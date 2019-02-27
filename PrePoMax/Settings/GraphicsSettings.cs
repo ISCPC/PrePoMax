@@ -1,0 +1,81 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.ComponentModel;
+using CaeGlobals;
+using System.IO;
+using DynamicTypeDescriptor;
+using System.Drawing;
+
+namespace PrePoMax
+{
+    [Serializable]
+    public enum BackgroundType
+    {
+        [StandardValue("Solid", Description = "One color background.")]
+        Solid,
+
+        [StandardValue("Gradient", DisplayName = "Gradient", Description = "Two color background.")]
+        Gradient,
+    }
+
+    [Serializable]
+    public class GraphicsSettings : ISettings
+    {
+        // Variables                                                                                                                
+        private BackgroundType _backgroundType;
+        private Color _topColor;
+        private Color _bottomColor;
+        private double _ambientComponent;
+        private double _diffuseComponent;
+        private bool _pointSmoothing;
+        private bool _lineSmoothing;
+        private double _geometryDeflection;
+
+
+        // Properties                                                                                                               
+        public BackgroundType BackgroundType { get { return _backgroundType; } set { _backgroundType = value; } }
+        public Color TopColor { get { return _topColor; } set { _topColor = value; } }
+        public Color BottomColor { get { return _bottomColor; } set { _bottomColor = value; } }
+        public double AmbientComponent { get { return _ambientComponent; } set { _ambientComponent = value; } }
+        public double DiffuseComponent { get { return _diffuseComponent; } set { _diffuseComponent = value; } }
+        public bool PointSmoothing { get { return _pointSmoothing; } set { _pointSmoothing = value; } }
+        public bool LineSmoothing { get { return _lineSmoothing; } set { _lineSmoothing = value; } }
+        public double GeometryDeflection
+        {
+            get { return _geometryDeflection; }
+            set
+            {
+                _geometryDeflection = value;
+                if (_geometryDeflection < 0) _geometryDeflection = 0;
+                else if (_geometryDeflection > 0.1) _geometryDeflection = 0.1;
+            }
+        }
+
+
+        // Constructors                                                                                                             
+        public GraphicsSettings()
+        {
+            Reset();
+        }
+
+
+        // Methods                                                                                                                  
+        public void CheckValues()
+        {
+        }
+        public void Reset()
+        {
+            _backgroundType = PrePoMax.BackgroundType.Gradient;
+            _topColor = Color.Gainsboro;
+            _bottomColor = Color.WhiteSmoke;
+            _ambientComponent = 0.4;
+            _diffuseComponent = 0.6;
+            _pointSmoothing = true;
+            _lineSmoothing = true;
+            _geometryDeflection = 0.01;
+        }
+    }
+}

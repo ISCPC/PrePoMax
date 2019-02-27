@@ -1,0 +1,2 @@
+http://mecway.com/forum/discussion/163/calculix-ccx2-9-built-with-msys2-mingw64-vs-bconverged-ccx2-8p2
+https://github.com/ddfem/ccx_mingw64

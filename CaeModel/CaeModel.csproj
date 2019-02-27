@@ -1,0 +1,160 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{65E5EE18-B889-42AD-A775-BA5674ABE1DD}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>CaeModel</RootNamespace>
+    <AssemblyName>CaeModel</AssemblyName>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BoundaryConditions\DisplacementRotation.cs" />
+    <Compile Include="BoundaryConditions\BoundaryCondition.cs" />
+    <Compile Include="Constraints\Tie.cs" />
+    <Compile Include="Constraints\RigidBody.cs" />
+    <Compile Include="Constraints\Constraint.cs" />
+    <Compile Include="FeModel.cs" />
+    <Compile Include="FieldOutputs\ElementFieldOutput.cs" />
+    <Compile Include="FieldOutputs\NodalFieldOutput.cs" />
+    <Compile Include="FieldOutputs\FieldOutput.cs" />
+    <Compile Include="FileInOut\Common\InpFeDescriptor.cs" />
+    <Compile Include="FileInOut\Input\InpModel\InpFileReader.cs" />
+    <Compile Include="FileInOut\Input\VisFileReader\VisFileReader.cs" />
+    <Compile Include="FileInOut\Input\VolMesh\VolKeywords.cs" />
+    <Compile Include="FileInOut\Input\StlGeomFile\StlFileReader.cs" />
+    <Compile Include="FileInOut\Common\ElementsToImport.cs" />
+    <Compile Include="FileInOut\Input\UnvMesh\UnvFeDescriptorId.cs" />
+    <Compile Include="FileInOut\Input\UnvMesh\UnvFileReader.cs" />
+    <Compile Include="FileInOut\Input\VolMesh\VolFileReader.cs" />
+    <Compile Include="FileInOut\Output\Abaqus\AbaqusFileWriter.cs" />
+    <Compile Include="FileInOut\Output\Calculix\CalCentrifLoad.cs" />
+    <Compile Include="FileInOut\Output\Calculix\CalGravityLoad.cs" />
+    <Compile Include="FileInOut\Output\Calculix\CalPlastic.cs" />
+    <Compile Include="FileInOut\Output\Calculix\CalElFile.cs" />
+    <Compile Include="FileInOut\Output\Calculix\CalNodeFile.cs" />
+    <Compile Include="FileInOut\Output\Calculix\CalFrequencyStep.cs" />
+    <Compile Include="FileInOut\Output\Calculix\CalTie.cs" />
+    <Compile Include="FileInOut\Output\Calculix\CalSTLoad.cs" />
+    <Compile Include="FileInOut\Output\Calculix\CalMomentLoad.cs" />
+    <Compile Include="FileInOut\Output\Calculix\CalculixFileWriter.cs" />
+    <Compile Include="FileInOut\Output\Calculix\CalDensity.cs" />
+    <Compile Include="FileInOut\Output\Calculix\CalCLoad.cs" />
+    <Compile Include="FileInOut\Output\Calculix\CalElementSet.cs" />
+    <Compile Include="FileInOut\Output\Calculix\CalElastic.cs" />
+    <Compile Include="FileInOut\Output\Calculix\CalRigidBody.cs" />
+    <Compile Include="FileInOut\Output\Calculix\CalSolidSection.cs" />
+    <Compile Include="FileInOut\Output\Calculix\CalMaterial.cs" />
+    <Compile Include="FileInOut\Output\Calculix\CalStaticStep.cs" />
+    <Compile Include="FileInOut\Output\Calculix\CalStep.cs" />
+    <Compile Include="FileInOut\Output\Calculix\CalDisplacementRotation.cs" />
+    <Compile Include="FileInOut\Output\Calculix\CalDLoad.cs" />
+    <Compile Include="FileInOut\Output\Calculix\CalEndStep.cs" />
+    <Compile Include="FileInOut\Output\Calculix\CalculixUserKeyword.cs" />
+    <Compile Include="FileInOut\Output\Calculix\CalTitle.cs" />
+    <Compile Include="FileInOut\Output\Calculix\CalSurface.cs" />
+    <Compile Include="FileInOut\Output\Calculix\CalNodeSet.cs" />
+    <Compile Include="FileInOut\Output\Calculix\CalElement.cs" />
+    <Compile Include="FileInOut\Output\Calculix\CalNode.cs" />
+    <Compile Include="FileInOut\Output\Calculix\CalHeading.cs" />
+    <Compile Include="FileInOut\Output\Calculix\CalculixKeyword.cs" />
+    <Compile Include="FileInOut\Output\Stl\StlFileWriter.cs" />
+    <Compile Include="IMultiRegion.cs" />
+    <Compile Include="GeometricRegionType.cs" />
+    <Compile Include="Loads\CentrifLoad.cs" />
+    <Compile Include="Loads\GravityLoad.cs" />
+    <Compile Include="Loads\MomentLoad.cs" />
+    <Compile Include="Loads\STLoad.cs" />
+    <Compile Include="Loads\CLoad.cs" />
+    <Compile Include="Loads\DLoad.cs" />
+    <Compile Include="Loads\Load.cs" />
+    <Compile Include="Materials\Density.cs" />
+    <Compile Include="Materials\Plastic.cs" />
+    <Compile Include="Materials\Elastic.cs" />
+    <Compile Include="Materials\MaterialProperty.cs" />
+    <Compile Include="Materials\Material.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Sections\Section.cs" />
+    <Compile Include="Sections\SolidSection.cs" />
+    <Compile Include="Steps\InitialStep.cs" />
+    <Compile Include="Steps\FrequencyStep.cs" />
+    <Compile Include="Steps\StaticStep.cs" />
+    <Compile Include="Steps\Step.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Steps\StepCollection.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CaeGlobals\CaeGlobals.csproj">
+      <Project>{104caebc-0761-4850-a97d-3fc59116c5b6}</Project>
+      <Name>CaeGlobals</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CaeMesh\CaeMesh.csproj">
+      <Project>{69d01fc1-1bc1-4470-b371-84d22282be98}</Project>
+      <Name>CaeMesh</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\STL\STL.csproj">
+      <Project>{f32f3151-1595-4211-a01e-2f7beb34f88d}</Project>
+      <Name>STL</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

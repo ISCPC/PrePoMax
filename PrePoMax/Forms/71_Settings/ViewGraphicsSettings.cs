@@ -1,0 +1,169 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.ComponentModel;
+using CaeGlobals;
+using DynamicTypeDescriptor;
+using System.Drawing;
+
+namespace PrePoMax.Settings
+{
+    [Serializable]
+    public class ViewGraphicsSettings : ViewSettings, IReset
+    {
+        // Variables                                                                                                                
+        private GraphicsSettings _graphicsSettings;
+        private DynamicCustomTypeDescriptor _dctd = null;
+
+        // Background                                                                               
+        [CategoryAttribute("Background")]
+        [OrderedDisplayName(0, 10, "Type")]
+        [DescriptionAttribute("Select the background color type.")]
+        public BackgroundType BackgroundType
+        {
+            get { return _graphicsSettings.BackgroundType; }
+            set
+            {
+                _graphicsSettings.BackgroundType = value;
+
+                if (value == BackgroundType.Solid)
+                {
+                    CustomPropertyDescriptor cpd;
+                    cpd = _dctd.GetProperty("Color");
+                    cpd.SetIsBrowsable(true);
+                    cpd = _dctd.GetProperty("TopColor");
+                    cpd.SetIsBrowsable(false);
+                    cpd = _dctd.GetProperty("BottomColor");
+                    cpd.SetIsBrowsable(false);
+                }
+                else
+                {
+                    CustomPropertyDescriptor cpd;
+                    cpd = _dctd.GetProperty("Color");
+                    cpd.SetIsBrowsable(false);
+                    cpd = _dctd.GetProperty("TopColor");
+                    cpd.SetIsBrowsable(true);
+                    cpd = _dctd.GetProperty("BottomColor");
+                    cpd.SetIsBrowsable(true);
+                }
+            }
+        }
+
+        [CategoryAttribute("Background")]
+        [OrderedDisplayName(1, 10, "Color")]
+        [DescriptionAttribute("Select the background color.")]
+        public Color Color
+        {
+            get { return _graphicsSettings.BottomColor; }
+            set { _graphicsSettings.BottomColor = value; }
+        }
+
+        [CategoryAttribute("Background")]
+        [OrderedDisplayName(2, 10, "Top color")]
+        [DescriptionAttribute("Select the top background color.")]
+        public Color TopColor
+        {
+            get { return _graphicsSettings.TopColor; }
+            set { _graphicsSettings.TopColor = value; }
+        }
+
+        [CategoryAttribute("Background")]
+        [OrderedDisplayName(3, 10, "Bottom color")]
+        [DescriptionAttribute("Select the top bottom color.")]
+        public Color BottomColor
+        {
+            get { return _graphicsSettings.BottomColor; }
+            set { _graphicsSettings.BottomColor = value; }
+        }
+
+        [CategoryAttribute("Lighting")]
+        [OrderedDisplayName(0, 10, "Ambient component")]
+        [DescriptionAttribute("Select the ambient light component between 0 and 1. ")]
+        public double AmbientComponent
+        {
+            get { return _graphicsSettings.AmbientComponent; }
+            set { _graphicsSettings.AmbientComponent = value; }
+        }
+
+        [CategoryAttribute("Lighting")]
+        [OrderedDisplayName(1, 10, "Diffuse component")]
+        [DescriptionAttribute("Select the diffuse light component between 0 and 1.")]
+        public double DiffuseComponent
+        {
+            get { return _graphicsSettings.DiffuseComponent; }
+            set { _graphicsSettings.DiffuseComponent = value; }
+        }
+
+        [CategoryAttribute("Smoothing")]
+        [OrderedDisplayName(0, 10, "Point smoothing")]
+        [DescriptionAttribute("Enable/disable point smoothing. Restart the application for the changes to take effect.")]
+        public bool PointSmoothing
+        {
+            get { return _graphicsSettings.PointSmoothing; }
+            set { _graphicsSettings.PointSmoothing = value; }
+        }
+
+        [CategoryAttribute("Smoothing")]
+        [OrderedDisplayName(1, 10, "Line smoothing")]
+        [DescriptionAttribute("Enable/disable line smoothing. Restart the application for the changes to take effect")]
+        public bool LineSmoothing
+        {
+            get { return _graphicsSettings.LineSmoothing; }
+            set { _graphicsSettings.LineSmoothing = value; }
+        }
+
+        [CategoryAttribute("Geometry")]
+        [OrderedDisplayName(0, 10, "CAD deflection")]
+        [DescriptionAttribute("This parameter controls the deflection of the geometry visualization, i.e. how accurate it is at approximating the actual curved surfaces")]
+        public double GeometryDeflection
+        {
+            get { return _graphicsSettings.GeometryDeflection; }
+            set { _graphicsSettings.GeometryDeflection = value; }
+        }
+
+
+        // Constructors                                                                               
+        public ViewGraphicsSettings(GraphicsSettings graphicsSettings)
+        {
+            _graphicsSettings = graphicsSettings;
+            _dctd = ProviderInstaller.Install(this);
+
+            BackgroundType = _graphicsSettings.BackgroundType;  // add this also to Reset()
+
+            CustomPropertyDescriptor cpd;
+
+            // now lets display On/Off instead of True/False
+            cpd = _dctd.GetProperty("PointSmoothing");
+            foreach (StandardValueAttribute sva in cpd.StatandardValues)
+            {
+                if ((bool)sva.Value == true) sva.DisplayName = "On";
+                else sva.DisplayName = "Off";
+            }
+
+            // now lets display On/Off instead of True/False
+            cpd = _dctd.GetProperty("LineSmoothing");
+            foreach (StandardValueAttribute sva in cpd.StatandardValues)
+            {
+                if ((bool)sva.Value == true) sva.DisplayName = "On";
+                else sva.DisplayName = "Off";
+            }
+        }
+
+
+        // Methods                                                                               
+        public override ISettings GetBase()
+        {
+            return _graphicsSettings;
+        }
+
+        public void Reset()
+        {
+            _graphicsSettings.Reset();
+
+            BackgroundType = _graphicsSettings.BackgroundType;
+        }
+    }
+
+}

@@ -1,0 +1,301 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{74EA83FB-2743-49EE-85A8-5B42CBCE19B3}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>UserControls</RootNamespace>
+    <AssemblyName>UserControls</AssemblyName>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Drawing.Design" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AutoClosingMessageBox.cs" />
+    <Compile Include="Forms\ChildMouseWheelManagedForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FrmProperties.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FrmProperties.Designer.cs">
+      <DependentUpon>FrmProperties.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\FrmPropertyListView.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FrmPropertyListView.Designer.cs">
+      <DependentUpon>FrmPropertyListView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\MainMouseWheelManagedForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\PrePoMaxChildForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ListViewWithSelection.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="ListViewWithSelection.Designer.cs">
+      <DependentUpon>ListViewWithSelection.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Trees\MultiSelectBufferedTreeView.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Trees\BufferedTreeView.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="MenuStripFocus.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="MenuStripFocus.Designer.cs">
+      <DependentUpon>MenuStripFocus.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ModelTree.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ModelTree.Designer.cs">
+      <DependentUpon>ModelTree.cs</DependentUpon>
+    </Compile>
+    <Compile Include="NumericTextBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="NumericTextBox.Designer.cs">
+      <DependentUpon>NumericTextBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="ProperyGrid\ColorEditorEx.cs" />
+    <Compile Include="ProperyGrid\TabbedPropertyGrid.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Trees\CodersLabTreeView.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="ToolStripFocus.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="ToolStripFocus.Designer.cs">
+      <DependentUpon>ToolStripFocus.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Materials\ViewMaterial.cs" />
+    <Compile Include="Views\Sections\ViewSection.cs" />
+    <Compile Include="Views\Sections\ViewSolidSection.cs" />
+    <Compile Include="Views\Step\ViewStaticStep.cs" />
+    <Compile Include="Views\Step\ViewStep.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Forms\FrmProperties.resx">
+      <DependentUpon>FrmProperties.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\FrmPropertyListView.resx">
+      <DependentUpon>FrmPropertyListView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ModelTree.resx">
+      <DependentUpon>ModelTree.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="NumericTextBox.resx">
+      <DependentUpon>NumericTextBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ProperyGrid\TabbedPropertyGrid.resx">
+      <DependentUpon>TabbedPropertyGrid.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Trees\CodersLabTreeView.resx">
+      <DependentUpon>CodersLabTreeView.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CaeGlobals\CaeGlobals.csproj">
+      <Project>{104caebc-0761-4850-a97d-3fc59116c5b6}</Project>
+      <Name>CaeGlobals</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CaeJob\CaeJob.csproj">
+      <Project>{a449b1d6-da0d-4a08-9b64-2cd929830399}</Project>
+      <Name>CaeJob</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CaeMesh\CaeMesh.csproj">
+      <Project>{69d01fc1-1bc1-4470-b371-84d22282be98}</Project>
+      <Name>CaeMesh</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CaeModel\CaeModel.csproj">
+      <Project>{65e5ee18-b889-42ad-a775-ba5674abe1dd}</Project>
+      <Name>CaeModel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CaeResults\CaeResults.csproj">
+      <Project>{bca7c65b-cc0b-48ca-b852-49255bd3851d}</Project>
+      <Name>CaeResults</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Warning.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Running.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\OK.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Mesh.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Mesh.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Part.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Node_set.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Element_set.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Surface.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Reference_point.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Material.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Section.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Constraints.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Step.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Field_output.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Load.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Analysis.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Empty.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Bc.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Unactive1.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Hide1.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Show1.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Hide.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Show.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Unactive.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Deformed.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Color_contours.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Library.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Show2.ico" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -1,0 +1,626 @@
+﻿namespace PrePoMax.Forms
+{
+    partial class FrmAnimation
+    {
+        /// <summary>
+        /// Required designer variable.
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Windows Form Designer generated code
+
+        /// <summary>
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            this.components = new System.ComponentModel.Container();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.numIncrementStep = new System.Windows.Forms.NumericUpDown();
+            this.label6 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.rbTimeIncrements = new System.Windows.Forms.RadioButton();
+            this.numNumOfFrames = new System.Windows.Forms.NumericUpDown();
+            this.rbScaleFactor = new System.Windows.Forms.RadioButton();
+            this.tbarFrameSelector = new System.Windows.Forms.TrackBar();
+            this.label1 = new System.Windows.Forms.Label();
+            this.numFramesPerSecond = new System.Windows.Forms.NumericUpDown();
+            this.rbOnce = new System.Windows.Forms.RadioButton();
+            this.rbLoop = new System.Windows.Forms.RadioButton();
+            this.rbSwing = new System.Windows.Forms.RadioButton();
+            this.label3 = new System.Windows.Forms.Label();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.btnMoreLess = new System.Windows.Forms.Button();
+            this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.btnSaveMovieAs = new System.Windows.Forms.Button();
+            this.btnStop = new System.Windows.Forms.Button();
+            this.btnPlayBackward = new System.Windows.Forms.Button();
+            this.btnPlayForward = new System.Windows.Forms.Button();
+            this.numCurrFrame = new System.Windows.Forms.NumericUpDown();
+            this.timerAnimation = new System.Windows.Forms.Timer(this.components);
+            this.gbColorSpectrumLimits = new System.Windows.Forms.GroupBox();
+            this.rbLimitsCurrentFrame = new System.Windows.Forms.RadioButton();
+            this.rbLimitsAllFrames = new System.Windows.Forms.RadioButton();
+            this.numLastFrame = new System.Windows.Forms.NumericUpDown();
+            this.label5 = new System.Windows.Forms.Label();
+            this.numFirstFrame = new System.Windows.Forms.NumericUpDown();
+            this.label4 = new System.Windows.Forms.Label();
+            this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+            this.groupBox5 = new System.Windows.Forms.GroupBox();
+            this.groupBox6 = new System.Windows.Forms.GroupBox();
+            this.cbEncoderOptions = new System.Windows.Forms.CheckBox();
+            this.cbSaveAsImages = new System.Windows.Forms.CheckBox();
+            this.groupBox1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numIncrementStep)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numNumOfFrames)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbarFrameSelector)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numFramesPerSecond)).BeginInit();
+            this.groupBox2.SuspendLayout();
+            this.groupBox3.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numCurrFrame)).BeginInit();
+            this.gbColorSpectrumLimits.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numLastFrame)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numFirstFrame)).BeginInit();
+            this.groupBox5.SuspendLayout();
+            this.groupBox6.SuspendLayout();
+            this.SuspendLayout();
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Controls.Add(this.numIncrementStep);
+            this.groupBox1.Controls.Add(this.label6);
+            this.groupBox1.Controls.Add(this.label2);
+            this.groupBox1.Controls.Add(this.rbTimeIncrements);
+            this.groupBox1.Controls.Add(this.numNumOfFrames);
+            this.groupBox1.Controls.Add(this.rbScaleFactor);
+            this.groupBox1.Location = new System.Drawing.Point(12, 133);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(281, 76);
+            this.groupBox1.TabIndex = 0;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Animation type";
+            // 
+            // numIncrementStep
+            // 
+            this.numIncrementStep.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.numIncrementStep.Location = new System.Drawing.Point(232, 47);
+            this.numIncrementStep.Maximum = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
+            this.numIncrementStep.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numIncrementStep.Name = "numIncrementStep";
+            this.numIncrementStep.Size = new System.Drawing.Size(42, 23);
+            this.numIncrementStep.TabIndex = 6;
+            this.numIncrementStep.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.numIncrementStep.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numIncrementStep.ValueChanged += new System.EventHandler(this.NumIncrementStep_ValueChanged);
+            // 
+            // label6
+            // 
+            this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(141, 49);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(86, 15);
+            this.label6.TabIndex = 5;
+            this.label6.Text = "Increment step";
+            // 
+            // label2
+            // 
+            this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(123, 24);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(104, 15);
+            this.label2.TabIndex = 4;
+            this.label2.Text = "Number of frames";
+            // 
+            // rbTimeIncrements
+            // 
+            this.rbTimeIncrements.AutoSize = true;
+            this.rbTimeIncrements.Location = new System.Drawing.Point(6, 47);
+            this.rbTimeIncrements.Name = "rbTimeIncrements";
+            this.rbTimeIncrements.Size = new System.Drawing.Size(114, 19);
+            this.rbTimeIncrements.TabIndex = 1;
+            this.rbTimeIncrements.TabStop = true;
+            this.rbTimeIncrements.Text = "Time increments";
+            this.rbTimeIncrements.UseVisualStyleBackColor = true;
+            // 
+            // numNumOfFrames
+            // 
+            this.numNumOfFrames.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.numNumOfFrames.Location = new System.Drawing.Point(232, 22);
+            this.numNumOfFrames.Maximum = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
+            this.numNumOfFrames.Minimum = new decimal(new int[] {
+            2,
+            0,
+            0,
+            0});
+            this.numNumOfFrames.Name = "numNumOfFrames";
+            this.numNumOfFrames.Size = new System.Drawing.Size(42, 23);
+            this.numNumOfFrames.TabIndex = 3;
+            this.numNumOfFrames.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.numNumOfFrames.Value = new decimal(new int[] {
+            15,
+            0,
+            0,
+            0});
+            this.numNumOfFrames.ValueChanged += new System.EventHandler(this.numNumOfFrames_ValueChanged);
+            // 
+            // rbScaleFactor
+            // 
+            this.rbScaleFactor.AutoSize = true;
+            this.rbScaleFactor.Checked = true;
+            this.rbScaleFactor.Location = new System.Drawing.Point(6, 22);
+            this.rbScaleFactor.Name = "rbScaleFactor";
+            this.rbScaleFactor.Size = new System.Drawing.Size(86, 19);
+            this.rbScaleFactor.TabIndex = 0;
+            this.rbScaleFactor.TabStop = true;
+            this.rbScaleFactor.Text = "Scale factor";
+            this.rbScaleFactor.UseVisualStyleBackColor = true;
+            this.rbScaleFactor.CheckedChanged += new System.EventHandler(this.AnimationType_CheckedChanged);
+            // 
+            // tbarFrameSelector
+            // 
+            this.tbarFrameSelector.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbarFrameSelector.AutoSize = false;
+            this.tbarFrameSelector.Location = new System.Drawing.Point(6, 49);
+            this.tbarFrameSelector.Maximum = 15;
+            this.tbarFrameSelector.Minimum = 1;
+            this.tbarFrameSelector.Name = "tbarFrameSelector";
+            this.tbarFrameSelector.Size = new System.Drawing.Size(269, 23);
+            this.tbarFrameSelector.TabIndex = 5;
+            this.tbarFrameSelector.TickStyle = System.Windows.Forms.TickStyle.None;
+            this.tbarFrameSelector.Value = 8;
+            this.tbarFrameSelector.ValueChanged += new System.EventHandler(this.tbarFrameSelector_ValueChanged);
+            // 
+            // label1
+            // 
+            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(201, 24);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(26, 15);
+            this.label1.TabIndex = 10;
+            this.label1.Text = "FPS";
+            // 
+            // numFramesPerSecond
+            // 
+            this.numFramesPerSecond.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.numFramesPerSecond.Location = new System.Drawing.Point(233, 22);
+            this.numFramesPerSecond.Maximum = new decimal(new int[] {
+            120,
+            0,
+            0,
+            0});
+            this.numFramesPerSecond.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numFramesPerSecond.Name = "numFramesPerSecond";
+            this.numFramesPerSecond.Size = new System.Drawing.Size(42, 23);
+            this.numFramesPerSecond.TabIndex = 9;
+            this.numFramesPerSecond.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.numFramesPerSecond.Value = new decimal(new int[] {
+            15,
+            0,
+            0,
+            0});
+            this.numFramesPerSecond.ValueChanged += new System.EventHandler(this.numFramesPerSecond_ValueChanged);
+            // 
+            // rbOnce
+            // 
+            this.rbOnce.AutoSize = true;
+            this.rbOnce.Location = new System.Drawing.Point(6, 22);
+            this.rbOnce.Name = "rbOnce";
+            this.rbOnce.Size = new System.Drawing.Size(53, 19);
+            this.rbOnce.TabIndex = 11;
+            this.rbOnce.Text = "Once";
+            this.rbOnce.UseVisualStyleBackColor = true;
+            this.rbOnce.CheckedChanged += new System.EventHandler(this.rbAnimationStyle_CheckedChanged);
+            // 
+            // rbLoop
+            // 
+            this.rbLoop.AutoSize = true;
+            this.rbLoop.Location = new System.Drawing.Point(68, 22);
+            this.rbLoop.Name = "rbLoop";
+            this.rbLoop.Size = new System.Drawing.Size(52, 19);
+            this.rbLoop.TabIndex = 12;
+            this.rbLoop.Text = "Loop";
+            this.rbLoop.UseVisualStyleBackColor = true;
+            this.rbLoop.CheckedChanged += new System.EventHandler(this.rbAnimationStyle_CheckedChanged);
+            // 
+            // rbSwing
+            // 
+            this.rbSwing.AutoSize = true;
+            this.rbSwing.Checked = true;
+            this.rbSwing.Location = new System.Drawing.Point(126, 22);
+            this.rbSwing.Name = "rbSwing";
+            this.rbSwing.Size = new System.Drawing.Size(57, 19);
+            this.rbSwing.TabIndex = 13;
+            this.rbSwing.TabStop = true;
+            this.rbSwing.Text = "Swing";
+            this.rbSwing.UseVisualStyleBackColor = true;
+            this.rbSwing.CheckedChanged += new System.EventHandler(this.rbAnimationStyle_CheckedChanged);
+            // 
+            // label3
+            // 
+            this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(93, 19);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(47, 15);
+            this.label3.TabIndex = 14;
+            this.label3.Text = "Current";
+            // 
+            // groupBox2
+            // 
+            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Controls.Add(this.rbOnce);
+            this.groupBox2.Controls.Add(this.numFramesPerSecond);
+            this.groupBox2.Controls.Add(this.label1);
+            this.groupBox2.Controls.Add(this.rbSwing);
+            this.groupBox2.Controls.Add(this.rbLoop);
+            this.groupBox2.Location = new System.Drawing.Point(11, 215);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(281, 51);
+            this.groupBox2.TabIndex = 16;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "Animation style";
+            // 
+            // btnMoreLess
+            // 
+            this.btnMoreLess.Font = new System.Drawing.Font("Segoe UI", 8F);
+            this.btnMoreLess.Location = new System.Drawing.Point(9, 22);
+            this.btnMoreLess.Name = "btnMoreLess";
+            this.btnMoreLess.Size = new System.Drawing.Size(52, 24);
+            this.btnMoreLess.TabIndex = 17;
+            this.btnMoreLess.Text = "Less";
+            this.btnMoreLess.UseVisualStyleBackColor = true;
+            this.btnMoreLess.Click += new System.EventHandler(this.btnMoreLess_Click);
+            // 
+            // groupBox3
+            // 
+            this.groupBox3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox3.Controls.Add(this.btnSaveMovieAs);
+            this.groupBox3.Controls.Add(this.btnStop);
+            this.groupBox3.Controls.Add(this.btnMoreLess);
+            this.groupBox3.Controls.Add(this.btnPlayBackward);
+            this.groupBox3.Controls.Add(this.btnPlayForward);
+            this.groupBox3.Controls.Add(this.tbarFrameSelector);
+            this.groupBox3.Location = new System.Drawing.Point(12, -2);
+            this.groupBox3.Name = "groupBox3";
+            this.groupBox3.Size = new System.Drawing.Size(281, 77);
+            this.groupBox3.TabIndex = 18;
+            this.groupBox3.TabStop = false;
+            // 
+            // btnSaveMovieAs
+            // 
+            this.btnSaveMovieAs.Font = new System.Drawing.Font("Segoe UI", 8F);
+            this.btnSaveMovieAs.Location = new System.Drawing.Point(221, 22);
+            this.btnSaveMovieAs.Name = "btnSaveMovieAs";
+            this.btnSaveMovieAs.Size = new System.Drawing.Size(52, 24);
+            this.btnSaveMovieAs.TabIndex = 19;
+            this.btnSaveMovieAs.Text = "Save as";
+            this.btnSaveMovieAs.UseVisualStyleBackColor = true;
+            this.btnSaveMovieAs.Click += new System.EventHandler(this.btnSaveMovieAs_Click);
+            // 
+            // btnStop
+            // 
+            this.btnStop.Image = global::PrePoMax.Properties.Resources.Stop;
+            this.btnStop.Location = new System.Drawing.Point(128, 22);
+            this.btnStop.Name = "btnStop";
+            this.btnStop.Size = new System.Drawing.Size(24, 24);
+            this.btnStop.TabIndex = 6;
+            this.btnStop.UseVisualStyleBackColor = true;
+            this.btnStop.Click += new System.EventHandler(this.btnStop_Click);
+            // 
+            // btnPlayBackward
+            // 
+            this.btnPlayBackward.Image = global::PrePoMax.Properties.Resources.Animate_backwards;
+            this.btnPlayBackward.Location = new System.Drawing.Point(100, 22);
+            this.btnPlayBackward.Name = "btnPlayBackward";
+            this.btnPlayBackward.Size = new System.Drawing.Size(24, 24);
+            this.btnPlayBackward.TabIndex = 4;
+            this.btnPlayBackward.UseVisualStyleBackColor = true;
+            this.btnPlayBackward.Click += new System.EventHandler(this.btnPlayBackward_Click);
+            // 
+            // btnPlayForward
+            // 
+            this.btnPlayForward.Image = global::PrePoMax.Properties.Resources.Animate;
+            this.btnPlayForward.Location = new System.Drawing.Point(158, 22);
+            this.btnPlayForward.Name = "btnPlayForward";
+            this.btnPlayForward.Size = new System.Drawing.Size(24, 24);
+            this.btnPlayForward.TabIndex = 7;
+            this.btnPlayForward.UseVisualStyleBackColor = true;
+            this.btnPlayForward.Click += new System.EventHandler(this.btnPlayForward_Click);
+            // 
+            // numCurrFrame
+            // 
+            this.numCurrFrame.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.numCurrFrame.Location = new System.Drawing.Point(146, 17);
+            this.numCurrFrame.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numCurrFrame.Name = "numCurrFrame";
+            this.numCurrFrame.Size = new System.Drawing.Size(42, 23);
+            this.numCurrFrame.TabIndex = 18;
+            this.numCurrFrame.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.numCurrFrame.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numCurrFrame.ValueChanged += new System.EventHandler(this.numCurrFrame_ValueChanged);
+            // 
+            // timerAnimation
+            // 
+            this.timerAnimation.Tick += new System.EventHandler(this.timerAnimation_Tick);
+            // 
+            // gbColorSpectrumLimits
+            // 
+            this.gbColorSpectrumLimits.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.gbColorSpectrumLimits.Controls.Add(this.rbLimitsCurrentFrame);
+            this.gbColorSpectrumLimits.Controls.Add(this.rbLimitsAllFrames);
+            this.gbColorSpectrumLimits.Location = new System.Drawing.Point(11, 272);
+            this.gbColorSpectrumLimits.Name = "gbColorSpectrumLimits";
+            this.gbColorSpectrumLimits.Size = new System.Drawing.Size(281, 51);
+            this.gbColorSpectrumLimits.TabIndex = 19;
+            this.gbColorSpectrumLimits.TabStop = false;
+            this.gbColorSpectrumLimits.Text = "Automatic color spectrum limits";
+            // 
+            // rbLimitsCurrentFrame
+            // 
+            this.rbLimitsCurrentFrame.AutoSize = true;
+            this.rbLimitsCurrentFrame.Location = new System.Drawing.Point(6, 22);
+            this.rbLimitsCurrentFrame.Name = "rbLimitsCurrentFrame";
+            this.rbLimitsCurrentFrame.Size = new System.Drawing.Size(119, 19);
+            this.rbLimitsCurrentFrame.TabIndex = 11;
+            this.rbLimitsCurrentFrame.Text = "Use current frame";
+            this.rbLimitsCurrentFrame.UseVisualStyleBackColor = true;
+            this.rbLimitsCurrentFrame.CheckedChanged += new System.EventHandler(this.rbLimitChanged_CheckedChanged);
+            // 
+            // rbLimitsAllFrames
+            // 
+            this.rbLimitsAllFrames.AutoSize = true;
+            this.rbLimitsAllFrames.Checked = true;
+            this.rbLimitsAllFrames.Location = new System.Drawing.Point(176, 22);
+            this.rbLimitsAllFrames.Name = "rbLimitsAllFrames";
+            this.rbLimitsAllFrames.Size = new System.Drawing.Size(98, 19);
+            this.rbLimitsAllFrames.TabIndex = 12;
+            this.rbLimitsAllFrames.TabStop = true;
+            this.rbLimitsAllFrames.Text = "Use all frames";
+            this.rbLimitsAllFrames.UseVisualStyleBackColor = true;
+            this.rbLimitsAllFrames.CheckedChanged += new System.EventHandler(this.rbLimitChanged_CheckedChanged);
+            // 
+            // numLastFrame
+            // 
+            this.numLastFrame.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.numLastFrame.Location = new System.Drawing.Point(231, 17);
+            this.numLastFrame.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numLastFrame.Name = "numLastFrame";
+            this.numLastFrame.Size = new System.Drawing.Size(42, 23);
+            this.numLastFrame.TabIndex = 23;
+            this.numLastFrame.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.numLastFrame.Value = new decimal(new int[] {
+            2,
+            0,
+            0,
+            0});
+            this.numLastFrame.ValueChanged += new System.EventHandler(this.numLastFrame_ValueChanged);
+            // 
+            // label5
+            // 
+            this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(197, 19);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(28, 15);
+            this.label5.TabIndex = 22;
+            this.label5.Text = "Last";
+            // 
+            // numFirstFrame
+            // 
+            this.numFirstFrame.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.numFirstFrame.Location = new System.Drawing.Point(41, 17);
+            this.numFirstFrame.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numFirstFrame.Name = "numFirstFrame";
+            this.numFirstFrame.Size = new System.Drawing.Size(42, 23);
+            this.numFirstFrame.TabIndex = 21;
+            this.numFirstFrame.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.numFirstFrame.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numFirstFrame.ValueChanged += new System.EventHandler(this.numFirstFrame_ValueChanged);
+            // 
+            // label4
+            // 
+            this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(6, 19);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(29, 15);
+            this.label4.TabIndex = 20;
+            this.label4.Text = "First";
+            // 
+            // groupBox5
+            // 
+            this.groupBox5.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox5.Controls.Add(this.label4);
+            this.groupBox5.Controls.Add(this.numLastFrame);
+            this.groupBox5.Controls.Add(this.label3);
+            this.groupBox5.Controls.Add(this.numCurrFrame);
+            this.groupBox5.Controls.Add(this.numFirstFrame);
+            this.groupBox5.Controls.Add(this.label5);
+            this.groupBox5.Location = new System.Drawing.Point(12, 81);
+            this.groupBox5.Name = "groupBox5";
+            this.groupBox5.Size = new System.Drawing.Size(281, 46);
+            this.groupBox5.TabIndex = 20;
+            this.groupBox5.TabStop = false;
+            this.groupBox5.Text = "Frames";
+            // 
+            // groupBox6
+            // 
+            this.groupBox6.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox6.Controls.Add(this.cbSaveAsImages);
+            this.groupBox6.Controls.Add(this.cbEncoderOptions);
+            this.groupBox6.Location = new System.Drawing.Point(11, 329);
+            this.groupBox6.Name = "groupBox6";
+            this.groupBox6.Size = new System.Drawing.Size(281, 73);
+            this.groupBox6.TabIndex = 21;
+            this.groupBox6.TabStop = false;
+            this.groupBox6.Text = "Movie options";
+            // 
+            // cbEncoderOptions
+            // 
+            this.cbEncoderOptions.AutoSize = true;
+            this.cbEncoderOptions.Location = new System.Drawing.Point(6, 22);
+            this.cbEncoderOptions.Name = "cbEncoderOptions";
+            this.cbEncoderOptions.Size = new System.Drawing.Size(201, 19);
+            this.cbEncoderOptions.TabIndex = 0;
+            this.cbEncoderOptions.Text = "Show video compression options";
+            this.cbEncoderOptions.UseVisualStyleBackColor = true;
+            this.cbEncoderOptions.CheckedChanged += new System.EventHandler(this.cbEncoderOptions_CheckedChanged);
+            // 
+            // cbSaveAsImages
+            // 
+            this.cbSaveAsImages.AutoSize = true;
+            this.cbSaveAsImages.Location = new System.Drawing.Point(6, 47);
+            this.cbSaveAsImages.Name = "cbSaveAsImages";
+            this.cbSaveAsImages.Size = new System.Drawing.Size(105, 19);
+            this.cbSaveAsImages.TabIndex = 1;
+            this.cbSaveAsImages.Text = "Save as images";
+            this.cbSaveAsImages.UseVisualStyleBackColor = true;
+            this.cbSaveAsImages.CheckedChanged += new System.EventHandler(this.cbSaveAsImages_CheckedChanged);
+            // 
+            // FrmAnimation
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(304, 414);
+            this.Controls.Add(this.groupBox6);
+            this.Controls.Add(this.groupBox5);
+            this.Controls.Add(this.gbColorSpectrumLimits);
+            this.Controls.Add(this.groupBox3);
+            this.Controls.Add(this.groupBox2);
+            this.Controls.Add(this.groupBox1);
+            this.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
+            this.Name = "FrmAnimation";
+            this.ShowInTaskbar = false;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
+            this.Text = "Animation";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmAnimation_FormClosing);
+            this.Shown += new System.EventHandler(this.FrmAnimation_Shown);
+            this.VisibleChanged += new System.EventHandler(this.FrmAnimation_VisibleChanged);
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numIncrementStep)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numNumOfFrames)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbarFrameSelector)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numFramesPerSecond)).EndInit();
+            this.groupBox2.ResumeLayout(false);
+            this.groupBox2.PerformLayout();
+            this.groupBox3.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.numCurrFrame)).EndInit();
+            this.gbColorSpectrumLimits.ResumeLayout(false);
+            this.gbColorSpectrumLimits.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numLastFrame)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numFirstFrame)).EndInit();
+            this.groupBox5.ResumeLayout(false);
+            this.groupBox5.PerformLayout();
+            this.groupBox6.ResumeLayout(false);
+            this.groupBox6.PerformLayout();
+            this.ResumeLayout(false);
+
+        }
+
+        #endregion
+
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.RadioButton rbTimeIncrements;
+        private System.Windows.Forms.NumericUpDown numNumOfFrames;
+        private System.Windows.Forms.RadioButton rbScaleFactor;
+        private System.Windows.Forms.Button btnPlayBackward;
+        private System.Windows.Forms.TrackBar tbarFrameSelector;
+        private System.Windows.Forms.Button btnStop;
+        private System.Windows.Forms.Button btnPlayForward;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.NumericUpDown numFramesPerSecond;
+        private System.Windows.Forms.RadioButton rbOnce;
+        private System.Windows.Forms.RadioButton rbLoop;
+        private System.Windows.Forms.RadioButton rbSwing;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.Button btnMoreLess;
+        private System.Windows.Forms.GroupBox groupBox3;
+        private System.Windows.Forms.Timer timerAnimation;
+        private System.Windows.Forms.NumericUpDown numCurrFrame;
+        private System.Windows.Forms.GroupBox gbColorSpectrumLimits;
+        private System.Windows.Forms.RadioButton rbLimitsCurrentFrame;
+        private System.Windows.Forms.RadioButton rbLimitsAllFrames;
+        private System.Windows.Forms.Button btnSaveMovieAs;
+        private System.Windows.Forms.NumericUpDown numFirstFrame;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.NumericUpDown numLastFrame;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.SaveFileDialog saveFileDialog1;
+        private System.Windows.Forms.GroupBox groupBox5;
+        private System.Windows.Forms.GroupBox groupBox6;
+        private System.Windows.Forms.CheckBox cbEncoderOptions;
+        private System.Windows.Forms.NumericUpDown numIncrementStep;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.CheckBox cbSaveAsImages;
+    }
+}

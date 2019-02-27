@@ -1,0 +1,524 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{1BA289A1-1DEE-4EE3-80C6-0150A1BEAFD4}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>PrePoMax</RootNamespace>
+    <AssemblyName>PrePoMax</AssemblyName>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>main.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Design" />
+    <Reference Include="System.Drawing.Design" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Command\0000_File\CImportFile.cs" />
+    <Compile Include="Command\0010_Edit\CSetCalculixUserKeywords.cs" />
+    <Compile Include="Command\0030_Geometry\01_Part\CHideGeometryParts.cs" />
+    <Compile Include="Command\0030_Geometry\01_Part\CRemoveGeometryParts.cs" />
+    <Compile Include="Command\0030_Geometry\01_Part\CReplaceGeometryPartProperties.cs" />
+    <Compile Include="Command\0030_Geometry\01_Part\CShowGeometryParts.cs" />
+    <Compile Include="Command\0030_Geometry\02_CreateMesh\CCreateMesh.cs" />
+    <Compile Include="Command\0030_Geometry\02_CreateMesh\CSetMeshingParameters.cs" />
+    <Compile Include="Command\0040_Model\01_Node\CRenumberNodes.cs" />
+    <Compile Include="Command\0040_Model\11_Part\CMergeModelParts.cs" />
+    <Compile Include="Command\0040_Model\11_Part\CShowModelParts.cs" />
+    <Compile Include="Command\0040_Model\11_Part\CHideModelParts.cs" />
+    <Compile Include="Command\0040_Model\12_NodeSet\CAddNodeSet.cs" />
+    <Compile Include="Command\0040_Model\12_NodeSet\CRemoveNodeSets.cs" />
+    <Compile Include="Command\0040_Model\12_NodeSet\CReplaceNodeSet.cs" />
+    <Compile Include="Command\0040_Model\13_ElementSet\CAddElementSet.cs" />
+    <Compile Include="Command\0040_Model\13_ElementSet\CConvertElementSetsToMeshParts.cs" />
+    <Compile Include="Command\0040_Model\13_ElementSet\CRemoveElementSets.cs" />
+    <Compile Include="Command\0040_Model\13_ElementSet\CReplaceElementSet.cs" />
+    <Compile Include="Command\0040_Model\15_ReferencePoint\CAddReferencePoint.cs" />
+    <Compile Include="Command\0040_Model\15_ReferencePoint\CRemoveReferencePoints.cs" />
+    <Compile Include="Command\0040_Model\15_ReferencePoint\CReplaceReferencePoint.cs" />
+    <Compile Include="Command\0051_Material\CAddMaterial.cs" />
+    <Compile Include="Command\0051_Material\CRemoveMaterials.cs" />
+    <Compile Include="Command\0051_Material\CReplaceMaterial.cs" />
+    <Compile Include="Command\0052_Section\CAddSection.cs" />
+    <Compile Include="Command\0052_Section\CRemoveSections.cs" />
+    <Compile Include="Command\0052_Section\CReplaceSection.cs" />
+    <Compile Include="Command\0061_Constraint\CAddConstraint.cs" />
+    <Compile Include="Command\0061_Constraint\CHideConstraints.cs" />
+    <Compile Include="Command\0061_Constraint\CRemoveConstraints.cs" />
+    <Compile Include="Command\0061_Constraint\CReplaceConstraint.cs" />
+    <Compile Include="Command\0061_Constraint\CShowConstraints.cs" />
+    <Compile Include="Command\0071_Step\CAddStep.cs" />
+    <Compile Include="Command\0071_Step\CRemoveSteps.cs" />
+    <Compile Include="Command\0071_Step\CReplaceStep.cs" />
+    <Compile Include="Command\0072_FieldOutput\CAddFieldOutput.cs" />
+    <Compile Include="Command\0072_FieldOutput\CRemoveFieldOutputs.cs" />
+    <Compile Include="Command\0072_FieldOutput\CReplaceFieldOutput.cs" />
+    <Compile Include="Command\0081_BoundaryConditions\CAddBC.cs" />
+    <Compile Include="Command\0081_BoundaryConditions\CHideBCs.cs" />
+    <Compile Include="Command\0081_BoundaryConditions\CRemoveBCs.cs" />
+    <Compile Include="Command\0081_BoundaryConditions\CReplaceBC.cs" />
+    <Compile Include="Command\0081_BoundaryConditions\CShowBCs.cs" />
+    <Compile Include="Command\0091_Load\CAddLoad.cs" />
+    <Compile Include="Command\0091_Load\CHideLoads.cs" />
+    <Compile Include="Command\0091_Load\CRemoveLoads.cs" />
+    <Compile Include="Command\0091_Load\CReplaceLoad.cs" />
+    <Compile Include="Command\0091_Load\CShowLoads.cs" />
+    <Compile Include="Command\0111_Analysis\CAddJob.cs" />
+    <Compile Include="Command\0111_Analysis\CRemoveJobs.cs" />
+    <Compile Include="Command\0111_Analysis\CReplaceJob.cs" />
+    <Compile Include="Command\CActivateDeactivateMultilpe.cs" />
+    <Compile Include="Command\ICommandWithDialog.cs" />
+    <Compile Include="Command\CClear.cs" />
+    <Compile Include="Command\CActivateDeactivate.cs" />
+    <Compile Include="Command\CommandsCollection.cs" />
+    <Compile Include="Command\0040_Model\11_Part\CRemoveModelParts.cs" />
+    <Compile Include="Command\0040_Model\11_Part\CReplaceModelPartProperties.cs" />
+    <Compile Include="Command\0040_Model\14_Surface\CReplaceSurface.cs" />
+    <Compile Include="Command\0040_Model\14_Surface\CRemoveSurfaces.cs" />
+    <Compile Include="Command\0040_Model\14_Surface\CAddSurface.cs" />
+    <Compile Include="Command\Command.cs" />
+    <Compile Include="Controller.cs" />
+    <Compile Include="Enums\ViewGeometryModelResults.cs" />
+    <Compile Include="Enums\ViewResultsType.cs" />
+    <Compile Include="Forms\31_Material\MaterialLibraryItem.cs" />
+    <Compile Include="Forms\31_Material\FrmMaterialLibrary.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\31_Material\FrmMaterialLibrary.Designer.cs">
+      <DependentUpon>FrmMaterialLibrary.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\41_Step\ViewFrequencyStep.cs" />
+    <Compile Include="Forms\61_Load\ViewCentrifLoad.cs" />
+    <Compile Include="Forms\61_Load\ViewGravityLoad.cs" />
+    <Compile Include="Forms\71_Settings\FrmGetEnvVars.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\71_Settings\FrmGetEnvVars.Designer.cs">
+      <DependentUpon>FrmGetEnvVars.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\00_Common\FrmGetInteger.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\00_Common\FrmGetInteger.Designer.cs">
+      <DependentUpon>FrmGetInteger.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\12_MeshingParameters\FrmMeshingParameters.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\21_Part\FrmPartProperties.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\22_NodeSet\FrmNodeSet.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\23_ElementSet\FrmElementSet.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\24_Surface\FrmSurface.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\25_ReferencePoint\FrmReferencePoint.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\32_Section\FrmSection.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\33_Constraint\FrmConstraint.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\41_Step\FrmStep.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\42_FieldOutput\FrmFieldOutput.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\51_BoundaryConditions\FrmBC.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\61_Load\FrmLoad.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\81_Analysis\EnvVarsUIEditor.cs" />
+    <Compile Include="Forms\IFormBase.cs" />
+    <Compile Include="Forms\00_Common\ViewValue.cs" />
+    <Compile Include="Forms\02_CalculixKeywordEditor\FrmCalculixKeywordEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\02_CalculixKeywordEditor\FrmCalculixKeywordEditor.Designer.cs">
+      <DependentUpon>FrmCalculixKeywordEditor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\12_MeshingParameters\ViewMeshingParameters.cs" />
+    <Compile Include="Forms\21_Part\ViewPartProperties.cs" />
+    <Compile Include="Forms\22_NodeSet\ViewNodeSet.cs" />
+    <Compile Include="Forms\23_ElementSet\ViewElementSet.cs" />
+    <Compile Include="Forms\24_Surface\ViewFeSurface.cs" />
+    <Compile Include="Forms\25_ReferencePoint\ViewFeReferencePoint.cs" />
+    <Compile Include="Forms\31_Material\ViewPlastic.cs" />
+    <Compile Include="Forms\33_Constraint\StringPosTolConverter.cs" />
+    <Compile Include="Forms\33_Constraint\ViewTie.cs" />
+    <Compile Include="Forms\33_Constraint\ViewRigidBody.cs" />
+    <Compile Include="Forms\33_Constraint\ViewConstraint.cs" />
+    <Compile Include="Forms\51_BoundaryConditions\StringDOFconverter.cs" />
+    <Compile Include="Forms\51_BoundaryConditions\ViewBoundaryCondition.cs" />
+    <Compile Include="Forms\51_BoundaryConditions\ViewDisplacementRotation.cs" />
+    <Compile Include="Forms\42_FieldOutput\ViewFieldOutput.cs" />
+    <Compile Include="Forms\42_FieldOutput\ViewElementFieldOutput.cs" />
+    <Compile Include="Forms\42_FieldOutput\ViewNodalFieldOutput.cs" />
+    <Compile Include="Forms\31_Material\FrmMaterial.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\31_Material\FrmMaterial.Designer.cs">
+      <DependentUpon>FrmMaterial.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\31_Material\ViewElastic.cs" />
+    <Compile Include="Forms\31_Material\IViewProperty.cs" />
+    <Compile Include="Forms\31_Material\ViewDensity.cs" />
+    <Compile Include="Forms\32_Section\ViewSection.cs" />
+    <Compile Include="Forms\32_Section\ViewSolidSection.cs" />
+    <Compile Include="Forms\00_Common\FrmSelectEntity.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\00_Common\FrmSelectEntity.Designer.cs">
+      <DependentUpon>FrmSelectEntity.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\61_Load\ViewMomentLoad.cs" />
+    <Compile Include="Forms\61_Load\ViewSTLoad.cs" />
+    <Compile Include="Forms\61_Load\ViewCLoad.cs" />
+    <Compile Include="Forms\61_Load\ViewDLoad.cs" />
+    <Compile Include="Forms\61_Load\ViewLoad.cs" />
+    <Compile Include="Forms\71_Settings\FrmSettings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\71_Settings\FrmSettings.Designer.cs">
+      <DependentUpon>FrmSettings.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\71_Settings\ViewGeneralSettings.cs" />
+    <Compile Include="Forms\71_Settings\ViewPreSettings.cs" />
+    <Compile Include="Forms\71_Settings\ViewGraphicsSettings.cs" />
+    <Compile Include="Forms\71_Settings\ViewPostSettings.cs" />
+    <Compile Include="Forms\71_Settings\ViewSettings.cs" />
+    <Compile Include="Forms\72_Query\FrmQuery.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\72_Query\FrmQuery.Designer.cs">
+      <DependentUpon>FrmQuery.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\81_Analysis\FrmAnalysis.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\81_Analysis\FrmAnalysis.Designer.cs">
+      <DependentUpon>FrmAnalysis.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\81_Analysis\FrmMonitor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\81_Analysis\FrmMonitor.Designer.cs">
+      <DependentUpon>FrmMonitor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\81_Analysis\ViewJob.cs" />
+    <Compile Include="Forms\91_Animation\FrmAnimation.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\91_Animation\FrmAnimation.Designer.cs">
+      <DependentUpon>FrmAnimation.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\FrmMain.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FrmMain.Designer.cs">
+      <DependentUpon>FrmMain.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\41_Step\ViewStaticStep.cs" />
+    <Compile Include="Forms\41_Step\ViewStep.cs" />
+    <Compile Include="Forms\FrmSplash.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FrmSplash.Designer.cs">
+      <DependentUpon>FrmSplash.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\ViewMultiRegion.cs" />
+    <Compile Include="Forms\ViewError.cs" />
+    <Compile Include="Globals.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Selection\ItemSet\ItemSetData.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Selection\MouseSelection\Selection.cs" />
+    <Compile Include="Selection\MouseSelection\SelectionNodeIds.cs" />
+    <Compile Include="Selection\MouseSelection\SelectionNodeInvert.cs" />
+    <Compile Include="Selection\MouseSelection\SelectionNodeMouse.cs" />
+    <Compile Include="Selection\MouseSelection\SelectionNode.cs" />
+    <Compile Include="Forms\00_Common\FrmSelectItemSet.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\00_Common\FrmSelectItemSet.Designer.cs">
+      <DependentUpon>FrmSelectItemSet.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Selection\ItemSet\ItemSetDataEditor.cs" />
+    <Compile Include="Settings\GeneralSettings.cs" />
+    <Compile Include="Settings\GraphicsSettings.cs" />
+    <Compile Include="Forms\71_Settings\IReset.cs" />
+    <Compile Include="Settings\PreSettings.cs" />
+    <Compile Include="Settings\PostSettings.cs" />
+    <Compile Include="Settings\ISettings.cs" />
+    <Compile Include="Settings\CalculixSettings.cs" />
+    <Compile Include="Tools.cs" />
+    <EmbeddedResource Include="Forms\31_Material\FrmMaterialLibrary.resx">
+      <DependentUpon>FrmMaterialLibrary.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\71_Settings\FrmGetEnvVars.resx">
+      <DependentUpon>FrmGetEnvVars.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\00_Common\FrmGetInteger.resx">
+      <DependentUpon>FrmGetInteger.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\12_MeshingParameters\FrmMeshingParameters.resx">
+      <DependentUpon>FrmMeshingParameters.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\21_Part\FrmPartProperties.resx">
+      <DependentUpon>FrmPartProperties.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\22_NodeSet\FrmNodeSet.resx">
+      <DependentUpon>FrmNodeSet.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\23_ElementSet\FrmElementSet.resx">
+      <DependentUpon>FrmElementSet.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\24_Surface\FrmSurface.resx">
+      <DependentUpon>FrmSurface.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\02_CalculixKeywordEditor\FrmCalculixKeywordEditor.resx">
+      <DependentUpon>FrmCalculixKeywordEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\25_ReferencePoint\FrmReferencePoint.resx">
+      <DependentUpon>FrmReferencePoint.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\32_Section\FrmSection.resx">
+      <DependentUpon>FrmSection.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\33_Constraint\FrmConstraint.resx">
+      <DependentUpon>FrmConstraint.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\41_Step\FrmStep.resx">
+      <DependentUpon>FrmStep.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\42_FieldOutput\FrmFieldOutput.resx">
+      <DependentUpon>FrmFieldOutput.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\31_Material\FrmMaterial.resx">
+      <DependentUpon>FrmMaterial.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\00_Common\FrmSelectEntity.resx">
+      <DependentUpon>FrmSelectEntity.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\51_BoundaryConditions\FrmBC.resx">
+      <DependentUpon>FrmBC.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\61_Load\FrmLoad.resx">
+      <DependentUpon>FrmLoad.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\71_Settings\FrmSettings.resx">
+      <DependentUpon>FrmSettings.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\72_Query\FrmQuery.resx">
+      <DependentUpon>FrmQuery.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\81_Analysis\FrmAnalysis.resx">
+      <DependentUpon>FrmAnalysis.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\81_Analysis\FrmMonitor.resx">
+      <DependentUpon>FrmMonitor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\91_Animation\FrmAnimation.resx">
+      <DependentUpon>FrmAnimation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\FrmMain.resx">
+      <DependentUpon>FrmMain.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\FrmSplash.resx">
+      <DependentUpon>FrmSplash.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <EmbeddedResource Include="Forms\00_Common\FrmSelectItemSet.resx">
+      <DependentUpon>FrmSelectItemSet.cs</DependentUpon>
+    </EmbeddedResource>
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CaeGlobals\CaeGlobals.csproj">
+      <Project>{104caebc-0761-4850-a97d-3fc59116c5b6}</Project>
+      <Name>CaeGlobals</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CaeJob\CaeJob.csproj">
+      <Project>{a449b1d6-da0d-4a08-9b64-2cd929830399}</Project>
+      <Name>CaeJob</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CaeMesh\CaeMesh.csproj">
+      <Project>{69d01fc1-1bc1-4470-b371-84d22282be98}</Project>
+      <Name>CaeMesh</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CaeModel\CaeModel.csproj">
+      <Project>{65e5ee18-b889-42ad-a775-ba5674abe1dd}</Project>
+      <Name>CaeModel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CaeResults\CaeResults.csproj">
+      <Project>{bca7c65b-cc0b-48ca-b852-49255bd3851d}</Project>
+      <Name>CaeResults</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\UserControls\UserControls.csproj">
+      <Project>{74ea83fb-2743-49ee-85a8-5b42cbce19b3}</Project>
+      <Name>UserControls</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\vtkControl\vtkControl.csproj">
+      <Project>{125eefac-7731-4640-b731-1a32372fa76d}</Project>
+      <Name>vtkControl</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Icons\Common\Hide.ico" />
+    <None Include="Icons\Common\Show.ico" />
+    <None Include="Icons\Common\Up_arrow.ico" />
+    <None Include="Icons\Common\Down_arrow.ico" />
+    <None Include="Icons\Results\Previous.ico" />
+    <None Include="Icons\Results\Next.ico" />
+    <None Include="Icons\Results\First.ico" />
+    <None Include="Icons\Results\Last.ico" />
+    <None Include="Icons\Results\Stop.ico" />
+    <None Include="Icons\Results\Animate.ico" />
+    <None Include="Icons\Results\Animate_backwards.ico" />
+    <None Include="Icons\Common\InvertHideShow.ico" />
+    <None Include="Icons\Results\Color_contours.ico" />
+    <None Include="Icons\Results\Deformed.ico" />
+    <None Include="Icons\Results\Undeformed.ico" />
+    <None Include="Icons\Common\Right_arrow.ico" />
+    <None Include="Icons\Common\Left_arrow.ico" />
+    <None Include="Icons\Material\Library.ico" />
+    <None Include="Icons\View\SymbolsOff.ico" />
+    <None Include="Icons\View\SymbolsOn.ico" />
+    <Content Include="main.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Command\0020_View\" />
+    <Folder Include="Command\0100_Tools\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <Target Name="AfterBuild">
+    <ItemGroup>
+      <MoveToLibFolder Include="$(OutputPath)*.dll ; $(OutputPath)*.pdb ; $(OutputPath)*.xml" />
+    </ItemGroup>
+    <Move SourceFiles="@(MoveToLibFolder)" DestinationFolder="$(OutputPath)lib" OverwriteReadOnlyFiles="true" />
+  </Target>
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+</Project>

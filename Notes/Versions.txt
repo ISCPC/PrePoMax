@@ -1,0 +1,293 @@
+﻿Requirements
+
+By others:
+
+
+By Emanuele:
+5. 11. 2018
+- add support for a bearing load - load distributed inside a hole
+
+
+By Ihor:
+- #5: For the project with saved results FE Model tab is empty when going back: 1. Open any project with results included; 2. On my computer in this case FE Model  tab is completely empty
+- add support for importing inp files
+
+
+By Sergio:
+24.8.2018
+- basic contacts support
+- tabular amplitude definitions
+- 2D plot utility 
+- exporting results to Paraview (Calmed does not export all values).
+26.8.2018
+- grapical representation of the node sets, element sets to turn on/off
+30.7.2018
+- sorting of part names, set names :- this is not possible using current user keywords positioning system with indices
+- tie constraint - swap master/slave
+- analysis should be run in a separate folder with the analysis name; 
+- option to use pmx file folder as working folder
+
+24.6.2018
+- stange part behaviour stl unv files with the same name - renaming and deleeting
+- renaming of parts on the treeview with the F2 shortcut
+- option/icon to hide/show all symbols
+5.6.2018
+- add mirror to results
+19.2.2018
+- show material and other properties in results view
+- user defined result fields using equations, so the user could add a new field and its equation
+- support for the Comands keyword in Step card
+- opening multiple results files
+- create .pmx file with each analysis run
+
+
+By Martin:
+
+17.1.2018
+- distributed loads, in particular, hydrostatic ones. It is a shame that calculix doesn't offer these by default.
+- Get Prepomax running under Linux (with mono framework).
+- support of more analysis types, handling of selected data output (dat)
+- path plots based on geometric objects or sets of nodes
+- history plots based on dat and on multistep field output
+- support of contact including smart choice of master/slave and appropriate parameters, correction of overclosure or positioning for initial touch
+- Mesh-independent entity selections (possibly using Netgen groups, should these be mesh independent)
+- real cad support
+- symmetry expansion in post-processing
+10.1.2018
+- bring geometry data to the results view (Parts already added)
+- cutting planes for the results
+
+By Matej
+- wrong selection when using thin 3D structures due to the GetNearestPoint selection on actor locator
+- Slow animation - change parabolic elements to linear elements? draw multiple models and hide/show them?
+  use vtkWarpVector to deform the mesh?
+- Custom Type Editor for units and BC https://www.cyotek.com/blog/creating-a-custom-typeconverter-part-1   
+									  https://msdn.microsoft.com/en-us/library/ayybcxe5.aspx#Type
+
+- show loads and boundary conditions in dependance from the selected step
+- if mesh fails, the history is corrupt - the meshing parameters remain in history
+- define the titles of all different message boxes
+- min/max widgest are drawn correctly only by using the front view with animation turned on - fix it differently
+- deactivate constraint
+- naming BCs, constraints ... one name for symbol and surface or node set... -> dictionary<name, list<maxActors>>
+- Correctly draw transparent highlighted faces -> unstructured grid -> polyData -> DepthSortPolydata - SLOW
+- Reduce the number of commands - as by Activate/Deactivate - NOT ACTIVE ANYMORE
+- Add zero increment in each step with no displacements - done for first step
+- Faster picking - first a vtkRenderedAreaSelector and if hit do a hardwareAreaPick; Found at tests of vtkProp3DCollection: (http://www.vtk.org/gitweb?p=VTK.git;a=blob;f=Rendering/Core/Testing/Cxx/TestCompositePolyDataMapper2Picking.cxx)
+- Add View classes for selected items for property grid in treeview
+- Convert from linear to quadratic elements
+- add Shell, beam elements
+
+Errors:
+- if first step is Nlgeo then all the rest of them are Nlgeo - this is not so in PrePoMax.
+- on the wireframe view the query element command does not work 
+- running with no Admin rights the number of cpus can not be changed...
+- the mouseMove event gets fired every second?!
+- there is something wrong when using small dimension: 0.001 - negative Jacobian
+- the moment on rigid body rotation node works in opposite direction?
+
+Dependancy nglib - added following files for c++ redistriburable compatibility:
+
+ 2015
+- concrt140.dll
+- msvcp140.dll
+- vccorlib140.dll
+- vcruntime140.dll
+
+2013
+- msvcp120.dll
+- msvcr120.dll
+
+
+
+Done
+
+Version 0.5.1 Master branch
+Added support for *Frequency step
+Added support for reading Frequency results
+
+Version 0.5.0 Sync branch
+Added support for selection by edges
+Added Querry -> Assembly data
+Added support for Show only (parts, constraints ...)
+Added support for smooth shading via polymesh
+Added support for point and line smoothing
+Added support for .step file import
+Added support for edges and surfaces import from .vol files
+Added support for selection by surfaces
+Added support for model rotation using arrow keys - laptops
+Added support for importing .inp materials
+Added support for importing .inp reference points and rigid bodies
+Fixed stl import in case of collapsed triangles
+Addeed support for internal surfaces
+
+
+Version 0.4.7 Sync branch
+Added support for gravity and centrifugal loads
+Added support for hide/show and edit in the treeview with the space and enter keys
+Added support for importing .inp surfaces
+Added support for importing .inp element sets
+Added support for importing .inp node sets
+Added feature to merge mesh parts
+Added feature to create a part from element set
+Addes support for running .cmd files
+Save As in now in AsyncMode.
+Added setting for enabling/disabling the saving of the results into pmx files.
+Redraw the dependent objects (loads, BCs, ...) if the child object changes
+Added support for material library
+Fixed bug: #1: %STR results can not be displayed
+Fixed bug: #2: setting for open last file not working
+Added support for environmental variables: Settings/Calculix/Parallelization
+Bug fixes
+
+Version 0.4.6
+Added OK / Add new button to all forms
+Fixed save button highlight is now refreshed after saving.
+Fixed selection on assemblies when some parts are not visible.
+Added support for exe parameters - fileName to open; removed LastState file. Save before closing warning added.
+Support for saving animations as PNG images / added an increment step setting for time increment animation
+Added convergence file display to the Monitor form
+Support for openning the results file while the analysis is stil running
+The features defined on surfaces display the surfaces in the 3D view
+Added specular propertie to color, added translucency to model and actor edges
+Added support for displaying the results in udeformed, deformed and color contours way.
+Added help menu
+
+Version 0.4.5
+Added support for picking parts in 3D view
+Part, node set, element set, surface and RP names must be unique.
+Added support for multi-selection in the treeview control
+Added support for importing geometry parts into results view
+Added support for translucent colors
+Added signed maximal absolute principal stress
+Added support for parts in results view
+Simplified the BC definition form
+Added support for section assignments on element sets 
+Bounding box min and max data added
+Minor bug fixes
+
+Version 0.4.4
+Added principal stresses
+Set state working/ready now only resets when called with the same text
+Added separate commands for meshing parametres and create mesh
+Added validity checking for all items connected with names - invalid items are colored red
+Fixed the Element set form had bold font due to ViewElementSet not using DynamicCustomTypeDescriptor
+Fixed in keyword editor the GUI created keywords can be moved and deleted - they should be readonly
+Added suport for making movies from animations
+Added support for Constraints on surfaces
+Added support for BC on surfaces
+Minor bug fixes
+
+Version 0.4.3
+Added animations with scale factor and time increments
+Fixed queries on deformed geometry
+Minor bug fixes
+
+Version 0.4.2
+Stl files draw both triangle sides
+Changed the highloght functions of loads and boundary conditions
+Added support for spatially equally distributed symbols
+Support for hide/show loads
+Added graphical representation of the concentrated load, distributed load, pressure and surface traction loads
+Added graphical representation of the disp/rot boundary condition based on reference point
+Added settings for pre-processing colors: highlight, mouse highlight, contraint symbol and boundary condition color
+Support for hide/show boundary conditions
+Added graphical representation of the disp/rot boundary condition based on node set
+Added graphical representation of the disp/rot boundary condition based on reference point
+
+Version 0.4.1
+Support for hide/show constraints
+A tool for measuring distance, angle and circle was added
+A reference point can be created by nodeSets CG, by nodeSets BB CG and Coordinates
+A bounding box center is computed and displayed for NodeSet.
+Surface no longer contains the whole element set but only the element set name.
+Added outer cell face enumeration for easier surface selection.
+Added support for plastic material.
+Changed the way the surfaces are created - direct selection on geometry - based on node selection so not working properly
+
+Version 0.4.0
+Added suport for node selection by edge.
+Added support for netgen native *.vol solid mesh format.
+Added support for import of *.stl geometry.
+Added support for creating FE meshes using nglib library.
+
+Version 0.3.1
+Added output of the Analysis time in the status box.
+Added support for inp mesh file import. Only C3D4 and C3D8 elements. For mesh import from Netgen.
+Changed selection of result Step and Increment.
+Added tree based Calculix keyword editor.
+Added settings for background and lighting
+Added property part color
+Added show icons for Hidded parts
+Fixed hide all parts, select one view (top, ...), show one part - the clipping range is not correct
+Added support for Hide/show
+Updated the way the scalar values are changed in results view - faster.
+
+Version 0.3.0
+Added edit only part properties not the whole part
+Added faster selection of parts - add existing part to selection layer
+Added job status should be changed to "None" if the model changes -> add idication for job that is not OK
+Added disable/enable menus, when the model view changes from model to reslts and back;
+Fixed cell picking (select by surface) has a problem if the ray hits the cell edge and goes through;
+Fixed parabolic elements are not drawn correctly;
+Fixed picking is not working for parabolic elements;
+Fixed regenerate not working for node sets - node set has to be editeted to work.
+Added icon.
+Renamed to PrePoMax.
+Fixed after the results are read, the name of the open file remains *.frd when you view the model.
+Fixed when all results equals to 0 the model is not displayed correctly.
+Improved speed of reading and saving fiels.
+Fixed pick Node by Element - if picking on edge, mouse selection might give different result than actual pick.
+Added selection by geometry.
+Added element set creation by selection of nodes - pick and frustum
+Added element set creation by selection of elements - pick and frustum.
+Added element set creation by selection of surface angle.
+Added element set creation by selection of parts.
+Added element set creation by element ID.
+Added node set creation by selection of nodes - pick and frustum.
+Added node set creation by selection of elements - pick and frustum.
+Added node set creation by selection of surface angle.
+Added node set creation by selection of parts.
+Added node set creation by node ID.
+
+Version 0.2.2
+Added min and max ballons for the results.
+Fixed mouse selection on geometry with beam FE.
+Fixed red edges at the results,
+All 2D cells are drawn on both sides; the backface culling is enabled at all times,
+Added Wireframe view,
+Changed the representation of all edges from lines to wireframe triangles (extracted lines were extracted and then drawn for all 3D cells),
+Added query of the resutls,
+Added mouse selection of points and cells,
+Added all custom widgets,
+Added widget for status block (border widget).
+
+Version 0.2.1
+Added rainbow color spectrum.
+Added min and max setttings for the results.
+Fixed - if the number of discreete colors is reduced from 9 -> 2, after first apply is not OK, after second apply is OK.
+All item forms are now not modal any more.
+Added highlighting of the node sets, element sets, parts, surfaces and reference points in all forms.
+Determine edges from mesh based on the angle 30°.
+Draw only outter surface of the solid geometry.
+Fixed - the status block gets hidden if undeformed shape is drawn -> status block moved to selectionLayer.
+Fixed - after deactivation the icon "deactivated" is not shown. -> the last icon in the icon list is not shown!!!
+Added support for reference points in boundary conditions.
+Added feature RIGID BODY.
+Added feature reference points.
+Added multi-layerd rendering with 3 layers
+
+Version 0.2.0
+Added command patern.
+Add support for element type selection for each part.
+Replace all propertyGrids with tab enabled one.
+Added support for keyboard Delete on the model tree.
+Edit load - show which type of load it is.
+Settings for the postprocessor: draw deformed shape
+Added support for parabolic hexahedral elements
+Settings for the postprocessor: def. scale factor, number of colors, number of sig. digits, number format
+Added status block with name, date, time and def. scale factor
+Added Normal view
+Added support for linear quadrilateral and linear wedge elements
+Added support for parabolic quadrilateral and parabolic wedge elements
+Added support for linear hexahedral elements

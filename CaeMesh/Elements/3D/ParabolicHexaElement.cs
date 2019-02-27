@@ -1,0 +1,199 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace CaeMesh
+{
+    [Serializable]
+    public class ParabolicHexaElement : FeElement3D
+    {
+        // Variables                                                                                                                
+        private static int vtkCellTypeInt = (int)vtkCellType.VTK_QUADRATIC_HEXAHEDRON;
+        private static double a = 1.0 / 3.0;
+        private static double b = -a / 4;
+
+
+        // Properties                                                                                                               
+
+
+        // Constructors                                                                                                             
+        public ParabolicHexaElement(int id, int[] nodeIds)
+          : base(id, nodeIds)
+        {
+        }
+
+        public ParabolicHexaElement(int id, int partId, int[] nodeIds)
+            : base(id, partId, nodeIds)
+        {
+        }
+
+
+        // Methods                                                                                                                  
+        public override int[] GetVtkNodeIds()
+        {
+            // return a copy -> ToArray
+            return NodeIDs.ToArray();
+        }
+
+        public override int GetVtkCellType()
+        {
+            return vtkCellTypeInt;
+        }
+        
+        public override FeFaceName GetFaceNameFromSortedNodeIds(int[] nodeIds)
+        {
+            // the node ids are sorted 
+            // S1 = 1-2-3-4 . 0-1-2-3 . 0-1-2-3
+            // S2 = 5-8-7-6 . 4-7-6-5 . 4-5-6-7
+            // S3 = 1-5-6-2 . 0-4-5-1 . 0-1-4-5
+            // S4 = 2-6-7-3 . 1-5-6-2 . 1-2-5-6
+            // S5 = 3-7-8-4 . 2-6-7-3 . 2-3-6-7
+            // S6 = 4-8-5-1 . 3-7-4-0 . 0-3-4-7
+
+            if (nodeIds[2] == 2) return FeFaceName.S1;
+            else if (nodeIds[0] == 4) return FeFaceName.S2;
+            else if (nodeIds[1] == 1) return FeFaceName.S3;
+            else if (nodeIds[0] == 1) return FeFaceName.S4;
+            else if (nodeIds[0] == 2) return FeFaceName.S5;
+            else if (nodeIds[0] == 0) return FeFaceName.S6;
+            else throw new NotSupportedException();
+        }
+
+        public override int[] GetNodeIdsFromFaceName(FeFaceName faceName)
+        {
+            // S1 = 1-2-3-4-9-10-11-12  . 0-1-2-3-8-9-10-11
+            // S2 = 5-8-7-6-16-15-14-13 . 4-7-6-5-15-14-13-12
+            // S3 = 1-5-6-2-17-13-18-9  . 0-4-5-1-16-12-17-8
+            // S4 = 2-6-7-3-18-14-19-10 . 1-5-6-2-17-13-18-9
+            // S5 = 3-7-8-4-19-15-20-11 . 2-6-7-3-18-14-19-10
+            // S6 = 4-8-5-1-20-16-17-12 . 3-7-4-0-19-15-16-11
+
+            switch (faceName)
+            {
+                case FeFaceName.S1:
+                    return new int[] { NodeIDs[0], NodeIDs[1], NodeIDs[2], NodeIDs[3], NodeIDs[8], NodeIDs[9], NodeIDs[10], NodeIDs[11] };
+                case FeFaceName.S2:
+                    return new int[] { NodeIDs[4], NodeIDs[7], NodeIDs[6], NodeIDs[5], NodeIDs[15], NodeIDs[14], NodeIDs[13], NodeIDs[12] };
+                case FeFaceName.S3:
+                    return new int[] { NodeIDs[0], NodeIDs[4], NodeIDs[5], NodeIDs[1], NodeIDs[16], NodeIDs[12], NodeIDs[17], NodeIDs[8] };
+                case FeFaceName.S4:
+                    return new int[] { NodeIDs[1], NodeIDs[5], NodeIDs[6], NodeIDs[2], NodeIDs[17], NodeIDs[13], NodeIDs[18], NodeIDs[9] };
+                case FeFaceName.S5:
+                    return new int[] { NodeIDs[2], NodeIDs[6], NodeIDs[7], NodeIDs[3], NodeIDs[18], NodeIDs[14], NodeIDs[19], NodeIDs[10] };
+                case FeFaceName.S6:
+                    return new int[] { NodeIDs[3], NodeIDs[7], NodeIDs[4], NodeIDs[0], NodeIDs[19], NodeIDs[15], NodeIDs[16], NodeIDs[11] };
+                default:
+                    throw new NotSupportedException();
+            }
+        }
+
+        public override int[] GetVtkCellFromFaceName(FeFaceName faceName)
+        {
+            // invert the surface normal to point outwards
+            // S1 = 1-2-3-4-9-10-11-12  . 0-1-2-3-8-9-10-11   . 0-3-2-1-11-10-9-8
+            // S2 = 5-8-7-6-16-15-14-13 . 4-7-6-5-15-14-13-12 . 4-5-6-7-12-13-14-15
+            // S3 = 1-5-6-2-17-13-18-9  . 0-4-5-1-16-12-17-8  . 0-1-5-4-8-17-12-16
+            // S4 = 2-6-7-3-18-14-19-10 . 1-5-6-2-17-13-18-9  . 1-2-6-5-9-18-13-17
+            // S5 = 3-7-8-4-19-15-20-11 . 2-6-7-3-18-14-19-10 . 2-3-7-6-10-19-14-18
+            // S6 = 4-8-5-1-20-16-17-12 . 3-7-4-0-19-15-16-11 . 3-0-4-7-11-16-15-19
+
+            switch (faceName)
+            {
+                case FeFaceName.S1:
+                    return new int[] { NodeIDs[0], NodeIDs[3], NodeIDs[2], NodeIDs[1], NodeIDs[11], NodeIDs[10], NodeIDs[9], NodeIDs[8] };
+                case FeFaceName.S2:
+                    return new int[] { NodeIDs[4], NodeIDs[5], NodeIDs[6], NodeIDs[7], NodeIDs[12], NodeIDs[13], NodeIDs[14], NodeIDs[15] };
+                case FeFaceName.S3:
+                    return new int[] { NodeIDs[0], NodeIDs[1], NodeIDs[5], NodeIDs[4], NodeIDs[8], NodeIDs[17], NodeIDs[12], NodeIDs[16] };
+                case FeFaceName.S4:
+                    return new int[] { NodeIDs[1], NodeIDs[2], NodeIDs[6], NodeIDs[5], NodeIDs[9], NodeIDs[18], NodeIDs[13], NodeIDs[17] };
+                case FeFaceName.S5:
+                    return new int[] { NodeIDs[2], NodeIDs[3], NodeIDs[7], NodeIDs[6], NodeIDs[10], NodeIDs[19], NodeIDs[14], NodeIDs[18] };
+                case FeFaceName.S6:
+                    return new int[] { NodeIDs[3], NodeIDs[0], NodeIDs[4], NodeIDs[7], NodeIDs[11], NodeIDs[16], NodeIDs[15], NodeIDs[19] };
+                default:
+                    throw new NotSupportedException();
+            }
+        }
+
+        public override int[][] GetAllVtkCells()
+        {
+            // use Method: GetVtkCellFromFaceName(FeFaceName faceName)
+            int[][] cells = new int[6][];
+
+            cells[0] = new int[] { NodeIDs[0], NodeIDs[3], NodeIDs[2], NodeIDs[1], NodeIDs[11], NodeIDs[10], NodeIDs[9], NodeIDs[8] };
+            cells[1] = new int[] { NodeIDs[4], NodeIDs[5], NodeIDs[6], NodeIDs[7], NodeIDs[12], NodeIDs[13], NodeIDs[14], NodeIDs[15] };
+            cells[2] = new int[] { NodeIDs[0], NodeIDs[1], NodeIDs[5], NodeIDs[4], NodeIDs[8], NodeIDs[17], NodeIDs[12], NodeIDs[16] };
+            cells[3] = new int[] { NodeIDs[1], NodeIDs[2], NodeIDs[6], NodeIDs[5], NodeIDs[9], NodeIDs[18], NodeIDs[13], NodeIDs[17] };
+            cells[4] = new int[] { NodeIDs[2], NodeIDs[3], NodeIDs[7], NodeIDs[6], NodeIDs[10], NodeIDs[19], NodeIDs[14], NodeIDs[18] };
+            cells[5] = new int[] { NodeIDs[3], NodeIDs[0], NodeIDs[4], NodeIDs[7], NodeIDs[11], NodeIDs[16], NodeIDs[15], NodeIDs[19] };
+
+            return cells;
+        }
+
+        public override Dictionary<FeFaceName, double> GetFaceNamesAndAreasFromNodeSet(HashSet<int> nodeSet, Dictionary<int, FeNode> nodes)
+        {
+            // check only first 8 nodes (as in linear element)
+            int significantNodes = 8;
+            bool[] faceNodeIds = new bool[significantNodes];
+
+            int count = 0;
+            for (int i = 0; i < significantNodes; i++)
+            {
+                if (nodeSet.Contains(NodeIDs[i]))
+                {
+                    faceNodeIds[i] = true;
+                    count++;
+                }
+                if (i >= 4 && count <= i - 4) break;
+            }
+
+            // S1 = 1-2-3-4 . 0-1-2-3
+            // S2 = 5-8-7-6 . 4-7-6-5
+            // S3 = 1-5-6-2 . 0-4-5-1
+            // S4 = 2-6-7-3 . 1-5-6-2
+            // S5 = 3-7-8-4 . 2-6-7-3
+            // S6 = 4-8-5-1 . 3-7-4-0
+            Dictionary<FeFaceName, double> faces = new Dictionary<FeFaceName, double>();
+
+            if (faceNodeIds[0] && faceNodeIds[1] && faceNodeIds[2] && faceNodeIds[3]) faces.Add(FeFaceName.S1, GetArea(FeFaceName.S1, nodes));
+            if (faceNodeIds[4] && faceNodeIds[7] && faceNodeIds[6] && faceNodeIds[5]) faces.Add(FeFaceName.S2, GetArea(FeFaceName.S2, nodes));
+            if (faceNodeIds[0] && faceNodeIds[4] && faceNodeIds[5] && faceNodeIds[1]) faces.Add(FeFaceName.S3, GetArea(FeFaceName.S3, nodes));
+            if (faceNodeIds[1] && faceNodeIds[5] && faceNodeIds[6] && faceNodeIds[2]) faces.Add(FeFaceName.S4, GetArea(FeFaceName.S4, nodes));
+            if (faceNodeIds[2] && faceNodeIds[6] && faceNodeIds[7] && faceNodeIds[3]) faces.Add(FeFaceName.S5, GetArea(FeFaceName.S5, nodes));
+            if (faceNodeIds[3] && faceNodeIds[7] && faceNodeIds[4] && faceNodeIds[0]) faces.Add(FeFaceName.S6, GetArea(FeFaceName.S6, nodes));
+
+            return faces;
+        }
+
+
+        public override double[] GetEquivalentForcesFromFaceName(FeFaceName faceName)
+        {
+            return new double[] { b, b, b, b, a, a, a, a };
+        }
+
+        public override double GetArea(FeFaceName faceName, Dictionary<int, FeNode> nodes)
+        {
+            int[] cell = GetVtkCellFromFaceName(faceName);
+
+            FeNode[] n = new FeNode[8];
+            for (int i = 0; i < 8; i++)
+            {
+                n[i] = nodes[cell[i]];
+            }
+           
+            double area = 0;
+            area += GeometryTools.TriangleArea(n[7], n[0], n[4]);
+            area += GeometryTools.TriangleArea(n[7], n[4], n[6]);
+            area += GeometryTools.TriangleArea(n[7], n[6], n[3]);
+
+            area += GeometryTools.TriangleArea(n[5], n[2], n[6]);
+            area += GeometryTools.TriangleArea(n[5], n[6], n[4]);
+            area += GeometryTools.TriangleArea(n[5], n[4], n[1]);
+
+            return area;
+        }
+    }
+}
