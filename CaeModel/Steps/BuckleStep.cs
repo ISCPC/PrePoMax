@@ -7,39 +7,48 @@ using System.Threading.Tasks;
 namespace CaeModel
 {
     [Serializable]
-    public class FrequencyStep : Step
+    public class BuckleStep : Step
     {
         // Variables                                                                                                                
-        private double _numOfFrequencies;
-        private bool _storage;
+        private int _numOfBucklingFactors;
+        private double _accuracy;
 
 
         // Properties                                                                                                               
-        public double NumOfFrequencies
+        public int NumOfBucklingFactors
         {
-            get { return _numOfFrequencies; }
-            set 
+            get { return _numOfBucklingFactors; }
+            set
             {
-                if (value <= 1) throw new Exception("The number of frequencies must be larger than 0.");
-                _numOfFrequencies = value;
+                _numOfBucklingFactors = value;
+                if (_numOfBucklingFactors < 1) _numOfBucklingFactors = 1;
             }
         }
-        public bool Storage { get { return _storage; } set { _storage = value; } }
+        public double Accuracy
+        {
+            get { return _accuracy; }
+            set
+            {
+                _accuracy = value;
+
+                if (_numOfBucklingFactors < 1) _numOfBucklingFactors = 1;
+            }
+        }
 
 
         // Constructors                                                                                                             
-        public FrequencyStep(string name)
+        public BuckleStep(string name)
             :base(name)
         {
-            _perturbation = true;
-            _supportsLoads = false;
+            //_perturbation = false;
 
-            _numOfFrequencies = 10;
-            _storage = false;
+            _numOfBucklingFactors = 1;
+            _accuracy = 0.01;
 
             AddFieldOutput(new NodalFieldOutput("NF-Output-1", NodalVariable.U | NodalVariable.RF));
             AddFieldOutput(new ElementFieldOutput("EF-Output-1", ElementVariable.E | ElementVariable.S));
         }
+
 
         // Methods                                                                                                                  
     }

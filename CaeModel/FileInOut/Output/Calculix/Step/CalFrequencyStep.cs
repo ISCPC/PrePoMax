@@ -33,7 +33,9 @@ namespace FileInOut.Output.Calculix
         // Methods                                                                                                                  
         public override string GetKeywordString()
         {
-            return string.Format("*Frequency{0}", Environment.NewLine);
+            string storage = _step.Storage ? ", Storage=Yes" : "";
+
+            return string.Format("*Frequency{0}{1}", storage, Environment.NewLine);
         }
 
         public override string GetDataString()

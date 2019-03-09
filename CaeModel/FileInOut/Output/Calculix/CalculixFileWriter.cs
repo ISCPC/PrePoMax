@@ -120,12 +120,16 @@ namespace FileInOut.Output
             else
             {
                 CalculixKeyword keywordParent = keywords[indices[0]];
-
+                
+                // Find a parent
                 for (int i = 1; i < indices.Length - 1; i++)
                 {
                     if (indices[i] < keywordParent.Keywords.Count) keywordParent = keywordParent.Keywords[indices[i]];
                     else return false;
                 }
+
+                // Add the keyword
+                if (keywordParent.Keywords.Count < indices[indices.Length - 1]) return false;
 
                 keywordParent.Keywords.Insert(indices[indices.Length - 1], keyword);
             }
@@ -402,33 +406,37 @@ namespace FileInOut.Output
         static private void AppendSteps(FeModel model, Dictionary<string, int[]> referencePointsNodeIds, CalculixKeyword parent)
         {
             CalTitle title;
-            foreach (var entry in model.StepCollection.Steps)
+            foreach (var step in model.StepCollection.StepsList)
             {
-                if (entry.Value is InitialStep) continue;
+                if (step is InitialStep) continue;
 
-                if (entry.Value.Active)
+                if (step.Active)
                 {
-                    title = new CalTitle(entry.Value.Name, "");
+                    title = new CalTitle(step.Name, "");
                     parent.AddKeyword(title);
 
-                    Step step = entry.Value;
                     CalStep calStep = new CalStep(step);
                     title.AddKeyword(calStep);
 
-                    if (entry.Value is StaticStep staticStep)
+                    if (step is StaticStep staticStep)
                     {
                         CalStaticStep calStaticStep = new CalStaticStep(staticStep);
                         calStep.AddKeyword(calStaticStep);
                     }
-                    else if (entry.Value is FrequencyStep frequencyStep)
+                    else if (step is FrequencyStep frequencyStep)
                     {
                         CalFrequencyStep calFrequencyStep = new CalFrequencyStep(frequencyStep);
                         calStep.AddKeyword(calFrequencyStep);
                     }
+                    else if (step is BuckleStep buckleStep)
+                    {
+                        CalBuckleStep calBuckleStep = new CalBuckleStep(buckleStep);
+                        calStep.AddKeyword(calBuckleStep);
+                    }
                     else throw new NotImplementedException();
 
                     // boundary conditions
-                    title = new CalTitle("Boundary conditions", "*Boundary, op=NEW");
+                    title = new CalTitle("Boundary conditions", "*Boundary, op=New");
                     calStep.AddKeyword(title);
 
                     foreach (var bcEntry in step.BoundaryConditions)
@@ -440,7 +448,7 @@ namespace FileInOut.Output
                     }
 
                     // loads
-                    title = new CalTitle("Loads", "*Dload, op=NEW" + Environment.NewLine + "*Cload, op=NEW");
+                    title = new CalTitle("Loads", "*Dload, op=New" + Environment.NewLine + "*Cload, op=New");
                     calStep.AddKeyword(title);
 
                     foreach (var loadEntry in step.Loads)

@@ -33,10 +33,11 @@ namespace FileInOut.Output.Calculix
         // Methods                                                                                                                  
         public override string GetKeywordString()
         {
+            string perturbation = _step.Perturbation ? ", Perturbation" : "";
             string nlGeom = _step.Nlgeom ? string.Format(", Nlgeom, Inc={0}", _step.MaxIncrements) : "";
-            
+
             StringBuilder sb = new StringBuilder();
-            sb.AppendFormat("*Step{0}", nlGeom).AppendLine();
+            sb.AppendFormat("*Step{0}{1}", perturbation, nlGeom).AppendLine();
             return sb.ToString();
         }
 

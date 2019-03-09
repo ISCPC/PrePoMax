@@ -89,7 +89,7 @@ namespace PrePoMax.Forms
                 if (_propertyItemChanged) _controller.ReplaceFieldOutputCommand(_stepName, _fieldOutputToEditName, FieldOutput);
             }
         }
-        protected override void OnPrepareForm(string stepName, string fieldOutputToEditName)
+        protected override bool OnPrepareForm(string stepName, string fieldOutputToEditName)
         {
             this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
             this.btnOkAddNew.Visible = fieldOutputToEditName == null;
@@ -130,13 +130,15 @@ namespace PrePoMax.Forms
                 propertyGrid.SelectedObject = _viewFieldOutput;
                 propertyGrid.Select();
             }
+
+            return true;
         }
 
 
         // Methods                                                                                                                  
-        public void PrepareForm(string stepName, string fieldOutputToEditName)
+        public bool PrepareForm(string stepName, string fieldOutputToEditName)
         {
-            OnPrepareForm(stepName, fieldOutputToEditName);
+            return OnPrepareForm(stepName, fieldOutputToEditName);
         }
         private void PopulateListOfFieldOutputs()
         {

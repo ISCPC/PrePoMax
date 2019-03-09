@@ -327,7 +327,7 @@ namespace PrePoMax.Forms
             rbAnimationStyle_CheckedChanged(null, null);
             numFramesPerSecond_ValueChanged(null, null);
 
-            rbLimitChanged_CheckedChanged(null, null);
+            rbLimitChanged_CheckedChanged(null, null);  // this calls UpdateFrame
 
             _updateAnimation = true;
         }

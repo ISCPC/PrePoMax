@@ -142,14 +142,11 @@ namespace CaeModel
             }
 
             // Steps
-            Step step;
             BoundaryCondition boundaryCondition;
             Load load;
             FeSurface s;
-            foreach (var entry in _stepCollection.Steps)
+            foreach (var step in _stepCollection.StepsList)
             {
-                step = entry.Value;
-
                 // Boundary conditions
                 foreach (var bcEntry in step.BoundaryConditions)
                 {

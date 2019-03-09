@@ -166,6 +166,7 @@
     <Compile Include="Forms\31_Material\FrmMaterialLibrary.Designer.cs">
       <DependentUpon>FrmMaterialLibrary.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\41_Step\ViewBuckleStep.cs" />
     <Compile Include="Forms\41_Step\ViewFrequencyStep.cs" />
     <Compile Include="Forms\61_Load\ViewCentrifLoad.cs" />
     <Compile Include="Forms\61_Load\ViewGravityLoad.cs" />

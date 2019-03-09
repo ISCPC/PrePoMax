@@ -434,9 +434,18 @@ namespace CaeMesh
         
         public double GetBoundingBoxSize()
         {
-            return Math.Sqrt(Math.Pow(_boundingBox.MinX - _boundingBox.MaxX, 2) 
-                            + Math.Pow(_boundingBox.MinY - _boundingBox.MaxY, 2) 
-                            + Math.Pow(_boundingBox.MinZ - _boundingBox.MaxZ, 2));
+            return Math.Sqrt(Math.Pow(_boundingBox.MinX - _boundingBox.MaxX, 2) +
+                             Math.Pow(_boundingBox.MinY - _boundingBox.MaxY, 2) +
+                             Math.Pow(_boundingBox.MinZ - _boundingBox.MaxZ, 2));
+        }
+
+        public double GetBoundingBoxVolumeAsCubeSide()
+        {
+            return Math.Pow((_boundingBox.MaxX - _boundingBox.MinX) * 
+                            (_boundingBox.MaxY - _boundingBox.MinY) *
+                            (_boundingBox.MaxZ - _boundingBox.MinZ), 1.0 / 3.0);
+
+
         }
 
         public void ResetPartsColor()

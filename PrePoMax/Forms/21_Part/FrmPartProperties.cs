@@ -100,7 +100,7 @@ namespace PrePoMax.Forms
                 }
             }
         }
-        protected override void OnPrepareForm(string stepName, string partToEditName)
+        protected override bool OnPrepareForm(string stepName, string partToEditName)
         {
             this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
 
@@ -130,13 +130,15 @@ namespace PrePoMax.Forms
 
             propertyGrid.SelectedObject = _viewPartProperties;
             propertyGrid.Select();
+
+            return true;
         }
 
 
         // Methods                                                                                                                  
-        public void PrepareForm(string stepName, string partToEditName)
+        public bool PrepareForm(string stepName, string partToEditName)
         {
-            OnPrepareForm(stepName, partToEditName);
+            return OnPrepareForm(stepName, partToEditName);
         }
 
         

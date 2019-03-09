@@ -248,19 +248,19 @@ namespace FileInOut.Output
 
         static private void AppendSteps(StringBuilder sb, FeModel model)
         {
-            foreach (var entry in model.StepCollection.Steps)
+            foreach (var step in model.StepCollection.StepsList)
             {
-                if (entry.Value is InitialStep) continue;
+                if (step is InitialStep) continue;
 
-                if (entry.Value.Active)
+                if (step.Active)
                 {
                     sb.Append("*Step");
-                    if (entry.Value.Nlgeom) sb.Append(", Nlgeom");
+                    if (step.Nlgeom) sb.Append(", Nlgeom");
                     sb.AppendLine();
 
-                    if (entry.Value is StaticStep)
+                    if (step is StaticStep)
                     {
-                        StaticStep staticStep = (StaticStep)entry.Value;
+                        StaticStep staticStep = (StaticStep)step;
                         sb.AppendLine("*Static");
                         sb.AppendFormat("{0}, {1}", staticStep.InitialTimeIncrement, staticStep.TimePeriod);
                         sb.AppendLine();

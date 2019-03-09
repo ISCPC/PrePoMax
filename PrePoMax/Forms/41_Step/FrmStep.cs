@@ -25,7 +25,9 @@ namespace PrePoMax.Forms
             get { return _viewStep.Base; }
             set
             {
-                if (value is StaticStep) _viewStep = new ViewStaticStep((StaticStep)value.DeepClone());
+                if (value is StaticStep ss) _viewStep = new ViewStaticStep(ss.DeepClone());
+                else if (value is FrequencyStep fs) _viewStep = new ViewFrequencyStep(fs.DeepClone());
+                else if (value is BuckleStep bs) _viewStep = new ViewBuckleStep(bs.DeepClone());
                 else throw new NotImplementedException();
             }
         }
@@ -47,15 +49,46 @@ namespace PrePoMax.Forms
             this.gbProperties.SuspendLayout();
             this.SuspendLayout();
             // 
+            // gbType
+            // 
+            this.gbType.Size = new System.Drawing.Size(310, 97);
+            // 
+            // lvTypes
+            // 
+            this.lvTypes.Size = new System.Drawing.Size(298, 69);
+            // 
+            // gbProperties
+            // 
+            this.gbProperties.Location = new System.Drawing.Point(12, 115);
+            this.gbProperties.Size = new System.Drawing.Size(310, 355);
+            // 
+            // propertyGrid
+            // 
+            this.propertyGrid.Size = new System.Drawing.Size(298, 327);
+            // 
+            // btnOK
+            // 
+            this.btnOK.Location = new System.Drawing.Point(160, 476);
+            // 
+            // btnCancel
+            // 
+            this.btnCancel.Location = new System.Drawing.Point(241, 476);
+            // 
+            // btnOkAddNew
+            // 
+            this.btnOkAddNew.Location = new System.Drawing.Point(65, 476);
+            // 
             // FrmStep
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.ClientSize = new System.Drawing.Size(334, 461);
+            this.ClientSize = new System.Drawing.Size(334, 511);
+            this.MinimumSize = new System.Drawing.Size(350, 550);
             this.Name = "FrmStep";
             this.Text = "Edit Step";
             this.gbType.ResumeLayout(false);
             this.gbProperties.ResumeLayout(false);
             this.ResumeLayout(false);
+
         }
 
 
@@ -64,19 +97,23 @@ namespace PrePoMax.Forms
         {
             if (lvTypes.Enabled && lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)
             {
-                _viewStep = (ViewStep)lvTypes.SelectedItems[0].Tag;
-                propertyGrid.SelectedObject = _viewStep;
+                propertyGrid.SelectedObject = lvTypes.SelectedItems[0].Tag;
                 propertyGrid.Select();
             }
         }
         protected override void OnPropertyGridPropertyValueChanged()
         {
-            _viewStep.UpdateFieldView(); // update visibility of fields
+            (propertyGrid.SelectedObject as ViewStep).UpdateFieldView();
+
+            //_viewStep.UpdateFieldView(); // update visibility of fields
             base.OnPropertyGridPropertyValueChanged();
         }
         protected override void Apply()
         {
             _viewStep = (ViewStep)propertyGrid.SelectedObject;
+
+            if (_viewStep == null)
+                throw new CaeGlobals.CaeException("There is nothing to add.");
 
             if ((_stepToEditName == null && _stepNames.Contains(_viewStep.Name)) ||             // create
                 (_viewStep.Name != _stepToEditName && _stepNames.Contains(_viewStep.Name)))     // edit
@@ -93,7 +130,7 @@ namespace PrePoMax.Forms
                 if (_propertyItemChanged) _controller.ReplaceStepCommand(_stepToEditName, Step);
             }
         }
-        protected override void OnPrepareForm(string stepName, string stepToEditName)
+        protected override bool OnPrepareForm(string stepName, string stepToEditName)
         {
             this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
             this.btnOkAddNew.Visible = stepToEditName == null;
@@ -122,53 +159,131 @@ namespace PrePoMax.Forms
             }
             else
             {
+                Step = _controller.GetStep(_stepToEditName);    // to clone and set _viewStep
+
+                // select the appropriate load in the list view
+                foreach (ListViewItem item in lvTypes.Items)
+                {
+                    if (item.Tag != null && item.Tag.GetType() == _viewStep.GetType())
+                    {
+                        item.Selected = true;
+                        break;
+                    }
+                }
+
                 lvTypes.Enabled = false;
-                Step = _controller.GetStep(_stepToEditName); // to clone
 
                 propertyGrid.SelectedObject = _viewStep;
                 propertyGrid.Select();
             }
+
+            return true;
         }
 
 
         // Methods                                                                                                                  
-        public void PrepareForm(string stepName, string stepToEditName)
+        public bool PrepareForm(string stepName, string stepToEditName)
         {
-            OnPrepareForm(stepName, stepToEditName);
+            return OnPrepareForm(stepName, stepToEditName);
         }
         private void PopulateListOfSteps()
         {
+            Step newStep = null;
+            Step prevOrLastStep = GetPreviousOrLastStep();
+            bool addStatic = false;
+            bool addFrequency = false;
+            bool addBuckle = false;
+            bool cannotAdd = false;
+
+            if (prevOrLastStep is StaticStep) addStatic = true;
+            if (!(prevOrLastStep is FrequencyStep)) addFrequency = true;
+            if (!(prevOrLastStep is BuckleStep)) addBuckle = true;
+
+            cannotAdd = !(addStatic || addFrequency || addBuckle);
+
             ListViewItem item;
-            Step[] steps = _controller.GetAllSteps();
-
-            if (steps.Length == 0)
+            if (cannotAdd)
             {
-                // Static step
-                item = new ListViewItem("Static step");
-                item.Tag = new ViewStaticStep(new StaticStep(GetStepName()));
-                lvTypes.Items.Add(item);
-
-                // Frequency step
-                item = new ListViewItem("Frequency step");
-                item.Tag = new ViewFrequencyStep(new FrequencyStep(GetStepName()));
+                item = new ListViewItem("No steps can be added after the last step.");
+                item.Tag = null;
                 lvTypes.Items.Add(item);
             }
             else
             {
-                Step step = steps.Last().DeepClone();
-                if (step is StaticStep)
+                if (addStatic)
                 {
                     // Static step
                     item = new ListViewItem("Static step");
-                    step = steps.Last().DeepClone();
-                    step.FieldOutputs.Clear();
-                    step.BoundaryConditions.Clear();
-                    step.Loads.Clear();
-                    step.Name = GetStepName();
-                    item.Tag = new ViewStaticStep((StaticStep)step);
+                    newStep = CreateNewOrCloneLast(typeof(StaticStep));
+                    item.Tag = new ViewStaticStep(newStep as StaticStep);
+                    lvTypes.Items.Add(item);
+                }
+                if (addFrequency)
+                {
+                    // Frequency step
+                    item = new ListViewItem("Frequency step");
+                    newStep = new FrequencyStep(GetStepName());
+                    item.Tag = new ViewFrequencyStep(newStep as FrequencyStep);
+                    lvTypes.Items.Add(item);
+                }
+                if (addBuckle)
+                {
+                    // Frequency step
+                    item = new ListViewItem("Buckle step");
+                    newStep = new BuckleStep(GetStepName());
+                    item.Tag = new ViewBuckleStep(newStep as BuckleStep);
                     lvTypes.Items.Add(item);
                 }
             }
+            
+        }
+        private Step CreateNewOrCloneLast(Type stepTypeToCreate)
+        {
+            if (stepTypeToCreate == null) throw new ArgumentNullException();
+
+            Step newStep = null;
+            Step prevOrLastStep = GetPreviousOrLastStep();
+
+            if (prevOrLastStep == null)
+            {
+                newStep = (Step)Activator.CreateInstance(stepTypeToCreate, new object[] { GetStepName() });
+            }
+            else
+            {
+                newStep = prevOrLastStep.DeepClone();
+                newStep.FieldOutputs.Clear();
+                newStep.BoundaryConditions.Clear();
+                newStep.Loads.Clear();
+                newStep.Name = GetStepName();
+            }
+            return newStep;
+        }
+        private Step GetPreviousOrLastStep()
+        {
+            Step prevOrLastStep = null;
+
+            // find previous step
+            if (_stepToEditName != null)
+            {
+                Step[] steps = _controller.GetAllSteps();
+                int prevStepId = -1;
+                for (int i = 0; i < steps.Length; i++)
+                {
+                    if (steps[i].Name == _stepToEditName)
+                    {
+                        prevStepId = i - 1;
+                        break;
+                    }
+                }
+                if (prevStepId >= 0) prevOrLastStep = steps[prevStepId];
+            }
+            // find last step
+            else if (_stepNames.Length > 0)
+            {
+                prevOrLastStep = _controller.GetAllSteps().Last();
+            }
+
+            return prevOrLastStep;
         }
         private string GetStepName()
         {

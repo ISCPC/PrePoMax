@@ -115,7 +115,7 @@ namespace PrePoMax.Forms
                 if (_propertyItemChanged) _controller.ReplaceReferencePointCommand(_referencePointToEditName, ReferencePoint);
             }
         }
-        protected override void OnPrepareForm(string stepName, string referencePointToEditName)
+        protected override bool OnPrepareForm(string stepName, string referencePointToEditName)
         {
             this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
             this.btnOkAddNew.Visible = referencePointToEditName == null;
@@ -147,13 +147,15 @@ namespace PrePoMax.Forms
 
             propertyGrid.SelectedObject = _viewReferencePoint;
             propertyGrid.Select();
+
+            return true;
         }
 
 
         // Methods                                                                                                                  
-        public void PrepareForm(string stepName, string referencePointToEditName)
+        public bool PrepareForm(string stepName, string referencePointToEditName)
         {
-            OnPrepareForm(stepName, referencePointToEditName);
+            return OnPrepareForm(stepName, referencePointToEditName);
         }
         private string GetReferencePointName()
         {

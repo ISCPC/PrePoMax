@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using CaeMesh;
+using CaeGlobals;
 
 namespace CaeResults
 {
@@ -39,7 +40,8 @@ namespace CaeResults
 
                 FeResults result = new FeResults(fileName);
                 Field field;
-                FieldData fieldData;
+                FieldData fieldData = null;
+                FieldData prevFieldData = null;
 
                 bool constantWidth = true;
 
@@ -62,8 +64,9 @@ namespace CaeResults
                     }
                     else if (setID.StartsWith("    1PSTEP")) // Fields
                     {
-                        GetField(dataSet, constantWidth, out fieldData, out field);
+                        GetField(dataSet, constantWidth, prevFieldData, out fieldData, out field);
                         result.AddFiled(fieldData, field);
+                        prevFieldData = fieldData.DeepClone();
                     }
                 }
 
@@ -303,9 +306,11 @@ namespace CaeResults
 
             return elements;
         }
-        static private void GetField(string[] lines, bool constantWidth, out FieldData fieldData, out Field field)
+        static private void GetField(string[] lines, bool constantWidth, FieldData prevFieldData, out FieldData fieldData, out Field field)
         {
-            //                              field#  stepIncrement#       step#
+            // STATIC STEP
+
+            //                              field#  stepIncrement#       step# - COMMENTS
             //    1PSTEP                        25               1           2
             //             time        numOfvalues
             //  100CL  107 2.000000000         613                     0    7           1
@@ -320,9 +325,38 @@ namespace CaeResults
             // -5  ALL         1    2    0    0    1ALL                                  
             // -1         1-9.27159E-04 1.48271E-04-1.46752E-04                          
 
+            // MODAL STEP
+
+            //    1PSTEP                         5           1           2          
+            //    1PGM                1.000000E+00                                  
+            //    1PGK                7.155923E+05                                  
+            //    1PHID                         -1                                  
+            //    1PSUBC                         0                                  
+            //    1PMODE                         1                                   - frequency
+            //  100CL  102 1.34633E+02        1329                     2    2MODAL      1
+            // -4  DISP        4    1
+            // -5  D1          1    2    1    0
+            // -5  D2          1    2    2    0
+            // -5  D3          1    2    3    0
+            // -5  ALL         1    2    0    0    1ALL
+
+            // BUCKLING STEP
+
+            //                              field#  stepIncrement#       step# - COMMENTS
+            //    1PSTEP                         4           1           1
+            //  100CL  104  93.9434614        1329                     4    4           1
+            //  -4  DISP        4    1
+            //  -5  D1          1    2    1    0
+            //  -5  D2          1    2    2    0
+            //  -5  D3          1    2    3    0
+            //  -5  ALL         1    2    0    0    1ALL
+
+            int userDefinedBlockId = -1;
+            float time;
             int stepId;
             int stepIncrementId;
             bool modal = false;
+            bool buckling = false;
 
             string[] record;
             string[] splitter = new string[] { " " };
@@ -330,42 +364,61 @@ namespace CaeResults
             int n;
             string name;
             List<string> components = new List<string>();
-            float time;
+            
             float[][] values;
 
             int lineNum = 0;
-            record = lines[lineNum++].Split(splitter, StringSplitOptions.RemoveEmptyEntries);     // 1PSTEP
+            record = lines[lineNum++].Split(splitter, StringSplitOptions.RemoveEmptyEntries);       // 1PSTEP
             stepId = int.Parse(record[3]);
             stepIncrementId = int.Parse(record[2]);
 
-            // find 100CL line
-            while (!lines[lineNum].TrimStart().StartsWith("100CL")) lineNum++;
-
-            record = lines[lineNum++].Split(splitter, StringSplitOptions.RemoveEmptyEntries);     // 100CL
-            n = int.Parse(record[3]);
+            // find 100C line - user field data
+            while (!lines[lineNum].TrimStart().StartsWith("100C")) lineNum++;
+            record = lines[lineNum++].Split(splitter, StringSplitOptions.RemoveEmptyEntries);       // 100CL
+            userDefinedBlockId = int.Parse(record[1]);
             time = float.Parse(record[2]);
+            n = int.Parse(record[3]);
+            buckling = int.Parse(record[4]) == 4;                                                   // buckling switch
 
+            if (buckling) 
+            {
+                if (prevFieldData == null) // this is the first step
+                {
+                    stepId = 1;
+                    stepIncrementId = 1;
+                }
+                else if (prevFieldData.Buckling == false) // this is the first increment in the buckling step
+                {
+                    stepId = prevFieldData.StepId + 1;
+                    stepIncrementId = 1;
+                }
+                else if (userDefinedBlockId != prevFieldData.UserDefinedBlockId) // this is the new increment in the buckling step
+                {
+                    stepId = prevFieldData.StepId;
+                    stepIncrementId = prevFieldData.StepIncrementId + 1;
+                }
+                else // this is the same increment
+                {
+                    stepId = prevFieldData.StepId;
+                    stepIncrementId = prevFieldData.StepIncrementId;
+                }
+            }
             // check for modal analysis
-            if (record.Length > 5 && record[5].Contains("MODAL"))
+            else if (record.Length > 5 && record[5].Contains("MODAL"))
             {
                 modal = true;
-                int freqNum = int.Parse(record[5].Replace("MODAL", ""));
+                record = lines[lineNum - 2].Split(splitter, StringSplitOptions.RemoveEmptyEntries); // 1PMODE
+                int freqNum = int.Parse(record[1]);
                 stepIncrementId = freqNum;
             }
 
-            record = lines[lineNum++].Split(splitter, StringSplitOptions.RemoveEmptyEntries);     // -4  DISP
+            record = lines[lineNum++].Split(splitter, StringSplitOptions.RemoveEmptyEntries);       // -4  DISP
             name = record[1];
 
             while (true)
             {
                 record = lines[lineNum++].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
-                if (record[0] == "-5")
-                {
-                    //if (int.Parse(record[4]) > 0) // 0 means that no data is written // this was so for version 
-                    {
-                        components.Add(record[1]);
-                    }
-                }
+                if (record[0] == "-5") components.Add(record[1]);
                 else break;
             }
             lineNum--;
@@ -421,10 +474,13 @@ namespace CaeResults
             }
 
             fieldData = new FieldData(name);
+            // component ??
+            fieldData.UserDefinedBlockId = userDefinedBlockId;
+            fieldData.Time = time;
             fieldData.StepId = stepId;
             fieldData.StepIncrementId = stepIncrementId;
-            fieldData.Time = time;
             fieldData.Modal = modal;
+            fieldData.Buckling = buckling;
 
             switch (name)
             {

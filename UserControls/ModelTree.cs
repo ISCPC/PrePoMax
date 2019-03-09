@@ -64,6 +64,7 @@ namespace UserControls
         private int _afterSelectCount;
 
         private TreeNode _geomParts;
+        private TreeNode _model;
         private TreeNode _meshParts;
         private TreeNode _resultParts;
         private TreeNode _nodeSets;
@@ -78,6 +79,7 @@ namespace UserControls
         private TreeNode _fieldData;
 
         private string _geomPartsName;
+        private string _modelName;
         private string _meshPartsName;
         private string _resultPartsName;
         private string _nodeSetsName;
@@ -144,9 +146,6 @@ namespace UserControls
         public event Action RenderingOff;
 
 
-        // Callbacks                                                                                                                
-
-
 
         // Constructors                                                                                                             
         public ModelTree()
@@ -154,6 +153,7 @@ namespace UserControls
             InitializeComponent();
 
             _geomPartsName = "Parts";
+            _modelName = "Model";
             _meshPartsName = "Parts";
             _resultPartsName = "Parts";
             _nodeSetsName = "Node sets";
@@ -172,6 +172,7 @@ namespace UserControls
 
 
             _geomParts = cltvGeometry.Nodes.Find(_geomPartsName, true)[0];
+            _model = cltvModel.Nodes.Find(_modelName, true)[0];
             _meshParts = cltvModel.Nodes.Find(_meshPartsName, true)[0];
             _resultParts = cltvResults.Nodes.Find(_resultPartsName, true)[0];
             _nodeSets = cltvModel.Nodes.Find(_nodeSetsName, true)[0];
@@ -184,6 +185,9 @@ namespace UserControls
             _steps = cltvModel.Nodes.Find(_stepsName, true)[0];
             _analyses = cltvModel.Nodes.Find(_analysesName, true)[0];
             _fieldData = cltvResults.Nodes.Find(_fieldDataName, true)[0];
+
+            // add NamedClasses to static items
+            _model.Tag = new EmptyNamedClass(typeof(CaeModel.FeModel).ToString());
 
             // Geometry icons
             _geomParts.StateImageKey = "GeomPart";
@@ -376,6 +380,13 @@ namespace UserControls
 
         private void AppendMenuFields(TreeNode node, ref ContextMenuFields menuFields)
         {
+            // Check if selected node is Model
+            if (node == _model)
+            {
+                menuFields.Edit++;
+                return;
+            }
+
             NamedClass item = (NamedClass)node.Tag;
             // Create
             if (CanCreate(node)) menuFields.Create++;
@@ -1207,7 +1218,7 @@ namespace UserControls
                     AddObjectsToNode<string, Constraint>(_constraintName, _constraints, model.Constraints);
 
                     // Steps
-                    AddSteps(model.StepCollection.Steps);
+                    AddSteps(model.StepCollection.StepsList);
 
                     // Analyses
                     AddObjectsToNode<string, AnalysisJob>(_analysesName, _analyses, jobs);
@@ -1501,13 +1512,9 @@ namespace UserControls
             if (node.Nodes.Count > 0) node.Text = initialNodeName + " (" + node.Nodes.Count.ToString() + ")";
             else node.Text = initialNodeName;
         }
-        private void AddSteps(Dictionary<string, Step> dictionary)
+        private void AddSteps(List<Step> steps)
         {
-            var list = dictionary.Keys.ToList();
-            foreach (var key in list)
-            {
-                AddStep(dictionary[key]);
-            }
+            foreach (var step in steps) AddStep(step);
 
             if (_steps.Nodes.Count > 0) _steps.Text = _stepsName + " (" + _steps.Nodes.Count.ToString() + ")";
             else _steps.Text = _stepsName;

@@ -166,7 +166,7 @@ namespace PrePoMax.Forms
 
 
         // Methods                                                                                                                  
-        public void PrepareForm(string stepName, string materialToEditName)
+        public bool PrepareForm(string stepName, string materialToEditName)
         {
             this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
             this.btnOKAddNew.Visible = materialToEditName == null;
@@ -218,6 +218,8 @@ namespace PrePoMax.Forms
                     lvAddedProperties.Select();
                 }
             }
+
+            return true;
         }
         public void Add()
         {

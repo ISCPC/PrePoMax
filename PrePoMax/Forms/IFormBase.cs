@@ -8,7 +8,7 @@ namespace PrePoMax.Forms
 {
     interface IFormBase
     {
-        void PrepareForm(string stepName, string itemToEdit);
+        bool PrepareForm(string stepName, string itemToEdit);
         bool Visible { get; set; }
         string Text { get; set; }
         void Show();

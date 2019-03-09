@@ -489,7 +489,7 @@ namespace CaeResults
             pData.ExtremeNodesAnimation = new NodesExchangeData[numFrames];
 
             float[] ratios;
-            if (fData.Modal) ratios = GetRelativeModalScales(numFrames);
+            if (fData.Modal || fData.Buckling) ratios = GetRelativeModalScales(numFrames);
             else ratios = GetRelativeScales(numFrames);
 
             float absoluteScale;
@@ -519,7 +519,7 @@ namespace CaeResults
             pData.NodesAnimation = new NodesExchangeData[numFrames];
 
             float[] ratios;
-            if (fData.Modal) ratios = GetRelativeModalScales(numFrames);
+            if (fData.Modal || fData.Buckling) ratios = GetRelativeModalScales(numFrames);
             else ratios = GetRelativeScales(numFrames);
 
             float absoluteScale;
@@ -671,6 +671,18 @@ namespace CaeResults
                 {
                     fieldMax = entry.Value.GetComponentMax("ALL");
                     if (fieldMax > max) max = fieldMax;
+                }
+            }
+            return max;
+        }
+        public float GetMaxDisplacement(int stepId, int stepIncrementId)
+        {
+            float max = 0;
+            foreach (var entry in _fields)
+            {
+                if (entry.Key.StepId == stepId && entry.Key.StepIncrementId == stepIncrementId && entry.Key.Name == "DISP")
+                {
+                    max = entry.Value.GetComponentMax("ALL");
                 }
             }
             return max;

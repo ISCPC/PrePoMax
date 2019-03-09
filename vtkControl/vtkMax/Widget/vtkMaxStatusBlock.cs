@@ -6,6 +6,12 @@ using Kitware.VTK;
 
 namespace vtkControl
 {
+    public enum DataFieldType
+    {
+        Static,
+        Modal,
+        Buckling
+    }
     class vtkMaxStatusBlock : vtkMaxTextBackgroundWidget
     {
         // Variables                                                                                                                
@@ -15,7 +21,7 @@ namespace vtkControl
         private float _analysisTime;
         private float _animationScaleFactor;
         private float _deformationScaleFactor;
-        private bool _modal;
+        private DataFieldType _fieldType;
         
 
         // Properties                                                                                                               
@@ -24,7 +30,7 @@ namespace vtkControl
         public float AnalysisTime { get { return _analysisTime; } set { _analysisTime = value; SetText(); } }
         public float DeformationScaleFactor { get { return _deformationScaleFactor; } set { _deformationScaleFactor = value; SetText(); } }
         public float AnimationScaleFactor { get { return _animationScaleFactor; } set { _animationScaleFactor = value; SetText(); } }
-        public bool Modal { get { return _modal; } set { _modal = value; SetText(); } }
+        public DataFieldType FieldType { get { return _fieldType; } set { _fieldType = value; SetText(); } }
 
 
         // Constructors                                                                                                             
@@ -54,16 +60,16 @@ namespace vtkControl
 
 
         // Private methods                                                                                                          
-        
         private void SetText()
         {
             string sysUIFormat = System.Globalization.CultureInfo.CurrentUICulture.DateTimeFormat.ShortDatePattern;
 
-            _text = "Name: " + _name + "   "; // +Environment.NewLine;
+            _text = "Name: " + _name + "   ";
             _text += "Date: " + _dateTime.ToString(sysUIFormat) + "   Time: " + _dateTime.ToString("HH:mm:ss") + Environment.NewLine;
 
-            if (_modal) _text += "Frequency: " + _analysisTime.ToString();
-            else _text += "Analysis time: " + _analysisTime.ToString();
+            if (_fieldType == DataFieldType.Static) _text += "Step: Static   Analysis time: " + _analysisTime.ToString();
+            else if(_fieldType == DataFieldType.Modal) _text += "Step: Frequency   Eigen frequency: " + _analysisTime.ToString();
+            else if (_fieldType == DataFieldType.Buckling) _text += "Step: Buckling   Buckling factor: " + _analysisTime.ToString();
 
             if (_animationScaleFactor >= 0) _text += "    Animation scale factor: " + _animationScaleFactor.ToString();
             _text += Environment.NewLine;

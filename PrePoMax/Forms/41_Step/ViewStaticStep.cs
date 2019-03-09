@@ -78,37 +78,20 @@ namespace PrePoMax
         // Constructors                                                                                                             
         public ViewStaticStep(CaeModel.StaticStep step)
         {
+            if (step == null)
+                throw new ArgumentNullException();
+
             _step = step;
             _dctd = ProviderInstaller.Install(this);
 
-            ApplyNlGeomOnOff();
-            ApplyDirectOnOff();
+            RenameTrueFalseForBooleanToOnOff("Nlgeom");
+            RenameTrueFalseForBooleanToOnOff("Direct");
 
             UpdateFieldView();
         }
 
 
         // Methods
-        protected void ApplyNlGeomOnOff()
-        {
-            CustomPropertyDescriptor cpd = _dctd.GetProperty("Nlgeom");
-
-            foreach (StandardValueAttribute sva in cpd.StatandardValues)
-            {
-                if ((bool)sva.Value == true) sva.DisplayName = "On";
-                else sva.DisplayName = "Off";
-            }
-        }
-        protected void ApplyDirectOnOff()
-        {
-            CustomPropertyDescriptor cpd = _dctd.GetProperty("Direct");
-
-            foreach (StandardValueAttribute sva in cpd.StatandardValues)
-            {
-                if ((bool)sva.Value == true) sva.DisplayName = "On";
-                else sva.DisplayName = "Off";
-            }
-        }
         public override void UpdateFieldView()
         {
             if (_step.Nlgeom)

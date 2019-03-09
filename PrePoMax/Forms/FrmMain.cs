@@ -498,13 +498,19 @@ namespace PrePoMax
         }
         private void ModelTree_Edit(NamedClass namedClass, string stepName)
         {
+            // Geometry
             if (_controller.CurrentView == ViewGeometryModelResults.Geometry)
             {
                 if (namedClass is CaeMesh.GeometryPart) EditGeometryPart((namedClass).Name);
             }
+            // Model
             else if (_controller.CurrentView == ViewGeometryModelResults.Model)
-            { 
-                if (namedClass is CaeMesh.MeshPart) EditModelPart((namedClass).Name);
+            {
+                if (namedClass is EmptyNamedClass) // empty named class is used to trasfer the name only
+                {
+                    if (namedClass.Name == typeof(CaeModel.FeModel).ToString()) tsmiEditCalculiXKeywords_Click(null, null);
+                }
+                else if (namedClass is CaeMesh.MeshPart) EditModelPart((namedClass).Name);
                 else if (namedClass is CaeMesh.FeNodeSet) EditNodeSet((namedClass).Name);
                 else if (namedClass is CaeMesh.FeElementSet) EditElementSet((namedClass).Name);
                 else if (namedClass is CaeMesh.FeSurface) EditSurface((namedClass).Name);
@@ -518,6 +524,7 @@ namespace PrePoMax
                 else if (namedClass is CaeModel.Load) EditLoad(stepName, (namedClass).Name);
                 else if (namedClass is CaeJob.AnalysisJob) EditAnalysis((namedClass).Name);
             }
+            // Results
             else if (_controller.CurrentView == ViewGeometryModelResults.Results)
             {
                 if (namedClass is CaeMesh.ResultPart || namedClass is CaeMesh.GeometryPart) EditResultPart((namedClass).Name);
@@ -605,10 +612,9 @@ namespace PrePoMax
         }
         private void ModelTree_FieldDataSelectEvent(string[] obj)
         {
-            // create temp fild data to check for field data changes
             int stepId = GetCurrentFieldOutputStepId();
             int stepIncrementId = GetCurrentFieldOutputStepIncrementId();
-            CaeResults.FieldData newData = _controller.Results.GetFieldData(obj[0], obj[1], stepId, stepIncrementId);
+            CaeResults.FieldData newData = new CaeResults.FieldData(obj[0], obj[1], stepId, stepIncrementId);
 
             if (!newData.Equals(_controller.CurrentFieldData)) // update results only if field data changed
             {
@@ -2259,7 +2265,7 @@ namespace PrePoMax
         }
         private void ShowOnlyBoundaryConditions(string stepName, string[] boundaryConditionNames)
         {
-            HashSet<string> allNames = new HashSet<string>(_controller.Model.StepCollection.Steps[stepName].BoundaryConditions.Keys);
+            HashSet<string> allNames = new HashSet<string>(_controller.Model.StepCollection.GetStep(stepName).BoundaryConditions.Keys);
             allNames.ExceptWith(boundaryConditionNames);
             _controller.ShowBoundaryConditionCommand(stepName, boundaryConditionNames);
             _controller.HideBoundaryConditionCommand(stepName, allNames.ToArray());
@@ -2367,7 +2373,7 @@ namespace PrePoMax
         }
         private void ShowOnlyLoads(string stepName, string[] loadNames)
         {
-            HashSet<string> allNames = new HashSet<string>(_controller.Model.StepCollection.Steps[stepName].Loads.Keys);
+            HashSet<string> allNames = new HashSet<string>(_controller.Model.StepCollection.GetStep(stepName).Loads.Keys);
             allNames.ExceptWith(loadNames);
             _controller.ShowLoadsCommand(stepName, loadNames);
             _controller.HideLoadsCommand(stepName, allNames.ToArray());
@@ -2823,8 +2829,8 @@ namespace PrePoMax
                 SetFormLoaction((Form)form);
                 form.Text = text;
                 if (itemToEditName != null) form.Text += ": " + itemToEditName;
-                form.PrepareForm(stepName, itemToEditName);
-                form.Show();
+                if (form.PrepareForm(stepName, itemToEditName))
+                    form.Show();
             }
         }
         private void SetFormLoaction(Form form)
@@ -2964,10 +2970,21 @@ namespace PrePoMax
         {
             try
             {
-                // create temp fild data to check for field data changes
-                CaeResults.FieldData newData = new CaeResults.FieldData(_controller.CurrentFieldData);
-                newData.StepId = GetCurrentFieldOutputStepId();                     // set StepId
-                newData.StepIncrementId = GetCurrentFieldOutputStepIncrementId();   // set StepIncrementId
+                CaeResults.FieldData newData;
+
+                // find the chosen data; also contains info about modal analysis ...
+                newData = _controller.Results.GetFieldData(_controller.CurrentFieldData.Name,
+                                                           _controller.CurrentFieldData.Component,
+                                                           GetCurrentFieldOutputStepId(),
+                                                           GetCurrentFieldOutputStepIncrementId());
+
+                if (newData == null)    // the step increment id = 0; crate new step data
+                {
+                    newData = new CaeResults.FieldData(_controller.CurrentFieldData.Name,
+                                                       _controller.CurrentFieldData.Component,
+                                                       GetCurrentFieldOutputStepId(),
+                                                       GetCurrentFieldOutputStepIncrementId());
+                }
 
                 if (!newData.Equals(_controller.CurrentFieldData)) // update results only if field data changed
                 {
@@ -3322,9 +3339,10 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.SetChartNumberFormat, numberFormat);
         }
-        public void SetStatusBlock(string name, DateTime dateTime, float analysisTime, float scaleFactor, bool modal = false)
+        public void SetStatusBlock(string name, DateTime dateTime, float analysisTime, float scaleFactor, 
+                                   vtkControl.DataFieldType fieldType = vtkControl.DataFieldType.Static)
         {
-            InvokeIfRequired(_vtk.SetStatusBlock, name, dateTime, analysisTime, scaleFactor, modal);
+            InvokeIfRequired(_vtk.SetStatusBlock, name, dateTime, analysisTime, scaleFactor, fieldType);
         }
         public void SetBackground(bool gradient, Color topColor, Color bottomColor, bool redraw)
         {

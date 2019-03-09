@@ -2077,7 +2077,7 @@ namespace PrePoMax
 
         public string[] GetStepNames()
         {
-            return _model.StepCollection.Steps.Keys.ToArray();
+            return _model.StepCollection.GetStepNames();
         }
         public void AddStep(Step step)
         {
@@ -2089,11 +2089,11 @@ namespace PrePoMax
         }
         public Step GetStep(string stepName)
         {
-            return _model.StepCollection.Steps[stepName];
+            return _model.StepCollection.GetStep(stepName);
         }
         public Step[] GetAllSteps()
         {
-            return _model.StepCollection.Steps.Values.ToArray();
+            return _model.StepCollection.StepsList.ToArray();
         }
         public void ReplaceStep(string oldStepName, Step newStep)
         {
@@ -2107,7 +2107,7 @@ namespace PrePoMax
         {
             foreach (var name in stepNames)
             {
-                _model.StepCollection.Steps.Remove(name);
+                _model.StepCollection.RemoveStep(name);
                 _form.RemoveTreeNode<Step>(ViewGeometryModelResults.Model, name, null);
             }
 
@@ -2143,27 +2143,27 @@ namespace PrePoMax
         }
         public string[] GetFieldOutputNamesForStep(string stepName)
         {
-            return _model.StepCollection.Steps[stepName].FieldOutputs.Keys.ToArray();
+            return _model.StepCollection.GetStep(stepName).FieldOutputs.Keys.ToArray();
         }
         public void AddFieldOutput(string stepName, FieldOutput fieldOutput)
         {
-            _model.StepCollection.Steps[stepName].FieldOutputs.Add(fieldOutput.Name, fieldOutput);
+            _model.StepCollection.GetStep(stepName).FieldOutputs.Add(fieldOutput.Name, fieldOutput);
             _form.AddTreeNode(ViewGeometryModelResults.Results, fieldOutput, stepName);
 
             CheckAndUpdateValidity();
         }
         public FieldOutput GetFieldOutput(string stepName, string fieldOutputName)
         {
-            return _model.StepCollection.Steps[stepName].FieldOutputs[fieldOutputName];
+            return _model.StepCollection.GetStep(stepName).FieldOutputs[fieldOutputName];
         }
         public FieldOutput[] GetAllFieldOutputs(string stepName)
         {
-            return _model.StepCollection.Steps[stepName].FieldOutputs.Values.ToArray();
+            return _model.StepCollection.GetStep(stepName).FieldOutputs.Values.ToArray();
         }
         public void ReplaceFieldOutput(string stepName, string oldFieldOutputName, FieldOutput fieldOutput)
         {
-            _model.StepCollection.Steps[stepName].FieldOutputs.Remove(oldFieldOutputName);
-            _model.StepCollection.Steps[stepName].FieldOutputs.Add(fieldOutput.Name, fieldOutput);
+            _model.StepCollection.GetStep(stepName).FieldOutputs.Remove(oldFieldOutputName);
+            _model.StepCollection.GetStep(stepName).FieldOutputs.Add(fieldOutput.Name, fieldOutput);
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldFieldOutputName, fieldOutput, stepName);
 
             CheckAndUpdateValidity();
@@ -2172,7 +2172,7 @@ namespace PrePoMax
         {
             foreach (var name in fieldOutputNames)
             {
-                _model.StepCollection.Steps[stepName].FieldOutputs.Remove(name);
+                _model.StepCollection.GetStep(stepName).FieldOutputs.Remove(name);
                 _form.RemoveTreeNode<FieldOutput>(ViewGeometryModelResults.Model, name, stepName);
             }
 
@@ -2213,7 +2213,7 @@ namespace PrePoMax
 
         public string[] GetBoundaryConditionNames(string stepName)
         {
-            return _model.StepCollection.Steps[stepName].BoundaryConditions.Keys.ToArray();
+            return _model.StepCollection.GetStep(stepName).BoundaryConditions.Keys.ToArray();
         }
         public void AddBoundaryCondition(string stepName, BoundaryCondition boundaryCondition)
         {
@@ -2225,19 +2225,19 @@ namespace PrePoMax
         }
         public BoundaryCondition GetBoundaryCondition(string stepName, string boundaryConditionName)
         {
-            return _model.StepCollection.Steps[stepName].BoundaryConditions[boundaryConditionName];
+            return _model.StepCollection.GetStep(stepName).BoundaryConditions[boundaryConditionName];
         }
         public BoundaryCondition[] GetStepBoundaryConditions(string stepName)
         {
-            return _model.StepCollection.Steps[stepName].BoundaryConditions.Values.ToArray();
+            return _model.StepCollection.GetStep(stepName).BoundaryConditions.Values.ToArray();
         }
 
         public void HideBoundaryConditions(string stepName, string[] boundaryConditionNames)
         {
             foreach (var name in boundaryConditionNames)
             {
-                _model.StepCollection.Steps[stepName].BoundaryConditions[name].Visible = false;
-                _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.StepCollection.Steps[stepName].BoundaryConditions[name], stepName);
+                _model.StepCollection.GetStep(stepName).BoundaryConditions[name].Visible = false;
+                _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.StepCollection.GetStep(stepName).BoundaryConditions[name], stepName);
             }
             RedrawAnnotations();
         }
@@ -2245,15 +2245,15 @@ namespace PrePoMax
         {
             foreach (var name in boundaryConditionNames)
             {
-                _model.StepCollection.Steps[stepName].BoundaryConditions[name].Visible = true;
-                _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.StepCollection.Steps[stepName].BoundaryConditions[name], stepName);
+                _model.StepCollection.GetStep(stepName).BoundaryConditions[name].Visible = true;
+                _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.StepCollection.GetStep(stepName).BoundaryConditions[name], stepName);
             }
             RedrawAnnotations();
         }
         public void ReplaceBoundaryCondition(string stepName, string oldBoundaryConditionName, BoundaryCondition boundaryCondition)
         {
-            _model.StepCollection.Steps[stepName].BoundaryConditions.Remove(oldBoundaryConditionName);
-            _model.StepCollection.Steps[stepName].BoundaryConditions.Add(boundaryCondition.Name, boundaryCondition);
+            _model.StepCollection.GetStep(stepName).BoundaryConditions.Remove(oldBoundaryConditionName);
+            _model.StepCollection.GetStep(stepName).BoundaryConditions.Add(boundaryCondition.Name, boundaryCondition);
 
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldBoundaryConditionName, boundaryCondition, stepName);
             CheckAndUpdateValidity();
@@ -2263,7 +2263,7 @@ namespace PrePoMax
         {
             foreach (var name in boundaryConditionNames)
             {
-                _model.StepCollection.Steps[stepName].BoundaryConditions.Remove(name);
+                _model.StepCollection.GetStep(stepName).BoundaryConditions.Remove(name);
                 _form.RemoveTreeNode<BoundaryCondition>(ViewGeometryModelResults.Model, name, stepName);
             }
 
@@ -2305,11 +2305,11 @@ namespace PrePoMax
 
         public string[] GetLoadNames(string stepName)
         {
-            return _model.StepCollection.Steps[stepName].Loads.Keys.ToArray();
+            return _model.StepCollection.GetStep(stepName).Loads.Keys.ToArray();
         }
         public void AddLoad(string stepName, Load load)
         {
-            _model.StepCollection.Steps[stepName].Loads.Add(load.Name, load);
+            _model.StepCollection.GetStep(stepName).Loads.Add(load.Name, load);
 
             _form.AddTreeNode(ViewGeometryModelResults.Model, load, stepName);
             CheckAndUpdateValidity();
@@ -2317,18 +2317,18 @@ namespace PrePoMax
         }
         public Load GetLoad(string stepName, string loadName)
         {
-            return _model.StepCollection.Steps[stepName].Loads[loadName];
+            return _model.StepCollection.GetStep(stepName).Loads[loadName];
         }
         public Load[] GetStepLoads(string stepName)
         {
-            return _model.StepCollection.Steps[stepName].Loads.Values.ToArray();
+            return _model.StepCollection.GetStep(stepName).Loads.Values.ToArray();
         }
         public void HideLoads(string stepName, string[] loadNames)
         {
             foreach (var name in loadNames)
             {
-                _model.StepCollection.Steps[stepName].Loads[name].Visible = false;
-                _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.StepCollection.Steps[stepName].Loads[name], stepName);
+                _model.StepCollection.GetStep(stepName).Loads[name].Visible = false;
+                _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.StepCollection.GetStep(stepName).Loads[name], stepName);
             }
             RedrawAnnotations();
         }
@@ -2336,15 +2336,15 @@ namespace PrePoMax
         {
             foreach (var name in loadNames)
             {
-                _model.StepCollection.Steps[stepName].Loads[name].Visible = true;
-                _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.StepCollection.Steps[stepName].Loads[name], stepName);
+                _model.StepCollection.GetStep(stepName).Loads[name].Visible = true;
+                _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.StepCollection.GetStep(stepName).Loads[name], stepName);
             }
             RedrawAnnotations();
         }
         public void ReplaceLoad(string stepName, string oldLoadName, Load load)
         {
-            _model.StepCollection.Steps[stepName].Loads.Remove(oldLoadName);
-            _model.StepCollection.Steps[stepName].Loads.Add(load.Name, load);
+            _model.StepCollection.GetStep(stepName).Loads.Remove(oldLoadName);
+            _model.StepCollection.GetStep(stepName).Loads.Add(load.Name, load);
 
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldLoadName, load, stepName);
             CheckAndUpdateValidity();
@@ -2354,7 +2354,7 @@ namespace PrePoMax
         {
             foreach (var name in loadNames)
             {
-                _model.StepCollection.Steps[stepName].Loads.Remove(name);
+                _model.StepCollection.GetStep(stepName).Loads.Remove(name);
                 _form.RemoveTreeNode<Load>(ViewGeometryModelResults.Model, name, stepName);
             }
 
@@ -3231,7 +3231,7 @@ namespace PrePoMax
                 int num = _model.CalculixUserKeywords.Count;
                 _model.RemoveLostUserKeywords(_form.SetNumberOfModelUserKeywords);
                 int delta = num - _model.CalculixUserKeywords.Count;
-                if (delta > 0) MessageBox.Show("Number of removed CalculiX user keywords : " + delta, "Warning", MessageBoxButtons.OK);
+                if (delta > 0) MessageBox.Show("Number of removed CalculiX user keywords: " + delta, "Warning", MessageBoxButtons.OK);
             }
             // Tuple<NamedClass, string>   ...   Tuple<invalidItem, stepName>
             List<Tuple<NamedClass, string>> items = new List<Tuple<NamedClass, string>>();
@@ -3659,11 +3659,11 @@ namespace PrePoMax
             int nodeSymbolSize = preSettings.NodeSymbolSize;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
 
-            foreach (var stepEntry in _model.StepCollection.Steps)
+            foreach (var step in _model.StepCollection.StepsList)
             {
-                foreach (var bcEntry in stepEntry.Value.BoundaryConditions)
+                foreach (var bcEntry in step.BoundaryConditions)
                 {
-                    DrawBoundaryCondition(stepEntry.Key, bcEntry.Value, color, symbolSize, nodeSymbolSize, layer);
+                    DrawBoundaryCondition(step.Name, bcEntry.Value, color, symbolSize, nodeSymbolSize, layer);
                 }
             }
         }
@@ -3869,11 +3869,11 @@ namespace PrePoMax
             System.Drawing.Color color = preSettings.LoadSymbolColor;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
 
-            foreach (var stepEntry in _model.StepCollection.Steps)
+            foreach (var step in _model.StepCollection.StepsList)
             {
-                foreach (var loadEntry in stepEntry.Value.Loads)
+                foreach (var loadEntry in step.Loads)
                 {
-                    DrawLoad(stepEntry.Key, loadEntry.Value, color, symbolSize, nodeSymbolSize, layer);
+                    DrawLoad(step.Name, loadEntry.Value, color, symbolSize, nodeSymbolSize, layer);
                 }
             }
         }
@@ -4706,7 +4706,10 @@ namespace PrePoMax
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
             List<string> hiddenActors = new List<string>();
 
-            _form.SetStatusBlock(Path.GetFileName(_results.FileName), _results.DateTime, fieldData.Time, scale, fieldData.Modal);
+            vtkControl.DataFieldType fieldType = vtkControl.DataFieldType.Static;
+            if (fieldData.Modal) fieldType = vtkControl.DataFieldType.Modal;
+            else if (fieldData.Buckling) fieldType = vtkControl.DataFieldType.Buckling;
+            _form.SetStatusBlock(Path.GetFileName(_results.FileName), _results.DateTime, fieldData.Time, scale, fieldType);
 
             // udeformed shape
             foreach (var entry in _results.Mesh.Parts)
@@ -4781,7 +4784,10 @@ namespace PrePoMax
             vtkControl.vtkMaxActorData data;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
 
-            _form.SetStatusBlock(Path.GetFileName(_results.FileName), _results.DateTime, _currentFieldData.Time, scale, _currentFieldData.Modal);
+            vtkControl.DataFieldType fieldType = vtkControl.DataFieldType.Static;
+            if (_currentFieldData.Modal) fieldType = vtkControl.DataFieldType.Modal;
+            else if (_currentFieldData.Buckling) fieldType = vtkControl.DataFieldType.Buckling;
+            _form.SetStatusBlock(Path.GetFileName(_results.FileName), _results.DateTime, _currentFieldData.Time, scale, fieldType);
 
             List<string> hiddenActors = new List<string>();
             double[] allFramesScalarRange = new double[] { double.MaxValue, -double.MaxValue };
@@ -4839,11 +4845,14 @@ namespace PrePoMax
             _form.SetShowMaxValueLocation(postSettings.ShowMaxValueLocation);
             _form.SetChartNumberFormat(postSettings.GetColorChartNumberFormat());
 
-            float scale = GetScale();
+            float scale = GetScaleForAllStepsAndIncrements();
             vtkControl.vtkMaxActorData data = null;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
 
-            _form.SetStatusBlock(Path.GetFileName(_results.FileName), _results.DateTime, _currentFieldData.Time, scale, _currentFieldData.Modal);
+            vtkControl.DataFieldType fieldType = vtkControl.DataFieldType.Static;
+            if (_currentFieldData.Modal) fieldType = vtkControl.DataFieldType.Modal;
+            else if (_currentFieldData.Buckling) fieldType = vtkControl.DataFieldType.Buckling;
+            _form.SetStatusBlock(Path.GetFileName(_results.FileName), _results.DateTime, _currentFieldData.Time, scale, fieldType);
 
             List<string> hiddenActors = new List<string>();
             double[] allFramesScalarRange = new double[] { double.MaxValue, -double.MaxValue };
@@ -4987,9 +4996,26 @@ namespace PrePoMax
 
             if (settings.DeformationScaleFactorType == DeformationScaleFactorType.Automatic)
             {
-                float size = (float)_results.Mesh.GetBoundingBoxSize();
+                float size = (float)_results.Mesh.GetBoundingBoxVolumeAsCubeSide();
+                float maxDisp = _results.GetMaxDisplacement(_currentFieldData.StepId, _currentFieldData.StepIncrementId);
+                if (maxDisp != 0) scale = size * 0.25f / maxDisp;
+            }
+            else scale = (float)settings.DeformationScaleFactorValue;
+            return scale;
+        }
+
+        public float GetScaleForAllStepsAndIncrements()
+        {
+            if (_viewResultsType == ViewResultsType.Undeformed) return 0;
+
+            float scale = 1;
+            PostSettings settings = (PostSettings)_settings[Globals.PostSettingsName];
+
+            if (settings.DeformationScaleFactorType == DeformationScaleFactorType.Automatic)
+            {
+                float size = (float)_results.Mesh.GetBoundingBoxVolumeAsCubeSide();
                 float maxDisp = _results.GetMaxDisplacement();
-                if (maxDisp != 0) scale = size * 0.2f / maxDisp;
+                if (maxDisp != 0) scale = size * 0.25f / maxDisp;
             }
             else scale = (float)settings.DeformationScaleFactorValue;
             return scale;

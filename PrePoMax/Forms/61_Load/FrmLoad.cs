@@ -211,7 +211,7 @@ namespace PrePoMax.Forms
                 if (_propertyItemChanged) _controller.ReplaceLoadCommand(_stepName, _loadToEditName, GetLoad);
             }
         }
-        protected override void OnPrepareForm(string stepName, string loadToEditName)
+        protected override bool OnPrepareForm(string stepName, string loadToEditName)
         {
             _selectedPropertyGridItemChangedEventActive = false;                             // to prevent clear of the selection
 
@@ -229,6 +229,8 @@ namespace PrePoMax.Forms
             _stepName = stepName;
             _loadNames = _controller.GetLoadNames(stepName);
             _loadToEditName = loadToEditName;
+
+            if (!CheckIfStepSupportsLoads()) return false;
 
             string[] partNames = _controller.GetModelPartNames();
             string[] nodeSetNames = _controller.GetUserNodeSetNames();
@@ -335,13 +337,15 @@ namespace PrePoMax.Forms
                 propertyGrid.Select();
             }
             _selectedPropertyGridItemChangedEventActive = true;
+
+            return true;
         }
 
 
         // Methods                                                                                                                  
-        public void PrepareForm(string stepName, string loadToEditName)
+        public bool PrepareForm(string stepName, string loadToEditName)
         {
-            OnPrepareForm(stepName, loadToEditName);
+            return OnPrepareForm(stepName, loadToEditName);
         }
         private void PopulateListOfLoads(string[] partNames, string[] nodeSetNames, string[] elementSetNames, string[] referencePointNames, string[] surfaceNames)
         {
@@ -440,6 +444,17 @@ namespace PrePoMax.Forms
             max++;
 
             return "Load-" + max.ToString();
+        }
+
+        private bool CheckIfStepSupportsLoads()
+        {
+            Step step = _controller.GetStep(_stepName);
+            if (step.SupportsLoads) return true;
+            else
+            {
+                MessageBox.Show("The selected step does not support loads.", "Warning");
+                return false;
+            }
         }
     }
 }

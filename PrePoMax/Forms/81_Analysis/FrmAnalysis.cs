@@ -96,9 +96,8 @@ namespace PrePoMax.Forms
         }
 
         // Methods                                                                                                                  
-        public void PrepareForm(string stepName, string jobToEditName)
+        public bool PrepareForm(string stepName, string jobToEditName)
         {
-            
             this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
 
             _propertyItemChanged = false;
@@ -122,6 +121,8 @@ namespace PrePoMax.Forms
 
             propertyGrid.SelectedObject = _viewJob;
             propertyGrid.Select();
+
+            return true;
         }
         private string GetJobName()
         {

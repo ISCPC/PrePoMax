@@ -100,7 +100,7 @@ namespace UserControls
                 ExceptionTools.Show(this, ex);
             }
         }
-        private void btnCancel_Click(object sender, EventArgs e)
+        protected void btnCancel_Click(object sender, EventArgs e)
         {
             try
             {
@@ -145,7 +145,7 @@ namespace UserControls
 
 
         // Methods                                                                                                                  
-        protected virtual void OnPrepareForm(string stepName, string itemToEditName) { }
+        protected virtual bool OnPrepareForm(string stepName, string itemToEditName) { return true; }
         protected virtual void OnPropertyGridPropertyValueChanged()
         {
             propertyGrid.Refresh();

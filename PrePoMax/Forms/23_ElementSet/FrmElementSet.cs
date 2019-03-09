@@ -92,7 +92,7 @@ namespace PrePoMax.Forms
             }
             _selection.Clear();
         }
-        protected override void OnPrepareForm(string stepName, string elementSetToEditName)
+        protected override bool OnPrepareForm(string stepName, string elementSetToEditName)
         {
             this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
             this.btnOkAddNew.Visible = elementSetToEditName == null;
@@ -129,6 +129,8 @@ namespace PrePoMax.Forms
             propertyGrid.Select();
 
             _controller.HighlightSelection();
+
+            return true;
         }
         protected override void OnEnabledChanged()
         {
@@ -154,9 +156,9 @@ namespace PrePoMax.Forms
 
 
         // Methods                                                                                                                  
-        public void PrepareForm(string stepName, string elementSetToEditName)
+        public bool PrepareForm(string stepName, string elementSetToEditName)
         {
-            OnPrepareForm(stepName, elementSetToEditName);
+            return OnPrepareForm(stepName, elementSetToEditName);
         }
         private string GetElementSetName()
         {

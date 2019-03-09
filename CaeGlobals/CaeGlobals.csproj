@@ -67,6 +67,7 @@
     <Compile Include="CommonClasses\DataExchange\CellsExchangeData.cs" />
     <Compile Include="CommonClasses\DataExchange\NodesExchangeData.cs" />
     <Compile Include="CommonClasses\DataExchange\PartExchangeData.cs" />
+    <Compile Include="CommonClasses\EmptyNamedClass.cs" />
     <Compile Include="Comparers\CompareDoubleArray.cs" />
     <Compile Include="Comparers\CompareIntArray.cs" />
     <Compile Include="DynamicTypeDescriptor\CustomComponentModel.cs" />

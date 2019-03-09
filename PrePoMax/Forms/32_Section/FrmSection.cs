@@ -104,7 +104,7 @@ namespace PrePoMax.Forms
                 if (_propertyItemChanged) _controller.ReplaceSectionCommand(_sectionToEditName, Section);
             }
         }
-        protected override void OnPrepareForm(string stepName, string sectionToEditName)
+        protected override bool OnPrepareForm(string stepName, string sectionToEditName)
         {
             _selectedPropertyGridItemChangedEventActive = false;                             // to prevent clear of the selection
 
@@ -164,13 +164,15 @@ namespace PrePoMax.Forms
 
             }
             _selectedPropertyGridItemChangedEventActive = true;
+
+            return true;
         }
 
 
         // Methods                                                                                                                  
-        public void PrepareForm(string stepName, string sectionToEditName)
+        public bool PrepareForm(string stepName, string sectionToEditName)
         {
-            OnPrepareForm(stepName, sectionToEditName);
+            return OnPrepareForm(stepName, sectionToEditName);
         }
         private void PopulateListOfSections(string[] materialNames, string[] partNames, string[] elementSetNames)
         {

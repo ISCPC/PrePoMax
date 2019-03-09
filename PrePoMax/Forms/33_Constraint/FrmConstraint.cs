@@ -123,7 +123,7 @@ namespace PrePoMax.Forms
                 if (_propertyItemChanged) _controller.ReplaceConstraintCommand(_constraintToEditName, Constraint);
             }
         }
-        protected override void OnPrepareForm(string stepName, string constraintToEditName)
+        protected override bool OnPrepareForm(string stepName, string constraintToEditName)
         {
             _selectedPropertyGridItemChangedEventActive = false;                             // to prevent clear of the selection
 
@@ -195,13 +195,15 @@ namespace PrePoMax.Forms
                 propertyGrid.Select();
             }
             _selectedPropertyGridItemChangedEventActive = true;
+
+            return true;
         }
         
 
         // Methods                                                                                                                  
-        public void PrepareForm(string stepName, string constraintToEditName)
+        public bool PrepareForm(string stepName, string constraintToEditName)
         {
-            OnPrepareForm(stepName, constraintToEditName);
+            return OnPrepareForm(stepName, constraintToEditName);
         }
         private void PopulateListOfConstraints(string[] referencePointNames, string[] nodeSetNames, string[] surfaceNames)
         {

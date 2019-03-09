@@ -10,10 +10,10 @@ using DynamicTypeDescriptor;
 namespace PrePoMax
 {
     [Serializable]
-    public class ViewFrequencyStep : ViewStep
+    public class ViewBuckleStep : ViewStep
     {
         // Variables                                                                                                                
-        private CaeModel.FrequencyStep _step;
+        private CaeModel.BuckleStep _step;
 
 
         // Properties                                                                                                               
@@ -27,28 +27,26 @@ namespace PrePoMax
 
         [CategoryAttribute("Data")]
         [ReadOnly(false)]
-        [OrderedDisplayName(1, 10, "Storage")]
-        [DescriptionAttribute("Store eigenvalues, eigenmodes, mass and stiffness matrix in a binary form in file jobname.eig " +
-                              "for further use.")]
-        public bool Storage { get { return _step.Storage; } set { _step.Storage = value; } }
+        [OrderedDisplayName(0, 10, "Num. of buckling factors")]
+        [DescriptionAttribute("Number of buckling factors desired (default: 1).")]
+        public int NumBucklingFactors { get { return _step.NumOfBucklingFactors; } set { _step.NumOfBucklingFactors = value; } }
 
         [CategoryAttribute("Data")]
         [ReadOnly(false)]
-        [OrderedDisplayName(2, 10, "Number of frequencies")]
-        [DescriptionAttribute("Number of eigenfrequencies to compute.")]
-        public double NumOfFrequencies { get { return _step.NumOfFrequencies; } set { _step.NumOfFrequencies = value; } }
+        [OrderedDisplayName(1, 10, "Accuracy")]
+        [DescriptionAttribute("Accuracy desired (default: 0.01).")]
+        public double Accuracy { get { return _step.Accuracy; } set { _step.Accuracy = value; } }
 
-        public override CaeModel.Step Base { get { return _step; } set { _step = (CaeModel.FrequencyStep)value; } }
+        public override CaeModel.Step Base { get { return _step; } set { _step = (CaeModel.BuckleStep)value; } }
 
 
         // Constructors                                                                                                             
-        public ViewFrequencyStep(CaeModel.FrequencyStep step)
+        public ViewBuckleStep(CaeModel.BuckleStep step)
         {
             _step = step;
             _dctd = ProviderInstaller.Install(this);
 
             RenameTrueFalseForBooleanToOnOff("Perturbation");
-            RenameTrueFalseForBooleanToYesNo("Storage");
 
             UpdateFieldView();
         }

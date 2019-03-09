@@ -49,6 +49,7 @@ namespace vtkControl
         private Dictionary<string, vtkActor> _overlayActors;
         private vtkMaxAnimationFrameData _animationFrameData;
         private Color _highlightColor;
+        private double _maxSymbolSize;
 
         private bool _animating;
         private bool _mouseIn;
@@ -240,7 +241,7 @@ namespace vtkControl
         {
             if (_renderWindow != null) _renderWindow.Modified();     // this has to be here in order for the vtkMAx widgets to work on maximize/minimize
 
-            if (_coorSys != null && _drawCoorSys) _coorSys.SetViewport(0.0, 0.0, 200f / this.Size.Width, 200f / this.Size.Height);
+            if (_coorSys != null && _drawCoorSys) _coorSys.SetViewport(0.0, 0.0, 200f / Width, 200f / Height);
             if (_renderer != null)
             {
                 //float scale = vtkTextActor.GetFontScale(_renderer);
@@ -1556,7 +1557,7 @@ namespace vtkControl
             _coorSys.SetOutlineColor(0.9300, 0.5700, 0.1300);
             _coorSys.SetOrientationMarker(axes);
             _coorSys.SetInteractor(this._renderWindowInteractor);
-            _coorSys.SetViewport(0, 0, 200f / this.Size.Width, 200f / this.Size.Height);
+            _coorSys.SetViewport(0, 0, 200f / Width, 200f / Height);
             if (_drawCoorSys) _coorSys.SetEnabled(1);
             else _coorSys.SetEnabled(0);
             _coorSys.InteractiveOff();
@@ -2101,7 +2102,8 @@ namespace vtkControl
             double[] fPos = camera.GetFocalPoint();
             camera.SetPosition(fPos[0], fPos[1], fPos[2] + delta);
             camera.SetViewUp(0, 1, 0);
-            _renderer.ResetCamera();
+
+            ResetCamera();
          
             if (animate) AnimateCamera(cameraStart, camera, camera);
             else this.Invalidate();
@@ -2121,7 +2123,8 @@ namespace vtkControl
             double[] fPos = camera.GetFocalPoint();
             camera.SetPosition(fPos[0], fPos[1] + delta, fPos[2]);
             camera.SetViewUp(0, 0, -delta);
-            _renderer.ResetCamera();
+
+            ResetCamera();
 
             if (animate) AnimateCamera(cameraStart, camera, camera);
             else this.Invalidate();
@@ -2141,7 +2144,8 @@ namespace vtkControl
             double[] fPos = camera.GetFocalPoint();
             camera.SetPosition(fPos[0] + delta, fPos[1], fPos[2]);
             camera.SetViewUp(0, 1, 0);
-            _renderer.ResetCamera();
+
+            ResetCamera();
 
             if (animate) AnimateCamera(cameraStart, camera, camera);
             else this.Invalidate();
@@ -2159,7 +2163,7 @@ namespace vtkControl
             cameraStart.DeepCopy(camera);
 
             double[] zRange = camera.GetClippingRange();
-            double aspect = (double)this.Size.Width / this.Size.Height;
+            double aspect = (double)Width / Height;
             vtkMatrix4x4 m = camera.GetCompositeProjectionTransformMatrix(aspect, zRange[0], zRange[1]);
             double[] x = new double[2]; // 2d projection of the X axis
             double[] y = new double[2]; // 2d projection of the Y axis
@@ -2229,7 +2233,7 @@ namespace vtkControl
             if (Math.Min(Math.Min(angle1, angle2), Math.Min(angle2, angle3)) == angle3)
                 camera.SetPosition(fPoint[0], fPoint[1], fPoint[2] + Math.Sign(direction[2]));
 
-            _renderer.ResetCamera();
+            ResetCamera();
 
             SetVerticalView(false, false);
 
@@ -2280,7 +2284,7 @@ namespace vtkControl
             else if (maxID == 1) camera.SetViewUp(0, Math.Sign(up[1]), 0);
             else camera.SetViewUp(0, 0, Math.Sign(up[2]));
             
-            _renderer.ResetCamera();
+            ResetCamera();
 
             if (animate) AnimateCamera(cameraStart, camera, camera);
             else this.Invalidate();
@@ -2294,20 +2298,81 @@ namespace vtkControl
             vtkCamera cameraStart = vtkCamera.New();
             cameraStart.DeepCopy(camera);
 
-            if (_overlayActors.Count > 0)
-            {
-                double[] b1 = _renderer.ComputeVisiblePropBounds();
-                double[] b2 = _overlayRenderer.ComputeVisiblePropBounds();
-                double[] b3 = new double[] {Math.Min(b1[0], b2[0]),Math.Max(b1[1], b2[1]), Math.Min(b1[2], b2[2]),
-                                        Math.Max(b1[3], b2[3]), Math.Min(b1[4], b2[4]), Math.Max(b1[5], b2[5])};
-
-                _renderer.ResetCamera(b3[0], b3[1], b3[2], b3[3], b3[4], b3[5]);
-            }
-            else _renderer.ResetCamera();
+            ResetCamera();
 
             //_renderWindowInteractor.Modified(); // this updates the vtkMax annotation objects
             if (animate) AnimateCamera(cameraStart, camera, camera);
             else this.Invalidate();
+        }
+
+        private void ResetCamera()
+        {
+            if (_overlayActors.Count > 0)
+            {
+                double[] b1 = _renderer.ComputeVisiblePropBounds();
+                double[] b2 = _overlayRenderer.ComputeVisiblePropBounds();
+                
+                //double[] b3 = new double[] { Math.Min(b1[0], b2[0]), Math.Max(b1[1], b2[1]),
+                //                             Math.Min(b1[2], b2[2]), Math.Max(b1[3], b2[3]),
+                //                             Math.Min(b1[4], b2[4]), Math.Max(b1[5], b2[5])};
+                //
+                //_renderer.ResetCamera(b3[0], b3[1], b3[2], b3[3], b3[4], b3[5]);
+
+                //bool left, right, bottom, top;
+                //left = b2[0] < b1[0];
+                //right = b2[1] > b1[1];
+                //bottom = b2[2] < b1[2];
+                //top = b2[4] > b1[4];
+
+                int wFactor = 0;
+                int hFactor = 0;
+
+                //if (left) wFactor++;
+                //if (right) wFactor++;
+                //if (bottom) hFactor++;
+                //if (top) hFactor++;
+
+                // simple solution
+                wFactor = 2;
+                hFactor = 2;
+
+                double w = Width - wFactor * _maxSymbolSize;
+                double h = Height - hFactor * _maxSymbolSize;
+                double zoomW = Width / w;
+                double zoomH = Height / h;
+
+                double mid;
+                double l;
+
+                // width
+                mid = (b1[0] + b1[1]) / 2;
+                l = b1[1] - b1[0];
+                //if (wFactor == 1)
+                //{
+                //    if (left) mid += l * (1 - zoomW) / 2;
+                //    if (right) mid -= l * (1 - zoomW) / 2;
+                //}
+                l *= zoomW;
+                b1[0] = mid - l / 2;
+                b1[1] = mid + l / 2;
+
+                // height
+                mid = (b1[2] + b1[3]) / 2;
+                l = b1[3] - b1[2];
+                //if (hFactor == 1)
+                //{
+                //    if (bottom) mid += l * (1 - zoomH) / 2;
+                //    if (top) mid -= l * (1 - zoomH) / 2;
+                //}
+                l *= zoomH;
+                b1[2] = mid - l / 2;
+                b1[3] = mid + l / 2;
+
+                _renderer.ResetCamera(b1[0], b1[1], b1[2], b1[3], b1[4], b1[5]);
+            }
+            else _renderer.ResetCamera();
+
+            _style.ResetClippingRange();
         }
 
         private int GetClosestIsoDirectionQuadrant(double[] camera)
@@ -2692,12 +2757,6 @@ namespace vtkControl
             }
         }
 
-        private void ResetCamera()
-        {
-            SetFrontBackView(false, true);
-            if (_maxValueWidget.GetVisibility() == 1) _maxValueWidget.OnRenderWindowInteractorModified();
-            if (_minValueWidget.GetVisibility() == 1) _minValueWidget.OnRenderWindowInteractorModified();
-        }
         public void AdjustCameraDistanceAndClipping()
         {
             _style.AdjustCameraDistanceAndClipping();
@@ -2733,6 +2792,8 @@ namespace vtkControl
         }
         public void AddSphereActor(vtkMaxActorData data, double symbolSize)
         {
+            if (symbolSize > _maxSymbolSize) _maxSymbolSize = symbolSize;
+
             double[][] centers = data.Actor.Nodes.Coor;
 
             // points
@@ -2784,6 +2845,8 @@ namespace vtkControl
         }
         public void AddOrientedDisplacementConstraintActor(vtkMaxActorData data, double symbolSize)
         {
+            if (symbolSize > _maxSymbolSize) _maxSymbolSize = symbolSize;
+
             double[][] points = data.Actor.Nodes.Coor;
             double[][] normals = data.Actor.Nodes.Normals;
             // points
@@ -2847,6 +2910,8 @@ namespace vtkControl
         }
         public void AddOrientedRotationalConstraintActor(vtkMaxActorData data, double symbolSize)
         {
+            if (symbolSize > _maxSymbolSize) _maxSymbolSize = symbolSize;
+
             double[][] points = data.Actor.Nodes.Coor;
             double[][] normals = data.Actor.Nodes.Normals;
             // points
@@ -2918,6 +2983,8 @@ namespace vtkControl
         }
         public void AddOrientedArrowsActor(vtkMaxActorData data, double symbolSize, bool invert)
         {
+            if (symbolSize > _maxSymbolSize) _maxSymbolSize = symbolSize;
+
             // points
             vtkPoints pointData = vtkPoints.New();
             for (int i = 0; i < data.Actor.Nodes.Coor.GetLength(0); i++)
@@ -2985,6 +3052,8 @@ namespace vtkControl
         }
         public void AddOrientedDoubleArrowsActor(vtkMaxActorData data, double symbolSize)
         {
+            if (symbolSize > _maxSymbolSize) _maxSymbolSize = symbolSize;
+
             // double arrow for moent loads
 
             // points
@@ -3129,14 +3198,14 @@ namespace vtkControl
         {
             _vtkMaxScalarBar.SetLabelFormat(numberFormat);
         }
-        public void SetStatusBlock(string name, DateTime dateTime, float analysisTimeOrFrequency, float scaleFactor, bool modal)
+        public void SetStatusBlock(string name, DateTime dateTime, float analysisTimeOrFrequency, float scaleFactor, DataFieldType fieldType)
         {
             if (_statusBlock == null) return;
             _statusBlock.Name = name;
             _statusBlock.AnalysisTime = analysisTimeOrFrequency;
             _statusBlock.DateTime = dateTime;
             _statusBlock.DeformationScaleFactor = scaleFactor;
-            _statusBlock.Modal = modal;
+            _statusBlock.FieldType = fieldType;
             _statusBlock.AnimationScaleFactor = -1;
             _statusBlock.VisibilityOn();            
         }
@@ -3411,6 +3480,7 @@ namespace vtkControl
 
             UpdateScalarFormatting();
 
+            _style.AdjustCameraDistanceAndClipping();
             this.Invalidate();
         }
         public void SaveAnimationAsAVI(string fileName, int[] firstLastFrame, int step, int fps, bool scalarRangeFromAllFrames, bool swing, bool encoderOptions)
@@ -3619,6 +3689,7 @@ namespace vtkControl
         }
         public void ClearOverlay()
         {
+            _maxSymbolSize = 0;
             foreach (var entry in _overlayActors)
             {
                 _overlayRenderer.RemoveActor(entry.Value);

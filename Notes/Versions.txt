@@ -86,7 +86,7 @@ Errors:
 - there is something wrong when using small dimension: 0.001 - negative Jacobian
 - the moment on rigid body rotation node works in opposite direction?
 
-Dependancy nglib - added following files for c++ redistriburable compatibility:
+Dependency nglib - added following files for c++ redistriburable compatibility:
 
  2015
 - concrt140.dll
@@ -105,6 +105,7 @@ Done
 Version 0.5.1 Master branch
 Added support for *Frequency step
 Added support for reading Frequency results
+Bug fixes
 
 Version 0.5.0 Sync branch
 Added support for selection by edges

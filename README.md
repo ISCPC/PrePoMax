@@ -4,13 +4,8 @@
 
 # PrePoMax Visual Studio setup
 *  Download a Master branch of the PrePoMax package and extract it to a PrePoMax folder
- 
-![master](/uploads/9f4c76a93588934169e0255f2c1e2e31/master.PNG)
-
 *  Open the solution: "PrePoMax\PrePoMax.sln"
 *  Recreate the references to the VTK library: first delete the two existing references to the VTK library in the vtkControl project using Solution Explorer window (right click on the reference and select Remove)
-
-![references](/uploads/9cd517064e4000a6572b8a04e4be4b6e/references.png)
  
 Then add the two references again using the folowing procedure:
 *  Right click on References from vtkControl project in the Solution Explorer Window and selected Add Reference

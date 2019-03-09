@@ -599,6 +599,8 @@ namespace vtkControl
             //double[] clip = camera.GetClippingRange();
             camera.SetPosition(cPos[0] + motionVector[0], cPos[1] + motionVector[1], cPos[2] + motionVector[2]);
             camera.SetFocalPoint(fPos[0] + motionVector[0], fPos[1] + motionVector[1], fPos[2] + motionVector[2]);
+
+            AdjustCameraDistanceAndClipping();
         }
         override public void Rotate()
         {
@@ -754,17 +756,16 @@ namespace vtkControl
         }
         public void AdjustCameraDistanceAndClipping()
         {
-            //if (_rotationCenterWorld != null)
-            {
-                vtkRenderer renderer = this.GetCurrentRenderer();
-                vtkCamera camera = renderer.GetActiveCamera();
+            vtkRenderer renderer = this.GetCurrentRenderer();
+            vtkCamera camera = renderer.GetActiveCamera();
 
-                AdjustCameraDistance(renderer, camera);
-                ResetClippingRange();
-            }
+            AdjustCameraDistance(renderer, camera);
+            ResetClippingRange();
         }
-        private void AdjustCameraDistance(vtkRenderer renderer , vtkCamera camera)
+        private void AdjustCameraDistance(vtkRenderer renderer, vtkCamera camera)
         {
+            // camera should not be to close
+
             double[] b1 = renderer.ComputeVisiblePropBounds();
             double[] b2 = _selectionRenderer.ComputeVisiblePropBounds();
             double[] b3 = _overlayRenderer.ComputeVisiblePropBounds();
@@ -773,7 +774,6 @@ namespace vtkControl
                                         Math.Min(b1[2], Math.Min(b2[2], b3[2])), Math.Max(b1[3], Math.Max(b2[3], b3[3])),
                                         Math.Min(b1[4], Math.Min(b2[4], b3[4])), Math.Max(b1[5], Math.Max(b2[5], b3[5]))};
 
-            //double D = Math.Sqrt(Math.Pow(b[0] - b[3], 2) + Math.Pow(b[1] - b[4], 2) + Math.Pow(b[2] - b[5], 2));
             double D = Math.Sqrt(Math.Pow(b[0] - b[1], 2) + Math.Pow(b[2] - b[3], 2) + Math.Pow(b[4] - b[5], 2));   // diameter
             double[] center = new double[] { (b[0] + b[1]) / 2, (b[2] + b[3]) / 2, (b[4] + b[5]) / 2 };
 
@@ -859,7 +859,7 @@ namespace vtkControl
             //System.Diagnostics.Debug.WriteLine(string.Format("newPos x: {0},  y: {1},  z: {1}", newPos[0], newPos[1], newPos[2]));
         }
 
-        private void ResetClippingRange()
+        public void ResetClippingRange()
         {
             double min, max, minSel, maxSel, minOver, maxOver;
             min = max = minSel = maxSel = minOver = maxOver = 0;

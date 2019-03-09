@@ -105,7 +105,7 @@ namespace PrePoMax.Forms
             }
             _controller.Selection.Clear();
         }
-        protected override void OnPrepareForm(string stepName, string surfaceToEditName)
+        protected override bool OnPrepareForm(string stepName, string surfaceToEditName)
         {
             this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
             this.btnOkAddNew.Visible = surfaceToEditName == null;
@@ -151,6 +151,8 @@ namespace PrePoMax.Forms
 
             // add surface selection data to selection history
             HighlightSurface();
+
+            return true;
         }
         protected override void OnEnabledChanged()
         {
@@ -177,9 +179,9 @@ namespace PrePoMax.Forms
 
 
         // Methods                                                                                                                  
-        public void PrepareForm(string stepName, string surfaceToEditName)
+        public bool PrepareForm(string stepName, string surfaceToEditName)
         {
-            OnPrepareForm(stepName, surfaceToEditName);
+            return OnPrepareForm(stepName, surfaceToEditName);
         }
         private string GetSurfaceName()
         {

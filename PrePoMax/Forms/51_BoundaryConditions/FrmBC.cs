@@ -115,9 +115,8 @@ namespace PrePoMax.Forms
                 if (_propertyItemChanged) _controller.ReplaceBoundaryConditionCommand(_stepName, _boundaryConditionToEditName, BoundaryCondition);
             }
         }
-        protected override void OnPrepareForm(string stepName, string boundaryConditionToEditName)
+        protected override bool OnPrepareForm(string stepName, string boundaryConditionToEditName)
         {
-            
             _selectedPropertyGridItemChangedEventActive = false;                             // to prevent clear of the selection
 
             this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
@@ -187,13 +186,15 @@ namespace PrePoMax.Forms
                 propertyGrid.Select();
             }
             _selectedPropertyGridItemChangedEventActive = true;
+
+            return true;
         }
 
 
         // Methods                                                                                                                  
-        public void PrepareForm(string stepName, string boundaryConditionToEditName)
+        public bool PrepareForm(string stepName, string boundaryConditionToEditName)
         {
-            OnPrepareForm(stepName, boundaryConditionToEditName);
+            return OnPrepareForm(stepName, boundaryConditionToEditName);
         }
         private void PopulateListOfBCs(string[] nodeSetNames, string[] surfaceNames, string[] referencePointNames)
         {
