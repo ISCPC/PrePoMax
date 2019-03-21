@@ -458,7 +458,9 @@ namespace PrePoMax.Forms
             catch (Exception ex)
             {
                 CaeGlobals.ExceptionTools.Show(this, ex);
-                UpdateAnimation();
+                Stop();
+                //_updateAnimation = false;
+                //UpdateAnimation();
             }
         }
 

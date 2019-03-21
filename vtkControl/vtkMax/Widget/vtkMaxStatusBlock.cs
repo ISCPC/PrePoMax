@@ -1,18 +1,15 @@
 ﻿using System;
-using System.Drawing;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Kitware.VTK;
 
 namespace vtkControl
 {
-    public enum DataFieldType
-    {
-        Static,
-        Modal,
-        Buckling
-    }
-    class vtkMaxStatusBlock : vtkMaxTextBackgroundWidget
+    
+
+    class vtkMaxStatusBlockWidget : vtkMaxTextWidget
     {
         // Variables                                                                                                                
         private string _text;
@@ -22,7 +19,7 @@ namespace vtkControl
         private float _animationScaleFactor;
         private float _deformationScaleFactor;
         private DataFieldType _fieldType;
-        
+
 
         // Properties                                                                                                               
         public string Name { get { return _name; } set { _name = value; SetText(); } }
@@ -34,7 +31,7 @@ namespace vtkControl
 
 
         // Constructors                                                                                                             
-        public vtkMaxStatusBlock()
+        public vtkMaxStatusBlockWidget()
         {
             _text = "text";
             _name = "name";
@@ -50,12 +47,6 @@ namespace vtkControl
             textProperty.SetLineOffset(-Math.Round(textProperty.GetFontSize() / 5.0));
             textProperty.SetLineSpacing(1.2);
             this.SetTextProperty(textProperty);
-
-
-            // Border representation
-            vtkProperty2D borderProperty = vtkProperty2D.New();
-            borderProperty.SetColor(0, 0, 0);
-            this.SetBorderProperty(borderProperty);
         }
 
 
@@ -68,7 +59,7 @@ namespace vtkControl
             _text += "Date: " + _dateTime.ToString(sysUIFormat) + "   Time: " + _dateTime.ToString("HH:mm:ss") + Environment.NewLine;
 
             if (_fieldType == DataFieldType.Static) _text += "Step: Static   Analysis time: " + _analysisTime.ToString();
-            else if(_fieldType == DataFieldType.Modal) _text += "Step: Frequency   Eigen frequency: " + _analysisTime.ToString();
+            else if (_fieldType == DataFieldType.Frequency) _text += "Step: Frequency   Eigenfrequency: " + _analysisTime.ToString();
             else if (_fieldType == DataFieldType.Buckling) _text += "Step: Buckling   Buckling factor: " + _analysisTime.ToString();
 
             if (_animationScaleFactor >= 0) _text += "    Animation scale factor: " + _animationScaleFactor.ToString();
@@ -78,7 +69,8 @@ namespace vtkControl
             this.SetText(_text);
         }
 
+
         // Public methods                                                                                                           
-        
+
     }
 }

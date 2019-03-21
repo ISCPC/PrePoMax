@@ -207,6 +207,15 @@ namespace CaeResults
         }
         public FieldData GetFieldData(string name, string component, int stepId, int stepIncrementId)
         {
+            // zero step
+            if (stepId == 1 && stepIncrementId == 0)
+            {
+
+                FieldData fieldData = new FieldData(name, component, stepId, stepIncrementId);
+                fieldData.Type = StepType.Static;
+                return fieldData;
+            }
+
             foreach (var entry in _fields)
             {
                 if (entry.Key.Name == name && entry.Key.StepId == stepId && entry.Key.StepIncrementId == stepIncrementId)
@@ -216,6 +225,7 @@ namespace CaeResults
                     return result;
                 }
             }
+            
             return null;
         }
         public FieldData GetFirstFieldAtLastIncrement()
@@ -250,9 +260,11 @@ namespace CaeResults
             HashSet<int> incrementIds = new HashSet<int>();
             foreach (var entry in _fields)
             {
+
                 if (entry.Key.StepId == stepId)
                 {
-                    if (stepId == 1 && incrementIds.Count == 0) incrementIds.Add(0);   // zero increment for first step
+                    if (entry.Key.Type == StepType.Static && stepId == 1 && incrementIds.Count == 0)
+                        incrementIds.Add(0);   // zero increment for the first step - static only
 
                     incrementIds.Add(entry.Key.StepIncrementId);
                 }
@@ -489,7 +501,7 @@ namespace CaeResults
             pData.ExtremeNodesAnimation = new NodesExchangeData[numFrames];
 
             float[] ratios;
-            if (fData.Modal || fData.Buckling) ratios = GetRelativeModalScales(numFrames);
+            if (fData.Type == StepType.Frequency || fData.Type == StepType.Buckling) ratios = GetRelativeModalScales(numFrames);
             else ratios = GetRelativeScales(numFrames);
 
             float absoluteScale;
@@ -519,7 +531,7 @@ namespace CaeResults
             pData.NodesAnimation = new NodesExchangeData[numFrames];
 
             float[] ratios;
-            if (fData.Modal || fData.Buckling) ratios = GetRelativeModalScales(numFrames);
+            if (fData.Type == StepType.Frequency || fData.Type == StepType.Buckling) ratios = GetRelativeModalScales(numFrames);
             else ratios = GetRelativeScales(numFrames);
 
             float absoluteScale;

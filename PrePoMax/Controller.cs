@@ -30,7 +30,7 @@ namespace PrePoMax
         protected FeResults _results;
         // View
         protected ViewGeometryModelResults _currentView;
-        protected bool _drawSymbols;
+        protected string _drawSymbolsForStep;
         // Selection
         protected vtkControl.vtkSelectBy _selectBy;
         protected double _selectAngle;
@@ -88,18 +88,19 @@ namespace PrePoMax
                     _form.SetCurrentView(_currentView);
                     if (_currentView == ViewGeometryModelResults.Geometry) DrawGeometry(false);
                     else if (_currentView == ViewGeometryModelResults.Model) DrawMesh(false);
-                    else DrawResults(false);
+                    else if (_currentView == ViewGeometryModelResults.Results) DrawResults(false);
+                    else throw new NotSupportedException();
                 }
             }
         }
-        public bool DrawSymbols
+        public string DrawSymbolsForStep
         {
-            get { return _drawSymbols; }
+            get { return _drawSymbolsForStep; }
             set
             {
-                if (value != _drawSymbols)
+                if (value != _drawSymbolsForStep)
                 {
-                    _drawSymbols = value;
+                    _drawSymbolsForStep = value;
                     RedrawAnnotations();
                 }
             }
@@ -311,7 +312,7 @@ namespace PrePoMax
         public void ClearModel()
         {
             _model = new FeModel("Model-1");
-            _drawSymbols = true;
+            _drawSymbolsForStep = null;
             _jobs.Clear();
             ClearAllSelection();
 
@@ -3463,12 +3464,16 @@ namespace PrePoMax
         // Annotations
         public void DrawAnnotations()
         {
-            if (_drawSymbols)
+            if (_drawSymbolsForStep != null && _drawSymbolsForStep != "None")
             {
+
                 DrawAllReferencePoints();
                 DrawAllConstraints();
-                DrawAllBoundaryConditions();
-                DrawAllLoads();
+                if (_drawSymbolsForStep != "Model")
+                {
+                    DrawAllBoundaryConditions(_drawSymbolsForStep);
+                    DrawAllLoads(_drawSymbolsForStep);
+                }
             }
         }
         public void RedrawAnnotations()
@@ -3651,7 +3656,7 @@ namespace PrePoMax
         }
         
         // BCs
-        public void DrawAllBoundaryConditions()
+        public void DrawAllBoundaryConditions(string stepName)
         {
             PreSettings preSettings = (PreSettings)_settings[Globals.PreSettingsName];
             System.Drawing.Color color = preSettings.BoundaryConditionSymbolColor;
@@ -3661,9 +3666,13 @@ namespace PrePoMax
 
             foreach (var step in _model.StepCollection.StepsList)
             {
-                foreach (var bcEntry in step.BoundaryConditions)
+                if (step.Name == stepName)
                 {
-                    DrawBoundaryCondition(step.Name, bcEntry.Value, color, symbolSize, nodeSymbolSize, layer);
+                    foreach (var bcEntry in step.BoundaryConditions)
+                    {
+                        DrawBoundaryCondition(step.Name, bcEntry.Value, color, symbolSize, nodeSymbolSize, layer);
+                    }
+                    break;
                 }
             }
         }
@@ -3861,7 +3870,7 @@ namespace PrePoMax
             }
         }
         // Loads
-        private void DrawAllLoads()
+        private void DrawAllLoads(string stepName)
         {
             PreSettings preSettings = (PreSettings)_settings[Globals.PreSettingsName];
             int symbolSize = preSettings.SymbolSize;
@@ -3871,9 +3880,13 @@ namespace PrePoMax
 
             foreach (var step in _model.StepCollection.StepsList)
             {
-                foreach (var loadEntry in step.Loads)
+                if (step.Name == stepName)
                 {
-                    DrawLoad(step.Name, loadEntry.Value, color, symbolSize, nodeSymbolSize, layer);
+                    foreach (var loadEntry in step.Loads)
+                    {
+                        DrawLoad(step.Name, loadEntry.Value, color, symbolSize, nodeSymbolSize, layer);
+                    }
+                    break;
                 }
             }
         }
@@ -4706,9 +4719,7 @@ namespace PrePoMax
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
             List<string> hiddenActors = new List<string>();
 
-            vtkControl.DataFieldType fieldType = vtkControl.DataFieldType.Static;
-            if (fieldData.Modal) fieldType = vtkControl.DataFieldType.Modal;
-            else if (fieldData.Buckling) fieldType = vtkControl.DataFieldType.Buckling;
+            vtkControl.DataFieldType fieldType = ConvertStepType(fieldData);
             _form.SetStatusBlock(Path.GetFileName(_results.FileName), _results.DateTime, fieldData.Time, scale, fieldType);
 
             // udeformed shape
@@ -4784,9 +4795,7 @@ namespace PrePoMax
             vtkControl.vtkMaxActorData data;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
 
-            vtkControl.DataFieldType fieldType = vtkControl.DataFieldType.Static;
-            if (_currentFieldData.Modal) fieldType = vtkControl.DataFieldType.Modal;
-            else if (_currentFieldData.Buckling) fieldType = vtkControl.DataFieldType.Buckling;
+            vtkControl.DataFieldType fieldType = ConvertStepType(_currentFieldData);
             _form.SetStatusBlock(Path.GetFileName(_results.FileName), _results.DateTime, _currentFieldData.Time, scale, fieldType);
 
             List<string> hiddenActors = new List<string>();
@@ -4849,9 +4858,7 @@ namespace PrePoMax
             vtkControl.vtkMaxActorData data = null;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
 
-            vtkControl.DataFieldType fieldType = vtkControl.DataFieldType.Static;
-            if (_currentFieldData.Modal) fieldType = vtkControl.DataFieldType.Modal;
-            else if (_currentFieldData.Buckling) fieldType = vtkControl.DataFieldType.Buckling;
+            vtkControl.DataFieldType fieldType = ConvertStepType(_currentFieldData);
             _form.SetStatusBlock(Path.GetFileName(_results.FileName), _results.DateTime, _currentFieldData.Time, scale, fieldType);
 
             List<string> hiddenActors = new List<string>();
@@ -4896,7 +4903,7 @@ namespace PrePoMax
             _form.SetAnimationFrameData(time.ToArray(), animationScale.ToArray(), allFramesScalarRange);
 
             numFrames = data.Actor.NodesAnimation.Length;
-        }
+        }        
         private vtkControl.vtkMaxActorData GetScaleFactorAnimationDataFromPart(ResultPart part, FieldData fieldData, float scale, int numFrames)
         {
             // get visualization nodes and renumbered elements
@@ -4915,6 +4922,7 @@ namespace PrePoMax
             data.ColorContours = part.ColorContours;
             data.CanHaveElementEdges = true;
             data.Pickable = true;
+            data.SmoothShaded = part.SmoothShaded;
             return data;
         }
         private vtkControl.vtkMaxActorData GetTimeIncrementAnimationDataFromPart(ResultPart part, FieldData fieldData, float scale)
@@ -4935,10 +4943,19 @@ namespace PrePoMax
             data.ColorContours = part.ColorContours;
             data.CanHaveElementEdges = true;
             data.Pickable = true;
+            data.SmoothShaded = part.SmoothShaded;
             return data;
         }
-
         // Common
+        private vtkControl.DataFieldType ConvertStepType(FieldData fieldData)
+        {
+            vtkControl.DataFieldType fieldType;
+            if (fieldData.Type == StepType.Static) fieldType = vtkControl.DataFieldType.Static;
+            else if (fieldData.Type == StepType.Frequency) fieldType = vtkControl.DataFieldType.Frequency;
+            else if (fieldData.Type == StepType.Buckling) fieldType = vtkControl.DataFieldType.Buckling;
+            else throw new NotSupportedException();
+            return fieldType;
+        }
         public void UpdatePartsScalarFields()
         {
             if (_results == null) return;
@@ -4968,6 +4985,7 @@ namespace PrePoMax
             data.Color = color;
             data.Layer = layer;
             data.CanHaveElementEdges = false;
+            data.SmoothShaded = part.SmoothShaded;
             _results.GetUndeformedNodesAndCells(part, out data.Actor.Nodes.Coor, out data.Actor.Cells.CellNodeIds, out data.Actor.Cells.Types);
             ApplyLighting(data);
             _form.Add3DCells(data);

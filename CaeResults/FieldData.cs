@@ -7,16 +7,24 @@ using System.Threading.Tasks;
 namespace CaeResults
 {
     [Serializable]
+    public enum StepType
+    {
+        None,
+        Static,
+        Frequency,
+        Buckling
+    }
+
+    [Serializable]
     public class FieldData : CaeGlobals.NamedClass
     {
         // Variables                                                                                                                
         public string Component;
         public int UserDefinedBlockId;
+        public StepType Type;
         public float Time;
         public int StepId;
         public int StepIncrementId;
-        public bool Modal;
-        public bool Buckling;
 
 
         // Constructors                                                                                                              
@@ -27,11 +35,10 @@ namespace CaeResults
             Name = name;
             Component = null;
             UserDefinedBlockId = -1;
+            Type = StepType.None;
             Time = -1;
             StepId = -1;
             StepIncrementId = -1;
-            Modal = false;
-            Buckling = false;
         }
         public FieldData(string name, string component, int stepId, int stepIncrementId)
            : base(name)
@@ -39,22 +46,20 @@ namespace CaeResults
             Name = name;
             Component = component;
             UserDefinedBlockId = -1;
+            Type = StepType.None;
             Time = -1;
             StepId = stepId;
             StepIncrementId = stepIncrementId;
-            Modal = false;
-            Buckling = false;
         }
         public FieldData(FieldData fieldData)
             : base(fieldData.Name)
         {
             Component = fieldData.Component;
             UserDefinedBlockId = fieldData.UserDefinedBlockId;
+            Type = fieldData.Type;
             Time = fieldData.Time;
             StepId = fieldData.StepId;
             StepIncrementId = fieldData.StepIncrementId;
-            Modal = fieldData.Modal;
-            Buckling = fieldData.Buckling;
         }
 
 
@@ -81,11 +86,10 @@ namespace CaeResults
                 }
 
                 bw.Write(fieldData.UserDefinedBlockId);
+                bw.Write((int)fieldData.Type);
                 bw.Write(fieldData.Time);
                 bw.Write(fieldData.StepId);
                 bw.Write(fieldData.StepIncrementId);
-                bw.Write(fieldData.Modal ? (int)1 : (int)0);
-                bw.Write(fieldData.Buckling ? (int)1 : (int)0);
             }
         }
         public static FieldData ReadFromFile(System.IO.BinaryReader br)
@@ -99,11 +103,10 @@ namespace CaeResults
                 if (componentExists == 1) fieldData.Component = br.ReadString();
 
                 fieldData.UserDefinedBlockId = br.ReadInt32();
+                fieldData.Type = (StepType)br.ReadInt32();
                 fieldData.Time = br.ReadSingle();
                 fieldData.StepId = br.ReadInt32();
                 fieldData.StepIncrementId = br.ReadInt32();
-                fieldData.Modal = br.ReadInt32() == 1;
-                fieldData.Buckling = br.ReadInt32() == 1;
                 return fieldData;
             }
             return null;
@@ -119,11 +122,10 @@ namespace CaeResults
         {
             return  Name == data.Name &&
                     Component == data.Component &&
-                    UserDefinedBlockId == data.UserDefinedBlockId &&
+                    //UserDefinedBlockId == data.UserDefinedBlockId &&
+                    //Type == data.Type &&
                     StepId == data.StepId &&
-                    StepIncrementId == data.StepIncrementId &&
-                    Modal == data.Modal &&
-                    Buckling == data.Buckling;
+                    StepIncrementId == data.StepIncrementId;
         }
     }
 }

@@ -32,17 +32,17 @@ namespace vtkControl
         private vtkRenderWindowInteractor _renderWindowInteractor;
         private vtkOrientationMarkerWidget _coorSys;
         private vtkLookupTable _lookupTable;
-        private vtkMaxScalarBarWidget _vtkMaxScalarBar;
-        private vtkMaxStatusBlock _statusBlock;
+        private vtkMaxScalarBarWidget _scalarBarWidget;
+        private vtkMaxStatusBlockWidget _statusBlockWidget;
         private vtkInteractorStyleControl _style;
         private bool _drawCoorSys;
         private vtkEdgesVisibility _edgesVisibility;
 
         private vtkMaxColorSpectrum _colorSpectrum;
 
-        private vtkMaxCaptionWidget _minValueWidget;
-        private vtkMaxCaptionWidget _maxValueWidget;
-        private vtkMaxTextBackgroundWidget _probeWidget;
+        private vtkMaxTextWithArrowWidget _minValueWidget;
+        private vtkMaxTextWithArrowWidget _maxValueWidget;
+        private vtkMaxTextWidget _probeWidget;
 
         private Dictionary<string, vtkMaxActor> _actors;
         private List<vtkMaxActor> _selectedActors;
@@ -106,28 +106,24 @@ namespace vtkControl
                 }
             }
         }
-        public string ScalarBarText { get { return _vtkMaxScalarBar.GetText(); } set { _vtkMaxScalarBar.SetText(value); } }
+        public string ScalarBarText { get { return _scalarBarWidget.GetText(); } set { _scalarBarWidget.SetText(value); } }
         public bool ShowMinValueLocation
         { 
-            get { return _minValueWidget.Enabled; } 
+            get { return _minValueWidget.GetVisibility() == 1; } 
             set
             {
-                if (_minValueWidget.Enabled != value)
-                {
-                    _minValueWidget.Enabled = value;
-                }
+                if (value) _minValueWidget.VisibilityOn();
+                else _minValueWidget.VisibilityOff();
             } 
         }
         public bool ShowMaxValueLocation 
-        { 
-            get { return _maxValueWidget.Enabled; }
+        {
+            get { return _maxValueWidget.GetVisibility() == 1; }
             set
             {
-                if (_maxValueWidget.Enabled != value)
-                {
-                    _maxValueWidget.Enabled = value;
-                }
-            } 
+                if (value) _maxValueWidget.VisibilityOn();
+                else _maxValueWidget.VisibilityOff();
+            }
         }
         public vtkSelectBy SelectBy
         {
@@ -240,6 +236,7 @@ namespace vtkControl
         private void vtkControl_Resize(object sender, EventArgs e)
         {
             if (_renderWindow != null) _renderWindow.Modified();     // this has to be here in order for the vtkMAx widgets to work on maximize/minimize
+            //if (_renderWindowInteractor != null) _renderWindowInteractor.Render();
 
             if (_coorSys != null && _drawCoorSys) _coorSys.SetViewport(0.0, 0.0, 200f / Width, 200f / Height);
             if (_renderer != null)
@@ -427,7 +424,7 @@ namespace vtkControl
             if (showLabel)
             {
                 // Probe widget
-                string format = _vtkMaxScalarBar.GetLabelFormat();
+                string format = _scalarBarWidget.GetLabelFormat();
 
                 _renderer.SetWorldPoint(pickedPoint[0], pickedPoint[1], pickedPoint[2], 1.0);
                 _renderer.WorldToDisplay();
@@ -435,8 +432,8 @@ namespace vtkControl
 
                 //double w = ((float)display[0] + 20) / Width;
                 //double h = ((float)display[1] + 10) / Height;
-                double w = (x + 20d) / Width;
-                double h = (y + 10d) / Height;
+                double w = x + 20d;
+                double h = y + 10d;
 
                 _probeWidget.SetPosition(w, h);
                 _probeWidget.SetText("Node id: " + globalPointId);
@@ -485,10 +482,10 @@ namespace vtkControl
                 // Probe widget
                 //if (_frustumLocators[pickedActor].GetDataSet().GetCellData().GetGlobalIds() != null)
                 {
-                    string format = _vtkMaxScalarBar.GetLabelFormat();
+                    string format = _scalarBarWidget.GetLabelFormat();
 
-                    double w = ((float)x + 20) / Width;
-                    double h = ((float)y + 10) / Height;
+                    double w = x + 20;
+                    double h = y + 10;
 
                     _probeWidget.SetPosition(w, h);
                     _probeWidget.SetText("Element id: " + globalCellId);
@@ -1556,7 +1553,7 @@ namespace vtkControl
             _coorSys = vtkOrientationMarkerWidget.New();
             _coorSys.SetOutlineColor(0.9300, 0.5700, 0.1300);
             _coorSys.SetOrientationMarker(axes);
-            _coorSys.SetInteractor(this._renderWindowInteractor);
+            _coorSys.SetInteractor(_renderWindowInteractor);
             _coorSys.SetViewport(0, 0, 200f / Width, 200f / Height);
             if (_drawCoorSys) _coorSys.SetEnabled(1);
             else _coorSys.SetEnabled(0);
@@ -1588,7 +1585,7 @@ namespace vtkControl
             _style.Reset();
 
             _renderWindowInteractor.ModifiedEvt += _renderWindowInteractor_ModifiedEvt;
-
+            
 
             // background
             _renderer.SetBackground(0.4, 0.4, 0.4);     // bottm
@@ -1612,65 +1609,56 @@ namespace vtkControl
 
 
             // Status block
-            _statusBlock = new vtkMaxStatusBlock();
-            _statusBlock.SetRenderer(_selectionRenderer);
-            _statusBlock.SetInteractor(_renderWindowInteractor);
-            _statusBlock.SetTextProperty(CreateNewTextProperty());
-            _statusBlock.SetDisplayPosition(200, 20);
-            _statusBlock.SetPadding(5);
-            _statusBlock.GetBackgroundProperty().SetColor(1, 1, 1);
-            _statusBlock.BackgroundVisibilityOff();
-            _statusBlock.VisibilityOff();
+            _statusBlockWidget = new vtkMaxStatusBlockWidget();
+            //_statusBlock.SetRenderer(_selectionRenderer);
+            _statusBlockWidget.SetInteractor(_renderWindowInteractor);
+            _statusBlockWidget.SetTextProperty(CreateNewTextProperty());            
+            _statusBlockWidget.SetPadding(5);
+            _statusBlockWidget.GetBackgroundProperty().SetColor(1, 1, 1);
+            _statusBlockWidget.BackgroundVisibilityOff();
+            _statusBlockWidget.VisibilityOff();
 
 
             // Max widget
-            _maxValueWidget = new vtkMaxCaptionWidget();
-            _maxValueWidget.SetRenderer(_selectionRenderer);
+            _maxValueWidget = new vtkMaxTextWithArrowWidget();
             _maxValueWidget.SetInteractor(_renderWindowInteractor);
-            _maxValueWidget.GetBorderRepresentation().GetBorderProperty().SetColor(0, 0, 0);
+            _maxValueWidget.SetBorderColor(0, 0, 0);
             _maxValueWidget.SetTextProperty(CreateNewTextProperty());
             _maxValueWidget.SetPadding(5);
             _maxValueWidget.GetBackgroundProperty().SetColor(1, 1, 1);
-            _maxValueWidget.GetBackgroundProperty().SetOpacity(1);
             _maxValueWidget.SetText("Test");
             _maxValueWidget.VisibilityOff();
 
 
             // Min widget
-            _minValueWidget = new vtkMaxCaptionWidget();
-            _minValueWidget.SetRenderer(_selectionRenderer);
+            _minValueWidget = new vtkMaxTextWithArrowWidget();
             _minValueWidget.SetInteractor(_renderWindowInteractor);
-            _minValueWidget.GetBorderRepresentation().GetBorderProperty().SetColor(0, 0, 0);
+            _minValueWidget.SetBorderColor(0, 0, 0);
             _minValueWidget.SetTextProperty(CreateNewTextProperty());
             _minValueWidget.SetPadding(5);
             _minValueWidget.GetBackgroundProperty().SetColor(1, 1, 1);
-            _minValueWidget.GetBackgroundProperty().SetOpacity(1);
             _minValueWidget.SetText("Test");
             _minValueWidget.VisibilityOff();
 
 
             // Probe widget
-            _probeWidget = new vtkMaxTextBackgroundWidget();
-            _probeWidget.SetRenderer(_selectionRenderer);
+            _probeWidget = new vtkMaxTextWidget();
             _probeWidget.SetInteractor(_renderWindowInteractor);
-            _probeWidget.GetBorderRepresentation().GetBorderProperty().SetColor(0, 0, 0);
+            _probeWidget.SetBorderColor(0, 0, 0);
             _probeWidget.SetTextProperty(CreateNewTextProperty());
             _probeWidget.SetPadding(5);
             _probeWidget.GetBackgroundProperty().SetColor(1, 1, 1);
-            _probeWidget.GetBackgroundProperty().SetOpacity(1);
-            _probeWidget.GetBorderWidget().SelectableOn();          // to prevent draging
-            _probeWidget.GetBorderWidget().ProcessEventsOff();      // to prevent cursor changes
             _probeWidget.VisibilityOff();
 
 
             // Add the actors to the scene
             //Hexahedron();
-            //AddSphere();
+            //Actor2D();
         }
 
         private void _style_KeyPressEvt(vtkObject sender, vtkObjectEventArgs e)
         {
-            if (_vtkMaxScalarBar.GetVisibility() == 1) _vtkMaxScalarBar.OnRenderWindowModified();
+            if (_scalarBarWidget.GetVisibility() == 1) _scalarBarWidget.OnRenderWindowModified();
         }
 
         private void InitializeScalarBar()
@@ -1679,14 +1667,17 @@ namespace vtkControl
             _lookupTable = vtkLookupTable.New();
 
             // Scalar bar
-            _vtkMaxScalarBar = new vtkMaxScalarBarWidget();
-            _vtkMaxScalarBar.SetInteractor(_renderWindowInteractor);
-            _vtkMaxScalarBar.SetRenderer(_selectionRenderer);
-            _vtkMaxScalarBar.SetTextProperty(CreateNewTextProperty());
-            _vtkMaxScalarBar.CreateLookupTable(GetColorTransferFunction(), 0, 1);
-            _vtkMaxScalarBar.SetLabelFormat("E3");
-            _vtkMaxScalarBar.SetPadding(15);
-            _vtkMaxScalarBar.VisibilityOn();
+            _scalarBarWidget = new vtkMaxScalarBarWidget();
+            _scalarBarWidget.SetInteractor(_renderWindowInteractor);
+            //_vtkMaxScalarBar.SetRenderer(_selectionRenderer);
+            _scalarBarWidget.SetTextProperty(CreateNewTextProperty());
+            _scalarBarWidget.CreateLookupTable(GetColorTransferFunction(), 0, 1);
+            _scalarBarWidget.SetLabelFormat("E3");
+            _scalarBarWidget.SetPadding(15);
+            _scalarBarWidget.VisibilityOn();
+            //_vtkMaxScalarBar.WidgetPosition = vtkMaxWidgetPosition.FromBottomLeft;
+
+            
         }
         private vtkTextProperty CreateNewTextProperty()
         {
@@ -3190,24 +3181,24 @@ namespace vtkControl
         {
             _colorSpectrum.DeepCopy(colorSpectrum);
 
-            _vtkMaxScalarBar.SetNumberOfColors(_colorSpectrum.NumberOfColors);  // for the scalar bar
-            _vtkMaxScalarBar.MinColor = colorSpectrum.MinColor;
-            _vtkMaxScalarBar.MaxColor = colorSpectrum.MaxColor;            
+            _scalarBarWidget.SetNumberOfColors(_colorSpectrum.NumberOfColors);  // for the scalar bar
+            _scalarBarWidget.MinColor = colorSpectrum.MinColor;
+            _scalarBarWidget.MaxColor = colorSpectrum.MaxColor;            
         }       
         public void SetChartNumberFormat(string numberFormat)
         {
-            _vtkMaxScalarBar.SetLabelFormat(numberFormat);
+            _scalarBarWidget.SetLabelFormat(numberFormat);
         }
         public void SetStatusBlock(string name, DateTime dateTime, float analysisTimeOrFrequency, float scaleFactor, DataFieldType fieldType)
         {
-            if (_statusBlock == null) return;
-            _statusBlock.Name = name;
-            _statusBlock.AnalysisTime = analysisTimeOrFrequency;
-            _statusBlock.DateTime = dateTime;
-            _statusBlock.DeformationScaleFactor = scaleFactor;
-            _statusBlock.FieldType = fieldType;
-            _statusBlock.AnimationScaleFactor = -1;
-            _statusBlock.VisibilityOn();            
+            if (_statusBlockWidget == null) return;
+            _statusBlockWidget.Name = name;
+            _statusBlockWidget.AnalysisTime = analysisTimeOrFrequency;
+            _statusBlockWidget.DateTime = dateTime;
+            _statusBlockWidget.DeformationScaleFactor = scaleFactor;
+            _statusBlockWidget.FieldType = fieldType;
+            _statusBlockWidget.AnimationScaleFactor = -1;
+            _statusBlockWidget.VisibilityOn();            
         }
         public void SetBackground(bool gradient, Color topColor, Color bottomColor, bool redraw)
         {
@@ -3255,11 +3246,11 @@ namespace vtkControl
                     _renderWindow.SetInteractor(_renderWindowInteractor);
 
                     _coorSys.SetInteractor(_renderWindowInteractor);
-                    _statusBlock.SetInteractor(_renderWindowInteractor);
+                    _statusBlockWidget.SetInteractor(_renderWindowInteractor);
                     _minValueWidget.SetInteractor(_renderWindowInteractor);
                     _maxValueWidget.SetInteractor(_renderWindowInteractor);
                     _probeWidget.SetInteractor(_renderWindowInteractor);
-                    _vtkMaxScalarBar.SetInteractor(_renderWindowInteractor);
+                    _scalarBarWidget.SetInteractor(_renderWindowInteractor);
 
                     if (_drawCoorSys) _coorSys.EnabledOn();
                     else _coorSys.EnabledOff();
@@ -3315,8 +3306,10 @@ namespace vtkControl
         private void UpdateScalarFormatting()
         {
             // Legend
-            _vtkMaxScalarBar.VisibilityOff();
+            _scalarBarWidget.VisibilityOff();
 
+            bool minVisible = _minValueWidget.GetVisibility() == 1;
+            bool maxVisible = _maxValueWidget.GetVisibility() == 1;
             _minValueWidget.VisibilityOff();
             _maxValueWidget.VisibilityOff();
 
@@ -3363,18 +3356,18 @@ namespace vtkControl
                 if (_animationFrameData != null && _animationFrameData.UseAllFrameData)   // animation from all frames
                 {
                     double[] animRange = _animationFrameData.AllFramesScalarRange;
-                    _vtkMaxScalarBar.CreateLookupTable(GetColorTransferFunction(), animRange[0], animRange[1]);
+                    _scalarBarWidget.CreateLookupTable(GetColorTransferFunction(), animRange[0], animRange[1]);
                     PrepareActorLookupTable(animRange[0], animRange[1]);
                 }
                 else // min max from current frame
                 {
-                    _vtkMaxScalarBar.CreateLookupTable(GetColorTransferFunction(), minNode.Value, maxNode.Value);
+                    _scalarBarWidget.CreateLookupTable(GetColorTransferFunction(), minNode.Value, maxNode.Value);
                     PrepareActorLookupTable(minNode.Value, maxNode.Value);
                 }
             }
             else  // Manual and min max from current frame
             {
-                _vtkMaxScalarBar.CreateLookupTable(GetColorTransferFunction(), minNode.Value, maxNode.Value, _colorSpectrum.MinUserValue, _colorSpectrum.MaxUserValue);
+                _scalarBarWidget.CreateLookupTable(GetColorTransferFunction(), minNode.Value, maxNode.Value, _colorSpectrum.MinUserValue, _colorSpectrum.MaxUserValue);
                 PrepareActorLookupTable(minNode.Value, maxNode.Value);
             }
 
@@ -3390,13 +3383,13 @@ namespace vtkControl
             }
 
             // Scalar bar
-            _vtkMaxScalarBar.VisibilityOn();
+            _scalarBarWidget.VisibilityOn();
            
             // Min Max widgets
-            string format = _vtkMaxScalarBar.GetLabelFormat();
+            string format = _scalarBarWidget.GetLabelFormat();
 
             double[] coor;
-            if (_minValueWidget.Enabled && minNode != null)
+            if (minVisible)
             {
                 _minValueWidget.VisibilityOn();
                 coor = minNode.Coor;
@@ -3404,7 +3397,7 @@ namespace vtkControl
                 _minValueWidget.SetAnchorPoint(coor[0], coor[1], coor[2]);
             }
 
-            if (_maxValueWidget.Enabled && maxNode != null)
+            if (maxVisible)
             {
                 _maxValueWidget.VisibilityOn();
                 coor = maxNode.Coor;
@@ -3465,10 +3458,10 @@ namespace vtkControl
 
             //return;
 
-            if (_statusBlock != null && _animationFrameData != null)
+            if (_statusBlockWidget != null && _animationFrameData != null)
             {
-                _statusBlock.AnalysisTime = _animationFrameData.Time[frameNumber];
-                _statusBlock.AnimationScaleFactor = _animationFrameData.ScaleFactor[frameNumber];
+                _statusBlockWidget.AnalysisTime = _animationFrameData.Time[frameNumber];
+                _statusBlockWidget.AnimationScaleFactor = _animationFrameData.ScaleFactor[frameNumber];
             }
 
             foreach (var entry in _actors)
@@ -3600,12 +3593,16 @@ namespace vtkControl
             _propPicker.InitializePickList();
             _animationFrameData = null;
 
-            if (_vtkMaxScalarBar != null)
+            if (_scalarBarWidget != null)
             {
-                _vtkMaxScalarBar.VisibilityOff();
-                _vtkMaxScalarBar.SetTopLeftPosition(20, 20);
+                _scalarBarWidget.VisibilityOff();
+                _scalarBarWidget.SetTopLeftPosition(20, 20);
             }
-            if (_statusBlock != null) _statusBlock.VisibilityOff();
+            if (_statusBlockWidget != null)
+            {
+                _statusBlockWidget.VisibilityOff();
+                _statusBlockWidget.SetPosition(200, 20);
+            }
             if (_minValueWidget != null) _minValueWidget.VisibilityOff();
             if (_maxValueWidget != null) _maxValueWidget.VisibilityOff();
             if (_style != null) _style.Reset();
@@ -4126,21 +4123,6 @@ namespace vtkControl
 
             captionWidget.On();
         }
-
-        private void vtkControl_KeyDown(object sender, KeyEventArgs e)
-        {
-            int i = 0;
-        }
-
-        private void vtkControl_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            int i = 0;
-        }
-
-
-
-
-
 
 
     }

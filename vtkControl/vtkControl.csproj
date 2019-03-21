@@ -117,12 +117,13 @@
     <Compile Include="vtkMax\Actor\vtkMaxExtreemeNode.cs" />
     <Compile Include="vtkMax\Actor\vtkMaxActorAnimationData.cs" />
     <Compile Include="vtkMax\ColorSpectrum\vtkMaxColorSpectrum.cs" />
-    <Compile Include="vtkMax\Widget\vtkMaxCaptionWidget.cs" />
+    <Compile Include="vtkMax\Widget\DataFieldType.cs" />
+    <Compile Include="vtkMax\Widget\vtkMaxBorderWidget.cs" />
     <Compile Include="vtkMax\Actor\vtkMaxActorData.cs" />
     <Compile Include="vtkMax\Widget\vtkMaxScalarBarWidget.cs" />
-    <Compile Include="vtkMax\Widget\vtkMaxTextBackgroundWidget.cs" />
-    <Compile Include="vtkMax\Widget\vtkMaxTextWidget.cs" />
     <Compile Include="vtkMax\Widget\vtkMaxStatusBlock.cs" />
+    <Compile Include="vtkMax\Widget\vtkMaxTextWidget.cs" />
+    <Compile Include="vtkMax\Widget\vtkMaxTextWithArrowWidget.cs" />
     <Service Include="{94E38DFF-614B-4cbd-B67C-F211BB35CE8B}" />
   </ItemGroup>
   <ItemGroup>

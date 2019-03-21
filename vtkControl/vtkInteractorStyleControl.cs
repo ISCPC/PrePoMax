@@ -91,7 +91,6 @@ namespace vtkControl
         }
 
 
-
         private double _motionFactor;
         private double[] _rotationCenterWorld;
         private double[] _rotationCenterDisplay;
@@ -112,6 +111,8 @@ namespace vtkControl
         protected vtkPolyDataMapper2D _backgroundMapper;
         protected vtkActor2D _backgroundActor;
         protected vtkActor2D _borderActor;
+
+        protected List<vtkMaxBorderWidget> _widgets;
 
         
         // Properties                                                                                                               
@@ -141,8 +142,7 @@ namespace vtkControl
             _timer.Tick += timer_Tick;
 
             _rubberBandEnabled = true;
-
-            this.KeyPressActivationOff();
+            _widgets = new List<vtkMaxBorderWidget>();
 
             this.LeftButtonPressEvt += vtkInteractorStyleControl_LeftButtonPressEvt;
             this.LeftButtonReleaseEvt += vtkInteractorStyleControl_LeftButtonReleaseEvt;
@@ -153,61 +153,8 @@ namespace vtkControl
             this.MouseMoveEvt += vtkInteractorStyleControl_MouseMoveEvt;
             this.MouseWheelForwardEvt += vtkInteractorStyleControl_MouseWheelForwardEvt;
             this.MouseWheelBackwardEvt += vtkInteractorStyleControl_MouseWheelBackwardEvt;
-            this.CharEvt += vtkInteractorStyleControl_CharEvt;
             this.KeyPressEvt += VtkInteractorStyleControl_KeyPressEvt;
         }
-
-        private void VtkInteractorStyleControl_KeyPressEvt(vtkObject sender, vtkObjectEventArgs e)
-        {
-            vtkRenderer renderer = this.GetCurrentRenderer();
-            if (renderer == null) return;
-
-            vtkRenderWindowInteractor rwi = this.GetInteractor();
-            sbyte key = rwi.GetKeyCode();
-
-            if (key >= 37 && key <= 40)
-            {
-                UpdateRotationCenterDisplay();
-
-                double delta = 5;
-
-                rwi.Modified();
-
-                if (key == 37) Rotate(+delta, 0);       // left
-                else if (key == 39) Rotate(-delta, 0);  // right
-                else if (key == 38) Rotate(0, -delta);  // up
-                else if (key == 40) Rotate(0, +delta);  // down
-
-                rwi.Modified();
-                rwi.Render();
-            }
-            else if (key == 27) // Escape
-            {
-                // When making area selection, Esc key cancels it
-
-                _selectionCanceled = true;
-                _clickPos = null;
-                //_leftMouseButtonPressed = false;
-                _rubberBandSelection = false;
-
-                _backgroundActor.VisibilityOff();
-                _borderActor.VisibilityOff();
-
-                ClearCurrentMouseSelection?.Invoke();
-
-                rwi.Render();
-            }
-        }
-
-        void timer_Tick(object sender, EventArgs e)
-        {
-            _timer.Stop();
-            this.FindPokedRenderer(_x, _y);
-            this.Select(_x, _y);
-        }
-
-
-        // Static constructor                                                                                                       
         new public static vtkInteractorStyleControl New()
         {
             return new vtkInteractorStyleControl();
@@ -250,6 +197,12 @@ namespace vtkControl
             vtkRenderer renderer = this.GetCurrentRenderer();
             if (renderer == null) return;
 
+            // Widgets - left pressed
+            foreach (vtkMaxBorderWidget widget in _widgets)
+            {
+                if (widget.LeftButtonPress(x, y)) return;
+            }
+
             _clickPos = rwi.GetEventPosition();     // set global variable
 
             if (_selection)
@@ -273,6 +226,9 @@ namespace vtkControl
         }
         void vtkInteractorStyleControl_LeftButtonReleaseEvt(vtkObject sender, vtkObjectEventArgs e)
         {
+            // Widgets
+            foreach (vtkMaxBorderWidget widget in _widgets) widget.LeftButtonRelease();
+
             if (_selection)
             {
                 if (!_selectionCanceled)
@@ -417,11 +373,18 @@ namespace vtkControl
         
         void vtkInteractorStyleControl_MouseMoveEvt(vtkObject sender, vtkObjectEventArgs e)
         {
-            vtkRenderer renderer;
             _x = this.GetInteractor().GetEventPosition()[0];
             _y = this.GetInteractor().GetEventPosition()[1];
 
-            //
+            // Widgets - Move
+            foreach (vtkMaxBorderWidget widget in _widgets)
+            {
+                if (widget.MouseMove(_x, _y))
+                {
+                    this.GetInteractor().Render();
+                    return;
+                }
+            }
 
             switch (this.GetState())
             {
@@ -439,16 +402,14 @@ namespace vtkControl
                             {
                                 _rubberBandSelection = true;
                             }
-
                             if (_rubberBandSelection) DrawRubberBandSelection(_x, _y);
                         }
                     }
                     break;
                 case VTKIS_ROTATE:
                     this.FindPokedRenderer(_x, _y);
-
-                    renderer = this.GetCurrentRenderer();
-                    vtkCamera camera = renderer.GetActiveCamera();
+                    //renderer = this.GetCurrentRenderer();
+                    //vtkCamera camera = renderer.GetActiveCamera();
                     //double[] focalPos1 = camera.GetFocalPoint();
                     this.Rotate();
                     this.InvokeEvent((uint)EventIds.InteractionEvent, IntPtr.Zero);
@@ -464,17 +425,17 @@ namespace vtkControl
                     this.InvokeEvent((uint)EventIds.InteractionEvent, IntPtr.Zero);
                     break;
 
-                case VTKIS_DOLLY:
-                    this.FindPokedRenderer(_x, _y);
-                    this.Dolly();
-                    this.InvokeEvent((uint)EventIds.InteractionEvent, IntPtr.Zero);
-                    break;
+                //case VTKIS_DOLLY:
+                //    this.FindPokedRenderer(_x, _y);
+                //    this.Dolly();
+                //    this.InvokeEvent((uint)EventIds.InteractionEvent, IntPtr.Zero);
+                //    break;
 
-                case VTKIS_SPIN:
-                    this.FindPokedRenderer(_x, _y);
-                    this.Spin();
-                    this.InvokeEvent((uint)EventIds.InteractionEvent, IntPtr.Zero);
-                    break;
+                //case VTKIS_SPIN:
+                //    this.FindPokedRenderer(_x, _y);
+                //    this.Spin();
+                //    this.InvokeEvent((uint)EventIds.InteractionEvent, IntPtr.Zero);
+                //    break;
             }
         }
         
@@ -496,10 +457,15 @@ namespace vtkControl
 
                 PanCamera(camera, worldPosAfter, worldPos);
 
+                // Widgets - mouse wheel scrolled
+                foreach (vtkMaxBorderWidget widget in _widgets)
+                {
+                    widget.MouseWheelScrolled();
+                }
+
                 this.GetInteractor().Modified();
                 this.GetInteractor().Render();
-            }
-            
+            }            
         }
         void vtkInteractorStyleControl_MouseWheelBackwardEvt(vtkObject sender, vtkObjectEventArgs e)
         {
@@ -519,17 +485,57 @@ namespace vtkControl
 
                 PanCamera(camera, worldPosAfter, worldPos);
 
+                // Widgets - mouse wheel scrolled
+                foreach (vtkMaxBorderWidget widget in _widgets)
+                {
+                    widget.MouseWheelScrolled();
+                }
+
                 this.GetInteractor().Modified();
-                this.GetInteractor().Render();
+                this.GetInteractor().Render();                
             }
         }
 
-        void vtkInteractorStyleControl_CharEvt(vtkObject sender, vtkObjectEventArgs e)
+        private void VtkInteractorStyleControl_KeyPressEvt(vtkObject sender, vtkObjectEventArgs e)
         {
-            vtkRenderWindowInteractor rwi = this.GetInteractor();
-            string key = rwi.GetKeySym();
+            vtkRenderer renderer = this.GetCurrentRenderer();
+            if (renderer == null) return;
 
-           
+            vtkRenderWindowInteractor rwi = this.GetInteractor();
+            sbyte key = rwi.GetKeyCode();
+
+            if (key >= 37 && key <= 40)
+            {
+                UpdateRotationCenterDisplay();
+
+                double delta = 5;
+
+                rwi.Modified();
+
+                if (key == 37) Rotate(+delta, 0);       // left
+                else if (key == 39) Rotate(-delta, 0);  // right
+                else if (key == 38) Rotate(0, -delta);  // up
+                else if (key == 40) Rotate(0, +delta);  // down
+
+                rwi.Modified();
+                rwi.Render();
+            }
+            else if (key == 27) // Escape
+            {
+                // When making area selection, Esc key cancels it
+
+                _selectionCanceled = true;
+                _clickPos = null;
+                //_leftMouseButtonPressed = false;
+                _rubberBandSelection = false;
+
+                _backgroundActor.VisibilityOff();
+                _borderActor.VisibilityOff();
+
+                ClearCurrentMouseSelection?.Invoke();
+
+                rwi.Render();
+            }
         }
 
 
@@ -546,6 +552,18 @@ namespace vtkControl
 
 
         // Methods                                                                                                                  
+        void timer_Tick(object sender, EventArgs e)
+        {
+            _timer.Stop();
+            this.FindPokedRenderer(_x, _y);
+            this.Select(_x, _y);
+        }
+
+        public void AddVtkMaxWidget(vtkMaxBorderWidget widget)
+        {
+            _widgets.Add(widget);
+        }
+
         public void Reset()
         {
             _rotationCenterWorld = null;
@@ -586,6 +604,38 @@ namespace vtkControl
             System.Runtime.InteropServices.Marshal.Copy(posOutPtr, worldPos, 0, 3);
             return worldPos;
         }
+       
+        public override void Pan()
+        {
+            vtkRenderer renderer = this.GetCurrentRenderer();
+            if (renderer == null) return;
+         
+            vtkRenderWindowInteractor rwi = this.GetInteractor();
+            int[] clickPos = rwi.GetEventPosition();
+
+            double[] newPickPoint;
+            double[] oldPickPoint;
+
+            newPickPoint = this.DisplayToWorld(renderer, new double[] { clickPos[0], clickPos[1] });
+            oldPickPoint = DisplayToWorld(renderer, new double[] { rwi.GetLastEventPosition()[0], rwi.GetLastEventPosition()[1] });
+
+            vtkCamera camera = renderer.GetActiveCamera();
+            PanCamera(camera, newPickPoint, oldPickPoint);
+
+            if (rwi.GetLightFollowCamera() == 1) renderer.UpdateLightsGeometryToFollowCamera();
+
+            // Widgets - Pan
+            foreach (vtkMaxBorderWidget widget in _widgets)
+            {
+                // compute the delta
+                int dx = clickPos[0] - rwi.GetLastEventPosition()[0];
+                int dy = clickPos[1] - rwi.GetLastEventPosition()[1];
+
+                widget.MousePan(dx, dy);
+            }
+
+            rwi.Render();
+        }
         private void PanCamera(vtkCamera camera, double[] posStart, double[] posEnd)
         {
             double[] motionVector = new double[3];
@@ -602,7 +652,8 @@ namespace vtkControl
 
             AdjustCameraDistanceAndClipping();
         }
-        override public void Rotate()
+
+        public override void Rotate()
         {
             vtkRenderer renderer = this.GetCurrentRenderer();
             if (renderer == null) return;
@@ -655,9 +706,17 @@ namespace vtkControl
             if (this.GetAutoAdjustCameraClippingRange() == 1) ResetClippingRange();
             if (rwi.GetLightFollowCamera() == 1) renderer.UpdateLightsGeometryToFollowCamera();
 
+            // Widgets - Rotate
+            foreach (vtkMaxBorderWidget widget in _widgets)
+            {
+                widget.MouseRotate(azimuthAngle, ElevationAngle);
+            }
+
             rwi.Modified();
             rwi.Render();
         }
+
+
         private void Select(int x, int y)
         {
             if (PointPickedOnMouseMoveEvt != null)

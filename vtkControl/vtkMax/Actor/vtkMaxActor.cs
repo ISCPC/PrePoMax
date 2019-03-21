@@ -739,7 +739,8 @@ namespace vtkControl
                     (_elementEdges.GetMapper().GetInput() as vtkPointSet).SetPoints(_animationData[frameNumber].Points);
 
                     // normals
-                    if (_animationData[frameNumber].PointNormals == null) _animationData[frameNumber].PointNormals = ComputeNormals(pointSet);
+                    if (pointSet.GetPointData().GetNormals() != null && _animationData[frameNumber].PointNormals == null)
+                        _animationData[frameNumber].PointNormals = ComputeNormals(pointSet);
                     pointSet.GetPointData().SetNormals(_animationData[frameNumber].PointNormals);
                 }
                 // actor edges points

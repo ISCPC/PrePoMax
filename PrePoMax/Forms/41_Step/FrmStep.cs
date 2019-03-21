@@ -195,7 +195,7 @@ namespace PrePoMax.Forms
             bool addBuckle = false;
             bool cannotAdd = false;
 
-            if (prevOrLastStep is StaticStep) addStatic = true;
+            if (prevOrLastStep == null || prevOrLastStep is StaticStep) addStatic = true;
             if (!(prevOrLastStep is FrequencyStep)) addFrequency = true;
             if (!(prevOrLastStep is BuckleStep)) addBuckle = true;
 
@@ -251,9 +251,9 @@ namespace PrePoMax.Forms
             else
             {
                 newStep = prevOrLastStep.DeepClone();
-                newStep.FieldOutputs.Clear();
-                newStep.BoundaryConditions.Clear();
-                newStep.Loads.Clear();
+                //newStep.FieldOutputs.Clear();
+                newStep.BoundaryConditions.Clear(); // this gets added at the step collection
+                newStep.Loads.Clear();              // this gets added at the step collection
                 newStep.Name = GetStepName();
             }
             return newStep;

@@ -5,16 +5,17 @@ using System.Text;
 using System.Threading.Tasks;
 using Kitware.VTK;
 
+
 namespace vtkControl
 {
-    class vtkMaxScalarBarWidget : vtkMaxTextBackgroundWidget
+    class vtkMaxScalarBarWidget : vtkMaxTextWidget
     {
         // Variables                                                                                                                
         protected vtkPolyDataMapper2D _scalarBarBorderMapper;
         protected vtkActor2D _scalarBarBorderActor;
 
-        protected vtkPolyDataMapper2D _scalarBarBackgroundMapper;
-        protected vtkActor2D _scalarBarBackgroundActor;
+        protected vtkPolyDataMapper2D _scalarBarColorsMapper;
+        protected vtkActor2D _scalarBarColorsActor;
 
         protected vtkLookupTable _lookupTable;
 
@@ -35,10 +36,9 @@ namespace vtkControl
         private System.Drawing.Color _maxColor;
 
 
-        // Properties
+        // Properties                                                                                                               
         public System.Drawing.Color MinColor { get { return _minColor; } set { _minColor = value; } }
         public System.Drawing.Color MaxColor { get { return _maxColor; } set { _maxColor = value; } }
-
 
         // Constructors                                                                                                             
         public vtkMaxScalarBarWidget()
@@ -46,7 +46,7 @@ namespace vtkControl
             _backgroundVisibility = false;
             _borderVisibility = false;
 
-            _borderRepresentation.GetBorderProperty().SetColor(0, 0, 0);
+            SetBorderColor(0, 0, 0);
 
             InitializeFooter();
             InitializeLabels();
@@ -72,12 +72,11 @@ namespace vtkControl
             // Actor
             _textActorFooter = vtkActor2D.New();
             _textActorFooter.SetMapper(_textMapperFooter);
-            _textActorFooter.VisibilityOff();
 
             // Set relative text position
             _textActorFooter.GetPositionCoordinate().SetCoordinateSystemToDisplay();  // set offsets in pixels
             _textActorFooter.GetPositionCoordinate().SetValue(_padding, _padding);
-            _textActorFooter.GetPositionCoordinate().SetReferenceCoordinate(_borderRepresentation.GetPositionCoordinate());
+            _textActorFooter.GetPositionCoordinate().SetReferenceCoordinate(_positionCoordinate);
         }
         private void InitializeLabels()
         {
@@ -89,11 +88,10 @@ namespace vtkControl
             // Actor
             _textActorLabel = vtkActor2D.New();
             _textActorLabel.SetMapper(_textMapperLabel);
-            _textActorLabel.VisibilityOff();
 
             // Set relative text position
             _textActorLabel.GetPositionCoordinate().SetCoordinateSystemToDisplay();  // set offsets in pixels
-            _textActorLabel.GetPositionCoordinate().SetReferenceCoordinate(_borderRepresentation.GetPositionCoordinate());
+            _textActorLabel.GetPositionCoordinate().SetReferenceCoordinate(_positionCoordinate);
         }
         private void InitializeBar()
         {
@@ -111,10 +109,9 @@ namespace vtkControl
             _scalarBarBorderActor = vtkActor2D.New();
             _scalarBarBorderActor.SetMapper(_scalarBarBorderMapper);
             _scalarBarBorderActor.SetProperty(scalarBarProperty);
-            _scalarBarBorderActor.VisibilityOff();
 
             _scalarBarBorderActor.GetPositionCoordinate().SetCoordinateSystemToDisplay();
-            _scalarBarBorderActor.GetPositionCoordinate().SetReferenceCoordinate(_borderRepresentation.GetPositionCoordinate());
+            _scalarBarBorderActor.GetPositionCoordinate().SetReferenceCoordinate(_positionCoordinate);
 
 
             // Bar filled                                                                          
@@ -122,16 +119,15 @@ namespace vtkControl
             scalarBarPolyData.SetPoints(vtkPoints.New());
             scalarBarPolyData.SetPolys(vtkCellArray.New());
 
-            _scalarBarBackgroundMapper = vtkPolyDataMapper2D.New();
-            _scalarBarBackgroundMapper.SetInput(scalarBarPolyData);
+            _scalarBarColorsMapper = vtkPolyDataMapper2D.New();
+            _scalarBarColorsMapper.SetInput(scalarBarPolyData);
 
-            _scalarBarBackgroundActor = vtkActor2D.New();
-            _scalarBarBackgroundActor.SetMapper(_scalarBarBackgroundMapper);
-            _scalarBarBackgroundActor.SetProperty(scalarBarProperty);
-            _scalarBarBackgroundActor.VisibilityOff();
+            _scalarBarColorsActor = vtkActor2D.New();
+            _scalarBarColorsActor.SetMapper(_scalarBarColorsMapper);
+            _scalarBarColorsActor.SetProperty(scalarBarProperty);
 
-            _scalarBarBackgroundActor.GetPositionCoordinate().SetCoordinateSystemToDisplay();
-            _scalarBarBackgroundActor.GetPositionCoordinate().SetReferenceCoordinate(_borderRepresentation.GetPositionCoordinate());
+            _scalarBarColorsActor.GetPositionCoordinate().SetCoordinateSystemToDisplay();
+            _scalarBarColorsActor.GetPositionCoordinate().SetReferenceCoordinate(_positionCoordinate);
         }
 
         private void GenerateGeometry()
@@ -163,7 +159,7 @@ namespace vtkControl
             // Bar lines
             double offsetY = -lineOffset + 2.0 / 7 * sizeOfOne[1];
             GenerateBarBorders(_padding, offsetY + size1[1], boxWidth, boxHeight, verticalLineLength);
-            GenerateBarBackground(_padding, offsetY + size1[1], boxWidth, boxHeight, verticalLineLength);
+            GenerateBarColors(_padding, offsetY + size1[1], boxWidth, boxHeight, verticalLineLength);
 
             // Text
             double[] size3 = GenerateText(_padding, size2[1]);
@@ -172,19 +168,8 @@ namespace vtkControl
             if (size2[0] > maxX) maxX = size2[0];
             if (size3[0] > maxX) maxX = size3[0];
 
-            _borderRepresentation.GetPosition2Coordinate().SetValue(maxX + _padding, size3[1] + _padding);
-            _borderRepresentation.Modified();
-
-
-            // apply the size to the border and background
-            double[] borderSize = _borderRepresentation.GetPosition2();
-
-            vtkPoints backgroundPoints = _backgroundMapper.GetInput().GetPoints();
-
-            backgroundPoints.SetPoint(1, borderSize[0], 0.0, 0.0);
-            backgroundPoints.SetPoint(2, borderSize[0], borderSize[1], 0.0);
-            backgroundPoints.SetPoint(3, 0.0, borderSize[1], 0.0);
-            backgroundPoints.Modified();
+            _size[0] = maxX + _padding;
+            _size[1] = size3[1] + _padding;
         }
         private double[] GenerateFooter(double offsetX, double offsetY)
         {
@@ -202,7 +187,7 @@ namespace vtkControl
             if (_addMaxColor) _numberOfAllLabels++;
 
             double[] minMaxRange = _lookupTable.GetTableRange();    // min, max
-            double[] labelsRange = new double[] { minMaxRange[1], minMaxRange[0] };            
+            double[] labelsRange = new double[] { minMaxRange[1], minMaxRange[0] };
 
             if (_addMaxColor) labelsRange[0] = _maxUserValue;
             if (_addMinColor) labelsRange[1] = _minUserValue;
@@ -329,7 +314,7 @@ namespace vtkControl
 
             _scalarBarBorderActor.GetPositionCoordinate().SetValue(offsetX, offsetY);
         }
-        private void GenerateBarBackground(double offsetX, double offsetY, double boxWidth, double boxHeight, double verticalLineLength)
+        private void GenerateBarColors(double offsetX, double offsetY, double boxWidth, double boxHeight, double verticalLineLength)
         {
             vtkPoints scalarBarPoints = vtkPoints.New();
             vtkCellArray scalarBarPolygons = vtkCellArray.New();
@@ -353,7 +338,7 @@ namespace vtkControl
                 h += boxHeight;
                 scalarBarPoints.SetPoint(4 * i + 2, boxWidth, h, 0);
                 scalarBarPoints.SetPoint(4 * i + 3, 0, h, 0);
-                
+
 
                 scalarBarPolygons.InsertNextCell(4);
                 scalarBarPolygons.InsertCellPoint(4 * i + 0);
@@ -368,18 +353,18 @@ namespace vtkControl
                 scalars.SetValue(4 * i + 3, value);
             }
 
-            vtkPolyData scalarBarPoly = _scalarBarBackgroundMapper.GetInput();
+            vtkPolyData scalarBarPoly = _scalarBarColorsMapper.GetInput();
             scalarBarPoly.SetPoints(scalarBarPoints);
             scalarBarPoly.SetPolys(scalarBarPolygons);
 
             // Set scalars
-            _scalarBarBackgroundMapper.GetInput().GetPointData().SetScalars(scalars);
+            _scalarBarColorsMapper.GetInput().GetPointData().SetScalars(scalars);
 
             // Edit actors mapper
-            _scalarBarBackgroundMapper.SetScalarRange(0, 1);
-            _scalarBarBackgroundMapper.SetLookupTable(_lookupTable);
+            _scalarBarColorsMapper.SetScalarRange(0, 1);
+            _scalarBarColorsMapper.SetLookupTable(_lookupTable);
 
-            _scalarBarBackgroundActor.GetPositionCoordinate().SetValue(offsetX, offsetY);
+            _scalarBarColorsActor.GetPositionCoordinate().SetValue(offsetX, offsetY);
         }
         private double[] GenerateText(double offsetX, double offsetY)
         {
@@ -392,47 +377,51 @@ namespace vtkControl
         public override void OnSizeChanged()
         {
             GenerateGeometry();
+            OnMovedOrSizeChanged();
         }
 
         // Public methods                                                                                                           
         public override void VisibilityOn()
         {
-            base.VisibilityOn();
+            if (_visibility == false)
+            {
+                base.VisibilityOn();
 
-            if (_textActorFooter != null) _textActorFooter.VisibilityOn();
-            if (_textActorLabel != null) _textActorLabel.VisibilityOn();
-            if (_scalarBarBorderActor != null) _scalarBarBorderActor.VisibilityOn();
-            if (_scalarBarBackgroundActor != null) _scalarBarBackgroundActor.VisibilityOn();
+                if (_textActorFooter != null) _renderer.AddActor(_textActorFooter);
+                if (_textActorLabel != null) _renderer.AddActor(_textActorLabel);
+                if (_scalarBarColorsActor != null) _renderer.AddActor(_scalarBarColorsActor);
+                if (_scalarBarBorderActor != null) _renderer.AddActor(_scalarBarBorderActor);
+            }
         }
         public override void VisibilityOff()
         {
-            base.VisibilityOff();
+            if (_visibility == true)
+            {
+                base.VisibilityOff();
 
-            if (_textActorFooter != null) _textActorFooter.VisibilityOff();
-            if (_textActorLabel != null) _textActorLabel.VisibilityOff();
-            if (_scalarBarBorderActor != null) _scalarBarBorderActor.VisibilityOff();
-            if (_scalarBarBackgroundActor != null) _scalarBarBackgroundActor.VisibilityOff();
+                if (_textActorFooter != null) _renderer.RemoveActor(_textActorFooter);
+                if (_textActorLabel != null) _renderer.RemoveActor(_textActorLabel);
+                if (_scalarBarBorderActor != null) _renderer.RemoveActor(_scalarBarBorderActor);
+                if (_scalarBarColorsActor != null) _renderer.RemoveActor(_scalarBarColorsActor);
+            }
         }
         public override void SetText(string text)
         {
             base.SetText(text);
-
-            GenerateGeometry();
+            OnSizeChanged();
         }
 
-        public void SetTopLeftPosition(int x, int y)
-        {
-            int[] windowSize = _renderer.GetSize();
-            double[] size = _borderRepresentation.GetPosition2Coordinate().GetValue();
-
-            double[] position = new double[] {x, windowSize[1] - y - size[1] };
-            _renderer.DisplayToNormalizedDisplay(ref position[0], ref position[1]);
-
-            SetPosition(position[0], position[1]);
-        }
-
+        
 
         // Public setters                                                                                                           
+        public override void SetInteractor(vtkRenderWindowInteractor renderWindowInteractor)
+        {
+            base.SetInteractor(renderWindowInteractor);
+            _renderer.AddActor(_textActorFooter);
+            _renderer.AddActor(_textActorLabel);
+            _renderer.AddActor(_scalarBarColorsActor);
+            _renderer.AddActor(_scalarBarBorderActor);
+        }
         public void SetNumberOfColors(int numOfColors)
         {
             if (_numberOfColors != numOfColors)
@@ -448,23 +437,6 @@ namespace vtkControl
                 _labelFormat = labelFormat;
                 OnSizeChanged();
             }
-        }
-        public override void SetRenderer(vtkRenderer renderer)
-        {
-            // remove actors from old renderers
-            if (_renderer != null && _textActorFooter != null) _renderer.RemoveActor(_textActorFooter);
-            if (_renderer != null && _textActorLabel != null) _renderer.RemoveActor(_textActorLabel);
-            if (_renderer != null && _scalarBarBorderActor != null) _renderer.RemoveActor(_scalarBarBorderActor);
-            if (_renderer != null && _scalarBarBackgroundActor != null) _renderer.RemoveActor(_scalarBarBackgroundActor);
-
-            base.SetRenderer(renderer);
-
-            _renderer.AddActor(_scalarBarBackgroundActor);
-            _renderer.AddActor(_scalarBarBorderActor);
-            _renderer.AddActor(_textActorFooter);
-            _renderer.AddActor(_textActorLabel);
-           
-            GenerateGeometry();
         }
 
         public void CreateLookupTable(vtkColorTransferFunction ctf, double scalarRangeMin, double scalarRangeMax)

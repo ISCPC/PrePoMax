@@ -5,9 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using Kitware.VTK;
 
+
 namespace vtkControl
 {
-    class vtkMaxCaptionWidget : vtkMaxTextBackgroundWidget
+    class vtkMaxTextWithArrowWidget : vtkMaxTextWidget
     {
         // Variables                                                                                                                
         private bool _anchorAlreadySet;
@@ -24,31 +25,21 @@ namespace vtkControl
 
         protected bool _enabled;
 
-        // Variables                                                                                                                
-        public bool Visibility
-        {
-            get { return base.GetVisibility() == 1 ? true : false; }
-            set
-            {
-                if (value) VisibilityOn();
-                else VisibilityOff();
-            }
-        }
+        // Enabled is used to determine if 
         public bool Enabled
         {
             get { return _enabled; }
             set { _enabled = value; }
         }
 
-
         // Constructors                                                                                                             
-        public vtkMaxCaptionWidget()
+        public vtkMaxTextWithArrowWidget()
         {
             _enabled = false;
             _anchorAlreadySet = false;
-            _scaleBySectors = false;
+            _scaleBySectors = true;
 
-            vtkPoints pts;
+            
             vtkDoubleArray vecs;
 
             _worldAnchorPoint = vtkCoordinate.New();
@@ -58,13 +49,14 @@ namespace vtkControl
             _worldPositionPoint = vtkCoordinate.New();
             _worldPositionPoint.SetCoordinateSystemToWorld();
 
-            // This is the leader (line) from the attachment point to the caption
+            // Leader - This is the leader (line) from the attachment point to the caption                              
             _leaderPolyData = vtkPolyData.New();
-            pts = vtkPoints.New();
+            vtkPoints pts = vtkPoints.New();
             pts.SetNumberOfPoints(2);
             pts.SetPoint(0, 0, 0, 0);
             pts.SetPoint(0, 100, 100, 0);
             _leaderPolyData.SetPoints(pts);
+
             vtkCellArray leader = vtkCellArray.New();
             leader.InsertNextCell(2);
             leader.InsertCellPoint(0);
@@ -79,21 +71,22 @@ namespace vtkControl
             _leaderActor2D.SetMapper(_leaderMapper2D);
             _leaderActor2D.GetProperty().SetColor(0, 0, 0);
 
-            // Arrow
+
+            // Arrow                                                                                                    
             vtkArrowSource arrowSource = vtkArrowSource.New();
             arrowSource.SetTipLength(1);
             arrowSource.SetTipRadius(0.2);
             arrowSource.SetShaftRadius(0.3);
 
             vtkTransform transform = vtkTransform.New();
-            transform.Translate(-1, 0, 0);
+            transform.Translate(-1, 0, 0); // so that tip is at the coordinates point
 
             // Transform the polydata
             vtkTransformPolyDataFilter translatedArrow = vtkTransformPolyDataFilter.New();
             translatedArrow.SetTransform(transform);
             translatedArrow.SetInputConnection(arrowSource.GetOutputPort());
 
-            // This is for glyphing the head of the leader: A single point with a vector for glyph orientation
+            // Glyph - This is for glyphing the head of the leader: A single point with a vector for glyph orientation  
             _headPolyData = vtkPolyData.New();
             pts = vtkPoints.New();
             pts.SetNumberOfPoints(1);
@@ -119,16 +112,12 @@ namespace vtkControl
             _headActor2D = vtkActor2D.New();
             _headActor2D.SetMapper(arrowMapper2D);
             _headActor2D.GetProperty().SetColor(0, 0, 0);
-
-            // Set initial position out of view
-            _borderRepresentation.GetPositionCoordinate().SetValue(-1, -1);
         }
-
 
         // Private methods                                                                                                          
         private void RecomputeLeader()
         {
-            if (_positionInPixels == null) return;      // if borederRepresentation is changed before _positionInPixels is initialized
+            if (_position == null) return;              // if border is changed before _positionInPixels is initialized
 
             double[] end = RecomputeLeaderEnd();        // this is arrow head
             double[] start = RecomputeLeaderStart();    // this is the start of the arrow
@@ -139,16 +128,15 @@ namespace vtkControl
             vtkPoints pts = _leaderPolyData.GetPoints();
 
             double[] head = pts.GetPoint(1);
-            double[] size = _borderRepresentation.GetPosition2Coordinate().GetValue();
             double[] start;
-            if (head[0] < _positionInPixels[0])                     // head is left from border
-                start = new double[] { _positionInPixels[0], _positionInPixels[1] + size[1] / 2 };
-            else if (head[0] > _positionInPixels[0] + size[0])      // head is right from border
-                start = new double[] { _positionInPixels[0] + size[0], _positionInPixels[1] + size[1] / 2 };
-            else if (head[1] < _positionInPixels[1])                // head is below the border
-                start = new double[] { _positionInPixels[0] + size[0] / 2, _positionInPixels[1] };
-            else                                                    // head is over the border
-                start = new double[] { _positionInPixels[0] + size[0] / 2, _positionInPixels[1] + size[1] };
+            if (head[0] < _position[0])                         // head is left from border
+                start = new double[] { _position[0], _position[1] + _size[1] / 2 };
+            else if (head[0] > _position[0] + _size[0])         // head is right from border
+                start = new double[] { _position[0] + _size[0], _position[1] + _size[1] / 2 };
+            else if (head[1] < _position[1])                    // head is below the border
+                start = new double[] { _position[0] + _size[0] / 2, _position[1] };
+            else                                                // head is over the border
+                start = new double[] { _position[0] + _size[0] / 2, _position[1] + _size[1] };
 
             pts.SetPoint(0, start[0], start[1], 0);
 
@@ -191,96 +179,94 @@ namespace vtkControl
             return tmp;
         }
 
-
         // Public methods                                                                                                           
-        public override void OnBorderRepresentationModified()
-        {
-            base.OnBorderRepresentationModified();
-
-            vtkInteractorStyle style = (vtkInteractorStyle)_borderWidget.GetInteractor().GetInteractorStyle();
-            if (style.GetState() == vtkInteractorStyleControl.VTKIS_NONE)   // only draging or zoom
-                SetWorldPositionFromPosition();
-
-            RecomputeLeader();
-        }
-        public override void OnRenderWindowInteractorModified()
-        {
-            base.OnRenderWindowInteractorModified();
-
-            SetPositionFromWorldPosition();
-
-            if (_positionInPixels != null)
-            {
-                RecomputeLeader();
-            }
-        }
-        public override void OnMouseWheelScrolled()
-        {
-            base.OnMouseWheelScrolled();
-
-            SetPositionFromWorldPosition();
-
-            if (_positionInPixels != null)
-            {
-                RecomputeLeader();
-                _borderWidget.GetInteractor().Render();
-            }
-
-        }
         public override void OnRenderWindowModified()
         {
             base.OnRenderWindowModified();
+            if (_position != null) RecomputeLeader();
+        }
 
-            if (_positionInPixels != null) RecomputeLeader();
+        public override bool MouseMove(int x, int y)
+        {
+            if (!_visibility) return false;
+
+            if (base.MouseMove(x, y))
+            {
+                SetWorldPositionFromPosition();
+                RecomputeLeader();
+                return true;
+            }
+            return false;
+        }
+        public override void MousePan(int dx, int dy)
+        {
+            if (!_visibility) return;
+
+            base.MousePan(dx, dy);
+            SetPosition(_position[0] + dx, _position[1] + dy);
+            RecomputeLeader();
+        }
+        public override void MouseRotate(double azimuthAngle, double ElevationAngle)
+        {
+            if (!_visibility) return;
+
+            base.MouseRotate(azimuthAngle, ElevationAngle);
+            SetPositionFromWorldPosition();
+            RecomputeLeader();
+        }
+        public override void MouseWheelScrolled()
+        {
+            if (!_visibility) return;
+
+            base.MouseWheelScrolled();
+            SetPositionFromWorldPosition();
+            RecomputeLeader();
         }
 
         public override void VisibilityOn()
         {
-            base.VisibilityOn();
-            if (_leaderActor2D != null) _leaderActor2D.VisibilityOn();
-            if (_headActor2D != null) _headActor2D.VisibilityOn();
+            if (_visibility == false)
+            {
+                base.VisibilityOn();
+                if (_leaderActor2D != null) _renderer.AddActor(_leaderActor2D);
+                if (_headActor2D != null) _renderer.AddActor(_headActor2D);
+            }
         }
         public override void VisibilityOff()
         {
-            base.VisibilityOff();
-            if (_leaderActor2D != null) _leaderActor2D.VisibilityOff();
-            if (_headActor2D != null) _headActor2D.VisibilityOff();
+            if (_visibility == true)
+            {
+                base.VisibilityOff();
+                if (_leaderActor2D != null) _renderer.RemoveActor(_leaderActor2D);
+                if (_headActor2D != null) _renderer.RemoveActor(_headActor2D);
+            }
         }
-
 
         // Public setters                                                                                                           
-        public override void SetRenderer(vtkRenderer renderer)
-        {
-            if (_renderer != null && _leaderActor2D != null) _renderer.RemoveActor(_leaderActor2D);
-            renderer.AddActor(_leaderActor2D);
-            renderer.AddActor(_headActor2D);
-            base.SetRenderer(renderer);
-        }
-
         public override void SetInteractor(vtkRenderWindowInteractor renderWindowInteractor)
         {
-            SetInteractor(renderWindowInteractor, true);
+            base.SetInteractor(renderWindowInteractor);
+
+            _renderer.AddActor(_leaderActor2D);
+            _renderer.AddActor(_headActor2D);
         }
         public void SetAnchorPoint(double x, double y, double z)
         {
             _worldAnchorPoint.SetValue(x, y, z);
 
-            double[] position = _borderRepresentation.GetPositionCoordinate().GetValue();
-
-            if (double.IsNaN(position[0]) || double.IsNaN(position[1]) || !_anchorAlreadySet)     // change the position only the first time the anchor point is set
+            if (!_anchorAlreadySet)     // change the position only the first time the anchor point is set
             {
                 _renderer.SetWorldPoint(x, y, z, 1.0);
                 _renderer.WorldToDisplay();
                 double[] displayAnchor = _renderer.GetDisplayPoint();
 
-                double[] size = _borderRepresentation.GetPosition2Coordinate().GetValue();
                 int[] windowSize = _renderer.GetSize();
 
                 double dx = -80;
                 double dy = 50;
 
-                if (displayAnchor[0] + dx + size[0] > windowSize[0]) dx = -(size[0] + dx);     // if there is no room to the left, go to the right
-                if (displayAnchor[1] + dy + size[1] > windowSize[1]) dy = -(size[1] + dy);     // if there is no room to the top, go down
+                if (displayAnchor[0] + dx + _size[0] > windowSize[0]) dx = -(_size[0] + dx);     // if there is no room to the left, go to the right
+                if (displayAnchor[1] + dy + _size[1] > windowSize[1]) dy = -(_size[1] + dy);     // if there is no room to the top, go down
 
                 _renderer.SetDisplayPoint(displayAnchor[0] + dx, displayAnchor[1] + dy, 0);
                 _renderer.DisplayToWorld();
@@ -296,7 +282,7 @@ namespace vtkControl
                 _anchorAlreadySet = true;
             }
             RecomputeLeader();
-            OnBorderRepresentationModified();
+            //OnBorderRepresentationModified();
         }
         private void SetPositionFromWorldPosition()
         {
@@ -309,24 +295,22 @@ namespace vtkControl
             double[] displayPosition = _renderer.GetDisplayPoint();
 
             // move to the center of the caption
-            double[] borderSize = _borderRepresentation.GetPosition2Coordinate().GetValue();
-            displayPosition[0] -= borderSize[0] / 2;
-            displayPosition[1] -= borderSize[1] / 2;
+            displayPosition[0] -= _size[0] / 2;
+            displayPosition[1] -= _size[1] / 2;
 
             // convert
-            _renderer.DisplayToNormalizedDisplay(ref displayPosition[0], ref displayPosition[1]);
+            //_renderer.DisplayToNormalizedDisplay(ref displayPosition[0], ref displayPosition[1]);
 
             SetPosition(displayPosition[0], displayPosition[1]);
         }
         private void SetWorldPositionFromPosition()
         {
-            if (_positionInPixels == null) return;      // if borederRepresentation is changed before _positionInPixels is initialized
+            if (_position == null) return;      // if borederRepresentation is changed before _positionInPixels is initialized
 
             vtkCamera camera = _renderer.GetActiveCamera();
-            double[] borderSize = _borderRepresentation.GetPosition2Coordinate().GetValue();
 
             // get world projection from display position
-            _renderer.SetDisplayPoint(_positionInPixels[0] + borderSize[0] / 2, _positionInPixels[1] + borderSize[1] / 2, 0);
+            _renderer.SetDisplayPoint(_position[0] + _size[0] / 2, _position[1] + _size[1] / 2, 0);
             _renderer.DisplayToWorld();
             double[] positionWorld = _renderer.GetWorldPoint();
 
@@ -341,5 +325,7 @@ namespace vtkControl
 
 
         // Public getters                                                                                                           
+        
+
     }
 }

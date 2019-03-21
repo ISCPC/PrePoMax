@@ -172,11 +172,11 @@ namespace vtkControl
             if (this._renderWindowInteractor != null)
             {
                 if (_coorSys != null) this._coorSys.SetInteractor(null);
-                if (_statusBlock != null) this._statusBlock.SetInteractor(null);
+                if (_statusBlockWidget != null) this._statusBlockWidget.SetInteractor(null);
                 if (_minValueWidget != null) this._minValueWidget.SetInteractor(null);
                 if (_maxValueWidget != null) this._maxValueWidget.SetInteractor(null);
                 if (_probeWidget != null) this._probeWidget.SetInteractor(null);
-                if (_vtkMaxScalarBar != null) this._vtkMaxScalarBar.SetInteractor(null);
+                if (_scalarBarWidget != null) this._scalarBarWidget.SetInteractor(null);
 
                 this._renderWindowInteractor.Dispose();
                 this._renderWindowInteractor = null;
@@ -230,6 +230,26 @@ namespace vtkControl
 
                     case System.Windows.Forms.MouseButtons.Right:
                         grwi.RightButtonPressEvent();
+                        break;
+                }
+            }
+            Kitware.VTK.vtkRenderWindowInteractor rwi = this._renderWindowInteractor as Kitware.VTK.vtkRenderWindowInteractor;
+            if (null != rwi)
+            {
+                rwi.SetEventInformationFlipY(e.X, e.Y, 0, 0, 0, e.Clicks, null);
+
+                switch (e.Button)
+                {
+                    case System.Windows.Forms.MouseButtons.Left:
+                        rwi.LeftButtonPressEvent();
+                        break;
+
+                    case System.Windows.Forms.MouseButtons.Middle:
+                        rwi.MiddleButtonPressEvent();
+                        break;
+
+                    case System.Windows.Forms.MouseButtons.Right:
+                        rwi.RightButtonPressEvent();
                         break;
                 }
             }
@@ -341,7 +361,6 @@ namespace vtkControl
         {
             Kitware.VTK.vtkGenericRenderWindowInteractor grwi = this._renderWindowInteractor as Kitware.VTK.vtkGenericRenderWindowInteractor;
             if (null != grwi)
-
             {
                 grwi.SetKeyEventInformation(e.Control ? 1 : 0, e.Shift ? 1 : 0, (sbyte)e.KeyCode, 1, null);
 
@@ -457,11 +476,8 @@ namespace vtkControl
             this.Name = "vtkControl";
             this.Size = new System.Drawing.Size(475, 326);
             this.Load += new System.EventHandler(this.vtkControl_Load);
-            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.vtkControl_KeyDown);
-            this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.vtkControl_KeyPress);
             this.Resize += new System.EventHandler(this.vtkControl_Resize);
             this.ResumeLayout(false);
-
         }
 
         #endregion

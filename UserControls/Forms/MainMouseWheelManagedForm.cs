@@ -16,7 +16,7 @@ namespace UserControls
         /* **********************************/
 
         //WM_MOUSEFIRST = 0x200
-        //WM_MOUSEMOVE = 0x200
+        private const int WM_MOUSEMOVE = 0x200;
         //WM_LBUTTONDOWN = 0x201
         //WM_LBUTTONUP = 0x202
         //WM_LBUTTONDBLCLK = 0x203
@@ -135,7 +135,7 @@ namespace UserControls
             //}
 
             // Prevent arrow keys to change focus from PassThroughControl
-            if (m.Msg == WM_KEYDOWN)
+            if (m.Msg == WM_KEYDOWN || m.Msg == WM_KEYUP)
             {
                 //System.Diagnostics.Debug.WriteLine(DateTime.Now + " Focus: " + PassThroughControl.ContainsFocus);
                 if (PassThroughControl != null && PassThroughControl.ContainsFocus)
@@ -152,6 +152,19 @@ namespace UserControls
                     }
                 }
             }
+
+            //if (m.Msg == WM_MOUSEMOVE || m.Msg == 275 || m.Msg == 1848 || m.Msg == 15 || m.Msg == 96 || m.Msg == 160 || m.Msg == 674 || m.Msg == 675) return false;
+            //System.Diagnostics.Debug.WriteLine(DateTime.Now + " m.Msg: " + m.Msg);
+            //if (m.Msg == 513)
+            //{
+            //    if (PassThroughControl != null && PassThroughControl.ContainsFocus)
+            //    {
+            //        hWnd = this.Handle;
+            //        SendMessage(hWnd, m.Msg, m.WParam, m.LParam);
+            //        return true;
+            //    }
+            //}
+
             return false;
         }
 

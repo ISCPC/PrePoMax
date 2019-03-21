@@ -308,66 +308,92 @@ namespace CaeResults
         }
         static private void GetField(string[] lines, bool constantWidth, FieldData prevFieldData, out FieldData fieldData, out Field field)
         {
-            // STATIC STEP
+            int lineNum = 0;
+            int numOfVal;
+            List<string> components;
 
-            //                              field#  stepIncrement#       step# - COMMENTS
-            //    1PSTEP                        25               1           2
-            //             time        numOfvalues
-            //  100CL  107 2.000000000         613                     0    7           1
+            GetFieldHeaderData(lines, ref lineNum, prevFieldData, out fieldData, out numOfVal);
+            float[][] values = GetFieldValuesData(lines, ref lineNum, constantWidth, numOfVal, out components);
+
+            switch (fieldData.Name)
+            {
+                case "DISP":
+                    field = CreateVectorField(fieldData.Name, components, values);
+                    break;
+                case "FORC":
+                    field = CreateVectorField(fieldData.Name, components, values);
+                    break;
+                case "STRESS":
+                    field = CreateStressField(fieldData.Name, components, values);
+                    break;
+                default:
+                    field = new Field(fieldData.Name);
+                    for (int i = 0; i < components.Count; i++)
+                    {
+                        field.AddComponent(components[i], values[i]);
+                    }
+                    break;
+            }
+        }
+
+        static private void GetFieldHeaderData(string[] lines, ref int lineNum, FieldData prevFieldData,
+                                               out FieldData fieldData, out int numOfVal)
+        {
+            {
+                // STATIC STEP
+
+                //                              field#  stepIncrement#       step# - COMMENTS
+                //    1PSTEP                        25               1           2
+                //             time        numOfvalues
+                //  100CL  107 2.000000000         613                     0    7           1
 
 
-            //    1PSTEP                        25           1           2               
-            //  100CL  107 2.000000000         613                     0    7           1
-            // -4  DISP        4    1                                                    
-            // -5  D1          1    2    1    0                                          
-            // -5  D2          1    2    2    0                                          
-            // -5  D3          1    2    3    0                                          
-            // -5  ALL         1    2    0    0    1ALL                                  
-            // -1         1-9.27159E-04 1.48271E-04-1.46752E-04                          
+                //    1PSTEP                        25           1           2               
+                //  100CL  107 2.000000000         613                     0    7           1
+                // -4  DISP        4    1                                                    
+                // -5  D1          1    2    1    0                                          
+                // -5  D2          1    2    2    0                                          
+                // -5  D3          1    2    3    0                                          
+                // -5  ALL         1    2    0    0    1ALL                                  
+                // -1         1-9.27159E-04 1.48271E-04-1.46752E-04                          
 
-            // MODAL STEP
+                // FREQUENCY STEP
 
-            //    1PSTEP                         5           1           2          
-            //    1PGM                1.000000E+00                                  
-            //    1PGK                7.155923E+05                                  
-            //    1PHID                         -1                                  
-            //    1PSUBC                         0                                  
-            //    1PMODE                         1                                   - frequency
-            //  100CL  102 1.34633E+02        1329                     2    2MODAL      1
-            // -4  DISP        4    1
-            // -5  D1          1    2    1    0
-            // -5  D2          1    2    2    0
-            // -5  D3          1    2    3    0
-            // -5  ALL         1    2    0    0    1ALL
+                //    1PSTEP                         5           1           2          
+                //    1PGM                1.000000E+00                                  
+                //    1PGK                7.155923E+05                                  
+                //    1PHID                         -1                                  
+                //    1PSUBC                         0                                  
+                //    1PMODE                         1                                   - frequency
+                //  100CL  102 1.34633E+02        1329                     2    2MODAL      1
+                // -4  DISP        4    1
+                // -5  D1          1    2    1    0
+                // -5  D2          1    2    2    0
+                // -5  D3          1    2    3    0
+                // -5  ALL         1    2    0    0    1ALL
 
-            // BUCKLING STEP
+                // BUCKLING STEP
 
-            //                              field#  stepIncrement#       step# - COMMENTS
-            //    1PSTEP                         4           1           1
-            //  100CL  104  93.9434614        1329                     4    4           1
-            //  -4  DISP        4    1
-            //  -5  D1          1    2    1    0
-            //  -5  D2          1    2    2    0
-            //  -5  D3          1    2    3    0
-            //  -5  ALL         1    2    0    0    1ALL
-
-            int userDefinedBlockId = -1;
-            float time;
-            int stepId;
-            int stepIncrementId;
-            bool modal = false;
-            bool buckling = false;
+                //                              field#  stepIncrement#       step# - COMMENTS
+                //    1PSTEP                         4           1           1
+                //  100CL  104  93.9434614        1329                     4    4           1
+                //  -4  DISP        4    1
+                //  -5  D1          1    2    1    0
+                //  -5  D2          1    2    2    0
+                //  -5  D3          1    2    3    0
+                //  -5  ALL         1    2    0    0    1ALL
+            }
 
             string[] record;
             string[] splitter = new string[] { " " };
 
-            int n;
             string name;
-            List<string> components = new List<string>();
+            int userDefinedBlockId = -1;
+            StepType type = StepType.Static;
+            float time;
+            int stepId;
+            int stepIncrementId;
             
-            float[][] values;
-
-            int lineNum = 0;
             record = lines[lineNum++].Split(splitter, StringSplitOptions.RemoveEmptyEntries);       // 1PSTEP
             stepId = int.Parse(record[3]);
             stepIncrementId = int.Parse(record[2]);
@@ -377,22 +403,22 @@ namespace CaeResults
             record = lines[lineNum++].Split(splitter, StringSplitOptions.RemoveEmptyEntries);       // 100CL
             userDefinedBlockId = int.Parse(record[1]);
             time = float.Parse(record[2]);
-            n = int.Parse(record[3]);
-            buckling = int.Parse(record[4]) == 4;                                                   // buckling switch
+            numOfVal = int.Parse(record[3]);
+            if (int.Parse(record[4]) == 4) type = StepType.Buckling;                                // buckling switch
 
-            if (buckling) 
+            if (type == StepType.Buckling)
             {
                 if (prevFieldData == null) // this is the first step
                 {
                     stepId = 1;
                     stepIncrementId = 1;
                 }
-                else if (prevFieldData.Buckling == false) // this is the first increment in the buckling step
+                else if (prevFieldData.Type != StepType.Buckling)   // this is the first increment in the buckling step
                 {
                     stepId = prevFieldData.StepId + 1;
                     stepIncrementId = 1;
                 }
-                else if (userDefinedBlockId != prevFieldData.UserDefinedBlockId) // this is the new increment in the buckling step
+                else if (userDefinedBlockId != prevFieldData.UserDefinedBlockId)    // this is the new increment in the buckling step
                 {
                     stepId = prevFieldData.StepId;
                     stepIncrementId = prevFieldData.StepIncrementId + 1;
@@ -406,7 +432,7 @@ namespace CaeResults
             // check for modal analysis
             else if (record.Length > 5 && record[5].Contains("MODAL"))
             {
-                modal = true;
+                type = StepType.Frequency;
                 record = lines[lineNum - 2].Split(splitter, StringSplitOptions.RemoveEmptyEntries); // 1PMODE
                 int freqNum = int.Parse(record[1]);
                 stepIncrementId = freqNum;
@@ -415,6 +441,23 @@ namespace CaeResults
             record = lines[lineNum++].Split(splitter, StringSplitOptions.RemoveEmptyEntries);       // -4  DISP
             name = record[1];
 
+            fieldData = new FieldData(name);
+            fieldData.UserDefinedBlockId = userDefinedBlockId;
+            fieldData.Type = type;
+            fieldData.Time = time;
+            fieldData.StepId = stepId;
+            fieldData.StepIncrementId = stepIncrementId;
+        }
+        static private float[][] GetFieldValuesData(string[] lines, ref int lineNum, bool constantWidth, int numOfVal, out List<string> components)
+        {
+            string[] record;
+            string[] splitter = new string[] { " " };
+
+            // -5  D1          1    2    1    0                                          
+            // -5  D2          1    2    2    0                                          
+            // -5  D3          1    2    3    0                                          
+            // -5  ALL         1    2    0    0    1ALL                                  
+            components = new List<string>();
             while (true)
             {
                 record = lines[lineNum++].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
@@ -424,10 +467,10 @@ namespace CaeResults
             lineNum--;
 
             // check if the line number equals the numebr of lines
-            if (lines.Length - lineNum != n) n = lines.Length - lineNum;
+            if (lines.Length - lineNum != numOfVal) numOfVal = lines.Length - lineNum;
 
-            values = new float[components.Count][];
-            for (int i = 0; i < values.GetLength(0); i++) values[i] = new float[n];
+            float[][] values = new float[components.Count][];
+            for (int i = 0; i < values.GetLength(0); i++) values[i] = new float[numOfVal];
 
             int start;
             int width;
@@ -435,7 +478,7 @@ namespace CaeResults
             if (constantWidth)
             {
                 width = 12;
-                for (int i = 0; i < n; i++)
+                for (int i = 0; i < numOfVal; i++)
                 {
                     start = 13;
                     for (int j = 0; j < components.Count; j++)
@@ -455,7 +498,7 @@ namespace CaeResults
                 // -1         4-9.84216E-0035.62909E-003-2.73047E-001
                 // -1         53.91981E-0031.22846E-002-2.98849E-001
                 // -1         6-1.16413E-0027.22403E-003-2.74940E-001
-                for (int i = 0; i < n; i++)
+                for (int i = 0; i < numOfVal; i++)
                 {
                     start = 13;
                     for (int j = 0; j < components.Count; j++)
@@ -472,35 +515,7 @@ namespace CaeResults
                     }
                 }
             }
-
-            fieldData = new FieldData(name);
-            // component ??
-            fieldData.UserDefinedBlockId = userDefinedBlockId;
-            fieldData.Time = time;
-            fieldData.StepId = stepId;
-            fieldData.StepIncrementId = stepIncrementId;
-            fieldData.Modal = modal;
-            fieldData.Buckling = buckling;
-
-            switch (name)
-            {
-                case "DISP":
-                    field = CreateVectorField(name, components, values);
-                    break;
-                case "FORC":
-                    field = CreateVectorField(name, components, values);
-                    break;
-                case "STRESS":
-                    field = CreateStressField(name, components, values);
-                    break;
-                default:
-                    field = new Field(name);
-                    for (int i = 0; i < components.Count; i++)
-                    {
-                        field.AddComponent(components[i], values[i]);
-                    }
-                    break;
-            }
+            return values;
         }
         static private Field CreateVectorField(string name, List<string> components, float[][] values)
         {

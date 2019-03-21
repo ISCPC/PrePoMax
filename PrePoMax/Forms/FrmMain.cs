@@ -78,22 +78,13 @@ namespace PrePoMax
         {
             InvokeIfRequired(() =>
             {
-                if (view == ViewGeometryModelResults.Geometry)
-                {
-                    _modelTree.SetGeometryTab();
-                    tsResults.Visible = false;
-                }
-                else if (view == ViewGeometryModelResults.Model)
-                {
-                    _modelTree.SetModelTab();
-                    tsResults.Visible = false;
-                }
-                else
-                {
-                    _modelTree.SetResultsTab();
-                    tsResults.Visible = true;
-                }
-                SetMenuVisibility();
+                if (view == ViewGeometryModelResults.Geometry) _modelTree.SetGeometryTab();
+                else if (view == ViewGeometryModelResults.Model) _modelTree.SetModelTab();
+                else if (view == ViewGeometryModelResults.Results) _modelTree.SetResultsTab();
+                else throw new NotSupportedException();
+
+                SetMenuAndToolStripVisibility();
+
                 this.ActiveControl = null;
             });
         }
@@ -121,8 +112,6 @@ namespace PrePoMax
             _controller = null;
             _modelTree = null;
             _args = args;
-
-            InitializeResults();
         }
 
 
@@ -174,9 +163,10 @@ namespace PrePoMax
                 _modelTree.RenderingOn += () => _vtk.RenderingOn = true;
 
                 // Strip menus
-                //tsFile.Location = new Point(3, 0);
-                //tsViews.Location = new Point(107, 0);
-                //tsResults.Location = new Point(530, 0);
+                tsFile.Location = new Point(0, 0);
+                tsViews.Location = new Point(tsFile.Left + tsFile.Width, 0);
+                tsResults.Location = new Point(tsViews.Left + tsViews.Width, 0);
+                tscbSymbolsForStep.SelectedIndexChanged += tscbSymbolsForStep_SelectedIndexChanged;
 
                 // controller
                 _controller = new PrePoMax.Controller(this);
@@ -443,24 +433,10 @@ namespace PrePoMax
                 CloseAllForms();
                 _controller.SelectBy = vtkControl.vtkSelectBy.Off;
 
-                if (viewType == ViewType.Geometry)
-                {
-                    tsResults.Visible = false;
-                    _controller.CurrentView = ViewGeometryModelResults.Geometry;
-                }
-                else if (viewType == ViewType.Model)
-                {
-                    tsResults.Visible = false;
-                    _controller.CurrentView = ViewGeometryModelResults.Model;
-                }
-                else if (viewType == ViewType.Results)
-                {
-                    tsResults.Visible = true;
-                    _controller.CurrentView = ViewGeometryModelResults.Results;
-                }
+                if (viewType == ViewType.Geometry) _controller.CurrentView = ViewGeometryModelResults.Geometry;
+                else if (viewType == ViewType.Model) _controller.CurrentView = ViewGeometryModelResults.Model;
+                else if (viewType == ViewType.Results) _controller.CurrentView = ViewGeometryModelResults.Results;
                 else throw new NotSupportedException();
-
-                SetMenuVisibility();
             }
             catch (Exception ex)
             {
@@ -612,25 +588,11 @@ namespace PrePoMax
         }
         private void ModelTree_FieldDataSelectEvent(string[] obj)
         {
-            int stepId = GetCurrentFieldOutputStepId();
-            int stepIncrementId = GetCurrentFieldOutputStepIncrementId();
-            CaeResults.FieldData newData = new CaeResults.FieldData(obj[0], obj[1], stepId, stepIncrementId);
-
-            if (!newData.Equals(_controller.CurrentFieldData)) // update results only if field data changed
+            try
             {
-                // update controller field data
-                _controller.CurrentFieldData = newData;
-
-                SetAllStepAndIncrementIds();
-
-                if (_controller.ViewResultsType == ViewResultsType.ColorContours)
-                {
-                    // draw field data
-                    _controller.UpdatePartsScalarFields();
-                    // stop and update animation data
-                    if (_frmAnimation.Visible) _frmAnimation.UpdateAnimation();
-                }
+                SetFieldData(obj[0], obj[1], GetCurrentFieldOutputStepId(), GetCurrentFieldOutputStepIncrementId());
             }
+            catch { }
         }
 
         //                                                                              
@@ -707,7 +669,7 @@ namespace PrePoMax
 
 
         // Menus                                                                                                                    
-        private void SetMenuVisibility()
+        private void SetMenuAndToolStripVisibility()
         {
             switch (_controller.CurrentView)
             {
@@ -722,10 +684,17 @@ namespace PrePoMax
                     tsmiAnalysis.Enabled = false;
                     tsmiResults.Enabled = false;
 
-                    tsmiDividerView4.Visible = false;
+                    tsmiDividerView3.Visible = false;
                     tsmiResultsUndeformed.Visible = false;
                     tsmiResultsDeformed.Visible = false;
                     tsmiResultsColorContours.Visible = false;
+
+                    // toolStrip
+                    toolStripViewSeparator4.Visible = false;
+                    tslSymbols.Visible = false;
+                    tscbSymbolsForStep.Visible = false;
+
+                    tsResults.Visible = false;
                     break;
                 case ViewGeometryModelResults.Model:
                     tsmiGeometry.Enabled = false;
@@ -738,10 +707,17 @@ namespace PrePoMax
                     tsmiAnalysis.Enabled = true;
                     tsmiResults.Enabled = false;
 
-                    tsmiDividerView4.Visible = false;
+                    tsmiDividerView3.Visible = false;
                     tsmiResultsUndeformed.Visible = false;
                     tsmiResultsDeformed.Visible = false;
                     tsmiResultsColorContours.Visible = false;
+
+                    // toolStrip
+                    toolStripViewSeparator4.Visible = true;
+                    tslSymbols.Visible = true;
+                    tscbSymbolsForStep.Visible = true;
+
+                    tsResults.Visible = false;
                     break;
                 case ViewGeometryModelResults.Results:
                     tsmiGeometry.Enabled = false;
@@ -754,10 +730,17 @@ namespace PrePoMax
                     tsmiAnalysis.Enabled = false;
                     tsmiResults.Enabled = true;
 
-                    tsmiDividerView4.Visible = true;
+                    tsmiDividerView3.Visible = true;
                     tsmiResultsUndeformed.Visible = true;
                     tsmiResultsDeformed.Visible = true;
                     tsmiResultsColorContours.Visible = true;
+
+                    // toolStrip
+                    toolStripViewSeparator4.Visible = false;
+                    tslSymbols.Visible = false;
+                    tscbSymbolsForStep.Visible = false;
+
+                    tsResults.Visible = true;
                     break;
                 default:
                     break;
@@ -829,8 +812,10 @@ namespace PrePoMax
 
             if (_controller.Results != null)
             {
-                SetAllStepAndIncrementIds();    // this resets the previous step and increment
-                SetLastStepAndIncrementIds();   // set last increment
+                // reset the previous step and increment
+                SetAllStepAndIncrementIds();
+                // set last increment
+                SetLastStepAndIncrementIds();   
             }
 
             if (_controller.CurrentView == ViewGeometryModelResults.Geometry) _controller.DrawGeometry(resetCamera);
@@ -1281,15 +1266,6 @@ namespace PrePoMax
                 }
             }
             catch { }
-        }
-
-        private void tsmiShowSymbols_Click(object sender, EventArgs e)
-        {
-            _controller.DrawSymbols = true;
-        }
-        private void tsmiHideSymbols_Click(object sender, EventArgs e)
-        {
-            _controller.DrawSymbols = false;
         }
 
         private void tsmiResultsUndeformed_Click(object sender, EventArgs e)
@@ -2559,10 +2535,9 @@ namespace PrePoMax
                 _frmMonitor.PrepareForm(_controller.GetJob(jobName));
                 _frmMonitor.ShowDialog();
             }
-            catch (Exception ex) { CaeGlobals.ExceptionTools.Show(this, ex); }
-            finally
-            { 
-                //_frmMonitor.Hide();
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
         private void ResultsAnalysis(string jobName)
@@ -2940,14 +2915,61 @@ namespace PrePoMax
             tsmiInvertVisibleParts_Click(sender, e);
         }
 
-        private void tsbShowSymbols_Click(object sender, EventArgs e)
+        private void tscbSymbolsForStep_SelectedIndexChanged(object sender, System.EventArgs e)
         {
-            tsmiShowSymbols_Click(sender, e);
+            _controller.DrawSymbolsForStep = tscbSymbolsForStep.SelectedItem.ToString();
         }
-        private void tsbHideSymbols_Click(object sender, EventArgs e)
+        public void UpadteSymbolsForStepList()
         {
-            tsmiHideSymbols_Click(sender, e);
+            InvokeIfRequired(() =>
+            {
+                ClearSymbolsDropDown();
+                tscbSymbolsForStep.Items.AddRange(_controller.GetStepNames());
+                tscbSymbolsForStep.SelectedIndex = tscbSymbolsForStep.Items.Count - 1;
+            });
         }
+        public void UpadteOneStepInSymbolsForStepList(string oldStepName, string newStepName)
+        {
+            InvokeIfRequired(() =>
+            {
+                int index = -1;
+                for (int i = 0; i < tscbSymbolsForStep.Items.Count; i++)
+                {
+                    if (tscbSymbolsForStep.Items[i].ToString() == oldStepName)
+                    {
+                        index = i;
+                        break;
+                    }
+                }
+                if (index != -1)
+                {
+                    tscbSymbolsForStep.Items[index] = newStepName;
+                }
+            });
+        }
+        public void RemoveOneStepInSymbolsForStepList(string stepName)
+        {
+            InvokeIfRequired(() =>
+            {
+                int selectedIndex = tscbSymbolsForStep.SelectedIndex;
+
+                int index = -1;
+                for (int i = 0; i < tscbSymbolsForStep.Items.Count; i++)
+                {
+                    if (tscbSymbolsForStep.Items[i].ToString() == stepName)
+                    {
+                        index = i;
+                        break;
+                    }
+                }
+                if (index != -1)
+                {
+                    tscbSymbolsForStep.Items.RemoveAt(index);
+                    if (index == selectedIndex) tscbSymbolsForStep.SelectedIndex = tscbSymbolsForStep.Items.Count - 1;
+                }
+            });
+        }
+
 
         #endregion  ################################################################################################################
 
@@ -2970,30 +2992,8 @@ namespace PrePoMax
         {
             try
             {
-                CaeResults.FieldData newData;
-
-                // find the chosen data; also contains info about modal analysis ...
-                newData = _controller.Results.GetFieldData(_controller.CurrentFieldData.Name,
-                                                           _controller.CurrentFieldData.Component,
-                                                           GetCurrentFieldOutputStepId(),
-                                                           GetCurrentFieldOutputStepIncrementId());
-
-                if (newData == null)    // the step increment id = 0; crate new step data
-                {
-                    newData = new CaeResults.FieldData(_controller.CurrentFieldData.Name,
-                                                       _controller.CurrentFieldData.Component,
-                                                       GetCurrentFieldOutputStepId(),
-                                                       GetCurrentFieldOutputStepIncrementId());
-                }
-
-                if (!newData.Equals(_controller.CurrentFieldData)) // update results only if field data changed
-                {
-                    // update controller field data
-                    _controller.CurrentFieldData = newData;
-                    // draw field data
-                    if (_controller.ViewResultsType != ViewResultsType.Undeformed) _controller.DrawResults(false);
-                }
-                this.ActiveControl = null;
+                CaeResults.FieldData current = _controller.CurrentFieldData;
+                SetFieldData(current.Name, current.Component, GetCurrentFieldOutputStepId(), GetCurrentFieldOutputStepIncrementId());
             }
             catch
             { }
@@ -3209,7 +3209,15 @@ namespace PrePoMax
                 _modelTree.Clear();
                 tbOutput.Text = "";
                 ClearResults();
+                
             });
+        }
+        private void ClearSymbolsDropDown()
+        {
+            tscbSymbolsForStep.Items.Clear();
+            tscbSymbolsForStep.Items.Add("None");
+            tscbSymbolsForStep.Items.Add("Model");
+            tscbSymbolsForStep.SelectedIndex = 1;
         }
         public void ClearResults()
         {
@@ -3236,10 +3244,6 @@ namespace PrePoMax
             _modelTree.ClearSelection();
         }
 
-        public void InitializeResults()
-        {
-            tsResults.Visible = false;
-        }
         public void SetTitle(string title)
         {
             InvokeIfRequired(() => this.Text = title);
@@ -3367,6 +3371,50 @@ namespace PrePoMax
 
 
         // Results
+        public void SetFieldData(string name, string component, int stepId, int stepIncrementId)
+        {
+            CaeResults.FieldData fieldData = new CaeResults.FieldData(name, component, stepId, stepIncrementId);
+            CaeResults.FieldData currentData = _controller.CurrentFieldData;
+
+            if (!fieldData.Equals(currentData)) // update results only if field data changed
+            {
+                if (fieldData.Name == currentData.Name && fieldData.Component == currentData.Component)
+                {
+                    // the step id or increment id changed                                              
+
+                    // find the choosen data; also contains info about type of step ...
+                    fieldData = _controller.Results.GetFieldData(fieldData.Name,
+                                                                 fieldData.Component,
+                                                                 fieldData.StepId,
+                                                                 fieldData.StepIncrementId);
+                    // update controller field data
+                    _controller.CurrentFieldData = fieldData;
+                    // draw deformation or field data
+                    if (_controller.ViewResultsType != ViewResultsType.Undeformed) _controller.DrawResults(false);
+                }
+                else
+                {
+                    // field of field component changed                                                 
+
+                    // update controller field data; this is used for the SetStepAndIncrementIds to detect missing ids
+                    _controller.CurrentFieldData = fieldData;
+                    // find all step and step increments
+                    SetAllStepAndIncrementIds();
+                    // find the existing choosen data; also contains info about type of step ...
+                    fieldData = _controller.Results.GetFieldData(fieldData.Name,
+                                                                 fieldData.Component,
+                                                                 fieldData.StepId,
+                                                                 fieldData.StepIncrementId);
+                    // update controller field data
+                    _controller.CurrentFieldData = fieldData;
+                    // draw field data
+                    if (_controller.ViewResultsType == ViewResultsType.ColorContours) _controller.UpdatePartsScalarFields();
+                }
+                this.ActiveControl = null;
+                // stop and update animation data
+                if (_frmAnimation.Visible) _frmAnimation.UpdateAnimation();
+            }
+        }
         public void SetFieldOutputAndComponentNames(string[] fieldNames, string[][] components)
         {
             InvokeIfRequired(_modelTree.SetFieldOutputAndComponentNames, fieldNames, components);
@@ -3378,12 +3426,14 @@ namespace PrePoMax
                 // Save current step and increment id
                 string currentStepIncrement = (string)tscbStepAndIncrement.SelectedItem;
                 string[] prevStepIncrementIds = null;
-                if (currentStepIncrement != null) prevStepIncrementIds = currentStepIncrement.Split(new string[] { ",", " " }, StringSplitOptions.RemoveEmptyEntries);
+                if (currentStepIncrement != null)
+                    prevStepIncrementIds = currentStepIncrement.Split(new string[] { ",", " " }, StringSplitOptions.RemoveEmptyEntries);
 
                 // Set all increments
                 tscbStepAndIncrement.SelectedIndexChanged -= FieldOutput_SelectionChanged;  // detach event
                 tscbStepAndIncrement.Items.Clear();
-                Dictionary<int, int[]> allIds = _controller.GetResultExistingIncrementIds(_controller.CurrentFieldData.Name, _controller.CurrentFieldData.Component);
+                Dictionary<int, int[]> allIds = _controller.GetResultExistingIncrementIds(_controller.CurrentFieldData.Name,
+                                                                                          _controller.CurrentFieldData.Component);
                 foreach (var entry in allIds)
                 {
                     foreach (int incrementId in entry.Value)
@@ -3403,12 +3453,7 @@ namespace PrePoMax
                 else SetLastStepAndIncrementIds();
             });
         }
-        public void SetLastStepAndIncrementIds()
-        {
-            string lastStepIncrement = (string)tscbStepAndIncrement.Items[tscbStepAndIncrement.Items.Count - 1];
-            string[] tmp = lastStepIncrement.Split(new string[] { ",", " " }, StringSplitOptions.RemoveEmptyEntries);
-            SetStepAndIncrementIds(int.Parse(tmp[0]), int.Parse(tmp[1]));
-        }
+        
         public void SetStepAndIncrementIds(int stepId, int incrementId)
         {
             InvokeIfRequired(() =>
@@ -3429,6 +3474,12 @@ namespace PrePoMax
                 }
                 else SetLastStepAndIncrementIds();
             });
+        }
+        public void SetLastStepAndIncrementIds()
+        {
+            string lastStepIncrement = (string)tscbStepAndIncrement.Items[tscbStepAndIncrement.Items.Count - 1];
+            string[] tmp = lastStepIncrement.Split(new string[] { ",", " " }, StringSplitOptions.RemoveEmptyEntries);
+            SetStepAndIncrementIds(int.Parse(tmp[0]), int.Parse(tmp[1]));
         }
         public int GetCurrentFieldOutputStepId()
         {
@@ -3464,6 +3515,7 @@ namespace PrePoMax
         public void RegenerateTree(CaeModel.FeModel model, Dictionary<string, CaeJob.AnalysisJob> jobs, CaeResults.FeResults results)
         {
             InvokeIfRequired(_modelTree.RegenerateTree, model, jobs, results);
+            InvokeIfRequired(UpadteSymbolsForStepList);
         }
         public void AddTreeNode(ViewGeometryModelResults view, NamedClass item, string stepName)
         {
@@ -3474,6 +3526,7 @@ namespace PrePoMax
             else throw new NotSupportedException();
 
             InvokeIfRequired(_modelTree.AddTreeNode, viewType, item, stepName);
+            if (item is CaeModel.Step) UpadteSymbolsForStepList();
         }
         public void UpdateTreeNode(ViewGeometryModelResults view, string oldItemName, NamedClass item, string stepName, bool updateSelection = true)
         {
@@ -3484,6 +3537,7 @@ namespace PrePoMax
             else throw new NotSupportedException();
 
             InvokeIfRequired(_modelTree.UpdateTreeNode, viewType, oldItemName, item, stepName, updateSelection);
+            if (item is CaeModel.Step) UpadteOneStepInSymbolsForStepList(oldItemName, item.Name);
         }
         public void RemoveTreeNode<T>(ViewGeometryModelResults view, string nodeName, string stepName) where T : NamedClass
         {
@@ -3494,6 +3548,7 @@ namespace PrePoMax
             else throw new NotSupportedException();
 
             InvokeIfRequired(_modelTree.RemoveTreeNode<T>, viewType, nodeName, stepName);
+            if (typeof(T) == typeof(CaeModel.Step)) RemoveOneStepInSymbolsForStepList(nodeName);
         }
         public bool[] GetTreeExpandCollapseState()
         {

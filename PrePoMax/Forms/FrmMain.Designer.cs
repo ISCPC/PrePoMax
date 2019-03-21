@@ -76,9 +76,6 @@
             this.tsmiHideAllParts = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiInvertVisibleParts = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerView3 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsmiShowSymbols = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiHideSymbols = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiDividerView4 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiResultsUndeformed = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiResultsDeformed = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiResultsColorContours = new System.Windows.Forms.ToolStripMenuItem();
@@ -214,7 +211,7 @@
             this.tsbResultsUndeformed = new System.Windows.Forms.ToolStripButton();
             this.tsbResultsDeformed = new System.Windows.Forms.ToolStripButton();
             this.tsbResultsColorContours = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripResultsSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.tsbFirstStepIncrement = new System.Windows.Forms.ToolStripButton();
             this.tsbPreviousStepIncrement = new System.Windows.Forms.ToolStripButton();
             this.tslStepIncrement = new System.Windows.Forms.ToolStripLabel();
@@ -233,7 +230,7 @@
             this.tsbSave = new System.Windows.Forms.ToolStripButton();
             this.tsViews = new UserControls.ToolStripFocus();
             this.tsbZoomToFit = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripViewSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.tsbFrontView = new System.Windows.Forms.ToolStripButton();
             this.tsbBackView = new System.Windows.Forms.ToolStripButton();
             this.tsbTopView = new System.Windows.Forms.ToolStripButton();
@@ -243,18 +240,18 @@
             this.tsbNormalView = new System.Windows.Forms.ToolStripButton();
             this.tsbVerticalView = new System.Windows.Forms.ToolStripButton();
             this.tsbIsometric = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripViewSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.tsbShowWireframeEdges = new System.Windows.Forms.ToolStripButton();
             this.tsbShowElementEdges = new System.Windows.Forms.ToolStripButton();
             this.tsbShowModelEdges = new System.Windows.Forms.ToolStripButton();
             this.tsbShowNoEdges = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripViewSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.tsbShowAllParts = new System.Windows.Forms.ToolStripButton();
             this.tsbHideAllParts = new System.Windows.Forms.ToolStripButton();
             this.tsbInvertVisibleParts = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsbShowSymbols = new System.Windows.Forms.ToolStripButton();
-            this.tsbHideSymbols = new System.Windows.Forms.ToolStripButton();
+            this.toolStripViewSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            this.tslSymbols = new System.Windows.Forms.ToolStripLabel();
+            this.tscbSymbolsForStep = new System.Windows.Forms.ToolStripComboBox();
             this.menuStripMain.SuspendLayout();
             this.statusStripMain.SuspendLayout();
             this.tsResults.SuspendLayout();
@@ -496,9 +493,6 @@
             this.tsmiHideAllParts,
             this.tsmiInvertVisibleParts,
             this.tsmiDividerView3,
-            this.tsmiShowSymbols,
-            this.tsmiHideSymbols,
-            this.tsmiDividerView4,
             this.tsmiResultsUndeformed,
             this.tsmiResultsDeformed,
             this.tsmiResultsColorContours});
@@ -672,27 +666,6 @@
             // 
             this.tsmiDividerView3.Name = "tsmiDividerView3";
             this.tsmiDividerView3.Size = new System.Drawing.Size(230, 6);
-            // 
-            // tsmiShowSymbols
-            // 
-            this.tsmiShowSymbols.Image = global::PrePoMax.Properties.Resources.SymbolsOn;
-            this.tsmiShowSymbols.Name = "tsmiShowSymbols";
-            this.tsmiShowSymbols.Size = new System.Drawing.Size(233, 22);
-            this.tsmiShowSymbols.Text = "Show symbols";
-            this.tsmiShowSymbols.Click += new System.EventHandler(this.tsmiShowSymbols_Click);
-            // 
-            // tsmiHideSymbols
-            // 
-            this.tsmiHideSymbols.Image = global::PrePoMax.Properties.Resources.SymbolsOff;
-            this.tsmiHideSymbols.Name = "tsmiHideSymbols";
-            this.tsmiHideSymbols.Size = new System.Drawing.Size(233, 22);
-            this.tsmiHideSymbols.Text = "Hide symbols";
-            this.tsmiHideSymbols.Click += new System.EventHandler(this.tsmiHideSymbols_Click);
-            // 
-            // tsmiDividerView4
-            // 
-            this.tsmiDividerView4.Name = "tsmiDividerView4";
-            this.tsmiDividerView4.Size = new System.Drawing.Size(230, 6);
             // 
             // tsmiResultsUndeformed
             // 
@@ -1654,7 +1627,7 @@
             this.panelControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelControl.Location = new System.Drawing.Point(0, 0);
             this.panelControl.Name = "panelControl";
-            this.panelControl.Size = new System.Drawing.Size(956, 607);
+            this.panelControl.Size = new System.Drawing.Size(956, 582);
             this.panelControl.TabIndex = 1;
             // 
             // statusStripMain
@@ -1711,7 +1684,7 @@
             this.tsbResultsUndeformed,
             this.tsbResultsDeformed,
             this.tsbResultsColorContours,
-            this.toolStripSeparator4,
+            this.toolStripResultsSeparator1,
             this.tsbFirstStepIncrement,
             this.tsbPreviousStepIncrement,
             this.tslStepIncrement,
@@ -1719,7 +1692,7 @@
             this.tsbNextStepIncrement,
             this.tsbLastStepIncrement,
             this.tsbAnimate});
-            this.tsResults.Location = new System.Drawing.Point(585, 0);
+            this.tsResults.Location = new System.Drawing.Point(3, 0);
             this.tsResults.Name = "tsResults";
             this.tsResults.Size = new System.Drawing.Size(369, 25);
             this.tsResults.TabIndex = 7;
@@ -1755,10 +1728,10 @@
             this.tsbResultsColorContours.Text = "Deformed with color contours";
             this.tsbResultsColorContours.Click += new System.EventHandler(this.tsbResultsColorContours_Click);
             // 
-            // toolStripSeparator4
+            // toolStripResultsSeparator1
             // 
-            this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 25);
+            this.toolStripResultsSeparator1.Name = "toolStripResultsSeparator1";
+            this.toolStripResultsSeparator1.Size = new System.Drawing.Size(6, 25);
             // 
             // tsbFirstStepIncrement
             // 
@@ -1833,7 +1806,7 @@
             // toolStripContainer1.ContentPanel
             // 
             this.toolStripContainer1.ContentPanel.Controls.Add(this.splitContainer1);
-            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(1216, 719);
+            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(1216, 694);
             this.toolStripContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.toolStripContainer1.LeftToolStripPanelVisible = false;
             this.toolStripContainer1.Location = new System.Drawing.Point(0, 24);
@@ -1845,9 +1818,9 @@
             // 
             // toolStripContainer1.TopToolStripPanel
             // 
+            this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.tsResults);
             this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.tsFile);
             this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.tsViews);
-            this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.tsResults);
             // 
             // splitContainer1
             // 
@@ -1861,7 +1834,7 @@
             // 
             this.splitContainer1.Panel2.Controls.Add(this.splitContainer2);
             this.splitContainer1.Panel2MinSize = 250;
-            this.splitContainer1.Size = new System.Drawing.Size(1216, 719);
+            this.splitContainer1.Size = new System.Drawing.Size(1216, 694);
             this.splitContainer1.SplitterDistance = 256;
             this.splitContainer1.TabIndex = 2;
             // 
@@ -1880,8 +1853,8 @@
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.Controls.Add(this.tbOutput);
-            this.splitContainer2.Size = new System.Drawing.Size(956, 719);
-            this.splitContainer2.SplitterDistance = 607;
+            this.splitContainer2.Size = new System.Drawing.Size(956, 694);
+            this.splitContainer2.SplitterDistance = 582;
             this.splitContainer2.TabIndex = 2;
             // 
             // tbOutput
@@ -1908,7 +1881,7 @@
             this.tsbImport,
             this.tsbOpen,
             this.tsbSave});
-            this.tsFile.Location = new System.Drawing.Point(3, 0);
+            this.tsFile.Location = new System.Drawing.Point(3, 25);
             this.tsFile.Name = "tsFile";
             this.tsFile.Size = new System.Drawing.Size(104, 25);
             this.tsFile.TabIndex = 5;
@@ -1962,7 +1935,7 @@
             this.tsViews.Dock = System.Windows.Forms.DockStyle.None;
             this.tsViews.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsbZoomToFit,
-            this.toolStripSeparator1,
+            this.toolStripViewSeparator1,
             this.tsbFrontView,
             this.tsbBackView,
             this.tsbTopView,
@@ -1972,21 +1945,21 @@
             this.tsbNormalView,
             this.tsbVerticalView,
             this.tsbIsometric,
-            this.toolStripSeparator2,
+            this.toolStripViewSeparator2,
             this.tsbShowWireframeEdges,
             this.tsbShowElementEdges,
             this.tsbShowModelEdges,
             this.tsbShowNoEdges,
-            this.toolStripSeparator3,
+            this.toolStripViewSeparator3,
             this.tsbShowAllParts,
             this.tsbHideAllParts,
             this.tsbInvertVisibleParts,
-            this.toolStripSeparator5,
-            this.tsbShowSymbols,
-            this.tsbHideSymbols});
-            this.tsViews.Location = new System.Drawing.Point(107, 0);
+            this.toolStripViewSeparator4,
+            this.tslSymbols,
+            this.tscbSymbolsForStep});
+            this.tsViews.Location = new System.Drawing.Point(107, 25);
             this.tsViews.Name = "tsViews";
-            this.tsViews.Size = new System.Drawing.Size(473, 25);
+            this.tsViews.Size = new System.Drawing.Size(635, 25);
             this.tsViews.TabIndex = 6;
             this.tsViews.Text = "Views";
             // 
@@ -2000,10 +1973,10 @@
             this.tsbZoomToFit.Text = "Zoom to fit";
             this.tsbZoomToFit.Click += new System.EventHandler(this.tsbZoomToFit_Click);
             // 
-            // toolStripSeparator1
+            // toolStripViewSeparator1
             // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
+            this.toolStripViewSeparator1.Name = "toolStripViewSeparator1";
+            this.toolStripViewSeparator1.Size = new System.Drawing.Size(6, 25);
             // 
             // tsbFrontView
             // 
@@ -2095,10 +2068,10 @@
             this.tsbIsometric.Text = "Isometric view";
             this.tsbIsometric.Click += new System.EventHandler(this.tsbIsometric_Click);
             // 
-            // toolStripSeparator2
+            // toolStripViewSeparator2
             // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 25);
+            this.toolStripViewSeparator2.Name = "toolStripViewSeparator2";
+            this.toolStripViewSeparator2.Size = new System.Drawing.Size(6, 25);
             // 
             // tsbShowWireframeEdges
             // 
@@ -2140,10 +2113,10 @@
             this.tsbShowNoEdges.Text = "No edges";
             this.tsbShowNoEdges.Click += new System.EventHandler(this.tsbShowNoEdges_Click);
             // 
-            // toolStripSeparator3
+            // toolStripViewSeparator3
             // 
-            this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
+            this.toolStripViewSeparator3.Name = "toolStripViewSeparator3";
+            this.toolStripViewSeparator3.Size = new System.Drawing.Size(6, 25);
             // 
             // tsbShowAllParts
             // 
@@ -2175,30 +2148,26 @@
             this.tsbInvertVisibleParts.Text = "Invert visible parts";
             this.tsbInvertVisibleParts.Click += new System.EventHandler(this.tsbInvertVisibleParts_Click);
             // 
-            // toolStripSeparator5
+            // toolStripViewSeparator4
             // 
-            this.toolStripSeparator5.Name = "toolStripSeparator5";
-            this.toolStripSeparator5.Size = new System.Drawing.Size(6, 25);
+            this.toolStripViewSeparator4.Name = "toolStripViewSeparator4";
+            this.toolStripViewSeparator4.Size = new System.Drawing.Size(6, 25);
             // 
-            // tsbShowSymbols
+            // tslSymbols
             // 
-            this.tsbShowSymbols.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbShowSymbols.Image = global::PrePoMax.Properties.Resources.SymbolsOn;
-            this.tsbShowSymbols.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbShowSymbols.Name = "tsbShowSymbols";
-            this.tsbShowSymbols.Size = new System.Drawing.Size(23, 22);
-            this.tsbShowSymbols.Text = "Show symbols";
-            this.tsbShowSymbols.Click += new System.EventHandler(this.tsbShowSymbols_Click);
+            this.tslSymbols.Name = "tslSymbols";
+            this.tslSymbols.Size = new System.Drawing.Size(52, 22);
+            this.tslSymbols.Text = "Symbols";
             // 
-            // tsbHideSymbols
+            // tscbSymbolsForStep
             // 
-            this.tsbHideSymbols.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbHideSymbols.Image = global::PrePoMax.Properties.Resources.SymbolsOff;
-            this.tsbHideSymbols.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbHideSymbols.Name = "tsbHideSymbols";
-            this.tsbHideSymbols.Size = new System.Drawing.Size(23, 22);
-            this.tsbHideSymbols.Text = "Hide symbols";
-            this.tsbHideSymbols.Click += new System.EventHandler(this.tsbHideSymbols_Click);
+            this.tscbSymbolsForStep.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.tscbSymbolsForStep.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.tscbSymbolsForStep.Items.AddRange(new object[] {
+            "None"});
+            this.tscbSymbolsForStep.Name = "tscbSymbolsForStep";
+            this.tscbSymbolsForStep.Size = new System.Drawing.Size(121, 25);
+            this.tscbSymbolsForStep.ToolTipText = "Select how symbols are displayed.";
             // 
             // FrmMain
             // 
@@ -2247,6 +2216,8 @@
 
         }
 
+       
+
         #endregion
 
         private UserControls.MenuStripFocus menuStripMain;
@@ -2274,7 +2245,7 @@
         private System.Windows.Forms.ToolStripButton tsbBottomView;
         private System.Windows.Forms.ToolStripButton tsbLeftView;
         private System.Windows.Forms.ToolStripButton tsbRightView;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripSeparator toolStripViewSeparator1;
         private System.Windows.Forms.ToolStripButton tsbZoomToFit;
         private System.Windows.Forms.ToolStripButton tsbIsometric;
         private System.Windows.Forms.ToolStripMenuItem standardViewsToolStripMenuItem;
@@ -2290,7 +2261,7 @@
         private System.Windows.Forms.ToolStripButton tsbOpen;
         private System.Windows.Forms.ToolStripButton tsbSave;
         private System.Windows.Forms.ToolStripMenuItem tsmiZoomToFit;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripSeparator toolStripViewSeparator2;
         private System.Windows.Forms.ToolStripButton tsbShowElementEdges;
         private System.Windows.Forms.ToolStripMenuItem tsmiShowElementEdges;
         private System.Windows.Forms.SplitContainer splitContainer1;
@@ -2448,14 +2419,14 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiHideAllParts;
         private System.Windows.Forms.ToolStripMenuItem tsmiShowAllParts;
         private System.Windows.Forms.ToolStripMenuItem tsmiInvertVisibleParts;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.ToolStripSeparator toolStripViewSeparator3;
         private System.Windows.Forms.ToolStripButton tsbHideAllParts;
         private System.Windows.Forms.ToolStripButton tsbShowAllParts;
         private System.Windows.Forms.ToolStripButton tsbInvertVisibleParts;
         private System.Windows.Forms.ToolStripButton tsbResultsUndeformed;
         private System.Windows.Forms.ToolStripButton tsbResultsDeformed;
         private System.Windows.Forms.ToolStripButton tsbResultsColorContours;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
+        private System.Windows.Forms.ToolStripSeparator toolStripResultsSeparator1;
         private System.Windows.Forms.ToolStripSeparator tsmiDividerView3;
         private System.Windows.Forms.ToolStripMenuItem tsmiResultsUndeformed;
         private System.Windows.Forms.ToolStripMenuItem tsmiResultsDeformed;
@@ -2470,12 +2441,9 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiMergePart;
         private System.Windows.Forms.ToolStripSeparator tsmiDividerPart2;
         private System.Windows.Forms.ToolStripMenuItem tsmiConvertElementSetsToMeshParts;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
-        private System.Windows.Forms.ToolStripButton tsbShowSymbols;
-        private System.Windows.Forms.ToolStripButton tsbHideSymbols;
-        private System.Windows.Forms.ToolStripSeparator tsmiDividerView4;
-        private System.Windows.Forms.ToolStripMenuItem tsmiShowSymbols;
-        private System.Windows.Forms.ToolStripMenuItem tsmiHideSymbols;
+        private System.Windows.Forms.ToolStripSeparator toolStripViewSeparator4;
+        private System.Windows.Forms.ToolStripLabel tslSymbols;
+        private System.Windows.Forms.ToolStripComboBox tscbSymbolsForStep;
     }
 }
 
