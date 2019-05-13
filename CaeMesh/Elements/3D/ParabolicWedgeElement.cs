@@ -178,29 +178,16 @@ namespace CaeMesh
                 n[i] = nodes[cell[i]];
             }
 
-            double area = 0;
             if (cell.Length == 6)   //(faceName == FeFaceName.S1 || faceName == FeFaceName.S2)
             {
-                area += GeometryTools.TriangleArea(n[3], n[5], n[0]);
-                area += GeometryTools.TriangleArea(n[3], n[4], n[5]);
-                area += GeometryTools.TriangleArea(n[3], n[1], n[4]);
-                area += GeometryTools.TriangleArea(n[5], n[4], n[2]);
-                return area;
+                return GeometryTools.TriangleArea(n[0], n[1], n[2], n[3], n[4], n[5]);
             }
             else
             {
                 n[6] = nodes[cell[6]];
                 n[7] = nodes[cell[7]];
 
-                area += GeometryTools.TriangleArea(n[7], n[0], n[4]);
-                area += GeometryTools.TriangleArea(n[7], n[4], n[6]);
-                area += GeometryTools.TriangleArea(n[7], n[6], n[3]);
-
-                area += GeometryTools.TriangleArea(n[5], n[2], n[6]);
-                area += GeometryTools.TriangleArea(n[5], n[6], n[4]);
-                area += GeometryTools.TriangleArea(n[5], n[4], n[1]);
-
-                return area;
+                return GeometryTools.RectangleArea(n[0], n[1], n[2], n[3], n[4], n[5], n[6], n[7]);
             }
         }
     }

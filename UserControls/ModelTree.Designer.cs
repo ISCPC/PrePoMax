@@ -57,8 +57,10 @@
             System.Windows.Forms.TreeNode treeNode15 = new System.Windows.Forms.TreeNode("Mesh", new System.Windows.Forms.TreeNode[] {
             treeNode14});
             System.Windows.Forms.TreeNode treeNode16 = new System.Windows.Forms.TreeNode("Field outputs");
-            System.Windows.Forms.TreeNode treeNode17 = new System.Windows.Forms.TreeNode("Results", new System.Windows.Forms.TreeNode[] {
-            treeNode16});
+            System.Windows.Forms.TreeNode treeNode17 = new System.Windows.Forms.TreeNode("History outputs");
+            System.Windows.Forms.TreeNode treeNode18 = new System.Windows.Forms.TreeNode("Results", new System.Windows.Forms.TreeNode[] {
+            treeNode16,
+            treeNode17});
             this.cmsTree = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.tsmiCreate = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEdit = new System.Windows.Forms.ToolStripMenuItem();
@@ -95,7 +97,6 @@
             this.tsmiDelete = new System.Windows.Forms.ToolStripMenuItem();
             this.ilIcons = new System.Windows.Forms.ImageList(this.components);
             this.ilStatusIcons = new System.Windows.Forms.ImageList(this.components);
-            this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.tcGeometryModelResults = new System.Windows.Forms.TabControl();
             this.tpGeometry = new System.Windows.Forms.TabPage();
             this.cltvGeometry = new UserControls.CodersLabTreeView();
@@ -103,12 +104,7 @@
             this.cltvModel = new UserControls.CodersLabTreeView();
             this.tpResults = new System.Windows.Forms.TabPage();
             this.cltvResults = new UserControls.CodersLabTreeView();
-            this.Properties = new UserControls.TabbedPropertyGrid();
             this.cmsTree.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
-            this.splitContainer1.Panel1.SuspendLayout();
-            this.splitContainer1.Panel2.SuspendLayout();
-            this.splitContainer1.SuspendLayout();
             this.tcGeometryModelResults.SuspendLayout();
             this.tpGeometry.SuspendLayout();
             this.tpModel.SuspendLayout();
@@ -390,15 +386,16 @@
             this.ilIcons.Images.SetKeyName(13, "Section.ico");
             this.ilIcons.Images.SetKeyName(14, "Constraints.ico");
             this.ilIcons.Images.SetKeyName(15, "Step.ico");
-            this.ilIcons.Images.SetKeyName(16, "Field_output.ico");
-            this.ilIcons.Images.SetKeyName(17, "Bc.ico");
-            this.ilIcons.Images.SetKeyName(18, "Load.ico");
-            this.ilIcons.Images.SetKeyName(19, "Analysis.ico");
-            this.ilIcons.Images.SetKeyName(20, "Warning.ico");
-            this.ilIcons.Images.SetKeyName(21, "Running.ico");
-            this.ilIcons.Images.SetKeyName(22, "OK.ico");
-            this.ilIcons.Images.SetKeyName(23, "Dots.ico");
-            this.ilIcons.Images.SetKeyName(24, "Dots_t.ico");
+            this.ilIcons.Images.SetKeyName(16, "History_output.ico");
+            this.ilIcons.Images.SetKeyName(17, "Field_output.ico");
+            this.ilIcons.Images.SetKeyName(18, "Bc.ico");
+            this.ilIcons.Images.SetKeyName(19, "Load.ico");
+            this.ilIcons.Images.SetKeyName(20, "Analysis.ico");
+            this.ilIcons.Images.SetKeyName(21, "Warning.ico");
+            this.ilIcons.Images.SetKeyName(22, "Running.ico");
+            this.ilIcons.Images.SetKeyName(23, "OK.ico");
+            this.ilIcons.Images.SetKeyName(24, "Dots.ico");
+            this.ilIcons.Images.SetKeyName(25, "Dots_t.ico");
             // 
             // ilStatusIcons
             // 
@@ -407,49 +404,28 @@
             this.ilStatusIcons.Images.SetKeyName(0, "Unactive.ico");
             this.ilStatusIcons.Images.SetKeyName(1, "Warning.ico");
             // 
-            // splitContainer1
-            // 
-            this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainer1.FixedPanel = System.Windows.Forms.FixedPanel.Panel2;
-            this.splitContainer1.Location = new System.Drawing.Point(0, 0);
-            this.splitContainer1.Margin = new System.Windows.Forms.Padding(0);
-            this.splitContainer1.Name = "splitContainer1";
-            this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            // 
-            // splitContainer1.Panel1
-            // 
-            this.splitContainer1.Panel1.Controls.Add(this.tcGeometryModelResults);
-            // 
-            // splitContainer1.Panel2
-            // 
-            this.splitContainer1.Panel2.Controls.Add(this.Properties);
-            this.splitContainer1.Size = new System.Drawing.Size(239, 498);
-            this.splitContainer1.SplitterDistance = 292;
-            this.splitContainer1.TabIndex = 2;
-            // 
             // tcGeometryModelResults
             // 
-            this.tcGeometryModelResults.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.tcGeometryModelResults.Controls.Add(this.tpGeometry);
             this.tcGeometryModelResults.Controls.Add(this.tpModel);
             this.tcGeometryModelResults.Controls.Add(this.tpResults);
+            this.tcGeometryModelResults.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tcGeometryModelResults.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.tcGeometryModelResults.Location = new System.Drawing.Point(0, 0);
             this.tcGeometryModelResults.Margin = new System.Windows.Forms.Padding(0);
             this.tcGeometryModelResults.Name = "tcGeometryModelResults";
             this.tcGeometryModelResults.SelectedIndex = 0;
-            this.tcGeometryModelResults.Size = new System.Drawing.Size(240, 292);
+            this.tcGeometryModelResults.Size = new System.Drawing.Size(239, 498);
             this.tcGeometryModelResults.TabIndex = 0;
             this.tcGeometryModelResults.SelectedIndexChanged += new System.EventHandler(this.tcGeometryModelResults_SelectedIndexChanged);
+            this.tcGeometryModelResults.Deselecting += new System.Windows.Forms.TabControlCancelEventHandler(this.tcGeometryModelResults_Deselecting);
             // 
             // tpGeometry
             // 
             this.tpGeometry.Controls.Add(this.cltvGeometry);
             this.tpGeometry.Location = new System.Drawing.Point(4, 24);
             this.tpGeometry.Name = "tpGeometry";
-            this.tpGeometry.Size = new System.Drawing.Size(232, 264);
+            this.tpGeometry.Size = new System.Drawing.Size(231, 470);
             this.tpGeometry.TabIndex = 2;
             this.tpGeometry.Text = "Geometry";
             this.tpGeometry.UseVisualStyleBackColor = true;
@@ -476,7 +452,7 @@
             this.cltvGeometry.SelectedImageIndex = 0;
             this.cltvGeometry.SelectionBackColor = System.Drawing.SystemColors.Highlight;
             this.cltvGeometry.SelectionMode = UserControls.TreeViewSelectionMode.MultiSelect;
-            this.cltvGeometry.Size = new System.Drawing.Size(232, 264);
+            this.cltvGeometry.Size = new System.Drawing.Size(231, 470);
             this.cltvGeometry.TabIndex = 0;
             this.cltvGeometry.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.cltv_BeforeCollapse);
             this.cltvGeometry.AfterCollapse += new System.Windows.Forms.TreeViewEventHandler(this.cltv_AfterCollapse);
@@ -494,7 +470,7 @@
             this.tpModel.Controls.Add(this.cltvModel);
             this.tpModel.Location = new System.Drawing.Point(4, 24);
             this.tpModel.Name = "tpModel";
-            this.tpModel.Size = new System.Drawing.Size(232, 264);
+            this.tpModel.Size = new System.Drawing.Size(231, 470);
             this.tpModel.TabIndex = 0;
             this.tpModel.Text = "FE Model";
             this.tpModel.UseVisualStyleBackColor = true;
@@ -577,7 +553,7 @@
             this.cltvModel.SelectedImageIndex = 0;
             this.cltvModel.SelectionBackColor = System.Drawing.SystemColors.Highlight;
             this.cltvModel.SelectionMode = UserControls.TreeViewSelectionMode.MultiSelect;
-            this.cltvModel.Size = new System.Drawing.Size(232, 264);
+            this.cltvModel.Size = new System.Drawing.Size(231, 470);
             this.cltvModel.TabIndex = 0;
             this.cltvModel.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.cltv_BeforeCollapse);
             this.cltvModel.AfterCollapse += new System.Windows.Forms.TreeViewEventHandler(this.cltv_AfterCollapse);
@@ -596,7 +572,7 @@
             this.tpResults.Location = new System.Drawing.Point(4, 24);
             this.tpResults.Name = "tpResults";
             this.tpResults.Padding = new System.Windows.Forms.Padding(3);
-            this.tpResults.Size = new System.Drawing.Size(232, 264);
+            this.tpResults.Size = new System.Drawing.Size(231, 470);
             this.tpResults.TabIndex = 1;
             this.tpResults.Text = "Results";
             this.tpResults.UseVisualStyleBackColor = true;
@@ -630,18 +606,23 @@
             treeNode16.StateImageKey = "(none)";
             treeNode16.Text = "Field outputs";
             treeNode16.ToolTipText = "Field outputs";
-            treeNode17.ImageKey = "Dots.ico";
-            treeNode17.Name = "Results";
-            treeNode17.SelectedImageKey = "Dots_t.ico";
-            treeNode17.Text = "Results";
-            treeNode17.ToolTipText = "Results";
+            treeNode17.ImageKey = "History_output.ico";
+            treeNode17.Name = "History outputs";
+            treeNode17.SelectedImageKey = "History_output.ico";
+            treeNode17.Text = "History outputs";
+            treeNode17.ToolTipText = "History outputs";
+            treeNode18.ImageKey = "Dots.ico";
+            treeNode18.Name = "Results";
+            treeNode18.SelectedImageKey = "Dots_t.ico";
+            treeNode18.Text = "Results";
+            treeNode18.ToolTipText = "Results";
             this.cltvResults.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
             treeNode15,
-            treeNode17});
+            treeNode18});
             this.cltvResults.SelectedImageIndex = 0;
             this.cltvResults.SelectionBackColor = System.Drawing.SystemColors.Highlight;
             this.cltvResults.SelectionMode = UserControls.TreeViewSelectionMode.MultiSelect;
-            this.cltvResults.Size = new System.Drawing.Size(226, 258);
+            this.cltvResults.Size = new System.Drawing.Size(225, 464);
             this.cltvResults.TabIndex = 0;
             this.cltvResults.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.cltv_BeforeCollapse);
             this.cltvResults.AfterCollapse += new System.Windows.Forms.TreeViewEventHandler(this.cltv_AfterCollapse);
@@ -654,34 +635,14 @@
             this.cltvResults.MouseDown += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseDown);
             this.cltvResults.MouseUp += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseUp);
             // 
-            // Properties
-            // 
-            this.Properties.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.Properties.DisabledItemForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(80)))), ((int)(((byte)(80)))), ((int)(((byte)(80)))));
-            this.Properties.Enabled = false;
-            this.Properties.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.Properties.LineColor = System.Drawing.SystemColors.Control;
-            this.Properties.Location = new System.Drawing.Point(0, 0);
-            this.Properties.Margin = new System.Windows.Forms.Padding(0);
-            this.Properties.Name = "Properties";
-            this.Properties.Size = new System.Drawing.Size(238, 202);
-            this.Properties.TabIndex = 1;
-            this.Properties.ToolbarVisible = false;
-            // 
             // ModelTree
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.splitContainer1);
+            this.Controls.Add(this.tcGeometryModelResults);
             this.Name = "ModelTree";
             this.Size = new System.Drawing.Size(239, 498);
             this.cmsTree.ResumeLayout(false);
-            this.splitContainer1.Panel1.ResumeLayout(false);
-            this.splitContainer1.Panel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
-            this.splitContainer1.ResumeLayout(false);
             this.tcGeometryModelResults.ResumeLayout(false);
             this.tpGeometry.ResumeLayout(false);
             this.tpModel.ResumeLayout(false);
@@ -693,8 +654,6 @@
         #endregion
 
         private CodersLabTreeView cltvModel;
-        private TabbedPropertyGrid Properties;
-        private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.ContextMenuStrip cmsTree;
         private System.Windows.Forms.ToolStripMenuItem tsmiExpandAll;
         private System.Windows.Forms.ToolStripMenuItem tsmiCollapseAll;

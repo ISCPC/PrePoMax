@@ -82,6 +82,7 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Management" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
@@ -113,17 +114,19 @@
     <Compile Include="vtkInteractorStyleControl.cs" />
     <Compile Include="Enums\vtkRendererLayer.cs" />
     <Compile Include="vtkMax\Actor\vtkMaxActor.cs" />
-    <Compile Include="vtkMax\Actor\vtkMaxAnimationFrameData.cs" />
+    <Compile Include="vtkMax\Animation\vtkMaxAnimationFrameData.cs" />
     <Compile Include="vtkMax\Actor\vtkMaxExtreemeNode.cs" />
-    <Compile Include="vtkMax\Actor\vtkMaxActorAnimationData.cs" />
+    <Compile Include="vtkMax\Animation\vtkMaxActorAnimationData.cs" />
     <Compile Include="vtkMax\ColorSpectrum\vtkMaxColorSpectrum.cs" />
+    <Compile Include="vtkMax\Widget\02_vtkMaxScaleWidget.cs" />
     <Compile Include="vtkMax\Widget\DataFieldType.cs" />
-    <Compile Include="vtkMax\Widget\vtkMaxBorderWidget.cs" />
+    <Compile Include="vtkMax\Widget\01_vtkMaxBorderWidget.cs" />
     <Compile Include="vtkMax\Actor\vtkMaxActorData.cs" />
-    <Compile Include="vtkMax\Widget\vtkMaxScalarBarWidget.cs" />
-    <Compile Include="vtkMax\Widget\vtkMaxStatusBlock.cs" />
-    <Compile Include="vtkMax\Widget\vtkMaxTextWidget.cs" />
-    <Compile Include="vtkMax\Widget\vtkMaxTextWithArrowWidget.cs" />
+    <Compile Include="vtkMax\Widget\03_vtkMaxScalarBarWidget.cs" />
+    <Compile Include="vtkMax\Widget\03_vtkMaxStatusBlock.cs" />
+    <Compile Include="vtkMax\Widget\02_vtkMaxTextWidget.cs" />
+    <Compile Include="vtkMax\Widget\03_vtkMaxTextWithArrowWidget.cs" />
+    <Compile Include="vtkMax\Widget\vtkMaxWidgetTools.cs" />
     <Service Include="{94E38DFF-614B-4cbd-B67C-F211BB35CE8B}" />
   </ItemGroup>
   <ItemGroup>

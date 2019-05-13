@@ -101,22 +101,26 @@ namespace PrePoMax.Forms
                 else if (lvAddedProperties.SelectedItems[0].Tag is ViewPlastic)
                 {
                     tcProperties.TabPages.Clear();
+                    tcProperties.TabPages.Add(_pages[0]);
                     tcProperties.TabPages.Add(_pages[1]);
 
                     BindingSource binding = new BindingSource();
                     binding.DataSource = (lvAddedProperties.SelectedItems[0].Tag as ViewPlastic).DataPoints;
                     dgvData.DataSource = binding; //bind datagridview to binding source - enables adding of new lines
+                    binding.ListChanged += Binding_ListChanged;
+
+                    propertyGrid.SelectedObject = lvAddedProperties.SelectedItems[0].Tag;
                 }
             }
             lvAddedProperties.Select();
         }
+        private void Binding_ListChanged(object sender, ListChangedEventArgs e)
+        {
+            _propertyChanged = true;
+        }
         private void propertyGrid_PropertyValueChanged(object s, PropertyValueChangedEventArgs e)
         {
             propertyGrid.Refresh();
-            _propertyItemChanged = true;
-        }
-        private void dgvData_CellValueChanged(object sender, DataGridViewCellEventArgs e)
-        {
             _propertyItemChanged = true;
         }
         private void dgvData_DataError(object sender, DataGridViewDataErrorEventArgs e)
@@ -251,7 +255,5 @@ namespace PrePoMax.Forms
         {
             return NamedClass.GetNewValueName(_materialNames, "Material-");
         }
-
-       
     }
 }

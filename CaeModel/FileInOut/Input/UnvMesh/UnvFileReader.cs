@@ -114,15 +114,23 @@ namespace FileInOut.Input
 
         static private Dictionary<int, FeNode> GetNodes(string[] lines)
         {
+            // Gmsh output
+            // 5.9503897502616780D+000 - 6.7545275265579088D+000 - 1.2674495655059456D+001
+
             Dictionary<int, FeNode> nodes = new Dictionary<int, FeNode>();
             int id;
             FeNode node;
             string[] record1;
             string[] record2;
-
+            bool replaceDwithE = false;
             // line 0 is the line with the SetID
+
+            if (lines.Length > 2) replaceDwithE = lines[2].Contains("D");
+
             for (int i = 1; i < lines.Length; i += 2)
             {
+                if (replaceDwithE) lines[i + 1] = lines[i + 1].Replace('D', 'E');
+
                 record1 = lines[i].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
                 record2 = lines[i + 1].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
 

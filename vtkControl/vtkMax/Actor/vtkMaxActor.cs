@@ -18,7 +18,7 @@ namespace vtkControl
         private vtkActor _modelEdges;
         private vtkCellLocator _cellLocator;          // for surface picking
         private vtkCellLocator _frustumCellLocator;   // for volume picking
-        private vtkMaxActorAnimationData[] _animationData;        
+        //private vtkMaxActorAnimationData[] _animationData;        
         private bool _backfaceCulling;
         private System.Drawing.Color _color;
         private double _ambient;
@@ -34,7 +34,6 @@ namespace vtkControl
         public vtkActor ModelEdges { get { return _modelEdges; } set { _modelEdges = value; } }
         public vtkCellLocator CellLocator { get { return _cellLocator; } set { _cellLocator = value; } }
         public vtkCellLocator FrustumCellLocator { get { return _frustumCellLocator; } set { _frustumCellLocator = value; } }
-        public vtkMaxActorAnimationData[] AnimationData { get { return _animationData; } set { _animationData = value; } }
         public bool BackfaceCulling { get { return _backfaceCulling; } set { _backfaceCulling = value; } }
         public System.Drawing.Color Color
         {
@@ -76,7 +75,6 @@ namespace vtkControl
             _modelEdges = null;
             _cellLocator = null;
             _frustumCellLocator = null;
-            _animationData = null;
             _backfaceCulling = true;
             _color = System.Drawing.Color.Yellow;
             _colorContours = false;
@@ -132,8 +130,8 @@ namespace vtkControl
             this._diffuse = data.Diffuse;
             this._backfaceCulling = data.BackfaceCulling;
             this._colorContours = data.ColorContours;
-            
-            if (createNodalActor) 
+
+            if (createNodalActor)
                 CreateNodalActor(data);
             else
             {
@@ -152,12 +150,82 @@ namespace vtkControl
                     this.SetPickable(0);
                 }
 
-                AddAnimationData(data);
-
                 UpdateColor();
             }
         }
+        public vtkMaxActor(vtkMaxActor sourceActor)
+          : this()
+        {
+            this._name = sourceActor.Name;
+            this._color = sourceActor.Color;
+            this._ambient = sourceActor.Ambient;
+            this._diffuse = sourceActor.Diffuse;
+            this._backfaceCulling = sourceActor.BackfaceCulling;
+            this._colorContours = sourceActor.ColorContours;
 
+            if (sourceActor.MinNode != null) _minNode = new vtkMaxExtreemeNode(sourceActor.MinNode);
+            if (sourceActor.MaxNode != null) _maxNode = new vtkMaxExtreemeNode(sourceActor.MaxNode);
+
+            // This                                                             
+            // Polydata
+            vtkPolyData polydata = vtkPolyData.New();
+            polydata.DeepCopy(sourceActor.GetMapper().GetInput());
+            // Mapper
+            vtkDataSetMapper mapper = vtkDataSetMapper.New();
+            mapper.SetInput(polydata);
+            // Actor
+            this.SetMapper(mapper);
+            this.GetProperty().DeepCopy(sourceActor.GetProperty());
+
+
+            // Element edges                                                    
+            // Grid
+            vtkUnstructuredGrid grid = vtkUnstructuredGrid.New();
+            grid.DeepCopy(sourceActor.ElementEdges.GetMapper().GetInput());
+            // Mapper
+            mapper = vtkDataSetMapper.New();
+            mapper.SetInput(grid);
+            // Actor
+            _elementEdges = new vtkActor();
+            _elementEdges.SetMapper(mapper);
+            _elementEdges.GetProperty().DeepCopy(sourceActor.ElementEdges.GetProperty());
+
+            
+            // Model edges                                                      
+            if (sourceActor.ModelEdges != null)
+            {
+                // Grid
+                grid = vtkUnstructuredGrid.New();
+                grid.DeepCopy(sourceActor.ModelEdges.GetMapper().GetInput());
+                // Mapper
+                mapper = vtkDataSetMapper.New();
+                mapper.SetInput(grid);
+                // Actor
+                _modelEdges = vtkActor.New();
+                _modelEdges.SetMapper(mapper);
+                _modelEdges.GetProperty().DeepCopy(sourceActor.ModelEdges.GetProperty());
+            }
+
+            if (sourceActor.GetPickable() == 1 && sourceActor.CellLocator != null)
+            {
+                this.SetPickable(1);
+                _cellLocator = vtkCellLocator.New();
+                _cellLocator.SetDataSet(this.GetMapper().GetInputAsDataSet());
+                _cellLocator.LazyEvaluationOn();
+
+                // Grid
+                grid = vtkUnstructuredGrid.New();
+                grid.DeepCopy(sourceActor.FrustumCellLocator.GetDataSet());
+
+                _frustumCellLocator = vtkCellLocator.New();
+                _frustumCellLocator.SetDataSet(grid);
+                _frustumCellLocator.LazyEvaluationOn();
+            }
+            else
+            {
+                this.SetPickable(0);
+            }
+        }
 
         // Methods                                                                                                                  
         private void AddCellDataToGrid(vtkUnstructuredGrid source, vtkUnstructuredGrid uGridActor, vtkUnstructuredGrid uGridEdges)
@@ -316,7 +384,7 @@ namespace vtkControl
             vtkDataSetMapper mapper = vtkDataSetMapper.New();
             mapper.SetInput(polydata);
             this.SetMapper(mapper);
-
+            
             if (data.Pickable) this.PickableOn();
             else this.PickableOff();
 
@@ -358,6 +426,8 @@ namespace vtkControl
                 _modelEdges.PickableOff();
             }
         }
+        
+
         //                          
         private vtkActor GetActorEdgesFromGrid_(vtkUnstructuredGrid uGridEdges)
         {
@@ -707,52 +777,39 @@ namespace vtkControl
 
 
         // Animation                                                                                                                
-        private void AddAnimationData(vtkMaxActorData data)
+        public void SetAnimationFrame(vtkMaxActorData data, int frameNumber)
         {
-            int n = 0;
-            if (data.Actor.NodesAnimation != null) n = data.Actor.NodesAnimation.Length;
-            //if (data.ModelEdges != null && data.ModelEdges.NodesAnimation != null) n = data.ModelEdges.NodesAnimation.Length;
-
-            if (n > 0)
+            if (data.Actor.NodesAnimation != null)
             {
-                if (data.Actor.NodesAnimation == null) data.Actor.NodesAnimation = new NodesExchangeData[n];
-                if (data.ModelEdges.NodesAnimation == null) data.ModelEdges.NodesAnimation = new NodesExchangeData[n];
+                if (frameNumber < 0 || frameNumber >= data.Actor.NodesAnimation.Length) throw new Exception("The animation frame can not be set.");
 
-                _animationData = new vtkMaxActorAnimationData[n];
-                for (int i = 0; i < n; i++)
-                {
-                    _animationData[i] = new vtkMaxActorAnimationData(data.Actor.NodesAnimation[i].Coor, data.ModelEdges.NodesAnimation[i].Coor, 
-                                                                     data.Actor.NodesAnimation[i].Values, data.Actor.ExtremeNodesAnimation[i]);
-                }
-            }
-        }
-        public void SetAnimationFrame(int frameNumber)
-        {
-            if (_animationData != null)
-            {
-                if (frameNumber < 0 || frameNumber >= _animationData.Length) throw new Exception("The animation frame can not be set.");
+                vtkMaxActorAnimationData animationData = new vtkMaxActorAnimationData(data.Actor.NodesAnimation[frameNumber].Coor, 
+                                                                                      data.ModelEdges.NodesAnimation[frameNumber].Coor,
+                                                                                      data.Actor.NodesAnimation[frameNumber].Values,
+                                                                                      data.Actor.ExtremeNodesAnimation[frameNumber]);
                 // actor points
-                if (_animationData[frameNumber].Points != null)
+                if (animationData.Points != null)
                 {
                     vtkPointSet pointSet = this.GetMapper().GetInput() as vtkPointSet;
-                    pointSet.SetPoints(_animationData[frameNumber].Points);
-                    (_elementEdges.GetMapper().GetInput() as vtkPointSet).SetPoints(_animationData[frameNumber].Points);
+                    pointSet.SetPoints(animationData.Points);
+                    (_elementEdges.GetMapper().GetInput() as vtkPointSet).SetPoints(animationData.Points);
 
                     // normals
-                    if (pointSet.GetPointData().GetNormals() != null && _animationData[frameNumber].PointNormals == null)
-                        _animationData[frameNumber].PointNormals = ComputeNormals(pointSet);
-                    pointSet.GetPointData().SetNormals(_animationData[frameNumber].PointNormals);
+                    if (pointSet.GetPointData().GetNormals() != null && animationData.PointNormals == null)
+                        animationData.PointNormals = ComputeNormals(pointSet);
+                    pointSet.GetPointData().SetNormals(animationData.PointNormals);
                 }
+                
                 // actor edges points
-                if (_animationData[frameNumber].ModelEdgesPoints != null && _modelEdges != null)
-                    (_modelEdges.GetMapper().GetInput() as vtkPointSet).SetPoints(_animationData[frameNumber].ModelEdgesPoints);
+                if (animationData.ModelEdgesPoints != null && _modelEdges != null)
+                    (_modelEdges.GetMapper().GetInput() as vtkPointSet).SetPoints(animationData.ModelEdgesPoints);
 
                 // values
-                if (_animationData[frameNumber].Values != null) this.GetMapper().GetInput().GetPointData().SetScalars(_animationData[frameNumber].Values);
-
+                if (animationData.Values != null) this.GetMapper().GetInput().GetPointData().SetScalars(animationData.Values);
+                
                 // min/max
-                if (_animationData[frameNumber].MinNode != null) _minNode = _animationData[frameNumber].MinNode;
-                if (_animationData[frameNumber].MaxNode != null) _maxNode = _animationData[frameNumber].MaxNode;
+                if (animationData.MinNode != null) _minNode = animationData.MinNode;
+                if (animationData.MaxNode != null) _maxNode = animationData.MaxNode;
             }
         }
     }

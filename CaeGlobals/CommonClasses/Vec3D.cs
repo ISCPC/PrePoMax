@@ -38,12 +38,6 @@ namespace CaeGlobals
 
 
         // Methods                                                                                                                  
-        public void Sub(Vec3D a)
-        {
-            X = X - a.X;
-            Y = Y - a.Y;
-            Z = Z - a.Z;
-        }
         public double Normalize()
         {
             double n = Math.Sqrt(X * X + Y * Y + Z * Z);
@@ -55,12 +49,7 @@ namespace CaeGlobals
             }
             return n;
         }
-        public void MultBy(double a)
-        {
-            X = X * a;
-            Y = Y * a;
-            Z = Z * a;
-        }
+
 
         #region STATIC UTILITIES
 

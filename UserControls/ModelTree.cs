@@ -76,7 +76,9 @@ namespace UserControls
         private TreeNode _constraints;
         private TreeNode _steps;
         private TreeNode _analyses;
-        private TreeNode _fieldData;
+        // Results
+        private TreeNode _resultFieldOutputs;
+        private TreeNode _resultHistoryOutputs;
 
         private string _geomPartsName;
         private string _modelName;
@@ -90,13 +92,12 @@ namespace UserControls
         private string _sectionsName;
         private string _constraintName;
         private string _stepsName;
+        private string _historyOutputsName;
         private string _fieldOutputsName;
         private string _boundaryConditionsName;
         private string _loadsName;
         private string _analysesName;
-        private string _fieldDataName;
 
-        
 
         // Properties                                                                                                               
         public bool ScreenUpdating 
@@ -164,12 +165,12 @@ namespace UserControls
             _sectionsName = "Sections";
             _constraintName = "Constraints";
             _stepsName = "Steps";
-            _fieldOutputsName = "Field outputs";
             _boundaryConditionsName = "BCs";
             _loadsName = "Loads";
             _analysesName = "Analyses";
-            _fieldDataName = "Field outputs";
-
+            // Results
+            _fieldOutputsName = "Field outputs";
+            _historyOutputsName = "History outputs";
 
             _geomParts = cltvGeometry.Nodes.Find(_geomPartsName, true)[0];
             _model = cltvModel.Nodes.Find(_modelName, true)[0];
@@ -184,11 +185,11 @@ namespace UserControls
             _constraints = cltvModel.Nodes.Find(_constraintName, true)[0];
             _steps = cltvModel.Nodes.Find(_stepsName, true)[0];
             _analyses = cltvModel.Nodes.Find(_analysesName, true)[0];
-            _fieldData = cltvResults.Nodes.Find(_fieldDataName, true)[0];
+            _resultFieldOutputs = cltvResults.Nodes.Find(_fieldOutputsName, true)[0];
+            _resultHistoryOutputs = cltvResults.Nodes.Find(_historyOutputsName, true)[0];
 
             // add NamedClasses to static items
             _model.Tag = new EmptyNamedClass(typeof(CaeModel.FeModel).ToString());
-
             // Geometry icons
             _geomParts.StateImageKey = "GeomPart";
             // Model icons
@@ -203,10 +204,11 @@ namespace UserControls
             _constraints.StateImageKey = "Constraints";
             _steps.StateImageKey = "Step";
             _analyses.StateImageKey = "Bc";
-            _fieldData.StateImageKey = "Field_output";
             // Results icons
             cltvResults.Nodes.Find("Mesh", true)[0].StateImageKey = "Mesh";
             _resultParts.StateImageKey = "BasePart";
+            _resultFieldOutputs.StateImageKey = "Field_output";
+            _resultHistoryOutputs.StateImageKey = "History_output";
 
             _doubleClick = false;
             _screenUpdating = true;
@@ -216,15 +218,17 @@ namespace UserControls
             cltvResults.Nodes[0].ExpandAll();
             cltvResults.Nodes[1].ExpandAll();
 
-            //Properties.SetParent((Form)this.Parent);  // for the Tab key to work
-            Properties.SetLabelColumnWidth(1.5);
-
             //cltvModel.SelectionBackColor = Color.White;
             //cltvModel.ForeColor = Color.Black;
         }
 
 
         // Event hadlers                                                                                                            
+        private void tcGeometryModelResults_Deselecting(object sender, TabControlCancelEventArgs e)
+        {
+            e.Cancel = _disableMouse;
+        }
+
         #region Geometry-Model-Results
         private ViewType GetViewType()
         {
@@ -240,19 +244,28 @@ namespace UserControls
         public void SetGeometryTab()
         {
             tcGeometryModelResults.SelectedIndexChanged -= tcGeometryModelResults_SelectedIndexChanged;
+            bool prevMouseState = _disableMouse;
+            _disableMouse = false;
             tcGeometryModelResults.SelectedTab = tpGeometry;
+            _disableMouse = prevMouseState;
             tcGeometryModelResults.SelectedIndexChanged += tcGeometryModelResults_SelectedIndexChanged;
         }
         public void SetModelTab()
         {
             tcGeometryModelResults.SelectedIndexChanged -= tcGeometryModelResults_SelectedIndexChanged;
+            bool prevMouseState = _disableMouse;
+            _disableMouse = false;
             tcGeometryModelResults.SelectedTab = tpModel;
+            _disableMouse = prevMouseState;
             tcGeometryModelResults.SelectedIndexChanged += tcGeometryModelResults_SelectedIndexChanged;
         }
         public void SetResultsTab()
         {
             tcGeometryModelResults.SelectedIndexChanged -= tcGeometryModelResults_SelectedIndexChanged;
+            bool prevMouseState = _disableMouse;
+            _disableMouse = false;
             tcGeometryModelResults.SelectedTab = tpResults;
+            _disableMouse = prevMouseState;
             tcGeometryModelResults.SelectedIndexChanged += tcGeometryModelResults_SelectedIndexChanged;
         }
         #endregion
@@ -510,20 +523,19 @@ namespace UserControls
 
             if (!_doubleClick && tree.SelectedNodes.Count > 0)
             {
+                // Select field data
                 if (tree.SelectedNodes.Count == 1)
                 {
                     node = tree.SelectedNodes[0];
 
-                    UpdatePropertiesControl(node.Tag); // must be here to also set = null
-
-                    if (node.Tag is FieldData)
+                    if (node.Tag is FieldData)          // Results
                     {
-                        SelectEvent?.Invoke(null);
+                        SelectEvent?.Invoke(null);      // clear selection
                         FieldDataSelectEvent?.Invoke(new string[] { node.Parent.Name, node.Name });
+                        ActiveControl = cltvResults;    // this is for the arrow keys to work on the results tree
                         return;
                     }
                 }
-                else UpdatePropertiesControl(null);
 
                 // Select
                 foreach (TreeNode selectedNode in tree.SelectedNodes)
@@ -532,7 +544,6 @@ namespace UserControls
 
                     items.Add((NamedClass)selectedNode.Tag);
                 }
-
                 SelectEvent?.Invoke(items.ToArray());
             }
             else if (tree.SelectedNodes.Count == 0) ClearSelectionEvent();
@@ -1101,8 +1112,6 @@ namespace UserControls
             //btvGeometry.Nodes[0].ExpandAll();
             //btvModel.Nodes[0].ExpandAll();
             //btvResults.Nodes[0].ExpandAll();
-
-            Properties.SelectedObject = null;
         }
         public void ClearSelection()
         {
@@ -1115,8 +1124,11 @@ namespace UserControls
             _resultParts.Nodes.Clear();
             _resultParts.Text = _resultPartsName;
 
-            _fieldData.Nodes.Clear();
-            _fieldData.Text = _fieldDataName;
+            _resultFieldOutputs.Nodes.Clear();
+            _resultFieldOutputs.Text = _fieldOutputsName;
+
+            _resultHistoryOutputs.Nodes.Clear();
+            _resultHistoryOutputs.Text = _historyOutputsName;
         }
 
         public void UpdateHighlight()
@@ -1173,7 +1185,7 @@ namespace UserControls
         }
 
 
-        public void RegenerateTree(FeModel model, Dictionary<string, AnalysisJob> jobs, FeResults results)
+        public void RegenerateTree(FeModel model, Dictionary<string, AnalysisJob> jobs, FeResults results, HistoryResults history)
         {
             if (!_screenUpdating) return;
 
@@ -1245,11 +1257,13 @@ namespace UserControls
                             SetFieldOutputAndComponentNames(fieldNames, allComponents);
                         }
                     }
+
+                    if (history != null)
+                    {
+                        SetHistoryOutputNames(history);
+                    }
                 }
                 cltvModel.EndUpdate();
-
-                Properties.SelectedObject = null;
-
             }
             catch { }
         }
@@ -1330,6 +1344,19 @@ namespace UserControls
             {
                 node = AddStep((Step)item);
                 parent = _steps;
+            }
+            else if (item is HistoryOutput && stepName != null)
+            {
+                tmp = _steps.Nodes.Find(stepName, true);
+                if (tmp.Length > 1) throw new Exception("Adding operation failed. More than one step named: " + stepName);
+
+                tmp = tmp[0].Nodes.Find(_historyOutputsName, true);
+                if (tmp.Length > 1) throw new Exception("Adding operation failed. There is no history output node to add to.");
+
+                node = tmp[0].Nodes.Add(item.Name);
+                node.Name = node.Text;
+                node.Tag = item;
+                parent = tmp[0];
             }
             else if (item is FieldOutput && stepName != null)
             {
@@ -1529,6 +1556,12 @@ namespace UserControls
             SetNodeStatus(stepNode);
 
             TreeNode tmp;
+            // HistoryOutputs
+            tmp = stepNode.Nodes.Add(_historyOutputsName);
+            tmp.Name = tmp.Text;
+            AddObjectsToNode<string, HistoryOutput>(_historyOutputsName, tmp, step.HistoryOutputs);
+            SetNodeImage(tmp, "History_output.ico");
+
             // FieldOutputs
             tmp = stepNode.Nodes.Add(_fieldOutputsName);
             tmp.Name = tmp.Text;
@@ -1624,21 +1657,16 @@ namespace UserControls
             }
         }
         //                                                                                                              
-        public void UpdatePropertyGrid()
-        {
-            Properties.Refresh();
-        }
+     
 
         //                                                                                                              
         public void SetFieldOutputAndComponentNames(string[] fieldNames, string[][] components)
         {
-            _fieldData.Nodes.Clear();
-
             TreeNode node;
             TreeNode child;
             for (int i = 0; i < fieldNames.Length; i++)
             {
-                node = _fieldData.Nodes.Add(fieldNames[i]);
+                node = _resultFieldOutputs.Nodes.Add(fieldNames[i]);
                 node.Name = node.Text;
                 SetNodeImage(node, "Dots.ico");
 
@@ -1653,8 +1681,36 @@ namespace UserControls
                 if (i == 0) node.Expand();
             }
 
-            _fieldData.Expand();
-            _fieldData.Text = _fieldDataName + " (" + fieldNames.Length.ToString() + ")";
+            _resultFieldOutputs.Expand();
+            _resultFieldOutputs.Text = _fieldOutputsName + " (" + _resultFieldOutputs.Nodes.Count.ToString() + ")";
+        }
+        public void SetHistoryOutputNames(HistoryResults historyOutput)
+        {
+            TreeNode node1;
+            TreeNode node2;
+            TreeNode node3;
+            foreach (var setEntry in historyOutput.Sets)
+            {
+                node1 = _resultHistoryOutputs.Nodes.Add(setEntry.Key);
+                node1.Name = node1.Text;
+                SetNodeImage(node1, "Dots.ico");
+
+                foreach (var fieldEntry in setEntry.Value.Fields)
+                {
+                    node2 = node1.Nodes.Add(fieldEntry.Key);
+                    node2.Name = node2.Text;
+                    SetNodeImage(node2, "Dots.ico");
+
+                    foreach (var componentEntry in fieldEntry.Value.Components)
+                    {
+                        node3 = node2.Nodes.Add(componentEntry.Key);
+                        node3.Name = node3.Text;
+                        SetNodeImage(node3, "Dots.ico");
+                        node3.Tag = new HistoryResultData(setEntry.Key, fieldEntry.Key, componentEntry.Key);
+                    }
+                }
+            }
+            _resultHistoryOutputs.Text = _historyOutputsName + " (" + _resultHistoryOutputs.Nodes.Count.ToString() + ")";
         }
 
         //                                                                                                              
@@ -1723,6 +1779,7 @@ namespace UserControls
             else if (node.Name == _sectionsName) return true;
             else if (node.Name == _constraintName) return true;
             else if (node.Name == _stepsName) return true;
+            else if (node.Name == _historyOutputsName) return true;
             else if (node.Name == _fieldOutputsName) return true;
             else if (node.Name == _boundaryConditionsName) return true;
             else if (node.Name == _loadsName) return true;
@@ -1731,10 +1788,11 @@ namespace UserControls
         }
         private bool CanDeactivate(TreeNode node)
         {
-            if (node.Tag is FieldOutput) return true;
-            if (node.Tag is BoundaryCondition) return true;
-            if (node.Tag is Load) return true;
-            return false;
+            if (node.Tag is HistoryOutput) return true;
+            else if (node.Tag is FieldOutput) return true;
+            else if (node.Tag is BoundaryCondition) return true;
+            else if (node.Tag is Load) return true;
+            else return false;
         }
         private bool CanHide(object item)
         {
@@ -1746,29 +1804,6 @@ namespace UserControls
         }
 
         //                                                                                                              
-        private void UpdatePropertiesControl(object obj)
-        {
-            if (obj is Material)
-            {
-                obj = new ViewMaterial((Material)obj);
-                Properties.SelectedObject = obj;
-
-            }
-            else if (obj is SolidSection)
-            {
-                obj = new ViewSolidSection((SolidSection)obj);
-                Properties.SelectedObject = obj;
-
-            }
-            else if (obj is StaticStep)
-            {
-                obj = new ViewStaticStep((StaticStep)obj);
-                Properties.SelectedObject = obj;
-
-            }
-            else
-                Properties.SelectedObject = obj;
-        }
         public static void SetLabelColumnWidth(PropertyGrid grid, int width)
         {
             if (grid == null)
@@ -1821,6 +1856,7 @@ namespace UserControls
                 cmsTree.Show(control, x, y);
             }
         }
-       
+
+        
     }
 }

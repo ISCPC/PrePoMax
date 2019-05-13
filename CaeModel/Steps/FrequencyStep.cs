@@ -37,8 +37,8 @@ namespace CaeModel
             _numOfFrequencies = 10;
             _storage = false;
 
-            AddFieldOutput(new NodalFieldOutput("NF-Output-1", NodalVariable.U | NodalVariable.RF));
-            AddFieldOutput(new ElementFieldOutput("EF-Output-1", ElementVariable.E | ElementVariable.S));
+            AddFieldOutput(new NodalFieldOutput("NF-Output-1", NodalFieldVariable.U | NodalFieldVariable.RF));
+            AddFieldOutput(new ElementFieldOutput("EF-Output-1", ElementFieldVariable.E | ElementFieldVariable.S));
         }
 
         // Methods                                                                                                                  

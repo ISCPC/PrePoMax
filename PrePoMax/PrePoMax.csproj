@@ -129,9 +129,12 @@
     <Compile Include="Command\0071_Step\CAddStep.cs" />
     <Compile Include="Command\0071_Step\CRemoveSteps.cs" />
     <Compile Include="Command\0071_Step\CReplaceStep.cs" />
-    <Compile Include="Command\0072_FieldOutput\CAddFieldOutput.cs" />
-    <Compile Include="Command\0072_FieldOutput\CRemoveFieldOutputs.cs" />
-    <Compile Include="Command\0072_FieldOutput\CReplaceFieldOutput.cs" />
+    <Compile Include="Command\0072_HistoryOutput\CAddHistoryOutput.cs" />
+    <Compile Include="Command\0072_HistoryOutput\CRemoveHistoryOutputs.cs" />
+    <Compile Include="Command\0072_HistoryOutput\CReplaceHisotryOutput.cs" />
+    <Compile Include="Command\0073_FieldOutput\CAddFieldOutput.cs" />
+    <Compile Include="Command\0073_FieldOutput\CRemoveFieldOutputs.cs" />
+    <Compile Include="Command\0073_FieldOutput\CReplaceFieldOutput.cs" />
     <Compile Include="Command\0081_BoundaryConditions\CAddBC.cs" />
     <Compile Include="Command\0081_BoundaryConditions\CHideBCs.cs" />
     <Compile Include="Command\0081_BoundaryConditions\CRemoveBCs.cs" />
@@ -159,6 +162,12 @@
     <Compile Include="Controller.cs" />
     <Compile Include="Enums\ViewGeometryModelResults.cs" />
     <Compile Include="Enums\ViewResultsType.cs" />
+    <Compile Include="Forms\12_AnalyzeGeometry\FrmAnalyzeGeometry.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\12_AnalyzeGeometry\FrmAnalyzeGeometry.Designer.cs">
+      <DependentUpon>FrmAnalyzeGeometry.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\31_Material\MaterialLibraryItem.cs" />
     <Compile Include="Forms\31_Material\FrmMaterialLibrary.cs">
       <SubType>Form</SubType>
@@ -168,6 +177,12 @@
     </Compile>
     <Compile Include="Forms\41_Step\ViewBuckleStep.cs" />
     <Compile Include="Forms\41_Step\ViewFrequencyStep.cs" />
+    <Compile Include="Forms\42_HistoryOutput\FrmHistoryOutput.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\42_HistoryOutput\ViewHistoryOutput.cs" />
+    <Compile Include="Forms\42_HistoryOutput\ViewElementHistoryOutput.cs" />
+    <Compile Include="Forms\42_HistoryOutput\ViewNodalHistoryOutput.cs" />
     <Compile Include="Forms\61_Load\ViewCentrifLoad.cs" />
     <Compile Include="Forms\61_Load\ViewGravityLoad.cs" />
     <Compile Include="Forms\71_Settings\FrmGetEnvVars.cs">
@@ -182,7 +197,7 @@
     <Compile Include="Forms\00_Common\FrmGetInteger.Designer.cs">
       <DependentUpon>FrmGetInteger.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\12_MeshingParameters\FrmMeshingParameters.cs">
+    <Compile Include="Forms\11_MeshingParameters\FrmMeshingParameters.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\21_Part\FrmPartProperties.cs">
@@ -209,7 +224,7 @@
     <Compile Include="Forms\41_Step\FrmStep.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\42_FieldOutput\FrmFieldOutput.cs">
+    <Compile Include="Forms\43_FieldOutput\FrmFieldOutput.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\51_BoundaryConditions\FrmBC.cs">
@@ -219,6 +234,12 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\81_Analysis\EnvVarsUIEditor.cs" />
+    <Compile Include="Forms\92_HistoryResultsOutput\FrmHistoryResultsOutput.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\92_HistoryResultsOutput\FrmHistoryResultsOutput.Designer.cs">
+      <DependentUpon>FrmHistoryResultsOutput.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\IFormBase.cs" />
     <Compile Include="Forms\00_Common\ViewValue.cs" />
     <Compile Include="Forms\02_CalculixKeywordEditor\FrmCalculixKeywordEditor.cs">
@@ -227,7 +248,7 @@
     <Compile Include="Forms\02_CalculixKeywordEditor\FrmCalculixKeywordEditor.Designer.cs">
       <DependentUpon>FrmCalculixKeywordEditor.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\12_MeshingParameters\ViewMeshingParameters.cs" />
+    <Compile Include="Forms\11_MeshingParameters\ViewMeshingParameters.cs" />
     <Compile Include="Forms\21_Part\ViewPartProperties.cs" />
     <Compile Include="Forms\22_NodeSet\ViewNodeSet.cs" />
     <Compile Include="Forms\23_ElementSet\ViewElementSet.cs" />
@@ -241,9 +262,9 @@
     <Compile Include="Forms\51_BoundaryConditions\StringDOFconverter.cs" />
     <Compile Include="Forms\51_BoundaryConditions\ViewBoundaryCondition.cs" />
     <Compile Include="Forms\51_BoundaryConditions\ViewDisplacementRotation.cs" />
-    <Compile Include="Forms\42_FieldOutput\ViewFieldOutput.cs" />
-    <Compile Include="Forms\42_FieldOutput\ViewElementFieldOutput.cs" />
-    <Compile Include="Forms\42_FieldOutput\ViewNodalFieldOutput.cs" />
+    <Compile Include="Forms\43_FieldOutput\ViewFieldOutput.cs" />
+    <Compile Include="Forms\43_FieldOutput\ViewElementFieldOutput.cs" />
+    <Compile Include="Forms\43_FieldOutput\ViewNodalFieldOutput.cs" />
     <Compile Include="Forms\31_Material\FrmMaterial.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -344,8 +365,14 @@
     <Compile Include="Settings\ISettings.cs" />
     <Compile Include="Settings\CalculixSettings.cs" />
     <Compile Include="Tools.cs" />
+    <EmbeddedResource Include="Forms\12_AnalyzeGeometry\FrmAnalyzeGeometry.resx">
+      <DependentUpon>FrmAnalyzeGeometry.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\31_Material\FrmMaterialLibrary.resx">
       <DependentUpon>FrmMaterialLibrary.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\42_HistoryOutput\FrmHistoryOutput.resx">
+      <DependentUpon>FrmHistoryOutput.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\71_Settings\FrmGetEnvVars.resx">
       <DependentUpon>FrmGetEnvVars.cs</DependentUpon>
@@ -353,7 +380,7 @@
     <EmbeddedResource Include="Forms\00_Common\FrmGetInteger.resx">
       <DependentUpon>FrmGetInteger.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\12_MeshingParameters\FrmMeshingParameters.resx">
+    <EmbeddedResource Include="Forms\11_MeshingParameters\FrmMeshingParameters.resx">
       <DependentUpon>FrmMeshingParameters.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\21_Part\FrmPartProperties.resx">
@@ -383,7 +410,7 @@
     <EmbeddedResource Include="Forms\41_Step\FrmStep.resx">
       <DependentUpon>FrmStep.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\42_FieldOutput\FrmFieldOutput.resx">
+    <EmbeddedResource Include="Forms\43_FieldOutput\FrmFieldOutput.resx">
       <DependentUpon>FrmFieldOutput.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\31_Material\FrmMaterial.resx">
@@ -412,6 +439,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\91_Animation\FrmAnimation.resx">
       <DependentUpon>FrmAnimation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\92_HistoryResultsOutput\FrmHistoryResultsOutput.resx">
+      <DependentUpon>FrmHistoryResultsOutput.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmMain.resx">
       <DependentUpon>FrmMain.cs</DependentUpon>

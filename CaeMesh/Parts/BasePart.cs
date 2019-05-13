@@ -193,6 +193,14 @@ namespace CaeMesh
             Name = properties.Name;
             _color = properties.Color;
         }
+        public virtual void RenumberElements(Dictionary<int, int> newIds)
+        {
+            Visualization.RenumberElements(newIds);
+        }
+        public virtual void RenumberNodes(Dictionary<int, int> newIds)
+        {
+            Visualization.RenumberNodes(newIds);
+        }
 
         public bool IsEqual(BasePart part)
         {

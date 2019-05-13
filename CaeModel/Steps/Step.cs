@@ -15,6 +15,7 @@ namespace CaeModel
         protected Dictionary<string, BoundaryCondition> _boundayConditions;
         protected Dictionary<string, Load> _loads;
         protected Dictionary<string, FieldOutput> _fieldOutputs;
+        protected Dictionary<string, HistoryOutput> _historyOutputs;
         protected bool _perturbation;
         protected bool _nlgeom;
         protected int _maxIncrements;
@@ -25,6 +26,7 @@ namespace CaeModel
         public Dictionary<string, BoundaryCondition> BoundaryConditions { get { return _boundayConditions; } }
         public Dictionary<string, Load> Loads { get { return _loads; } }
         public Dictionary<string, FieldOutput> FieldOutputs { get { return _fieldOutputs; } }
+        public Dictionary<string, HistoryOutput> HistoryOutputs { get { return _historyOutputs; } }
         public bool Perturbation { get { return _perturbation; } set { _perturbation = value; } }
         public bool Nlgeom { get { return _nlgeom; } set { _nlgeom = value; } }
         public int MaxIncrements { get { return _maxIncrements; } set { _maxIncrements = Math.Max(value, 1); } }
@@ -38,6 +40,7 @@ namespace CaeModel
             _boundayConditions = new Dictionary<string, BoundaryCondition>();
             _loads = new Dictionary<string, Load>();
             _fieldOutputs = new Dictionary<string, FieldOutput>();
+            _historyOutputs = new Dictionary<string, HistoryOutput>();
             _perturbation = false;
             _nlgeom = false;
             _maxIncrements = 100;
@@ -46,6 +49,14 @@ namespace CaeModel
 
 
         // Methods                                                                                                                  
+        public void AddHistoryOutput(HistoryOutput historyOutput)
+        {
+            _historyOutputs.Add(historyOutput.Name, historyOutput);
+        }
+        public void AddFieldOutput(FieldOutput fieldOutput)
+        {
+            _fieldOutputs.Add(fieldOutput.Name, fieldOutput);
+        }
         public void AddBoundaryCondition(BoundaryCondition boundaryCondition)
         {
             _boundayConditions.Add(boundaryCondition.Name, boundaryCondition);
@@ -54,9 +65,6 @@ namespace CaeModel
         {
             _loads.Add(load.Name, load);
         }
-        public void AddFieldOutput(FieldOutput fieldOutput)
-        {
-            _fieldOutputs.Add(fieldOutput.Name, fieldOutput);
-        }
+        
     }
 }

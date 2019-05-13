@@ -112,7 +112,8 @@ namespace PrePoMax.Forms
             else
             {
                 // Replace
-                if (_propertyItemChanged) _controller.ReplaceBoundaryConditionCommand(_stepName, _boundaryConditionToEditName, BoundaryCondition);
+                if (_propertyItemChanged)
+                    _controller.ReplaceBoundaryConditionCommand(_stepName, _boundaryConditionToEditName, BoundaryCondition);
             }
         }
         protected override bool OnPrepareForm(string stepName, string boundaryConditionToEditName)

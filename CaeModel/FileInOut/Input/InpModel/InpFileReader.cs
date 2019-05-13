@@ -258,6 +258,8 @@ namespace FileInOut.Input
                         break;
 
                     default:
+                        //System.Windows.Forms.MessageBox.Show("The element type '" + elementType + "' is not supported.");
+                        //break;
                         throw new Exception("The element type '" + elementType + "' is not supported.");
                 }
                 elementIds.Add(element.Id);
@@ -631,7 +633,7 @@ namespace FileInOut.Input
         }
         static private Plastic GetMaterialPlasticity(string[] lines, int firstLineNumber)
         {
-            // *Plastic
+            // *Plastic, Hardening=Kinematic
             // 235, 0
             // 400, 0.2
 
@@ -639,8 +641,16 @@ namespace FileInOut.Input
 
             try
             {
+                PlasticHardening hardening = PlasticHardening.Isotropic;
                 double[] stressStrain;
                 List<double[]> stressStrains = new List<double[]>();
+
+                record1 = lines[0].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                if (record1.Length > 1)
+                {
+                    record1 = record1[1].Split(splitterEqual, StringSplitOptions.RemoveEmptyEntries);
+                    hardening = (PlasticHardening)Enum.Parse(typeof(PlasticHardening), record1[1]);
+                }
 
                 for (int i = 1; i < lines.Length; i++)
                 {
@@ -652,11 +662,12 @@ namespace FileInOut.Input
                 }
 
                 Plastic plastic = new Plastic(stressStrains.ToArray());
+                plastic.Hardening = hardening;
                 return plastic;
             }
             catch
             {
-                _errors.Add("Line " + firstLineNumber + ": Failed to import elasticity");
+                _errors.Add("Line " + firstLineNumber + ": Failed to import plasticity");
                 return null;
             }
         }

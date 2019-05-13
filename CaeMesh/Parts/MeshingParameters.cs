@@ -9,13 +9,23 @@ namespace CaeMesh
     [Serializable]
     public class MeshingParameters
     {
-        // Variables                                                                                                                
-        public double _maxH;
-        public double _minH;
-        public bool _secondOrder;
-        public int _optimizeSteps2D;
-        public int _optimizeSteps3D;
+        //        double fineness...Mesh density: 0...1 (0 => coarse; 1 => fine)
+        //0.3
+        //double grading...Mesh grading: 0...1 (0 => uniform mesh; 1 => aggressive local grading)
+        //0.3
 
+        // Variables                                                                                                                
+        private double _maxH;
+        private double _minH;
+        private double _fineness;
+        private double _grading;
+        private double _elementsperedge;
+        private double _elementspercurve;
+        private bool _secondOrder;
+        private bool _mediumNodesOnGeometry;
+        private int _optimizeSteps2D;
+        private int _optimizeSteps3D;
+        
 
         // Properties                                                                                                               
         public double MaxH 
@@ -24,7 +34,7 @@ namespace CaeMesh
             set
             {
                 if (value < 0) throw new Exception("The value must be larger or equal to 0.");
-                if (value < _minH) throw new Exception("The value must larger than min value.");
+                if (value < _minH) throw new Exception("The value must be larger than min value.");
                 _maxH = value;
             } 
         }
@@ -34,11 +44,52 @@ namespace CaeMesh
             set 
             {
                 if (value < 0) throw new Exception("The value must be larger or equal to 0.");
-                if (value > _maxH) throw new Exception("The value must smaller than max value.");
+                if (value > _maxH) throw new Exception("The value must be smaller than max value.");
                 _minH = value; 
             } 
         }
+        public double Fineness
+        {
+            get { return _fineness; }
+            set
+            {
+                if (value <= 0) throw new Exception("The value must be larger than 0.");
+                if (value > 1) throw new Exception("The value must be smaller or equal to 1.");
+                _fineness = value;
+            }
+        }
+        public double Grading
+        {
+            get { return _grading; }
+            set
+            {
+                if (value <= 0) throw new Exception("The value must be larger than 0.");
+                if (value > 1) throw new Exception("The value must be smaller or equal to 1.");
+                _grading = value;
+            }
+        }
+        public double Elementsperedge
+        {
+            get { return _elementsperedge; }
+            set
+            {
+                if (value <= 0) throw new Exception("The value must be larger than 0.");
+                _elementsperedge = value;
+            }
+        }
+        public double Elementspercurve
+        {
+            get { return _elementspercurve; }
+            set
+            {
+                if (value <= 0) throw new Exception("The value must be larger than 0.");
+                _elementspercurve = value;
+            }
+        }
+
         public bool SecondOrder { get { return _secondOrder; } set { _secondOrder = value; } }
+        public bool MediumNodesOnGeometry { get { return _mediumNodesOnGeometry; } set { _mediumNodesOnGeometry = value; } }
+
         public int OptimizeSteps2D 
         { 
             get { return _optimizeSteps2D; } 
@@ -62,19 +113,23 @@ namespace CaeMesh
         // Constructors                                                                                                             
         public MeshingParameters()
         {
+            // defaults
             _maxH = 1000;
             _minH = 0;
+            _fineness = 0.5;
+            _grading = 0.3;
+            _elementsperedge = 2;
+            _elementspercurve = 2;
             _optimizeSteps2D = 3;
             _optimizeSteps3D = 3;
             _secondOrder = false;
+            _mediumNodesOnGeometry = true;
         }
 
 
         // Methods                                                                                                                  
         public void WriteToFile(string fileName)
         {
-            
-
             StringBuilder sb = new StringBuilder();
             
             sb.AppendLine("int      uselocalh                   ... Switch to enable / disable usage of local mesh size modifiers.");
@@ -83,24 +138,24 @@ namespace CaeMesh
             sb.AppendLine(_maxH.ToString());
             sb.AppendLine("double   minh		                ... Minimum global mesh size allowed.");
             sb.AppendLine(_minH.ToString());
-            sb.AppendLine("double   fineness	                ... Mesh density: 0...1 (0 => coarse; 1 => fine)");
-            sb.AppendLine("0.3");
-            sb.AppendLine("double   grading                     ... Mesh grading: 0...1 (0 => uniform mesh; 1 => aggressive local grading)");
-            sb.AppendLine("0.3");
+            sb.AppendLine("double   fineness	                ... Mesh density: 0...1 (0 => coarse; 1 => fine).");
+            sb.AppendLine(_fineness.ToString());
+            sb.AppendLine("double   grading                     ... Mesh grading: 0...1 (0 => uniform mesh; 1 => aggressive local grading).");
+            sb.AppendLine(_grading.ToString());
             sb.AppendLine("double   elementsperedge	            ... Number of elements to generate per edge of the geometry.");
-            sb.AppendLine("2.0");
+            sb.AppendLine(_elementsperedge.ToString());
             sb.AppendLine("double   elementspercurve	        ... Elements to generate per curvature radius.");
-            sb.AppendLine("2.0");
+            sb.AppendLine(_elementspercurve.ToString());
             sb.AppendLine("int      closeedgeenable		        ... Enable / Disable mesh refinement at close edges.");
             sb.AppendLine("0");
-            sb.AppendLine("double 	closeedgefact		        ... Factor to use for refinement at close edges (larger => finer)");
+            sb.AppendLine("double 	closeedgefact		        ... Factor to use for refinement at close edges (larger => finer).");
             sb.AppendLine("2.0");
-            sb.AppendLine("int      minedgelenenable");
+            sb.AppendLine("int      minedgelenenable            ... Enable / Disable user defined minimum edge length for edge subdivision.");
             sb.AppendLine("0");
-            sb.AppendLine("double   minedgelen");
+            sb.AppendLine("double   minedgelen                  ... Minimum edge length to use while subdividing the edges (default = 1e-4).");
             sb.AppendLine("0.0001");
             sb.AppendLine("int      second_order		        ... Generate second-order surface and volume elements.");
-            sb.AppendLine(Convert.ToInt32(_secondOrder).ToString());
+            sb.AppendLine(Convert.ToInt32(_secondOrder && _mediumNodesOnGeometry).ToString());
             sb.AppendLine("int      quad_dominated		        ... Creates a Quad-dominated mesh.");
             sb.AppendLine("0");
             sb.AppendLine("char*    meshsize_filename           ... Optional external mesh size file.");
@@ -121,6 +176,8 @@ namespace CaeMesh
             sb.AppendLine("1");
             sb.AppendLine("int      check_overlapping_boundary	... Check for overlapping surface elements before volume meshing.");
             sb.AppendLine("1");
+            sb.AppendLine("double   deflection	                ... Open cascade visualization deflection.");
+            sb.AppendLine("0.01");
 
             System.IO.File.WriteAllText(fileName, sb.ToString());
         }

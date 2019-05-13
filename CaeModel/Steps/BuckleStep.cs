@@ -45,8 +45,8 @@ namespace CaeModel
             _numOfBucklingFactors = 1;
             _accuracy = 0.01;
 
-            AddFieldOutput(new NodalFieldOutput("NF-Output-1", NodalVariable.U | NodalVariable.RF));
-            AddFieldOutput(new ElementFieldOutput("EF-Output-1", ElementVariable.E | ElementVariable.S));
+            AddFieldOutput(new NodalFieldOutput("NF-Output-1", NodalFieldVariable.U | NodalFieldVariable.RF));
+            AddFieldOutput(new ElementFieldOutput("EF-Output-1", ElementFieldVariable.E | ElementFieldVariable.S));
         }
 
 

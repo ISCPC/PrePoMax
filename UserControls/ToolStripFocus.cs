@@ -49,7 +49,7 @@ namespace UserControls
             //
             
             // Eat left and right mouse clicks
-            if (_disableMouse && (m.Msg >= 513 && m.Msg <= 522))
+            if (_disableMouse && (m.Msg >= 512 && m.Msg <= 522))
             {
                 // eat message
             }

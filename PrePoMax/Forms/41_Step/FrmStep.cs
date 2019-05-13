@@ -113,7 +113,7 @@ namespace PrePoMax.Forms
             _viewStep = (ViewStep)propertyGrid.SelectedObject;
 
             if (_viewStep == null)
-                throw new CaeGlobals.CaeException("There is nothing to add.");
+                throw new CaeGlobals.CaeException("There is no step selected.");
 
             if ((_stepToEditName == null && _stepNames.Contains(_viewStep.Name)) ||             // create
                 (_viewStep.Name != _stepToEditName && _stepNames.Contains(_viewStep.Name)))     // edit

@@ -71,16 +71,40 @@ namespace CaeMesh
         public override PartProperties GetProperties()
         {
             PartProperties properties = base.GetProperties();
-            if (_meshingParameters != null) properties.MeshingParameters = _meshingParameters.DeepClone();
-            else properties.MeshingParameters = null;
+            //if (_meshingParameters != null) properties.MeshingParameters = _meshingParameters.DeepClone();
+            //else properties.MeshingParameters = null;
             return properties;
         }
         public override void SetProperties(PartProperties properties)
         {
             base.SetProperties(properties);
 
-            if (properties.MeshingParameters != null) _meshingParameters = properties.MeshingParameters.DeepClone();
-            else _meshingParameters = null;
-        }        
+            //if (properties.MeshingParameters != null) _meshingParameters = properties.MeshingParameters.DeepClone();
+            //else _meshingParameters = null;
+        }
+        public override void RenumberElements(Dictionary<int, int> newIds)
+        {
+            base.RenumberElements(newIds);
+
+            if (_errorElementIds != null)
+            {
+                for (int i = 0; i < _errorElementIds.Length; i++)
+                {
+                    _errorElementIds[i] = newIds[_errorElementIds[i]];
+                }
+            }
+        }
+        public override void RenumberNodes(Dictionary<int, int> newIds)
+        {
+            base.RenumberNodes(newIds);
+
+            if (_errorNodeIds != null)
+            {
+                for (int i = 0; i < _errorNodeIds.Length; i++)
+                {
+                    _errorNodeIds[i] = newIds[_errorNodeIds[i]];
+                }
+            }
+        }
     }
 }

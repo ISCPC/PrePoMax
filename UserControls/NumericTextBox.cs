@@ -59,5 +59,15 @@ namespace UserControls
             }
         }
 
+        public double Value
+        {
+            get
+            {
+                double value = 0;
+                if (double.TryParse(this.Text, out value)) return value;
+                else return 0;
+            }
+        }
+
     }
 }

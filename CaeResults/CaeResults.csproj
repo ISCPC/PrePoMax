@@ -59,12 +59,20 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FeResults.cs" />
-    <Compile Include="FieldComponent.cs" />
-    <Compile Include="FieldData.cs" />
+    <Compile Include="HistoryOutputs\HistoryResultData.cs" />
+    <Compile Include="HistoryOutputs\HistoryResultComponent.cs" />
+    <Compile Include="HistoryOutputs\HistoryResultField.cs" />
+    <Compile Include="HistoryOutputs\HistoryResultSet.cs" />
+    <Compile Include="HistoryOutputs\HistoryResults.cs" />
+    <Compile Include="HistoryOutputs\HistoryResultEntries.cs" />
+    <Compile Include="FieldOutput\FieldComponent.cs" />
+    <Compile Include="FieldOutput\FieldData.cs" />
+    <Compile Include="FileInOut\Input\DatDataSet.cs" />
     <Compile Include="FileInOut\Input\FrdFeDescriptorId.cs" />
+    <Compile Include="FileInOut\Input\DatFileReader.cs" />
     <Compile Include="FileInOut\Input\FrdFileReader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Field.cs" />
+    <Compile Include="FieldOutput\Field.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CaeGlobals\CaeGlobals.csproj">

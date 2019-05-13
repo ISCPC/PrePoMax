@@ -459,6 +459,18 @@ namespace FileInOut.Output
                         }
                     }
 
+                    // history outputs
+                    title = new CalTitle("History outputs", "");
+                    calStep.AddKeyword(title);
+
+                    foreach (var historyOutputEntry in step.HistoryOutputs)
+                    {
+                        if (historyOutputEntry.Value.Active)
+                        {
+                            AppendHistoryOutput(model, historyOutputEntry.Value, title);
+                        }
+                    }
+
                     // field outputs
                     title = new CalTitle("Field outputs", "");
                     calStep.AddKeyword(title);
@@ -573,6 +585,20 @@ namespace FileInOut.Output
             }
         }
 
+        static private void AppendHistoryOutput(FeModel model, HistoryOutput historyOutput, CalculixKeyword parent)
+        {
+            if (historyOutput is NodalHistoryOutput nho)
+            {
+                CalNodePrint nodePrint = new CalNodePrint(model, nho);
+                parent.AddKeyword(nodePrint);
+            }
+            else if (historyOutput is ElementHistoryOutput eho)
+            {
+                CalElPrint elPrint = new CalElPrint(eho);
+                parent.AddKeyword(elPrint);
+            }
+            else throw new NotImplementedException();
+        }
         static private void AppendFieldOutput(FeModel model, FieldOutput fieldOutput, CalculixKeyword parent)
         {
             if (fieldOutput is NodalFieldOutput)

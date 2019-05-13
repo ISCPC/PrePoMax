@@ -50,6 +50,7 @@ namespace CaeMesh
         private MeshRepresentation _meshRepresentation;
         private bool _manifoldGeometry;
 
+
         // Properties                                                                                                               
         public Dictionary<int, FeNode> Nodes
         {
@@ -99,12 +100,14 @@ namespace CaeMesh
         }
         public FeMesh(Dictionary<int, FeNode> nodes, Dictionary<int, FeElement> elements, MeshRepresentation representation, 
                       List<InpElementSet> inpElementTypeSets)
-            : this(nodes, elements, representation, inpElementTypeSets, null)
+            : this(nodes, elements, representation, inpElementTypeSets, null, false)
         {
         }
         public FeMesh(Dictionary<int, FeNode> nodes, Dictionary<int, FeElement> elements, MeshRepresentation representation,
-                      List<InpElementSet> inpElementTypeSets, string partNamePrefix)
+                      List<InpElementSet> inpElementTypeSets, string partNamePrefix, bool convertToSecondOrder)
         {
+            if (convertToSecondOrder) LinearToParabolic(ref nodes, ref elements);
+
             _nodes = nodes;
             _elements = elements;
             _meshRepresentation = representation;
@@ -164,6 +167,97 @@ namespace CaeMesh
             _manifoldGeometry = mesh.ManifoldGeometry;
         }
 
+        private static void LinearToParabolic(ref Dictionary<int, FeNode> nodes, ref Dictionary<int, FeElement> elements)
+        {
+            CompareIntArray comparer = new CompareIntArray();
+            Dictionary<int[], FeNode> midNodesDic = new Dictionary<int[], FeNode>(comparer);
+
+            Dictionary<int, FeNode> nodesOut = new Dictionary<int, FeNode>(nodes);
+            Dictionary<int, FeElement> elementsOut = new Dictionary<int, FeElement>();
+
+            int maxNodeId = int.MinValue;
+            foreach (var entry in nodes) if (entry.Key > maxNodeId) maxNodeId = entry.Key;
+
+            int[] nodeIds;
+            FeNode[] elNodes;
+            FeElement linElement;
+            FeElement parElement;
+            foreach (var entry in elements)
+            {
+                linElement = entry.Value;
+                if (linElement is LinearBeamElement)
+                {
+                    elNodes = new FeNode[3];                    
+                    elNodes[0] = nodes[linElement.NodeIDs[0]];
+                    elNodes[1] = nodes[linElement.NodeIDs[1]];
+                    elNodes[2] = GetOrCreateMidNode(elNodes[0], elNodes[1], ref midNodesDic, ref maxNodeId);
+
+                    nodeIds = new int[] { elNodes[0].Id, elNodes[1].Id, elNodes[2].Id };
+                    parElement = new ParabolicBeamElement(entry.Key, nodeIds);
+                }
+                else if (linElement is LinearTriangleElement)
+                {
+                    elNodes = new FeNode[6];
+                    elNodes[0] = nodes[linElement.NodeIDs[0]];
+                    elNodes[1] = nodes[linElement.NodeIDs[1]];
+                    elNodes[2] = nodes[linElement.NodeIDs[2]];
+                    elNodes[3] = GetOrCreateMidNode(elNodes[0], elNodes[1], ref midNodesDic, ref maxNodeId);
+                    elNodes[4] = GetOrCreateMidNode(elNodes[1], elNodes[2], ref midNodesDic, ref maxNodeId);
+                    elNodes[5] = GetOrCreateMidNode(elNodes[2], elNodes[0], ref midNodesDic, ref maxNodeId);
+
+                    nodeIds = new int[] { elNodes[0].Id, elNodes[1].Id, elNodes[2].Id,
+                                          elNodes[3].Id, elNodes[4].Id, elNodes[5].Id };
+                    parElement = new ParabolicTriangleElement(entry.Key, nodeIds);
+                }
+                else if (linElement is LinearTetraElement linTetEl)
+                {
+                    elNodes = new FeNode[10];
+                    elNodes[0] = nodes[linElement.NodeIDs[0]];
+                    elNodes[1] = nodes[linElement.NodeIDs[1]];
+                    elNodes[2] = nodes[linElement.NodeIDs[2]];
+                    elNodes[3] = nodes[linElement.NodeIDs[3]];
+                    elNodes[4] = GetOrCreateMidNode(elNodes[0], elNodes[1], ref midNodesDic, ref maxNodeId);
+                    elNodes[5] = GetOrCreateMidNode(elNodes[1], elNodes[2], ref midNodesDic, ref maxNodeId);
+                    elNodes[6] = GetOrCreateMidNode(elNodes[2], elNodes[0], ref midNodesDic, ref maxNodeId);
+                    elNodes[7] = GetOrCreateMidNode(elNodes[0], elNodes[3], ref midNodesDic, ref maxNodeId);
+                    elNodes[8] = GetOrCreateMidNode(elNodes[1], elNodes[3], ref midNodesDic, ref maxNodeId);
+                    elNodes[9] = GetOrCreateMidNode(elNodes[2], elNodes[3], ref midNodesDic, ref maxNodeId);
+
+                    nodeIds = new int[] { elNodes[0].Id, elNodes[1].Id, elNodes[2].Id, elNodes[3].Id,
+                                          elNodes[4].Id, elNodes[5].Id, elNodes[6].Id,
+                                          elNodes[7].Id, elNodes[8].Id, elNodes[9].Id };
+                    parElement = new ParabolicTetraElement(entry.Key, nodeIds);
+                }
+                else throw new NotSupportedException();
+                
+                elementsOut.Add(parElement.Id, parElement);
+            }
+
+            // Add nodes
+            foreach (var entry in midNodesDic) nodesOut.Add(entry.Value.Id, entry.Value);
+
+            nodes = nodesOut;
+            elements = elementsOut;
+        }
+        private static FeNode GetOrCreateMidNode(FeNode n1, FeNode n2, ref Dictionary<int[],FeNode> midNodes, ref int maxNodeId)
+        {
+            int[] ids;
+            if (n1.Id < n2.Id) ids = new int[] { n1.Id, n2.Id };
+            else ids = new int[] { n2.Id, n1.Id };
+
+            double x, y, z;
+            FeNode newNode;
+            if (!midNodes.TryGetValue(ids, out newNode))
+            {
+                maxNodeId++;
+                x = 0.5 * (n1.X + n2.X);
+                y = 0.5 * (n1.Y + n2.Y);
+                z = 0.5 * (n1.Z + n2.Z);
+                newNode = new FeNode(maxNodeId, x, y, z);
+                midNodes.Add(ids, newNode);
+            }
+            return newNode;
+        }
 
         // Static methods                                                                                                           
         public static void WriteToBinaryFile(FeMesh mesh, System.IO.BinaryWriter bw)
@@ -845,14 +939,18 @@ namespace CaeMesh
 
             if (part is GeometryPart gp)
             {
-                if (badElementIds.Count > 0) gp.ErrorElementIds = badElementIds.ToArray();
-                if (badNodeIds.Count > 0) gp.ErrorNodeIds = badNodeIds.ToArray();
+                if (badElementIds.Count > 0)
+                    gp.ErrorElementIds = badElementIds.ToArray();
+                if (badNodeIds.Count > 0)
+                    gp.ErrorNodeIds = badNodeIds.ToArray();
             }
         }
         private void SplitVisualization(BasePart part)
         {
             SplitEdgesByVertices(part);
-            SplitVisualizationByEdges(part);
+            ComputeEdgeLengths(part);
+            SplitVisualizationFacesByEdges(part);
+            ComputeFaceAreas(part);
         }
         private void SplitEdgesByVertices(BasePart part)
         {
@@ -874,13 +972,13 @@ namespace CaeMesh
                 }
             }
 
-            HashSet<int> verticeNodeIds = new HashSet<int>();
+            HashSet<int> verticeNodeIds = new HashSet<int>();       // vertice connects more than two edge cells
             foreach (var entry in nodeEdgeCellIds)
             {
                 if (entry.Value.Count != 2) verticeNodeIds.Add(entry.Key);
             }
 
-            HashSet<int>[] edgeNeighboursHash = new HashSet<int>[allEdgeCells.Length];
+            HashSet<int>[] edgeNeighboursHash = new HashSet<int>[allEdgeCells.Length];  // find edge neighbours
             foreach (var entry in nodeEdgeCellIds)
             {
                 foreach (var edge1Id in entry.Value)
@@ -895,10 +993,9 @@ namespace CaeMesh
                 }
             }
 
+            // speed up
             int[][] edgeNeighbours = new int[allEdgeCells.Length][];
             for (int i = 0; i < edgeNeighbours.Length; i++) edgeNeighbours[i] = edgeNeighboursHash[i].ToArray();
-
-
 
             // spread
             int[] oneEdgeCells;
@@ -916,11 +1013,51 @@ namespace CaeMesh
             }
 
             part.Visualization.VertexNodeIds = verticeNodeIds.ToArray();
-            part.Visualization.EdgeCellIdsByEdge = edges.ToArray();
+            part.Visualization.EdgeCellIdsByEdge = edges.ToArray();            
         }
-        private void SplitVisualizationByEdges(BasePart part)
+        private void ComputeEdgeLengths(BasePart part)
         {
-            part.Visualization.CellIdsBySurface = null;
+            int edgeCellId;
+            int[] edgeCell;
+            Vec3D v1;
+            Vec3D v2;
+            VisualizationData visualization = part.Visualization;
+            double[] edgeLengths = new double[visualization.EdgeCellIdsByEdge.Length];
+
+            // for each edge
+            for (int i = 0; i < visualization.EdgeCellIdsByEdge.Length; i++)                
+            {
+                edgeLengths[i] = 0;
+                // for each edge cell
+                for (int j = 0; j < visualization.EdgeCellIdsByEdge[i].Length; j++)         
+                {
+                    edgeCellId = visualization.EdgeCellIdsByEdge[i][j];
+                    edgeCell = visualization.EdgeCells[edgeCellId];
+
+                    if (edgeCell.Length == 2)
+                    {
+                        v1 = new Vec3D(_nodes[edgeCell[0]].Coor);
+                        v2 = new Vec3D(_nodes[edgeCell[1]].Coor);
+                        edgeLengths[i] += (v2 - v1).Len;
+                    }
+                    else if (edgeCell.Length == 3)
+                    {
+                        v1 = new Vec3D(_nodes[edgeCell[0]].Coor);
+                        v2 = new Vec3D(_nodes[edgeCell[2]].Coor);
+                        edgeLengths[i] += (v2 - v1).Len;
+
+                        v1 = new Vec3D(_nodes[edgeCell[1]].Coor);
+                        edgeLengths[i] += (v2 - v1).Len;
+                    }
+                    else throw new NotSupportedException();
+                }
+            }
+
+            visualization.EdgeLengths = edgeLengths;
+        }
+        private void SplitVisualizationFacesByEdges(BasePart part)
+        {
+            part.Visualization.CellIdsByFace = null;
 
             if (part.PartType == PartType.Solid || part.PartType == PartType.Shell)
             {
@@ -943,26 +1080,61 @@ namespace CaeMesh
                     }
                 }
 
-                int[] surfaceCellIds;
-                int[] surfaceEdgeIds;
-                List<int[]> visualizationSurfaces = new List<int[]>();
-                List<int[]> surfaceEdges = new List<int[]>();
+                int[] faceCellIds;
+                int[] faceEdgeIds;
+                List<int[]> visualizationFaces = new List<int[]>();
+                List<int[]> faceEdges = new List<int[]>();
                 HashSet<int> visitedVisualizationCellIds = new HashSet<int>();
 
                 for (int cellId = 0; cellId < part.Visualization.CellIds.Length; cellId++)
                 {
                     if (!visitedVisualizationCellIds.Contains(cellId))
                     {
-                        GetSplitVisualizationSurfaceByCellId(part, cellId, modelEdges, out surfaceCellIds, out surfaceEdgeIds);
-                        visualizationSurfaces.Add(surfaceCellIds);
-                        surfaceEdges.Add(surfaceEdgeIds);
-                        visitedVisualizationCellIds.UnionWith(surfaceCellIds);
+                        GetSplitVisualizationFaceByCellId(part, cellId, modelEdges, out faceCellIds, out faceEdgeIds);
+                        visualizationFaces.Add(faceCellIds);
+                        faceEdges.Add(faceEdgeIds);
+                        visitedVisualizationCellIds.UnionWith(faceCellIds);
                     }
                 }
 
-                part.Visualization.CellIdsBySurface = visualizationSurfaces.ToArray();
-                part.Visualization.SurfaceEdgeIds = surfaceEdges.ToArray();
+                part.Visualization.CellIdsByFace = visualizationFaces.ToArray();
+                part.Visualization.FaceEdgeIds = faceEdges.ToArray();
             }
+        }
+        private void ComputeFaceAreas(BasePart part)
+        {
+            int faceCellId;
+            int[] cell;
+            VisualizationData visualization = part.Visualization;
+            double[] faceAreas = new double[visualization.CellIdsByFace.Length];
+
+            // for each face
+            for (int i = 0; i < visualization.CellIdsByFace.Length; i++)                
+            {
+                faceAreas[i] = 0;
+                // for each face cell
+                for (int j = 0; j < visualization.CellIdsByFace[i].Length; j++)        
+                {
+                    faceCellId = visualization.CellIdsByFace[i][j];
+                    cell = visualization.Cells[faceCellId];
+
+                    if (cell.Length == 3)
+                        faceAreas[i] += GeometryTools.TriangleArea(_nodes[cell[0]], _nodes[cell[1]], _nodes[cell[2]]);
+                    else if (cell.Length == 4)
+                        faceAreas[i] += GeometryTools.RectangleArea(_nodes[cell[0]], _nodes[cell[1]], _nodes[cell[2]],
+                                                                    _nodes[cell[3]]);
+                    else if (cell.Length == 6)
+                        faceAreas[i] += GeometryTools.TriangleArea(_nodes[cell[0]], _nodes[cell[1]], _nodes[cell[2]],
+                                                                   _nodes[cell[3]], _nodes[cell[4]], _nodes[cell[5]]);
+                    else if (cell.Length == 8)
+                        faceAreas[i] += GeometryTools.RectangleArea(_nodes[cell[0]], _nodes[cell[1]], _nodes[cell[2]],
+                                                                    _nodes[cell[3]], _nodes[cell[4]], _nodes[cell[5]],
+                                                                    _nodes[cell[6]], _nodes[cell[7]]);
+                    else throw new NotSupportedException();
+                }
+            }
+
+            visualization.FaceAreas = faceAreas;
         }
         public double ComputeAngleInRadFromCellIndices(int[] cell1, int[] cell2)
         {
@@ -1006,7 +1178,6 @@ namespace CaeMesh
             int[][] edgeCells = part.Visualization.EdgeCells;
             if (edgeCells == null) return null;
 
-            int tmp;
             int nodeId;
             int[] edgeCell1;
             int[] edgeCell2;
@@ -1020,31 +1191,28 @@ namespace CaeMesh
             {
                 // find new edge candidates
                 newEdgeCellIds.Clear();
-                foreach (var notVisitedCellId in notVisitedEdgeCellIds)
+                // search each not visited edge cell
+                foreach (var notVisitedCellId in notVisitedEdgeCellIds)                     
                 {
-                    if (edgeNeighbours[notVisitedCellId] != null)
+                    // continue if edge has at least one neighbour
+                    if (edgeNeighbours[notVisitedCellId] != null)                           
                     {
-                        edgeCell1 = edgeCells[notVisitedCellId];        // this edge orientation is correct
-                        foreach (var neighbourId in edgeNeighbours[notVisitedCellId])
+                        edgeCell1 = edgeCells[notVisitedCellId];
+                        // continue for each edge neighbour
+                        foreach (var edgeNeighbourId in edgeNeighbours[notVisitedCellId])       
                         {
-                            if (!edgeCellIds.Contains(neighbourId) && !newEdgeCellIds.Contains(neighbourId))
+                            // is it a new edge cell
+                            if (!edgeCellIds.Contains(edgeNeighbourId) && !newEdgeCellIds.Contains(edgeNeighbourId))    
                             {
-                                edgeCell2 = edgeCells[neighbourId];
+                                edgeCell2 = edgeCells[edgeNeighbourId];
 
                                 if (edgeCell1[0] == edgeCell2[0] || edgeCell1[0] == edgeCell2[1]) nodeId = edgeCell1[0];
                                 else if (edgeCell1[1] == edgeCell2[0] || edgeCell1[1] == edgeCell2[1]) nodeId = edgeCell1[1];
                                 else throw new NotSupportedException();
 
-                                if (!verticeNodeIds.Contains(nodeId))
+                                if (!verticeNodeIds.Contains(nodeId))   // stop the edge at the node that connects more than two edge cells
                                 {
-                                    // reverse the edge cell orientation for drawing reasons
-                                    if (edgeCell1[0] == edgeCell2[0] || edgeCell1[1] == edgeCell2[1])
-                                    {
-                                        tmp = edgeCell2[0];
-                                        edgeCell2[0] = edgeCell2[1];
-                                        edgeCell2[1] = tmp;
-                                    }
-                                    newEdgeCellIds.Add(neighbourId);
+                                    newEdgeCellIds.Add(edgeNeighbourId);
                                 }
                             }
                         }
@@ -1055,17 +1223,90 @@ namespace CaeMesh
                     }
                 }
 
-                // add new surface candidates to surface and to cells to visit
+                // add new edge candidates to edge and to cells to visit
                 notVisitedEdgeCellIds.Clear();
                 edgeCellIds.UnionWith(newEdgeCellIds);
                 notVisitedEdgeCellIds.UnionWith(newEdgeCellIds);
             }
             while (notVisitedEdgeCellIds.Count > 0);
 
-            return edgeCellIds.ToArray();
+            return SortEdgeCellIds(part, edgeCellIds);
         }
-        public void GetSplitVisualizationSurfaceByCellId(BasePart part, int cellId, Dictionary<int[], int> modelEdges, 
-                                                          out int[] surfaceCellIds, out int[] surfaceEdgeIds)
+
+        private int[] SortEdgeCellIds(BasePart part, HashSet<int> edgeCellIds)
+        {
+            int[][] edgeCells = part.Visualization.EdgeCells;
+
+            int nodeId;
+            List<int> ids;
+            Dictionary<int, List<int>> nodeEdgeCellIds = new Dictionary<int, List<int>> ();
+            foreach (int edgeCellId in edgeCellIds)
+            {
+                for (int i = 0; i < 2; i++)
+                {
+                    nodeId = edgeCells[edgeCellId][i];
+                    if (nodeEdgeCellIds.TryGetValue(nodeId, out ids)) ids.Add(edgeCellId);
+                    else nodeEdgeCellIds.Add(nodeId, new List<int>() { edgeCellId });
+                }
+            }
+            
+            int firstNodeId = -1;
+            int lastNodeId = -1;
+            foreach (var entry in nodeEdgeCellIds)
+            {
+                // find firts or last node id
+                if (entry.Value.Count == 1) 
+                {
+                    if (firstNodeId == -1) firstNodeId = entry.Key;
+                    else if (lastNodeId == -1)
+                    {
+                        // use frst id beforre overwriting it in the next line
+                        lastNodeId = Math.Max(firstNodeId, entry.Key);     
+                        firstNodeId = Math.Min(firstNodeId, entry.Key);
+                    }
+                    else throw new Exception("More than two nodes should not be external nodes!");
+                }
+            }
+
+            // check for loop
+            if (firstNodeId == -1)
+            {
+                firstNodeId = nodeEdgeCellIds.Keys.First();
+                lastNodeId = firstNodeId;
+            }
+
+            int[] edgeCell;
+            HashSet<int> visitedEdgeCellIds = new HashSet<int>();
+            List<int> sortedEdgeCellIds = new List<int>();
+            do
+            {
+                ids = nodeEdgeCellIds[firstNodeId];
+                foreach (var cellId in ids)
+                {
+                    if (visitedEdgeCellIds.Add(cellId)) // if add possible 
+                    {
+                        edgeCell = edgeCells[cellId];
+                        if (edgeCell[0] != firstNodeId) // swap
+                        {
+                            edgeCell[1] = edgeCell[0];
+                            edgeCell[0] = firstNodeId;
+                        }
+                        sortedEdgeCellIds.Add(cellId);
+                        firstNodeId = edgeCell[1];      // for the next edge cell the last node is the first
+
+                        // if the first one is added break:
+                        // by loops this prevents going in the opposite direction
+                        break;                          
+                    }
+                }
+            }
+
+            while (firstNodeId != lastNodeId);
+
+            return sortedEdgeCellIds.ToArray();
+        }
+        public void GetSplitVisualizationFaceByCellId(BasePart part, int cellId, Dictionary<int[], int> modelEdges, 
+                                                      out int[] surfaceCellIds, out int[] surfaceEdgeIds)
         {
             surfaceCellIds = null;
             surfaceEdgeIds = null;
@@ -1261,14 +1502,17 @@ namespace CaeMesh
         {
             HashSet<Type> partElementTypes = new HashSet<Type>();
             HashSet<int> partNodeIds = new HashSet<int>();
+            HashSet<int> partElementIds = new HashSet<int>();
             FeElement element;
             for (int i = 0; i < elementIds.Length; i++)
             {
                 element = _elements[elementIds[i]];
+                partElementIds.Add(element.Id);
                 partElementTypes.Add(element.GetType());
                 partNodeIds.UnionWith(element.NodeIDs);
             }
-            BasePart part = new BasePart("Part-from-element-Ids", -1, partNodeIds.ToArray(), elementIds, partElementTypes.ToArray());
+            BasePart part = new BasePart("Part-from-element-Ids", -1, partNodeIds.ToArray(), 
+                                         partElementIds.ToArray(), partElementTypes.ToArray());
 
             if (part.PartType == PartType.Solid) ExtractSolidPartVisualization(part);
             else if (part.PartType == PartType.Shell) ExtractShellPartVisualization(part);
@@ -1423,32 +1667,34 @@ namespace CaeMesh
                     part.NodeLabels[i] = newIds[part.NodeLabels[i]];
                 }
 
-                cells = part.Visualization.Cells;
-                if (cells != null)
-                {
-                    for (int i = 0; i < cells.Length; i++)
-                    {
-                        for (int j = 0; j < cells[i].Length; j++)
-                        {
-                            cells[i][j] = newIds[cells[i][j]];
-                        }
-                    }
-                }
+                part.RenumberNodes(newIds);
 
-                // visualizationCellNeighbours are counted in local ids from 0 to cell.length
-                //cells = entry.Value.Visualization.CellNeighbours;
+                //cells = part.Visualization.Cells;
+                //if (cells != null)
+                //{
+                //    for (int i = 0; i < cells.Length; i++)
+                //    {
+                //        for (int j = 0; j < cells[i].Length; j++)
+                //        {
+                //            cells[i][j] = newIds[cells[i][j]];
+                //        }
+                //    }
+                //}
 
-                cells = part.Visualization.EdgeCells;
-                if (cells != null)
-                {
-                    for (int i = 0; i < cells.Length; i++)
-                    {
-                        for (int j = 0; j < cells[i].Length; j++)
-                        {
-                            cells[i][j] = newIds[cells[i][j]];
-                        }
-                    }
-                }
+                //// visualizationCellNeighbours are counted in local ids from 0 to cell.length
+                ////cells = entry.Value.Visualization.CellNeighbours;
+
+                //cells = part.Visualization.EdgeCells;
+                //if (cells != null)
+                //{
+                //    for (int i = 0; i < cells.Length; i++)
+                //    {
+                //        for (int j = 0; j < cells[i].Length; j++)
+                //        {
+                //            cells[i][j] = newIds[cells[i][j]];
+                //        }
+                //    }
+                //}
             }
         }
         public void RenumberElements(int startId = 0)
@@ -1485,7 +1731,6 @@ namespace CaeMesh
             }
             
             BasePart part;
-            int[] cellIds;
             foreach (var entry in _parts)
             {
                 // renumber parts
@@ -1496,14 +1741,7 @@ namespace CaeMesh
                 }
 
                 // renumber 3D part's visualization cells
-                cellIds = entry.Value.Visualization.CellIds;
-                if (cellIds != null)
-                {
-                    for (int i = 0; i < cellIds.Length; i++)
-                    {
-                        cellIds[i] = newIds[cellIds[i]];
-                    }
-                }
+                part.RenumberElements(newIds);                
             }
         }
         public void RenumberParts(int startId = 0)
@@ -1544,6 +1782,11 @@ namespace CaeMesh
                 }
             }
             cells = cellList.ToArray();
+
+            GetSurfaceGeometry(cells, out nodeCoor, out cellTypes);
+        }
+        public void GetSurfaceGeometry(int[][] cells, out double[][] nodeCoor, out int[] cellTypes)
+        {
             // get the node ids of the used nodes
             HashSet<int> nodesNeeded = new HashSet<int>();
             for (int i = 0; i < cells.Length; i++) nodesNeeded.UnionWith(cells[i]);
@@ -1559,54 +1802,11 @@ namespace CaeMesh
                 count++;
             }
 
-            // renumber cell node ids
+            // renumber triangles and add cell type
+            cellTypes = new int[cells.Length];
             for (int i = 0; i < cells.Length; i++)
             {
                 for (int j = 0; j < cells[i].Length; j++)
-                {
-                    cells[i][j] = oldNew[cells[i][j]];
-                }
-            }
-
-            cellTypes = new int[cells.Length];
-            int[][] allCells = new int[cells.Length][];
-            for (int i = 0; i < cells.Length; i++)
-            {
-                if (cells[i].Length == 3) cellTypes[i] = (int)vtkCellType.VTK_TRIANGLE;
-                else if (cells[i].Length == 4) cellTypes[i] = (int)vtkCellType.VTK_QUAD;
-                else if (cells[i].Length == 6) cellTypes[i] = (int)vtkCellType.VTK_QUADRATIC_TRIANGLE;
-                else if (cells[i].Length == 8) cellTypes[i] = (int)vtkCellType.VTK_QUADRATIC_QUAD;
-                else throw new NotSupportedException();
-            }
-        }
-        public void GetSurfaceGeometry(int[][] cells, out double[][] nodes, out int[] cellTypes)
-        {
-            // get the node ids of the used nodes
-            HashSet<int> nodesNeeded = new HashSet<int>();
-            for (int i = 0; i < cells.GetLength(0); i++)
-            {
-                for (int j = 0; j < cells[i].GetLength(0); j++)
-                {
-                    nodesNeeded.Add(cells[i][j]);
-                }
-            }
-
-            // create node array and a lookup table
-            nodes = new double[nodesNeeded.Count][];
-            Dictionary<int, int> oldNew = new Dictionary<int, int>();
-            int count = 0;
-            foreach (int id in nodesNeeded)
-            {
-                nodes[count] = _nodes[id].Coor;
-                oldNew.Add(id, count);
-                count++;
-            }
-
-            // renumber triangles and add cell type
-            cellTypes = new int[cells.Length];
-            for (int i = 0; i < cells.GetLength(0); i++)
-            {
-                for (int j = 0; j < cells[i].GetLength(0); j++)
                 {
                     cells[i][j] = oldNew[cells[i][j]];
                 }
@@ -1638,6 +1838,10 @@ namespace CaeMesh
             // get edges
             cells = GetFreeEdgesFromVisualizationCells(cellList.ToArray());
 
+            GetSurfaceEdgesGeometry(cells, out nodeCoor, out cellTypes);
+        }
+        public void GetSurfaceEdgesGeometry(int[][] cells, out double[][] nodeCoor, out int[] cellTypes)
+        {
             // get the node ids of the used nodes
             HashSet<int> nodesNeeded = new HashSet<int>();
             for (int i = 0; i < cells.Length; i++) nodesNeeded.UnionWith(cells[i]);
@@ -1654,17 +1858,14 @@ namespace CaeMesh
             }
 
             // renumber edge cell node ids
+            cellTypes = new int[cells.Length];
             for (int i = 0; i < cells.Length; i++)
             {
                 for (int j = 0; j < cells[i].Length; j++)
                 {
                     cells[i][j] = oldNew[cells[i][j]];
-                }
-            }
 
-            cellTypes = new int[cells.Length];
-            for (int i = 0; i < cells.Length; i++)
-            {
+                }
                 if (cells[i].Length == 2) cellTypes[i] = (int)vtkCellType.VTK_LINE;
                 else if (cells[i].Length == 3) cellTypes[i] = (int)vtkCellType.VTK_QUADRATIC_EDGE;
                 else throw new NotSupportedException();
@@ -2089,11 +2290,11 @@ namespace CaeMesh
             }
             else return null;
         }
-        public bool GetSurfaceId(int elementId, int[] cellFaceGlobalNodeIds, out BasePart part, out int surfaceId)
+        public bool GetFaceId(int elementId, int[] cellFaceGlobalNodeIds, out BasePart part, out int faceId)
         {
             // Find the part
             part = null;
-            surfaceId = -1;
+            faceId = -1;
             int elementPartId = _elements[elementId].PartId;
 
             foreach (var entry in _parts)
@@ -2110,7 +2311,7 @@ namespace CaeMesh
             int[] cellIds = part.Visualization.CellIds;
             if (cells == null) return false;
 
-            int surfaceCellId = -1;
+            int faceCellId = -1;
             int numberOfSameNodes = cellFaceGlobalNodeIds.Length;
             HashSet<int> faceNodeIds = new HashSet<int>(cellFaceGlobalNodeIds);
             int count;
@@ -2126,38 +2327,38 @@ namespace CaeMesh
                             count++;
                             if (count == numberOfSameNodes)
                             {
-                                surfaceCellId = i;
+                                faceCellId = i;
                                 break;
                             }
                         }
                     }
                 }
-                if (surfaceCellId != -1) break;
+                if (faceCellId != -1) break;
             }
-            if (surfaceCellId == -1) return false;
+            if (faceCellId == -1) return false;
 
-            for (int i = 0; i < part.Visualization.CellIdsBySurface.Length; i++)
+            for (int i = 0; i < part.Visualization.CellIdsByFace.Length; i++)
             {
-                if (part.Visualization.CellIdsBySurface[i].Contains(surfaceCellId))
+                if (part.Visualization.CellIdsByFace[i].Contains(faceCellId))
                 {
-                    surfaceId = i;
+                    faceId = i;
                     break;
                 }
             }
 
             return true;
         }
-        public int[] GetSurfaceNodeIds(int elementId, int[] cellFaceGlobalNodeIds)
+        public int[] GetFaceNodeIds(int elementId, int[] cellFaceGlobalNodeIds)
         {
             BasePart part;
-            int surfaceId;
-            if (GetSurfaceId(elementId, cellFaceGlobalNodeIds, out part, out surfaceId))
+            int faceId;
+            if (GetFaceId(elementId, cellFaceGlobalNodeIds, out part, out faceId))
             {
                 int[][] cells = part.Visualization.Cells;
                 HashSet<int> surfaceNodes = new HashSet<int>();
-                if (surfaceId != -1)
+                if (faceId != -1)
                 {
-                    foreach (var surfaceCellId in part.Visualization.CellIdsBySurface[surfaceId])
+                    foreach (var surfaceCellId in part.Visualization.CellIdsByFace[faceId])
                     {
                         surfaceNodes.UnionWith(cells[surfaceCellId]);
                     }
@@ -3190,6 +3391,7 @@ namespace CaeMesh
             }
             return ids.ToArray();
         }
+
         // Elements 
         public string[] GetElementSetNames()
         {
@@ -3353,7 +3555,6 @@ namespace CaeMesh
             }
             else throw new NotSupportedException();
         }        
-
         public int[] GetVisibleElementIds()
         {
             HashSet<int> ids = new HashSet<int>();
@@ -3425,20 +3626,20 @@ namespace CaeMesh
             List<int> cellTypesList = new List<int>();
             int visualizationCellId;
 
-            // Create visualization for each visualization surface
+            // Create visualization for each visualization face
             if (part.PartType == PartType.Solid || part.PartType == PartType.Shell)
             {
-                //if (part.Visualization.CellIdsBySurface != null)
+                //if (part.Visualization.CellIdsByFace != null)
                 {
-                    for (int i = 0; i < part.Visualization.CellIdsBySurface.Length; i++)
+                    for (int i = 0; i < part.Visualization.CellIdsByFace.Length; i++)
                     {
-                        cellIds = new int[part.Visualization.CellIdsBySurface[i].Length];
-                        cells = new int[part.Visualization.CellIdsBySurface[i].Length][];
-                        cellTypes = new int[part.Visualization.CellIdsBySurface[i].Length];
+                        cellIds = new int[part.Visualization.CellIdsByFace[i].Length];
+                        cells = new int[part.Visualization.CellIdsByFace[i].Length][];
+                        cellTypes = new int[part.Visualization.CellIdsByFace[i].Length];
 
-                        for (int j = 0; j < part.Visualization.CellIdsBySurface[i].Length; j++)
+                        for (int j = 0; j < part.Visualization.CellIdsByFace[i].Length; j++)
                         {
-                            visualizationCellId = part.Visualization.CellIdsBySurface[i][j];
+                            visualizationCellId = part.Visualization.CellIdsByFace[i][j];
                             cellIds[j] = part.Visualization.CellIds[visualizationCellId];
                             cells[j] = visualizationCells[visualizationCellId].ToArray(); // node ids in cells will be renumbered
 
@@ -3626,6 +3827,107 @@ namespace CaeMesh
                 //                        new int[] { cell[3], cell[7], cell[0] } };
             }
             else throw new NotSupportedException();
+        }
+
+        // Analyze
+        public double GetShortestEdgeLen()
+        {
+            double min = double.MaxValue;
+            VisualizationData visualization;
+            foreach (var entry in _parts)
+            {
+                visualization = entry.Value.Visualization;
+                // for each edge
+                for (int i = 0; i < visualization.EdgeLengths.Length; i++)
+                {
+                    if (visualization.EdgeLengths[i] < min) min = visualization.EdgeLengths[i];
+                }
+            }
+            return min;
+        }
+        /// <summary>
+        /// Returns an array of edges. Each edge is an array of connecteds points and each point is a 3D coordinate - array
+        /// </summary>
+        /// <param name="minEdgeLen"></param>
+        /// <returns></returns>
+        public double[][][] GetShortEdges(double minEdgeLen)
+        {
+            int edgeCellId;
+            int[] nodeIds;
+            List<double[]> oneEdgeNodeCoor = new List<double[]>();
+            List<double[][]> allNodeCoor = new List<double[][]>();
+
+            VisualizationData visualization;
+            foreach (var entry in _parts)
+            {
+                visualization = entry.Value.Visualization;
+                // for each edge
+                for (int i = 0; i < visualization.EdgeLengths.Length; i++)                          
+                {
+                    if (visualization.EdgeLengths[i] < minEdgeLen)
+                    {
+                        oneEdgeNodeCoor.Clear();
+                        // each edge cell
+                        for (int j = 0; j < visualization.EdgeCellIdsByEdge[i].Length; j++)         
+                        {
+                            edgeCellId = visualization.EdgeCellIdsByEdge[i][j];
+                            nodeIds = visualization.EdgeCells[edgeCellId];
+
+                            // for each cell add the first node
+                            oneEdgeNodeCoor.Add(_nodes[nodeIds[0]].Coor);
+                            // for parabolic cell add the the middle node
+                            if (nodeIds.Length == 3) oneEdgeNodeCoor.Add(_nodes[nodeIds[2]].Coor);
+                            // for the last cell add the last node
+                            if (j == visualization.EdgeCellIdsByEdge[i].Length - 1) oneEdgeNodeCoor.Add(_nodes[nodeIds[1]].Coor);
+                        }
+
+                        allNodeCoor.Add(oneEdgeNodeCoor.ToArray());
+                    }
+                }
+            }
+            return allNodeCoor.ToArray();
+        }
+        public double GetSmallestFace()
+        {
+            double min = double.MaxValue;
+            VisualizationData visualization;
+            foreach (var entry in _parts)
+            {
+                visualization = entry.Value.Visualization;
+                // for each face
+                for (int i = 0; i < visualization.FaceAreas.Length; i++)
+                {
+                    if (visualization.FaceAreas[i] < min) min = visualization.FaceAreas[i];
+                }
+            }
+            return min;
+        }
+        public int[][] GetSmallestFaces(double minFaceArea)
+        {
+            int cellId;
+            int[] cell;
+            List<int[]> cells = new List<int[]>();
+
+            VisualizationData visualization;
+            foreach (var entry in _parts)
+            {
+                visualization = entry.Value.Visualization;
+                // for each face
+                for (int i = 0; i < visualization.FaceAreas.Length; i++)
+                {
+                    if (visualization.FaceAreas[i] < minFaceArea)
+                    {
+                        // each edge cell
+                        for (int j = 0; j < visualization.CellIdsByFace[i].Length; j++)
+                        {
+                            cellId = visualization.CellIdsByFace[i][j];
+                            cell = visualization.Cells[cellId];
+                            cells.Add(cell.ToArray());
+                        }
+                    }
+                }
+            }
+            return cells.ToArray();
         }
 
         // Read - Write

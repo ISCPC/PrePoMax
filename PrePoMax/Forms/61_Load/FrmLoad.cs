@@ -19,7 +19,8 @@ namespace PrePoMax.Forms
 
 
         // Properties                                                                                                               
-        public Load GetLoad
+        // SetLoad and GetLoad to distinguish from Load event
+        public Load GetLoad 
         {
             get { return _viewLoad.GetBase(); }
         }

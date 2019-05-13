@@ -9,6 +9,7 @@ namespace CaeMesh
     [Serializable]
     public struct PartProperties
     {
+        // only properties, that can not be changed by any other edit form (like MeshingParameters...)
         public string Name;
         public PartType PartType;
         public System.Drawing.Color Color;
@@ -21,6 +22,6 @@ namespace CaeMesh
         public FeElementTypeParabolicWedge ParabolicWedgeType;
         public FeElementTypeLinearHexa LinearHexaType;
         public FeElementTypeParabolicHexa ParabolicHexaType;
-        public MeshingParameters MeshingParameters;
+        //public MeshingParameters MeshingParameters;
     }
 }

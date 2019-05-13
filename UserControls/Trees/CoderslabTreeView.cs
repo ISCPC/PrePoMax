@@ -163,7 +163,18 @@ namespace UserControls
             // 0109        265     WM_UNICHAR
             //
             // Eat left and right mouse clicks and buttons
-            if (!_disableMouse || (m.Msg < 256 || (m.Msg > 265 && m.Msg < 512) || m.Msg > 522)) base.WndProc(ref m);
+            if (!_disableMouse)
+                m.Msg = m.Msg;
+
+            if (_disableMouse && ((m.Msg >= 512 && m.Msg <= 522) || (m.Msg >= 512 && m.Msg <= 522)))
+            {
+                // eat message
+                m.Msg = m.Msg;
+            }
+            else
+            {
+                base.WndProc(ref m);
+            }
         }
 
 

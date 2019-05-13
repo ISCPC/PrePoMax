@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel;
-using CaeGlobals;
+using CaeModel;
 
 namespace PrePoMax.PropertyViews
 {
@@ -42,14 +42,18 @@ namespace PrePoMax.PropertyViews
     {
         // Variables                                                                                                                
         private List<DataPoint> _points;
+        private PlasticHardening _hardening;
 
 
         // Properties                                                                                                               
+        [Browsable(false)]
         public string Name
         {
             get { return "Plastic"; }
         }
-        public CaeModel.MaterialProperty Base
+
+        [Browsable(false)]
+        public MaterialProperty Base
         {
             get
             {
@@ -62,21 +66,29 @@ namespace PrePoMax.PropertyViews
                     stressStrain[i][1] = point.Strain;
                     i++;
                 }
-                CaeModel.Plastic plastic = new CaeModel.Plastic(stressStrain);
+                Plastic plastic = new Plastic(stressStrain);
+                plastic.Hardening = _hardening;
                 return plastic;
             }
         }
+
+        [Browsable(false)]
         public List<DataPoint> DataPoints { get { return _points; } set { _points = value; } }
+
+        [CategoryAttribute("Data")]
+        [Description("Select the hardening rule.")]
+        public PlasticHardening Hardening { get { return _hardening; } set { _hardening = value; } }
 
 
         // Constructors                                                                                                             
-        public ViewPlastic(CaeModel.Plastic plastic)
+        public ViewPlastic(Plastic plastic)
         {
             _points = new List<DataPoint>();
             for (int i = 0; i < plastic.StressStrain.GetLength(0); i++)
             {
                 _points.Add(new DataPoint(plastic.StressStrain[i][0], plastic.StressStrain[i][1]));
             }
+            _hardening = plastic.Hardening;
         }
 
 

@@ -368,6 +368,8 @@ namespace CaeJob
             try
             {
                 string statusFileName = Path.Combine(_workDirectory, Name + ".sta");
+                if (!File.Exists(statusFileName)) return;
+
                 long size = new System.IO.FileInfo(statusFileName).Length;
 
                 if (size != _statusFileLength)
@@ -391,6 +393,8 @@ namespace CaeJob
             try
             {
                 string convergenceFileName = Path.Combine(_workDirectory, Name + ".cvg");
+                if (!File.Exists(convergenceFileName)) return;
+
                 long size = new System.IO.FileInfo(convergenceFileName).Length;
 
                 if (size != _convergenceFileLength)

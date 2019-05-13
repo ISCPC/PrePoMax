@@ -146,7 +146,6 @@ namespace PrePoMax.Forms
         // Methods                                                                                                                  
         public void PrepareForm(Controller controller)
         {
-            
             this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
 
             _propertyItemChanged = false;
@@ -186,6 +185,10 @@ namespace PrePoMax.Forms
             {
                 if (lvSettings.Items.Count > 0) lvSettings.Items[0].Selected = true;
             }
+        }
+        public void SetSettingsToShow(string name)
+        {
+            _previousSettings = name;
         }
 
       

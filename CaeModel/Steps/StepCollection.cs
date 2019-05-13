@@ -82,20 +82,24 @@ namespace CaeModel
             if (stepToRemove != null) _steps.Remove(stepToRemove);
 
         }
-        public void AddBoundaryCondition(BoundaryCondition boundaryCondition, string stepName)
+
+        public void AddHistoryOutput(HistoryOutput historyOutput, string stepName)
         {
             foreach (var step in _steps)
             {
-                if (step.Name == stepName) step.AddBoundaryCondition(boundaryCondition);
+                if (step.Name == stepName) step.AddHistoryOutput(historyOutput);
             }
         }
-        public void AddLoad(Load load, string stepName)
+        public string[] GetHistoryOutputNames()
         {
+            List<string> names = new List<string>();
             foreach (var step in _steps)
             {
-                if (step.Name == stepName)  step.AddLoad(load);
+                foreach (var history in step.HistoryOutputs) names.Add(step.Name + " -> " + history.Key);
             }
+            return names.ToArray();
         }
+
         public void AddFieldOutput(FieldOutput fieldOutput, string stepName)
         {
             foreach (var step in _steps)
@@ -112,5 +116,25 @@ namespace CaeModel
             }
             return names.ToArray();
         }
+
+        public void AddBoundaryCondition(BoundaryCondition boundaryCondition, string stepName)
+        {
+            foreach (var step in _steps)
+            {
+                if (step.Name == stepName) step.AddBoundaryCondition(boundaryCondition);
+            }
+        }
+
+        public void AddLoad(Load load, string stepName)
+        {
+            foreach (var step in _steps)
+            {
+                if (step.Name == stepName)  step.AddLoad(load);
+            }
+        }
+
+      
+
+       
     }
 }

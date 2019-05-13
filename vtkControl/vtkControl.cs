@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 using System.Linq;
 
 using System.Threading.Tasks;
-
+using System.Management;
 
 namespace vtkControl
 {
@@ -23,6 +23,9 @@ namespace vtkControl
     [System.Runtime.InteropServices.ComVisible(true), System.Runtime.InteropServices.ClassInterface(System.Runtime.InteropServices.ClassInterfaceType.AutoDual)]
     public partial class vtkControl : UserControl
     {
+        int countError;
+
+
         // Variables                                                                                                                
         private bool _renderingOn;
         private vtkRenderer _renderer;
@@ -31,6 +34,7 @@ namespace vtkControl
         private vtkRenderWindow _renderWindow;
         private vtkRenderWindowInteractor _renderWindowInteractor;
         private vtkOrientationMarkerWidget _coorSys;
+        private vtkMaxScaleWidget _scaleWidget;
         private vtkLookupTable _lookupTable;
         private vtkMaxScalarBarWidget _scalarBarWidget;
         private vtkMaxStatusBlockWidget _statusBlockWidget;
@@ -47,7 +51,9 @@ namespace vtkControl
         private Dictionary<string, vtkMaxActor> _actors;
         private List<vtkMaxActor> _selectedActors;
         private Dictionary<string, vtkActor> _overlayActors;
+        private Dictionary<string, vtkMaxActor[]> _animationActors;
         private vtkMaxAnimationFrameData _animationFrameData;
+        private bool _animationAcceleration;
         private Color _highlightColor;
         private double _maxSymbolSize;
 
@@ -80,20 +86,7 @@ namespace vtkControl
                 }
             }
         }
-        public bool DrawCoorSys
-        {
-            get { return _drawCoorSys; }
-            set
-            {
-                _drawCoorSys = value;
-                if (_coorSys != null)
-                {
-                    if (_drawCoorSys) _coorSys.SetEnabled(1);
-                    else _coorSys.SetEnabled(0);
-                }
-                this.Invalidate();
-            }
-        }
+       
         public vtkEdgesVisibility EdgesVisibility
         {
             get { return _edgesVisibility; }
@@ -113,7 +106,11 @@ namespace vtkControl
             set
             {
                 if (value) _minValueWidget.VisibilityOn();
-                else _minValueWidget.VisibilityOff();
+                else
+                {
+                    _minValueWidget.VisibilityOff();
+                    _minValueWidget.ResetInitialPosition();
+                }
             } 
         }
         public bool ShowMaxValueLocation 
@@ -122,7 +119,11 @@ namespace vtkControl
             set
             {
                 if (value) _maxValueWidget.VisibilityOn();
-                else _maxValueWidget.VisibilityOff();
+                else
+                {
+                    _maxValueWidget.VisibilityOff();
+                    _maxValueWidget.ResetInitialPosition();
+                }
             }
         }
         public vtkSelectBy SelectBy
@@ -156,11 +157,17 @@ namespace vtkControl
             }
         }
         public vtkSelectItem SelectItem { get { return _selectItem; } set { if (_selectItem != value) { _selectItem = value; } } }
+        
+
         // Setters                                                                                                                  
         public void SetSelectBy(vtkSelectBy selectBy)
         {
             SelectBy = selectBy;
         }
+        public void SetAnimationAcceleration(bool animationAcceleration)
+        {
+            _animationAcceleration = animationAcceleration;
+        } 
 
 
         // Callbacks                                                                                                                
@@ -178,6 +185,7 @@ namespace vtkControl
         public Func<int, int[], double, int[]> Controller_GetSurfaceByAngleNodeIds;
         public Func<int[], bool, bool, bool, int[]> Controller_GetElementIdsFromNodeIds;
         public Action<MouseEventArgs, Keys, string> Controller_ActorPicked;
+        public Action Controller_ShowPostSettings;
 
         // Events                                                                                                                   
         public event Action<double[], double[][], vtkSelectOperation> OnMouseLeftButtonUpSelection;
@@ -201,6 +209,7 @@ namespace vtkControl
             _actors = new Dictionary<string, vtkMaxActor>();
             _selectedActors = new List<vtkMaxActor>();
             _overlayActors = new Dictionary<string, vtkActor>();
+            _animationActors = new Dictionary<string, vtkMaxActor[]>();
             _animationFrameData = null;
             _highlightColor = Color.Red;
 
@@ -280,8 +289,13 @@ namespace vtkControl
             _renderWindow.SetCurrentCursor(0);  // Default
         }
 
+        private void scalarBarWidget_MouseDoubleClick()
+        {
+            Controller_ShowPostSettings?.Invoke();
+        }
+
         // Mouse Events - Style                                                                                                     
-        void _style_PointPickedOnMouseMoveEvt(int x1, int y1, bool rubberBandSelection, int x2, int y2)
+        private void _style_PointPickedOnMouseMoveEvt(int x1, int y1, bool rubberBandSelection, int x2, int y2)
         {
             try
             {
@@ -341,7 +355,7 @@ namespace vtkControl
             }
             catch { }
         }
-        void _style_PointPickedOnLeftUpEvt(int x1, int y1, bool rubberBandSelection, int x2, int y2)
+        private void _style_PointPickedOnLeftUpEvt(int x1, int y1, bool rubberBandSelection, int x2, int y2)
         {
             vtkSelectOperation selectOperation;
             if (Control.ModifierKeys == (Keys.Shift | Keys.Control)) selectOperation = vtkSelectOperation.Intersect;
@@ -374,7 +388,7 @@ namespace vtkControl
                 if (OnMouseLeftButtonUpSelection != null) OnMouseLeftButtonUpSelection(null, planeParameters, selectOperation);
             }
         }
-        void _style_LeftButtonPressEvent(int x, int y)
+        private void _style_LeftButtonPressEvent(int x, int y)
         {
             if (_selectBy == vtkSelectBy.Off)
             {
@@ -510,7 +524,7 @@ namespace vtkControl
             int globalPointId = GetNodeIdOnCellFaceClosestToPoint(pickedPoint);
             int globalCellId = GetCellIdClosestToPoint(pickedPoint, out cellId, out cell, out cellLocator);
             int[] globalCellFaceNodeIds = GetCellFaceNodeIds(cell, cellLocator);
-            vtkMaxActorData cellFaceData = Controller_GetCellFaceActorData(globalCellId, globalCellFaceNodeIds);
+            vtkMaxActorData cellFaceData = Controller_GetCellFaceActorData(globalCellId, globalCellFaceNodeIds); // works on undeformed mesh
 
             int[] nodeIds = null;
             double[][] nodeCoor = null;
@@ -543,7 +557,7 @@ namespace vtkControl
             vtkCellLocator cellLocator;
             int globalCellId = GetCellIdClosestToPoint(pickedPoint, out cellId, out cell, out cellLocator);
             int[] globalCellFaceNodeIds = GetCellFaceNodeIds(cell, cellLocator);
-            vtkMaxActorData cellFaceData = Controller_GetCellFaceActorData(globalCellId, globalCellFaceNodeIds);
+            vtkMaxActorData cellFaceData = Controller_GetCellFaceActorData(globalCellId, globalCellFaceNodeIds); // works on undeformed mesh
 
             int[] nodeIds = null;
             double[][] nodeCoor = null;
@@ -757,7 +771,7 @@ namespace vtkControl
             int globalCellId = GetCellIdClosestToPoint(pickedPoint, out cellId, out cell, out cellLocator);
             int[] globalCellFaceNodeIds = GetCellFaceNodeIds(cell, cellLocator);
 
-            vtkMaxActorData data = Controller_GetCellFaceActorData(globalCellId, globalCellFaceNodeIds);
+            vtkMaxActorData data = Controller_GetCellFaceActorData(globalCellId, globalCellFaceNodeIds); // works on undeformed mesh
 
             vtkMaxActor actor = new vtkMaxActor(data);
             _mouseSelectionActorCurrent = actor;
@@ -996,6 +1010,7 @@ namespace vtkControl
             if (pickedActor != null)
             {
                 p = _propPicker.GetPickPosition();
+                System.Diagnostics.Debug.WriteLine(String.Format("{0}   {1}   {2}", p[0], p[1], p[2]));
             }
             else
             {
@@ -1207,7 +1222,7 @@ namespace vtkControl
         {
             // cell face
             int[] globalCellFaceNodeIds = GetCellFaceNodeIds(cell, cellLocator);
-            vtkMaxActorData cellFaceData = Controller_GetCellFaceActorData(globalCellId, globalCellFaceNodeIds);
+            vtkMaxActorData cellFaceData = Controller_GetCellFaceActorData(globalCellId, globalCellFaceNodeIds); // works on undeformed mesh
 
             // closest edge cell
             int[] nodeIds = null;
@@ -1229,6 +1244,17 @@ namespace vtkControl
             }
             return faceGlobalNodeIds;
         }
+        private double[][] GetCellFaceNodeCoor(vtkCell cell)
+        {
+            vtkPoints points = cell.GetPoints();
+            double[][] coor = new double[points.GetNumberOfPoints()][];
+            
+            for (int i = 0; i < coor.Length; i++)
+            {
+                coor[i] = points.GetPoint(i);
+            }
+            return coor;
+        }
         private int GetNodeIdOnCellFaceClosestToPoint(double[] point)
         {
             long cellId;
@@ -1237,16 +1263,16 @@ namespace vtkControl
             int globalCellId = GetCellIdClosestToPoint(point, out cellId, out cell, out cellLocator);
             int[] globalCellFaceNodeIds = GetCellFaceNodeIds(cell, cellLocator);
 
-            vtkMaxActorData data = Controller_GetCellFaceActorData(globalCellId, globalCellFaceNodeIds);
+            double[][] coor = GetCellFaceNodeCoor(cell);
 
             double distance;
             double minDistance = double.MaxValue;
             int minId = -1;
 
-            for (int i = 0; i < data.Actor.Nodes.Coor.Length; i++)
+            for (int i = 0; i < coor.Length; i++)
             {
-                distance = Math.Pow(data.Actor.Nodes.Coor[i][0] - point[0], 2) + Math.Pow(data.Actor.Nodes.Coor[i][1] - point[1], 2) +
-                           Math.Pow(data.Actor.Nodes.Coor[i][2] - point[2], 2);
+                distance = Math.Pow(coor[i][0] - point[0], 2) + Math.Pow(coor[i][1] - point[1], 2) +
+                           Math.Pow(coor[i][2] - point[2], 2);
                 if (distance < minDistance)
                 {
                     minDistance = distance;
@@ -1254,7 +1280,7 @@ namespace vtkControl
                 }
             }
 
-            int globalPointId = data.Actor.Nodes.Ids[minId];
+            int globalPointId = globalCellFaceNodeIds[minId];
 
             return globalPointId;
         }
@@ -1555,10 +1581,12 @@ namespace vtkControl
             _coorSys.SetOrientationMarker(axes);
             _coorSys.SetInteractor(_renderWindowInteractor);
             _coorSys.SetViewport(0, 0, 200f / Width, 200f / Height);
+            _coorSys.KeyPressActivationOff();   // char i or I turns off the widget otherwise
             if (_drawCoorSys) _coorSys.SetEnabled(1);
             else _coorSys.SetEnabled(0);
-            _coorSys.InteractiveOff();
-            _coorSys.KeyPressActivationOff();   // char i or I turns off the widget otherwise
+            _coorSys.InteractiveOff();  // must be after enabled ???
+            
+
 
             // interactor style
             _style = vtkInteractorStyleControl.New();
@@ -1572,13 +1600,8 @@ namespace vtkControl
             _style.PointPickedOnLeftUpEvt += _style_PointPickedOnLeftUpEvt;
             _style.ClearCurrentMouseSelection += ClearCurrentMouseSelection;
             _style.LeftButtonPressEvent += _style_LeftButtonPressEvent;
-            //_style.LeftButtonReleaseEvt += _style_LeftButtonReleaseEvt;
-            //_style.MouseMoveEvt += _style_MouseMoveEvt;
-            //_style.MiddleButtonPressEvt += _style_MiddleButtonPressEvt;
-            //_style.MiddleButtonReleaseEvt += _style_MiddleButtonReleaseEvt;
             _style.RightButtonPressEvent += _style_RightButtonPressEvent;
             _style.KeyPressEvt += _style_KeyPressEvt;
-            //_style.Control = this;
             _style.LeaveEvt += _style_LeaveEvt;
             _style.EnterEvt += _style_EnterEvt;
             _renderWindowInteractor.SetInteractorStyle(_style);
@@ -1596,13 +1619,25 @@ namespace vtkControl
             // camera
             vtkCamera camera = _renderer.GetActiveCamera();
             camera.SetParallelProjection(1);
-            //camera.SetParallelScale(1);
-            //_selectionRenderer.SetActiveCamera(_renderer.GetActiveCamera());
-
+         
 
             // offset lines from polygons
             vtkPolyDataMapper.SetResolveCoincidentTopologyToPolygonOffset();
-         
+
+
+            // Scale bar
+            _scaleWidget = new vtkMaxScaleWidget();
+            _scaleWidget.SetInteractor(_selectionRenderer, _renderWindowInteractor);
+            _scaleWidget.SetWidth(400);
+            _scaleWidget.SetHorizontallyRelativePosition(313, 0);
+            _scaleWidget.SetBorderColor(0, 0, 0);
+            _scaleWidget.SetTextProperty(CreateNewTextProperty());
+            _scaleWidget.SetPadding(5);
+            _scaleWidget.GetBackgroundProperty().SetColor(1, 1, 1);
+            _scaleWidget.VisibilityOn();
+            _scaleWidget.BackgroundVisibilityOff();
+            _scaleWidget.BorderVisibilityOff();
+
 
             // Scalar bar
             InitializeScalarBar();
@@ -1611,7 +1646,7 @@ namespace vtkControl
             // Status block
             _statusBlockWidget = new vtkMaxStatusBlockWidget();
             //_statusBlock.SetRenderer(_selectionRenderer);
-            _statusBlockWidget.SetInteractor(_renderWindowInteractor);
+            _statusBlockWidget.SetInteractor(_selectionRenderer, _renderWindowInteractor);
             _statusBlockWidget.SetTextProperty(CreateNewTextProperty());            
             _statusBlockWidget.SetPadding(5);
             _statusBlockWidget.GetBackgroundProperty().SetColor(1, 1, 1);
@@ -1621,7 +1656,7 @@ namespace vtkControl
 
             // Max widget
             _maxValueWidget = new vtkMaxTextWithArrowWidget();
-            _maxValueWidget.SetInteractor(_renderWindowInteractor);
+            _maxValueWidget.SetInteractor(_selectionRenderer, _renderWindowInteractor);
             _maxValueWidget.SetBorderColor(0, 0, 0);
             _maxValueWidget.SetTextProperty(CreateNewTextProperty());
             _maxValueWidget.SetPadding(5);
@@ -1632,35 +1667,34 @@ namespace vtkControl
 
             // Min widget
             _minValueWidget = new vtkMaxTextWithArrowWidget();
-            _minValueWidget.SetInteractor(_renderWindowInteractor);
+            _minValueWidget.SetInteractor(_selectionRenderer, _renderWindowInteractor);
             _minValueWidget.SetBorderColor(0, 0, 0);
             _minValueWidget.SetTextProperty(CreateNewTextProperty());
             _minValueWidget.SetPadding(5);
             _minValueWidget.GetBackgroundProperty().SetColor(1, 1, 1);
             _minValueWidget.SetText("Test");
-            _minValueWidget.VisibilityOff();
+            _minValueWidget.VisibilityOff();            
 
 
             // Probe widget
             _probeWidget = new vtkMaxTextWidget();
-            _probeWidget.SetInteractor(_renderWindowInteractor);
+            _probeWidget.SetInteractor(_selectionRenderer, _renderWindowInteractor);
             _probeWidget.SetBorderColor(0, 0, 0);
             _probeWidget.SetTextProperty(CreateNewTextProperty());
             _probeWidget.SetPadding(5);
             _probeWidget.GetBackgroundProperty().SetColor(1, 1, 1);
             _probeWidget.VisibilityOff();
 
+            
 
             // Add the actors to the scene
             //Hexahedron();
             //Actor2D();
+            //Timer timer = new Timer();
+            //timer.Tick += Timer_Tick;
+            //timer.Interval = 10 * 1000;
+            //timer.Enabled = true;
         }
-
-        private void _style_KeyPressEvt(vtkObject sender, vtkObjectEventArgs e)
-        {
-            if (_scalarBarWidget.GetVisibility() == 1) _scalarBarWidget.OnRenderWindowModified();
-        }
-
         private void InitializeScalarBar()
         {
             // Lookup table
@@ -1668,17 +1702,33 @@ namespace vtkControl
 
             // Scalar bar
             _scalarBarWidget = new vtkMaxScalarBarWidget();
-            _scalarBarWidget.SetInteractor(_renderWindowInteractor);
+            _scalarBarWidget.SetInteractor(_renderer, _renderWindowInteractor);
             //_vtkMaxScalarBar.SetRenderer(_selectionRenderer);
             _scalarBarWidget.SetTextProperty(CreateNewTextProperty());
             _scalarBarWidget.CreateLookupTable(GetColorTransferFunction(), 0, 1);
             _scalarBarWidget.SetLabelFormat("E3");
             _scalarBarWidget.SetPadding(15);
             _scalarBarWidget.VisibilityOn();
-            //_vtkMaxScalarBar.WidgetPosition = vtkMaxWidgetPosition.FromBottomLeft;
 
-            
+            _scalarBarWidget.MouseDoubleClick += scalarBarWidget_MouseDoubleClick;
         }
+
+        public void InitializeWidgetPositions()
+        {
+            _scalarBarWidget.SetTopLeftPosition(20, 20);
+            _statusBlockWidget.SetTopLeftPosition(Width - _statusBlockWidget.GetWidth() - 20, 20);
+        }
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            ((Timer)sender).Enabled = false;
+            AddDiskAnimation();
+        }
+
+        private void _style_KeyPressEvt(vtkObject sender, vtkObjectEventArgs e)
+        {
+            if (_scalarBarWidget.GetVisibility() == 1) _scalarBarWidget.OnRenderWindowModified();
+        }
+
         private vtkTextProperty CreateNewTextProperty()
         {
             vtkTextProperty textProperty = vtkTextProperty.New();
@@ -1762,7 +1812,6 @@ namespace vtkControl
             if (isModelEdge) ApplyEdgeVisibilityAndBackfaceCullingToModelEdges(actor.ModelEdges, actor.Name);
             else ApplyEdgeVisibilityAndBackfaceCullingToActorEdges(actor.ElementEdges, actor.Name);
         }
-
        
         private vtkActor GetActorEdgesFromGrid(vtkUnstructuredGrid uGridEdges)
         {
@@ -1793,6 +1842,7 @@ namespace vtkControl
 
             return edges;
         }
+       
         // Formating
         private void ApplyEdgesFormatingToActor(vtkActor actor)
         {
@@ -2768,7 +2818,7 @@ namespace vtkControl
         {
             // Create actor
             vtkMaxActor actor = new vtkMaxActor(data);
-          
+
             // Add actor
             AddActor(actor, data.Layer);
 
@@ -3163,8 +3213,7 @@ namespace vtkControl
         {
             foreach (var name in actorNames)
             {
-                if (_actors.ContainsKey(name))
-                    _actors[name].VisibilityOn();
+                if (_actors.ContainsKey(name)) _actors[name].VisibilityOn();
                 if (_overlayActors.ContainsKey(name)) _overlayActors[name].VisibilityOn();
             }
 
@@ -3177,6 +3226,24 @@ namespace vtkControl
         #endregion  ################################################################################################################
 
         #region Settings ###########################################################################################################
+        public void SetCoorSysVisibility(bool visibility)
+        {
+            _drawCoorSys = visibility;
+            if (_coorSys != null)
+            {
+                if (_drawCoorSys)
+                {
+                    _coorSys.SetViewport(0, 0, 200f / Width, 200f / Height);
+                    _coorSys.SetEnabled(1);
+                }
+                else _coorSys.SetEnabled(0);
+            }
+        }
+        public void SetScaleWidgetVisibility(bool visibility)
+        {
+            if (visibility) _scaleWidget.VisibilityOn();
+            else _scaleWidget.VisibilityOff();
+        }
         public void SetColorSpectrum(vtkMaxColorSpectrum colorSpectrum)
         {
             _colorSpectrum.DeepCopy(colorSpectrum);
@@ -3198,7 +3265,7 @@ namespace vtkControl
             _statusBlockWidget.DeformationScaleFactor = scaleFactor;
             _statusBlockWidget.FieldType = fieldType;
             _statusBlockWidget.AnimationScaleFactor = -1;
-            _statusBlockWidget.VisibilityOn();            
+            _statusBlockWidget.VisibilityOn();
         }
         public void SetBackground(bool gradient, Color topColor, Color bottomColor, bool redraw)
         {
@@ -3246,11 +3313,12 @@ namespace vtkControl
                     _renderWindow.SetInteractor(_renderWindowInteractor);
 
                     _coorSys.SetInteractor(_renderWindowInteractor);
-                    _statusBlockWidget.SetInteractor(_renderWindowInteractor);
-                    _minValueWidget.SetInteractor(_renderWindowInteractor);
-                    _maxValueWidget.SetInteractor(_renderWindowInteractor);
-                    _probeWidget.SetInteractor(_renderWindowInteractor);
-                    _scalarBarWidget.SetInteractor(_renderWindowInteractor);
+                    //_scaleBarWidget.SetInteractor(_selectionRenderer, _renderWindowInteractor);
+                    //_scalarBarWidget.SetInteractor(_selectionRenderer, _renderWindowInteractor);
+                    //_statusBlockWidget.SetInteractor(_selectionRenderer, _renderWindowInteractor);
+                    //_minValueWidget.SetInteractor(_selectionRenderer, _renderWindowInteractor);
+                    //_maxValueWidget.SetInteractor(_selectionRenderer, _renderWindowInteractor);
+                    //_probeWidget.SetInteractor(_selectionRenderer, _renderWindowInteractor);
 
                     if (_drawCoorSys) _coorSys.EnabledOn();
                     else _coorSys.EnabledOff();
@@ -3290,7 +3358,7 @@ namespace vtkControl
 
             // Add actor
             AddActor(actor, vtkRendererLayer.Base);
-            
+
             // Add actorEdges
             if (data.CanHaveElementEdges && actor.ElementEdges != null) AddActorEdges(actor, false, vtkRendererLayer.Base);
 
@@ -3303,7 +3371,233 @@ namespace vtkControl
             _style.AdjustCameraDistanceAndClipping();
             this.Invalidate();
         }
+
+        public bool AddAnimatedScalarFieldOnCells(vtkMaxActorData data)
+        {
+            if (_animationAcceleration) return AddAnimatedScalarFieldOnCellsAllActors(data);
+            else return AddAnimatedScalarFieldOnCellsAddRemoveActors(data);
+        }
+        public bool AddAnimatedScalarFieldOnCellsAddRemoveActors(vtkMaxActorData data)
+        {
+            //countError = 0;
+            int n = data.Actor.NodesAnimation.Length;
+
+            // Create actor
+            vtkMaxActor actor;
+            vtkMaxActor baseActor = new vtkMaxActor(data);
+
+            // Add actor
+            AddActor(baseActor, data.Layer);
+            _animationFrameData.MemMb += n * baseActor.GetMapper().GetInput().GetActualMemorySize() / 1024.0;
+
+            // Add actorElementEdges
+            if (data.CanHaveElementEdges && baseActor.ElementEdges != null)
+            {
+                AddActorEdges(baseActor, false, data.Layer);
+                _animationFrameData.MemMb += n * baseActor.ElementEdges.GetMapper().GetInput().GetActualMemorySize() / 1024.0;
+            }
+
+            // Add modelEdges
+            if (baseActor.ModelEdges != null)
+            {
+                AddActorEdges(baseActor, true, data.Layer);
+                _animationFrameData.MemMb += n * baseActor.ModelEdges.GetMapper().GetInput().GetActualMemorySize() / 1024.0;
+            }
+
+            string name;
+            vtkMaxActor[] actors = new vtkMaxActor[n];
+            for (int i = 0; i < n; i++)
+            {
+                name = data.Name + "_animation-frame-" + i;
+                // Create actor
+                actor = new vtkMaxActor(baseActor);
+                actor.SetAnimationFrame(data, i);
+                actor.Name = name;
+
+                // Add actor
+                actors[i] = actor;
+            }
+
+            _animationActors.Add(baseActor.Name, actors);
+
+            _style.AdjustCameraDistanceAndClipping();
+            this.Invalidate();
+
+            return true;
+        }
+        public bool AddAnimatedScalarFieldOnCellsAllActors(vtkMaxActorData data)
+        {
+            string name;
+            Dictionary<int, string> animatedActorNames = new Dictionary<int, string>();
+
+            vtkMaxActor actor;
+            vtkMaxActor baseActor = new vtkMaxActor(data);
+
+            int n = data.Actor.NodesAnimation.Length;
+            for (int i = 0; i < n; i++)
+            {
+                // Animated actor names
+                name = data.Name + "_animation-frame-" + i;
+                animatedActorNames.Add(i, name);
+
+                // Create actor
+                actor = new vtkMaxActor(baseActor);
+                actor.Name = name;
+                actor.SetAnimationFrame(data, i);
+
+                // Add actor
+                AddActor(actor, vtkRendererLayer.Base);
+                _animationFrameData.MemMb += actor.GetMapper().GetInput().GetActualMemorySize() / 1024.0;
+
+                // Add actorEdges
+                if (data.CanHaveElementEdges && actor.ElementEdges != null)
+                {
+                    AddActorEdges(actor, false, vtkRendererLayer.Base);
+                    _animationFrameData.MemMb += actor.ElementEdges.GetMapper().GetInput().GetActualMemorySize() / 1024.0;
+                }
+
+                // Add modelEdges
+                if (actor.ModelEdges != null)
+                {
+                    AddActorEdges(actor, true, data.Layer);
+                    _animationFrameData.MemMb += actor.ModelEdges.GetMapper().GetInput().GetActualMemorySize() / 1024.0;
+                }
+                int memLimit = 1000;
+                if (_animationFrameData.MemMb > memLimit)
+                {
+                    if (MessageBox.Show("The size of the problem requires more than " + memLimit + " MB of RAM." +
+                                        "This might cause the application to shut down unexpectedly. Continue?",
+                                        "Warning", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    {
+                        _animationFrameData.MemMb = -1000000;   // prevet the messagebox from reappearing
+                    }
+                    else return false;
+                }
+            }
+
+            _animationFrameData.AnimatedActorNames.Add(animatedActorNames);
+
+            // UpdateScalarFormatting();   // this is called for the first time in the SetAnimationFrame
+
+            _style.AdjustCameraDistanceAndClipping();
+            this.Invalidate();
+
+            return true;
+        }
+
         private void UpdateScalarFormatting()
+        {
+            // Legend
+            _scalarBarWidget.VisibilityOff();
+
+            bool minVisible = _minValueWidget.GetVisibility() == 1;
+            bool maxVisible = _maxValueWidget.GetVisibility() == 1;
+            _minValueWidget.VisibilityOff();
+            _maxValueWidget.VisibilityOff();
+
+            vtkMaxExtreemeNode minNode = null;
+            vtkMaxExtreemeNode maxNode = null;
+            
+            // Find min and max value on actors
+            foreach (var entry in _actors)
+            {
+                if (entry.Value == null) throw new ArgumentNullException("_actors.Actor", "The actor does not exist.");
+
+                // if the part does not have scalar data
+                if (entry.Value.MinNode == null || entry.Value.MaxNode == null) continue;
+
+                if (entry.Value.ColorContours)
+                {
+                    if (entry.Value.GetMapper().GetInput().GetPointData().GetAttribute(0).GetName() != Globals.ScalarArrayName)
+                        entry.Value.GetMapper().GetInput().GetPointData().SetActiveScalars(Globals.ScalarArrayName);
+                    if (entry.Value.GetMapper().GetInterpolateScalarsBeforeMapping() != 1)
+                        entry.Value.GetMapper().SetInterpolateScalarsBeforeMapping(1); // discrete colors
+                }
+                else
+                {
+                    if (entry.Value.GetMapper().GetInput().GetPointData().GetAttribute(0) != null &&
+                        entry.Value.GetMapper().GetInput().GetPointData().GetAttribute(0).GetName() != "none")
+                        entry.Value.GetMapper().GetInput().GetPointData().SetActiveScalars("none");
+                    entry.Value.GetProperty().SetColor(entry.Value.Color.R / 255d, entry.Value.Color.G / 255d, entry.Value.Color.B / 255d);
+                    if (entry.Value.GetMapper().GetInterpolateScalarsBeforeMapping() != 0)
+                        entry.Value.GetMapper().SetInterpolateScalarsBeforeMapping(0); // discrete colors must be turned off
+                }
+
+                if (entry.Value.GetVisibility() == 0 || !entry.Value.ColorContours) continue;
+
+                if (minNode == null || maxNode == null)     // the first time through
+                {
+                    minNode = entry.Value.MinNode;
+                    maxNode = entry.Value.MaxNode;
+                }
+                else
+                {
+                    if (entry.Value.MinNode != null && entry.Value.MinNode.Value < minNode.Value) minNode = entry.Value.MinNode;
+                    if (entry.Value.MaxNode != null && entry.Value.MaxNode.Value > maxNode.Value) maxNode = entry.Value.MaxNode;
+                }
+            }
+            if (minNode == null || maxNode == null) return;
+            
+            // Scalar bar and min/max values of actor scalar range
+            if (_colorSpectrum.MinMaxType == vtkColorSpectrumMinMaxType.Automatic)
+            {
+                if (_animationFrameData != null && _animationFrameData.UseAllFrameData)   // animation from all frames
+                {
+                    double[] animRange = _animationFrameData.AllFramesScalarRange;
+                    _scalarBarWidget.CreateLookupTable(GetColorTransferFunction(), animRange[0], animRange[1]);
+                    PrepareActorLookupTable(animRange[0], animRange[1]);
+                }
+                else // min max from current frame
+                {
+                    _scalarBarWidget.CreateLookupTable(GetColorTransferFunction(), minNode.Value, maxNode.Value);
+                    PrepareActorLookupTable(minNode.Value, maxNode.Value);
+                }
+            }
+            else  // Manual and min max from current frame
+            {
+                _scalarBarWidget.CreateLookupTable(GetColorTransferFunction(), minNode.Value, maxNode.Value, _colorSpectrum.MinUserValue, _colorSpectrum.MaxUserValue);
+                PrepareActorLookupTable(minNode.Value, maxNode.Value);
+            }
+            
+            // Edit actors mapper
+            double[] actorRange = _lookupTable.GetTableRange();
+            vtkLookupTable lookup = vtkLookupTable.New();
+            lookup.DeepCopy(_lookupTable);
+            foreach (var entry in _actors)
+            {
+                if (entry.Value.ColorContours && entry.Value.GetVisibility() == 1 &&
+                    entry.Value.GetMapper().GetInput().GetPointData().GetScalars() != null
+                    && !_animationFrameData.InitializedActorNames.Contains(entry.Value.Name))              // animation speedup
+                {
+                    entry.Value.GetMapper().SetScalarRange(actorRange[0], actorRange[1]);
+                    entry.Value.GetMapper().SetLookupTable(lookup);
+                }
+            }
+
+            // Scalar bar
+            _scalarBarWidget.VisibilityOn();
+           
+            // Min Max widgets
+            string format = _scalarBarWidget.GetLabelFormat();
+
+            double[] coor;
+            if (minVisible)
+            {
+                _minValueWidget.VisibilityOn();
+                coor = minNode.Coor;
+                _minValueWidget.SetText("Min: " + minNode.Value.ToString(format) + Environment.NewLine + "Node id: " + minNode.Id);
+                _minValueWidget.SetAnchorPoint(coor[0], coor[1], coor[2]);
+            }
+
+            if (maxVisible)
+            {
+                _maxValueWidget.VisibilityOn();
+                coor = maxNode.Coor;
+                _maxValueWidget.SetText("Max: " + maxNode.Value.ToString(format) + Environment.NewLine + "Node id: " + maxNode.Id);
+                _maxValueWidget.SetAnchorPoint(coor[0], coor[1], coor[2]);
+            }
+        }
+        private void UpdateAnimationScalarFormatting()
         {
             // Legend
             _scalarBarWidget.VisibilityOff();
@@ -3324,15 +3618,19 @@ namespace vtkControl
 
                 if (entry.Value.ColorContours)
                 {
-                    entry.Value.GetMapper().GetInput().GetPointData().SetActiveScalars(Globals.ScalarArrayName);
-                    //entry.Value.GetProperty().SetColor(1, 1, 1); // set white color - vtkMaxActor UpdateColor uses the same color
-                    entry.Value.GetMapper().SetInterpolateScalarsBeforeMapping(1); // discrete colors
+                    if (entry.Value.GetMapper().GetInput().GetPointData().GetAttribute(0).GetName() != Globals.ScalarArrayName)
+                        entry.Value.GetMapper().GetInput().GetPointData().SetActiveScalars(Globals.ScalarArrayName);
+                    if (entry.Value.GetMapper().GetInterpolateScalarsBeforeMapping() != 1)
+                        entry.Value.GetMapper().SetInterpolateScalarsBeforeMapping(1); // discrete colors
                 }
                 else
                 {
-                    entry.Value.GetMapper().GetInput().GetPointData().SetActiveScalars("none");
+                    if (entry.Value.GetMapper().GetInput().GetPointData().GetAttribute(0) != null &&
+                        entry.Value.GetMapper().GetInput().GetPointData().GetAttribute(0).GetName() != "none")
+                        entry.Value.GetMapper().GetInput().GetPointData().SetActiveScalars("none");
                     entry.Value.GetProperty().SetColor(entry.Value.Color.R / 255d, entry.Value.Color.G / 255d, entry.Value.Color.B / 255d);
-                    entry.Value.GetMapper().SetInterpolateScalarsBeforeMapping(0);    // discrete colors must be turned off
+                    if (entry.Value.GetMapper().GetInterpolateScalarsBeforeMapping() != 0)
+                        entry.Value.GetMapper().SetInterpolateScalarsBeforeMapping(0); // discrete colors must be turned off
                 }
 
                 if (entry.Value.GetVisibility() == 0 || !entry.Value.ColorContours) continue;
@@ -3384,7 +3682,7 @@ namespace vtkControl
 
             // Scalar bar
             _scalarBarWidget.VisibilityOn();
-           
+
             // Min Max widgets
             string format = _scalarBarWidget.GetLabelFormat();
 
@@ -3446,17 +3744,19 @@ namespace vtkControl
         #region Animation ##########################################################################################################
         public void SetAnimationFrameData(float[] time, float[] scale, double[] allFramesScalarRange)
         {
-            _animationFrameData = new vtkMaxAnimationFrameData(time, scale, allFramesScalarRange);            
+            _animationFrameData.Time = time;
+            _animationFrameData.ScaleFactor = scale;
+            _animationFrameData.AllFramesScalarRange = allFramesScalarRange;
         }
+
         public void SetAnimationFrame(int frameNumber, bool scalarRangeFromAllFrames)
         {
-            //if (_renderWindow.GetRenderers().GetNumberOfItems() == 4)
-            //    _renderWindow.RemoveRenderer(_renderer);
-            //else
-            //    _renderWindow.AddRenderer(_renderer);
-            //this.Invalidate();
-
-            //return;
+            if (_animationAcceleration) SetAnimationFrameAllActors(frameNumber, scalarRangeFromAllFrames);
+            else SetAnimationFrameAddRemoveActors(frameNumber, scalarRangeFromAllFrames);
+        }
+        private void SetAnimationFrameAddRemoveActors(int frameNumber, bool scalarRangeFromAllFrames)
+        {
+            _animationFrameData.UseAllFrameData = scalarRangeFromAllFrames;
 
             if (_statusBlockWidget != null && _animationFrameData != null)
             {
@@ -3464,18 +3764,71 @@ namespace vtkControl
                 _statusBlockWidget.AnimationScaleFactor = _animationFrameData.ScaleFactor[frameNumber];
             }
 
-            foreach (var entry in _actors)
+            List<string> visibleActors = new List<string>();
+            vtkMaxActor actor;
+            foreach (var entry in _animationActors)
             {
-                entry.Value.SetAnimationFrame(frameNumber);
-            }
+                // get
+                actor = _actors[entry.Key];
+                // remove
+                _actors.Remove(entry.Key);
+                _renderer.RemoveActor(actor);
+                _renderer.RemoveActor(actor.ElementEdges);
+                _renderer.RemoveActor(actor.ModelEdges);
 
-            _animationFrameData.UseAllFrameData = scalarRangeFromAllFrames;
+                // get
+                actor = entry.Value[frameNumber];
+                // add
+                _actors.Add(entry.Key, actor);
+                _renderer.AddActor(actor);
+                _renderer.AddActor(actor.ElementEdges);
+                _renderer.AddActor(actor.ModelEdges);
+
+                visibleActors.Add(actor.Name);
+            }
 
             UpdateScalarFormatting();
 
+            _animationFrameData.InitializedActorNames.UnionWith(visibleActors); // add visible actors to initialized actors
+
+            ApplyEdgesVisibilityAndBackfaceCulling();   // calls invalidate
             _style.AdjustCameraDistanceAndClipping();
-            this.Invalidate();
+
+            countError++;
+            if (countError % 10 == 0) System.Diagnostics.Debug.WriteLine("Count: " + countError);
         }
+        private void SetAnimationFrameAllActors(int frameNumber, bool scalarRangeFromAllFrames)
+        {
+            _animationFrameData.UseAllFrameData = scalarRangeFromAllFrames;
+
+            if (_statusBlockWidget != null && _animationFrameData != null)
+            {
+                _statusBlockWidget.AnalysisTime = _animationFrameData.Time[frameNumber];
+                _statusBlockWidget.AnimationScaleFactor = _animationFrameData.ScaleFactor[frameNumber];
+            }
+
+            List<string> visibleActors = new List<string>();
+            foreach (var listEntry in _animationFrameData.AnimatedActorNames)
+            {
+                foreach (var entry in listEntry)
+                {
+                    if (entry.Key == frameNumber)
+                    {
+                        _actors[entry.Value].VisibilityOn();
+                        visibleActors.Add(entry.Value);
+                    }
+                    else _actors[entry.Value].VisibilityOff();
+                }
+            }
+
+            UpdateScalarFormatting();
+
+            _animationFrameData.InitializedActorNames.UnionWith(visibleActors); // add visible actors to initialized actors
+
+            ApplyEdgesVisibilityAndBackfaceCulling();   // calls invalidate
+            _style.AdjustCameraDistanceAndClipping();
+        }
+
         public void SaveAnimationAsAVI(string fileName, int[] firstLastFrame, int step, int fps, bool scalarRangeFromAllFrames, bool swing, bool encoderOptions)
         {
             if (step < 1) step = 1;
@@ -3588,20 +3941,20 @@ namespace vtkControl
                 _renderer.RemoveActor(entry.Value.ModelEdges);
             }
             //_renderer.RemoveAllViewProps();  this removes all other actors for min/max values ...
+
             _actors.Clear();
             _cellPicker.RemoveAllLocators();
             _propPicker.InitializePickList();
-            _animationFrameData = null;
+            _animationActors.Clear();
+            _animationFrameData = new vtkMaxAnimationFrameData();
 
             if (_scalarBarWidget != null)
             {
                 _scalarBarWidget.VisibilityOff();
-                _scalarBarWidget.SetTopLeftPosition(20, 20);
             }
             if (_statusBlockWidget != null)
             {
                 _statusBlockWidget.VisibilityOff();
-                _statusBlockWidget.SetPosition(200, 20);
             }
             if (_minValueWidget != null) _minValueWidget.VisibilityOff();
             if (_maxValueWidget != null) _maxValueWidget.VisibilityOff();
@@ -4122,6 +4475,119 @@ namespace vtkControl
             // Add the actors to the scene
 
             captionWidget.On();
+        }
+
+        private void AddDiskAnimation()
+        {
+            //vtkCamera camera = vtkCamera.New();
+            //camera.Elevation(-45);
+            //_renderer.SetActiveCamera(camera);
+
+            //# Creating disk mesh
+            vtkDiskSource disk = vtkDiskSource.New();
+            disk.SetInnerRadius(0.1);
+            disk.SetOuterRadius(2.0);
+            disk.SetRadialResolution(800);
+            disk.SetCircumferentialResolution(800);
+            disk.Update();
+            vtkPolyData polyData = disk.GetOutput();
+
+            Console.WriteLine(polyData.GetNumberOfPoints() + " nodes");
+            Console.WriteLine(polyData.GetNumberOfCells() + " elements");
+
+            //# Setup actor and mapper
+            vtkPolyDataMapper mapper = vtkPolyDataMapper.New();
+            mapper.SetInput(polyData);
+            vtkActor actor = vtkActor.New();
+            actor.SetMapper(mapper);
+
+            _renderer.AddActor(actor);
+
+            int n = 36;
+            double[] nodePos;
+            polyData = disk.GetOutput();
+            vtkPoints[] vtkPointsList = new vtkPoints[n];
+
+            Console.WriteLine("Calculate...");
+            for (int i = 0; i < n; i++)
+            {
+                vtkPointsList[i] = vtkPoints.New();
+                vtkPointsList[i].DeepCopy(polyData.GetPoints());
+                for (int j = 0; j < polyData.GetNumberOfPoints(); j++)
+                {
+                    nodePos = vtkPointsList[i].GetPoint(j);
+                    vtkPointsList[i].SetPoint(j, nodePos[0], nodePos[1], 0.3 * Math.Sin(nodePos[0] * 2 + 360 / (n - 1) * i * Math.PI / 180));
+                }
+                polyData.SetPoints(vtkPointsList[i]);
+                _renderWindow.Render();
+                Application.DoEvents();
+            }
+
+            Console.WriteLine("Done. Animate.");
+            System.Threading.Thread.Sleep(2000);
+
+            //# First animation without color
+            DateTime start_time = DateTime.Now;
+
+            //for (int j = 0; j < 10; j++)
+            //{
+            //    for (int i = 0; i < n; i++)
+            //    {
+            //        polyData.SetPoints(vtkPointsList[i]);
+            //        _renderWindow.Render();
+            //        //Application.DoEvents();
+            //        //this.Invalidate();
+            //    }
+            //}
+
+            double fps = 10 * n / (DateTime.Now - start_time).TotalSeconds;
+            Console.WriteLine(fps + " FPS");
+            //MessageBox.Show(fps + " FPS");
+
+            Console.WriteLine("Done. Animate actor array.");
+
+            _renderer.RemoveActor(actor);
+            vtkActor[] actors = new vtkActor[n];
+            for (int i = 0; i < n; i++)
+            {
+                disk = vtkDiskSource.New();
+                disk.SetInnerRadius(0.1);
+                disk.SetOuterRadius(2.0);
+                disk.SetRadialResolution(800);
+                disk.SetCircumferentialResolution(800);
+                disk.Update();
+                polyData = disk.GetOutput();
+                polyData.SetPoints(vtkPointsList[i]);
+                mapper = vtkPolyDataMapper.New();
+                mapper.SetInput(polyData);
+                actors[i] = vtkActor.New();
+                actors[i].SetMapper(mapper);
+                _renderer.AddActor(actors[i]);
+                _renderWindow.Render();
+                Application.DoEvents();
+                actors[i].VisibilityOff();
+            }
+
+            start_time = DateTime.Now;
+            for (int j = 0; j < 10; j++)
+            {
+                for (int i = 0; i < n; i++)
+                {
+                    //for (int k = 0; k < n; k++)
+                    //{
+                    //   actors[k].VisibilityOff();
+                    //}
+                    actors[(i + n - 1) % n].VisibilityOff();
+                    actors[i].VisibilityOn();
+                    _renderWindow.Render();
+                }
+            }
+
+            fps = 10 * n / (DateTime.Now - start_time).TotalSeconds;
+            Console.WriteLine(fps + " FPS");
+            MessageBox.Show(fps + " FPS");
+
+
         }
 
 

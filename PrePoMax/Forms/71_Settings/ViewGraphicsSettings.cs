@@ -78,9 +78,26 @@ namespace PrePoMax.Settings
             set { _graphicsSettings.BottomColor = value; }
         }
 
+        [CategoryAttribute("Widgets")]
+        [OrderedDisplayName(0, 10, "Coordinate system visibility")]
+        [DescriptionAttribute("Turn coordinate system on or off.")]
+        public bool CoorSysVisibility
+        {
+            get { return _graphicsSettings.CoorSysVisibility; }
+            set { _graphicsSettings.CoorSysVisibility = value; }
+        }
+        [CategoryAttribute("Widgets")]
+        [OrderedDisplayName(1, 10, "Scale widget visibility")]
+        [DescriptionAttribute("Turn scale widget on or off.")]
+        public bool ScaleWidgetVisibility
+        {
+            get { return _graphicsSettings.ScaleWidgetVisibility; }
+            set { _graphicsSettings.ScaleWidgetVisibility = value; }
+        }
+
         [CategoryAttribute("Lighting")]
         [OrderedDisplayName(0, 10, "Ambient component")]
-        [DescriptionAttribute("Select the ambient light component between 0 and 1. ")]
+        [DescriptionAttribute("Select the ambient light component between 0 and 1.")]
         public double AmbientComponent
         {
             get { return _graphicsSettings.AmbientComponent; }
@@ -98,7 +115,7 @@ namespace PrePoMax.Settings
 
         [CategoryAttribute("Smoothing")]
         [OrderedDisplayName(0, 10, "Point smoothing")]
-        [DescriptionAttribute("Enable/disable point smoothing. Restart the application for the changes to take effect.")]
+        [DescriptionAttribute("Enable/disable point smoothing.")]
         public bool PointSmoothing
         {
             get { return _graphicsSettings.PointSmoothing; }
@@ -107,7 +124,7 @@ namespace PrePoMax.Settings
 
         [CategoryAttribute("Smoothing")]
         [OrderedDisplayName(1, 10, "Line smoothing")]
-        [DescriptionAttribute("Enable/disable line smoothing. Restart the application for the changes to take effect")]
+        [DescriptionAttribute("Enable/disable line smoothing.")]
         public bool LineSmoothing
         {
             get { return _graphicsSettings.LineSmoothing; }
@@ -133,6 +150,22 @@ namespace PrePoMax.Settings
             BackgroundType = _graphicsSettings.BackgroundType;  // add this also to Reset()
 
             CustomPropertyDescriptor cpd;
+
+            // now lets display On/Off instead of True/False
+            cpd = _dctd.GetProperty("CoorSysVisibility");
+            foreach (StandardValueAttribute sva in cpd.StatandardValues)
+            {
+                if ((bool)sva.Value == true) sva.DisplayName = "On";
+                else sva.DisplayName = "Off";
+            }
+
+            // now lets display On/Off instead of True/False
+            cpd = _dctd.GetProperty("ScaleWidgetVisibility");
+            foreach (StandardValueAttribute sva in cpd.StatandardValues)
+            {
+                if ((bool)sva.Value == true) sva.DisplayName = "On";
+                else sva.DisplayName = "Off";
+            }
 
             // now lets display On/Off instead of True/False
             cpd = _dctd.GetProperty("PointSmoothing");

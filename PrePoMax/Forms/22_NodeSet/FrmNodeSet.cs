@@ -15,7 +15,8 @@ namespace PrePoMax.Forms
         private HashSet<string> _allExistingNames;
         private string _nodeSetToEditName;
         private ViewNodeSet _viewNodeSet;
-        private Selection _selection;
+        private List<SelectionNode> _prevSelectionNodes;
+        private SelectionNodeIds _selectionNodeIds;
         private Controller _controller;
 
 
@@ -85,11 +86,18 @@ namespace PrePoMax.Forms
                 // Replace
                 if (_propertyItemChanged || !NodeSet.Valid)
                 {
+                    // replace the ids by the previous selection
+                    Selection selection = (Selection)NodeSet.CreationData;
+                    if (selection.Nodes[0] is SelectionNodeIds sn && sn.Equals(_selectionNodeIds))
+                    {
+                        selection.Nodes.RemoveAt(0);
+                        selection.Nodes.InsertRange(0, _prevSelectionNodes);
+                    }
+
                     NodeSet.Valid = true;
                     _controller.ReplaceNodeSetCommand(_nodeSetToEditName, NodeSet);
                 }
             }
-            _selection.Clear();
         }
         protected override bool OnPrepareForm(string stepName, string nodeSetToEditName)
         {
@@ -103,7 +111,8 @@ namespace PrePoMax.Forms
             _nodeSetToEditName = null;
             _viewNodeSet = null;
             propertyGrid.SelectedObject = null;
-            _selection = null;
+            _prevSelectionNodes = null;
+            _selectionNodeIds = null;
 
             _allExistingNames.UnionWith(_controller.GetAllMeshEntityNames());
             _nodeSetToEditName = nodeSetToEditName;
@@ -116,13 +125,13 @@ namespace PrePoMax.Forms
             else
             {
                 NodeSet = _controller.GetNodeSet(_nodeSetToEditName);   // to clone
-                int[] ids = NodeSet.Labels;                             // change node selection history to ids
-                SelectionNodeIds selectionNode = new SelectionNodeIds(vtkControl.vtkSelectOperation.None, false, ids);
+                int[] ids = NodeSet.Labels;                             // change node selection history to ids to speed up
+                _selectionNodeIds = new SelectionNodeIds(vtkControl.vtkSelectOperation.None, false, ids);
+                _prevSelectionNodes = ((Selection)NodeSet.CreationData).Nodes;
                 _controller.ClearSelectionHistory();
-                _controller.AddSelectionNode(selectionNode, true);
+                _controller.AddSelectionNode(_selectionNodeIds, true);
                 NodeSet.CreationData = _controller.Selection.DeepClone();
             }
-            _selection = _controller.Selection;
 
             propertyGrid.SelectedObject = _viewNodeSet;
             propertyGrid.Select();
@@ -138,7 +147,7 @@ namespace PrePoMax.Forms
             {
                 if (this.DialogResult == System.Windows.Forms.DialogResult.OK)              // the FrmItemSet was closed with OK
                 {
-                    NodeSet.CreationData = _selection.DeepClone();
+                    NodeSet.CreationData = _controller.Selection.DeepClone();
                     _controller.GetNodesCenterOfGravity(NodeSet);
                     _propertyItemChanged = true;
                 }
@@ -146,7 +155,7 @@ namespace PrePoMax.Forms
                 {
                     if (NodeSet.CreationData != null)
                     {
-                        _selection.CopySelectonData(NodeSet.CreationData as Selection);
+                        _controller.Selection.CopySelectonData(NodeSet.CreationData as Selection);
                         _controller.HighlightSelection();
                     }
                 }

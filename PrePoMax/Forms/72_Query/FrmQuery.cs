@@ -505,7 +505,7 @@ namespace PrePoMax.Forms
                 else if (_coorNodesToDraw.GetLength(0) >= 2)
                 {
                     _controller.DrawNodes("Querry", _coorNodesToDraw, color, layer, 7);
-                    _controller.HighlightLines(_coorLinesToDraw, 7);
+                    _controller.HighlightConnectedLines(_coorLinesToDraw, 7);
                 }
             }
         }

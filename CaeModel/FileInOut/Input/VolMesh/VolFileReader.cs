@@ -14,6 +14,10 @@ namespace FileInOut.Input
         // Methods                                                                                                                  
         static public FeMesh Read(string fileName, ElementsToImport elementsToImport)
         {
+            return Read(fileName, elementsToImport, false);
+        }
+        static public FeMesh Read(string fileName, ElementsToImport elementsToImport, bool convertToSecondOrder)
+        {
             if (fileName != null && File.Exists(fileName))
             {
                 string[] lines = File.ReadAllLines(fileName);
@@ -32,7 +36,7 @@ namespace FileInOut.Input
                     }
                     else if (dataSet[0] == VolKeywords.volumeelements.ToString()) // 3D Elements
                     {
-                        AddtVolumeElements(dataSet.ToArray(), elements, ref elementStartId);
+                        AddVolumeElements(dataSet.ToArray(), elements, ref elementStartId);
                     }
                     else if (dataSet[0] == VolKeywords.surfaceelements.ToString() ||
                              dataSet[0] == VolKeywords.surfaceelementsuv.ToString()) // 2D Elements
@@ -44,7 +48,7 @@ namespace FileInOut.Input
                         AddLineElements(dataSet.ToArray(), elements, ref elementStartId);
                     }
                 }
-                FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Mesh);
+                FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Mesh, null, null, convertToSecondOrder);
 
                 mesh.ConvertLineFeElementsToEdges();
 
@@ -117,7 +121,7 @@ namespace FileInOut.Input
 
             return nodes;
         }
-        static private void AddtVolumeElements(string[] lines, Dictionary<int, FeElement> elements, ref int startId)
+        static private void AddVolumeElements(string[] lines, Dictionary<int, FeElement> elements, ref int startId)
         {
             int numNodes;
             int N = int.Parse(lines[1]);

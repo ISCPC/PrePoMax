@@ -103,9 +103,21 @@ Dependency nglib - added following files for c++ redistriburable compatibility:
 Done
 
 Version 0.5.1 Master branch
+Added support for additional mesh parameters
+Added support for reading and displaying *El print data
+Added support for reading and displaying *Node print data
+Added support for preparation of outputs using *El print
+Added support for preparation of outputs using *Node print
+Added double click shortcuts on Model (for keywords) and on Scale bar (for settings)
+Added scale widget
+Added support for finding short edges and small faces
+Added support for hardware accelerated animation
+Added support for hardening parameter in *Plastic material
+Added support for *Buckling step
 Added support for *Frequency step
 Added support for reading Frequency results
 Bug fixes
+
 
 Version 0.5.0 Sync branch
 Added support for selection by edges

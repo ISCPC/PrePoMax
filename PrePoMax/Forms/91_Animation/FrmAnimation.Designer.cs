@@ -62,8 +62,10 @@
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.groupBox6 = new System.Windows.Forms.GroupBox();
-            this.cbEncoderOptions = new System.Windows.Forms.CheckBox();
             this.cbSaveAsImages = new System.Windows.Forms.CheckBox();
+            this.cbEncoderOptions = new System.Windows.Forms.CheckBox();
+            this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.cbGraphicsRam = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numIncrementStep)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numNumOfFrames)).BeginInit();
@@ -77,6 +79,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numFirstFrame)).BeginInit();
             this.groupBox5.SuspendLayout();
             this.groupBox6.SuspendLayout();
+            this.groupBox4.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -509,27 +512,14 @@
             // 
             // groupBox6
             // 
-            this.groupBox6.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox6.Controls.Add(this.cbSaveAsImages);
             this.groupBox6.Controls.Add(this.cbEncoderOptions);
-            this.groupBox6.Location = new System.Drawing.Point(11, 329);
+            this.groupBox6.Location = new System.Drawing.Point(11, 383);
             this.groupBox6.Name = "groupBox6";
             this.groupBox6.Size = new System.Drawing.Size(281, 73);
             this.groupBox6.TabIndex = 21;
             this.groupBox6.TabStop = false;
             this.groupBox6.Text = "Movie options";
-            // 
-            // cbEncoderOptions
-            // 
-            this.cbEncoderOptions.AutoSize = true;
-            this.cbEncoderOptions.Location = new System.Drawing.Point(6, 22);
-            this.cbEncoderOptions.Name = "cbEncoderOptions";
-            this.cbEncoderOptions.Size = new System.Drawing.Size(201, 19);
-            this.cbEncoderOptions.TabIndex = 0;
-            this.cbEncoderOptions.Text = "Show video compression options";
-            this.cbEncoderOptions.UseVisualStyleBackColor = true;
-            this.cbEncoderOptions.CheckedChanged += new System.EventHandler(this.cbEncoderOptions_CheckedChanged);
             // 
             // cbSaveAsImages
             // 
@@ -542,11 +532,46 @@
             this.cbSaveAsImages.UseVisualStyleBackColor = true;
             this.cbSaveAsImages.CheckedChanged += new System.EventHandler(this.cbSaveAsImages_CheckedChanged);
             // 
+            // cbEncoderOptions
+            // 
+            this.cbEncoderOptions.AutoSize = true;
+            this.cbEncoderOptions.Location = new System.Drawing.Point(6, 22);
+            this.cbEncoderOptions.Name = "cbEncoderOptions";
+            this.cbEncoderOptions.Size = new System.Drawing.Size(201, 19);
+            this.cbEncoderOptions.TabIndex = 0;
+            this.cbEncoderOptions.Text = "Show video compression options";
+            this.cbEncoderOptions.UseVisualStyleBackColor = true;
+            this.cbEncoderOptions.CheckedChanged += new System.EventHandler(this.cbEncoderOptions_CheckedChanged);
+            // 
+            // groupBox4
+            // 
+            this.groupBox4.Controls.Add(this.cbGraphicsRam);
+            this.groupBox4.Location = new System.Drawing.Point(11, 329);
+            this.groupBox4.Name = "groupBox4";
+            this.groupBox4.Size = new System.Drawing.Size(281, 48);
+            this.groupBox4.TabIndex = 22;
+            this.groupBox4.TabStop = false;
+            this.groupBox4.Text = "Acceleration";
+            // 
+            // cbGraphicsRam
+            // 
+            this.cbGraphicsRam.AutoSize = true;
+            this.cbGraphicsRam.Checked = true;
+            this.cbGraphicsRam.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cbGraphicsRam.Location = new System.Drawing.Point(6, 22);
+            this.cbGraphicsRam.Name = "cbGraphicsRam";
+            this.cbGraphicsRam.Size = new System.Drawing.Size(258, 19);
+            this.cbGraphicsRam.TabIndex = 0;
+            this.cbGraphicsRam.Text = "Use graphics card RAM (for smaller meshes)";
+            this.cbGraphicsRam.UseVisualStyleBackColor = true;
+            this.cbGraphicsRam.CheckedChanged += new System.EventHandler(this.cbGraphicsRam_CheckedChanged);
+            // 
             // FrmAnimation
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(304, 414);
+            this.ClientSize = new System.Drawing.Size(304, 466);
+            this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox6);
             this.Controls.Add(this.groupBox5);
             this.Controls.Add(this.gbColorSpectrumLimits);
@@ -581,6 +606,8 @@
             this.groupBox5.PerformLayout();
             this.groupBox6.ResumeLayout(false);
             this.groupBox6.PerformLayout();
+            this.groupBox4.ResumeLayout(false);
+            this.groupBox4.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -622,5 +649,7 @@
         private System.Windows.Forms.NumericUpDown numIncrementStep;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.CheckBox cbSaveAsImages;
+        private System.Windows.Forms.GroupBox groupBox4;
+        private System.Windows.Forms.CheckBox cbGraphicsRam;
     }
 }

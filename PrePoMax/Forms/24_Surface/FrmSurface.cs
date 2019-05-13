@@ -15,6 +15,8 @@ namespace PrePoMax.Forms
         private HashSet<string> _allExistingNames;
         private string _surfaceToEditName;
         private ViewFeSurface _viewSurface;
+        private List<SelectionNode> _prevSelectionNodes;
+        private SelectionNodeIds _selectionNodeIds;
         private Controller _controller;
 
 
@@ -98,6 +100,14 @@ namespace PrePoMax.Forms
                 // Replace
                 if (_propertyItemChanged || !Surface.Valid)
                 {
+                    // replace the ids by the previous selection
+                    Selection selection = (Selection)Surface.CreationData;
+                    if (selection.Nodes[0] is SelectionNodeIds sn && sn.Equals(_selectionNodeIds))
+                    {
+                        selection.Nodes.RemoveAt(0);
+                        selection.Nodes.InsertRange(0, _prevSelectionNodes);
+                    }
+
                     Surface.Valid = true;
                     _controller.ReplaceSurfaceCommand(_surfaceToEditName, Surface);
                 }
@@ -115,6 +125,8 @@ namespace PrePoMax.Forms
             _surfaceToEditName = null;
             _viewSurface = null;
             propertyGrid.SelectedObject = null;
+            _prevSelectionNodes = null;
+            _selectionNodeIds = null;
 
             _controller.SetSelectItemToSurface();
 
@@ -126,17 +138,19 @@ namespace PrePoMax.Forms
             if (_surfaceToEditName == null)
             {
                 Surface = new FeSurface(GetSurfaceName());
+                _controller.Selection.Clear();
             }
             else
             {
-                Surface = _controller.GetSurface(_surfaceToEditName); // to clone
+                Surface = _controller.GetSurface(_surfaceToEditName);   // to clone
 
                 if (Surface.FaceIds != null)
                 {
-                    int[] ids = Surface.FaceIds;
-                    SelectionNodeIds selectionNode = new SelectionNodeIds(vtkControl.vtkSelectOperation.None, false, ids);
+                    int[] ids = Surface.FaceIds;                        // change node selection history to ids to speed up
+                    _selectionNodeIds = new SelectionNodeIds(vtkControl.vtkSelectOperation.None, false, ids);
+                    _prevSelectionNodes = ((Selection)Surface.CreationData).Nodes;
                     _controller.ClearSelectionHistory();
-                    _controller.AddSelectionNode(selectionNode, true);
+                    _controller.AddSelectionNode(_selectionNodeIds, true);
                     Surface.CreationData = _controller.Selection.DeepClone();
                 }
 

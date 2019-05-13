@@ -28,6 +28,7 @@ namespace PrePoMax
         protected Dictionary<string, AnalysisJob> _jobs;
         protected NetgenJob _netgenJob;
         protected FeResults _results;
+        protected HistoryResults _history;
         // View
         protected ViewGeometryModelResults _currentView;
         protected string _drawSymbolsForStep;
@@ -101,7 +102,7 @@ namespace PrePoMax
                 if (value != _drawSymbolsForStep)
                 {
                     _drawSymbolsForStep = value;
-                    RedrawAnnotations();
+                    RedrawSymbols();
                 }
             }
         }
@@ -134,6 +135,7 @@ namespace PrePoMax
         public Selection Selection { get { return _selection; } set { _selection = value; } }
         // Results
         public FeResults Results { get { return _results; } }
+        public HistoryResults History { get { return _history; } }
         public ViewResultsType ViewResultsType
         {
             get { return _viewResultsType; }
@@ -320,10 +322,11 @@ namespace PrePoMax
         }
         public void ClearResults()
         {
-            if (_results != null)
+            if (_results != null || _history != null)
             {
                 _modelChanged = true;
                 _results = null;
+                _history = null;
             }
             _currentFieldData = null;
             ClearAllSelection();
@@ -366,6 +369,7 @@ namespace PrePoMax
 
             if (extension == ".pmx") OpenPmx(fileName);
             else if (extension == ".frd") OpenFrd(fileName);
+            else if (extension == ".dat") OpenDat(fileName);
             else throw new NotSupportedException();
             
             // Get first component of the first field for the last increment in the last step
@@ -382,10 +386,13 @@ namespace PrePoMax
 
             data = TryReadCompressedPmx(fileName, out _model, out _results);
             if (data == null) data = TryReadUncompressedPmx(fileName, out _model, out _results);
-            if (data == null || data.Length < 3) throw new Exception("The file can not be read. It is either corrupt or was created by a previous version.");
+            if (data == null || data.Length < 3)
+                throw new Exception("The file can not be read. It is either corrupt or was created by a previous version.");
 
             tmp = (Controller)data[0];
-            
+
+            _history = tmp.History;
+
             _commands.EnableDisableUndoRedo -= _commands_CommandExecuted;
             _commands = new Commands.CommandsCollection(this, tmp._commands); // to recreate the history file
             _commands.WriteOutput = _form.WriteDataToOutput;
@@ -402,7 +409,7 @@ namespace PrePoMax
             if (_model != null && _model.Mesh != null) _currentView = ViewGeometryModelResults.Model;
             else if (_results != null) _currentView = ViewGeometryModelResults.Results;
 
-            _form.RegenerateTree(_model, _jobs, _results);
+            _form.RegenerateTree(_model, _jobs, _results, _history);
 
             //_form.SetTreeExpandCollapseState((bool[])data[2]);
 
@@ -433,11 +440,33 @@ namespace PrePoMax
                 _currentView = ViewGeometryModelResults.Results;     // do not draw
                 _form.SetCurrentView(_currentView);
 
-                _form.RegenerateTree(_model, _jobs, _results);
+                _form.RegenerateTree(_model, _jobs, _results, _history);
+
+                _modelChanged = true;
+            }
+
+            string datFileName = Path.GetFileNameWithoutExtension(fileName) + ".dat";
+            datFileName = Path.Combine(Path.GetDirectoryName(fileName), datFileName);
+            if (File.Exists(datFileName)) OpenDat(datFileName);
+        }
+
+        private void OpenDat(string fileName)
+        {
+            _history = CaeResults.DatFileReader.Read(fileName);
+
+            if (_history == null)
+            {
+                MessageBox.Show("The dat file does not exist or is empty.", "Error");
+                return;
+            }
+            else
+            {
+                _form.RegenerateTree(_model, _jobs, _results, _history);
 
                 _modelChanged = true;
             }
         }
+
         private object[] TryReadCompressedPmx(string fileName, out FeModel model, out FeResults results)
         {
             try
@@ -564,7 +593,7 @@ namespace PrePoMax
             }
 
             // Regenerate
-            _form.RegenerateTree(_model, _jobs, _results);
+            _form.RegenerateTree(_model, _jobs, _results, _history);
         }
         public void ImportStepAssemblyFile(string fileName)
         {
@@ -755,7 +784,8 @@ namespace PrePoMax
         {
             _form.WriteDataToOutput(data);
         }
-        public void ImportGeneratedMesh(string fileName, string partName, bool resetCamera, bool fromStep)
+        public void ImportGeneratedMesh(string fileName, string partName, bool resetCamera, bool fromBrep, 
+                                        bool convertToSecondOrder)
         {
             if (!File.Exists(fileName))
                 throw new FileNotFoundException("The file: '" + fileName + "' does not exist." + Environment.NewLine +
@@ -763,16 +793,16 @@ namespace PrePoMax
 
             RemoveModelParts(new string[] { partName }, false);
 
-            _model.ImportGeneratedMeshFromVolFile(fileName, partName);
-            if (fromStep) _model.Mesh.Parts[partName].SmoothShaded = true;
+            _model.ImportGeneratedMeshFromVolFile(fileName, partName, convertToSecondOrder);
+            if (fromBrep) _model.Mesh.Parts[partName].SmoothShaded = true;
 
             _form.Clear3D();
             _currentView = ViewGeometryModelResults.Model;
             _form.SetCurrentView(_currentView);
 
-            _form.RegenerateTree(_model, _jobs, _results);
+            _form.RegenerateTree(_model, _jobs, _results, _history);
             
-            DrawMesh(resetCamera); // also draws annotations
+            DrawMesh(resetCamera); // also draws symbols
         }
 
         public string GetFileNameToSaveAs()
@@ -802,11 +832,16 @@ namespace PrePoMax
             using (FileStream fs = new FileStream(fileName, FileMode.Create))
             {
                 FeResults results = null;
+                HistoryResults history = null;
                 bool saveResults = ((GeneralSettings)Settings[Globals.GeneralSettingsName]).SaveResultsInPmx;
+
+                // when controller (data[0]) is dumped to stream, the results should be null if selected
                 if (saveResults == false)
                 {
                     results = _results;
                     _results = null;
+                    history = _history;
+                    _history = null;
                 }
 
                 // Controller
@@ -816,7 +851,12 @@ namespace PrePoMax
                 // Results - data is saved inside data[0]._results but without mesh data - speed up
                 FeResults.WriteToFile(_results, bw);
 
-                if (saveResults == false) _results = results;
+                // after dumping restore the results
+                if (saveResults == false)
+                {
+                    _results = results;
+                    _history = history;
+                }
 
                 bw.Flush();
                 bw.BaseStream.Position = 0;
@@ -1017,7 +1057,7 @@ namespace PrePoMax
                 string[] addedPartNames = _results.Mesh.AddPartsFromMesh(_model.Geometry, partNames);
                 if (addedPartNames.Length > 0)
                 {
-                    _form.RegenerateTree(_model, _jobs, _results);
+                    _form.RegenerateTree(_model, _jobs, _results, _history);
                     CurrentView = ViewGeometryModelResults.Results;
                 }
             }
@@ -1032,6 +1072,30 @@ namespace PrePoMax
             foreach (var name in removedParts) _form.RemoveTreeNode<GeometryPart>(view, name, null);
             
             DrawGeometry(false);
+        }
+
+        // Analyze geometry ***********************************************************************
+
+        public double GetShortestEdgeLen()
+        {
+            return DisplayedMesh.GetShortestEdgeLen();
+        }
+        public void ShowShortEdges(double minEdgeLen)
+        {
+            //ClearAllSelection();
+            double[][][] edgeNodeCoor = DisplayedMesh.GetShortEdges(minEdgeLen);
+            HighlightConnectedEdges(edgeNodeCoor, 7);
+        }
+        public double GetSmallestFace()
+        {
+            return DisplayedMesh.GetSmallestFace();
+        }
+        public void ShowSmallFaces(double minFaceArea)
+        {
+            //ClearAllSelection();
+            FeMesh mesh = DisplayedMesh;
+            int[][] cells = mesh.GetSmallestFaces(minFaceArea);
+            HighlightSurface(cells);
         }
 
         #endregion #################################################################################################################
@@ -1108,8 +1172,8 @@ namespace PrePoMax
             if (_netgenJob.JobStatus == JobStatus.OK)
             {
                 _form.SetStateReady("Meshing...");
-
-                ImportGeneratedMesh(volFileName, part.Name, false, false);
+                bool convertToSecondOrder = part.MeshingParameters.SecondOrder && !part.MeshingParameters.MediumNodesOnGeometry;
+                ImportGeneratedMesh(volFileName, part.Name, false, false, convertToSecondOrder);
 
                 return true;
             }
@@ -1152,8 +1216,8 @@ namespace PrePoMax
             if (_netgenJob.JobStatus == JobStatus.OK)
             {
                 _form.SetStateReady("Meshing...");
-
-                ImportGeneratedMesh(volFileName, part.Name, false, true);
+                bool convertToSecondOrder = part.MeshingParameters.SecondOrder && !part.MeshingParameters.MediumNodesOnGeometry;
+                ImportGeneratedMesh(volFileName, part.Name, false, true, convertToSecondOrder);
 
                 return true;
             }
@@ -1377,7 +1441,7 @@ namespace PrePoMax
                 _form.AddTreeNode(ViewGeometryModelResults.Model, newMeshPart, null);
 
                 DrawMesh(false);
-                RedrawAnnotations();
+                RedrawSymbols();
 
                 CheckAndUpdateValidity();
             }
@@ -1396,7 +1460,7 @@ namespace PrePoMax
             if (invalidate)
             {
                 DrawMesh(false);
-                RedrawAnnotations();
+                RedrawSymbols();
             }
 
             CheckAndUpdateValidity();
@@ -1457,7 +1521,7 @@ namespace PrePoMax
             UpdateSurfacesDependentOnNodeSet(nodeSet.Name);
             UpdateReferencePointsDependentOnNodeSet(nodeSet.Name);
             CheckAndUpdateValidity();   // if a missing item was added
-            RedrawAnnotations();
+            RedrawSymbols();
         }
         public FeNodeSet GetNodeSet(string nodeSetName)
         {
@@ -1485,7 +1549,7 @@ namespace PrePoMax
             UpdateSurfacesDependentOnNodeSet(nodeSet.Name);
             UpdateReferencePointsDependentOnNodeSet(nodeSet.Name);
             CheckAndUpdateValidity();
-            RedrawAnnotations();
+            RedrawSymbols();
         }
         public void RemoveNodeSets(string[] nodeSetNames)
         {
@@ -1497,7 +1561,7 @@ namespace PrePoMax
                 UpdateReferencePointsDependentOnNodeSet(name);
             }
             CheckAndUpdateValidity();
-            RedrawAnnotations();
+            RedrawSymbols();
         }
         public void GetNodesCenterOfGravity(FeNodeSet nodeSet)
         {
@@ -1572,7 +1636,7 @@ namespace PrePoMax
             else throw new NotSupportedException("The element set does not contain any selection data.");
 
             CheckAndUpdateValidity();
-            RedrawAnnotations();
+            RedrawSymbols();
         }
         public FeElementSet GetElementSet(string elementSetName)
         {
@@ -1597,7 +1661,7 @@ namespace PrePoMax
 
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldElementSetName, elementSet, null);
             CheckAndUpdateValidity();
-            RedrawAnnotations();
+            RedrawSymbols();
         }
         public void ConvertElementSetsToMeshParts(string[] elementSetNames)
         {
@@ -1620,7 +1684,7 @@ namespace PrePoMax
             DrawMesh(false);
 
             CheckAndUpdateValidity();
-            RedrawAnnotations();
+            RedrawSymbols();
         }
         public void RemoveElementSets(string[] elementSetNames)
         {
@@ -1630,7 +1694,7 @@ namespace PrePoMax
                 _form.RemoveTreeNode<FeElementSet>(ViewGeometryModelResults.Model, name, null);
             }
             CheckAndUpdateValidity();
-            RedrawAnnotations();
+            RedrawSymbols();
         }
 
         #endregion #################################################################################################################
@@ -1673,7 +1737,7 @@ namespace PrePoMax
 
             _form.AddTreeNode(ViewGeometryModelResults.Model, surface, null);
             CheckAndUpdateValidity();
-            RedrawAnnotations();
+            RedrawSymbols();
         }
         public FeSurface GetSurface(string surfaceName)
         {
@@ -1698,7 +1762,7 @@ namespace PrePoMax
 
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldSurfaceName, newSurface, null);
             CheckAndUpdateValidity();
-            RedrawAnnotations();
+            RedrawSymbols();
         }
         public void RemoveSurfaces(string[] surfaceNames)
         {
@@ -1707,7 +1771,7 @@ namespace PrePoMax
             foreach (var name in surfaceNames) _form.RemoveTreeNode<FeSurface>(ViewGeometryModelResults.Model, name, null);
 
             CheckAndUpdateValidity();
-            RedrawAnnotations();
+            RedrawSymbols();
         }
         private void AddSurfaceAndElementFaces(FeSurface surface)
         {
@@ -1795,7 +1859,7 @@ namespace PrePoMax
 
             _form.AddTreeNode(ViewGeometryModelResults.Model, referencePoint, null);
             CheckAndUpdateValidity();
-            RedrawAnnotations();
+            RedrawSymbols();
         }
         public FeReferencePoint GetReferencePoint(string referencePointName)
         {
@@ -1812,7 +1876,7 @@ namespace PrePoMax
 
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldReferencePointName, newReferencePoint, null);
             CheckAndUpdateValidity();
-            RedrawAnnotations();
+            RedrawSymbols();
         }
         public void RemoveReferencePoints(string[] referencePointNames)
         {
@@ -1823,7 +1887,7 @@ namespace PrePoMax
             }
             
             CheckAndUpdateValidity();
-            RedrawAnnotations();
+            RedrawSymbols();
         }
 
         private void UpdateReferencePointsDependentOnNodeSet(string nodeSetName)
@@ -2003,7 +2067,7 @@ namespace PrePoMax
 
             _form.AddTreeNode(ViewGeometryModelResults.Model, constraint, null);
             CheckAndUpdateValidity();
-            RedrawAnnotations();
+            RedrawSymbols();
         }
         public Constraint GetConstraint(string constraintName)
         {
@@ -2021,7 +2085,7 @@ namespace PrePoMax
                 _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.Constraints[name], null);
             }
             //_form.HideActors(constraintNames);
-            RedrawAnnotations();
+            RedrawSymbols();
         }
         public void ShowConstraints(string[] constraintNames)
         {
@@ -2031,7 +2095,7 @@ namespace PrePoMax
                 _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.Constraints[name], null);
             }
             //_form.ShowActors(constraintNames);
-            RedrawAnnotations();
+            RedrawSymbols();
         }
         public void ReplaceConstraint(string oldConstraintName, Constraint newConstraint)
         {
@@ -2040,7 +2104,7 @@ namespace PrePoMax
 
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldConstraintName, newConstraint, null);
             CheckAndUpdateValidity();
-            RedrawAnnotations();
+            RedrawSymbols();
         }
         public void RemoveConstraints(string[] constraintNames)
         {
@@ -2051,7 +2115,7 @@ namespace PrePoMax
             }
 
             CheckAndUpdateValidity();
-            RedrawAnnotations();
+            RedrawSymbols();
         }
 
         #endregion #################################################################################################################
@@ -2086,7 +2150,7 @@ namespace PrePoMax
             _form.AddTreeNode(ViewGeometryModelResults.Model, step, null);
 
             CheckAndUpdateValidity();
-            RedrawAnnotations();
+            RedrawSymbols();
         }
         public Step GetStep(string stepName)
         {
@@ -2102,7 +2166,7 @@ namespace PrePoMax
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldStepName, newStep, null);
 
             CheckAndUpdateValidity();
-            RedrawAnnotations();
+            RedrawSymbols();
         }
         public void RemoveSteps(string[] stepNames)
         {
@@ -2113,7 +2177,71 @@ namespace PrePoMax
             }
 
             CheckAndUpdateValidity();
-            RedrawAnnotations();
+            RedrawSymbols();
+        }
+
+        #endregion #################################################################################################################
+
+        #region History output menu   ##############################################################################################
+        // COMMANDS ********************************************************************************
+        public void AddHistoryOutputCommand(string stepName, HistoryOutput historyOutput)
+        {
+            Commands.CAddHistoryOutput comm = new Commands.CAddHistoryOutput(stepName, historyOutput);
+            _commands.AddAndExecute(comm);
+        }
+        public void ReplaceHistoryOutputCommand(string stepName, string oldHistoryOutputName, HistoryOutput historyOutput)
+        {
+            Commands.CReplaceHisotryOutput comm = new Commands.CReplaceHisotryOutput(stepName, oldHistoryOutputName, historyOutput);
+            _commands.AddAndExecute(comm);
+        }
+        public void RemoveHistoryOutputsForStepCommand(string stepName, string[] historyOutputNames)
+        {
+            Commands.CRemoveHistoryOutputs comm = new Commands.CRemoveHistoryOutputs(stepName, historyOutputNames);
+            _commands.AddAndExecute(comm);
+        }
+
+        //******************************************************************************************
+
+        public string[] GetHistoryOutputNames()
+        {
+            return _model.StepCollection.GetHistoryOutputNames();
+        }
+        public string[] GetHistoryOutputNamesForStep(string stepName)
+        {
+            return _model.StepCollection.GetStep(stepName).HistoryOutputs.Keys.ToArray();
+        }
+        public void AddHistoryOutput(string stepName, HistoryOutput historyOutput)
+        {
+            _model.StepCollection.GetStep(stepName).HistoryOutputs.Add(historyOutput.Name, historyOutput);
+            _form.AddTreeNode(ViewGeometryModelResults.Results, historyOutput, stepName);
+
+            CheckAndUpdateValidity();
+        }
+        public HistoryOutput GetHistoryOutput(string stepName, string historyOutputName)
+        {
+            return _model.StepCollection.GetStep(stepName).HistoryOutputs[historyOutputName];
+        }
+        public HistoryOutput[] GetAllHistoryOutputs(string stepName)
+        {
+            return _model.StepCollection.GetStep(stepName).HistoryOutputs.Values.ToArray();
+        }
+        public void ReplaceHistoryOutput(string stepName, string oldHistoryOutputName, HistoryOutput historyOutput)
+        {
+            _model.StepCollection.GetStep(stepName).HistoryOutputs.Remove(oldHistoryOutputName);
+            _model.StepCollection.GetStep(stepName).HistoryOutputs.Add(historyOutput.Name, historyOutput);
+            _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldHistoryOutputName, historyOutput, stepName);
+
+            CheckAndUpdateValidity();
+        }
+        public void RemoveHistoryOutputs(string stepName, string[] historyOutputNames)
+        {
+            foreach (var name in historyOutputNames)
+            {
+                _model.StepCollection.GetStep(stepName).HistoryOutputs.Remove(name);
+                _form.RemoveTreeNode<HistoryOutput>(ViewGeometryModelResults.Model, name, stepName);
+            }
+
+            CheckAndUpdateValidity();
         }
 
         #endregion #################################################################################################################
@@ -2222,7 +2350,7 @@ namespace PrePoMax
 
             _form.AddTreeNode(ViewGeometryModelResults.Model, boundaryCondition, stepName);
             CheckAndUpdateValidity();
-            RedrawAnnotations();
+            RedrawSymbols();
         }
         public BoundaryCondition GetBoundaryCondition(string stepName, string boundaryConditionName)
         {
@@ -2240,7 +2368,7 @@ namespace PrePoMax
                 _model.StepCollection.GetStep(stepName).BoundaryConditions[name].Visible = false;
                 _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.StepCollection.GetStep(stepName).BoundaryConditions[name], stepName);
             }
-            RedrawAnnotations();
+            RedrawSymbols();
         }
         public void ShowBoundaryConditions(string stepName, string[] boundaryConditionNames)
         {
@@ -2249,7 +2377,7 @@ namespace PrePoMax
                 _model.StepCollection.GetStep(stepName).BoundaryConditions[name].Visible = true;
                 _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.StepCollection.GetStep(stepName).BoundaryConditions[name], stepName);
             }
-            RedrawAnnotations();
+            RedrawSymbols();
         }
         public void ReplaceBoundaryCondition(string stepName, string oldBoundaryConditionName, BoundaryCondition boundaryCondition)
         {
@@ -2258,7 +2386,7 @@ namespace PrePoMax
 
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldBoundaryConditionName, boundaryCondition, stepName);
             CheckAndUpdateValidity();
-            RedrawAnnotations();
+            RedrawSymbols();
         }
         public void RemoveBoundaryConditions(string stepName, string[] boundaryConditionNames)
         {
@@ -2269,7 +2397,7 @@ namespace PrePoMax
             }
 
             CheckAndUpdateValidity();
-            RedrawAnnotations();
+            RedrawSymbols();
         }
 
         #endregion #################################################################################################################
@@ -2314,7 +2442,7 @@ namespace PrePoMax
 
             _form.AddTreeNode(ViewGeometryModelResults.Model, load, stepName);
             CheckAndUpdateValidity();
-            RedrawAnnotations();
+            RedrawSymbols();
         }
         public Load GetLoad(string stepName, string loadName)
         {
@@ -2331,7 +2459,7 @@ namespace PrePoMax
                 _model.StepCollection.GetStep(stepName).Loads[name].Visible = false;
                 _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.StepCollection.GetStep(stepName).Loads[name], stepName);
             }
-            RedrawAnnotations();
+            RedrawSymbols();
         }
         public void ShowLoads(string stepName, string[] loadNames)
         {
@@ -2340,7 +2468,7 @@ namespace PrePoMax
                 _model.StepCollection.GetStep(stepName).Loads[name].Visible = true;
                 _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.StepCollection.GetStep(stepName).Loads[name], stepName);
             }
-            RedrawAnnotations();
+            RedrawSymbols();
         }
         public void ReplaceLoad(string stepName, string oldLoadName, Load load)
         {
@@ -2349,7 +2477,7 @@ namespace PrePoMax
 
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldLoadName, load, stepName);
             CheckAndUpdateValidity();
-            RedrawAnnotations();
+            RedrawSymbols();
         }
         public void RemoveLoads(string stepName, string[] loadNames)
         {
@@ -2360,7 +2488,7 @@ namespace PrePoMax
             }
 
             CheckAndUpdateValidity();
-            RedrawAnnotations();
+            RedrawSymbols();
         }
 
         #endregion #################################################################################################################
@@ -2369,16 +2497,18 @@ namespace PrePoMax
 
         public void ApplySettings()
         {
+            // Graphics settings
+            GraphicsSettings graphicsSettings = (GraphicsSettings)_settings[Globals.GraphicsSettingsName];
+            _form.SetBackground(graphicsSettings.BackgroundType == BackgroundType.Gradient, graphicsSettings.TopColor, graphicsSettings.BottomColor, false);
+            _form.SetCoorSysVisibility(graphicsSettings.CoorSysVisibility);
+            _form.SetScaleWidgetVisibility(graphicsSettings.ScaleWidgetVisibility);
+            _form.SetLighting(graphicsSettings.AmbientComponent, graphicsSettings.DiffuseComponent, false);
+            _form.SetSmoothing(graphicsSettings.PointSmoothing, graphicsSettings.LineSmoothing, false);
+
             // Pre-processing settings
             PreSettings preSettings = (PreSettings)_settings[Globals.PreSettingsName];
             _form.SetHighlightColor(preSettings.HighlightColor);
             _form.SetMouseHighlightColor(preSettings.MouseHighlightColor);
-
-            // Graphics settings
-            GraphicsSettings graphicsSettings = (GraphicsSettings)_settings[Globals.GraphicsSettingsName];
-            _form.SetBackground(graphicsSettings.BackgroundType == BackgroundType.Gradient, graphicsSettings.TopColor, graphicsSettings.BottomColor, false);
-            _form.SetLighting(graphicsSettings.AmbientComponent, graphicsSettings.DiffuseComponent, false);
-            _form.SetSmoothing(graphicsSettings.PointSmoothing, graphicsSettings.LineSmoothing, false);
 
             // Job settings
             if (_jobs != null)
@@ -2446,7 +2576,19 @@ namespace PrePoMax
         public void RunJob(string inputFileName, AnalysisJob job)
         {
             if (File.Exists(job.Executable))
-            {              
+            {
+                string directory = Path.GetDirectoryName(inputFileName);
+                string searchPattern = Path.GetFileNameWithoutExtension(inputFileName) + ".*";
+                string[] files = Directory.GetFiles(directory, searchPattern);
+                try
+                {
+                    foreach (var fileName in files) File.Delete(fileName);
+                }
+                catch (Exception ex)
+                {
+                    throw new CaeGlobals.CaeException(ex.Message);
+                }
+                
                 ExportToCalculix(inputFileName);
                 job.JobStatusChanged = JobStatusChanged;
                 job.Submit();
@@ -2587,6 +2729,44 @@ namespace PrePoMax
         {
             return _results.GetExistingIncrementIds(name, component);
         }
+
+        public void GetHistoryOutputData(HistoryResultData historyData, out string[] columnNames, out object[][] rowBasedData)
+        {
+            HistoryResultSet set = _history.Sets[historyData.SetName];
+            HistoryResultField field = set.Fields[historyData.FieldName];
+            HistoryResultComponent component = field.Components[historyData.ComponentName];
+
+            int numCol = component.Entries.Count + 1; // +1 for the time column
+            int numRow = component.Entries.First().Value.Time.Count;
+            columnNames = new string[numCol];
+            rowBasedData = new object[numRow][];
+            for (int i = 0; i < numRow; i++) rowBasedData[i] = new object[numCol];
+
+            int col = 0;
+            int row = 0;
+            columnNames[col] = "Time";
+            foreach (var time in component.Entries.First().Value.Time)
+            {
+                rowBasedData[row][0] = time;
+                row++;
+            }
+
+            col = 1;
+            foreach (var entry in component.Entries)
+            {
+                columnNames[col] = entry.Key;
+
+                row = 0;
+                foreach (var value in entry.Value.Values)
+                {
+                    rowBasedData[row][col] = value;
+                    row++;
+                }
+                col++;
+            }
+
+
+        }
         #endregion #################################################################################################################
 
         #region Activate Deactivate  ###############################################################################################
@@ -2607,7 +2787,11 @@ namespace PrePoMax
         public void ActivateDeactivate(NamedClass item, bool activate, string stepName)
         {
             item.Active = activate;
-            if (item is FieldOutput)
+            if (item is HistoryOutput)
+            {
+                ReplaceHistoryOutput(stepName, item.Name, ((HistoryOutput)item));
+            }
+            else if (item is FieldOutput)
             {
                 ReplaceFieldOutput(stepName, item.Name, ((FieldOutput)item));
             }
@@ -2626,20 +2810,7 @@ namespace PrePoMax
             int count = 0;
             foreach (var item in items)
             {
-                item.Active = activate;
-                if (item is FieldOutput)
-                {
-                    ReplaceFieldOutput(stepNames[count], item.Name, ((FieldOutput)item));
-                }
-                else if (item is BoundaryCondition)
-                {
-                    ReplaceBoundaryCondition(stepNames[count], item.Name, ((BoundaryCondition)item));
-                }
-                else if (item is Load)
-                {
-                    ReplaceLoad(stepNames[count], item.Name, ((Load)item));
-                }
-                else throw new NotImplementedException();
+                ActivateDeactivate(item, activate, stepNames[count]);
                 count++;
             }
         }
@@ -2719,6 +2890,14 @@ namespace PrePoMax
             }
 
             _selection.Add(node);
+            if (highlight) HighlightSelection();
+        }
+        public void AddSelectionNodes(List<SelectionNode> nodes, bool highlight)
+        {
+            foreach (var node in nodes)
+            {
+                AddSelectionNode(node, false);
+            }
             if (highlight) HighlightSelection();
         }
         public void RemoveLastSelectionNode(bool highlight)
@@ -3092,13 +3271,14 @@ namespace PrePoMax
             }
             else return null;
         }
-        public vtkControl.vtkMaxActorData GetSurfaceActorDataByFaceIds(int[] faceIds)
+        public vtkControl.vtkMaxActorData GetFaceActorDataByFaceIds(int[] faceIds)
         {
             int[][] cells = new int[faceIds.Length][];
             int count = 0;
+            FeMesh mesh = DisplayedMesh;        // it is used in loop
             foreach (int faceId in faceIds)
             {
-                cells[count++] = DisplayedMesh.GetCellFromFaceId(faceId, out FeElement element);
+                cells[count++] = mesh.GetCellFromFaceId(faceId, out FeElement element);
             }
 
             vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
@@ -3127,19 +3307,19 @@ namespace PrePoMax
                                                    out data.Actor.Cells.CellNodeIds, out data.Actor.Cells.Types);
             return data;
         }
-        public vtkControl.vtkMaxActorData GetSurfaceEdgeActorData(int elementId, int[] nodeIds)
+        public vtkControl.vtkMaxActorData GetFaceEdgeActorData(int elementId, int[] nodeIds)
         {
             // from element id and node ids get surface id nad from surface id get free edges !!!
             BasePart part;
-            int surfaceId;
-            if (DisplayedMesh.GetSurfaceId(elementId, nodeIds, out part, out surfaceId))
+            int faceId;
+            if (DisplayedMesh.GetFaceId(elementId, nodeIds, out part, out faceId))
             {
                 List<int[]> edgeCells = new List<int[]>();
                 int edgeId;
                 int edgeCellId;
-                for (int i = 0; i < part.Visualization.SurfaceEdgeIds[surfaceId].Length; i++)
+                for (int i = 0; i < part.Visualization.FaceEdgeIds[faceId].Length; i++)
                 {
-                    edgeId = part.Visualization.SurfaceEdgeIds[surfaceId][i];
+                    edgeId = part.Visualization.FaceEdgeIds[faceId][i];
                     for (int j = 0; j < part.Visualization.EdgeCellIdsByEdge[edgeId].Length; j++)
                     {
                         edgeCellId = part.Visualization.EdgeCellIdsByEdge[edgeId][j];
@@ -3192,7 +3372,7 @@ namespace PrePoMax
         }
         public int[] GetSurfaceNodeIds(int elementId, int[] cellFaceGlobalNodeIds)
         {
-            return DisplayedMesh.GetSurfaceNodeIds(elementId, cellFaceGlobalNodeIds);
+            return DisplayedMesh.GetFaceNodeIds(elementId, cellFaceGlobalNodeIds);
         }
         public int[] GetEdgeByAngleNodeIds(int elementId, int[] edgeGlobalNodeIds, double angle)
         {
@@ -3388,7 +3568,7 @@ namespace PrePoMax
                         {
                             if (_currentView != ViewGeometryModelResults.Model) CurrentView = ViewGeometryModelResults.Model;
                             DrawAllMeshParts();
-                            DrawAnnotations();
+                            DrawSymbols();
                         }
                         catch { }
                     }
@@ -3461,8 +3641,8 @@ namespace PrePoMax
             _form.Add3DCells(data);
         }
 
-        // Annotations
-        public void DrawAnnotations()
+        // Symbols
+        public void DrawSymbols()
         {
             if (_drawSymbolsForStep != null && _drawSymbolsForStep != "None")
             {
@@ -3476,7 +3656,7 @@ namespace PrePoMax
                 }
             }
         }
-        public void RedrawAnnotations()
+        public void RedrawSymbols()
         {
             try
             {
@@ -3491,7 +3671,7 @@ namespace PrePoMax
                         try // must be inside to continue screen update
                         {
                             if (_currentView != ViewGeometryModelResults.Model) CurrentView = ViewGeometryModelResults.Model;
-                            DrawAnnotations();
+                            DrawSymbols();
                         }
                         catch { }
 
@@ -4432,6 +4612,13 @@ namespace PrePoMax
                     {
                         HighlightConstraints(new string[] { ((CaeModel.Constraint)obj).Name });
                     }
+                    else if (obj is CaeModel.HistoryOutput ho)
+                    {
+                        if (ho.RegionType == RegionTypeEnum.NodeSetName) HighlightNodeSets(new string[] { ho.RegionName });
+                        else if (ho.RegionType == RegionTypeEnum.ElementSetName) HighlightElementSets(new string[] { ho.RegionName });
+                        else if (ho.RegionType == RegionTypeEnum.SurfaceName) HighlightSurfaces(new string[] { ho.RegionName });
+                        else throw new NotSupportedException();
+                    }
                     else if (obj is CaeModel.DisplacementRotation)
                     {
                         HighlightBoundaryCondition(obj as BoundaryCondition);
@@ -4561,6 +4748,45 @@ namespace PrePoMax
         {
             HighlightElements(elementSet.Labels, mesh);
         }
+        public void HighlightSurface(int[][] cells)
+        {
+            FeMesh mesh = DisplayedMesh;
+            System.Drawing.Color color = System.Drawing.Color.Red;
+            vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
+
+            // copy
+            int[][] cellsCopy = new int[cells.Length][];
+            for (int i = 0; i < cells.Length; i++) cellsCopy[i] = cells[i].ToArray();
+
+            // faces
+            vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
+            data.Name = "highlight_surface_by_cells";
+            data.Color = color;
+            data.Layer = layer;
+            data.CanHaveElementEdges = true;
+            data.BackfaceCulling = true;
+            data.Actor.Cells.CellNodeIds = cells;
+            mesh.GetSurfaceGeometry(cells, out data.Actor.Nodes.Coor, out data.Actor.Cells.Types);
+
+            ApplyLighting(data);
+            _form.Add3DCells(data);
+
+            //edges
+            cells = mesh.GetFreeEdgesFromVisualizationCells(cellsCopy);
+
+            data = new vtkControl.vtkMaxActorData();
+            data.Name = "highlight_surface_edges_by_cells";
+            data.Color = color;
+            data.Layer = layer;
+            data.CanHaveElementEdges = true;
+            data.BackfaceCulling = true;
+            data.Actor.Cells.CellNodeIds = cells;
+            mesh.GetSurfaceEdgesGeometry(cells, out data.Actor.Nodes.Coor, out data.Actor.Cells.Types);
+
+            ApplyLighting(data);
+            _form.Add3DCells(data);
+
+        }
         public void HighlightSurfaces(string[] surfacesToSelect)
         {
             System.Drawing.Color color = System.Drawing.Color.Red;
@@ -4618,7 +4844,7 @@ namespace PrePoMax
             int nodeSymbolSize = preSettings.NodeSymbolSize;
             DrawLoad("Highlight", load, System.Drawing.Color.Red, symbolSize, nodeSymbolSize, vtkControl.vtkRendererLayer.Selection);
         }
-        public void HighlightLines(double[][] nodeCoor, int nodeSize = 5)
+        public void HighlightConnectedLines(double[][] lineNodeCoor, int nodeSize = 5)
         {
             // create wire elements
             System.Drawing.Color color = System.Drawing.Color.Red;
@@ -4626,7 +4852,7 @@ namespace PrePoMax
 
             LinearBeamElement element = new LinearBeamElement(0, new int[] { 0, 1 });
 
-            int[][] cells = new int[nodeCoor.GetLength(0) - 1][];
+            int[][] cells = new int[lineNodeCoor.GetLength(0) - 1][];
             int[] cellsTypes = new int[cells.GetLength(0)];
             for (int i = 0; i < cells.GetLength(0); i++)
             {
@@ -4639,6 +4865,54 @@ namespace PrePoMax
             data.Layer = layer;
             data.Pickable = false;
             data.Actor.Nodes.Ids = null;
+            data.Actor.Nodes.Coor = lineNodeCoor.ToArray();
+            data.Actor.Cells.CellNodeIds = cells;
+            data.Actor.Cells.Types = cellsTypes;
+
+            ApplyLighting(data);
+            _form.Add3DCells(data);
+
+            double[][] nodeCoor = new double[2][];
+            nodeCoor[0] = lineNodeCoor[0];
+            nodeCoor[1] = lineNodeCoor[lineNodeCoor.Length - 1];
+
+            //DrawNodes("short_edges", nodeCoor, color, layer, nodeSize);
+        }
+        public void HighlightConnectedEdges(double[][][] lineNodeCoor, int nodeSize = 5)
+        {   
+            // using HighlightConnectedLines is slow since invalidate is called each time
+
+            // create wire elements
+            vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
+
+            int elementVtkCellType = new LinearBeamElement(0, new int[] { 0, 1 }).GetVtkCellType();
+
+            int n = 0;
+            for (int i = 0; i < lineNodeCoor.Length; i++) n += lineNodeCoor[i].Length - 1;
+            
+            int[][] cells = new int[n][];
+            int[] cellsTypes = new int[cells.GetLength(0)];
+            List<double[]> nodeCoor = new List<double[]>();
+
+            int countCells = 0;
+            int countNodeIds = 0;
+            for (int i = 0; i < lineNodeCoor.Length; i++)                       // lines
+            {
+                for (int j = 0; j < lineNodeCoor[i].Length - 1; j++)            // cells
+                {
+                    cells[countCells] = new int[] { countNodeIds, countNodeIds + 1 };
+                    cellsTypes[countCells] = elementVtkCellType;
+                    countCells++;
+                    countNodeIds++;
+                }
+                countNodeIds++;                                                 // next line
+                nodeCoor.AddRange(lineNodeCoor[i]);
+            }
+
+            vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
+            data.Layer = layer;
+            data.Pickable = false;
+            data.Actor.Nodes.Ids = null;
             data.Actor.Nodes.Coor = nodeCoor.ToArray();
             data.Actor.Cells.CellNodeIds = cells;
             data.Actor.Cells.Types = cellsTypes;
@@ -4646,7 +4920,14 @@ namespace PrePoMax
             ApplyLighting(data);
             _form.Add3DCells(data);
 
-            //HighlightNodes(nodeCoor, resetCamera, nodeSize);
+            nodeCoor.Clear();
+
+            for (int i = 0; i < lineNodeCoor.Length; i++)                       // lines
+            {
+                nodeCoor.Add(lineNodeCoor[i][0]);
+                nodeCoor.Add(lineNodeCoor[i][lineNodeCoor[i].Length - 1]);
+            }
+            DrawNodes("short_edges", nodeCoor.ToArray(), System.Drawing.Color.Empty, layer, nodeSize);
         }
 
         public void HighlightSelection()
@@ -4668,7 +4949,7 @@ namespace PrePoMax
             }
             else if (_selection.SelectItem == vtkControl.vtkSelectItem.Surface)
             {
-                vtkControl.vtkMaxActorData data = GetSurfaceActorDataByFaceIds(ids);
+                vtkControl.vtkMaxActorData data = GetFaceActorDataByFaceIds(ids);
                 data.Layer = vtkControl.vtkRendererLayer.Selection;
                 data.CanHaveElementEdges = true;
                 ApplyLighting(data);
@@ -4721,6 +5002,7 @@ namespace PrePoMax
 
             vtkControl.DataFieldType fieldType = ConvertStepType(fieldData);
             _form.SetStatusBlock(Path.GetFileName(_results.FileName), _results.DateTime, fieldData.Time, scale, fieldType);
+            _form.InitializeWidgetPositions(); // reset the widget position after setting the status block content
 
             // udeformed shape
             foreach (var entry in _results.Mesh.Parts)
@@ -4775,11 +5057,11 @@ namespace PrePoMax
             return data;
         }
         // Animation
-        public void DrawScaleFactorAnimation(int numFrames)
+        public bool DrawScaleFactorAnimation(int numFrames)
         {
             _form.Clear3D();
 
-            if (_results == null) return;
+            if (_results == null) return false;
 
             // Settings                                                              
             // must be here before drawing parts to correctly set the numer of colors
@@ -4798,6 +5080,7 @@ namespace PrePoMax
             vtkControl.DataFieldType fieldType = ConvertStepType(_currentFieldData);
             _form.SetStatusBlock(Path.GetFileName(_results.FileName), _results.DateTime, _currentFieldData.Time, scale, fieldType);
 
+            bool result = true;
             List<string> hiddenActors = new List<string>();
             double[] allFramesScalarRange = new double[] { double.MaxValue, -double.MaxValue };
             foreach (var entry in _results.Mesh.Parts)
@@ -4816,7 +5099,8 @@ namespace PrePoMax
                     }
                     //data = GetVtkMaxActorDataFromPart(resultPart, _currentFieldData, scale);
                     ApplyLighting(data);
-                    _form.AddScalarFieldOn3DCells(data);
+                    result = _form.AddAnimatedScalarFieldOn3DCells(data);                    
+                    if (result == false) {_form.Clear3D(); return false;}
                 }
                 else if (entry.Value is CaeMesh.GeometryPart)
                 {
@@ -4835,14 +5119,17 @@ namespace PrePoMax
                 time[i] = _currentFieldData.Time;
                 animationScale[i] = i * ratio;
             }
-            _form.SetAnimationFrameData(time, animationScale, allFramesScalarRange);
+
+             _form.SetAnimationFrameData(time, animationScale, allFramesScalarRange);
+
+            return result;
         }
-        public void DrawTimeIncrementAnimation(out int numFrames)
+        public bool DrawTimeIncrementAnimation(out int numFrames)
         {
             _form.Clear3D();
 
             numFrames = -1;
-            if (_results == null) return;
+            if (_results == null) return false;
 
             // Settings                                                              
             // must be here before drawing parts to correctly set the numer of colors
@@ -4861,6 +5148,7 @@ namespace PrePoMax
             vtkControl.DataFieldType fieldType = ConvertStepType(_currentFieldData);
             _form.SetStatusBlock(Path.GetFileName(_results.FileName), _results.DateTime, _currentFieldData.Time, scale, fieldType);
 
+            bool result = true;
             List<string> hiddenActors = new List<string>();
             double[] allFramesScalarRange = new double[] { double.MaxValue, -double.MaxValue };
             foreach (var entry in _results.Mesh.Parts)
@@ -4878,7 +5166,8 @@ namespace PrePoMax
                         if (nData.Values[1] > allFramesScalarRange[1]) allFramesScalarRange[1] = nData.Values[1];
                     }
                     ApplyLighting(data);
-                    _form.AddScalarFieldOn3DCells(data);
+                    result = _form.AddAnimatedScalarFieldOn3DCells(data);
+                    if (result == false) { _form.Clear3D(); return false; }
                 }
                 else if (entry.Value is CaeMesh.GeometryPart)
                 {
@@ -4903,6 +5192,8 @@ namespace PrePoMax
             _form.SetAnimationFrameData(time.ToArray(), animationScale.ToArray(), allFramesScalarRange);
 
             numFrames = data.Actor.NodesAnimation.Length;
+
+            return result;
         }        
         private vtkControl.vtkMaxActorData GetScaleFactorAnimationDataFromPart(ResultPart part, FieldData fieldData, float scale, int numFrames)
         {
@@ -4921,7 +5212,7 @@ namespace PrePoMax
             data.Color = part.Color;
             data.ColorContours = part.ColorContours;
             data.CanHaveElementEdges = true;
-            data.Pickable = true;
+            data.Pickable = false;
             data.SmoothShaded = part.SmoothShaded;
             return data;
         }
@@ -4942,7 +5233,7 @@ namespace PrePoMax
             data.Color = part.Color;
             data.ColorContours = part.ColorContours;
             data.CanHaveElementEdges = true;
-            data.Pickable = true;
+            data.Pickable = false;
             data.SmoothShaded = part.SmoothShaded;
             return data;
         }

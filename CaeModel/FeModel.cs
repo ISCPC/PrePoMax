@@ -142,11 +142,32 @@ namespace CaeModel
             }
 
             // Steps
+            HistoryOutput historyOutput;
             BoundaryCondition boundaryCondition;
             Load load;
             FeSurface s;
             foreach (var step in _stepCollection.StepsList)
             {
+                // History output
+                foreach (var hoEntry in step.HistoryOutputs)
+                {
+                    historyOutput = hoEntry.Value;
+                    if (historyOutput is NodalHistoryOutput nho)
+                    {
+                        valid = (nho.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(nho.RegionName))
+                                || (nho.RegionType == RegionTypeEnum.SurfaceName && (_mesh.Surfaces.ContainsValidKey(nho.RegionName)));
+                        SetItemValidity(nho, valid, items);
+                        if (!valid && nho.Active) invalidItems.Add("History output: " + step.Name + ", " + nho.Name);
+                    }
+                    else if (historyOutput is ElementHistoryOutput eho)
+                    {
+                        valid = _mesh.ElementSets.ContainsValidKey(eho.RegionName);
+                        SetItemValidity(eho, valid, items);
+                        if (!valid && eho.Active) invalidItems.Add("History output: " + step.Name + ", " + eho.Name);
+                    }
+                    else throw new NotSupportedException();
+                }
+
                 // Boundary conditions
                 foreach (var bcEntry in step.BoundaryConditions)
                 {
@@ -330,9 +351,11 @@ namespace CaeModel
 
             ImportMesh(mesh);
         }
-        public void ImportGeneratedMeshFromVolFile(string fileName, string partName)
+        public void ImportGeneratedMeshFromVolFile(string fileName, string partName, bool convertToSecondorder)
         {
-            FeMesh mesh = FileInOut.Input.VolFileReader.Read(fileName, FileInOut.Input.ElementsToImport.Solid);
+            FeMesh mesh = FileInOut.Input.VolFileReader.Read(fileName, 
+                                                             FileInOut.Input.ElementsToImport.Solid,
+                                                             convertToSecondorder);
 
             // Rename the imported part
             string[] partNames = mesh.Parts.Keys.ToArray();

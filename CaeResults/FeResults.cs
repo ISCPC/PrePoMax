@@ -21,6 +21,7 @@ namespace CaeResults
         private Dictionary<int, FieldData> _fieldLookUp;
         private DateTime _dateTime;
 
+
         // Properties                                                                                                               
         public string FileName { get { return _fileName; } set { _fileName = value; } }
         public FeMesh Mesh { get { return _mesh; } set { _mesh = value; } }
@@ -30,8 +31,6 @@ namespace CaeResults
         // Constructor                                                                                                              
         public FeResults(string fileName)
         {
-            
-
             _fileName = fileName;
             _mesh = null;
             _nodeIdsLookUp = null;
@@ -210,7 +209,6 @@ namespace CaeResults
             // zero step
             if (stepId == 1 && stepIncrementId == 0)
             {
-
                 FieldData fieldData = new FieldData(name, component, stepId, stepIncrementId);
                 fieldData.Type = StepType.Static;
                 return fieldData;

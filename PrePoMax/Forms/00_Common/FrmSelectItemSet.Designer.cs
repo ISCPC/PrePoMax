@@ -31,10 +31,14 @@
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnAddId = new System.Windows.Forms.Button();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
+            this.rbEdge = new System.Windows.Forms.RadioButton();
             this.rbSurface = new System.Windows.Forms.RadioButton();
+            this.tbEdgeAngle = new UserControls.NumericTextBox();
             this.rbEdgeAngle = new System.Windows.Forms.RadioButton();
             this.btnSubtractId = new System.Windows.Forms.Button();
             this.rbId = new System.Windows.Forms.RadioButton();
+            this.tbId = new UserControls.NumericTextBox();
+            this.tbSurfaceAngle = new UserControls.NumericTextBox();
             this.rbSurfaceAngle = new System.Windows.Forms.RadioButton();
             this.rbPart = new System.Windows.Forms.RadioButton();
             this.rbElement = new System.Windows.Forms.RadioButton();
@@ -45,10 +49,6 @@
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.btnUndoSelection = new System.Windows.Forms.Button();
             this.btnOK = new System.Windows.Forms.Button();
-            this.rbEdge = new System.Windows.Forms.RadioButton();
-            this.tbEdgeAngle = new UserControls.NumericTextBox();
-            this.tbId = new UserControls.NumericTextBox();
-            this.tbSurfaceAngle = new UserControls.NumericTextBox();
             this.groupBox5.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.SuspendLayout();
@@ -56,9 +56,9 @@
             // btnCancel
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnCancel.Location = new System.Drawing.Point(204, 298);
+            this.btnCancel.Location = new System.Drawing.Point(211, 298);
             this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(87, 27);
+            this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 3;
             this.btnCancel.Text = "Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
@@ -99,6 +99,17 @@
             this.groupBox5.TabStop = false;
             this.groupBox5.Text = "Select by";
             // 
+            // rbEdge
+            // 
+            this.rbEdge.AutoSize = true;
+            this.rbEdge.Location = new System.Drawing.Point(6, 72);
+            this.rbEdge.Name = "rbEdge";
+            this.rbEdge.Size = new System.Drawing.Size(51, 19);
+            this.rbEdge.TabIndex = 12;
+            this.rbEdge.Text = "Edge";
+            this.rbEdge.UseVisualStyleBackColor = true;
+            this.rbEdge.CheckedChanged += new System.EventHandler(this.rbSelectBy_CheckedChanged);
+            // 
             // rbSurface
             // 
             this.rbSurface.AutoSize = true;
@@ -109,6 +120,17 @@
             this.rbSurface.Text = "Surface";
             this.rbSurface.UseVisualStyleBackColor = true;
             this.rbSurface.CheckedChanged += new System.EventHandler(this.rbSelectBy_CheckedChanged);
+            // 
+            // tbEdgeAngle
+            // 
+            this.tbEdgeAngle.Enabled = false;
+            this.tbEdgeAngle.Location = new System.Drawing.Point(121, 146);
+            this.tbEdgeAngle.Name = "tbEdgeAngle";
+            this.tbEdgeAngle.Size = new System.Drawing.Size(55, 23);
+            this.tbEdgeAngle.TabIndex = 10;
+            this.tbEdgeAngle.Text = "10";
+            this.tbEdgeAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.tbEdgeAngle.TextChanged += new System.EventHandler(this.tbEdgeAngle_TextChanged);
             // 
             // rbEdgeAngle
             // 
@@ -142,6 +164,26 @@
             this.rbId.Text = "ID";
             this.rbId.UseVisualStyleBackColor = true;
             this.rbId.CheckedChanged += new System.EventHandler(this.rbSelectBy_CheckedChanged);
+            // 
+            // tbId
+            // 
+            this.tbId.Enabled = false;
+            this.tbId.Location = new System.Drawing.Point(60, 196);
+            this.tbId.Name = "tbId";
+            this.tbId.Size = new System.Drawing.Size(116, 23);
+            this.tbId.TabIndex = 1;
+            this.tbId.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
+            // tbSurfaceAngle
+            // 
+            this.tbSurfaceAngle.Enabled = false;
+            this.tbSurfaceAngle.Location = new System.Drawing.Point(121, 172);
+            this.tbSurfaceAngle.Name = "tbSurfaceAngle";
+            this.tbSurfaceAngle.Size = new System.Drawing.Size(55, 23);
+            this.tbSurfaceAngle.TabIndex = 5;
+            this.tbSurfaceAngle.Text = "10";
+            this.tbSurfaceAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.tbSurfaceAngle.TextChanged += new System.EventHandler(this.tbSurfaceAngle_TextChanged);
             // 
             // rbSurfaceAngle
             // 
@@ -193,7 +235,7 @@
             // 
             this.btnClearSelection.Location = new System.Drawing.Point(192, 119);
             this.btnClearSelection.Name = "btnClearSelection";
-            this.btnClearSelection.Size = new System.Drawing.Size(87, 24);
+            this.btnClearSelection.Size = new System.Drawing.Size(75, 23);
             this.btnClearSelection.TabIndex = 9;
             this.btnClearSelection.Text = "Clear";
             this.btnClearSelection.UseVisualStyleBackColor = true;
@@ -203,7 +245,7 @@
             // 
             this.btnInvertSelection.Location = new System.Drawing.Point(192, 59);
             this.btnInvertSelection.Name = "btnInvertSelection";
-            this.btnInvertSelection.Size = new System.Drawing.Size(87, 24);
+            this.btnInvertSelection.Size = new System.Drawing.Size(75, 23);
             this.btnInvertSelection.TabIndex = 10;
             this.btnInvertSelection.Text = "Invert";
             this.btnInvertSelection.UseVisualStyleBackColor = true;
@@ -213,7 +255,7 @@
             // 
             this.btnSelectAll.Location = new System.Drawing.Point(192, 29);
             this.btnSelectAll.Name = "btnSelectAll";
-            this.btnSelectAll.Size = new System.Drawing.Size(87, 24);
+            this.btnSelectAll.Size = new System.Drawing.Size(75, 23);
             this.btnSelectAll.TabIndex = 11;
             this.btnSelectAll.Text = "All";
             this.btnSelectAll.UseVisualStyleBackColor = true;
@@ -231,7 +273,7 @@
             this.groupBox3.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.groupBox3.Location = new System.Drawing.Point(12, 12);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(285, 280);
+            this.groupBox3.Size = new System.Drawing.Size(274, 280);
             this.groupBox3.TabIndex = 12;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Data";
@@ -240,7 +282,7 @@
             // 
             this.btnUndoSelection.Location = new System.Drawing.Point(192, 89);
             this.btnUndoSelection.Name = "btnUndoSelection";
-            this.btnUndoSelection.Size = new System.Drawing.Size(87, 24);
+            this.btnUndoSelection.Size = new System.Drawing.Size(75, 23);
             this.btnUndoSelection.TabIndex = 12;
             this.btnUndoSelection.Text = "Undo";
             this.btnUndoSelection.UseVisualStyleBackColor = true;
@@ -249,61 +291,19 @@
             // btnOK
             // 
             this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnOK.Location = new System.Drawing.Point(106, 298);
+            this.btnOK.Location = new System.Drawing.Point(130, 298);
             this.btnOK.Name = "btnOK";
-            this.btnOK.Size = new System.Drawing.Size(87, 27);
+            this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 13;
             this.btnOK.Text = "OK";
             this.btnOK.UseVisualStyleBackColor = true;
             this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
             // 
-            // rbEdge
-            // 
-            this.rbEdge.AutoSize = true;
-            this.rbEdge.Location = new System.Drawing.Point(6, 72);
-            this.rbEdge.Name = "rbEdge";
-            this.rbEdge.Size = new System.Drawing.Size(51, 19);
-            this.rbEdge.TabIndex = 12;
-            this.rbEdge.Text = "Edge";
-            this.rbEdge.UseVisualStyleBackColor = true;
-            this.rbEdge.CheckedChanged += new System.EventHandler(this.rbSelectBy_CheckedChanged);
-            // 
-            // tbEdgeAngle
-            // 
-            this.tbEdgeAngle.Enabled = false;
-            this.tbEdgeAngle.Location = new System.Drawing.Point(121, 146);
-            this.tbEdgeAngle.Name = "tbEdgeAngle";
-            this.tbEdgeAngle.Size = new System.Drawing.Size(55, 23);
-            this.tbEdgeAngle.TabIndex = 10;
-            this.tbEdgeAngle.Text = "10";
-            this.tbEdgeAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.tbEdgeAngle.TextChanged += new System.EventHandler(this.tbEdgeAngle_TextChanged);
-            // 
-            // tbId
-            // 
-            this.tbId.Enabled = false;
-            this.tbId.Location = new System.Drawing.Point(60, 196);
-            this.tbId.Name = "tbId";
-            this.tbId.Size = new System.Drawing.Size(116, 23);
-            this.tbId.TabIndex = 1;
-            this.tbId.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            // 
-            // tbSurfaceAngle
-            // 
-            this.tbSurfaceAngle.Enabled = false;
-            this.tbSurfaceAngle.Location = new System.Drawing.Point(121, 172);
-            this.tbSurfaceAngle.Name = "tbSurfaceAngle";
-            this.tbSurfaceAngle.Size = new System.Drawing.Size(55, 23);
-            this.tbSurfaceAngle.TabIndex = 5;
-            this.tbSurfaceAngle.Text = "10";
-            this.tbSurfaceAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.tbSurfaceAngle.TextChanged += new System.EventHandler(this.tbSurfaceAngle_TextChanged);
-            // 
             // FrmSelectItemSet
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(311, 331);
+            this.ClientSize = new System.Drawing.Size(298, 331);
             this.Controls.Add(this.btnOK);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.btnCancel);

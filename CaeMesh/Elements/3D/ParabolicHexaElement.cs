@@ -183,17 +183,8 @@ namespace CaeMesh
             {
                 n[i] = nodes[cell[i]];
             }
-           
-            double area = 0;
-            area += GeometryTools.TriangleArea(n[7], n[0], n[4]);
-            area += GeometryTools.TriangleArea(n[7], n[4], n[6]);
-            area += GeometryTools.TriangleArea(n[7], n[6], n[3]);
 
-            area += GeometryTools.TriangleArea(n[5], n[2], n[6]);
-            area += GeometryTools.TriangleArea(n[5], n[6], n[4]);
-            area += GeometryTools.TriangleArea(n[5], n[4], n[1]);
-
-            return area;
+            return GeometryTools.RectangleArea(n[0], n[1], n[2], n[3], n[4], n[5], n[6], n[7]);
         }
     }
 }

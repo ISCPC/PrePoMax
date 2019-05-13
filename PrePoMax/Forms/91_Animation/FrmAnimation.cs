@@ -32,6 +32,7 @@ namespace PrePoMax.Forms
     public partial class FrmAnimation : UserControls.PrePoMaxChildForm
     {
         // Variables                                                                                                                
+        private int _countFrames;
         private Size _expandedSize;
         private bool _updateAnimation;
         private int _numFrames;
@@ -50,7 +51,7 @@ namespace PrePoMax.Forms
 
 
         // Callbacks                                                                                                                
-        public Action<bool> Form_ToolstripFieldOutputEnable;
+        public Action<bool> Form_ControlsEnable;
 
 
         // Constructors                                                                                                             
@@ -58,6 +59,7 @@ namespace PrePoMax.Forms
         {
             InitializeComponent();
 
+            _countFrames = 0;
             _updateAnimation = false;
             _expandedSize = Size;
             btnMoreLess_Click(null, null);
@@ -122,10 +124,7 @@ namespace PrePoMax.Forms
             // the form was hidden 
             if (!this.Visible)
             {
-                Stop();
-                _updateAnimation = true;    // this must be here since on hide/maximize of the main form the graphics is reset
-                Form_ToolstripFieldOutputEnable(true);
-                _controller.DrawResults(false);
+                OnHide();
             }
         }
         private void btnSaveMovieAs_Click(object sender, EventArgs e)
@@ -159,26 +158,7 @@ namespace PrePoMax.Forms
         // Animation type
         private void AnimationType_CheckedChanged(object sender, EventArgs e)
         {
-            Stop();
-
-            numNumOfFrames.Enabled = rbScaleFactor.Checked;
-            numIncrementStep.Enabled = !rbScaleFactor.Checked;
-
-            if (rbScaleFactor.Checked)
-            {
-                numNumOfFrames.Value = _prevNumFrmes;
-                _animationType = AnimationType.ScaleFactor;
-            }
-            else
-            {
-                _prevNumFrmes = (int)numNumOfFrames.Value;
-                _animationType = AnimationType.TimeIncrements;
-            }
-
-            NumIncrementStep_ValueChanged(null, null);
-
-            _updateAnimation = true;
-            UpdateFrame();
+            AnimationTypeChanged(true);
         }
         private void numNumOfFrames_ValueChanged(object sender, EventArgs e)
         {
@@ -226,6 +206,14 @@ namespace PrePoMax.Forms
             if (rbLimitsCurrentFrame.Checked) _colorSpectrumLimitsType = ColorSpectrumLimitsType.CurrentFrame;
             else _colorSpectrumLimitsType = ColorSpectrumLimitsType.AllFrames;
             UpdateAnimation();
+        }
+
+        // Acceleration
+        private void cbGraphicsRam_CheckedChanged(object sender, EventArgs e)
+        {
+            _form.SetAnimationAcceleration(cbGraphicsRam.Checked);
+            Stop();
+            _updateAnimation = true;
         }
 
         // Movie options
@@ -294,7 +282,6 @@ namespace PrePoMax.Forms
         // Methods                                                                                                                  
         public void PrepareForm(FrmMain form, Controller controller)
         {
-            
             this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
 
             _form = form;
@@ -310,6 +297,40 @@ namespace PrePoMax.Forms
                 rbLimitsAllFrames.Checked = false;
             }
         }
+        private void OnHide()
+        {
+            Stop();
+            _updateAnimation = true;    // this must be here since on hide/maximize of the main form the graphics is reset
+            Form_ControlsEnable(true);
+            _controller.DrawResults(false);
+        }
+
+        private void AnimationTypeChanged(bool updateAnimation)
+        {
+            Stop();
+
+            numNumOfFrames.Enabled = rbScaleFactor.Checked;
+            numIncrementStep.Enabled = !rbScaleFactor.Checked;
+
+            if (rbScaleFactor.Checked)
+            {
+                numNumOfFrames.Value = _prevNumFrmes;
+                _animationType = AnimationType.ScaleFactor;
+            }
+            else
+            {
+                _prevNumFrmes = (int)numNumOfFrames.Value;
+                _animationType = AnimationType.TimeIncrements;
+            }
+
+            NumIncrementStep_ValueChanged(null, null);
+
+            if (updateAnimation)
+            {
+                _updateAnimation = true;
+                UpdateFrame();
+            }
+        }
         public void UpdateAnimation()
         {
             Stop();
@@ -319,17 +340,20 @@ namespace PrePoMax.Forms
 
         private void InitializeVariables()
         {
+            _countFrames = 0;
             numNumOfFrames_ValueChanged(null, null);
             _prevNumFrmes = _numFrames;
             _currFrme = (int)numLastFrame.Value;
 
-            AnimationType_CheckedChanged(null, null);   // this calls UpdateFrame
+            AnimationTypeChanged(false);
             rbAnimationStyle_CheckedChanged(null, null);
             numFramesPerSecond_ValueChanged(null, null);
 
+            cbGraphicsRam_CheckedChanged(null, null);
+
             rbLimitChanged_CheckedChanged(null, null);  // this calls UpdateFrame
 
-            _updateAnimation = true;
+            //_updateAnimation = true;
         }
         
         private void PlayForward()
@@ -437,33 +461,53 @@ namespace PrePoMax.Forms
                 tbarFrameSelector.ValueChanged += tbarFrameSelector_ValueChanged;
                 numCurrFrame.ValueChanged += numCurrFrame_ValueChanged;
 
+                bool timer;
+                bool close = false;
                 if (_updateAnimation)
                 {
+                    timer = timerAnimation.Enabled; // called from animation so stop the timer in case of an error
+                    Stop();
+
                     if (_animationType == AnimationType.ScaleFactor)
                     {
-                        _controller.DrawScaleFactorAnimation(_numFrames);
+                        if (!_controller.DrawScaleFactorAnimation(_numFrames)) close = true;
                     }
                     else
                     {
                         _updateAnimation = false; //numNumOfFrames.Value couses this function to be called again
                         int numFrames;  // create new variable since _numFrames gets changed by numNumOfFrames_ValueChanged
-                        _controller.DrawTimeIncrementAnimation(out numFrames);
+                        if (!_controller.DrawTimeIncrementAnimation(out numFrames)) close = true;
                         if (numFrames > 0) numNumOfFrames.Value = numFrames;   // this changes _updateAnimation = true
-
                     }
                     _updateAnimation = false;
+
+                    if (close)
+                    {
+                        this.DialogResult = DialogResult.Abort;     // out of memory
+                        if (Visible) Hide();
+                        else OnHide();          // before it is shown - called from prepare form
+                        return;
+                    }
+
+                    timerAnimation.Enabled = timer;
+                }
+                if (_countFrames >= 1000)
+                {
+                    _updateAnimation = true;
+                    _countFrames = 0;
                 }
                 _form.SetAnimationFrame(_currFrme - 1, _colorSpectrumLimitsType == ColorSpectrumLimitsType.AllFrames);
+                _countFrames++;
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
                 Stop();
+                CaeGlobals.ExceptionTools.Show(this, ex);
                 //_updateAnimation = false;
                 //UpdateAnimation();
             }
         }
 
-        
+       
     }
 }

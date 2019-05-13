@@ -176,11 +176,7 @@ namespace CaeMesh
         public override double GetArea(FeFaceName faceName, Dictionary<int, FeNode> nodes)
         {
             int[] cell = GetVtkCellFromFaceName(faceName);
-            
-            double area = 0;
-            area += GeometryTools.TriangleArea(nodes[cell[0]], nodes[cell[1]], nodes[cell[2]]);
-            area += GeometryTools.TriangleArea(nodes[cell[0]], nodes[cell[2]], nodes[cell[3]]);
-            return area;
+            return GeometryTools.RectangleArea(nodes[cell[0]], nodes[cell[1]], nodes[cell[2]], nodes[cell[3]]);
         }
     }
 }

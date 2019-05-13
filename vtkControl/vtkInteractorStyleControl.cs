@@ -271,7 +271,13 @@ namespace vtkControl
 
             AddAnnotationForCenter3D(rwi, renderer);
 
-            this.GetInteractor().Render();
+            // Widgets - middle pressed
+            foreach (vtkMaxBorderWidget widget in _widgets)
+            {
+                widget.MiddleButtonPress(x, y);
+            }
+
+            rwi.Render();
         }
         void vtkInteractorStyleControl_MiddleButtonReleaseEvt(vtkObject sender, vtkObjectEventArgs e)
         {
@@ -343,13 +349,18 @@ namespace vtkControl
             if (this.GetAutoAdjustCameraClippingRange() == 1) ResetClippingRange();
             if (rwi.GetLightFollowCamera() == 1) renderer.UpdateLightsGeometryToFollowCamera();
 
-            //rwi.Render();
+            // Widgets - middle released
+            foreach (vtkMaxBorderWidget widget in _widgets)
+            {
+                widget.MiddleButtonRelease(currClickPos[0], currClickPos[1]);
+            }
 
+            //rwi.Render();
             rwi.Modified();
 
             _clickPos = null;
 
-            base.OnLeftButtonUp();
+            base.OnLeftButtonUp();  // left button is rotation by default
         }
         
         void vtkInteractorStyleControl_RightButtonPressEvt(vtkObject sender, vtkObjectEventArgs e)
@@ -364,6 +375,12 @@ namespace vtkControl
             if (renderer == null) return;
 
             int[] clickPos = rwi.GetEventPosition();
+
+            // Widgets - right pressed
+            foreach (vtkMaxBorderWidget widget in _widgets)
+            {
+                if (widget.RightButtonPress(x, y)) return;
+            }
 
             RightButtonPressEvent?.Invoke(clickPos[0], clickPos[1]);
         }
@@ -820,6 +837,12 @@ namespace vtkControl
 
             AdjustCameraDistance(renderer, camera);
             ResetClippingRange();
+
+            // Widgets - Modified
+            foreach (vtkMaxBorderWidget widget in _widgets)
+            {
+                widget.CameraModified();
+            }
         }
         private void AdjustCameraDistance(vtkRenderer renderer, vtkCamera camera)
         {

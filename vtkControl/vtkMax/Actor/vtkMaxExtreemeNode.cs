@@ -24,6 +24,12 @@ namespace vtkControl
             Coor = null;
             Value = -1;
         }
+        public vtkMaxExtreemeNode(vtkMaxExtreemeNode source)
+        {
+            Id = source.Id;
+            Coor = source.Coor;
+            Value = source.Value;
+        }
         public vtkMaxExtreemeNode(int id, double[] coordinates, float value)
         {
             Id = id;

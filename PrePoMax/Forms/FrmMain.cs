@@ -46,6 +46,7 @@ namespace PrePoMax
         private FrmCalculixKeywordEditor _frmCalculixKeywordEditor;
         private FrmSelectEntity _frmSelectEntity;
         private FrmSelectItemSet _frmSelectItemSet;
+        private FrmAnalyzeGeometry _frmAnalyzeGeometry;
         private FrmPartProperties _frmPartProperties;
         private FrmNodeSet _frmNodeSet;
         private FrmElementSet _frmElementSet;
@@ -55,6 +56,7 @@ namespace PrePoMax
         private FrmSection _frmSection;
         private FrmConstraint _frmConstraint;
         private FrmStep _frmStep;
+        private FrmHistoryOutput _frmHistoryOutput;
         private FrmFieldOutput _frmFieldOutput;
         private FrmBC _frmBoundaryCondition;
         private FrmLoad _frmLoad;
@@ -63,6 +65,7 @@ namespace PrePoMax
         private FrmAnalysis _frmAnalysis;
         private FrmMonitor _frmMonitor;
         private FrmAnimation _frmAnimation;
+        private FrmHistoryResultsOutput _frmHistoryResultsOutput;
 
 
 
@@ -80,7 +83,11 @@ namespace PrePoMax
             {
                 if (view == ViewGeometryModelResults.Geometry) _modelTree.SetGeometryTab();
                 else if (view == ViewGeometryModelResults.Model) _modelTree.SetModelTab();
-                else if (view == ViewGeometryModelResults.Results) _modelTree.SetResultsTab();
+                else if (view == ViewGeometryModelResults.Results)
+                {
+                    _modelTree.SetResultsTab();
+                    InitializeWidgetPositions();
+                }
                 else throw new NotSupportedException();
 
                 SetMenuAndToolStripVisibility();
@@ -177,7 +184,7 @@ namespace PrePoMax
                 _vtk.Controller_GetCellActorData = _controller.GetCellActorData;
                 _vtk.Controller_GetCellFaceActorData = _controller.GetCellFaceActorData;
                 _vtk.Controller_GetEdgeActorData = _controller.GetEdgeActorData;
-                _vtk.Controller_GetSurfaceEdgesActorData = _controller.GetSurfaceEdgeActorData;
+                _vtk.Controller_GetSurfaceEdgesActorData = _controller.GetFaceEdgeActorData;
                 _vtk.Controller_GetPartActorData = _controller.GetPartActorData;
                 _vtk.Controller_GetEdgeNodeIds = _controller.GetEdgeNodeIds;
                 _vtk.Controller_GetSurfaceNodeIds = _controller.GetSurfaceNodeIds;
@@ -187,6 +194,7 @@ namespace PrePoMax
                 _vtk.Controller_GetPartElementIds = _controller.GetPartElementIds;
                 _vtk.Controller_GetElementIdsFromNodeIds = _controller.GetElementIdsFromNodeIds;
                 _vtk.Controller_ActorPicked = SelectBasePart;
+                _vtk.Controller_ShowPostSettings = ShowPostSettings;
                 _vtk.GotFocus += _vtk_GotFocus;
 
                 //Forms
@@ -198,6 +206,9 @@ namespace PrePoMax
 
                 _frmSelectItemSet = new FrmSelectItemSet(_controller);
                 AddFormToAllForms(_frmSelectItemSet);
+
+                _frmAnalyzeGeometry = new FrmAnalyzeGeometry(_controller);
+                AddFormToAllForms(_frmAnalyzeGeometry);
 
                 _frmPartProperties = new FrmPartProperties(_controller);
                 AddFormToAllForms(_frmPartProperties);
@@ -226,6 +237,9 @@ namespace PrePoMax
                 _frmStep = new FrmStep(_controller);
                 AddFormToAllForms(_frmStep);
 
+                _frmHistoryOutput = new FrmHistoryOutput(_controller);
+                AddFormToAllForms(_frmHistoryOutput);
+
                 _frmFieldOutput = new FrmFieldOutput(_controller);
                 AddFormToAllForms(_frmFieldOutput);
 
@@ -252,8 +266,11 @@ namespace PrePoMax
                 AddFormToAllForms(_frmQuery);
 
                 _frmAnimation = new FrmAnimation();
-                _frmAnimation.Form_ToolstripFieldOutputEnable = ((b) => tscbStepAndIncrement.Enabled = b);
+                _frmAnimation.Form_ControlsEnable = DisableEnableControlsForAnimation;
                 AddFormToAllForms(_frmAnimation);
+
+                _frmHistoryResultsOutput = new FrmHistoryResultsOutput(_controller);
+                AddFormToAllForms(_frmHistoryResultsOutput);
 
                 _vtk.Hide();
                 _vtk.Enabled = false;
@@ -360,7 +377,7 @@ namespace PrePoMax
                 DialogResult response = DialogResult.None;
                 if (tsslState.Text != Globals.ReadyText)
                 {
-                    response = MessageBox.Show("There is a command running. Close anyway?", "Warning", MessageBoxButtons.YesNo);
+                    response = MessageBox.Show("There is a task running. Close anyway?", "Warning", MessageBoxButtons.YesNo);
                     if (response == DialogResult.No) e.Cancel = true;
                 }
                 else if (_controller.ModelChanged)
@@ -396,10 +413,8 @@ namespace PrePoMax
             Form form = sender as Form;
             int count = 0;
 
-            if (!(form is FrmAnimation))
-            {
-                foreach (var oneForm in _allForms) if (oneForm.Visible) count++;
-            }
+            // one or two forms can be open
+            foreach (var oneForm in _allForms) if (oneForm.Visible) count++;
 
             // Disable model tree mouse and keyboard actions for form
             if (count > 0) _modelTree.DisableMouse = true;
@@ -466,6 +481,7 @@ namespace PrePoMax
                 else if (nodeName == "Sections") tsmiCreateSection_Click(null, null);
                 else if (nodeName == "Constraints") tsmiCreateConstraint_Click(null, null);
                 else if (nodeName == "Steps") tsmiCreateStep_Click(null, null);
+                else if (nodeName == "History outputs" && stepName != null) CreateHistoryOutput(stepName);
                 else if (nodeName == "Field outputs" && stepName != null) CreateFieldOutput(stepName);
                 else if (nodeName == "BCs" && stepName != null) CreateBoundaryCondition(stepName);
                 else if (nodeName == "Loads" && stepName != null) CreateLoad(stepName);
@@ -495,6 +511,7 @@ namespace PrePoMax
                 else if (namedClass is CaeModel.Section) EditSection((namedClass).Name);
                 else if (namedClass is CaeModel.Constraint) EditConstraint((namedClass).Name);
                 else if (namedClass is CaeModel.Step) EditStep((namedClass).Name);
+                else if (namedClass is CaeModel.HistoryOutput) EditHistoryOutput(stepName, (namedClass).Name);
                 else if (namedClass is CaeModel.FieldOutput) EditFieldOutput(stepName, (namedClass).Name);
                 else if (namedClass is CaeModel.BoundaryCondition) EditBoundaryCondition(stepName, (namedClass).Name);
                 else if (namedClass is CaeModel.Load) EditLoad(stepName, (namedClass).Name);
@@ -504,6 +521,7 @@ namespace PrePoMax
             else if (_controller.CurrentView == ViewGeometryModelResults.Results)
             {
                 if (namedClass is CaeMesh.ResultPart || namedClass is CaeMesh.GeometryPart) EditResultPart((namedClass).Name);
+                else if (namedClass is CaeResults.HistoryResultData hd) ShowHistoryOutput(hd);
             }
         }
 
@@ -569,6 +587,7 @@ namespace PrePoMax
                 DeleteItems<CaeModel.Constraint>(items, DeleteConstraints);
                 DeleteItems<CaeModel.Step>(items, DeleteSteps);
 
+                DeleteStepItems<CaeModel.HistoryOutput>(items, stepNames, DeleteHistoryOutputs);
                 DeleteStepItems<CaeModel.FieldOutput>(items, stepNames, DeleteFieldOutputs);
                 DeleteStepItems<CaeModel.BoundaryCondition>(items, stepNames, DeleteBoundaryConditions);
                 DeleteStepItems<CaeModel.Load>(items, stepNames, DeleteLoads);
@@ -765,13 +784,17 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-        private async void tsmiOpen_Click(object sender, EventArgs e)
+        private void tsmiOpen_Click(object sender, EventArgs e)
         {
             try
             {                
                 using (System.Windows.Forms.OpenFileDialog openFileDialog = new System.Windows.Forms.OpenFileDialog())
                 {
-                    openFileDialog.Filter = "All files|*.pmx;*.frd;|PrePoMax files|*.pmx|Calculix result files|*.frd";
+                    openFileDialog.Filter = "All files|*.pmx;*.frd;*.dat" +
+                                            "|PrePoMax files|*.pmx" + 
+                                            "|Calculix result files|*.frd" +
+                                            "|Calculix dat files|*.dat";
+
                     openFileDialog.FileName = "";
                     if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                     {
@@ -791,8 +814,7 @@ namespace PrePoMax
                             }
                         }
 
-                        SetStateWorking("Opening ...");
-                        await Task.Run(() => Open(openFileDialog.FileName));
+                        OpenAsync(openFileDialog.FileName);
                     }
                 }
             }
@@ -801,9 +823,27 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
                 _controller.New();
             }
+        }
+        private async void OpenAsync(string fileName, bool resetCamera = true, Action callback = null)
+        {
+            bool stateSet = false;
+            try
+            {
+                if (SetStateWorking("Opening ..."))
+                {
+                    stateSet = true;
+                    await Task.Run(() => Open(fileName, resetCamera));
+                    callback?.Invoke();
+                }
+                else MessageBox.Show("Another task is already running.");
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
             finally
             {
-                SetStateReady("Opening ...");
+                if (stateSet) SetStateReady("Opening ...");
             }
         }
         private void Open(string fileName, bool resetCamera = true)
@@ -839,7 +879,7 @@ namespace PrePoMax
                     {
                         await _controller.ImportFileAsync(file);
                     }
-                    SetFrontBackView(false, true);
+                    SetFrontBackView(true, true);   // animate must be true in order for the scale bar to work correctly
                 }
             }
             catch (Exception ex)
@@ -976,7 +1016,7 @@ namespace PrePoMax
             {
                 SetStateReady("Undoing ...");
                 _modelTree.ScreenUpdating = true;
-                _modelTree.RegenerateTree(_controller.Model, _controller.Jobs, _controller.Results);
+                _modelTree.RegenerateTree(_controller.Model, _controller.Jobs, _controller.Results, _controller.History);
             }
         }
         private void tsmiRedo_Click(object sender, EventArgs e)
@@ -1013,7 +1053,7 @@ namespace PrePoMax
             {
                 SetStateReady("Regenerating history ...");
                 _modelTree.ScreenUpdating = true;
-                _modelTree.RegenerateTree(_controller.Model, _controller.Jobs, _controller.Results);
+                _modelTree.RegenerateTree(_controller.Model, _controller.Jobs, _controller.Results, _controller.History);
             }
         }
         private void tsmiRegenerteUsingOtherFiles_Click(object sender, EventArgs e)
@@ -1068,7 +1108,7 @@ namespace PrePoMax
             {
                 SetStateReady("Regenerating history ...");
                 _modelTree.ScreenUpdating = true;
-                _modelTree.RegenerateTree(_controller.Model, _controller.Jobs, _controller.Results);
+                _modelTree.RegenerateTree(_controller.Model, _controller.Jobs, _controller.Results, _controller.History);
             }
         }
 
@@ -1145,7 +1185,7 @@ namespace PrePoMax
         }
         private void tsmiZoomToFit_Click(object sender, EventArgs e)
         {
-            _vtk.SetZoomToFit(true);
+            SetZoomToFit(true);
         }
 
         private void tsmiShowWireframeEdges_Click(object sender, EventArgs e)
@@ -1375,6 +1415,25 @@ namespace PrePoMax
             {
                 _controller.RemoveGeometryPartsCommand(partNames);
             }
+        }
+
+        // Analyze
+        private void tsmiGeometryAnalyze_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (!_frmAnalyzeGeometry.Visible)
+                {
+                    CloseAllForms();
+                    SetFormLoaction((Form)_frmAnalyzeGeometry);
+                    _frmAnalyzeGeometry.Show();
+                }
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+            
         }
 
         #endregion  ################################################################################################################
@@ -2087,6 +2146,68 @@ namespace PrePoMax
 
         #endregion  ################################################################################################################
 
+        #region History output menu  ###############################################################################################
+        private void tsmiCreateHistoryOutput_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectOneEntity("Steps", _controller.GetAllSteps(), CreateHistoryOutput);
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
+
+        private void tsmiEditHistoryOutput_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectOneEntity("Steps", _controller.GetAllSteps(), SelectAndEditHistoryOutput);
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
+
+        private void tsmiDeleteHistoryOutput_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectOneEntity("Steps", _controller.GetAllSteps(), SelectAndDeleteHistoryOutputs);
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
+        private void SelectAndEditHistoryOutput(string stepName)
+        {
+            SelectOneEntityInStep("History outputs", _controller.GetAllHistoryOutputs(stepName), stepName, EditHistoryOutput);
+        }
+        private void SelectAndDeleteHistoryOutputs(string stepName)
+        {
+            SelectMultipleEntitiesInStep("History outputs", _controller.GetAllHistoryOutputs(stepName), stepName, DeleteHistoryOutputs);
+        }
+
+        private void CreateHistoryOutput(string stepName)
+        {
+            ShowForm(_frmHistoryOutput, "Create History Output", stepName, null);
+        }
+        private void EditHistoryOutput(string stepName, string historyOutputName)
+        {
+            ShowForm(_frmHistoryOutput, "Edit History Output", stepName, historyOutputName);
+        }
+        private void DeleteHistoryOutputs(string stepName, string[] historyOutputNames)
+        {
+            if (MessageBox.Show("OK to delete selected history outputs?", Globals.ProgramName, MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+            {
+                _controller.RemoveHistoryOutputsForStepCommand(stepName, historyOutputNames);
+            }
+        }
+        #endregion  ################################################################################################################
+
         #region Field output menu  #################################################################################################
         private void tsmiCreateFieldOutput_Click(object sender, EventArgs e)
         {
@@ -2386,11 +2507,15 @@ namespace PrePoMax
             }
            
         }
+        private void ShowPostSettings()
+        {
+            _frmSettings.SetSettingsToShow(Globals.PostSettingsName);
+            tsmiSettings_Click(null, null);
+        }
 
         private void UpdateSettings(Dictionary<string, ISettings> settings)
         {
             _controller.Settings = settings;    // this calls the redraw functions
-            _modelTree.UpdatePropertyGrid();
         }
         #endregion  ################################################################################################################
 
@@ -2540,16 +2665,18 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-        private void ResultsAnalysis(string jobName)
+        private async void ResultsAnalysis(string jobName)
         {
             CaeJob.AnalysisJob job = _controller.GetJob(jobName);
             if (job.JobStatus == CaeJob.JobStatus.OK || job.JobStatus == CaeJob.JobStatus.Running)
             {
                 //string resultsFile = Path.GetFileNameWithoutExtension(job.Name) + ".frd";
                 string resultsFile = job.Name + ".frd";
-                Open(Path.Combine(job.WorkDirectory, resultsFile), false);
 
-                if (_controller.Results != null) _frmMonitor.DialogResult = DialogResult.OK; // this hides the dialog
+                OpenAsync(Path.Combine(job.WorkDirectory, resultsFile), false,
+                    () => { if (_controller.Results != null) _frmMonitor.DialogResult = DialogResult.OK; }); // this hides the dialog
+
+                //if (_controller.Results != null) _frmMonitor.DialogResult = DialogResult.OK; // this hides the dialog
                 //_frmMonitor.Hide();
             }
             else
@@ -2693,6 +2820,31 @@ namespace PrePoMax
             }
         }
 
+        #endregion  ################################################################################################################
+
+        #region Result  ############################################################################################################
+        public void ShowHistoryOutput(CaeResults.HistoryResultData historyData)
+        {
+            try
+            {
+                if (!_frmHistoryResultsOutput.Visible)
+                {
+                    CloseAllForms();
+                    SetFormLoaction((Form)_frmHistoryResultsOutput);
+
+                    string[] columnNames;
+                    object[][] rowBasedData;
+                    _controller.GetHistoryOutputData(historyData, out columnNames, out rowBasedData);
+
+                    _frmHistoryResultsOutput.SetData(columnNames, rowBasedData);
+                    _frmHistoryResultsOutput.Show();
+                }
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
         #endregion  ################################################################################################################
 
         #region Help menu  #########################################################################################################
@@ -3043,14 +3195,30 @@ namespace PrePoMax
                 if (_controller.ViewResultsType != ViewResultsType.Undeformed && _controller.GetResultStepIDs().Length > 0 && !_frmAnimation.Visible)
                 {
                     CloseAllForms();
-                    tscbStepAndIncrement.Enabled = false;
+                    DisableEnableControlsForAnimation(false);
                     SetFormLoaction(_frmAnimation);
                     _frmAnimation.PrepareForm(this, _controller);
-                    _frmAnimation.Show();
+                    if (_frmAnimation.DialogResult == DialogResult.Abort)
+                        DisableEnableControlsForAnimation(true);
+                    else
+                        _frmAnimation.Show();
                 }
             }
             catch
             { }
+        }
+
+        private void DisableEnableControlsForAnimation(bool enable)
+        {
+            // _modelTree.DisableMouse = !enable; this is done in the itemForm_VisibleChanged
+            menuStripMain.DisableMouseButtons = !enable;
+            tsFile.DisableMouseButtons = !enable;
+            tsResults.DisableMouseButtons = !enable;
+            tscbStepAndIncrement.Enabled = enable;      // must be here despite the tsResults.DisableMouseButtons = !enable;
+
+            tsbShowAllParts.Enabled = enable;
+            tsbHideAllParts.Enabled = enable;
+            tsbInvertVisibleParts.Enabled = enable;
         }
 
 
@@ -3144,11 +3312,7 @@ namespace PrePoMax
             string fileName = null;
             InvokeIfRequired(() =>
             {
-                openFileDialog.Filter = "All supported files|*.stl;*.unv;*.vol;*.inp" 
-                                        + "|Stereolitography files|*.stl"
-                                        + "|Universal files|*.unv"
-                                        + "|Netgen files|*.vol"
-                                        + "|Abaqus/Calculix inp files|*.inp";
+                openFileDialog.Filter = GetFileImportFilter();
                 openFileDialog.FileName = "";
                 if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
@@ -3181,16 +3345,11 @@ namespace PrePoMax
             string[] fileNames = null;
             InvokeIfRequired(() =>
             {
+                // create new dialog to enable multiFilter
                 using (System.Windows.Forms.OpenFileDialog openFileDialog = new System.Windows.Forms.OpenFileDialog())
                 {
                     openFileDialog.Multiselect = true;
-                    openFileDialog.Filter = "All supported files|*.stp;*.step;*.igs;*.iges;*.stl;*.unv;*.vol;*.inp"
-                                            + "|Step files|*.stp;*.step"
-                                            + "|Iges files|*.igs;*.iges"
-                                            + "|Stereolitography files|*.stl"
-                                            + "|Universal files|*.unv"
-                                            + "|Netgen files|*.vol"
-                                            + "|Abaqus/Calculix inp files|*.inp";
+                    openFileDialog.Filter = GetFileImportFilter();
                     openFileDialog.FileName = "";
                     if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                     {
@@ -3199,6 +3358,17 @@ namespace PrePoMax
                 }
             });
             return fileNames;
+        }
+        private string GetFileImportFilter()
+        {
+            string filter = "All supported files|*.stp;*.step;*.igs;*.iges;*.stl;*.unv;*.vol;*.inp"
+                            + "|Step files|*.stp;*.step"
+                            + "|Iges files|*.igs;*.iges"
+                            + "|Stereolitography files|*.stl"
+                            + "|Universal files|*.unv"
+                            + "|Netgen files|*.vol"
+                            + "|Abaqus/Calculix inp files|*.inp";
+            return filter;
         }
 
         public void ClearControls()
@@ -3256,6 +3426,10 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.SetFrontBackView, animate, front);
         }
+        public void SetZoomToFit(bool animate)
+        {
+            InvokeIfRequired(_vtk.SetZoomToFit, animate);
+        }
         public void AdjustCameraDistanceAndClipping()
         {
             InvokeIfRequired(_vtk.AdjustCameraDistanceAndClipping);
@@ -3271,6 +3445,10 @@ namespace PrePoMax
         public void AddScalarFieldOn3DCells(vtkControl.vtkMaxActorData actorData)
         {
             InvokeIfRequired(_vtk.AddScalarFieldOnCells, actorData);
+        }
+        public bool AddAnimatedScalarFieldOn3DCells(vtkControl.vtkMaxActorData actorData)
+        {
+            return _vtk.AddAnimatedScalarFieldOnCells(actorData);
         }
         public void UpdateActorScalarField(string actorName, float[] values, NodesExchangeData extremeNodes)
         {
@@ -3323,6 +3501,18 @@ namespace PrePoMax
             InvokeIfRequired(_vtk.ShowActors, actorNames, updateColorContours);
         }
 
+        public void InitializeWidgetPositions()
+        {
+            InvokeIfRequired(_vtk.InitializeWidgetPositions);
+        }
+        public void SetCoorSysVisibility(bool visibility)
+        {
+            InvokeIfRequired(_vtk.SetCoorSysVisibility, visibility);
+        }
+        public void SetScaleWidgetVisibility(bool visibility)
+        {
+            InvokeIfRequired(_vtk.SetScaleWidgetVisibility, visibility);
+        }
         public void SetColorSpectrum(vtkControl.vtkMaxColorSpectrum colorSpectrum)
         {
             InvokeIfRequired(_vtk.SetColorSpectrum, colorSpectrum);
@@ -3378,6 +3568,9 @@ namespace PrePoMax
 
             if (!fieldData.Equals(currentData)) // update results only if field data changed
             {
+                // stop and update animation data only if field data changed
+                if (_frmAnimation.Visible) _frmAnimation.Hide();
+
                 if (fieldData.Name == currentData.Name && fieldData.Component == currentData.Component)
                 {
                     // the step id or increment id changed                                              
@@ -3411,13 +3604,7 @@ namespace PrePoMax
                     if (_controller.ViewResultsType == ViewResultsType.ColorContours) _controller.UpdatePartsScalarFields();
                 }
                 this.ActiveControl = null;
-                // stop and update animation data
-                if (_frmAnimation.Visible) _frmAnimation.UpdateAnimation();
             }
-        }
-        public void SetFieldOutputAndComponentNames(string[] fieldNames, string[][] components)
-        {
-            InvokeIfRequired(_modelTree.SetFieldOutputAndComponentNames, fieldNames, components);
         }
         public void SetAllStepAndIncrementIds()
         {
@@ -3493,6 +3680,10 @@ namespace PrePoMax
             string[] tmp = selectedStepIncrement.Split(new string[] { ",", " " }, StringSplitOptions.RemoveEmptyEntries);
             return int.Parse(tmp[1]);
         }
+        public void SetAnimationAcceleration(bool animationAcceleration)
+        {
+            InvokeIfRequired(_vtk.SetAnimationAcceleration, animationAcceleration);
+        }
         public void SetAnimationFrameData(float[] time, float[] scale, double[] allFramesScalarRange)
         {
             InvokeIfRequired(_vtk.SetAnimationFrameData, time, scale, allFramesScalarRange);
@@ -3505,16 +3696,16 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.SaveAnimationAsAVI, fileName, firstLastFrame, step, fps, scalarRangeFromAllFrames, swing, encoderOptions);
         }
-
         public void SaveAnimationAsImages(string fileName, int[] firstLastFrame, int step, bool scalarRangeFromAllFrames, bool swing)
         {
             InvokeIfRequired(_vtk.SaveAnimationAsImages, fileName, firstLastFrame, step, scalarRangeFromAllFrames, swing);
         }
 
         // Tree
-        public void RegenerateTree(CaeModel.FeModel model, Dictionary<string, CaeJob.AnalysisJob> jobs, CaeResults.FeResults results)
+        public void RegenerateTree(CaeModel.FeModel model, Dictionary<string, CaeJob.AnalysisJob> jobs,
+                                   CaeResults.FeResults results, CaeResults.HistoryResults history)
         {
-            InvokeIfRequired(_modelTree.RegenerateTree, model, jobs, results);
+            InvokeIfRequired(_modelTree.RegenerateTree, model, jobs, results, history);
             InvokeIfRequired(UpadteSymbolsForStepList);
         }
         public void AddTreeNode(ViewGeometryModelResults view, NamedClass item, string stepName)
@@ -3631,8 +3822,8 @@ namespace PrePoMax
 
             while (numColDate + data.Length > numCol)
             {
-                wrappedLines.Add(data.Substring(0, numCol) + "...");
-                data = data.Substring(numCol);
+                wrappedLines.Add(data.Substring(0, numCol - numColDate) + "...");
+                data = data.Substring(numCol - numColDate);
             }
             wrappedLines.Add(data);
 
@@ -3764,9 +3955,11 @@ namespace PrePoMax
 
 
 
+
+
+
         #endregion
 
-
-        
+      
     }
 }

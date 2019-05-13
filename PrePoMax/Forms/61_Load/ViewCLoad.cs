@@ -88,7 +88,6 @@ namespace PrePoMax
         }
 
 
-
         // Methods                                                                                                                  
         public override CaeModel.Load GetBase()
         {
