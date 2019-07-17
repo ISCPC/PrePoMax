@@ -113,7 +113,7 @@ namespace FileInOut.Output
                 {
                     sb.AppendFormat("{0}", element.Id + 1);
                     count = 1;
-                    foreach (int nodeId in element.NodeIDs)
+                    foreach (int nodeId in element.NodeIds)
                     {
                         count++;
                         if (count == 17)        // 16 entries per line; 17th entry goes in new line

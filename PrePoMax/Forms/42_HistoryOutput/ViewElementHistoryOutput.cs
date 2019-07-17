@@ -47,13 +47,14 @@ namespace PrePoMax
 
         // Properties                                                                                                               
         public override string Name { get { return _historyOutput.Name; } set { _historyOutput.Name = value; } }
+        public override int Frequency { get { return _historyOutput.Frequency; } set { _historyOutput.Frequency = value; } }
 
-        [OrderedDisplayName(2, 10, "Element set")]
+        [OrderedDisplayName(3, 10, "Element set")]
         [CategoryAttribute("Data")]
         [DescriptionAttribute("Select the element set which will be used for the history output definition.")]
         public string ElementSetName { get { return _historyOutput.RegionName; } set { _historyOutput.RegionName = value; } }
 
-        [OrderedDisplayName(3, 10, "Variables to output")]
+        [OrderedDisplayName(4, 10, "Variables to output")]
         [CategoryAttribute("Data")]
         [DescriptionAttribute("Element history variables")]
         public ViewElementHistoryVariable Variables 
@@ -68,7 +69,7 @@ namespace PrePoMax
             } 
         }
 
-        [OrderedDisplayName(4, 10, "Totals")]
+        [OrderedDisplayName(5, 10, "Totals")]
         [CategoryAttribute("Data")]
         [DescriptionAttribute("The parameter totals only applies to whole element variables (ELSE, EVOL).")]
         public CaeModel.TotalsTypeEnum TotalsType { get { return _historyOutput.TotalsType; } set { _historyOutput.TotalsType = value; } }

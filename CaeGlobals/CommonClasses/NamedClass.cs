@@ -24,13 +24,14 @@ namespace CaeGlobals
             get { return _name; }
             set
             {
-                CheckName(value);
+                if (_checkName) CheckNameForErrors(value);
                 _name = value;
             }
         }
         public virtual bool Active { get { return _active; } set { _active = value; } }
         public virtual bool Visible { get { return _visible; } set { _visible = value; } }
-        public virtual bool Valid { get { return _valid; } set { _valid = value; } }
+        public virtual bool Valid { get { return _valid; }
+            set { _valid = value; } }
         public virtual bool Internal { get { return _internal; } set { _internal = value; } }
 
 
@@ -75,32 +76,55 @@ namespace CaeGlobals
 
 
         // Methods                                                                                                                  
-        private void CheckName(string name)
+        public static bool CheckName(string name)
         {
-            if (_checkName)
+            try
             {
-                if (name == "") throw new CaeGlobals.CaeException("The name can not be an empty string.");
-                if (name.Contains(' ')) throw new CaeGlobals.CaeException("The name can not contain space characters.");
-                if (Char.IsDigit(name[0])) throw new CaeGlobals.CaeException("The name can not start with a digit.");
-                if (name == "Missing") throw new CaeGlobals.CaeException("The name 'Missing' is a reserved name.");
-
-                char c;
-                int letterCount = 0;
-                int digitCount = 0;
-
-                for (int i = 0; i < name.Length; i++)
-                {
-                    c = (char)name[i];
-                    if (Char.IsLetter(c)) letterCount++;
-                    else if (Char.IsDigit(c)) digitCount++;
-                    else if (c != '_' && c != '-')
-                        throw new CaeGlobals.CaeException("The name can only contain a letter, a digit or characters: minus and underscore.");
-                }
-
-                if (letterCount <= 0)
-                    throw new CaeGlobals.CaeException("The name must contain at least one letter.");
+                CheckNameForErrors(name);
+                return true;
+            }
+            catch
+            {
+                return false;
             }
         }
+        public static string CheckNameError(string name)
+        {
+            try
+            {
+                CheckNameForErrors(name);
+                return null;
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
+        }
+        private static void CheckNameForErrors(string name)
+        {
+            if (name == null) throw new CaeGlobals.CaeException("The name can not be null.");
+            if (name == "") throw new CaeGlobals.CaeException("The name can not be an empty string.");
+            if (name.Contains(' ')) throw new CaeGlobals.CaeException("The name can not contain space characters: '" + name + "'.");
+            if (Char.IsDigit(name[0])) throw new CaeGlobals.CaeException("The name can not start with a digit: '" + name + "'.");
+            if (name == "Missing") throw new CaeGlobals.CaeException("The name 'Missing' is a reserved name.");
+
+            char c;
+            int letterCount = 0;
+            int digitCount = 0;
+
+            for (int i = 0; i < name.Length; i++)
+            {
+                c = (char)name[i];
+                if (Char.IsLetter(c)) letterCount++;
+                else if (Char.IsDigit(c)) digitCount++;
+                else if (c != '_' && c != '-' && c != '(' && c != ')')
+                    throw new CaeGlobals.CaeException("The name can only contain a letter, a digit or characters: minus, underscore and parenthesis: '" + name + "'.");
+            }
+
+            if (letterCount <= 0)
+                throw new CaeGlobals.CaeException("The name must contain at least one letter: '" + name + "'.");
+        }
+
         public override string ToString()
         {
             return _name;

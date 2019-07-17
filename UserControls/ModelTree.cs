@@ -1682,7 +1682,9 @@ namespace UserControls
             }
 
             _resultFieldOutputs.Expand();
-            _resultFieldOutputs.Text = _fieldOutputsName + " (" + _resultFieldOutputs.Nodes.Count.ToString() + ")";
+
+            int n = _resultFieldOutputs.Nodes.Count;
+            if (n > 0) _resultFieldOutputs.Text = _fieldOutputsName + " (" + n + ")";
         }
         public void SetHistoryOutputNames(HistoryResults historyOutput)
         {
@@ -1710,7 +1712,11 @@ namespace UserControls
                     }
                 }
             }
-            _resultHistoryOutputs.Text = _historyOutputsName + " (" + _resultHistoryOutputs.Nodes.Count.ToString() + ")";
+
+            _resultHistoryOutputs.Expand();
+
+            int n = _resultHistoryOutputs.Nodes.Count;
+            if (n > 0) _resultHistoryOutputs.Text = _historyOutputsName + " (" + n + ")";
         }
 
         //                                                                                                              

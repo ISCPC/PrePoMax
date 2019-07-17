@@ -22,7 +22,7 @@ namespace CaeMesh
         private double _elementsperedge;
         private double _elementspercurve;
         private bool _secondOrder;
-        private bool _mediumNodesOnGeometry;
+        private bool _midsideNodesOnGeometry;
         private int _optimizeSteps2D;
         private int _optimizeSteps3D;
         
@@ -88,7 +88,7 @@ namespace CaeMesh
         }
 
         public bool SecondOrder { get { return _secondOrder; } set { _secondOrder = value; } }
-        public bool MediumNodesOnGeometry { get { return _mediumNodesOnGeometry; } set { _mediumNodesOnGeometry = value; } }
+        public bool MidsideNodesOnGeometry { get { return _midsideNodesOnGeometry; } set { _midsideNodesOnGeometry = value; } }
 
         public int OptimizeSteps2D 
         { 
@@ -123,7 +123,7 @@ namespace CaeMesh
             _optimizeSteps2D = 3;
             _optimizeSteps3D = 3;
             _secondOrder = false;
-            _mediumNodesOnGeometry = true;
+            _midsideNodesOnGeometry = true;
         }
 
 
@@ -155,7 +155,7 @@ namespace CaeMesh
             sb.AppendLine("double   minedgelen                  ... Minimum edge length to use while subdividing the edges (default = 1e-4).");
             sb.AppendLine("0.0001");
             sb.AppendLine("int      second_order		        ... Generate second-order surface and volume elements.");
-            sb.AppendLine(Convert.ToInt32(_secondOrder && _mediumNodesOnGeometry).ToString());
+            sb.AppendLine(Convert.ToInt32(_secondOrder && _midsideNodesOnGeometry).ToString());
             sb.AppendLine("int      quad_dominated		        ... Creates a Quad-dominated mesh.");
             sb.AppendLine("0");
             sb.AppendLine("char*    meshsize_filename           ... Optional external mesh size file.");

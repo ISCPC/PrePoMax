@@ -132,14 +132,14 @@ namespace FileInOut.Input
             foreach (var entry in elements)
             {
                 nodeIds.Clear();
-                for (int i = 0; i < entry.Value.NodeIDs.Length; i++)
+                for (int i = 0; i < entry.Value.NodeIds.Length; i++)
                 {
-                    if (mergeMap.TryGetValue(entry.Value.NodeIDs[i], out newId)) 
-                        entry.Value.NodeIDs[i] = newId;
+                    if (mergeMap.TryGetValue(entry.Value.NodeIds[i], out newId)) 
+                        entry.Value.NodeIds[i] = newId;
 
-                    nodeIds.Add(entry.Value.NodeIDs[i]);
+                    nodeIds.Add(entry.Value.NodeIds[i]);
                 }
-                if (nodeIds.Count != entry.Value.NodeIDs.Length) elementIdsToRemove.Add(entry.Key);
+                if (nodeIds.Count != entry.Value.NodeIds.Length) elementIdsToRemove.Add(entry.Key);
             }
 
             // remove collapsed elements

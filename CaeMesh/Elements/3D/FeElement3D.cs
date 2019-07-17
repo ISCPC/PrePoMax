@@ -28,6 +28,7 @@ namespace CaeMesh
         {
         }
 
+
         // Methods                                                                                                                  
         abstract public int[][] GetAllVtkCells();
         public int GetVtkCellIdFromCell(int[] cell)

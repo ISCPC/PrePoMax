@@ -42,7 +42,7 @@ namespace CaeMesh
 
         /// <summary>
         /// CellIdsByFace
-        /// [0...num. of faces][0...num. of cells] -> local cell id
+        /// [0...num. of faces][0...num. of face cells] -> local cell id
         /// </summary>
         public int[][] CellIdsByFace
         {
@@ -178,17 +178,6 @@ namespace CaeMesh
         }
 
         // Methods
-        public void RenumberElements(Dictionary<int, int> newIds)
-        {
-            if (_cellIds != null)
-            {
-                for (int i = 0; i < _cellIds.Length; i++)
-                {
-                    _cellIds[i] = newIds[_cellIds[i]];
-                }
-            }
-        }
-
         public void RenumberNodes(Dictionary<int, int> newIds)
         {
             // Cells
@@ -223,6 +212,42 @@ namespace CaeMesh
                 }
             }
         }
+        public void RenumberElements(Dictionary<int, int> newIds)
+        {
+            if (_cellIds != null)
+            {
+                for (int i = 0; i < _cellIds.Length; i++)
+                {
+                    _cellIds[i] = newIds[_cellIds[i]];
+                }
+            }
+        }
 
+        public void RenumberSurfaces(int[] orderedSurfaceIds)
+        {
+            // Surfaces
+            int[][] newCellIdsByFace = new int[_cellIdsByFace.Length][];
+            for (int i = 0; i < orderedSurfaceIds.Length; i++)
+            {
+                newCellIdsByFace[i] = _cellIdsByFace[orderedSurfaceIds[i]];
+            }
+            _cellIdsByFace = newCellIdsByFace;
+
+            // Areas
+            double[] newFaceAreas = new double[_faceAreas.Length];
+            for (int i = 0; i < orderedSurfaceIds.Length; i++)
+            {
+                newFaceAreas[i] = _faceAreas[orderedSurfaceIds[i]];
+            }
+            _faceAreas = newFaceAreas;
+
+            // Edges
+            int[][] newFaceEdgeIds = new int[_faceEdgeIds.Length][];
+            for (int i = 0; i < orderedSurfaceIds.Length; i++)
+            {
+                newFaceEdgeIds[i] = _faceEdgeIds[orderedSurfaceIds[i]];
+            }
+            _faceEdgeIds = newFaceEdgeIds;
+        }
     }
 }

@@ -125,9 +125,13 @@ namespace PrePoMax.Forms
             else
             {
                 NodeSet = _controller.GetNodeSet(_nodeSetToEditName);   // to clone
+
                 int[] ids = NodeSet.Labels;                             // change node selection history to ids to speed up
-                _selectionNodeIds = new SelectionNodeIds(vtkControl.vtkSelectOperation.None, false, ids);
-                _prevSelectionNodes = ((Selection)NodeSet.CreationData).Nodes;
+                _selectionNodeIds = new SelectionNodeIds(vtkSelectOperation.None, false, ids);
+                // if the base node set was remeshed the creation data does not exist any more - recreate it by ids
+                if (NodeSet.CreationData != null) _prevSelectionNodes = ((Selection)NodeSet.CreationData).Nodes;
+                else _prevSelectionNodes = new List<SelectionNode>() { _selectionNodeIds };
+                //
                 _controller.ClearSelectionHistory();
                 _controller.AddSelectionNode(_selectionNodeIds, true);
                 NodeSet.CreationData = _controller.Selection.DeepClone();

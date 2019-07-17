@@ -82,9 +82,9 @@ namespace CaeMesh
             //if (properties.MeshingParameters != null) _meshingParameters = properties.MeshingParameters.DeepClone();
             //else _meshingParameters = null;
         }
-        public override void RenumberElements(Dictionary<int, int> newIds)
+        public override void RenumberVisualizationElements(Dictionary<int, int> newIds)
         {
-            base.RenumberElements(newIds);
+            base.RenumberVisualizationElements(newIds);
 
             if (_errorElementIds != null)
             {
@@ -94,9 +94,9 @@ namespace CaeMesh
                 }
             }
         }
-        public override void RenumberNodes(Dictionary<int, int> newIds)
+        public override void RenumberVisualizationNodes(Dictionary<int, int> newIds)
         {
-            base.RenumberNodes(newIds);
+            base.RenumberVisualizationNodes(newIds);
 
             if (_errorNodeIds != null)
             {

@@ -16,7 +16,8 @@ namespace CaeModel
         PEEQ = 2,
         S = 4,
         ENER = 8,
-        ERR = 16
+        ERR = 16,
+        ZZS = 32
     }
 
     [Serializable]
@@ -25,9 +26,10 @@ namespace CaeModel
         // Variables                                                                                                                
         private ElementFieldVariable _variables;
 
+
         // Properties                                                                                                               
         public ElementFieldVariable Variables { get { return _variables; } set { _variables = value; } }
-      
+
 
         // Constructors                                                                                                             
         public ElementFieldOutput(string name, ElementFieldVariable variables)
@@ -35,7 +37,7 @@ namespace CaeModel
         {
             _variables |= variables;
         }
-    
+
 
         // Methods                                                                                                                  
     }

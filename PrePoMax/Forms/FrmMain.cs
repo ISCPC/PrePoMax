@@ -48,6 +48,7 @@ namespace PrePoMax
         private FrmSelectItemSet _frmSelectItemSet;
         private FrmAnalyzeGeometry _frmAnalyzeGeometry;
         private FrmPartProperties _frmPartProperties;
+        private FrmTranslate _frmTranslate;
         private FrmNodeSet _frmNodeSet;
         private FrmElementSet _frmElementSet;
         private FrmSurface _frmSurface;
@@ -184,8 +185,10 @@ namespace PrePoMax
                 _vtk.Controller_GetCellActorData = _controller.GetCellActorData;
                 _vtk.Controller_GetCellFaceActorData = _controller.GetCellFaceActorData;
                 _vtk.Controller_GetEdgeActorData = _controller.GetEdgeActorData;
-                _vtk.Controller_GetSurfaceEdgesActorData = _controller.GetFaceEdgeActorData;
+                _vtk.Controller_GetSurfaceEdgesActorData = _controller.GetSurfaceEdgeActorData;
                 _vtk.Controller_GetPartActorData = _controller.GetPartActorData;
+                _vtk.Controller_GetGeometryActorData = _controller.GetGeometryActorData;
+
                 _vtk.Controller_GetEdgeNodeIds = _controller.GetEdgeNodeIds;
                 _vtk.Controller_GetSurfaceNodeIds = _controller.GetSurfaceNodeIds;
                 _vtk.Controller_GetEdgeByAngleNodeIds = _controller.GetEdgeByAngleNodeIds;
@@ -195,7 +198,6 @@ namespace PrePoMax
                 _vtk.Controller_GetElementIdsFromNodeIds = _controller.GetElementIdsFromNodeIds;
                 _vtk.Controller_ActorPicked = SelectBasePart;
                 _vtk.Controller_ShowPostSettings = ShowPostSettings;
-                _vtk.GotFocus += _vtk_GotFocus;
 
                 //Forms
                 _formLocation = new Point(100, 100);
@@ -212,6 +214,9 @@ namespace PrePoMax
 
                 _frmPartProperties = new FrmPartProperties(_controller);
                 AddFormToAllForms(_frmPartProperties);
+
+                _frmTranslate = new FrmTranslate(_controller);
+                AddFormToAllForms(_frmTranslate);
 
                 _frmNodeSet = new FrmNodeSet(_controller);
                 AddFormToAllForms(_frmNodeSet);
@@ -284,11 +289,6 @@ namespace PrePoMax
             {
                 this.TopMost = false;
             }
-        }
-
-        private void _vtk_GotFocus(object sender, EventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine(DateTime.Now + " vtk focused.");
         }
 
         private void FrmMain_Shown(object sender, EventArgs e)
@@ -375,10 +375,15 @@ namespace PrePoMax
             try
             {
                 DialogResult response = DialogResult.None;
+                
                 if (tsslState.Text != Globals.ReadyText)
                 {
                     response = MessageBox.Show("There is a task running. Close anyway?", "Warning", MessageBoxButtons.YesNo);
                     if (response == DialogResult.No) e.Cancel = true;
+                    else if (response == DialogResult.Yes && _controller.SavingFile)
+                    {
+                        while (_controller.SavingFile) System.Threading.Thread.Sleep(100);
+                    }
                 }
                 else if (_controller.ModelChanged)
                 {
@@ -446,7 +451,7 @@ namespace PrePoMax
             try
             {
                 CloseAllForms();
-                _controller.SelectBy = vtkControl.vtkSelectBy.Off;
+                _controller.SelectBy = vtkSelectBy.Off;
 
                 if (viewType == ViewType.Geometry) _controller.CurrentView = ViewGeometryModelResults.Geometry;
                 else if (viewType == ViewType.Model) _controller.CurrentView = ViewGeometryModelResults.Model;
@@ -471,7 +476,7 @@ namespace PrePoMax
 
         private void ModelTree_CreateEvent(string nodeName, string stepName)
         {
-            if (_controller.CurrentView == ViewGeometryModelResults.Model)
+            if (_controller.Model.Mesh != null && _controller.CurrentView == ViewGeometryModelResults.Model)
             {
                 if (nodeName == "Node sets") tsmiCreateNodeSet_Click(null, null);
                 else if (nodeName == "Element sets") tsmiCreateElementSet_Click(null, null);
@@ -1422,7 +1427,8 @@ namespace PrePoMax
         {
             try
             {
-                if (!_frmAnalyzeGeometry.Visible)
+                var parts = _controller.GetGeometryParts();
+                if (parts != null && parts.Length > 0 && !_frmAnalyzeGeometry.Visible)
                 {
                     CloseAllForms();
                     SetFormLoaction((Form)_frmAnalyzeGeometry);
@@ -1513,7 +1519,9 @@ namespace PrePoMax
             if (part.MeshingParameters == null) frmMeshingParameters.MeshingParameters = defaultMeshingParameters;
             else frmMeshingParameters.MeshingParameters = part.MeshingParameters;
             frmMeshingParameters.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
-            //frmMeshingParameters.Owner = this; - other thread
+
+            //InvokeIfRequired(() => { frmMeshingParameters.Owner = this; });
+            //frmMeshingParameters.Owner = this; // other thread
 
             if (frmMeshingParameters.ShowDialog() == System.Windows.Forms.DialogResult.OK) return frmMeshingParameters.MeshingParameters;
             else return null; // Cancel pressed on Meshing parameters form
@@ -1546,6 +1554,8 @@ namespace PrePoMax
         {
             try
             {
+                if (_controller.Model.Mesh == null) return;
+
                 using (FrmGetInteger frmGetInteger = new FrmGetInteger())
                 {
                     frmGetInteger.PrepareForm("Renumber Nodes", "Start node id", "Enter the starting node id for the node renumbering.");
@@ -1570,6 +1580,17 @@ namespace PrePoMax
             try
             {
                 SelectOneEntity("Parts", _controller.GetModelParts(), EditModelPart);
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiTranslatePart_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Parts", _controller.GetModelParts(), TranslateParts);
             }
             catch (Exception ex)
             {
@@ -1627,6 +1648,15 @@ namespace PrePoMax
             _frmPartProperties.View = ViewGeometryModelResults.Model; 
             ShowForm(_frmPartProperties, "Edit Part", partName);
         }
+        private void TranslateParts(string[] partNames)
+        {
+            SinglePointDataEditor.ParentForm = _frmTranslate;
+            SinglePointDataEditor.Controller = _controller;
+
+            _frmTranslate.PartNames = partNames;    // set all part names for translation
+            
+            ShowForm(_frmTranslate, "Translate parts: " + partNames.ToShortString(), null);
+        }
         private void MergeModelParts(string[] partNames)
         {
             if (MessageBox.Show("OK to merge selected parts?", Globals.ProgramName, MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
@@ -1665,6 +1695,7 @@ namespace PrePoMax
         {
             try
             {
+                if (_controller.Model.Mesh == null) return;
                 // Data editor
                 ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
                 ItemSetDataEditor.ParentForm = _frmNodeSet;
@@ -1721,6 +1752,7 @@ namespace PrePoMax
         {
             try
             {
+                if (_controller.Model.Mesh == null) return;
                 // Data editor
                 ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
                 ItemSetDataEditor.ParentForm = _frmElementSet;
@@ -1792,6 +1824,7 @@ namespace PrePoMax
         {
             try
             {
+                if (_controller.Model.Mesh == null) return;
                 // Data editor
                 ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
                 ItemSetDataEditor.ParentForm = _frmSurface;
@@ -1847,6 +1880,11 @@ namespace PrePoMax
         {
             try
             {
+                if (_controller.Model.Mesh == null) return;
+
+                SinglePointDataEditor.ParentForm = _frmReferencePoint;
+                SinglePointDataEditor.Controller = _controller;
+
                 ShowForm(_frmReferencePoint, "Create Reference Point", null);
             }
             catch (Exception ex)
@@ -1897,6 +1935,7 @@ namespace PrePoMax
         {
             try
             {
+                if (_controller.Model.Mesh == null) return;
                 ShowForm(_frmMaterial, "Create Material", null);
             }
             catch (Exception ex)
@@ -1966,6 +2005,7 @@ namespace PrePoMax
         {
             try
             {
+                if (_controller.Model.Mesh == null) return;
                 ShowForm(_frmSection, "Create Section", null);
             }
             catch (Exception ex)
@@ -2015,6 +2055,7 @@ namespace PrePoMax
         {
             try
             {
+                if (_controller.Model.Mesh == null) return;
                 ShowForm(_frmConstraint, "Create Constraint", null);
             }
             catch (Exception ex)
@@ -2102,6 +2143,7 @@ namespace PrePoMax
         {
             try
             {
+                if (_controller.Model.Mesh == null) return;
                 ShowForm(_frmStep, "Create Step", null);
             }
             catch (Exception ex)
@@ -2193,6 +2235,7 @@ namespace PrePoMax
 
         private void CreateHistoryOutput(string stepName)
         {
+            if (_controller.Model.Mesh == null) return;
             ShowForm(_frmHistoryOutput, "Create History Output", stepName, null);
         }
         private void EditHistoryOutput(string stepName, string historyOutputName)
@@ -2254,6 +2297,7 @@ namespace PrePoMax
 
         private void CreateFieldOutput(string stepName)
         {
+            if (_controller.Model.Mesh == null) return;
             ShowForm(_frmFieldOutput, "Create Field Output", stepName, null);
         }
         private void EditFieldOutput(string stepName, string fieldOutputName)
@@ -2346,6 +2390,7 @@ namespace PrePoMax
 
         private void CreateBoundaryCondition(string stepName)
         {
+            if (_controller.Model.Mesh == null) return;
             ShowForm(_frmBoundaryCondition, "Create Boundary Condition", stepName, null);
         }
         private void EditBoundaryCondition(string stepName, string boundaryConditionName)
@@ -2454,6 +2499,7 @@ namespace PrePoMax
 
         private void CreateLoad(string stepName)
         {
+            if (_controller.Model.Mesh == null) return;
             ShowForm(_frmLoad, "Create Load", stepName, null);
         }
         private void EditLoad(string stepName, string loadName)
@@ -2548,6 +2594,7 @@ namespace PrePoMax
         {
             try
             {
+                if (_controller.Model.Mesh == null) return;
                 ShowForm(_frmAnalysis, "Create Analysis", null);
             }
             catch (Exception ex)
@@ -2864,6 +2911,8 @@ namespace PrePoMax
 
         private void SelectOneEntity(string title, NamedClass[] entities, Action<string> OperateOnEntity)
         {
+            if (entities == null || entities.Length == 0) return;
+
             _frmSelectEntity.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
             _frmSelectEntity.PrepareForm(title, false, entities, null);
             _frmSelectEntity.OneEntitySelected = OperateOnEntity;
@@ -2878,6 +2927,8 @@ namespace PrePoMax
         }
         private void SelectMultipleEntities(string title, NamedClass[] entities, Action<string[]> OperateOnMultpleEntities)
         {
+            if (entities == null || entities.Length == 0) return;
+
             _frmSelectEntity.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
             _frmSelectEntity.PrepareForm(title, true, entities, null);
             _frmSelectEntity.MultipleEntitiesSelected = OperateOnMultpleEntities;
@@ -2895,26 +2946,29 @@ namespace PrePoMax
 
         #region Mouse selection methods  ###########################################################################################
 
-        public void SelectPointOrArea(double[] pickedPoint, double[][] planeParameters, vtkControl.vtkSelectOperation selectOperation)
+        public void SelectPointOrArea(double[] pickedPoint, double[][] planeParameters, vtkSelectOperation selectOperation)
         {
             _controller.SelectPointOrArea(pickedPoint, planeParameters, selectOperation);
             int[] ids = _controller.GetSelectionIds();
-            if (_frmQuery.Visible) _frmQuery.PickedIds(ids);
+
+            if (_frmTranslate.Visible) _frmTranslate.PickedIds(ids);
+            else if (_frmReferencePoint.Visible) _frmReferencePoint.PickedIds(ids);
+            else if (_frmQuery.Visible) _frmQuery.PickedIds(ids);
         }
 
-        public void SetSelectBy(vtkControl.vtkSelectBy selectBy)
+        public void SetSelectBy(vtkSelectBy selectBy)
         {
             InvokeIfRequired(() => _vtk.SelectBy = selectBy);
         }
-        public void SetSelectItem(vtkControl.vtkSelectItem selectItem)
+        public void SetSelectItem(vtkSelectItem selectItem)
         {
             InvokeIfRequired(() => _vtk.SelectItem = selectItem);
         }
-        public int[] GetNodeIdsAtPoint(double[] point, vtkControl.vtkSelectBy selectBy, double angle)
+        public int[] GetNodeIdsAtPoint(double[] point, vtkSelectBy selectBy, double angle)
         {
             return _vtk.GetGlobalNodeIdsAtPoint(point, selectBy, angle);
         }
-        public int[] GetElementIdsAtPoint(double[] point, vtkControl.vtkSelectBy selectBy, double angle)
+        public int[] GetElementIdsAtPoint(double[] point, vtkSelectBy selectBy, double angle)
         {
             return _vtk.GetGlobalElementIdsAtPoint(point, selectBy, angle);
         }
@@ -2923,12 +2977,19 @@ namespace PrePoMax
         {
             return _vtk.GetPartNameAtPoint(point);
         }
-        
-        public int[] GetNodeIdsFromFrustum(double[][] planeParameters, vtkControl.vtkSelectBy selectBy)
+
+        public void GetGeometryPickProperties(double[] point, out double dist, out int elementId,
+                                              out int[] edgeNodeIds, out int[] cellFaceNodeIds)
+        {
+            _vtk.GetGeometryPickProperties(point, out dist, out elementId, 
+                                           out edgeNodeIds, out cellFaceNodeIds);
+        }
+
+        public int[] GetNodeIdsFromFrustum(double[][] planeParameters, vtkSelectBy selectBy)
         {
             return _vtk.GetGlobalNodeIdsFromFrustum(planeParameters, selectBy);
         }
-        public int[] GetElementIdsFromFrustum(double[][] planeParameters, vtkControl.vtkSelectBy selectBy)
+        public int[] GetElementIdsFromFrustum(double[][] planeParameters, vtkSelectBy selectBy)
         {
             return _vtk.GetGlobalElementIdsFromFrustum(planeParameters, selectBy);
         }
@@ -3795,7 +3856,6 @@ namespace PrePoMax
         Timer outputTimer = new Timer();
         public void WriteDataToOutput(string data)
         {
-            
             if (data == null) return;
             // 20 chars is an empty line with date
             if (data.Length == 0 && (tbOutput.Lines.Length > 0 && tbOutput.Lines.Last().Length == 20)) return;
@@ -3814,8 +3874,8 @@ namespace PrePoMax
         private void WriteLineToOutputWithDate(string data)
         {
             int numColDate = 20;
-            int numCol = 120;
-            int numRows = 100;
+            int numCol = 150 + numColDate;
+            int numRows = 200;      // number of displayed lines
 
             List<string> lines = new List<string>(tbOutput.Lines);
             List<string> wrappedLines = new List<string>();
@@ -3958,8 +4018,9 @@ namespace PrePoMax
 
 
 
+
         #endregion
 
-      
+        
     }
 }

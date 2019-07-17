@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CaeGlobals;
 
 namespace CaeMesh
 {
@@ -10,11 +11,11 @@ namespace CaeMesh
     public class FeElementSet : FeGroup
     {
         // Variables                                                                                                                
-        private object _creationData;
+        private Selection _creationData;
 
 
         // Properties                                                                                                               
-        public object CreationData { get { return _creationData; } set { _creationData = value; } }
+        public Selection CreationData { get { return _creationData; } set { _creationData = value; } }
 
 
         // Constructors                                                                                                             

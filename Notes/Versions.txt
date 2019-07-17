@@ -2,18 +2,58 @@
 
 By others:
 
+SAVE TO ANOTHER FILE AND THEN REMOVE THE OLDER FILE
+
+By Martin:
+7. 7. 2019
+0) add descriptions provided by Martin to the video tutorials and add all files from the video tutorials to the new version
+1) support of RPs in history output - be careful about the rotationla nodes which are moments and rorations
+2) support CAD based entities in the FE Model tab - divide the user interface for selection in two parts - mesh and CAD based
+3) support for smart naming - ANSYS "rename based on definition".
+4) MINOR - support for the same names of node sets, element sets, surfaces, reference points ...
+5) support for moment loads on surfaces
+6) support for hydrostatic load
+7) support for de-featuring based on mesh???
+8) local mesh seed size on edges
+9) support for scaling and rotating mesh parts
+10) FORUM!
+11) highlight the parts for which the meshing parameters are changed while Regenerate for remeshing
+12) highlight hidden parts if selected in the tree
+13) create node, element sets and surfaces when needed (load, support)
+14) option to disable constraints in the model tree (just like loads and bc's)
+15) activate/deactivate a step
+16) step manager is missing (move up and down, duplicate ...)
+
+
+By Vittorio:
+20. 6. 2019
+1) load symbols scaled according their magnitude • I am more inclind to the possibility to display the magnitudes like in a postprocessor using colors and a scale/legend.
+2) vector plots of displacements • This could be a nice feature. I will add it to the list.
+3) the capability of doing linear combinations of the results obtained in load steps (this is a must for civil engineers) •	This could be done like an equation combining different field values from different fields. At the moment this could be done using simple math operations: +,-,*,/,sin, cos, abs.
+Another very useful capability could be the export of results in vtk format • This feature is also requested by other users.
+
 
 By Emanuele:
 5. 11. 2018
 - add support for a bearing load - load distributed inside a hole
 
 
+
 By Ihor:
+30.5.2019
+- open older file -> error msg. Then open CAD file and the same error msg.
+- export for VTK
+
+Old
 - #5: For the project with saved results FE Model tab is empty when going back: 1. Open any project with results included; 2. On my computer in this case FE Model  tab is completely empty
 - add support for importing inp files
 
 
 By Sergio:
+28.5.2019
+- History output for RP'same
+- Option to make all noncomputed parts transparent
+
 24.8.2018
 - basic contacts support
 - tabular amplitude definitions
@@ -30,7 +70,6 @@ By Sergio:
 24.6.2018
 - stange part behaviour stl unv files with the same name - renaming and deleeting
 - renaming of parts on the treeview with the F2 shortcut
-- option/icon to hide/show all symbols
 5.6.2018
 - add mirror to results
 19.2.2018
@@ -102,13 +141,21 @@ Dependency nglib - added following files for c++ redistriburable compatibility:
 
 Done
 
+Version 0.5.2 Master branch
+
+Added support for translating mesh parts
+Added proces ZZS stresses as normal stress tensors
+Added frequency option for the field output (every n increments)
+Bug fixes - A bug in color conturs lookup table and other bugs reported by Martin
+Bug fixes - Medium nodes on geometry - Midside nodes
+
 Version 0.5.1 Master branch
 Added support for additional mesh parameters
 Added support for reading and displaying *El print data
 Added support for reading and displaying *Node print data
 Added support for preparation of outputs using *El print
 Added support for preparation of outputs using *Node print
-Added double click shortcuts on Model (for keywords) and on Scale bar (for settings)
+Added double click shortcuts on Model (for keywords) and on Scalar bar (for settings)
 Added scale widget
 Added support for finding short edges and small faces
 Added support for hardware accelerated animation

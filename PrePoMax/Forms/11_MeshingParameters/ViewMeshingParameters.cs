@@ -71,15 +71,15 @@ namespace PrePoMax.Forms
             {
                 _parameters.SecondOrder = value;
 
-                cpd = _dctd.GetProperty("MediumNodesOnGeometry");
+                cpd = _dctd.GetProperty("MidsideNodesOnGeometry");
                 cpd.SetIsBrowsable(value);
             }
         }
 
         [CategoryAttribute("Type")]
-        [OrderedDisplayName(1, 10, "Medium nodes on geometry")]
-        [DescriptionAttribute("Create medium nodes on geometry.")]
-        public bool MediumNodesOnGeometry { get { return _parameters.MediumNodesOnGeometry; } set { _parameters.MediumNodesOnGeometry = value; } }
+        [OrderedDisplayName(1, 10, "Midside nodes on geometry")]
+        [DescriptionAttribute("Create midside nodes on geometry.")]
+        public bool MidsideNodesOnGeometry { get { return _parameters.MidsideNodesOnGeometry; } set { _parameters.MidsideNodesOnGeometry = value; } }
 
 
         // Constructors                                                                                                             
@@ -99,7 +99,7 @@ namespace PrePoMax.Forms
             }
 
             // now lets display Yes/No instead of True/False
-            cpd = _dctd.GetProperty("MediumNodesOnGeometry");
+            cpd = _dctd.GetProperty("MidsideNodesOnGeometry");
             foreach (StandardValueAttribute sva in cpd.StatandardValues)
             {
                 if ((bool)sva.Value == true) sva.DisplayName = "Yes";

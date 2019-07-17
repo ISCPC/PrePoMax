@@ -3,26 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using vtkControl;
 
-namespace PrePoMax
+namespace CaeMesh
 {
-    [Serializable]
-    public class SelectionNodeInvert : SelectionNode
+    public class GeomEdge : GeometryItem
     {
-        // Variables                                                                                                                
-
+        // Variables                                                                                                                        
 
 
         // Properties                                                                                                               
 
 
-
         // Constructors                                                                                                             
-        public SelectionNodeInvert()
-            : base(vtkSelectOperation.Invert)
+        public GeomEdge(int id, int[] labels)
+            : base(id, labels)
         {
         }
+
 
         // Methods                                                                                                                  
     }

@@ -605,7 +605,7 @@ namespace vtkControl
             _rotationCenterDisplay = WorldToDisplay(renderer, _rotationCenterWorld);
         }
 
-        private double[] WorldToDisplay(vtkRenderer renderer, double[] worldPos)
+        public static double[] WorldToDisplay(vtkRenderer renderer, double[] worldPos)
         {
             IntPtr posOutPtr = System.Runtime.InteropServices.Marshal.AllocHGlobal(2 * 8);
             ComputeWorldToDisplay(renderer, worldPos[0], worldPos[1], worldPos[2], posOutPtr);
@@ -613,7 +613,7 @@ namespace vtkControl
             System.Runtime.InteropServices.Marshal.Copy(posOutPtr, displayPos, 0, 2);
             return displayPos;
         }
-        private double[] DisplayToWorld(vtkRenderer renderer, double[] displayPos)
+        public static double[] DisplayToWorld(vtkRenderer renderer, double[] displayPos)
         {
             IntPtr posOutPtr = System.Runtime.InteropServices.Marshal.AllocHGlobal(4 * 8);
             ComputeDisplayToWorld(renderer, displayPos[0], displayPos[1], 0, posOutPtr);
@@ -621,7 +621,16 @@ namespace vtkControl
             System.Runtime.InteropServices.Marshal.Copy(posOutPtr, worldPos, 0, 3);
             return worldPos;
         }
-       
+
+        public static double DisplayToWorldScale(vtkRenderer renderer, int size = 1)
+        {
+            int delta = 1 * size;
+            int x = 0;
+            int y = 0;
+            double[] p1 = vtkInteractorStyleControl.DisplayToWorld(renderer, new double[] { x, y });
+            double[] p2 = vtkInteractorStyleControl.DisplayToWorld(renderer, new double[] { x + delta, y });
+            return Math.Abs(p1[0] - p2[0]);
+        }
         public override void Pan()
         {
             vtkRenderer renderer = this.GetCurrentRenderer();
@@ -633,7 +642,7 @@ namespace vtkControl
             double[] newPickPoint;
             double[] oldPickPoint;
 
-            newPickPoint = this.DisplayToWorld(renderer, new double[] { clickPos[0], clickPos[1] });
+            newPickPoint = DisplayToWorld(renderer, new double[] { clickPos[0], clickPos[1] });
             oldPickPoint = DisplayToWorld(renderer, new double[] { rwi.GetLastEventPosition()[0], rwi.GetLastEventPosition()[1] });
 
             vtkCamera camera = renderer.GetActiveCamera();

@@ -24,20 +24,20 @@ namespace CaeMesh
         // Properties                                                                                                               
         public int Id;
         public int PartId;
-        public int[] NodeIDs;
+        public int[] NodeIds;
 
 
         public FeElement(int id, int[] nodeIds)
             : this(id, -1, nodeIds)
         {
         }
-
         public FeElement(int id, int partId, int[] nodeIds)
         {
             Id = id;
             PartId = partId;
-            NodeIDs = nodeIds;
+            NodeIds = nodeIds;
         }
+       
 
         // Methods                                                                                                                  
         public static bool IsParabolic(FeElement element)
@@ -49,19 +49,13 @@ namespace CaeMesh
 
         // Abstract methods                                                                                                         
         abstract public int[] GetVtkNodeIds();
-        
         abstract public int GetVtkCellType();
-
         abstract public FeFaceName GetFaceNameFromSortedNodeIds(int[] nodeIds);
-
         abstract public int[] GetNodeIdsFromFaceName(FeFaceName faceName);
-
         abstract public int[] GetVtkCellFromFaceName(FeFaceName faceName);
-
         abstract public Dictionary<FeFaceName, double> GetFaceNamesAndAreasFromNodeSet(HashSet<int> nodeSet, Dictionary<int, FeNode> nodes);
-
         abstract public double[] GetEquivalentForcesFromFaceName(FeFaceName faceName);
-
         abstract public double GetArea(FeFaceName faceName, Dictionary<int, FeNode> nodes);
+        abstract public FeElement DeepCopy();
     }
 }

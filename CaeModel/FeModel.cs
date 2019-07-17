@@ -367,9 +367,9 @@ namespace CaeModel
             
             ImportMesh(mesh);
         }
-        public List<string> ImportMeshFromInpFile(string fileName)
+        public List<string> ImportMeshFromInpFile(string fileName, Action<string> WriteDataToOutput)
         {
-            FileInOut.Input.InpFileReader.Read(fileName, FileInOut.Input.ElementsToImport.Solid, this);
+            FileInOut.Input.InpFileReader.Read(fileName, FileInOut.Input.ElementsToImport.Solid, this, WriteDataToOutput);
             return FileInOut.Input.InpFileReader.Errors;
         }
         private void ImportGeometry(FeMesh mesh)

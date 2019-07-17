@@ -23,7 +23,6 @@ namespace CaeMesh
           : base(id, nodeIds)
         {
         }
-
         public ParabolicHexaElement(int id, int partId, int[] nodeIds)
             : base(id, partId, nodeIds)
         {
@@ -34,14 +33,12 @@ namespace CaeMesh
         public override int[] GetVtkNodeIds()
         {
             // return a copy -> ToArray
-            return NodeIDs.ToArray();
+            return NodeIds.ToArray();
         }
-
         public override int GetVtkCellType()
         {
             return vtkCellTypeInt;
         }
-        
         public override FeFaceName GetFaceNameFromSortedNodeIds(int[] nodeIds)
         {
             // the node ids are sorted 
@@ -60,7 +57,6 @@ namespace CaeMesh
             else if (nodeIds[0] == 0) return FeFaceName.S6;
             else throw new NotSupportedException();
         }
-
         public override int[] GetNodeIdsFromFaceName(FeFaceName faceName)
         {
             // S1 = 1-2-3-4-9-10-11-12  . 0-1-2-3-8-9-10-11
@@ -73,22 +69,21 @@ namespace CaeMesh
             switch (faceName)
             {
                 case FeFaceName.S1:
-                    return new int[] { NodeIDs[0], NodeIDs[1], NodeIDs[2], NodeIDs[3], NodeIDs[8], NodeIDs[9], NodeIDs[10], NodeIDs[11] };
+                    return new int[] { NodeIds[0], NodeIds[1], NodeIds[2], NodeIds[3], NodeIds[8], NodeIds[9], NodeIds[10], NodeIds[11] };
                 case FeFaceName.S2:
-                    return new int[] { NodeIDs[4], NodeIDs[7], NodeIDs[6], NodeIDs[5], NodeIDs[15], NodeIDs[14], NodeIDs[13], NodeIDs[12] };
+                    return new int[] { NodeIds[4], NodeIds[7], NodeIds[6], NodeIds[5], NodeIds[15], NodeIds[14], NodeIds[13], NodeIds[12] };
                 case FeFaceName.S3:
-                    return new int[] { NodeIDs[0], NodeIDs[4], NodeIDs[5], NodeIDs[1], NodeIDs[16], NodeIDs[12], NodeIDs[17], NodeIDs[8] };
+                    return new int[] { NodeIds[0], NodeIds[4], NodeIds[5], NodeIds[1], NodeIds[16], NodeIds[12], NodeIds[17], NodeIds[8] };
                 case FeFaceName.S4:
-                    return new int[] { NodeIDs[1], NodeIDs[5], NodeIDs[6], NodeIDs[2], NodeIDs[17], NodeIDs[13], NodeIDs[18], NodeIDs[9] };
+                    return new int[] { NodeIds[1], NodeIds[5], NodeIds[6], NodeIds[2], NodeIds[17], NodeIds[13], NodeIds[18], NodeIds[9] };
                 case FeFaceName.S5:
-                    return new int[] { NodeIDs[2], NodeIDs[6], NodeIDs[7], NodeIDs[3], NodeIDs[18], NodeIDs[14], NodeIDs[19], NodeIDs[10] };
+                    return new int[] { NodeIds[2], NodeIds[6], NodeIds[7], NodeIds[3], NodeIds[18], NodeIds[14], NodeIds[19], NodeIds[10] };
                 case FeFaceName.S6:
-                    return new int[] { NodeIDs[3], NodeIDs[7], NodeIDs[4], NodeIDs[0], NodeIDs[19], NodeIDs[15], NodeIDs[16], NodeIDs[11] };
+                    return new int[] { NodeIds[3], NodeIds[7], NodeIds[4], NodeIds[0], NodeIds[19], NodeIds[15], NodeIds[16], NodeIds[11] };
                 default:
                     throw new NotSupportedException();
             }
         }
-
         public override int[] GetVtkCellFromFaceName(FeFaceName faceName)
         {
             // invert the surface normal to point outwards
@@ -102,37 +97,35 @@ namespace CaeMesh
             switch (faceName)
             {
                 case FeFaceName.S1:
-                    return new int[] { NodeIDs[0], NodeIDs[3], NodeIDs[2], NodeIDs[1], NodeIDs[11], NodeIDs[10], NodeIDs[9], NodeIDs[8] };
+                    return new int[] { NodeIds[0], NodeIds[3], NodeIds[2], NodeIds[1], NodeIds[11], NodeIds[10], NodeIds[9], NodeIds[8] };
                 case FeFaceName.S2:
-                    return new int[] { NodeIDs[4], NodeIDs[5], NodeIDs[6], NodeIDs[7], NodeIDs[12], NodeIDs[13], NodeIDs[14], NodeIDs[15] };
+                    return new int[] { NodeIds[4], NodeIds[5], NodeIds[6], NodeIds[7], NodeIds[12], NodeIds[13], NodeIds[14], NodeIds[15] };
                 case FeFaceName.S3:
-                    return new int[] { NodeIDs[0], NodeIDs[1], NodeIDs[5], NodeIDs[4], NodeIDs[8], NodeIDs[17], NodeIDs[12], NodeIDs[16] };
+                    return new int[] { NodeIds[0], NodeIds[1], NodeIds[5], NodeIds[4], NodeIds[8], NodeIds[17], NodeIds[12], NodeIds[16] };
                 case FeFaceName.S4:
-                    return new int[] { NodeIDs[1], NodeIDs[2], NodeIDs[6], NodeIDs[5], NodeIDs[9], NodeIDs[18], NodeIDs[13], NodeIDs[17] };
+                    return new int[] { NodeIds[1], NodeIds[2], NodeIds[6], NodeIds[5], NodeIds[9], NodeIds[18], NodeIds[13], NodeIds[17] };
                 case FeFaceName.S5:
-                    return new int[] { NodeIDs[2], NodeIDs[3], NodeIDs[7], NodeIDs[6], NodeIDs[10], NodeIDs[19], NodeIDs[14], NodeIDs[18] };
+                    return new int[] { NodeIds[2], NodeIds[3], NodeIds[7], NodeIds[6], NodeIds[10], NodeIds[19], NodeIds[14], NodeIds[18] };
                 case FeFaceName.S6:
-                    return new int[] { NodeIDs[3], NodeIDs[0], NodeIDs[4], NodeIDs[7], NodeIDs[11], NodeIDs[16], NodeIDs[15], NodeIDs[19] };
+                    return new int[] { NodeIds[3], NodeIds[0], NodeIds[4], NodeIds[7], NodeIds[11], NodeIds[16], NodeIds[15], NodeIds[19] };
                 default:
                     throw new NotSupportedException();
             }
         }
-
         public override int[][] GetAllVtkCells()
         {
             // use Method: GetVtkCellFromFaceName(FeFaceName faceName)
             int[][] cells = new int[6][];
 
-            cells[0] = new int[] { NodeIDs[0], NodeIDs[3], NodeIDs[2], NodeIDs[1], NodeIDs[11], NodeIDs[10], NodeIDs[9], NodeIDs[8] };
-            cells[1] = new int[] { NodeIDs[4], NodeIDs[5], NodeIDs[6], NodeIDs[7], NodeIDs[12], NodeIDs[13], NodeIDs[14], NodeIDs[15] };
-            cells[2] = new int[] { NodeIDs[0], NodeIDs[1], NodeIDs[5], NodeIDs[4], NodeIDs[8], NodeIDs[17], NodeIDs[12], NodeIDs[16] };
-            cells[3] = new int[] { NodeIDs[1], NodeIDs[2], NodeIDs[6], NodeIDs[5], NodeIDs[9], NodeIDs[18], NodeIDs[13], NodeIDs[17] };
-            cells[4] = new int[] { NodeIDs[2], NodeIDs[3], NodeIDs[7], NodeIDs[6], NodeIDs[10], NodeIDs[19], NodeIDs[14], NodeIDs[18] };
-            cells[5] = new int[] { NodeIDs[3], NodeIDs[0], NodeIDs[4], NodeIDs[7], NodeIDs[11], NodeIDs[16], NodeIDs[15], NodeIDs[19] };
+            cells[0] = new int[] { NodeIds[0], NodeIds[3], NodeIds[2], NodeIds[1], NodeIds[11], NodeIds[10], NodeIds[9], NodeIds[8] };
+            cells[1] = new int[] { NodeIds[4], NodeIds[5], NodeIds[6], NodeIds[7], NodeIds[12], NodeIds[13], NodeIds[14], NodeIds[15] };
+            cells[2] = new int[] { NodeIds[0], NodeIds[1], NodeIds[5], NodeIds[4], NodeIds[8], NodeIds[17], NodeIds[12], NodeIds[16] };
+            cells[3] = new int[] { NodeIds[1], NodeIds[2], NodeIds[6], NodeIds[5], NodeIds[9], NodeIds[18], NodeIds[13], NodeIds[17] };
+            cells[4] = new int[] { NodeIds[2], NodeIds[3], NodeIds[7], NodeIds[6], NodeIds[10], NodeIds[19], NodeIds[14], NodeIds[18] };
+            cells[5] = new int[] { NodeIds[3], NodeIds[0], NodeIds[4], NodeIds[7], NodeIds[11], NodeIds[16], NodeIds[15], NodeIds[19] };
 
             return cells;
         }
-
         public override Dictionary<FeFaceName, double> GetFaceNamesAndAreasFromNodeSet(HashSet<int> nodeSet, Dictionary<int, FeNode> nodes)
         {
             // check only first 8 nodes (as in linear element)
@@ -142,7 +135,7 @@ namespace CaeMesh
             int count = 0;
             for (int i = 0; i < significantNodes; i++)
             {
-                if (nodeSet.Contains(NodeIDs[i]))
+                if (nodeSet.Contains(NodeIds[i]))
                 {
                     faceNodeIds[i] = true;
                     count++;
@@ -167,13 +160,10 @@ namespace CaeMesh
 
             return faces;
         }
-
-
         public override double[] GetEquivalentForcesFromFaceName(FeFaceName faceName)
         {
             return new double[] { b, b, b, b, a, a, a, a };
         }
-
         public override double GetArea(FeFaceName faceName, Dictionary<int, FeNode> nodes)
         {
             int[] cell = GetVtkCellFromFaceName(faceName);
@@ -185,6 +175,10 @@ namespace CaeMesh
             }
 
             return GeometryTools.RectangleArea(n[0], n[1], n[2], n[3], n[4], n[5], n[6], n[7]);
+        }
+        public override FeElement DeepCopy()
+        {
+            return new ParabolicHexaElement(Id, PartId, NodeIds.ToArray());
         }
     }
 }

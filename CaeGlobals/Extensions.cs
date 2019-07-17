@@ -7,6 +7,7 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Xml.Serialization;
 using System.Xml;
+using System.Windows.Forms;
 
 namespace CaeGlobals
 {
@@ -102,6 +103,51 @@ namespace CaeGlobals
                 else return true;  // act as ordinary ContainsKey
             }
             else return false;
+        }
+
+        // Property grid items
+        public static IEnumerable<GridItem> EnumerateAllItems(this PropertyGrid grid)
+        {
+            if (grid == null)
+                yield break;
+
+            // get to root item
+            GridItem start = grid.SelectedGridItem;
+            while (start.Parent != null)
+            {
+                start = start.Parent;
+            }
+
+            foreach (GridItem item in start.EnumerateAllItems())
+            {
+                yield return item;
+            }
+        }
+        public static IEnumerable<GridItem> EnumerateAllItems(this GridItem item)
+        {
+            if (item == null)
+                yield break;
+
+            yield return item;
+            foreach (GridItem child in item.GridItems)
+            {
+                foreach (GridItem gc in child.EnumerateAllItems())
+                {
+                    yield return gc;
+                }
+            }
+        }
+
+        // String Array
+        public static string ToShortString(this string[] stringArray)
+        {
+            string allNames = null;
+            if (stringArray != null)
+            {
+                if (stringArray.Length >= 1) allNames = stringArray[0];
+                if (stringArray.Length >= 2) allNames += ", ...";
+            }
+            return allNames;
         }
     }
 }

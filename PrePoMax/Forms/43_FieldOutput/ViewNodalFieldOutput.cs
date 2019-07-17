@@ -33,8 +33,9 @@ namespace PrePoMax
 
         // Properties                                                                                                               
         public override string Name { get { return _fieldOutput.Name; } set { _fieldOutput.Name = value; } }
-     
-        [OrderedDisplayName(1, 10, "Variables to output")]
+        public override int Frequency { get { return _fieldOutput.Frequency; } set { _fieldOutput.Frequency = value; } }
+
+        [OrderedDisplayName(2, 10, "Variables to output")]
         [CategoryAttribute("Data")]
         [DescriptionAttribute("Nodal field variables")]
         public ViewNodalFieldVariable Variables 

@@ -11,7 +11,7 @@ namespace PrePoMax
     {
         public static string HomePage = "http://lace.fs.uni-mb.si/wordpress/borovinsek/?page_id=41";
 
-        public static string ProgramName = "PrePoMax v0.5.1";
+        public static string ProgramName = "PrePoMax v0.5.2";
 
         public static string ReadyText = "Ready";
         public static string SavingText = "Saving ...";

@@ -66,16 +66,19 @@ namespace PrePoMax.Commands
         // Methods                                                                                                                  
         public void AddAndExecute(Command command)
         {
-            // first execute to check for errors
+            // Write to form
+            WriteToOutput(command);
+
+            // First execute to check for errors
             if (command.Execute(_controller))
             {
-                // add command
+                // Add command
                 AddCommand(command);
 
-                // add history
+                // Add history
                 AddToHistory(command);
 
-                // write to file
+                // Write to file
                 WriteToFile();
 
                 _currPositionIndex++;
@@ -91,18 +94,28 @@ namespace PrePoMax.Commands
         }
         private void ExecuteCommand(Command command)
         {
-            // first execute to check for errors
+            // Write to form
+            WriteToOutput(command);
+
+            // First execute to check for errors
             command.Execute(_controller);
 
-            // add history
+            // Add history
             AddToHistory(command);
 
-            // write to file
+            // Write to file
             WriteToFile();
 
             _currPositionIndex++;
 
             OnEnableDisableUndoRedo();
+        }
+        private void WriteToOutput(Command command)
+        {
+            if (command is CClear) return;
+            string data = command.GetCommandString();
+            if (data.Length > 20) data = data.Substring(20);    // Remove date and time for the write to form
+            WriteOutput?.Invoke(data);
         }
         private void AddToHistory(Command command)
         {
@@ -114,8 +127,6 @@ namespace PrePoMax.Commands
             _controller.ModelChanged = true;
 
             ModelChanged_ResetJobStatus?.Invoke();
-            if (data.Length > 20) data = data.Substring(20);    // Remove data and time
-            WriteOutput?.Invoke(data);
         }
         private void ExecuteAllCommands()
         {
@@ -131,13 +142,18 @@ namespace PrePoMax.Commands
             {
                 if (count++ <= _currPositionIndex)
                 {
-                    if (command is ICommandWithDialog && showDialogs &&
+                    // Write to form
+                    WriteToOutput(command);
+
+                    // Execute
+                    if (command is ICommandWithDialog icwd && showDialogs &&
                         (showImportDialog && command is CImportFile || showMeshParametersDialog && command is CSetMeshingParameters))
                     {
-                        (command as ICommandWithDialog).ExecuteWithDialogs(_controller);
+                        icwd.ExecuteWithDialogs(_controller);
                     }
                     else command.Execute(_controller);
-
+                    
+                    // Add history
                     AddToHistory(command);
                 }
                 else break;

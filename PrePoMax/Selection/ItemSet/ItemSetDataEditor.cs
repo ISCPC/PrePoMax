@@ -23,14 +23,12 @@ namespace PrePoMax
         // Variables                                                                                                                
         private static FrmSelectItemSet _frmSelectItemSet;
         private static Form _parentForm;
-        private static vtkControl.vtkSelectMode _selectModeToSet;
         private ItemSetData _itemSetData;
         
 
         // Properties                                                                                                               
         public static FrmSelectItemSet SelectionForm { get { return _frmSelectItemSet; } set { _frmSelectItemSet = value; } }
         public static Form ParentForm { get { return _parentForm; } set { _parentForm = value; } }
-        public static vtkControl.vtkSelectMode SelectModeToSet { get { return _selectModeToSet; } set { _selectModeToSet = value; } }
 
 
         // Methods                                                                                                                  

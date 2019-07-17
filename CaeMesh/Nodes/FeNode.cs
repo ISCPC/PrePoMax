@@ -45,8 +45,11 @@ namespace CaeMesh
                 return true;
             else
                 return false;
+        }
 
-            //return (Id == node.Id && Math.Abs(X - node.X) + Math.Abs(Y - node.Y) + Math.Abs(Z - node.Z) < epsilon);
+        public FeNode DeepCopy()
+        {
+            return new FeNode(Id, X, Y, Z);
         }
     }
 }

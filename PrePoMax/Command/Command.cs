@@ -50,10 +50,16 @@ namespace PrePoMax.Commands
         {
             string names = "[";
             int count = 0;
+            int maxLen = 120;
             foreach (string name in array)
             {
-                names += name;
+                names += name;                
                 if (++count < array.Length) names += ", ";
+                if (names.Length > maxLen)
+                {
+                    names += "...";
+                    break;
+                }
             }
             names += "]";
 

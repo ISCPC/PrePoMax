@@ -28,6 +28,11 @@ namespace FileInOut.Input
                 Dictionary<int, FeNode> nodes = null;
                 Dictionary<int, FeElement> elements = new Dictionary<int,FeElement>();
 
+                // Geometry: itemId, allNodeIds
+                Dictionary<int, HashSet<int>> surfaceIdNodeIds = new Dictionary<int, HashSet<int>>();
+                Dictionary<int, HashSet<int>> edges = new Dictionary<int, HashSet<int>>();
+                Dictionary<int, HashSet<int>> vertices = new Dictionary<int, HashSet<int>>();
+
                 foreach (List<string> dataSet in dataSets)
                 {
                     if (dataSet[0] == VolKeywords.points.ToString()) // Nodes
@@ -41,16 +46,18 @@ namespace FileInOut.Input
                     else if (dataSet[0] == VolKeywords.surfaceelements.ToString() ||
                              dataSet[0] == VolKeywords.surfaceelementsuv.ToString()) // 2D Elements
                     {
-                        AddSurfaceElements(dataSet.ToArray(), elements, ref elementStartId);
+                        AddSurfaceElements(dataSet.ToArray(), elements, ref elementStartId, surfaceIdNodeIds);
                     }
                     else if (dataSet[0] == VolKeywords.edgesegmentsgi2.ToString()) // 1D Elements
                     {
-                        AddLineElements(dataSet.ToArray(), elements, ref elementStartId);
+                        AddLineElements(dataSet.ToArray(), elements, ref elementStartId, edges);
                     }
                 }
                 FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Mesh, null, null, convertToSecondOrder);
 
                 mesh.ConvertLineFeElementsToEdges();
+
+                mesh.RenumberVisualizationSurfaces(surfaceIdNodeIds);
 
                 if (elementsToImport != ElementsToImport.All)
                 {
@@ -150,23 +157,26 @@ namespace FileInOut.Input
                 startId++;
             }
         }
-        static private void AddSurfaceElements(string[] lines, Dictionary<int, FeElement> elements, ref int startId)
+        static private void AddSurfaceElements(string[] lines, Dictionary<int, FeElement> elements, ref int startId,
+                                               Dictionary<int, HashSet<int>> surfaceIdNodeIds)
         {
-            //# surfnr    bcnr   domin  domout      np      p1      p2      p3
-            //surfaceelements
-            //440
-            // 2 1 1 0 3 46 47 57
-            //
-            // 2 1 1 0 6 2 1 407 6824 6825 6420
+            //# surfnr    bcnr   domin  domout      np      p1      p2      p3  
+            //surfaceelements                                                   
+            //440                                                               
+            // 2 1 1 0 3 46 47 57                                               
+            //                                                                  
+            // 2 1 1 0 6 2 1 407 6824 6825 6420                                 
 
             int numNodes;
             int N = int.Parse(lines[1]);
+            int surfId;
             string[] record;
             string[] splitter = new string[] { " " };
+            HashSet<int> surface;
 
             FeElement2D element = null;
 
-            // line 0 is the line with the Keyword
+            // line 0 is the line with the Keyword                              
             for (int i = 2; i < N + 2; i++)
             {
                 record = lines[i].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
@@ -182,21 +192,31 @@ namespace FileInOut.Input
                     default:
                         throw new NotSupportedException();
                 }
-                elements.Add(startId, element);
+                elements.Add(element.Id, element);
+                
+                surfId = int.Parse(record[1]);
+                if (surfaceIdNodeIds.TryGetValue(surfId, out surface)) surface.UnionWith(element.NodeIds);
+                else surfaceIdNodeIds.Add(surfId, new HashSet<int>(element.NodeIds));
+
                 startId++;
             }
         }
-        static private void AddLineElements(string[] lines, Dictionary<int, FeElement> elements, ref int startId)
+        static private void AddLineElements(string[] lines, Dictionary<int, FeElement> elements, ref int startId,
+                                            Dictionary<int, HashSet<int>> edges)
         {
-            //# surfid  0   p1   p2   trignum1    trignum2   domin/surfnr1    domout/surfnr2   ednr1   dist1   ednr2   dist2 
-            //edgesegmentsgi2
-            //170
-            // 4       0       1       2      217      217        0        0        1            0        1 1.361946362602851
+            //# surfid  0   p1   p2   trignum1    trignum2   domin/surfnr1    domout/surfnr2   ednr1   dist1   ednr2   dist2  
+            //edgesegmentsgi2                                                                                                 
+            //170                                                                                                             
+            //       1       0       1       9       -1       -1        0        0        1         -100        1        -49.9
+            //       1       0       9       2       -1       -1        0        0        2        -49.9        1           -0
+            //       1       0      10       3      -1        -1        0        0        3         50.1        2           -0
 
             int numNodes;
             int N = int.Parse(lines[1]);
+            int edgeId;
             string[] record;
             string[] splitter = new string[] { " " };
+            HashSet<int> edge;
 
             FeElement1D element = null;
 
@@ -214,6 +234,11 @@ namespace FileInOut.Input
                         throw new NotSupportedException();
                 }
                 elements.Add(startId, element);
+
+                edgeId = int.Parse(record[10]);
+                if (edges.TryGetValue(edgeId, out edge)) edge.UnionWith(element.NodeIds);
+                else edges.Add(edgeId, new HashSet<int>(element.NodeIds));
+
                 startId++;
             }
         }

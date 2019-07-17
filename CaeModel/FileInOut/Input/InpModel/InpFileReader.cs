@@ -20,13 +20,18 @@ namespace FileInOut.Input
         static string[] splitter = new string[] { " ", ",", "\t" };
 
 
+        // Callbacks                                                                                                                
+        static private Action<string> WriteDataToOutputStatic;
+
+
         // Properties                                                                                                               
         static public List<string> Errors { get { return _errors; }  } 
 
 
         // Methods                                                                                                                  
-        static public void Read(string fileName, ElementsToImport elementsToImport, FeModel model)
+        static public void Read(string fileName, ElementsToImport elementsToImport, FeModel model, Action<string> WriteDataToOutput)
         {
+            WriteDataToOutputStatic = WriteDataToOutput;
             _errors = new List<string>();
 
             if (fileName != null && File.Exists(fileName))
@@ -54,10 +59,12 @@ namespace FileInOut.Input
 
                     if (keyword == "*NODE") // Nodes
                     {
+                        WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
                         nodes = GetNodes(dataSet);
                     }
                     else if (keyword == "*ELEMENT") // Elements
                     {
+                        WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
                         AddElements(dataSet, ref elements, ref inpElementTypeSets);
                     }
                 }
@@ -84,35 +91,44 @@ namespace FileInOut.Input
                 for (int i = 0; i < dataSets.Length; i++)
                 {
                     dataSet = dataSets[i];
-                    keyword = dataSet[0].Split(splitter, StringSplitOptions.RemoveEmptyEntries)[0].Trim().ToUpper();
+                    keyword = dataSet[0].Split(splitter, StringSplitOptions.RemoveEmptyEntries)[0].Trim().ToUpper();                    
 
                     if (keyword == "*NSET")
                     {
+                        WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
                         GetNodeOrElementSet("NSET", dataSet, out name, out ids);
-                        if (name != null && ids != null) mesh.AddNodeSet(new FeNodeSet(name, ids));
+                        if (NamedClass.CheckNameError(name) != null) AddError(NamedClass.CheckNameError(name));
+                        else if (ids != null) mesh.AddNodeSet(new FeNodeSet(name, ids));
                     }
                     else if (keyword == "*ELSET")
                     {
+                        WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
                         GetNodeOrElementSet("ELSET", dataSet, out name, out ids);
-                        if (name != null && ids != null) mesh.AddElementSet(new FeElementSet(name, ids));
+                        if (NamedClass.CheckNameError(name) != null) AddError(NamedClass.CheckNameError(name));
+                        else if (ids != null) mesh.AddElementSet(new FeElementSet(name, ids));
                     }
                     else if (keyword == "*SURFACE")
                     {
+                        WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
                         FeSurface surface = GetSurface(dataSet, lineNumber);
                         if (surface != null) mesh.AddSurface(surface);
                     }
                     else if (keyword == "*RIGID BODY")
                     {
+                        WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
                         GetRigidBody(dataSet, lineNumber, nodes, constraints, referencePoints);
                     }
                     else if (keyword == "*MATERIAL")
                     {
+                        WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
                         Material material = GetMaterial(dataSets, i, lineNumber);
                         if (material != null) materials.Add(material.Name, material);
                     }
 
                     lineNumber += dataSet.Length;
                 }
+
+                //try to output errors as TextReader ...
                 
 
                 foreach (var entry in referencePoints) mesh.ReferencePoints.Add(entry.Key, entry.Value);
@@ -186,165 +202,179 @@ namespace FileInOut.Input
         }
         static private void AddElements(string[] lines, ref Dictionary<int, FeElement> elements, ref List<InpElementSet> inpElementTypeSets)
         {
-            FeElement element;
-            
-            string elementType = null;
-            string elementSetName = null;
-            string[] record1;
-            string[] record2;
-
-            // *Element, type=C3D4, ELSET=PART1
-            record1 = lines[0].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
-            
-            foreach (var rec in record1)
+            try
             {
-                record2 = rec.Split(splitterEqual, StringSplitOptions.RemoveEmptyEntries);
-                if (record2.Length == 2)
+                FeElement element;
+
+                string elementType = null;
+                string elementSetName = null;
+                string[] record1;
+                string[] record2;
+
+                // *Element, type=C3D4, ELSET=PART1
+                record1 = lines[0].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
+
+                foreach (var rec in record1)
                 {
-                    if (record2[0].Trim().ToUpper() == "TYPE") elementType = record2[1].Trim().ToUpper();
-                    else if (record2[0].Trim().ToUpper() == "ELSET") elementSetName = record2[1].Trim();
+                    record2 = rec.Split(splitterEqual, StringSplitOptions.RemoveEmptyEntries);
+                    if (record2.Length == 2)
+                    {
+                        if (record2[0].Trim().ToUpper() == "TYPE") elementType = record2[1].Trim().ToUpper();
+                        else if (record2[0].Trim().ToUpper() == "ELSET") elementSetName = record2[1].Trim();
+                    }
                 }
-            }
-            if (elementType == null) return;
+                if (elementType == null) return;
 
-            List<int> elementIds = new List<int>();
-            // line 0 is the line with the keyword
-            for (int i = 1; i < lines.Length; i ++)
-            {
-                if (lines[i].StartsWith("*")) continue;
-
-                switch (elementType)
+                List<int> elementIds = new List<int>();
+                // line 0 is the line with the keyword
+                for (int i = 1; i < lines.Length; i++)
                 {
-                    // LINEAR ELEMENTS                                                                                          
+                    if (lines[i].StartsWith("*")) continue;
 
-                    case "C3D4":
-                        // linear tetrahedron element
-                        element = GetLinearTetraElement(lines[i].Split(splitter, StringSplitOptions.RemoveEmptyEntries));
-                        break;
-                    case "C3D6":
-                        // linear wedge element
-                        element = GetLinearWedgeElement(lines[i].Split(splitter, StringSplitOptions.RemoveEmptyEntries));
-                        break;
-                    case "C3D8":
-                        // linear hexahedron element
-                        element = GetLinearHexaElement(lines[i].Split(splitter, StringSplitOptions.RemoveEmptyEntries));
-                        break;
-                    case "C3D8R":
-                        // linear hexahedron element
-                        element = GetLinearHexaElement(lines[i].Split(splitter, StringSplitOptions.RemoveEmptyEntries));
-                        break;
-                    case "C3D8I":
-                        // linear hexahedron element
-                        element = GetLinearHexaElement(lines[i].Split(splitter, StringSplitOptions.RemoveEmptyEntries));
-                        break;
+                    switch (elementType)
+                    {
+                        // LINEAR ELEMENTS                                                                                          
 
-                    // PARABOLIC ELEMENTS                                                                                       
+                        case "C3D4":
+                            // linear tetrahedron element
+                            element = GetLinearTetraElement(lines[i].Split(splitter, StringSplitOptions.RemoveEmptyEntries));
+                            break;
+                        case "C3D6":
+                            // linear wedge element
+                            element = GetLinearWedgeElement(lines[i].Split(splitter, StringSplitOptions.RemoveEmptyEntries));
+                            break;
+                        case "C3D8":
+                            // linear hexahedron element
+                            element = GetLinearHexaElement(lines[i].Split(splitter, StringSplitOptions.RemoveEmptyEntries));
+                            break;
+                        case "C3D8R":
+                            // linear hexahedron element
+                            element = GetLinearHexaElement(lines[i].Split(splitter, StringSplitOptions.RemoveEmptyEntries));
+                            break;
+                        case "C3D8I":
+                            // linear hexahedron element
+                            element = GetLinearHexaElement(lines[i].Split(splitter, StringSplitOptions.RemoveEmptyEntries));
+                            break;
 
-                    case "C3D10":
-                        // parabolic tetrahedron element
-                        element = GetParabolicTetraElement(ref i, lines, splitter);
-                        break;
-                    case "C3D15":
-                        // parabolic wedge element
-                        element = GetParabolicWedgeElement(ref i, lines, splitter);
-                        break;
-                    // parabolic hexahedron element
-                    case "C3D20":
-                        element = GetParabolicHexaElement(ref i, lines, splitter);
-                        break;
-                    // parabolic hexahedron element
-                    case "C3D20R":
-                        element = GetParabolicHexaElement(ref i, lines, splitter);
-                        break;
+                        // PARABOLIC ELEMENTS                                                                                       
 
-                    default:
-                        //System.Windows.Forms.MessageBox.Show("The element type '" + elementType + "' is not supported.");
-                        //break;
-                        throw new Exception("The element type '" + elementType + "' is not supported.");
+                        case "C3D10":
+                            // parabolic tetrahedron element
+                            element = GetParabolicTetraElement(ref i, lines, splitter);
+                            break;
+                        case "C3D15":
+                            // parabolic wedge element
+                            element = GetParabolicWedgeElement(ref i, lines, splitter);
+                            break;
+                        // parabolic hexahedron element
+                        case "C3D20":
+                            element = GetParabolicHexaElement(ref i, lines, splitter);
+                            break;
+                        // parabolic hexahedron element
+                        case "C3D20R":
+                            element = GetParabolicHexaElement(ref i, lines, splitter);
+                            break;
+
+                        default:
+                            //System.Windows.Forms.MessageBox.Show("The element type '" + elementType + "' is not supported.");
+                            //break;
+                            throw new Exception("The element type '" + elementType + "' is not supported.");
+                    }
+                    elementIds.Add(element.Id);
+                    elements.Add(element.Id, element);
                 }
-                elementIds.Add(element.Id);
-                elements.Add(element.Id, element);
-            }
 
-            // find element set
-            InpElementSet inpSet = null;
-            foreach (var entry in inpElementTypeSets)
-            {
-                if (entry.Name == elementSetName)   // both names can be null - must be like this for sets without names
+                // find element set
+                InpElementSet inpSet = null;
+                foreach (var entry in inpElementTypeSets)
                 {
-                    inpSet = entry;
-                    break;
+                    if (entry.Name == elementSetName)   // both names can be null - must be like this for sets without names
+                    {
+                        inpSet = entry;
+                        break;
+                    }
                 }
+                // create new set
+                if (inpSet == null)
+                {
+                    inpSet = new InpElementSet(elementSetName, new HashSet<string>(), new HashSet<int>());
+                    inpElementTypeSets.Add(inpSet);
+                }
+                // add type and labels
+                inpSet.InpElementTypeNames.Add(elementType);
+                inpSet.ElementLabels.UnionWith(elementIds);
             }
-            // create new set
-            if (inpSet == null)
+            catch (Exception ex)
             {
-                inpSet = new InpElementSet(elementSetName, new HashSet<string>(), new HashSet<int>());
-                inpElementTypeSets.Add(inpSet);
+                AddError(ex.Message);
             }
-            // add type and labels
-            inpSet.InpElementTypeNames.Add(elementType);
-            inpSet.ElementLabels.UnionWith(elementIds);
         }
         static private void GetNodeOrElementSet(string keywordName, string[] lines, out string name, out int[] ids)
         {
             name = null;
             ids = null;
 
-            bool generate = false;
-            string[] record1;
-            string[] record2;
-
-            // *NSET,NSET=SET1,GENERATE
-            record1 = lines[0].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
-
-            foreach (var rec in record1)
+            try
             {
-                record2 = rec.Split(splitterEqual, StringSplitOptions.RemoveEmptyEntries);
-                if (record2.Length == 1)
-                {
-                    if (record2[0].Trim().ToUpper() == "GENERATE") generate = true;
-                }
-                else if (record2.Length == 2)
-                {
-                    if (record2[0].Trim().ToUpper() == keywordName.ToUpper()) name = record2[1].Trim();
-                }
-            }
-            if (name == null) return;
+                bool generate = false;
+                string[] record1;
+                string[] record2;
 
-            List<int> nodeIds = new List<int>();
-            if (generate)   // can be written in more than one line
-            {
-                // line 0 is the line with the keyword
-                for (int i = 1; i < lines.Length; i++)
-                {
-                    record1 = lines[i].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                // *NSET,NSET=SET1,GENERATE
+                record1 = lines[0].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
 
-                    if (record1.Length <= 3)
+                foreach (var rec in record1)
+                {
+                    record2 = rec.Split(splitterEqual, StringSplitOptions.RemoveEmptyEntries);
+                    if (record2.Length == 1)
                     {
-                        int start = int.Parse(record1[0]);
-                        int end = int.Parse(record1[1]);
-                        int step = 1;
-                        if (record1.Length == 3) step = int.Parse(record1[2]);
-
-                        for (int j = start; j <= end; j+=step) nodeIds.Add(j);
+                        if (record2[0].Trim().ToUpper() == "GENERATE") generate = true;
                     }
-                    else throw new CaeGlobals.CaeException("When node set is defined using GENERATE parameter at most three node ids are expected.");
-                }
-                ids = nodeIds.ToArray();
-            }
-            else
-            {
-                for (int i = 1; i < lines.Length; i++)
-                {
-                    record1 = lines[i].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
-                    foreach (string nodeId in record1)
+                    else if (record2.Length == 2)
                     {
-                        nodeIds.Add(int.Parse(nodeId));
+                        if (record2[0].Trim().ToUpper() == keywordName.ToUpper()) name = record2[1].Trim();
                     }
                 }
-                ids = nodeIds.ToArray();
-                Array.Sort(ids);
+                if (name == null) WriteDataToOutputStatic("There is a set name missing in the line: " + lines[0]);
+
+                List<int> nodeIds = new List<int>();
+                if (generate)   // can be written in more than one line
+                {
+                    // line 0 is the line with the keyword
+                    for (int i = 1; i < lines.Length; i++)
+                    {
+                        record1 = lines[i].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
+
+                        if (record1.Length <= 3)
+                        {
+                            int start = int.Parse(record1[0]);
+                            int end = int.Parse(record1[1]);
+                            int step = 1;
+                            if (record1.Length == 3) step = int.Parse(record1[2]);
+
+                            for (int j = start; j <= end; j += step) nodeIds.Add(j);
+                        }
+                        else throw new CaeGlobals.CaeException("When node set is defined using GENERATE parameter at most three node ids are expected.");
+                    }
+                    ids = nodeIds.ToArray();
+                }
+                else
+                {
+                    for (int i = 1; i < lines.Length; i++)
+                    {
+                        record1 = lines[i].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
+                        foreach (string nodeId in record1)
+                        {
+                            nodeIds.Add(int.Parse(nodeId));
+                        }
+                    }
+                    ids = nodeIds.ToArray();
+                    Array.Sort(ids);
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteDataToOutputStatic(ex.Message);
             }
         }
         static private FeSurface GetSurface(string[] lines, int firstLineNumber)
@@ -807,6 +837,12 @@ namespace FileInOut.Input
             }
 
             return new ParabolicHexaElement(id, nodes);
+        }
+
+        static private void AddError(string error)
+        {
+            Errors.Add(error);
+            WriteDataToOutputStatic(error);
         }
 
 

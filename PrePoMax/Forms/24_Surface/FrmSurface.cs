@@ -100,12 +100,15 @@ namespace PrePoMax.Forms
                 // Replace
                 if (_propertyItemChanged || !Surface.Valid)
                 {
-                    // replace the ids by the previous selection
-                    Selection selection = (Selection)Surface.CreationData;
-                    if (selection.Nodes[0] is SelectionNodeIds sn && sn.Equals(_selectionNodeIds))
+                    if (Surface.CreatedFrom == FeSurfaceCreatedFrom.Selection)
                     {
-                        selection.Nodes.RemoveAt(0);
-                        selection.Nodes.InsertRange(0, _prevSelectionNodes);
+                        // replace back the ids by the previous selection
+                        Selection selection = (Selection)Surface.CreationData;
+                        if (selection.Nodes[0] is SelectionNodeIds sn && sn.Equals(_selectionNodeIds))
+                        {
+                            selection.Nodes.RemoveAt(0);
+                            selection.Nodes.InsertRange(0, _prevSelectionNodes);
+                        }
                     }
 
                     Surface.Valid = true;
@@ -146,8 +149,13 @@ namespace PrePoMax.Forms
 
                 if (Surface.FaceIds != null)
                 {
-                    int[] ids = Surface.FaceIds;                        // change node selection history to ids to speed up
-                    _selectionNodeIds = new SelectionNodeIds(vtkControl.vtkSelectOperation.None, false, ids);
+                    // change node selection history to ids to speed up
+                    int[] ids = Surface.FaceIds;
+                    _selectionNodeIds = new SelectionNodeIds(vtkSelectOperation.None, false, ids);
+                    // if the base surface was remeshed the creation data does not exist any more - recreate it by ids
+                    //if (Surface.CreationData != null) _prevSelectionNodes = ((Selection)Surface.CreationData).Nodes;
+                    //else _prevSelectionNodes = new List<SelectionNode>() { _selectionNodeIds };
+                    //
                     _prevSelectionNodes = ((Selection)Surface.CreationData).Nodes;
                     _controller.ClearSelectionHistory();
                     _controller.AddSelectionNode(_selectionNodeIds, true);
@@ -212,18 +220,18 @@ namespace PrePoMax.Forms
                     _controller.ClearSelectionHistory();
                     if (Surface.CreatedFrom == FeSurfaceCreatedFrom.Selection)
                     {
-                        _controller.Selection.SelectItem = vtkControl.vtkSelectItem.Surface;
+                        _controller.Selection.SelectItem = vtkSelectItem.Surface;
                         // Surface.CreationData is set to null when the CreatedFrom is changed
                         if (Surface.CreationData != null) _controller.Selection.CopySelectonData(Surface.CreationData as Selection);  // deep copy to not clear
                     }
                     else if (Surface.CreatedFrom == FeSurfaceCreatedFrom.NodeSet && Surface.CreatedFromNodeSetName != null)
                     {
                         _controller.ClearSelectionHistory();
-                        _controller.Selection.SelectItem = vtkControl.vtkSelectItem.Node;
+                        _controller.Selection.SelectItem = vtkSelectItem.Node;
                         if (_controller.GetUserNodeSetNames().Contains(Surface.CreatedFromNodeSetName))
                         {
                             int[] ids = _controller.GetNodeSet(Surface.CreatedFromNodeSetName).Labels;
-                            SelectionNodeIds selectionNode = new SelectionNodeIds(vtkControl.vtkSelectOperation.None, false, ids);
+                            SelectionNodeIds selectionNode = new SelectionNodeIds(vtkSelectOperation.None, false, ids);
                             _controller.AddSelectionNode(selectionNode, true);
                         }
                     }

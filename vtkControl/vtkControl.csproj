@@ -88,15 +88,11 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Enums\Selection\vtkSelectItem.cs" />
-    <Compile Include="Enums\Selection\vtkSelectOperation.cs" />
     <Compile Include="Enums\vtkAttributeType.cs" />
     <Compile Include="Enums\vtkColorSpectrum.cs" />
     <Compile Include="Enums\vtkColorSpectrumMinMaxType.cs" />
     <Compile Include="Enums\vtkFieldAssociations.cs" />
-    <Compile Include="Enums\Selection\vtkSelectBy.cs" />
     <Compile Include="Enums\vtkSelectionContent.cs" />
-    <Compile Include="Enums\Selection\vtkSelectionMode.cs" />
     <Compile Include="Enums\vtkSelectionField.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Globals.cs" />
@@ -148,7 +144,9 @@
       <Name>CaeGlobals</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Enums\Selection\" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

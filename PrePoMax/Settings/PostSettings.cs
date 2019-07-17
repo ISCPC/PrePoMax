@@ -115,7 +115,7 @@ namespace PrePoMax
             _chartNumberFormat = PrePoMax.ChartNumberFormat.Scientific;
             _numberOfSignificantDigits = 4;
             _drawUndeformedModel = true;
-            _undeformedModelColor = System.Drawing.Color.FromArgb(128, System.Drawing.Color.White);
+            _undeformedModelColor = System.Drawing.Color.FromArgb(128, 128, 128, 128);
             _dsfType = PrePoMax.DeformationScaleFactorType.Automatic;
 
             _colorSpectrum = new vtkControl.vtkMaxColorSpectrum();

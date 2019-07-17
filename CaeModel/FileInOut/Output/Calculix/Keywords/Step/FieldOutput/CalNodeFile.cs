@@ -33,7 +33,9 @@ namespace FileInOut.Output.Calculix
         // Methods                                                                                                                  
         public override string GetKeywordString()
         {
-            return string.Format("*Node file{0}", Environment.NewLine);
+            string frequency = _nodalFieldOutput.Frequency > 1 ? ", Frequency=" + _nodalFieldOutput.Frequency : "";
+
+            return string.Format("*Node file{0}{1}", frequency, Environment.NewLine);
         }
 
         public override string GetDataString()

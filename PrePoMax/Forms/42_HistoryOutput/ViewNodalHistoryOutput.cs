@@ -33,18 +33,19 @@ namespace PrePoMax
 
         // Properties                                                                                                               
         public override string Name { get { return _historyOutput.Name; } set { _historyOutput.Name = value; } }
+        public override int Frequency { get { return _historyOutput.Frequency; } set { _historyOutput.Frequency = value; } }
 
-        [OrderedDisplayName(2, 10, "Node set")]
+        [OrderedDisplayName(3, 10, "Node set")]
         [CategoryAttribute("Data")]
         [DescriptionAttribute("Select the node set which will be used for the history output definition.")]
         public string NodeSetName { get { return _historyOutput.RegionName; } set { _historyOutput.RegionName = value; } }
 
-        [OrderedDisplayName(3, 10, "Surface")]
+        [OrderedDisplayName(4, 10, "Surface")]
         [CategoryAttribute("Data")]
         [DescriptionAttribute("Select the surface which will be used for the history output definition.")]
         public string SurfaceName { get { return _historyOutput.RegionName; } set { _historyOutput.RegionName = value; } }
 
-        [OrderedDisplayName(4, 10, "Variables to output")]
+        [OrderedDisplayName(5, 10, "Variables to output")]
         [CategoryAttribute("Data")]
         [DescriptionAttribute("Nodal history variables")]
         public ViewNodalHistoryVariable Variables 
@@ -59,7 +60,7 @@ namespace PrePoMax
             } 
         }
 
-        [OrderedDisplayName(5, 10, "Totals")]
+        [OrderedDisplayName(6, 10, "Totals")]
         [CategoryAttribute("Data")]
         [DescriptionAttribute("The parameter totals only applies to external forces.")]
         public CaeModel.TotalsTypeEnum TotalsType { get { return _historyOutput.TotalsType; } set { _historyOutput.TotalsType = value; } }

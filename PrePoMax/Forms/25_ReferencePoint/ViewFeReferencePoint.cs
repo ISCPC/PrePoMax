@@ -16,7 +16,7 @@ namespace PrePoMax.Forms
         // Variables                                                                                                                
         private FeReferencePoint _referencePoint;
         private DynamicCustomTypeDescriptor _dctd = null;
-
+        private ItemSetData _rpCoordinates;
 
         // Properties                                                                                                               
         [CategoryAttribute("Data")]
@@ -53,21 +53,28 @@ namespace PrePoMax.Forms
         }
 
         [CategoryAttribute("Coordinates")]
+        [DisplayName("Select the point")]
+        [DescriptionAttribute("Select the point for the location of the reference point.")]
+        [EditorAttribute(typeof(SinglePointDataEditor), typeof(System.Drawing.Design.UITypeEditor))]
+        [Id(4, 2)]
+        public ItemSetData RpCoordinates { get { return _rpCoordinates; } set { if (value != _rpCoordinates) _rpCoordinates = value; } }
+
+        [CategoryAttribute("Coordinates")]
         [DisplayName("X")]
         [DescriptionAttribute("X coordinate of the reference point.")]
-        [Id(4, 2)]
+        [Id(5, 2)]
         public double X { get { return _referencePoint.X; } set { _referencePoint.X = value; } }
         
         [CategoryAttribute("Coordinates")]
         [DisplayName("Y")]
         [DescriptionAttribute("Y coordinate of the reference point.")]
-        [Id(5, 2)]
+        [Id(6, 2)]
         public double Y { get { return _referencePoint.Y; } set { _referencePoint.Y = value; } }
         
         [CategoryAttribute("Coordinates")]
         [DisplayName("Z")]
         [DescriptionAttribute("Z coordinate of the reference point.")]
-        [Id(6, 2)]
+        [Id(7, 2)]
         public double Z { get { return _referencePoint.Z; } set { _referencePoint.Z = value; } }
 
 
@@ -76,6 +83,10 @@ namespace PrePoMax.Forms
         {
             _referencePoint = referencePoint;
             _dctd = ProviderInstaller.Install(this);
+
+            _rpCoordinates = new ItemSetData(); // needed to display ItemSetData.ToString()
+            _rpCoordinates.ToStringType = ItemSetDataToStringType.SelectSinglePoint;
+
             SetPropertiesVisibility();
         }
 
@@ -114,17 +125,19 @@ namespace PrePoMax.Forms
         {
             if (_referencePoint.CreatedFrom == FeReferencePointCreatedFrom.Coordinates)
             {
+                _dctd.GetProperty("NodeSetName").SetIsBrowsable(false);
+                _dctd.GetProperty("RpCoordinates").SetIsBrowsable(true);
                 _dctd.GetProperty("X").SetIsReadOnly(false);
                 _dctd.GetProperty("Y").SetIsReadOnly(false);
                 _dctd.GetProperty("Z").SetIsReadOnly(false);
-                _dctd.GetProperty("NodeSetName").SetIsBrowsable(false);
             }
             else
             {
+                _dctd.GetProperty("NodeSetName").SetIsBrowsable(true);
+                _dctd.GetProperty("RpCoordinates").SetIsBrowsable(false);
                 _dctd.GetProperty("X").SetIsReadOnly(true);
                 _dctd.GetProperty("Y").SetIsReadOnly(true);
                 _dctd.GetProperty("Z").SetIsReadOnly(true);
-                _dctd.GetProperty("NodeSetName").SetIsBrowsable(true);
 
                 if (_referencePoint.NodeSetName == null && _dctd.GetProperty("NodeSetName").StatandardValues.Count > 0)
                 {

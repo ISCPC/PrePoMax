@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using vtkControl;
 
-namespace PrePoMax
+namespace CaeGlobals
 {
     [Serializable]
     public class SelectionNodeIds : SelectionNode
@@ -13,11 +12,13 @@ namespace PrePoMax
         // Variables                                                                                                                
         private bool _selectAll;
         private int[] _itemIds;
+        private bool _geometryIds;
 
 
         // Properties                                                                                                               
         public bool SelectAll { get { return _selectAll; } set { _selectAll = value; } }
         public int[] ItemIds { get { return _itemIds; } set { _itemIds = value; } }
+        public bool GeometryIds { get { return _geometryIds; } set { _geometryIds = value; } }
 
 
         // Constructors                                                                                                             
@@ -27,6 +28,7 @@ namespace PrePoMax
             _selectAll = selectAll;
             if (itemIds != null) _itemIds = itemIds.ToArray(); // copy
             else _itemIds = null;
+            _geometryIds = false;
         }
 
 

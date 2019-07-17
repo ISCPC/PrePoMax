@@ -284,6 +284,7 @@ namespace CaeResults
             HistoryResultComponent component;
             HistoryResultEntries entries;
             int offset;
+            string valueId;
             string id;
             double time;
             double[] values;
@@ -315,18 +316,18 @@ namespace CaeResults
                         if (dataSet.ComponentNames[1] == "Int.Pnt.")
                         {
                             // the second column in In.Pnt. column
-                            id = values[0].ToString() + "_" + values[1].ToString();
+                            valueId = values[0].ToString() + "_" + values[1].ToString();
                             offset = 2;
                         }
                         else
                         {
-                            id = values[0].ToString();
+                            valueId = values[0].ToString();
                             offset = 1;
                         }
                     }
-                    else
+                    else // there is no id
                     {
-                        id = dataSet.ComponentNames[0];
+                        valueId = null;
                         offset = 0;
                     }
                     
@@ -341,7 +342,12 @@ namespace CaeResults
                             component = new HistoryResultComponent(dataSet.ComponentNames[j + offset]);
                             field.Components.Add(component.Name, component);
                         }
-                        // get or create historyValues as item
+                        
+                        // for the case of total forces
+                        if (valueId == null) id = component.Name;
+                        else id = valueId;
+
+                        // get or create historyValues as component entries
                         if (!component.Entries.TryGetValue(id, out entries))
                         {
                             entries = new HistoryResultEntries(id);

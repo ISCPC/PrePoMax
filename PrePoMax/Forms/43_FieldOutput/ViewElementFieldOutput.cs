@@ -28,8 +28,11 @@ namespace PrePoMax
         [StandardValue("ENER", Description = "Energy density.")]
         ENER = 8,
 
-        [StandardValue("ERR", Description = "Extrapolation error estimator for stress calculations.")]
-        ERR = 16
+        [StandardValue("ERR", Description = "Extrapolation error estimator for stress calculations. ZZS and ERR are mutually exclusive.")]
+        ERR = 16,
+
+        [StandardValue("ZZS", Description = "Zienkiewicz-Zhu improved stress. ZZS and ERR are mutually exclusive.")]
+        ZZS = 32
     }
 
     [Serializable]
@@ -41,8 +44,9 @@ namespace PrePoMax
 
         // Properties                                                                                                               
         public override string Name { get { return _fieldOutput.Name; } set { _fieldOutput.Name = value; } }
+        public override int Frequency { get { return _fieldOutput.Frequency; } set { _fieldOutput.Frequency = value; } }
 
-        [OrderedDisplayName(1, 10, "Variables to output")]
+        [OrderedDisplayName(2, 10, "Variables to output")]
         [CategoryAttribute("Data")]
         [DescriptionAttribute("Element field variables")]
         public ViewElementFieldVariable Variables

@@ -37,8 +37,12 @@ namespace PrePoMax.Commands
 
         public void ExecuteWithDialogs(Controller receiver)
         {
-            _meshingParameters = receiver.GetMeshingParameters(_partName);
-            if (_meshingParameters == null) _meshingParameters = receiver.GetDefaultMeshingParameters(_partName);
+            // first set previously used meshing parameters
+            receiver.SetMeshingParameters(_partName, _meshingParameters.DeepClone());
+            // get new meshing parameters
+            MeshingParameters meshingParameters = receiver.GetMeshingParameters(_partName);
+            // if new parameters were defined use them, else use old mesh parameters
+            if (meshingParameters != null) _meshingParameters = meshingParameters;
             Execute(receiver);
         }
 

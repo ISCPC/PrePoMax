@@ -33,7 +33,9 @@ namespace FileInOut.Output.Calculix
         // Methods                                                                                                                  
         public override string GetKeywordString()
         {
-            return string.Format("*El file{0}", Environment.NewLine);
+            string frequency = _elementFieldOutput.Frequency > 1 ? ", Frequency=" + _elementFieldOutput.Frequency : "";
+
+            return string.Format("*El file{0}{1}", frequency, Environment.NewLine);
         }
 
         public override string GetDataString()

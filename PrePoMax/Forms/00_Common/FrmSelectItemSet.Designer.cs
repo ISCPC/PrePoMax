@@ -49,6 +49,7 @@
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.btnUndoSelection = new System.Windows.Forms.Button();
             this.btnOK = new System.Windows.Forms.Button();
+            this.rbGeometry = new System.Windows.Forms.RadioButton();
             this.groupBox5.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.SuspendLayout();
@@ -79,6 +80,7 @@
             // 
             this.groupBox5.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
+            this.groupBox5.Controls.Add(this.rbGeometry);
             this.groupBox5.Controls.Add(this.rbEdge);
             this.groupBox5.Controls.Add(this.rbSurface);
             this.groupBox5.Controls.Add(this.tbEdgeAngle);
@@ -226,7 +228,6 @@
             this.rbNode.Name = "rbNode";
             this.rbNode.Size = new System.Drawing.Size(54, 19);
             this.rbNode.TabIndex = 1;
-            this.rbNode.TabStop = true;
             this.rbNode.Text = "Node";
             this.rbNode.UseVisualStyleBackColor = true;
             this.rbNode.CheckedChanged += new System.EventHandler(this.rbSelectBy_CheckedChanged);
@@ -299,6 +300,17 @@
             this.btnOK.UseVisualStyleBackColor = true;
             this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
             // 
+            // rbGeometry
+            // 
+            this.rbGeometry.AutoSize = true;
+            this.rbGeometry.Location = new System.Drawing.Point(98, 22);
+            this.rbGeometry.Name = "rbGeometry";
+            this.rbGeometry.Size = new System.Drawing.Size(77, 19);
+            this.rbGeometry.TabIndex = 13;
+            this.rbGeometry.Text = "Geometry";
+            this.rbGeometry.UseVisualStyleBackColor = true;
+            this.rbGeometry.CheckedChanged += new System.EventHandler(this.rbSelectBy_CheckedChanged);
+            // 
             // FrmSelectItemSet
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -348,5 +360,6 @@
         private System.Windows.Forms.RadioButton rbEdgeAngle;
         private System.Windows.Forms.RadioButton rbSurface;
         private System.Windows.Forms.RadioButton rbEdge;
+        private System.Windows.Forms.RadioButton rbGeometry;
     }
 }

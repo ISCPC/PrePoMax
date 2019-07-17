@@ -29,7 +29,7 @@ namespace PrePoMax
         // Callbacks                                                                                                                
         //public Func<int[]> GetSelectionIds;
         //public Action SetSelectionOff;
-        //public Action<vtkControl.vtkSelectBy> SetSelectBy;
+        //public Action<vtkSelectBy> SetSelectBy;
         //public Action<double> SetSelectAngle;
         //public Action<bool> RemoveLastSelectionNode;
 
@@ -84,23 +84,24 @@ namespace PrePoMax
             btnAddId.Enabled = rbId.Checked;
             btnSubtractId.Enabled = rbId.Checked;
 
-            vtkControl.vtkSelectBy selectBy;
-            if (rbNode.Checked) selectBy = vtkControl.vtkSelectBy.Node;
-            else if (rbElement.Checked) selectBy = vtkControl.vtkSelectBy.Element;
-            else if (rbEdge.Checked) selectBy = vtkControl.vtkSelectBy.Edge;
-            else if (rbSurface.Checked) selectBy = vtkControl.vtkSelectBy.Surface;
-            else if (rbPart.Checked) selectBy = vtkControl.vtkSelectBy.Part;
+            vtkSelectBy selectBy;
+            if (rbNode.Checked) selectBy = vtkSelectBy.Node;
+            else if (rbElement.Checked) selectBy = vtkSelectBy.Element;
+            else if (rbEdge.Checked) selectBy = vtkSelectBy.Edge;
+            else if (rbSurface.Checked) selectBy = vtkSelectBy.Surface;
+            else if (rbPart.Checked) selectBy = vtkSelectBy.Part;
             else if (rbEdgeAngle.Checked)
             {
-                selectBy = vtkControl.vtkSelectBy.EdgeAngle;
+                selectBy = vtkSelectBy.EdgeAngle;
                 tbEdgeAngle_TextChanged(null, null);
             }
             else if (rbSurfaceAngle.Checked)
             {
-                selectBy = vtkControl.vtkSelectBy.SurfaceAngle;
+                selectBy = vtkSelectBy.SurfaceAngle;
                 tbSurfaceAngle_TextChanged(null, null);
             }
-            else if (rbId.Checked) selectBy = vtkControl.vtkSelectBy.Id;
+            else if (rbId.Checked) selectBy = vtkSelectBy.Id;
+            else if (rbGeometry.Checked) selectBy = vtkSelectBy.Geometry;
             else return; // do not select
 
             _controller.SetSelectBy(selectBy);
@@ -119,7 +120,7 @@ namespace PrePoMax
         }
         private void btnSelectAll_Click(object sender, EventArgs e)
         {
-            _controller.AddSelectionNode(new SelectionNodeIds(vtkControl.vtkSelectOperation.None, true), true);
+            _controller.AddSelectionNode(new SelectionNodeIds(vtkSelectOperation.None, true), true);
         }
         private void btnInvertSelection_Click(object sender, EventArgs e)
         {
@@ -140,7 +141,7 @@ namespace PrePoMax
                 int id;
                 if (int.TryParse(tbId.Text, out id))
                 {
-                    SelectionNodeIds selectionNodeIds = new SelectionNodeIds(vtkControl.vtkSelectOperation.Add, false, new int[] { id });
+                    SelectionNodeIds selectionNodeIds = new SelectionNodeIds(vtkSelectOperation.Add, false, new int[] { id });
                     _controller.AddSelectionNode(selectionNodeIds, true);
                 }
                 else
@@ -160,7 +161,7 @@ namespace PrePoMax
             {
                 if (int.TryParse(tbId.Text, out int id))
                 {
-                    SelectionNodeIds selectionNodeIds = new SelectionNodeIds(vtkControl.vtkSelectOperation.Subtract, false, new int[] { id });
+                    SelectionNodeIds selectionNodeIds = new SelectionNodeIds(vtkSelectOperation.Subtract, false, new int[] { id });
                     _controller.AddSelectionNode(selectionNodeIds, true);
                 }
                 else

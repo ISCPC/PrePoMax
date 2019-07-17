@@ -174,6 +174,8 @@ namespace CaeMesh
             return true;
         }
 
+       
+
         public virtual BasePart DeepCopy()
         {
             return new BasePart(this);
@@ -193,15 +195,18 @@ namespace CaeMesh
             Name = properties.Name;
             _color = properties.Color;
         }
-        public virtual void RenumberElements(Dictionary<int, int> newIds)
+        public virtual void RenumberVisualizationNodes(Dictionary<int, int> newIds)
         {
-            Visualization.RenumberElements(newIds);
+            _visualization.RenumberNodes(newIds);
         }
-        public virtual void RenumberNodes(Dictionary<int, int> newIds)
+        public virtual void RenumberVisualizationElements(Dictionary<int, int> newIds)
         {
-            Visualization.RenumberNodes(newIds);
+            _visualization.RenumberElements(newIds);
         }
-
+        public virtual void RenumberVisualizationSurfaces(int[] orderedSurfaceIds)
+        {
+            _visualization.RenumberSurfaces(orderedSurfaceIds);
+        }
         public bool IsEqual(BasePart part)
         {
             if (_nodeLabels.Length != part.NodeLabels.Length) return false;

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace vtkControl
+namespace CaeGlobals
 {
     public enum vtkSelectBy
     {
@@ -17,6 +17,8 @@ namespace vtkControl
         EdgeAngle,
         SurfaceAngle,
         Part,
+
+        Geometry,
 
         QueryNode,
         QueryElement,

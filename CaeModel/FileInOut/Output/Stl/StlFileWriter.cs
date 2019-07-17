@@ -27,7 +27,7 @@ namespace FileInOut.Output
                 if (element is LinearTriangleElement)
                 {
                     Vertex[] vertices = new Vertex[3];
-                    nodeIds = element.NodeIDs;
+                    nodeIds = element.NodeIds;
                     for (int i = 0; i < nodeIds.Length; i++)
                     {
                         coor = mesh.Nodes[nodeIds[i]].Coor;

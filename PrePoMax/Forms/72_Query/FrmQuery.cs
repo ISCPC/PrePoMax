@@ -47,52 +47,52 @@ namespace PrePoMax.Forms
                 switch (lvQueries.SelectedItems[0].Text)
                 {
                     case ("Bounding box size"):
-                        _controller.SelectBy = vtkControl.vtkSelectBy.Off;
-                        _controller.Selection.SelectItem = vtkControl.vtkSelectItem.None;
+                        _controller.SelectBy = vtkSelectBy.Off;
+                        _controller.Selection.SelectItem = vtkSelectItem.None;
                         OutputBoundingBox();
                         _controller.ClearSelectionHistory();
                         _numNodesToSelect = -1;
                         break;
                     case ("Assembly"):
-                        _controller.SelectBy = vtkControl.vtkSelectBy.Off;
-                        _controller.Selection.SelectItem = vtkControl.vtkSelectItem.None;
+                        _controller.SelectBy = vtkSelectBy.Off;
+                        _controller.Selection.SelectItem = vtkSelectItem.None;
                         OutputAssemblyData();
                         _controller.ClearSelectionHistory();
                         _numNodesToSelect = -1;
                         break;
                     case ("Part"):
-                        _controller.SelectBy = vtkControl.vtkSelectBy.QueryPart;
-                        _controller.Selection.SelectItem = vtkControl.vtkSelectItem.Part;
+                        _controller.SelectBy = vtkSelectBy.QueryPart;
+                        _controller.Selection.SelectItem = vtkSelectItem.Part;
                         _controller.ClearSelectionHistory();
                         _numNodesToSelect = -1;
                         break;
                     case ("Point/Node"):
-                        _controller.SelectBy = vtkControl.vtkSelectBy.QueryNode;
-                        _controller.Selection.SelectItem = vtkControl.vtkSelectItem.Node;
+                        _controller.SelectBy = vtkSelectBy.QueryNode;
+                        _controller.Selection.SelectItem = vtkSelectItem.Node;
                         _controller.ClearSelectionHistory();
                         _numNodesToSelect = 1;
                         break;
                     case ("Element"):
-                        _controller.SelectBy = vtkControl.vtkSelectBy.QueryElement;
-                        _controller.Selection.SelectItem = vtkControl.vtkSelectItem.Element;
+                        _controller.SelectBy = vtkSelectBy.QueryElement;
+                        _controller.Selection.SelectItem = vtkSelectItem.Element;
                         _controller.ClearSelectionHistory();
                         _numNodesToSelect = -1;
                         break;
                     case ("Distance"):
-                        _controller.SelectBy = vtkControl.vtkSelectBy.QueryNode;
-                        _controller.Selection.SelectItem = vtkControl.vtkSelectItem.Node;
+                        _controller.SelectBy = vtkSelectBy.QueryNode;
+                        _controller.Selection.SelectItem = vtkSelectItem.Node;
                         _controller.ClearSelectionHistory();
                         _numNodesToSelect = 2;
                         break;
                     case ("Angle"):
-                        _controller.SelectBy = vtkControl.vtkSelectBy.QueryNode;
-                        _controller.Selection.SelectItem = vtkControl.vtkSelectItem.Node;
+                        _controller.SelectBy = vtkSelectBy.QueryNode;
+                        _controller.Selection.SelectItem = vtkSelectItem.Node;
                         _controller.ClearSelectionHistory();
                         _numNodesToSelect = 3;
                         break;
                     case ("Circle"):
-                        _controller.SelectBy = vtkControl.vtkSelectBy.QueryNode;
-                        _controller.Selection.SelectItem = vtkControl.vtkSelectItem.Node;
+                        _controller.SelectBy = vtkSelectBy.QueryNode;
+                        _controller.Selection.SelectItem = vtkSelectItem.Node;
                         _controller.ClearSelectionHistory();
                         _numNodesToSelect = 3;
                         break;
@@ -120,7 +120,7 @@ namespace PrePoMax.Forms
             // the form was hidden 
             if (!this.Visible)
             {
-                _controller.SelectBy = vtkControl.vtkSelectBy.Off;
+                _controller.SelectBy = vtkSelectBy.Off;
             }                
         }
 
@@ -153,7 +153,7 @@ namespace PrePoMax.Forms
         private void OutputAssemblyData()
         {
             CaeMesh.FeMesh mesh = _controller.DisplayedMesh;
-
+            if (mesh == null) return;
             double[] bb = _controller.GetBoundingBox();
             double[] size = new double[] { bb[1] - bb[0], bb[3] - bb[2], bb[5] - bb[4] };
 
@@ -172,8 +172,8 @@ namespace PrePoMax.Forms
         {
             try
             {
-                if (_controller.SelectBy == vtkControl.vtkSelectBy.QueryPart && ids.Length == 1) OnePartPicked(ids[0]);
-                else if (_controller.SelectBy == vtkControl.vtkSelectBy.QueryElement && ids.Length == 1) OneElementPicked(ids[0]);
+                if (_controller.SelectBy == vtkSelectBy.QueryPart && ids.Length == 1) OnePartPicked(ids[0]);
+                else if (_controller.SelectBy == vtkSelectBy.QueryElement && ids.Length == 1) OneElementPicked(ids[0]);
                 else if (ids.Length == _numNodesToSelect)
                 {
                     // one node

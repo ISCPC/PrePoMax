@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CaeMesh;
-using CaeGlobals;
 using System.Windows.Forms;
+using CaeGlobals;
 
 namespace PrePoMax.Forms
 {
@@ -126,9 +126,13 @@ namespace PrePoMax.Forms
             else
             {
                 ElementSet = _controller.GetElementSet(_elementSetToEditName);  // to clone
+
                 int[] ids = ElementSet.Labels;                                  // change node selection history to ids to speed up
-                _selectionNodeIds = new SelectionNodeIds(vtkControl.vtkSelectOperation.None, false, ids);
-                _prevSelectionNodes = ((Selection)ElementSet.CreationData).Nodes;
+                _selectionNodeIds = new SelectionNodeIds(vtkSelectOperation.None, false, ids);
+                // if the base element set was remeshed the creation data does not exist any more - recreate it by ids
+                if (ElementSet.CreationData != null) _prevSelectionNodes = ((Selection)ElementSet.CreationData).Nodes;
+                else _prevSelectionNodes = new List<SelectionNode>() { _selectionNodeIds };
+                //
                 _controller.ClearSelectionHistory();
                 _controller.AddSelectionNode(_selectionNodeIds, true);
                 ElementSet.CreationData = _controller.Selection.DeepClone();

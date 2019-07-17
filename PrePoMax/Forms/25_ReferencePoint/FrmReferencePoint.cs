@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CaeMesh;
 using CaeGlobals;
 using System.Windows.Forms;
+using System.Drawing;
 
 namespace PrePoMax.Forms
 {
@@ -16,6 +17,7 @@ namespace PrePoMax.Forms
         private string _referencePointToEditName;
         private ViewFeReferencePoint _viewReferencePoint;
         private Controller _controller;
+        private double[][] _coorNodesToDraw;
 
 
         // Properties                                                                                                               
@@ -35,6 +37,9 @@ namespace PrePoMax.Forms
             _viewReferencePoint = null;
             _allExistingNames = new HashSet<string>();
             _selectedPropertyGridItemChangedEventActive = true;
+
+            _coorNodesToDraw = new double[1][];
+            _coorNodesToDraw[0] = new double[3];
         }
         private void InitializeComponent()
         {
@@ -77,6 +82,8 @@ namespace PrePoMax.Forms
                 }
             }
 
+            HighlightNodes();
+
             base.OnPropertyGridPropertyValueChanged();
         }
         protected override void OnPropertyGridSelectedGridItemChanged()
@@ -95,6 +102,8 @@ namespace PrePoMax.Forms
                 }
                 else throw new NotImplementedException();
             }
+
+            HighlightNodes();
         }
         protected override void Apply()
         {
@@ -157,9 +166,41 @@ namespace PrePoMax.Forms
         {
             return OnPrepareForm(stepName, referencePointToEditName);
         }
+        public void PickedIds(int[] ids)
+        {
+            this.Enabled = true;
+
+            _controller.SelectBy = vtkSelectBy.Off;
+            _controller.Selection.SelectItem = vtkSelectItem.None;
+            _controller.ClearSelectionHistory();
+
+            if (ids != null && ids.Length == 1)
+            {
+                FeNode node = _controller.Model.Mesh.Nodes[ids[0]];
+                _viewReferencePoint.X = node.X;
+                _viewReferencePoint.Y = node.Y;
+                _viewReferencePoint.Z = node.Z;
+
+                propertyGrid.Refresh();
+
+                HighlightNodes();
+            }
+        }
         private string GetReferencePointName()
         {
             return NamedClass.GetNewValueName(_allExistingNames.ToArray(), "RP-");
+        }
+
+        private void HighlightNodes()
+        {
+            Color color = Color.Red;
+            vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
+
+            _coorNodesToDraw[0][0] = _viewReferencePoint.X;
+            _coorNodesToDraw[0][1] = _viewReferencePoint.Y;
+            _coorNodesToDraw[0][2] = _viewReferencePoint.Z;
+
+            _controller.DrawNodes("ReferencePoint", _coorNodesToDraw, color, layer, 7);
         }
     }
 }

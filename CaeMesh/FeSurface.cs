@@ -38,7 +38,7 @@ namespace CaeMesh
         private int[] _faceIds;
         private double _area;
         private Dictionary<FeFaceName, string> _elementFaces;
-        private object _creationData;
+        private Selection _creationData;
 
 
         // Properties                                                                                                               
@@ -70,7 +70,7 @@ namespace CaeMesh
         public int[] FaceIds { get { return _faceIds; } set { _faceIds = value; } }
         public double Area { get { return _area; } set { _area = value; } }
         public Dictionary<FeFaceName, string> ElementFaces { get { return _elementFaces; } }
-        public object CreationData { get { return _creationData; } set { _creationData = value; } }
+        public Selection CreationData { get { return _creationData; } set { _creationData = value; } }
         
 
         // Constructors                                                                                                             
@@ -85,7 +85,7 @@ namespace CaeMesh
         {
             _createdFromNodeSetName = nodeSetName;
         }
-        public FeSurface(string name, int[] faceIds, object creationDataClone)
+        public FeSurface(string name, int[] faceIds, Selection creationDataClone)
             : this(name)
         {
             _faceIds = faceIds;

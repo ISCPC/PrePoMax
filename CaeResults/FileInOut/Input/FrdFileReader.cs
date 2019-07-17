@@ -326,6 +326,9 @@ namespace CaeResults
                 case "STRESS":
                     field = CreateStressField(fieldData.Name, components, values);
                     break;
+                case "ZZSTR":
+                    field = CreateStressField(fieldData.Name, components, values);
+                    break;
                 default:
                     field = new Field(fieldData.Name);
                     for (int i = 0; i < components.Count; i++)

@@ -49,7 +49,7 @@ namespace FileInOut.Output.Calculix
             {
                 sb.AppendFormat("{0}", feElement.Id);
                 count = 1;
-                foreach (int nodeId in feElement.NodeIDs)
+                foreach (int nodeId in feElement.NodeIds)
                 {
                     count++;
                     if (count == 17)        // 16 entries per line; 17th entry goes in new line

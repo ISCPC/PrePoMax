@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using vtkControl;
 
-namespace PrePoMax
+namespace CaeGlobals
 {
     [Serializable]
     public class Selection
@@ -49,6 +48,15 @@ namespace PrePoMax
         public void Clear()
         {
             _nodes.Clear();
+        }
+
+        public bool IsGeometryBased()
+        {
+            foreach (var node in _nodes)
+            {
+                if (!(node is SelectionNodeIds sni && sni.GeometryIds)) return false;
+            }
+            return true;
         }
 
        

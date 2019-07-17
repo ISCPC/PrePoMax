@@ -78,6 +78,10 @@
     <Compile Include="Elements\FeElementType.cs" />
     <Compile Include="FeGroup.cs" />
     <Compile Include="FeMesh.cs" />
+    <Compile Include="Geometry\GeomEdge.cs" />
+    <Compile Include="Geometry\GeomVertex.cs" />
+    <Compile Include="Geometry\GeomSurface.cs" />
+    <Compile Include="Geometry\GeometryItem.cs" />
     <Compile Include="InpElementSet.cs" />
     <Compile Include="Nodes\CompareFeNodeByX.cs" />
     <Compile Include="Nodes\CompareFeNodeCoods.cs" />

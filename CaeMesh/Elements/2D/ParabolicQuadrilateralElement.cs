@@ -21,7 +21,6 @@ namespace CaeMesh
          : base(id, nodeIds)
         {
         }
-
         public ParabolicQuadrilateralElement(int id, int partId, int[] nodeIds)
             : base(id, partId, nodeIds)
         {
@@ -32,42 +31,39 @@ namespace CaeMesh
         public override int[] GetVtkNodeIds()
         {
             // return a copy -> ToArray
-            return NodeIDs.ToArray();
+            return NodeIds.ToArray();
         }
-
         public override int GetVtkCellType()
         {
             return vtkCellTypeInt;
         }
-        
         public override FeFaceName GetFaceNameFromSortedNodeIds(int[] nodeIds)
         {
             throw new NotImplementedException();
         }
-
         public override int[] GetNodeIdsFromFaceName(FeFaceName faceName)
         {
             throw new NotImplementedException();
         }
-
         public override int[] GetVtkCellFromFaceName(FeFaceName faceName)
         {
             throw new NotImplementedException();
         }
-
         public override Dictionary<FeFaceName, double> GetFaceNamesAndAreasFromNodeSet(HashSet<int> nodeSet, Dictionary<int, FeNode> nodes)
         {
             throw new NotImplementedException();
         }
-
         public override double[] GetEquivalentForcesFromFaceName(FeFaceName faceName)
         {
             throw new NotImplementedException();
         }
-
         public override double GetArea(FeFaceName faceName, Dictionary<int, FeNode> nodes)
         {
             throw new NotImplementedException();
+        }
+        public override FeElement DeepCopy()
+        {
+            return new ParabolicQuadrilateralElement(Id, PartId, NodeIds.ToArray());
         }
     }
 }

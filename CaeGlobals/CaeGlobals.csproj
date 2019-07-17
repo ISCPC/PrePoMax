@@ -68,6 +68,7 @@
     <Compile Include="CommonClasses\DataExchange\NodesExchangeData.cs" />
     <Compile Include="CommonClasses\DataExchange\PartExchangeData.cs" />
     <Compile Include="CommonClasses\EmptyNamedClass.cs" />
+    <Compile Include="CommonClasses\Geometry.cs" />
     <Compile Include="Comparers\CompareDoubleArray.cs" />
     <Compile Include="Comparers\CompareIntArray.cs" />
     <Compile Include="DynamicTypeDescriptor\CustomComponentModel.cs" />
@@ -80,6 +81,15 @@
     </Compile>
     <Compile Include="ExceptionTools.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="Selection\Enums\vtkSelectBy.cs" />
+    <Compile Include="Selection\Enums\vtkSelectionMode.cs" />
+    <Compile Include="Selection\Enums\vtkSelectItem.cs" />
+    <Compile Include="Selection\Enums\vtkSelectOperation.cs" />
+    <Compile Include="Selection\Selection.cs" />
+    <Compile Include="Selection\SelectionNode.cs" />
+    <Compile Include="Selection\SelectionNodeIds.cs" />
+    <Compile Include="Selection\SelectionNodeInvert.cs" />
+    <Compile Include="Selection\SelectionNodeMouse.cs" />
     <Compile Include="OrderedDisplayNameAttribute.cs" />
     <Compile Include="CommonClasses\RegionType.cs" />
     <Compile Include="CommonClasses\NamedClass.cs" />
