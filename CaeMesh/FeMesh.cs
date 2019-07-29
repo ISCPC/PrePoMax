@@ -466,17 +466,19 @@ namespace CaeMesh
         }
 
         // Compare 
-        public bool IsEqual(FeMesh mesh)
+        public double IsEqual(FeMesh mesh)
         {
-            if (_nodes.Count != mesh.Nodes.Count) return false;
-            if (_elements.Count != mesh.Elements.Count) return false;
+            if (_nodes.Count != mesh.Nodes.Count) return 0;
+            if (_elements.Count != mesh.Elements.Count) return 0;
 
-            int n = Math.Min(1000, _nodes.Count);
-            n = Math.Max(_nodes.Count / 1000, n);
+            int numToCheck = 1000;
+            int n = Math.Min(numToCheck, _nodes.Count);
+            n = Math.Max(_nodes.Count / numToCheck, n);
 
             int nodeId;
             int[] keys = _nodes.Keys.ToArray();
 
+            int count = 0;
             Random rand = new Random();
             FeNode node1;
             FeNode node2;
@@ -485,13 +487,16 @@ namespace CaeMesh
                 nodeId = (int)(rand.NextDouble() * (keys.Length - 1));
                 if (_nodes.TryGetValue(keys[nodeId], out node1) && mesh.Nodes.TryGetValue(keys[nodeId], out node2))
                 {
-                    if (!node1.IsEqual(node2))
-                        return false;
+                    if (node1.IsEqual(node2))
+                        count++;
                 }
                 else
-                    return false;
+                    return 0;
             }
-            return true;
+
+            if (count != numToCheck) return (double)count / numToCheck;
+
+            return 1;
         }
 
         private void FindMaxNodeAndElementIds()
@@ -941,7 +946,7 @@ namespace CaeMesh
                     badNodeIds.AddRange(_elements[part.Visualization.CellIds[i]].NodeIds);
                 }
             }
-            part.Visualization.CellNeighboursOverEdge = cellNeighboursArray;
+            part.Visualization.CellNeighboursOverCellEdge = cellNeighboursArray;
 
             if (part is GeometryPart gp)
             {
@@ -1318,7 +1323,7 @@ namespace CaeMesh
             surfaceEdgeIds = null;
 
             int[][] visualizationCells = part.Visualization.Cells;
-            int[][] allCellNeighbours = part.Visualization.CellNeighboursOverEdge;
+            int[][] allCellNeighbours = part.Visualization.CellNeighboursOverCellEdge;
             if (visualizationCells == null) return;
 
             // spread
@@ -1414,6 +1419,50 @@ namespace CaeMesh
 
                 Array.Sort(newSurfaceIds, oldSurfaceIds);
                 entry.Value.RenumberVisualizationSurfaces(oldSurfaceIds);
+            }
+        }
+
+        public void RenumberVisualizationEdges(Dictionary<int, HashSet<int>> edgeIdNodeIds)
+        {
+            int[] edgeCellIdsByEdge;
+            VisualizationData vis;
+            HashSet<int> edgeNodeIds = new HashSet<int>();
+            int[] newEdgeIds;
+            int[] oldEdgeIds;
+            int edgeCount;
+
+            // for each part
+            foreach (var partEntry in _parts)
+            {
+                vis = partEntry.Value.Visualization;
+                if (vis.EdgeCellIdsByEdge == null) continue;    // for wire parts
+
+                edgeCount = 0;
+                newEdgeIds = new int[vis.EdgeCellIdsByEdge.Length];
+                oldEdgeIds = new int[vis.EdgeCellIdsByEdge.Length];
+
+                // for each edge
+                for (int i = 0; i < vis.EdgeCellIdsByEdge.Length; i++)
+                {
+                    edgeNodeIds.Clear();
+                    edgeCellIdsByEdge = vis.EdgeCellIdsByEdge[i];
+                    for (int j = 0; j < edgeCellIdsByEdge.Length; j++) edgeNodeIds.UnionWith(vis.EdgeCells[edgeCellIdsByEdge[j]]);
+
+                    // find the edge with the same node ids
+                    foreach (var entry in edgeIdNodeIds)
+                    {
+                        if (entry.Value.Count == edgeNodeIds.Count &&
+                            entry.Value.Except(edgeNodeIds).ToArray().Length == 0)
+                        {
+                            newEdgeIds[edgeCount] = entry.Key;
+                            oldEdgeIds[edgeCount] = edgeCount;
+                            edgeCount++;
+                        }
+                    }
+                }
+
+                Array.Sort(newEdgeIds, oldEdgeIds);
+                partEntry.Value.RenumberVisualizationEdges(oldEdgeIds);
             }
         }
 
@@ -2563,7 +2612,7 @@ namespace CaeMesh
             if (surfaceCellId == -1) return null;
 
             // spread
-            int[][] allCellNeighbours = part.Visualization.CellNeighboursOverEdge;
+            int[][] allCellNeighbours = part.Visualization.CellNeighboursOverCellEdge;
             HashSet<int> surfaceCellIds = new HashSet<int>();
             HashSet<int> notVisitedCellIds = new HashSet<int>();
             surfaceCellIds.Add(surfaceCellId);
@@ -3198,7 +3247,7 @@ namespace CaeMesh
         #endregion #################################################################################################################
 
         #region Remove entities ####################################################################################################
-        public string[] RemoveUnreferencedNodes(HashSet<int> possiblyUnrefNodeIds, bool removeEmptyNodeSets)
+        public string[] RemoveUnreferencedNodes(HashSet<int> possiblyUnrefNodeIds, bool removeEmptyNodeSets, bool removeForRemeshing)
         {
             // for each node find it's connected elements
             Dictionary<int, List<FeElement>> nodeElements = new Dictionary<int, List<FeElement>>();
@@ -3242,13 +3291,21 @@ namespace CaeMesh
             }
 
             // changed node sets
+            bool geometryBased;
             FeNodeSet nodeSet;
             foreach (string name in changedNodeSets)
             {
                 nodeSet = _nodeSets[name];
-                UpdateNodeSetCenterOfGravity(nodeSet);
-                nodeSet.CreationData = null;    // change creation data (from mouse selection) to ids
-                nodeSet.Valid = false;          // mark it as unvalid to highlight it for the user
+                geometryBased = nodeSet.CreationData != null && nodeSet.CreationData.IsGeometryBased();
+
+                // do not change the geometry based node set if remeshing is done
+                if (!(removeForRemeshing && geometryBased))
+                {
+                    UpdateNodeSetCenterOfGravity(nodeSet);
+                    nodeSet.CreationData = new Selection();
+                    nodeSet.CreationData.Add(new SelectionNodeIds(vtkSelectOperation.None, false, nodeSet.Labels));
+                    nodeSet.Valid = false;          // mark it as unvalid to highlight it for the user
+                }
             }
 
             // remove empty node sets
@@ -3259,7 +3316,7 @@ namespace CaeMesh
 
             return emptyNodeSets.ToArray();
         }
-        public string[] RemoveElementsFromElementSets(HashSet<int> removedElementIds, bool removeEmptyElementSets)
+        public string[] RemoveElementsFromElementSets(HashSet<int> removedElementIds, bool removeEmptyElementSets, bool removeForRemeshing)
         {
             List<int> newElementSetLabels = new List<int>();
             List<string> emptyElementSets = new List<string>();
@@ -3281,12 +3338,20 @@ namespace CaeMesh
             }
 
             // changed element sets
+            bool geometryBased;
             FeElementSet elementSet;
             foreach (string name in changedElementSets)
             {
                 elementSet = _elementSets[name];
-                elementSet.CreationData = null;     // change creation data (from mouse selection) to created from ids
-                elementSet.Valid = false;           // mark it as unvalid to highlight it for the user
+                geometryBased = elementSet.CreationData != null && elementSet.CreationData.IsGeometryBased();
+
+                // do not change the geometry based element set if remeshing is done
+                if (!(removeForRemeshing && geometryBased))
+                {
+                    elementSet.CreationData = new Selection();
+                    elementSet.CreationData.Add(new SelectionNodeIds(vtkSelectOperation.None, false, elementSet.Labels));
+                    elementSet.Valid = false;          // mark it as unvalid to highlight it for the user
+                }
             }
 
             // remove empty element sets
@@ -3394,10 +3459,10 @@ namespace CaeMesh
             removedParts = removedPartsHashSet.ToArray();
 
             // remove unreferenced nodes and keep empty node sets
-            RemoveUnreferencedNodes(possiblyUnrefNodeIds, false);
+            RemoveUnreferencedNodes(possiblyUnrefNodeIds, false, removeForRemeshing);
 
             // remove elements from element sets and find empty element sets but do not remove them
-            string[] changedElementSets = RemoveElementsFromElementSets(removedElementIds, false);
+            string[] changedElementSets = RemoveElementsFromElementSets(removedElementIds, false, removeForRemeshing);
 
             // find changed surface
             string[] changedSurfaces = RemoveElementsFromSurfaceFaces(removedElementIds, false, removeForRemeshing);
@@ -3498,7 +3563,7 @@ namespace CaeMesh
                 _parts.Remove(key);
             }
 
-            RemoveUnreferencedNodes(possiblyUnrefNodeIds, true);
+            RemoveUnreferencedNodes(possiblyUnrefNodeIds, true, false);
 
             ComputeBoundingBox();
         }
@@ -4141,7 +4206,7 @@ namespace CaeMesh
         }
        
         // Transform
-        public string[] TranslateParts(string[] partNames, double[] vector, bool copy)
+        public string[] TranslateParts(string[] partNames, double[] translateVector, bool copy)
         {            
             string[] translatedPartNames = partNames.ToArray();
 
@@ -4158,9 +4223,9 @@ namespace CaeMesh
             foreach (var nodeId in nodeLabels)
             {
                 node = _nodes[nodeId];
-                node.X += vector[0];
-                node.Y += vector[1];
-                node.Z += vector[2];
+                node.X += translateVector[0];
+                node.Y += translateVector[1];
+                node.Z += translateVector[2];
                 _nodes[nodeId] = node;
             }
 
@@ -4181,7 +4246,132 @@ namespace CaeMesh
             if (copy) return translatedPartNames;
             else return null;
         }
+        public string[] ScaleParts(string[] partNames, double[] scaleCenter, double[] scaleFactors, bool copy)
+        {
+            string[] scaledPartNames = partNames.ToArray();
 
+            if (copy)
+            {
+                FeMesh mesh = this.DeepCopy();
+                scaledPartNames = this.AddPartsFromMesh(mesh, scaledPartNames);
+            }
+
+            HashSet<int> nodeLabels = new HashSet<int>();
+            foreach (var partName in scaledPartNames) nodeLabels.UnionWith(_parts[partName].NodeLabels);
+
+            FeNode node;
+            foreach (var nodeId in nodeLabels)
+            {
+                node = _nodes[nodeId];
+                node.X = scaleCenter[0] + (node.X - scaleCenter[0]) * scaleFactors[0];
+                node.Y = scaleCenter[1] + (node.Y - scaleCenter[1]) * scaleFactors[1];
+                node.Z = scaleCenter[2] + (node.Z - scaleCenter[2]) * scaleFactors[2];
+                _nodes[nodeId] = node;
+            }
+
+            // update node sets
+            foreach (var entry in _nodeSets) UpdateNodeSetCenterOfGravity(entry.Value);
+
+            // update reference points
+            FeNodeSet nodeSet;
+            foreach (var entry in _referencePoints)
+            {
+                if (_nodeSets.TryGetValue(entry.Value.NodeSetName, out nodeSet))
+                    entry.Value.UpdateCoordinates(nodeSet);
+            }
+
+            // update bounding box
+            ComputeBoundingBox();
+
+            if (copy) return scaledPartNames;
+            else return null;
+        }
+        public string[] RotateParts(string[] partNames, double[] rotateCenter, double[] rotateAxis, double rotateAngle, bool copy)
+        {
+            string[] scaledPartNames = partNames.ToArray();
+
+            if (copy)
+            {
+                FeMesh mesh = this.DeepCopy();
+                scaledPartNames = this.AddPartsFromMesh(mesh, scaledPartNames);
+            }
+
+            HashSet<int> nodeLabels = new HashSet<int>();
+            foreach (var partName in scaledPartNames) nodeLabels.UnionWith(_parts[partName].NodeLabels);
+
+            FeNode node;
+            double[] x;
+            double[][] m = RotationMatrix(rotateAxis, rotateAngle);
+            foreach (var nodeId in nodeLabels)
+            {
+                node = _nodes[nodeId];
+                
+                // translate to origin
+                node.X -= rotateCenter[0];
+                node.Y -= rotateCenter[1];
+                node.Z -= rotateCenter[2];
+                // copy
+                x = node.Coor;
+                // rotate
+                node.X = m[0][0] * x[0] + m[0][1] * x[1] + m[0][2] * x[2];
+                node.Y = m[1][0] * x[0] + m[1][1] * x[1] + m[1][2] * x[2];
+                node.Z = m[2][0] * x[0] + m[2][1] * x[1] + m[2][2] * x[2];
+                // translate to rotation center
+                node.X += rotateCenter[0];
+                node.Y += rotateCenter[1];
+                node.Z += rotateCenter[2];
+                // copy data
+                _nodes[nodeId] = node;
+            }
+
+            // update node sets
+            foreach (var entry in _nodeSets) UpdateNodeSetCenterOfGravity(entry.Value);
+
+            // update reference points
+            FeNodeSet nodeSet;
+            foreach (var entry in _referencePoints)
+            {
+                if (_nodeSets.TryGetValue(entry.Value.NodeSetName, out nodeSet))
+                    entry.Value.UpdateCoordinates(nodeSet);
+            }
+
+            // update bounding box
+            ComputeBoundingBox();
+
+            if (copy) return scaledPartNames;
+            else return null;
+        }
+
+        private double[][] RotationMatrix(double[] rotateAxis, double rotateAngle)
+        {
+            //https://stackoverflow.com/questions/6721544/circular-rotation-around-an-arbitrary-axis
+            //https://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_and_angle
+
+            double[][] m = new double[3][];
+            m[0] = new double[3];
+            m[1] = new double[3];
+            m[2] = new double[3];
+
+            Vec3D u = new Vec3D(rotateAxis);
+            u.Normalize();
+
+            double cosPhi = Math.Cos(rotateAngle);
+            double sinPhi = Math.Sin(rotateAngle);
+
+            m[0][0] = cosPhi + (Math.Pow(u.X, 2) * (1 - cosPhi));
+            m[0][1] = u.X * u.Y * (1 - cosPhi) - u.Z * sinPhi;
+            m[0][2] = u.X * u.Z * (1 - cosPhi) + u.Y * sinPhi;
+
+            m[1][0] = u.Y * u.X * (1 - cosPhi) + u.Z * sinPhi;
+            m[1][1] = cosPhi + (Math.Pow(u.Y, 2) * (1 - cosPhi));
+            m[1][2] = u.Y * u.Z * (1 - cosPhi) - u.X * sinPhi;
+
+            m[2][0] = u.Z * u.X * (1 - cosPhi) - u.Y * sinPhi;
+            m[2][1] = u.Z * u.Y * (1 - cosPhi) + u.X * sinPhi;
+            m[2][2] = cosPhi + (Math.Pow(u.Z, 2) * (1 - cosPhi));
+
+            return m;
+        }
 
         // Clone
         public FeMesh DeepCopy()

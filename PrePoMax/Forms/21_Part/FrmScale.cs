@@ -10,48 +10,48 @@ using System.Drawing;
 
 namespace PrePoMax.Forms
 {
-    class FrmTranslate : UserControls.FrmProperties, IFormBase
+    class FrmScale : UserControls.FrmProperties, IFormBase
     {
         // Variables                                                                                                                
-        private TranslateParameters _translateParameters;
+        private ScaleParameters _scaleParameters;
         private Controller _controller;
         private string[] _partNames;
-        private double[][] _coorNodesToDraw;
         private ContextMenuStrip cmsPropertyGrid;
         private System.ComponentModel.IContainer components;
         private ToolStripMenuItem tsmiResetAll;
-        private double[][] _coorLinesToDraw;
+        private double[][] _coorNodesToDraw;
 
 
         // Properties                                                                                                               
         public string[] PartNames { get { return _partNames; } set { _partNames = value; } }
-        public double[] TranslateVector
+        public double[] ScaleCenter
         {
             get
             {
-                return new double[] { _translateParameters.X2 - _translateParameters.X1,
-                                      _translateParameters.Y2 - _translateParameters.Y1,
-                                      _translateParameters.Z2 - _translateParameters.Z1};
+                return new double[] { _scaleParameters.CenterX, _scaleParameters.CenterY, _scaleParameters.CenterZ };
+            }
+        }
+        public double[] ScaleFactors
+        {
+            get
+            {
+                return new double[] { _scaleParameters.FactorX, _scaleParameters.FactorY, _scaleParameters.FactorZ };
             }
         }
 
 
         // Constructors                                                                                                             
-        public FrmTranslate(Controller controller) 
+        public FrmScale(Controller controller) 
             : base(2)
         {
             InitializeComponent();
 
             _controller = controller;
-            _translateParameters = new TranslateParameters();
-            propertyGrid.SelectedObject = _translateParameters;
+            _scaleParameters = new ScaleParameters();
+            propertyGrid.SelectedObject = _scaleParameters;
 
             _coorNodesToDraw = new double[1][];
             _coorNodesToDraw[0] = new double[3];
-
-            _coorLinesToDraw = new double[2][];
-            _coorLinesToDraw[0] = new double[3];
-            _coorLinesToDraw[1] = new double[3];
 
             btnOK.Visible = false;
             btnOkAddNew.Width = btnOK.Width;
@@ -77,20 +77,20 @@ namespace PrePoMax.Forms
             this.cmsPropertyGrid.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmiResetAll});
             this.cmsPropertyGrid.Name = "cmsPropertyGrid";
-            this.cmsPropertyGrid.Size = new System.Drawing.Size(118, 26);
+            this.cmsPropertyGrid.Size = new System.Drawing.Size(181, 48);
             // 
             // tsmiResetAll
             // 
             this.tsmiResetAll.Name = "tsmiResetAll";
-            this.tsmiResetAll.Size = new System.Drawing.Size(117, 22);
+            this.tsmiResetAll.Size = new System.Drawing.Size(180, 22);
             this.tsmiResetAll.Text = "Reset all";
             this.tsmiResetAll.Click += new System.EventHandler(this.tsmiResetAll_Click);
             // 
-            // FrmTranslate
+            // FrmScale
             // 
             this.ClientSize = new System.Drawing.Size(334, 411);
-            this.Name = "FrmTranslate";
-            this.Text = "Translate Parameters";
+            this.Name = "FrmScale";
+            this.Text = "Scale Parameters";
             this.Controls.SetChildIndex(this.gbProperties, 0);
             this.Controls.SetChildIndex(this.btnCancel, 0);
             this.Controls.SetChildIndex(this.btnOK, 0);
@@ -111,12 +111,7 @@ namespace PrePoMax.Forms
         }
         protected override void Apply()
         {
-            _translateParameters = (TranslateParameters)propertyGrid.SelectedObject;
-
-            double[] translateVector = TranslateVector;
-            _controller.TranlsateModelPartsCommand(_partNames, translateVector, _translateParameters.Copy);
-
-            HighlightNodes();
+            _controller.ScaleModelPartsCommand(_partNames, ScaleCenter, ScaleFactors, _scaleParameters.Copy);
         }
 
 
@@ -124,13 +119,13 @@ namespace PrePoMax.Forms
         public bool PrepareForm(string stepName, string partToEditName)
         {
             _controller.ClearSelectionHistory();
-            _translateParameters.Clear();
+            _scaleParameters.Clear();
             
 
-            // Get start point grid item
+            // Get center point grid item
             GridItem gi = propertyGrid.EnumerateAllItems().First((item) =>
                               item.PropertyDescriptor != null &&
-                              item.PropertyDescriptor.Name == "StartPointItemSet");
+                              item.PropertyDescriptor.Name == "ScaleCenterItemSet");
 
             // Select it
             gi.Select();
@@ -150,19 +145,10 @@ namespace PrePoMax.Forms
             if (ids != null && ids.Length == 1)
             {
                 FeNode node = _controller.Model.Mesh.Nodes[ids[0]];
-                string propertyName = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
-                if (propertyName == "StartPointItemSet")
-                {
-                    _translateParameters.X1 = node.X;
-                    _translateParameters.Y1 = node.Y;
-                    _translateParameters.Z1 = node.Z;
-                }
-                else if(propertyName == "EndPointItemSet")
-                {
-                    _translateParameters.X2 = node.X;
-                    _translateParameters.Y2 = node.Y;
-                    _translateParameters.Z2 = node.Z;
-                }
+                
+                _scaleParameters.CenterX = node.X;
+                _scaleParameters.CenterY = node.Y;
+                _scaleParameters.CenterZ = node.Z;
 
                 propertyGrid.Refresh();
 
@@ -174,25 +160,17 @@ namespace PrePoMax.Forms
             Color color = Color.Red;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
 
-            _controller.ClearAllSelection();
+            _coorNodesToDraw[0][0] = _scaleParameters.CenterX;
+            _coorNodesToDraw[0][1] = _scaleParameters.CenterY;
+            _coorNodesToDraw[0][2] = _scaleParameters.CenterZ;
 
-            _coorNodesToDraw[0][0] = _translateParameters.X2;
-            _coorNodesToDraw[0][1] = _translateParameters.Y2;
-            _coorNodesToDraw[0][2] = _translateParameters.Z2;
-
-            _coorLinesToDraw[0][0] = _translateParameters.X1;
-            _coorLinesToDraw[0][1] = _translateParameters.Y1;
-            _coorLinesToDraw[0][2] = _translateParameters.Z1;
-            _coorLinesToDraw[1] = _coorNodesToDraw[0];
-
-            _controller.DrawNodes("Translate", _coorNodesToDraw, color, layer, 7);
-            _controller.HighlightConnectedLines(_coorLinesToDraw, 7);
+            _controller.DrawNodes("Scale", _coorNodesToDraw, color, layer, 7);
         }
 
         private void tsmiResetAll_Click(object sender, EventArgs e)
         {
-            _translateParameters = new TranslateParameters();
-            propertyGrid.SelectedObject = _translateParameters;
+            _scaleParameters = new ScaleParameters();
+            propertyGrid.SelectedObject = _scaleParameters;
             _controller.ClearAllSelection();
         }
     }

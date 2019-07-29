@@ -103,7 +103,7 @@ namespace PrePoMax.Forms
                     if (Surface.CreatedFrom == FeSurfaceCreatedFrom.Selection)
                     {
                         // replace back the ids by the previous selection
-                        Selection selection = (Selection)Surface.CreationData;
+                        Selection selection = Surface.CreationData;
                         if (selection.Nodes[0] is SelectionNodeIds sn && sn.Equals(_selectionNodeIds))
                         {
                             selection.Nodes.RemoveAt(0);
@@ -152,11 +152,7 @@ namespace PrePoMax.Forms
                     // change node selection history to ids to speed up
                     int[] ids = Surface.FaceIds;
                     _selectionNodeIds = new SelectionNodeIds(vtkSelectOperation.None, false, ids);
-                    // if the base surface was remeshed the creation data does not exist any more - recreate it by ids
-                    //if (Surface.CreationData != null) _prevSelectionNodes = ((Selection)Surface.CreationData).Nodes;
-                    //else _prevSelectionNodes = new List<SelectionNode>() { _selectionNodeIds };
-                    //
-                    _prevSelectionNodes = ((Selection)Surface.CreationData).Nodes;
+                    _prevSelectionNodes = Surface.CreationData.Nodes;
                     _controller.ClearSelectionHistory();
                     _controller.AddSelectionNode(_selectionNodeIds, true);
                     Surface.CreationData = _controller.Selection.DeepClone();
@@ -191,7 +187,7 @@ namespace PrePoMax.Forms
                 {
                     if (Surface.CreationData != null)
                     {
-                        _controller.Selection.CopySelectonData(Surface.CreationData as Selection);
+                        _controller.Selection.CopySelectonData(Surface.CreationData);
                         HighlightSurface();
                     }
                 }
@@ -222,7 +218,7 @@ namespace PrePoMax.Forms
                     {
                         _controller.Selection.SelectItem = vtkSelectItem.Surface;
                         // Surface.CreationData is set to null when the CreatedFrom is changed
-                        if (Surface.CreationData != null) _controller.Selection.CopySelectonData(Surface.CreationData as Selection);  // deep copy to not clear
+                        if (Surface.CreationData != null) _controller.Selection.CopySelectonData(Surface.CreationData);  // deep copy to not clear
                     }
                     else if (Surface.CreatedFrom == FeSurfaceCreatedFrom.NodeSet && Surface.CreatedFromNodeSetName != null)
                     {

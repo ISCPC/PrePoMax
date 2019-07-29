@@ -6,23 +6,21 @@ SAVE TO ANOTHER FILE AND THEN REMOVE THE OLDER FILE
 
 By Martin:
 7. 7. 2019
-0) add descriptions provided by Martin to the video tutorials and add all files from the video tutorials to the new version
-1) support of RPs in history output - be careful about the rotationla nodes which are moments and rorations
-2) support CAD based entities in the FE Model tab - divide the user interface for selection in two parts - mesh and CAD based
+0) add all files from the video tutorials to the new version
+1) support of RPs in history output - be careful about the rotational nodes where are moments and rotations
 3) support for smart naming - ANSYS "rename based on definition".
 4) MINOR - support for the same names of node sets, element sets, surfaces, reference points ...
 5) support for moment loads on surfaces
 6) support for hydrostatic load
 7) support for de-featuring based on mesh???
 8) local mesh seed size on edges
-9) support for scaling and rotating mesh parts
 10) FORUM!
 11) highlight the parts for which the meshing parameters are changed while Regenerate for remeshing
-12) highlight hidden parts if selected in the tree
 13) create node, element sets and surfaces when needed (load, support)
-14) option to disable constraints in the model tree (just like loads and bc's)
-15) activate/deactivate a step
 16) step manager is missing (move up and down, duplicate ...)
+17) shape optimization, adaptive mesh refinement
+18) automatic contact pair detection
+19) support for oppening older file versions
 
 
 By Vittorio:
@@ -143,7 +141,14 @@ Done
 
 Version 0.5.2 Master branch
 
+Highlight hidden parts if they are selected in the model tree
+Added support to activate/deactivate steps
+Added descriptions provided by Martin to the video tutorials and
+Added support to activate/deactivate constraints
+Added support for CAD based selection entities in the FE Model tab
 Added support for translating mesh parts
+Added support for scaling mesh parts
+Added support for rotating mesh parts
 Added proces ZZS stresses as normal stress tensors
 Added frequency option for the field output (every n increments)
 Bug fixes - A bug in color conturs lookup table and other bugs reported by Martin

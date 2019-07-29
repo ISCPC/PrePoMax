@@ -102,6 +102,8 @@
     <Compile Include="Command\0030_Geometry\02_CreateMesh\CCreateMesh.cs" />
     <Compile Include="Command\0030_Geometry\02_CreateMesh\CSetMeshingParameters.cs" />
     <Compile Include="Command\0040_Model\01_Node\CRenumberNodes.cs" />
+    <Compile Include="Command\0040_Model\11_Part\CRotateModelParts.cs" />
+    <Compile Include="Command\0040_Model\11_Part\CScaleModelParts.cs" />
     <Compile Include="Command\0040_Model\11_Part\CTranslateModelParts.cs" />
     <Compile Include="Command\0040_Model\11_Part\CMergeModelParts.cs" />
     <Compile Include="Command\0040_Model\11_Part\CShowModelParts.cs" />
@@ -169,9 +171,17 @@
     <Compile Include="Forms\12_AnalyzeGeometry\FrmAnalyzeGeometry.Designer.cs">
       <DependentUpon>FrmAnalyzeGeometry.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\21_Part\FrmScale.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\21_Part\FrmRotate.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Forms\21_Part\FrmTranslate.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Forms\21_Part\ScaleParameters.cs" />
+    <Compile Include="Forms\21_Part\RotateParameters.cs" />
     <Compile Include="Forms\21_Part\TranslateParameters.cs" />
     <Compile Include="Forms\31_Material\MaterialLibraryItem.cs" />
     <Compile Include="Forms\31_Material\FrmMaterialLibrary.cs">
@@ -369,6 +379,12 @@
     <Compile Include="UpdateModelType.cs" />
     <EmbeddedResource Include="Forms\12_AnalyzeGeometry\FrmAnalyzeGeometry.resx">
       <DependentUpon>FrmAnalyzeGeometry.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\21_Part\FrmScale.resx">
+      <DependentUpon>FrmScale.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\21_Part\FrmRotate.resx">
+      <DependentUpon>FrmRotate.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\21_Part\FrmTranslate.resx">
       <DependentUpon>FrmTranslate.cs</DependentUpon>

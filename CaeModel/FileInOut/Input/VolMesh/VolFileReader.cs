@@ -30,7 +30,7 @@ namespace FileInOut.Input
 
                 // Geometry: itemId, allNodeIds
                 Dictionary<int, HashSet<int>> surfaceIdNodeIds = new Dictionary<int, HashSet<int>>();
-                Dictionary<int, HashSet<int>> edges = new Dictionary<int, HashSet<int>>();
+                Dictionary<int, HashSet<int>> edgeIdNodeIds = new Dictionary<int, HashSet<int>>();
                 Dictionary<int, HashSet<int>> vertices = new Dictionary<int, HashSet<int>>();
 
                 foreach (List<string> dataSet in dataSets)
@@ -50,7 +50,7 @@ namespace FileInOut.Input
                     }
                     else if (dataSet[0] == VolKeywords.edgesegmentsgi2.ToString()) // 1D Elements
                     {
-                        AddLineElements(dataSet.ToArray(), elements, ref elementStartId, edges);
+                        AddLineElements(dataSet.ToArray(), elements, ref elementStartId, edgeIdNodeIds);
                     }
                 }
                 FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Mesh, null, null, convertToSecondOrder);
@@ -58,6 +58,7 @@ namespace FileInOut.Input
                 mesh.ConvertLineFeElementsToEdges();
 
                 mesh.RenumberVisualizationSurfaces(surfaceIdNodeIds);
+                mesh.RenumberVisualizationEdges(edgeIdNodeIds);
 
                 if (elementsToImport != ElementsToImport.All)
                 {

@@ -1794,7 +1794,9 @@ namespace UserControls
         }
         private bool CanDeactivate(TreeNode node)
         {
-            if (node.Tag is HistoryOutput) return true;
+            if (node.Tag is Constraint) return true;
+            else if (node.Tag is Step) return true;
+            else if (node.Tag is HistoryOutput) return true;
             else if (node.Tag is FieldOutput) return true;
             else if (node.Tag is BoundaryCondition) return true;
             else if (node.Tag is Load) return true;

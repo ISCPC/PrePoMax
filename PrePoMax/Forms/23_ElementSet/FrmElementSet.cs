@@ -88,7 +88,7 @@ namespace PrePoMax.Forms
                 if (_propertyItemChanged || !ElementSet.Valid)
                 {
                     // replace the ids by the previous selection
-                    Selection selection = (Selection)ElementSet.CreationData;
+                    Selection selection = ElementSet.CreationData;
                     if (selection.Nodes[0] is SelectionNodeIds sn && sn.Equals(_selectionNodeIds))
                     {
                         selection.Nodes.RemoveAt(0);
@@ -129,10 +129,7 @@ namespace PrePoMax.Forms
 
                 int[] ids = ElementSet.Labels;                                  // change node selection history to ids to speed up
                 _selectionNodeIds = new SelectionNodeIds(vtkSelectOperation.None, false, ids);
-                // if the base element set was remeshed the creation data does not exist any more - recreate it by ids
-                if (ElementSet.CreationData != null) _prevSelectionNodes = ((Selection)ElementSet.CreationData).Nodes;
-                else _prevSelectionNodes = new List<SelectionNode>() { _selectionNodeIds };
-                //
+                _prevSelectionNodes = ElementSet.CreationData.Nodes;
                 _controller.ClearSelectionHistory();
                 _controller.AddSelectionNode(_selectionNodeIds, true);
                 ElementSet.CreationData = _controller.Selection.DeepClone();
@@ -159,7 +156,7 @@ namespace PrePoMax.Forms
                 {
                     if (ElementSet.CreationData != null)
                     {
-                        _controller.Selection.CopySelectonData(ElementSet.CreationData as Selection);
+                        _controller.Selection.CopySelectonData(ElementSet.CreationData);
                         _controller.HighlightSelection();
                     }
                 }

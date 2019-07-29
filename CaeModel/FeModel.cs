@@ -242,6 +242,28 @@ namespace CaeModel
             }
         }
 
+
+        public int CheckSectionAssignments()
+        {
+            HashSet<int> elementIds = new HashSet<int>();
+            foreach (var entry in _sections)
+            {
+                if (entry.Value.RegionType == RegionTypeEnum.PartName)
+                {
+                    elementIds.UnionWith(_mesh.Parts[entry.Value.RegionName].Labels);
+                }
+                else if (entry.Value.RegionType == RegionTypeEnum.ElementSetName)
+                {
+                    elementIds.UnionWith(_mesh.ElementSets[entry.Value.RegionName].Labels);
+                }
+                else throw new NotSupportedException();
+            }
+
+            var notSpecifiedIds = _mesh.Elements.Keys.Except(elementIds);
+
+            return notSpecifiedIds.Count();
+        }
+
         public void RemoveLostUserKeywords(Action<int> SetNumberOfUserKeywords)
         {
             FileInOut.Output.CalculixFileWriter.RemoveLostUserKeywords(this);

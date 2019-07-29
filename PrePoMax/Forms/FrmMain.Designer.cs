@@ -99,6 +99,9 @@
             this.tsmiRenumberAllNodes = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiPart = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEditPart = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiTransformPart = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiTranslatePart = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiScalePart = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiMergePart = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerPart2 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiHidePart = new System.Windows.Forms.ToolStripMenuItem();
@@ -259,8 +262,7 @@
             this.toolStripViewSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.tslSymbols = new System.Windows.Forms.ToolStripLabel();
             this.tscbSymbolsForStep = new System.Windows.Forms.ToolStripComboBox();
-            this.tsmiTransformPart = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiTranslatePart = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiRotatePart = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStripMain.SuspendLayout();
             this.statusStripMain.SuspendLayout();
             this.tsResults.SuspendLayout();
@@ -861,6 +863,30 @@
             this.tsmiEditPart.Size = new System.Drawing.Size(180, 22);
             this.tsmiEditPart.Text = "Edit";
             this.tsmiEditPart.Click += new System.EventHandler(this.tsmiEditPart_Click);
+            // 
+            // tsmiTransformPart
+            // 
+            this.tsmiTransformPart.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsmiTranslatePart,
+            this.tsmiScalePart,
+            this.tsmiRotatePart});
+            this.tsmiTransformPart.Name = "tsmiTransformPart";
+            this.tsmiTransformPart.Size = new System.Drawing.Size(180, 22);
+            this.tsmiTransformPart.Text = "Transform";
+            // 
+            // tsmiTranslatePart
+            // 
+            this.tsmiTranslatePart.Name = "tsmiTranslatePart";
+            this.tsmiTranslatePart.Size = new System.Drawing.Size(180, 22);
+            this.tsmiTranslatePart.Text = "Translate";
+            this.tsmiTranslatePart.Click += new System.EventHandler(this.tsmiTranslatePart_Click);
+            // 
+            // tsmiScalePart
+            // 
+            this.tsmiScalePart.Name = "tsmiScalePart";
+            this.tsmiScalePart.Size = new System.Drawing.Size(180, 22);
+            this.tsmiScalePart.Text = "Scale";
+            this.tsmiScalePart.Click += new System.EventHandler(this.tsmiScalePart_Click);
             // 
             // tsmiMergePart
             // 
@@ -2232,20 +2258,12 @@
             this.tscbSymbolsForStep.Size = new System.Drawing.Size(121, 25);
             this.tscbSymbolsForStep.ToolTipText = "Select how symbols are displayed.";
             // 
-            // tsmiTransformPart
+            // tsmiRotatePart
             // 
-            this.tsmiTransformPart.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsmiTranslatePart});
-            this.tsmiTransformPart.Name = "tsmiTransformPart";
-            this.tsmiTransformPart.Size = new System.Drawing.Size(180, 22);
-            this.tsmiTransformPart.Text = "Transform";
-            // 
-            // tsmiTranslatePart
-            // 
-            this.tsmiTranslatePart.Name = "tsmiTranslatePart";
-            this.tsmiTranslatePart.Size = new System.Drawing.Size(180, 22);
-            this.tsmiTranslatePart.Text = "Translate";
-            this.tsmiTranslatePart.Click += new System.EventHandler(this.tsmiTranslatePart_Click);
+            this.tsmiRotatePart.Name = "tsmiRotatePart";
+            this.tsmiRotatePart.Size = new System.Drawing.Size(180, 22);
+            this.tsmiRotatePart.Text = "Rotate";
+            this.tsmiRotatePart.Click += new System.EventHandler(this.tsmiRotatePart_Click);
             // 
             // FrmMain
             // 
@@ -2531,6 +2549,8 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiDeleteHistoryOutput;
         private System.Windows.Forms.ToolStripMenuItem tsmiTransformPart;
         private System.Windows.Forms.ToolStripMenuItem tsmiTranslatePart;
+        private System.Windows.Forms.ToolStripMenuItem tsmiScalePart;
+        private System.Windows.Forms.ToolStripMenuItem tsmiRotatePart;
     }
 }
 

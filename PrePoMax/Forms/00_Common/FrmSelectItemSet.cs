@@ -15,6 +15,7 @@ namespace PrePoMax
     public partial class FrmSelectItemSet : Form
     {
         // Variables                                                                                                                
+        private bool _checkBoxEventRunning;
         private ItemSetData _itemSetData;
         private Controller _controller;
 
@@ -41,6 +42,7 @@ namespace PrePoMax
         {
             InitializeComponent();
 
+            _checkBoxEventRunning = false;
             _controller = controller;
             _itemSetData = null;
         }
@@ -77,15 +79,48 @@ namespace PrePoMax
 
         private void rbSelectBy_CheckedChanged(object sender, EventArgs e)
         {
+            if (_checkBoxEventRunning) return;  // allow only one running function
+            else _checkBoxEventRunning = true;
+
+
+            // clear selection - if geometry check changed
+            if (rbGeometry.Checked || _controller.SelectBy == vtkSelectBy.Geometry)
+                _controller.ClearSelectionHistory();
+
+            // connect two group boxes of radio buttons
+            if (sender != null)
+            {
+                if (sender == rbGeometry)
+                {
+                    if (rbNode.Checked) rbNode.Checked = false;
+                    if (rbElement.Checked) rbElement.Checked = false;
+                    if (rbEdge.Checked) rbEdge.Checked = false;
+                    if (rbSurface.Checked) rbSurface.Checked = false;
+                    if (rbPart.Checked) rbPart.Checked = false;
+                    if (rbEdgeAngle.Checked) rbEdgeAngle.Checked = false;
+                    if (rbSurfaceAngle.Checked) rbSurfaceAngle.Checked = false;
+                    if (rbId.Checked) rbId.Checked = false;
+                }
+                else
+                {
+                    if (rbGeometry.Checked) rbGeometry.Checked = false;
+                }
+            }
+
+            // enable/disable Textboxes
             tbSurfaceAngle.Enabled = rbSurfaceAngle.Checked;
             tbEdgeAngle.Enabled = rbEdgeAngle.Checked;
-
             tbId.Enabled = rbId.Checked;
+            // enable/disable buttons
             btnAddId.Enabled = rbId.Checked;
             btnSubtractId.Enabled = rbId.Checked;
+            // check All and Invert buttons
+            btnSelectAll.Enabled = !rbGeometry.Checked;
+            btnInvertSelection.Enabled = !rbGeometry.Checked;
 
             vtkSelectBy selectBy;
-            if (rbNode.Checked) selectBy = vtkSelectBy.Node;
+            if (rbGeometry.Checked) selectBy = vtkSelectBy.Geometry;
+            else if (rbNode.Checked) selectBy = vtkSelectBy.Node;
             else if (rbElement.Checked) selectBy = vtkSelectBy.Element;
             else if (rbEdge.Checked) selectBy = vtkSelectBy.Edge;
             else if (rbSurface.Checked) selectBy = vtkSelectBy.Surface;
@@ -101,10 +136,11 @@ namespace PrePoMax
                 tbSurfaceAngle_TextChanged(null, null);
             }
             else if (rbId.Checked) selectBy = vtkSelectBy.Id;
-            else if (rbGeometry.Checked) selectBy = vtkSelectBy.Geometry;
             else return; // do not select
 
-            _controller.SetSelectBy(selectBy);
+            _controller.SelectBy = selectBy;
+
+            _checkBoxEventRunning = false;
         }
         private void tbSurfaceAngle_TextChanged(object sender, EventArgs e)
         {

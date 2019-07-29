@@ -20,7 +20,7 @@ namespace CaeMesh
         protected int[][] _cellIdsByFace;        // coud be hashset<> but serialization coud be bad
         protected double[] _faceAreas;
         protected int[][] _faceEdgeIds;
-        protected int[][] _cellNeighboursOverEdge;
+        protected int[][] _cellNeighboursOverCellEdge;
         protected int[][] _edgeCells;
         protected int[][] _edgeCellIdsByEdge;
         protected double[] _edgeLengths;
@@ -78,7 +78,7 @@ namespace CaeMesh
         /// CellNeighboursOverEdge
         /// [0...num. of cells][0...num. of neigh.] -> local cell id
         /// </summary>
-        public int[][] CellNeighboursOverEdge { get { return _cellNeighboursOverEdge; } set { _cellNeighboursOverEdge = value; } }
+        public int[][] CellNeighboursOverCellEdge { get { return _cellNeighboursOverCellEdge; } set { _cellNeighboursOverCellEdge = value; } }
 
         /// <summary>
         /// EdgeCells
@@ -116,7 +116,7 @@ namespace CaeMesh
             _cellIds = null;
             _cellIdsByFace = null;
             _faceAreas = null;
-            _cellNeighboursOverEdge = null;
+            _cellNeighboursOverCellEdge = null;
             _edgeCells = null;
             _edgeCellIdsByEdge = null;
             _edgeLengths = null;
@@ -150,13 +150,13 @@ namespace CaeMesh
                     _faceEdgeIds[i] = visualization.FaceEdgeIds[i].ToArray();
             }
 
-            if (visualization.CellNeighboursOverEdge != null)
+            if (visualization.CellNeighboursOverCellEdge != null)
             {
-                _cellNeighboursOverEdge = new int[visualization.CellNeighboursOverEdge.Length][];
-                for (int i = 0; i < _cellNeighboursOverEdge.Length; i++)
+                _cellNeighboursOverCellEdge = new int[visualization.CellNeighboursOverCellEdge.Length][];
+                for (int i = 0; i < _cellNeighboursOverCellEdge.Length; i++)
                 {
-                    if (visualization.CellNeighboursOverEdge[i] != null)
-                        _cellNeighboursOverEdge[i] = visualization.CellNeighboursOverEdge[i].ToArray();
+                    if (visualization.CellNeighboursOverCellEdge[i] != null)
+                        _cellNeighboursOverCellEdge[i] = visualization.CellNeighboursOverCellEdge[i].ToArray();
                 }
             }
 
@@ -222,10 +222,9 @@ namespace CaeMesh
                 }
             }
         }
-
         public void RenumberSurfaces(int[] orderedSurfaceIds)
         {
-            // Surfaces
+            // Surface cells
             int[][] newCellIdsByFace = new int[_cellIdsByFace.Length][];
             for (int i = 0; i < orderedSurfaceIds.Length; i++)
             {
@@ -248,6 +247,24 @@ namespace CaeMesh
                 newFaceEdgeIds[i] = _faceEdgeIds[orderedSurfaceIds[i]];
             }
             _faceEdgeIds = newFaceEdgeIds;
+        }
+        public void RenumberEdges(int[] orderedEdgeIds)
+        {
+            // Edge cells
+            int[][] newEdgeCellIdsByEdge = new int[_edgeCellIdsByEdge.Length][];
+            for (int i = 0; i < orderedEdgeIds.Length; i++)
+            {
+                newEdgeCellIdsByEdge[i] = _edgeCellIdsByEdge[orderedEdgeIds[i]];
+            }
+            _edgeCellIdsByEdge = newEdgeCellIdsByEdge;
+
+            // Lengths
+            double[] newFaceLengths = new double[_edgeLengths.Length];
+            for (int i = 0; i < orderedEdgeIds.Length; i++)
+            {
+                newFaceLengths[i] = _edgeLengths[orderedEdgeIds[i]];
+            }
+            _edgeLengths = newFaceLengths;
         }
     }
 }

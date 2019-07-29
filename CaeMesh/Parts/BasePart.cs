@@ -207,6 +207,10 @@ namespace CaeMesh
         {
             _visualization.RenumberSurfaces(orderedSurfaceIds);
         }
+        public virtual void RenumberVisualizationEdges(int[] orderedEdgesIds)
+        {
+            _visualization.RenumberEdges(orderedEdgesIds);
+        }
         public bool IsEqual(BasePart part)
         {
             if (_nodeLabels.Length != part.NodeLabels.Length) return false;

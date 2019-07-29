@@ -49,6 +49,8 @@ namespace PrePoMax
         private FrmAnalyzeGeometry _frmAnalyzeGeometry;
         private FrmPartProperties _frmPartProperties;
         private FrmTranslate _frmTranslate;
+        private FrmScale _frmScale;
+        private FrmRotate _frmRotate;
         private FrmNodeSet _frmNodeSet;
         private FrmElementSet _frmElementSet;
         private FrmSurface _frmSurface;
@@ -217,6 +219,12 @@ namespace PrePoMax
 
                 _frmTranslate = new FrmTranslate(_controller);
                 AddFormToAllForms(_frmTranslate);
+
+                _frmScale = new FrmScale(_controller);
+                AddFormToAllForms(_frmScale);
+
+                _frmRotate = new FrmRotate(_controller);
+                AddFormToAllForms(_frmRotate);
 
                 _frmNodeSet = new FrmNodeSet(_controller);
                 AddFormToAllForms(_frmNodeSet);
@@ -1597,6 +1605,28 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
+        private void tsmiScalePart_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Parts", _controller.GetModelParts(), ScaleParts);
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiRotatePart_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Parts", _controller.GetModelParts(), RotateParts);
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
         private void tsmiMergePart_Click(object sender, EventArgs e)
         {
             try
@@ -1656,6 +1686,24 @@ namespace PrePoMax
             _frmTranslate.PartNames = partNames;    // set all part names for translation
             
             ShowForm(_frmTranslate, "Translate parts: " + partNames.ToShortString(), null);
+        }
+        private void ScaleParts(string[] partNames)
+        {
+            SinglePointDataEditor.ParentForm = _frmScale;
+            SinglePointDataEditor.Controller = _controller;
+
+            _frmScale.PartNames = partNames;    // set all part names for scaling
+
+            ShowForm(_frmScale, "Scale parts: " + partNames.ToShortString(), null);
+        }
+        private void RotateParts(string[] partNames)
+        {
+            SinglePointDataEditor.ParentForm = _frmRotate;
+            SinglePointDataEditor.Controller = _controller;
+
+            _frmRotate.PartNames = partNames;    // set all part names for rotation
+
+            ShowForm(_frmRotate, "Rotate parts: " + partNames.ToShortString(), null);
         }
         private void MergeModelParts(string[] partNames)
         {
@@ -2952,6 +3000,8 @@ namespace PrePoMax
             int[] ids = _controller.GetSelectionIds();
 
             if (_frmTranslate.Visible) _frmTranslate.PickedIds(ids);
+            else if (_frmScale.Visible) _frmScale.PickedIds(ids);
+            else if (_frmRotate.Visible) _frmRotate.PickedIds(ids);
             else if (_frmReferencePoint.Visible) _frmReferencePoint.PickedIds(ids);
             else if (_frmQuery.Visible) _frmQuery.PickedIds(ids);
         }
@@ -4021,6 +4071,6 @@ namespace PrePoMax
 
         #endregion
 
-        
+       
     }
 }

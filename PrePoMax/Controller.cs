@@ -434,11 +434,21 @@ namespace PrePoMax
                 _form.Clear3D();
 
                 // check if the meshes are the same and rename the parts
-                if (_model.Mesh != null && _results.Mesh != null && _model.Mesh.IsEqual(_results.Mesh))
+                if (_model.Mesh != null && _results.Mesh != null)
                 {
-                    //_results.Mesh.SetPartPropertiesFromMesh(_model.Mesh);
-                    //_results.Mesh = .CopyPartsFromMesh(_model.Mesh);
-                    _results.CopyPartsFromMesh(_model.Mesh);
+                    double similarity = _model.Mesh.IsEqual(_results.Mesh);
+                    if (similarity > 0)
+                    {
+                        if (similarity < 1)
+                        {
+                            if (MessageBox.Show("Some node coordinates in the result .frd file are different from the coordinates in the model mesh." + 
+                                                Environment.NewLine + Environment.NewLine +
+                                                "Apply model mesh properties (part names, geomery...) to the result mesh?", "Warning", 
+                                                MessageBoxButtons.YesNo) == DialogResult.Yes) similarity = 1;
+                        }
+
+                        if (similarity == 1) _results.CopyPartsFromMesh(_model.Mesh);
+                    }
                 }
 
                 _currentView = ViewGeometryModelResults.Results;     // do not draw
@@ -817,8 +827,10 @@ namespace PrePoMax
             {
                 if (_model.Mesh.Parts[partName].PartId != removedPartId[0])
                     _model.Mesh.RenumberPart(partName, removedPartId[0]);
-                
+
                 // Update sets
+                UpdateNodeSetsBasedOnGeometry();
+                UpdateElementSetsBasedOnGeometry();
                 UpdateSurfacesBasedOnGeometry();
             }
 
@@ -1384,6 +1396,16 @@ namespace PrePoMax
             Commands.CTranslateModelParts comm = new Commands.CTranslateModelParts(partNames, translateVector, copy);
             _commands.AddAndExecute(comm);
         }
+        public void ScaleModelPartsCommand(string[] partNames, double[] scaleCenter, double[] scaleFactors, bool copy)
+        {
+            Commands.CScaleModelParts comm = new Commands.CScaleModelParts(partNames, scaleCenter, scaleFactors, copy);
+            _commands.AddAndExecute(comm);
+        }
+        public void RotateModelPartsCommand(string[] partNames, double[] rotateCenter, double[] rotateAxis, double rotateAngle, bool copy)
+        {
+            Commands.CRotateModelParts comm = new Commands.CRotateModelParts(partNames, rotateCenter, rotateAxis, rotateAngle, copy);
+            _commands.AddAndExecute(comm);
+        }
         public void MergeModelPartsCommand(string[] partNames)
         {
             Commands.CMergeModelParts comm = new Commands.CMergeModelParts(partNames);
@@ -1488,6 +1510,30 @@ namespace PrePoMax
             }
             Update(UpdateType.DrawMesh | UpdateType.RedrawSymbols);
         }
+        public void ScaleModelParts(string[] partNames, double[] scaleCenter, double[] scaleFactors, bool copy)
+        {
+            string[] scaledPartNames = _model.Mesh.ScaleParts(partNames, scaleCenter, scaleFactors, copy);
+            if (copy)
+            {
+                foreach (var partName in scaledPartNames)
+                {
+                    _form.AddTreeNode(ViewGeometryModelResults.Model, _model.Mesh.Parts[partName], null);
+                }
+            }
+            Update(UpdateType.DrawMesh | UpdateType.RedrawSymbols);
+        }
+        public void RotateModelParts(string[] partNames, double[] rotateCenter, double[] rotateAxis, double rotateAngle, bool copy)
+        {
+            string[] rotatedPartNames = _model.Mesh.RotateParts(partNames, rotateCenter, rotateAxis, rotateAngle, copy);
+            if (copy)
+            {
+                foreach (var partName in rotatedPartNames)
+                {
+                    _form.AddTreeNode(ViewGeometryModelResults.Model, _model.Mesh.Parts[partName], null);
+                }
+            }
+            Update(UpdateType.DrawMesh | UpdateType.RedrawSymbols);
+        }
         public void MergeModelParts(string[] partNames)
         {
             ViewGeometryModelResults view = ViewGeometryModelResults.Model;
@@ -1568,9 +1614,9 @@ namespace PrePoMax
         }
         public void AddNodeSet(FeNodeSet nodeSet)
         {
-            if (nodeSet.CreationData != null && nodeSet.CreationData is Selection)
+            if (nodeSet.CreationData != null)
             {
-                _selection = nodeSet.CreationData.DeepClone() as Selection;  // in order for the Regenerate history to work
+                _selection = nodeSet.CreationData.DeepClone();  // in order for the Regenerate history to work
                 nodeSet.Labels = GetSelectionIds();
                 _selection.Clear();
                 _model.Mesh.UpdateNodeSetCenterOfGravity(nodeSet);
@@ -1598,9 +1644,9 @@ namespace PrePoMax
         {
             _model.Mesh.NodeSets.Remove(oldNodeSetName);
 
-            if (nodeSet.CreationData != null && nodeSet.CreationData is Selection)
+            if (nodeSet.CreationData != null)
             {
-                _selection = nodeSet.CreationData.DeepClone() as Selection;  // in order for the Regenerate history to work
+                _selection = nodeSet.CreationData.DeepClone();  // in order for the Regenerate history to work
                 nodeSet.Labels = GetSelectionIds();
                 _selection.Clear();
                 _model.Mesh.UpdateNodeSetCenterOfGravity(nodeSet);
@@ -1630,8 +1676,28 @@ namespace PrePoMax
         {
             _model.Mesh.UpdateNodeSetCenterOfGravity(nodeSet);
         }
+        private void UpdateNodeSetsBasedOnGeometry()
+        {
+            // use list not to throw collection moddified exception
+            List<CaeMesh.FeNodeSet> geomNodeSets = new List<FeNodeSet>();
+            if (_model != null && _model.Mesh != null)
+            {
+                foreach (var entry in _model.Mesh.NodeSets)
+                {
+                    if (entry.Value.CreationData != null && entry.Value.CreationData.IsGeometryBased())
+                        geomNodeSets.Add(entry.Value);
+                }
+                if (geomNodeSets.Count > 0)
+                {
+                    foreach (FeNodeSet nodeSet in geomNodeSets)
+                    {
+                        nodeSet.Valid = true;
+                        ReplaceNodeSet(nodeSet.Name, nodeSet);
+                    }
+                }
+            }
+        }
 
-        
         #endregion #################################################################################################################
 
         #region Element set   ######################################################################################################
@@ -1688,9 +1754,9 @@ namespace PrePoMax
         }
         public void AddelementSet(FeElementSet elementSet)
         {
-            if (elementSet.CreationData != null && elementSet.CreationData is Selection)
+            if (elementSet.CreationData != null)
             {
-                _selection = elementSet.CreationData.DeepClone() as Selection;  // in order for the Regenerate history to work
+                _selection = elementSet.CreationData.DeepClone();  // in order for the Regenerate history to work
                 elementSet.Labels = GetSelectionIds();
                 _selection.Clear();
                 _model.Mesh.ElementSets.Add(elementSet.Name, elementSet);
@@ -1713,9 +1779,9 @@ namespace PrePoMax
         {
             _model.Mesh.ElementSets.Remove(oldElementSetName);
 
-            if (elementSet.CreationData != null && elementSet.CreationData is Selection)
+            if (elementSet.CreationData != null)
             {
-                _selection = elementSet.CreationData.DeepClone() as Selection;  // in order for the Regenerate history to work
+                _selection = elementSet.CreationData.DeepClone();  // in order for the Regenerate history to work
                 elementSet.Labels = GetSelectionIds();
                 _selection.Clear();
                 _model.Mesh.ElementSets.Add(elementSet.Name, elementSet);
@@ -1756,6 +1822,27 @@ namespace PrePoMax
 
             Update(UpdateType.Check | UpdateType.RedrawSymbols);
         }
+        private void UpdateElementSetsBasedOnGeometry()
+        {
+            // use list not to throw collection moddified exception
+            List<CaeMesh.FeElementSet> geomElementSets = new List<FeElementSet>();
+            if (_model != null && _model.Mesh != null)
+            {
+                foreach (var entry in _model.Mesh.ElementSets)
+                {
+                    if (entry.Value.CreationData != null && entry.Value.CreationData.IsGeometryBased())
+                        geomElementSets.Add(entry.Value);
+                }
+                if (geomElementSets.Count > 0)
+                {
+                    foreach (FeElementSet elementSet in geomElementSets)
+                    {
+                        elementSet.Valid = true;
+                        ReplaceElementSet(elementSet.Name, elementSet);
+                    }
+                }
+            }
+        }
 
         #endregion #################################################################################################################
 
@@ -1788,7 +1875,7 @@ namespace PrePoMax
         {
             if (surface.CreatedFrom == FeSurfaceCreatedFrom.Selection)
             {
-                _selection = surface.CreationData.DeepClone() as Selection;  // in order for the Regenerate history to work
+                _selection = surface.CreationData.DeepClone();  // in order for the Regenerate history to work
                 surface.FaceIds = GetSelectionIds();
                 _selection.Clear();
             }
@@ -1812,10 +1899,9 @@ namespace PrePoMax
         {
             RemoveSurfaceAndElementFacesFromModel(new string[] { oldSurfaceName });
 
-            newSurface.Valid = true;    // added for the update geometry based surfaces to work after remeshing
             if (newSurface.CreatedFrom == FeSurfaceCreatedFrom.Selection)
             {
-                _selection = newSurface.CreationData.DeepClone() as Selection;  // in order for the Regenerate history to work
+                _selection = newSurface.CreationData.DeepClone();  // in order for the Regenerate history to work
                 newSurface.FaceIds = GetSelectionIds();
                 _selection.Clear();
             }
@@ -1887,17 +1973,22 @@ namespace PrePoMax
         }
         private void UpdateSurfacesBasedOnGeometry()
         {
-            // use list not to throw collection moddified
+            // use list not to throw collection moddified exception
             List<CaeMesh.FeSurface> geomSurfaces = new List<FeSurface>();
             if (_model != null && _model.Mesh != null)
             {
                 foreach (var entry in _model.Mesh.Surfaces)
                 {
-                    if (entry.Value.CreationData.IsGeometryBased()) geomSurfaces.Add(entry.Value);
+                    if (entry.Value.CreationData != null && entry.Value.CreationData.IsGeometryBased())
+                        geomSurfaces.Add(entry.Value);
                 }
                 if (geomSurfaces.Count > 0)
                 {
-                    foreach (FeSurface surface in geomSurfaces) ReplaceSurface(surface.Name, surface);
+                    foreach (FeSurface surface in geomSurfaces)
+                    {
+                        surface.Valid = true;
+                        ReplaceSurface(surface.Name, surface);
+                    }
                 }
             }
         }
@@ -2659,7 +2750,11 @@ namespace PrePoMax
                 {
                     throw new CaeGlobals.CaeException(ex.Message);
                 }
-                
+
+                int numOfUnspecifiedElementIds = _model.CheckSectionAssignments();
+                if (numOfUnspecifiedElementIds != 0)
+                    throw new CaeException(numOfUnspecifiedElementIds + " finite elements have a missing section assignment.");
+
                 ExportToCalculix(inputFileName);
                 job.JobStatusChanged = JobStatusChanged;
                 job.Submit();
@@ -2862,21 +2957,29 @@ namespace PrePoMax
         public void ActivateDeactivate(NamedClass item, bool activate, string stepName)
         {
             item.Active = activate;
-            if (item is HistoryOutput)
+            if (item is Constraint co)
             {
-                ReplaceHistoryOutput(stepName, item.Name, ((HistoryOutput)item));
+                ReplaceConstraint(co.Name, co);
             }
-            else if (item is FieldOutput)
+            else if (item is Step st)
             {
-                ReplaceFieldOutput(stepName, item.Name, ((FieldOutput)item));
+                ReplaceStep(st.Name, st);
             }
-            else if (item is BoundaryCondition)
+            else if (item is HistoryOutput ho)
             {
-                ReplaceBoundaryCondition(stepName, item.Name, ((BoundaryCondition)item));
+                ReplaceHistoryOutput(stepName, ho.Name, ho);
             }
-            else if (item is Load)
+            else if (item is FieldOutput fo)
             {
-                ReplaceLoad(stepName, item.Name, ((Load)item));
+                ReplaceFieldOutput(stepName, fo.Name, fo);
+            }
+            else if (item is BoundaryCondition bc)
+            {
+                ReplaceBoundaryCondition(stepName, bc.Name, bc);
+            }
+            else if (item is Load lo)
+            {
+                ReplaceLoad(stepName, lo.Name, lo);
             }
             else throw new NotImplementedException();
         }
@@ -4820,7 +4923,8 @@ namespace PrePoMax
 
             foreach (var part in parts)
             {
-                if (part.Visible && partsToSelect.Contains(part.Name))
+                //if (part.Visible && partsToSelect.Contains(part.Name))
+                if (partsToSelect.Contains(part.Name))
                 {
                     if (_form.ContainsActor(part.Name)) _form.HighlightActor(part.Name);
                 }

@@ -12,7 +12,7 @@ using System.Drawing.Design;
 namespace PrePoMax.Forms
 {
     [Serializable]
-    public class TranslateParameters
+    public class RotateParameters
     {
         // Variables                                                                                                                      
         private DynamicCustomTypeDescriptor _dctd = null;
@@ -20,6 +20,7 @@ namespace PrePoMax.Forms
         private ItemSetData _endPointItemSetData;
         private double[] _startPoint;
         private double[] _endPoint;
+        private double _angleDeg;
         private bool _copy;
 
 
@@ -30,7 +31,8 @@ namespace PrePoMax.Forms
         [Id(1, 1)]
         public bool Copy { get { return _copy; } set { _copy = value; } }
 
-        [Category("Start point coordinates")]
+
+        [Category("Rotation axis")]
         [OrderedDisplayName(0, 10, "Select the start point")]
         [DescriptionAttribute("Select the start point.")]
         [EditorAttribute(typeof(SinglePointDataEditor), typeof(System.Drawing.Design.UITypeEditor))]
@@ -45,29 +47,29 @@ namespace PrePoMax.Forms
             }
         }
 
-        [Category("Start point coordinates")]
+        [Category("Rotation axis")]
         [OrderedDisplayName(1, 10, "X")]
         [Description("X coordinate of the start point.")]
         [Id(1, 2)]
         public double X1 { get { return _startPoint[0]; } set { _startPoint[0] = value; } }
 
-        [Category("Start point coordinates")]
+        [Category("Rotation axis")]
         [OrderedDisplayName(2, 10, "Y")]
         [Description("Y coordinate of the start point.")]
         [Id(1, 2)]
         public double Y1 { get { return _startPoint[1]; } set { _startPoint[1] = value; } }
 
-        [Category("Start point coordinates")]
+        [Category("Rotation axis")]
         [OrderedDisplayName(3, 10, "Z")]
         [Description("Z coordinate of the start point.")]
         [Id(1, 2)]
         public double Z1 { get { return _startPoint[2]; } set { _startPoint[2] = value; } }
 
-        [Category("End point coordinates")]
-        [OrderedDisplayName(0, 10, "Select the end point")]
+        [Category("Rotation axis")]
+        [OrderedDisplayName(4, 10, "Select the end point")]
         [DescriptionAttribute("Select the end point.")]
         [EditorAttribute(typeof(SinglePointDataEditor), typeof(System.Drawing.Design.UITypeEditor))]
-        [Id(1, 3)]
+        [Id(1, 2)]
         public ItemSetData EndPointItemSet
         {
             get { return _endPointItemSetData; }
@@ -78,27 +80,34 @@ namespace PrePoMax.Forms
             }
         }
 
-        [Category("End point coordinates")]
-        [OrderedDisplayName(1, 10, "X")]
+        [Category("Rotation axis")]
+        [OrderedDisplayName(5, 10, "X")]
         [Description("X coordinate of the end point.")]
-        [Id(1, 3)]
+        [Id(1, 2)]
         public double X2 { get { return _endPoint[0]; } set { _endPoint[0] = value; } }
 
-        [Category("End point coordinates")]
-        [OrderedDisplayName(2, 10, "Y")]
+        [Category("Rotation axis")]
+        [OrderedDisplayName(6, 10, "Y")]
         [Description("Y coordinate of the end point.")]
-        [Id(1, 3)]
+        [Id(1, 2)]
         public double Y2 { get { return _endPoint[1]; } set { _endPoint[1] = value; } }
 
-        [Category("End point coordinates")]
-        [OrderedDisplayName(3, 10, "Z")]
+        [Category("Rotation axis")]
+        [OrderedDisplayName(7, 10, "Z")]
         [Description("Z coordinate of the end point.")]
-        [Id(1, 3)]
+        [Id(1, 2)]
         public double Z2 { get { return _endPoint[2]; } set { _endPoint[2] = value; } }
 
 
+        [Category("Rotation angle")]
+        [OrderedDisplayName(0, 10, "Angle [°]")]
+        [Description("Rotation angle in degrees.")]
+        [Id(1, 3)]
+        public double AngleDeg { get { return _angleDeg; } set { _angleDeg = value; } }
+
+
         // Constructors                                                                                                             
-        public TranslateParameters()
+        public RotateParameters()
         {
             Clear();
 
@@ -121,6 +130,7 @@ namespace PrePoMax.Forms
             _copy = false;
             _startPoint = new double[3];
             _endPoint = new double[3];
+            _angleDeg = 0;
         }
 
         protected void RenameTrueFalseForBooleanProperty(string propertyName, string trueName, string falseName)
