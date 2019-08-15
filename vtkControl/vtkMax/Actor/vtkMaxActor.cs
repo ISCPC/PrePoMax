@@ -18,7 +18,7 @@ namespace vtkControl
         private vtkActor _modelEdges;
         private vtkCellLocator _cellLocator;          // for surface picking
         private vtkCellLocator _frustumCellLocator;   // for volume picking
-        //private vtkMaxActorAnimationData[] _animationData;        
+        private bool _visible;
         private bool _backfaceCulling;
         private System.Drawing.Color _color;
         private double _ambient;
@@ -34,6 +34,15 @@ namespace vtkControl
         public vtkActor ModelEdges { get { return _modelEdges; } set { _modelEdges = value; } }
         public vtkCellLocator CellLocator { get { return _cellLocator; } set { _cellLocator = value; } }
         public vtkCellLocator FrustumCellLocator { get { return _frustumCellLocator; } set { _frustumCellLocator = value; } }
+        public bool VtkMaxActorVisible
+        {
+            get { return _visible; }
+            set
+            {
+                _visible = value;
+                SetVisibility(_visible ? 1 : 0);    // to base vtkActor
+            }
+        }
         public bool BackfaceCulling { get { return _backfaceCulling; } set { _backfaceCulling = value; } }
         public System.Drawing.Color Color
         {
@@ -75,6 +84,7 @@ namespace vtkControl
             _modelEdges = null;
             _cellLocator = null;
             _frustumCellLocator = null;
+            _visible = true;
             _backfaceCulling = true;
             _color = System.Drawing.Color.Yellow;
             _colorContours = false;

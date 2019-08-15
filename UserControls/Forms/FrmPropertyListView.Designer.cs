@@ -63,7 +63,7 @@
             // 
             // btnOkAddNew
             // 
-            this.btnOkAddNew.Location = new System.Drawing.Point(65, 426);
+            this.btnOkAddNew.Location = new System.Drawing.Point(79, 426);
             // 
             // gbType
             // 

@@ -49,6 +49,8 @@ namespace PrePoMax.Forms
             _viewLoad = null;
 
             _selectedPropertyGridItemChangedEventActive = true;
+
+            this.Height = 600;
         }
         private void InitializeComponent()
         {
@@ -67,34 +69,21 @@ namespace PrePoMax.Forms
             // gbProperties
             // 
             this.gbProperties.Location = new System.Drawing.Point(12, 164);
-            this.gbProperties.Size = new System.Drawing.Size(310, 365);
+            this.gbProperties.Size = new System.Drawing.Size(310, 256);
             // 
             // propertyGrid
             // 
-            this.propertyGrid.Size = new System.Drawing.Size(298, 337);
-            // 
-            // btnOK
-            // 
-            this.btnOK.Location = new System.Drawing.Point(160, 535);
-            // 
-            // btnCancel
-            // 
-            this.btnCancel.Location = new System.Drawing.Point(241, 535);
-            // 
-            // btnOkAddNew
-            // 
-            this.btnOkAddNew.Location = new System.Drawing.Point(65, 535);
+            this.propertyGrid.Size = new System.Drawing.Size(298, 228);
             // 
             // FrmLoad
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.ClientSize = new System.Drawing.Size(334, 570);
+            this.ClientSize = new System.Drawing.Size(334, 461);
             this.Name = "FrmLoad";
             this.Text = "Edit Load";
             this.gbType.ResumeLayout(false);
             this.gbProperties.ResumeLayout(false);
             this.ResumeLayout(false);
-
         }
 
 

@@ -33,6 +33,21 @@ namespace CaeResults
         private static readonly string[] componentsSplitter = new string[] { " ", "," };
         private static readonly string[] dataSplitter = new string[] { " ", "for set", "and time" };
 
+       
+
+        private static readonly Dictionary<string, string> compMap = new Dictionary<string, string>()
+        {
+            { "Id", "Id" },
+
+            { "U1", "UR1" },
+            { "U2", "UR2" },
+            { "U3", "UR3" },
+
+            { "RF1", "RM1" },
+            { "RF2", "RM2" },
+            { "RF3", "RM3" },
+        };
+
         // Methods                                                                                                                  
         static public HistoryResults Read(string fileName)
         {
@@ -283,6 +298,8 @@ namespace CaeResults
             HistoryResultField field;
             HistoryResultComponent component;
             HistoryResultEntries entries;
+
+            DatDataSet repairedDataSet;
             int offset;
             string valueId;
             string id;
@@ -291,29 +308,31 @@ namespace CaeResults
 
             foreach (var dataSet in dataSets)
             {
-                time = dataSet.Time;
+                repairedDataSet = RepairReferencePointDataSet(dataSet);
+
+                time = repairedDataSet.Time;
                 // get or create a set
-                if (!historyOutput.Sets.TryGetValue(dataSet.SetName, out set))
+                if (!historyOutput.Sets.TryGetValue(repairedDataSet.SetName, out set))
                 {
-                    set = new HistoryResultSet(dataSet.SetName);
+                    set = new HistoryResultSet(repairedDataSet.SetName);
                     historyOutput.Sets.Add(set.Name, set);
                 }
                 // get or create a field
-                if (!set.Fields.TryGetValue(dataSet.FieldName, out field))
+                if (!set.Fields.TryGetValue(repairedDataSet.FieldName, out field))
                 {
-                    field = new HistoryResultField(dataSet.FieldName);
+                    field = new HistoryResultField(repairedDataSet.FieldName);
                     set.Fields.Add(field.Name, field);
                 }
 
                 // for each value line in data set: id x y z
-                for (int i = 0; i < dataSet.Values.Length; i++)
+                for (int i = 0; i < repairedDataSet.Values.Length; i++)
                 {
-                    values = dataSet.Values[i];
+                    values = repairedDataSet.Values[i];
 
-                    if (dataSet.ComponentNames.Length > 0 && dataSet.ComponentNames[0] == "Id")
+                    if (repairedDataSet.ComponentNames.Length > 0 && repairedDataSet.ComponentNames[0] == "Id")
                     {
                         // the first column is id column
-                        if (dataSet.ComponentNames[1] == "Int.Pnt.")
+                        if (repairedDataSet.ComponentNames[1] == "Int.Pnt.")
                         {
                             // the second column in In.Pnt. column
                             valueId = values[0].ToString() + "_" + values[1].ToString();
@@ -337,9 +356,9 @@ namespace CaeResults
                     for (int j = 0; j < values.Length - offset; j++)
                     {
                         // get or create a component
-                        if (!field.Components.TryGetValue(dataSet.ComponentNames[j + offset], out component))
+                        if (!field.Components.TryGetValue(repairedDataSet.ComponentNames[j + offset], out component))
                         {
-                            component = new HistoryResultComponent(dataSet.ComponentNames[j + offset]);
+                            component = new HistoryResultComponent(repairedDataSet.ComponentNames[j + offset]);
                             field.Components.Add(component.Name, component);
                         }
                         
@@ -361,6 +380,31 @@ namespace CaeResults
             }
 
             return historyOutput;
+        }
+
+        static private DatDataSet RepairReferencePointDataSet(DatDataSet dataSet)
+        {
+            string setName = dataSet.SetName;
+            string[] tmp;
+
+            // Ref node
+            tmp = setName.ToUpper().Split(new string[] { FeReferencePoint.RefName.ToUpper() }, 
+                                          StringSplitOptions.RemoveEmptyEntries);
+            if (tmp.Length == 2) dataSet.SetName = tmp[0];
+
+            // Rot node
+            tmp = setName.ToUpper().Split(new string[] { FeReferencePoint.RotName.ToUpper() },
+                                          StringSplitOptions.RemoveEmptyEntries);
+            if (tmp.Length == 2)
+            {
+                dataSet.SetName = tmp[0];
+                for (int i = 0; i < dataSet.ComponentNames.Length; i++)
+                {
+                    dataSet.ComponentNames[i] = compMap[dataSet.ComponentNames[i]];
+                }
+            }
+
+            return dataSet;
         }
 
      

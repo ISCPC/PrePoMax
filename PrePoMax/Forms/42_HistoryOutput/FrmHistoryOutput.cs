@@ -136,11 +136,12 @@ namespace PrePoMax.Forms
             string[] nodeSetNames = _controller.GetUserNodeSetNames();
             string[] elementSetNames = _controller.GetUserElementSetNames();
             string[] surfaceNames = _controller.GetSurfaceNames();
+            string[] referencePointNames = _controller.GetReferencePointNames();
 
             if (_historyOutputNames == null)
                 throw new CaeGlobals.CaeException("The history output names must be defined first.");
 
-            PopulateListOfHistoryOutputs(nodeSetNames, elementSetNames, surfaceNames);
+            PopulateListOfHistoryOutputs(nodeSetNames, elementSetNames, surfaceNames, referencePointNames);
 
             // Add history outputs
             if (_historyOutputToEditName == null)
@@ -168,9 +169,11 @@ namespace PrePoMax.Forms
                         CheckMissingValueRef(ref nodeSetNames, vnho.NodeSetName, s => { vnho.NodeSetName = s; });
                     else if (vnho.RegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
                         CheckMissingValueRef(ref surfaceNames, vnho.SurfaceName, s => { vnho.SurfaceName = s; });
+                    else if (vnho.RegionType == RegionTypeEnum.ReferencePointName.ToFriendlyString())
+                        CheckMissingValueRef(ref referencePointNames, vnho.ReferencePointName, s => { vnho.ReferencePointName = s; });
                     else throw new NotSupportedException();
 
-                    vnho.PopululateDropDownLists(nodeSetNames, surfaceNames);
+                    vnho.PopululateDropDownLists(nodeSetNames, surfaceNames, referencePointNames);
                 }
                 else if (_viewHistoryOutput is ViewElementHistoryOutput veho)
                 {
@@ -194,7 +197,8 @@ namespace PrePoMax.Forms
         {
             return OnPrepareForm(stepName, sectionToEditName);
         }
-        private void PopulateListOfHistoryOutputs(string[] nodeSetNames, string[] elementSetNames, string[] surfaceNames)
+        private void PopulateListOfHistoryOutputs(string[] nodeSetNames, string[] elementSetNames, 
+                                                  string[] surfaceNames, string[] referencePointNames)
         {
             ListViewItem item;
 
@@ -209,7 +213,7 @@ namespace PrePoMax.Forms
                     nho = new NodalHistoryOutput(GetHistoryOutputName("N"), NodalHistoryVariable.U, surfaceNames[0], RegionTypeEnum.SurfaceName);
 
                 ViewNodalHistoryOutput vnho = new ViewNodalHistoryOutput(nho);
-                vnho.PopululateDropDownLists(nodeSetNames, surfaceNames);
+                vnho.PopululateDropDownLists(nodeSetNames, surfaceNames, referencePointNames);
                 item.Tag = vnho;
             }
             else item.Tag = new ViewError("There is no node set/surface defined for the history output definition.");

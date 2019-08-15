@@ -40,12 +40,17 @@ namespace PrePoMax
         [DescriptionAttribute("Select the node set which will be used for the history output definition.")]
         public string NodeSetName { get { return _historyOutput.RegionName; } set { _historyOutput.RegionName = value; } }
 
-        [OrderedDisplayName(4, 10, "Surface")]
+        [OrderedDisplayName(4, 10, "Reference point")]
+        [CategoryAttribute("Data")]
+        [DescriptionAttribute("Select the reference point which will be used for the history output definition.")]
+        public string ReferencePointName { get { return _historyOutput.RegionName; } set { _historyOutput.RegionName = value; } }
+
+        [OrderedDisplayName(5, 10, "Surface")]
         [CategoryAttribute("Data")]
         [DescriptionAttribute("Select the surface which will be used for the history output definition.")]
         public string SurfaceName { get { return _historyOutput.RegionName; } set { _historyOutput.RegionName = value; } }
 
-        [OrderedDisplayName(5, 10, "Variables to output")]
+        [OrderedDisplayName(6, 10, "Variables to output")]
         [CategoryAttribute("Data")]
         [DescriptionAttribute("Nodal history variables")]
         public ViewNodalHistoryVariable Variables 
@@ -60,7 +65,7 @@ namespace PrePoMax
             } 
         }
 
-        [OrderedDisplayName(6, 10, "Totals")]
+        [OrderedDisplayName(7, 10, "Totals")]
         [CategoryAttribute("Data")]
         [DescriptionAttribute("The parameter totals only applies to external forces.")]
         public CaeModel.TotalsTypeEnum TotalsType { get { return _historyOutput.TotalsType; } set { _historyOutput.TotalsType = value; } }
@@ -75,6 +80,7 @@ namespace PrePoMax
             Dictionary<RegionTypeEnum, string> regionTypePropertyNamePairs = new Dictionary<RegionTypeEnum, string>();
             regionTypePropertyNamePairs.Add(RegionTypeEnum.NodeSetName, CaeGlobals.Tools.GetPropertyName(() => this.NodeSetName));
             regionTypePropertyNamePairs.Add(RegionTypeEnum.SurfaceName, CaeGlobals.Tools.GetPropertyName(() => this.SurfaceName));
+            regionTypePropertyNamePairs.Add(RegionTypeEnum.ReferencePointName, CaeGlobals.Tools.GetPropertyName(() => this.ReferencePointName));
 
             base.SetBase(_historyOutput, regionTypePropertyNamePairs);
             base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
@@ -86,11 +92,12 @@ namespace PrePoMax
         {
             return _historyOutput;
         }
-        public void PopululateDropDownLists(string[] nodeSetNames, string[] surfaceNames)
+        public void PopululateDropDownLists(string[] nodeSetNames, string[] surfaceNames, string[] referencePointNames)
         {
             Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
             regionTypeListItemsPairs.Add(RegionTypeEnum.NodeSetName, nodeSetNames);
             regionTypeListItemsPairs.Add(RegionTypeEnum.SurfaceName, surfaceNames);
+            regionTypeListItemsPairs.Add(RegionTypeEnum.ReferencePointName, referencePointNames);
             base.PopululateDropDownLists(regionTypeListItemsPairs);
         }
     }

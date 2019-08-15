@@ -99,7 +99,6 @@ namespace PrePoMax
             });
         }
 
-
         #endregion  ################################################################################################################
 
 
@@ -121,7 +120,7 @@ namespace PrePoMax
             _vtk = null;
             _controller = null;
             _modelTree = null;
-            _args = args;
+            _args = args;           
         }
 
 
@@ -191,17 +190,10 @@ namespace PrePoMax
                 _vtk.Controller_GetPartActorData = _controller.GetPartActorData;
                 _vtk.Controller_GetGeometryActorData = _controller.GetGeometryActorData;
 
-                _vtk.Controller_GetEdgeNodeIds = _controller.GetEdgeNodeIds;
-                _vtk.Controller_GetSurfaceNodeIds = _controller.GetSurfaceNodeIds;
-                _vtk.Controller_GetEdgeByAngleNodeIds = _controller.GetEdgeByAngleNodeIds;
-                _vtk.Controller_GetSurfaceByAngleNodeIds = _controller.GetSurfaceByAngleNodeIds;
-                _vtk.Controller_GetPartNodeIds = _controller.GetPartNodeIds;
-                _vtk.Controller_GetPartElementIds = _controller.GetPartElementIds;
-                _vtk.Controller_GetElementIdsFromNodeIds = _controller.GetElementIdsFromNodeIds;
                 _vtk.Controller_ActorPicked = SelectBasePart;
                 _vtk.Controller_ShowPostSettings = ShowPostSettings;
 
-                //Forms
+                // Forms
                 _formLocation = new Point(100, 100);
                 _allForms = new List<Form>();
 
@@ -342,7 +334,7 @@ namespace PrePoMax
                 {
                     try
                     {
-                        SetStateWorking("Opening ...");
+                        SetStateWorking(Globals.OpeningText);
                         string extension = Path.GetExtension(fileName).ToLower();
                         if (extension == ".pmx" || extension == ".frd")
                             await Task.Run(() => Open(fileName));
@@ -362,7 +354,7 @@ namespace PrePoMax
                     }
                     finally
                     {
-                        SetStateReady("Opening ...");
+                        SetStateReady(Globals.OpeningText);
                     }
                 }
                 else
@@ -429,10 +421,14 @@ namespace PrePoMax
             // one or two forms can be open
             foreach (var oneForm in _allForms) if (oneForm.Visible) count++;
 
-            // Disable model tree mouse and keyboard actions for form
-            if (count > 0) _modelTree.DisableMouse = true;
-            else _modelTree.DisableMouse = false;
-            
+            // Disable model tree mouse and keyboard actions for the form
+            bool unactive;
+            if (count > 0) unactive = true;
+            else unactive = false;
+            _modelTree.DisableMouse = unactive;
+            menuStripMain.DisableMouseButtons = unactive;
+            tsFile.DisableMouseButtons = unactive;
+
             // this gets also called from item selection form: by angle, by edge ...
             if (form.Visible == false && form.DialogResult == System.Windows.Forms.DialogResult.Cancel)
                 UpdateHighlightFromTree();
@@ -576,10 +572,7 @@ namespace PrePoMax
 
         private void ModelTree_MeshingParametersEvent(string[] geometryPartNames)
         {
-            foreach (string geometryPartName in geometryPartNames)
-            {
-                GetSetMeshingParameters(geometryPartName);
-            }
+            GetSetMeshingParameters(geometryPartNames);
         }
       
         private void ModelTree_Delete(NamedClass[] items, string[] stepNames)
@@ -842,7 +835,7 @@ namespace PrePoMax
             bool stateSet = false;
             try
             {
-                if (SetStateWorking("Opening ..."))
+                if (SetStateWorking(Globals.OpeningText))
                 {
                     stateSet = true;
                     await Task.Run(() => Open(fileName, resetCamera));
@@ -856,7 +849,7 @@ namespace PrePoMax
             }
             finally
             {
-                if (stateSet) SetStateReady("Opening ...");
+                if (stateSet) SetStateReady(Globals.OpeningText);
             }
         }
         private void Open(string fileName, bool resetCamera = true)
@@ -887,7 +880,7 @@ namespace PrePoMax
                 string[] files = GetFileNamesToImport();
                 if (files != null && files.Length > 0)
                 {
-                    SetStateWorking("Importing ...");
+                    SetStateWorking(Globals.ImportingText);
                     foreach (var file in files)
                     {
                         await _controller.ImportFileAsync(file);
@@ -901,7 +894,7 @@ namespace PrePoMax
             }
             finally
             {
-                SetStateReady("Importing ...");
+                SetStateReady(Globals.ImportingText);
             }
         }
         private async void tsmiSave_Click(object sender, EventArgs e)
@@ -950,7 +943,7 @@ namespace PrePoMax
                         if (saveFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                         {
                             // the filter adds the extension to the file name
-                            SetStateWorking("Exporting ...");
+                            SetStateWorking(Globals.ExportingText);
                             _controller.ExportToCalculix(saveFileDialog.FileName);
                         }
                     }
@@ -962,7 +955,7 @@ namespace PrePoMax
             }
             finally
             {
-                SetStateReady("Exporting ...");
+                SetStateReady(Globals.ExportingText);
             }
         }
         private void tsmiExportToAbaqus_Click(object sender, EventArgs e)
@@ -979,7 +972,7 @@ namespace PrePoMax
                         if (saveFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                         {
                             // the filter adds the extension to the file name
-                            SetStateWorking("Exporting ...");
+                            SetStateWorking(Globals.ExportingText);
                             _controller.ExportToCalculix(saveFileDialog.FileName);
                         }
                     }
@@ -991,7 +984,7 @@ namespace PrePoMax
             }
             finally
             {
-                SetStateReady("Exporting ...");
+                SetStateReady(Globals.ExportingText);
             }
         }
         private void tsmiCloseResults_Click(object sender, EventArgs e)
@@ -1016,7 +1009,7 @@ namespace PrePoMax
         {
             try
             {
-                SetStateWorking("Undoing ...");
+                SetStateWorking(Globals.UndoingText);
                 _modelTree.ScreenUpdating = false;
 
                 await Task.Run(() => _controller.UndoHistory());
@@ -1027,7 +1020,7 @@ namespace PrePoMax
             }
             finally
             {
-                SetStateReady("Undoing ...");
+                SetStateReady(Globals.UndoingText);
                 _modelTree.ScreenUpdating = true;
                 _modelTree.RegenerateTree(_controller.Model, _controller.Jobs, _controller.Results, _controller.History);
             }
@@ -1054,7 +1047,7 @@ namespace PrePoMax
                 CloseAllForms();
                 Clear3D();
                 Application.DoEvents();
-                SetStateWorking("Regenerating history ...");
+                SetStateWorking(Globals.RegeneratingText);
                 _modelTree.ScreenUpdating = false;
                 await Task.Run(() => _controller.RegenerateHistoryCommands());
             }
@@ -1064,7 +1057,7 @@ namespace PrePoMax
             }
             finally
             {
-                SetStateReady("Regenerating history ...");
+                SetStateReady(Globals.RegeneratingText);
                 _modelTree.ScreenUpdating = true;
                 _modelTree.RegenerateTree(_controller.Model, _controller.Jobs, _controller.Results, _controller.History);
             }
@@ -1109,7 +1102,7 @@ namespace PrePoMax
                 CloseAllForms();
                 Clear3D();
                 Application.DoEvents();
-                SetStateWorking("Regenerating history ...");
+                SetStateWorking(Globals.RegeneratingText);
                 _modelTree.ScreenUpdating = false;
                 await Task.Run(() => _controller.RegenerateHistoryCommandsWithDialogs(showImportDialog, showMeshParametersDialog));
             }
@@ -1119,7 +1112,7 @@ namespace PrePoMax
             }
             finally
             {
-                SetStateReady("Regenerating history ...");
+                SetStateReady(Globals.RegeneratingText);
                 _modelTree.ScreenUpdating = true;
                 _modelTree.RegenerateTree(_controller.Model, _controller.Jobs, _controller.Results, _controller.History);
             }
@@ -1206,28 +1199,32 @@ namespace PrePoMax
             _vtk.EdgesVisibility = vtkControl.vtkEdgesVisibility.Wireframe;
             if (_controller.Selection != null && _controller.Selection.Nodes.Count > 0)
                 _controller.HighlightSelection();
-            else _modelTree.UpdateHighlight();
+            else if (!_frmSelectItemSet.Visible)    // if everything is deselectd in _frmSelectItemSet do not highlight from tree
+                _modelTree.UpdateHighlight();
         }
         private void tsmiShowElementEdges_Click(object sender, EventArgs e)
         {
             _vtk.EdgesVisibility = vtkControl.vtkEdgesVisibility.ElementEdges;
             if (_controller.Selection != null && _controller.Selection.Nodes.Count > 0)
                 _controller.HighlightSelection();
-            else _modelTree.UpdateHighlight();
+            else if (!_frmSelectItemSet.Visible)    // if everything is deselectd in _frmSelectItemSet do not highlight from tree
+                _modelTree.UpdateHighlight();
         }
         private void tsmiShowModelEdges_Click(object sender, EventArgs e)
         {
             _vtk.EdgesVisibility = vtkControl.vtkEdgesVisibility.ModelEdges;
             if (_controller.Selection != null && _controller.Selection.Nodes.Count > 0)
                 _controller.HighlightSelection();
-            else _modelTree.UpdateHighlight();
+            else if (!_frmSelectItemSet.Visible)    // if everything is deselectd in _frmSelectItemSet do not highlight from tree
+                _modelTree.UpdateHighlight();
         }
         private void tsmiShowNoEdges_Click(object sender, EventArgs e)
         {
             _vtk.EdgesVisibility = vtkControl.vtkEdgesVisibility.NoEdges;
             if (_controller.Selection != null && _controller.Selection.Nodes.Count > 0)
                 _controller.HighlightSelection();
-            else _modelTree.UpdateHighlight();
+            else if (!_frmSelectItemSet.Visible)    // if everything is deselectd in _frmSelectItemSet do not highlight from tree
+                _modelTree.UpdateHighlight();
         }
 
         private void tsmiHideAllParts_Click(object sender, EventArgs e)
@@ -1457,7 +1454,7 @@ namespace PrePoMax
         {
             try
             {
-                SelectOneEntity("Parts", _controller.GetGeometryParts(), GetSetMeshingParameters);
+                SelectMultipleEntities("Parts", _controller.GetGeometryParts(), GetSetMeshingParameters);
             }
             catch (Exception ex)
             {
@@ -1474,25 +1471,49 @@ namespace PrePoMax
             {
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
+            
         }
-        private void GetSetMeshingParameters(string partName)
+        private void GetSetMeshingParameters(string[] partNames)
         {
             try
             {
-                CaeMesh.MeshingParameters meshingParameters = GetMeshingParameters(partName);
+                CaeMesh.MeshingParameters meshingParameters = GetMeshingParameters(partNames);
                 if (meshingParameters != null) // Cancel pressed on Meshing parameters form
-                    _controller.SetMeshingParametersCommand(partName, meshingParameters);
+                    _controller.SetMeshingParametersCommand(partNames, meshingParameters);
             }
             catch (Exception ex)
             {
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-
-        private void SetDefaultMeshingParameters(string partName)
+        public CaeMesh.MeshingParameters GetMeshingParameters(string[] partNames)
         {
-            CaeMesh.MeshingParameters defaultMeshingParameters = GetDefaultMeshingParameters(partName);
-            _controller.SetMeshingParametersCommand(partName, defaultMeshingParameters);
+            double sumMax = 0;
+            double sumMin = 0;
+            CaeMesh.GeometryPart part;
+            CaeMesh.MeshingParameters meshingParameters = null;
+            CaeMesh.MeshingParameters defaultMeshingParameters = null;
+            foreach (var partName in partNames)
+            {
+                part = _controller.GetGeometryPart(partName);
+                // default parameters
+                defaultMeshingParameters = GetDefaultMeshingParameters(partName);
+                // first time set the meshing parameters
+                if (partName == partNames[0]) meshingParameters = part.MeshingParameters;
+                // meshing parameters exist only when all parts have the same meshing parameters
+                if (!CaeMesh.MeshingParameters.Equals(meshingParameters, part.MeshingParameters))
+                    meshingParameters = null;
+
+                sumMax += defaultMeshingParameters.MaxH;
+                sumMin += defaultMeshingParameters.MinH;
+            }
+            defaultMeshingParameters.MaxH = Math.Round(sumMax / partNames.Length, 2);
+            defaultMeshingParameters.MinH = Math.Round(sumMin / partNames.Length, 2);
+
+            // use meshingParameters as default if meshing parameters are not equal
+            if (meshingParameters == null) meshingParameters = defaultMeshingParameters;
+
+            return GetMeshingParametersByForm(partNames.ToShortString(), defaultMeshingParameters, meshingParameters);
         }
         public CaeMesh.MeshingParameters GetDefaultMeshingParameters(string partName)
         {
@@ -1502,58 +1523,56 @@ namespace PrePoMax
             if (!_controller.MeshJobIdle) throw new Exception("The meshing is already in progress.");
 
             CaeMesh.MeshingParameters defaultMeshingParameters = new CaeMesh.MeshingParameters();
-            double[] size = _controller.GetBoundingBoxSize();
-            double maxSize = Math.Max(size[0], Math.Max(size[1], size[2]));
-            defaultMeshingParameters.MaxH = CaeGlobals.Tools.RoundToSignificantDigits(maxSize / 20, 2);
-            defaultMeshingParameters.MinH = CaeGlobals.Tools.RoundToSignificantDigits(maxSize / 1000, 2);
+            double factorMax = 20;
+            double factorMin = 1000;
+            double maxSize = part.BoundingBox.GetDiagonal();
+            defaultMeshingParameters.MaxH = CaeGlobals.Tools.RoundToSignificantDigits(maxSize / factorMax, 2);
+            defaultMeshingParameters.MinH = CaeGlobals.Tools.RoundToSignificantDigits(maxSize / factorMin, 2);
 
             return defaultMeshingParameters;
         }
-        public CaeMesh.MeshingParameters GetMeshingParameters(string partName)
+        private CaeMesh.MeshingParameters GetMeshingParametersByForm(string formName, 
+                                                                     CaeMesh.MeshingParameters defaultMeshingParameters,
+                                                                     CaeMesh.MeshingParameters meshingParameters)
         {
-            // this should invoke to set the owner of the frmMeshingParameters
-            return GetMeshingParametersThreadUnsafe(partName);
-        }
-
-        public CaeMesh.MeshingParameters GetMeshingParametersThreadUnsafe(string partName)
-        {
-            CaeMesh.GeometryPart part = _controller.GetGeometryPart(partName);
-            CaeMesh.MeshingParameters defaultMeshingParameters = GetDefaultMeshingParameters(partName);
-
             FrmMeshingParameters frmMeshingParameters = new FrmMeshingParameters();
             frmMeshingParameters.Icon = Icon;
-            frmMeshingParameters.PartName = part.Name;
+            frmMeshingParameters.PartName = formName;
             frmMeshingParameters.DefaultMeshingParameters = defaultMeshingParameters;
-            if (part.MeshingParameters == null) frmMeshingParameters.MeshingParameters = defaultMeshingParameters;
-            else frmMeshingParameters.MeshingParameters = part.MeshingParameters;
+            frmMeshingParameters.MeshingParameters = meshingParameters;
             frmMeshingParameters.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
-
-            //InvokeIfRequired(() => { frmMeshingParameters.Owner = this; });
-            //frmMeshingParameters.Owner = this; // other thread
 
             if (frmMeshingParameters.ShowDialog() == System.Windows.Forms.DialogResult.OK) return frmMeshingParameters.MeshingParameters;
             else return null; // Cancel pressed on Meshing parameters form
         }
-
         private async void CreateMeshes(string[] partNames)
         {
             try
             {
+                SetStateWorking(Globals.MeshingText, true);
                 foreach (var partName in partNames)
                 {
                     CaeMesh.GeometryPart part = _controller.GetGeometryPart(partName);
                     if (part.MeshingParameters == null) SetDefaultMeshingParameters(partName);
 
-                    await Task.Run(() => _controller.CreateMeshCommand(partName));
+                     await Task.Run(() => _controller.CreateMeshCommand(partName));
                 }
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
-                SetStateReady("Meshing...");
+                CaeGlobals.ExceptionTools.Show(this, ex);                
+            }
+            finally
+            {
+                SetStateReady(Globals.MeshingText);
             }
         }
-       
+        private void SetDefaultMeshingParameters(string partName)
+        {
+            CaeMesh.MeshingParameters defaultMeshingParameters = GetDefaultMeshingParameters(partName);
+            _controller.SetMeshingParametersCommand(new string[] { partName }, defaultMeshingParameters);
+        }
+
 
         #endregion  ################################################################################################################
 
@@ -1758,7 +1777,7 @@ namespace PrePoMax
         {
             try
             {
-                SelectOneEntity("Node Sets", _controller.GetAllNodeSets(), EditNodeSet);
+                SelectOneEntity("Node Sets", _controller.GetUserNodeSets(), EditNodeSet);
             }
             catch (Exception ex)
             {
@@ -1769,7 +1788,7 @@ namespace PrePoMax
         {
             try
             {
-                SelectMultipleEntities("Node Sets", _controller.GetAllNodeSets(), DeleteNodeSets);
+                SelectMultipleEntities("Node Sets", _controller.GetUserNodeSets(), DeleteNodeSets);
             }
             catch (Exception ex)
             {
@@ -1815,7 +1834,7 @@ namespace PrePoMax
         {
             try
             {
-                SelectOneEntity("Element Sets", _controller.GetAllelementSets(), EditElementSet);
+                SelectOneEntity("Element Sets", _controller.GetUserElementSets(), EditElementSet);
             }
             catch (Exception ex)
             {
@@ -1826,7 +1845,7 @@ namespace PrePoMax
         {
             try
             {
-                SelectMultipleEntities("Element Sets", _controller.GetAllelementSets(), ConvertElementSetsToMeshParts);
+                SelectMultipleEntities("Element Sets", _controller.GetUserElementSets(), ConvertElementSetsToMeshParts);
             }
             catch (Exception ex)
             {
@@ -1837,7 +1856,7 @@ namespace PrePoMax
         {
             try
             {
-                SelectMultipleEntities("Element Sets", _controller.GetAllelementSets(), DeleteElementSets);
+                SelectMultipleEntities("Element Sets", _controller.GetUserElementSets(), DeleteElementSets);
             }
             catch (Exception ex)
             {
@@ -2961,15 +2980,21 @@ namespace PrePoMax
         {
             if (entities == null || entities.Length == 0) return;
 
+            string[] preSelectedEntityNames = _modelTree.IntersectSelectionWithList(entities);
+
             _frmSelectEntity.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
-            _frmSelectEntity.PrepareForm(title, false, entities, null);
+            _frmSelectEntity.PrepareForm(title, false, entities, preSelectedEntityNames, null);
             _frmSelectEntity.OneEntitySelected = OperateOnEntity;
             _frmSelectEntity.Show();
         }
         private void SelectOneEntityInStep(string title, NamedClass[] entities, string stepName, Action<string, string> OperateOnEntityInStep)
         {
+            if (entities == null || entities.Length == 0) return;
+
+            string[] preSelectedEntityNames = _modelTree.IntersectSelectionWithList(entities);
+
             _frmSelectEntity.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
-            _frmSelectEntity.PrepareForm(title, false, entities, stepName);
+            _frmSelectEntity.PrepareForm(title, false, entities, preSelectedEntityNames, stepName);
             _frmSelectEntity.OneEntitySelectedInStep = OperateOnEntityInStep;
             _frmSelectEntity.Show();
         }
@@ -2977,15 +3002,21 @@ namespace PrePoMax
         {
             if (entities == null || entities.Length == 0) return;
 
+            string[] preSelectedEntityNames = _modelTree.IntersectSelectionWithList(entities);
+
             _frmSelectEntity.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
-            _frmSelectEntity.PrepareForm(title, true, entities, null);
+            _frmSelectEntity.PrepareForm(title, true, entities, preSelectedEntityNames, null);
             _frmSelectEntity.MultipleEntitiesSelected = OperateOnMultpleEntities;
             _frmSelectEntity.Show();
         }
         private void SelectMultipleEntitiesInStep(string title, NamedClass[] entities, string stepName, Action<string, string[]> OperateOnMultpleEntitiesInStep)
         {
+            if (entities == null || entities.Length == 0) return;
+
+            string[] preSelectedEntityNames = _modelTree.IntersectSelectionWithList(entities);
+
             _frmSelectEntity.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
-            _frmSelectEntity.PrepareForm(title, true, entities, stepName);
+            _frmSelectEntity.PrepareForm(title, true, entities, preSelectedEntityNames, stepName);
             _frmSelectEntity.MultipleEntitiesSelectedInStep = OperateOnMultpleEntitiesInStep;
             _frmSelectEntity.Show();
         }
@@ -3013,19 +3044,6 @@ namespace PrePoMax
         public void SetSelectItem(vtkSelectItem selectItem)
         {
             InvokeIfRequired(() => _vtk.SelectItem = selectItem);
-        }
-        public int[] GetNodeIdsAtPoint(double[] point, vtkSelectBy selectBy, double angle)
-        {
-            return _vtk.GetGlobalNodeIdsAtPoint(point, selectBy, angle);
-        }
-        public int[] GetElementIdsAtPoint(double[] point, vtkSelectBy selectBy, double angle)
-        {
-            return _vtk.GetGlobalElementIdsAtPoint(point, selectBy, angle);
-        }
-
-        public string GetPartNameAtPoint(double[] point)
-        {
-            return _vtk.GetPartNameAtPoint(point);
         }
 
         public void GetGeometryPickProperties(double[] point, out double dist, out int elementId,
@@ -3075,11 +3093,17 @@ namespace PrePoMax
         {
             form.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);            
         }
-        private void CloseAllForms()
+        public void CloseAllForms()
         {
-            foreach (var form in _allForms)
+            if (_allForms != null)
             {
-                if (form.Visible) form.Hide();
+                // first hide the _frmSelectItemSet, since it's hiding enables the form it was called from (like _frmNodeSet...)
+                if (_frmSelectItemSet.Visible) _frmSelectItemSet.Hide();
+                
+                foreach (var form in _allForms)
+                {
+                    if (form.Visible) form.Hide();
+                }
             }
         }
 

@@ -15,6 +15,9 @@ namespace PrePoMax.Forms
         private string[] _constraintNames;
         private string _constraintToEditName;
         private ViewConstraint _viewConstraint;
+        private ContextMenuStrip cmsPropertyGrid;
+        private System.ComponentModel.IContainer components;
+        private ToolStripMenuItem tsmiSwapMasterSlave;
         private Controller _controller;
 
 
@@ -44,19 +47,48 @@ namespace PrePoMax.Forms
         }
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
+            this.cmsPropertyGrid = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.tsmiSwapMasterSlave = new System.Windows.Forms.ToolStripMenuItem();
             this.gbType.SuspendLayout();
             this.gbProperties.SuspendLayout();
+            this.cmsPropertyGrid.SuspendLayout();
             this.SuspendLayout();
             // 
-            // FrmTemp
+            // propertyGrid
+            // 
+            this.propertyGrid.ContextMenuStrip = this.cmsPropertyGrid;
+            // 
+            // cmsPropertyGrid
+            // 
+            this.cmsPropertyGrid.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsmiSwapMasterSlave});
+            this.cmsPropertyGrid.Name = "cmsPropertyGrid";
+            this.cmsPropertyGrid.Size = new System.Drawing.Size(173, 26);
+            // 
+            // tsmiSwapMasterSlave
+            // 
+            this.tsmiSwapMasterSlave.Name = "tsmiSwapMasterSlave";
+            this.tsmiSwapMasterSlave.Size = new System.Drawing.Size(172, 22);
+            this.tsmiSwapMasterSlave.Text = "Swap master/slave";
+            this.tsmiSwapMasterSlave.Click += new System.EventHandler(this.tsmiSwapMasterSlave_Click);
+            // 
+            // FrmConstraint
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.ClientSize = new System.Drawing.Size(334, 461);
-            this.Name = "FrmTemp";
+            this.Name = "FrmConstraint";
             this.Text = "Edit Constraint";
+            this.Controls.SetChildIndex(this.gbProperties, 0);
+            this.Controls.SetChildIndex(this.btnCancel, 0);
+            this.Controls.SetChildIndex(this.btnOK, 0);
+            this.Controls.SetChildIndex(this.btnOkAddNew, 0);
+            this.Controls.SetChildIndex(this.gbType, 0);
             this.gbType.ResumeLayout(false);
             this.gbProperties.ResumeLayout(false);
+            this.cmsPropertyGrid.ResumeLayout(false);
             this.ResumeLayout(false);
+
         }
 
 
@@ -67,6 +99,11 @@ namespace PrePoMax.Forms
             {
                 propertyGrid.SelectedObject = lvTypes.SelectedItems[0].Tag;
                 propertyGrid.Select();
+
+                if (propertyGrid.SelectedObject is ViewRigidBody vrb)
+                    propertyGrid.ContextMenuStrip = null;
+                else if (propertyGrid.SelectedObject is ViewTie vt)
+                    propertyGrid.ContextMenuStrip = cmsPropertyGrid;
             }
         }
         protected override void OnPropertyGridSelectedGridItemChanged()
@@ -181,6 +218,8 @@ namespace PrePoMax.Forms
                     else throw new NotSupportedException();
 
                     vrb.PopululateDropDownLists(referencePointNames, nodeSetNames, surfaceNames);
+
+                    propertyGrid.ContextMenuStrip = null;
                 }
                 else if (_viewConstraint is ViewTie vt)
                 {
@@ -188,6 +227,8 @@ namespace PrePoMax.Forms
                     CheckMissingValueRef(ref surfaceNames, vt.MasterSurfaceName, s => { vt.MasterSurfaceName = s; });
 
                     vt.PopululateDropDownLists(surfaceNames);
+
+                    propertyGrid.ContextMenuStrip = cmsPropertyGrid;
                 }
                 else throw new NotSupportedException();
 
@@ -245,6 +286,20 @@ namespace PrePoMax.Forms
         private string GetConstraintName(string namePrefix)
         {
             return NamedClass.GetNewValueName(_constraintNames, namePrefix);
+        }
+
+        private void tsmiSwapMasterSlave_Click(object sender, EventArgs e)
+        {
+            if (propertyGrid.SelectedObject is ViewTie vt)
+            {
+                string tmp = vt.SlaveSurfaceName;
+                vt.SlaveSurfaceName = vt.MasterSurfaceName;
+                vt.MasterSurfaceName = tmp;
+                propertyGrid.Refresh();
+
+                OnPropertyGridSelectedGridItemChanged();    // highlight
+                _propertyItemChanged = true;
+            }
         }
     }
 }

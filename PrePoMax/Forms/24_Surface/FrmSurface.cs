@@ -9,7 +9,7 @@ using CaeGlobals;
 
 namespace PrePoMax.Forms
 {
-    class FrmSurface : UserControls.FrmProperties, IFormBase
+    class FrmSurface : UserControls.FrmProperties, IFormBase, IFormItemSetDataParent
     {
         // Variables                                                                                                                
         private HashSet<string> _allExistingNames;
@@ -43,18 +43,6 @@ namespace PrePoMax.Forms
         {
             this.gbProperties.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // btnOK
-            // 
-            this.btnOK.Location = new System.Drawing.Point(160, 376);
-            // 
-            // btnCancel
-            // 
-            this.btnCancel.Location = new System.Drawing.Point(241, 376);
-            // 
-            // btnOkAddNew
-            // 
-            this.btnOkAddNew.Location = new System.Drawing.Point(65, 376);
             // 
             // FrmSurface
             // 
@@ -251,6 +239,15 @@ namespace PrePoMax.Forms
                 propertyGrid.Refresh();
             }
             catch { }
+        }
+
+
+        // IFormItemSetDataParent
+        public bool IsSelectionGeometryBased()
+        {
+            // prepare ItemSetDataEditor
+            if (_surfaceToEditName == null) return true;
+            return _controller.GetSurface(_surfaceToEditName).CreationData.IsGeometryBased();
         }
     }
 

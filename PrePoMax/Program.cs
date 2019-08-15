@@ -20,6 +20,16 @@ namespace PrePoMax
             System.Threading.Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.InvariantCulture;
             System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = System.Globalization.CultureInfo.InvariantCulture;
 
+            // Set MessageBoxButtons to English defaults
+            MessageBoxManager.OK = "OK";
+            MessageBoxManager.Cancel = "Cancel";
+            MessageBoxManager.Abort = "Abort";
+            MessageBoxManager.Retry = "Retry";
+            MessageBoxManager.Ignore = "Ignore";
+            MessageBoxManager.Yes = "Yes";
+            MessageBoxManager.No = "No";
+            MessageBoxManager.Register();
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new FrmMain(args));

@@ -66,7 +66,7 @@ namespace FileInOut.Input
                     if (elementsToImport != ElementsToImport.Shell) mesh.RemoveElementsByType<FeElement2D>();
                     if (elementsToImport != ElementsToImport.Solid) mesh.RemoveElementsByType<FeElement3D>();
                 }
-
+                
                 return mesh;
             }
 

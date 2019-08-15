@@ -45,10 +45,10 @@ namespace PrePoMax.Forms
         [Id(3, 1)]
         public string NodeSetName
         { 
-            get { return _referencePoint.NodeSetName; } 
+            get { return _referencePoint.CreatedFromNodeSetName; } 
             set 
             {
-                _referencePoint.NodeSetName = value;
+                _referencePoint.CreatedFromNodeSetName = value;
             } 
         }
 
@@ -139,7 +139,7 @@ namespace PrePoMax.Forms
                 _dctd.GetProperty("Y").SetIsReadOnly(true);
                 _dctd.GetProperty("Z").SetIsReadOnly(true);
 
-                if (_referencePoint.NodeSetName == null && _dctd.GetProperty("NodeSetName").StatandardValues.Count > 0)
+                if (_referencePoint.CreatedFromNodeSetName == null && _dctd.GetProperty("NodeSetName").StatandardValues.Count > 0)
                 {
                     NodeSetName = _dctd.GetProperty("NodeSetName").StatandardValues.First().ToString();
                 }

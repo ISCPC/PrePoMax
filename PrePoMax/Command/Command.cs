@@ -13,18 +13,14 @@ namespace PrePoMax.Commands
     {
         // Variables                                                                                                                
         private string _name;
-        private DateTime _dateCreated;
+        protected DateTime _dateCreated;
 
 
         // Properties                                                                                                               
         public string Name { get { return _name; } }
 
 
-        // Callbacks
-        //public Action CommnadFinished;
-
-
-        // Constructor                                                                                                              
+        // Constructors                                                                                                             
         public Command(string name)
         {
             _name = name;
@@ -38,14 +34,10 @@ namespace PrePoMax.Commands
             //if (CommnadFinished != null) CommnadFinished();
             return true;
         }
-
-       
         public virtual string GetCommandString()
         {
             return _dateCreated.ToString("MM/dd/yy HH:mm:ss") + "   " + _name + ": ";
         }
-
-
         protected string GetArrayAsString(string[] array)
         {
             string names = "[";

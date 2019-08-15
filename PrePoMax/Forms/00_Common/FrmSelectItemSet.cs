@@ -14,10 +14,20 @@ namespace PrePoMax
 {
     public partial class FrmSelectItemSet : Form
     {
+        // Enum
+        private enum SelectionType
+        {
+            Geometry,
+            Mesh
+        }
+
+
         // Variables                                                                                                                
         private bool _checkBoxEventRunning;
         private ItemSetData _itemSetData;
         private Controller _controller;
+        private SelectionType _prevSelectionType;
+
 
         // Properties                                                                                                               
         public ItemSetData ItemSetData
@@ -25,17 +35,7 @@ namespace PrePoMax
             get { return _itemSetData; } 
             set { if (_itemSetData != value) _itemSetData = value; }
         }
-
-
-        // Callbacks                                                                                                                
-        //public Func<int[]> GetSelectionIds;
-        //public Action SetSelectionOff;
-        //public Action<vtkSelectBy> SetSelectBy;
-        //public Action<double> SetSelectAngle;
-        //public Action<bool> RemoveLastSelectionNode;
-
-        //public Action ClearSelection;
-
+        
 
         // Constructors                                                                                                             
         public FrmSelectItemSet(Controller controller)
@@ -45,6 +45,7 @@ namespace PrePoMax
             _checkBoxEventRunning = false;
             _controller = controller;
             _itemSetData = null;
+            _prevSelectionType = SelectionType.Geometry;
         }
         public FrmSelectItemSet(Controller controller, ItemSetData itemSetData)
             : this(controller)
@@ -54,17 +55,14 @@ namespace PrePoMax
 
 
         // Event handlers                                                                                                           
-        private void FrmSelectItemSet_Shown(object sender, EventArgs e)
-        {
-            // called on minimize - maximize
-            this.DialogResult = DialogResult.None;    // minimizing the control
-
-            rbSelectBy_CheckedChanged(null, null);
-        }
         private void FrmSelectItemSet_VisibleChanged(object sender, EventArgs e)
         {
             // called every time the form is shown with: form.Show()
-            if (this.Visible) rbSelectBy_CheckedChanged(null, null);
+            if (this.Visible)
+            {
+                this.DialogResult = DialogResult.None; // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
+                rbSelectBy_CheckedChanged(null, null);
+            }
         }
         private void FrmSelectItemSet_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -78,48 +76,81 @@ namespace PrePoMax
         }
 
         private void rbSelectBy_CheckedChanged(object sender, EventArgs e)
-        {
-            if (_checkBoxEventRunning) return;  // allow only one running function
+        {            
+            // Allow only one running function - disable check boy event
+            if (_checkBoxEventRunning) return;  
             else _checkBoxEventRunning = true;
 
-
-            // clear selection - if geometry check changed
-            if (rbGeometry.Checked || _controller.SelectBy == vtkSelectBy.Geometry)
-                _controller.ClearSelectionHistory();
-
-            // connect two group boxes of radio buttons
-            if (sender != null)
+            // Connect two group boxes of radio buttons
+            if (sender != null) // radio button check was activated by user
             {
-                if (sender == rbGeometry)
+                // If radio button was checked off - do nothing; this must be 
+                if (!((RadioButton)sender).Checked)
                 {
-                    if (rbNode.Checked) rbNode.Checked = false;
-                    if (rbElement.Checked) rbElement.Checked = false;
-                    if (rbEdge.Checked) rbEdge.Checked = false;
-                    if (rbSurface.Checked) rbSurface.Checked = false;
-                    if (rbPart.Checked) rbPart.Checked = false;
-                    if (rbEdgeAngle.Checked) rbEdgeAngle.Checked = false;
-                    if (rbSurfaceAngle.Checked) rbSurfaceAngle.Checked = false;
-                    if (rbId.Checked) rbId.Checked = false;
+                    _checkBoxEventRunning = false;
+                    return;
                 }
-                else
-                {
-                    if (rbGeometry.Checked) rbGeometry.Checked = false;
-                }
+                // Set new states of radio buttons before everything else
+                if (rbGeometry.Checked && sender != rbGeometry)
+                    rbGeometry.Checked = false;
+                if (rbGeometryEdgeAngle.Checked && sender != rbGeometryEdgeAngle)
+                    rbGeometryEdgeAngle.Checked = false;
+                if (rbGeometrySurfaceAngle.Checked && sender != rbGeometrySurfaceAngle)
+                    rbGeometrySurfaceAngle.Checked = false;
+
+                if (rbNode.Checked && sender != rbNode) rbNode.Checked = false;
+                if (rbElement.Checked && sender != rbElement) rbElement.Checked = false;
+                if (rbEdge.Checked && sender != rbEdge) rbEdge.Checked = false;
+                if (rbSurface.Checked && sender != rbSurface) rbSurface.Checked = false;
+                if (rbPart.Checked && sender != rbPart) rbPart.Checked = false;
+                if (rbEdgeAngle.Checked && sender != rbEdgeAngle) rbEdgeAngle.Checked = false;
+                if (rbSurfaceAngle.Checked && sender != rbSurfaceAngle) rbSurfaceAngle.Checked = false;
+                if (rbId.Checked && sender != rbId) rbId.Checked = false;
             }
 
-            // enable/disable Textboxes
+            // Determine selection type and change of selection type
+            bool selectionTypeChanged = false;
+            SelectionType currentSelectionType;
+            if (rbGeometry.Checked || rbGeometryEdgeAngle.Checked || rbGeometrySurfaceAngle.Checked)
+            {
+                selectionTypeChanged = _prevSelectionType != SelectionType.Geometry;
+                currentSelectionType = SelectionType.Geometry;
+            }
+            else
+            {
+                selectionTypeChanged = _prevSelectionType != SelectionType.Mesh;
+                currentSelectionType = SelectionType.Mesh;
+            }
+            // Clear selection - if geometry selection type changed by the USER: 
+            // sender != null                                                    
+            // Visible = true - user action                                      
+            if (sender != null && Visible && selectionTypeChanged) _controller.ClearSelectionHistory();
+
+            // Enable/disable Textboxes
+            tbGeometryEdgeAngle.Enabled = rbGeometryEdgeAngle.Checked;
+            tbGeometrySurfaceAngle.Enabled = rbGeometrySurfaceAngle.Checked;
             tbSurfaceAngle.Enabled = rbSurfaceAngle.Checked;
             tbEdgeAngle.Enabled = rbEdgeAngle.Checked;
             tbId.Enabled = rbId.Checked;
-            // enable/disable buttons
+            // Enable/disable buttons
             btnAddId.Enabled = rbId.Checked;
             btnSubtractId.Enabled = rbId.Checked;
-            // check All and Invert buttons
-            btnSelectAll.Enabled = !rbGeometry.Checked;
-            btnInvertSelection.Enabled = !rbGeometry.Checked;
+            // Check All and Invert buttons
+            btnSelectAll.Enabled = currentSelectionType == SelectionType.Mesh;
+            btnInvertSelection.Enabled = currentSelectionType == SelectionType.Mesh;
 
             vtkSelectBy selectBy;
             if (rbGeometry.Checked) selectBy = vtkSelectBy.Geometry;
+            else if (rbGeometryEdgeAngle.Checked)
+            {
+                selectBy = vtkSelectBy.GeometryEdgeAngle;
+                tbGeometryEdgeAngle_TextChanged(null, null);
+            }
+            else if (rbGeometrySurfaceAngle.Checked)
+            {
+                selectBy = vtkSelectBy.GeometrySurfaceAngle;
+                tbGeometrySurfaceAngle_TextChanged(null, null);
+            }
             else if (rbNode.Checked) selectBy = vtkSelectBy.Node;
             else if (rbElement.Checked) selectBy = vtkSelectBy.Element;
             else if (rbEdge.Checked) selectBy = vtkSelectBy.Edge;
@@ -136,23 +167,30 @@ namespace PrePoMax
                 tbSurfaceAngle_TextChanged(null, null);
             }
             else if (rbId.Checked) selectBy = vtkSelectBy.Id;
-            else return; // do not select
+            else selectBy = vtkSelectBy.Off;
 
+            // Set selection
             _controller.SelectBy = selectBy;
-
+            // Set previous selection type
+            _prevSelectionType = currentSelectionType;
+            // Enable check box event
             _checkBoxEventRunning = false;
         }
-        private void tbSurfaceAngle_TextChanged(object sender, EventArgs e)
+        private void tbGeometryEdgeAngle_TextChanged(object sender, EventArgs e)
         {
-            double angle;
-            if (double.TryParse(tbSurfaceAngle.Text, out angle)) _controller.SetSelectAngle(angle);
-            else MessageBox.Show("The selection angle is not a valid number.");
+            SetSelectionAngle(tbGeometryEdgeAngle);
+        }
+        private void tbGeometrySurfaceAngle_TextChanged(object sender, EventArgs e)
+        {
+            SetSelectionAngle(tbGeometrySurfaceAngle);
         }
         private void tbEdgeAngle_TextChanged(object sender, EventArgs e)
         {
-            double angle;
-            if (double.TryParse(tbEdgeAngle.Text, out angle)) _controller.SetSelectAngle(angle);
-            else MessageBox.Show("The selection angle is not a valid number.");
+            SetSelectionAngle(tbEdgeAngle);
+        }
+        private void tbSurfaceAngle_TextChanged(object sender, EventArgs e)
+        {
+            SetSelectionAngle(tbSurfaceAngle);
         }
         private void btnSelectAll_Click(object sender, EventArgs e)
         {
@@ -226,19 +264,37 @@ namespace PrePoMax
             Hide();
         }
 
-    
-
-       
-       
-
 
         // Methods                                                                                                                  
-       
+        public void SetGeometrySelection(bool selectGeometry)
+        {
+            if (selectGeometry == rbGeometry.Checked) return;
 
-      
+            if (selectGeometry) rbGeometry.Checked = true;
+            else rbNode.Checked = true;
+        }
 
-
-
-
+        private void SetSelectionAngle(TextBox tbAngle)
+        {
+            double angle;
+            if (double.TryParse(tbAngle.Text, out angle)) _controller.SetSelectAngle(angle);
+            else MessageBox.Show("The selection angle is not a valid number.");
+        }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -30,10 +30,10 @@ namespace PrePoMax.Forms
         [DescriptionAttribute("The value for the minimum element size.")]
         public double MinH { get { return _parameters.MinH; } set { _parameters.MinH = value; } }
 
-        [CategoryAttribute("\tSize")]
-        [OrderedDisplayName(2, 10, "Fineness")]
-        [DescriptionAttribute("The value of the mesh fineness (0 => coarse; 1 => fine).")]
-        public double Fineness { get { return _parameters.Fineness; } set { _parameters.Fineness = value; } }
+        //[CategoryAttribute("\tSize")]
+        //[OrderedDisplayName(2, 10, "Fineness")]
+        //[DescriptionAttribute("The value of the mesh fineness (0 => coarse; 1 => fine).")]
+        //public double Fineness { get { return _parameters.Fineness; } set { _parameters.Fineness = value; } }
 
         [CategoryAttribute("\tSize")]
         [OrderedDisplayName(3, 10, "Grading")]

@@ -10,7 +10,7 @@ namespace CaeMesh
     public class VisualizationData
     {
         // vertex
-        // edge     - parabolic edge [0, 1, 2] is discretized like 0----2----1
+        // edge     - parabolic edge [0, 1, 2] is visually discretized like 0----2----1
         // face     - cells limited by edges
         // surface  - can be arbitrary combination of cells
 

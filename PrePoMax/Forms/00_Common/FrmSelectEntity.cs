@@ -17,6 +17,7 @@ namespace PrePoMax.Forms
         private string _entitiyNames;
         private string _stepName;
         private NamedClass[] _entitiesToSelect;
+        private string[] _preSelectedEntities;
         private Controller _controller;
 
         // Properties                                                                                                               
@@ -90,6 +91,10 @@ namespace PrePoMax.Forms
                 Hide();
             }
         }
+        private void FrmSelectEntity_VisibleChanged(object sender, EventArgs e)
+        {
+            if (Visible) SetEntityNamesToSelect();
+        }
         private void cbHighlight_CheckedChanged(object sender, EventArgs e)
         {
             dgvNames_SelectionChanged(null, null);
@@ -119,18 +124,16 @@ namespace PrePoMax.Forms
         }
 
         // Methods                                                                                                                  
-        public void PrepareForm(string title, bool multiselect, NamedClass[] entitiesToSelect, string stepName = null)
+        public void PrepareForm(string title, bool multiselect, NamedClass[] entitiesToSelect, string[] preSelectedEntities,
+                                string stepName = null)
         {
             this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
 
             EntitiesName = title;
             MultiSelect = multiselect;
             _entitiesToSelect = entitiesToSelect;
+            _preSelectedEntities = preSelectedEntities;
             _stepName = stepName;
-
-            SetEntityNamesToSelect();
-
-            dgvNames_SelectionChanged(null, null);
         }
         private void SetEntityNamesToSelect()
         {
@@ -140,6 +143,15 @@ namespace PrePoMax.Forms
             {
                 rowId = dgvNames.Rows.Add(new object[] { entity.Name });
                 dgvNames.Rows[rowId].Cells[dgvNames.Columns[0].Name].Tag = entity;
+                
+            }
+
+            dgvNames.ClearSelection();
+            foreach (DataGridViewRow row in dgvNames.Rows)
+            {
+                // setting row.selected = false in SingleSelection mode clears the selected row which has selection = true
+                row.Selected = _preSelectedEntities.Contains(row.Cells[dgvNames.Columns[0].Name].Value);
+                if (dgvNames.SelectedRows.Count > 0 && !MultiSelect) break;
             }
         }
         public string[] GetSelectedEntityNames()
@@ -152,13 +164,6 @@ namespace PrePoMax.Forms
             return names.ToArray();
         }
 
-       
-
-      
-
-       
-
-     
-       
+        
     }
 }

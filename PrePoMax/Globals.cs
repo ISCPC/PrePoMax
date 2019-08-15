@@ -14,8 +14,14 @@ namespace PrePoMax
         public static string ProgramName = "PrePoMax v0.5.2";
 
         public static string ReadyText = "Ready";
-        public static string SavingText = "Saving ...";
-        public static string SavingAsText = "Saving As ...";
+        public static string OpeningText = "Opening...";
+        public static string ImportingText = "Importing...";
+        public static string SavingText = "Saving...";
+        public static string SavingAsText = "Saving As...";
+        public static string ExportingText = "Exporting...";
+        public static string MeshingText = "Meshing...";
+        public static string UndoingText = "Undoing...";
+        public static string RegeneratingText = "Regenerating history...";
 
         public static string SettingsFileName = "settings.bin";
         public static string MaterialLibraryFileName = "materials.lib";

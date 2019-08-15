@@ -7,7 +7,6 @@ SAVE TO ANOTHER FILE AND THEN REMOVE THE OLDER FILE
 By Martin:
 7. 7. 2019
 0) add all files from the video tutorials to the new version
-1) support of RPs in history output - be careful about the rotational nodes where are moments and rotations
 3) support for smart naming - ANSYS "rename based on definition".
 4) MINOR - support for the same names of node sets, element sets, surfaces, reference points ...
 5) support for moment loads on surfaces
@@ -21,6 +20,8 @@ By Martin:
 17) shape optimization, adaptive mesh refinement
 18) automatic contact pair detection
 19) support for oppening older file versions
+21) pre-select the parts in the parts selection window before Transformations
+22) add support for changing the active step while the animation is on
 
 
 By Vittorio:
@@ -49,7 +50,6 @@ Old
 
 By Sergio:
 28.5.2019
-- History output for RP'same
 - Option to make all noncomputed parts transparent
 
 24.8.2018
@@ -57,11 +57,8 @@ By Sergio:
 - tabular amplitude definitions
 - 2D plot utility 
 - exporting results to Paraview (Calmed does not export all values).
-26.8.2018
-- grapical representation of the node sets, element sets to turn on/off
 30.7.2018
 - sorting of part names, set names :- this is not possible using current user keywords positioning system with indices
-- tie constraint - swap master/slave
 - analysis should be run in a separate folder with the analysis name; 
 - option to use pmx file folder as working folder
 
@@ -96,23 +93,17 @@ By Martin:
 
 By Matej
 - wrong selection when using thin 3D structures due to the GetNearestPoint selection on actor locator
-- Slow animation - change parabolic elements to linear elements? draw multiple models and hide/show them?
-  use vtkWarpVector to deform the mesh?
 - Custom Type Editor for units and BC https://www.cyotek.com/blog/creating-a-custom-typeconverter-part-1   
 									  https://msdn.microsoft.com/en-us/library/ayybcxe5.aspx#Type
 
-- show loads and boundary conditions in dependance from the selected step
 - if mesh fails, the history is corrupt - the meshing parameters remain in history
 - define the titles of all different message boxes
 - min/max widgest are drawn correctly only by using the front view with animation turned on - fix it differently
-- deactivate constraint
 - naming BCs, constraints ... one name for symbol and surface or node set... -> dictionary<name, list<maxActors>>
 - Correctly draw transparent highlighted faces -> unstructured grid -> polyData -> DepthSortPolydata - SLOW
 - Reduce the number of commands - as by Activate/Deactivate - NOT ACTIVE ANYMORE
 - Add zero increment in each step with no displacements - done for first step
 - Faster picking - first a vtkRenderedAreaSelector and if hit do a hardwareAreaPick; Found at tests of vtkProp3DCollection: (http://www.vtk.org/gitweb?p=VTK.git;a=blob;f=Rendering/Core/Testing/Cxx/TestCompositePolyDataMapper2Picking.cxx)
-- Add View classes for selected items for property grid in treeview
-- Convert from linear to quadratic elements
 - add Shell, beam elements
 
 Errors:
@@ -141,7 +132,12 @@ Done
 
 Version 0.5.2 Master branch
 
+Changed the wireframe mode to show model edges
+Fixed a bug with the strage selection in some cases - check for cellId != -1
+Added manager for English language of message box buttons
 Highlight hidden parts if they are selected in the model tree
+Added support of RPs in history output
+Added support for swap master/slave surfaces in tie constraints - context menu
 Added support to activate/deactivate steps
 Added descriptions provided by Martin to the video tutorials and
 Added support to activate/deactivate constraints

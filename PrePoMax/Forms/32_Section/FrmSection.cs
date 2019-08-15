@@ -76,6 +76,7 @@ namespace PrePoMax.Forms
                 string valueString = value.ToString();
 
                 if (propertyGrid.SelectedObject == null) { }
+                else if (propertyGrid.SelectedObject is ViewError) { }
                 else if (propertyGrid.SelectedObject is ViewSolidSection)
                 {
                     ViewSolidSection vss = propertyGrid.SelectedObject as ViewSolidSection;

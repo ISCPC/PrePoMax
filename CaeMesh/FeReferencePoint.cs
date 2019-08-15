@@ -29,8 +29,11 @@ namespace CaeMesh
         private FeReferencePointCreatedFrom _createdFrom;
         private int _createdFromRefNodeId1;
         private int _createdFromRefNodeId2;
-        private string _nodeSetName;
-
+        private string _createdFromNodeSetName;
+        private string _refNodeSetName;
+        private string _rotNodeSetName;
+        public const string RefName = "_ref_";
+        public const string RotName = "_rot_";
 
         // Properties                                                                                                               
         public double X { get { return _x; } set { _x = value; } }
@@ -50,7 +53,9 @@ namespace CaeMesh
         }
         public int CreatedFromRefNodeId1 { get { return _createdFromRefNodeId1; } set { _createdFromRefNodeId1 = value; } }
         public int CreatedFromRefNodeId2 { get { return _createdFromRefNodeId2; } set { _createdFromRefNodeId2 = value; } }
-        public string NodeSetName { get { return _nodeSetName; } set { _nodeSetName = value; } }
+        public string CreatedFromNodeSetName { get { return _createdFromNodeSetName; } set { _createdFromNodeSetName = value; } }
+        public string RefNodeSetName { get { return _refNodeSetName; } set { _refNodeSetName = value; } }
+        public string RotNodeSetName { get { return _rotNodeSetName; } set { _rotNodeSetName = value; } }
 
 
         // Constructors                                                                                                             
@@ -78,7 +83,7 @@ namespace CaeMesh
             : base(name)
         {
             Clear();
-            _nodeSetName = nodeSetName;
+            _createdFromNodeSetName = nodeSetName;
             _createdFrom = createdFrom;
         }
 
@@ -96,7 +101,7 @@ namespace CaeMesh
             _createdFrom = FeReferencePointCreatedFrom.Coordinates;
             _createdFromRefNodeId1 = -1;
             _createdFromRefNodeId2 = -1;
-            _nodeSetName = null;
+            _createdFromNodeSetName = null;
         }
         public double[] Coor()
         {

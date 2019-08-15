@@ -15,17 +15,14 @@ namespace CaeGlobals
             Vec3D v2 = new Vec3D(p2);
 
             // http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
-            double d0 = Vec3D.CrossProduct(v0 - v1, v0 - v2).Len / (v2 - v1).Len;
-            double d1 = (v0 - v1).Len;
-            double d2 = (v0 - v2).Len;
-            double d3 = (v1 - v2).Len;
+            double t = -Vec3D.DotProduct(v1 - v0, v2 - v1) / (v2 - v1).Len2;
 
-            if (d3 > d1 && d3 > d2)
-            {
-                // d3 is the longest side of the triangle so the closest point is between segment end points
-                return d0;
-            }
-            else return Math.Min(d1, d2);
+            if (t <= 0)
+                return (v0 - v1).Len;
+            else if (t >= 1)
+                return (v0 - v2).Len;
+            else
+                return Vec3D.CrossProduct(v0 - v1, v0 - v2).Len / (v2 - v1).Len;
         }
     }
 }

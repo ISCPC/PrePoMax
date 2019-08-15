@@ -119,6 +119,20 @@ namespace UserControls
                 cltvResults.DisableMouse = value;
             }
         }
+        public string[] IntersectSelectionWithList(NamedClass[] list)
+        {
+            List<string> selected = new List<string>();
+
+            CodersLabTreeView tree = GetActiveTree();
+            foreach (TreeNode node in tree.SelectedNodes)
+            {
+                if (node.Tag != null && list.Contains(node.Tag))
+                    selected.Add(node.Text);
+            }
+
+            return selected.ToArray();
+        }
+
 
         // Events                                                                                                                   
         public event Action<ViewType> GeometryMeshResultsEvent;

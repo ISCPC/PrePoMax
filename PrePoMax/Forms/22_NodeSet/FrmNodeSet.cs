@@ -9,7 +9,7 @@ using System.Windows.Forms;
 
 namespace PrePoMax.Forms
 {
-    class FrmNodeSet : UserControls.FrmProperties, IFormBase
+    class FrmNodeSet : UserControls.FrmProperties, IFormBase, IFormItemSetDataParent
     {
         // Variables                                                                                                                
         private HashSet<string> _allExistingNames;
@@ -41,18 +41,6 @@ namespace PrePoMax.Forms
         {
             this.gbProperties.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // btnOK
-            // 
-            this.btnOK.Location = new System.Drawing.Point(160, 376);
-            // 
-            // btnCancel
-            // 
-            this.btnCancel.Location = new System.Drawing.Point(241, 376);
-            // 
-            // btnOkAddNew
-            // 
-            this.btnOkAddNew.Location = new System.Drawing.Point(65, 376);
             // 
             // FrmNodeSet
             // 
@@ -173,6 +161,15 @@ namespace PrePoMax.Forms
         private string GetNodeSetName()
         {
             return NamedClass.GetNewValueName(_allExistingNames.ToArray(), "NodeSet-");
+        }
+
+
+        // IFormItemSetDataParent
+        public bool IsSelectionGeometryBased()
+        {
+            // prepare ItemSetDataEditor
+            if (_nodeSetToEditName == null) return true;
+            return _controller.GetNodeSet(_nodeSetToEditName).CreationData.IsGeometryBased();
         }
 
     }

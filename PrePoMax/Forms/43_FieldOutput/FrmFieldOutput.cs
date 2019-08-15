@@ -51,7 +51,7 @@ namespace PrePoMax.Forms
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.ClientSize = new System.Drawing.Size(334, 461);
-            this.Name = "FrmTmp";
+            this.Name = "FrmFieldOutput";
             this.Text = "Edit Field Output";
             this.gbType.ResumeLayout(false);
             this.gbProperties.ResumeLayout(false);

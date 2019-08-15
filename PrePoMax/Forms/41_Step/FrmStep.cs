@@ -60,29 +60,16 @@ namespace PrePoMax.Forms
             // gbProperties
             // 
             this.gbProperties.Location = new System.Drawing.Point(12, 115);
-            this.gbProperties.Size = new System.Drawing.Size(310, 355);
+            this.gbProperties.Size = new System.Drawing.Size(310, 305);
             // 
             // propertyGrid
             // 
-            this.propertyGrid.Size = new System.Drawing.Size(298, 327);
-            // 
-            // btnOK
-            // 
-            this.btnOK.Location = new System.Drawing.Point(160, 476);
-            // 
-            // btnCancel
-            // 
-            this.btnCancel.Location = new System.Drawing.Point(241, 476);
-            // 
-            // btnOkAddNew
-            // 
-            this.btnOkAddNew.Location = new System.Drawing.Point(65, 476);
+            this.propertyGrid.Size = new System.Drawing.Size(298, 277);
             // 
             // FrmStep
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.ClientSize = new System.Drawing.Size(334, 511);
-            this.MinimumSize = new System.Drawing.Size(350, 550);
+            this.ClientSize = new System.Drawing.Size(334, 461);
             this.Name = "FrmStep";
             this.Text = "Edit Step";
             this.gbType.ResumeLayout(false);

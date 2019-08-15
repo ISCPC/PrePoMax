@@ -116,7 +116,7 @@ namespace CaeMesh
             // defaults
             _maxH = 1000;
             _minH = 0;
-            _fineness = 0.5;
+            _fineness = 0.5;        // has no effect
             _grading = 0.3;
             _elementsperedge = 2;
             _elementspercurve = 2;
@@ -180,6 +180,22 @@ namespace CaeMesh
             sb.AppendLine("0.01");
 
             System.IO.File.WriteAllText(fileName, sb.ToString());
+        }
+        static public bool Equals(MeshingParameters meshingParameters1, MeshingParameters meshingParameters2)
+        {
+            if (meshingParameters1 == null) return false;
+            if (meshingParameters2 == null) return false;
+            if (meshingParameters1._maxH != meshingParameters2._maxH) return false;
+            if (meshingParameters1._minH != meshingParameters2._minH) return false;
+            if (meshingParameters1._fineness != meshingParameters2._fineness) return false;
+            if (meshingParameters1._grading != meshingParameters2._grading) return false;
+            if (meshingParameters1._elementsperedge != meshingParameters2._elementsperedge) return false;
+            if (meshingParameters1._elementspercurve != meshingParameters2._elementspercurve) return false;
+            if (meshingParameters1._optimizeSteps2D != meshingParameters2._optimizeSteps2D) return false;
+            if (meshingParameters1._optimizeSteps3D != meshingParameters2._optimizeSteps3D) return false;
+            if (meshingParameters1._secondOrder != meshingParameters2._secondOrder) return false;
+            if (meshingParameters1._midsideNodesOnGeometry != meshingParameters2._midsideNodesOnGeometry) return false;
+            return true;
         }
     }
 }

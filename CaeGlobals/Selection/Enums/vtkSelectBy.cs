@@ -8,7 +8,9 @@ namespace CaeGlobals
 {
     public enum vtkSelectBy
     {
+        // General
         Off,
+        // Mesh based
         Id,
         Node,
         Element,
@@ -17,9 +19,11 @@ namespace CaeGlobals
         EdgeAngle,
         SurfaceAngle,
         Part,
-
+        // Geometry
         Geometry,
-
+        GeometryEdgeAngle,
+        GeometrySurfaceAngle,
+        // Querry
         QueryNode,
         QueryElement,
         QueryPart

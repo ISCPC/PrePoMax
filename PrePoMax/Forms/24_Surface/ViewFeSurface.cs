@@ -60,8 +60,13 @@ namespace PrePoMax.Forms
         [DescriptionAttribute("Select the node set for the surface creation.")]
         public string NodeSetName { get { return _surface.CreatedFromNodeSetName; } set { _surface.CreatedFromNodeSetName = value; } }
 
+        //[CategoryAttribute("Data")]
+        //[OrderedDisplayName(5, 10, "Geom. based")]
+        //[DescriptionAttribute("Is surface selection based on geometry?")]
+        //public bool GeomBased { get { return _surface.CreationData.IsGeometryBased(); } }
+
         [CategoryAttribute("Data")]
-        [OrderedDisplayName(5, 10, "Area")]
+        [OrderedDisplayName(6, 10, "Area")]
         [DescriptionAttribute("Area of the surface.")]
         public double Area { get { return _surface.Area; } }
 

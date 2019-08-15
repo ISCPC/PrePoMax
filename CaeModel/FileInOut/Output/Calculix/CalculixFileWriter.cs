@@ -79,7 +79,7 @@ namespace FileInOut.Output
 
             title = new CalTitle("Node sets", "");
             keywords.Add(title);
-            AppendNodeSets(model, title);
+            AppendNodeSets(model, referencePointsNodeIds, title);
 
             title = new CalTitle("Element sets", "");
             keywords.Add(title);
@@ -274,7 +274,7 @@ namespace FileInOut.Output
                 }
             }
         }
-        static private void AppendNodeSets(FeModel model, CalculixKeyword parent)
+        static private void AppendNodeSets(FeModel model, Dictionary<string, int[]> referencePointsNodeIds, CalculixKeyword parent)
         {
             if (model.Mesh != null)
             {
@@ -286,6 +286,22 @@ namespace FileInOut.Output
                         nodeSet = new CalNodeSet(entry.Value);
                         parent.AddKeyword(nodeSet);
                     }
+                }
+                FeReferencePoint rp;
+                FeNodeSet rpNodeSet;
+                foreach (var entry in referencePointsNodeIds)
+                {
+                    rp = model.Mesh.ReferencePoints[entry.Key];
+                    rp.RefNodeSetName = rp.Name + FeReferencePoint.RefName + entry.Value[0];
+                    rp.RotNodeSetName = rp.Name + FeReferencePoint.RotName + entry.Value[1];
+
+                    rpNodeSet = new FeNodeSet(rp.RefNodeSetName, new int[] { entry.Value[0] });
+                    nodeSet = new CalNodeSet(rpNodeSet);
+                    parent.AddKeyword(nodeSet);
+
+                    rpNodeSet = new FeNodeSet(rp.RotNodeSetName, new int[] { entry.Value[1] });
+                    nodeSet = new CalNodeSet(rpNodeSet);
+                    parent.AddKeyword(nodeSet);
                 }
             }
         }
@@ -589,8 +605,20 @@ namespace FileInOut.Output
         {
             if (historyOutput is NodalHistoryOutput nho)
             {
-                CalNodePrint nodePrint = new CalNodePrint(model, nho);
-                parent.AddKeyword(nodePrint);
+                CalNodePrint nodePrint;
+                if (nho.RegionType == RegionTypeEnum.ReferencePointName)
+                {
+                    FeReferencePoint rp = model.Mesh.ReferencePoints[nho.RegionName];
+                    nodePrint = new CalNodePrint(model, nho, rp.RefNodeSetName);
+                    parent.AddKeyword(nodePrint);
+                    nodePrint = new CalNodePrint(model, nho, rp.RotNodeSetName);
+                    parent.AddKeyword(nodePrint);
+                }
+                else
+                {
+                    nodePrint = new CalNodePrint(model, nho);
+                    parent.AddKeyword(nodePrint);
+                }
             }
             else if (historyOutput is ElementHistoryOutput eho)
             {

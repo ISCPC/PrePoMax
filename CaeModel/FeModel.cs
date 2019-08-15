@@ -155,7 +155,8 @@ namespace CaeModel
                     if (historyOutput is NodalHistoryOutput nho)
                     {
                         valid = (nho.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(nho.RegionName))
-                                || (nho.RegionType == RegionTypeEnum.SurfaceName && (_mesh.Surfaces.ContainsValidKey(nho.RegionName)));
+                                || (nho.RegionType == RegionTypeEnum.SurfaceName && _mesh.Surfaces.ContainsValidKey(nho.RegionName))
+                                || (nho.RegionType == RegionTypeEnum.ReferencePointName && _mesh.ReferencePoints.ContainsValidKey(nho.RegionName));
                         SetItemValidity(nho, valid, items);
                         if (!valid && nho.Active) invalidItems.Add("History output: " + step.Name + ", " + nho.Name);
                     }
@@ -375,10 +376,10 @@ namespace CaeModel
         }
         public void ImportGeneratedMeshFromVolFile(string fileName, string partName, bool convertToSecondorder)
         {
+            // called after meshing in PrePoMax
             FeMesh mesh = FileInOut.Input.VolFileReader.Read(fileName, 
                                                              FileInOut.Input.ElementsToImport.Solid,
                                                              convertToSecondorder);
-
             // Rename the imported part
             string[] partNames = mesh.Parts.Keys.ToArray();
             if (partNames.Length != 1) throw new Exception("Mesh file does not contain exactly one part.");
@@ -386,8 +387,9 @@ namespace CaeModel
             part.Name = partName;
             mesh.Parts.Remove(partNames[0]);
             mesh.Parts.Add(part.Name, part);
-            
             ImportMesh(mesh);
+            // recolor parts at the end of the import
+            if (_geometry.Parts.ContainsKey(partName)) part.Color = _geometry.Parts[partName].Color;
         }
         public List<string> ImportMeshFromInpFile(string fileName, Action<string> WriteDataToOutput)
         {

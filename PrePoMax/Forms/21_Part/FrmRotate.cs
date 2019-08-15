@@ -120,6 +120,8 @@ namespace PrePoMax.Forms
         {
             double angle = _rotateParameters.AngleDeg * Math.PI / 180;
             _controller.RotateModelPartsCommand(_partNames, RotateCenter, RotateAxis, angle, _rotateParameters.Copy);
+
+            HighlightNodes();
         }
 
 

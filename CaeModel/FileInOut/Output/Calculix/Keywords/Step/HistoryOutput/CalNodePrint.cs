@@ -12,7 +12,7 @@ namespace FileInOut.Output.Calculix
     internal class CalNodePrint : CalculixKeyword
     {
         // Variables                                                                                                                
-        private string regionName;
+        private string _regionName;
         private readonly NodalHistoryOutput _nodalHistoryOutput;
 
 
@@ -26,14 +26,22 @@ namespace FileInOut.Output.Calculix
         // Constructor                                                                                                              
         public CalNodePrint(FeModel model, NodalHistoryOutput nodalHistoryOutput)
         {
-            _nodalHistoryOutput = nodalHistoryOutput;
+            _nodalHistoryOutput = nodalHistoryOutput;   // set this first
             _active = nodalHistoryOutput.Active;
 
-            regionName = ", Nset=";
+            _regionName = ", Nset=";
             if (_nodalHistoryOutput.RegionType == CaeGlobals.RegionTypeEnum.NodeSetName)
-                regionName += _nodalHistoryOutput.RegionName;
+                _regionName += _nodalHistoryOutput.RegionName;
             else if (_nodalHistoryOutput.RegionType == CaeGlobals.RegionTypeEnum.SurfaceName)
-                regionName += model.Mesh.Surfaces[_nodalHistoryOutput.RegionName].NodeSetName;
+                _regionName += model.Mesh.Surfaces[_nodalHistoryOutput.RegionName].NodeSetName;
+            else throw new NotSupportedException();
+        }
+
+        public CalNodePrint(FeModel model, NodalHistoryOutput nodalHistoryOutput, string regionName)
+        {
+            _regionName = ", Nset=" + regionName;
+            _nodalHistoryOutput = nodalHistoryOutput;
+            _active = nodalHistoryOutput.Active;
         }
 
 
@@ -44,7 +52,7 @@ namespace FileInOut.Output.Calculix
             string totals = "";
             if (_nodalHistoryOutput.TotalsType == TotalsTypeEnum.Yes) totals = ", Totals=Yes";
             else if (_nodalHistoryOutput.TotalsType == TotalsTypeEnum.Only) totals = ", Totals=Only";
-            return string.Format("*Node print{0}{1}{2}{3}", frequency, regionName, totals, Environment.NewLine);
+            return string.Format("*Node print{0}{1}{2}{3}", frequency, _regionName, totals, Environment.NewLine);
         }
 
         public override string GetDataString()

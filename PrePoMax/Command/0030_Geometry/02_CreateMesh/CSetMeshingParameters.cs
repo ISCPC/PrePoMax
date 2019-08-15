@@ -7,48 +7,81 @@ using PrePoMax;
 using CaeModel;
 using CaeMesh;
 using CaeGlobals;
-
+using System.Runtime.Serialization;
 
 namespace PrePoMax.Commands
 {
     [Serializable]
-    class CSetMeshingParameters : Command, ICommandWithDialog
+    class CSetMeshingParameters : Command, ICommandWithDialog, ISerializable
     {
         // Variables                                                                                                                
-        private string _partName;
+        private string[] _partNames;
         private MeshingParameters _meshingParameters;
 
 
-        // Constructor                                                                                                              
-        public CSetMeshingParameters(string partName, MeshingParameters meshingParameters)
+        // Constructors                                                                                                             
+        public CSetMeshingParameters(string[] partNames, MeshingParameters meshingParameters)
             : base("Set meshing parameters")
         {
-            _partName = partName;
+            _partNames = partNames;
             _meshingParameters = meshingParameters.DeepClone();
+        }
+        public CSetMeshingParameters(SerializationInfo info, StreamingContext context)
+            : base("Set meshing parameters")
+        {
+            string partName = null;         // old serialization parameter
+            foreach (SerializationEntry entry in info)
+            {
+                switch (entry.Name)
+                {
+                    case "Command+_dateCreated":
+                        _dateCreated = (DateTime)entry.Value; break;
+                    case "_partName":
+                        partName = (string)entry.Value; break;
+                    case "_partNames":
+                        _partNames = (string[])entry.Value; break;
+                    case "_meshingParameters":
+                        _meshingParameters = (MeshingParameters)entry.Value; break;
+                }
+            }
+            if (_partNames == null && partName != null) _partNames = new string[] { partName };
         }
 
 
         // Methods                                                                                                                  
         public override bool Execute(Controller receiver)
         {
-            receiver.SetMeshingParameters(_partName, _meshingParameters.DeepClone());
+            foreach (var partName in _partNames)
+            {
+                receiver.SetMeshingParameters(partName, _meshingParameters.DeepClone());
+            }
             return true;
         }
-
         public void ExecuteWithDialogs(Controller receiver)
         {
             // first set previously used meshing parameters
-            receiver.SetMeshingParameters(_partName, _meshingParameters.DeepClone());
+            foreach (var partName in _partNames)
+            {
+                receiver.SetMeshingParameters(partName, _meshingParameters.DeepClone());
+            }
             // get new meshing parameters
-            MeshingParameters meshingParameters = receiver.GetMeshingParameters(_partName);
+            MeshingParameters meshingParameters = receiver.GetMeshingParameters(_partNames);
             // if new parameters were defined use them, else use old mesh parameters
             if (meshingParameters != null) _meshingParameters = meshingParameters;
             Execute(receiver);
         }
-
         public override string GetCommandString()
         {
-            return base.GetCommandString() + _partName;
+            return base.GetCommandString() + GetArrayAsString(_partNames);
+        }
+
+
+        // ISerialization
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            info.AddValue("Command+_dateCreated", _dateCreated, typeof(DateTime));
+            info.AddValue("_partNames", _partNames, typeof(string[]));
+            info.AddValue("_meshingParameters", _meshingParameters, typeof(MeshingParameters));
         }
     }
 }

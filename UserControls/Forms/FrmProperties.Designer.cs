@@ -91,11 +91,11 @@
             // btnOkAddNew
             // 
             this.btnOkAddNew.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOkAddNew.Location = new System.Drawing.Point(65, 376);
+            this.btnOkAddNew.Location = new System.Drawing.Point(79, 376);
             this.btnOkAddNew.Name = "btnOkAddNew";
-            this.btnOkAddNew.Size = new System.Drawing.Size(90, 23);
+            this.btnOkAddNew.Size = new System.Drawing.Size(75, 23);
             this.btnOkAddNew.TabIndex = 14;
-            this.btnOkAddNew.Text = "OK - Add new";
+            this.btnOkAddNew.Text = "OK - New";
             this.btnOkAddNew.UseVisualStyleBackColor = true;
             this.btnOkAddNew.Click += new System.EventHandler(this.btnOKAddNew_Click);
             // 

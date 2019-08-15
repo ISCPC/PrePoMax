@@ -255,6 +255,7 @@
     <Compile Include="Forms\92_HistoryResultsOutput\FrmHistoryResultsOutput.Designer.cs">
       <DependentUpon>FrmHistoryResultsOutput.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\IFormItemSetDataParent.cs" />
     <Compile Include="Forms\IFormBase.cs" />
     <Compile Include="Forms\00_Common\ViewValue.cs" />
     <Compile Include="Forms\02_CalculixKeywordEditor\FrmCalculixKeywordEditor.cs">

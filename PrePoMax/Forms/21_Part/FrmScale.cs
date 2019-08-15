@@ -112,6 +112,7 @@ namespace PrePoMax.Forms
         protected override void Apply()
         {
             _controller.ScaleModelPartsCommand(_partNames, ScaleCenter, ScaleFactors, _scaleParameters.Copy);
+            HighlightNodes();
         }
 
 

@@ -75,10 +75,10 @@ namespace PrePoMax.Forms
             if (nameof(_viewReferencePoint.CreateReferencePointFrom) == propertyGrid.SelectedGridItem.PropertyDescriptor.Name)
             {
                 string value = (string)propertyGrid.SelectedGridItem.Value.ToString();
-                if (value != FeReferencePointCreatedFrom.Coordinates.ToString() && ReferencePoint.NodeSetName != null)
+                if (value != FeReferencePointCreatedFrom.Coordinates.ToString() && ReferencePoint.CreatedFromNodeSetName != null)
                 {
-                    if (_controller.GetUserNodeSetNames().Contains(ReferencePoint.NodeSetName))
-                        ReferencePoint.UpdateCoordinates(_controller.GetNodeSet(ReferencePoint.NodeSetName));
+                    if (_controller.GetUserNodeSetNames().Contains(ReferencePoint.CreatedFromNodeSetName))
+                        ReferencePoint.UpdateCoordinates(_controller.GetNodeSet(ReferencePoint.CreatedFromNodeSetName));
                 }
             }
 
@@ -147,9 +147,9 @@ namespace PrePoMax.Forms
                 CheckMissingValueRef(ref nodeSetNames, _viewReferencePoint.NodeSetName, s => { _viewReferencePoint.NodeSetName = s; });
 
                 // CheckMissingValue changes _propertyItemChanged -> update coordinates
-                if (_propertyItemChanged && ReferencePoint.NodeSetName != null
-                    && _controller.GetReferencePointNames().Contains(ReferencePoint.NodeSetName))
-                    ReferencePoint.UpdateCoordinates(_controller.GetNodeSet(ReferencePoint.NodeSetName));
+                if (_propertyItemChanged && ReferencePoint.CreatedFromNodeSetName != null
+                    && _controller.GetReferencePointNames().Contains(ReferencePoint.CreatedFromNodeSetName))
+                    ReferencePoint.UpdateCoordinates(_controller.GetNodeSet(ReferencePoint.CreatedFromNodeSetName));
             }
 
             _viewReferencePoint.PopululateDropDownList(nodeSetNames);

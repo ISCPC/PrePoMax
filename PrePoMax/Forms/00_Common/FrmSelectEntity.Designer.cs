@@ -149,6 +149,7 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Entity selection";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmSelectEntity_FormClosing);
+            this.VisibleChanged += new System.EventHandler(this.FrmSelectEntity_VisibleChanged);
             ((System.ComponentModel.ISupportInitialize)(this.dgvNames)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();

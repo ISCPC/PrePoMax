@@ -8,8 +8,8 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Windows.Forms.Design;
+using PrePoMax.Forms;
 
-//using System.Windows.Forms.Design;
 
 namespace PrePoMax
 {
@@ -54,6 +54,9 @@ namespace PrePoMax
                     _frmSelectItemSet.ItemSetData = _itemSetData;
                     _frmSelectItemSet.Location = _parentForm.Location;
                     _frmSelectItemSet.VisibleChanged += _frmSelectItemSet_VisibleChanged;
+
+                    if (_parentForm is IFormItemSetDataParent fdsp)
+                        _frmSelectItemSet.SetGeometrySelection(fdsp.IsSelectionGeometryBased());
 
                     _parentForm.Enabled = false;
                     _frmSelectItemSet.Show();

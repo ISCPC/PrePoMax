@@ -31,7 +31,6 @@
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnAddId = new System.Windows.Forms.Button();
             this.gbFEMesh = new System.Windows.Forms.GroupBox();
-            this.rbGeometry = new System.Windows.Forms.RadioButton();
             this.rbEdge = new System.Windows.Forms.RadioButton();
             this.rbSurface = new System.Windows.Forms.RadioButton();
             this.tbEdgeAngle = new UserControls.NumericTextBox();
@@ -44,13 +43,18 @@
             this.rbPart = new System.Windows.Forms.RadioButton();
             this.rbElement = new System.Windows.Forms.RadioButton();
             this.rbNode = new System.Windows.Forms.RadioButton();
+            this.rbGeometry = new System.Windows.Forms.RadioButton();
             this.btnClearSelection = new System.Windows.Forms.Button();
             this.btnInvertSelection = new System.Windows.Forms.Button();
             this.btnSelectAll = new System.Windows.Forms.Button();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.gbGeometry = new System.Windows.Forms.GroupBox();
+            this.tbGeometrySurfaceAngle = new UserControls.NumericTextBox();
+            this.rbGeometrySurfaceAngle = new System.Windows.Forms.RadioButton();
+            this.tbGeometryEdgeAngle = new UserControls.NumericTextBox();
+            this.rbGeometryEdgeAngle = new System.Windows.Forms.RadioButton();
             this.btnUndoSelection = new System.Windows.Forms.Button();
             this.btnOK = new System.Windows.Forms.Button();
-            this.gbGeometry = new System.Windows.Forms.GroupBox();
             this.gbFEMesh.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.gbGeometry.SuspendLayout();
@@ -58,8 +62,8 @@
             // 
             // btnCancel
             // 
-            this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnCancel.Location = new System.Drawing.Point(211, 362);
+            this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnCancel.Location = new System.Drawing.Point(220, 408);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 3;
@@ -70,7 +74,7 @@
             // btnAddId
             // 
             this.btnAddId.Enabled = false;
-            this.btnAddId.Location = new System.Drawing.Point(59, 221);
+            this.btnAddId.Location = new System.Drawing.Point(74, 221);
             this.btnAddId.Name = "btnAddId";
             this.btnAddId.Size = new System.Drawing.Size(49, 23);
             this.btnAddId.TabIndex = 2;
@@ -80,8 +84,9 @@
             // 
             // gbFEMesh
             // 
-            this.gbFEMesh.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
+            this.gbFEMesh.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.gbFEMesh.Controls.Add(this.rbEdge);
             this.gbFEMesh.Controls.Add(this.rbSurface);
             this.gbFEMesh.Controls.Add(this.tbEdgeAngle);
@@ -95,25 +100,12 @@
             this.gbFEMesh.Controls.Add(this.rbPart);
             this.gbFEMesh.Controls.Add(this.rbElement);
             this.gbFEMesh.Controls.Add(this.rbNode);
-            this.gbFEMesh.Location = new System.Drawing.Point(6, 88);
+            this.gbFEMesh.Location = new System.Drawing.Point(6, 131);
             this.gbFEMesh.Name = "gbFEMesh";
-            this.gbFEMesh.Size = new System.Drawing.Size(181, 250);
+            this.gbFEMesh.Size = new System.Drawing.Size(196, 253);
             this.gbFEMesh.TabIndex = 8;
             this.gbFEMesh.TabStop = false;
             this.gbFEMesh.Text = "FE mesh based selection";
-            // 
-            // rbGeometry
-            // 
-            this.rbGeometry.AutoSize = true;
-            this.rbGeometry.Checked = true;
-            this.rbGeometry.Location = new System.Drawing.Point(6, 22);
-            this.rbGeometry.Name = "rbGeometry";
-            this.rbGeometry.Size = new System.Drawing.Size(172, 19);
-            this.rbGeometry.TabIndex = 13;
-            this.rbGeometry.TabStop = true;
-            this.rbGeometry.Text = "Surfaces, edges and vertices";
-            this.rbGeometry.UseVisualStyleBackColor = true;
-            this.rbGeometry.CheckedChanged += new System.EventHandler(this.rbSelectBy_CheckedChanged);
             // 
             // rbEdge
             // 
@@ -140,9 +132,9 @@
             // tbEdgeAngle
             // 
             this.tbEdgeAngle.Enabled = false;
-            this.tbEdgeAngle.Location = new System.Drawing.Point(120, 145);
+            this.tbEdgeAngle.Location = new System.Drawing.Point(154, 145);
             this.tbEdgeAngle.Name = "tbEdgeAngle";
-            this.tbEdgeAngle.Size = new System.Drawing.Size(55, 23);
+            this.tbEdgeAngle.Size = new System.Drawing.Size(36, 23);
             this.tbEdgeAngle.TabIndex = 10;
             this.tbEdgeAngle.Text = "10";
             this.tbEdgeAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
@@ -162,7 +154,7 @@
             // btnSubtractId
             // 
             this.btnSubtractId.Enabled = false;
-            this.btnSubtractId.Location = new System.Drawing.Point(114, 221);
+            this.btnSubtractId.Location = new System.Drawing.Point(129, 221);
             this.btnSubtractId.Name = "btnSubtractId";
             this.btnSubtractId.Size = new System.Drawing.Size(61, 23);
             this.btnSubtractId.TabIndex = 8;
@@ -184,7 +176,7 @@
             // tbId
             // 
             this.tbId.Enabled = false;
-            this.tbId.Location = new System.Drawing.Point(59, 195);
+            this.tbId.Location = new System.Drawing.Point(74, 195);
             this.tbId.Name = "tbId";
             this.tbId.Size = new System.Drawing.Size(116, 23);
             this.tbId.TabIndex = 1;
@@ -193,9 +185,9 @@
             // tbSurfaceAngle
             // 
             this.tbSurfaceAngle.Enabled = false;
-            this.tbSurfaceAngle.Location = new System.Drawing.Point(120, 170);
+            this.tbSurfaceAngle.Location = new System.Drawing.Point(154, 170);
             this.tbSurfaceAngle.Name = "tbSurfaceAngle";
-            this.tbSurfaceAngle.Size = new System.Drawing.Size(55, 23);
+            this.tbSurfaceAngle.Size = new System.Drawing.Size(36, 23);
             this.tbSurfaceAngle.TabIndex = 5;
             this.tbSurfaceAngle.Text = "10";
             this.tbSurfaceAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
@@ -245,9 +237,23 @@
             this.rbNode.UseVisualStyleBackColor = true;
             this.rbNode.CheckedChanged += new System.EventHandler(this.rbSelectBy_CheckedChanged);
             // 
+            // rbGeometry
+            // 
+            this.rbGeometry.AutoSize = true;
+            this.rbGeometry.Checked = true;
+            this.rbGeometry.Location = new System.Drawing.Point(6, 22);
+            this.rbGeometry.Name = "rbGeometry";
+            this.rbGeometry.Size = new System.Drawing.Size(172, 19);
+            this.rbGeometry.TabIndex = 13;
+            this.rbGeometry.TabStop = true;
+            this.rbGeometry.Text = "Surfaces, edges and vertices";
+            this.rbGeometry.UseVisualStyleBackColor = true;
+            this.rbGeometry.CheckedChanged += new System.EventHandler(this.rbSelectBy_CheckedChanged);
+            // 
             // btnClearSelection
             // 
-            this.btnClearSelection.Location = new System.Drawing.Point(192, 119);
+            this.btnClearSelection.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnClearSelection.Location = new System.Drawing.Point(208, 227);
             this.btnClearSelection.Name = "btnClearSelection";
             this.btnClearSelection.Size = new System.Drawing.Size(75, 23);
             this.btnClearSelection.TabIndex = 9;
@@ -257,8 +263,9 @@
             // 
             // btnInvertSelection
             // 
+            this.btnInvertSelection.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnInvertSelection.Enabled = false;
-            this.btnInvertSelection.Location = new System.Drawing.Point(192, 59);
+            this.btnInvertSelection.Location = new System.Drawing.Point(208, 167);
             this.btnInvertSelection.Name = "btnInvertSelection";
             this.btnInvertSelection.Size = new System.Drawing.Size(75, 23);
             this.btnInvertSelection.TabIndex = 10;
@@ -268,8 +275,9 @@
             // 
             // btnSelectAll
             // 
+            this.btnSelectAll.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnSelectAll.Enabled = false;
-            this.btnSelectAll.Location = new System.Drawing.Point(192, 29);
+            this.btnSelectAll.Location = new System.Drawing.Point(208, 138);
             this.btnSelectAll.Name = "btnSelectAll";
             this.btnSelectAll.Size = new System.Drawing.Size(75, 23);
             this.btnSelectAll.TabIndex = 11;
@@ -279,8 +287,9 @@
             // 
             // groupBox3
             // 
-            this.groupBox3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
+            this.groupBox3.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox3.Controls.Add(this.gbGeometry);
             this.groupBox3.Controls.Add(this.btnUndoSelection);
             this.groupBox3.Controls.Add(this.btnSelectAll);
@@ -290,14 +299,75 @@
             this.groupBox3.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.groupBox3.Location = new System.Drawing.Point(12, 12);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(274, 344);
+            this.groupBox3.Size = new System.Drawing.Size(290, 390);
             this.groupBox3.TabIndex = 12;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Data";
             // 
+            // gbGeometry
+            // 
+            this.gbGeometry.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.gbGeometry.Controls.Add(this.tbGeometrySurfaceAngle);
+            this.gbGeometry.Controls.Add(this.rbGeometrySurfaceAngle);
+            this.gbGeometry.Controls.Add(this.tbGeometryEdgeAngle);
+            this.gbGeometry.Controls.Add(this.rbGeometryEdgeAngle);
+            this.gbGeometry.Controls.Add(this.rbGeometry);
+            this.gbGeometry.Location = new System.Drawing.Point(6, 22);
+            this.gbGeometry.Name = "gbGeometry";
+            this.gbGeometry.Size = new System.Drawing.Size(196, 103);
+            this.gbGeometry.TabIndex = 13;
+            this.gbGeometry.TabStop = false;
+            this.gbGeometry.Text = "Geometry based selection";
+            // 
+            // tbGeometrySurfaceAngle
+            // 
+            this.tbGeometrySurfaceAngle.Enabled = false;
+            this.tbGeometrySurfaceAngle.Location = new System.Drawing.Point(154, 72);
+            this.tbGeometrySurfaceAngle.Name = "tbGeometrySurfaceAngle";
+            this.tbGeometrySurfaceAngle.Size = new System.Drawing.Size(36, 23);
+            this.tbGeometrySurfaceAngle.TabIndex = 17;
+            this.tbGeometrySurfaceAngle.Text = "10";
+            this.tbGeometrySurfaceAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.tbGeometrySurfaceAngle.TextChanged += new System.EventHandler(this.tbGeometrySurfaceAngle_TextChanged);
+            // 
+            // rbGeometrySurfaceAngle
+            // 
+            this.rbGeometrySurfaceAngle.AutoSize = true;
+            this.rbGeometrySurfaceAngle.Location = new System.Drawing.Point(6, 72);
+            this.rbGeometrySurfaceAngle.Name = "rbGeometrySurfaceAngle";
+            this.rbGeometrySurfaceAngle.Size = new System.Drawing.Size(127, 19);
+            this.rbGeometrySurfaceAngle.TabIndex = 16;
+            this.rbGeometrySurfaceAngle.Text = "Surface angle [deg]";
+            this.rbGeometrySurfaceAngle.UseVisualStyleBackColor = true;
+            this.rbGeometrySurfaceAngle.CheckedChanged += new System.EventHandler(this.rbSelectBy_CheckedChanged);
+            // 
+            // tbGeometryEdgeAngle
+            // 
+            this.tbGeometryEdgeAngle.Enabled = false;
+            this.tbGeometryEdgeAngle.Location = new System.Drawing.Point(154, 47);
+            this.tbGeometryEdgeAngle.Name = "tbGeometryEdgeAngle";
+            this.tbGeometryEdgeAngle.Size = new System.Drawing.Size(36, 23);
+            this.tbGeometryEdgeAngle.TabIndex = 15;
+            this.tbGeometryEdgeAngle.Text = "10";
+            this.tbGeometryEdgeAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.tbGeometryEdgeAngle.TextChanged += new System.EventHandler(this.tbGeometryEdgeAngle_TextChanged);
+            // 
+            // rbGeometryEdgeAngle
+            // 
+            this.rbGeometryEdgeAngle.AutoSize = true;
+            this.rbGeometryEdgeAngle.Location = new System.Drawing.Point(6, 47);
+            this.rbGeometryEdgeAngle.Name = "rbGeometryEdgeAngle";
+            this.rbGeometryEdgeAngle.Size = new System.Drawing.Size(114, 19);
+            this.rbGeometryEdgeAngle.TabIndex = 14;
+            this.rbGeometryEdgeAngle.Text = "Edge angle [deg]";
+            this.rbGeometryEdgeAngle.UseVisualStyleBackColor = true;
+            this.rbGeometryEdgeAngle.CheckedChanged += new System.EventHandler(this.rbSelectBy_CheckedChanged);
+            // 
             // btnUndoSelection
             // 
-            this.btnUndoSelection.Location = new System.Drawing.Point(192, 89);
+            this.btnUndoSelection.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnUndoSelection.Location = new System.Drawing.Point(208, 197);
             this.btnUndoSelection.Name = "btnUndoSelection";
             this.btnUndoSelection.Size = new System.Drawing.Size(75, 23);
             this.btnUndoSelection.TabIndex = 12;
@@ -307,8 +377,8 @@
             // 
             // btnOK
             // 
-            this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnOK.Location = new System.Drawing.Point(130, 362);
+            this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnOK.Location = new System.Drawing.Point(139, 408);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 13;
@@ -316,21 +386,11 @@
             this.btnOK.UseVisualStyleBackColor = true;
             this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
             // 
-            // gbGeometry
-            // 
-            this.gbGeometry.Controls.Add(this.rbGeometry);
-            this.gbGeometry.Location = new System.Drawing.Point(6, 22);
-            this.gbGeometry.Name = "gbGeometry";
-            this.gbGeometry.Size = new System.Drawing.Size(181, 60);
-            this.gbGeometry.TabIndex = 13;
-            this.gbGeometry.TabStop = false;
-            this.gbGeometry.Text = "Geometry based selection";
-            // 
             // FrmSelectItemSet
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(298, 395);
+            this.ClientSize = new System.Drawing.Size(314, 441);
             this.Controls.Add(this.btnOK);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.btnCancel);
@@ -343,7 +403,6 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Set selection";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmSelectItemSet_FormClosing);
-            this.Shown += new System.EventHandler(this.FrmSelectItemSet_Shown);
             this.VisibleChanged += new System.EventHandler(this.FrmSelectItemSet_VisibleChanged);
             this.gbFEMesh.ResumeLayout(false);
             this.gbFEMesh.PerformLayout();
@@ -379,5 +438,9 @@
         private System.Windows.Forms.RadioButton rbEdge;
         private System.Windows.Forms.RadioButton rbGeometry;
         private System.Windows.Forms.GroupBox gbGeometry;
+        private UserControls.NumericTextBox tbGeometrySurfaceAngle;
+        private System.Windows.Forms.RadioButton rbGeometrySurfaceAngle;
+        private UserControls.NumericTextBox tbGeometryEdgeAngle;
+        private System.Windows.Forms.RadioButton rbGeometryEdgeAngle;
     }
 }

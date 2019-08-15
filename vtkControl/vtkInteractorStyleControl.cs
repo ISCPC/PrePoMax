@@ -629,7 +629,9 @@ namespace vtkControl
             int y = 0;
             double[] p1 = vtkInteractorStyleControl.DisplayToWorld(renderer, new double[] { x, y });
             double[] p2 = vtkInteractorStyleControl.DisplayToWorld(renderer, new double[] { x + delta, y });
-            return Math.Abs(p1[0] - p2[0]);
+            return Math.Sqrt(Math.Pow(p1[0] - p2[0], 2)
+                             + Math.Pow(p1[1] - p2[1], 2)
+                             + Math.Pow(p1[2] - p2[2], 2));
         }
         public override void Pan()
         {
