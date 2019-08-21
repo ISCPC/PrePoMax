@@ -26,6 +26,8 @@ namespace CaeGlobals
         // Querry
         QueryNode,
         QueryElement,
+        QueryEdge,
+        QuerySurface,
         QueryPart
     }
 }

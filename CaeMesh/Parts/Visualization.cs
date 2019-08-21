@@ -250,6 +250,24 @@ namespace CaeMesh
         }
         public void RenumberEdges(int[] orderedEdgeIds)
         {
+            // inverse map
+            int[] map = new int[orderedEdgeIds.Length];
+            for (int i = 0; i < orderedEdgeIds.Length; i++)
+            {
+                map[orderedEdgeIds[i]] = i;
+            }
+            // Surface edges
+            int[][] newFaceEdgeIds = new int[_faceEdgeIds.Length][];
+            for (int i = 0; i < _faceEdgeIds.Length; i++)
+            {
+                newFaceEdgeIds[i] = new int[_faceEdgeIds[i].Length];
+                for (int j = 0; j < _faceEdgeIds[i].Length; j++)
+                {
+                    newFaceEdgeIds[i][j] = map[_faceEdgeIds[i][j]];
+                }
+            }
+            _faceEdgeIds = newFaceEdgeIds;
+
             // Edge cells
             int[][] newEdgeCellIdsByEdge = new int[_edgeCellIdsByEdge.Length][];
             for (int i = 0; i < orderedEdgeIds.Length; i++)
@@ -259,12 +277,14 @@ namespace CaeMesh
             _edgeCellIdsByEdge = newEdgeCellIdsByEdge;
 
             // Lengths
-            double[] newFaceLengths = new double[_edgeLengths.Length];
+            double[] newEdgeLengths = new double[_edgeLengths.Length];
             for (int i = 0; i < orderedEdgeIds.Length; i++)
             {
-                newFaceLengths[i] = _edgeLengths[orderedEdgeIds[i]];
+                newEdgeLengths[i] = _edgeLengths[orderedEdgeIds[i]];
             }
-            _edgeLengths = newFaceLengths;
+            _edgeLengths = newEdgeLengths;
         }
+
+        
     }
 }

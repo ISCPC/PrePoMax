@@ -320,10 +320,10 @@ namespace vtkControl
                             PickByCell(out pickedActor, x1, y1, false);
                             break;
                         case vtkSelectBy.Edge:
-                            PickByEdge(out pickedActor, x1, y1);
+                            PickByEdge(out pickedActor, x1, y1, false);
                             break;
                         case vtkSelectBy.Surface:
-                            PickBySurface(out pickedActor, x1, y1);
+                            PickBySurface(out pickedActor, x1, y1, false);
                             break;
                         case vtkSelectBy.EdgeAngle:
                             PickByEdgeAngle(out pickedActor, x1, y1);
@@ -341,13 +341,19 @@ namespace vtkControl
                             PickByGeometryEdgeAngle(out pickedActor, x1, y1);
                             break;
                         case vtkSelectBy.GeometrySurfaceAngle:
-                            PickByGeometrySurfaceAngle(out pickedActor, x1, y1);
+                            PickBySurface(out pickedActor, x1, y1, false);
                             break;
                         case vtkSelectBy.QueryNode:
                             PickByNode(out pickedActor, x1, y1, true);
                             break;
                         case vtkSelectBy.QueryElement:
                             PickByCell(out pickedActor, x1, y1, true);
+                            break;
+                        case vtkSelectBy.QueryEdge:
+                            PickByEdge(out pickedActor, x1, y1, true);
+                            break;
+                        case vtkSelectBy.QuerySurface:
+                            PickBySurface(out pickedActor, x1, y1, true);
                             break;
                         case vtkSelectBy.QueryPart:
                             PickByActor(out pickedActor, x1, y1);
@@ -517,7 +523,7 @@ namespace vtkControl
                 
             }
         }
-        private void PickByEdge(out vtkActor pickedActor, int x, int y)
+        private void PickByEdge(out vtkActor pickedActor, int x, int y, bool showLabel)
         {
             double[] pickedPoint = GetPickPoint(out pickedActor, x, y);
             if (pickedPoint == null)
@@ -548,6 +554,26 @@ namespace vtkControl
 
                 AddActor(_mouseSelectionActorCurrent, vtkRendererLayer.Selection);
                 _mouseSelectionActorCurrent.SetProperty(Globals.CurrentMouseSelectionProperty);
+
+                if (showLabel)
+                {
+                    string edgeId = edgeData.Name;
+
+                    // Probe widget
+                    string format = _scalarBarWidget.GetLabelFormat();
+
+                    _renderer.SetWorldPoint(pickedPoint[0], pickedPoint[1], pickedPoint[2], 1.0);
+                    _renderer.WorldToDisplay();
+                    double[] display = _renderer.GetDisplayPoint();
+
+                    double w = x + 20d;
+                    double h = y + 10d;
+
+                    _probeWidget.SetPosition(w, h);
+                    _probeWidget.SetText("Edge id: " + edgeId);
+
+                    if (_probeWidget.GetVisibility() == 0) _probeWidget.VisibilityOn();
+                }
             }
         }
         private void PickByEdgeAngle(out vtkActor pickedActor, int x, int y)
@@ -739,7 +765,7 @@ namespace vtkControl
                 return d;
             }
         }
-        private void PickBySurface(out vtkActor pickedActor, int x, int y)
+        private void PickBySurface(out vtkActor pickedActor, int x, int y, bool showLabel)
         {
             double[] pickedPoint = GetPickPoint(out pickedActor, x, y);
             if (pickedPoint == null)
@@ -761,6 +787,26 @@ namespace vtkControl
 
             AddActor(_mouseSelectionActorCurrent, vtkRendererLayer.Selection);
             _mouseSelectionActorCurrent.SetProperty(Globals.CurrentMouseSelectionProperty);
+
+            if (showLabel)
+            {
+                string surfaceId = actorData.Name;
+
+                // Probe widget
+                string format = _scalarBarWidget.GetLabelFormat();
+
+                _renderer.SetWorldPoint(pickedPoint[0], pickedPoint[1], pickedPoint[2], 1.0);
+                _renderer.WorldToDisplay();
+                double[] display = _renderer.GetDisplayPoint();
+
+                double w = x + 20d;
+                double h = y + 10d;
+
+                _probeWidget.SetPosition(w, h);
+                _probeWidget.SetText("Surface id: " + surfaceId);
+
+                if (_probeWidget.GetVisibility() == 0) _probeWidget.VisibilityOn();
+            }
         }
         private void PickBySurfaceAngle(out vtkActor pickedActor, int x, int y)
         {
@@ -884,29 +930,29 @@ namespace vtkControl
                 _mouseSelectionActorCurrent.SetProperty(Globals.CurrentMouseSelectionProperty);
             }
         }
-        private void PickByGeometrySurfaceAngle(out vtkActor pickedActor, int x, int y)
-        {
-            double[] pickedPoint = GetPickPoint(out pickedActor, x, y);
-            if (pickedPoint == null)
-            {
-                if (_probeWidget.GetVisibility() == 1) _probeWidget.VisibilityOff();
-                return;
-            }
+        //private void PickByGeometrySurfaceAngle(out vtkActor pickedActor, int x, int y)
+        //{
+        //    double[] pickedPoint = GetPickPoint(out pickedActor, x, y);
+        //    if (pickedPoint == null)
+        //    {
+        //        if (_probeWidget.GetVisibility() == 1) _probeWidget.VisibilityOff();
+        //        return;
+        //    }
 
-            vtkCellLocator cellLocator;
-            vtkCell cell;
-            int globalCellId = GetGlobalCellIdClosestTo3DPoint(ref pickedPoint, out cell, out cellLocator);
-            int[] globalCellFaceNodeIds = GetCellFaceNodeIds(cell, cellLocator);
+        //    vtkCellLocator cellLocator;
+        //    vtkCell cell;
+        //    int globalCellId = GetGlobalCellIdClosestTo3DPoint(ref pickedPoint, out cell, out cellLocator);
+        //    int[] globalCellFaceNodeIds = GetCellFaceNodeIds(cell, cellLocator);
 
-            vtkMaxActorData actorData = Controller_GetSurfaceEdgesActorData(globalCellId, globalCellFaceNodeIds);
-            actorData.CanHaveElementEdges = true;
+        //    vtkMaxActorData actorData = Controller_GetSurfaceEdgesActorData(globalCellId, globalCellFaceNodeIds);
+        //    actorData.CanHaveElementEdges = true;
 
-            vtkMaxActor actor = new vtkMaxActor(actorData);
-            _mouseSelectionActorCurrent = actor;
+        //    vtkMaxActor actor = new vtkMaxActor(actorData);
+        //    _mouseSelectionActorCurrent = actor;
 
-            AddActor(_mouseSelectionActorCurrent, vtkRendererLayer.Selection);
-            _mouseSelectionActorCurrent.SetProperty(Globals.CurrentMouseSelectionProperty);
-        }
+        //    AddActor(_mouseSelectionActorCurrent, vtkRendererLayer.Selection);
+        //    _mouseSelectionActorCurrent.SetProperty(Globals.CurrentMouseSelectionProperty);
+        //}
 
         private void PickByArea(int x1, int y1, int x2, int y2)
         {
@@ -1731,78 +1777,7 @@ namespace vtkControl
             return textProperty;
         }
         
-        private void AddActor(vtkMaxActor actor, vtkRendererLayer layer)
-        {
-            // add actor
-            if (layer == vtkRendererLayer.Base)
-            {
-                if (actor.Name == null) actor.Name = (_actors.Count + 1).ToString();
-                _actors.Add(actor.Name, actor);
-                _renderer.AddActor(actor);
-
-                if (actor.GetPickable() == 1)
-                {
-                    if (actor.CellLocator != null) _cellPicker.AddLocator(actor.CellLocator);
-                    _propPicker.AddPickList(actor);
-                }
-            }
-            else if (layer == vtkRendererLayer.Overlay)
-            {
-                if (actor.Name == null) actor.Name = (_overlayActors.Count + 1).ToString();
-                _overlayActors.Add(actor.Name, actor);
-                _overlayRenderer.AddActor(actor);
-                actor.PickableOff();
-            }
-            else if (layer == vtkRendererLayer.Selection)
-            {
-                ApplySelectionFormatingToActor(actor);
-                _selectedActors.Add(actor);
-                _selectionRenderer.AddActor(actor);
-            }
-
-            ApplyEdgeVisibilityAndBackfaceCullingToActor(actor, layer);
-        }
-        private void AddActorEdges(vtkMaxActor actor, bool isModelEdge, vtkRendererLayer layer)
-        {
-            if (layer == vtkRendererLayer.Base)
-            {
-                if (actor.Name == null) actor.Name = (_actors.Count + 1).ToString();
-
-                if (_actors.ContainsKey(actor.Name))
-                {
-                    if (isModelEdge && _actors[actor.Name].ModelEdges != actor.ModelEdges) throw new Exception("Animation changes exception.");
-                    if (!isModelEdge && _actors[actor.Name].ElementEdges != actor.ElementEdges) throw new Exception("Animation changes exception.");
-                }
-                else
-                {
-                    _actors.Add(actor.Name, actor);
-                }
-
-                if (isModelEdge) _renderer.AddActor(actor.ModelEdges);
-                else _renderer.AddActor(actor.ElementEdges);
-            }
-            else if (layer == vtkRendererLayer.Overlay)
-            {
-                _overlayActors.Add(actor.Name, actor);
-
-                if (isModelEdge) _overlayRenderer.AddActor(actor.ModelEdges);
-                else _overlayRenderer.AddActor(actor.ElementEdges);
-            }
-            else if (layer == vtkRendererLayer.Selection)
-            {
-                // wireframe selection
-                if (!_selectedActors.Contains(actor)) _selectedActors.Add(actor);
-
-                if (isModelEdge) _selectionRenderer.AddActor(actor.ModelEdges);
-                else _selectionRenderer.AddActor(actor.ElementEdges);
-            }
-
-            //if (isModelEdge) ApplyEdgesFormatingToActor(actor.ModelEdges);
-            //else ApplyEdgesFormatingToActor(actor.ElementEdges);
-
-            if (isModelEdge) ApplyEdgeVisibilityAndBackfaceCullingToModelEdges(actor.ModelEdges, actor.Name);
-            else ApplyEdgeVisibilityAndBackfaceCullingToActorEdges(actor.ElementEdges, actor.Name);
-        }
+     
        
         private vtkActor GetActorEdgesFromGrid(vtkUnstructuredGrid uGridEdges)
         {
@@ -2818,7 +2793,7 @@ namespace vtkControl
         {
             // Create actor
             vtkMaxActor actor = new vtkMaxActor(data);
-
+            
             // Add actor
             AddActor(actor, data.Layer);
 
@@ -3167,10 +3142,83 @@ namespace vtkControl
             AddActor(actor, data.Layer);
         }
 
+        private void AddActor(vtkMaxActor actor, vtkRendererLayer layer)
+        {
+            // add actor
+            if (layer == vtkRendererLayer.Base)
+            {
+                if (actor.Name == null) actor.Name = (_actors.Count + 1).ToString();
+                _actors.Add(actor.Name, actor);
+                _renderer.AddActor(actor);
+
+                if (actor.GetPickable() == 1)
+                {
+                    if (actor.CellLocator != null) _cellPicker.AddLocator(actor.CellLocator);
+                    _propPicker.AddPickList(actor);
+                }
+            }
+            else if (layer == vtkRendererLayer.Overlay)
+            {
+                if (actor.Name == null) actor.Name = (_overlayActors.Count + 1).ToString();
+                _overlayActors.Add(actor.Name, actor);
+                _overlayRenderer.AddActor(actor);
+                actor.PickableOff();
+            }
+            else if (layer == vtkRendererLayer.Selection)
+            {
+                ApplySelectionFormatingToActor(actor);
+                _selectedActors.Add(actor);
+                _selectionRenderer.AddActor(actor);
+            }
+
+            ApplyEdgeVisibilityAndBackfaceCullingToActor(actor, layer);
+        }
+        private void AddActorEdges(vtkMaxActor actor, bool isModelEdge, vtkRendererLayer layer)
+        {
+            if (layer == vtkRendererLayer.Base)
+            {
+                if (actor.Name == null) actor.Name = (_actors.Count + 1).ToString();
+
+                if (_actors.ContainsKey(actor.Name))
+                {
+                    if (isModelEdge && _actors[actor.Name].ModelEdges != actor.ModelEdges) throw new Exception("Animation changes exception.");
+                    if (!isModelEdge && _actors[actor.Name].ElementEdges != actor.ElementEdges) throw new Exception("Animation changes exception.");
+                }
+                else
+                {
+                    _actors.Add(actor.Name, actor);
+                }
+
+                if (isModelEdge) _renderer.AddActor(actor.ModelEdges);
+                else _renderer.AddActor(actor.ElementEdges);
+            }
+            else if (layer == vtkRendererLayer.Overlay)
+            {
+                _overlayActors.Add(actor.Name, actor);
+
+                if (isModelEdge) _overlayRenderer.AddActor(actor.ModelEdges);
+                else _overlayRenderer.AddActor(actor.ElementEdges);
+            }
+            else if (layer == vtkRendererLayer.Selection)
+            {                
+                // wireframe selection
+                if (!_selectedActors.Contains(actor)) _selectedActors.Add(actor);
+
+                if (isModelEdge) _selectionRenderer.AddActor(actor.ModelEdges);
+                else _selectionRenderer.AddActor(actor.ElementEdges);
+            }
+
+            //if (isModelEdge) ApplyEdgesFormatingToActor(actor.ModelEdges);
+            //else ApplyEdgesFormatingToActor(actor.ElementEdges);
+
+            if (isModelEdge) ApplyEdgeVisibilityAndBackfaceCullingToModelEdges(actor.ModelEdges, actor.Name);
+            else ApplyEdgeVisibilityAndBackfaceCullingToActorEdges(actor.ElementEdges, actor.Name);
+        }
+
         #endregion  ################################################################################################################
 
         #region Highlight geometry  ################################################################################################
-      
+
         public void HighlightActor(string actorName)
         {
             // actor

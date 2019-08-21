@@ -46,10 +46,33 @@ namespace PrePoMax.Forms
             {
                 switch (lvQueries.SelectedItems[0].Text)
                 {
-                    case ("Bounding box size"):
-                        _controller.SelectBy = vtkSelectBy.Off;
-                        _controller.Selection.SelectItem = vtkSelectItem.None;
-                        OutputBoundingBox();
+                    case ("Point/Node"):
+                        _controller.SelectBy = vtkSelectBy.QueryNode;
+                        _controller.Selection.SelectItem = vtkSelectItem.Node;
+                        _controller.ClearSelectionHistory();
+                        _numNodesToSelect = 1;
+                        break;
+                    case ("Element"):
+                        _controller.SelectBy = vtkSelectBy.QueryElement;
+                        _controller.Selection.SelectItem = vtkSelectItem.Element;
+                        _controller.ClearSelectionHistory();
+                        _numNodesToSelect = -1;
+                        break;
+                    case ("Edge"):
+                        _controller.SelectBy = vtkSelectBy.QueryEdge;
+                        _controller.Selection.SelectItem = vtkSelectItem.Edge;
+                        _controller.ClearSelectionHistory();
+                        _numNodesToSelect = -1;
+                        break;
+                    case ("Surface"):
+                        _controller.SelectBy = vtkSelectBy.QuerySurface;
+                        _controller.Selection.SelectItem = vtkSelectItem.Surface;
+                        _controller.ClearSelectionHistory();
+                        _numNodesToSelect = -1;
+                        break;
+                    case ("Part"):
+                        _controller.SelectBy = vtkSelectBy.QueryPart;
+                        _controller.Selection.SelectItem = vtkSelectItem.Part;
                         _controller.ClearSelectionHistory();
                         _numNodesToSelect = -1;
                         break;
@@ -60,21 +83,10 @@ namespace PrePoMax.Forms
                         _controller.ClearSelectionHistory();
                         _numNodesToSelect = -1;
                         break;
-                    case ("Part"):
-                        _controller.SelectBy = vtkSelectBy.QueryPart;
-                        _controller.Selection.SelectItem = vtkSelectItem.Part;
-                        _controller.ClearSelectionHistory();
-                        _numNodesToSelect = -1;
-                        break;
-                    case ("Point/Node"):
-                        _controller.SelectBy = vtkSelectBy.QueryNode;
-                        _controller.Selection.SelectItem = vtkSelectItem.Node;
-                        _controller.ClearSelectionHistory();
-                        _numNodesToSelect = 1;
-                        break;
-                    case ("Element"):
-                        _controller.SelectBy = vtkSelectBy.QueryElement;
-                        _controller.Selection.SelectItem = vtkSelectItem.Element;
+                    case ("Bounding box size"):
+                        _controller.SelectBy = vtkSelectBy.Off;
+                        _controller.Selection.SelectItem = vtkSelectItem.None;
+                        OutputBoundingBox();
                         _controller.ClearSelectionHistory();
                         _numNodesToSelect = -1;
                         break;
@@ -128,52 +140,22 @@ namespace PrePoMax.Forms
         // Methods                                                                                                                  
         public void PrepareForm(Controller controller)
         {
-            
+
             this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
 
             _controller = controller;
             lvQueries.HideSelection = false;
             lvQueries.SelectedIndices.Clear();
         }
-        private void OutputBoundingBox()
-        {
-            double[] bb = _controller.GetBoundingBox();
-            double[] size = new double[] { bb[1] - bb[0], bb[3] - bb[2], bb[5] - bb[4] };
 
-            Form_WriteDataToOutput("");
-            string data = string.Format("Bounding box");
-            Form_WriteDataToOutput(data);
-            data = string.Format("Min             x, y, z: {0,16:E}, {1,16:E}, {2,16:E}", bb[0], bb[2], bb[4]);
-            Form_WriteDataToOutput(data);
-            data = string.Format("Max             x, y, z: {0,16:E}, {1,16:E}, {2,16:E}", bb[1], bb[3], bb[5]);
-            Form_WriteDataToOutput(data);
-            data = string.Format("Size            x, y, z: {0,16:E}, {1,16:E}, {2,16:E}", size[0], size[1], size[2]);
-            Form_WriteDataToOutput(data);
-        }
-        private void OutputAssemblyData()
-        {
-            CaeMesh.FeMesh mesh = _controller.DisplayedMesh;
-            if (mesh == null) return;
-            double[] bb = _controller.GetBoundingBox();
-            double[] size = new double[] { bb[1] - bb[0], bb[3] - bb[2], bb[5] - bb[4] };
-
-            Form_WriteDataToOutput("");
-            string data = string.Format("Assembly");
-            Form_WriteDataToOutput(data);
-            data = string.Format("Number of parts: {0}", mesh.Parts.Count);
-            Form_WriteDataToOutput(data);
-            data = string.Format("Number of elements: {0}", mesh.Elements.Count);
-            Form_WriteDataToOutput(data);
-            data = string.Format("Number of nodes: {0}", mesh.Nodes.Count);
-            Form_WriteDataToOutput(data);
-            Form_WriteDataToOutput("");
-        }
         public void PickedIds(int[] ids)
         {
             try
             {
-                if (_controller.SelectBy == vtkSelectBy.QueryPart && ids.Length == 1) OnePartPicked(ids[0]);
-                else if (_controller.SelectBy == vtkSelectBy.QueryElement && ids.Length == 1) OneElementPicked(ids[0]);
+                if (_controller.SelectBy == vtkSelectBy.QueryElement && ids.Length == 1) OneElementPicked(ids[0]);
+                else if (_controller.SelectBy == vtkSelectBy.QueryEdge && ids.Length == 1) OneEdgePicked(ids[0]);
+                else if (_controller.SelectBy == vtkSelectBy.QuerySurface && ids.Length == 1) OneSurfacePicked(ids[0]);
+                else if (_controller.SelectBy == vtkSelectBy.QueryPart && ids.Length == 1) OnePartPicked(ids[0]);
                 else if (ids.Length == _numNodesToSelect)
                 {
                     // one node
@@ -188,52 +170,9 @@ namespace PrePoMax.Forms
                 }
             }
             catch
-            {}
+            { }
         }
-        public void OnePartPicked(int id)
-        {
-            CaeMesh.FeMesh mesh = _controller.DisplayedMesh;
-            
-            CaeMesh.BasePart part = null;
-            foreach (var entry in mesh.Parts)
-            {
-                if (entry.Value.PartId == id) part = entry.Value;
-            }
-
-            if (part == null) throw new NotSupportedException();
-
-            Form_WriteDataToOutput("");
-            string data = string.Format("Part name: {0}", part.Name);
-            Form_WriteDataToOutput(data);
-            data = string.Format("Part type: {0}", part.PartType);
-            Form_WriteDataToOutput(data);
-            //data = string.Format("Part id: {0}{1}", part.PartId, Environment.NewLine);
-            //WriteLineToOutputWithDate(data);
-            data = string.Format("Number of elements: {0}", part.Labels.Length);
-            Form_WriteDataToOutput(data);
-            data = string.Format("Number of nodes: {0}", part.NodeLabels.Length);
-            Form_WriteDataToOutput(data);
-            Form_WriteDataToOutput("");
-
-            _controller.ClearSelectionHistory();
-            _controller.Highlight3DObjects(_controller.CurrentView, new object[] { part });
-        }
-        public void OneElementPicked(int id)
-        {
-            CaeMesh.FeMesh mesh;
-            if (_controller.CurrentView == ViewGeometryModelResults.Geometry) mesh = _controller.Model.Geometry;
-            else if (_controller.CurrentView == ViewGeometryModelResults.Model) mesh = _controller.Model.Mesh;
-            else if (_controller.CurrentView == ViewGeometryModelResults.Results) mesh = _controller.Results.Mesh;
-            else throw new NotSupportedException();
-            
-            Form_WriteDataToOutput("");
-            string data = string.Format("Element id: {0}", id);
-            Form_WriteDataToOutput(data);
-            Form_WriteDataToOutput("");
-
-            _controller.ClearSelectionHistory();
-            _controller.HighlightElement(id);
-        }
+        
         public void OneNodePicked(int nodeId)
         {
             if (Form_WriteDataToOutput != null)
@@ -271,6 +210,117 @@ namespace PrePoMax.Forms
                 _coorNodesToDraw[0] = baseV.Coor;
                 _coorLinesToDraw = null;
             }
+        }
+        public void OneElementPicked(int id)
+        {
+            Form_WriteDataToOutput("");
+            string data = string.Format("Element id: {0}", id);
+            Form_WriteDataToOutput(data);
+            Form_WriteDataToOutput("");
+
+            _controller.ClearSelectionHistory();
+            _controller.HighlightElement(id);
+        }
+        public void OneEdgePicked(int id)
+        {
+            int[] itemTypePart = _controller.DisplayedMesh.GetItemTypePartIdsFromGeometryId(id);
+            CaeMesh.BasePart part = _controller.DisplayedMesh.GetPartById(itemTypePart[2]);
+            double length = _controller.DisplayedMesh.GetEdgeLength(id);
+
+            Form_WriteDataToOutput("");
+            string data = string.Format("Edge part name: {0}", part.Name);
+            Form_WriteDataToOutput(data);
+            data = string.Format("Edge id: {0}", itemTypePart[0]);
+            Form_WriteDataToOutput(data);
+            data = string.Format("Edge length: {0:E}", length);
+            Form_WriteDataToOutput(data);
+            Form_WriteDataToOutput("");
+
+            _controller.ClearSelectionHistory();
+
+            vtkControl.vtkMaxActorData aData = _controller.GetGeometryEdgeActorData(new int[] { id });
+            _controller.HighlightActorData(aData);
+        }
+        public void OneSurfacePicked(int id)
+        {
+            int[] itemTypePart = _controller.DisplayedMesh.GetItemTypePartIdsFromGeometryId(id);
+            CaeMesh.BasePart part = _controller.DisplayedMesh.GetPartById(itemTypePart[2]);
+            double area = _controller.DisplayedMesh.GetSurfaceArea(id);
+
+            Form_WriteDataToOutput("");
+            string data = string.Format("Surface part name: {0}", part.Name);
+            Form_WriteDataToOutput(data);
+            data = string.Format("Surface id: {0}", itemTypePart[0]);
+            Form_WriteDataToOutput(data);
+            data = string.Format("Surface area: {0:E}", area);
+            Form_WriteDataToOutput(data);
+            Form_WriteDataToOutput("");
+
+            _controller.ClearSelectionHistory();
+
+            vtkControl.vtkMaxActorData aData = _controller.GetGeometrySurfaceActorData(new int[] { id });
+            _controller.HighlightActorData(aData);
+        }
+        public void OnePartPicked(int id)
+        {
+            CaeMesh.FeMesh mesh = _controller.DisplayedMesh;
+
+            CaeMesh.BasePart part = null;
+            foreach (var entry in mesh.Parts)
+            {
+                if (entry.Value.PartId == id) part = entry.Value;
+            }
+
+            if (part == null) throw new NotSupportedException();
+
+            Form_WriteDataToOutput("");
+            string data = string.Format("Part name: {0}", part.Name);
+            Form_WriteDataToOutput(data);
+            data = string.Format("Part type: {0}", part.PartType);
+            Form_WriteDataToOutput(data);
+            //data = string.Format("Part id: {0}{1}", part.PartId, Environment.NewLine);
+            //WriteLineToOutputWithDate(data);
+            data = string.Format("Number of elements: {0}", part.Labels.Length);
+            Form_WriteDataToOutput(data);
+            data = string.Format("Number of nodes: {0}", part.NodeLabels.Length);
+            Form_WriteDataToOutput(data);
+            Form_WriteDataToOutput("");
+
+            _controller.ClearSelectionHistory();
+            _controller.Highlight3DObjects(_controller.CurrentView, new object[] { part });
+        }
+        private void OutputAssemblyData()
+        {
+            CaeMesh.FeMesh mesh = _controller.DisplayedMesh;
+            if (mesh == null) return;
+            double[] bb = _controller.GetBoundingBox();
+            double[] size = new double[] { bb[1] - bb[0], bb[3] - bb[2], bb[5] - bb[4] };
+
+            Form_WriteDataToOutput("");
+            string data = string.Format("Assembly");
+            Form_WriteDataToOutput(data);
+            data = string.Format("Number of parts: {0}", mesh.Parts.Count);
+            Form_WriteDataToOutput(data);
+            data = string.Format("Number of elements: {0}", mesh.Elements.Count);
+            Form_WriteDataToOutput(data);
+            data = string.Format("Number of nodes: {0}", mesh.Nodes.Count);
+            Form_WriteDataToOutput(data);
+            Form_WriteDataToOutput("");
+        }
+        private void OutputBoundingBox()
+        {
+            double[] bb = _controller.GetBoundingBox();
+            double[] size = new double[] { bb[1] - bb[0], bb[3] - bb[2], bb[5] - bb[4] };
+
+            Form_WriteDataToOutput("");
+            string data = string.Format("Bounding box");
+            Form_WriteDataToOutput(data);
+            data = string.Format("Min             x, y, z: {0,16:E}, {1,16:E}, {2,16:E}", bb[0], bb[2], bb[4]);
+            Form_WriteDataToOutput(data);
+            data = string.Format("Max             x, y, z: {0,16:E}, {1,16:E}, {2,16:E}", bb[1], bb[3], bb[5]);
+            Form_WriteDataToOutput(data);
+            data = string.Format("Size            x, y, z: {0,16:E}, {1,16:E}, {2,16:E}", size[0], size[1], size[2]);
+            Form_WriteDataToOutput(data);
         }
         public void TwoNodesPicked(int nodeId1, int nodeId2)
         {
@@ -320,6 +370,7 @@ namespace PrePoMax.Forms
                 else if (lvQueries.SelectedItems[0].Text == "Circle") ComputeCircle(nodeId1, nodeId2, nodeId3);
             }
         }
+
         private void ComputeAngle(int nodeId1, int nodeId2, int nodeId3)
         {
             string data;
@@ -491,6 +542,7 @@ namespace PrePoMax.Forms
             }
             return coorLines;
         }
+
         private void HighlightNodes()
         {
             Color color = Color.Red;
@@ -505,19 +557,29 @@ namespace PrePoMax.Forms
                 else if (_coorNodesToDraw.GetLength(0) >= 2)
                 {
                     _controller.DrawNodes("Querry", _coorNodesToDraw, color, layer, 7);
-                    _controller.HighlightConnectedLines(_coorLinesToDraw, 7);
+                    _controller.HighlightConnectedLines(_coorLinesToDraw);
                 }
             }
         }
-
-       
-
-       
-
-       
-
-        
-
-       
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -444,7 +444,7 @@ namespace CaeResults
             return nodesData;
         }
 
-
+        // Scaled results
         public void GetScaledNodesAndValues(FieldData fieldData, float scale, int[] nodeIds, out double[][] nodeCoor, out float[] values)
         {
             nodeCoor = new double[nodeIds.Length][];
@@ -470,6 +470,13 @@ namespace CaeResults
             if (scale != 0) ScaleNodeCoordinates(scale, fData.StepId, fData.StepIncrementId, pData.Nodes.Ids, ref pData.Nodes.Coor);
             return pData;
         }
+        public PartExchangeData GetScaledEdgesCells(int[][] edgeCells, FieldData fData, float scale)
+        {
+            PartExchangeData pData = new PartExchangeData();
+            _mesh.GetNodesAndCellsForEdges(edgeCells, out pData.Nodes.Ids, out pData.Nodes.Coor, out pData.Cells.CellNodeIds, out pData.Cells.Types);
+            if (scale != 0) ScaleNodeCoordinates(scale, fData.StepId, fData.StepIncrementId, pData.Nodes.Ids, ref pData.Nodes.Coor);
+            return pData;
+        }
         public PartExchangeData GetVisualizationScaledNodesCellsAndValues(BasePart part, FieldData fData, float scale)
         {
             PartExchangeData pData = new PartExchangeData();
@@ -479,11 +486,11 @@ namespace CaeResults
             pData.ExtremeNodes = GetScaledExtremeValues(part.Name, fData, scale, 1);
             return pData;
         }
-        public PartExchangeData GetScaledEdgesNodesAndCells(FeGroup elementSet, FieldData fieldData, float scale)
+        public PartExchangeData GetScaledEdgesNodesAndCells(FeGroup elementSet, FieldData fData, float scale)
         {
             PartExchangeData resultData = new PartExchangeData();
             _mesh.GetNodesAndCellsForModelEdges(elementSet, out resultData.Nodes.Ids, out resultData.Nodes.Coor, out resultData.Cells.CellNodeIds, out resultData.Cells.Types);
-            if (scale != 0) ScaleNodeCoordinates(scale, fieldData.StepId, fieldData.StepIncrementId, resultData.Nodes.Ids, ref resultData.Nodes.Coor);
+            if (scale != 0) ScaleNodeCoordinates(scale, fData.StepId, fData.StepIncrementId, resultData.Nodes.Ids, ref resultData.Nodes.Coor);
             return resultData;
         }
 

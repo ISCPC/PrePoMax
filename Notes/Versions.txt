@@ -1,5 +1,9 @@
 ﻿Requirements
 
+Querry - edges and surfaces
+Geometry selection by surface angle
+Selection - UNDO after empty click
+
 By others:
 
 SAVE TO ANOTHER FILE AND THEN REMOVE THE OLDER FILE
@@ -132,6 +136,7 @@ Done
 
 Version 0.5.2 Master branch
 
+Added support for geometry selection of edges by angle
 Changed the wireframe mode to show model edges
 Fixed a bug with the strage selection in some cases - check for cellId != -1
 Added manager for English language of message box buttons

@@ -189,7 +189,7 @@ namespace PrePoMax.Forms
             _coorLinesToDraw[1] = _coorNodesToDraw[0];
 
             _controller.DrawNodes("Rotate", _coorNodesToDraw, color, layer, 7);
-            _controller.HighlightConnectedLines(_coorLinesToDraw, 7);
+            _controller.HighlightConnectedLines(_coorLinesToDraw);
         }
 
         private void tsmiResetAll_Click(object sender, EventArgs e)

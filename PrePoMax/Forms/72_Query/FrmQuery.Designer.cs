@@ -28,14 +28,16 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem("Bounding box size");
-            System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem("Assembly");
-            System.Windows.Forms.ListViewItem listViewItem3 = new System.Windows.Forms.ListViewItem("Part");
-            System.Windows.Forms.ListViewItem listViewItem4 = new System.Windows.Forms.ListViewItem("Point/Node");
-            System.Windows.Forms.ListViewItem listViewItem5 = new System.Windows.Forms.ListViewItem("Element");
-            System.Windows.Forms.ListViewItem listViewItem6 = new System.Windows.Forms.ListViewItem("Distance");
-            System.Windows.Forms.ListViewItem listViewItem7 = new System.Windows.Forms.ListViewItem("Angle");
-            System.Windows.Forms.ListViewItem listViewItem8 = new System.Windows.Forms.ListViewItem("Circle");
+            System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem("Point/Node");
+            System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem("Element");
+            System.Windows.Forms.ListViewItem listViewItem3 = new System.Windows.Forms.ListViewItem("Edge");
+            System.Windows.Forms.ListViewItem listViewItem4 = new System.Windows.Forms.ListViewItem("Surface");
+            System.Windows.Forms.ListViewItem listViewItem5 = new System.Windows.Forms.ListViewItem("Part");
+            System.Windows.Forms.ListViewItem listViewItem6 = new System.Windows.Forms.ListViewItem("Assembly");
+            System.Windows.Forms.ListViewItem listViewItem7 = new System.Windows.Forms.ListViewItem("Bounding box size");
+            System.Windows.Forms.ListViewItem listViewItem8 = new System.Windows.Forms.ListViewItem("Distance");
+            System.Windows.Forms.ListViewItem listViewItem9 = new System.Windows.Forms.ListViewItem("Angle");
+            System.Windows.Forms.ListViewItem listViewItem10 = new System.Windows.Forms.ListViewItem("Circle");
             this.btnClose = new System.Windows.Forms.Button();
             this.gbQueries = new System.Windows.Forms.GroupBox();
             this.lvQueries = new System.Windows.Forms.ListView();
@@ -75,14 +77,16 @@
             this.lvQueries.FullRowSelect = true;
             this.lvQueries.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
             this.lvQueries.HideSelection = false;
-            listViewItem1.ToolTipText = "Bounding box size";
-            listViewItem2.ToolTipText = "Assembly";
-            listViewItem3.ToolTipText = "Part";
-            listViewItem4.ToolTipText = "Point/Node";
-            listViewItem5.ToolTipText = "Element";
-            listViewItem6.ToolTipText = "Distance";
-            listViewItem7.ToolTipText = "Angle";
-            listViewItem8.ToolTipText = "Circle";
+            listViewItem1.ToolTipText = "Point/Node";
+            listViewItem2.ToolTipText = "Element";
+            listViewItem3.ToolTipText = "Edge";
+            listViewItem4.ToolTipText = "Surface";
+            listViewItem5.ToolTipText = "Part";
+            listViewItem6.ToolTipText = "Assembly";
+            listViewItem7.ToolTipText = "Bounding box size";
+            listViewItem8.ToolTipText = "Distance";
+            listViewItem9.ToolTipText = "Angle";
+            listViewItem10.ToolTipText = "Circle";
             this.lvQueries.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
             listViewItem1,
             listViewItem2,
@@ -91,7 +95,9 @@
             listViewItem5,
             listViewItem6,
             listViewItem7,
-            listViewItem8});
+            listViewItem8,
+            listViewItem9,
+            listViewItem10});
             this.lvQueries.Location = new System.Drawing.Point(6, 22);
             this.lvQueries.MultiSelect = false;
             this.lvQueries.Name = "lvQueries";

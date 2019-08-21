@@ -12,6 +12,7 @@ namespace CaeGlobals
         None,
         Node,
         Element,
+        Edge,
         Surface,
         Part
     }
