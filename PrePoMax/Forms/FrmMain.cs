@@ -43,6 +43,7 @@ namespace PrePoMax
 
         private Point _formLocation;
         private List<Form> _allForms;
+        private FrmSectionCut _frmSectionCut;
         private FrmCalculixKeywordEditor _frmCalculixKeywordEditor;
         private FrmSelectEntity _frmSelectEntity;
         private FrmSelectItemSet _frmSelectItemSet;
@@ -202,6 +203,9 @@ namespace PrePoMax
 
                 _frmSelectItemSet = new FrmSelectItemSet(_controller);
                 AddFormToAllForms(_frmSelectItemSet);
+
+                _frmSectionCut = new FrmSectionCut(_controller);
+                AddFormToAllForms(_frmSectionCut);
 
                 _frmAnalyzeGeometry = new FrmAnalyzeGeometry(_controller);
                 AddFormToAllForms(_frmAnalyzeGeometry);
@@ -408,7 +412,7 @@ namespace PrePoMax
             {
                 if (form.Visible)
                 {
-                    form.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
+                    //form.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
                 }
             }
         }
@@ -709,7 +713,7 @@ namespace PrePoMax
                     tsmiAnalysis.Enabled = false;
                     tsmiResults.Enabled = false;
 
-                    tsmiDividerView3.Visible = false;
+                    tsmiDividerView4.Visible = false;
                     tsmiResultsUndeformed.Visible = false;
                     tsmiResultsDeformed.Visible = false;
                     tsmiResultsColorContours.Visible = false;
@@ -732,7 +736,7 @@ namespace PrePoMax
                     tsmiAnalysis.Enabled = true;
                     tsmiResults.Enabled = false;
 
-                    tsmiDividerView3.Visible = false;
+                    tsmiDividerView4.Visible = false;
                     tsmiResultsUndeformed.Visible = false;
                     tsmiResultsDeformed.Visible = false;
                     tsmiResultsColorContours.Visible = false;
@@ -755,7 +759,7 @@ namespace PrePoMax
                     tsmiAnalysis.Enabled = false;
                     tsmiResults.Enabled = true;
 
-                    tsmiDividerView3.Visible = true;
+                    tsmiDividerView4.Visible = true;
                     tsmiResultsUndeformed.Visible = true;
                     tsmiResultsDeformed.Visible = true;
                     tsmiResultsColorContours.Visible = true;
@@ -1225,6 +1229,13 @@ namespace PrePoMax
                 _controller.HighlightSelection();
             else if (!_frmSelectItemSet.Visible)    // if everything is deselectd in _frmSelectItemSet do not highlight from tree
                 _modelTree.UpdateHighlight();
+        }
+
+        private void tsmiSectionCut_Click(object sender, EventArgs e)
+        {
+            CloseAllForms();
+            SetFormLoaction(_frmSectionCut);
+            _frmSectionCut.Show();
         }
 
         private void tsmiHideAllParts_Click(object sender, EventArgs e)
@@ -3090,8 +3101,8 @@ namespace PrePoMax
             }
         }
         private void SetFormLoaction(Form form)
-        {
-            form.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);            
+        {            
+            form.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
         }
         public void CloseAllForms()
         {
@@ -3417,8 +3428,13 @@ namespace PrePoMax
         }
         #endregion  ################################################################################################################
 
+
         // Methods                                                                                                                  
         #region Methods
+        public void SetTitle(string title)
+        {
+            InvokeIfRequired(() => this.Text = title);
+        }
         private bool CheckValiditiy()
         {
             string[] invalidItems = _controller.CheckAndUpdateValidity();
@@ -3506,6 +3522,7 @@ namespace PrePoMax
             return filter;
         }
 
+        #region Clear  #############################################################################################################
         public void ClearControls()
         {
             InvokeIfRequired(() =>
@@ -3548,14 +3565,10 @@ namespace PrePoMax
         {
             _modelTree.ClearSelection();
         }
+        
+        #endregion  ################################################################################################################
 
-        public void SetTitle(string title)
-        {
-            InvokeIfRequired(() => this.Text = title);
-        }
-
-
-
+        #region vtkControl  ########################################################################################################
         // vtkControl
         public void SetFrontBackView(bool animate, bool front)
         {
@@ -3569,6 +3582,16 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.AdjustCameraDistanceAndClipping);
         }
+
+        public void ApplySectionCut(double[] point, double[] normal)
+        {
+            InvokeIfRequired(_vtk.ApplySectionCut, point, normal);
+        }
+        public void RemoveSectionCut()
+        {
+            InvokeIfRequired(_vtk.RemoveSectionCut);
+        }
+
         public void Add3DNodes(vtkControl.vtkMaxActorData actorData)
         {
             InvokeIfRequired(_vtk.AddPoints, actorData);
@@ -3585,9 +3608,10 @@ namespace PrePoMax
         {
             return _vtk.AddAnimatedScalarFieldOnCells(actorData);
         }
-        public void UpdateActorScalarField(string actorName, float[] values, NodesExchangeData extremeNodes)
+        public void UpdateActorSurfaceScalarField(string actorName, float[] values, NodesExchangeData extremeNodes,
+                                                  float[] frustumCellLocatorValues)
         {
-            InvokeIfRequired(_vtk.UpdateActorScalarField, actorName, values, extremeNodes);
+            InvokeIfRequired(_vtk.UpdateActorScalarField, actorName, values, extremeNodes, frustumCellLocatorValues);
         }
         public void UpdateActorColorContoursVisibility(string[] actorNames, bool colorContour)
         {
@@ -3694,7 +3718,9 @@ namespace PrePoMax
             InvokeIfRequired(_vtk.SetMouseHighlightColor, mousehighlightColor);
         }
 
+        #endregion  ################################################################################################################
 
+        #region Results  ###########################################################################################################
         // Results
         public void SetFieldData(string name, string component, int stepId, int stepIncrementId)
         {
@@ -3835,7 +3861,10 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.SaveAnimationAsImages, fileName, firstLastFrame, step, scalarRangeFromAllFrames, swing);
         }
-
+        
+        #endregion  ################################################################################################################
+        
+        #region Tree  ##############################################################################################################
         // Tree
         public void RegenerateTree(CaeModel.FeModel model, Dictionary<string, CaeJob.AnalysisJob> jobs,
                                    CaeResults.FeResults results, CaeResults.HistoryResults history)
@@ -3924,7 +3953,8 @@ namespace PrePoMax
         {
             InvokeIfRequired(_modelTree.SetNumberOfUserKeywords, numOfUserKeywords);
         }
-
+        
+        #endregion  ################################################################################################################
 
         // Output
         Timer outputTimer = new Timer();
@@ -3973,7 +4003,7 @@ namespace PrePoMax
             tbOutput.ScrollToCaret();
         }
 
-
+        #region Invoke  ############################################################################################################
         // Invoke
         public void InvokeIfRequired(Action action)
         {
@@ -4066,6 +4096,8 @@ namespace PrePoMax
                 action(parameter1, parameter2, parameter3, parameter4, parameter5, parameter6, parameter7);
             }
         }
+        #endregion  ################################################################################################################
+
 
 
 
@@ -4095,6 +4127,6 @@ namespace PrePoMax
 
         #endregion
 
-       
+
     }
 }

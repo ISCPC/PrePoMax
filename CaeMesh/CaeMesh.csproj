@@ -59,6 +59,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BoundingBox.cs" />
     <Compile Include="Elements\0D\FeElement0D.cs" />
     <Compile Include="Elements\VtkCellType.cs" />
     <Compile Include="FeReferencePoint.cs" />
@@ -82,6 +83,7 @@
     <Compile Include="Geometry\GeomVertex.cs" />
     <Compile Include="Geometry\GeomSurface.cs" />
     <Compile Include="Geometry\GeometryItem.cs" />
+    <Compile Include="Parts\CellNeighbour.cs" />
     <Compile Include="InpElementSet.cs" />
     <Compile Include="Nodes\CompareFeNodeByX.cs" />
     <Compile Include="Nodes\CompareFeNodeCoods.cs" />

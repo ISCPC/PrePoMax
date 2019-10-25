@@ -12,6 +12,7 @@ namespace vtkControl
     {
         // Variables                                                                                                                
         public static string ScalarArrayName = "scalars";
+        public static string QuadraticArrayName = "quadratic";
         public static Color CurrentMouseHighlightColor = Color.FromArgb(255, 175, 0);
         private static vtkProperty _currentMouseSelectionProperty;
         public static string NameSeparator = ":";

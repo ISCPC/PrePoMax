@@ -9,6 +9,14 @@ using CaeGlobals;
 
 namespace vtkControl
 {
+    public enum vtkMaxActorRepresentation
+    {
+        Solid,
+        SolidAsShell,
+        Shell,
+        Wire,
+        Unknown
+    }
     public class vtkMaxActorData
     {
         // Variables                                                                                                                
@@ -23,8 +31,9 @@ namespace vtkControl
         public bool BackfaceCulling;
         public bool ColorContours;
         public bool SmoothShaded;
+        public vtkMaxActorRepresentation ActorRepresentation;
 
-        public PartExchangeData Actor;
+        public PartExchangeData Geometry;
         public PartExchangeData ModelEdges;
         public PartExchangeData CellLocator;
         
@@ -43,8 +52,9 @@ namespace vtkControl
             BackfaceCulling = true;
             ColorContours = false;
             SmoothShaded = false;
+            ActorRepresentation = vtkMaxActorRepresentation.Unknown;
 
-            Actor = new PartExchangeData();
+            Geometry = new PartExchangeData();
             ModelEdges = null;
             CellLocator = null;
         }

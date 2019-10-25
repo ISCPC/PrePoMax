@@ -82,6 +82,17 @@
     <Compile Include="ExceptionTools.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="MessageBoxManager.cs" />
+    <Compile Include="Octree\BoundsOctree.cs" />
+    <Compile Include="Octree\BoundsOctreeNode.cs" />
+    <Compile Include="Octree\Data\BoundingBox.cs" />
+    <Compile Include="Octree\Data\PointCloud.cs" />
+    <Compile Include="Octree\Data\IIntersect.cs" />
+    <Compile Include="Octree\Data\MathExtensions.cs" />
+    <Compile Include="Octree\Data\Plane.cs" />
+    <Compile Include="Octree\Data\Point.cs" />
+    <Compile Include="Octree\Data\Ray.cs" />
+    <Compile Include="Octree\PointOctree.cs" />
+    <Compile Include="Octree\PointOctreeNode.cs" />
     <Compile Include="Selection\Enums\vtkSelectBy.cs" />
     <Compile Include="Selection\Enums\vtkSelectionMode.cs" />
     <Compile Include="Selection\Enums\vtkSelectItem.cs" />

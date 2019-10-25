@@ -102,6 +102,7 @@
             this.tsmiTransformPart = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiTranslatePart = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiScalePart = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiRotatePart = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiMergePart = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerPart2 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiHidePart = new System.Windows.Forms.ToolStripMenuItem();
@@ -262,7 +263,8 @@
             this.toolStripViewSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.tslSymbols = new System.Windows.Forms.ToolStripLabel();
             this.tscbSymbolsForStep = new System.Windows.Forms.ToolStripComboBox();
-            this.tsmiRotatePart = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiDividerView4 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsmiSectionCut = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStripMain.SuspendLayout();
             this.statusStripMain.SuspendLayout();
             this.tsResults.SuspendLayout();
@@ -384,14 +386,14 @@
             // tsmiExportToCalculix
             // 
             this.tsmiExportToCalculix.Name = "tsmiExportToCalculix";
-            this.tsmiExportToCalculix.Size = new System.Drawing.Size(143, 22);
+            this.tsmiExportToCalculix.Size = new System.Drawing.Size(144, 22);
             this.tsmiExportToCalculix.Text = "Calculix *.inp";
             this.tsmiExportToCalculix.Click += new System.EventHandler(this.tsmiExportToCalculix_Click);
             // 
             // tsmiExportToAbaqus
             // 
             this.tsmiExportToAbaqus.Name = "tsmiExportToAbaqus";
-            this.tsmiExportToAbaqus.Size = new System.Drawing.Size(143, 22);
+            this.tsmiExportToAbaqus.Size = new System.Drawing.Size(144, 22);
             this.tsmiExportToAbaqus.Text = "Abaqus *.inp";
             this.tsmiExportToAbaqus.Click += new System.EventHandler(this.tsmiExportToAbaqus_Click);
             // 
@@ -500,10 +502,12 @@
             this.tsmiShowModelEdges,
             this.tsmiShowNoEdges,
             this.tsmiDividerView2,
+            this.tsmiSectionCut,
+            this.tsmiDividerView3,
             this.tsmiShowAllParts,
             this.tsmiHideAllParts,
             this.tsmiInvertVisibleParts,
-            this.tsmiDividerView3,
+            this.tsmiDividerView4,
             this.tsmiResultsUndeformed,
             this.tsmiResultsDeformed,
             this.tsmiResultsColorContours});
@@ -831,7 +835,7 @@
             this.tsmiNode.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmiRenumberAllNodes});
             this.tsmiNode.Name = "tsmiNode";
-            this.tsmiNode.Size = new System.Drawing.Size(180, 22);
+            this.tsmiNode.Size = new System.Drawing.Size(157, 22);
             this.tsmiNode.Text = "Node";
             // 
             // tsmiRenumberAllNodes
@@ -854,13 +858,13 @@
             this.tsmiDeletePart});
             this.tsmiPart.Image = ((System.Drawing.Image)(resources.GetObject("tsmiPart.Image")));
             this.tsmiPart.Name = "tsmiPart";
-            this.tsmiPart.Size = new System.Drawing.Size(180, 22);
+            this.tsmiPart.Size = new System.Drawing.Size(157, 22);
             this.tsmiPart.Text = "Part";
             // 
             // tsmiEditPart
             // 
             this.tsmiEditPart.Name = "tsmiEditPart";
-            this.tsmiEditPart.Size = new System.Drawing.Size(180, 22);
+            this.tsmiEditPart.Size = new System.Drawing.Size(127, 22);
             this.tsmiEditPart.Text = "Edit";
             this.tsmiEditPart.Click += new System.EventHandler(this.tsmiEditPart_Click);
             // 
@@ -871,40 +875,47 @@
             this.tsmiScalePart,
             this.tsmiRotatePart});
             this.tsmiTransformPart.Name = "tsmiTransformPart";
-            this.tsmiTransformPart.Size = new System.Drawing.Size(180, 22);
+            this.tsmiTransformPart.Size = new System.Drawing.Size(127, 22);
             this.tsmiTransformPart.Text = "Transform";
             // 
             // tsmiTranslatePart
             // 
             this.tsmiTranslatePart.Name = "tsmiTranslatePart";
-            this.tsmiTranslatePart.Size = new System.Drawing.Size(180, 22);
+            this.tsmiTranslatePart.Size = new System.Drawing.Size(120, 22);
             this.tsmiTranslatePart.Text = "Translate";
             this.tsmiTranslatePart.Click += new System.EventHandler(this.tsmiTranslatePart_Click);
             // 
             // tsmiScalePart
             // 
             this.tsmiScalePart.Name = "tsmiScalePart";
-            this.tsmiScalePart.Size = new System.Drawing.Size(180, 22);
+            this.tsmiScalePart.Size = new System.Drawing.Size(120, 22);
             this.tsmiScalePart.Text = "Scale";
             this.tsmiScalePart.Click += new System.EventHandler(this.tsmiScalePart_Click);
+            // 
+            // tsmiRotatePart
+            // 
+            this.tsmiRotatePart.Name = "tsmiRotatePart";
+            this.tsmiRotatePart.Size = new System.Drawing.Size(120, 22);
+            this.tsmiRotatePart.Text = "Rotate";
+            this.tsmiRotatePart.Click += new System.EventHandler(this.tsmiRotatePart_Click);
             // 
             // tsmiMergePart
             // 
             this.tsmiMergePart.Name = "tsmiMergePart";
-            this.tsmiMergePart.Size = new System.Drawing.Size(180, 22);
+            this.tsmiMergePart.Size = new System.Drawing.Size(127, 22);
             this.tsmiMergePart.Text = "Merge";
             this.tsmiMergePart.Click += new System.EventHandler(this.tsmiMergePart_Click);
             // 
             // tsmiDividerPart2
             // 
             this.tsmiDividerPart2.Name = "tsmiDividerPart2";
-            this.tsmiDividerPart2.Size = new System.Drawing.Size(177, 6);
+            this.tsmiDividerPart2.Size = new System.Drawing.Size(124, 6);
             // 
             // tsmiHidePart
             // 
             this.tsmiHidePart.Image = global::PrePoMax.Properties.Resources.Hide;
             this.tsmiHidePart.Name = "tsmiHidePart";
-            this.tsmiHidePart.Size = new System.Drawing.Size(180, 22);
+            this.tsmiHidePart.Size = new System.Drawing.Size(127, 22);
             this.tsmiHidePart.Text = "Hide";
             this.tsmiHidePart.Click += new System.EventHandler(this.tsmiHidePart_Click);
             // 
@@ -912,19 +923,19 @@
             // 
             this.tsmiShowPart.Image = global::PrePoMax.Properties.Resources.Show;
             this.tsmiShowPart.Name = "tsmiShowPart";
-            this.tsmiShowPart.Size = new System.Drawing.Size(180, 22);
+            this.tsmiShowPart.Size = new System.Drawing.Size(127, 22);
             this.tsmiShowPart.Text = "Show";
             this.tsmiShowPart.Click += new System.EventHandler(this.tsmiShowPart_Click);
             // 
             // tsmiDividerPart3
             // 
             this.tsmiDividerPart3.Name = "tsmiDividerPart3";
-            this.tsmiDividerPart3.Size = new System.Drawing.Size(177, 6);
+            this.tsmiDividerPart3.Size = new System.Drawing.Size(124, 6);
             // 
             // tsmiDeletePart
             // 
             this.tsmiDeletePart.Name = "tsmiDeletePart";
-            this.tsmiDeletePart.Size = new System.Drawing.Size(180, 22);
+            this.tsmiDeletePart.Size = new System.Drawing.Size(127, 22);
             this.tsmiDeletePart.Text = "Delete";
             this.tsmiDeletePart.Click += new System.EventHandler(this.tsmiDeletePart_Click);
             // 
@@ -937,7 +948,7 @@
             this.tsmiDeleteNodeSet});
             this.tsmiNodeSet.Image = ((System.Drawing.Image)(resources.GetObject("tsmiNodeSet.Image")));
             this.tsmiNodeSet.Name = "tsmiNodeSet";
-            this.tsmiNodeSet.Size = new System.Drawing.Size(180, 22);
+            this.tsmiNodeSet.Size = new System.Drawing.Size(157, 22);
             this.tsmiNodeSet.Text = "Node set";
             // 
             // tsmiCreateNodeSet
@@ -976,7 +987,7 @@
             this.tsmiDeleteElementSet});
             this.tsmiElementSet.Image = ((System.Drawing.Image)(resources.GetObject("tsmiElementSet.Image")));
             this.tsmiElementSet.Name = "tsmiElementSet";
-            this.tsmiElementSet.Size = new System.Drawing.Size(180, 22);
+            this.tsmiElementSet.Size = new System.Drawing.Size(157, 22);
             this.tsmiElementSet.Text = "Element set";
             // 
             // tsmiCreateElementSet
@@ -1021,7 +1032,7 @@
             this.tsmiDeleteSurface});
             this.tsmiSurface.Image = ((System.Drawing.Image)(resources.GetObject("tsmiSurface.Image")));
             this.tsmiSurface.Name = "tsmiSurface";
-            this.tsmiSurface.Size = new System.Drawing.Size(180, 22);
+            this.tsmiSurface.Size = new System.Drawing.Size(157, 22);
             this.tsmiSurface.Text = "Surface";
             // 
             // tsmiCreateSurface
@@ -1059,7 +1070,7 @@
             this.tsmiDeleteRP});
             this.tsmiReferencePointTool.Image = ((System.Drawing.Image)(resources.GetObject("tsmiReferencePointTool.Image")));
             this.tsmiReferencePointTool.Name = "tsmiReferencePointTool";
-            this.tsmiReferencePointTool.Size = new System.Drawing.Size(180, 22);
+            this.tsmiReferencePointTool.Size = new System.Drawing.Size(157, 22);
             this.tsmiReferencePointTool.Text = "Reference point";
             // 
             // tsmiCreateRP
@@ -1670,7 +1681,7 @@
             this.tsmiSettings,
             this.tsmiQuery});
             this.tsmiTools.Name = "tsmiTools";
-            this.tsmiTools.Size = new System.Drawing.Size(47, 20);
+            this.tsmiTools.Size = new System.Drawing.Size(46, 20);
             this.tsmiTools.Text = "Tools";
             // 
             // tsmiSettings
@@ -2258,12 +2269,17 @@
             this.tscbSymbolsForStep.Size = new System.Drawing.Size(121, 25);
             this.tscbSymbolsForStep.ToolTipText = "Select how symbols are displayed.";
             // 
-            // tsmiRotatePart
+            // tsmiDividerView4
             // 
-            this.tsmiRotatePart.Name = "tsmiRotatePart";
-            this.tsmiRotatePart.Size = new System.Drawing.Size(180, 22);
-            this.tsmiRotatePart.Text = "Rotate";
-            this.tsmiRotatePart.Click += new System.EventHandler(this.tsmiRotatePart_Click);
+            this.tsmiDividerView4.Name = "tsmiDividerView4";
+            this.tsmiDividerView4.Size = new System.Drawing.Size(230, 6);
+            // 
+            // tsmiSectionCut
+            // 
+            this.tsmiSectionCut.Name = "tsmiSectionCut";
+            this.tsmiSectionCut.Size = new System.Drawing.Size(233, 22);
+            this.tsmiSectionCut.Text = "Section cut";
+            this.tsmiSectionCut.Click += new System.EventHandler(this.tsmiSectionCut_Click);
             // 
             // FrmMain
             // 
@@ -2551,6 +2567,8 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiTranslatePart;
         private System.Windows.Forms.ToolStripMenuItem tsmiScalePart;
         private System.Windows.Forms.ToolStripMenuItem tsmiRotatePart;
+        private System.Windows.Forms.ToolStripMenuItem tsmiSectionCut;
+        private System.Windows.Forms.ToolStripSeparator tsmiDividerView4;
     }
 }
 

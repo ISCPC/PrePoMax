@@ -8,72 +8,6 @@ using CaeGlobals;
 namespace CaeMesh
 {
     [Serializable]
-    public class BoundingBox
-    {
-        public double MinX;
-        public double MinY;
-        public double MinZ;
-
-        public double MaxX;
-        public double MaxY;
-        public double MaxZ;
-
-        public BoundingBox()
-        {
-            Reset();
-        }
-
-        public void Reset()
-        {
-            MinX = double.MaxValue;
-            MinY = double.MaxValue;
-            MinZ = double.MaxValue;
-            MaxX = -double.MaxValue;
-            MaxY = -double.MaxValue;
-            MaxZ = -double.MaxValue;
-        }
-        public void SetMin(FeNode node)
-        {
-            MinX = node.X;
-            MinY = node.Y;
-            MinZ = node.Z;
-        }
-        public void SetMax(FeNode node)
-        {
-            MaxX = node.X;
-            MaxY = node.Y;
-            MaxZ = node.Z;
-        }
-        public void CheckNode(FeNode node)
-        {
-            if (node.X > MaxX) MaxX = node.X;
-            else if (node.X < MinX) MinX = node.X;
-
-            if (node.Y > MaxY) MaxY = node.Y;
-            else if (node.Y < MinY) MinY = node.Y;
-
-            if (node.Z > MaxZ) MaxZ = node.Z;
-            else if (node.Z < MinZ) MinZ = node.Z;
-        }
-        public double GetDiagonal()
-        {
-            return Math.Sqrt(Math.Pow(MaxX - MinX, 2) + Math.Pow(MaxY - MinY, 2) + Math.Pow(MaxZ - MinZ, 2));
-        }
-
-        public bool IsEqual(BoundingBox boundingBox)
-        {
-            double diagonal = Math.Pow(MinX - MaxX, 2) + Math.Pow(MinY - MaxY, 2) + Math.Pow(MinZ - MaxZ, 2);
-            double bbDiagonal = Math.Pow(boundingBox.MinX - boundingBox.MaxX, 2) + Math.Pow(boundingBox.MinY - boundingBox.MaxY, 2) + Math.Pow(boundingBox.MinZ - boundingBox.MaxZ, 2);
-
-            if (diagonal == 0 && bbDiagonal == 0) return true;
-            else if (diagonal != 0 && bbDiagonal != 0) return Math.Abs(diagonal - bbDiagonal) / Math.Max(diagonal, bbDiagonal) < 0.001 ? true : false;
-            return false;
-        }
-    }
-
-
-    [Serializable]
-
     public class BasePart : FeGroup
     {
         // Variables                                                                                                                
@@ -86,6 +20,9 @@ namespace CaeMesh
         protected bool _smoothShaded;
         protected BoundingBox _boundingBox;
 
+        [NonSerialized]
+        protected VisualizationData _visualizationCopy;
+
 
         // Properties                                                                                                               
         public int PartId { get { return _partId; } set { _partId = value; } }
@@ -97,6 +34,7 @@ namespace CaeMesh
         }
         public Type[] ElementTypes { get { return _elementTypes; } }
         public VisualizationData Visualization  { get { return _visualization; } set { _visualization = value; } }
+        public VisualizationData VisualizationCopy { get { return _visualizationCopy; } set { _visualizationCopy = value; } }
         public int[] NodeLabels { get { return _nodeLabels; } set { _nodeLabels = value; } }
         public bool SmoothShaded { get { return _smoothShaded; } set { _smoothShaded = value; } }
         public BoundingBox BoundingBox { get { return _boundingBox; } set { _boundingBox = value; } }
@@ -111,6 +49,7 @@ namespace CaeMesh
             _color = System.Drawing.Color.Gray;
             _elementTypes = elementTypes;
             _visualization = new VisualizationData();
+            _visualizationCopy = null;
             _smoothShaded = false;
             _boundingBox = new BoundingBox();
 
@@ -130,7 +69,10 @@ namespace CaeMesh
 
             _elementTypes = part.ElementTypes != null ? part.ElementTypes.ToArray() : null;
 
-            _visualization = new VisualizationData(part.Visualization);
+            _visualization = part.Visualization.DeepCopy();
+
+            if (part.VisualizationCopy != null)
+                _visualizationCopy = part.VisualizationCopy.DeepCopy();
             
             _nodeLabels = part.NodeLabels != null ? part.NodeLabels.ToArray() : null;
 
@@ -173,7 +115,14 @@ namespace CaeMesh
             }
             return true;
         }
-
+        public void SetPartType(PartType partType)
+        {
+            if (_partType == PartType.Shell && partType == PartType.SolidAsShell)
+            {
+                _partType = partType;
+            }
+            else throw new NotSupportedException();
+        }
        
 
         public virtual BasePart DeepCopy()

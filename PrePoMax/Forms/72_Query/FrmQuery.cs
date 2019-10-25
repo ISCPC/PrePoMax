@@ -133,6 +133,7 @@ namespace PrePoMax.Forms
             if (!this.Visible)
             {
                 _controller.SelectBy = vtkSelectBy.Off;
+                _controller.ClearSelectionHistory();
             }                
         }
 

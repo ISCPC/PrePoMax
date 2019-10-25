@@ -136,6 +136,8 @@ Done
 
 Version 0.5.2 Master branch
 
+Added support to query edges and surfaces
+Added support for geometry selection of surfaces by angle
 Added support for geometry selection of edges by angle
 Changed the wireframe mode to show model edges
 Fixed a bug with the strage selection in some cases - check for cellId != -1

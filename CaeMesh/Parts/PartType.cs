@@ -10,6 +10,7 @@ namespace CaeMesh
     public enum PartType
     {
         Solid,
+        SolidAsShell,
         Shell,
         Wire,
         Unknown

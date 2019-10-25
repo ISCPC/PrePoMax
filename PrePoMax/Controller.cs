@@ -30,6 +30,7 @@ namespace PrePoMax
         protected NetgenJob _netgenJob;
         protected FeResults _results;
         protected HistoryResults _history;
+        protected bool _sectionCutActive;
         // View
         protected ViewGeometryModelResults _currentView;
         protected string _drawSymbolsForStep;
@@ -252,6 +253,8 @@ namespace PrePoMax
 
             _jobs = new Dictionary<string, AnalysisJob>();
             _selection = new Selection();
+
+            _sectionCutActive = false;
 
             Clear();
 
@@ -1013,6 +1016,31 @@ namespace PrePoMax
         {
             _model.CalculixUserKeywords = userKeywords;
             _form.SetNumberOfModelUserKeywords(userKeywords.Count);
+        }
+
+        #endregion ################################################################################################################
+
+        #region View menu   ########################################################################################################
+        // COMMANDS ********************************************************************************
+        
+        public void ApplySectionCut(Octree.Plane sectionPlane)
+        {
+            //DisplayedMesh.ApplySectionCut(sectionPlane);
+            //_sectionCutActive = true;
+
+            //if (_currentView == ViewGeometryModelResults.Geometry) DrawGeometry(false);
+            //else if (_currentView == ViewGeometryModelResults.Model) DrawMesh(false);
+            //else if (_currentView == ViewGeometryModelResults.Results) DrawResults(false);
+            double[] normal = sectionPlane.Normal.Coor;
+            double[] point = sectionPlane.Normal.Coor;
+            point[0] *= -sectionPlane.D;
+            point[1] *= -sectionPlane.D;
+            point[2] *= -sectionPlane.D;
+            _form.ApplySectionCut(point, normal);
+        }
+        public void RemoveSectionCut()
+        {
+            _form.RemoveSectionCut();
         }
 
         #endregion ################################################################################################################
@@ -3385,7 +3413,7 @@ namespace PrePoMax
             else if (selectBy == vtkSelectBy.Element || selectBy == vtkSelectBy.QueryElement)
             {
                 vtkControl.vtkMaxActorData data = GetCellActorData(new int[] { elementId }, null);
-                return data.Actor.Nodes.Ids;
+                return data.Geometry.Nodes.Ids;
             }
             else if (selectBy == vtkSelectBy.Edge)
             {
@@ -3524,26 +3552,26 @@ namespace PrePoMax
         public vtkControl.vtkMaxActorData GetNodeActorData(int[] nodeIds)
         {
             vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
-            data.Actor.Nodes.Coor = new double[nodeIds.Length][];
+            data.Geometry.Nodes.Coor = new double[nodeIds.Length][];
 
             if (_currentView == ViewGeometryModelResults.Geometry && _model.Geometry != null)
             {
                 for (int i = 0; i < nodeIds.Length; i++)
                 {
-                    data.Actor.Nodes.Coor[i] = _model.Geometry.Nodes[nodeIds[i]].Coor;
+                    data.Geometry.Nodes.Coor[i] = _model.Geometry.Nodes[nodeIds[i]].Coor;
                 }
             }
             else if (_currentView == ViewGeometryModelResults.Model && _model.Mesh != null)
             {
                 for (int i = 0; i < nodeIds.Length; i++)
                 {
-                    data.Actor.Nodes.Coor[i] = _model.Mesh.Nodes[nodeIds[i]].Coor;
+                    data.Geometry.Nodes.Coor[i] = _model.Mesh.Nodes[nodeIds[i]].Coor;
                 }
             }
             else
             {
                 float scale = GetScale();
-                Results.GetScaledNodesAndValues(_currentFieldData, scale, nodeIds, out data.Actor.Nodes.Coor, out data.Actor.Nodes.Values);
+                Results.GetScaledNodesAndValues(_currentFieldData, scale, nodeIds, out data.Geometry.Nodes.Coor, out data.Geometry.Nodes.Values);
             }
 
             return data;
@@ -3608,13 +3636,13 @@ namespace PrePoMax
             vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
             if (_currentView == ViewGeometryModelResults.Geometry && _model.Geometry != null)
             {
-                _model.Geometry.GetAllNodesAndCells(elementSet, out data.Actor.Nodes.Ids, out data.Actor.Nodes.Coor, out data.Actor.Cells.Ids,
-                                                    out data.Actor.Cells.CellNodeIds, out data.Actor.Cells.Types);
+                _model.Geometry.GetAllNodesAndCells(elementSet, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.Ids,
+                                                    out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
             }
             else if (_currentView == ViewGeometryModelResults.Model && _model.Mesh != null)
             {
-                _model.Mesh.GetAllNodesAndCells(elementSet, out data.Actor.Nodes.Ids, out data.Actor.Nodes.Coor, out data.Actor.Cells.Ids,
-                                                out data.Actor.Cells.CellNodeIds, out data.Actor.Cells.Types);
+                _model.Mesh.GetAllNodesAndCells(elementSet, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.Ids,
+                                                out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
             }
             else
             {
@@ -3670,11 +3698,11 @@ namespace PrePoMax
             else throw new NotSupportedException();
 
             vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
-            data.Actor.Nodes.Ids = cell;
-            data.Actor.Nodes.Coor = nodeCoor;
-            data.Actor.Cells.CellNodeIds = cells;
+            data.Geometry.Nodes.Ids = cell;
+            data.Geometry.Nodes.Coor = nodeCoor;
+            data.Geometry.Cells.CellNodeIds = cells;
             
-            data.Actor.Cells.Types = new int[] { cellTypes };
+            data.Geometry.Cells.Types = new int[] { cellTypes };
             return data;
         }
         public vtkControl.vtkMaxActorData GetEdgeActorData(int elementId, int[] edgeNodeIds)
@@ -3684,13 +3712,13 @@ namespace PrePoMax
 
             if (edgeCells != null)
             {
-                DisplayedMesh.GetNodesAndCellsForEdges(edgeCells, out data.Actor.Nodes.Ids, out data.Actor.Nodes.Coor,
-                                                       out data.Actor.Cells.CellNodeIds, out data.Actor.Cells.Types);
+                DisplayedMesh.GetNodesAndCellsForEdges(edgeCells, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor,
+                                                       out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
                 // Scale nodes
                 if(_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
                 {
                     float scale = GetScale();
-                    Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId, data.Actor.Nodes.Ids, ref data.Actor.Nodes.Coor);
+                    Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId, data.Geometry.Nodes.Ids, ref data.Geometry.Nodes.Coor);
                 }
 
                 // name for the probe widget
@@ -3706,14 +3734,14 @@ namespace PrePoMax
             if (edgeCells != null)
             {
                 vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
-                DisplayedMesh.GetNodesAndCellsForEdges(edgeCells, out data.Actor.Nodes.Ids, out data.Actor.Nodes.Coor,
-                                                       out data.Actor.Cells.CellNodeIds, out data.Actor.Cells.Types);
+                DisplayedMesh.GetNodesAndCellsForEdges(edgeCells, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor,
+                                                       out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
 
                 // Scale nodes
                 if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
                 {
                     float scale = GetScale();
-                    Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId, data.Actor.Nodes.Ids, ref data.Actor.Nodes.Coor);
+                    Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId, data.Geometry.Nodes.Ids, ref data.Geometry.Nodes.Coor);
                 }
 
                 return data;
@@ -3731,8 +3759,8 @@ namespace PrePoMax
             }
 
             vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
-            data.Actor.Cells.CellNodeIds = cells;
-            DisplayedMesh.GetSurfaceGeometry(cells, out data.Actor.Nodes.Coor, out data.Actor.Cells.Types);
+            data.Geometry.Cells.CellNodeIds = cells;
+            DisplayedMesh.GetSurfaceGeometry(cells, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.Types);
 
             return data;
         }
@@ -3752,8 +3780,8 @@ namespace PrePoMax
             vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
             int[][] freeEdges = DisplayedMesh.GetFreeEdgesFromVisualizationCells(cells);
 
-            DisplayedMesh.GetNodesAndCellsForEdges(freeEdges, out data.Actor.Nodes.Ids, out data.Actor.Nodes.Coor,
-                                                   out data.Actor.Cells.CellNodeIds, out data.Actor.Cells.Types);
+            DisplayedMesh.GetNodesAndCellsForEdges(freeEdges, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor,
+                                                   out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
             return data;
         }
         public vtkControl.vtkMaxActorData GetSurfaceEdgeActorData(int elementId, int[] cellFaceNodeIds)
@@ -3777,8 +3805,8 @@ namespace PrePoMax
                 }
 
                 vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
-                DisplayedMesh.GetNodesAndCellsForEdges(edgeCells.ToArray(), out data.Actor.Nodes.Ids, out data.Actor.Nodes.Coor,
-                                                       out data.Actor.Cells.CellNodeIds, out data.Actor.Cells.Types);
+                DisplayedMesh.GetNodesAndCellsForEdges(edgeCells.ToArray(), out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor,
+                                                       out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
                 // name for the probe widget
                 data.Name = faceId.ToString();
 
@@ -3786,7 +3814,7 @@ namespace PrePoMax
                 if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
                 {
                     float scale = GetScale();
-                    Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId, data.Actor.Nodes.Ids, ref data.Actor.Nodes.Coor);
+                    Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId, data.Geometry.Nodes.Ids, ref data.Geometry.Nodes.Coor);
                 }
 
                 return data;
@@ -3801,14 +3829,14 @@ namespace PrePoMax
             int[][] cells = DisplayedMesh.GetSurfaceCells(geometrySurfaceIds[0]);
 
             vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
-            data.Actor.Cells.CellNodeIds = cells;
-            DisplayedMesh.GetSurfaceGeometry(cells, out data.Actor.Nodes.Ids, out data.Actor.Nodes.Coor, out data.Actor.Cells.Types);
+            data.Geometry.Cells.CellNodeIds = cells;
+            DisplayedMesh.GetSurfaceGeometry(cells, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.Types);
 
             // Scale nodes
             if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
             {
                 float scale = GetScale();
-                Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId, data.Actor.Nodes.Ids, ref data.Actor.Nodes.Coor);
+                Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId, data.Geometry.Nodes.Ids, ref data.Geometry.Nodes.Coor);
             }
 
             return data;
@@ -3973,12 +4001,20 @@ namespace PrePoMax
         // Update model stat
         public void Update(UpdateType updateType)
         {
-            
-if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first check the validity to correctly draw the symbols
+            if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first check the validity to correctly draw the symbols
             if (updateType.HasFlag(UpdateType.DrawMesh)) DrawMesh(updateType.HasFlag(UpdateType.ResetCamera));
             if (updateType.HasFlag(UpdateType.RedrawSymbols)) RedrawSymbols();
         }
         
+        private vtkControl.vtkMaxActorRepresentation GetRepresentation(BasePart part)
+        {
+            if (part.PartType == PartType.Solid) return vtkControl.vtkMaxActorRepresentation.Solid;
+            else if (part.PartType == PartType.SolidAsShell) return vtkControl.vtkMaxActorRepresentation.SolidAsShell;
+            else if (part.PartType == PartType.Shell) return vtkControl.vtkMaxActorRepresentation.Shell;
+            else if (part.PartType == PartType.Wire) return vtkControl.vtkMaxActorRepresentation.Wire;
+            else throw new NotSupportedException();
+        }
+
         // Geometry mesh
         public void DrawGeometry(bool resetCamera)
         {
@@ -4033,6 +4069,8 @@ if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first che
             data.CanHaveElementEdges = canHaveElementEdges;
             data.Pickable = pickable;
             data.SmoothShaded = part.SmoothShaded;
+            data.ActorRepresentation = GetRepresentation(part);
+            
 
             // get all nodes and elements - renumbered
             if (pickable)
@@ -4043,15 +4081,16 @@ if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first che
             }
 
             // get only needed nodes and elements - renumbered
-            mesh.GetVisualizationNodesAndCells(part, out data.Actor.Nodes.Ids, out data.Actor.Nodes.Coor, out data.Actor.Cells.Ids,
-                                        out data.Actor.Cells.CellNodeIds, out data.Actor.Cells.Types);
+            mesh.GetVisualizationNodesAndCells(part, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.Ids,
+                                        out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
 
             // model edges
-            if ((part.PartType == PartType.Solid || part.PartType == PartType.Shell) && part.Visualization.EdgeCells != null)
+            if ((part.PartType == PartType.Solid || part.PartType == PartType.SolidAsShell || part.PartType == PartType.Shell)
+                && part.Visualization.EdgeCells != null)
             {
                 data.ModelEdges = new PartExchangeData();
-                mesh.GetNodesAndCellsForModelEdges(part, out data.ModelEdges.Nodes.Ids, out data.ModelEdges.Nodes.Coor, out data.ModelEdges.Cells.CellNodeIds,
-                                                   out data.ModelEdges.Cells.Types);
+                mesh.GetNodesAndCellsForModelEdges(part, out data.ModelEdges.Nodes.Ids, out data.ModelEdges.Nodes.Coor, 
+                                                   out data.ModelEdges.Cells.CellNodeIds, out data.ModelEdges.Cells.Types);
             }
 
             ApplyLighting(data);
@@ -4120,21 +4159,22 @@ if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first che
             data.CanHaveElementEdges = true;
             data.Pickable = true;
             data.SmoothShaded = part.SmoothShaded;
+            data.ActorRepresentation = GetRepresentation(part);
 
             // get all nodes and elements for selection - renumbered
             data.CellLocator = new PartExchangeData();
-            mesh.GetAllNodesAndCells(part, out data.CellLocator.Nodes.Ids, out data.CellLocator.Nodes.Coor, out data.CellLocator.Cells.Ids, 
+            mesh.GetAllNodesAndCells(part, out data.CellLocator.Nodes.Ids, out data.CellLocator.Nodes.Coor, out data.CellLocator.Cells.Ids,
                                      out data.CellLocator.Cells.CellNodeIds, out data.CellLocator.Cells.Types);
 
 
 
             // get only needed nodes and elements - renumbered
-            mesh.GetVisualizationNodesAndCells(part, out data.Actor.Nodes.Ids, out data.Actor.Nodes.Coor, out data.Actor.Cells.Ids, 
-                                        out data.Actor.Cells.CellNodeIds, out data.Actor.Cells.Types);
+            mesh.GetVisualizationNodesAndCells(part, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.Ids, 
+                                        out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
             
             // model edges
-            if (((part.PartType == PartType.Solid || part.PartType == PartType.Shell) && part.Visualization.EdgeCells != null) ||
-                  part.PartType == PartType.Wire)
+            if (((part.PartType == PartType.Solid || part.PartType == PartType.SolidAsShell || part.PartType == PartType.Shell) 
+                && part.Visualization.EdgeCells != null) || part.PartType == PartType.Wire)
             {
                 data.ModelEdges = new PartExchangeData();
                 mesh.GetNodesAndCellsForModelEdges(part, out data.ModelEdges.Nodes.Ids, out data.ModelEdges.Nodes.Coor, 
@@ -4214,7 +4254,7 @@ if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first che
                     data.NodeSize = nodeSize;
                     data.Color = colorBorder;
                     data.Layer = layer;
-                    data.Actor.Nodes.Coor = new double[][] { rp.Coor() };
+                    data.Geometry.Nodes.Coor = new double[][] { rp.Coor() };
                     ApplyLighting(data);
                     _form.Add3DNodes(data);
 
@@ -4331,10 +4371,10 @@ if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first che
                     data.Layer = layer;
                     data.CanHaveElementEdges = canHaveEdges;
                     data.Pickable = false;
-                    data.Actor.Nodes.Ids = null;
-                    data.Actor.Nodes.Coor = nodeCoor.ToArray();
-                    data.Actor.Cells.CellNodeIds = cells;
-                    data.Actor.Cells.Types = cellsTypes;
+                    data.Geometry.Nodes.Ids = null;
+                    data.Geometry.Nodes.Coor = nodeCoor.ToArray();
+                    data.Geometry.Cells.CellNodeIds = cells;
+                    data.Geometry.Cells.Types = cellsTypes;
                     ApplyLighting(data);
                     _form.Add3DCells(data);
                 }
@@ -4450,8 +4490,8 @@ if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first che
                 data.Name = prefixName;
                 data.Color = color;
                 data.Layer = layer;
-                data.Actor.Nodes.Coor = allCoor.ToArray();
-                data.Actor.Nodes.Normals = allNormals.ToArray();
+                data.Geometry.Nodes.Coor = allCoor.ToArray();
+                data.Geometry.Nodes.Normals = allNormals.ToArray();
                 ApplyLighting(data);
                 _form.AddOrientedDisplacementConstraintActor(data, symbolSize);                
             }
@@ -4492,8 +4532,8 @@ if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first che
                 data.Name = prefixName;
                 data.Color = color;
                 data.Layer = layer;
-                data.Actor.Nodes.Coor = allCoor.ToArray();
-                data.Actor.Nodes.Normals = allNormals.ToArray();
+                data.Geometry.Nodes.Coor = allCoor.ToArray();
+                data.Geometry.Nodes.Normals = allNormals.ToArray();
                 ApplyLighting(data);
                 _form.AddOrientedRotationalConstraintActor(data, symbolSize);
             }
@@ -4521,8 +4561,8 @@ if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first che
                 data.Name = prefixName;
                 data.Color = color;
                 data.Layer = layer;
-                data.Actor.Nodes.Coor = allCoor.ToArray();
-                data.Actor.Nodes.Normals = allNormals.ToArray();
+                data.Geometry.Nodes.Coor = allCoor.ToArray();
+                data.Geometry.Nodes.Normals = allNormals.ToArray();
                 ApplyLighting(data);
                 _form.AddOrientedArrowsActor(data, symbolSize);
             }
@@ -4549,8 +4589,8 @@ if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first che
                 data.Name = prefixName;
                 data.Color = color;
                 data.Layer = layer;
-                data.Actor.Nodes.Coor = allCoor.ToArray();
-                data.Actor.Nodes.Normals = allNormals.ToArray();
+                data.Geometry.Nodes.Coor = allCoor.ToArray();
+                data.Geometry.Nodes.Normals = allNormals.ToArray();
                 ApplyLighting(data);
                 _form.AddOrientedDoubleArrowsActor(data, symbolSize);
             }
@@ -4688,8 +4728,8 @@ if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first che
                 data.Name = prefixName;
                 data.Color = color;
                 data.Layer = layer;
-                data.Actor.Nodes.Coor = symbolCoor.ToArray();
-                data.Actor.Nodes.Normals = allLoadNormals.ToArray();
+                data.Geometry.Nodes.Coor = symbolCoor.ToArray();
+                data.Geometry.Nodes.Normals = allLoadNormals.ToArray();
                 ApplyLighting(data);
                 _form.AddOrientedArrowsActor(data, symbolSize);
             }
@@ -4713,8 +4753,8 @@ if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first che
                 data.Name = prefixName;
                 data.Color = color;
                 data.Layer = layer;
-                data.Actor.Nodes.Coor = symbolCoor.ToArray();
-                data.Actor.Nodes.Normals = allLoadNormals.ToArray();
+                data.Geometry.Nodes.Coor = symbolCoor.ToArray();
+                data.Geometry.Nodes.Normals = allLoadNormals.ToArray();
                 ApplyLighting(data);
                 _form.AddOrientedDoubleArrowsActor(data, symbolSize);
             }
@@ -4738,8 +4778,8 @@ if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first che
                 data.Name = prefixName;
                 data.Color = color;
                 data.Layer = layer;
-                data.Actor.Nodes.Coor = symbolCoor.ToArray();
-                data.Actor.Nodes.Normals = allLoadNormals.ToArray();
+                data.Geometry.Nodes.Coor = symbolCoor.ToArray();
+                data.Geometry.Nodes.Normals = allLoadNormals.ToArray();
                 ApplyLighting(data);
                 _form.AddOrientedArrowsActor(data, symbolSize);
             }
@@ -4794,8 +4834,8 @@ if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first che
                 data.Name = prefixName;
                 data.Color = color;
                 data.Layer = layer;
-                data.Actor.Nodes.Coor = distributedCoor.ToArray();
-                data.Actor.Nodes.Normals = distributedLoadNormals.ToArray();
+                data.Geometry.Nodes.Coor = distributedCoor.ToArray();
+                data.Geometry.Nodes.Normals = distributedLoadNormals.ToArray();
                 ApplyLighting(data);
                 _form.AddOrientedArrowsActor(data, symbolSize, dLoad.Magnitude > 0);
             }
@@ -4811,8 +4851,8 @@ if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first che
             data.Name = prefixName;
             data.Color = color;
             data.Layer = layer;
-            data.Actor.Nodes.Coor = new double[][] { symbolCoor };
-            data.Actor.Nodes.Normals = new double[][] { normal };
+            data.Geometry.Nodes.Coor = new double[][] { symbolCoor };
+            data.Geometry.Nodes.Normals = new double[][] { normal };
             ApplyLighting(data);
             _form.AddOrientedArrowsActor(data, symbolSize);
             _form.AddSphereActor(data, symbolSize);
@@ -4828,8 +4868,8 @@ if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first che
             data.Name = prefixName;
             data.Color = color;
             data.Layer = layer;
-            data.Actor.Nodes.Coor = new double[][] { new double[] { cfLoad.X, cfLoad.Y, cfLoad.Z } };
-            data.Actor.Nodes.Normals = new double[][] { normal };
+            data.Geometry.Nodes.Coor = new double[][] { new double[] { cfLoad.X, cfLoad.Y, cfLoad.Z } };
+            data.Geometry.Nodes.Normals = new double[][] { normal };
             ApplyLighting(data);
             _form.AddOrientedDoubleArrowsActor(data, symbolSize);
             _form.AddSphereActor(data, symbolSize);
@@ -4956,7 +4996,7 @@ if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first che
             data.NodeSize = nodeSize;
             data.Color = color;
             data.Layer = layer;
-            data.Actor.Nodes.Coor = nodeCoor;
+            data.Geometry.Nodes.Coor = nodeCoor;
             ApplyLighting(data);
             _form.Add3DNodes(data);
         }
@@ -4976,7 +5016,7 @@ if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first che
                 data.NodeSize = nodeSize;
                 data.Color = color;
                 data.Layer = layer;
-                data.Actor.Nodes.Coor = nodeCoor;
+                data.Geometry.Nodes.Coor = nodeCoor;
                 ApplyLighting(data);
                 _form.Add3DNodes(data);
             }
@@ -4995,7 +5035,7 @@ if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first che
                     data.Layer = layer;
                     data.CanHaveElementEdges = true;
                     data.BackfaceCulling = backfaceCulling;
-                    _model.Mesh.GetSurfaceGeometry(surfaceName, out data.Actor.Nodes.Coor, out data.Actor.Cells.CellNodeIds, out data.Actor.Cells.Types);
+                    _model.Mesh.GetSurfaceGeometry(surfaceName, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
 
                     ApplyLighting(data);
                     _form.Add3DCells(data);
@@ -5020,7 +5060,7 @@ if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first che
                     data.Layer = layer;
                     data.CanHaveElementEdges = true;
                     data.BackfaceCulling = backfaceCulling;
-                    _model.Mesh.GetSurfaceEdgesGeometry(surfaceName, out data.Actor.Nodes.Coor, out data.Actor.Cells.CellNodeIds, out data.Actor.Cells.Types);
+                    _model.Mesh.GetSurfaceEdgesGeometry(surfaceName, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
 
                     ApplyLighting(data);
                     _form.Add3DCells(data);
@@ -5208,7 +5248,7 @@ if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first che
         public void HighlightElement(int elementId)
         {
             vtkControl.vtkMaxActorData data = GetCellActorData(new int[] {elementId}, null);
-            data.Actor.Nodes.Values = null; // to draw in highlight color
+            data.Geometry.Nodes.Values = null; // to draw in highlight color
             data.Layer = vtkControl.vtkRendererLayer.Selection;
             data.CanHaveElementEdges = true;
             ApplyLighting(data);
@@ -5236,10 +5276,10 @@ if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first che
             data.Color = color;
             data.Layer = layer;
             data.CanHaveElementEdges = canHaveEdges;
-            data.Actor.Nodes.Ids = null;
-            data.Actor.Nodes.Coor = nodeCoor;
-            data.Actor.Cells.CellNodeIds = cells;
-            data.Actor.Cells.Types = cellTypes;
+            data.Geometry.Nodes.Ids = null;
+            data.Geometry.Nodes.Coor = nodeCoor;
+            data.Geometry.Cells.CellNodeIds = cells;
+            data.Geometry.Cells.Types = cellTypes;
 
             ApplyLighting(data);
             _form.Add3DCells(data);
@@ -5273,8 +5313,8 @@ if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first che
             data.Layer = layer;
             data.CanHaveElementEdges = true;
             data.BackfaceCulling = true;
-            data.Actor.Cells.CellNodeIds = cells;
-            mesh.GetSurfaceGeometry(cells, out data.Actor.Nodes.Coor, out data.Actor.Cells.Types);
+            data.Geometry.Cells.CellNodeIds = cells;
+            mesh.GetSurfaceGeometry(cells, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.Types);
 
             ApplyLighting(data);
             _form.Add3DCells(data);
@@ -5288,8 +5328,8 @@ if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first che
             data.Layer = layer;
             data.CanHaveElementEdges = true;
             data.BackfaceCulling = true;
-            data.Actor.Cells.CellNodeIds = cells;
-            mesh.GetSurfaceEdgesGeometry(cells, out data.Actor.Nodes.Coor, out data.Actor.Cells.Types);
+            data.Geometry.Cells.CellNodeIds = cells;
+            mesh.GetSurfaceEdgesGeometry(cells, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.Types);
 
             ApplyLighting(data);
             _form.Add3DCells(data);
@@ -5372,10 +5412,10 @@ if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first che
             data.Color = color;
             data.Layer = layer;
             data.Pickable = false;
-            data.Actor.Nodes.Ids = null;
-            data.Actor.Nodes.Coor = lineNodeCoor.ToArray();
-            data.Actor.Cells.CellNodeIds = cells;
-            data.Actor.Cells.Types = cellsTypes;
+            data.Geometry.Nodes.Ids = null;
+            data.Geometry.Nodes.Coor = lineNodeCoor.ToArray();
+            data.Geometry.Cells.CellNodeIds = cells;
+            data.Geometry.Cells.Types = cellsTypes;
 
             ApplyLighting(data);
             _form.Add3DCells(data);
@@ -5420,10 +5460,10 @@ if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first che
             vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
             data.Layer = layer;
             data.Pickable = false;
-            data.Actor.Nodes.Ids = null;
-            data.Actor.Nodes.Coor = nodeCoor.ToArray();
-            data.Actor.Cells.CellNodeIds = cells;
-            data.Actor.Cells.Types = cellsTypes;
+            data.Geometry.Nodes.Ids = null;
+            data.Geometry.Nodes.Coor = nodeCoor.ToArray();
+            data.Geometry.Cells.CellNodeIds = cells;
+            data.Geometry.Cells.Types = cellsTypes;
 
             ApplyLighting(data);
             _form.Add3DCells(data);
@@ -5463,7 +5503,7 @@ if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first che
             else if (_selection.SelectItem == vtkSelectItem.Surface)
             {
                 vtkControl.vtkMaxActorData data;
-                if (_selection.IsGeometryBased()) data = GetGeometrySurfaceActorData(ids);
+                if (ids.Length == 1) data = GetGeometrySurfaceActorData(ids);   // QuerySurface
                 else data = GetFaceActorDataByFaceIds(ids);
 
                 data.Layer = vtkControl.vtkRendererLayer.Selection;
@@ -5567,8 +5607,9 @@ if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first che
                 modelEdgesResultData = _results.GetScaledEdgesNodesAndCells(part, fieldData, scale);
             }
 
-            // get all needed nodes and elements - renumbered
-            PartExchangeData locatorResultData = _results.GetAllScaledNodesCellsAndValues(part, fieldData, scale);
+            // get all needed nodes and elements - renumbered            
+            PartExchangeData locatorResultData = null;
+            locatorResultData = _results.GetAllScaledNodesCellsAndValues(part, fieldData, scale);
 
             vtkControl.vtkMaxActorData data = GetVtkData(actorResultData, modelEdgesResultData, locatorResultData);
             data.Name = part.Name;
@@ -5577,7 +5618,8 @@ if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first che
             data.CanHaveElementEdges = true;
             data.Pickable = true;
             data.SmoothShaded = part.SmoothShaded;
-            
+            data.ActorRepresentation = GetRepresentation(part);
+
             return data;
         }
         // Animation
@@ -5616,7 +5658,7 @@ if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first che
 
                     // results
                     data = GetScaleFactorAnimationDataFromPart(resultPart, _currentFieldData, scale, numFrames);
-                    foreach (NodesExchangeData nData in data.Actor.ExtremeNodesAnimation)
+                    foreach (NodesExchangeData nData in data.Geometry.ExtremeNodesAnimation)
                     {
                         if (nData.Values[0] < allFramesScalarRange[0]) allFramesScalarRange[0] = nData.Values[0];
                         if (nData.Values[1] > allFramesScalarRange[1]) allFramesScalarRange[1] = nData.Values[1];
@@ -5684,7 +5726,7 @@ if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first che
 
                     // results
                     data = GetTimeIncrementAnimationDataFromPart(resultPart, _currentFieldData, scale);
-                    foreach (NodesExchangeData nData in data.Actor.ExtremeNodesAnimation)
+                    foreach (NodesExchangeData nData in data.Geometry.ExtremeNodesAnimation)
                     {
                         if (nData.Values[0] < allFramesScalarRange[0]) allFramesScalarRange[0] = nData.Values[0];
                         if (nData.Values[1] > allFramesScalarRange[1]) allFramesScalarRange[1] = nData.Values[1];
@@ -5715,7 +5757,7 @@ if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first che
             }
             _form.SetAnimationFrameData(time.ToArray(), animationScale.ToArray(), allFramesScalarRange);
 
-            numFrames = data.Actor.NodesAnimation.Length;
+            numFrames = data.Geometry.NodesAnimation.Length;
 
             return result;
         }        
@@ -5786,9 +5828,14 @@ if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first che
             {
                 if (entry.Value is ResultPart)
                 {
+                    // get all needed nodes and elements - renumbered            
+                    PartExchangeData locatorResultData = null;
+                    locatorResultData = _results.GetAllScaledNodesCellsAndValues(entry.Value, _currentFieldData, scale);
+
                     // get visualization nodes and renumbered elements
                     PartExchangeData actorResultData = _results.GetVisualizationScaledNodesCellsAndValues(entry.Value, _currentFieldData, scale);  // to scale min nad max nodes coor
-                    _form.UpdateActorScalarField(entry.Key, actorResultData.Nodes.Values, actorResultData.ExtremeNodes);
+                    _form.UpdateActorSurfaceScalarField(entry.Key, actorResultData.Nodes.Values, actorResultData.ExtremeNodes,
+                                                        locatorResultData.Nodes.Values);
                 }
             }
         }
@@ -5801,7 +5848,7 @@ if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first che
             data.Layer = layer;
             data.CanHaveElementEdges = false;
             data.SmoothShaded = part.SmoothShaded;
-            _results.GetUndeformedNodesAndCells(part, out data.Actor.Nodes.Coor, out data.Actor.Cells.CellNodeIds, out data.Actor.Cells.Types);
+            _results.GetUndeformedNodesAndCells(part, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
             ApplyLighting(data);
             _form.Add3DCells(data);
         }
@@ -5810,7 +5857,7 @@ if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first che
         {
             vtkControl.vtkMaxActorData vtkData = new vtkControl.vtkMaxActorData();
             
-            vtkData.Actor = actorData;
+            vtkData.Geometry = actorData;
             vtkData.ModelEdges = modelEdgesData;
             vtkData.CellLocator = locatorData;
 

@@ -165,6 +165,12 @@
     <Compile Include="Controller.cs" />
     <Compile Include="Enums\ViewGeometryModelResults.cs" />
     <Compile Include="Enums\ViewResultsType.cs" />
+    <Compile Include="Forms\02_View\FrmSectionCut.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\02_View\FrmSectionCut.Designer.cs">
+      <DependentUpon>FrmSectionCut.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\12_AnalyzeGeometry\FrmAnalyzeGeometry.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -258,10 +264,10 @@
     <Compile Include="Forms\IFormItemSetDataParent.cs" />
     <Compile Include="Forms\IFormBase.cs" />
     <Compile Include="Forms\00_Common\ViewValue.cs" />
-    <Compile Include="Forms\02_CalculixKeywordEditor\FrmCalculixKeywordEditor.cs">
+    <Compile Include="Forms\01_CalculixKeywordEditor\FrmCalculixKeywordEditor.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\02_CalculixKeywordEditor\FrmCalculixKeywordEditor.Designer.cs">
+    <Compile Include="Forms\01_CalculixKeywordEditor\FrmCalculixKeywordEditor.Designer.cs">
       <DependentUpon>FrmCalculixKeywordEditor.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\11_MeshingParameters\ViewMeshingParameters.cs" />
@@ -378,6 +384,9 @@
     <Compile Include="Settings\CalculixSettings.cs" />
     <Compile Include="Tools.cs" />
     <Compile Include="UpdateModelType.cs" />
+    <EmbeddedResource Include="Forms\02_View\FrmSectionCut.resx">
+      <DependentUpon>FrmSectionCut.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\12_AnalyzeGeometry\FrmAnalyzeGeometry.resx">
       <DependentUpon>FrmAnalyzeGeometry.cs</DependentUpon>
     </EmbeddedResource>
@@ -417,7 +426,7 @@
     <EmbeddedResource Include="Forms\24_Surface\FrmSurface.resx">
       <DependentUpon>FrmSurface.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\02_CalculixKeywordEditor\FrmCalculixKeywordEditor.resx">
+    <EmbeddedResource Include="Forms\01_CalculixKeywordEditor\FrmCalculixKeywordEditor.resx">
       <DependentUpon>FrmCalculixKeywordEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\25_ReferencePoint\FrmReferencePoint.resx">
