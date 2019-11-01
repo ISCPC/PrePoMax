@@ -174,9 +174,18 @@ namespace vtkControl
         // Public methods                                                                                                           
         public override void OnRenderWindowModified()
         {
+            if (!_visibility) return;
+
             base.OnRenderWindowModified();
-            //if (_position != null)
-                RecomputeLeader();
+            RecomputeLeader();
+        }
+        public override void CameraModified()
+        {
+            if (!_visibility) return;
+
+            base.CameraModified();
+            SetPositionFromWorldPosition();
+            RecomputeLeader();
         }
 
         public override void MiddleButtonPress(int x, int y)

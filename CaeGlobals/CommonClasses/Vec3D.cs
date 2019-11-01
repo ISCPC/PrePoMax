@@ -49,6 +49,12 @@ namespace CaeGlobals
             }
             return n;
         }
+        public void Abs()
+        {
+            if (X < 0) X = -X;
+            if (Y < 0) Y = -Y;
+            if (Z < 0) Z = -Z;
+        }
 
 
         #region STATIC UTILITIES

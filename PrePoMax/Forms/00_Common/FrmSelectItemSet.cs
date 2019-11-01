@@ -77,7 +77,7 @@ namespace PrePoMax
 
         private void rbSelectBy_CheckedChanged(object sender, EventArgs e)
         {            
-            // Allow only one running function - disable check boy event
+            // Allow only one running function - disable check box event
             if (_checkBoxEventRunning) return;  
             else _checkBoxEventRunning = true;
 

@@ -7,15 +7,21 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using CaeMesh;
+using CaeGlobals;
 
-namespace PrePoMax
+
+namespace PrePoMax.Forms
 {
-    public partial class FrmSectionCut : Form
+    public partial class FrmSectionCut : UserControls.PrePoMaxChildForm, IFormBase
     {
         // Variables                                                                                                                
         private Controller _controller;
+        private SectionCutParameters _sectionCutParameters;
+        private bool _pause;
         private double min;
         private double max;
+        private Vec3D _projHalfSize;
 
         // Properties                                                                                                               
 
@@ -26,6 +32,12 @@ namespace PrePoMax
             InitializeComponent();
 
             _controller = controller;
+            _sectionCutParameters = new SectionCutParameters();
+            propertyGrid.SelectedObject = _sectionCutParameters;
+            _pause = false;
+
+            propertyGrid.SetParent(this);   // for the Tab key to work
+            propertyGrid.SetLabelColumnWidth(1.9);
         }
 
 
@@ -44,111 +56,251 @@ namespace PrePoMax
             {
                 if (Visible)
                 {
-                    hsbPosition.Value = hsbPosition.Maximum / 2;
-                    timerUpdate.Start();
+                    _pause = true;
+                    //
+                    Octree.Plane plane = _controller.GetSectionCutPlane();
+                    if (plane == null)
+                    {
+                        resetToolStripMenuItem_Click(null, null);
+                    }
+                    else
+                    {
+                        _sectionCutParameters.Point = plane.Point.Coor;
+                        _sectionCutParameters.Normal = plane.Normal.Coor;
+                        SetScrollBarPositionFromPoint();
+                    }
+
+                    _controller.ApplySectionCut(_sectionCutParameters.Point, _sectionCutParameters.Normal);
                 }
                 else
                 {
-                    _controller.RemoveSectionCut();
+                    if (this.DialogResult == DialogResult.Cancel) _controller.RemoveSectionCut();
                 }
             }
             catch
             {}
-        }
-        private void rbAxis_CheckedChanged(object sender, EventArgs e)
-        {
-            if (sender is RadioButton rb && rb.Checked == true)
+            finally
             {
-                hsbPosition.Value = hsbPosition.Maximum / 2;
-                timerUpdate.Stop();
-                timerUpdate.Start();
+                _pause = false;
             }
         }
-        private void cbReverse_CheckedChanged(object sender, EventArgs e)
+
+        private void propertyGrid_PropertyValueChanged(object s, PropertyValueChangedEventArgs e)
         {
-            timerUpdate.Stop();
-            timerUpdate.Start();
+            PointOrNormalChanged();
+        }
+
+        private void resetToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _sectionCutParameters.Clear();
+            _sectionCutParameters.Point = GetBBCenter().Coor;
+            //
+            PointOrNormalChanged();
+        }
+        private void xDirectionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _sectionCutParameters.Normal = new double[] { 1, 0, 0 };
+            //
+            PointOrNormalChanged();
+        }
+        private void yDirectionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _sectionCutParameters.Normal = new double[] { 0, 1, 0 };
+            //
+            PointOrNormalChanged();
+        }
+        private void zDirectionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _sectionCutParameters.Normal = new double[] { 0, 0, 1 };
+            //
+            PointOrNormalChanged();
+        }
+        private void reverseDirectionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _sectionCutParameters.Normal[0] = -_sectionCutParameters.Normal[0];
+            _sectionCutParameters.Normal[1] = -_sectionCutParameters.Normal[1];
+            _sectionCutParameters.Normal[2] = -_sectionCutParameters.Normal[2];
+            //
+            PointOrNormalChanged();
         }
 
         private void hsbPosition_Scroll(object sender, ScrollEventArgs e)
         {
             if (e.Type == ScrollEventType.EndScroll) return;
 
-            timerUpdate.Stop();
-            timerUpdate.Start();
+            UpdateProjHalfSize();
+
+            double ratio = (double)(hsbPosition.Value - hsbPosition.Minimum) / (hsbPosition.Maximum - hsbPosition.Minimum);
+            ratio = 2 * ratio - 1;
+            Vec3D point = GetBBCenter() + _projHalfSize * ratio;
+            _sectionCutParameters.Point = point.Coor;
+
+            timerUpdate.Start();    // use timer to speed things up
         }
-        private void btnClose_Click(object sender, EventArgs e)
+        private void btnOK_Click(object sender, EventArgs e)
         {
+            this.DialogResult = DialogResult.OK;
+            Hide();
+        }
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+            this.DialogResult = DialogResult.Cancel;
             Hide();
         }
 
         private void timerUpdate_Tick(object sender, EventArgs e)
         {
+            timerUpdate.Stop();
+            UpdateSectionCut();
+        }
+
+        // Methods                                                                                                                  
+        public bool PrepareForm(string stepName, string partToEditName)
+        {
+            _controller.ClearSelectionHistory();
+            _sectionCutParameters.Clear();
+
+
+            // Get start point grid item
+            GridItem gi = propertyGrid.EnumerateAllItems().First((item) =>
+                          item.PropertyDescriptor != null &&
+                          item.PropertyDescriptor.Name == "PointItemSet");
+
+            // Select it
+            gi.Select();
+
+            propertyGrid.Refresh();
+
+            return true;
+        }
+        public void PickedIds(int[] ids)
+        {
+            this.Enabled = true;
+
+            _controller.SelectBy = vtkSelectBy.Off;
+            _controller.Selection.SelectItem = vtkSelectItem.None;
+            _controller.ClearSelectionHistory();
+
+            if (ids != null)
+            {
+                if (ids.Length == 1)
+                {
+                    FeNode node = _controller.DisplayedMesh.Nodes[ids[0]];
+                    string propertyName = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
+                    if (propertyName == "PointItemSet")
+                    {
+                        _sectionCutParameters.X = node.X;
+                        _sectionCutParameters.Y = node.Y;
+                        _sectionCutParameters.Z = node.Z;
+                        //
+                        PointOrNormalChanged();
+                    }
+                    else throw new NotSupportedException();
+                }
+                //else if (ids.Length == 2)
+                //{
+                //    FeNode node = _controller.DisplayedMesh.Nodes[ids[0]];
+                //    string propertyName = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
+                //    if (propertyName == "PointItemSet")
+                //    {
+                //        _sectionCutParameters.X = node.X;
+                //        _sectionCutParameters.Y = node.Y;
+                //        _sectionCutParameters.Z = node.Z;
+                //        //
+                //        PointOrNormalChanged();
+                //    }
+                //    //else throw new NotSupportedException();
+                //}
+            }
+
+            UpdateSectionCut();
+        }
+        private void PointOrNormalChanged()
+        {
+            SetScrollBarPositionFromPoint();
+            timerUpdate.Start();
+        }
+        private void UpdateProjHalfSize()
+        {
+            double[] box = _controller.GetBoundingBox();
+
+            Vec3D v = new Vec3D(); // half box diagonal
+            v.X = (box[1] - box[0]) / 2;
+            v.Y = (box[3] - box[2]) / 2;
+            v.Z = (box[5] - box[4]) / 2;
+
+            Vec3D n = new Vec3D(_sectionCutParameters.Normal);
+            n.Abs();
+            n.Normalize();
+
+            // project 1/2 diagonal on the positive normal
+            double l = Vec3D.DotProduct(v, n) * 1.05;
+
+            _projHalfSize = new Vec3D(_sectionCutParameters.Normal);
+            _projHalfSize.Normalize();
+            _projHalfSize = l * _projHalfSize;
+        }
+        private Vec3D GetBBCenter()
+        {
+            double[] box = _controller.GetBoundingBox();
+            Vec3D center = new Vec3D();
+            center.X = CaeGlobals.Tools.RoundToSignificantDigits((box[0] + box[1]) / 2, 4);
+            center.Y = CaeGlobals.Tools.RoundToSignificantDigits((box[2] + box[3]) / 2, 4);
+            center.Z = CaeGlobals.Tools.RoundToSignificantDigits((box[4] + box[5]) / 2, 4);
+            return center;
+        }
+        private void SetScrollBarPositionFromPoint()
+        {
             try
             {
-                if (timerUpdate.Enabled)
-                {
-                    //CaeMesh.BoundingBox box = _controller.DisplayedMesh.BoundingBox;
-                    double[] boxy = _controller.GetBoundingBox();
-                    CaeMesh.BoundingBox box = new CaeMesh.BoundingBox();
-                    box.MinX = boxy[0];
-                    box.MaxX = boxy[1];
-                    box.MinY = boxy[2];
-                    box.MaxY = boxy[3];
-                    box.MinZ = boxy[4];
-                    box.MaxZ = boxy[5];
+                UpdateProjHalfSize();
 
-                    Octree.Point normal = new Octree.Point();
-                    if (rbX.Checked)
-                    {
-                        min = box.MinX;
-                        max = box.MaxX;                        
-                        normal.X = 1;
-                    }
-                    else if (rbY.Checked)
-                    {
-                        min = box.MinY;
-                        max = box.MaxY;
-                        normal.Y = 1;
-                    }
-                    else if (rbZ.Checked)
-                    {
-                        min = box.MinZ;
-                        max = box.MaxZ;
-                        normal.Z = 1;
-                    }
-                    double delta = (max - min) / 100;
-                    max += delta;
-                    min -= delta;
-                    max = CaeGlobals.Tools.RoundToSignificantDigits(max, 4);
-                    min = CaeGlobals.Tools.RoundToSignificantDigits(min, 4);
+                Vec3D c = GetBBCenter();
+                Vec3D n = new Vec3D(_sectionCutParameters.Normal);
+                n.Normalize();
 
-                    System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
-                    watch.Start();
+                Vec3D p = new Vec3D(_sectionCutParameters.Point);
+                Vec3D v = p - c;
 
-                    timerUpdate.Stop();
-                    timerUpdate.Interval = 1;
+                double l = Vec3D.DotProduct(v, n);
+                double ratio = l / _projHalfSize.Len;
 
-                    double ratio = (double)hsbPosition.Value / hsbPosition.Maximum;
-                    double pos = min + (max - min) * ratio;
-                    ntbPosition.Text = pos.ToString();
+                if (ratio > 1) ratio = 1;
+                else if (ratio < -1) ratio = -1;
 
-                    if (cbReverse.Checked)
-                    {
-                        normal = normal * -1;
-                        pos *= -1;
-                    }
+                ratio = (ratio + 1) / 2;        // to iterval from 0 to 1;
 
-                    Octree.Plane sectionPlane = new Octree.Plane(normal, -pos);
-
-                    _controller.ApplySectionCut(sectionPlane);
-
-                    System.Diagnostics.Debug.WriteLine("Section cut time: " + DateTime.Now.ToLongTimeString() + "   Duration: " + watch.ElapsedMilliseconds);
-                }
+                hsbPosition.Value = (int)Math.Round((hsbPosition.Maximum - hsbPosition.Minimum) * ratio, 0);
             }
             catch
             { }
         }
+        private void UpdateSectionCut()
+        {
+            try
+            {
+                if (_pause) return;
+
+                propertyGrid.Refresh();     // must be here to update values
+
+                System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
+                watch.Start();
+                //
+                UpdateProjHalfSize();
+                //
+                _sectionCutParameters = (SectionCutParameters)propertyGrid.SelectedObject;
+                double[] point = _sectionCutParameters.Point;
+                double[] normal = _sectionCutParameters.Normal;
+                //
+                _controller.UpdateSectionCut(point, normal);
+                //
+                System.Diagnostics.Debug.WriteLine("Section cut time: " + DateTime.Now.ToLongTimeString() + "   Duration: " + watch.ElapsedMilliseconds);
+            }
+            catch
+            { }
+        }
+
+       
 
         
     }

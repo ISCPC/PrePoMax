@@ -1,4 +1,4 @@
-﻿namespace PrePoMax
+﻿namespace PrePoMax.Forms
 {
     partial class FrmSectionCut
     {
@@ -30,16 +30,24 @@
         {
             this.components = new System.ComponentModel.Container();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
-            this.lPosition = new System.Windows.Forms.Label();
-            this.rbZ = new System.Windows.Forms.RadioButton();
-            this.rbY = new System.Windows.Forms.RadioButton();
-            this.rbX = new System.Windows.Forms.RadioButton();
-            this.ntbPosition = new UserControls.NumericTextBox();
+            this.propertyGrid = new UserControls.TabbedPropertyGrid();
+            this.cmsNormal = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.resetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
+            this.xNormalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.yNormalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.zDirectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
+            this.reverseDirectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.lTranslate = new System.Windows.Forms.Label();
             this.hsbPosition = new System.Windows.Forms.HScrollBar();
-            this.btnClose = new System.Windows.Forms.Button();
+            this.btnCancel = new System.Windows.Forms.Button();
             this.timerUpdate = new System.Windows.Forms.Timer(this.components);
-            this.cbReverse = new System.Windows.Forms.CheckBox();
+            this.btnOK = new System.Windows.Forms.Button();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.groupBox3.SuspendLayout();
+            this.cmsNormal.SuspendLayout();
+            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox3
@@ -47,115 +55,157 @@
             this.groupBox3.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox3.Controls.Add(this.cbReverse);
-            this.groupBox3.Controls.Add(this.lPosition);
-            this.groupBox3.Controls.Add(this.rbZ);
-            this.groupBox3.Controls.Add(this.rbY);
-            this.groupBox3.Controls.Add(this.rbX);
-            this.groupBox3.Controls.Add(this.ntbPosition);
-            this.groupBox3.Controls.Add(this.hsbPosition);
+            this.groupBox3.Controls.Add(this.groupBox1);
+            this.groupBox3.Controls.Add(this.propertyGrid);
             this.groupBox3.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.groupBox3.Location = new System.Drawing.Point(12, 12);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(330, 73);
+            this.groupBox3.Size = new System.Drawing.Size(310, 336);
             this.groupBox3.TabIndex = 13;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Data";
             // 
-            // lPosition
+            // propertyGrid
             // 
-            this.lPosition.AutoSize = true;
-            this.lPosition.Location = new System.Drawing.Point(252, 24);
-            this.lPosition.Name = "lPosition";
-            this.lPosition.Size = new System.Drawing.Size(50, 15);
-            this.lPosition.TabIndex = 6;
-            this.lPosition.Text = "Position";
+            this.propertyGrid.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.propertyGrid.ContextMenuStrip = this.cmsNormal;
+            this.propertyGrid.DisabledItemForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(80)))), ((int)(((byte)(80)))), ((int)(((byte)(80)))));
+            this.propertyGrid.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.propertyGrid.LineColor = System.Drawing.SystemColors.Control;
+            this.propertyGrid.Location = new System.Drawing.Point(6, 22);
+            this.propertyGrid.Name = "propertyGrid";
+            this.propertyGrid.Size = new System.Drawing.Size(298, 237);
+            this.propertyGrid.TabIndex = 16;
+            this.propertyGrid.ToolbarVisible = false;
+            this.propertyGrid.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.propertyGrid_PropertyValueChanged);
             // 
-            // rbZ
+            // cmsNormal
             // 
-            this.rbZ.AutoSize = true;
-            this.rbZ.Location = new System.Drawing.Point(86, 22);
-            this.rbZ.Name = "rbZ";
-            this.rbZ.Size = new System.Drawing.Size(32, 19);
-            this.rbZ.TabIndex = 5;
-            this.rbZ.Text = "Z";
-            this.rbZ.UseVisualStyleBackColor = true;
-            this.rbZ.CheckedChanged += new System.EventHandler(this.rbAxis_CheckedChanged);
+            this.cmsNormal.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.resetToolStripMenuItem,
+            this.toolStripMenuItem1,
+            this.xNormalToolStripMenuItem,
+            this.yNormalToolStripMenuItem,
+            this.zDirectionToolStripMenuItem,
+            this.toolStripMenuItem2,
+            this.reverseDirectionToolStripMenuItem});
+            this.cmsNormal.Name = "cmsNormal";
+            this.cmsNormal.Size = new System.Drawing.Size(206, 126);
             // 
-            // rbY
+            // resetToolStripMenuItem
             // 
-            this.rbY.AutoSize = true;
-            this.rbY.Location = new System.Drawing.Point(47, 22);
-            this.rbY.Name = "rbY";
-            this.rbY.Size = new System.Drawing.Size(32, 19);
-            this.rbY.TabIndex = 4;
-            this.rbY.Text = "Y";
-            this.rbY.UseVisualStyleBackColor = true;
-            this.rbY.CheckedChanged += new System.EventHandler(this.rbAxis_CheckedChanged);
+            this.resetToolStripMenuItem.Name = "resetToolStripMenuItem";
+            this.resetToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
+            this.resetToolStripMenuItem.Text = "Reset";
+            this.resetToolStripMenuItem.Click += new System.EventHandler(this.resetToolStripMenuItem_Click);
             // 
-            // rbX
+            // toolStripMenuItem1
             // 
-            this.rbX.AutoSize = true;
-            this.rbX.Checked = true;
-            this.rbX.Location = new System.Drawing.Point(9, 22);
-            this.rbX.Name = "rbX";
-            this.rbX.Size = new System.Drawing.Size(32, 19);
-            this.rbX.TabIndex = 3;
-            this.rbX.TabStop = true;
-            this.rbX.Text = "X";
-            this.rbX.UseVisualStyleBackColor = true;
-            this.rbX.CheckedChanged += new System.EventHandler(this.rbAxis_CheckedChanged);
+            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(202, 6);
             // 
-            // ntbPosition
+            // xNormalToolStripMenuItem
             // 
-            this.ntbPosition.Location = new System.Drawing.Point(255, 44);
-            this.ntbPosition.Name = "ntbPosition";
-            this.ntbPosition.Size = new System.Drawing.Size(69, 23);
-            this.ntbPosition.TabIndex = 2;
+            this.xNormalToolStripMenuItem.Name = "xNormalToolStripMenuItem";
+            this.xNormalToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
+            this.xNormalToolStripMenuItem.Text = "Normal X direction";
+            this.xNormalToolStripMenuItem.Click += new System.EventHandler(this.xDirectionToolStripMenuItem_Click);
+            // 
+            // yNormalToolStripMenuItem
+            // 
+            this.yNormalToolStripMenuItem.Name = "yNormalToolStripMenuItem";
+            this.yNormalToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
+            this.yNormalToolStripMenuItem.Text = "Normal Y direction";
+            this.yNormalToolStripMenuItem.Click += new System.EventHandler(this.yDirectionToolStripMenuItem_Click);
+            // 
+            // zDirectionToolStripMenuItem
+            // 
+            this.zDirectionToolStripMenuItem.Name = "zDirectionToolStripMenuItem";
+            this.zDirectionToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
+            this.zDirectionToolStripMenuItem.Text = "Normal Z direction";
+            this.zDirectionToolStripMenuItem.Click += new System.EventHandler(this.zDirectionToolStripMenuItem_Click);
+            // 
+            // toolStripMenuItem2
+            // 
+            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(202, 6);
+            // 
+            // reverseDirectionToolStripMenuItem
+            // 
+            this.reverseDirectionToolStripMenuItem.Name = "reverseDirectionToolStripMenuItem";
+            this.reverseDirectionToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
+            this.reverseDirectionToolStripMenuItem.Text = "Reverse normal direction";
+            this.reverseDirectionToolStripMenuItem.Click += new System.EventHandler(this.reverseDirectionToolStripMenuItem_Click);
+            // 
+            // lTranslate
+            // 
+            this.lTranslate.AutoSize = true;
+            this.lTranslate.Location = new System.Drawing.Point(6, 19);
+            this.lTranslate.Name = "lTranslate";
+            this.lTranslate.Size = new System.Drawing.Size(53, 15);
+            this.lTranslate.TabIndex = 6;
+            this.lTranslate.Text = "Translate";
             // 
             // hsbPosition
             // 
             this.hsbPosition.LargeChange = 1;
-            this.hsbPosition.Location = new System.Drawing.Point(9, 47);
+            this.hsbPosition.Location = new System.Drawing.Point(6, 38);
             this.hsbPosition.Maximum = 1000;
             this.hsbPosition.Name = "hsbPosition";
-            this.hsbPosition.Size = new System.Drawing.Size(237, 18);
+            this.hsbPosition.Size = new System.Drawing.Size(286, 18);
             this.hsbPosition.TabIndex = 0;
             this.hsbPosition.Scroll += new System.Windows.Forms.ScrollEventHandler(this.hsbPosition_Scroll);
             // 
-            // btnClose
+            // btnCancel
             // 
-            this.btnClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnClose.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnClose.Location = new System.Drawing.Point(267, 91);
-            this.btnClose.Name = "btnClose";
-            this.btnClose.Size = new System.Drawing.Size(75, 23);
-            this.btnClose.TabIndex = 14;
-            this.btnClose.Text = "Close";
-            this.btnClose.UseVisualStyleBackColor = true;
-            this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
+            this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.btnCancel.Location = new System.Drawing.Point(247, 354);
+            this.btnCancel.Name = "btnCancel";
+            this.btnCancel.Size = new System.Drawing.Size(75, 23);
+            this.btnCancel.TabIndex = 14;
+            this.btnCancel.Text = "Cancel";
+            this.btnCancel.UseVisualStyleBackColor = true;
+            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
             // timerUpdate
             // 
+            this.timerUpdate.Interval = 20;
             this.timerUpdate.Tick += new System.EventHandler(this.timerUpdate_Tick);
             // 
-            // cbReverse
+            // btnOK
             // 
-            this.cbReverse.AutoSize = true;
-            this.cbReverse.Location = new System.Drawing.Point(133, 23);
-            this.cbReverse.Name = "cbReverse";
-            this.cbReverse.Size = new System.Drawing.Size(107, 19);
-            this.cbReverse.TabIndex = 7;
-            this.cbReverse.Text = "Reverse normal";
-            this.cbReverse.UseVisualStyleBackColor = true;
-            this.cbReverse.CheckedChanged += new System.EventHandler(this.cbReverse_CheckedChanged);
+            this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnOK.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.btnOK.Location = new System.Drawing.Point(166, 354);
+            this.btnOK.Name = "btnOK";
+            this.btnOK.Size = new System.Drawing.Size(75, 23);
+            this.btnOK.TabIndex = 15;
+            this.btnOK.Text = "OK";
+            this.btnOK.UseVisualStyleBackColor = true;
+            this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.groupBox1.Controls.Add(this.hsbPosition);
+            this.groupBox1.Controls.Add(this.lTranslate);
+            this.groupBox1.Location = new System.Drawing.Point(6, 265);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(298, 65);
+            this.groupBox1.TabIndex = 17;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Settings";
             // 
             // FrmSectionCut
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(354, 126);
-            this.Controls.Add(this.btnClose);
+            this.ClientSize = new System.Drawing.Size(334, 389);
+            this.Controls.Add(this.btnOK);
+            this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.groupBox3);
             this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -168,7 +218,9 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmSectionCut_FormClosing);
             this.VisibleChanged += new System.EventHandler(this.FrmSectionCut_VisibleChanged);
             this.groupBox3.ResumeLayout(false);
-            this.groupBox3.PerformLayout();
+            this.cmsNormal.ResumeLayout(false);
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -176,14 +228,20 @@
         #endregion
 
         private System.Windows.Forms.GroupBox groupBox3;
-        private System.Windows.Forms.Button btnClose;
-        private UserControls.NumericTextBox ntbPosition;
+        private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.HScrollBar hsbPosition;
         private System.Windows.Forms.Timer timerUpdate;
-        private System.Windows.Forms.Label lPosition;
-        private System.Windows.Forms.RadioButton rbZ;
-        private System.Windows.Forms.RadioButton rbY;
-        private System.Windows.Forms.RadioButton rbX;
-        private System.Windows.Forms.CheckBox cbReverse;
+        private System.Windows.Forms.Button btnOK;
+        protected UserControls.TabbedPropertyGrid propertyGrid;
+        private System.Windows.Forms.Label lTranslate;
+        private System.Windows.Forms.ContextMenuStrip cmsNormal;
+        private System.Windows.Forms.ToolStripMenuItem xNormalToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem yNormalToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem zDirectionToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem reverseDirectionToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem resetToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem2;
+        private System.Windows.Forms.GroupBox groupBox1;
     }
 }

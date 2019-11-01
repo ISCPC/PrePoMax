@@ -462,7 +462,7 @@ namespace CaeResults
             _mesh.GetVisualizationNodesAndCells(part, out nodeIds, out nodeCoor, out cellIds, out cells, out cellTypes);
         }
 
-        public PartExchangeData GetAllScaledNodesCellsAndValues(FeGroup elementSet, FieldData fData, float scale)
+        public PartExchangeData GetScaledAllNodesCellsAndValues(FeGroup elementSet, FieldData fData, float scale)
         {
             PartExchangeData pData = new PartExchangeData();
             _mesh.GetAllNodesAndCells(elementSet, out pData.Nodes.Ids, out pData.Nodes.Coor, out pData.Cells.Ids, out pData.Cells.CellNodeIds, out pData.Cells.Types);
@@ -477,7 +477,7 @@ namespace CaeResults
             if (scale != 0) ScaleNodeCoordinates(scale, fData.StepId, fData.StepIncrementId, pData.Nodes.Ids, ref pData.Nodes.Coor);
             return pData;
         }
-        public PartExchangeData GetVisualizationScaledNodesCellsAndValues(BasePart part, FieldData fData, float scale)
+        public PartExchangeData GetScaledVisualizationNodesCellsAndValues(BasePart part, FieldData fData, float scale)
         {
             PartExchangeData pData = new PartExchangeData();
             _mesh.GetVisualizationNodesAndCells(part, out pData.Nodes.Ids, out pData.Nodes.Coor, out pData.Cells.Ids, out pData.Cells.CellNodeIds, out pData.Cells.Types);
@@ -552,6 +552,38 @@ namespace CaeResults
             
             return pData;
         }
+        public PartExchangeData GetScaleFactorAnimationDataAllNodesCellsAndValues(FeGroup elementSet, FieldData fData, float scale, int numFrames)
+        {
+            PartExchangeData pData = new PartExchangeData();
+            _mesh.GetAllNodesAndCells(elementSet, out pData.Nodes.Ids, out pData.Nodes.Coor, out pData.Cells.Ids, out pData.Cells.CellNodeIds, out pData.Cells.Types);
+            pData.Nodes.Values = GetValues(fData, pData.Nodes.Ids);
+
+            pData.NodesAnimation = new NodesExchangeData[numFrames];
+            pData.ExtremeNodesAnimation = new NodesExchangeData[numFrames];
+
+            float[] ratios;
+            if (fData.Type == StepType.Frequency || fData.Type == StepType.Buckling) ratios = GetRelativeModalScales(numFrames);
+            else ratios = GetRelativeScales(numFrames);
+
+            float absoluteScale;
+            float relativeScale;
+            bool invariant = IsComponentInvariant(fData);
+
+            for (int i = 0; i < numFrames; i++)
+            {
+                relativeScale = ratios[i];
+                absoluteScale = relativeScale * scale;
+
+                pData.NodesAnimation[i] = new NodesExchangeData();
+                ScaleNodeCoordinates(absoluteScale, fData.StepId, fData.StepIncrementId, pData.Nodes.Ids, pData.Nodes.Coor, out pData.NodesAnimation[i].Coor);
+
+                if (invariant) relativeScale = Math.Abs(relativeScale);
+                ScaleValues(relativeScale, pData.Nodes.Values, out pData.NodesAnimation[i].Values);
+                pData.ExtremeNodesAnimation[i] = GetScaledExtremeValues(elementSet.Name, fData, absoluteScale, relativeScale);
+            }
+            
+            return pData;
+        }
 
         private float[] GetRelativeScales(int numFrames)
         {
@@ -572,13 +604,18 @@ namespace CaeResults
         }
         public PartExchangeData GetTimeIncrementAnimationDataVisualizationNodesCellsAndValues(BasePart part, FieldData fData, float scale)
         {
-            return GetTimeIncrementAnimationData(part, fData, scale, GetVisualizationScaledNodesCellsAndValues);
+            return GetTimeIncrementAnimationData(part, fData, scale, GetScaledVisualizationNodesCellsAndValues);
         }
         public PartExchangeData GetTimeIncrementAnimationDataVisualizationEdgesNodesAndCells(BasePart part, FieldData fData, float scale)
         {
             return GetTimeIncrementAnimationData(part, fData, scale, GetScaledEdgesNodesAndCells);
         }
-        private PartExchangeData GetTimeIncrementAnimationData(BasePart part, FieldData fData, float scale, Func<BasePart, FieldData, float, PartExchangeData> GetGeometryData)
+        public PartExchangeData GetTimeIncrementAnimationDataAllNodesCellsAndValues(BasePart part, FieldData fData, float scale)
+        {
+            return GetTimeIncrementAnimationData(part, fData, scale, GetScaledAllNodesCellsAndValues);
+        }
+        private PartExchangeData GetTimeIncrementAnimationData(BasePart part, FieldData fData, float scale, Func<BasePart, FieldData, float, 
+                                                               PartExchangeData> GetGeometryData)
         {
             PartExchangeData pData = GetGeometryData(part, fData, scale);
 

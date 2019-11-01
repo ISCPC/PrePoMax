@@ -17,6 +17,8 @@ namespace Octree
     /// This class was inspired by the Vector3 type of the Unity Engine and 
     /// designed with the exact same interface to provide maximum compatibility.
     /// </remarks>
+
+    [Serializable]
     public struct Point
     {
         /// <summary>
@@ -35,9 +37,22 @@ namespace Octree
         public double Z { get; set; }
 
         /// <summary>
-        /// Gets point coordinates.
+        /// Gets or set point coordinates.
         /// </summary>
-        public double[] Coor { get { return new double[] { X, Y, Z }; } }
+        public double[] Coor
+        {
+            get
+            {
+                return new double[] { X, Y, Z };
+            }
+            set
+            {
+                if (value.Length != 3) throw new NotSupportedException();
+                X = value[0];
+                Y = value[1];
+                Z = value[2];
+            }
+        }
 
         /// <summary>
         /// Gets the length of the vector.

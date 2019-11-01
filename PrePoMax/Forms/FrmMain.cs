@@ -1233,9 +1233,15 @@ namespace PrePoMax
 
         private void tsmiSectionCut_Click(object sender, EventArgs e)
         {
-            CloseAllForms();
-            SetFormLoaction(_frmSectionCut);
-            _frmSectionCut.Show();
+            //CloseAllForms();
+            //_frmSectionCut.PrepareForm(null, null);
+            //SetFormLoaction(_frmSectionCut);
+            //_frmSectionCut.Show();
+
+            SinglePointDataEditor.ParentForm = _frmSectionCut;
+            SinglePointDataEditor.Controller = _controller;
+
+            ShowForm(_frmSectionCut, "Section cut", null);
         }
 
         private void tsmiHideAllParts_Click(object sender, EventArgs e)
@@ -3041,7 +3047,8 @@ namespace PrePoMax
             _controller.SelectPointOrArea(pickedPoint, planeParameters, selectOperation);
             int[] ids = _controller.GetSelectionIds();
 
-            if (_frmTranslate.Visible) _frmTranslate.PickedIds(ids);
+            if (_frmSectionCut.Visible) _frmSectionCut.PickedIds(ids);
+            else if (_frmTranslate.Visible) _frmTranslate.PickedIds(ids);
             else if (_frmScale.Visible) _frmScale.PickedIds(ids);
             else if (_frmRotate.Visible) _frmRotate.PickedIds(ids);
             else if (_frmReferencePoint.Visible) _frmReferencePoint.PickedIds(ids);
@@ -3586,6 +3593,10 @@ namespace PrePoMax
         public void ApplySectionCut(double[] point, double[] normal)
         {
             InvokeIfRequired(_vtk.ApplySectionCut, point, normal);
+        }
+        public void UpdateSectionCut(double[] point, double[] normal)
+        {
+            InvokeIfRequired(_vtk.UpdateSectionCut, point, normal);
         }
         public void RemoveSectionCut()
         {

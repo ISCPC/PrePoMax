@@ -17,6 +17,8 @@ namespace vtkControl
         private vtkFloatArray _values;
         private vtkMaxExtreemeNode _minNode;
         private vtkMaxExtreemeNode _maxNode;
+        private vtkPoints _locatorPoints;
+        private vtkFloatArray _locatorValues;
 
 
         // Properties                                                                                                               
@@ -26,32 +28,20 @@ namespace vtkControl
         public vtkFloatArray Values { get { return _values; } set { _values = value; } }
         public vtkMaxExtreemeNode MinNode { get { return _minNode; } set { _minNode = value; } }
         public vtkMaxExtreemeNode MaxNode { get { return _maxNode; } set { _maxNode = value; } }
+        public vtkPoints LocatorPoints { get { return _locatorPoints; } set { _locatorPoints = value; } }
+        public vtkFloatArray LocatorValues { get { return _locatorValues; } set { _locatorValues = value; } }
 
         // Constructors                                                                                                             
-        public vtkMaxActorAnimationData()
-            : this(null, null, null, null)
-        {
-        }
-
-        public vtkMaxActorAnimationData(float[] values)
-            : this(null, null, values, null)
-        {
-        }
-
-        public vtkMaxActorAnimationData(double[][] nodes, double[][] modelEdgesNodes)
-            : this(nodes, modelEdgesNodes, null, null)
-        {
-        }
-
-        public vtkMaxActorAnimationData(double[][] nodes, double[][] modelEdgesNodes, float[] values, NodesExchangeData extremeNodes)
+        public vtkMaxActorAnimationData(double[][] nodes, double[][] modelEdgesNodes, float[] values, NodesExchangeData extremeNodes,
+                                        double[][] locatorNodes, float[] locatorValues)
         {
             // nodes
             if (nodes == null) _points = null;
             else
             {
                 _points = vtkPoints.New();
-                _points.SetNumberOfPoints(nodes.GetLength(0));
-                for (int i = 0; i < nodes.GetLength(0); i++) _points.SetPoint(i, nodes[i][0], nodes[i][1], nodes[i][2]);
+                _points.SetNumberOfPoints(nodes.Length);
+                for (int i = 0; i < nodes.Length; i++) _points.SetPoint(i, nodes[i][0], nodes[i][1], nodes[i][2]);
             }
             // normals
             _pointNormals = null;
@@ -60,8 +50,8 @@ namespace vtkControl
             else
             {
                 _modelEdgesPoints = vtkPoints.New();
-                _modelEdgesPoints.SetNumberOfPoints(modelEdgesNodes.GetLength(0));
-                for (int i = 0; i < modelEdgesNodes.GetLength(0); i++) _modelEdgesPoints.SetPoint(i, modelEdgesNodes[i][0], modelEdgesNodes[i][1], modelEdgesNodes[i][2]);
+                _modelEdgesPoints.SetNumberOfPoints(modelEdgesNodes.Length);
+                for (int i = 0; i < modelEdgesNodes.Length; i++) _modelEdgesPoints.SetPoint(i, modelEdgesNodes[i][0], modelEdgesNodes[i][1], modelEdgesNodes[i][2]);
             }
             // values
             if (values == null) _values = null;
@@ -82,6 +72,24 @@ namespace vtkControl
             {
                 _minNode = new vtkMaxExtreemeNode(extremeNodes.Ids[0], extremeNodes.Coor[0], extremeNodes.Values[0]);
                 _maxNode = new vtkMaxExtreemeNode(extremeNodes.Ids[1], extremeNodes.Coor[1], extremeNodes.Values[1]);
+            }
+
+            // locator nodes
+            if (locatorNodes == null) _locatorPoints = null;
+            else
+            {
+                _locatorPoints = vtkPoints.New();
+                _locatorPoints.SetNumberOfPoints(locatorNodes.Length);
+                for (int i = 0; i < locatorNodes.Length; i++) _locatorPoints.SetPoint(i, locatorNodes[i][0], locatorNodes[i][1], locatorNodes[i][2]);
+            }
+            // locator values
+            if (locatorValues == null) _locatorValues = null;
+            else
+            {
+                _locatorValues = vtkFloatArray.New();
+                _locatorValues.SetName(Globals.ScalarArrayName);
+                _locatorValues.SetNumberOfValues(locatorValues.Length);
+                for (int i = 0; i < locatorValues.Length; i++) _locatorValues.SetValue(i, locatorValues[i]);
             }
         }
 

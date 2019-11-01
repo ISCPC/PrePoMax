@@ -30,10 +30,10 @@ namespace PrePoMax
         protected NetgenJob _netgenJob;
         protected FeResults _results;
         protected HistoryResults _history;
-        protected bool _sectionCutActive;
         // View
         protected ViewGeometryModelResults _currentView;
         protected string _drawSymbolsForStep;
+        protected Dictionary<ViewGeometryModelResults, Octree.Plane> _sectionCutPlanes;
         // Selection
         protected vtkSelectBy _selectBy;
         protected double _selectAngle;
@@ -254,7 +254,10 @@ namespace PrePoMax
             _jobs = new Dictionary<string, AnalysisJob>();
             _selection = new Selection();
 
-            _sectionCutActive = false;
+            _sectionCutPlanes = new Dictionary<ViewGeometryModelResults, Octree.Plane>();
+            _sectionCutPlanes.Add(ViewGeometryModelResults.Geometry, null);
+            _sectionCutPlanes.Add(ViewGeometryModelResults.Model, null);
+            _sectionCutPlanes.Add(ViewGeometryModelResults.Results, null);
 
             Clear();
 
@@ -307,35 +310,41 @@ namespace PrePoMax
             _form.SetTitle(Globals.ProgramName);
             OpenedFileName = null;
             _savingFile = false;
-            //_currentView = ViewGeometryModelResults.Geometry;
-
+            //
             if (_form != null)
             {
                 _form.ClearControls();
                 _form.SetCurrentView(_currentView);
             }
-
+            //
             ClearModel();
             ClearResults();
         }
         public void ClearModel()
         {
+            _sectionCutPlanes[ViewGeometryModelResults.Geometry] = null;
+            _sectionCutPlanes[ViewGeometryModelResults.Model] = null;
+            //
             _model = new FeModel("Model-1");
             _drawSymbolsForStep = null;
             _jobs.Clear();
             ClearAllSelection();
-            
+            //
             _modelChanged = false;
         }
         public void ClearResults()
         {
+            _sectionCutPlanes[ViewGeometryModelResults.Results] = null;
+            //
             if (_results != null || _history != null)
             {
                 _modelChanged = true;
                 _results = null;
                 _history = null;
             }
+            //
             _currentFieldData = null;
+            //
             ClearAllSelection();
         }
         public void ClearSelectionHistory()
@@ -392,7 +401,11 @@ namespace PrePoMax
             object[] data = null;
 
             data = TryReadCompressedPmx(fileName, out _model, out _results);
-            if (data != null && data.Length == 1 && (string)data[0] == "UncompatibleVersion") return;
+            if (data != null && data.Length == 1 && (string)data[0] == "UncompatibleVersion")
+            {
+                New();
+                return;
+            }
             if (data == null) data = TryReadUncompressedPmx(fileName, out _model, out _results);
             if (data == null || data.Length < 3)
                 throw new Exception("The file can not be read. It is either corrupt or was created by a previous version.");
@@ -1023,24 +1036,24 @@ namespace PrePoMax
         #region View menu   ########################################################################################################
         // COMMANDS ********************************************************************************
         
-        public void ApplySectionCut(Octree.Plane sectionPlane)
+        public void ApplySectionCut(double[] point, double[] normal)
         {
-            //DisplayedMesh.ApplySectionCut(sectionPlane);
-            //_sectionCutActive = true;
-
-            //if (_currentView == ViewGeometryModelResults.Geometry) DrawGeometry(false);
-            //else if (_currentView == ViewGeometryModelResults.Model) DrawMesh(false);
-            //else if (_currentView == ViewGeometryModelResults.Results) DrawResults(false);
-            double[] normal = sectionPlane.Normal.Coor;
-            double[] point = sectionPlane.Normal.Coor;
-            point[0] *= -sectionPlane.D;
-            point[1] *= -sectionPlane.D;
-            point[2] *= -sectionPlane.D;
+            _sectionCutPlanes[_currentView] = new Octree.Plane(point, normal);
             _form.ApplySectionCut(point, normal);
+        }
+        public void UpdateSectionCut(double[] point, double[] normal)
+        {
+            _sectionCutPlanes[_currentView].SetPointAndNormal(point, normal);
+            _form.UpdateSectionCut(point, normal);
         }
         public void RemoveSectionCut()
         {
+            _sectionCutPlanes[_currentView] = null;
             _form.RemoveSectionCut();
+        }
+        public Octree.Plane GetSectionCutPlane()
+        {
+            return _sectionCutPlanes[_currentView];
         }
 
         #endregion ################################################################################################################
@@ -3647,7 +3660,7 @@ namespace PrePoMax
             else
             {
                 float scale = GetScale();
-                PartExchangeData actorResultData = _results.GetAllScaledNodesCellsAndValues(elementSet, _currentFieldData, scale);
+                PartExchangeData actorResultData = _results.GetScaledAllNodesCellsAndValues(elementSet, _currentFieldData, scale);
                 data = GetVtkData(actorResultData, null, null);
             }
 
@@ -4028,6 +4041,9 @@ namespace PrePoMax
                     {
                         CurrentView = ViewGeometryModelResults.Geometry;
                         DrawAllGeomParts();
+                        //
+                        Octree.Plane plane = _sectionCutPlanes[_currentView];
+                        if (plane != null) ApplySectionCut(plane.Point.Coor, plane.Normal.Coor);
                     }
                     UpdateHighlightFromTree();
                 }
@@ -4102,7 +4118,7 @@ namespace PrePoMax
         {
             try
             {
-                _form.Clear3D();
+                _form.Clear3D();    // Removes section cut
                 if (_model != null)
                 {
                     if (_model.Mesh != null && _model.Mesh.Parts.Count > 0)
@@ -4110,8 +4126,12 @@ namespace PrePoMax
                         try // must be inside to continue screen update
                         {
                             if (_currentView != ViewGeometryModelResults.Model) CurrentView = ViewGeometryModelResults.Model;
+                            //
                             DrawAllMeshParts();
                             DrawSymbols();
+                            //
+                            Octree.Plane plane = _sectionCutPlanes[_currentView];
+                            if (plane != null) ApplySectionCut(plane.Point.Coor, plane.Normal.Coor);
                         }
                         catch { }
                     }
@@ -5545,16 +5565,21 @@ namespace PrePoMax
             // Settings                                                              
             // must be here before drawing parts to correctly set the numer of colors
             PostSettings postSettings = (PostSettings)_settings[Globals.PostSettingsName];
-            _form.SetColorSpectrum(postSettings.ColorSpectrum);
-            _form.SetScalarBarText(_currentFieldData.Name + ": " + _currentFieldData.Component + Environment.NewLine 
-                                   + postSettings.ColorSpectrum.MinMaxType.ToString());
-            _form.SetShowMinValueLocation(postSettings.ShowMinValueLocation);
-            _form.SetShowMaxValueLocation(postSettings.ShowMaxValueLocation);
-            _form.SetChartNumberFormat(postSettings.GetColorChartNumberFormat());
-
+            if (_viewResultsType != ViewResultsType.Undeformed)
+            {
+                _form.SetColorSpectrum(postSettings.ColorSpectrum);
+                _form.SetScalarBarText(_currentFieldData.Name + ": " + _currentFieldData.Component + Environment.NewLine
+                                       + postSettings.ColorSpectrum.MinMaxType.ToString());
+                _form.SetShowMinValueLocation(postSettings.ShowMinValueLocation);
+                _form.SetShowMaxValueLocation(postSettings.ShowMaxValueLocation);
+                _form.SetChartNumberFormat(postSettings.GetColorChartNumberFormat());
+            }
             float scale = GetScale();
             DrawResult(_currentFieldData, scale, postSettings.DrawUndeformedModel, postSettings.UndeformedModelColor);
-
+            //
+            Octree.Plane plane = _sectionCutPlanes[_currentView];
+            if (plane != null) ApplySectionCut(plane.Point.Coor, plane.Normal.Coor);
+            //
             if (resetCamera) _form.SetFrontBackView(true, true); // animation:true is here to correctly draw max/min widgets 
             _form.AdjustCameraDistanceAndClipping();
         }
@@ -5598,7 +5623,7 @@ namespace PrePoMax
         private vtkControl.vtkMaxActorData GetVtkMaxActorDataFromPart(ResultPart part, FieldData fieldData, float scale)
         {
             // get visualization nodes and renumbered elements           
-            PartExchangeData actorResultData = _results.GetVisualizationScaledNodesCellsAndValues(part, fieldData, scale);
+            PartExchangeData actorResultData = _results.GetScaledVisualizationNodesCellsAndValues(part, fieldData, scale);
 
             // model edges
             PartExchangeData modelEdgesResultData = null;
@@ -5609,7 +5634,7 @@ namespace PrePoMax
 
             // get all needed nodes and elements - renumbered            
             PartExchangeData locatorResultData = null;
-            locatorResultData = _results.GetAllScaledNodesCellsAndValues(part, fieldData, scale);
+            locatorResultData = _results.GetScaledAllNodesCellsAndValues(part, fieldData, scale);
 
             vtkControl.vtkMaxActorData data = GetVtkData(actorResultData, modelEdgesResultData, locatorResultData);
             data.Name = part.Name;
@@ -5675,6 +5700,9 @@ namespace PrePoMax
                 if (!entry.Value.Visible) hiddenActors.Add(entry.Key);
             }
             if (hiddenActors.Count > 0) _form.HideActors(hiddenActors.ToArray(), true);
+            //
+            Octree.Plane plane = _sectionCutPlanes[_currentView];
+            if (plane != null) ApplySectionCut(plane.Point.Coor, plane.Normal.Coor);
 
             // animation field data
             float[] time = new float[numFrames];
@@ -5742,6 +5770,9 @@ namespace PrePoMax
                 if (!entry.Value.Visible) hiddenActors.Add(entry.Key);
             }
             if (hiddenActors.Count > 0) _form.HideActors(hiddenActors.ToArray(), true);
+            //
+            Octree.Plane plane = _sectionCutPlanes[_currentView];
+            if (plane != null) ApplySectionCut(plane.Point.Coor, plane.Normal.Coor);
 
             // animation field data
             var existingIncrements = _results.GetExistingIncrementIds(_currentFieldData.Name, _currentFieldData.Component);
@@ -5773,13 +5804,19 @@ namespace PrePoMax
                 modelEdgesResultData = _results.GetScaleFactorAnimationDataEdgesNodesAndCells(part, fieldData, scale, numFrames);
             }
 
-            vtkControl.vtkMaxActorData data = GetVtkData(actorResultData, modelEdgesResultData, null);
+            // get all needed nodes and elements - renumbered            
+            PartExchangeData locatorResultData = null;
+            locatorResultData = _results.GetScaleFactorAnimationDataAllNodesCellsAndValues(part, fieldData, scale, numFrames);
+
+            vtkControl.vtkMaxActorData data = GetVtkData(actorResultData, modelEdgesResultData, locatorResultData);
             data.Name = part.Name;
             data.Color = part.Color;
             data.ColorContours = part.ColorContours;
             data.CanHaveElementEdges = true;
             data.Pickable = false;
             data.SmoothShaded = part.SmoothShaded;
+            if (_results.Mesh.Elements[part.Labels[0]] is FeElement3D) data.ActorRepresentation = vtkControl.vtkMaxActorRepresentation.Solid;
+            else throw new NotSupportedException();
             return data;
         }
         private vtkControl.vtkMaxActorData GetTimeIncrementAnimationDataFromPart(ResultPart part, FieldData fieldData, float scale)
@@ -5794,13 +5831,19 @@ namespace PrePoMax
                 modelEdgesResultData = _results.GetTimeIncrementAnimationDataVisualizationEdgesNodesAndCells(part, fieldData, scale);
             }
 
-            vtkControl.vtkMaxActorData data = GetVtkData(actorResultData, modelEdgesResultData, null);
+            // get all needed nodes and elements - renumbered            
+            PartExchangeData locatorResultData = null;
+            locatorResultData = _results.GetTimeIncrementAnimationDataAllNodesCellsAndValues(part, fieldData, scale);
+
+            vtkControl.vtkMaxActorData data = GetVtkData(actorResultData, modelEdgesResultData, locatorResultData);
             data.Name = part.Name;
             data.Color = part.Color;
             data.ColorContours = part.ColorContours;
             data.CanHaveElementEdges = true;
             data.Pickable = false;
             data.SmoothShaded = part.SmoothShaded;
+            if (_results.Mesh.Elements[part.Labels[0]] is FeElement3D) data.ActorRepresentation = vtkControl.vtkMaxActorRepresentation.Solid;
+            else throw new NotSupportedException();
             return data;
         }
         // Common
@@ -5830,10 +5873,10 @@ namespace PrePoMax
                 {
                     // get all needed nodes and elements - renumbered            
                     PartExchangeData locatorResultData = null;
-                    locatorResultData = _results.GetAllScaledNodesCellsAndValues(entry.Value, _currentFieldData, scale);
+                    locatorResultData = _results.GetScaledAllNodesCellsAndValues(entry.Value, _currentFieldData, scale);
 
                     // get visualization nodes and renumbered elements
-                    PartExchangeData actorResultData = _results.GetVisualizationScaledNodesCellsAndValues(entry.Value, _currentFieldData, scale);  // to scale min nad max nodes coor
+                    PartExchangeData actorResultData = _results.GetScaledVisualizationNodesCellsAndValues(entry.Value, _currentFieldData, scale);  // to scale min nad max nodes coor
                     _form.UpdateActorSurfaceScalarField(entry.Key, actorResultData.Nodes.Values, actorResultData.ExtremeNodes,
                                                         locatorResultData.Nodes.Values);
                 }

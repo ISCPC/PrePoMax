@@ -192,36 +192,32 @@ namespace vtkControl
             // Geometry                                                         
             // Polydata
             vtkPolyData polydata = vtkPolyData.New();
-            polydata.DeepCopy(sourceActor._geometry.GetMapper().GetInput());
+            polydata.DeepCopy(sourceActor.Geometry.GetMapper().GetInput());
             // Mapper
             vtkDataSetMapper mapper = vtkDataSetMapper.New();
             mapper.SetInput(polydata);
             // Actor
             _geometry.SetMapper(mapper);
-            _geometry.GetProperty().DeepCopy(sourceActor._geometry.GetProperty());
-            _geometry.SetVisibility(sourceActor._geometry.GetVisibility());
-
-            vtkUnstructuredGrid grid;
-            if (sourceActor._geometry.GetPickable() == 1 && sourceActor.CellLocator != null)
+            _geometry.GetProperty().DeepCopy(sourceActor.Geometry.GetProperty());
+            _geometry.SetVisibility(sourceActor.Geometry.GetVisibility());
+            _geometry.SetPickable(sourceActor.Geometry.GetPickable());
+            // Cell Locator
+            if (sourceActor.CellLocator != null)
             {
-                _geometry.SetPickable(1);
                 _cellLocator = vtkCellLocator.New();
                 _cellLocator.SetDataSet(_geometry.GetMapper().GetInputAsDataSet());
                 _cellLocator.LazyEvaluationOn();
-
-                // Grid
-                grid = vtkUnstructuredGrid.New();
+            }
+            // Frustum Locator
+            if (sourceActor.FrustumCellLocator != null)
+            {
+                vtkUnstructuredGrid grid = vtkUnstructuredGrid.New();
                 grid.DeepCopy(sourceActor.FrustumCellLocator.GetDataSet());
 
                 _frustumCellLocator = vtkCellLocator.New();
                 _frustumCellLocator.SetDataSet(grid);
                 _frustumCellLocator.LazyEvaluationOn();
             }
-            else
-            {
-                _geometry.SetPickable(0);
-            }
-            
 
             // Element edges                                                    
             // Polydata
@@ -419,8 +415,9 @@ namespace vtkControl
             else _geometry.PickableOff();
 
             // Frustum locator
-            if (data.Layer == vtkRendererLayer.Base && data.Pickable && data.CellLocator != null)
-            {
+            //if (data.Layer == vtkRendererLayer.Base && data.Pickable && data.CellLocator != null)
+            if (data.Layer == vtkRendererLayer.Base && data.CellLocator != null)
+            { 
                 vtkUnstructuredGrid uGridCellLocator;
 
                 AddNodeAndCellDataToGrid(data.CellLocator, out uGridCellLocator);
@@ -850,7 +847,9 @@ namespace vtkControl
                 vtkMaxActorAnimationData animationData = new vtkMaxActorAnimationData(data.Geometry.NodesAnimation[frameNumber].Coor, 
                                                                                       data.ModelEdges.NodesAnimation[frameNumber].Coor,
                                                                                       data.Geometry.NodesAnimation[frameNumber].Values,
-                                                                                      data.Geometry.ExtremeNodesAnimation[frameNumber]);
+                                                                                      data.Geometry.ExtremeNodesAnimation[frameNumber],
+                                                                                      data.CellLocator.NodesAnimation[frameNumber].Coor,
+                                                                                      data.CellLocator.NodesAnimation[frameNumber].Values);
                 // actor points
                 if (animationData.Points != null)
                 {
@@ -874,6 +873,16 @@ namespace vtkControl
                 // min/max
                 if (animationData.MinNode != null) _minNode = animationData.MinNode;
                 if (animationData.MaxNode != null) _maxNode = animationData.MaxNode;
+
+                // locator points
+                if (animationData.LocatorPoints != null)
+                {
+                    vtkPointSet pointSet = _frustumCellLocator.GetDataSet() as vtkPointSet;
+                    pointSet.SetPoints(animationData.LocatorPoints);
+                }
+
+                // locator values
+                if (animationData.LocatorValues != null) _frustumCellLocator.GetDataSet().GetPointData().SetScalars(animationData.LocatorValues);
             }
         }
     }

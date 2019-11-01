@@ -171,6 +171,7 @@
     <Compile Include="Forms\02_View\FrmSectionCut.Designer.cs">
       <DependentUpon>FrmSectionCut.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\02_View\SectionCutParameters.cs" />
     <Compile Include="Forms\12_AnalyzeGeometry\FrmAnalyzeGeometry.cs">
       <SubType>Form</SubType>
     </Compile>

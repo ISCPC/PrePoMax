@@ -274,7 +274,6 @@ namespace vtkControl
             {
                 base.CameraModified();
                 OnSizeChanged();
-
                 //System.Diagnostics.Debug.WriteLine(DateTime.Now.TimeOfDay + "   CameraModified");
             }
         }
