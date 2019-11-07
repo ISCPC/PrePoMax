@@ -43,7 +43,7 @@ namespace PrePoMax
 
         private Point _formLocation;
         private List<Form> _allForms;
-        private FrmSectionCut _frmSectionCut;
+        private FrmSectionView _frmSectionView;
         private FrmCalculixKeywordEditor _frmCalculixKeywordEditor;
         private FrmSelectEntity _frmSelectEntity;
         private FrmSelectItemSet _frmSelectItemSet;
@@ -155,6 +155,7 @@ namespace PrePoMax
                 _modelTree.CreateEvent += ModelTree_CreateEvent;
                 _modelTree.EditEvent += ModelTree_Edit;
                 _modelTree.HideShowEvent += ModelTree_HideShowEvent;
+                _modelTree.SetTransparencyEvent += ModelTree_SetTransparencyEvent;
                 _modelTree.ColorContoursVisibilityEvent += ModelTree_ColorContoursVisibilityEvent; 
                 _modelTree.MeshingParametersEvent += ModelTree_MeshingParametersEvent;
                 _modelTree.CreateMeshEvent += CreateMeshes;
@@ -204,8 +205,8 @@ namespace PrePoMax
                 _frmSelectItemSet = new FrmSelectItemSet(_controller);
                 AddFormToAllForms(_frmSelectItemSet);
 
-                _frmSectionCut = new FrmSectionCut(_controller);
-                AddFormToAllForms(_frmSectionCut);
+                _frmSectionView = new FrmSectionView(_controller);
+                AddFormToAllForms(_frmSectionView);
 
                 _frmAnalyzeGeometry = new FrmAnalyzeGeometry(_controller);
                 AddFormToAllForms(_frmAnalyzeGeometry);
@@ -294,6 +295,8 @@ namespace PrePoMax
                 this.TopMost = false;
             }
         }
+
+       
 
         private void FrmMain_Shown(object sender, EventArgs e)
         {
@@ -448,8 +451,7 @@ namespace PrePoMax
             //if (form.Top < 0) form.Top = 0;
             //else if (form.Top + form.Height > screenSize.Height) form.Top = screenSize.Height - form.Height;
 
-            _formLocation.X = form.Location.X - Left;
-            _formLocation.Y = form.Location.Y - Top;
+            GetFormLoaction(form);
         }
 
 
@@ -558,7 +560,12 @@ namespace PrePoMax
                 HideShowItems<CaeMesh.GeometryPart>(items, operation, HideResultParts, ShowResultParts, ShowOnlyResultParts);
             }
         }
-
+        private void ModelTree_SetTransparencyEvent(string[] partNames)
+        {
+            if (_controller.CurrentView == ViewGeometryModelResults.Geometry) SetTransparencyForGeometryParts(partNames);
+            else if (_controller.CurrentView == ViewGeometryModelResults.Model) SetTransparencyForModelParts(partNames);
+            else if (_controller.CurrentView == ViewGeometryModelResults.Results) SetTransparencyForResultParts(partNames);
+        }
         private void ModelTree_ColorContoursVisibilityEvent(NamedClass[] items, bool colorContours)
         {
             List<string> names = new List<string>();
@@ -1231,17 +1238,12 @@ namespace PrePoMax
                 _modelTree.UpdateHighlight();
         }
 
-        private void tsmiSectionCut_Click(object sender, EventArgs e)
+        private void tsmiSectionView_Click(object sender, EventArgs e)
         {
-            //CloseAllForms();
-            //_frmSectionCut.PrepareForm(null, null);
-            //SetFormLoaction(_frmSectionCut);
-            //_frmSectionCut.Show();
-
-            SinglePointDataEditor.ParentForm = _frmSectionCut;
+            SinglePointDataEditor.ParentForm = _frmSectionView;
             SinglePointDataEditor.Controller = _controller;
 
-            ShowForm(_frmSectionCut, "Section cut", null);
+            ShowForm(_frmSectionView, tsmiSectionView.Text, null);
         }
 
         private void tsmiHideAllParts_Click(object sender, EventArgs e)
@@ -1389,6 +1391,18 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
+        private void tsmiSetTransparencyForGeometryPart_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Parts", _controller.GetGeometryParts(), SetTransparencyForGeometryParts);
+                Clear3DSelection();
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
         private void tsmiCopyGeometryPartToResults_Click(object sender, EventArgs e)
         {
             try
@@ -1424,6 +1438,25 @@ namespace PrePoMax
         private void ShowGeometryParts(string[] partNames)
         {
             _controller.ShowGeometryPartsCommand(partNames);
+        }
+        private void SetTransparencyForGeometryParts(string[] partNames)
+        {
+            if (_controller.Model.Mesh == null) return;
+
+            using (FrmGetValue frmGetValue = new FrmGetValue(128))
+            {
+                frmGetValue.NumOfDigits = 0;
+                frmGetValue.MinValue = 25;
+                frmGetValue.MaxValue = 255;
+                SetFormLoaction(frmGetValue);
+                frmGetValue.PrepareForm("Set Transparency", "Transparency", "Enter the transparency between 0 and 255.\n" +
+                                                                            "(0 - transparent; 255 - opaque)");
+                if (frmGetValue.ShowDialog() == DialogResult.OK)
+                {
+                    _controller.SetTransparencyForGeometryPartsCommand(partNames,(byte)frmGetValue.Value);
+                }
+                GetFormLoaction(frmGetValue);
+            }
         }
         private void ShowOnlyGeometryParts(string[] partNames)
         {
@@ -1600,13 +1633,18 @@ namespace PrePoMax
             {
                 if (_controller.Model.Mesh == null) return;
 
-                using (FrmGetInteger frmGetInteger = new FrmGetInteger())
+                using (FrmGetValue frmGetValue = new FrmGetValue(1))
                 {
-                    frmGetInteger.PrepareForm("Renumber Nodes", "Start node id", "Enter the starting node id for the node renumbering.");
-                    if (frmGetInteger.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                    frmGetValue.NumOfDigits = 0;
+                    frmGetValue.MinValue = 1;
+                    SetFormLoaction(frmGetValue);
+                    frmGetValue.PrepareForm("Renumber Nodes", "Start node id", "Enter the starting node id " +
+                                                                               "for the node renumbering.");
+                    if (frmGetValue.ShowDialog() == DialogResult.OK)
                     {
-                        _controller.RenumberNodesCommand(frmGetInteger.Value);
+                        _controller.RenumberNodesCommand((int)frmGetValue.Value);
                     }
+                    GetFormLoaction(frmGetValue);
                 }
             }
             catch (Exception ex)
@@ -1697,6 +1735,18 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
+        private void tsmiSetTransparencyForPart_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Parts", _controller.GetModelParts(), SetTransparencyForModelParts);
+                Clear3DSelection();
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
         private void tsmiDeletePart_Click(object sender, EventArgs e)
         {
             try
@@ -1762,6 +1812,26 @@ namespace PrePoMax
             allNames.ExceptWith(partNames);
             _controller.ShowModelPartsCommand(partNames);
             _controller.HideModelPartsCommand(allNames.ToArray());
+        }
+        private void SetTransparencyForModelParts(string[] partNames)
+        {
+            if (_controller.Model.Mesh == null) return;
+
+            using (FrmGetValue frmGetValue = new FrmGetValue(128))
+            {
+                frmGetValue.NumOfDigits = 0;
+                frmGetValue.MinValue = 25;
+                frmGetValue.MaxValue = 255;
+                SetFormLoaction(frmGetValue);
+                frmGetValue.StartPosition = FormStartPosition.Manual;
+                frmGetValue.PrepareForm("Set Transparency", "Transparency", "Enter the transparency between 0 and 255.\n" +
+                                                                            "(0 - transparent; 255 - opaque)");
+                if (frmGetValue.ShowDialog() == DialogResult.OK)
+                {
+                    _controller.SetTransparencyForModelPartsCommand(partNames, (byte)frmGetValue.Value);
+                }
+                GetFormLoaction(frmGetValue);
+            }
         }
         private void DeleteModelParts(string[] partNames)
         {
@@ -2879,6 +2949,18 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
+        private void tsmiSetTransparencyForResultPart_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Parts", _controller.GetResultParts(), SetTransparencyForResultParts);
+                Clear3DSelection();
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
         private void tsmiColorContoursOff_Click(object sender, EventArgs e)
         {
             try
@@ -2934,6 +3016,26 @@ namespace PrePoMax
             allNames.ExceptWith(partNames);
             _controller.ShowResultParts(partNames);
             _controller.HideResultParts(allNames.ToArray());
+        }
+        private void SetTransparencyForResultParts(string[] partNames)
+        {
+            if (_controller.Model.Mesh == null) return;
+
+            using (FrmGetValue frmGetValue = new FrmGetValue(128))
+            {
+                frmGetValue.NumOfDigits = 0;
+                frmGetValue.MinValue = 25;
+                frmGetValue.MaxValue = 255;
+                SetFormLoaction(frmGetValue);
+                frmGetValue.StartPosition = FormStartPosition.Manual;
+                frmGetValue.PrepareForm("Set Transparency", "Transparency", "Enter the transparency between 0 and 255.\n" +
+                                                                            "(0 - transparent; 255 - opaque)");
+                if (frmGetValue.ShowDialog() == DialogResult.OK)
+                {
+                    _controller.SetTransparencyForResultParts(partNames, (byte)frmGetValue.Value);
+                }
+                GetFormLoaction(frmGetValue);
+            }
         }
         private void ColorContoursOffResultPart(string[] partNames)
         {
@@ -3047,7 +3149,7 @@ namespace PrePoMax
             _controller.SelectPointOrArea(pickedPoint, planeParameters, selectOperation);
             int[] ids = _controller.GetSelectionIds();
 
-            if (_frmSectionCut.Visible) _frmSectionCut.PickedIds(ids);
+            if (_frmSectionView.Visible) _frmSectionView.PickedIds(ids);
             else if (_frmTranslate.Visible) _frmTranslate.PickedIds(ids);
             else if (_frmScale.Visible) _frmScale.PickedIds(ids);
             else if (_frmRotate.Visible) _frmRotate.PickedIds(ids);
@@ -3111,12 +3213,17 @@ namespace PrePoMax
         {            
             form.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
         }
+        private void GetFormLoaction(Form form)
+        {
+            _formLocation.X = form.Location.X - Left;
+            _formLocation.Y = form.Location.Y - Top;
+        }
         public void CloseAllForms()
         {
             if (_allForms != null)
             {
                 // first hide the _frmSelectItemSet, since it's hiding enables the form it was called from (like _frmNodeSet...)
-                if (_frmSelectItemSet.Visible) _frmSelectItemSet.Hide();
+                if (_frmSelectItemSet.Visible) _frmSelectItemSet.Hide(DialogResult.Cancel);
                 
                 foreach (var form in _allForms)
                 {
@@ -3205,6 +3312,11 @@ namespace PrePoMax
         private void tsbShowNoEdges_Click(object sender, EventArgs e)
         {
             tsmiShowNoEdges_Click(null, null);
+        }
+
+        private void tsbSectionView_Click(object sender, EventArgs e)
+        {
+            tsmiSectionView_Click(null, null);
         }
 
         private void tsbHideAllParts_Click(object sender, EventArgs e)
@@ -3585,22 +3697,33 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.SetZoomToFit, animate);
         }
+        public double[] GetViewPlaneNormal()
+        {
+            if (this.InvokeRequired)
+            {
+                return (double[])this.Invoke((MethodInvoker)delegate () { _vtk.GetViewPlaneNormal(); });
+            }
+            else
+            {
+                return _vtk.GetViewPlaneNormal();
+            }
+        }
         public void AdjustCameraDistanceAndClipping()
         {
             InvokeIfRequired(_vtk.AdjustCameraDistanceAndClipping);
         }
 
-        public void ApplySectionCut(double[] point, double[] normal)
+        public void ApplySectionView(double[] point, double[] normal)
         {
-            InvokeIfRequired(_vtk.ApplySectionCut, point, normal);
+            InvokeIfRequired(_vtk.ApplySectionView, point, normal);
         }
-        public void UpdateSectionCut(double[] point, double[] normal)
+        public void UpdateSectionView(double[] point, double[] normal)
         {
-            InvokeIfRequired(_vtk.UpdateSectionCut, point, normal);
+            InvokeIfRequired(_vtk.UpdateSectionView, point, normal);
         }
-        public void RemoveSectionCut()
+        public void RemoveSectionView()
         {
-            InvokeIfRequired(_vtk.RemoveSectionCut);
+            InvokeIfRequired(_vtk.RemoveSectionView);
         }
 
         public void Add3DNodes(vtkControl.vtkMaxActorData actorData)
@@ -3941,7 +4064,10 @@ namespace PrePoMax
 
             if (!_modelTree.DisableMouse)
             {
-                if (partName == null) _controller.ClearAllSelection();
+                if (partName == null)
+                {
+                    if (modifierKeys != Keys.Shift && modifierKeys != Keys.Control) _controller.ClearAllSelection();
+                }
                 else
                 {
                     CaeMesh.BasePart part;
@@ -4107,37 +4233,44 @@ namespace PrePoMax
                 action(parameter1, parameter2, parameter3, parameter4, parameter5, parameter6, parameter7);
             }
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         #endregion  ################################################################################################################
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         #endregion
 
+        
 
+       
+
+        
     }
 }

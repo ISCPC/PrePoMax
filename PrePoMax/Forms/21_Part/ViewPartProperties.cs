@@ -88,7 +88,10 @@ namespace PrePoMax.Forms
         public System.Drawing.Color Color
         {
             get { return _partProperties.Color; }
-            set { _partProperties.Color = value; }
+            set
+            {
+                _partProperties.Color = System.Drawing.Color.FromArgb(Math.Max((byte)25, value.A), value);
+            }
         }
 
 

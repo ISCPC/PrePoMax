@@ -17,7 +17,6 @@ namespace vtkControl
         private vtkActor _geometry;
         private vtkActor _elementEdges;
         private vtkActor _modelEdges;
-        private vtkActor _sectionCut;
         private vtkCellLocator _cellLocator;          // for surface picking
         private vtkCellLocator _frustumCellLocator;   // for volume picking
         public vtkMaxActorRepresentation _actorRepresentation;
@@ -27,6 +26,7 @@ namespace vtkControl
         private double _ambient;
         private double _diffuse;
         private bool _colorContours;
+        private bool _sectionViewPossible;
         
 
 
@@ -37,7 +37,6 @@ namespace vtkControl
         public vtkActor Geometry { get { return _geometry; } set { _geometry = value; } }
         public vtkActor ElementEdges { get { return _elementEdges; } set { _elementEdges = value; } }
         public vtkActor ModelEdges { get { return _modelEdges; } set { _modelEdges = value; } }
-        public vtkActor SectionCut { get { return _sectionCut; } set { _sectionCut = value; } }
         public vtkCellLocator CellLocator { get { return _cellLocator; } set { _cellLocator = value; } }
         public vtkCellLocator FrustumCellLocator { get { return _frustumCellLocator; } set { _frustumCellLocator = value; } }
         public vtkMaxActorRepresentation ActorRepresentation { get { return _actorRepresentation; } set { _actorRepresentation = value; } }
@@ -79,6 +78,7 @@ namespace vtkControl
             }
         }
         public bool ColorContours { get { return _colorContours; } set { _colorContours = value; } }
+        public bool SectionViewPossible { get { return _sectionViewPossible; } set { _sectionViewPossible = value; } }
 
 
         // Constructors                                                                                                             
@@ -96,7 +96,12 @@ namespace vtkControl
             _visible = true;
             _backfaceCulling = true;
             _color = System.Drawing.Color.Yellow;
+            _ambient = 0.5;
+            _diffuse = 0.5;
             _colorContours = false;
+            _sectionViewPossible = true;
+
+            UpdateColor();
         }
         public vtkMaxActor(vtkUnstructuredGrid source)
             : this ()
@@ -133,24 +138,22 @@ namespace vtkControl
             : this()
         {
             this._name = data.Name;
-            this.Color = data.Color; // to call UpdateColor();
-            this._backfaceCulling = data.BackfaceCulling;
-            this._colorContours = data.ColorContours;
-            this._actorRepresentation = data.ActorRepresentation;
-
-            _geometry.SetPickable(data.Pickable ? 1 : 0);
             _geometry.SetMapper(mapper);
+            _geometry.SetPickable(data.Pickable ? 1 : 0);
+            this._actorRepresentation = data.ActorRepresentation;
+            this._backfaceCulling = data.BackfaceCulling;
+            this._color = data.Color;
+            this._ambient = data.Ambient;
+            this._diffuse = data.Diffuse;
+            this._colorContours = data.ColorContours;
+            this._sectionViewPossible = data.SectionViewPossible;
+
+            UpdateColor();
         }
         public vtkMaxActor(vtkMaxActorData data, bool extractVisualizationSurface, bool createNodalActor)
             : this()
         {
-            this._name = data.Name;
-            this._color = data.Color;
-            this._ambient = data.Ambient;
-            this._diffuse = data.Diffuse;
-            this._backfaceCulling = data.BackfaceCulling;
-            this._colorContours = data.ColorContours;
-            this._actorRepresentation = data.ActorRepresentation;
+            this._name = data.Name;            
 
             if (createNodalActor)
                 CreateNodalActor(data);
@@ -170,21 +173,22 @@ namespace vtkControl
                 {
                     _geometry.SetPickable(0);
                 }
-
-                UpdateColor();
             }
+
+            this._actorRepresentation = data.ActorRepresentation;
+            this._backfaceCulling = data.BackfaceCulling;
+            this._color = data.Color;
+            this._ambient = data.Ambient;
+            this._diffuse = data.Diffuse;
+            this._colorContours = data.ColorContours;
+            this._sectionViewPossible = data.SectionViewPossible;
+
+            UpdateColor();
         }
         public vtkMaxActor(vtkMaxActor sourceActor)
           : this()
         {
-            this._name = sourceActor.Name;
-            this._color = sourceActor.Color;
-            this._ambient = sourceActor.Ambient;
-            this._diffuse = sourceActor.Diffuse;
-            this._visible = sourceActor.VtkMaxActorVisible;
-            this._backfaceCulling = sourceActor.BackfaceCulling;
-            this._colorContours = sourceActor.ColorContours;
-            this._actorRepresentation = sourceActor.ActorRepresentation;
+            this._name = sourceActor.Name;           
 
             if (sourceActor.MinNode != null) _minNode = new vtkMaxExtreemeNode(sourceActor.MinNode);
             if (sourceActor.MaxNode != null) _maxNode = new vtkMaxExtreemeNode(sourceActor.MaxNode);
@@ -201,24 +205,7 @@ namespace vtkControl
             _geometry.GetProperty().DeepCopy(sourceActor.Geometry.GetProperty());
             _geometry.SetVisibility(sourceActor.Geometry.GetVisibility());
             _geometry.SetPickable(sourceActor.Geometry.GetPickable());
-            // Cell Locator
-            if (sourceActor.CellLocator != null)
-            {
-                _cellLocator = vtkCellLocator.New();
-                _cellLocator.SetDataSet(_geometry.GetMapper().GetInputAsDataSet());
-                _cellLocator.LazyEvaluationOn();
-            }
-            // Frustum Locator
-            if (sourceActor.FrustumCellLocator != null)
-            {
-                vtkUnstructuredGrid grid = vtkUnstructuredGrid.New();
-                grid.DeepCopy(sourceActor.FrustumCellLocator.GetDataSet());
-
-                _frustumCellLocator = vtkCellLocator.New();
-                _frustumCellLocator.SetDataSet(grid);
-                _frustumCellLocator.LazyEvaluationOn();
-            }
-
+            
             // Element edges                                                    
             // Polydata
             polydata = vtkPolyData.New();
@@ -249,6 +236,35 @@ namespace vtkControl
                 _modelEdges.SetVisibility(sourceActor.ModelEdges.GetVisibility());
                 _modelEdges.SetPickable(sourceActor.ModelEdges.GetPickable());
             }
+
+            // Cell Locator
+            if (sourceActor.CellLocator != null)
+            {
+                _cellLocator = vtkCellLocator.New();
+                _cellLocator.SetDataSet(_geometry.GetMapper().GetInputAsDataSet());
+                _cellLocator.LazyEvaluationOn();
+            }
+            // Frustum Locator
+            if (sourceActor.FrustumCellLocator != null)
+            {
+                vtkUnstructuredGrid grid = vtkUnstructuredGrid.New();
+                grid.DeepCopy(sourceActor.FrustumCellLocator.GetDataSet());
+
+                _frustumCellLocator = vtkCellLocator.New();
+                _frustumCellLocator.SetDataSet(grid);
+                _frustumCellLocator.LazyEvaluationOn();
+            }
+
+            this._actorRepresentation = sourceActor.ActorRepresentation;
+            this.VtkMaxActorVisible = sourceActor.VtkMaxActorVisible;
+            this._backfaceCulling = sourceActor.BackfaceCulling;
+            this._color = sourceActor.Color;
+            this._ambient = sourceActor.Ambient;
+            this._diffuse = sourceActor.Diffuse;
+            this._colorContours = sourceActor.ColorContours;
+            this._sectionViewPossible = sourceActor.SectionViewPossible;
+
+            UpdateColor();
         }
 
         // Methods                                                                                                                  

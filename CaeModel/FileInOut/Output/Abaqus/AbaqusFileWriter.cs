@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeModel;
 using CaeMesh;
+using CaeGlobals;
 
 namespace FileInOut.Output
 {
@@ -132,7 +133,7 @@ namespace FileInOut.Output
 
         static private void AppendNodeSets(StringBuilder sb, FeModel model)
         {
-            Dictionary<string, FeNodeSet> nodeSets = model.Mesh.NodeSets;
+            IDictionary<string, FeNodeSet> nodeSets = model.Mesh.NodeSets;
 
             int count;
             foreach (var entry in nodeSets)
@@ -156,7 +157,7 @@ namespace FileInOut.Output
 
         static private void AppendElementSets(StringBuilder sb, FeModel model)
         {
-            Dictionary<string, FeElementSet> elementSets = model.Mesh.ElementSets;
+            IDictionary<string, FeElementSet> elementSets = model.Mesh.ElementSets;
 
             int count;
             foreach (var entry in elementSets)
@@ -181,7 +182,7 @@ namespace FileInOut.Output
         static private void AppendSurfaces(StringBuilder sb, FeModel model)
         {
             FeSurfaceType type;
-            Dictionary<string, FeSurface> surfaces = model.Mesh.Surfaces;
+            IDictionary<string, FeSurface> surfaces = model.Mesh.Surfaces;
             foreach (var entry in surfaces)
             {
                 if (entry.Value.Active)
@@ -202,7 +203,7 @@ namespace FileInOut.Output
 
         static private void AppendMaterials(StringBuilder sb, FeModel model)
         {
-            Dictionary<string, Material> materials = model.Materials;
+            IDictionary<string, Material> materials = model.Materials;
             foreach (var entry in materials)
             {
                 if (entry.Value.Active)
@@ -230,7 +231,7 @@ namespace FileInOut.Output
 
         static private void AppendSections(StringBuilder sb, FeModel model)
         {
-            Dictionary<string, Section> sections = model.Sections;
+            IDictionary<string, Section> sections = model.Sections;
             foreach (var entry in sections)
             {
                 if (entry.Value.Active)

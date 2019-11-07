@@ -13,7 +13,7 @@ namespace FileInOut.Output.Calculix
     {
         // Variables                                                                                                                
         private DLoad _load;
-        private Dictionary<string, FeSurface> _surfaces;
+        private IDictionary<string, FeSurface> _surfaces;
 
         // Properties                                                                                                               
         public override object BaseItem { get { return _load; } }
@@ -23,7 +23,7 @@ namespace FileInOut.Output.Calculix
 
 
         // Constructor                                                                                                              
-        public CalDLoad(Dictionary<string, FeSurface> surfaces, DLoad load)
+        public CalDLoad(IDictionary<string, FeSurface> surfaces, DLoad load)
         {
             _surfaces = surfaces;
             _load = load;

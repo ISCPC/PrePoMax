@@ -9,14 +9,15 @@ using CaeMesh;
 using CaeGlobals;
 using System.Runtime.Serialization;
 
+
 namespace PrePoMax.Commands
 {
     [Serializable]
     class CSetMeshingParameters : Command, ICommandWithDialog, ISerializable
     {
         // Variables                                                                                                                
-        private string[] _partNames;
-        private MeshingParameters _meshingParameters;
+        private string[] _partNames;                    //ISerializable
+        private MeshingParameters _meshingParameters;   //ISerializable
 
 
         // Constructors                                                                                                             
@@ -27,13 +28,15 @@ namespace PrePoMax.Commands
             _meshingParameters = meshingParameters.DeepClone();
         }
         public CSetMeshingParameters(SerializationInfo info, StreamingContext context)
-            : base("Set meshing parameters")
+            : base("") // this can be empty
         {
             string partName = null;         // old serialization parameter
             foreach (SerializationEntry entry in info)
             {
                 switch (entry.Name)
                 {
+                    case "Command+_name":
+                        _name = (string)entry.Value; break;
                     case "Command+_dateCreated":
                         _dateCreated = (DateTime)entry.Value; break;
                     case "_partName":
@@ -79,6 +82,8 @@ namespace PrePoMax.Commands
         // ISerialization
         public void GetObjectData(SerializationInfo info, StreamingContext context)
         {
+            // using typeof() works also for null fields
+            info.AddValue("Command+_name", _name, typeof(string));
             info.AddValue("Command+_dateCreated", _dateCreated, typeof(DateTime));
             info.AddValue("_partNames", _partNames, typeof(string[]));
             info.AddValue("_meshingParameters", _meshingParameters, typeof(MeshingParameters));

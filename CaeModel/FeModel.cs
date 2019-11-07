@@ -5,32 +5,34 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeMesh;
 using CaeGlobals;
+using System.Runtime.Serialization;
+using Calculix = FileInOut.Output.Calculix;
+
 
 namespace CaeModel
 {
     [Serializable]
-    public class FeModel
+    public class FeModel : ISerializable
     {
         // Variables                                                                                                                
-        private FeMesh _geometry;
-        private FeMesh _mesh;
-        private Dictionary<string, Material> _materials;
-        private Dictionary<string, Section> _sections;
-        private Dictionary<string, Constraint> _constraints;
-        private StepCollection _stepCollection;
-
-        private Dictionary<int[], FileInOut.Output.Calculix.CalculixUserKeyword> _calculixUserKeywords;
+        private FeMesh _geometry;                                                               //ISerializable
+        private FeMesh _mesh;                                                                   //ISerializable
+        private OrderedDictionary<string, Material> _materials;                                 //ISerializable
+        private OrderedDictionary<string, Section> _sections;                                   //ISerializable
+        private OrderedDictionary<string, Constraint> _constraints;                             //ISerializable
+        private StepCollection _stepCollection;                                                 //ISerializable
+        private OrderedDictionary<int[], Calculix.CalculixUserKeyword> _calculixUserKeywords;   //ISerializable
 
 
         // Properties                                                                                                               
         public string Name { get; set; }
         public FeMesh Geometry { get { return _geometry; } }
         public FeMesh Mesh { get { return _mesh; } }
-        public Dictionary<string, Material> Materials { get { return _materials; } }
-        public Dictionary<string, Section> Sections { get { return _sections; } }
-        public Dictionary<string, Constraint> Constraints { get { return _constraints; } }
+        public IDictionary<string, Material> Materials { get { return _materials; } }
+        public IDictionary<string, Section> Sections { get { return _sections; } }
+        public IDictionary<string, Constraint> Constraints { get { return _constraints; } }
         public StepCollection StepCollection { get { return _stepCollection; } }
-        public Dictionary<int[], FileInOut.Output.Calculix.CalculixUserKeyword> CalculixUserKeywords 
+        public OrderedDictionary<int[], Calculix.CalculixUserKeyword> CalculixUserKeywords 
         { 
             get { return _calculixUserKeywords; } 
             set 
@@ -44,12 +46,77 @@ namespace CaeModel
         public FeModel(string name)
         {
             Name = name;
-            _materials = new Dictionary<string, Material>();
-            _sections = new Dictionary<string, Section>();
-            _constraints = new Dictionary<string, Constraint>();
+            _materials = new OrderedDictionary<string, Material>();
+            _sections = new OrderedDictionary<string, Section>();
+            _constraints = new OrderedDictionary<string, Constraint>();
             _stepCollection = new StepCollection();
         }
 
+        public FeModel(SerializationInfo info, StreamingContext context)
+        {
+            foreach (SerializationEntry entry in info)
+            {
+                switch (entry.Name)
+                {
+                    case "<Name>k__BackingField":               // Compatibility for version v.0.5.1
+                    case "_name":
+                        Name = (string)entry.Value; break;
+                    case "_geometry":
+                        _geometry = (FeMesh)entry.Value; break;
+                    case "_mesh":
+                        _mesh = (FeMesh)entry.Value; break;
+                    case "_materials":
+                        if (entry.Value is Dictionary<string, Material> md)
+                        {
+                            // Compatibility for version v.0.5.1
+                            md.OnDeserialization(null);
+                            _materials = new OrderedDictionary<string, Material>(md);
+                        }
+                        else if (entry.Value is OrderedDictionary<string, Material> mod) _materials = mod;
+                        else if (entry.Value == null) _materials = null;
+                        else throw new NotSupportedException();
+                        break;
+                    case "_sections":
+                        if (entry.Value is Dictionary<string, Section> sd)
+                        {
+                            // Compatibility for version v.0.5.1
+                            sd.OnDeserialization(null);
+                            _sections = new OrderedDictionary<string, Section>(sd);
+                        }
+                        else if (entry.Value is OrderedDictionary<string, Section> sod) _sections = sod;
+                        else if (entry.Value == null) _sections = null;
+                        else throw new NotSupportedException();
+                        break;
+                    case "_constraints":
+                        if (entry.Value is Dictionary<string, Constraint> cd)   
+                        {
+                            // Compatibility for version v.0.5.1
+                            cd.OnDeserialization(null);
+                            _constraints = new OrderedDictionary<string, Constraint>(cd);
+                        }
+                        else if (entry.Value is OrderedDictionary<string, Constraint> cod) _constraints = cod;
+                        else if (entry.Value == null) _constraints = null;
+                        else throw new NotSupportedException();
+                        break;
+                    case "_stepCollection":
+                        _stepCollection = (StepCollection)entry.Value; break;
+                    case "_calculixUserKeywords":
+                        if (entry.Value is Dictionary<int[], Calculix.CalculixUserKeyword> cukd)
+                        {
+                            // Compatibility for version v.0.5.1
+                            cukd.OnDeserialization(null);
+                            _calculixUserKeywords = new OrderedDictionary<int[], Calculix.CalculixUserKeyword>(cukd);
+                        }
+                        else if (entry.Value is OrderedDictionary<int[], Calculix.CalculixUserKeyword> cukod)
+                            _calculixUserKeywords = cukod;
+                        else if (entry.Value == null) _calculixUserKeywords = null;
+                        else throw new NotSupportedException();
+                        break;
+                    default:
+                        throw new NotSupportedException();
+                }
+            }
+        }
 
         // Static methods
         public static void WriteToFile(FeModel model, System.IO.BinaryWriter bw)
@@ -276,7 +343,8 @@ namespace CaeModel
             int itemLevel;
             int[] userIndices;
             List<int[]> allKeywordIndices = FileInOut.Output.CalculixFileWriter.GetKeywordIndices(this, itemToRemove);
-            Dictionary<int[], FileInOut.Output.Calculix.CalculixUserKeyword> userKeywordsCopy = new Dictionary<int[], FileInOut.Output.Calculix.CalculixUserKeyword>();
+            OrderedDictionary<int[], Calculix.CalculixUserKeyword> userKeywordsCopy;
+            userKeywordsCopy = new OrderedDictionary<int[], Calculix.CalculixUserKeyword>();
 
             foreach (var keywordIndices in allKeywordIndices)
             {
@@ -468,8 +536,18 @@ namespace CaeModel
             return loads.ToArray();
         }
 
-       
-
-
+        // ISerialization
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            // using typeof() works also for null fields
+            info.AddValue("_name", Name, typeof(string));
+            info.AddValue("_geometry", _geometry, typeof(FeMesh));
+            info.AddValue("_mesh", _mesh, typeof(FeMesh));
+            info.AddValue("_materials", _materials, typeof(OrderedDictionary<string, Material>));
+            info.AddValue("_sections", _sections, typeof(OrderedDictionary<string, Section>));
+            info.AddValue("_constraints", _constraints, typeof(OrderedDictionary<string, Constraint>));
+            info.AddValue("_stepCollection", _stepCollection, typeof(StepCollection));
+            info.AddValue("_calculixUserKeywords", _calculixUserKeywords, typeof(OrderedDictionary<int[], Calculix.CalculixUserKeyword>));
+        }
     }
 }

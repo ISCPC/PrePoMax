@@ -26,8 +26,11 @@ namespace PrePoMax
         [StandardValue("TrueScale", DisplayName = "True scale", Description = "True scale")]
         TrueScale,
 
+        [StandardValue("Off", DisplayName = "Off", Description = "Off")]
+        Off,
+
         [StandardValue("UserDefined", DisplayName = "User defined", Description = "User defined")]
-        UserDefined
+        UserDefined,
     }
 
 
@@ -59,8 +62,11 @@ namespace PrePoMax
                         _deformationScaleFactor = -1;
                     else if (_dsfType == PrePoMax.DeformationScaleFactorType.TrueScale)
                         _deformationScaleFactor = 1;
-                    else //UserDefined
+                    else if (_dsfType == PrePoMax.DeformationScaleFactorType.Off)
+                        _deformationScaleFactor = 0;
+                    else if (_dsfType == PrePoMax.DeformationScaleFactorType.UserDefined)
                         _deformationScaleFactor = 1;
+                    else throw new NotSupportedException();
                 }
             }
         }

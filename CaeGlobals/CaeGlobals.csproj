@@ -69,6 +69,7 @@
     <Compile Include="CommonClasses\DataExchange\PartExchangeData.cs" />
     <Compile Include="CommonClasses\EmptyNamedClass.cs" />
     <Compile Include="CommonClasses\Geometry.cs" />
+    <Compile Include="CommonClasses\OrderedDictionary.cs" />
     <Compile Include="Comparers\CompareDoubleArray.cs" />
     <Compile Include="Comparers\CompareIntArray.cs" />
     <Compile Include="DynamicTypeDescriptor\CustomComponentModel.cs" />

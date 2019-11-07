@@ -33,7 +33,7 @@ namespace PrePoMax
         // View
         protected ViewGeometryModelResults _currentView;
         protected string _drawSymbolsForStep;
-        protected Dictionary<ViewGeometryModelResults, Octree.Plane> _sectionCutPlanes;
+        protected Dictionary<ViewGeometryModelResults, Octree.Plane> _sectionViewPlanes;
         // Selection
         protected vtkSelectBy _selectBy;
         protected double _selectAngle;
@@ -108,6 +108,10 @@ namespace PrePoMax
                     RedrawSymbols();
                 }
             }
+        }
+        public bool IsSectionViewActive()
+        {
+            return _sectionViewPlanes[_currentView] != null;
         }
         // Selection
         public vtkSelectItem SelectItem 
@@ -254,10 +258,10 @@ namespace PrePoMax
             _jobs = new Dictionary<string, AnalysisJob>();
             _selection = new Selection();
 
-            _sectionCutPlanes = new Dictionary<ViewGeometryModelResults, Octree.Plane>();
-            _sectionCutPlanes.Add(ViewGeometryModelResults.Geometry, null);
-            _sectionCutPlanes.Add(ViewGeometryModelResults.Model, null);
-            _sectionCutPlanes.Add(ViewGeometryModelResults.Results, null);
+            _sectionViewPlanes = new Dictionary<ViewGeometryModelResults, Octree.Plane>();
+            _sectionViewPlanes.Add(ViewGeometryModelResults.Geometry, null);
+            _sectionViewPlanes.Add(ViewGeometryModelResults.Model, null);
+            _sectionViewPlanes.Add(ViewGeometryModelResults.Results, null);
 
             Clear();
 
@@ -322,8 +326,8 @@ namespace PrePoMax
         }
         public void ClearModel()
         {
-            _sectionCutPlanes[ViewGeometryModelResults.Geometry] = null;
-            _sectionCutPlanes[ViewGeometryModelResults.Model] = null;
+            _sectionViewPlanes[ViewGeometryModelResults.Geometry] = null;
+            _sectionViewPlanes[ViewGeometryModelResults.Model] = null;
             //
             _model = new FeModel("Model-1");
             _drawSymbolsForStep = null;
@@ -334,7 +338,7 @@ namespace PrePoMax
         }
         public void ClearResults()
         {
-            _sectionCutPlanes[ViewGeometryModelResults.Results] = null;
+            _sectionViewPlanes[ViewGeometryModelResults.Results] = null;
             //
             if (_results != null || _history != null)
             {
@@ -513,8 +517,11 @@ namespace PrePoMax
 
                     if (fileVersion != Globals.ProgramName)
                     {
-                        MessageBox.Show("The selected file is from an uncompatible version: " + fileVersion, "Error", MessageBoxButtons.OK);
-                        throw new Exception("UncompatibleVersion");
+                        _form.WriteDataToOutput("Warning: The opened file is from an uncompatible version: " + fileVersion);
+                        _form.WriteDataToOutput("Some items might not be correctly loaded. Check the model.");
+
+                        //MessageBox.Show("The selected file is from an uncompatible version: " + fileVersion, "Error", MessageBoxButtons.OK);
+                        //throw new Exception("UncompatibleVersion");
                     }
 
                     using (BinaryReader br = new BinaryReader(Decompress(fs)))
@@ -978,7 +985,7 @@ namespace PrePoMax
 
         #region Edit menu   ########################################################################################################
         // COMMANDS ********************************************************************************
-        public void SetCalculixUserKeywordsCommand(Dictionary<int[], FileInOut.Output.Calculix.CalculixUserKeyword> userKeywords)
+        public void SetCalculixUserKeywordsCommand(OrderedDictionary<int[], FileInOut.Output.Calculix.CalculixUserKeyword> userKeywords)
         {
             Commands.CSetCalculixUserKeywords comm = new Commands.CSetCalculixUserKeywords(userKeywords);
             _commands.AddAndExecute(comm);
@@ -1016,7 +1023,7 @@ namespace PrePoMax
             }
             else return FileInOut.Output.CalculixFileWriter.GetModelKeywords(_model);
         }
-        public Dictionary<int[], FileInOut.Output.Calculix.CalculixUserKeyword> GetCalculixUserKeywords()
+        public OrderedDictionary<int[], FileInOut.Output.Calculix.CalculixUserKeyword> GetCalculixUserKeywords()
         {
             if (_model == null)
             {
@@ -1025,7 +1032,7 @@ namespace PrePoMax
             }
             else return _model.CalculixUserKeywords;
         }
-        public void SetCalculixUserKeywords(Dictionary<int[], FileInOut.Output.Calculix.CalculixUserKeyword> userKeywords)
+        public void SetCalculixUserKeywords(OrderedDictionary<int[], FileInOut.Output.Calculix.CalculixUserKeyword> userKeywords)
         {
             _model.CalculixUserKeywords = userKeywords;
             _form.SetNumberOfModelUserKeywords(userKeywords.Count);
@@ -1036,24 +1043,29 @@ namespace PrePoMax
         #region View menu   ########################################################################################################
         // COMMANDS ********************************************************************************
         
-        public void ApplySectionCut(double[] point, double[] normal)
+        public void ApplySectionView(double[] point, double[] normal)
         {
-            _sectionCutPlanes[_currentView] = new Octree.Plane(point, normal);
-            _form.ApplySectionCut(point, normal);
+            _sectionViewPlanes[_currentView] = new Octree.Plane(point, normal);
+            _form.ApplySectionView(point, normal);
         }
-        public void UpdateSectionCut(double[] point, double[] normal)
+        public void UpdateSectionView(double[] point, double[] normal)
         {
-            _sectionCutPlanes[_currentView].SetPointAndNormal(point, normal);
-            _form.UpdateSectionCut(point, normal);
+            _sectionViewPlanes[_currentView].SetPointAndNormal(point, normal);
+            _form.UpdateSectionView(point, normal);
         }
-        public void RemoveSectionCut()
+        public void RemoveSectionView()
         {
-            _sectionCutPlanes[_currentView] = null;
-            _form.RemoveSectionCut();
+            _sectionViewPlanes[_currentView] = null;
+            _form.RemoveSectionView();
         }
-        public Octree.Plane GetSectionCutPlane()
+        public Octree.Plane GetSectionViewPlane()
         {
-            return _sectionCutPlanes[_currentView];
+            return _sectionViewPlanes[_currentView];
+        }
+
+        public double[] GetViewPlaneNormal()
+        {
+            return _form.GetViewPlaneNormal();
         }
 
         #endregion ################################################################################################################
@@ -1068,6 +1080,11 @@ namespace PrePoMax
         public void ShowGeometryPartsCommand(string[] partNames)
         {
             Commands.CShowGeometryParts comm = new Commands.CShowGeometryParts(partNames);
+            _commands.AddAndExecute(comm);
+        }
+        public void SetTransparencyForGeometryPartsCommand(string[] partNames, byte alpha)
+        {
+            Commands.CSetTransparencyForGeometryParts comm = new Commands.CSetTransparencyForGeometryParts(partNames, alpha);
             _commands.AddAndExecute(comm);
         }
         public void ReplaceGeometryPartPropertiesCommand(string oldPartName, PartProperties newPartProperties)
@@ -1129,6 +1146,16 @@ namespace PrePoMax
                 _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, name, _model.Geometry.Parts[name], null);
             }
             _form.ShowActors(partNames, false);
+        }
+        public void SetTransparencyForGeometryParts(string[] partNames, byte alpha)
+        {
+            BasePart part;
+            foreach (var name in partNames)
+            {
+                part = _model.Geometry.Parts[name];
+                part.Color = System.Drawing.Color.FromArgb(alpha, part.Color);
+                _form.UpdateActor(name, name, part.Color);
+            }
         }
         public void ReplaceGeometryPartProperties(string oldPartName, PartProperties newPartProperties)
         {
@@ -1407,7 +1434,7 @@ namespace PrePoMax
 
         #endregion #################################################################################################################
 
-        #region Mesh part menu   ###################################################################################################
+        #region Model part menu   ##################################################################################################
         // COMMANDS ********************************************************************************
         public void HideModelPartsCommand(string[] partNames)
         {
@@ -1417,6 +1444,11 @@ namespace PrePoMax
         public void ShowModelPartsCommand(string[] partNames)
         {
             Commands.CShowModelParts comm = new Commands.CShowModelParts(partNames);
+            _commands.AddAndExecute(comm);
+        }
+        public void SetTransparencyForModelPartsCommand(string[] partNames, byte alpha)
+        {
+            Commands.CSetTransparencyForModelParts comm = new Commands.CSetTransparencyForModelParts(partNames, alpha);
             _commands.AddAndExecute(comm);
         }
         public void ReplaceModelPartPropertiesCommand(string oldPartName, PartProperties newPartProperties)
@@ -1507,6 +1539,16 @@ namespace PrePoMax
                 }
             }
             _form.ShowActors(partNames, false);
+        }
+        public void SetTransparencyForModelParts(string[] partNames, byte alpha)
+        {
+            BasePart part;
+            foreach (var name in partNames)
+            {
+                part = _model.Mesh.Parts[name];
+                part.Color = System.Drawing.Color.FromArgb(alpha, part.Color);
+                _form.UpdateActor(name, name, part.Color);
+            }
         }
         public void ReplaceModelPartProperties(string oldPartName, PartProperties newPartProperties)
         {
@@ -2941,6 +2983,16 @@ namespace PrePoMax
             }
             _form.ShowActors(partNames, true);
         }
+        public void SetTransparencyForResultParts(string[] partNames, byte alpha)
+        {
+            BasePart part;
+            foreach (var name in partNames)
+            {
+                part = _results.Mesh.Parts[name];
+                part.Color = System.Drawing.Color.FromArgb(alpha, part.Color);
+                _form.UpdateActor(name, name, part.Color);
+            }
+        }
         public void SetResultPartsColorContoursVisibility(string[] partNames, bool colorContours)
         {
             foreach (var name in partNames)
@@ -4006,7 +4058,8 @@ namespace PrePoMax
         public float GetNodalValue(int nodeId)
         {
             float[] values = _results.GetValues(_currentFieldData, new int[] { nodeId });
-            return values[0];
+            if (values == null) return 0;
+            else return values[0];
         }
 
         // Visualize
@@ -4042,8 +4095,8 @@ namespace PrePoMax
                         CurrentView = ViewGeometryModelResults.Geometry;
                         DrawAllGeomParts();
                         //
-                        Octree.Plane plane = _sectionCutPlanes[_currentView];
-                        if (plane != null) ApplySectionCut(plane.Point.Coor, plane.Normal.Coor);
+                        Octree.Plane plane = _sectionViewPlanes[_currentView];
+                        if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
                     }
                     UpdateHighlightFromTree();
                 }
@@ -4130,8 +4183,8 @@ namespace PrePoMax
                             DrawAllMeshParts();
                             DrawSymbols();
                             //
-                            Octree.Plane plane = _sectionCutPlanes[_currentView];
-                            if (plane != null) ApplySectionCut(plane.Point.Coor, plane.Normal.Coor);
+                            Octree.Plane plane = _sectionViewPlanes[_currentView];
+                            if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
                         }
                         catch { }
                     }
@@ -4150,7 +4203,7 @@ namespace PrePoMax
         {
             if (_model == null) return;
 
-            Dictionary<string, BasePart> parts = _model.Mesh.Parts;
+            IDictionary<string, BasePart> parts = _model.Mesh.Parts;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
             
             List<string> hiddenActors = new List<string>();
@@ -4236,6 +4289,13 @@ namespace PrePoMax
                         {
                             if (_currentView != ViewGeometryModelResults.Model) CurrentView = ViewGeometryModelResults.Model;
                             DrawSymbols();
+                            //
+                            Octree.Plane plane = _sectionViewPlanes[_currentView];
+                            if (plane != null)
+                            {
+                                RemoveSectionView();
+                                ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
+                            }
                         }
                         catch { }
 
@@ -4856,6 +4916,7 @@ namespace PrePoMax
                 data.Layer = layer;
                 data.Geometry.Nodes.Coor = distributedCoor.ToArray();
                 data.Geometry.Nodes.Normals = distributedLoadNormals.ToArray();
+                data.SectionViewPossible = false;
                 ApplyLighting(data);
                 _form.AddOrientedArrowsActor(data, symbolSize, dLoad.Magnitude > 0);
             }
@@ -5255,7 +5316,7 @@ namespace PrePoMax
         }
         public void HighlightNodeSets(string[] nodeSetsToSelect)
         {
-            Dictionary<string, FeNodeSet> nodeSets = _model.Mesh.NodeSets;
+            IDictionary<string, FeNodeSet> nodeSets = _model.Mesh.NodeSets;
             System.Drawing.Color color = System.Drawing.Color.Red;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
             int nodeSize = 1; // size <= 1 gets overwritten in vtkControl for the highlights in selection layer
@@ -5577,8 +5638,8 @@ namespace PrePoMax
             float scale = GetScale();
             DrawResult(_currentFieldData, scale, postSettings.DrawUndeformedModel, postSettings.UndeformedModelColor);
             //
-            Octree.Plane plane = _sectionCutPlanes[_currentView];
-            if (plane != null) ApplySectionCut(plane.Point.Coor, plane.Normal.Coor);
+            Octree.Plane plane = _sectionViewPlanes[_currentView];
+            if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
             //
             if (resetCamera) _form.SetFrontBackView(true, true); // animation:true is here to correctly draw max/min widgets 
             _form.AdjustCameraDistanceAndClipping();
@@ -5701,8 +5762,8 @@ namespace PrePoMax
             }
             if (hiddenActors.Count > 0) _form.HideActors(hiddenActors.ToArray(), true);
             //
-            Octree.Plane plane = _sectionCutPlanes[_currentView];
-            if (plane != null) ApplySectionCut(plane.Point.Coor, plane.Normal.Coor);
+            Octree.Plane plane = _sectionViewPlanes[_currentView];
+            if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
 
             // animation field data
             float[] time = new float[numFrames];
@@ -5771,8 +5832,8 @@ namespace PrePoMax
             }
             if (hiddenActors.Count > 0) _form.HideActors(hiddenActors.ToArray(), true);
             //
-            Octree.Plane plane = _sectionCutPlanes[_currentView];
-            if (plane != null) ApplySectionCut(plane.Point.Coor, plane.Normal.Coor);
+            Octree.Plane plane = _sectionViewPlanes[_currentView];
+            if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
 
             // animation field data
             var existingIncrements = _results.GetExistingIncrementIds(_currentFieldData.Name, _currentFieldData.Component);

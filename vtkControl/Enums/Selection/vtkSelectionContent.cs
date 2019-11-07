@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace vtkControl
 {
-    enum SelectionContent
+    enum vtkSelectionContent
     {
         SELECTIONS,
         GLOBALIDS,

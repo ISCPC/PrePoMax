@@ -32,6 +32,7 @@ namespace vtkControl
         public bool ColorContours;
         public bool SmoothShaded;
         public vtkMaxActorRepresentation ActorRepresentation;
+        public bool SectionViewPossible;
 
         public PartExchangeData Geometry;
         public PartExchangeData ModelEdges;
@@ -53,6 +54,7 @@ namespace vtkControl
             ColorContours = false;
             SmoothShaded = false;
             ActorRepresentation = vtkMaxActorRepresentation.Unknown;
+            SectionViewPossible = true;
 
             Geometry = new PartExchangeData();
             ModelEdges = null;

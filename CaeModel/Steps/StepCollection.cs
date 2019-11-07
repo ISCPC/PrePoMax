@@ -22,9 +22,6 @@ namespace CaeModel
         public StepCollection()
         {
             _steps = new List<Step>();
-
-            //InitialStep initial = new InitialStep("Initial");
-            //AddStep(initial);
         }
 
         // Methods                                                                                                                         

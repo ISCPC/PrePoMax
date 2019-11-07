@@ -88,13 +88,12 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Enums\Selection\vtkSelectionContent.cs" />
     <Compile Include="Enums\vtkAttributeType.cs" />
     <Compile Include="Enums\vtkColorSpectrum.cs" />
     <Compile Include="Enums\vtkColorSpectrumMinMaxType.cs" />
     <Compile Include="Enums\vtkFieldAssociations.cs" />
-    <Compile Include="Enums\vtkSelectionContent.cs" />
-    <Compile Include="Enums\vtkSelectionField.cs" />
+    <Compile Include="Enums\Selection\vtkSelectionContent.cs" />
+    <Compile Include="Enums\Selection\vtkSelectionField.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Globals.cs" />
     <Compile Include="Tools\Extensions.cs" />
@@ -115,7 +114,6 @@
     <Compile Include="vtkMax\Actor\vtkMaxExtreemeNode.cs" />
     <Compile Include="vtkMax\Animation\vtkMaxActorAnimationData.cs" />
     <Compile Include="vtkMax\ColorSpectrum\vtkMaxColorSpectrum.cs" />
-    <Compile Include="vtkMax\vtkMaxPointLocator.cs" />
     <Compile Include="vtkMax\Widget\02_vtkMaxScaleWidget.cs" />
     <Compile Include="vtkMax\Widget\DataFieldType.cs" />
     <Compile Include="vtkMax\Widget\01_vtkMaxBorderWidget.cs" />

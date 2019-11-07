@@ -94,7 +94,7 @@ namespace CaeGlobals
             }
         }
 
-        public static bool ContainsValidKey<T>(this Dictionary<string, T> dictionary, string key)
+        public static bool ContainsValidKey<T>(this IDictionary<string, T> dictionary, string key)
         {
             T value;
             if (dictionary.TryGetValue(key, out value))
@@ -104,6 +104,7 @@ namespace CaeGlobals
             }
             else return false;
         }
+        
 
         // Property grid items
         public static IEnumerable<GridItem> EnumerateAllItems(this PropertyGrid grid)

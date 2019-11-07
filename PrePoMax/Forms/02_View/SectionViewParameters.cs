@@ -12,7 +12,7 @@ using System.Drawing.Design;
 namespace PrePoMax.Forms
 {
     [Serializable]
-    public class SectionCutParameters
+    public class SectionViewParameters
     {
         // Variables                                                                                                                      
         private DynamicCustomTypeDescriptor _dctd = null;
@@ -57,20 +57,20 @@ namespace PrePoMax.Forms
         public double Z { get { return _point[2]; } set { _point[2] = value; } }
 
 
-        //[Category("Normal direction")]
-        //[OrderedDisplayName(0, 10, "Select the normal vector")]
-        //[DescriptionAttribute("Select the plane normal as a vector between two points.")]
-        //[EditorAttribute(typeof(SinglePointDataEditor), typeof(System.Drawing.Design.UITypeEditor))]
-        //[Id(1, 2)]
-        //public ItemSetData NormalItemSet
-        //{
-        //    get { return _normalItemSetData; }
-        //    set
-        //    {
-        //        if (value != _normalItemSetData)
-        //            _normalItemSetData = value;
-        //    }
-        //}
+        [Category("Normal direction")]
+        [OrderedDisplayName(0, 10, "Select the normal vector")]
+        [DescriptionAttribute("Select the plane normal as a vector between two points.")]
+        [EditorAttribute(typeof(SinglePointDataEditor), typeof(System.Drawing.Design.UITypeEditor))]
+        [Id(1, 2)]
+        public ItemSetData NormalItemSet
+        {
+            get { return _normalItemSetData; }
+            set
+            {
+                if (value != _normalItemSetData)
+                    _normalItemSetData = value;
+            }
+        }
 
         [Category("Normal direction")]
         [OrderedDisplayName(1, 10, "X")]
@@ -97,7 +97,7 @@ namespace PrePoMax.Forms
         public double[] Normal { get { return _normal; } set { _normal = value; } }
 
         // Constructors                                                                                                             
-        public SectionCutParameters()
+        public SectionViewParameters()
         {
             Clear();
 

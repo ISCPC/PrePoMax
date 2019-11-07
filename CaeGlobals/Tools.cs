@@ -122,7 +122,9 @@ namespace CaeGlobals
                 }
                 else
                 {
-                    return Math.Round(result, digits - (int)leftSideNumbers, MidpointRounding.AwayFromZero);
+                    int roundingDigits = digits - (int)leftSideNumbers;
+                    roundingDigits = Math.Max(0, Math.Min(roundingDigits, 15));
+                    return Math.Round(result, roundingDigits, MidpointRounding.AwayFromZero);
                 }
             }
         }

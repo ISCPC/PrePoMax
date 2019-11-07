@@ -14,26 +14,29 @@ using DynamicTypeDescriptor;
 
 namespace PrePoMax.Forms
 {
-    public partial class FrmGetInteger : Form
+    public partial class FrmGetValue : Form
     {
         // Variables                                                                                                                
-        private ViewValue<int> _viewValue;
+        private ViewDoubleValue _viewValue;
         private double _labelRatio = 2.0; // larger value means wider second column
 
 
         // Properties                                                                                                               
-        public int Value 
+        public double Value 
         {
             get { return _viewValue.Value; }
             set { _viewValue.Value = value; } 
         }
+        public byte NumOfDigits { get { return _viewValue.NumOfDigits; } set { _viewValue.NumOfDigits = value; } }
+        public double MaxValue { get { return _viewValue.MaxValue; } set { _viewValue.MaxValue = value; } }
+        public double MinValue { get { return _viewValue.MinValue; } set { _viewValue.MinValue = value; } }
 
 
         // Constructors                                                                                                             
-        public FrmGetInteger()
+        public FrmGetValue(double value)
         {
             InitializeComponent();
-            _viewValue = new ViewValue<int>(1);
+            _viewValue = new ViewDoubleValue(value);
 
             propertyGrid.SetParent(this);   // for the Tab key to work
             propertyGrid.SetLabelColumnWidth(_labelRatio);
@@ -44,7 +47,6 @@ namespace PrePoMax.Forms
         private void propertyGrid_PropertyValueChanged(object s, PropertyValueChangedEventArgs e)
         {
             propertyGrid.Refresh();
-            if (_viewValue.Value < 1) _viewValue.Value = 1;
         }
 
         private void btnOK_Click(object sender, EventArgs e)

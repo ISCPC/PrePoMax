@@ -6,13 +6,14 @@ using System.Threading.Tasks;
 using System.Reflection;
 using CaeGlobals;
 
+
 namespace PrePoMax.Commands
 {
     [Serializable]
     public abstract class Command
     {
         // Variables                                                                                                                
-        private string _name;
+        protected string _name;
         protected DateTime _dateCreated;
 
 
@@ -45,7 +46,7 @@ namespace PrePoMax.Commands
             int maxLen = 120;
             foreach (string name in array)
             {
-                names += name;                
+                names += name;
                 if (++count < array.Length) names += ", ";
                 if (names.Length > maxLen)
                 {
@@ -57,7 +58,5 @@ namespace PrePoMax.Commands
 
             return names;
         }
-
-
     }
 }

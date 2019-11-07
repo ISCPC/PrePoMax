@@ -95,6 +95,7 @@
   <ItemGroup>
     <Compile Include="Command\0000_File\CImportFile.cs" />
     <Compile Include="Command\0010_Edit\CSetCalculixUserKeywords.cs" />
+    <Compile Include="Command\0030_Geometry\01_Part\CSetTransparencyForGeometryParts.cs" />
     <Compile Include="Command\0030_Geometry\01_Part\CHideGeometryParts.cs" />
     <Compile Include="Command\0030_Geometry\01_Part\CRemoveGeometryParts.cs" />
     <Compile Include="Command\0030_Geometry\01_Part\CReplaceGeometryPartProperties.cs" />
@@ -104,6 +105,7 @@
     <Compile Include="Command\0040_Model\01_Node\CRenumberNodes.cs" />
     <Compile Include="Command\0040_Model\11_Part\CRotateModelParts.cs" />
     <Compile Include="Command\0040_Model\11_Part\CScaleModelParts.cs" />
+    <Compile Include="Command\0040_Model\11_Part\CSetTransparencyForModelParts.cs" />
     <Compile Include="Command\0040_Model\11_Part\CTranslateModelParts.cs" />
     <Compile Include="Command\0040_Model\11_Part\CMergeModelParts.cs" />
     <Compile Include="Command\0040_Model\11_Part\CShowModelParts.cs" />
@@ -165,13 +167,13 @@
     <Compile Include="Controller.cs" />
     <Compile Include="Enums\ViewGeometryModelResults.cs" />
     <Compile Include="Enums\ViewResultsType.cs" />
-    <Compile Include="Forms\02_View\FrmSectionCut.cs">
+    <Compile Include="Forms\02_View\FrmSectionView.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\02_View\FrmSectionCut.Designer.cs">
-      <DependentUpon>FrmSectionCut.cs</DependentUpon>
+    <Compile Include="Forms\02_View\FrmSectionView.Designer.cs">
+      <DependentUpon>FrmSectionView.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\02_View\SectionCutParameters.cs" />
+    <Compile Include="Forms\02_View\SectionViewParameters.cs" />
     <Compile Include="Forms\12_AnalyzeGeometry\FrmAnalyzeGeometry.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -213,11 +215,11 @@
     <Compile Include="Forms\71_Settings\FrmGetEnvVars.Designer.cs">
       <DependentUpon>FrmGetEnvVars.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\00_Common\FrmGetInteger.cs">
+    <Compile Include="Forms\00_Common\FrmGetValue.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\00_Common\FrmGetInteger.Designer.cs">
-      <DependentUpon>FrmGetInteger.cs</DependentUpon>
+    <Compile Include="Forms\00_Common\FrmGetValue.Designer.cs">
+      <DependentUpon>FrmGetValue.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\11_MeshingParameters\FrmMeshingParameters.cs">
       <SubType>Form</SubType>
@@ -385,8 +387,8 @@
     <Compile Include="Settings\CalculixSettings.cs" />
     <Compile Include="Tools.cs" />
     <Compile Include="UpdateModelType.cs" />
-    <EmbeddedResource Include="Forms\02_View\FrmSectionCut.resx">
-      <DependentUpon>FrmSectionCut.cs</DependentUpon>
+    <EmbeddedResource Include="Forms\02_View\FrmSectionView.resx">
+      <DependentUpon>FrmSectionView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\12_AnalyzeGeometry\FrmAnalyzeGeometry.resx">
       <DependentUpon>FrmAnalyzeGeometry.cs</DependentUpon>
@@ -409,8 +411,8 @@
     <EmbeddedResource Include="Forms\71_Settings\FrmGetEnvVars.resx">
       <DependentUpon>FrmGetEnvVars.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\00_Common\FrmGetInteger.resx">
-      <DependentUpon>FrmGetInteger.cs</DependentUpon>
+    <EmbeddedResource Include="Forms\00_Common\FrmGetValue.resx">
+      <DependentUpon>FrmGetValue.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\11_MeshingParameters\FrmMeshingParameters.resx">
       <DependentUpon>FrmMeshingParameters.cs</DependentUpon>
@@ -540,6 +542,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\SectionView.bmp" />
     <None Include="Icons\Common\Hide.ico" />
     <None Include="Icons\Common\Show.ico" />
     <None Include="Icons\Common\Up_arrow.ico" />
@@ -560,6 +563,8 @@
     <None Include="Icons\Material\Library.ico" />
     <None Include="Icons\View\SymbolsOff.ico" />
     <None Include="Icons\View\SymbolsOn.ico" />
+    <None Include="Icons\View\SectionCut.ico" />
+    <None Include="Icons\View\SectionView.ico" />
     <Content Include="main.ico" />
   </ItemGroup>
   <ItemGroup>

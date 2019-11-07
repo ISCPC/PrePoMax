@@ -13,36 +13,35 @@ using CaeGlobals;
 
 namespace PrePoMax.Forms
 {
-    public partial class FrmSectionCut : UserControls.PrePoMaxChildForm, IFormBase
+    public partial class FrmSectionView : UserControls.PrePoMaxChildForm, IFormBase
     {
         // Variables                                                                                                                
         private Controller _controller;
-        private SectionCutParameters _sectionCutParameters;
+        private SectionViewParameters _sectionViewParameters;
         private bool _pause;
-        private double min;
-        private double max;
         private Vec3D _projHalfSize;
+        private Octree.Plane _plane;
 
         // Properties                                                                                                               
 
 
         // Constructors                                                                                                             
-        public FrmSectionCut(Controller controller)
+        public FrmSectionView(Controller controller)
         {
             InitializeComponent();
 
             _controller = controller;
-            _sectionCutParameters = new SectionCutParameters();
-            propertyGrid.SelectedObject = _sectionCutParameters;
+            _sectionViewParameters = new SectionViewParameters();
+            propertyGrid.SelectedObject = _sectionViewParameters;
             _pause = false;
 
             propertyGrid.SetParent(this);   // for the Tab key to work
-            propertyGrid.SetLabelColumnWidth(1.9);
+            propertyGrid.SetLabelColumnWidth(1.75);
         }
 
 
         // Event handlers                                                                                                           
-        private void FrmSectionCut_FormClosing(object sender, FormClosingEventArgs e)
+        private void FrmSectionView_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (e.CloseReason == CloseReason.UserClosing)
             {
@@ -50,31 +49,63 @@ namespace PrePoMax.Forms
                 Hide();
             }
         }
-        private void FrmSectionCut_VisibleChanged(object sender, EventArgs e)
+        private void FrmSectionView_VisibleChanged(object sender, EventArgs e)
         {
             try
             {
                 if (Visible)
                 {
                     _pause = true;
-                    //
-                    Octree.Plane plane = _controller.GetSectionCutPlane();
-                    if (plane == null)
+                    _plane = _controller.GetSectionViewPlane();
+                    if (_plane == null)
                     {
-                        resetToolStripMenuItem_Click(null, null);
+                        double[] vpn = _controller.GetViewPlaneNormal();
+                        double max = 0;
+                        int id = -1;
+                        for (int i = 0; i < 3; i++)
+                        {
+                            if (Math.Abs(vpn[i]) > max)
+                            {
+                                max = Math.Abs(vpn[i]);
+                                id = i;
+                            }
+                        }
+                        for (int i = 0; i < 3; i++)
+                        {
+                            if (i == id) vpn[i] = -Math.Round(vpn[i], MidpointRounding.AwayFromZero);
+                            else vpn[i] = 0;
+                        }
+                        //
+                        _sectionViewParameters.Point = GetBBCenter().Coor;
+                        _sectionViewParameters.Normal = vpn;
+                        //
+                        PointOrNormalChanged();
                     }
                     else
                     {
-                        _sectionCutParameters.Point = plane.Point.Coor;
-                        _sectionCutParameters.Normal = plane.Normal.Coor;
+                        _sectionViewParameters.Point = _plane.Point.Coor.ToArray();      // keep plane data for Cancel
+                        _sectionViewParameters.Normal = _plane.Normal.Coor.ToArray();    // keep plane data for Cancel
                         SetScrollBarPositionFromPoint();
                     }
 
-                    _controller.ApplySectionCut(_sectionCutParameters.Point, _sectionCutParameters.Normal);
+                    _controller.ApplySectionView(_sectionViewParameters.Point, _sectionViewParameters.Normal);
                 }
                 else
                 {
-                    if (this.DialogResult == DialogResult.Cancel) _controller.RemoveSectionCut();
+                    if (this.DialogResult == DialogResult.Abort) _controller.RemoveSectionView();
+                    else if (this.DialogResult == DialogResult.Cancel)
+                    {
+                        if (_plane == null)
+                        {
+                            _controller.RemoveSectionView();
+                        }
+                        else
+                        {
+                            _sectionViewParameters.Point = _plane.Point.Coor;
+                            _sectionViewParameters.Normal = _plane.Normal.Coor;
+                            UpdateSectionView();
+                        }
+                    }
                 }
             }
             catch
@@ -92,34 +123,34 @@ namespace PrePoMax.Forms
 
         private void resetToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            _sectionCutParameters.Clear();
-            _sectionCutParameters.Point = GetBBCenter().Coor;
+            _sectionViewParameters.Clear();
+            _sectionViewParameters.Point = GetBBCenter().Coor;
             //
             PointOrNormalChanged();
         }
         private void xDirectionToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            _sectionCutParameters.Normal = new double[] { 1, 0, 0 };
+            _sectionViewParameters.Normal = new double[] { 1, 0, 0 };
             //
             PointOrNormalChanged();
         }
         private void yDirectionToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            _sectionCutParameters.Normal = new double[] { 0, 1, 0 };
+            _sectionViewParameters.Normal = new double[] { 0, 1, 0 };
             //
             PointOrNormalChanged();
         }
         private void zDirectionToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            _sectionCutParameters.Normal = new double[] { 0, 0, 1 };
+            _sectionViewParameters.Normal = new double[] { 0, 0, 1 };
             //
             PointOrNormalChanged();
         }
         private void reverseDirectionToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            _sectionCutParameters.Normal[0] = -_sectionCutParameters.Normal[0];
-            _sectionCutParameters.Normal[1] = -_sectionCutParameters.Normal[1];
-            _sectionCutParameters.Normal[2] = -_sectionCutParameters.Normal[2];
+            _sectionViewParameters.Normal[0] = -_sectionViewParameters.Normal[0];
+            _sectionViewParameters.Normal[1] = -_sectionViewParameters.Normal[1];
+            _sectionViewParameters.Normal[2] = -_sectionViewParameters.Normal[2];
             //
             PointOrNormalChanged();
         }
@@ -133,13 +164,21 @@ namespace PrePoMax.Forms
             double ratio = (double)(hsbPosition.Value - hsbPosition.Minimum) / (hsbPosition.Maximum - hsbPosition.Minimum);
             ratio = 2 * ratio - 1;
             Vec3D point = GetBBCenter() + _projHalfSize * ratio;
-            _sectionCutParameters.Point = point.Coor;
+            point.X = CaeGlobals.Tools.RoundToSignificantDigits(point.X, 6);
+            point.Y = CaeGlobals.Tools.RoundToSignificantDigits(point.Y, 6);
+            point.Z = CaeGlobals.Tools.RoundToSignificantDigits(point.Z, 6);
+            _sectionViewParameters.Point = point.Coor;
 
             timerUpdate.Start();    // use timer to speed things up
         }
         private void btnOK_Click(object sender, EventArgs e)
         {
             this.DialogResult = DialogResult.OK;
+            Hide();
+        }
+        private void btnDisable_Click(object sender, EventArgs e)
+        {
+            this.DialogResult = DialogResult.Abort;
             Hide();
         }
         private void btnCancel_Click(object sender, EventArgs e)
@@ -151,14 +190,16 @@ namespace PrePoMax.Forms
         private void timerUpdate_Tick(object sender, EventArgs e)
         {
             timerUpdate.Stop();
-            UpdateSectionCut();
+            UpdateSectionView();
         }
 
         // Methods                                                                                                                  
+
+        // IFormBase
         public bool PrepareForm(string stepName, string partToEditName)
         {
             _controller.ClearSelectionHistory();
-            _sectionCutParameters.Clear();
+            _sectionViewParameters.Clear();
 
 
             // Get start point grid item
@@ -173,48 +214,55 @@ namespace PrePoMax.Forms
 
             return true;
         }
+        
         public void PickedIds(int[] ids)
         {
-            this.Enabled = true;
-
-            _controller.SelectBy = vtkSelectBy.Off;
-            _controller.Selection.SelectItem = vtkSelectItem.None;
-            _controller.ClearSelectionHistory();
-
+            bool selectionFinished = false;
             if (ids != null)
             {
-                if (ids.Length == 1)
+                string propertyName = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
+                if (propertyName == "PointItemSet")
                 {
-                    FeNode node = _controller.DisplayedMesh.Nodes[ids[0]];
-                    string propertyName = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
-                    if (propertyName == "PointItemSet")
+                    if (ids.Length == 1)
                     {
-                        _sectionCutParameters.X = node.X;
-                        _sectionCutParameters.Y = node.Y;
-                        _sectionCutParameters.Z = node.Z;
+                        FeNode node = _controller.DisplayedMesh.Nodes[ids[0]];
                         //
-                        PointOrNormalChanged();
+                        _sectionViewParameters.X = CaeGlobals.Tools.RoundToSignificantDigits(node.X, 6);
+                        _sectionViewParameters.Y = CaeGlobals.Tools.RoundToSignificantDigits(node.Y, 6);
+                        _sectionViewParameters.Z = CaeGlobals.Tools.RoundToSignificantDigits(node.Z, 6);
+                        //
+                        selectionFinished = true;
                     }
-                    else throw new NotSupportedException();
                 }
-                //else if (ids.Length == 2)
-                //{
-                //    FeNode node = _controller.DisplayedMesh.Nodes[ids[0]];
-                //    string propertyName = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
-                //    if (propertyName == "PointItemSet")
-                //    {
-                //        _sectionCutParameters.X = node.X;
-                //        _sectionCutParameters.Y = node.Y;
-                //        _sectionCutParameters.Z = node.Z;
-                //        //
-                //        PointOrNormalChanged();
-                //    }
-                //    //else throw new NotSupportedException();
-                //}
+                else if (propertyName == "NormalItemSet") 
+                {
+                    if (ids.Length == 2)
+                    {
+                        FeNode start = _controller.DisplayedMesh.Nodes[ids[0]];
+                        FeNode end = _controller.DisplayedMesh.Nodes[ids[1]];
+
+                        _sectionViewParameters.Nx = CaeGlobals.Tools.RoundToSignificantDigits(end.X - start.X, 6);
+                        _sectionViewParameters.Ny = CaeGlobals.Tools.RoundToSignificantDigits(end.Y - start.Y, 6);
+                        _sectionViewParameters.Nz = CaeGlobals.Tools.RoundToSignificantDigits(end.Z - start.Z, 6);
+                        //
+                        selectionFinished = true;
+                    }
+                }
             }
 
-            UpdateSectionCut();
+            if (selectionFinished)
+            {
+                this.Enabled = true;
+                _controller.SelectBy = vtkSelectBy.Off;
+                _controller.Selection.SelectItem = vtkSelectItem.None;
+                _controller.ClearSelectionHistory();
+                //
+                PointOrNormalChanged();
+                //
+                UpdateSectionView();
+            }
         }
+
         private void PointOrNormalChanged()
         {
             SetScrollBarPositionFromPoint();
@@ -229,14 +277,14 @@ namespace PrePoMax.Forms
             v.Y = (box[3] - box[2]) / 2;
             v.Z = (box[5] - box[4]) / 2;
 
-            Vec3D n = new Vec3D(_sectionCutParameters.Normal);
+            Vec3D n = new Vec3D(_sectionViewParameters.Normal);
             n.Abs();
             n.Normalize();
 
             // project 1/2 diagonal on the positive normal
             double l = Vec3D.DotProduct(v, n) * 1.05;
 
-            _projHalfSize = new Vec3D(_sectionCutParameters.Normal);
+            _projHalfSize = new Vec3D(_sectionViewParameters.Normal);
             _projHalfSize.Normalize();
             _projHalfSize = l * _projHalfSize;
         }
@@ -244,9 +292,9 @@ namespace PrePoMax.Forms
         {
             double[] box = _controller.GetBoundingBox();
             Vec3D center = new Vec3D();
-            center.X = CaeGlobals.Tools.RoundToSignificantDigits((box[0] + box[1]) / 2, 4);
-            center.Y = CaeGlobals.Tools.RoundToSignificantDigits((box[2] + box[3]) / 2, 4);
-            center.Z = CaeGlobals.Tools.RoundToSignificantDigits((box[4] + box[5]) / 2, 4);
+            center.X = CaeGlobals.Tools.RoundToSignificantDigits((box[0] + box[1]) / 2, 6);
+            center.Y = CaeGlobals.Tools.RoundToSignificantDigits((box[2] + box[3]) / 2, 6);
+            center.Z = CaeGlobals.Tools.RoundToSignificantDigits((box[4] + box[5]) / 2, 6);
             return center;
         }
         private void SetScrollBarPositionFromPoint()
@@ -256,10 +304,10 @@ namespace PrePoMax.Forms
                 UpdateProjHalfSize();
 
                 Vec3D c = GetBBCenter();
-                Vec3D n = new Vec3D(_sectionCutParameters.Normal);
+                Vec3D n = new Vec3D(_sectionViewParameters.Normal);
                 n.Normalize();
 
-                Vec3D p = new Vec3D(_sectionCutParameters.Point);
+                Vec3D p = new Vec3D(_sectionViewParameters.Point);
                 Vec3D v = p - c;
 
                 double l = Vec3D.DotProduct(v, n);
@@ -275,7 +323,7 @@ namespace PrePoMax.Forms
             catch
             { }
         }
-        private void UpdateSectionCut()
+        private void UpdateSectionView()
         {
             try
             {
@@ -288,19 +336,17 @@ namespace PrePoMax.Forms
                 //
                 UpdateProjHalfSize();
                 //
-                _sectionCutParameters = (SectionCutParameters)propertyGrid.SelectedObject;
-                double[] point = _sectionCutParameters.Point;
-                double[] normal = _sectionCutParameters.Normal;
+                _sectionViewParameters = (SectionViewParameters)propertyGrid.SelectedObject;
+                double[] point = _sectionViewParameters.Point;
+                double[] normal = _sectionViewParameters.Normal;
                 //
-                _controller.UpdateSectionCut(point, normal);
+                _controller.UpdateSectionView(point, normal);
                 //
                 System.Diagnostics.Debug.WriteLine("Section cut time: " + DateTime.Now.ToLongTimeString() + "   Duration: " + watch.ElapsedMilliseconds);
             }
             catch
             { }
         }
-
-       
 
         
     }

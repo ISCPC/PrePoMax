@@ -27,6 +27,7 @@ namespace UserControls
         public int Edit;
         public int Hide;
         public int Show;
+        public int Transparency;
         public int Deformed;
         public int ColorContours;
         public int MeshingParameters;
@@ -61,7 +62,7 @@ namespace UserControls
         private int _numUserKeywords;
         private const int WM_MOUSEMOVE = 0x0200;
         private bool _disableMouse;
-        private int _afterSelectCount;
+        private bool _disableAfterSelect;
 
         private TreeNode _geomParts;
         private TreeNode _model;
@@ -142,6 +143,7 @@ namespace UserControls
         public event Action<string, string> CreateEvent;
         public event Action<NamedClass, string> EditEvent;
         public event Action<NamedClass[], HideShowOperation, string[]> HideShowEvent;
+        public event Action<string[]> SetTransparencyEvent;
         public event Action<NamedClass[], bool> ColorContoursVisibilityEvent;
         public event Action<string[]> MeshingParametersEvent;
         public event Action<string[]> CreateMeshEvent;
@@ -327,13 +329,15 @@ namespace UserControls
             tsmiSpaceConvertToPart.Visible = false;
             tsmiConvertToPart.Visible = visible;
             oneAboveVisible |= visible;
-            // Hide/Show                                            
+            // Hide/Show/                                           
             visible = menuFields.Hide + menuFields.Show == n;
             tsmiSpaceHideShow.Visible = visible && oneAboveVisible;
             tsmiHide.Visible = visible;
             tsmiShow.Visible = visible;
             tsmiShowOnly.Visible = visible;
-            oneAboveVisible |= visible;
+            // Transparency                                         
+            tsmiSetTransparency.Visible = menuFields.Transparency == n;
+            oneAboveVisible |= visible; // Hide/Show
             // Deformed/Color contours                              
             visible = menuFields.Deformed == n;
             tsmiSpaceColorContours.Visible = visible && oneAboveVisible;
@@ -425,6 +429,11 @@ namespace UserControls
                 if (item.Visible) menuFields.Hide++;
                 else menuFields.Show++;
             }
+            //Transparency
+            if (item != null && item is BasePart)
+            {
+                menuFields.Transparency++;
+            }
             // Deformed/Color contours
             if (item != null && item is ResultPart)
             {
@@ -476,7 +485,6 @@ namespace UserControls
 
         private void cltv_MouseDown(object sender, MouseEventArgs e)
         {
-            _afterSelectCount = 0;
             try
             {
                 CodersLabTreeView tree = (CodersLabTreeView)sender;
@@ -495,7 +503,6 @@ namespace UserControls
         }
         private void cltv_MouseUp(object sender, MouseEventArgs e)
         {
-            _afterSelectCount = 0;
             try
             {
                 CodersLabTreeView tree = (CodersLabTreeView)sender;
@@ -526,8 +533,7 @@ namespace UserControls
         }
         private void cltv_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            //if (_afterSelectCount++ > 0)
-            //    return;
+            if (_disableAfterSelect) return;
 
             // this function is also called with sender as null parameter
             CodersLabTreeView tree = GetActiveTree();
@@ -619,8 +625,6 @@ namespace UserControls
             {
                 tsmiEdit_Click(null, null);
             }
-
-            _afterSelectCount = 0;
         }
 
         #endregion
@@ -754,6 +758,25 @@ namespace UserControls
                     if (toHide.Count > 0) HideShowEvent?.Invoke(toHide.ToArray(), HideShowOperation.Hide, stepNames.ToArray());
                     RenderingOn?.Invoke();
                 }
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiSetTransparency_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                List<string> parts = new List<string>();
+
+                foreach (TreeNode selectedNode in GetActiveTree().SelectedNodes)
+                {
+                    if (selectedNode.Tag == null) continue;
+                    if (selectedNode.Tag is BasePart part) parts.Add(part.Name);
+                }
+
+                if (parts.Count > 0) SetTransparencyEvent?.Invoke(parts.ToArray());
             }
             catch (Exception ex)
             {
@@ -1147,55 +1170,69 @@ namespace UserControls
 
         public void UpdateHighlight()
         {
-            _afterSelectCount = 0;
             cltv_AfterSelect(null, null);
         }
         public int SelectBasePart(MouseEventArgs e, Keys modifierKeys, BasePart part)
         {
-            CodersLabTreeView tree = GetActiveTree();
-            TreeNode baseNode = tree.Nodes[0];
-            TreeNode[] tmp = baseNode.Nodes.Find(part.Name, true);
-
-            if (tmp.Length > 1)
+            try
             {
-                foreach (var treeNode in tmp)
+                _disableAfterSelect = true;
+
+                CodersLabTreeView tree = GetActiveTree();
+                TreeNode baseNode = tree.Nodes[0];
+                TreeNode[] tmp = baseNode.Nodes.Find(part.Name, true);
+
+                if (tmp.Length > 1)
                 {
-                    if (treeNode.Tag.GetType() == part.GetType())
+                    foreach (var treeNode in tmp)
                     {
-                        baseNode = treeNode;
-                        break;
+                        if (treeNode.Tag.GetType() == part.GetType())
+                        {
+                            baseNode = treeNode;
+                            break;
+                        }
                     }
                 }
-            }
-            else
-            {
-                if (tmp.Length > 0) baseNode = tmp[0];
-                else return -1;
-            }
-
-            if (e.Button == MouseButtons.Left)
-            {
-                if (modifierKeys == Keys.Shift && modifierKeys == Keys.Control) { }
-                else if (modifierKeys == Keys.Shift) tree.SelectedNodes.Add(baseNode);
-                else if (modifierKeys == Keys.Control && tree.SelectedNodes.Contains(baseNode)) tree.SelectedNodes.Remove(baseNode);
                 else
                 {
-                    tree.SelectedNodes.Clear();
-                    tree.SelectedNodes.Add(baseNode);
+                    if (tmp.Length > 0) baseNode = tmp[0];
+                    else return -1;
                 }
-            }
-            else if (e.Button == MouseButtons.Right)
-            {
-                if (!tree.SelectedNodes.Contains(baseNode))
+
+                if (e.Button == MouseButtons.Left)
                 {
-                    tree.SelectedNodes.Clear();
-                    tree.SelectedNodes.Add(baseNode);
+                    if (modifierKeys == Keys.Shift && modifierKeys == Keys.Control) { }
+                    else if (modifierKeys == Keys.Shift) tree.SelectedNodes.Add(baseNode);
+                    else if (modifierKeys == Keys.Control)
+                    {
+                        if (tree.SelectedNodes.Contains(baseNode))
+                            tree.SelectedNodes.Remove(baseNode);
+                        else
+                            tree.SelectedNodes.Add(baseNode);
+                    }
+                    else
+                    {
+                        // this is without modifier keys - a new selection
+                        tree.SelectedNodes.Clear();
+                        tree.SelectedNodes.Add(baseNode);
+                    }
                 }
+                else if (e.Button == MouseButtons.Right)
+                {
+                    if (!tree.SelectedNodes.Contains(baseNode))
+                    {
+                        tree.SelectedNodes.Clear();
+                        tree.SelectedNodes.Add(baseNode);
+                    }
+                }
+
+                _disableAfterSelect = false;
+                UpdateHighlight();
+
+                return tree.SelectedNodes.Count;
             }
-
-            //UpdateHighlight();
-
-            return tree.SelectedNodes.Count;
+            catch { return -1; }
+            finally { _disableAfterSelect = false; }
         }
 
 
@@ -1533,7 +1570,7 @@ namespace UserControls
             cltvModel.SelectedNode = parent;
         }
 
-        private void AddObjectsToNode<Tkey, Tval>(string initialNodeName, TreeNode node, Dictionary<Tkey, Tval> dictionary)
+        private void AddObjectsToNode<Tkey, Tval>(string initialNodeName, TreeNode node, IDictionary<Tkey, Tval> dictionary)
         {
             TreeNode nodeToAdd;
 
@@ -1824,6 +1861,7 @@ namespace UserControls
             else if (item is Load) return true;
             else return false;
         }
+
 
         //                                                                                                              
         public static void SetLabelColumnWidth(PropertyGrid grid, int width)

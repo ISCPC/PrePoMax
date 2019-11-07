@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CaeGlobals;
+using System.Runtime.Serialization;
+
 
 namespace CaeMesh
 {
@@ -31,7 +33,7 @@ namespace CaeMesh
     }
 
     [Serializable]
-    public class FeMesh
+    public class FeMesh : ISerializable
     {
         // Variables                                                                                                                
         [NonSerialized]
@@ -41,16 +43,16 @@ namespace CaeMesh
         [NonSerialized]
         private Octree.PointOctree<int> _octree;
 
-        private Dictionary<string, FeNodeSet> _nodeSets;
-        private Dictionary<string, FeElementSet> _elementSets;
-        private Dictionary<string, FeSurface> _surfaces;
-        private Dictionary<string, FeReferencePoint> _referencePoints;
-        private int _maxNodeId;
-        private int _maxElementId;
-        private BoundingBox _boundingBox;
-        private Dictionary<string, BasePart> _parts;
-        private MeshRepresentation _meshRepresentation;
-        private bool _manifoldGeometry;
+        private OrderedDictionary<string, FeNodeSet> _nodeSets;                 //ISerializable
+        private OrderedDictionary<string, FeElementSet> _elementSets;           //ISerializable
+        private OrderedDictionary<string, FeSurface> _surfaces;                 //ISerializable
+        private OrderedDictionary<string, FeReferencePoint> _referencePoints;   //ISerializable
+        private int _maxNodeId;                                                 //ISerializable
+        private int _maxElementId;                                              //ISerializable
+        private BoundingBox _boundingBox;                                       //ISerializable
+        private OrderedDictionary<string, BasePart> _parts;                     //ISerializable
+        private MeshRepresentation _meshRepresentation;                         //ISerializable
+        private bool _manifoldGeometry;                                         //ISerializable
 
 
         // Properties                                                                                                               
@@ -64,23 +66,23 @@ namespace CaeMesh
             get { return _elements; }
             set { _elements = value; }
         }
-        public Dictionary<string, FeNodeSet> NodeSets
+        public OrderedDictionary<string, FeNodeSet> NodeSets
         {
             get { return _nodeSets; }
         }
-        public Dictionary<string, FeElementSet> ElementSets
+        public OrderedDictionary<string, FeElementSet> ElementSets
         {
             get { return _elementSets; }
         }
-        public Dictionary<string, FeSurface> Surfaces
+        public OrderedDictionary<string, FeSurface> Surfaces
         {
             get { return _surfaces; }
         }
-        public Dictionary<string, FeReferencePoint> ReferencePoints
+        public OrderedDictionary<string, FeReferencePoint> ReferencePoints
         {
             get { return _referencePoints; }
         }
-        public Dictionary<string, BasePart> Parts
+        public OrderedDictionary<string, BasePart> Parts
         {
             get { return _parts; }
         }
@@ -116,20 +118,20 @@ namespace CaeMesh
             _meshRepresentation = representation;
             _manifoldGeometry = false;
 
-            _nodeSets = new Dictionary<string, FeNodeSet>();
-            _elementSets = new Dictionary<string, FeElementSet>();
+            _nodeSets = new OrderedDictionary<string, FeNodeSet>();
+            _elementSets = new OrderedDictionary<string, FeElementSet>();
 
-            _surfaces = new Dictionary<string, FeSurface>();
-            _referencePoints = new Dictionary<string, FeReferencePoint>();
+            _surfaces = new OrderedDictionary<string, FeSurface>();
+            _referencePoints = new OrderedDictionary<string, FeReferencePoint>();
 
-            _parts = new Dictionary<string, BasePart>();
+            _parts = new OrderedDictionary<string, BasePart>();
             ExtractPartsFast(inpElementTypeSets, partNamePrefix);
 
-            FindMaxNodeAndElementIds();            
+            UpdateMaxNodeAndElementIds();            
         }
         public FeMesh(FeMesh mesh, string[] partsToKeep)
         {
-            _parts = new Dictionary<string, BasePart>();
+            _parts = new OrderedDictionary<string, BasePart>();
             foreach (var partName in partsToKeep)
             {
                 _parts.Add(partName, mesh.Parts[partName].DeepCopy());
@@ -155,10 +157,10 @@ namespace CaeMesh
                 _elements.Add(elementId, mesh.Elements[elementId].DeepCopy());
             }
 
-            _nodeSets = new Dictionary<string, FeNodeSet>();
-            _elementSets = new Dictionary<string, FeElementSet>();
-            _surfaces = new Dictionary<string, FeSurface>();
-            _referencePoints = new Dictionary<string, FeReferencePoint>();
+            _nodeSets = new OrderedDictionary<string, FeNodeSet>();
+            _elementSets = new OrderedDictionary<string, FeElementSet>();
+            _surfaces = new OrderedDictionary<string, FeSurface>();
+            _referencePoints = new OrderedDictionary<string, FeReferencePoint>();
 
             _maxNodeId = mesh._maxNodeId;
             _maxElementId = mesh._maxElementId;
@@ -166,6 +168,84 @@ namespace CaeMesh
             _meshRepresentation = mesh._meshRepresentation;
             _manifoldGeometry = mesh.ManifoldGeometry;
         }
+
+        public FeMesh(SerializationInfo info, StreamingContext context)
+        {
+            foreach (SerializationEntry entry in info)
+            {
+                switch (entry.Name)
+                {
+                    case "_nodeSets":
+                        if (entry.Value is Dictionary<string, FeNodeSet> nsd)
+                        {
+                            // Compatibility for version v.0.5.1
+                            nsd.OnDeserialization(null);
+                            _nodeSets = new OrderedDictionary<string, FeNodeSet>(nsd);
+                        }
+                        else if (entry.Value is OrderedDictionary<string, FeNodeSet> nsod) _nodeSets = nsod;
+                        else if (entry.Value == null) _nodeSets = null;
+                        else throw new NotSupportedException();
+                        break;
+                    case "_elementSets":
+                        if (entry.Value is Dictionary<string, FeElementSet> esd)
+                        {
+                            // Compatibility for version v.0.5.1
+                            esd.OnDeserialization(null);
+                            _elementSets = new OrderedDictionary<string, FeElementSet>(esd);
+                        }
+                        else if (entry.Value is OrderedDictionary<string, FeElementSet> esod) _elementSets = esod;
+                        else if (entry.Value == null) _elementSets = null;
+                        else throw new NotSupportedException();
+                        break;
+                    case "_surfaces":
+                        if (entry.Value is Dictionary<string, FeSurface> sd)
+                        {
+                            // Compatibility for version v.0.5.1
+                            sd.OnDeserialization(null);
+                            _surfaces = new OrderedDictionary<string, FeSurface>(sd);
+                        }
+                        else if (entry.Value is OrderedDictionary<string, FeSurface> sod) _surfaces = sod;
+                        else if (entry.Value == null) _surfaces = null;
+                        else throw new NotSupportedException();
+                        break;
+                    case "_referencePoints":
+                        if (entry.Value is Dictionary<string, FeReferencePoint> rpd)
+                        {
+                            // Compatibility for version v.0.5.1
+                            rpd.OnDeserialization(null);
+                            _referencePoints = new OrderedDictionary<string, FeReferencePoint>(rpd);
+                        }
+                        else if (entry.Value is OrderedDictionary<string, FeReferencePoint> rpod) _referencePoints = rpod;
+                        else if (entry.Value == null) _referencePoints = null;
+                        else throw new NotSupportedException();
+                        break;
+                    case "_maxNodeId":
+                        _maxNodeId = (int)entry.Value; break;
+                    case "_maxElementId":
+                        _maxElementId = (int)entry.Value; break;
+                    case "_boundingBox":
+                        _boundingBox = (BoundingBox)entry.Value; break;
+                    case "_parts":
+                        if (entry.Value is Dictionary<string, BasePart> bpd)
+                        {
+                            // Compatibility for version v.0.5.1
+                            bpd.OnDeserialization(null);
+                            _parts = new OrderedDictionary<string, BasePart>(bpd);
+                        }
+                        else if (entry.Value is OrderedDictionary<string, BasePart> bpod) _parts = bpod;
+                        else if (entry.Value == null) _parts = null;
+                        else throw new NotSupportedException();
+                        break;
+                    case "_meshRepresentation":
+                        _meshRepresentation = (MeshRepresentation)entry.Value; break;
+                    case "_manifoldGeometry":
+                        _manifoldGeometry = (bool)entry.Value; break;
+                    default:
+                        throw new NotSupportedException();
+                }
+            }
+        }
+
 
         private static void LinearToParabolic(ref Dictionary<int, FeNode> nodes, ref Dictionary<int, FeElement> elements)
         {
@@ -499,7 +579,7 @@ namespace CaeMesh
             return 1;
         }
 
-        private void FindMaxNodeAndElementIds()
+        private void UpdateMaxNodeAndElementIds()
         {
             // determine max node id
             _maxNodeId = 0;
@@ -535,14 +615,12 @@ namespace CaeMesh
                 }
             }
         }
-
         public double GetBoundingBoxSize()
         {
             return Math.Sqrt(Math.Pow(_boundingBox.MinX - _boundingBox.MaxX, 2) +
                              Math.Pow(_boundingBox.MinY - _boundingBox.MaxY, 2) +
                              Math.Pow(_boundingBox.MinZ - _boundingBox.MaxZ, 2));
         }
-
         public double GetBoundingBoxVolumeAsCubeSide()
         {
             return Math.Pow((_boundingBox.MaxX - _boundingBox.MinX) *
@@ -551,7 +629,8 @@ namespace CaeMesh
 
 
         }
-
+        
+        // Colors
         public void ResetPartsColor()
         {
             foreach (var entry in _parts)
@@ -801,10 +880,6 @@ namespace CaeMesh
 
             SplitVisualizationEdgesAndFaces(part);
             System.Diagnostics.Debug.WriteLine("SplitVisualizationEdgesAndFaces time: " + watch.ElapsedMilliseconds);
-            watch.Restart();
-
-            //SectionCutNodes(part);
-            System.Diagnostics.Debug.WriteLine("SectionCutNodes time: " + watch.ElapsedMilliseconds);
             watch.Restart();
 
             watch.Stop();
@@ -1903,7 +1978,7 @@ namespace CaeMesh
         }
 
 
-        public void ApplySectionCut(Octree.Plane sectionPlane)
+        public void ApplySectionView(Octree.Plane sectionPlane)
         {
             // Create octree if this is the first time the section cut was made
             if (_octree == null)
@@ -1942,7 +2017,7 @@ namespace CaeMesh
                 part = entry.Value;
                 visCut = part.VisualizationCopy.DeepCopy();
                 //visCut = part.Visualization;
-                visCut.ApplySectionCut(_elements, part.Labels, frontNodes, backNodes);
+                visCut.ApplySectionView(_elements, part.Labels, frontNodes, backNodes);
                 part.Visualization = visCut;
 
                 // Recompute the areas and lengths
@@ -1950,7 +2025,7 @@ namespace CaeMesh
                 ComputeEdgeLengths(part);
             }
         }
-        public void RemoveSectionCut()
+        public void RemoveSectionView()
         {
             _octree = null;
             foreach (var entry in _parts)
@@ -2494,7 +2569,7 @@ namespace CaeMesh
             else throw new CaeGlobals.CaeException("The selected face id does not exist.");
         }
 
-        private string GetNextFreeInternalName<T>(Dictionary<string, T> dictionary)
+        private string GetNextFreeInternalName<T>(IDictionary<string, T> dictionary)
         {
             int n = 0;
             bool contains = true;
@@ -5061,6 +5136,20 @@ namespace CaeMesh
             return copy;
         }
 
-
+        // ISerialization
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            // using typeof() works also for null fields
+            info.AddValue("_nodeSets", _nodeSets, typeof(OrderedDictionary<string, FeNodeSet>));
+            info.AddValue("_elementSets", _elementSets, typeof(OrderedDictionary<string, FeElementSet>));
+            info.AddValue("_surfaces", _surfaces, typeof(OrderedDictionary<string, FeSurface>));
+            info.AddValue("_referencePoints", _referencePoints, typeof(OrderedDictionary<string, FeReferencePoint>));
+            info.AddValue("_maxNodeId", _maxNodeId, typeof(int));
+            info.AddValue("_maxElementId", _maxElementId, typeof(int));
+            info.AddValue("_boundingBox", _boundingBox, typeof(BoundingBox));
+            info.AddValue("_parts", _parts, typeof(OrderedDictionary<string, BasePart>));
+            info.AddValue("_meshRepresentation", _meshRepresentation, typeof(MeshRepresentation));
+            info.AddValue("_manifoldGeometry", _manifoldGeometry, typeof(bool));
+        }
     }
 }

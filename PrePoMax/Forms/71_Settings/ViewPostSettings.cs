@@ -41,25 +41,29 @@ namespace PrePoMax.Settings
 
                 if (value == PrePoMax.DeformationScaleFactorType.Automatic)
                 {
-                    //_postSettings.DeformationScaleFactorValue = -1;
                     CustomPropertyDescriptor cpd;
                     cpd = _dctd.GetProperty("DeformationScaleFactorValue");
                     cpd.SetIsBrowsable(false);
                 }
                 else if (value == PrePoMax.DeformationScaleFactorType.TrueScale)
                 {
-                    //_postSettings.DeformationScaleFactorValue = 1;
                     CustomPropertyDescriptor cpd;
                     cpd = _dctd.GetProperty("DeformationScaleFactorValue");
                     cpd.SetIsBrowsable(false);
                 }
-                else //UserDefined
+                else if (value == PrePoMax.DeformationScaleFactorType.Off)
                 {
-                    //_postSettings.DeformationScaleFactorValue = 1;
+                    CustomPropertyDescriptor cpd;
+                    cpd = _dctd.GetProperty("DeformationScaleFactorValue");
+                    cpd.SetIsBrowsable(false);
+                }
+                else if (value == PrePoMax.DeformationScaleFactorType.UserDefined)
+                {
                     CustomPropertyDescriptor cpd;
                     cpd = _dctd.GetProperty("DeformationScaleFactorValue");
                     cpd.SetIsBrowsable(true);
                 }
+                else throw new NotSupportedException();
             }
         }
 

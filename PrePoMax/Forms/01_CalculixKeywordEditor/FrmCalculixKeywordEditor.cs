@@ -22,14 +22,14 @@ namespace PrePoMax.Forms
 
         // Variables                                                                                                                
         List<CalculixKeyword> _keywords;
-        Dictionary<int[], CalculixUserKeyword> _userKeywords;
+        OrderedDictionary<int[], CalculixUserKeyword> _userKeywords;
         int _selectedKeywordFirstLine;
         int _selectedKeywordNumOfLines;
 
 
         // Properties                                                                                                               
         public List<CalculixKeyword> Keywords { get { return _keywords; } set { _keywords = value; } }
-        public Dictionary<int[], CalculixUserKeyword> UserKeywords { get { return _userKeywords; } set { _userKeywords = value; } }
+        public OrderedDictionary<int[], CalculixUserKeyword> UserKeywords { get { return _userKeywords; } set { _userKeywords = value; } }
 
 
         // Events                                                                                                                   
@@ -205,13 +205,13 @@ namespace PrePoMax.Forms
 
         private void btnOK_Click(object sender, EventArgs e)
         {
-            _userKeywords = new Dictionary<int[], CalculixUserKeyword>();
+            _userKeywords = new OrderedDictionary<int[], CalculixUserKeyword>();
 
             FindUserKeywords(btvKeywordsTree.Nodes[0], _userKeywords);
 
             this.DialogResult = System.Windows.Forms.DialogResult.OK;
         }
-        private void FindUserKeywords(TreeNode node, Dictionary<int[], CalculixUserKeyword> userKeywords)
+        private void FindUserKeywords(TreeNode node, OrderedDictionary<int[], CalculixUserKeyword> userKeywords)
         {
             if (node.Tag != null && node.Tag is CalculixUserKeyword calculixUserKeyword)
             {

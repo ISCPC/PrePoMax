@@ -341,7 +341,7 @@ namespace CaeMesh
 
 
         // Section cut
-        public void ApplySectionCut(Dictionary<int, FeElement> elements, int[] elementIds, HashSet<int> frontNodes, HashSet<int> backNodes)
+        public void ApplySectionView(Dictionary<int, FeElement> elements, int[] elementIds, HashSet<int> frontNodes, HashSet<int> backNodes)
         {
             HashSet<int> visibleNodes;
             SectionCutCells(elements, frontNodes, backNodes, out visibleNodes);
@@ -351,7 +351,7 @@ namespace CaeMesh
             //_cellIdsByFace = new int[0][];
             CreateSectionPlaneCellsAndEdges(elements, elementIds, frontNodes, backNodes);
         }
-        public void RemoveSectionCut()
+        public void RemoveSectionView()
         {
 
         }

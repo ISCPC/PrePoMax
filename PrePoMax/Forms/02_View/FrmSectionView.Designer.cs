@@ -1,6 +1,6 @@
 ﻿namespace PrePoMax.Forms
 {
-    partial class FrmSectionCut
+    partial class FrmSectionView
     {
         /// <summary>
         /// Required designer variable.
@@ -30,6 +30,9 @@
         {
             this.components = new System.ComponentModel.Container();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.hsbPosition = new System.Windows.Forms.HScrollBar();
+            this.lTranslate = new System.Windows.Forms.Label();
             this.propertyGrid = new UserControls.TabbedPropertyGrid();
             this.cmsNormal = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.resetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -39,15 +42,13 @@
             this.zDirectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
             this.reverseDirectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.lTranslate = new System.Windows.Forms.Label();
-            this.hsbPosition = new System.Windows.Forms.HScrollBar();
             this.btnCancel = new System.Windows.Forms.Button();
             this.timerUpdate = new System.Windows.Forms.Timer(this.components);
             this.btnOK = new System.Windows.Forms.Button();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.btnDisable = new System.Windows.Forms.Button();
             this.groupBox3.SuspendLayout();
-            this.cmsNormal.SuspendLayout();
             this.groupBox1.SuspendLayout();
+            this.cmsNormal.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox3
@@ -60,10 +61,41 @@
             this.groupBox3.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.groupBox3.Location = new System.Drawing.Point(12, 12);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(310, 336);
+            this.groupBox3.Size = new System.Drawing.Size(310, 355);
             this.groupBox3.TabIndex = 13;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Data";
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.groupBox1.Controls.Add(this.hsbPosition);
+            this.groupBox1.Controls.Add(this.lTranslate);
+            this.groupBox1.Location = new System.Drawing.Point(6, 284);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(298, 65);
+            this.groupBox1.TabIndex = 17;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Settings";
+            // 
+            // hsbPosition
+            // 
+            this.hsbPosition.LargeChange = 1;
+            this.hsbPosition.Location = new System.Drawing.Point(6, 38);
+            this.hsbPosition.Maximum = 1000;
+            this.hsbPosition.Name = "hsbPosition";
+            this.hsbPosition.Size = new System.Drawing.Size(286, 18);
+            this.hsbPosition.TabIndex = 0;
+            this.hsbPosition.Scroll += new System.Windows.Forms.ScrollEventHandler(this.hsbPosition_Scroll);
+            // 
+            // lTranslate
+            // 
+            this.lTranslate.AutoSize = true;
+            this.lTranslate.Location = new System.Drawing.Point(6, 19);
+            this.lTranslate.Name = "lTranslate";
+            this.lTranslate.Size = new System.Drawing.Size(53, 15);
+            this.lTranslate.TabIndex = 6;
+            this.lTranslate.Text = "Translate";
             // 
             // propertyGrid
             // 
@@ -76,7 +108,7 @@
             this.propertyGrid.LineColor = System.Drawing.SystemColors.Control;
             this.propertyGrid.Location = new System.Drawing.Point(6, 22);
             this.propertyGrid.Name = "propertyGrid";
-            this.propertyGrid.Size = new System.Drawing.Size(298, 237);
+            this.propertyGrid.Size = new System.Drawing.Size(298, 256);
             this.propertyGrid.TabIndex = 16;
             this.propertyGrid.ToolbarVisible = false;
             this.propertyGrid.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.propertyGrid_PropertyValueChanged);
@@ -92,7 +124,7 @@
             this.toolStripMenuItem2,
             this.reverseDirectionToolStripMenuItem});
             this.cmsNormal.Name = "cmsNormal";
-            this.cmsNormal.Size = new System.Drawing.Size(206, 126);
+            this.cmsNormal.Size = new System.Drawing.Size(206, 148);
             // 
             // resetToolStripMenuItem
             // 
@@ -110,21 +142,21 @@
             // 
             this.xNormalToolStripMenuItem.Name = "xNormalToolStripMenuItem";
             this.xNormalToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
-            this.xNormalToolStripMenuItem.Text = "Normal X direction";
+            this.xNormalToolStripMenuItem.Text = "Normal direction: X";
             this.xNormalToolStripMenuItem.Click += new System.EventHandler(this.xDirectionToolStripMenuItem_Click);
             // 
             // yNormalToolStripMenuItem
             // 
             this.yNormalToolStripMenuItem.Name = "yNormalToolStripMenuItem";
             this.yNormalToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
-            this.yNormalToolStripMenuItem.Text = "Normal Y direction";
+            this.yNormalToolStripMenuItem.Text = "Normal direction: Y";
             this.yNormalToolStripMenuItem.Click += new System.EventHandler(this.yDirectionToolStripMenuItem_Click);
             // 
             // zDirectionToolStripMenuItem
             // 
             this.zDirectionToolStripMenuItem.Name = "zDirectionToolStripMenuItem";
             this.zDirectionToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
-            this.zDirectionToolStripMenuItem.Text = "Normal Z direction";
+            this.zDirectionToolStripMenuItem.Text = "Normal direction: Z";
             this.zDirectionToolStripMenuItem.Click += new System.EventHandler(this.zDirectionToolStripMenuItem_Click);
             // 
             // toolStripMenuItem2
@@ -139,30 +171,11 @@
             this.reverseDirectionToolStripMenuItem.Text = "Reverse normal direction";
             this.reverseDirectionToolStripMenuItem.Click += new System.EventHandler(this.reverseDirectionToolStripMenuItem_Click);
             // 
-            // lTranslate
-            // 
-            this.lTranslate.AutoSize = true;
-            this.lTranslate.Location = new System.Drawing.Point(6, 19);
-            this.lTranslate.Name = "lTranslate";
-            this.lTranslate.Size = new System.Drawing.Size(53, 15);
-            this.lTranslate.TabIndex = 6;
-            this.lTranslate.Text = "Translate";
-            // 
-            // hsbPosition
-            // 
-            this.hsbPosition.LargeChange = 1;
-            this.hsbPosition.Location = new System.Drawing.Point(6, 38);
-            this.hsbPosition.Maximum = 1000;
-            this.hsbPosition.Name = "hsbPosition";
-            this.hsbPosition.Size = new System.Drawing.Size(286, 18);
-            this.hsbPosition.TabIndex = 0;
-            this.hsbPosition.Scroll += new System.Windows.Forms.ScrollEventHandler(this.hsbPosition_Scroll);
-            // 
             // btnCancel
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(247, 354);
+            this.btnCancel.Location = new System.Drawing.Point(247, 373);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 14;
@@ -179,7 +192,7 @@
             // 
             this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnOK.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnOK.Location = new System.Drawing.Point(166, 354);
+            this.btnOK.Location = new System.Drawing.Point(85, 373);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 15;
@@ -187,23 +200,24 @@
             this.btnOK.UseVisualStyleBackColor = true;
             this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
             // 
-            // groupBox1
+            // btnDisable
             // 
-            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.groupBox1.Controls.Add(this.hsbPosition);
-            this.groupBox1.Controls.Add(this.lTranslate);
-            this.groupBox1.Location = new System.Drawing.Point(6, 265);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(298, 65);
-            this.groupBox1.TabIndex = 17;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Settings";
+            this.btnDisable.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnDisable.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.btnDisable.Location = new System.Drawing.Point(166, 373);
+            this.btnDisable.Name = "btnDisable";
+            this.btnDisable.Size = new System.Drawing.Size(75, 23);
+            this.btnDisable.TabIndex = 16;
+            this.btnDisable.Text = "Disable";
+            this.btnDisable.UseVisualStyleBackColor = true;
+            this.btnDisable.Click += new System.EventHandler(this.btnDisable_Click);
             // 
-            // FrmSectionCut
+            // FrmSectionView
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(334, 389);
+            this.ClientSize = new System.Drawing.Size(334, 408);
+            this.Controls.Add(this.btnDisable);
             this.Controls.Add(this.btnOK);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.groupBox3);
@@ -211,16 +225,17 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "FrmSectionCut";
+            this.MinimumSize = new System.Drawing.Size(350, 447);
+            this.Name = "FrmSectionView";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
-            this.Text = "Section Cut";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmSectionCut_FormClosing);
-            this.VisibleChanged += new System.EventHandler(this.FrmSectionCut_VisibleChanged);
+            this.Text = "Section View";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmSectionView_FormClosing);
+            this.VisibleChanged += new System.EventHandler(this.FrmSectionView_VisibleChanged);
             this.groupBox3.ResumeLayout(false);
-            this.cmsNormal.ResumeLayout(false);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            this.cmsNormal.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -243,5 +258,6 @@
         private System.Windows.Forms.ToolStripMenuItem resetToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem2;
         private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.Button btnDisable;
     }
 }

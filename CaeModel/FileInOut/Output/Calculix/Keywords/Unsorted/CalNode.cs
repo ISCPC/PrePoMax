@@ -12,9 +12,9 @@ namespace FileInOut.Output.Calculix
     internal class CalNode : CalculixKeyword
     {
         // Variables                                                                                                                
-        Dictionary<string, int[]> _referencePointsNodeIds;
-        Dictionary<string, FeReferencePoint> _referencePoints;
-        Dictionary<int, FeNode> _nodes;
+        IDictionary<string, int[]> _referencePointsNodeIds;
+        IDictionary<string, FeReferencePoint> _referencePoints;
+        IDictionary<int, FeNode> _nodes;
 
         // Properties                                                                                                               
         public override object BaseItem { get { return _nodes; } }
@@ -24,7 +24,7 @@ namespace FileInOut.Output.Calculix
 
 
         // Constructor                                                                                                              
-        public CalNode(FeModel model, Dictionary<string, int[]> referencePointsNodeIds)
+        public CalNode(FeModel model, IDictionary<string, int[]> referencePointsNodeIds)
         {
             _referencePoints = model.Mesh.ReferencePoints;
             _nodes = model.Mesh.Nodes;

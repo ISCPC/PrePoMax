@@ -1,6 +1,6 @@
 ﻿namespace PrePoMax.Forms
 {
-    partial class FrmGetInteger
+    partial class FrmGetValue
     {
         /// <summary>
         /// Required designer variable.
@@ -85,7 +85,7 @@
             this.btnCancel.Text = "Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
             // 
-            // FrmGetInteger
+            // FrmGetValue
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.CancelButton = this.btnCancel;
@@ -97,9 +97,9 @@
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.MinimumSize = new System.Drawing.Size(350, 250);
-            this.Name = "FrmGetInteger";
+            this.Name = "FrmGetValue";
             this.ShowInTaskbar = false;
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Title";
             this.gbProperties.ResumeLayout(false);
             this.ResumeLayout(false);

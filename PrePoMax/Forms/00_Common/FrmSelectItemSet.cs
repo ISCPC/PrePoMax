@@ -60,8 +60,14 @@ namespace PrePoMax
             // called every time the form is shown with: form.Show()
             if (this.Visible)
             {
-                this.DialogResult = DialogResult.None; // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
+                // Form was just shown
+                this.DialogResult = DialogResult.None; // to prevent the call to _frmSelectItemSet_VisibleChanged when minimized
                 rbSelectBy_CheckedChanged(null, null);
+            }
+            else
+            {
+                // Form was just hidden
+                _controller.SetSelectionOff();
             }
         }
         private void FrmSelectItemSet_FormClosing(object sender, FormClosingEventArgs e)
@@ -69,9 +75,7 @@ namespace PrePoMax
             if (e.CloseReason == CloseReason.UserClosing)
             {
                 e.Cancel = true;
-                this.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-                _controller.SetSelectionOff();
-                Hide();
+                Hide(DialogResult.Cancel);
             }
         }
 
@@ -252,18 +256,18 @@ namespace PrePoMax
         private void btnCancel_Click(object sender, EventArgs e)
         {
             btnClearSelection_Click(null, null);
-            this.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            _controller.SetSelectionOff();
-            Hide();
+            Hide(DialogResult.Cancel);
         }
         private void btnOK_Click(object sender, EventArgs e)
         {
             _itemSetData.ItemIds = _controller.GetSelectionIds();
-            this.DialogResult = System.Windows.Forms.DialogResult.OK;
-            _controller.SetSelectionOff();
-            Hide();
+            Hide(DialogResult.OK);
         }
-
+        public void Hide(DialogResult dialogResult)
+        {
+            this.DialogResult = dialogResult;
+            base.Hide();
+        }
 
         // Methods                                                                                                                  
         public void SetGeometrySelection(bool selectGeometry)
