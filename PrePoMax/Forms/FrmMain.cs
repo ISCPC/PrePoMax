@@ -1441,7 +1441,7 @@ namespace PrePoMax
         }
         private void SetTransparencyForGeometryParts(string[] partNames)
         {
-            if (_controller.Model.Mesh == null) return;
+            if (_controller.Model.Geometry == null) return;
 
             using (FrmGetValue frmGetValue = new FrmGetValue(128))
             {
