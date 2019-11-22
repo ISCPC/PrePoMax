@@ -111,7 +111,7 @@ namespace PrePoMax.Forms
             _endPointItemSetData = new ItemSetData();   // needed to display ItemSetData.ToString()
             _endPointItemSetData.ToStringType = ItemSetDataToStringType.SelectSinglePoint;
 
-            RenameTrueFalseForBooleanProperty("Copy", "Copy", "Move");
+            RenameTrueFalseForBooleanProperty("Copy", "Copy and translate", "Translate");
         }
 
 

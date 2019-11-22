@@ -121,14 +121,6 @@
     <value>17, 17</value>
   </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="tsmiResultPart.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAL
-        EwAACxMBAJqcGAAAAAd0SU1FB+ACChUPGq/6hggAAABqSURBVDhPY/j//z9FGExcunTpf0BAAE6MrAEd
-        wzXfv38fAxNlAEwRNlxbWwum0TUhY7ABq1atwsDDxIDi4uL/YWFhODFBA0AYW+xgGEAqhrmMoAtwiSOH
-        zUg1AIRBeQhuAKkYpvn///8MAILio5fOkcwrAAAAAElFTkSuQmCC
-</value>
-  </data>
   <data name="tsmiNew.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
@@ -440,6 +432,14 @@
         SUVORK5CYII=
 </value>
   </data>
+  <data name="tsmiResultPart.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAL
+        EwAACxMBAJqcGAAAAAd0SU1FB+ACChUPGq/6hggAAABqSURBVDhPY/j//z9FGExcunTpf0BAAE6MrAEd
+        wzXfv38fAxNlAEwRNlxbWwum0TUhY7ABq1atwsDDxIDi4uL/YWFhODFBA0AYW+xgGEAqhrmMoAtwiSOH
+        zUg1AIRBeQhuAKkYpvn///8MAILio5fOkcwrAAAAAElFTkSuQmCC
+</value>
+  </data>
   <metadata name="statusStripMain.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>152, 17</value>
   </metadata>
@@ -672,6 +672,12 @@
         F0QP+oSsBWHWFGIAAAAASUVORK5CYII=
 </value>
   </data>
+  <metadata name="timerTest.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>1001, 17</value>
+  </metadata>
+  <metadata name="timerOutput.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>1088, 17</value>
+  </metadata>
   <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>49</value>
   </metadata>

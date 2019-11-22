@@ -83,8 +83,6 @@ namespace CaeMesh
             {
                 switch (inpElementTypeName)
                 {
-                    // normal elements                              
-
                     // tetrahedral
                     case "C3D4":
                         _linearTetraType = FeElementTypeLinearTetra.C3D4;

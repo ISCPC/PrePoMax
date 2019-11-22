@@ -36,7 +36,7 @@ namespace PrePoMax
 
         public static string NetGenMesher = @"\NetGen\NetGenMesher.exe";
         public static string VisFileName = "geometry.vis";
-        public static string StepFileName = "geometry.step";
+        public static string BrepFileName = "geometry.brep";
         public static string StlFileName = "geometry.stl";
         public static string ParametersFileName = "parameters";
         public static string VolFileName = "geometry.vol";

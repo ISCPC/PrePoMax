@@ -94,6 +94,7 @@ namespace CaeGlobals
             }
         }
 
+        // Dictionary
         public static bool ContainsValidKey<T>(this IDictionary<string, T> dictionary, string key)
         {
             T value;
@@ -104,7 +105,10 @@ namespace CaeGlobals
             }
             else return false;
         }
-        
+        public static void AddRange<TKey, TValue>(this Dictionary<TKey, TValue> dic, Dictionary<TKey, TValue> dicToAdd)
+        {
+            foreach (var item in dicToAdd) dic.Add(item.Key, item.Value);
+        }
 
         // Property grid items
         public static IEnumerable<GridItem> EnumerateAllItems(this PropertyGrid grid)
@@ -140,6 +144,11 @@ namespace CaeGlobals
         }
 
         // String Array
+        public static string ToUTF8(this string text)
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(text);
+            return Encoding.Default.GetString(bytes);
+        }
         public static string ToShortString(this string[] stringArray)
         {
             string allNames = null;

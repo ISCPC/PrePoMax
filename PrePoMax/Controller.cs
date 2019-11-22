@@ -606,6 +606,8 @@ namespace PrePoMax
                 ImportStepAssemblyFile(fileName);
             else if (extension == ".igs" || extension == ".iges")
                 ImportIgesAssemblyFile(fileName);
+            else if (extension == ".brep")
+                ImportBrepPartFile(fileName);
             else if (extension == ".unv")
                 _model.ImportMeshFromUnvFile(fileName);
             else if (extension == ".vol")
@@ -623,9 +625,11 @@ namespace PrePoMax
                 }
                 CheckAndUpdateValidity();
             }
+            else throw new NotSupportedException();
 
             // Visualization
-            if (extension == ".stl" || extension == ".stp" || extension == ".step" || extension == ".igs" || extension == ".iges")
+            if (extension == ".stl" || extension == ".stp" || extension == ".step" 
+                || extension == ".igs" || extension == ".iges" || extension == ".brep")
             {
                 _currentView = ViewGeometryModelResults.Geometry;
                 _form.SetCurrentView(_currentView);
@@ -673,33 +677,33 @@ namespace PrePoMax
         {
             CalculixSettings calculixSettings = (CalculixSettings)Settings[Globals.CalculixSettingsName];
             GraphicsSettings graphicsSettings = (GraphicsSettings)Settings[Globals.GraphicsSettingsName];
-
+            //
             if (calculixSettings.WorkDirectory == null || !Directory.Exists(calculixSettings.WorkDirectory))
             {
                 MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
                 return false;
             }
-
+            //
             string executable = Application.StartupPath + Globals.NetGenMesher;
             string visFileName = Path.Combine(calculixSettings.WorkDirectory, Globals.VisFileName);
-
+            //
             if (File.Exists(visFileName)) File.Delete(visFileName);
-
+            //
             string argument = "BREP_VISUALIZATION " +
-                              "\"" + brepFileName + "\" " +
+                              "\"" + brepFileName.ToUTF8() + "\" " +
                               "\"" + visFileName + "\" " +
                               graphicsSettings.GeometryDeflection.ToString();
-
+            //
             _netgenJob = new NetgenJob("Brep", executable, argument, calculixSettings.WorkDirectory);
             _netgenJob.AppendOutput += netgenJobStepImport_AppendOutput;
             //_form.SetStateWorking("Importing step...", true);
             _netgenJob.Submit();
-
+            //
             if (_netgenJob.JobStatus == JobStatus.OK)
             {
                 //_form.SetStateReady("Importing step...");
 
-                string error = _model.ImportGeometryFromBrepFile(visFileName, brepFileName);
+                string error = _model.ImportGeometryFromBrepFile(visFileName, brepFileName, true);
 
                 if (error != null)
                 {
@@ -710,7 +714,7 @@ namespace PrePoMax
             }
             else
             {
-                MessageBox.Show("Importing step file failed.", "Error", MessageBoxButtons.OK);
+                MessageBox.Show("Importing brep file failed.", "Error", MessageBoxButtons.OK);
                 return false;
             }
         }
@@ -722,19 +726,19 @@ namespace PrePoMax
                 MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
                 return null;
             }
-
+            //
             string executable = Application.StartupPath + Globals.NetGenMesher;
             string outFileName = GetFreeRandomFileName(settings.WorkDirectory, ".brep");
-
+            //
             string argument = "STEP_ASSEMBLY_SPLIT " +
-                              "\"" + stepFileName + "\" " +
-                              "\"" + outFileName + "\"";
+                              "\"" + stepFileName.ToUTF8() + "\" " +
+                              "\"" + outFileName.ToUTF8() + "\"";
 
             _netgenJob = new NetgenJob("SplitStep", executable, argument, settings.WorkDirectory);
             _netgenJob.AppendOutput += netgenJobStepImport_AppendOutput;
             //_form.SetStateWorking("Importing step...", true);
             _netgenJob.Submit();
-
+            //
             string brepFile;
             List<string> brepFiles = new List<string>();
             string outFileNameNoExtension = Path.GetFileNameWithoutExtension(outFileName);
@@ -762,13 +766,16 @@ namespace PrePoMax
                 MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
                 return null;
             }
-
+            // UTF-8
+            byte[] bytes = Encoding.UTF8.GetBytes(igesFileName);
+            igesFileName = Encoding.Default.GetString(bytes);
+            //
             string executable = Application.StartupPath + Globals.NetGenMesher;
             string outFileName = GetFreeRandomFileName(settings.WorkDirectory, ".brep");
 
             string argument = "IGES_ASSEMBLY_SPLIT " +
-                              "\"" + igesFileName + "\" " +
-                              "\"" + outFileName + "\"";
+                              "\"" + igesFileName.ToUTF8() + "\" " +
+                              "\"" + outFileName.ToUTF8() + "\"";
 
             _netgenJob = new NetgenJob("SplitIges", executable, argument, settings.WorkDirectory);
             _netgenJob.AppendOutput += netgenJobStepImport_AppendOutput;
@@ -1310,21 +1317,21 @@ namespace PrePoMax
             }
 
             string executable = Application.StartupPath + Globals.NetGenMesher;
-            string stepFileName = Path.Combine(settings.WorkDirectory, Globals.StepFileName);
+            string brepFileName = Path.Combine(settings.WorkDirectory, Globals.BrepFileName);
             string volFileName = Path.Combine(settings.WorkDirectory, Globals.VolFileName);
             string parametersFileName = Path.Combine(settings.WorkDirectory, Globals.ParametersFileName);
             string edgeNodesFileName = Path.Combine(settings.WorkDirectory, Globals.EdgeNodesFileName);
 
-            if (File.Exists(stepFileName)) File.Delete(stepFileName);
+            if (File.Exists(brepFileName)) File.Delete(brepFileName);
             if (File.Exists(volFileName)) File.Delete(volFileName);
             if (File.Exists(parametersFileName)) File.Delete(parametersFileName);
             if (File.Exists(edgeNodesFileName)) File.Delete(edgeNodesFileName);
 
-            File.WriteAllText(stepFileName, part.CADFileData);
+            File.WriteAllText(brepFileName, part.CADFileData);
             part.MeshingParameters.WriteToFile(parametersFileName);
 
             string argument = "BREP_MESH " +
-                              "\"" + stepFileName + "\" " +
+                              "\"" + brepFileName.ToUTF8() + "\" " +
                               "\"" + volFileName + "\" " +
                               "\"" + parametersFileName + "\"";
 
@@ -3722,12 +3729,11 @@ namespace PrePoMax
         {
             // get all faces containing at least 1 node id
             int[] faceIds = DisplayedMesh.GetVisualizationFaceIds(nodeIds, new int[] { elementId }, false, false);
-
+            //
             bool add;
             int[] cell = null;
             FeElement element = null;
             HashSet<int> hashCell;
-
             // find a face containing all node ids
             foreach (int faceId in faceIds)
             {
@@ -3745,8 +3751,7 @@ namespace PrePoMax
                     }
                 }
                 if (add) break;
-            }
-            
+            }            
             // get coordinates
             double[][] nodeCoor = new double[cell.Length][];
             for (int i = 0; i < cell.Length; i++) nodeCoor[i] = DisplayedMesh.Nodes[cell[i]].Coor;
@@ -3761,12 +3766,12 @@ namespace PrePoMax
             else if (cell.Length == 6) cellTypes = (int)vtkCellType.VTK_QUADRATIC_TRIANGLE;
             else if (cell.Length == 8) cellTypes = (int)vtkCellType.VTK_QUADRATIC_QUAD;
             else throw new NotSupportedException();
-
+            //
             vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
             data.Geometry.Nodes.Ids = cell;
             data.Geometry.Nodes.Coor = nodeCoor;
             data.Geometry.Cells.CellNodeIds = cells;
-            
+            //
             data.Geometry.Cells.Types = new int[] { cellTypes };
             return data;
         }
@@ -5654,13 +5659,13 @@ namespace PrePoMax
             _form.SetStatusBlock(Path.GetFileName(_results.FileName), _results.DateTime, fieldData.Time, scale, fieldType);
             _form.InitializeWidgetPositions(); // reset the widget position after setting the status block content
 
-            // udeformed shape
             foreach (var entry in _results.Mesh.Parts)
             {
                 if (entry.Value is ResultPart resultPart)
                 {
                     if (_viewResultsType == ViewResultsType.Undeformed)
                     {
+                        // udeformed shape
                         DrawMeshPart(_results.Mesh, resultPart, layer);
                     }
                     else
@@ -5926,7 +5931,10 @@ namespace PrePoMax
             // Settings                                                              
             _form.SetScalarBarText(_currentFieldData.Name + ": " + _currentFieldData.Component + Environment.NewLine 
                                    + settings.ColorSpectrum.MinMaxType.ToString());
-
+            //
+            Octree.Plane plane = _sectionViewPlanes[_currentView];
+            if (plane != null) RemoveSectionView();
+            //
             float scale = GetScale();
             foreach (var entry in _results.Mesh.Parts)
             {
@@ -5942,6 +5950,8 @@ namespace PrePoMax
                                                         locatorResultData.Nodes.Values);
                 }
             }
+            //
+            if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
         }
         public void DrawUndeformedPartCopy(BasePart part, System.Drawing.Color color, vtkControl.vtkRendererLayer layer)
         {

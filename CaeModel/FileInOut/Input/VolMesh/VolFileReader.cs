@@ -53,7 +53,7 @@ namespace FileInOut.Input
                         AddLineElements(dataSet.ToArray(), elements, ref elementStartId, edgeIdNodeIds);
                     }
                 }
-                FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Mesh, null, null, convertToSecondOrder);
+                FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Mesh, null, null, convertToSecondOrder, ImportOptions.None);
 
                 mesh.ConvertLineFeElementsToEdges();
 
@@ -197,7 +197,7 @@ namespace FileInOut.Input
                 
                 surfId = int.Parse(record[1]);
                 if (surfaceIdNodeIds.TryGetValue(surfId, out surface)) surface.UnionWith(element.NodeIds);
-                else surfaceIdNodeIds.Add(surfId, new HashSet<int>(element.NodeIds));
+                else surfaceIdNodeIds.Add(surfId, new HashSet<int>(element.NodeIds));   // create a copy!!!
 
                 startId++;
             }
@@ -238,7 +238,7 @@ namespace FileInOut.Input
 
                 edgeId = int.Parse(record[10]);
                 if (edges.TryGetValue(edgeId, out edge)) edge.UnionWith(element.NodeIds);
-                else edges.Add(edgeId, new HashSet<int>(element.NodeIds));
+                else edges.Add(edgeId, new HashSet<int>(element.NodeIds)); // create a copy!!!
 
                 startId++;
             }

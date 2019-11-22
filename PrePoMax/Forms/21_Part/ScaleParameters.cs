@@ -98,7 +98,7 @@ namespace PrePoMax.Forms
             _scaleCenterItemSetData.ToStringType = ItemSetDataToStringType.SelectSinglePoint;
 
             
-            RenameTrueFalseForBooleanProperty("Copy", "Copy", "Move");
+            RenameTrueFalseForBooleanProperty("Copy", "Copy and scale", "Scale");
         }
 
 

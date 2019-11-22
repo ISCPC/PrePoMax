@@ -134,6 +134,11 @@ namespace PrePoMax.Forms
             _entitiesToSelect = entitiesToSelect;
             _preSelectedEntities = preSelectedEntities;
             _stepName = stepName;
+            //
+            if (_entitiesToSelect == null) _entitiesToSelect = new NamedClass[0];
+            if (_preSelectedEntities == null) _preSelectedEntities = new string[0];
+            if (_entitiesToSelect.Length > 0 && _preSelectedEntities.Length == 0)
+                _preSelectedEntities = new string[] { _entitiesToSelect[0].Name };
         }
         private void SetEntityNamesToSelect()
         {
@@ -143,7 +148,6 @@ namespace PrePoMax.Forms
             {
                 rowId = dgvNames.Rows.Add(new object[] { entity.Name });
                 dgvNames.Rows[rowId].Cells[dgvNames.Columns[0].Name].Tag = entity;
-                
             }
 
             dgvNames.ClearSelection();

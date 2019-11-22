@@ -15,10 +15,12 @@ namespace vtkControl
         private vtkMaxExtreemeNode _minNode;
         private vtkMaxExtreemeNode _maxNode;
         private vtkActor _geometry;
+        private vtkPointData _geometryPointData;
         private vtkActor _elementEdges;
         private vtkActor _modelEdges;
         private vtkCellLocator _cellLocator;          // for surface picking
         private vtkCellLocator _frustumCellLocator;   // for volume picking
+        private vtkPointData _frustumPointData;
         public vtkMaxActorRepresentation _actorRepresentation;
         private bool _visible;
         private bool _backfaceCulling;
@@ -35,10 +37,12 @@ namespace vtkControl
         public vtkMaxExtreemeNode MinNode { get { return _minNode; } set { _minNode = value; } }
         public vtkMaxExtreemeNode MaxNode { get { return _maxNode; } set { _maxNode = value; } }
         public vtkActor Geometry { get { return _geometry; } set { _geometry = value; } }
+        public vtkPointData GeometryPointData { get { return _geometryPointData; } }
         public vtkActor ElementEdges { get { return _elementEdges; } set { _elementEdges = value; } }
         public vtkActor ModelEdges { get { return _modelEdges; } set { _modelEdges = value; } }
         public vtkCellLocator CellLocator { get { return _cellLocator; } set { _cellLocator = value; } }
         public vtkCellLocator FrustumCellLocator { get { return _frustumCellLocator; } set { _frustumCellLocator = value; } }
+        public vtkPointData FrustumPointData { get { return _frustumPointData; } }
         public vtkMaxActorRepresentation ActorRepresentation { get { return _actorRepresentation; } set { _actorRepresentation = value; } }
         public bool VtkMaxActorVisible
         {
@@ -205,37 +209,6 @@ namespace vtkControl
             _geometry.GetProperty().DeepCopy(sourceActor.Geometry.GetProperty());
             _geometry.SetVisibility(sourceActor.Geometry.GetVisibility());
             _geometry.SetPickable(sourceActor.Geometry.GetPickable());
-            
-            // Element edges                                                    
-            // Polydata
-            polydata = vtkPolyData.New();
-            polydata.DeepCopy(sourceActor.ElementEdges.GetMapper().GetInput());
-            // Mapper
-            mapper = vtkDataSetMapper.New();
-            mapper.SetInput(polydata);
-            // Actor
-            _elementEdges = new vtkActor();
-            _elementEdges.SetMapper(mapper);
-            _elementEdges.GetProperty().DeepCopy(sourceActor.ElementEdges.GetProperty());
-            _elementEdges.SetVisibility(sourceActor.ElementEdges.GetVisibility());
-            _elementEdges.SetPickable(sourceActor.ElementEdges.GetPickable());
-
-            // Model edges                                                      
-            if (sourceActor.ModelEdges != null)
-            {
-                // Polydata
-                polydata = vtkPolyData.New();
-                polydata.DeepCopy(sourceActor.ModelEdges.GetMapper().GetInput());
-                // Mapper
-                mapper = vtkDataSetMapper.New();
-                mapper.SetInput(polydata);
-                // Actor
-                _modelEdges = vtkActor.New();
-                _modelEdges.SetMapper(mapper);
-                _modelEdges.GetProperty().DeepCopy(sourceActor.ModelEdges.GetProperty());
-                _modelEdges.SetVisibility(sourceActor.ModelEdges.GetVisibility());
-                _modelEdges.SetPickable(sourceActor.ModelEdges.GetPickable());
-            }
 
             // Cell Locator
             if (sourceActor.CellLocator != null)
@@ -253,6 +226,40 @@ namespace vtkControl
                 _frustumCellLocator = vtkCellLocator.New();
                 _frustumCellLocator.SetDataSet(grid);
                 _frustumCellLocator.LazyEvaluationOn();
+            }
+
+            // Element edges                                                    
+            if (sourceActor.ElementEdges != null)
+            {
+                // Polydata
+                polydata = vtkPolyData.New();
+                polydata.DeepCopy(sourceActor.ElementEdges.GetMapper().GetInput());
+                // Mapper
+                mapper = vtkDataSetMapper.New();
+                mapper.SetInput(polydata);
+                // Actor
+                _elementEdges = new vtkActor();
+                _elementEdges.SetMapper(mapper);
+                _elementEdges.GetProperty().DeepCopy(sourceActor.ElementEdges.GetProperty());
+                _elementEdges.SetVisibility(sourceActor.ElementEdges.GetVisibility());
+                _elementEdges.SetPickable(sourceActor.ElementEdges.GetPickable());
+            }
+
+            // Model edges                                                      
+            if (sourceActor.ModelEdges != null)
+            {
+                // Polydata
+                polydata = vtkPolyData.New();
+                polydata.DeepCopy(sourceActor.ModelEdges.GetMapper().GetInput());
+                // Mapper
+                mapper = vtkDataSetMapper.New();
+                mapper.SetInput(polydata);
+                // Actor
+                _modelEdges = vtkActor.New();
+                _modelEdges.SetMapper(mapper);
+                _modelEdges.GetProperty().DeepCopy(sourceActor.ModelEdges.GetProperty());
+                _modelEdges.SetVisibility(sourceActor.ModelEdges.GetVisibility());
+                _modelEdges.SetPickable(sourceActor.ModelEdges.GetPickable());
             }
 
             this._actorRepresentation = sourceActor.ActorRepresentation;
@@ -377,7 +384,8 @@ namespace vtkControl
             else _geometry.PickableOff();
 
             // Edges
-            this._elementEdges = GetActorEdgesFromGridByVisualizationSurfaceExtraction(uGridEdges);
+            if (data.CanHaveElementEdges)
+                this._elementEdges = GetActorEdgesFromGridByVisualizationSurfaceExtraction(uGridEdges);
         }
         private void CreateFromData(vtkMaxActorData data)
         {
@@ -421,15 +429,15 @@ namespace vtkControl
             polydata.GetPointData().CopyScalarsOn();
             // Normals
             if (data.SmoothShaded) polydata.GetPointData().SetNormals(ComputeNormals(polydata));
-
             // Mapper
             vtkDataSetMapper mapper = vtkDataSetMapper.New();
             mapper.SetInput(polydata);
+            // Actor
             _geometry.SetMapper(mapper);
-
+            _geometryPointData = polydata.GetPointData();
+            //
             if (data.Pickable) _geometry.PickableOn();
             else _geometry.PickableOff();
-
             // Frustum locator
             //if (data.Layer == vtkRendererLayer.Base && data.Pickable && data.CellLocator != null)
             if (data.Layer == vtkRendererLayer.Base && data.CellLocator != null)
@@ -455,7 +463,8 @@ namespace vtkControl
                         scalars.SetValue(i, data.CellLocator.Nodes.Values[i]);
                     }
                     // Set scalars
-                    _frustumCellLocator.GetDataSet().GetPointData().SetScalars(scalars);
+                    _frustumPointData = _frustumCellLocator.GetDataSet().GetPointData();
+                    _frustumPointData.SetScalars(scalars);
 
                     // Set extreme nodes data
                     //if (data.Geometry.ExtremeNodes.Ids != null)
@@ -467,20 +476,23 @@ namespace vtkControl
             }
 
             // Element edges
-            geometryFilter = vtkGeometryFilter.New();
-            geometryFilter.SetInput(uGridEdges);
-            geometryFilter.Update();
-            polydata = vtkPolyData.New();
-            polydata = geometryFilter.GetOutput();
+            if (data.CanHaveElementEdges)
+            {
+                geometryFilter = vtkGeometryFilter.New();
+                geometryFilter.SetInput(uGridEdges);
+                geometryFilter.Update();
+                polydata = vtkPolyData.New();
+                polydata = geometryFilter.GetOutput();
 
-            // Mapper
-            mapper = vtkDataSetMapper.New();
-            mapper.SetInput(polydata);
-            // Actor
-            _elementEdges = new vtkActor();
-            _elementEdges.SetMapper(mapper);
-            _elementEdges.GetProperty().SetLighting(true);
-            _elementEdges.PickableOff();
+                // Mapper
+                mapper = vtkDataSetMapper.New();
+                mapper.SetInput(polydata);
+                // Actor
+                _elementEdges = new vtkActor();
+                _elementEdges.SetMapper(mapper);
+                _elementEdges.GetProperty().SetLighting(true);
+                _elementEdges.PickableOff();
+            }
 
             // Model edges          
             if (data.ModelEdges != null)
@@ -501,7 +513,23 @@ namespace vtkControl
                 _modelEdges.SetMapper(mapper);
                 _modelEdges.GetProperty().SetLighting(true);
                 _modelEdges.PickableOff();
+
+                if (!data.CanHaveElementEdges)
+                {
+                    // recreate data
+                    polydata.DeepCopy(polydata);
+                    // Mapper
+                    mapper = vtkDataSetMapper.New();
+                    mapper.SetInput(polydata);
+                    // Actor
+                    _elementEdges = new vtkActor();
+                    _elementEdges.SetMapper(mapper);
+                    _elementEdges.GetProperty().SetLighting(true);
+                    _elementEdges.PickableOff();
+                }
             }
+
+           
         }
         
 

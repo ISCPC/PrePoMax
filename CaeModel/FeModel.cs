@@ -412,14 +412,15 @@ namespace CaeModel
 
             return noErrors;
         }
-        public string ImportGeometryFromBrepFile(string visFileName, string brepFileName)
+        public string ImportGeometryFromBrepFile(string visFileName, string brepFileName, bool mergeParts)
         {
             FeMesh mesh = FileInOut.Input.VisFileReader.Read(visFileName);
 
-            if (mesh.Parts.Count != 1) return "The brep file does not contain exactly one part.";
+            if (mesh.Parts.Count > 1)
+                throw new Exception("The geometry contains more than one part.");
             else
             {
-                if (mesh.Parts.First().Value is GeometryPart gp)
+                if (mesh.Parts.GetValueByIndex(0) is GeometryPart gp)
                 {
                     gp.CADFileData = System.IO.File.ReadAllText(brepFileName);
                     gp.SmoothShaded = true;

@@ -76,6 +76,8 @@ namespace vtkControl
         private HashSet<int> _mouseSelectionAllIds;
         private int[] _mouseSelectionCurrentIds;
 
+        private object myLock = new object();
+
 
         // Properties                                                                                                               
         public bool RenderingOn 
@@ -539,14 +541,17 @@ namespace vtkControl
                 if (_probeWidget.GetVisibility() == 1) _probeWidget.VisibilityOff();
                 return;
             }
-
+            //
+            //pickedPoint = new double[] { 69.5036385225361, 46.5475130793349, 18.5134144946738 };
+            System.Diagnostics.Debug.WriteLine("x: " + pickedPoint[0] + "   y: " + pickedPoint[1] + "   z: " + pickedPoint[2]);
+            //
             vtkCell cell;
             vtkCellLocator cellLocator;
             int globalPointId = GetNodeIdOnCellFaceClosestToPoint(pickedPoint);
             int globalCellId = GetGlobalCellIdClosestTo3DPoint(ref pickedPoint, out cell, out cellLocator);
             int[] globalCellFaceNodeIds = GetCellFaceNodeIds(cell, cellLocator);
             vtkMaxActorData cellFaceData = Controller_GetCellFaceActorData(globalCellId, globalCellFaceNodeIds); // works on undeformed mesh
-
+            //
             int[] nodeIds = null;
             double[][] nodeCoor = null;
             int[] edgeCell = null;
@@ -1683,7 +1688,7 @@ namespace vtkControl
             _scaleWidget = new vtkMaxScaleWidget();
             _scaleWidget.SetInteractor(_selectionRenderer, _renderWindowInteractor);
             _scaleWidget.SetWidth(400);
-            _scaleWidget.SetHorizontallyRelativePosition(313, 0);
+            _scaleWidget.SetHorizontallyRelativePosition(435, 0);
             _scaleWidget.SetBorderColor(0, 0, 0);
             _scaleWidget.SetTextProperty(CreateNewTextProperty());
             _scaleWidget.SetPadding(5);
@@ -3168,7 +3173,7 @@ namespace vtkControl
             AddActorGeometry(actor, layer);
 
             // Add actorElementEdges
-            if (canHaveElementEdges && actor.ElementEdges != null) AddActorEdges(actor, false, layer);
+            if (actor.ElementEdges != null) AddActorEdges(actor, false, layer);
 
             // Add modelEdges
             if (actor.ModelEdges != null) AddActorEdges(actor, true, layer);
@@ -3342,115 +3347,124 @@ namespace vtkControl
         #region Section view  ######################################################################################################
         public void ApplySectionView(double[] point, double[] normal)
         {
-            if (!_sectionView)
+            lock (myLock)
             {
-                _sectionView = true;
-
-                // Set section cut plane
-                _sectionViewPlane = vtkPlane.New();
-                _sectionViewPlane.SetOrigin(point[0], point[1], point[2]);
-                _sectionViewPlane.SetNormal(normal[0], normal[1], normal[2]);
-
-                foreach (var entry in _actors)
+                if (!_sectionView)
                 {
-                    if (entry.Value.SectionViewPossible)
-                    {
-                        entry.Value.Geometry.GetMapper().AddClippingPlane(_sectionViewPlane);
-                        if (entry.Value.ElementEdges != null) entry.Value.ElementEdges.GetMapper().AddClippingPlane(_sectionViewPlane);
-                        if (entry.Value.ModelEdges != null) entry.Value.ModelEdges.GetMapper().AddClippingPlane(_sectionViewPlane);
-                        //
-                        if (entry.Value.ActorRepresentation == vtkMaxActorRepresentation.SolidAsShell)
-                            entry.Value.Geometry.GetProperty().BackfaceCullingOff();
-                    }
-                }
+                    _sectionView = true;
 
-                // Add new section cut actors
-                vtkMaxActor sectionViewActor;
-                foreach (var actor in _actors.Values.ToArray())
-                {
-                    if (actor.SectionViewPossible)
+                    // Set section cut plane
+                    _sectionViewPlane = vtkPlane.New();
+                    _sectionViewPlane.SetOrigin(point[0], point[1], point[2]);
+                    _sectionViewPlane.SetNormal(normal[0], normal[1], normal[2]);
+
+                    foreach (var entry in _actors)
                     {
-                        sectionViewActor = GetSectionViewActor(actor);
-                        if (sectionViewActor != null)
+                        if (entry.Value.SectionViewPossible)
                         {
-                            AddActor(sectionViewActor, vtkRendererLayer.Base, true);
-                            _sectionViewActors.Add(sectionViewActor.Name, sectionViewActor);
+                            entry.Value.Geometry.GetMapper().AddClippingPlane(_sectionViewPlane);
+                            if (entry.Value.ElementEdges != null) entry.Value.ElementEdges.GetMapper().AddClippingPlane(_sectionViewPlane);
+                            if (entry.Value.ModelEdges != null) entry.Value.ModelEdges.GetMapper().AddClippingPlane(_sectionViewPlane);
+                            //
+                            if (entry.Value.ActorRepresentation == vtkMaxActorRepresentation.SolidAsShell)
+                                entry.Value.Geometry.GetProperty().BackfaceCullingOff();
                         }
                     }
+
+                    // Add new section cut actors
+                    vtkMaxActor sectionViewActor;
+                    foreach (var actor in _actors.Values.ToArray())
+                    {
+                        if (actor.SectionViewPossible)
+                        {
+                            sectionViewActor = GetSectionViewActor(actor);
+                            if (sectionViewActor != null)
+                            {
+                                AddActor(sectionViewActor, vtkRendererLayer.Base, true);
+                                _sectionViewActors.Add(sectionViewActor.Name, sectionViewActor);
+                            }
+                        }
+                    }
+
+                    UpdateScalarFormatting();
+
+                    this.Invalidate();
                 }
-
-                UpdateScalarFormatting();
-
-                this.Invalidate();
             }
         }
         public void UpdateSectionView(double[] point, double[] normal)
         {
-            if (_sectionView)
+            lock (myLock)
             {
-                // Remove previous section cut actors
-                foreach (var entry in _sectionViewActors)
+                if (_sectionView)
                 {
-                    _renderer.RemoveActor(entry.Value.Geometry);
-                    if (entry.Value.ElementEdges != null) _renderer.RemoveActor(entry.Value.ElementEdges);
-                    if (entry.Value.ModelEdges != null) _renderer.RemoveActor(entry.Value.ModelEdges);
-                    //
-                    _actors.Remove(entry.Key);
-                }
-                _sectionViewActors.Clear();
-
-                // Modify section cut plane
-                _sectionViewPlane.SetOrigin(point[0], point[1], point[2]);
-                _sectionViewPlane.SetNormal(normal[0], normal[1], normal[2]);
-
-                // Add new section cut actors
-                vtkMaxActor sectionViewActor;
-                foreach (var actor in _actors.Values.ToArray())
-                {
-                    if (actor.SectionViewPossible)
+                    // Remove previous section cut actors
+                    foreach (var entry in _sectionViewActors)
                     {
-                        sectionViewActor = GetSectionViewActor(actor);
-                        if (sectionViewActor != null)
+                        _renderer.RemoveActor(entry.Value.Geometry);
+                        if (entry.Value.ElementEdges != null) _renderer.RemoveActor(entry.Value.ElementEdges);
+                        if (entry.Value.ModelEdges != null) _renderer.RemoveActor(entry.Value.ModelEdges);
+                        //
+                        _actors.Remove(entry.Key);
+                    }
+                    _sectionViewActors.Clear();
+
+                    // Modify section cut plane
+                    _sectionViewPlane.SetOrigin(point[0], point[1], point[2]);
+                    _sectionViewPlane.SetNormal(normal[0], normal[1], normal[2]);
+
+                    // Add new section cut actors
+                    vtkMaxActor sectionViewActor;
+                    foreach (var actor in _actors.Values.ToArray())
+                    {
+                        if (actor.SectionViewPossible)
                         {
-                            AddActor(sectionViewActor, vtkRendererLayer.Base, true);
-                            _sectionViewActors.Add(sectionViewActor.Name, sectionViewActor);
+                            sectionViewActor = GetSectionViewActor(actor);
+                            if (sectionViewActor != null)
+                            {
+                                AddActor(sectionViewActor, vtkRendererLayer.Base, true);
+                                _sectionViewActors.Add(sectionViewActor.Name, sectionViewActor);
+                            }
                         }
                     }
+
+                    UpdateScalarFormatting();
+
+                    this.Invalidate();
                 }
-
-                UpdateScalarFormatting();
-
-                this.Invalidate();
             }
         }
         public void RemoveSectionView()
         {
-            if (_sectionView)
+            lock (myLock)
             {
-                foreach (var entry in _actors)
+                if (_sectionView)
                 {
-                    entry.Value.Geometry.GetMapper().RemoveAllClippingPlanes();
-                    if (entry.Value.ElementEdges != null) entry.Value.ElementEdges.GetMapper().RemoveAllClippingPlanes();
-                    if (entry.Value.ModelEdges != null) entry.Value.ModelEdges.GetMapper().RemoveAllClippingPlanes();
+                    foreach (var entry in _actors)
+                    {
+                        entry.Value.Geometry.GetMapper().RemoveAllClippingPlanes();
+                        if (entry.Value.ElementEdges != null) entry.Value.ElementEdges.GetMapper().RemoveAllClippingPlanes();
+                        if (entry.Value.ModelEdges != null) entry.Value.ModelEdges.GetMapper().RemoveAllClippingPlanes();
+                    }
+
+                    // Remove previous section cut actors
+                    foreach (var entry in _sectionViewActors)
+                    {
+                        _renderer.RemoveActor(entry.Value.Geometry);
+                        if (entry.Value.ElementEdges != null) _renderer.RemoveActor(entry.Value.ElementEdges);
+                        if (entry.Value.ModelEdges != null) _renderer.RemoveActor(entry.Value.ModelEdges);
+                        //
+                        _actors.Remove(entry.Key);
+                    }
+                    _sectionViewActors.Clear();
+
+                    _sectionView = false;
+                    _sectionViewPlane = null;
+
+                    UpdateScalarFormatting();
+
+                    this.Invalidate();
                 }
-
-                // Remove previous section cut actors
-                foreach (var entry in _sectionViewActors)
-                {
-                    _renderer.RemoveActor(entry.Value.Geometry);
-                    if (entry.Value.ElementEdges != null) _renderer.RemoveActor(entry.Value.ElementEdges);
-                    if (entry.Value.ModelEdges != null) _renderer.RemoveActor(entry.Value.ModelEdges);
-                    //
-                    _actors.Remove(entry.Key);
-                }
-                _sectionViewActors.Clear();
-
-                _sectionView = false;
-                _sectionViewPlane = null;
-
-                UpdateScalarFormatting();
-
-                this.Invalidate();
             }
         }
         private vtkMaxActor GetSectionViewActor(vtkMaxActor actor)
@@ -4345,6 +4359,45 @@ namespace vtkControl
         public void UpdateActorScalarField(string actorName, float[] values, CaeGlobals.NodesExchangeData extremeNodes,
                                            float[] frustumCellLocatorValues)
         {
+            if (System.Diagnostics.Debugger.IsAttached)
+            {
+                Test(actorName, values, extremeNodes, frustumCellLocatorValues);
+                return;
+            }
+            
+            // Add scalars
+            if (values != null)
+            {
+                vtkFloatArray scalars = vtkFloatArray.New();
+                scalars.SetName(Globals.ScalarArrayName);
+                scalars.SetNumberOfValues(values.Length);
+                for (int i = 0; i < values.Length; i++)
+                {
+                    scalars.SetValue(i, values[i]);
+                }
+                //
+                vtkFloatArray frustumScalars = vtkFloatArray.New();
+                frustumScalars.SetName(Globals.ScalarArrayName);
+                frustumScalars.SetNumberOfValues(frustumCellLocatorValues.Length);
+                for (int i = 0; i < frustumCellLocatorValues.Length; i++)
+                {
+                    frustumScalars.SetValue(i, frustumCellLocatorValues[i]);
+                }
+                // Set scalars
+                _actors[actorName].Geometry.GetMapper().GetInput().GetPointData().SetScalars(scalars);
+                _actors[actorName].MinNode = new vtkMaxExtreemeNode(extremeNodes.Ids[0], extremeNodes.Coor[0], extremeNodes.Values[0]);
+                _actors[actorName].MaxNode = new vtkMaxExtreemeNode(extremeNodes.Ids[1], extremeNodes.Coor[1], extremeNodes.Values[1]);
+                // Set frustum scalars
+                _actors[actorName].FrustumCellLocator.GetDataSet().GetPointData().SetScalars(frustumScalars);
+                //
+                UpdateScalarFormatting();
+                //
+                this.Invalidate();
+            }
+        }
+        private void Test(string actorName, float[] values, CaeGlobals.NodesExchangeData extremeNodes,
+                                           float[] frustumCellLocatorValues)
+        {
             // Add scalars
             if (values != null)
             {
@@ -4363,20 +4416,111 @@ namespace vtkControl
                 {
                     frustumScalars.SetValue(i, frustumCellLocatorValues[i]);
                 }
+                
+                if (_actors.ContainsKey(actorName)) // added for testing
+                {
+                    // Set scalars
+                    _actors[actorName].GeometryPointData.SetScalars(scalars);
+                    //
+                    _actors[actorName].MinNode = new vtkMaxExtreemeNode(extremeNodes.Ids[0], extremeNodes.Coor[0], extremeNodes.Values[0]);
+                    _actors[actorName].MaxNode = new vtkMaxExtreemeNode(extremeNodes.Ids[1], extremeNodes.Coor[1], extremeNodes.Values[1]);
+                    //Set frustum scalars
+                    _actors[actorName].FrustumPointData.SetScalars(frustumScalars);
+                    //up to here 185000++
+                }
+                
+                //UpdateScalarFormatting();
+                if (true)
+                {
+                    vtkMaxActor actor;
+                    //vtkMapper mapper;
+                    vtkPointData pointData;
 
-                // Set scalars
-                _actors[actorName].Geometry.GetMapper().GetInput().GetPointData().SetScalars(scalars);
-                _actors[actorName].MinNode = new vtkMaxExtreemeNode(extremeNodes.Ids[0], extremeNodes.Coor[0], extremeNodes.Values[0]);
-                _actors[actorName].MaxNode = new vtkMaxExtreemeNode(extremeNodes.Ids[1], extremeNodes.Coor[1], extremeNodes.Values[1]);
-                // Set frustum scalars
-                _actors[actorName].FrustumCellLocator.GetDataSet().GetPointData().SetScalars(frustumScalars);
+                    bool minVisible = _minValueWidget.GetVisibility() == 1;
+                    bool maxVisible = _maxValueWidget.GetVisibility() == 1;
+                    _minValueWidget.VisibilityOff();
+                    _maxValueWidget.VisibilityOff();
 
-                UpdateScalarFormatting();
+                    vtkMaxExtreemeNode minNode = null;
+                    vtkMaxExtreemeNode maxNode = null;
+
+                    // Find min and max value on actors
+                    foreach (var entry in _actors)
+                    {
+                        actor = entry.Value;
+                        if (entry.Value == null) throw new ArgumentNullException("_actors.Actor", "The actor does not exist.");
+                        //mapper = actor.Geometry.GetMapper();
+                        pointData = actor.GeometryPointData;
+
+                        // if the part does not have scalar data
+                        if (actor.MinNode == null || actor.MaxNode == null) continue;
+
+                        if (actor.ColorContours)
+                        {
+                            if (pointData.GetAttribute(0) == null || pointData.GetAttribute(0).GetName() != Globals.ScalarArrayName)
+                                pointData.SetActiveScalars(Globals.ScalarArrayName);
+                            //if (mapper.GetInterpolateScalarsBeforeMapping() != 1)
+                            //    mapper.SetInterpolateScalarsBeforeMapping(1); // discrete colors
+                        }
+                        else
+                        {
+                            if (pointData.GetAttribute(0) != null && pointData.GetAttribute(0).GetName() != "none")
+                                pointData.SetActiveScalars("none");
+                            //if (mapper.GetInterpolateScalarsBeforeMapping() != 0)
+                            //    mapper.SetInterpolateScalarsBeforeMapping(0); // discrete colors must be turned off
+                            actor.Geometry.GetProperty().SetColor(actor.Color.R / 255d, actor.Color.G / 255d, actor.Color.B / 255d);
+                        }
+
+                        if (!actor.VtkMaxActorVisible || !actor.ColorContours) continue;
+
+                        if (minNode == null || maxNode == null)     // the first time through
+                        {
+                            minNode = actor.MinNode;
+                            maxNode = actor.MaxNode;
+                        }
+                        else
+                        {
+                            if (actor.MinNode != null && actor.MinNode.Value < minNode.Value) minNode = actor.MinNode;
+                            if (actor.MaxNode != null && actor.MaxNode.Value > maxNode.Value) maxNode = actor.MaxNode;
+                        }
+                    }
+
+                    // Working to here
+
+
+
+
+
+                    //if (minNode == null || maxNode == null) return;
+
+                    //// Scalar bar and min/max values of actor scalar range
+                    //if (_colorSpectrum.MinMaxType == vtkColorSpectrumMinMaxType.Automatic)
+                    //{
+                    //    if (_animationFrameData != null && _animationFrameData.UseAllFrameData)   // animation from all frames
+                    //    {
+                    //        double[] animRange = _animationFrameData.AllFramesScalarRange;
+                    //        _scalarBarWidget.CreateLookupTable(GetColorTransferFunction(), animRange[0], animRange[1]);
+                    //        PrepareActorLookupTable(animRange[0], animRange[1]);
+                    //    }
+                    //    else // min max from current frame
+                    //    {
+                    //        _scalarBarWidget.CreateLookupTable(GetColorTransferFunction(), minNode.Value, maxNode.Value);
+                    //        PrepareActorLookupTable(minNode.Value, maxNode.Value);
+                    //    }
+                    //}
+                    //else  // Manual and min max from current frame
+                    //{
+                    //    _scalarBarWidget.CreateLookupTable(GetColorTransferFunction(), minNode.Value, maxNode.Value, _colorSpectrum.MinUserValue, _colorSpectrum.MaxUserValue);
+                    //    PrepareActorLookupTable(minNode.Value, maxNode.Value);
+                    //}
+                }
 
                 this.Invalidate();
+
+                countError++;
+                if (countError % 1000 == 0) System.Diagnostics.Debug.WriteLine("Count: " + countError);
             }
         }
-
         public void UpdateActorColorContoursVisibility(string[] actorNames, bool colorContours)
         {
             foreach (var name in actorNames)
@@ -4456,8 +4600,8 @@ namespace vtkControl
             ApplyEdgesVisibilityAndBackfaceCulling();   // calls invalidate
             _style.AdjustCameraDistanceAndClipping();
 
-            countError++;
-            if (countError % 10 == 0) System.Diagnostics.Debug.WriteLine("Count: " + countError);
+            //countError++;
+            //if (countError % 10 == 0) System.Diagnostics.Debug.WriteLine("Count: " + countError);
         }
         private void SetAnimationFrameAllActors(int frameNumber, bool scalarRangeFromAllFrames)
         {

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using CaeMesh;
+using CaeGlobals;
 
 namespace FileInOut.Input
 {
@@ -19,34 +20,46 @@ namespace FileInOut.Input
             if (File.Exists(fileName))
             {
                 string data = File.ReadAllText(fileName);
-
-                string[] faceData = data.Split(new string[] { "Face number: " }, StringSplitOptions.RemoveEmptyEntries);
-
-                Dictionary<int, FeNode> nodes = new Dictionary<int, FeNode>();
-                Dictionary<int, FeElement> elements = new Dictionary<int, FeElement>();
-
-                BoundingBox bBox = new BoundingBox();
-                int offsetNodeId = 0;
-                int offsetElementId = 0;
-
-                for (int i = 1; i < faceData.Length; i++)   // start with 1 to skip first line ********
+                // Import solid geometry
+                if (data.Contains("Solid number: "))
                 {
-                    ReadFace(faceData[i], ref offsetNodeId, nodes, ref offsetElementId, elements, ref bBox);
+                    string[] solidData = data.Split(new string[] { "Solid number: " }, StringSplitOptions.RemoveEmptyEntries);
+
+                    if (solidData.Length > 2) throw new Exception("The file: " + fileName + " contains more than one solid.");
+
+                    string[] faceData = solidData[1].Split(new string[] { "Face number: " }, StringSplitOptions.RemoveEmptyEntries);
+
+                    Dictionary<int, HashSet<int>> surfaceIdNodeIds = new Dictionary<int, HashSet<int>>();
+                    Dictionary<int, HashSet<int>> edgeIdNodeIds = new Dictionary<int, HashSet<int>>();
+                    Dictionary<int, FeNode> nodes = new Dictionary<int, FeNode>();
+                    Dictionary<int, FeElement> elements = new Dictionary<int, FeElement>();
+
+                    BoundingBox bBox = new BoundingBox();
+                    int offsetNodeId = 0;
+                    int offsetElementId = 0;
+
+                    for (int i = 1; i < faceData.Length; i++)   // start with 1 to skip first line: ********
+                    {
+                        ReadFace(faceData[i], ref offsetNodeId, nodes, ref offsetElementId, elements,
+                                 surfaceIdNodeIds, edgeIdNodeIds, ref bBox);
+                    }
+
+                    double epsilon = 1E-4;
+                    double max = bBox.GetDiagonal();
+                    MergeNodes(nodes, elements, surfaceIdNodeIds, edgeIdNodeIds, epsilon * max);
+
+                    FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Geometry, ImportOptions.ImportOneSolidPart);
+
+                    mesh.ConvertLineFeElementsToEdges();
+
+                    mesh.RenumberVisualizationSurfaces(surfaceIdNodeIds);
+                    mesh.RenumberVisualizationEdges(edgeIdNodeIds);
+
+                    mesh.RemoveElementsByType<FeElement1D>();
+                    mesh.RemoveElementsByType<FeElement3D>();
+
+                    return mesh;
                 }
-
-
-                double epsilon = 1E-4;
-                double max = bBox.GetDiagonal();
-                MergeNodes(nodes, elements, epsilon * max);
-
-                FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Geometry);
-
-                mesh.ConvertLineFeElementsToEdges();
-
-                mesh.RemoveElementsByType<FeElement1D>();
-                mesh.RemoveElementsByType<FeElement3D>();
-
-                return mesh;
             }
 
             return null;
@@ -55,6 +68,8 @@ namespace FileInOut.Input
         private static void ReadFace(string faceData, 
                                      ref int offsetNodeId, Dictionary<int, FeNode> nodes, 
                                      ref int offsetElementId, Dictionary<int, FeElement> elements,
+                                     Dictionary<int, HashSet<int>> surfaceIdNodeIds,
+                                     Dictionary<int, HashSet<int>> edgeIdNodeIds,
                                      ref BoundingBox bBox)
         {
             int numOfNodes = 0;
@@ -62,14 +77,18 @@ namespace FileInOut.Input
             string[] data = faceData.Split(new string[] { "*", "Number of "}, StringSplitOptions.RemoveEmptyEntries);
 
             string[] tmp = data[0].Split(allSplitter, StringSplitOptions.RemoveEmptyEntries);
+            int surfId = int.Parse(tmp[0]);
             int orientation = int.Parse(tmp[3]);
             bool reverse = orientation == 1;
+
+            Dictionary<int, FeNode> surfaceNodes = new Dictionary<int, FeNode>();            
 
             for (int i = 1; i < data.Length; i++)
             {
                 if (data[i].StartsWith("nodes"))
                 {
-                    numOfNodes = ReadNodes(data[i], offsetNodeId, nodes, ref bBox);
+                    numOfNodes = ReadNodes(data[i], offsetNodeId, surfaceNodes, ref bBox);
+                    nodes.AddRange(surfaceNodes);
                 }
                 else if (data[i].StartsWith("triangles"))
                 {
@@ -78,11 +97,19 @@ namespace FileInOut.Input
                 }
                 else if (data[i].StartsWith("edges"))
                 {
-                    numOfElements = ReadEdges(data[i], offsetNodeId, offsetElementId, elements);
+                    numOfElements = ReadEdges(data[i], offsetNodeId, offsetElementId, elements, edgeIdNodeIds);
                     offsetElementId += numOfElements;
                 }
             }
             offsetNodeId += numOfNodes;
+
+            // Add surface if it contains more than 1 node
+            if (surfaceNodes.Count > 0)  
+            {
+                HashSet<int> surface;
+                if (surfaceIdNodeIds.TryGetValue(surfId, out surface)) surface.UnionWith(surfaceNodes.Keys);
+                else surfaceIdNodeIds.Add(surfId, new HashSet<int>(surfaceNodes.Keys)); // create a copy!!!
+            }
         }
 
         private static int ReadNodes(string nodeData, int offsetNodeId, Dictionary<int, FeNode> nodes, ref BoundingBox bBox)
@@ -140,7 +167,7 @@ namespace FileInOut.Input
             return data.Length - 1; // return number of read elements
         }
         private static int ReadEdges(string elementData, int offsetNodeId, int offsetElementId,
-                                     Dictionary<int, FeElement> elements)
+                                     Dictionary<int, FeElement> elements, Dictionary<int, HashSet<int>> edgeIdNodeIds)
         {
             string[] data = elementData.Split(lineSplitter, StringSplitOptions.RemoveEmptyEntries);
             string[] allIds;
@@ -148,11 +175,17 @@ namespace FileInOut.Input
             int internalId = 1;
             int[] nodeIds;
             LinearBeamElement element;
-
+            //
+            int edgeId;
+            HashSet<int> edgeNodeIds = new HashSet<int>();
+            HashSet<int> edgeNodeIdsOut;
+            //
             for (int i = 1; i < data.Length; i++)   // skip first row: Number of edges: 4
             {
                 allIds = data[i].Split(spaceSplitter, StringSplitOptions.RemoveEmptyEntries);
-
+                edgeId = int.Parse(allIds[0]);
+                //
+                edgeNodeIds.Clear();
                 for (int j = 1; j < allIds.Length - 1; j++)
                 {
                     id = internalId + offsetElementId;
@@ -160,17 +193,29 @@ namespace FileInOut.Input
                     nodeIds[0] = int.Parse(allIds[j]) + offsetNodeId;
                     nodeIds[1] = int.Parse(allIds[j + 1]) + offsetNodeId;
 
+                    edgeNodeIds.Add(nodeIds[0]);
+                    edgeNodeIds.Add(nodeIds[1]);
+
                     element = new LinearBeamElement(id, nodeIds);
                     elements.Add(element.Id, element);
 
                     internalId++;
                 }
+                //
+                if (edgeId == 1)
+                    edgeId = 1;
+                if (edgeIdNodeIds.TryGetValue(edgeId, out edgeNodeIdsOut)) edgeNodeIdsOut.UnionWith(edgeNodeIds);
+                else edgeIdNodeIds.Add(edgeId, new HashSet<int>(edgeNodeIds));      // create a copy!!!
             }
 
             return internalId - 1; // return number of read edges
         }
 
-        private static void MergeNodes(Dictionary<int, FeNode> nodes, Dictionary<int, FeElement> elements, double epsilon)
+        private static void MergeNodes(Dictionary<int, FeNode> nodes,
+                                       Dictionary<int, FeElement> elements,
+                                       Dictionary<int, HashSet<int>> surfaceIdNodeIds,
+                                       Dictionary<int, HashSet<int>> edgeIdNodeIds,
+                                       double epsilon)
         {
             int count = 0;
             FeNode[] sortedNodes = new FeNode[nodes.Count];
@@ -211,6 +256,12 @@ namespace FileInOut.Input
 
             }
 
+            // remove unused nodes
+            foreach (var entry in mergeMap)
+            {
+                nodes.Remove(entry.Key);
+            }
+
             // apply the map to the elements
             int newId;
             HashSet<int> nodeIds = new HashSet<int>();
@@ -235,11 +286,33 @@ namespace FileInOut.Input
                 // might be also necessary to remove some nodes ?
             }
 
-            // remove unused nodes
-            foreach (var entry in mergeMap)
+            // surface node ids
+            HashSet<int> newIds = new HashSet<int>();
+            foreach (var entry in surfaceIdNodeIds)
             {
-                nodes.Remove(entry.Key);
+                newIds.Clear();
+                foreach (var nodeId in entry.Value)
+                {
+                    if (mergeMap.TryGetValue(nodeId, out newId)) newIds.Add(newId);
+                    else newIds.Add(nodeId);
+                }
+                entry.Value.Clear();
+                entry.Value.UnionWith(newIds);
             }
+
+            // edge node ids
+            foreach (var entry in edgeIdNodeIds)
+            {
+                newIds.Clear();
+                foreach (var nodeId in entry.Value)
+                {
+                    if (mergeMap.TryGetValue(nodeId, out newId)) newIds.Add(newId);
+                    else newIds.Add(nodeId);
+                }
+                entry.Value.Clear();
+                entry.Value.UnionWith(newIds);
+            }
+
         }
 
 

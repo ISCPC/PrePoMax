@@ -5,7 +5,7 @@ Geometry selection by surface angle
 Selection - UNDO after empty click
 
 By others:
-
+Josh W: Support for viewing and editing materila data in material library
 SAVE TO ANOTHER FILE AND THEN REMOVE THE OLDER FILE
 
 By Martin:
@@ -135,7 +135,9 @@ Dependency nglib - added following files for c++ redistriburable compatibility:
 Done
 
 Version 0.5.2 Master branch
-
+Added support for importing and meshing 'hollow' CAD files.
+Added support for importing .brep files
+Added support for section view
 Added support to query edges and surfaces
 Added support for geometry selection of surfaces by angle
 Added support for geometry selection of edges by angle
@@ -156,6 +158,7 @@ Added proces ZZS stresses as normal stress tensors
 Added frequency option for the field output (every n increments)
 Bug fixes - A bug in color conturs lookup table and other bugs reported by Martin
 Bug fixes - Medium nodes on geometry - Midside nodes
+
 
 Version 0.5.1 Master branch
 Added support for additional mesh parameters

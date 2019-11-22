@@ -14,6 +14,7 @@ using UserControls;
 using CaeJob;
 using System.Reflection;
 
+
 namespace PrePoMax
 {
     public enum Cell3D
@@ -40,6 +41,7 @@ namespace PrePoMax
         private UserControls.ModelTree _modelTree;
         private Controller _controller;
         private string[] _args;
+        private string[] outputLines;
 
         private Point _formLocation;
         private List<Form> _allForms;
@@ -294,6 +296,11 @@ namespace PrePoMax
             {
                 this.TopMost = false;
             }
+
+            if (!System.Diagnostics.Debugger.IsAttached)
+            {
+                tsmiTest.Visible = false;
+            }
         }
 
        
@@ -454,6 +461,13 @@ namespace PrePoMax
             GetFormLoaction(form);
         }
 
+        private void timerOutput_Tick(object sender, EventArgs e)
+        {
+            tbOutput.Lines = outputLines;
+            tbOutput.SelectionStart = tbOutput.Text.Length;
+            tbOutput.ScrollToCaret();
+            timerOutput.Stop();
+        }
 
         #region ModelTree Events ###################################################################################################
         private void ModelTree_ViewEvent(ViewType viewType)
@@ -1569,7 +1583,8 @@ namespace PrePoMax
         {
             CaeMesh.GeometryPart part = _controller.GetGeometryPart(partName);
 
-            if (part.ErrorElementIds != null) throw new Exception("The part '" + partName + "' contains errors and can not be meshed.");
+            if (part.CADFileData == null && part.ErrorElementIds != null)
+                throw new Exception("The part '" + partName + "' contains errors and can not be meshed.");
             if (!_controller.MeshJobIdle) throw new Exception("The meshing is already in progress.");
 
             CaeMesh.MeshingParameters defaultMeshingParameters = new CaeMesh.MeshingParameters();
@@ -3631,9 +3646,10 @@ namespace PrePoMax
         }
         private string GetFileImportFilter()
         {
-            string filter = "All supported files|*.stp;*.step;*.igs;*.iges;*.stl;*.unv;*.vol;*.inp"
+            string filter = "All supported files|*.stp;*.step;*.igs;*.iges;*.brep;*.stl;*.unv;*.vol;*.inp"
                             + "|Step files|*.stp;*.step"
                             + "|Iges files|*.igs;*.iges"
+                            + "|Brep files|*.brep"
                             + "|Stereolitography files|*.stl"
                             + "|Universal files|*.unv"
                             + "|Netgen files|*.vol"
@@ -3648,6 +3664,7 @@ namespace PrePoMax
             {
                 _vtk.Clear();
                 _modelTree.Clear();
+                outputLines = new string[0];
                 tbOutput.Text = "";
                 ClearResults();
                 
@@ -4094,12 +4111,11 @@ namespace PrePoMax
         #endregion  ################################################################################################################
 
         // Output
-        Timer outputTimer = new Timer();
         public void WriteDataToOutput(string data)
         {
             if (data == null) return;
             // 20 chars is an empty line with date
-            if (data.Length == 0 && (tbOutput.Lines.Length > 0 && tbOutput.Lines.Last().Length == 20)) return;
+            if (data.Length == 0 && (outputLines.Length > 0 && outputLines.Last().Length == 20)) return;
 
             InvokeIfRequired(() =>
             {
@@ -4109,16 +4125,18 @@ namespace PrePoMax
 
                 foreach (var line in lines) WriteLineToOutputWithDate(line);
 
-                //if (tbOutput.Text.Length > 0) tbOutput.Text += Environment.NewLine;
+                timerOutput.Start();
             });
+            
+            
         }
         private void WriteLineToOutputWithDate(string data)
         {
             int numColDate = 20;
             int numCol = 150 + numColDate;
-            int numRows = 200;      // number of displayed lines
+            int numRows = 100;      // number of displayed lines
 
-            List<string> lines = new List<string>(tbOutput.Lines);
+            List<string> lines = new List<string>(outputLines);
             List<string> wrappedLines = new List<string>();
 
             while (numColDate + data.Length > numCol)
@@ -4135,9 +4153,9 @@ namespace PrePoMax
 
             int firstLine = Math.Max(0, lines.Count - numRows);
             int numLines = Math.Min(lines.Count, numRows);
-            tbOutput.Lines = lines.GetRange(firstLine, numLines).ToArray();
-            tbOutput.Select(tbOutput.TextLength, 0);
-            tbOutput.ScrollToCaret();
+
+            outputLines = new string[numLines];
+            Array.Copy(lines.ToArray(), firstLine, outputLines, 0, numLines);
         }
 
         #region Invoke  ############################################################################################################
@@ -4263,13 +4281,42 @@ namespace PrePoMax
 
 
 
+
+
+
+
+
         #endregion  ################################################################################################################
 
         #endregion
 
-        
+        private void tsmiTest_Click(object sender, EventArgs e)
+        {
+            if (timerTest.Enabled) timerTest.Stop();
+            else timerTest.Start();
+        }
 
-       
+        private void timerTest_Tick(object sender, EventArgs e)
+        {
+            try
+            {
+                timerTest.Interval = 10;
+                //timerTest.Stop();
+
+                string[] names = new string[] { "STRESS", "DISP" };
+                string[] components = new string[] { "SZZ", "D2" };
+
+                CaeResults.FieldData currentData = _controller.CurrentFieldData;
+                int i = 0;
+                if (currentData.Component == components[i]) i++;
+
+                int len = names.Length;
+
+                SetFieldData(names[i % len], components[i % len], 1, 1);
+            }
+            catch
+            {}
+        }
 
         
     }
