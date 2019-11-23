@@ -589,9 +589,8 @@ namespace PrePoMax
         public void ImportFile(string fileName)
         {
             if (!File.Exists(fileName)) throw new FileNotFoundException("The file: '" + fileName + "' does not exist.");
-
+            //
             string extension = Path.GetExtension(fileName).ToLower();
-
             // Import
             if (extension == ".stl")
             {
@@ -603,11 +602,11 @@ namespace PrePoMax
                 }
             }
             else if (extension == ".stp" || extension == ".step")
-                ImportStepAssemblyFile(fileName);
+                ImportCADAssemblyFile(fileName, "STEP_ASSEMBLY_SPLIT ");
             else if (extension == ".igs" || extension == ".iges")
-                ImportIgesAssemblyFile(fileName);
+                ImportCADAssemblyFile(fileName, "IGES_ASSEMBLY_SPLIT ");
             else if (extension == ".brep")
-                ImportBrepPartFile(fileName);
+                ImportCADAssemblyFile(fileName, "BREP_ASSEMBLY_SPLIT ");
             else if (extension == ".unv")
                 _model.ImportMeshFromUnvFile(fileName);
             else if (extension == ".vol")
@@ -645,9 +644,9 @@ namespace PrePoMax
             // Regenerate
             _form.RegenerateTree(_model, _jobs, _results, _history);
         }
-        public void ImportStepAssemblyFile(string fileName)
+        public void ImportCADAssemblyFile(string fileName, string splitCommand)
         {
-            string[] filesToImport = SplitStepAssemblyToBrepParts(fileName);
+            string[] filesToImport = SplitAssemblyToBrepParts(fileName, splitCommand);
 
             if (filesToImport != null)
             {
@@ -659,19 +658,46 @@ namespace PrePoMax
                 }
             }
         }
-        public void ImportIgesAssemblyFile(string fileName)
+        
+        public string[] SplitAssemblyToBrepParts(string stepFileName, string splitCommand)
         {
-            string[] filesToImport = SplitIgesAssemblyToBrepParts(fileName);
-
-            if (filesToImport != null)
+            CalculixSettings settings = (CalculixSettings)Settings[Globals.CalculixSettingsName];
+            if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
             {
-                foreach (var stepPartFileName in filesToImport)
-                {
-                    ImportBrepPartFile(stepPartFileName);
-
-                    if (File.Exists(stepPartFileName)) File.Delete(stepPartFileName);
-                }
+                MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
+                return null;
             }
+            //
+            string executable = Application.StartupPath + Globals.NetGenMesher;
+            string outFileName = GetFreeRandomFileName(settings.WorkDirectory, ".brep");
+            //
+            string argument = splitCommand +
+                              "\"" + stepFileName.ToUTF8() + "\" " +
+                              "\"" + outFileName.ToUTF8() + "\"";
+
+            _netgenJob = new NetgenJob("SplitStep", executable, argument, settings.WorkDirectory);
+            _netgenJob.AppendOutput += netgenJobStepImport_AppendOutput;
+            //_form.SetStateWorking("Importing step...", true);
+            _netgenJob.Submit();
+            //
+            string brepFile;
+            List<string> brepFiles = new List<string>();
+            string outFileNameNoExtension = Path.GetFileNameWithoutExtension(outFileName);
+
+            if (_netgenJob.JobStatus == JobStatus.OK)
+            {
+                //_form.SetStateReady("Importing step...");
+
+                string[] allFiles = Directory.GetFiles(settings.WorkDirectory);
+                foreach (var fileName in allFiles)
+                {
+                    brepFile = Path.GetFileName(fileName);
+                    if (brepFile.StartsWith(outFileNameNoExtension)) brepFiles.Add(fileName);
+                }
+
+                return brepFiles.ToArray();
+            }
+            else return null;
         }
         public bool ImportBrepPartFile(string brepFileName)
         {
@@ -717,86 +743,6 @@ namespace PrePoMax
                 MessageBox.Show("Importing brep file failed.", "Error", MessageBoxButtons.OK);
                 return false;
             }
-        }
-        public string[] SplitStepAssemblyToBrepParts(string stepFileName)
-        {
-            CalculixSettings settings = (CalculixSettings)Settings[Globals.CalculixSettingsName];
-            if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
-            {
-                MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
-                return null;
-            }
-            //
-            string executable = Application.StartupPath + Globals.NetGenMesher;
-            string outFileName = GetFreeRandomFileName(settings.WorkDirectory, ".brep");
-            //
-            string argument = "STEP_ASSEMBLY_SPLIT " +
-                              "\"" + stepFileName.ToUTF8() + "\" " +
-                              "\"" + outFileName.ToUTF8() + "\"";
-
-            _netgenJob = new NetgenJob("SplitStep", executable, argument, settings.WorkDirectory);
-            _netgenJob.AppendOutput += netgenJobStepImport_AppendOutput;
-            //_form.SetStateWorking("Importing step...", true);
-            _netgenJob.Submit();
-            //
-            string brepFile;
-            List<string> brepFiles = new List<string>();
-            string outFileNameNoExtension = Path.GetFileNameWithoutExtension(outFileName);
-
-            if (_netgenJob.JobStatus == JobStatus.OK)
-            {
-                //_form.SetStateReady("Importing step...");
-
-                string[] allFiles = Directory.GetFiles(settings.WorkDirectory);
-                foreach (var fileName in allFiles)
-                {
-                    brepFile = Path.GetFileName(fileName);
-                    if (brepFile.StartsWith(outFileNameNoExtension)) brepFiles.Add(fileName);
-                }
-
-                return brepFiles.ToArray();
-            }
-            else return null;
-        }
-        public string[] SplitIgesAssemblyToBrepParts(string igesFileName)
-        {
-            CalculixSettings settings = (CalculixSettings)Settings[Globals.CalculixSettingsName];
-            if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
-            {
-                MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
-                return null;
-            }
-            // UTF-8
-            byte[] bytes = Encoding.UTF8.GetBytes(igesFileName);
-            igesFileName = Encoding.Default.GetString(bytes);
-            //
-            string executable = Application.StartupPath + Globals.NetGenMesher;
-            string outFileName = GetFreeRandomFileName(settings.WorkDirectory, ".brep");
-
-            string argument = "IGES_ASSEMBLY_SPLIT " +
-                              "\"" + igesFileName.ToUTF8() + "\" " +
-                              "\"" + outFileName.ToUTF8() + "\"";
-
-            _netgenJob = new NetgenJob("SplitIges", executable, argument, settings.WorkDirectory);
-            _netgenJob.AppendOutput += netgenJobStepImport_AppendOutput;
-            _netgenJob.Submit();
-
-            string brepFile;
-            List<string> brepFiles = new List<string>();
-            string outFileNameNoExtension = Path.GetFileNameWithoutExtension(outFileName);
-
-            if (_netgenJob.JobStatus == JobStatus.OK)
-            {
-                string[] allFiles = Directory.GetFiles(settings.WorkDirectory);
-                foreach (var fileName in allFiles)
-                {
-                    brepFile = Path.GetFileName(fileName);
-                    if (brepFile.StartsWith(outFileNameNoExtension)) brepFiles.Add(fileName);
-                }
-
-                return brepFiles.ToArray();
-            }
-            else return null;
         }
         private string GetFreeRandomFileName(string path, string extension)
         {
