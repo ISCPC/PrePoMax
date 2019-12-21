@@ -212,7 +212,6 @@ namespace UserControls
 
         #endregion
 
-
         public event TreeViewEventHandler AfterDeselect;
 		public event TreeViewEventHandler BeforeDeselect;
 		public event EventHandler SelectionsChanged;
@@ -255,7 +254,8 @@ namespace UserControls
 		/// <summary>
 		/// Hashtable that contains all selected nodes.
 		/// </summary>
-		private Hashtable htblSelectedNodes = new Hashtable();
+		private OrderedDictionary<int, TreeNode> htblSelectedNodes = new OrderedDictionary<int, TreeNode>();
+		//private Hashtable htblSelectedNodes = new Hashtable();
 
 		/// <summary>
 		/// Track whether the total SelectedNodes changed across multiple operations
@@ -1790,10 +1790,13 @@ namespace UserControls
 		/// <param name="treeNode">Tree node to remove.</param>
 		public void Remove(TreeNode treeNode)
 		{
-			if (TreeNodeRemoved != null)
-				TreeNodeRemoved(treeNode);
+            if (List.Contains(treeNode))
+            {
+                if (TreeNodeRemoved != null)
+                    TreeNodeRemoved(treeNode);
 
-			List.Remove(treeNode);
+                List.Remove(treeNode);
+            }
 		}
 
 		/// <summary>

@@ -22,6 +22,7 @@ namespace CaeModel
         private OrderedDictionary<string, Constraint> _constraints;                             //ISerializable
         private StepCollection _stepCollection;                                                 //ISerializable
         private OrderedDictionary<int[], Calculix.CalculixUserKeyword> _calculixUserKeywords;   //ISerializable
+        private ModelProperties _properties;                                                    //ISerializable
 
 
         // Properties                                                                                                               
@@ -40,6 +41,7 @@ namespace CaeModel
                 _calculixUserKeywords = value;
             } 
         }
+        public ModelProperties Properties  { get { return _properties; } set { _properties = value; } }
 
 
         // Constructors                                                                                                             
@@ -51,7 +53,8 @@ namespace CaeModel
             _constraints = new OrderedDictionary<string, Constraint>();
             _stepCollection = new StepCollection();
         }
-
+        
+        // ISerialization
         public FeModel(SerializationInfo info, StreamingContext context)
         {
             foreach (SerializationEntry entry in info)
@@ -112,12 +115,17 @@ namespace CaeModel
                         else if (entry.Value == null) _calculixUserKeywords = null;
                         else throw new NotSupportedException();
                         break;
+                    case "_properties":
+                        _properties = (ModelProperties)entry.Value; break;
                     default:
                         throw new NotSupportedException();
                 }
             }
         }
 
+
+        // Methods                                                                                                                  
+        
         // Static methods
         public static void WriteToFile(FeModel model, System.IO.BinaryWriter bw)
         {
@@ -159,9 +167,8 @@ namespace CaeModel
                 FeMesh.ReadFromBinaryFile(model.Mesh, br);
             }
         }
-
-
-        // Methods                                                                                                                  
+        
+        //
         public string[] CheckValidity(List<Tuple<NamedClass, string>> items)
         {
             // Tuple<NamedClass, string>   ...   Tuple<invalidItem, stepName>
@@ -247,6 +254,13 @@ namespace CaeModel
                                 || (dr.RegionType == RegionTypeEnum.ReferencePointName && (_mesh.ReferencePoints.ContainsValidKey(dr.RegionName)));
                         SetItemValidity(dr, valid, items);
                         if (!valid && dr.Active) invalidItems.Add("Boundary condition: " + step.Name + ", " + dr.Name);
+                    }
+                    else if (boundaryCondition is SubmodelBC sm)
+                    {
+                        valid = (sm.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(sm.RegionName))
+                                || (sm.RegionType == RegionTypeEnum.SurfaceName && (_mesh.Surfaces.ContainsValidKey(sm.RegionName)));
+                        SetItemValidity(sm, valid, items);
+                        if (!valid && sm.Active) invalidItems.Add("Boundary condition: " + step.Name + ", " + sm.Name);
                     }
                     else throw new NotSupportedException();
                 }
@@ -393,7 +407,7 @@ namespace CaeModel
             return true;
         }
 
-        // Input //
+        // Input
         public bool ImportGeometryFromStlFile(string fileName)
         {
             FeMesh mesh = FileInOut.Input.StlFileReader.Read(fileName);
@@ -549,6 +563,7 @@ namespace CaeModel
             info.AddValue("_constraints", _constraints, typeof(OrderedDictionary<string, Constraint>));
             info.AddValue("_stepCollection", _stepCollection, typeof(StepCollection));
             info.AddValue("_calculixUserKeywords", _calculixUserKeywords, typeof(OrderedDictionary<int[], Calculix.CalculixUserKeyword>));
+            info.AddValue("_properties", _properties, typeof(ModelProperties));
         }
     }
 }

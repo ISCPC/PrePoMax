@@ -47,7 +47,7 @@ namespace FileInOut.Output
         {
             // only keywords from the model, not user keywords
             // allways add a title keyword to get all possible keyword types to the keyword editor
-
+            //
             Dictionary<string, int[]> referencePointsNodeIds = new Dictionary<string, int[]>();
             if (model.Mesh != null)
             {
@@ -59,14 +59,21 @@ namespace FileInOut.Output
                     id += 2;
                 }
             }
-
+            //
             CalTitle title;
             List<CalculixKeyword> keywords = new List<CalculixKeyword>();
-
-            // heading
+            // Heading
             title = new CalTitle("Heading", "");
             keywords.Add(title);
             AppendHeading(model, title);
+            //Submodel
+            string[] nodeSetNames = GetAllSubmodelNodeSetNames(model);
+            if (nodeSetNames.Length > 0)
+            {
+                title = new CalTitle("Submodel", "");
+                keywords.Add(title);
+                AppendSubmodel(model, nodeSetNames, title);
+            }
 
             // mesh
             title = new CalTitle("Nodes", "");
@@ -83,7 +90,6 @@ namespace FileInOut.Output
 
             title = new CalTitle("Element sets", "");
             keywords.Add(title);
-            //AppendParts(model, title);
             AppendElementSets(model, title);
 
             title = new CalTitle("Surfaces", "");
@@ -219,10 +225,34 @@ namespace FileInOut.Output
             }
         }
 
+        static private string[] GetAllSubmodelNodeSetNames(FeModel model)
+        {
+            List<string> nodeSetNames = new List<string>();
+            foreach (var step in model.StepCollection.StepsList)
+            {
+                foreach (var entry in step.BoundaryConditions)
+                {
+                    if (entry.Value is SubmodelBC sm)
+                    {
+                        if (sm.RegionType == CaeGlobals.RegionTypeEnum.SurfaceName) 
+                            nodeSetNames.Add(model.Mesh.Surfaces[sm.RegionName].NodeSetName);
+                        else nodeSetNames.Add(sm.RegionName);
+                    }
+                } 
+            }
+            return nodeSetNames.ToArray();
+        }
+
         static private void AppendHeading(FeModel model, CalculixKeyword parent)
         {
             CalHeading heading = new CalHeading(model.Name);
             parent.AddKeyword(heading);
+        }
+        static private void AppendSubmodel(FeModel model, string[] nodeSetNames, CalculixKeyword parent)
+        {
+            //*Submodel, TYPE = NODE, INPUT = Model.frd
+            CalSubmodel submodel = new CalSubmodel(model.Properties.GlobalResultsFileName, nodeSetNames);
+            parent.AddKeyword(submodel);
         }
         static private void AppendNodes(FeModel model, Dictionary<string, int[]> referencePointsNodeIds, CalculixKeyword parent)
         {
@@ -510,13 +540,21 @@ namespace FileInOut.Output
         {
             if (model.Mesh != null)
             {
-                if (boundaryCondition is DisplacementRotation)
+                if (boundaryCondition is DisplacementRotation dispRot)
                 {
-                    DisplacementRotation dispRot = (DisplacementRotation)boundaryCondition;
                     string surfaceNodeSetName = null;
-                    if (dispRot.RegionType == CaeGlobals.RegionTypeEnum.SurfaceName) surfaceNodeSetName = model.Mesh.Surfaces[dispRot.RegionName].NodeSetName;
-                    CalDisplacementRotation displacementRotation = new CalDisplacementRotation(boundaryCondition as DisplacementRotation, referencePointsNodeIds, surfaceNodeSetName);
-                    parent.AddKeyword(displacementRotation);
+                    if (dispRot.RegionType == CaeGlobals.RegionTypeEnum.SurfaceName)
+                        surfaceNodeSetName = model.Mesh.Surfaces[dispRot.RegionName].NodeSetName;
+                    CalDisplacementRotation calDisplacementRotation = new CalDisplacementRotation(dispRot, referencePointsNodeIds, surfaceNodeSetName);
+                    parent.AddKeyword(calDisplacementRotation);
+                }
+                else if (boundaryCondition is SubmodelBC sm)
+                {
+                    string surfaceNodeSetName = null;
+                    if (sm.RegionType == CaeGlobals.RegionTypeEnum.SurfaceName)
+                        surfaceNodeSetName = model.Mesh.Surfaces[sm.RegionName].NodeSetName;
+                    CalSubmodelBC calSubmodelBC = new CalSubmodelBC(sm, surfaceNodeSetName);
+                    parent.AddKeyword(calSubmodelBC);
                 }
                 else throw new NotImplementedException();
             }

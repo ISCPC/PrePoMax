@@ -150,6 +150,7 @@
     <Compile Include="ToolStripFocus.Designer.cs">
       <DependentUpon>ToolStripFocus.cs</DependentUpon>
     </Compile>
+    <Compile Include="Trees\OrderedDictionary.cs" />
     <Compile Include="Views\Materials\ViewMaterial.cs" />
     <Compile Include="Views\Sections\ViewSection.cs" />
     <Compile Include="Views\Sections\ViewSolidSection.cs" />

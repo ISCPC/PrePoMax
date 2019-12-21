@@ -8,15 +8,21 @@ using CaeGlobals;
 
 namespace PrePoMax.Forms
 {
-    class FrmMeshingParameters : UserControls.FrmProperties
+    class FrmMeshingParameters : UserControls.FrmProperties, IFormBase
     {
         // Variables                                                                                                                
-        private string _partName;
+        private Controller _controller;
+        private string[] _partNames;
         private MeshingParameters _defaultMeshingParameters;
         private System.Windows.Forms.ContextMenuStrip cmsPropertyGrid;
         private System.ComponentModel.IContainer components;
         private System.Windows.Forms.ToolStripMenuItem tsmiResetAll;
+        private System.Windows.Forms.Button btnPreview;
         private ViewMeshingParameters _viewMeshingParameters;
+
+
+        // Callbacks                                                                                                                
+        public Action UpdateHighlightFromTree;
 
 
         // Properties                                                                                                               
@@ -31,28 +37,28 @@ namespace PrePoMax.Forms
             }
         }
         public MeshingParameters DefaultMeshingParameters { set { _defaultMeshingParameters = value; } }
-        public string PartName
+        public string[] PartNames
         {
-            get { return _partName; }
+            get { return _partNames; }
             set
             {
-                _partName = value;
-                Text = "Edit Meshing Parameters: " + _partName;
+                _partNames = value;
+                Text = "Edit Meshing Parameters: " + _partNames.ToShortString();
             }
         }
 
 
         // Constructors                                                                                                             
-        public FrmMeshingParameters() 
+        public FrmMeshingParameters(Controller controller) 
             : base(1.5)
         {
             InitializeComponent();
-
-            _partName = null;
+            //
+            _controller = controller;
+            _partNames = null;
             _defaultMeshingParameters = null;
             _viewMeshingParameters = null;
-
-            _hideOnClose = false;
+            //
             btnOkAddNew.Visible = false;
         }
         private void InitializeComponent()
@@ -60,6 +66,7 @@ namespace PrePoMax.Forms
             this.components = new System.ComponentModel.Container();
             this.cmsPropertyGrid = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.tsmiResetAll = new System.Windows.Forms.ToolStripMenuItem();
+            this.btnPreview = new System.Windows.Forms.Button();
             this.gbProperties.SuspendLayout();
             this.cmsPropertyGrid.SuspendLayout();
             this.SuspendLayout();
@@ -82,15 +89,28 @@ namespace PrePoMax.Forms
             this.tsmiResetAll.Text = "Reset all";
             this.tsmiResetAll.Click += new System.EventHandler(this.tsmiResetAll_Click);
             // 
+            // btnPreview
+            // 
+            this.btnPreview.Location = new System.Drawing.Point(79, 376);
+            this.btnPreview.Name = "btnPreview";
+            this.btnPreview.Size = new System.Drawing.Size(75, 23);
+            this.btnPreview.TabIndex = 16;
+            this.btnPreview.Text = "Preview";
+            this.btnPreview.UseVisualStyleBackColor = true;
+            this.btnPreview.Click += new System.EventHandler(this.btnPreview_Click);
+            // 
             // FrmMeshingParameters
             // 
             this.ClientSize = new System.Drawing.Size(334, 411);
+            this.Controls.Add(this.btnPreview);
             this.Name = "FrmMeshingParameters";
             this.Text = "Edit Meshing Parameters";
+            this.VisibleChanged += new System.EventHandler(this.FrmMeshingParameters_VisibleChanged);
             this.Controls.SetChildIndex(this.gbProperties, 0);
             this.Controls.SetChildIndex(this.btnCancel, 0);
             this.Controls.SetChildIndex(this.btnOK, 0);
             this.Controls.SetChildIndex(this.btnOkAddNew, 0);
+            this.Controls.SetChildIndex(this.btnPreview, 0);
             this.gbProperties.ResumeLayout(false);
             this.cmsPropertyGrid.ResumeLayout(false);
             this.ResumeLayout(false);
@@ -98,17 +118,55 @@ namespace PrePoMax.Forms
         }
 
 
+        // Event handlers                                                                                                           
+        private void FrmMeshingParameters_VisibleChanged(object sender, EventArgs e)
+        {
+            UpdateHighlightFromTree?.Invoke();
+            btnPreview.Visible = Visible && !Modal;
+        }
+
         // Overrides                                                                                                                
         protected override void Apply()
         {
+            // OK
             _viewMeshingParameters = (ViewMeshingParameters)propertyGrid.SelectedObject;
+            //
+            if (_viewMeshingParameters.GetBase() != null && !Modal)
+            {
+                _controller.SetMeshingParametersCommand(_partNames, _viewMeshingParameters.GetBase());
+            }
         }
 
 
         // Methods                                                                                                                  
+        public bool PrepareForm(string stepName, string partToEditName)
+        {
+            return OnPrepareForm(stepName, partToEditName);
+        }
         private void tsmiResetAll_Click(object sender, EventArgs e)
         {
             MeshingParameters = _defaultMeshingParameters;
         }
+        async private void btnPreview_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                MeshingParameters parameters = ((ViewMeshingParameters)(propertyGrid.SelectedObject)).GetBase();
+                if (_partNames != null && _partNames.Length > 0)
+                {
+                    UpdateHighlightFromTree?.Invoke();
+                    foreach (var partName in _partNames)
+                    {
+                        await Task.Run(() => _controller.PreviewEdgeMesh(partName, parameters));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
+
+       
     }
 }

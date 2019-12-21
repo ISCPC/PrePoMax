@@ -27,6 +27,7 @@ namespace PrePoMax.Commands
             _partNames = partNames;
             _meshingParameters = meshingParameters.DeepClone();
         }
+        // ISerialization
         public CSetMeshingParameters(SerializationInfo info, StreamingContext context)
             : base("") // this can be empty
         {

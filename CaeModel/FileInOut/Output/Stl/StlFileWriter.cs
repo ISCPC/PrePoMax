@@ -13,8 +13,6 @@ namespace FileInOut.Output
     {
         public static void Write(string fileName, FeMesh mesh, string partName)
         {
-            
-
             List<Facet> facets = new List<Facet>();
             Normal normal;
             FeElement element;

@@ -25,6 +25,7 @@ namespace PrePoMax.Forms
             set
             {
                 if (value is DisplacementRotation) _viewBc = new ViewDisplacementRotation((DisplacementRotation)value.DeepClone());
+                else if (value is SubmodelBC) _viewBc = new ViewSubmodel((SubmodelBC)value.DeepClone());
                 else throw new NotImplementedException();
             }
         }
@@ -45,17 +46,37 @@ namespace PrePoMax.Forms
             this.gbType.SuspendLayout();
             this.gbProperties.SuspendLayout();
             this.SuspendLayout();
-            
+            // 
+            // gbProperties
+            // 
+            this.gbProperties.Size = new System.Drawing.Size(310, 322);
+            // 
+            // propertyGrid
+            // 
+            this.propertyGrid.Size = new System.Drawing.Size(298, 294);
+            // 
+            // btnOK
+            // 
+            this.btnOK.Location = new System.Drawing.Point(160, 436);
+            // 
+            // btnCancel
+            // 
+            this.btnCancel.Location = new System.Drawing.Point(241, 436);
+            // 
+            // btnOkAddNew
+            // 
+            this.btnOkAddNew.Location = new System.Drawing.Point(79, 436);
             // 
             // FrmBC
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.ClientSize = new System.Drawing.Size(334, 461);
+            this.ClientSize = new System.Drawing.Size(334, 471);
             this.Name = "FrmBC";
             this.Text = "Edit Boundary Condition";
             this.gbType.ResumeLayout(false);
             this.gbProperties.ResumeLayout(false);
             this.ResumeLayout(false);
+
         }
 
 
@@ -70,6 +91,7 @@ namespace PrePoMax.Forms
         }
         protected override void OnPropertyGridSelectedGridItemChanged()
         {
+            // Highlight
             object value = propertyGrid.SelectedGridItem.Value;
             if (value != null)
             {
@@ -87,6 +109,16 @@ namespace PrePoMax.Forms
 
                     _controller.Highlight3DObjects(objects);
                 }
+                else if (propertyGrid.SelectedObject is ViewSubmodel)
+                {
+                    object[] objects;
+                    ViewSubmodel vsm = propertyGrid.SelectedObject as ViewSubmodel;
+                    if (valueString == vsm.NodeSetName) objects = new object[] { vsm.NodeSetName };
+                    else if (valueString == vsm.SurfaceName) objects = new object[] { vsm.SurfaceName };
+                    else objects = null;
+
+                    _controller.Highlight3DObjects(objects);
+                }
                 else throw new NotImplementedException();
             }
         }
@@ -100,8 +132,13 @@ namespace PrePoMax.Forms
 
             if (_viewBc is ViewDisplacementRotation vdr)
             {
-                if (((DisplacementRotation)vdr.GetBase()).GetConstrainValues().Length == 0)
-                    throw new CaeException("At least one degree of freedom must be constrained for the boundary condition.");
+                if (((DisplacementRotation)vdr.GetBase()).GetConstrainedDirections().Length == 0)
+                    throw new CaeException("At least one degree of freedom must be defined for the boundary condition.");
+            }
+            else if (_viewBc is ViewSubmodel vsm)
+            {
+                if (((SubmodelBC)vsm.GetBase()).GetConstrainedDirections().Length == 0)
+                    throw new CaeException("At least one degree of freedom must be defined for the boundary condition.");
             }
 
             if (_boundaryConditionToEditName == null)
@@ -164,7 +201,8 @@ namespace PrePoMax.Forms
 
                 // select the appropriate boundary condition in the list view - disable event SelectedIndexChanged
                 _lvTypesSelectedIndexChangedEventActive = false;
-                if (_viewBc is ViewBoundaryCondition) lvTypes.Items[0].Selected = true;
+                if (_viewBc is ViewDisplacementRotation) lvTypes.Items[0].Selected = true;
+                else if (_viewBc is ViewSubmodel) lvTypes.Items[1].Selected = true;
                 lvTypes.Enabled = false;
                 _lvTypesSelectedIndexChangedEventActive = true;
 
@@ -180,6 +218,17 @@ namespace PrePoMax.Forms
                     else throw new NotSupportedException();
 
                     vdr.PopululateDropDownLists(nodeSetNames, surfaceNames, referencePointNames);
+                }
+                else if (_viewBc is ViewSubmodel vsm)
+                {
+                    // Check for deleted regions
+                    if (vsm.RegionType == RegionTypeEnum.NodeSetName.ToFriendlyString())
+                        CheckMissingValueRef(ref nodeSetNames, vsm.NodeSetName, s => { vsm.NodeSetName = s; });
+                    else if (vsm.RegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
+                        CheckMissingValueRef(ref surfaceNames, vsm.SurfaceName, s => { vsm.SurfaceName = s; });
+                    else throw new NotSupportedException();
+
+                    vsm.PopululateDropDownLists(nodeSetNames, surfaceNames);
                 }
                 else throw new NotSupportedException();
 
@@ -206,7 +255,7 @@ namespace PrePoMax.Forms
                 vdr = new ViewDisplacementRotation(new DisplacementRotation(GetBoundaryConditionName(), nodeSetNames[0], RegionTypeEnum.NodeSetName));
             else if (surfaceNames.Length > 0)
                 vdr = new ViewDisplacementRotation(new DisplacementRotation(GetBoundaryConditionName(), surfaceNames[0], RegionTypeEnum.SurfaceName));
-            else if (surfaceNames.Length > 0)
+            else if (referencePointNames.Length > 0)
                 vdr = new ViewDisplacementRotation(new DisplacementRotation(GetBoundaryConditionName(), referencePointNames[0], RegionTypeEnum.ReferencePointName));
 
             if (vdr != null)
@@ -215,6 +264,23 @@ namespace PrePoMax.Forms
                 item.Tag = vdr;
             }
             else item.Tag = new ViewError("There is no node set/surface/reference point defined to which a boundary condition could be applied.");
+
+            lvTypes.Items.Add(item);
+
+            item = new ListViewItem("Submodel");
+            ViewSubmodel vsm = null;
+
+            if (nodeSetNames.Length > 0)
+                vsm = new ViewSubmodel(new SubmodelBC(GetBoundaryConditionName(), nodeSetNames[0], RegionTypeEnum.NodeSetName));
+            else if (surfaceNames.Length > 0)
+                vsm = new ViewSubmodel(new SubmodelBC(GetBoundaryConditionName(), surfaceNames[0], RegionTypeEnum.SurfaceName));
+
+            if (vsm != null)
+            {
+                vsm.PopululateDropDownLists(nodeSetNames, surfaceNames);
+                item.Tag = vsm;
+            }
+            else item.Tag = new ViewError("There is no node set/surface defined to which a boundary condition could be applied.");
 
             lvTypes.Items.Add(item);
         }

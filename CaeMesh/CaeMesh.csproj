@@ -62,6 +62,7 @@
     <Compile Include="BoundingBox.cs" />
     <Compile Include="Elements\0D\FeElement0D.cs" />
     <Compile Include="Elements\VtkCellType.cs" />
+    <Compile Include="FeMeshRefinement.cs" />
     <Compile Include="FeReferencePoint.cs" />
     <Compile Include="Elements\3D\FeElement3D.cs" />
     <Compile Include="Elements\2D\FeElement2D.cs" />
@@ -111,6 +112,9 @@
       <Project>{104caebc-0761-4850-a97d-3fc59116c5b6}</Project>
       <Name>CaeGlobals</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="MeshRefinement\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

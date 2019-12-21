@@ -63,8 +63,10 @@ namespace UserControls
         private const int WM_MOUSEMOVE = 0x0200;
         private bool _disableMouse;
         private bool _disableAfterSelect;
-
+        // Geometry
         private TreeNode _geomParts;
+        private TreeNode _meshRefinements;
+        // Model
         private TreeNode _model;
         private TreeNode _meshParts;
         private TreeNode _resultParts;
@@ -80,8 +82,10 @@ namespace UserControls
         // Results
         private TreeNode _resultFieldOutputs;
         private TreeNode _resultHistoryOutputs;
-
+        //
         private string _geomPartsName;
+        private string _meshRefinementsName;
+        //
         private string _modelName;
         private string _meshPartsName;
         private string _resultPartsName;
@@ -98,8 +102,8 @@ namespace UserControls
         private string _boundaryConditionsName;
         private string _loadsName;
         private string _analysesName;
-
-
+        
+        
         // Properties                                                                                                               
         public bool ScreenUpdating 
         { 
@@ -170,6 +174,8 @@ namespace UserControls
             InitializeComponent();
 
             _geomPartsName = "Parts";
+            _meshRefinementsName = "Mesh refinements";
+            //
             _modelName = "Model";
             _meshPartsName = "Parts";
             _resultPartsName = "Parts";
@@ -187,8 +193,10 @@ namespace UserControls
             // Results
             _fieldOutputsName = "Field outputs";
             _historyOutputsName = "History outputs";
-
+            //
             _geomParts = cltvGeometry.Nodes.Find(_geomPartsName, true)[0];
+            _meshRefinements = cltvGeometry.Nodes.Find(_meshRefinementsName, true)[0];
+            //
             _model = cltvModel.Nodes.Find(_modelName, true)[0];
             _meshParts = cltvModel.Nodes.Find(_meshPartsName, true)[0];
             _resultParts = cltvResults.Nodes.Find(_resultPartsName, true)[0];
@@ -209,7 +217,7 @@ namespace UserControls
             // Geometry icons
             _geomParts.StateImageKey = "GeomPart";
             // Model icons
-            cltvModel.Nodes.Find("Mesh", true)[0].StateImageKey = "Mesh";            
+            cltvModel.Nodes.Find("Mesh", true)[0].StateImageKey = "Mesh";
             _meshParts.StateImageKey = "BasePart";
             _nodeSets.StateImageKey = "Node_set";
             _elementSets.StateImageKey = "Element_set";
@@ -993,7 +1001,8 @@ namespace UserControls
                 List<NamedClass> items = new List<NamedClass>();
                 string stepName;
                 List<string> stepNames = new List<string>();
-
+                CodersLabTreeView tree = GetActiveTree();
+                //
                 foreach (TreeNode selectedNode in GetActiveTree().SelectedNodes)
                 {
                     if (selectedNode.Tag == null) continue;
@@ -1002,8 +1011,8 @@ namespace UserControls
                     {
                         items.Add((NamedClass)selectedNode.Tag);
                         stepName = null;
-                        if (cltvModel.SelectedNode.Parent != null && cltvModel.SelectedNode.Parent.Parent != null && cltvModel.SelectedNode.Parent.Parent.Tag is Step)
-                            stepName = cltvModel.SelectedNode.Parent.Parent.Text;
+                        if (tree.SelectedNode.Parent != null && tree.SelectedNode.Parent.Parent != null && tree.SelectedNode.Parent.Parent.Tag is Step)
+                            stepName = tree.SelectedNode.Parent.Parent.Text;
                         stepNames.Add(stepName);
                     }
                 }
@@ -1117,6 +1126,8 @@ namespace UserControls
         public void Clear()
         {
             _geomParts.Nodes.Clear();
+            _meshRefinements.Nodes.Clear();
+            //
             _meshParts.Nodes.Clear();
             _nodeSets.Nodes.Clear();
             _elementSets.Nodes.Clear();
@@ -1127,9 +1138,11 @@ namespace UserControls
             _constraints.Nodes.Clear();
             _steps.Nodes.Clear();
             _analyses.Nodes.Clear();
-
+            //
             SetNumberOfUserKeywords(0);
             _geomParts.Text = _geomPartsName;
+            _meshRefinements.Text = _meshRefinementsName;
+            //
             _meshParts.Text = _meshPartsName;
             _nodeSets.Text = _nodeSetsName;
             _elementSets.Text = _elementSetsName;
@@ -1140,32 +1153,37 @@ namespace UserControls
             _constraints.Text = _constraintName;
             _steps.Text = _stepsName;
             _analyses.Text = _analysesName;
-
-            ClearResults();
-
-            //tcModelResults.SelectedTab = tpModel;
-            //SetModelTab();
-
-            //btvGeometry.Nodes[0].ExpandAll();
-            //btvModel.Nodes[0].ExpandAll();
-            //btvResults.Nodes[0].ExpandAll();
-        }
-        public void ClearSelection()
-        {
+            //
             cltvGeometry.SelectedNodes.Clear();
             cltvModel.SelectedNodes.Clear();
-            cltvResults.SelectedNodes.Clear();
+            //
+            ClearResults(); //calls cltvResults.SelectedNodes.Clear();
+        }
+        public void ClearActiveTreeSelection()
+        {
+            GetActiveTree().SelectedNodes.Clear();
+        }
+        public void ClearTreeSelection(ViewType view)
+        {
+            CodersLabTreeView tree = null;
+            if (view == ViewType.Geometry) tree = cltvGeometry;
+            else if (view == ViewType.Model) tree = cltvModel;
+            else if (view == ViewType.Results) tree = cltvResults;
+            else throw new NotSupportedException();
+            tree.SelectedNodes.Clear();
         }
         public void ClearResults()
         {
             _resultParts.Nodes.Clear();
             _resultParts.Text = _resultPartsName;
-
+            //
             _resultFieldOutputs.Nodes.Clear();
             _resultFieldOutputs.Text = _fieldOutputsName;
-
+            //
             _resultHistoryOutputs.Nodes.Clear();
             _resultHistoryOutputs.Text = _historyOutputsName;
+            //
+            cltvResults.SelectedNodes.Clear();
         }
 
         public void UpdateHighlight()
@@ -1198,7 +1216,9 @@ namespace UserControls
                     if (tmp.Length > 0) baseNode = tmp[0];
                     else return -1;
                 }
-
+                //
+                baseNode.Parent.Expand();   // expand if called as function
+                //
                 if (e.Button == MouseButtons.Left)
                 {
                     if (modifierKeys == Keys.Shift && modifierKeys == Keys.Control) { }
@@ -1239,67 +1259,63 @@ namespace UserControls
         public void RegenerateTree(FeModel model, Dictionary<string, AnalysisJob> jobs, FeResults results, HistoryResults history)
         {
             if (!_screenUpdating) return;
-
+            //
             try
             {
+                cltvGeometry.BeginUpdate();
                 cltvModel.BeginUpdate();
+                cltvResults.BeginUpdate();
+                Dictionary<CodersLabTreeView, string[]> selectedNodePaths = GetSelectedNodePaths();
                 Clear();
                 if (model != null)
                 {
                     // User keywords
                     if (model.CalculixUserKeywords != null) SetNumberOfUserKeywords(model.CalculixUserKeywords.Count);
-
                     // Geom Parts
-                    if (model.Geometry != null) AddObjectsToNode<string, CaeMesh.BasePart>(_geomPartsName, _geomParts, model.Geometry.Parts);
-                    _geomParts.Expand();
-                    
+                    if (model.Geometry != null)
+                    {
+                        AddObjectsToNode<string, CaeMesh.BasePart>(_geomPartsName, _geomParts, model.Geometry.Parts);
+                        _geomParts.Expand();
+                        AddObjectsToNode<string, CaeMesh.FeMeshRefinement>(_meshRefinementsName, _meshRefinements, model.Geometry.MeshRefinements);
+                        _meshRefinements.Expand();
+                    }
+                    //
                     if (model.Mesh != null)
                     {
                         // Mesh Parts
                         AddObjectsToNode<string, CaeMesh.BasePart>(_meshPartsName, _meshParts, model.Mesh.Parts);
-
                         // Node sets
                         AddObjectsToNode<string, CaeMesh.FeNodeSet>(_nodeSetsName, _nodeSets, model.Mesh.NodeSets);
-
                         // Element sets
                         AddObjectsToNode<string, CaeMesh.FeElementSet>(_elementSetsName, _elementSets, model.Mesh.ElementSets);
-
                         // Surfaces
                         AddObjectsToNode<string, CaeMesh.FeSurface>(_surfacesName, _surfaces, model.Mesh.Surfaces);
-
                         // Reference points
                         AddObjectsToNode<string, CaeMesh.FeReferencePoint>(_referencePointsName, _referencePoints, model.Mesh.ReferencePoints);
                     }
-
                     // Materials
                     AddObjectsToNode<string, Material>(_materialsName, _materials, model.Materials);
-
                     // Sections
                     AddObjectsToNode<string, Section>(_sectionsName, _sections, model.Sections);
-
                     // Constraints
                     AddObjectsToNode<string, Constraint>(_constraintName, _constraints, model.Constraints);
-
                     // Steps
                     AddSteps(model.StepCollection.StepsList);
-
                     // Analyses
                     AddObjectsToNode<string, AnalysisJob>(_analysesName, _analyses, jobs);
                     _analyses.ExpandAll();
-
                     if (results != null)
                     {
                         if (results.Mesh != null)
                         {
                             // Results parts
                             AddObjectsToNode<string, CaeMesh.BasePart>(_resultPartsName, _resultParts, results.Mesh.Parts);
-
                             // Field outputs
                             string[] fieldNames;
                             string[][] allComponents;
-
+                            //
                             fieldNames = results.GetAllFieldNames();
-
+                            //
                             allComponents = new string[fieldNames.Length][];
                             for (int i = 0; i < fieldNames.Length; i++)
                             {
@@ -1308,17 +1324,67 @@ namespace UserControls
                             SetFieldOutputAndComponentNames(fieldNames, allComponents);
                         }
                     }
-
-                    if (history != null)
-                    {
-                        SetHistoryOutputNames(history);
-                    }
+                    if (history != null) SetHistoryOutputNames(history);
                 }
+                //
+                SelectNodesByPath(selectedNodePaths);
+                //
+                cltvGeometry.EndUpdate();
                 cltvModel.EndUpdate();
+                cltvResults.EndUpdate();
             }
             catch { }
         }
-
+        private Dictionary<CodersLabTreeView, string[]> GetSelectedNodePaths()
+        {
+            string splitter = "\\";
+            string path;
+            TreeNode node;
+            Dictionary<CodersLabTreeView, string[]> selectedNodePaths = new Dictionary<CodersLabTreeView, string[]>();
+            List<string> nodePaths = new List<string>();
+            CodersLabTreeView[] trees = new CodersLabTreeView[] { cltvGeometry, cltvModel, cltvResults };
+            //
+            for (int i = 0; i < trees.Length; i++)
+            {
+                if (trees[i].SelectedNodes.Count > 0)
+                {
+                    nodePaths.Clear();
+                    foreach (TreeNode selectedNode in trees[i].SelectedNodes)
+                    {
+                        path = "";
+                        node = selectedNode;
+                        while (node != null)
+                        {
+                            path = node.Name + splitter + path;
+                            node = node.Parent;
+                        }
+                        nodePaths.Add(path);
+                    }
+                    selectedNodePaths.Add(trees[i], nodePaths.ToArray());
+                }
+            }
+            return selectedNodePaths;
+        }
+        private void SelectNodesByPath(Dictionary<CodersLabTreeView, string[]> selectedNodeNames)
+        {
+            string[] splitter = new string[] { "\\" };
+            string[] tmp;
+            TreeNode node;
+            foreach (var entry in selectedNodeNames)
+            {
+                node = null;
+                for (int i = 0; i < entry.Value.Length; i++)
+                {
+                    tmp = entry.Value[i].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
+                    node = entry.Key.Nodes[tmp[0]];
+                    for (int j = 1; j < tmp.Length; j++)
+                    {
+                        if (node != null) node = node.Nodes[tmp[j]];
+                    }
+                    if (node != null) entry.Key.SelectedNodes.Add(node);
+                }
+            }
+        }
         public void AddTreeNode(ViewType view, NamedClass item, string stepName)
         {
             if (!_screenUpdating) return;
@@ -1328,7 +1394,14 @@ namespace UserControls
             TreeNode parent;
             TreeNode[] tmp;
 
-            if (item is MeshPart)
+            if (item is FeMeshRefinement)
+            {
+                node = _meshRefinements.Nodes.Add(item.Name);
+                node.Name = node.Text;
+                node.Tag = item;
+                parent = _meshRefinements;
+            }
+            else if (item is MeshPart)
             {
                 node = _meshParts.Nodes.Add(item.Name);
                 node.Name = node.Text;
@@ -1463,20 +1536,21 @@ namespace UserControls
 
             SetNodeStatus(node);
 
-            cltvModel.SelectedNode = node;
+            GetActiveTree().SelectedNode = node;
         }
         public void UpdateTreeNode(ViewType view, string oldItemName, NamedClass item, string stepName, bool updateSelection)
         {
             if (!_screenUpdating) return;   // must be here; when _screenUpdating = false the function add tree node is not working
-
+            //
             CodersLabTreeView tree = null;
             if (view == ViewType.Geometry) tree = cltvGeometry;
             else if (view == ViewType.Model) tree = cltvModel;
             else if (view == ViewType.Results) tree = cltvResults;
             else throw new NotSupportedException();
-
+            //
             TreeNode baseNode = null;
             if (item is AnalysisJob) baseNode = _analyses;
+            else if (item is FeMeshRefinement) baseNode = _meshRefinements;
             else baseNode = tree.Nodes[0];
 
             TreeNode[] tmp;
@@ -1525,15 +1599,17 @@ namespace UserControls
         public void RemoveTreeNode<T>(ViewType view, string nodeName, string stepName) where T : NamedClass
         {
             if (!_screenUpdating) return;
-            //if (item.Internal) return;
-
-            TreeNode baseNode = null;
-            if (view == ViewType.Geometry) baseNode = cltvGeometry.Nodes[0];
-            else if (view == ViewType.Model) baseNode = cltvModel.Nodes[0];
-            else if (view == ViewType.Results) baseNode = cltvResults.Nodes[0];
+            //
+            CodersLabTreeView tree = null;      // the tree depends on the view
+            if (view == ViewType.Geometry) tree = cltvGeometry;
+            else if (view == ViewType.Model) tree = cltvModel;
+            else if (view == ViewType.Results) tree = cltvResults;
             else throw new NotSupportedException();
-
+            //
+            TreeNode baseNode = null;
             if (typeof(T) == typeof(AnalysisJob)) baseNode = _analyses;
+            if (typeof(T) == typeof(FeMeshRefinement)) baseNode = _meshRefinements;
+            else baseNode = tree.Nodes[0];
 
             TreeNode[] tmp;
 
@@ -1561,13 +1637,11 @@ namespace UserControls
 
             TreeNode parent = tmp[0].Parent;
 
-            cltvModel.SelectedNode = null;
-
             tmp[0].Remove();
+            tree.SelectedNodes.Remove(tmp[0]);
+
             parent.Text = parent.Name;
             if (parent.Nodes.Count > 0) parent.Text += " (" + parent.Nodes.Count + ")";
-
-            cltvModel.SelectedNode = parent;
         }
 
         private void AddObjectsToNode<Tkey, Tval>(string initialNodeName, TreeNode node, IDictionary<Tkey, Tval> dictionary)
@@ -1773,6 +1847,8 @@ namespace UserControls
         //                                                                                                              
         private CodersLabTreeView GetActiveTree()
         {
+            if (tcGeometryModelResults.TabPages.Count <= 0) return null;
+            //
             if (tcGeometryModelResults.SelectedTab == tpGeometry) return cltvGeometry;
             else if (tcGeometryModelResults.SelectedTab == tpModel) return cltvModel;
             else if (tcGeometryModelResults.SelectedTab == tpResults) return cltvResults;
@@ -1828,7 +1904,8 @@ namespace UserControls
         //                                                                                                              
         private bool CanCreate(TreeNode node)
         {
-            if (node.Name == _nodeSetsName) return true;
+            if (node.Name == _meshRefinementsName) return true;
+            else if (node.Name == _nodeSetsName) return true;
             else if (node.Name == _elementSetsName) return true;
             else if (node.Name == _surfacesName) return true;
             else if (node.Name == _referencePointsName) return true;
@@ -1845,7 +1922,8 @@ namespace UserControls
         }
         private bool CanDeactivate(TreeNode node)
         {
-            if (node.Tag is Constraint) return true;
+            if (node.Tag is FeMeshRefinement) return true;
+            else if (node.Tag is Constraint) return true;
             else if (node.Tag is Step) return true;
             else if (node.Tag is HistoryOutput) return true;
             else if (node.Tag is FieldOutput) return true;

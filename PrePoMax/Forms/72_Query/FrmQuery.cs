@@ -224,7 +224,7 @@ namespace PrePoMax.Forms
         }
         public void OneEdgePicked(int id)
         {
-            int[] itemTypePart = _controller.DisplayedMesh.GetItemTypePartIdsFromGeometryId(id);
+            int[] itemTypePart = CaeMesh.FeMesh.GetItemTypePartIdsFromGeometryId(id);
             CaeMesh.BasePart part = _controller.DisplayedMesh.GetPartById(itemTypePart[2]);
             double length = _controller.DisplayedMesh.GetEdgeLength(id);
 
@@ -244,7 +244,7 @@ namespace PrePoMax.Forms
         }
         public void OneSurfacePicked(int id)
         {
-            int[] itemTypePart = _controller.DisplayedMesh.GetItemTypePartIdsFromGeometryId(id);
+            int[] itemTypePart = CaeMesh.FeMesh.GetItemTypePartIdsFromGeometryId(id);
             CaeMesh.BasePart part = _controller.DisplayedMesh.GetPartById(itemTypePart[2]);
             double area = _controller.DisplayedMesh.GetSurfaceArea(id);
 

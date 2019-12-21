@@ -49,7 +49,7 @@ namespace CaeMesh
         private Dictionary<int, FeElement> _elements;
         [NonSerialized]
         private Octree.PointOctree<int> _octree;
-
+        
         private OrderedDictionary<string, FeNodeSet> _nodeSets;                 //ISerializable
         private OrderedDictionary<string, FeElementSet> _elementSets;           //ISerializable
         private OrderedDictionary<string, FeSurface> _surfaces;                 //ISerializable
@@ -58,6 +58,7 @@ namespace CaeMesh
         private int _maxElementId;                                              //ISerializable
         private BoundingBox _boundingBox;                                       //ISerializable
         private OrderedDictionary<string, BasePart> _parts;                     //ISerializable
+        private OrderedDictionary<string, FeMeshRefinement> _meshRefinements;   //ISerializable
         private MeshRepresentation _meshRepresentation;                         //ISerializable
         private bool _manifoldGeometry;                                         //ISerializable
 
@@ -93,6 +94,10 @@ namespace CaeMesh
         {
             get { return _parts; }
         }
+        public OrderedDictionary<string, FeMeshRefinement> MeshRefinements
+        {
+            get { return _meshRefinements; }
+        }
         public int MaxNodeId
         {
             get { return _maxNodeId; }
@@ -126,16 +131,18 @@ namespace CaeMesh
             _elements = elements;
             _meshRepresentation = representation;
             _manifoldGeometry = false;
-
+            //
             _nodeSets = new OrderedDictionary<string, FeNodeSet>();
             _elementSets = new OrderedDictionary<string, FeElementSet>();
-
+            //
             _surfaces = new OrderedDictionary<string, FeSurface>();
             _referencePoints = new OrderedDictionary<string, FeReferencePoint>();
-
+            //
             _parts = new OrderedDictionary<string, BasePart>();
             ExtractPartsFast(inpElementTypeSets, partNamePrefix, importOptions);
-
+            //
+            _meshRefinements = new OrderedDictionary<string, FeMeshRefinement>();
+            //
             UpdateMaxNodeAndElementIds();            
         }
         public FeMesh(FeMesh mesh, string[] partsToKeep)
@@ -145,7 +152,7 @@ namespace CaeMesh
             {
                 _parts.Add(partName, mesh.Parts[partName].DeepCopy());
             }
-
+            //
             HashSet<int> nodeIds = new HashSet<int>();
             HashSet<int> elementIds = new HashSet<int>();
             foreach (var entry in _parts)
@@ -153,24 +160,26 @@ namespace CaeMesh
                 nodeIds.UnionWith(entry.Value.NodeLabels);
                 elementIds.UnionWith(entry.Value.Labels);
             }
-
+            //
             _nodes = new Dictionary<int, FeNode>();
             foreach (var nodeId in nodeIds)
             {
                 _nodes.Add(nodeId, mesh.Nodes[nodeId].DeepCopy());
             }
-
+            //
             _elements = new Dictionary<int, FeElement>();
             foreach (var elementId in elementIds)
             {
                 _elements.Add(elementId, mesh.Elements[elementId].DeepCopy());
             }
-
+            //
             _nodeSets = new OrderedDictionary<string, FeNodeSet>();
             _elementSets = new OrderedDictionary<string, FeElementSet>();
             _surfaces = new OrderedDictionary<string, FeSurface>();
             _referencePoints = new OrderedDictionary<string, FeReferencePoint>();
-
+            //
+            _meshRefinements = new OrderedDictionary<string, FeMeshRefinement>();
+            //
             _maxNodeId = mesh._maxNodeId;
             _maxElementId = mesh._maxElementId;
             ComputeBoundingBox();
@@ -187,7 +196,7 @@ namespace CaeMesh
                     case "_nodeSets":
                         if (entry.Value is Dictionary<string, FeNodeSet> nsd)
                         {
-                            // Compatibility for version v.0.5.1
+                            // Compatibility for version v0.5.1
                             nsd.OnDeserialization(null);
                             _nodeSets = new OrderedDictionary<string, FeNodeSet>(nsd);
                         }
@@ -198,7 +207,7 @@ namespace CaeMesh
                     case "_elementSets":
                         if (entry.Value is Dictionary<string, FeElementSet> esd)
                         {
-                            // Compatibility for version v.0.5.1
+                            // Compatibility for version v0.5.1
                             esd.OnDeserialization(null);
                             _elementSets = new OrderedDictionary<string, FeElementSet>(esd);
                         }
@@ -209,7 +218,7 @@ namespace CaeMesh
                     case "_surfaces":
                         if (entry.Value is Dictionary<string, FeSurface> sd)
                         {
-                            // Compatibility for version v.0.5.1
+                            // Compatibility for version v0.5.1
                             sd.OnDeserialization(null);
                             _surfaces = new OrderedDictionary<string, FeSurface>(sd);
                         }
@@ -220,7 +229,7 @@ namespace CaeMesh
                     case "_referencePoints":
                         if (entry.Value is Dictionary<string, FeReferencePoint> rpd)
                         {
-                            // Compatibility for version v.0.5.1
+                            // Compatibility for version v0.5.1
                             rpd.OnDeserialization(null);
                             _referencePoints = new OrderedDictionary<string, FeReferencePoint>(rpd);
                         }
@@ -237,7 +246,7 @@ namespace CaeMesh
                     case "_parts":
                         if (entry.Value is Dictionary<string, BasePart> bpd)
                         {
-                            // Compatibility for version v.0.5.1
+                            // Compatibility for version v0.5.1
                             bpd.OnDeserialization(null);
                             _parts = new OrderedDictionary<string, BasePart>(bpd);
                         }
@@ -245,6 +254,8 @@ namespace CaeMesh
                         else if (entry.Value == null) _parts = null;
                         else throw new NotSupportedException();
                         break;
+                    case "_meshRefinements":
+                        _meshRefinements = (OrderedDictionary<string, FeMeshRefinement>)entry.Value; break;
                     case "_meshRepresentation":
                         _meshRepresentation = (MeshRepresentation)entry.Value; break;
                     case "_manifoldGeometry":
@@ -253,6 +264,8 @@ namespace CaeMesh
                         throw new NotSupportedException();
                 }
             }
+            // Compatibility for version v0.5.2
+            if (_meshRefinements == null) _meshRefinements = new OrderedDictionary<string, FeMeshRefinement>();
         }
 
 
@@ -3514,7 +3527,6 @@ namespace CaeMesh
         {
             // geometryId = itemId * 100000 + typeId * 10000 + partId;
             // 1 ... vertex, 2 ... edge, 3 ... surface
-
             int[] itemTypePart = GetItemTypePartIdsFromGeometryId(geometryId);
             int[] nodeIds;
 
@@ -3580,14 +3592,209 @@ namespace CaeMesh
 
             return nodeIds.ToArray();
         }
-        public int[] GetItemTypePartIdsFromGeometryId(int geometryId)
+        // Get node, edge or triangle coordinates for mesh refinement
+        public double[][] GetVetexAndEdgeCoorFromGeometryIds(int[] ids, double meshSize, bool edgeRepresentation)
         {
+            int[][] cells = GetCellsFromGeometryIds(ids, edgeRepresentation);
+            List<double[]> coor = new List<double[]>();
+            List<double[][]> triangleList = new List<double[][]>();
+            //
+            for (int i = 0; i < cells.Length; i++)
+            {
+                if (cells[i].Length == 1)
+                {
+                    coor.Add(_nodes[cells[i][0]].Coor);
+                }
+                else if (cells[i].Length == 2)
+                {
+                    coor.AddRange(SplitEdge(cells[i], meshSize));
+                }
+                else if (cells[i].Length == 3)
+                {
+                    coor.AddRange(SplitTriangle(cells[i], meshSize));
+                }
+                else throw new NotSupportedException();
+            }
+            return coor.ToArray();
+        }
+        private int[][] GetCellsFromGeometryIds(int[] ids, bool edgeRepresentation)
+        {
+            int[][] cells;
+            List<int[]> cellsList = new List<int[]>();
+            foreach (var id in ids)
+            {
+                cells = GetCellsFromGeometryId(id, edgeRepresentation);
+                if (cells != null) cellsList.AddRange(cells);
+            }
+            return cellsList.ToArray();
+        }
+        private int[][] GetCellsFromGeometryId(int geometryId, bool edgeRepresentation)
+        {
+            int[] itemTypePart = GetItemTypePartIdsFromGeometryId(geometryId);
+            // Find part by id
+            BasePart part = null;
+            foreach (var entry in _parts)
+            {
+                if (entry.Value.PartId == itemTypePart[2])
+                {
+                    part = entry.Value;
+                    break;
+                }
+            }
+            //
+            if (part == null) return null;
+            VisualizationData vis = part.Visualization;
+            List<int[]> cellsList = new List<int[]>();
+            //
+            if (itemTypePart[1] == 1)
+            {
+                cellsList.Add(new int[] { vis.VertexNodeIds[itemTypePart[0]] });
+            }
+            else if (itemTypePart[1] == 2)
+            {
+                foreach (var edgeCellId in vis.EdgeCellIdsByEdge[itemTypePart[0]])
+                {
+                    cellsList.Add(vis.EdgeCells[edgeCellId]);
+                }
+            }
+            else if (itemTypePart[1] == 3)
+            {
+                if (edgeRepresentation)
+                {
+                    foreach (var edgeId in vis.FaceEdgeIds[itemTypePart[0]])
+                    {
+                        foreach (var edgeCellId in vis.EdgeCellIdsByEdge[edgeId])
+                        {
+                            cellsList.Add(vis.EdgeCells[edgeCellId]);
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (var cellId in vis.CellIdsByFace[itemTypePart[0]])
+                    {
+                        cellsList.Add(vis.Cells[cellId]);
+                    }
+                }
+            }
+            else throw new NotSupportedException();
+            //
+            return cellsList.ToArray();
+        }
+        private double[][] SplitEdge(int[] edgeNodeIds, double meshSize)
+        {
+            Vec3D n1 = new Vec3D(_nodes[edgeNodeIds[0]].Coor);
+            Vec3D n2 = new Vec3D(_nodes[edgeNodeIds[1]].Coor);
+            Vec3D e = n2 - n1;
+
+            int numSeg = (int)(e.Len / meshSize) + 1;
+            double[][] coor = new double[numSeg + 1][];
+            coor[0] = n1.Coor;
+            coor[numSeg] = n2.Coor;
+            if (numSeg > 1)
+            {
+                e *= (1.0 / numSeg);
+                for (int i = 1; i < numSeg; i++)
+                {
+                    coor[i] = (n1 + i * e).Coor;
+                }
+            }
+            return coor;
+        }
+        private double[][] SplitTriangle(int[] triangleNodeIds, double meshSize)
+        {
+            Vec3D[] triangle = new Vec3D[3];
+            triangle[0] = new Vec3D(_nodes[triangleNodeIds[0]].Coor);
+            triangle[1] = new Vec3D(_nodes[triangleNodeIds[1]].Coor);
+            triangle[2] = new Vec3D(_nodes[triangleNodeIds[2]].Coor);
+            //
+            HashSet<Vec3D[]> splitTriangles = new HashSet<Vec3D[]>();
+            HashSet<Vec3D[]> trianglesToSplit = new HashSet<Vec3D[]>();
+            HashSet<Vec3D[]> newTrianglesToSplit = new HashSet<Vec3D[]>();
+            trianglesToSplit.Add(triangle);
+            //
+            while (trianglesToSplit.Count > 0)
+            {
+                newTrianglesToSplit.Clear();
+                foreach (var triangleToSplit in trianglesToSplit)
+                {
+                    if (TriangleSize(triangleToSplit) > meshSize)
+                    {
+                        newTrianglesToSplit.UnionWith(SplitTriangle(triangleToSplit));
+                    }
+                    else
+                    {
+                        splitTriangles.Add(triangleToSplit);
+                    }
+                }
+                trianglesToSplit.Clear();
+                trianglesToSplit.UnionWith(newTrianglesToSplit);
+            }
+            //
+            HashSet<Vec3D> nodes = new HashSet<Vec3D>();
+            foreach (var splitTriangle in splitTriangles) nodes.UnionWith(splitTriangle);
+            //
+            int count = 0;
+            double[][] coor = new double[nodes.Count][];
+            foreach (var node in nodes) coor[count++] = node.Coor;
+            //
+            return coor;
+        }
+        private double TriangleSize(Vec3D[] triangle)
+        {
+            Vec3D n1 = triangle[0];
+            Vec3D n2 = triangle[1];
+            Vec3D n3 = triangle[2];
+            //
+            double l1 = (n2 - n1).Len;
+            double l2 = (n3 - n2).Len;
+            double l3 = (n1 - n3).Len;
+            return Math.Max(Math.Max(l1, l2), l3);
+        }
+        private Vec3D[][] SplitTriangle(Vec3D[] triangle)
+        {
+            Vec3D n1 = triangle[0];
+            Vec3D n2 = triangle[1];
+            Vec3D n3 = triangle[2];
+            //
+            Vec3D n4 = (n1 + n2) * 0.5;
+            Vec3D n5 = (n2 + n3) * 0.5;
+            Vec3D n6 = (n3 + n1) * 0.5;
+            //
+            Vec3D[][] coor = new Vec3D[4][];
+            coor[0] = new Vec3D[3];
+            coor[0][0] = n1;
+            coor[0][1] = n4;
+            coor[0][2] = n6;
+            //
+            coor[1] = new Vec3D[3];
+            coor[1][0] = n4;
+            coor[1][1] = n5;
+            coor[1][2] = n6;
+            //
+            coor[2] = new Vec3D[3];
+            coor[2][0] = n4;
+            coor[2][1] = n2;
+            coor[2][2] = n5;
+            //
+            coor[3] = new Vec3D[3];
+            coor[3][0] = n6;
+            coor[3][1] = n5;
+            coor[3][2] = n3;
+            //
+            return coor;
+        }
+        //
+        public static int[] GetItemTypePartIdsFromGeometryId(int geometryId)
+        {
+            // geometryId = itemId * 100000 + typeId * 10000 + partId;
+            // 1 ... vertex, 2 ... edge, 3 ... surface
             int partId = geometryId % 10000;
             int typeId = (geometryId / 10000) % 10;
             int itemId = geometryId / 100000;
             return new int[] { itemId, typeId, partId };
         }
-
+        
         private int GetNextEdgeNodeId(int n1Id, int n2Id, HashSet<int> n2Neighbours, double angle)
         {
             double minAngle = double.MaxValue;
@@ -5232,6 +5439,7 @@ namespace CaeMesh
             info.AddValue("_maxElementId", _maxElementId, typeof(int));
             info.AddValue("_boundingBox", _boundingBox, typeof(BoundingBox));
             info.AddValue("_parts", _parts, typeof(OrderedDictionary<string, BasePart>));
+            info.AddValue("_meshRefinements", _meshRefinements, typeof(OrderedDictionary<string, FeMeshRefinement>));
             info.AddValue("_meshRepresentation", _meshRepresentation, typeof(MeshRepresentation));
             info.AddValue("_manifoldGeometry", _manifoldGeometry, typeof(bool));
         }

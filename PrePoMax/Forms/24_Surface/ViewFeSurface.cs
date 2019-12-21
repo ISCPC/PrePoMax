@@ -47,7 +47,7 @@ namespace PrePoMax.Forms
 
         [CategoryAttribute("Data")]
         [OrderedDisplayName(3, 10, "Select items")]
-        [DescriptionAttribute("Select the items for the set.")]
+        [DescriptionAttribute("Select the items for the surface.")]
         [EditorAttribute(typeof(ItemSetDataEditor), typeof(System.Drawing.Design.UITypeEditor))]
         public ItemSetData ItemSetData
         {

@@ -14,6 +14,7 @@ namespace CaeGlobals
         Element,
         Edge,
         Surface,
-        Part
+        Geometry,
+        Part,
     }
 }

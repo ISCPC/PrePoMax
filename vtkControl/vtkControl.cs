@@ -873,44 +873,40 @@ namespace vtkControl
         private void PickByGeometry(out vtkActor pickedActor, int x, int y)
         {
             double[] pickedPoint = GetPickPoint(out pickedActor, x, y);
-
+            //
             if (pickedPoint == null)
             {
                 if (_probeWidget.GetVisibility() == 1) _probeWidget.VisibilityOff();
                 return;
             }
-
+            //
             vtkCellLocator cellLocator;
             vtkCell cell;
             int globalCellId = GetGlobalCellIdClosestTo3DPoint(ref pickedPoint, out cell, out cellLocator);
             int[] globalCellEdgeNodeIds = GetEdgeNodeIds(pickedPoint, globalCellId, cell, cellLocator);
             int[] globalCellFaceNodeIds = GetCellFaceNodeIds(cell, cellLocator);
             double dist = vtkInteractorStyleControl.DisplayToWorldScale(_renderer, 7);
-
+            //
             vtkMaxActorData actorData = Controller_GetGeometryActorData(pickedPoint,
                                                                         dist,
                                                                         globalCellId, 
                                                                         globalCellEdgeNodeIds,
                                                                         globalCellFaceNodeIds);
+            //
             if (actorData.Geometry.Nodes.Coor.Length == 1)
             {
                 // nodal actor data
-                _mouseSelectionActorCurrent = new vtkMaxActor(actorData, true, true);
-                AddActorGeometry(_mouseSelectionActorCurrent, vtkRendererLayer.Selection);
-                _mouseSelectionActorCurrent.Geometry.SetProperty(Globals.CurrentMouseSelectionProperty);
+                _mouseSelectionActorCurrent = new vtkMaxActor(actorData, false, true);
             }
             else
             {
                 // edge or surface actor data
                 actorData.CanHaveElementEdges = true;
-
-                vtkMaxActor actor = new vtkMaxActor(actorData);
-                _mouseSelectionActorCurrent = actor;
-
-                AddActorGeometry(_mouseSelectionActorCurrent, vtkRendererLayer.Selection);
-                _mouseSelectionActorCurrent.Geometry.SetProperty(Globals.CurrentMouseSelectionProperty);
+                _mouseSelectionActorCurrent = new vtkMaxActor(actorData);
             }
-
+            //
+            AddActorGeometry(_mouseSelectionActorCurrent, vtkRendererLayer.Selection);
+            _mouseSelectionActorCurrent.Geometry.SetProperty(Globals.CurrentMouseSelectionProperty);
         }
         private void PickByGeometryEdgeAngle(out vtkActor pickedActor, int x, int y)
         {
@@ -4359,7 +4355,7 @@ namespace vtkControl
         public void UpdateActorScalarField(string actorName, float[] values, CaeGlobals.NodesExchangeData extremeNodes,
                                            float[] frustumCellLocatorValues)
         {
-            if (System.Diagnostics.Debugger.IsAttached)
+            if (System.Diagnostics.Debugger.IsAttached && false)
             {
                 Test(actorName, values, extremeNodes, frustumCellLocatorValues);
                 return;
@@ -5018,8 +5014,6 @@ namespace vtkControl
             this.Invalidate();
         }
         
-
-
         public void AddTest()
         {
             double[,] p = new double[,] {
@@ -5112,7 +5106,6 @@ namespace vtkControl
 
             this.Invalidate();
         }
-
         private void Hexahedron()
         {
             // Setup the coordinates of eight points 
@@ -5181,7 +5174,6 @@ namespace vtkControl
 
             this.Invalidate();
         }
-
         public void AddSphere()
         {
             // source object
@@ -5222,7 +5214,6 @@ namespace vtkControl
 
             this.Invalidate();
         }
-
         private void Actor2D()
         {
             // Create the geometry of a point (the coordinate)
@@ -5252,7 +5243,6 @@ namespace vtkControl
             _renderer.AddViewProp(actor);
             _renderer.ResetCamera();
         }
-
         private void AddGlyphDemo()
         {
             vtkPoints points = vtkPoints.New();
@@ -5290,7 +5280,6 @@ namespace vtkControl
 
             this.Invalidate();
         }
-
         private void AddCaptionWidget()
         {
             // Create the widget and its representation
@@ -5318,7 +5307,6 @@ namespace vtkControl
 
             captionWidget.On();
         }
-
         private void AddDiskAnimation()
         {
             //vtkCamera camera = vtkCamera.New();
@@ -5431,8 +5419,6 @@ namespace vtkControl
 
 
         }
-
-
     }
 }
 

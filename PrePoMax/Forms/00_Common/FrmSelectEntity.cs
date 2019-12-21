@@ -51,31 +51,36 @@ namespace PrePoMax.Forms
         // Event handlers                                                                                                           
         private void btnContinue_Click(object sender, EventArgs e)
         {
-            this.DialogResult = System.Windows.Forms.DialogResult.OK;
-            Hide();  // first hide since this form calls itself in the following lines
+            try
+            {
+                this.DialogResult = System.Windows.Forms.DialogResult.OK;
+                Hide();  // first hide since this form calls itself in the following lines
 
-            if (dgvNames.MultiSelect)
-            {
-                if (_stepName == null)
+                if (dgvNames.MultiSelect)
                 {
-                    if (MultipleEntitiesSelected != null) MultipleEntitiesSelected(GetSelectedEntityNames());
+                    if (_stepName == null)
+                    {
+                        if (MultipleEntitiesSelected != null) MultipleEntitiesSelected(GetSelectedEntityNames());
+                    }
+                    else
+                    {
+                        if (MultipleEntitiesSelectedInStep != null) MultipleEntitiesSelectedInStep(_stepName, GetSelectedEntityNames());
+                    }
                 }
                 else
                 {
-                    if (MultipleEntitiesSelectedInStep != null) MultipleEntitiesSelectedInStep(_stepName, GetSelectedEntityNames());
+                    if (_stepName == null)
+                    {
+                        if (OneEntitySelected != null) OneEntitySelected(GetSelectedEntityNames()[0]);
+                    }
+                    else
+                    {
+                        if (OneEntitySelectedInStep != null) OneEntitySelectedInStep(_stepName, GetSelectedEntityNames()[0]);
+                    }
                 }
             }
-            else
-            {
-                if (_stepName == null)
-                {
-                    if (OneEntitySelected != null) OneEntitySelected(GetSelectedEntityNames()[0]);
-                }
-                else
-                {
-                    if (OneEntitySelectedInStep != null) OneEntitySelectedInStep(_stepName, GetSelectedEntityNames()[0]);
-                }
-            }
+            catch
+            {}
         }
         private void btnCancel_Click(object sender, EventArgs e)
         {

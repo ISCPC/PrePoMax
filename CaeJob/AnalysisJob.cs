@@ -176,15 +176,18 @@ namespace CaeJob
             _timer.Stop();
             _watch.Stop();
 
-            AddDataToOutput(" Elapsed time [s]: " + _watch.Elapsed.TotalSeconds.ToString());
-            Timer_Tick(null, null);
-
-            if (_jobStatus == JobStatus.OK)
-                Debug.WriteLine(DateTime.Now + "   Job finished.");
+            AddDataToOutput("");
+            if (_jobStatus == JobStatus.OK && !File.Exists(Path.Combine(WorkDirectory, _name + ".frd")))
+                AddDataToOutput(" Job failed.");
             else if (_jobStatus == JobStatus.Killed)
-                Debug.WriteLine(DateTime.Now + "   Job killed.");
+                AddDataToOutput(" Job killed.");
             else if (_jobStatus == JobStatus.Failed)
-                Debug.WriteLine(DateTime.Now + "   Job failed.");
+                AddDataToOutput(" Job failed.");
+
+            AddDataToOutput("");
+            AddDataToOutput(" Elapsed time [s]: " + _watch.Elapsed.TotalSeconds.ToString());
+
+            Timer_Tick(null, null);
 
             JobStatusChanged?.Invoke(_name, _jobStatus);
 

@@ -82,7 +82,12 @@ namespace PrePoMax
         }
         public void UpdateRegionVisibility()
         {
-            foreach (var entry in _regionTypePropertyNamePairs) _dctd.GetProperty(entry.Value).SetIsBrowsable(_multiRegion.RegionType == entry.Key);
+            bool browsable;
+            foreach (var entry in _regionTypePropertyNamePairs)
+            {
+                browsable = _multiRegion.RegionType == entry.Key;
+                _dctd.GetProperty(entry.Value).SetIsBrowsable(browsable);
+            }
         }
     }
 }

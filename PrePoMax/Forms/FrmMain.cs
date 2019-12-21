@@ -45,11 +45,14 @@ namespace PrePoMax
 
         private Point _formLocation;
         private List<Form> _allForms;
-        private FrmSectionView _frmSectionView;
-        private FrmCalculixKeywordEditor _frmCalculixKeywordEditor;
+        private FrmSectionView _frmSectionView;        
         private FrmSelectEntity _frmSelectEntity;
         private FrmSelectItemSet _frmSelectItemSet;
         private FrmAnalyzeGeometry _frmAnalyzeGeometry;
+        private FrmMeshingParameters _frmMeshingParameters;
+        private FrmMeshRefinement _frmMeshRefinement;
+        private FrmModelProperties _frmModelProperties;
+        private FrmCalculixKeywordEditor _frmCalculixKeywordEditor;
         private FrmPartProperties _frmPartProperties;
         private FrmTranslate _frmTranslate;
         private FrmScale _frmScale;
@@ -213,6 +216,16 @@ namespace PrePoMax
                 _frmAnalyzeGeometry = new FrmAnalyzeGeometry(_controller);
                 AddFormToAllForms(_frmAnalyzeGeometry);
 
+                _frmMeshingParameters = new FrmMeshingParameters(_controller);
+                _frmMeshingParameters.UpdateHighlightFromTree = UpdateHighlightFromTree;
+                AddFormToAllForms(_frmMeshingParameters);
+
+                _frmMeshRefinement = new FrmMeshRefinement(_controller);
+                AddFormToAllForms(_frmMeshRefinement);
+
+                _frmModelProperties = new FrmModelProperties(_controller);
+                AddFormToAllForms(_frmModelProperties);
+
                 _frmPartProperties = new FrmPartProperties(_controller);
                 AddFormToAllForms(_frmPartProperties);
 
@@ -304,7 +317,6 @@ namespace PrePoMax
         }
 
        
-
         private void FrmMain_Shown(object sender, EventArgs e)
         {
             // Set vtk control size
@@ -500,7 +512,11 @@ namespace PrePoMax
 
         private void ModelTree_CreateEvent(string nodeName, string stepName)
         {
-            if (_controller.Model.Mesh != null && _controller.CurrentView == ViewGeometryModelResults.Model)
+            if (_controller.Model.Geometry != null && _controller.CurrentView == ViewGeometryModelResults.Geometry)
+            {
+                if (nodeName == "Mesh refinements") tsmiCreateMeshRefinement_Click(null, null);
+            }
+            else if (_controller.Model.Mesh != null && _controller.CurrentView == ViewGeometryModelResults.Model)
             {
                 if (nodeName == "Node sets") tsmiCreateNodeSet_Click(null, null);
                 else if (nodeName == "Element sets") tsmiCreateElementSet_Click(null, null);
@@ -523,13 +539,14 @@ namespace PrePoMax
             if (_controller.CurrentView == ViewGeometryModelResults.Geometry)
             {
                 if (namedClass is CaeMesh.GeometryPart) EditGeometryPart((namedClass).Name);
+                else if (namedClass is CaeMesh.FeMeshRefinement) EditMeshRefinement((namedClass).Name);
             }
             // Model
             else if (_controller.CurrentView == ViewGeometryModelResults.Model)
             {
                 if (namedClass is EmptyNamedClass) // empty named class is used to trasfer the name only
                 {
-                    if (namedClass.Name == typeof(CaeModel.FeModel).ToString()) tsmiEditCalculiXKeywords_Click(null, null);
+                    if (namedClass.Name == typeof(CaeModel.FeModel).ToString()) tsmiEditModel_Click(null, null);
                 }
                 else if (namedClass is CaeMesh.MeshPart) EditModelPart((namedClass).Name);
                 else if (namedClass is CaeMesh.FeNodeSet) EditNodeSet((namedClass).Name);
@@ -605,6 +622,7 @@ namespace PrePoMax
             if (_controller.CurrentView == ViewGeometryModelResults.Geometry)
             {
                 DeleteItems<CaeMesh.GeometryPart>(items, DeleteGeometryParts);
+                DeleteItems<CaeMesh.FeMeshRefinement>(items, DeleteMeshRefinements);
             }
             else if (_controller.CurrentView == ViewGeometryModelResults.Model)
             {
@@ -725,7 +743,8 @@ namespace PrePoMax
             {
                 case ViewGeometryModelResults.Geometry:
                     tsmiGeometry.Enabled = true;
-                    tsmiMesh.Enabled = false;
+                    tsmiMesh.Enabled = true;
+                    tsmiModel.Enabled = false;
                     tsmiProperty.Enabled = false;
                     tsmiInteraction.Enabled = false;
                     tsmiStepMenu.Enabled = false;
@@ -748,7 +767,8 @@ namespace PrePoMax
                     break;
                 case ViewGeometryModelResults.Model:
                     tsmiGeometry.Enabled = false;
-                    tsmiMesh.Enabled = true;
+                    tsmiMesh.Enabled = false;
+                    tsmiModel.Enabled = true;
                     tsmiProperty.Enabled = true;
                     tsmiInteraction.Enabled = true;
                     tsmiStepMenu.Enabled = true;
@@ -772,6 +792,7 @@ namespace PrePoMax
                 case ViewGeometryModelResults.Results:
                     tsmiGeometry.Enabled = false;
                     tsmiMesh.Enabled = false;
+                    tsmiModel.Enabled = false;
                     tsmiProperty.Enabled = false;
                     tsmiInteraction.Enabled = false;
                     tsmiStepMenu.Enabled = false;
@@ -1094,32 +1115,7 @@ namespace PrePoMax
         private void tsmiRegenerateForRemeshing_Click(object sender, EventArgs e)
         {
             RegenerateWithDialogs(false, true);
-        }
-        private void tsmiEditCalculiXKeywords_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                if (CheckValiditiy())
-                {
-                    _frmCalculixKeywordEditor = new FrmCalculixKeywordEditor();
-                    _frmCalculixKeywordEditor.Keywords = _controller.GetCalculixModelKeywords();
-                    _frmCalculixKeywordEditor.UserKeywords = _controller.GetCalculixUserKeywords();
-
-                    if (_frmCalculixKeywordEditor.Keywords != null)
-                    {
-                        if (_frmCalculixKeywordEditor.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-                        {
-                            _controller.SetCalculixUserKeywordsCommand(_frmCalculixKeywordEditor.UserKeywords);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                CaeGlobals.ExceptionTools.Show(this, ex);
-            }
-        }
-
+        }        
         private async void RegenerateWithDialogs(bool showImportDialog, bool showMeshParametersDialog)
         {
             try
@@ -1370,7 +1366,6 @@ namespace PrePoMax
         #endregion
 
         #region Geometry part   ####################################################################################################
-
         private void tsmiEditGeometryPart_Click(object sender, EventArgs e)
         {
             try
@@ -1513,12 +1508,60 @@ namespace PrePoMax
 
         #endregion  ################################################################################################################
 
-        #region Meshing ############################################################################################################
+        #region Mesh ###############################################################################################################
         private void tsmiMeshingParameters_Click(object sender, EventArgs e)
         {
             try
             {
                 SelectMultipleEntities("Parts", _controller.GetGeometryParts(), GetSetMeshingParameters);
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiPreviewEdgeMesh_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Parts", _controller.GetGeometryParts(), PreviewEdgeMeshes);
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiCreateMeshRefinement_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (_controller.Model.Geometry == null) return;
+                // Data editor
+                ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
+                ItemSetDataEditor.ParentForm = _frmMeshRefinement;
+                ShowForm(_frmMeshRefinement, "Create Mesh Refinement", null);
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiEditMeshRefinement_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectOneEntity("Mesh Refinements", _controller.GetMeshRefinements(), EditMeshRefinement);
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiDeleteMeshRefinement_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Mesh Refinements", _controller.GetMeshRefinements(), DeleteMeshRefinements);
             }
             catch (Exception ex)
             {
@@ -1537,20 +1580,20 @@ namespace PrePoMax
             }
             
         }
+
+
         private void GetSetMeshingParameters(string[] partNames)
         {
             try
             {
-                CaeMesh.MeshingParameters meshingParameters = GetMeshingParameters(partNames);
-                if (meshingParameters != null) // Cancel pressed on Meshing parameters form
-                    _controller.SetMeshingParametersCommand(partNames, meshingParameters);
+                GetMeshingParameters(partNames, false);
             }
             catch (Exception ex)
             {
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-        public CaeMesh.MeshingParameters GetMeshingParameters(string[] partNames)
+        public CaeMesh.MeshingParameters GetMeshingParameters(string[] partNames, bool formModal)
         {
             double sumMax = 0;
             double sumMin = 0;
@@ -1567,17 +1610,28 @@ namespace PrePoMax
                 // meshing parameters exist only when all parts have the same meshing parameters
                 if (!CaeMesh.MeshingParameters.Equals(meshingParameters, part.MeshingParameters))
                     meshingParameters = null;
-
+                //
                 sumMax += defaultMeshingParameters.MaxH;
                 sumMin += defaultMeshingParameters.MinH;
             }
             defaultMeshingParameters.MaxH = Math.Round(sumMax / partNames.Length, 2);
             defaultMeshingParameters.MinH = Math.Round(sumMin / partNames.Length, 2);
-
             // use meshingParameters as default if meshing parameters are not equal
             if (meshingParameters == null) meshingParameters = defaultMeshingParameters;
-
-            return GetMeshingParametersByForm(partNames.ToShortString(), defaultMeshingParameters, meshingParameters);
+            //
+            CaeMesh.MeshingParameters parameters = null;
+            if (this.InvokeRequired)
+            {
+                this.Invoke((MethodInvoker)delegate () 
+                {
+                    parameters = GetMeshingParametersForm(partNames, defaultMeshingParameters, meshingParameters, formModal); 
+                });
+            }
+            else
+            {
+                parameters = GetMeshingParametersForm(partNames, defaultMeshingParameters, meshingParameters, formModal);
+            }
+            return parameters;
         }
         public CaeMesh.MeshingParameters GetDefaultMeshingParameters(string partName)
         {
@@ -1596,31 +1650,84 @@ namespace PrePoMax
 
             return defaultMeshingParameters;
         }
-        private CaeMesh.MeshingParameters GetMeshingParametersByForm(string formName, 
-                                                                     CaeMesh.MeshingParameters defaultMeshingParameters,
-                                                                     CaeMesh.MeshingParameters meshingParameters)
+        public CaeMesh.MeshingParameters GetMeshingParametersForm(string[] partNames,
+                                                                  CaeMesh.MeshingParameters defaultMeshingParameters,
+                                                                  CaeMesh.MeshingParameters meshingParameters,
+                                                                  bool formModal)
         {
-            FrmMeshingParameters frmMeshingParameters = new FrmMeshingParameters();
-            frmMeshingParameters.Icon = Icon;
-            frmMeshingParameters.PartName = formName;
-            frmMeshingParameters.DefaultMeshingParameters = defaultMeshingParameters;
-            frmMeshingParameters.MeshingParameters = meshingParameters;
-            frmMeshingParameters.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
+            // - show form
+            CloseAllForms();
+            SetFormLoaction(_frmMeshingParameters);
+            _frmMeshingParameters.PartNames = partNames;
+            _frmMeshingParameters.DefaultMeshingParameters = defaultMeshingParameters;
+            _frmMeshingParameters.MeshingParameters = meshingParameters;
+            //
+            if (formModal)
+            {
+                if (_frmMeshingParameters.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                    return _frmMeshingParameters.MeshingParameters;
+                else return null; // Cancel pressed on Meshing parameters form
+            }
+            else
+            {
+                _frmMeshingParameters.Show();
+                return null;
+            }
+        }
+        private void SetDefaultMeshingParameters(string partName)
+        {
+            CaeMesh.MeshingParameters defaultMeshingParameters = GetDefaultMeshingParameters(partName);
+            _controller.SetMeshingParametersCommand(new string[] { partName }, defaultMeshingParameters);
+        }
+        private async void PreviewEdgeMeshes(string[] partNames)
+        {
+            try
+            {
+                foreach (var partName in partNames)
+                {
+                    CaeMesh.GeometryPart part = _controller.GetGeometryPart(partName);
+                    if (part.MeshingParameters == null) SetDefaultMeshingParameters(partName);
+                    await Task.Run(() => _controller.PreviewEdgeMesh(partName, part.MeshingParameters));
+                }
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
 
-            if (frmMeshingParameters.ShowDialog() == System.Windows.Forms.DialogResult.OK) return frmMeshingParameters.MeshingParameters;
-            else return null; // Cancel pressed on Meshing parameters form
+
+        private void EditMeshRefinement(string meshRefinementName)
+        {
+            // Data editor
+            ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
+            ItemSetDataEditor.ParentForm = _frmMeshRefinement;
+            ShowForm(_frmMeshRefinement, "Edit Mesh Refinement", meshRefinementName);
+        }
+        private void DeleteMeshRefinements(string[] meshRefinementNames)
+        {
+            if (MessageBox.Show("OK to delete selected mesh refinements?", Globals.ProgramName, MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+            {
+                _controller.RemoveMeshRefinementsCommand(meshRefinementNames);
+            }
         }
         private async void CreateMeshes(string[] partNames)
         {
             try
             {
                 SetStateWorking(Globals.MeshingText, true);
+                MouseEventArgs e = new MouseEventArgs(MouseButtons.Left, 0, 0, 0, 0);
+                Keys modifierKeys = Keys.Control;
+                _modelTree.ClearTreeSelection(ViewType.Model);
+                //
                 foreach (var partName in partNames)
                 {
                     CaeMesh.GeometryPart part = _controller.GetGeometryPart(partName);
                     if (part.MeshingParameters == null) SetDefaultMeshingParameters(partName);
 
                      await Task.Run(() => _controller.CreateMeshCommand(partName));
+
+                    _modelTree.SelectBasePart(e, modifierKeys, part);
                 }
             }
             catch (Exception ex)
@@ -1632,12 +1739,52 @@ namespace PrePoMax
                 SetStateReady(Globals.MeshingText);
             }
         }
-        private void SetDefaultMeshingParameters(string partName)
+        
+
+        #endregion  ################################################################################################################
+
+        #region Model edit  ########################################################################################################
+        
+        private void tsmiEditModel_Click(object sender, EventArgs e)
         {
-            CaeMesh.MeshingParameters defaultMeshingParameters = GetDefaultMeshingParameters(partName);
-            _controller.SetMeshingParametersCommand(new string[] { partName }, defaultMeshingParameters);
+            try
+            {
+                EditModel();
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiEditCalculiXKeywords_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (CheckValiditiy())
+                {
+                    _frmCalculixKeywordEditor = new FrmCalculixKeywordEditor();
+                    _frmCalculixKeywordEditor.Keywords = _controller.GetCalculixModelKeywords();
+                    _frmCalculixKeywordEditor.UserKeywords = _controller.GetCalculixUserKeywords();
+
+                    if (_frmCalculixKeywordEditor.Keywords != null)
+                    {
+                        if (_frmCalculixKeywordEditor.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                        {
+                            _controller.SetCalculixUserKeywordsCommand(_frmCalculixKeywordEditor.UserKeywords);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
         }
 
+        private void EditModel()
+        {
+            ShowForm(_frmModelProperties, "Edit Model", null);
+        }
 
         #endregion  ################################################################################################################
 
@@ -1671,7 +1818,6 @@ namespace PrePoMax
         #endregion  ################################################################################################################
 
         #region Model part menu  ###################################################################################################
-
         private void tsmiEditPart_Click(object sender, EventArgs e)
         {
             try
@@ -1868,7 +2014,7 @@ namespace PrePoMax
                 // Data editor
                 ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
                 ItemSetDataEditor.ParentForm = _frmNodeSet;
-                ShowForm(_frmNodeSet, "Edit Node Set", null);
+                ShowForm(_frmNodeSet, "Create Node Set", null);
             }
             catch (Exception ex)
             {
@@ -1925,7 +2071,7 @@ namespace PrePoMax
                 // Data editor
                 ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
                 ItemSetDataEditor.ParentForm = _frmElementSet;
-                ShowForm(_frmElementSet, "Edit Element set", null);
+                ShowForm(_frmElementSet, "Create Element Set", null);
             }
             catch (Exception ex)
             {
@@ -1971,7 +2117,7 @@ namespace PrePoMax
             // Data editor
             ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
             ItemSetDataEditor.ParentForm = _frmElementSet;
-            ShowForm(_frmElementSet, "Edit Element set", elementSetName);
+            ShowForm(_frmElementSet, "Edit Element Set", elementSetName);
         }
         private void ConvertElementSetsToMeshParts(string[] elementSetNames)
         {
@@ -3697,9 +3843,9 @@ namespace PrePoMax
         {
             InvokeIfRequired(() => _vtk.ClearSelection());
         }
-        public void ClearTreeSelection()
+        public void ClearActiveTreeSelection()
         {
-            _modelTree.ClearSelection();
+            InvokeIfRequired(_modelTree.ClearActiveTreeSelection);
         }
         
         #endregion  ################################################################################################################

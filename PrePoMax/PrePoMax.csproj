@@ -100,69 +100,73 @@
     <Compile Include="Command\0030_Geometry\01_Part\CRemoveGeometryParts.cs" />
     <Compile Include="Command\0030_Geometry\01_Part\CReplaceGeometryPartProperties.cs" />
     <Compile Include="Command\0030_Geometry\01_Part\CShowGeometryParts.cs" />
-    <Compile Include="Command\0030_Geometry\02_CreateMesh\CCreateMesh.cs" />
-    <Compile Include="Command\0030_Geometry\02_CreateMesh\CSetMeshingParameters.cs" />
-    <Compile Include="Command\0040_Model\01_Node\CRenumberNodes.cs" />
-    <Compile Include="Command\0040_Model\11_Part\CRotateModelParts.cs" />
-    <Compile Include="Command\0040_Model\11_Part\CScaleModelParts.cs" />
-    <Compile Include="Command\0040_Model\11_Part\CSetTransparencyForModelParts.cs" />
-    <Compile Include="Command\0040_Model\11_Part\CTranslateModelParts.cs" />
-    <Compile Include="Command\0040_Model\11_Part\CMergeModelParts.cs" />
-    <Compile Include="Command\0040_Model\11_Part\CShowModelParts.cs" />
-    <Compile Include="Command\0040_Model\11_Part\CHideModelParts.cs" />
-    <Compile Include="Command\0040_Model\12_NodeSet\CAddNodeSet.cs" />
-    <Compile Include="Command\0040_Model\12_NodeSet\CRemoveNodeSets.cs" />
-    <Compile Include="Command\0040_Model\12_NodeSet\CReplaceNodeSet.cs" />
-    <Compile Include="Command\0040_Model\13_ElementSet\CAddElementSet.cs" />
-    <Compile Include="Command\0040_Model\13_ElementSet\CConvertElementSetsToMeshParts.cs" />
-    <Compile Include="Command\0040_Model\13_ElementSet\CRemoveElementSets.cs" />
-    <Compile Include="Command\0040_Model\13_ElementSet\CReplaceElementSet.cs" />
-    <Compile Include="Command\0040_Model\15_ReferencePoint\CAddReferencePoint.cs" />
-    <Compile Include="Command\0040_Model\15_ReferencePoint\CRemoveReferencePoints.cs" />
-    <Compile Include="Command\0040_Model\15_ReferencePoint\CReplaceReferencePoint.cs" />
-    <Compile Include="Command\0051_Material\CAddMaterial.cs" />
-    <Compile Include="Command\0051_Material\CRemoveMaterials.cs" />
-    <Compile Include="Command\0051_Material\CReplaceMaterial.cs" />
-    <Compile Include="Command\0052_Section\CAddSection.cs" />
-    <Compile Include="Command\0052_Section\CRemoveSections.cs" />
-    <Compile Include="Command\0052_Section\CReplaceSection.cs" />
-    <Compile Include="Command\0061_Constraint\CAddConstraint.cs" />
-    <Compile Include="Command\0061_Constraint\CHideConstraints.cs" />
-    <Compile Include="Command\0061_Constraint\CRemoveConstraints.cs" />
-    <Compile Include="Command\0061_Constraint\CReplaceConstraint.cs" />
-    <Compile Include="Command\0061_Constraint\CShowConstraints.cs" />
-    <Compile Include="Command\0071_Step\CAddStep.cs" />
-    <Compile Include="Command\0071_Step\CRemoveSteps.cs" />
-    <Compile Include="Command\0071_Step\CReplaceStep.cs" />
-    <Compile Include="Command\0072_HistoryOutput\CAddHistoryOutput.cs" />
-    <Compile Include="Command\0072_HistoryOutput\CRemoveHistoryOutputs.cs" />
-    <Compile Include="Command\0072_HistoryOutput\CReplaceHisotryOutput.cs" />
-    <Compile Include="Command\0073_FieldOutput\CAddFieldOutput.cs" />
-    <Compile Include="Command\0073_FieldOutput\CRemoveFieldOutputs.cs" />
-    <Compile Include="Command\0073_FieldOutput\CReplaceFieldOutput.cs" />
-    <Compile Include="Command\0081_BoundaryConditions\CAddBC.cs" />
-    <Compile Include="Command\0081_BoundaryConditions\CHideBCs.cs" />
-    <Compile Include="Command\0081_BoundaryConditions\CRemoveBCs.cs" />
-    <Compile Include="Command\0081_BoundaryConditions\CReplaceBC.cs" />
-    <Compile Include="Command\0081_BoundaryConditions\CShowBCs.cs" />
-    <Compile Include="Command\0091_Load\CAddLoad.cs" />
-    <Compile Include="Command\0091_Load\CHideLoads.cs" />
-    <Compile Include="Command\0091_Load\CRemoveLoads.cs" />
-    <Compile Include="Command\0091_Load\CReplaceLoad.cs" />
-    <Compile Include="Command\0091_Load\CShowLoads.cs" />
-    <Compile Include="Command\0111_Analysis\CAddJob.cs" />
-    <Compile Include="Command\0111_Analysis\CRemoveJobs.cs" />
-    <Compile Include="Command\0111_Analysis\CReplaceJob.cs" />
+    <Compile Include="Command\0040_Mesh\CAddMeshRefinement.cs" />
+    <Compile Include="Command\0040_Mesh\CCreateMesh.cs" />
+    <Compile Include="Command\0040_Mesh\CRemoveMeshRefinements.cs" />
+    <Compile Include="Command\0040_Mesh\CReplaceMeshRefinement.cs" />
+    <Compile Include="Command\0040_Mesh\CSetMeshingParameters.cs" />
+    <Compile Include="Command\0050_Model\01_Properties\CReplaceModelProperties.cs" />
+    <Compile Include="Command\0050_Model\10_Node\CRenumberNodes.cs" />
+    <Compile Include="Command\0050_Model\11_Part\CRotateModelParts.cs" />
+    <Compile Include="Command\0050_Model\11_Part\CScaleModelParts.cs" />
+    <Compile Include="Command\0050_Model\11_Part\CSetTransparencyForModelParts.cs" />
+    <Compile Include="Command\0050_Model\11_Part\CTranslateModelParts.cs" />
+    <Compile Include="Command\0050_Model\11_Part\CMergeModelParts.cs" />
+    <Compile Include="Command\0050_Model\11_Part\CShowModelParts.cs" />
+    <Compile Include="Command\0050_Model\11_Part\CHideModelParts.cs" />
+    <Compile Include="Command\0050_Model\12_NodeSet\CAddNodeSet.cs" />
+    <Compile Include="Command\0050_Model\12_NodeSet\CRemoveNodeSets.cs" />
+    <Compile Include="Command\0050_Model\12_NodeSet\CReplaceNodeSet.cs" />
+    <Compile Include="Command\0050_Model\13_ElementSet\CAddElementSet.cs" />
+    <Compile Include="Command\0050_Model\13_ElementSet\CConvertElementSetsToMeshParts.cs" />
+    <Compile Include="Command\0050_Model\13_ElementSet\CRemoveElementSets.cs" />
+    <Compile Include="Command\0050_Model\13_ElementSet\CReplaceElementSet.cs" />
+    <Compile Include="Command\0050_Model\15_ReferencePoint\CAddReferencePoint.cs" />
+    <Compile Include="Command\0050_Model\15_ReferencePoint\CRemoveReferencePoints.cs" />
+    <Compile Include="Command\0050_Model\15_ReferencePoint\CReplaceReferencePoint.cs" />
+    <Compile Include="Command\0061_Material\CAddMaterial.cs" />
+    <Compile Include="Command\0061_Material\CRemoveMaterials.cs" />
+    <Compile Include="Command\0061_Material\CReplaceMaterial.cs" />
+    <Compile Include="Command\0062_Section\CAddSection.cs" />
+    <Compile Include="Command\0062_Section\CRemoveSections.cs" />
+    <Compile Include="Command\0062_Section\CReplaceSection.cs" />
+    <Compile Include="Command\0071_Constraint\CAddConstraint.cs" />
+    <Compile Include="Command\0071_Constraint\CHideConstraints.cs" />
+    <Compile Include="Command\0071_Constraint\CRemoveConstraints.cs" />
+    <Compile Include="Command\0071_Constraint\CReplaceConstraint.cs" />
+    <Compile Include="Command\0071_Constraint\CShowConstraints.cs" />
+    <Compile Include="Command\0081_Step\CAddStep.cs" />
+    <Compile Include="Command\0081_Step\CRemoveSteps.cs" />
+    <Compile Include="Command\0081_Step\CReplaceStep.cs" />
+    <Compile Include="Command\0082_HistoryOutput\CAddHistoryOutput.cs" />
+    <Compile Include="Command\0082_HistoryOutput\CRemoveHistoryOutputs.cs" />
+    <Compile Include="Command\0082_HistoryOutput\CReplaceHisotryOutput.cs" />
+    <Compile Include="Command\0083_FieldOutput\CAddFieldOutput.cs" />
+    <Compile Include="Command\0083_FieldOutput\CRemoveFieldOutputs.cs" />
+    <Compile Include="Command\0083_FieldOutput\CReplaceFieldOutput.cs" />
+    <Compile Include="Command\0091_BoundaryConditions\CAddBC.cs" />
+    <Compile Include="Command\0091_BoundaryConditions\CHideBCs.cs" />
+    <Compile Include="Command\0091_BoundaryConditions\CRemoveBCs.cs" />
+    <Compile Include="Command\0091_BoundaryConditions\CReplaceBC.cs" />
+    <Compile Include="Command\0091_BoundaryConditions\CShowBCs.cs" />
+    <Compile Include="Command\0101_Load\CAddLoad.cs" />
+    <Compile Include="Command\0101_Load\CHideLoads.cs" />
+    <Compile Include="Command\0101_Load\CRemoveLoads.cs" />
+    <Compile Include="Command\0101_Load\CReplaceLoad.cs" />
+    <Compile Include="Command\0101_Load\CShowLoads.cs" />
+    <Compile Include="Command\0121_Analysis\CAddJob.cs" />
+    <Compile Include="Command\0121_Analysis\CRemoveJobs.cs" />
+    <Compile Include="Command\0121_Analysis\CReplaceJob.cs" />
     <Compile Include="Command\CActivateDeactivateMultilpe.cs" />
     <Compile Include="Command\ICommandWithDialog.cs" />
     <Compile Include="Command\CClear.cs" />
     <Compile Include="Command\CActivateDeactivate.cs" />
     <Compile Include="Command\CommandsCollection.cs" />
-    <Compile Include="Command\0040_Model\11_Part\CRemoveModelParts.cs" />
-    <Compile Include="Command\0040_Model\11_Part\CReplaceModelPartProperties.cs" />
-    <Compile Include="Command\0040_Model\14_Surface\CReplaceSurface.cs" />
-    <Compile Include="Command\0040_Model\14_Surface\CRemoveSurfaces.cs" />
-    <Compile Include="Command\0040_Model\14_Surface\CAddSurface.cs" />
+    <Compile Include="Command\0050_Model\11_Part\CRemoveModelParts.cs" />
+    <Compile Include="Command\0050_Model\11_Part\CReplaceModelPartProperties.cs" />
+    <Compile Include="Command\0050_Model\14_Surface\CReplaceSurface.cs" />
+    <Compile Include="Command\0050_Model\14_Surface\CRemoveSurfaces.cs" />
+    <Compile Include="Command\0050_Model\14_Surface\CAddSurface.cs" />
     <Compile Include="Command\Command.cs" />
     <Compile Include="Controller.cs" />
     <Compile Include="Enums\ViewGeometryModelResults.cs" />
@@ -174,12 +178,20 @@
       <DependentUpon>FrmSectionView.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\02_View\SectionViewParameters.cs" />
-    <Compile Include="Forms\12_AnalyzeGeometry\FrmAnalyzeGeometry.cs">
+    <Compile Include="Forms\03_AnalyzeGeometry\FrmAnalyzeGeometry.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\12_AnalyzeGeometry\FrmAnalyzeGeometry.Designer.cs">
+    <Compile Include="Forms\03_AnalyzeGeometry\FrmAnalyzeGeometry.Designer.cs">
       <DependentUpon>FrmAnalyzeGeometry.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\12_MeshRefinement\FrmMeshRefinement.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\12_MeshRefinement\ViewFeMeshRefinement.cs" />
+    <Compile Include="Forms\20_Model\FrmModelProperties.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\20_Model\ViewModelProperties.cs" />
     <Compile Include="Forms\21_Part\FrmScale.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -207,6 +219,7 @@
     <Compile Include="Forms\42_HistoryOutput\ViewHistoryOutput.cs" />
     <Compile Include="Forms\42_HistoryOutput\ViewElementHistoryOutput.cs" />
     <Compile Include="Forms\42_HistoryOutput\ViewNodalHistoryOutput.cs" />
+    <Compile Include="Forms\51_BoundaryConditions\ViewSubmodel.cs" />
     <Compile Include="Forms\61_Load\ViewCentrifLoad.cs" />
     <Compile Include="Forms\61_Load\ViewGravityLoad.cs" />
     <Compile Include="Forms\71_Settings\FrmGetEnvVars.cs">
@@ -267,10 +280,10 @@
     <Compile Include="Forms\IFormItemSetDataParent.cs" />
     <Compile Include="Forms\IFormBase.cs" />
     <Compile Include="Forms\00_Common\ViewValue.cs" />
-    <Compile Include="Forms\01_CalculixKeywordEditor\FrmCalculixKeywordEditor.cs">
+    <Compile Include="Forms\20_Model\FrmCalculixKeywordEditor.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\01_CalculixKeywordEditor\FrmCalculixKeywordEditor.Designer.cs">
+    <Compile Include="Forms\20_Model\FrmCalculixKeywordEditor.Designer.cs">
       <DependentUpon>FrmCalculixKeywordEditor.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\11_MeshingParameters\ViewMeshingParameters.cs" />
@@ -390,8 +403,14 @@
     <EmbeddedResource Include="Forms\02_View\FrmSectionView.resx">
       <DependentUpon>FrmSectionView.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\12_AnalyzeGeometry\FrmAnalyzeGeometry.resx">
+    <EmbeddedResource Include="Forms\03_AnalyzeGeometry\FrmAnalyzeGeometry.resx">
       <DependentUpon>FrmAnalyzeGeometry.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\12_MeshRefinement\FrmMeshRefinement.resx">
+      <DependentUpon>FrmMeshRefinement.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\20_Model\FrmModelProperties.resx">
+      <DependentUpon>FrmModelProperties.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\21_Part\FrmScale.resx">
       <DependentUpon>FrmScale.cs</DependentUpon>
@@ -429,7 +448,7 @@
     <EmbeddedResource Include="Forms\24_Surface\FrmSurface.resx">
       <DependentUpon>FrmSurface.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\01_CalculixKeywordEditor\FrmCalculixKeywordEditor.resx">
+    <EmbeddedResource Include="Forms\20_Model\FrmCalculixKeywordEditor.resx">
       <DependentUpon>FrmCalculixKeywordEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\25_ReferencePoint\FrmReferencePoint.resx">
@@ -569,7 +588,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Command\0020_View\" />
-    <Folder Include="Command\0100_Tools\" />
+    <Folder Include="Command\0110_Tools\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
