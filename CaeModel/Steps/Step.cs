@@ -4,29 +4,30 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CaeMesh;
+using System.Runtime.Serialization;
 using CaeGlobals;
 
 namespace CaeModel
 {
     [Serializable]
-    public abstract class Step : NamedClass
+    public abstract class Step : NamedClass, ISerializable
     {
         // Variables                                                                                                                
-        protected Dictionary<string, BoundaryCondition> _boundayConditions;
-        protected Dictionary<string, Load> _loads;
-        protected Dictionary<string, FieldOutput> _fieldOutputs;
-        protected Dictionary<string, HistoryOutput> _historyOutputs;
-        protected bool _perturbation;
-        protected bool _nlgeom;
-        protected int _maxIncrements;
-        protected bool _supportsLoads;
+        protected OrderedDictionary<string, BoundaryCondition> _boundayConditions;      //ISerializable
+        protected OrderedDictionary<string, Load> _loads;                               //ISerializable
+        protected OrderedDictionary<string, FieldOutput> _fieldOutputs;                 //ISerializable
+        protected OrderedDictionary<string, HistoryOutput> _historyOutputs;             //ISerializable
+        protected bool _perturbation;                                                   //ISerializable
+        protected bool _nlgeom;                                                         //ISerializable
+        protected int _maxIncrements;                                                   //ISerializable
+        protected bool _supportsLoads;                                                  //ISerializable
 
 
         // Properties                                                                                                               
-        public Dictionary<string, BoundaryCondition> BoundaryConditions { get { return _boundayConditions; } }
-        public Dictionary<string, Load> Loads { get { return _loads; } }
-        public Dictionary<string, FieldOutput> FieldOutputs { get { return _fieldOutputs; } }
-        public Dictionary<string, HistoryOutput> HistoryOutputs { get { return _historyOutputs; } }
+        public OrderedDictionary<string, BoundaryCondition> BoundaryConditions { get { return _boundayConditions; } }
+        public OrderedDictionary<string, Load> Loads { get { return _loads; } }
+        public OrderedDictionary<string, FieldOutput> FieldOutputs { get { return _fieldOutputs; } }
+        public OrderedDictionary<string, HistoryOutput> HistoryOutputs { get { return _historyOutputs; } }
         public bool Perturbation { get { return _perturbation; } set { _perturbation = value; } }
         public bool Nlgeom { get { return _nlgeom; } set { _nlgeom = value; } }
         public int MaxIncrements { get { return _maxIncrements; } set { _maxIncrements = Math.Max(value, 1); } }
@@ -34,17 +35,87 @@ namespace CaeModel
 
 
         // Constructors                                                                                                             
+        public Step()
+            :this("Step")
+        { 
+        }
         public Step(string name)
             : base(name) 
         {
-            _boundayConditions = new Dictionary<string, BoundaryCondition>();
-            _loads = new Dictionary<string, Load>();
-            _fieldOutputs = new Dictionary<string, FieldOutput>();
-            _historyOutputs = new Dictionary<string, HistoryOutput>();
+            _boundayConditions = new OrderedDictionary<string, BoundaryCondition>();
+            _loads = new OrderedDictionary<string, Load>();
+            _fieldOutputs = new OrderedDictionary<string, FieldOutput>();
+            _historyOutputs = new OrderedDictionary<string, HistoryOutput>();
             _perturbation = false;
             _nlgeom = false;
             _maxIncrements = 100;
             _supportsLoads = true;
+        }
+
+        // ISerialization
+        public Step(SerializationInfo info, StreamingContext context)
+            :base(info, context)
+        {
+            int count = 0;
+            foreach (SerializationEntry entry in info)
+            {
+                switch (entry.Name)
+                {
+                    case "_boundayConditions":
+                        if (entry.Value is Dictionary<string, BoundaryCondition> bc)
+                        {
+                            // Compatibility for version v.0.5.2
+                            bc.OnDeserialization(null);
+                            _boundayConditions = new OrderedDictionary<string, BoundaryCondition>(bc);
+                        }
+                        else if (entry.Value is OrderedDictionary<string, BoundaryCondition> bcod) _boundayConditions = bcod;
+                        else if (entry.Value == null) _boundayConditions = null;
+                        else throw new NotSupportedException();
+                        count++; break;
+                    case "_loads":
+                        if (entry.Value is Dictionary<string, Load> l)
+                        {
+                            // Compatibility for version v.0.5.2
+                            l.OnDeserialization(null);
+                            _loads = new OrderedDictionary<string, Load>(l);
+                        }
+                        else if (entry.Value is OrderedDictionary<string, Load> lod) _loads = lod;
+                        else if (entry.Value == null) _loads = null;
+                        else throw new NotSupportedException();
+                        count++; break;
+                    case "_fieldOutputs":
+                        if (entry.Value is Dictionary<string, FieldOutput> fo)
+                        {
+                            // Compatibility for version v.0.5.2
+                            fo.OnDeserialization(null);
+                            _fieldOutputs = new OrderedDictionary<string, FieldOutput>(fo);
+                        }
+                        else if (entry.Value is OrderedDictionary<string, FieldOutput> food) _fieldOutputs = food;
+                        else if (entry.Value == null) _fieldOutputs = null;
+                        else throw new NotSupportedException();
+                        count++; break;
+                    case "_historyOutputs":
+                        if (entry.Value is Dictionary<string, HistoryOutput> ho)
+                        {
+                            // Compatibility for version v.0.5.2
+                            ho.OnDeserialization(null);
+                            _historyOutputs = new OrderedDictionary<string, HistoryOutput>(ho);
+                        }
+                        else if (entry.Value is OrderedDictionary<string, HistoryOutput> hood) _historyOutputs = hood;
+                        else if (entry.Value == null) _historyOutputs = null;
+                        else throw new NotSupportedException();
+                        count++; break;
+                    case "_perturbation":
+                        _perturbation = (bool)entry.Value; count++; break;
+                    case "_nlgeom":
+                        _nlgeom = (bool)entry.Value; count++; break;
+                    case "_maxIncrements":
+                        _maxIncrements = (int)entry.Value; count++; break;
+                    case "_supportsLoads":
+                        _supportsLoads = (bool)entry.Value; count++; break;                    
+                }
+            }
+            if (count != 8) throw new NotSupportedException();
         }
 
 
@@ -65,6 +136,21 @@ namespace CaeModel
         {
             _loads.Add(load.Name, load);
         }
-        
+
+        // ISerialization
+        public new void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            // using typeof() works also for null fields
+            base.GetObjectData(info, context);
+            //
+            info.AddValue("_boundayConditions", _boundayConditions, typeof(OrderedDictionary<string, BoundaryCondition>));
+            info.AddValue("_loads", _loads, typeof(OrderedDictionary<string, Load>));
+            info.AddValue("_fieldOutputs", _fieldOutputs, typeof(OrderedDictionary<string, FieldOutput>));
+            info.AddValue("_historyOutputs", _historyOutputs, typeof(OrderedDictionary<string, HistoryOutput>));
+            info.AddValue("_perturbation", _perturbation, typeof(bool));
+            info.AddValue("_nlgeom", _nlgeom, typeof(bool));
+            info.AddValue("_maxIncrements", _maxIncrements, typeof(int));
+            info.AddValue("_supportsLoads", _supportsLoads, typeof(bool));
+        }
     }
 }

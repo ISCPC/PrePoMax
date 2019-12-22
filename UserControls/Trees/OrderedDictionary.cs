@@ -231,6 +231,28 @@ namespace UserControls
         }
 
         /// <summary>
+        /// Replace an element with the provided key and value to the <see cref="T:System.Collections.Generic.IDictionary`2" />.
+        /// </summary>
+        /// 
+        /// <param name="key">The object to use as the key of the element to add.</param>
+        /// <param name="value">The object to use as the value of the element to add.</param>
+        /// 
+        public bool Replace(TKey oldKey, TKey newKey, Predicate<TKey> match, TValue value)
+        {
+            if (this.dictionary.Remove(oldKey))
+            {
+                this.dictionary.Add(newKey, value);
+                //
+                int index = this.list.FindIndex(match);
+                this.list.RemoveAt(index);
+                this.list.Insert(index, newKey);
+                return true;
+            }
+            //
+            return false;
+        }
+
+        /// <summary>
         /// Removes all items from the <see cref="T:System.Collections.Generic.ICollection`1" />.
         /// </summary>
         /// 

@@ -29,9 +29,9 @@ namespace CaeModel
         public string Name { get; set; }
         public FeMesh Geometry { get { return _geometry; } }
         public FeMesh Mesh { get { return _mesh; } }
-        public IDictionary<string, Material> Materials { get { return _materials; } }
-        public IDictionary<string, Section> Sections { get { return _sections; } }
-        public IDictionary<string, Constraint> Constraints { get { return _constraints; } }
+        public OrderedDictionary<string, Material> Materials { get { return _materials; } }
+        public OrderedDictionary<string, Section> Sections { get { return _sections; } }
+        public OrderedDictionary<string, Constraint> Constraints { get { return _constraints; } }
         public StepCollection StepCollection { get { return _stepCollection; } }
         public OrderedDictionary<int[], Calculix.CalculixUserKeyword> CalculixUserKeywords 
         { 

@@ -1120,9 +1120,8 @@ namespace PrePoMax
         {
             // Replace geometry part
             GeometryPart geomPart = GetGeometryPart(oldPartName);
-            _model.Geometry.Parts.Remove(oldPartName);
             geomPart.SetProperties(newPartProperties);
-            _model.Geometry.Parts.Add(geomPart.Name, geomPart);
+            _model.Geometry.Parts.Replace(oldPartName, geomPart.Name, geomPart);
             _form.UpdateActor(oldPartName, geomPart.Name, geomPart.Color);
             _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, oldPartName, geomPart, null);
 
@@ -1132,8 +1131,7 @@ namespace PrePoMax
                 string newPartName = geomPart.Name;
                 MeshPart meshPart = GetModelPart(oldPartName);
                 meshPart.Name = newPartName;
-                _model.Mesh.Parts.Remove(oldPartName);
-                _model.Mesh.Parts.Add(meshPart.Name, meshPart);
+                _model.Mesh.Parts.Replace(oldPartName, meshPart.Name, meshPart);
                 _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldPartName, meshPart, null);
             }
         }
@@ -1368,8 +1366,6 @@ namespace PrePoMax
         }
         public void ReplaceMeshRefinement(string oldMeshRefinementName, FeMeshRefinement meshRefinement)
         {
-            _model.Geometry.MeshRefinements.Remove(oldMeshRefinementName);
-
             if (meshRefinement.CreationData != null)
             {
                 // In order for the Regenerate history to work perform the selection
@@ -1387,7 +1383,7 @@ namespace PrePoMax
             }
             else throw new NotSupportedException("The mesh refinement does not contain any selection data.");
             //
-            _model.Geometry.MeshRefinements.Add(meshRefinement.Name, meshRefinement);
+            _model.Geometry.MeshRefinements.Replace(oldMeshRefinementName, meshRefinement.Name, meshRefinement);
             //
             _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, oldMeshRefinementName, meshRefinement, null);
             //
@@ -1728,8 +1724,7 @@ namespace PrePoMax
             // Replace mesh part
             MeshPart meshPart = GetModelPart(oldPartName);
             meshPart.SetProperties(newPartProperties);
-            _model.Mesh.Parts.Remove(oldPartName);
-            _model.Mesh.Parts.Add(meshPart.Name, meshPart);
+            _model.Mesh.Parts.Replace(oldPartName, meshPart.Name, meshPart);
             _form.UpdateActor(oldPartName, meshPart.Name, meshPart.Color);
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldPartName, meshPart, null);
 
@@ -1739,8 +1734,7 @@ namespace PrePoMax
                 string newPartName = meshPart.Name;
                 GeometryPart geomPart = GetGeometryPart(oldPartName);
                 geomPart.Name = newPartName;
-                _model.Geometry.Parts.Remove(oldPartName);
-                _model.Geometry.Parts.Add(geomPart.Name, geomPart);
+                _model.Geometry.Parts.Replace(oldPartName, geomPart.Name, geomPart);
                 _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, oldPartName, geomPart, null);
             }
 
@@ -1907,8 +1901,6 @@ namespace PrePoMax
         }
         public void ReplaceNodeSet(string oldNodeSetName, FeNodeSet nodeSet)
         {
-            _model.Mesh.NodeSets.Remove(oldNodeSetName);
-
             if (nodeSet.CreationData != null)
             {
                 // In order for the Regenerate history to work perform the selection
@@ -1923,16 +1915,16 @@ namespace PrePoMax
                 }
             }
             else throw new NotSupportedException("The node set does not contain any selection data.");
-
+            //
             _model.Mesh.UpdateNodeSetCenterOfGravity(nodeSet);
-
-            _model.Mesh.NodeSets.Add(nodeSet.Name, nodeSet);
-
+            //
+            _model.Mesh.NodeSets.Replace(oldNodeSetName, nodeSet.Name, nodeSet);
+            //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldNodeSetName, nodeSet, null);
-
+            //
             UpdateSurfacesBasedOnNodeSet(nodeSet.Name);
             UpdateReferencePointsDependentOnNodeSet(nodeSet.Name);
-
+            //
             Update(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void RemoveNodeSets(string[] nodeSetNames)
@@ -2069,8 +2061,6 @@ namespace PrePoMax
         }
         public void ReplaceElementSet(string oldElementSetName, FeElementSet elementSet)
         {
-            _model.Mesh.ElementSets.Remove(oldElementSetName);
-
             if (elementSet.CreationData != null)
             {
                 // In order for the Regenerate history to work perform the selection
@@ -2085,11 +2075,11 @@ namespace PrePoMax
                 }
             }
             else throw new NotSupportedException("The element set does not contain any selection data.");
-
-            _model.Mesh.ElementSets.Add(elementSet.Name, elementSet);
-
+            //
+            _model.Mesh.ElementSets.Replace(oldElementSetName, elementSet.Name, elementSet);
+            //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldElementSetName, elementSet, null);
-
+            //
             Update(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void ConvertElementSetsToMeshParts(string[] elementSetNames)
@@ -2204,8 +2194,9 @@ namespace PrePoMax
         }
         public void ReplaceSurface(string oldSurfaceName, FeSurface surface)
         {
+            List<string> keys = _model.Mesh.Surfaces.Keys.ToList();     // copy
             RemoveSurfaceAndElementFacesFromModel(new string[] { oldSurfaceName });
-
+            //
             if (surface.CreatedFrom == FeSurfaceCreatedFrom.Selection)
             {
                 // In order for the Regenerate history to work perform the selection
@@ -2219,11 +2210,16 @@ namespace PrePoMax
                     surface.CreationData.Add(new SelectionNodeIds(vtkSelectOperation.Add, false, surface.FaceIds));
                 }
             }
-
+            //
             AddSurfaceAndElementFaces(surface);
-
+            //
+            int index = keys.IndexOf(oldSurfaceName);
+            keys.RemoveAt(index);
+            keys.Insert(index, surface.Name);
+            _model.Mesh.Surfaces.SortKeysAs(keys);
+            //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldSurfaceName, surface, null);
-
+            //
             Update(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void RemoveSurfaces(string[] surfaceNames)
@@ -2355,11 +2351,10 @@ namespace PrePoMax
         }
         public void ReplaceReferencePoint(string oldReferencePointName, FeReferencePoint newReferencePoint)
         {
-            _model.Mesh.ReferencePoints.Remove(oldReferencePointName);
-            _model.Mesh.ReferencePoints.Add(newReferencePoint.Name, newReferencePoint);
-
+            _model.Mesh.ReferencePoints.Replace(oldReferencePointName, newReferencePoint.Name, newReferencePoint);
+            //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldReferencePointName, newReferencePoint, null);
-
+            //
             Update(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void RemoveReferencePoints(string[] referencePointNames)
@@ -2431,10 +2426,10 @@ namespace PrePoMax
         }
         public void ReplaceMaterial(string oldMaterialName, Material newMaterial)
         {
-            _model.Materials.Remove(oldMaterialName);
-            _model.Materials.Add(newMaterial.Name, newMaterial);
+            _model.Materials.Replace(oldMaterialName, newMaterial.Name, newMaterial);
+            //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldMaterialName, newMaterial, null);
-
+            //
             CheckAndUpdateValidity();
         }
         public void RemoveMaterials(string[] materialNames)
@@ -2491,10 +2486,10 @@ namespace PrePoMax
         }
         public void ReplaceSection(string oldSectionName, Section newSection)
         {
-            _model.Sections.Remove(oldSectionName);
-            _model.Sections.Add(newSection.Name, newSection);
+            _model.Sections.Replace(oldSectionName, newSection.Name, newSection);
+            //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldSectionName, newSection, null);
-
+            //
             CheckAndUpdateValidity();
         }
         public void RemoveSections(string[] sectionNames)
@@ -2582,11 +2577,10 @@ namespace PrePoMax
         }
         public void ReplaceConstraint(string oldConstraintName, Constraint newConstraint)
         {
-            _model.Constraints.Remove(oldConstraintName);
-            _model.Constraints.Add(newConstraint.Name, newConstraint);
-
+            _model.Constraints.Replace(oldConstraintName, newConstraint.Name, newConstraint);
+            //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldConstraintName, newConstraint, null);
-
+            //
             Update(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void RemoveConstraints(string[] constraintNames)
@@ -2706,10 +2700,10 @@ namespace PrePoMax
         }
         public void ReplaceHistoryOutput(string stepName, string oldHistoryOutputName, HistoryOutput historyOutput)
         {
-            _model.StepCollection.GetStep(stepName).HistoryOutputs.Remove(oldHistoryOutputName);
-            _model.StepCollection.GetStep(stepName).HistoryOutputs.Add(historyOutput.Name, historyOutput);
+            _model.StepCollection.GetStep(stepName).HistoryOutputs.Replace(oldHistoryOutputName, historyOutput.Name, historyOutput);
+            //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldHistoryOutputName, historyOutput, stepName);
-
+            //
             CheckAndUpdateValidity();
         }
         public void RemoveHistoryOutputs(string stepName, string[] historyOutputNames)
@@ -2770,10 +2764,10 @@ namespace PrePoMax
         }
         public void ReplaceFieldOutput(string stepName, string oldFieldOutputName, FieldOutput fieldOutput)
         {
-            _model.StepCollection.GetStep(stepName).FieldOutputs.Remove(oldFieldOutputName);
-            _model.StepCollection.GetStep(stepName).FieldOutputs.Add(fieldOutput.Name, fieldOutput);
+            _model.StepCollection.GetStep(stepName).FieldOutputs.Replace(oldFieldOutputName, fieldOutput.Name, fieldOutput);
+            //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldFieldOutputName, fieldOutput, stepName);
-
+            //
             CheckAndUpdateValidity();
         }
         public void RemoveFieldOutputs(string stepName, string[] fieldOutputNames)
@@ -2860,11 +2854,12 @@ namespace PrePoMax
         }
         public void ReplaceBoundaryCondition(string stepName, string oldBoundaryConditionName, BoundaryCondition boundaryCondition)
         {
-            _model.StepCollection.GetStep(stepName).BoundaryConditions.Remove(oldBoundaryConditionName);
-            _model.StepCollection.GetStep(stepName).BoundaryConditions.Add(boundaryCondition.Name, boundaryCondition);
-
+            _model.StepCollection.GetStep(stepName).BoundaryConditions.Replace(oldBoundaryConditionName, 
+                                                                               boundaryCondition.Name, 
+                                                                               boundaryCondition);
+            //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldBoundaryConditionName, boundaryCondition, stepName);
-
+            //
             Update(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void RemoveBoundaryConditions(string stepName, string[] boundaryConditionNames)
@@ -2950,11 +2945,10 @@ namespace PrePoMax
         }
         public void ReplaceLoad(string stepName, string oldLoadName, Load load)
         {
-            _model.StepCollection.GetStep(stepName).Loads.Remove(oldLoadName);
-            _model.StepCollection.GetStep(stepName).Loads.Add(load.Name, load);
-
+            _model.StepCollection.GetStep(stepName).Loads.Replace(oldLoadName, load.Name, load);
+            //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldLoadName, load, stepName);
-
+            //
             Update(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void RemoveLoads(string stepName, string[] loadNames)

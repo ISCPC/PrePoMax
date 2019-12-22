@@ -4,19 +4,22 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel;
+using System.Runtime.Serialization;
+
 
 namespace CaeGlobals
 {
     [Serializable]
-    public abstract class NamedClass
+    public abstract class NamedClass //: ISerializable - this would mean that all derived classes must be Serializable !!!
     {
         // Variables                                                                                                                
-        protected string _name;
-        protected bool _active;
-        protected bool _visible;
-        protected bool _valid;
-        protected bool _internal;
-        protected bool _checkName;
+        protected string _name;             //ISerializable
+        protected bool _active;             //ISerializable
+        protected bool _visible;            //ISerializable
+        protected bool _valid;              //ISerializable
+        protected bool _internal;           //ISerializable
+        protected bool _checkName;          //ISerializable
+
 
         // Properties                                                                                                               
         public virtual string Name
@@ -49,6 +52,29 @@ namespace CaeGlobals
             _visible = true;
             _valid = true;
             _internal = false;
+        }
+        public NamedClass(SerializationInfo info, StreamingContext context)
+        {
+            int count = 0;
+            foreach (SerializationEntry entry in info)
+            {
+                switch (entry.Name)
+                {
+                    case "_name":
+                        _name = (string)entry.Value; count++; break;
+                    case "_active":
+                        _active = (bool)entry.Value; count++; break;
+                    case "_visible":
+                        _visible = (bool)entry.Value; count++; break;
+                    case "_valid":
+                        _valid = (bool)entry.Value; count++; break;
+                    case "_internal":
+                        _internal = (bool)entry.Value; count++; break;
+                    case "_checkName":
+                        _checkName = (bool)entry.Value; count++; break;
+                }
+            }
+            if (count != 6) throw new NotSupportedException();
         }
 
 
@@ -128,6 +154,18 @@ namespace CaeGlobals
         public override string ToString()
         {
             return _name;
+        }
+
+        // ISerialization
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            // using typeof() works also for null fields
+            info.AddValue("_name", _name, typeof(string));
+            info.AddValue("_active", _active, typeof(bool));
+            info.AddValue("_visible", _visible, typeof(bool));
+            info.AddValue("_valid", _valid, typeof(bool));
+            info.AddValue("_internal", _internal, typeof(bool));
+            info.AddValue("_checkName", _checkName, typeof(bool));
         }
     }
 }

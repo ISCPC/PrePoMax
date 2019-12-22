@@ -3,17 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Runtime.Serialization;
+
 
 namespace CaeModel
 {
     [Serializable]
-    public class StaticStep : Step
+    public class StaticStep : Step, ISerializable
     {
         // Variables                                                                                                                
-        private double _timePeriod;
-        private double _initialTimeIncrement;
-        private double _minTimeIncrement;
-        private double _maxTimeIncrement;
+        private double _timePeriod;                 //ISerializable
+        private double _initialTimeIncrement;       //ISerializable
+        private double _minTimeIncrement;           //ISerializable
+        private double _maxTimeIncrement;           //ISerializable
 
 
         // Properties                                                                                                               
@@ -69,7 +71,42 @@ namespace CaeModel
             AddFieldOutput(new NodalFieldOutput("NF-Output-1", NodalFieldVariable.U | NodalFieldVariable.RF));
             AddFieldOutput(new ElementFieldOutput("EF-Output-1", ElementFieldVariable.E | ElementFieldVariable.S));
         }
+        
+        //ISerializable
+        public StaticStep(SerializationInfo info, StreamingContext context)
+            :base(info, context)
+        {
+            int count = 0;
+            foreach (SerializationEntry entry in info)
+            {
+                switch (entry.Name)
+                {
+                    case "_timePeriod":
+                        _timePeriod = (double)entry.Value; count++; break;
+                    case "_initialTimeIncrement":
+                        _initialTimeIncrement = (double)entry.Value; count++; break;
+                    case "_minTimeIncrement":
+                        _minTimeIncrement = (double)entry.Value; count++; break;
+                    case "_maxTimeIncrement":
+                        _maxTimeIncrement = (double)entry.Value; count++; break;                   
+                }
+            }
+            if (count != 4) throw new NotSupportedException();
+        }
+
 
         // Methods                                                                                                                  
+
+        // ISerialization
+        public new void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            // using typeof() works also for null fields
+            base.GetObjectData(info, context);
+            //
+            info.AddValue("_timePeriod", _timePeriod, typeof(double));
+            info.AddValue("_initialTimeIncrement", _initialTimeIncrement, typeof(double));
+            info.AddValue("_minTimeIncrement", _minTimeIncrement, typeof(double));
+            info.AddValue("_maxTimeIncrement", _maxTimeIncrement, typeof(double));
+        }
     }
 }

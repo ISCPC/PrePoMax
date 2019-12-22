@@ -4401,6 +4401,7 @@ namespace CaeMesh
             HashSet<string> removedElementSetsHashSet = new HashSet<string>();
             HashSet<string> removedNodeSetsHashSet = new HashSet<string>();
             FeSurface surface;
+            //
             foreach (var name in surfaceNames)
             {
                 // remove old element sets

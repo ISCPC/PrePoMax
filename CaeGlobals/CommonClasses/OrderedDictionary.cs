@@ -44,7 +44,6 @@ namespace CaeGlobals
     [Serializable]
     public class OrderedDictionary<TKey, TValue> : IDictionary<TKey, TValue>
     {
-
         private List<TKey> list;
         private Dictionary<TKey, TValue> dictionary;
 
@@ -171,7 +170,17 @@ namespace CaeGlobals
         /// 
         public ICollection<TKey> Keys
         {
-            get { return list; }
+            get { return this.list; }
+        }
+
+        public void SortKeysAs(ICollection<TKey> keys)
+        {
+            foreach (var key in keys)
+            {
+                if (this.list.IndexOf(key) < 0) throw new NotSupportedException();
+            }
+            this.list.Clear();
+            this.list.AddRange(keys);
         }
 
         /// <summary>
@@ -228,6 +237,30 @@ namespace CaeGlobals
             ((IDictionary<TKey, TValue>)dictionary).Add(item);
             if (!list.Contains(item.Key))
                 list.Add(item.Key);
+        }
+
+        /// <summary>
+        /// Replace an element with the provided key and value to the <see cref="T:System.Collections.Generic.IDictionary`2" />.
+        /// </summary>
+        /// 
+        /// <param name="oldKey">The object to use as the key of the element to remove.</param>
+        /// <param name="newKey">The object to use as the key of the element to add.</param>
+        /// <param name="value">The object to use as the value of the element to add.</param>
+        /// 
+        public bool Replace(TKey oldKey, TKey newKey, TValue value)
+        {
+            if (this.dictionary.Remove(oldKey))
+            {
+                this.dictionary.Add(newKey, value);
+                //
+                //int index = this.list.FindIndex(key => dictionary.Comparer.Equals(key, oldKey));
+                int index = this.list.IndexOf(oldKey);
+                this.list.RemoveAt(index);
+                this.list.Insert(index, newKey);
+                return true;
+            }
+            //
+            return false;
         }
 
         /// <summary>
