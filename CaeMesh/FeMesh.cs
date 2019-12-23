@@ -3784,6 +3784,24 @@ namespace CaeMesh
             //
             return coor;
         }
+        public string[] GetPartNamesFromGeometryIds(int[] ids)
+        {
+            if (ids == null) return null;
+            //
+            HashSet<int> partIds = new HashSet<int>();
+            int[] itemTypePart;
+            for (int i = 0; i < ids.Length; i++)
+            {
+                itemTypePart = GetItemTypePartIdsFromGeometryId(ids[i]);
+                partIds.Add(itemTypePart[2]);
+            }
+            //
+            int count = 0;
+            string[] partNames = new string[partIds.Count];
+            foreach (var partId in partIds) partNames[count++] = GetPartById(partId).Name;
+            //
+            return partNames.ToArray();
+        }
         //
         public static int[] GetItemTypePartIdsFromGeometryId(int geometryId)
         {

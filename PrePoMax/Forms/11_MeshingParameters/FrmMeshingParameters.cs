@@ -157,7 +157,7 @@ namespace PrePoMax.Forms
                     UpdateHighlightFromTree?.Invoke();
                     foreach (var partName in _partNames)
                     {
-                        await Task.Run(() => _controller.PreviewEdgeMesh(partName, parameters));
+                        await Task.Run(() => _controller.PreviewEdgeMesh(partName, parameters, null));
                     }
                 }
             }

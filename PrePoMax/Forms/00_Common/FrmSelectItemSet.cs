@@ -27,6 +27,9 @@ namespace PrePoMax
         private ItemSetData _itemSetData;
         private Controller _controller;
         private SelectionType _prevSelectionType;
+        private Size _expandedSize;
+        private Point _btnUndoPosition;
+        private Point _btnClearPosition;
 
 
         // Properties                                                                                                               
@@ -41,11 +44,16 @@ namespace PrePoMax
         public FrmSelectItemSet(Controller controller)
         {
             InitializeComponent();
-
+            //
             _checkBoxEventRunning = false;
             _controller = controller;
             _itemSetData = null;
             _prevSelectionType = SelectionType.Geometry;
+            _expandedSize = Size;
+            _btnUndoPosition = btnUndoSelection.Location;
+            _btnClearPosition = btnClearSelection.Location;
+            //
+            btnMoreLess_Click(null, null);
         }
         public FrmSelectItemSet(Controller controller, ItemSetData itemSetData)
             : this(controller)
@@ -78,7 +86,7 @@ namespace PrePoMax
                 Hide(DialogResult.Cancel);
             }
         }
-
+        //
         private void rbSelectBy_CheckedChanged(object sender, EventArgs e)
         {            
             // Allow only one running function - disable check box event
@@ -188,6 +196,44 @@ namespace PrePoMax
         {
             SetSelectionAngle(tbGeometrySurfaceAngle);
         }
+        private void btnUndoSelection_Click(object sender, EventArgs e)
+        {
+            _controller.RemoveLastSelectionNode(true);
+        }
+        private void btnClearSelection_Click(object sender, EventArgs e)
+        {
+            _controller.ClearSelectionHistory();
+        }
+        private void btnMoreLess_Click(object sender, EventArgs e)
+        {
+            Size size;
+            if (btnMoreLess.Text == "More")
+            {
+                btnMoreLess.Text = "Less";
+                size = _expandedSize;
+                //
+                Point locationAll = btnSelectAll.Location;
+                Point locationInvert = btnInvertSelection.Location;
+                int delta = locationInvert.Y - locationAll.Y;
+                btnUndoSelection.Location = locationInvert;
+                btnUndoSelection.Top += delta;
+                btnClearSelection.Location = locationInvert;
+                btnClearSelection.Top += 2 * delta;
+            }
+            else
+            {
+                btnMoreLess.Text = "More";
+                size = new Size(237, 300);
+                //
+                btnUndoSelection.Location = _btnUndoPosition;
+                btnClearSelection.Location = _btnClearPosition;
+            }
+            //
+            this.MaximumSize = size;
+            this.MinimumSize = size;
+            this.Size = size;
+        }
+        //
         private void tbEdgeAngle_TextChanged(object sender, EventArgs e)
         {
             SetSelectionAngle(tbEdgeAngle);
@@ -203,14 +249,6 @@ namespace PrePoMax
         private void btnInvertSelection_Click(object sender, EventArgs e)
         {
             _controller.AddSelectionNode(new SelectionNodeInvert(), true);
-        }
-        private void btnUndoSelection_Click(object sender, EventArgs e)
-        {
-            _controller.RemoveLastSelectionNode(true);
-        }
-        private void btnClearSelection_Click(object sender, EventArgs e)
-        {
-            _controller.ClearSelectionHistory();
         }
         private void btnAddId_Click(object sender, EventArgs e)
         {
@@ -252,7 +290,7 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-
+        //
         private void btnCancel_Click(object sender, EventArgs e)
         {
             btnClearSelection_Click(null, null);
@@ -278,12 +316,30 @@ namespace PrePoMax
             else rbNode.Checked = true;
         }
 
+        public void SetOnlyGeometrySelection(bool onlyGeometrySelection)
+        {
+            if (onlyGeometrySelection)
+            {
+                SetGeometrySelection(true);
+                if (btnMoreLess.Text == "Less") btnMoreLess_Click(null, null);
+                btnMoreLess.Enabled = false;
+            }
+            else
+            {
+                btnMoreLess.Enabled = true;
+            }
+        }
+
         private void SetSelectionAngle(TextBox tbAngle)
         {
             double angle;
             if (double.TryParse(tbAngle.Text, out angle)) _controller.SetSelectAngle(angle);
             else MessageBox.Show("The selection angle is not a valid number.");
         }
+
+        
+
+       
     }
 }
 

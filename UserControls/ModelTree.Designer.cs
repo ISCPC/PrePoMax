@@ -67,6 +67,7 @@
             this.tsmiEdit = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSpaceMesh = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiMeshingParameters = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiPreviewEdgeMesh = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiCreateMesh = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSpaceCopyPart = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiCopyGeometryToResults = new System.Windows.Forms.ToolStripMenuItem();
@@ -101,10 +102,10 @@
             this.ilStatusIcons = new System.Windows.Forms.ImageList(this.components);
             this.tcGeometryModelResults = new System.Windows.Forms.TabControl();
             this.tpGeometry = new System.Windows.Forms.TabPage();
-            this.tpModel = new System.Windows.Forms.TabPage();
-            this.tpResults = new System.Windows.Forms.TabPage();
             this.cltvGeometry = new UserControls.CodersLabTreeView();
+            this.tpModel = new System.Windows.Forms.TabPage();
             this.cltvModel = new UserControls.CodersLabTreeView();
+            this.tpResults = new System.Windows.Forms.TabPage();
             this.cltvResults = new UserControls.CodersLabTreeView();
             this.cmsTree.SuspendLayout();
             this.tcGeometryModelResults.SuspendLayout();
@@ -120,6 +121,7 @@
             this.tsmiEdit,
             this.tsmiSpaceMesh,
             this.tsmiMeshingParameters,
+            this.tsmiPreviewEdgeMesh,
             this.tsmiCreateMesh,
             this.tsmiSpaceCopyPart,
             this.tsmiCopyGeometryToResults,
@@ -151,7 +153,7 @@
             this.tsmiSpaceDelete,
             this.tsmiDelete});
             this.cmsTree.Name = "cmsTree";
-            this.cmsTree.Size = new System.Drawing.Size(208, 576);
+            this.cmsTree.Size = new System.Drawing.Size(208, 598);
             // 
             // tsmiCreate
             // 
@@ -178,6 +180,13 @@
             this.tsmiMeshingParameters.Size = new System.Drawing.Size(207, 22);
             this.tsmiMeshingParameters.Text = "Meshing parameters";
             this.tsmiMeshingParameters.Click += new System.EventHandler(this.tsmiMeshingParameters_Click);
+            // 
+            // tsmiPreviewEdgeMesh
+            // 
+            this.tsmiPreviewEdgeMesh.Name = "tsmiPreviewEdgeMesh";
+            this.tsmiPreviewEdgeMesh.Size = new System.Drawing.Size(207, 22);
+            this.tsmiPreviewEdgeMesh.Text = "Preview edge mesh";
+            this.tsmiPreviewEdgeMesh.Click += new System.EventHandler(this.tsmiPreviewEdgeMesh_Click);
             // 
             // tsmiCreateMesh
             // 
@@ -386,26 +395,27 @@
             this.ilIcons.Images.SetKeyName(3, "Unactive.ico");
             this.ilIcons.Images.SetKeyName(4, "Geometry.ico");
             this.ilIcons.Images.SetKeyName(5, "GeomPart.ico");
-            this.ilIcons.Images.SetKeyName(6, "Mesh.ico");
-            this.ilIcons.Images.SetKeyName(7, "BasePart.ico");
-            this.ilIcons.Images.SetKeyName(8, "Node_set.ico");
-            this.ilIcons.Images.SetKeyName(9, "Element_set.ico");
-            this.ilIcons.Images.SetKeyName(10, "Surface.ico");
-            this.ilIcons.Images.SetKeyName(11, "Reference_point.ico");
-            this.ilIcons.Images.SetKeyName(12, "Material.ico");
-            this.ilIcons.Images.SetKeyName(13, "Section.ico");
-            this.ilIcons.Images.SetKeyName(14, "Constraints.ico");
-            this.ilIcons.Images.SetKeyName(15, "Step.ico");
-            this.ilIcons.Images.SetKeyName(16, "History_output.ico");
-            this.ilIcons.Images.SetKeyName(17, "Field_output.ico");
-            this.ilIcons.Images.SetKeyName(18, "Bc.ico");
-            this.ilIcons.Images.SetKeyName(19, "Load.ico");
-            this.ilIcons.Images.SetKeyName(20, "Analysis.ico");
-            this.ilIcons.Images.SetKeyName(21, "Warning.ico");
-            this.ilIcons.Images.SetKeyName(22, "Running.ico");
-            this.ilIcons.Images.SetKeyName(23, "OK.ico");
-            this.ilIcons.Images.SetKeyName(24, "Dots.ico");
-            this.ilIcons.Images.SetKeyName(25, "Dots_t.ico");
+            this.ilIcons.Images.SetKeyName(6, "Mesh_refinement.ico");
+            this.ilIcons.Images.SetKeyName(7, "Mesh.ico");
+            this.ilIcons.Images.SetKeyName(8, "BasePart.ico");
+            this.ilIcons.Images.SetKeyName(9, "Node_set.ico");
+            this.ilIcons.Images.SetKeyName(10, "Element_set.ico");
+            this.ilIcons.Images.SetKeyName(11, "Surface.ico");
+            this.ilIcons.Images.SetKeyName(12, "Reference_point.ico");
+            this.ilIcons.Images.SetKeyName(13, "Material.ico");
+            this.ilIcons.Images.SetKeyName(14, "Section.ico");
+            this.ilIcons.Images.SetKeyName(15, "Constraints.ico");
+            this.ilIcons.Images.SetKeyName(16, "Step.ico");
+            this.ilIcons.Images.SetKeyName(17, "History_output.ico");
+            this.ilIcons.Images.SetKeyName(18, "Field_output.ico");
+            this.ilIcons.Images.SetKeyName(19, "Bc.ico");
+            this.ilIcons.Images.SetKeyName(20, "Load.ico");
+            this.ilIcons.Images.SetKeyName(21, "Analysis.ico");
+            this.ilIcons.Images.SetKeyName(22, "Warning.ico");
+            this.ilIcons.Images.SetKeyName(23, "Running.ico");
+            this.ilIcons.Images.SetKeyName(24, "OK.ico");
+            this.ilIcons.Images.SetKeyName(25, "Dots.ico");
+            this.ilIcons.Images.SetKeyName(26, "Dots_t.ico");
             // 
             // ilStatusIcons
             // 
@@ -440,27 +450,6 @@
             this.tpGeometry.Text = "Geometry";
             this.tpGeometry.UseVisualStyleBackColor = true;
             // 
-            // tpModel
-            // 
-            this.tpModel.Controls.Add(this.cltvModel);
-            this.tpModel.Location = new System.Drawing.Point(4, 24);
-            this.tpModel.Name = "tpModel";
-            this.tpModel.Size = new System.Drawing.Size(231, 470);
-            this.tpModel.TabIndex = 0;
-            this.tpModel.Text = "FE Model";
-            this.tpModel.UseVisualStyleBackColor = true;
-            // 
-            // tpResults
-            // 
-            this.tpResults.Controls.Add(this.cltvResults);
-            this.tpResults.Location = new System.Drawing.Point(4, 24);
-            this.tpResults.Name = "tpResults";
-            this.tpResults.Padding = new System.Windows.Forms.Padding(3);
-            this.tpResults.Size = new System.Drawing.Size(231, 470);
-            this.tpResults.TabIndex = 1;
-            this.tpResults.Text = "Results";
-            this.tpResults.UseVisualStyleBackColor = true;
-            // 
             // cltvGeometry
             // 
             this.cltvGeometry.BorderStyle = System.Windows.Forms.BorderStyle.None;
@@ -478,7 +467,9 @@
             treeNode1.SelectedImageKey = "Geometry.ico";
             treeNode1.Text = "Parts";
             treeNode1.ToolTipText = "Parts";
+            treeNode2.ImageKey = "Mesh_refinement.ico";
             treeNode2.Name = "Mesh refinements";
+            treeNode2.SelectedImageKey = "Mesh_refinement.ico";
             treeNode2.Text = "Mesh refinements";
             treeNode2.ToolTipText = "Mesh refinements";
             this.cltvGeometry.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
@@ -499,6 +490,16 @@
             this.cltvGeometry.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseDoubleClick);
             this.cltvGeometry.MouseDown += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseDown);
             this.cltvGeometry.MouseUp += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseUp);
+            // 
+            // tpModel
+            // 
+            this.tpModel.Controls.Add(this.cltvModel);
+            this.tpModel.Location = new System.Drawing.Point(4, 24);
+            this.tpModel.Name = "tpModel";
+            this.tpModel.Size = new System.Drawing.Size(231, 470);
+            this.tpModel.TabIndex = 0;
+            this.tpModel.Text = "FE Model";
+            this.tpModel.UseVisualStyleBackColor = true;
             // 
             // cltvModel
             // 
@@ -590,6 +591,17 @@
             this.cltvModel.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseDoubleClick);
             this.cltvModel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseDown);
             this.cltvModel.MouseUp += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseUp);
+            // 
+            // tpResults
+            // 
+            this.tpResults.Controls.Add(this.cltvResults);
+            this.tpResults.Location = new System.Drawing.Point(4, 24);
+            this.tpResults.Name = "tpResults";
+            this.tpResults.Padding = new System.Windows.Forms.Padding(3);
+            this.tpResults.Size = new System.Drawing.Size(231, 470);
+            this.tpResults.TabIndex = 1;
+            this.tpResults.Text = "Results";
+            this.tpResults.UseVisualStyleBackColor = true;
             // 
             // cltvResults
             // 
@@ -711,5 +723,6 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiConvertToPart;
         private System.Windows.Forms.ToolStripMenuItem tsmiShowOnly;
         private System.Windows.Forms.ToolStripMenuItem tsmiSetTransparency;
+        private System.Windows.Forms.ToolStripMenuItem tsmiPreviewEdgeMesh;
     }
 }

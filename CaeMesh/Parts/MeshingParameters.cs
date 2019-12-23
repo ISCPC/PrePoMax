@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CaeGlobals;
+
 
 namespace CaeMesh
 {
@@ -15,6 +17,9 @@ namespace CaeMesh
         //0.3
 
         // Variables                                                                                                                
+        //[NonSerialized]
+        //private double[][] _edgeMeshNodes;
+        //
         private double _maxH;
         private double _minH;
         private double _fineness;
@@ -86,10 +91,10 @@ namespace CaeMesh
                 _elementspercurve = value;
             }
         }
-
+        //
         public bool SecondOrder { get { return _secondOrder; } set { _secondOrder = value; } }
         public bool MidsideNodesOnGeometry { get { return _midsideNodesOnGeometry; } set { _midsideNodesOnGeometry = value; } }
-
+        //
         public int OptimizeSteps2D 
         { 
             get { return _optimizeSteps2D; } 
@@ -108,6 +113,8 @@ namespace CaeMesh
                 _optimizeSteps3D = value;
             }
         }
+        //
+        //public double[][] EdgeMeshNodes { get { return _edgeMeshNodes; } set { _edgeMeshNodes = value; } }
 
 
         // Constructors                                                                                                             
@@ -131,7 +138,7 @@ namespace CaeMesh
         public void WriteToFile(string fileName)
         {
             StringBuilder sb = new StringBuilder();
-            
+            //
             sb.AppendLine("int      uselocalh                   ... Switch to enable / disable usage of local mesh size modifiers.");
             sb.AppendLine("1");
             sb.AppendLine("double   maxh		                ... Maximum global mesh size allowed.");
@@ -178,7 +185,8 @@ namespace CaeMesh
             sb.AppendLine("1");
             sb.AppendLine("double   deflection	                ... Open cascade visualization deflection.");
             sb.AppendLine("0.01");
-
+            //
+            //Encoding encoding = Encoding.Unicode;
             System.IO.File.WriteAllText(fileName, sb.ToString());
         }
         static public bool Equals(MeshingParameters meshingParameters1, MeshingParameters meshingParameters2)

@@ -15,6 +15,7 @@ namespace CaeMesh
         private int[] _errorElementIds;
         private int[] _errorNodeIds;
         private string _cadFileData;
+        private double[][] _edgeMeshNodes;
 
 
         // Properties                                                                                                               

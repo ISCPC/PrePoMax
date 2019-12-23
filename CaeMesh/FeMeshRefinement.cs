@@ -15,7 +15,7 @@ namespace CaeMesh
         private int[] _geometryIds;
         private Selection _creationData;
         private double _meshSize;
-
+        
 
         // Properties                                                                                                               
         public int[] GeometryIds { get { return _geometryIds; } set { _geometryIds = value; } }

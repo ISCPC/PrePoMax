@@ -17,6 +17,7 @@ namespace PrePoMax.Forms
         private ViewFeMeshRefinement _viewFeMeshRefinement;
         private List<SelectionNode> _prevSelectionNodes;
         private SelectionNodeIds _selectionNodeIds;
+        private Button btnPreview;
         private Controller _controller;
 
 
@@ -41,16 +42,34 @@ namespace PrePoMax.Forms
         }
         private void InitializeComponent()
         {
+            this.btnPreview = new System.Windows.Forms.Button();
             this.gbProperties.SuspendLayout();
             this.SuspendLayout();
+            // 
+            // btnPreview
+            // 
+            this.btnPreview.Location = new System.Drawing.Point(79, 376);
+            this.btnPreview.Name = "btnPreview";
+            this.btnPreview.Size = new System.Drawing.Size(75, 23);
+            this.btnPreview.TabIndex = 17;
+            this.btnPreview.Text = "Preview";
+            this.btnPreview.UseVisualStyleBackColor = true;
+            this.btnPreview.Click += new System.EventHandler(this.btnPreview_Click);
             // 
             // FrmMeshRefinement
             // 
             this.ClientSize = new System.Drawing.Size(334, 411);
+            this.Controls.Add(this.btnPreview);
             this.Name = "FrmMeshRefinement";
             this.Text = "Edit Mesh Refinement";
+            this.Controls.SetChildIndex(this.gbProperties, 0);
+            this.Controls.SetChildIndex(this.btnCancel, 0);
+            this.Controls.SetChildIndex(this.btnOK, 0);
+            this.Controls.SetChildIndex(this.btnOkAddNew, 0);
+            this.Controls.SetChildIndex(this.btnPreview, 0);
             this.gbProperties.ResumeLayout(false);
             this.ResumeLayout(false);
+
         }
 
 
@@ -163,18 +182,23 @@ namespace PrePoMax.Forms
                     }
                 }
             }
+            else
+            {
+                // When the itemSetForm is shown, reset the highlight (after Preview Edge Mesh)
+                HighlightMeshRefinement();
+            }
             this.DialogResult = System.Windows.Forms.DialogResult.None;
         }
 
 
         // Methods                                                                                                                  
-        public bool PrepareForm(string stepName, string surfaceToEditName)
+        public bool PrepareForm(string stepName, string meshRefinementToEditName)
         {
-            return OnPrepareForm(stepName, surfaceToEditName);
+            return OnPrepareForm(stepName, meshRefinementToEditName);
         }
         private string GetMeshRefinementName()
         {
-            return NamedClass.GetNewValueName(_meshRefinementNames.ToArray(), "MeshRefinement-");
+            return NamedClass.GetNewValueName(_meshRefinementNames.ToArray(), "Mesh_Refinement-");
         }
         private void HighlightMeshRefinement()
         {
@@ -202,6 +226,30 @@ namespace PrePoMax.Forms
             // prepare ItemSetDataEditor
             if (_meshRefinementToEditName == null) return true;
             return _controller.GetMeshRefinement(_meshRefinementToEditName).CreationData.IsGeometryBased();
+        }
+
+        async private void btnPreview_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                FeMeshRefinement meshRefinement = MeshRefinement.DeepClone();
+                string[] partNames = _controller.GetPartNamesFromMeshRefinement(meshRefinement);
+                if (partNames != null && partNames.Length > 0)
+                {
+                    HighlightMeshRefinement();
+                    //Set the name to the prev meshRefinement name
+                    if (_meshRefinementToEditName != null) meshRefinement.Name = _meshRefinementToEditName;
+                    //
+                    foreach (var partName in partNames)
+                    {
+                        await Task.Run(() => _controller.PreviewEdgeMesh(partName, null, meshRefinement));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
         }
     }
 

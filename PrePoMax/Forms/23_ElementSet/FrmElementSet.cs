@@ -160,7 +160,7 @@ namespace PrePoMax.Forms
         }
         private string GetElementSetName()
         {
-            return NamedClass.GetNewValueName(_allExistingNames.ToArray(), "ElementSet-");
+            return NamedClass.GetNewValueName(_allExistingNames.ToArray(), "Element_Set-");
         }
 
 

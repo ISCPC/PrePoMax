@@ -31,6 +31,7 @@ namespace UserControls
         public int Deformed;
         public int ColorContours;
         public int MeshingParameters;
+        public int PreviewEdgeMesh;
         public int CreateMesh;
         public int CopyPart;
         public int MergePart;
@@ -150,6 +151,7 @@ namespace UserControls
         public event Action<string[]> SetTransparencyEvent;
         public event Action<NamedClass[], bool> ColorContoursVisibilityEvent;
         public event Action<string[]> MeshingParametersEvent;
+        public event Action<string[]> PreviewEdgeMesh;
         public event Action<string[]> CreateMeshEvent;
         public event Action<string[]> CopyGeometryToResultsEvent;
         public event Action<string[]> MergeParts;
@@ -320,6 +322,7 @@ namespace UserControls
             visible = menuFields.MeshingParameters == n;
             tsmiSpaceMesh.Visible = visible && oneAboveVisible;
             tsmiMeshingParameters.Visible = visible;
+            tsmiPreviewEdgeMesh.Visible = visible;
             tsmiCreateMesh.Visible = visible;
             // Copy part                                            
             tsmiSpaceCopyPart.Visible = visible;
@@ -455,6 +458,7 @@ namespace UserControls
             if (item != null && item is GeometryPart && GetActiveTree() == cltvGeometry)
             {
                 menuFields.MeshingParameters++;
+                menuFields.PreviewEdgeMesh++;
                 menuFields.CreateMesh++;
                 menuFields.CopyPart++;
             }
@@ -834,6 +838,22 @@ namespace UserControls
             {
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
+        }
+        private void tsmiPreviewEdgeMesh_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                List<string> names = new List<string>();
+                foreach (TreeNode node in cltvGeometry.SelectedNodes)
+                {
+                    if (node.Tag != null) names.Add(((NamedClass)node.Tag).Name);
+                }
+                if (names.Count > 0) PreviewEdgeMesh?.Invoke(names.ToArray());
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }            
         }
         private void tsmiCreateMesh_Click(object sender, EventArgs e)
         {
@@ -1256,7 +1276,7 @@ namespace UserControls
         }
 
 
-        public void RegenerateTree(FeModel model, Dictionary<string, AnalysisJob> jobs, FeResults results, HistoryResults history)
+        public void RegenerateTree(FeModel model, IDictionary<string, AnalysisJob> jobs, FeResults results, HistoryResults history)
         {
             if (!_screenUpdating) return;
             //

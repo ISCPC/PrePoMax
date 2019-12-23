@@ -162,7 +162,8 @@ namespace PrePoMax
                 _modelTree.HideShowEvent += ModelTree_HideShowEvent;
                 _modelTree.SetTransparencyEvent += ModelTree_SetTransparencyEvent;
                 _modelTree.ColorContoursVisibilityEvent += ModelTree_ColorContoursVisibilityEvent; 
-                _modelTree.MeshingParametersEvent += ModelTree_MeshingParametersEvent;
+                _modelTree.MeshingParametersEvent += GetSetMeshingParameters;
+                _modelTree.PreviewEdgeMesh += PreviewEdgeMeshes;
                 _modelTree.CreateMeshEvent += CreateMeshes;
                 _modelTree.CopyGeometryToResultsEvent += CopyGeometryPartsToResults;
                 _modelTree.MergeParts += MergeModelParts;
@@ -610,11 +611,6 @@ namespace PrePoMax
                 if (colorContours) ColorContoursOnResultPart(names.ToArray());
                 else ColorContoursOffResultPart(names.ToArray());
             }
-        }
-
-        private void ModelTree_MeshingParametersEvent(string[] geometryPartNames)
-        {
-            GetSetMeshingParameters(geometryPartNames);
         }
       
         private void ModelTree_Delete(NamedClass[] items, string[] stepNames)
@@ -1539,6 +1535,7 @@ namespace PrePoMax
                 // Data editor
                 ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
                 ItemSetDataEditor.ParentForm = _frmMeshRefinement;
+                _frmSelectItemSet.SetOnlyGeometrySelection(true);
                 ShowForm(_frmMeshRefinement, "Create Mesh Refinement", null);
             }
             catch (Exception ex)
@@ -1674,7 +1671,7 @@ namespace PrePoMax
                 return null;
             }
         }
-        private void SetDefaultMeshingParameters(string partName)
+        public void SetDefaultMeshingParameters(string partName)
         {
             CaeMesh.MeshingParameters defaultMeshingParameters = GetDefaultMeshingParameters(partName);
             _controller.SetMeshingParametersCommand(new string[] { partName }, defaultMeshingParameters);
@@ -1685,9 +1682,7 @@ namespace PrePoMax
             {
                 foreach (var partName in partNames)
                 {
-                    CaeMesh.GeometryPart part = _controller.GetGeometryPart(partName);
-                    if (part.MeshingParameters == null) SetDefaultMeshingParameters(partName);
-                    await Task.Run(() => _controller.PreviewEdgeMesh(partName, part.MeshingParameters));
+                    await Task.Run(() => _controller.PreviewEdgeMesh(partName, null, null));
                 }
             }
             catch (Exception ex)
@@ -1702,6 +1697,7 @@ namespace PrePoMax
             // Data editor
             ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
             ItemSetDataEditor.ParentForm = _frmMeshRefinement;
+            _frmSelectItemSet.SetOnlyGeometrySelection(true);
             ShowForm(_frmMeshRefinement, "Edit Mesh Refinement", meshRefinementName);
         }
         private void DeleteMeshRefinements(string[] meshRefinementNames)
@@ -2014,6 +2010,7 @@ namespace PrePoMax
                 // Data editor
                 ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
                 ItemSetDataEditor.ParentForm = _frmNodeSet;
+                _frmSelectItemSet.SetOnlyGeometrySelection(false);
                 ShowForm(_frmNodeSet, "Create Node Set", null);
             }
             catch (Exception ex)
@@ -2049,6 +2046,7 @@ namespace PrePoMax
             // Data editor
             ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
             ItemSetDataEditor.ParentForm = _frmNodeSet;
+            _frmSelectItemSet.SetOnlyGeometrySelection(false);
             ShowForm(_frmNodeSet, "Edit Node Set", nodeSetName);
         }
         private void DeleteNodeSets(string[] nodeSetNames)
@@ -2071,6 +2069,7 @@ namespace PrePoMax
                 // Data editor
                 ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
                 ItemSetDataEditor.ParentForm = _frmElementSet;
+                _frmSelectItemSet.SetOnlyGeometrySelection(false);
                 ShowForm(_frmElementSet, "Create Element Set", null);
             }
             catch (Exception ex)
@@ -2117,6 +2116,7 @@ namespace PrePoMax
             // Data editor
             ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
             ItemSetDataEditor.ParentForm = _frmElementSet;
+            _frmSelectItemSet.SetOnlyGeometrySelection(false);
             ShowForm(_frmElementSet, "Edit Element Set", elementSetName);
         }
         private void ConvertElementSetsToMeshParts(string[] elementSetNames)
@@ -2143,6 +2143,7 @@ namespace PrePoMax
                 // Data editor
                 ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
                 ItemSetDataEditor.ParentForm = _frmSurface;
+                _frmSelectItemSet.SetOnlyGeometrySelection(false);
                 ShowForm(_frmSurface, "Create Surface", null);
             }
             catch (Exception ex)
@@ -2177,6 +2178,7 @@ namespace PrePoMax
             // Data editor
             ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
             ItemSetDataEditor.ParentForm = _frmSurface;
+            _frmSelectItemSet.SetOnlyGeometrySelection(false);
             ShowForm(_frmSurface, "Edit Surface", surfaceName);
         }
         private void DeleteSurfaces(string[] surfaceNames)
@@ -4163,7 +4165,7 @@ namespace PrePoMax
         
         #region Tree  ##############################################################################################################
         // Tree
-        public void RegenerateTree(CaeModel.FeModel model, Dictionary<string, CaeJob.AnalysisJob> jobs,
+        public void RegenerateTree(CaeModel.FeModel model, OrderedDictionary<string, CaeJob.AnalysisJob> jobs,
                                    CaeResults.FeResults results, CaeResults.HistoryResults history)
         {
             InvokeIfRequired(_modelTree.RegenerateTree, model, jobs, results, history);

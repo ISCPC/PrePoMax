@@ -22,11 +22,12 @@ namespace PrePoMax
         protected FrmMain _form;
         [NonSerialized]
         protected Dictionary<string, ISettings> _settings;
+        [NonSerialized]
+        protected OrderedDictionary<string, AnalysisJob> _jobs;
         //
         protected bool _modelChanged;
         protected bool _savingFile;
         protected FeModel _model;
-        protected Dictionary<string, AnalysisJob> _jobs;
         protected NetgenJob _netgenJob;
         protected FeResults _results;
         protected HistoryResults _history;
@@ -67,11 +68,11 @@ namespace PrePoMax
                 { }
             }
         }
+        public OrderedDictionary<string, AnalysisJob> Jobs { get { return _jobs; } }
         //
         public bool ModelChanged { get { return _modelChanged; } set { _modelChanged = value; } }
         public bool SavingFile { get { return _savingFile; } }
         public FeModel Model { get { return _model; } }
-        public Dictionary<string, AnalysisJob> Jobs { get { return _jobs; } }
         public bool MeshJobIdle
         {
             get
@@ -255,7 +256,7 @@ namespace PrePoMax
             _commands.EnableDisableUndoRedo += _commands_CommandExecuted;
             _commands.OnEnableDisableUndoRedo();
 
-            _jobs = new Dictionary<string, AnalysisJob>();
+            _jobs = new OrderedDictionary<string, AnalysisJob>();
             _selection = new Selection();
 
             _sectionViewPlanes = new Dictionary<ViewGeometryModelResults, Octree.Plane>();
@@ -425,7 +426,10 @@ namespace PrePoMax
             _commands.EnableDisableUndoRedo += _commands_CommandExecuted;
             _commands.OnEnableDisableUndoRedo();
 
-            _jobs = (Dictionary<string, AnalysisJob>)data[1];
+            // Compatibility for version v.0.5.2
+            if (data[1] is Dictionary<string, AnalysisJob> d) _jobs = new OrderedDictionary<string, AnalysisJob>(d);
+            else _jobs = (OrderedDictionary<string, AnalysisJob>)data[1];
+            
 
             ApplySettings(); // work folder and executable
             ResetAllJobStatus();
@@ -1223,14 +1227,17 @@ namespace PrePoMax
             ((GeometryPart)_model.Geometry.Parts[partName]).MeshingParameters = meshingParameters;
         }
         //
-        public bool PreviewEdgeMesh(string partName, MeshingParameters parameters)
+        public bool PreviewEdgeMesh(string partName, MeshingParameters parameters, FeMeshRefinement newMeshRefinement)
         {
             GeometryPart part = (GeometryPart)_model.Geometry.Parts[partName];
-
-            if (part.CADFileData == null) return PreviewEdgeMeshFromStl(part, parameters);
-            else return PreviewEdgeMeshFromBrep(part, parameters);
+            //
+            if (part.MeshingParameters == null) _form.SetDefaultMeshingParameters(partName);
+            if (parameters == null) parameters = part.MeshingParameters;
+            //
+            if (part.CADFileData == null) return PreviewEdgeMeshFromStl(part, parameters, newMeshRefinement);
+            else return PreviewEdgeMeshFromBrep(part, parameters, newMeshRefinement);
         }
-        public bool PreviewEdgeMeshFromBrep(GeometryPart part, MeshingParameters parameters)
+        public bool PreviewEdgeMeshFromStl(GeometryPart part, MeshingParameters parameters, FeMeshRefinement newMeshRefinement)
         {
             CalculixSettings settings = (CalculixSettings)Settings[Globals.CalculixSettingsName];
             if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
@@ -1238,85 +1245,89 @@ namespace PrePoMax
                 MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
                 return false;
             }
-
-            string executable = Application.StartupPath + Globals.NetGenMesher;
-            string brepFileName = Path.Combine(settings.WorkDirectory, Globals.BrepFileName);
-            string volFileName = Path.Combine(settings.WorkDirectory, Globals.VolFileName);
-            string parametersFileName = Path.Combine(settings.WorkDirectory, Globals.ParametersFileName);
-            string edgeNodesFileName = Path.Combine(settings.WorkDirectory, Globals.EdgeNodesFileName);
-
-            if (File.Exists(brepFileName)) File.Delete(brepFileName);
-            if (File.Exists(volFileName)) File.Delete(volFileName);
-            if (File.Exists(parametersFileName)) File.Delete(parametersFileName);
-            if (File.Exists(edgeNodesFileName)) File.Delete(edgeNodesFileName);
-
-            File.WriteAllText(brepFileName, part.CADFileData);
-            parameters.WriteToFile(parametersFileName);
-
-            string argument = "BREP_EDGE_MESH " +
-                              "\"" + brepFileName.ToUTF8() + "\" " +
-                              "\"" + volFileName + "\" " +
-                              "\"" + parametersFileName + "\"";
-
-            _netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
-            _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
-            _netgenJob.Submit();
-
-            // Job completed
-            if (_netgenJob.JobStatus == JobStatus.OK)
-            {
-                ImportGeneratedNodeMesh(volFileName, part.Name, false);
-                return true;
-            }
-            else return false;
-        }
-        public bool PreviewEdgeMeshFromStl(GeometryPart part, MeshingParameters parameters)
-        {
-            CalculixSettings settings = (CalculixSettings)Settings[Globals.CalculixSettingsName];
-            if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
-            {
-                MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
-                return false;
-            }
-
+            //
             string executable = Application.StartupPath + Globals.NetGenMesher;
             string stlFileName = Path.Combine(settings.WorkDirectory, Globals.StlFileName);
             string volFileName = Path.Combine(settings.WorkDirectory, Globals.VolFileName);
-            string parametersFileName = Path.Combine(settings.WorkDirectory, Globals.ParametersFileName);
+            string meshParametersFileName = Path.Combine(settings.WorkDirectory, Globals.MeshParametersFileName);
+            string meshRefinementFileName = Path.Combine(settings.WorkDirectory, Globals.MeshRefinementFileName);
             string edgeNodesFileName = Path.Combine(settings.WorkDirectory, Globals.EdgeNodesFileName);
-
+            //
             if (File.Exists(stlFileName)) File.Delete(stlFileName);
             if (File.Exists(volFileName)) File.Delete(volFileName);
-            if (File.Exists(parametersFileName)) File.Delete(parametersFileName);
+            if (File.Exists(meshParametersFileName)) File.Delete(meshParametersFileName);
+            if (File.Exists(meshRefinementFileName)) File.Delete(meshRefinementFileName);
             if (File.Exists(edgeNodesFileName)) File.Delete(edgeNodesFileName);
-
+            //
             FileInOut.Output.StlFileWriter.Write(stlFileName, _model.Geometry, part.Name);
-            parameters.WriteToFile(parametersFileName);
+            CreateMeshRefinementFile(meshRefinementFileName, newMeshRefinement);
+            parameters.WriteToFile(meshParametersFileName);
             _model.Geometry.WriteEdgeNodesToFile(part, edgeNodesFileName);
-
+            //
             string argument = "STL_EDGE_MESH " +
                               "\"" + stlFileName + "\" " +
                               "\"" + volFileName + "\" " +
-                              "\"" + parametersFileName + "\" " +
+                              "\"" + meshParametersFileName + "\" " +
+                              "\"" + meshRefinementFileName + "\" " +
                               "\"" + edgeNodesFileName + "\"";
 
             _netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
             _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
             _netgenJob.Submit();
-
             // Job completed
             if (_netgenJob.JobStatus == JobStatus.OK)
             {
-                ImportGeneratedNodeMesh(volFileName, part.Name, false);
+                ImportGeneratedNodeMesh(volFileName, part, false);
                 return true;
             }
             else return false;
         }
-        public void ImportGeneratedNodeMesh(string fileName, string partName, bool resetCamera)
+        public bool PreviewEdgeMeshFromBrep(GeometryPart part, MeshingParameters parameters, FeMeshRefinement newMeshRefinement)
+        {
+            CalculixSettings settings = (CalculixSettings)Settings[Globals.CalculixSettingsName];
+            if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
+            {
+                MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
+                return false;
+            }
+            //
+            string executable = Application.StartupPath + Globals.NetGenMesher;
+            string brepFileName = Path.Combine(settings.WorkDirectory, Globals.BrepFileName);
+            string volFileName = Path.Combine(settings.WorkDirectory, Globals.VolFileName);
+            string meshParametersFileName = Path.Combine(settings.WorkDirectory, Globals.MeshParametersFileName);
+            string meshRefinementFileName = Path.Combine(settings.WorkDirectory, Globals.MeshRefinementFileName);
+            //
+            if (File.Exists(brepFileName)) File.Delete(brepFileName);
+            if (File.Exists(volFileName)) File.Delete(volFileName);
+            if (File.Exists(meshParametersFileName)) File.Delete(meshParametersFileName);
+            if (File.Exists(meshRefinementFileName)) File.Delete(meshRefinementFileName);
+            //
+            File.WriteAllText(brepFileName, part.CADFileData);
+            CreateMeshRefinementFile(meshRefinementFileName, newMeshRefinement);
+            parameters.WriteToFile(meshParametersFileName);
+            //
+            string argument = "BREP_EDGE_MESH " +
+                              "\"" + brepFileName.ToUTF8() + "\" " +
+                              "\"" + volFileName + "\" " +
+                              "\"" + meshParametersFileName + "\" "+
+                              "\"" + meshRefinementFileName + "\"";
+            //
+            _netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
+            _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
+            _netgenJob.Submit();
+            // Job completed
+            if (_netgenJob.JobStatus == JobStatus.OK)
+            {
+                ImportGeneratedNodeMesh(volFileName, part, false);
+                return true;
+            }
+            else return false;
+        }
+        public void ImportGeneratedNodeMesh(string fileName, GeometryPart part, bool resetCamera)
         {
             if (!File.Exists(fileName))
                 throw new FileNotFoundException("The file: '" + fileName + "' does not exist." + Environment.NewLine +
-                                                "The reason is a failed mesh generation procedure for part: " + partName);
+                                                "The reason is a failed mesh generation procedure for part: " + part.Name);
 
             FeMesh mesh = FileInOut.Input.VolFileReader.Read(fileName, FileInOut.Input.ElementsToImport.All, false);
             double[][] nodeCoor = mesh.GetAllNodeCoor();
@@ -1399,6 +1410,11 @@ namespace PrePoMax
             //
             Update(UpdateType.Check | UpdateType.RedrawSymbols);
         }
+        public string[] GetPartNamesFromMeshRefinement(FeMeshRefinement meshRefinement)
+        {
+            if (Model.Geometry != null) return Model.Geometry.GetPartNamesFromGeometryIds(meshRefinement.GeometryIds);
+            else return null;
+        }
         //
         public bool CreateMesh(string partName)
         {
@@ -1407,7 +1423,7 @@ namespace PrePoMax
             if (part.CADFileData == null) return CreateMeshFromStl(part);
             else return CreateMeshFromBrep(part);
         }
-        public bool CreateMeshFromStl(GeometryPart part)
+        private bool CreateMeshFromStl(GeometryPart part)
         {
             CalculixSettings settings = (CalculixSettings)Settings[Globals.CalculixSettingsName];
             if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
@@ -1415,32 +1431,35 @@ namespace PrePoMax
                 MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
                 return false;
             }
-
+            //
             string executable = Application.StartupPath + Globals.NetGenMesher;
             string stlFileName = Path.Combine(settings.WorkDirectory, Globals.StlFileName);
             string volFileName = Path.Combine(settings.WorkDirectory, Globals.VolFileName);
-            string parametersFileName = Path.Combine(settings.WorkDirectory, Globals.ParametersFileName);
+            string meshParametersFileName = Path.Combine(settings.WorkDirectory, Globals.MeshParametersFileName);
+            string meshRefinementFileName = Path.Combine(settings.WorkDirectory, Globals.MeshRefinementFileName);
             string edgeNodesFileName = Path.Combine(settings.WorkDirectory, Globals.EdgeNodesFileName);
-
+            //
             if (File.Exists(stlFileName)) File.Delete(stlFileName);
             if (File.Exists(volFileName)) File.Delete(volFileName);
-            if (File.Exists(parametersFileName)) File.Delete(parametersFileName);
+            if (File.Exists(meshParametersFileName)) File.Delete(meshParametersFileName);
+            if (File.Exists(meshRefinementFileName)) File.Delete(meshRefinementFileName);
             if (File.Exists(edgeNodesFileName)) File.Delete(edgeNodesFileName);
-
+            //
             FileInOut.Output.StlFileWriter.Write(stlFileName, _model.Geometry, part.Name);
-            part.MeshingParameters.WriteToFile(parametersFileName);
+            CreateMeshRefinementFile(meshRefinementFileName, null);
+            part.MeshingParameters.WriteToFile(meshParametersFileName);
             _model.Geometry.WriteEdgeNodesToFile(part, edgeNodesFileName);
-
+            //
             string argument = "STL_MESH " +
                               "\"" + stlFileName + "\" " +
                               "\"" + volFileName + "\" " +
-                              "\"" + parametersFileName + "\" " +
+                              "\"" + meshParametersFileName + "\" " +
+                              "\"" + meshRefinementFileName + "\" " +
                               "\"" + edgeNodesFileName + "\"";
-
+            //
             _netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
             _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
             _netgenJob.Submit();
-
             // Job completed
             if (_netgenJob.JobStatus == JobStatus.OK)
             {
@@ -1450,7 +1469,7 @@ namespace PrePoMax
             }
             else return false;
         }
-        public bool CreateMeshFromBrep(GeometryPart part)
+        private bool CreateMeshFromBrep(GeometryPart part)
         {
             CalculixSettings settings = (CalculixSettings)Settings[Globals.CalculixSettingsName];
             if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
@@ -1458,30 +1477,31 @@ namespace PrePoMax
                 MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
                 return false;
             }
-
+            //
             string executable = Application.StartupPath + Globals.NetGenMesher;
             string brepFileName = Path.Combine(settings.WorkDirectory, Globals.BrepFileName);
             string volFileName = Path.Combine(settings.WorkDirectory, Globals.VolFileName);
-            string parametersFileName = Path.Combine(settings.WorkDirectory, Globals.ParametersFileName);
-            string edgeNodesFileName = Path.Combine(settings.WorkDirectory, Globals.EdgeNodesFileName);
-
+            string meshParametersFileName = Path.Combine(settings.WorkDirectory, Globals.MeshParametersFileName);
+            string meshRefinementFileName = Path.Combine(settings.WorkDirectory, Globals.MeshRefinementFileName);
+            //
             if (File.Exists(brepFileName)) File.Delete(brepFileName);
             if (File.Exists(volFileName)) File.Delete(volFileName);
-            if (File.Exists(parametersFileName)) File.Delete(parametersFileName);
-            if (File.Exists(edgeNodesFileName)) File.Delete(edgeNodesFileName);
-
+            if (File.Exists(meshParametersFileName)) File.Delete(meshParametersFileName);
+            if (File.Exists(meshRefinementFileName)) File.Delete(meshRefinementFileName);
+            //
             File.WriteAllText(brepFileName, part.CADFileData);
-            part.MeshingParameters.WriteToFile(parametersFileName);
-
+            CreateMeshRefinementFile(meshRefinementFileName, null);
+            part.MeshingParameters.WriteToFile(meshParametersFileName);
+            //
             string argument = "BREP_MESH " +
                               "\"" + brepFileName.ToUTF8() + "\" " +
                               "\"" + volFileName + "\" " +
-                              "\"" + parametersFileName + "\"";
-
+                              "\"" + meshParametersFileName + "\" " +
+                              "\"" + meshRefinementFileName + "\"";
+            //
             _netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
             _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
             _netgenJob.Submit();
-
             // Job completed
             if (_netgenJob.JobStatus == JobStatus.OK)
             {
@@ -1490,6 +1510,47 @@ namespace PrePoMax
                 return true;
             }
             else return false;
+        }
+        private void CreateMeshRefinementFile(string fileName, FeMeshRefinement newMeshRefinement)
+        {
+            int count = 0;
+            int[] ids;
+            double h;
+            FeMeshRefinement meshRefinement;
+            StringBuilder sb = new StringBuilder();
+            //
+            Dictionary<string, FeMeshRefinement> meshRefinements;
+            meshRefinements = new Dictionary<string, FeMeshRefinement>(_model.Geometry.MeshRefinements);
+            if (newMeshRefinement != null)
+            {
+                // Check for new mesh refinement
+                if (meshRefinements.ContainsKey(newMeshRefinement.Name)) meshRefinements[newMeshRefinement.Name] = newMeshRefinement;
+                else meshRefinements.Add(newMeshRefinement.Name, newMeshRefinement);
+            }
+            //
+            foreach (var entry in meshRefinements)
+            {
+                meshRefinement = entry.Value;
+                //
+                if (meshRefinement.Active)
+                {
+                    ids = meshRefinement.GeometryIds;
+                    if (ids == null || ids.Length == 0) break;
+                    //
+                    h = meshRefinement.MeshSize;
+                    double[][] coor = DisplayedMesh.GetVetexAndEdgeCoorFromGeometryIds(ids, h, false);
+                    //
+                    for (int i = 0; i < coor.Length; i++)
+                    {
+                        sb.AppendFormat("{0} {1} {2} {3} {4}", coor[i][0], coor[i][1], coor[i][2], h, Environment.NewLine);
+                    }
+                    count += coor.Length;
+                }
+            }
+            sb.Insert(0, count + Environment.NewLine);  // number of points
+            sb.AppendLine("0");                         // number of lines
+            //
+            File.WriteAllText(fileName, sb.ToString());
         }
         //
         public void StopMeshing()
@@ -5572,7 +5633,10 @@ namespace PrePoMax
                         HighlightElementSet(errorElemetSet, _model.Geometry);
                         DrawNodes(part.Name, part.ErrorNodeIds, color, layer);
                     }
-                    else _form.HighlightActor(part.Name);
+                    else
+                    {
+                        _form.HighlightActor(part.Name);
+                    }
                 }
             }
         }

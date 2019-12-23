@@ -149,6 +149,17 @@ namespace CaeGlobals
             byte[] bytes = Encoding.UTF8.GetBytes(text);
             return Encoding.Default.GetString(bytes);
         }
+        public static string ToUnicode(this string text)
+        {
+            byte[] bytes = Encoding.Unicode.GetBytes(text);
+            return Encoding.Default.GetString(bytes);
+        }
+        public static string ToASCII(this string text)
+        {
+            byte[] bytes = Encoding.ASCII.GetBytes(text);
+            return Encoding.Default.GetString(bytes);
+        }
+
         public static string ToShortString(this string[] stringArray)
         {
             string allNames = null;

@@ -16,13 +16,13 @@ namespace CaeGlobals
         [StandardValue("Node id")]
         NodeId,
 
-        [StandardValue("Nodeset name")]
+        [StandardValue("Node set name")]
         NodeSetName,
 
         [StandardValue("Element id")]
         ElementId,
 
-        [StandardValue("Elementset name")]
+        [StandardValue("Element set name")]
         ElementSetName,
 
         [StandardValue("Surface name")]

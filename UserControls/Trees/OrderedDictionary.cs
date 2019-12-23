@@ -42,7 +42,7 @@ namespace UserControls
     /// <typeparam name="TValue">The type of values in the dictionary.</typeparam>
     /// 
     [Serializable]
-    public class OrderedDictionary<TKey, TValue> : IDictionary<TKey, TValue>
+    internal class OrderedDictionary<TKey, TValue> : IDictionary<TKey, TValue>
     {
 
         private List<TKey> list;

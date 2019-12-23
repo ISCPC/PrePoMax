@@ -58,13 +58,13 @@ namespace PrePoMax.Forms
         public FrmAnimation()
         {
             InitializeComponent();
-
+            //
             _countFrames = 0;
             _updateAnimation = false;
-            _expandedSize = Size;
-            btnMoreLess_Click(null, null);
-
+            _expandedSize = Size;            
             _setSaveAsFolder = true;
+            //
+            btnMoreLess_Click(null, null);
         }
 
 

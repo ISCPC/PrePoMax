@@ -584,6 +584,7 @@
     <None Include="Icons\View\SymbolsOn.ico" />
     <None Include="Icons\View\SectionCut.ico" />
     <None Include="Icons\View\SectionView.ico" />
+    <None Include="Icons\Geometry\Mesh_refinement.ico" />
     <Content Include="main.ico" />
   </ItemGroup>
   <ItemGroup>
