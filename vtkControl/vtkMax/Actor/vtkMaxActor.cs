@@ -29,6 +29,7 @@ namespace vtkControl
         private double _diffuse;
         private bool _colorContours;
         private bool _sectionViewPossible;
+        private bool _isSurface;
         
 
 
@@ -83,6 +84,7 @@ namespace vtkControl
         }
         public bool ColorContours { get { return _colorContours; } set { _colorContours = value; } }
         public bool SectionViewPossible { get { return _sectionViewPossible; } set { _sectionViewPossible = value; } }
+        public bool IsSurface { get { return _isSurface; } }
 
 
         // Constructors                                                                                                             
@@ -104,7 +106,8 @@ namespace vtkControl
             _diffuse = 0.5;
             _colorContours = false;
             _sectionViewPossible = true;
-
+            _isSurface = false;
+            //
             UpdateColor();
         }
         public vtkMaxActor(vtkUnstructuredGrid source)
@@ -113,24 +116,19 @@ namespace vtkControl
             // Unstructured grid
             vtkUnstructuredGrid uGridActor = vtkUnstructuredGrid.New();
             vtkUnstructuredGrid uGridEdges = vtkUnstructuredGrid.New();
-
             // Add the points
             uGridActor.SetPoints(source.GetPoints());
             uGridEdges.SetPoints(source.GetPoints());
-
             // Add the cells
             AddCellDataToGrid(source, uGridActor, uGridEdges);
-
             // Update grid
             uGridActor.Update();
             uGridEdges.Update();
-
             // Actor
             vtkDataSetMapper mapper = vtkDataSetMapper.New();
             mapper.SetInput(uGridActor);
             _geometry.SetMapper(mapper);
             _geometry.PickableOff();
-
             // Edges
             _elementEdges = GetActorEdgesFromGridByVisualizationSurfaceExtraction(uGridEdges);
         }
@@ -151,21 +149,22 @@ namespace vtkControl
             this._diffuse = data.Diffuse;
             this._colorContours = data.ColorContours;
             this._sectionViewPossible = data.SectionViewPossible;
-
+            this._isSurface = data.IsSurface;
+            //
             UpdateColor();
         }
         public vtkMaxActor(vtkMaxActorData data, bool extractVisualizationSurface, bool createNodalActor)
             : this()
         {
             this._name = data.Name;            
-
+            //
             if (createNodalActor)
                 CreateNodalActor(data);
             else
             {
                 if (extractVisualizationSurface) CreateFromDataByVisualizationSurfaceExtraction(data);
                 else CreateFromData(data);
-
+                //
                 if (data.Pickable && _geometry.GetMapper().GetInputAsDataSet().GetCellData().GetGlobalIds() != null)
                 {
                     _geometry.SetPickable(1);
@@ -178,7 +177,7 @@ namespace vtkControl
                     _geometry.SetPickable(0);
                 }
             }
-
+            //
             this._actorRepresentation = data.ActorRepresentation;
             this._backfaceCulling = data.BackfaceCulling;
             this._color = data.Color;
@@ -186,17 +185,18 @@ namespace vtkControl
             this._diffuse = data.Diffuse;
             this._colorContours = data.ColorContours;
             this._sectionViewPossible = data.SectionViewPossible;
-
+            this._isSurface = data.IsSurface;
+            //
             UpdateColor();
         }
         public vtkMaxActor(vtkMaxActor sourceActor)
           : this()
         {
             this._name = sourceActor.Name;           
-
+            //
             if (sourceActor.MinNode != null) _minNode = new vtkMaxExtreemeNode(sourceActor.MinNode);
             if (sourceActor.MaxNode != null) _maxNode = new vtkMaxExtreemeNode(sourceActor.MaxNode);
-
+            //
             // Geometry                                                         
             // Polydata
             vtkPolyData polydata = vtkPolyData.New();
@@ -209,7 +209,7 @@ namespace vtkControl
             _geometry.GetProperty().DeepCopy(sourceActor.Geometry.GetProperty());
             _geometry.SetVisibility(sourceActor.Geometry.GetVisibility());
             _geometry.SetPickable(sourceActor.Geometry.GetPickable());
-
+            //
             // Cell Locator
             if (sourceActor.CellLocator != null)
             {
@@ -222,12 +222,12 @@ namespace vtkControl
             {
                 vtkUnstructuredGrid grid = vtkUnstructuredGrid.New();
                 grid.DeepCopy(sourceActor.FrustumCellLocator.GetDataSet());
-
+                //
                 _frustumCellLocator = vtkCellLocator.New();
                 _frustumCellLocator.SetDataSet(grid);
                 _frustumCellLocator.LazyEvaluationOn();
             }
-
+            //
             // Element edges                                                    
             if (sourceActor.ElementEdges != null)
             {
@@ -244,7 +244,7 @@ namespace vtkControl
                 _elementEdges.SetVisibility(sourceActor.ElementEdges.GetVisibility());
                 _elementEdges.SetPickable(sourceActor.ElementEdges.GetPickable());
             }
-
+            //
             // Model edges                                                      
             if (sourceActor.ModelEdges != null)
             {
@@ -261,7 +261,7 @@ namespace vtkControl
                 _modelEdges.SetVisibility(sourceActor.ModelEdges.GetVisibility());
                 _modelEdges.SetPickable(sourceActor.ModelEdges.GetPickable());
             }
-
+            //
             this._actorRepresentation = sourceActor.ActorRepresentation;
             this.VtkMaxActorVisible = sourceActor.VtkMaxActorVisible;
             this._backfaceCulling = sourceActor.BackfaceCulling;
@@ -270,7 +270,8 @@ namespace vtkControl
             this._diffuse = sourceActor.Diffuse;
             this._colorContours = sourceActor.ColorContours;
             this._sectionViewPossible = sourceActor.SectionViewPossible;
-
+            this._isSurface = sourceActor.IsSurface;
+            //
             UpdateColor();
         }
 
@@ -429,8 +430,41 @@ namespace vtkControl
             polydata.GetPointData().CopyScalarsOn();
             // Normals
             if (data.SmoothShaded) polydata.GetPointData().SetNormals(ComputeNormals(polydata));
+
+            
+
+            //// Transform
+            //double[] position = _geometry.GetPosition();
+            //double[] center = _geometry.GetCenter();
+            //double[] delta = new double[] { center[0] - position[0], center[1] - position[1], center[2] - position[2] };
+            //double scale = 2;
+            //center[0] *= scale;
+            //center[1] *= scale;
+            //center[2] *= scale;
+            //position[0] = center[0] - delta[0];
+            //position[1] = center[1] - delta[1];
+            //position[2] = center[2] - delta[2];
+            ////
+            //double[] bounds = polydata.GetBounds();
+
+            //delta[0] = (bounds[0] + bounds[1]) / 2 * (scale - 1);
+            //delta[1] = (bounds[2] + bounds[3]) / 2 * (scale - 1);
+            //delta[2] = (bounds[4] + bounds[5]) / 2 * (scale - 1);
+            ////
+            //vtkTransform translation = vtkTransform.New();
+            //translation.Translate(delta[0], delta[1], delta[2]);
+            ////
+            //vtkTransformPolyDataFilter transformFilter = vtkTransformPolyDataFilter.New();
+            //transformFilter.SetInput(polydata);
+            //transformFilter.SetTransform(translation);
+            //transformFilter.Update();
+
+
+
+
             // Mapper
             vtkDataSetMapper mapper = vtkDataSetMapper.New();
+            //mapper.SetInputConnection(transformFilter.GetOutputPort());
             mapper.SetInput(polydata);
             // Actor
             _geometry.SetMapper(mapper);
@@ -483,7 +517,6 @@ namespace vtkControl
                 geometryFilter.Update();
                 polydata = vtkPolyData.New();
                 polydata = geometryFilter.GetOutput();
-
                 // Mapper
                 mapper = vtkDataSetMapper.New();
                 mapper.SetInput(polydata);
@@ -834,16 +867,17 @@ namespace vtkControl
             property.SetAmbient(_ambient);
             property.SetDiffuse(_diffuse);
             property.SetAmbientColor(1, 1, 1);  // also reset part color highlight
-
+            //
+            property.SetOpacity(opacity);
+            //
             if (!ColorContours)
             {
                 property.SetColor(_color.R / 255d, _color.G / 255d, _color.B / 255d);
-                property.SetOpacity(opacity);
                 property.SetSpecular(0.6);
                 property.SetSpecularColor(1, 1, 1);
                 property.SetSpecularPower(100);
             }
-
+            //
             if (_modelEdges != null)
             {
                 property = _modelEdges.GetProperty();
@@ -852,7 +886,6 @@ namespace vtkControl
                 property.SetLineWidth(1.2f);
                 property.SetOpacity(opacity * 0.7);
             }
-
             //if (opacity < 1) opacity = Math.Min(0.2, opacity);
             if (_elementEdges != null)
             {

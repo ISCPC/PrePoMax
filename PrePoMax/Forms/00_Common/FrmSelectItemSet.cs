@@ -310,12 +310,21 @@ namespace PrePoMax
         // Methods                                                                                                                  
         public void SetGeometrySelection(bool selectGeometry)
         {
-            if (selectGeometry == rbGeometry.Checked) return;
-
-            if (selectGeometry) rbGeometry.Checked = true;
-            else rbNode.Checked = true;
+            if (selectGeometry)
+            {
+                if (rbGeometry.Checked) return;
+                //
+                rbGeometry.Checked = true;
+                if (btnMoreLess.Enabled && btnMoreLess.Text == "Less") btnMoreLess_Click(null, null);
+            }
+            else
+            {
+                if (rbNode.Checked) return;
+                //
+                rbNode.Checked = true;
+                if (btnMoreLess.Enabled && btnMoreLess.Text == "More") btnMoreLess_Click(null, null);
+            }
         }
-
         public void SetOnlyGeometrySelection(bool onlyGeometrySelection)
         {
             if (onlyGeometrySelection)
@@ -329,7 +338,7 @@ namespace PrePoMax
                 btnMoreLess.Enabled = true;
             }
         }
-
+        //
         private void SetSelectionAngle(TextBox tbAngle)
         {
             double angle;

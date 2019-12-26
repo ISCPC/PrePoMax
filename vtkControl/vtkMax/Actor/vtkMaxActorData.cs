@@ -31,9 +31,10 @@ namespace vtkControl
         public bool BackfaceCulling;
         public bool ColorContours;
         public bool SmoothShaded;
+        public bool IsSurface;
         public vtkMaxActorRepresentation ActorRepresentation;
         public bool SectionViewPossible;
-
+        //
         public PartExchangeData Geometry;
         public PartExchangeData ModelEdges;
         public PartExchangeData CellLocator;
@@ -53,9 +54,10 @@ namespace vtkControl
             BackfaceCulling = true;
             ColorContours = false;
             SmoothShaded = false;
+            IsSurface = false;
             ActorRepresentation = vtkMaxActorRepresentation.Unknown;
             SectionViewPossible = true;
-
+            //
             Geometry = new PartExchangeData();
             ModelEdges = null;
             CellLocator = null;

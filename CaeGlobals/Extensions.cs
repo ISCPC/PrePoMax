@@ -170,5 +170,15 @@ namespace CaeGlobals
             }
             return allNames;
         }
+
+        // vtkSelectBy
+        public static bool GeometryId(this vtkSelectBy selectBy)
+        {
+            return (selectBy == vtkSelectBy.QuerySurface ||
+                    selectBy == vtkSelectBy.QueryEdge ||
+                    selectBy == vtkSelectBy.Geometry ||
+                    selectBy == vtkSelectBy.GeometryEdgeAngle ||
+                    selectBy == vtkSelectBy.GeometrySurfaceAngle);
+        }
     }
 }

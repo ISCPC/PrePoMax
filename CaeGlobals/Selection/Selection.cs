@@ -54,7 +54,8 @@ namespace CaeGlobals
         {
             foreach (var node in _nodes)
             {
-                if (!(node is SelectionNodeIds sni && sni.GeometryIds)) return false;
+                if (!((node is SelectionNodeIds sni && sni.GeometryIds) || 
+                      (node is SelectionNodeMouse snm && snm.GeometryIds))) return false;
             }
             return true;
         }

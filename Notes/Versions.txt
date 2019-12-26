@@ -135,6 +135,12 @@ Dependency nglib - added following files for c++ redistriburable compatibility:
 Done
 
 Version 0.5.2 Master branch
+Added support for Submodel
+Added support for edge preview
+Added support for mesh refinement
+
+
+Version 0.5.2 Master branch
 Added support for importing and meshing 'hollow' CAD files.
 Added support for importing .brep files
 Added support for section view

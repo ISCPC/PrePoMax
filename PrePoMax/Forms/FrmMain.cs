@@ -42,6 +42,7 @@ namespace PrePoMax
         private Controller _controller;
         private string[] _args;
         private string[] outputLines;
+        private Dictionary<ViewGeometryModelResults, Action<object, EventArgs>> _edgeVisibilities;
 
         private Point _formLocation;
         private List<Form> _allForms;
@@ -88,6 +89,7 @@ namespace PrePoMax
         }
         public void SetCurrentView(ViewGeometryModelResults view)
         {
+            // this gets called from: _controller.CurrentView =
             InvokeIfRequired(() =>
             {
                 if (view == ViewGeometryModelResults.Geometry) _modelTree.SetGeometryTab();
@@ -98,9 +100,11 @@ namespace PrePoMax
                     InitializeWidgetPositions();
                 }
                 else throw new NotSupportedException();
-
+                //
                 SetMenuAndToolStripVisibility();
-
+                //
+                _edgeVisibilities[_controller.CurrentView](null, null);
+                //
                 this.ActiveControl = null;
             });
         }
@@ -126,7 +130,11 @@ namespace PrePoMax
             _vtk = null;
             _controller = null;
             _modelTree = null;
-            _args = args;           
+            _args = args;
+            _edgeVisibilities = new Dictionary<ViewGeometryModelResults, Action<object, EventArgs>>();
+            _edgeVisibilities.Add(ViewGeometryModelResults.Geometry, tsmiShowModelEdges_Click);
+            _edgeVisibilities.Add(ViewGeometryModelResults.Model, tsmiShowElementEdges_Click);
+            _edgeVisibilities.Add(ViewGeometryModelResults.Results, tsmiShowElementEdges_Click);
         }
 
 
@@ -483,17 +491,18 @@ namespace PrePoMax
         }
 
         #region ModelTree Events ###################################################################################################
+
         private void ModelTree_ViewEvent(ViewType viewType)
         {
             try
             {
                 CloseAllForms();
                 _controller.SelectBy = vtkSelectBy.Off;
-
+                //
                 if (viewType == ViewType.Geometry) _controller.CurrentView = ViewGeometryModelResults.Geometry;
                 else if (viewType == ViewType.Model) _controller.CurrentView = ViewGeometryModelResults.Model;
                 else if (viewType == ViewType.Results) _controller.CurrentView = ViewGeometryModelResults.Results;
-                else throw new NotSupportedException();
+                else throw new NotSupportedException();               
             }
             catch (Exception ex)
             {
@@ -729,6 +738,7 @@ namespace PrePoMax
                 }
             }
         }
+
         #endregion #################################################################################################################
 
 
@@ -1213,37 +1223,54 @@ namespace PrePoMax
 
         private void tsmiShowWireframeEdges_Click(object sender, EventArgs e)
         {
-            _vtk.EdgesVisibility = vtkControl.vtkEdgesVisibility.Wireframe;
-            if (_controller.Selection != null && _controller.Selection.Nodes.Count > 0)
-                _controller.HighlightSelection();
-            else if (!_frmSelectItemSet.Visible)    // if everything is deselectd in _frmSelectItemSet do not highlight from tree
-                _modelTree.UpdateHighlight();
+            try
+            {
+                _edgeVisibilities[_controller.CurrentView] = tsmiShowWireframeEdges_Click;
+                //
+                SetEdgesVisibility(vtkControl.vtkEdgesVisibility.Wireframe);
+            }
+            catch { }
         }
         private void tsmiShowElementEdges_Click(object sender, EventArgs e)
         {
-            _vtk.EdgesVisibility = vtkControl.vtkEdgesVisibility.ElementEdges;
-            if (_controller.Selection != null && _controller.Selection.Nodes.Count > 0)
-                _controller.HighlightSelection();
-            else if (!_frmSelectItemSet.Visible)    // if everything is deselectd in _frmSelectItemSet do not highlight from tree
-                _modelTree.UpdateHighlight();
+            try
+            {
+                _edgeVisibilities[_controller.CurrentView] = tsmiShowElementEdges_Click;
+                //
+                SetEdgesVisibility(vtkControl.vtkEdgesVisibility.ElementEdges);
+            }
+            catch { }
         }
         private void tsmiShowModelEdges_Click(object sender, EventArgs e)
         {
-            _vtk.EdgesVisibility = vtkControl.vtkEdgesVisibility.ModelEdges;
-            if (_controller.Selection != null && _controller.Selection.Nodes.Count > 0)
-                _controller.HighlightSelection();
-            else if (!_frmSelectItemSet.Visible)    // if everything is deselectd in _frmSelectItemSet do not highlight from tree
-                _modelTree.UpdateHighlight();
+            try
+            {
+                _edgeVisibilities[_controller.CurrentView] = tsmiShowModelEdges_Click;
+                //
+                SetEdgesVisibility(vtkControl.vtkEdgesVisibility.ModelEdges);
+            }
+            catch { }
         }
         private void tsmiShowNoEdges_Click(object sender, EventArgs e)
         {
-            _vtk.EdgesVisibility = vtkControl.vtkEdgesVisibility.NoEdges;
+            try
+            {
+                _edgeVisibilities[_controller.CurrentView] = tsmiShowNoEdges_Click;
+                //
+                SetEdgesVisibility(vtkControl.vtkEdgesVisibility.NoEdges);
+            }
+            catch { }
+        }
+        private void SetEdgesVisibility(vtkControl.vtkEdgesVisibility edgesVisibility)
+        {
+            _vtk.EdgesVisibility = edgesVisibility;
             if (_controller.Selection != null && _controller.Selection.Nodes.Count > 0)
                 _controller.HighlightSelection();
-            else if (!_frmSelectItemSet.Visible)    // if everything is deselectd in _frmSelectItemSet do not highlight from tree
+            else if (_frmSelectItemSet != null && !_frmSelectItemSet.Visible)   // null for the initiation
+                // if everything is deselectd in _frmSelectItemSet do not highlight from tree
                 _modelTree.UpdateHighlight();
         }
-
+        //
         private void tsmiSectionView_Click(object sender, EventArgs e)
         {
             SinglePointDataEditor.ParentForm = _frmSectionView;
@@ -1251,7 +1278,7 @@ namespace PrePoMax
 
             ShowForm(_frmSectionView, tsmiSectionView.Text, null);
         }
-
+        //
         private void tsmiHideAllParts_Click(object sender, EventArgs e)
         {
             try
@@ -4225,8 +4252,7 @@ namespace PrePoMax
         }
         public void SelectBasePart(MouseEventArgs e, Keys modifierKeys, string partName)
         {
-            // this is called from _vtk on part selection
-
+            // this is called from _vtk on part selection            
             if (!_modelTree.DisableMouse)
             {
                 if (partName == null)

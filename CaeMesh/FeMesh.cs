@@ -3544,6 +3544,10 @@ namespace CaeMesh
                 nodeIds = GetNodeIdsFromGeometryId(geometryId);
                 return GetElementIdsFromNodeIds(nodeIds, containsEdge, containsFace, false);
             }
+            else if (selectItem == vtkSelectItem.Edge || selectItem == vtkSelectItem.Geometry)
+            {
+                return new int[] { geometryId };
+            }
             else if (selectItem == vtkSelectItem.Surface)
             {
                 if (itemTypePart[1] == 3) return GetVisualizationFaceIds(itemTypePart[0], itemTypePart[2]);

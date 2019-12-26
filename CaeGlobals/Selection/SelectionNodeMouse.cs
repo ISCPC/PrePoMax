@@ -21,6 +21,13 @@ namespace CaeGlobals
         public double[][] PlaneParameters { get { return _planeParameters; } set { _planeParameters = value; } }
         public vtkSelectBy SelectBy { get { return _selectBy; } set { _selectBy = value; } }
         public double Angle { get { return _angle; } set { _angle = value; } }
+        public bool GeometryIds
+        {
+            get
+            {
+                return (_selectBy.GeometryId());
+            }
+        }
 
 
         // Constructors                                                                                                             
@@ -35,5 +42,6 @@ namespace CaeGlobals
 
 
         // Methods                                                                                                                  
+       
     }
 }

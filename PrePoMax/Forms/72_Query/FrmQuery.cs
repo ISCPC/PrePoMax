@@ -155,7 +155,15 @@ namespace PrePoMax.Forms
             {
                 if (_controller.SelectBy == vtkSelectBy.QueryElement && ids.Length == 1) OneElementPicked(ids[0]);
                 else if (_controller.SelectBy == vtkSelectBy.QueryEdge && ids.Length == 1) OneEdgePicked(ids[0]);
-                else if (_controller.SelectBy == vtkSelectBy.QuerySurface && ids.Length == 1) OneSurfacePicked(ids[0]);
+                else if (_controller.SelectBy == vtkSelectBy.QuerySurface)
+                {
+                    SelectionNodeMouse selectionNodeMouse = _controller.Selection.Nodes[0] as SelectionNodeMouse;
+                    if (selectionNodeMouse != null)
+                    {
+                        SelectionNodeIds selectionNodeIds = _controller.GetSelectionNodeIds(selectionNodeMouse);
+                        OneSurfacePicked(selectionNodeIds.ItemIds[0]);
+                    }
+                }
                 else if (_controller.SelectBy == vtkSelectBy.QueryPart && ids.Length == 1) OnePartPicked(ids[0]);
                 else if (ids.Length == _numNodesToSelect)
                 {
@@ -247,7 +255,7 @@ namespace PrePoMax.Forms
             int[] itemTypePart = CaeMesh.FeMesh.GetItemTypePartIdsFromGeometryId(id);
             CaeMesh.BasePart part = _controller.DisplayedMesh.GetPartById(itemTypePart[2]);
             double area = _controller.DisplayedMesh.GetSurfaceArea(id);
-
+            //
             Form_WriteDataToOutput("");
             string data = string.Format("Surface part name: {0}", part.Name);
             Form_WriteDataToOutput(data);
@@ -256,9 +264,9 @@ namespace PrePoMax.Forms
             data = string.Format("Surface area: {0:E}", area);
             Form_WriteDataToOutput(data);
             Form_WriteDataToOutput("");
-
+            //
             _controller.ClearSelectionHistory();
-
+            //
             vtkControl.vtkMaxActorData aData = _controller.GetGeometrySurfaceActorData(new int[] { id });
             _controller.HighlightActorData(aData);
         }

@@ -419,7 +419,7 @@ namespace vtkControl
                 vtkActor pickedActor = null;
                 GetPickPoint(out pickedActor, x, y);
                 MouseEventArgs e = new MouseEventArgs(MouseButtons.Left, 1, x, y, 0);
-
+                
                 if (pickedActor == null) Controller_ActorPicked?.Invoke(e, ModifierKeys, null);
                 else Controller_ActorPicked?.Invoke(e, ModifierKeys, GetActorName(pickedActor));
             }
@@ -3188,7 +3188,6 @@ namespace vtkControl
                     if (actor.CellLocator != null) _cellPicker.AddLocator(actor.CellLocator);
                     _propPicker.AddPickList(actor.Geometry);
                 }
-
                 //_overlayActors.Add(actor.Name, actor.Geometry);
                 //_overlayRenderer.AddActor(actor.Geometry);
 
@@ -3205,8 +3204,6 @@ namespace vtkControl
                 //    vtkMaxActor ma = new vtkMaxActor();
                 //    _renderer.AddActor(reflectionActor);
                 //}
-
-
             }
             else if (layer == vtkRendererLayer.Overlay)
             {
@@ -3220,12 +3217,13 @@ namespace vtkControl
             {
                 if (actor.Name == null) actor.Name = (_selectedActors.Count + 1).ToString();
                 _selectedActors.Add(actor);
-                _selectionRenderer.AddActor(actor.Geometry);
+                if (actor.IsSurface) _renderer.AddActor(actor.Geometry);
+                else _selectionRenderer.AddActor(actor.Geometry);
                 //
                 actor.Geometry.PickableOff();
                 ApplySelectionFormatingToActor(actor.Geometry);
             }
-
+            //
             ApplyEdgeVisibilityAndBackfaceCullingToActor(actor.Geometry, layer);            
         }
         private void AddActorEdges(vtkMaxActor actor, bool isModelEdge, vtkRendererLayer layer)
@@ -3258,9 +3256,13 @@ namespace vtkControl
             {                
                 // wireframe selection
                 if (!_selectedActors.Contains(actor)) _selectedActors.Add(actor);
-
-                if (isModelEdge) _selectionRenderer.AddActor(actor.ModelEdges);
-                else _selectionRenderer.AddActor(actor.ElementEdges);
+                //
+                vtkActor edgeActor;
+                if (isModelEdge) edgeActor = actor.ModelEdges;
+                else edgeActor = actor.ElementEdges;
+                //
+                if (actor.IsSurface) _renderer.AddActor(edgeActor);
+                else _selectionRenderer.AddActor(edgeActor);
             }
 
             //if (isModelEdge) ApplyEdgesFormatingToActor(actor.ModelEdges);
@@ -3276,7 +3278,7 @@ namespace vtkControl
 
         public void HighlightActor(string actorName)
         {
-            string sectionViewActorName = actorName + Globals.NameSeparator + "sectionView";
+            string sectionViewActorName = GetSectionViewActorName(actorName);
             HighlightActorByName(actorName);
             if (_sectionView) HighlightActorByName(sectionViewActorName);
         }
@@ -3326,7 +3328,7 @@ namespace vtkControl
             string sectionViewActorName;
             foreach (var name in actorNames)
             {
-                sectionViewActorName = name + Globals.NameSeparator + "sectionView";
+                sectionViewActorName = GetSectionViewActorName(name);
                 if (_actors.ContainsKey(name)) _actors[name].VtkMaxActorVisible = visible;        // use vtkMaxActor Visibility setting
                 if (_sectionView && _actors.ContainsKey(sectionViewActorName)) _actors[sectionViewActorName].VtkMaxActorVisible = visible;
                 if (_overlayActors.ContainsKey(name)) _overlayActors[name].VisibilityOn();
@@ -3490,7 +3492,7 @@ namespace vtkControl
         private vtkMaxActor GetSectionViewActorFromSolid(vtkMaxActor actor)
         {
             vtkMaxActor sectionViewActor = new vtkMaxActor(actor);
-            sectionViewActor.Name += Globals.NameSeparator + "sectionView";
+            sectionViewActor.Name = GetSectionViewActorName(actor.Name);
             sectionViewActor.BackfaceCulling = false;
 
             // Get the unstructured grid
@@ -3642,7 +3644,7 @@ namespace vtkControl
         private vtkMaxActor GetSectionViewActorFromSolidAsShell(vtkMaxActor actor)
         {
             vtkMaxActor sectionViewActor = new vtkMaxActor(actor);
-            sectionViewActor.Name += Globals.NameSeparator + "sectionView";
+            sectionViewActor.Name = GetSectionViewActorName(actor.Name);
             sectionViewActor.BackfaceCulling = false;            
 
             // Get the unstructured grid
@@ -3862,6 +3864,11 @@ namespace vtkControl
             sectionViewActor.ModelEdges.SetVisibility(actor.ModelEdges.GetVisibility());
 
             return sectionViewActor;
+        }
+
+        private string GetSectionViewActorName(string actorName)
+        {
+            return actorName + Globals.NameSeparator + "sectionView";
         }
 
         #endregion  ################################################################################################################
@@ -4519,13 +4526,20 @@ namespace vtkControl
         }
         public void UpdateActorColorContoursVisibility(string[] actorNames, bool colorContours)
         {
+            string sectionViewPartName;
+            vtkMaxActor sectionViewActor;
+            //
             foreach (var name in actorNames)
             {
                 _actors[name].ColorContours = colorContours;
+                //
+                sectionViewPartName = GetSectionViewActorName(name);
+                if (_sectionViewActors.TryGetValue(sectionViewPartName, out sectionViewActor))
+                    sectionViewActor.ColorContours = colorContours;
             }
-
+            //
             UpdateScalarFormatting();
-
+            //
             this.Invalidate();
         }
 
@@ -4615,7 +4629,7 @@ namespace vtkControl
             {
                 foreach (var entry in listEntry)
                 {
-                    sectionViewActorName = entry.Value + Globals.NameSeparator + "sectionView";
+                    sectionViewActorName = GetSectionViewActorName(entry.Value);
                     if (entry.Key == frameNumber)
                     {
                         _actors[entry.Value].VtkMaxActorVisible = true;
@@ -4782,7 +4796,7 @@ namespace vtkControl
             if (_sectionView)
             {
                 for (int i = 0; i < partNames.Length; i++)
-                    partNamesToKeep.Add(partNames[i] + Globals.NameSeparator + "sectionView");
+                    partNamesToKeep.Add(GetSectionViewActorName(partNames[i]));
             }
 
             foreach (var entry in _actors)
@@ -4816,27 +4830,24 @@ namespace vtkControl
                 if (_mouseSelectionAllIds.Count > 0) _mouseSelectionAllIds.Clear();
                 _mouseSelectionCurrentIds = null;
             }
-
+            //
             ClearCurrentMouseSelection();
-
-            // actors
+            // Actors
             foreach (var entry in _actors)
             {
                 entry.Value.UpdateColor();
             }
-
-            // actors and edges - leave mouse
+            // Actors and edges - leave mouse
             foreach (vtkMaxActor actor in _selectedActors)
             {
                 _selectionRenderer.RemoveActor(actor.Geometry);
                 _selectionRenderer.RemoveActor(actor.ElementEdges);
-
-                //_renderer.RemoveActor(actor);
-                //_renderer.RemoveActor(actor.ElementEdges);
+                //
+                _renderer.RemoveActor(actor.Geometry);
+                _renderer.RemoveActor(actor.ElementEdges);
             }
-            //_selectionRenderer.RemoveAllViewProps();
             _selectedActors.Clear();
-
+            //
             this.Invalidate();
         }
         public void ClearCurrentMouseSelection()
@@ -4891,8 +4902,8 @@ namespace vtkControl
 
             if (_sectionView)
             {
-                string oldsectionViewActorName = oldName + Globals.NameSeparator + "sectionView";
-                string newsectionViewActorName = oldName + Globals.NameSeparator + "sectionView";
+                string oldsectionViewActorName = GetSectionViewActorName(oldName);
+                string newsectionViewActorName = oldsectionViewActorName;
 
                 actor = _actors[oldsectionViewActorName];
                 actor.Color = newColor;
