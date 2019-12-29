@@ -148,11 +148,13 @@ namespace PrePoMax.Forms
             lvQueries.HideSelection = false;
             lvQueries.SelectedIndices.Clear();
         }
-
+        //
         public void PickedIds(int[] ids)
         {
             try
             {
+                if (ids == null || ids.Length == 0) return;
+                //
                 if (_controller.SelectBy == vtkSelectBy.QueryElement && ids.Length == 1) OneElementPicked(ids[0]);
                 else if (_controller.SelectBy == vtkSelectBy.QueryEdge && ids.Length == 1) OneEdgePicked(ids[0]);
                 else if (_controller.SelectBy == vtkSelectBy.QuerySurface)
@@ -181,7 +183,7 @@ namespace PrePoMax.Forms
             catch
             { }
         }
-        
+        //
         public void OneNodePicked(int nodeId)
         {
             if (Form_WriteDataToOutput != null)
@@ -235,7 +237,7 @@ namespace PrePoMax.Forms
             int[] itemTypePart = CaeMesh.FeMesh.GetItemTypePartIdsFromGeometryId(id);
             CaeMesh.BasePart part = _controller.DisplayedMesh.GetPartById(itemTypePart[2]);
             double length = _controller.DisplayedMesh.GetEdgeLength(id);
-
+            //
             Form_WriteDataToOutput("");
             string data = string.Format("Edge part name: {0}", part.Name);
             Form_WriteDataToOutput(data);
@@ -244,11 +246,10 @@ namespace PrePoMax.Forms
             data = string.Format("Edge length: {0:E}", length);
             Form_WriteDataToOutput(data);
             Form_WriteDataToOutput("");
-
+            //
             _controller.ClearSelectionHistory();
-
-            vtkControl.vtkMaxActorData aData = _controller.GetGeometryEdgeActorData(new int[] { id });
-            _controller.HighlightActorData(aData);
+            //
+            _controller.HighlightItemsByGeometryEdgeIds(new int[] { id });
         }
         public void OneSurfacePicked(int id)
         {
@@ -265,10 +266,9 @@ namespace PrePoMax.Forms
             Form_WriteDataToOutput(data);
             Form_WriteDataToOutput("");
             //
-            _controller.ClearSelectionHistory();
+            _controller.ClearSelectionHistory();    // in order to prevent SHIFT ADD
             //
-            vtkControl.vtkMaxActorData aData = _controller.GetGeometrySurfaceActorData(new int[] { id });
-            _controller.HighlightActorData(aData);
+            _controller.HighlightItemsBySurfaceIds(new int[] { id });
         }
         public void OnePartPicked(int id)
         {
@@ -379,7 +379,7 @@ namespace PrePoMax.Forms
                 else if (lvQueries.SelectedItems[0].Text == "Circle") ComputeCircle(nodeId1, nodeId2, nodeId3);
             }
         }
-
+        //
         private void ComputeAngle(int nodeId1, int nodeId2, int nodeId3)
         {
             string data;
@@ -551,7 +551,7 @@ namespace PrePoMax.Forms
             }
             return coorLines;
         }
-
+        //
         private void HighlightNodes()
         {
             Color color = Color.Red;

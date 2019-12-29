@@ -3825,7 +3825,23 @@ namespace PrePoMax
 
             if (selectBy == vtkSelectBy.Node || selectBy == vtkSelectBy.QueryNode)
             {
-                int nodeId = DisplayedMesh.GetCellFaceNodeIdClosestToPoint(pickedPoint, cellFaceNodeIds);
+                int nodeId;
+                // Scale nodes                
+                if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
+                {
+                    float scale = GetScale();
+                    double[][] cellFaceNodeCoor = new double[cellFaceNodeIds.Length][];
+                    for (int i = 0; i < cellFaceNodeIds.Length; i++)
+                        cellFaceNodeCoor[i] = DisplayedMesh.Nodes[cellFaceNodeIds[i]].Coor;
+                    //
+                    Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId,
+                                                 cellFaceNodeIds, ref cellFaceNodeCoor);
+                    nodeId = DisplayedMesh.GetCellFaceNodeIdClosestToPoint(pickedPoint, cellFaceNodeIds, cellFaceNodeCoor);
+                }
+                else
+                {
+                    nodeId = DisplayedMesh.GetCellFaceNodeIdClosestToPoint(pickedPoint, cellFaceNodeIds);
+                }
                 return new int[] { nodeId };
             }
             else if (selectBy == vtkSelectBy.Element || selectBy == vtkSelectBy.QueryElement)
@@ -4164,21 +4180,18 @@ namespace PrePoMax
             }
             else return null;
         }
-        public vtkControl.vtkMaxActorData GetFaceActorDataByFaceIds(int[] faceIds)
+        public int[][] GetSurfaceCellsByFaceIds(int[] faceIds)
         {
             int[][] cells = new int[faceIds.Length][];
             int count = 0;
             FeMesh mesh = DisplayedMesh;        // it is used in loop
+            //
             foreach (int faceId in faceIds)
             {
                 cells[count++] = mesh.GetCellFromFaceId(faceId, out FeElement element);
             }
-
-            vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
-            data.Geometry.Cells.CellNodeIds = cells;
-            DisplayedMesh.GetSurfaceGeometry(cells, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.Types);
-
-            return data;
+            //
+            return cells;
         }
         public vtkControl.vtkMaxActorData GetSurfaceActorDataByNodeIds(int[] nodeIds)
         {
@@ -4238,24 +4251,28 @@ namespace PrePoMax
             else return null;
         }
 
-        public vtkControl.vtkMaxActorData GetGeometrySurfaceActorData(int[] geometrySurfaceIds)
+        public int[][] GetSurfaceCellsByGeometryId(int[] geometrySurfaceIds)
         {
             if (geometrySurfaceIds.Length != 1) throw new NotSupportedException();
-
+            //
             int[][] cells = DisplayedMesh.GetSurfaceCells(geometrySurfaceIds[0]);
+            //
+            return cells;
 
-            vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
-            data.Geometry.Cells.CellNodeIds = cells;
-            DisplayedMesh.GetSurfaceGeometry(cells, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.Types);
+            //vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
+            //data.Geometry.Cells.CellNodeIds = cells;
+            //DisplayedMesh.GetSurfaceGeometry(cells, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor, 
+            //                                 out data.Geometry.Cells.Types);
 
-            // Scale nodes
-            if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
-            {
-                float scale = GetScale();
-                Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId, data.Geometry.Nodes.Ids, ref data.Geometry.Nodes.Coor);
-            }
+            //// Scale nodes
+            //if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
+            //{
+            //    float scale = GetScale();
+            //    Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId, 
+            //                                 data.Geometry.Nodes.Ids, ref data.Geometry.Nodes.Coor);
+            //}
 
-            return data;
+            //return data;
 
         }
         public vtkControl.vtkMaxActorData GetPartActorData(int[] elementIds)
@@ -5532,14 +5549,14 @@ namespace PrePoMax
 
         // Geometry
         public void DrawNodes(string prefixName, double[][] nodeCoor, System.Drawing.Color color, vtkControl.vtkRendererLayer layer,
-                              int nodeSize = 5, bool onGeometry = false)
+                              int nodeSize = 5, bool drawOnGeometry = false)
         {
             vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
             data.Name = prefixName + Globals.NameSeparator + "nodes";
             data.NodeSize = nodeSize;
             data.Color = color;
             data.Layer = layer;
-            data.IsSurface = onGeometry;
+            data.DrawOnGeometry = drawOnGeometry;
             data.Geometry.Nodes.Coor = nodeCoor;
             ApplyLighting(data);
             _form.Add3DNodes(data);
@@ -5574,7 +5591,7 @@ namespace PrePoMax
                     data.Layer = layer;
                     data.CanHaveElementEdges = true;
                     data.BackfaceCulling = backfaceCulling;
-                    data.IsSurface = true;
+                    data.DrawOnGeometry = true;
                     _model.Mesh.GetSurfaceGeometry(surfaceName, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
 
                     ApplyLighting(data);
@@ -5600,8 +5617,7 @@ namespace PrePoMax
                     data.Color = color;
                     data.Layer = layer;
                     data.CanHaveElementEdges = true;
-                    data.BackfaceCulling = backfaceCulling;
-                    data.IsSurface = false;
+                    data.BackfaceCulling = backfaceCulling;                    
                     _model.Mesh.GetSurfaceEdgesGeometry(surfaceName, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
 
                     ApplyLighting(data);
@@ -5868,11 +5884,9 @@ namespace PrePoMax
             FeMesh mesh = DisplayedMesh;
             System.Drawing.Color color = System.Drawing.Color.Red;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
-
             // copy
             int[][] cellsCopy = new int[cells.Length][];
             for (int i = 0; i < cells.Length; i++) cellsCopy[i] = cells[i].ToArray();
-
             // faces
             vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
             data.Name = "highlight_surface_by_cells";
@@ -5880,15 +5894,22 @@ namespace PrePoMax
             data.Layer = layer;
             data.CanHaveElementEdges = true;
             data.BackfaceCulling = true;
+            data.DrawOnGeometry = true;
             data.Geometry.Cells.CellNodeIds = cells;
-            mesh.GetSurfaceGeometry(cells, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.Types);
-
+            mesh.GetSurfaceGeometry(cells, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.Types);
+            // Scale nodes
+            if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
+            {
+                float scale = GetScale();
+                Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId,
+                                             data.Geometry.Nodes.Ids, ref data.Geometry.Nodes.Coor);
+            }
+            //
             ApplyLighting(data);
             _form.Add3DCells(data);
-
             //edges
             cells = mesh.GetFreeEdgesFromVisualizationCells(cellsCopy);
-
+            //
             data = new vtkControl.vtkMaxActorData();
             data.Name = "highlight_surface_edges_by_cells";
             data.Color = color;
@@ -5896,11 +5917,18 @@ namespace PrePoMax
             data.CanHaveElementEdges = true;
             data.BackfaceCulling = true;
             data.Geometry.Cells.CellNodeIds = cells;
-            mesh.GetSurfaceEdgesGeometry(cells, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.Types);
-
+            mesh.GetSurfaceEdgesGeometry(cells, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor, 
+                                         out data.Geometry.Cells.Types);
+            // Scale nodes
+            if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
+            {
+                float scale = GetScale();
+                Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId,
+                                             data.Geometry.Nodes.Ids, ref data.Geometry.Nodes.Coor);
+            }
+            //
             ApplyLighting(data);
             _form.Add3DCells(data);
-
         }
         public void HighlightSurfaces(string[] surfacesToSelect)
         {
@@ -6082,21 +6110,24 @@ namespace PrePoMax
             ApplyLighting(data);
             _form.Add3DNodes(data);
         }
-        private void HighlightItemsByGeometryEdgeIds(int[] ids)
+        public void HighlightItemsByGeometryEdgeIds(int[] ids)   // QueryEdge from frmQuery
         {
             vtkControl.vtkMaxActorData data = GetGeometryEdgeActorData(ids);
             HighlightActorData(data);
         }
-        private void HighlightItemsBySurfaceIds(int[] ids)
+        public void HighlightItemsBySurfaceIds(int[] ids)
         {
-            vtkControl.vtkMaxActorData data;
-            if (ids.Length == 1) data = GetGeometrySurfaceActorData(ids);   // QuerySurface
-            else data = GetFaceActorDataByFaceIds(ids);
+            int[][] cells;
+            if (ids.Length == 1) cells = GetSurfaceCellsByGeometryId(ids);   // QuerySurface from frmQuery
+            else cells = GetSurfaceCellsByFaceIds(ids);
             //
-            data.Layer = vtkControl.vtkRendererLayer.Selection;
-            data.CanHaveElementEdges = true;
-            ApplyLighting(data);
-            _form.Add3DCells(data);
+            HighlightSurface(cells);
+            //data.Layer = vtkControl.vtkRendererLayer.Selection;
+            //data.CanHaveElementEdges = true;
+            //data.DrawOnGeometry = true;
+            //ApplyLighting(data);
+            //_form.Add3DCells(data);
+            //
         }
         private void HighlightItemsByGeometryIds(int[] ids)
         {            

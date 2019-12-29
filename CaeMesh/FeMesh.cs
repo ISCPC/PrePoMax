@@ -2348,10 +2348,10 @@ namespace CaeMesh
         {
             FeSurface surface = _surfaces[name];
             KeyValuePair<FeFaceName, string>[] elementSets = surface.ElementFaces.ToArray();
-
+            //
             List<int[]> cellList = new List<int[]>();
             FeElement element;
-
+            //
             foreach (var entry in elementSets)
             {
                 foreach (int elementId in _elementSets[entry.Value].Labels)
@@ -2360,38 +2360,36 @@ namespace CaeMesh
                     cellList.Add(element.GetVtkCellFromFaceName(entry.Key));
                 }
             }
-
-            // get edges
+            // Get edges
             cells = GetFreeEdgesFromVisualizationCells(cellList.ToArray());
-
-            GetSurfaceEdgesGeometry(cells, out nodeCoor, out cellTypes);
+            //
+            GetSurfaceEdgesGeometry(cells, out int[] nodeIds, out nodeCoor, out cellTypes);
         }
-        public void GetSurfaceEdgesGeometry(int[][] cells, out double[][] nodeCoor, out int[] cellTypes)
+        public void GetSurfaceEdgesGeometry(int[][] cells, out int[] nodeIds, out double[][] nodeCoor, out int[] cellTypes)
         {
-            // get the node ids of the used nodes
+            // Get the node ids of the used nodes
             HashSet<int> nodesNeeded = new HashSet<int>();
             for (int i = 0; i < cells.Length; i++) nodesNeeded.UnionWith(cells[i]);
-
-            // create node array and a lookup table
+            // Create node array and a lookup table
             nodeCoor = new double[nodesNeeded.Count][];
+            nodeIds = new int[nodesNeeded.Count];
             Dictionary<int, int> oldNew = new Dictionary<int, int>();
             int count = 0;
+            //
             foreach (int id in nodesNeeded)
             {
+                nodeIds[count] = id;
                 nodeCoor[count] = _nodes[id].Coor;
                 oldNew.Add(id, count);
                 count++;
             }
-
-            // renumber edge cell node ids
+            // Renumber edge cell node ids
             cellTypes = new int[cells.Length];
+            //
             for (int i = 0; i < cells.Length; i++)
             {
-                for (int j = 0; j < cells[i].Length; j++)
-                {
-                    cells[i][j] = oldNew[cells[i][j]];
-
-                }
+                for (int j = 0; j < cells[i].Length; j++) cells[i][j] = oldNew[cells[i][j]];
+                //
                 if (cells[i].Length == 2) cellTypes[i] = (int)vtkCellType.VTK_LINE;
                 else if (cells[i].Length == 3) cellTypes[i] = (int)vtkCellType.VTK_QUADRATIC_EDGE;
                 else throw new NotSupportedException();
@@ -2688,9 +2686,30 @@ namespace CaeMesh
             double minDistance = double.MaxValue;
             int minId = -1;
             double[] coor;
+            //
             for (int i = 0; i < cellFaceNodeIds.Length; i++)
             {
                 coor = _nodes[cellFaceNodeIds[i]].Coor;
+                distance = Math.Pow(coor[0] - point[0], 2) + Math.Pow(coor[1] - point[1], 2) +
+                           Math.Pow(coor[2] - point[2], 2);
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    minId = i;
+                }
+            }
+            return cellFaceNodeIds[minId];
+        }
+        public int GetCellFaceNodeIdClosestToPoint(double[] point, int[] cellFaceNodeIds, double[][] cellFaceNodeCoor)
+        {
+            double distance;
+            double minDistance = double.MaxValue;
+            int minId = -1;
+            double[] coor;
+            //
+            for (int i = 0; i < cellFaceNodeCoor.Length; i++)
+            {
+                coor = cellFaceNodeCoor[i];
                 distance = Math.Pow(coor[0] - point[0], 2) + Math.Pow(coor[1] - point[1], 2) +
                            Math.Pow(coor[2] - point[2], 2);
                 if (distance < minDistance)

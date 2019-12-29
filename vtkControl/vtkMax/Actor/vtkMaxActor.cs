@@ -29,7 +29,7 @@ namespace vtkControl
         private double _diffuse;
         private bool _colorContours;
         private bool _sectionViewPossible;
-        private bool _isSurface;
+        private bool _drawOnGeometry;
         
 
 
@@ -84,7 +84,7 @@ namespace vtkControl
         }
         public bool ColorContours { get { return _colorContours; } set { _colorContours = value; } }
         public bool SectionViewPossible { get { return _sectionViewPossible; } set { _sectionViewPossible = value; } }
-        public bool IsSurface { get { return _isSurface; } }
+        public bool DrawOnGeometry { get { return _drawOnGeometry; } }
 
 
         // Constructors                                                                                                             
@@ -106,7 +106,7 @@ namespace vtkControl
             _diffuse = 0.5;
             _colorContours = false;
             _sectionViewPossible = true;
-            _isSurface = false;
+            _drawOnGeometry = false;
             //
             UpdateColor();
         }
@@ -149,7 +149,7 @@ namespace vtkControl
             this._diffuse = data.Diffuse;
             this._colorContours = data.ColorContours;
             this._sectionViewPossible = data.SectionViewPossible;
-            this._isSurface = data.IsSurface;
+            this._drawOnGeometry = data.DrawOnGeometry;
             //
             UpdateColor();
         }
@@ -185,7 +185,7 @@ namespace vtkControl
             this._diffuse = data.Diffuse;
             this._colorContours = data.ColorContours;
             this._sectionViewPossible = data.SectionViewPossible;
-            this._isSurface = data.IsSurface;
+            this._drawOnGeometry = data.DrawOnGeometry;
             //
             UpdateColor();
         }
@@ -270,7 +270,7 @@ namespace vtkControl
             this._diffuse = sourceActor.Diffuse;
             this._colorContours = sourceActor.ColorContours;
             this._sectionViewPossible = sourceActor.SectionViewPossible;
-            this._isSurface = sourceActor.IsSurface;
+            this._drawOnGeometry = sourceActor.DrawOnGeometry;
             //
             UpdateColor();
         }

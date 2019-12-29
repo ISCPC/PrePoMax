@@ -31,7 +31,7 @@ namespace vtkControl
         public bool BackfaceCulling;
         public bool ColorContours;
         public bool SmoothShaded;
-        public bool IsSurface;
+        public bool DrawOnGeometry;
         public vtkMaxActorRepresentation ActorRepresentation;
         public bool SectionViewPossible;
         //
@@ -54,7 +54,7 @@ namespace vtkControl
             BackfaceCulling = true;
             ColorContours = false;
             SmoothShaded = false;
-            IsSurface = false;
+            DrawOnGeometry = false;
             ActorRepresentation = vtkMaxActorRepresentation.Unknown;
             SectionViewPossible = true;
             //
