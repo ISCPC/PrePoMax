@@ -3819,10 +3819,9 @@ namespace PrePoMax
             int[] cellFaceNodeIds;
             double[] pickedPoint = selectionNodeMouse.PickedPoint;
             vtkSelectBy selectBy = selectionNodeMouse.SelectBy;
-
-            _form.GetGeometryPickProperties(pickedPoint, out dist, out elementId,
-                                            out edgeNodeIds, out cellFaceNodeIds);
-
+            //
+            _form.GetGeometryPickProperties(pickedPoint, out dist, out elementId, out edgeNodeIds, out cellFaceNodeIds);
+            //
             if (selectBy == vtkSelectBy.Node || selectBy == vtkSelectBy.QueryNode)
             {
                 int nodeId;
@@ -4258,22 +4257,6 @@ namespace PrePoMax
             int[][] cells = DisplayedMesh.GetSurfaceCells(geometrySurfaceIds[0]);
             //
             return cells;
-
-            //vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
-            //data.Geometry.Cells.CellNodeIds = cells;
-            //DisplayedMesh.GetSurfaceGeometry(cells, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor, 
-            //                                 out data.Geometry.Cells.Types);
-
-            //// Scale nodes
-            //if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
-            //{
-            //    float scale = GetScale();
-            //    Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId, 
-            //                                 data.Geometry.Nodes.Ids, ref data.Geometry.Nodes.Coor);
-            //}
-
-            //return data;
-
         }
         public vtkControl.vtkMaxActorData GetPartActorData(int[] elementIds)
         {
@@ -6122,12 +6105,6 @@ namespace PrePoMax
             else cells = GetSurfaceCellsByFaceIds(ids);
             //
             HighlightSurface(cells);
-            //data.Layer = vtkControl.vtkRendererLayer.Selection;
-            //data.CanHaveElementEdges = true;
-            //data.DrawOnGeometry = true;
-            //ApplyLighting(data);
-            //_form.Add3DCells(data);
-            //
         }
         private void HighlightItemsByGeometryIds(int[] ids)
         {            
