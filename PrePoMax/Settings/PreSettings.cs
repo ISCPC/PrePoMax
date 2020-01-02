@@ -22,6 +22,7 @@ namespace PrePoMax
         private Color _loadSymbolColor;
         private int _symbolSize;
         private int _nodeSymbolSize;
+        private bool _drawSilhouettes;
 
 
         // Properties                                                                                                               
@@ -60,7 +61,12 @@ namespace PrePoMax
             get { return _nodeSymbolSize; }
             set { _nodeSymbolSize = value; }
         }
-      
+        public bool DrawSilhouettes
+        {
+            get { return _drawSilhouettes; }
+            set { _drawSilhouettes = value; }
+        }
+
 
         // Constructors                                                                                                             
         public PreSettings()
@@ -82,6 +88,7 @@ namespace PrePoMax
             _loadSymbolColor = Color.RoyalBlue;
             _symbolSize = 50;
             _nodeSymbolSize = 3;
+            _drawSilhouettes = true;
         }
       
     }

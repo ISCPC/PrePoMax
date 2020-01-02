@@ -66,9 +66,8 @@ namespace PrePoMax
                 {
                     _settings = value;
                     _settings.DumpToFile(Path.Combine(System.Windows.Forms.Application.StartupPath, Globals.SettingsFileName));
-
+                    //
                     ApplySettings();
-
                     // Redraw model with new settings
                     if (_currentView == ViewGeometryModelResults.Geometry) DrawGeometry(false);
                     else if (_currentView == ViewGeometryModelResults.Model) DrawMesh(false);
@@ -3149,12 +3148,11 @@ namespace PrePoMax
             _form.SetScaleWidgetVisibility(graphicsSettings.ScaleWidgetVisibility);
             _form.SetLighting(graphicsSettings.AmbientComponent, graphicsSettings.DiffuseComponent, false);
             _form.SetSmoothing(graphicsSettings.PointSmoothing, graphicsSettings.LineSmoothing, false);
-
             // Pre-processing settings
             PreSettings preSettings = (PreSettings)_settings[Globals.PreSettingsName];
             _form.SetHighlightColor(preSettings.HighlightColor);
             _form.SetMouseHighlightColor(preSettings.MouseHighlightColor);
-
+            _form.SetDrawSilhouettes(preSettings.DrawSilhouettes);
             // Job settings
             if (_jobs != null)
             {
@@ -4613,7 +4611,6 @@ namespace PrePoMax
         {
             if (_drawSymbolsForStep != null && _drawSymbolsForStep != "None")
             {
-
                 DrawAllReferencePoints();
                 DrawAllConstraints();
                 if (_drawSymbolsForStep != "Model")
@@ -4634,9 +4631,10 @@ namespace PrePoMax
                     {
                         // Clear
                         _form.ClearButKeepParts(_model.Mesh.Parts.Keys.ToArray());
-
-                        try // must be inside to continue screen update
+                        //
+                        try 
                         {
+                            // must be inside to continue screen update
                             if (_currentView != ViewGeometryModelResults.Model) CurrentView = ViewGeometryModelResults.Model;
                             DrawSymbols();
                             //
@@ -4648,7 +4646,7 @@ namespace PrePoMax
                             }
                         }
                         catch { }
-
+                        //
                         UpdateHighlightFromTree();
                         _form.AdjustCameraDistanceAndClipping();
                     }
@@ -4665,13 +4663,14 @@ namespace PrePoMax
         {
             System.Drawing.Color color = System.Drawing.Color.FromArgb(0, 255, 255, 0);     // yellow
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Overlay;
-
+            //
             foreach (var entry in _model.Mesh.ReferencePoints)
             {
                 DrawReferencePoint(entry.Key, color, layer);
             }
         }
-        public void DrawReferencePoint(string referencePointName, System.Drawing.Color color, vtkControl.vtkRendererLayer layer, int nodeSize = 10)
+        public void DrawReferencePoint(string referencePointName, System.Drawing.Color color, vtkControl.vtkRendererLayer layer,
+                                       int nodeSize = 10)
         {
             try
             {
@@ -4687,7 +4686,7 @@ namespace PrePoMax
                     data.Geometry.Nodes.Coor = new double[][] { rp.Coor() };
                     ApplyLighting(data);
                     _form.Add3DNodes(data);
-
+                    //
                     data.NodeSize = nodeSize - 2;
                     data.Color = color;
                     ApplyLighting(data);
@@ -4710,7 +4709,8 @@ namespace PrePoMax
                 DrawConstraint(entry.Value, color, nodeSymbolSize, layer);
             }
         }
-        public void DrawConstraint(Constraint constraint, System.Drawing.Color color, int nodeSymbolSize, vtkControl.vtkRendererLayer layer)
+        public void DrawConstraint(Constraint constraint, System.Drawing.Color color, int nodeSymbolSize,
+                                   vtkControl.vtkRendererLayer layer)
         {
             try
             {
@@ -4832,8 +4832,8 @@ namespace PrePoMax
                 }
             }
         }
-        public void DrawBoundaryCondition(string stepName, BoundaryCondition boundaryCondition, System.Drawing.Color color, int symbolSize,
-                                          int nodeSymbolSize, vtkControl.vtkRendererLayer layer)
+        public void DrawBoundaryCondition(string stepName, BoundaryCondition boundaryCondition, System.Drawing.Color color, 
+                                          int symbolSize, int nodeSymbolSize, vtkControl.vtkRendererLayer layer)
         {
             try
             {
@@ -4899,8 +4899,8 @@ namespace PrePoMax
             }
             catch { } // do not show the exception to the user
         }
-        public void DrawDisplacementRotationSymbols(string prefixName, DisplacementRotation dispRot, double[][] symbolCoor, System.Drawing.Color color,
-                                                    int symbolSize, vtkControl.vtkRendererLayer layer)
+        public void DrawDisplacementRotationSymbols(string prefixName, DisplacementRotation dispRot, double[][] symbolCoor,
+                                                    System.Drawing.Color color, int symbolSize, vtkControl.vtkRendererLayer layer)
         {
             if (!dispRot.Visible) return;
 

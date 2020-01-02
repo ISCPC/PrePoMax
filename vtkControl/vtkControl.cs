@@ -57,6 +57,7 @@ namespace vtkControl
         private bool _animationAcceleration;
         private Color _highlightColor;
         private double _maxSymbolSize;
+        private bool _drawSilhouettes;
 
         private bool _animating;
         private bool _mouseIn;
@@ -197,17 +198,17 @@ namespace vtkControl
         public vtkControl()
         {
             InitializeComponent();
-
+            //
             Globals.Initialize();
-
+            //
             Controller_GetNodeActorData = null;
             Controller_GetCellActorData = null;
-
+            //
             _renderingOn = true;
             _drawCoorSys = true;
             _edgesVisibility = vtkEdgesVisibility.ElementEdges;
             _colorSpectrum = new vtkMaxColorSpectrum();
-            
+            //
             _actors = new Dictionary<string, vtkMaxActor>();
             _sectionViewActors = new Dictionary<string, vtkMaxActor>();
             _selectedActors = new List<vtkMaxActor>();
@@ -215,25 +216,26 @@ namespace vtkControl
             _animationActors = new Dictionary<string, vtkMaxActor[]>();
             _animationFrameData = null;
             _highlightColor = Color.Red;
-
+            _drawSilhouettes = true;
+            //
             _animating = false;
-
+            //
             _sectionView = false;
             _sectionViewPlane = null;
-
+            //
             SelectBy = vtkSelectBy.Off;
             _selectItem = vtkSelectItem.None;
-            
+            //
             _propPicker = vtkPropPicker.New();
             _propPicker.PickFromListOn();
             _propPicker.InitializePickList();
-
+            //
             _pointPicker = vtkPointPicker.New();
             _pointPicker.SetTolerance(0.01);
-            
+            //
             _cellPicker = vtkCellPicker.New();
             _cellPicker.SetTolerance(0.01);
-            
+            //
             _areaPicker = vtkRenderedAreaPicker.New();
             _mouseSelectionActorCurrent = null;
             _mouseSelectionCurrentIds = null;
@@ -2832,55 +2834,52 @@ namespace vtkControl
         public void AddSphereActor(vtkMaxActorData data, double symbolSize)
         {
             if (symbolSize > _maxSymbolSize) _maxSymbolSize = symbolSize;
-
+            //
             double[][] centers = data.Geometry.Nodes.Coor;
-
-            // points
+            // Points
             vtkPoints pointData = vtkPoints.New();
             for (int i = 0; i < data.Geometry.Nodes.Coor.GetLength(0); i++)
             {
                 pointData.InsertNextPoint(data.Geometry.Nodes.Coor[i][0], data.Geometry.Nodes.Coor[i][1], data.Geometry.Nodes.Coor[i][2]);
             }
-
-            // polydata
+            // Polydata
             vtkPolyData polydata = vtkPolyData.New();
             polydata.SetPoints(pointData);
-
-            // source object
+            // Source object
             vtkSphereSource sphereSource = vtkSphereSource.New();
             sphereSource.SetRadius(0.2);
             sphereSource.SetPhiResolution(15);
             sphereSource.SetThetaResolution(15);
             sphereSource.Update();
-
             // Calculate the distance to the camera of each point.
             vtkDistanceToCamera distanceToCamera = vtkDistanceToCamera.New();
             distanceToCamera.SetInput(polydata);
             distanceToCamera.SetScreenSize(symbolSize);
             distanceToCamera.SetRenderer(_renderer);
-
+            // Glyph
             vtkGlyph3D glyph = vtkGlyph3D.New();
             glyph.SetSourceConnection(sphereSource.GetOutputPort());
             glyph.SetInputConnection(distanceToCamera.GetOutputPort());
             glyph.SetVectorModeToUseNormal();
-            // scale
+            // Scale
             glyph.ScalingOn();
             glyph.SetScaleModeToScaleByScalar();
             glyph.SetInputArrayToProcess(0, 0, 0, "vtkDataObject::FIELD_ASSOCIATION_POINTS", "DistanceToCamera");
             glyph.SetScaleFactor(1.0);
             glyph.OrientOn();
             glyph.Update();
-
+            //
             vtkPolyDataMapper mapper = vtkPolyDataMapper.New();
             mapper.SetInputConnection(0, glyph.GetOutputPort());
             mapper.ScalarVisibilityOff();
-
+            //
             data.Name += Globals.NameSeparator + "sphere";
             vtkMaxActor actor = new vtkMaxActor(data, mapper);
-
+            //
             ApplySymbolFormatingToActor(actor.Geometry);
-
             AddActorGeometry(actor, data.Layer);
+            //
+            if (_dra)
         }
         public void AddOrientedDisplacementConstraintActor(vtkMaxActorData data, double symbolSize)
         {
@@ -4006,10 +4005,15 @@ namespace vtkControl
             Globals.CurrentMouseHighlightColor = mousehighlightColor;
             Globals.Initialize();
         }
+        public void SetDrawSilhouettes(bool drawSilhouettes)
+        {
+            _drawSilhouettes = drawSilhouettes;
+        }
+        
         #endregion #################################################################################################################
 
         #region Scalar fields ######################################################################################################
-       
+
         public void AddScalarFieldOnCells(vtkMaxActorData data)
         {
             // Create actor

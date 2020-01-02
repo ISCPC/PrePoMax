@@ -15,6 +15,7 @@ namespace PrePoMax.Settings
     {
         // Variables                                                                                                                
         private PreSettings _preSettings;
+        private DynamicCustomTypeDescriptor _dctd = null;
 
 
         // Properties                                                                                                               
@@ -53,6 +54,7 @@ namespace PrePoMax.Settings
             get { return _preSettings.BoundaryConditionSymbolColor; }
             set { _preSettings.BoundaryConditionSymbolColor = value; }
         }
+
         [CategoryAttribute("Symbols")]
         [OrderedDisplayName(2, 10, "Load color")]
         [DescriptionAttribute("Select the load symbol color.")]
@@ -61,6 +63,7 @@ namespace PrePoMax.Settings
             get { return _preSettings.LoadSymbolColor; }
             set { _preSettings.LoadSymbolColor = value; }
         }
+        
         [CategoryAttribute("Symbols")]
         [OrderedDisplayName(3, 10, "Symbol size")]
         [DescriptionAttribute("Select the symbol size.")]
@@ -69,6 +72,7 @@ namespace PrePoMax.Settings
             get { return _preSettings.SymbolSize; }
             set { _preSettings.SymbolSize = value; }
         }
+        
         [CategoryAttribute("Symbols")]
         [OrderedDisplayName(4, 10, "Node symbol size")]
         [DescriptionAttribute("Select the node symbol size.")]
@@ -78,11 +82,30 @@ namespace PrePoMax.Settings
             set { _preSettings.NodeSymbolSize = value; }
         }
 
+        [CategoryAttribute("Symbols")]
+        [OrderedDisplayName(5, 10, "Draw silhouettes")]
+        [DescriptionAttribute("Draw symbol silhouettes.")]
+        public bool DrawSilhouettes
+        {
+            get { return _preSettings.DrawSilhouettes; }
+            set { _preSettings.DrawSilhouettes = value; }
+        }
+
 
         // Constructors                                                                                                             
         public ViewPreSettings(PreSettings preSettings)
         {
             _preSettings = preSettings;
+            _dctd = ProviderInstaller.Install(this);
+            //
+            CustomPropertyDescriptor cpd;
+            // Now lets display Yes/No instead of True/False
+            cpd = _dctd.GetProperty("DrawSilhouettes");
+            foreach (StandardValueAttribute sva in cpd.StatandardValues)
+            {
+                if ((bool)sva.Value == true) sva.DisplayName = "Yes";
+                else sva.DisplayName = "No";
+            }
         }
 
 
