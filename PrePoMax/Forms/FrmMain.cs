@@ -4043,9 +4043,9 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.SetMouseHighlightColor, mousehighlightColor);
         }
-        public void SetDrawSilhouettes(bool drawSilhouettes)
+        public void SetDrawSymbolEdges(bool drawSilhouettes)
         {
-            InvokeIfRequired(_vtk.SetDrawSilhouettes, drawSilhouettes);
+            InvokeIfRequired(_vtk.SetDrawSymbolEdges, drawSilhouettes);
         }
         #endregion  ################################################################################################################
 

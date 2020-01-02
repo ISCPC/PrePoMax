@@ -83,12 +83,12 @@ namespace PrePoMax.Settings
         }
 
         [CategoryAttribute("Symbols")]
-        [OrderedDisplayName(5, 10, "Draw silhouettes")]
-        [DescriptionAttribute("Draw symbol silhouettes.")]
-        public bool DrawSilhouettes
+        [OrderedDisplayName(5, 10, "Draw symbol edges")]
+        [DescriptionAttribute("Draw symbol edges.")]
+        public bool DrawSymbolEdges
         {
-            get { return _preSettings.DrawSilhouettes; }
-            set { _preSettings.DrawSilhouettes = value; }
+            get { return _preSettings.DrawSymbolEdges; }
+            set { _preSettings.DrawSymbolEdges = value; }
         }
 
 
@@ -100,7 +100,7 @@ namespace PrePoMax.Settings
             //
             CustomPropertyDescriptor cpd;
             // Now lets display Yes/No instead of True/False
-            cpd = _dctd.GetProperty("DrawSilhouettes");
+            cpd = _dctd.GetProperty("DrawSymbolEdges");
             foreach (StandardValueAttribute sva in cpd.StatandardValues)
             {
                 if ((bool)sva.Value == true) sva.DisplayName = "Yes";

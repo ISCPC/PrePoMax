@@ -3152,7 +3152,7 @@ namespace PrePoMax
             PreSettings preSettings = (PreSettings)_settings[Globals.PreSettingsName];
             _form.SetHighlightColor(preSettings.HighlightColor);
             _form.SetMouseHighlightColor(preSettings.MouseHighlightColor);
-            _form.SetDrawSilhouettes(preSettings.DrawSilhouettes);
+            _form.SetDrawSymbolEdges(preSettings.DrawSymbolEdges);
             // Job settings
             if (_jobs != null)
             {
@@ -5348,7 +5348,7 @@ namespace PrePoMax
 
             if (!dLoad.Visible) return;
 
-            int[] distributedElementIds = GetSpatiallyEquallyDistributedCoor(allCoor.ToArray(), 4);
+            int[] distributedElementIds = GetSpatiallyEquallyDistributedCoor(allCoor.ToArray(), 6);
 
             int id;
             double[] faceNormal;
