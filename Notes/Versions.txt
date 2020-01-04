@@ -134,10 +134,12 @@ Dependency nglib - added following files for c++ redistriburable compatibility:
 
 Done
 
-Version 0.5.2 Master branch
+Version 0.5.3 Master branch
+Added support for edges on symbols
 Added support for Submodel
 Added support for edge preview
 Added support for mesh refinement
+
 
 
 Version 0.5.2 Master branch

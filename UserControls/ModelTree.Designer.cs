@@ -480,6 +480,7 @@
             this.cltvGeometry.SelectionMode = UserControls.TreeViewSelectionMode.MultiSelect;
             this.cltvGeometry.Size = new System.Drawing.Size(231, 470);
             this.cltvGeometry.TabIndex = 0;
+            this.cltvGeometry.SelectionsChanged += new System.EventHandler(this.cltv_SelectionsChanged);
             this.cltvGeometry.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.cltv_BeforeCollapse);
             this.cltvGeometry.AfterCollapse += new System.Windows.Forms.TreeViewEventHandler(this.cltv_AfterCollapse);
             this.cltvGeometry.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.cltv_BeforeExpand);
@@ -581,6 +582,7 @@
             this.cltvModel.SelectionMode = UserControls.TreeViewSelectionMode.MultiSelect;
             this.cltvModel.Size = new System.Drawing.Size(231, 470);
             this.cltvModel.TabIndex = 0;
+            this.cltvModel.SelectionsChanged += new System.EventHandler(this.cltv_SelectionsChanged);
             this.cltvModel.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.cltv_BeforeCollapse);
             this.cltvModel.AfterCollapse += new System.Windows.Forms.TreeViewEventHandler(this.cltv_AfterCollapse);
             this.cltvModel.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.cltv_BeforeExpand);
@@ -650,6 +652,7 @@
             this.cltvResults.SelectionMode = UserControls.TreeViewSelectionMode.MultiSelect;
             this.cltvResults.Size = new System.Drawing.Size(225, 464);
             this.cltvResults.TabIndex = 0;
+            this.cltvResults.SelectionsChanged += new System.EventHandler(this.cltv_SelectionsChanged);
             this.cltvResults.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.cltv_BeforeCollapse);
             this.cltvResults.AfterCollapse += new System.Windows.Forms.TreeViewEventHandler(this.cltv_AfterCollapse);
             this.cltvResults.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.cltv_BeforeExpand);
@@ -675,6 +678,11 @@
             this.tpResults.ResumeLayout(false);
             this.ResumeLayout(false);
 
+        }
+
+        private void CltvGeometry_SelectionsChanged(object sender, System.EventArgs e)
+        {
+            throw new System.NotImplementedException();
         }
 
         #endregion

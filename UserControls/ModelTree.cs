@@ -501,8 +501,8 @@ namespace UserControls
             {
                 CodersLabTreeView tree = (CodersLabTreeView)sender;
 
-                if (e.Clicks > 1) _doubleClick = true;
-                else _doubleClick = false;
+                if (ModifierKeys != Keys.Shift && ModifierKeys != Keys.Control && e.Clicks > 1) _doubleClick = true;
+                else de-selection bug fix_doubleClick = false;
 
                 if (tree.HitTest(e.Location).Node == null)
                 {
@@ -545,6 +545,13 @@ namespace UserControls
         }
         private void cltv_AfterSelect(object sender, TreeViewEventArgs e)
         {
+            System.Diagnostics.Debug.WriteLine("cltv_AfterSelect");
+            //
+        }
+        private void cltv_SelectionsChanged(object sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("cltv_SelectionsChanged");
+            //
             if (_disableAfterSelect) return;
 
             // this function is also called with sender as null parameter
@@ -1208,7 +1215,8 @@ namespace UserControls
 
         public void UpdateHighlight()
         {
-            cltv_AfterSelect(null, null);
+            cltv_SelectionsChanged(null, null);
+            //cltv_AfterSelect(null, null);
         }
         public int SelectBasePart(MouseEventArgs e, Keys modifierKeys, BasePart part)
         {
@@ -2015,6 +2023,6 @@ namespace UserControls
             }
         }
 
-        
+       
     }
 }
