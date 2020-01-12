@@ -4724,11 +4724,12 @@ namespace PrePoMax
         private void DrawGeomPart(FeMesh mesh, BasePart part, vtkControl.vtkRendererLayer layer, bool canHaveElementEdges, bool pickable)
         {
             System.Drawing.Color color = part.Color;
+            //
             foreach (var elType in part.ElementTypes)
             {
                 if (elType == typeof(LinearBeamElement) || elType == typeof(ParabolicBeamElement)) color = System.Drawing.Color.Black;
             }
-
+            //
             vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
             data.Name = part.Name;
             data.Color = color;
@@ -4737,8 +4738,6 @@ namespace PrePoMax
             data.Pickable = pickable;
             data.SmoothShaded = part.SmoothShaded;
             data.ActorRepresentation = GetRepresentation(part);
-
-
             // get all nodes and elements - renumbered
             if (pickable)
             {
@@ -4746,11 +4745,9 @@ namespace PrePoMax
                 mesh.GetAllNodesAndCells(part, out data.CellLocator.Nodes.Ids, out data.CellLocator.Nodes.Coor, out data.CellLocator.Cells.Ids,
                                          out data.CellLocator.Cells.CellNodeIds, out data.CellLocator.Cells.Types);
             }
-
             // get only needed nodes and elements - renumbered
             mesh.GetVisualizationNodesAndCells(part, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.Ids,
                                         out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
-
             // model edges
             if ((part.PartType == PartType.Solid || part.PartType == PartType.SolidAsShell || part.PartType == PartType.Shell)
                 && part.Visualization.EdgeCells != null)
@@ -4759,7 +4756,6 @@ namespace PrePoMax
                 mesh.GetNodesAndCellsForModelEdges(part, out data.ModelEdges.Nodes.Ids, out data.ModelEdges.Nodes.Coor,
                                                    out data.ModelEdges.Cells.CellNodeIds, out data.ModelEdges.Cells.Types);
             }
-
             ApplyLighting(data);
             _form.Add3DCells(data);
         }
