@@ -411,7 +411,7 @@ namespace CaeModel
         public bool ImportGeometryFromStlFile(string fileName)
         {
             FeMesh mesh = FileInOut.Input.StlFileReader.Read(fileName);
-
+            //
             bool noErrors = true;
             foreach (var entry in mesh.Parts)
             {
@@ -421,87 +421,118 @@ namespace CaeModel
                     break;
                 }
             }
-
-            ImportGeometry(mesh);
-
+            //
+            ImportGeometry(mesh, GetReservedPartNames());
+            //
             return noErrors;
         }
-        public string ImportGeometryFromBrepFile(string visFileName, string brepFileName, bool mergeParts)
+        public string[] ImportGeometryFromBrepFile(string visFileName, string brepFileName, bool mergeParts)
         {
             FeMesh mesh = FileInOut.Input.VisFileReader.Read(visFileName);
-
+            //
             if (mesh.Parts.Count > 1)
                 throw new Exception("The geometry contains more than one part.");
+            else if (mesh.Parts.Count <= 0)
+                throw new Exception("The geometry contains less than one part.");
             else
             {
                 if (mesh.Parts.GetValueByIndex(0) is GeometryPart gp)
                 {
-                    gp.CADFileData = System.IO.File.ReadAllText(brepFileName);
+                    gp.CADFileDataFromFile(brepFileName);
                     gp.SmoothShaded = true;
                 }
             }
-
-            ImportGeometry(mesh);
-
-            return null;
+            //
+            string[] addedPartNames = ImportGeometry(mesh, GetReservedPartNames());
+            //
+            return addedPartNames;
         }
         public void ImportMeshFromUnvFile(string fileName)
         {
             FeMesh mesh = FileInOut.Input.UnvFileReader.Read(fileName, FileInOut.Input.ElementsToImport.Solid);
-
-            ImportMesh(mesh);
+            //
+            ImportMesh(mesh, GetReservedPartNames());
         }
         public void ImportMeshFromVolFile(string fileName)
         {
             FeMesh mesh = FileInOut.Input.VolFileReader.Read(fileName, FileInOut.Input.ElementsToImport.Solid);
-
-            ImportMesh(mesh);
+            //
+            ImportMesh(mesh, GetReservedPartNames());
         }
-        public void ImportGeneratedMeshFromVolFile(string fileName, string partName, bool convertToSecondorder)
+        public void ImportGeneratedMeshFromVolFile(string fileName, GeometryPart part, bool convertToSecondorder)
         {
-            // called after meshing in PrePoMax
+            // Called after meshing in PrePoMax - the parts are sorted by id
             FeMesh mesh = FileInOut.Input.VolFileReader.Read(fileName, 
                                                              FileInOut.Input.ElementsToImport.Solid,
-                                                             convertToSecondorder);
-            // Rename the imported part
+                                                             convertToSecondorder);            
+            // Get part names
             string[] partNames = mesh.Parts.Keys.ToArray();
-            if (partNames.Length != 1) throw new Exception("Mesh file does not contain exactly one part.");
-            BasePart part = mesh.Parts[partNames[0]];
-            part.Name = partName;
-            mesh.Parts.Remove(partNames[0]);
-            mesh.Parts.Add(part.Name, part);
-            ImportMesh(mesh);
-            // recolor parts at the end of the import
-            if (_geometry.Parts.ContainsKey(partName)) part.Color = _geometry.Parts[partName].Color;
+            string[] prevPartNames;
+            if (part is CompoundGeometryPart cgp) prevPartNames = cgp.SubPartNames.ToArray();
+            else prevPartNames = new string[] { part.Name };
+            // Rename the imported part
+            BasePart[] importedParts = new BasePart[partNames.Length];
+            for (int i = 0; i < partNames.Length; i++)
+            {
+                importedParts[i] = mesh.Parts[partNames[i]];
+                importedParts[i].Name = prevPartNames[i];
+            }
+            mesh.Parts.Clear();
+            for (int i = 0; i < partNames.Length; i++) mesh.Parts.Add(importedParts[i].Name, importedParts[i]);
+            //
+            ImportMesh(mesh, null, false);
+            // Recolor parts at the end of the import
+            for (int i = 0; i < importedParts.Length; i++)
+            {
+                if (_geometry.Parts.ContainsKey(importedParts[i].Name))
+                    importedParts[i].Color = _geometry.Parts[importedParts[i].Name].Color;
+            }
         }
         public List<string> ImportMeshFromInpFile(string fileName, Action<string> WriteDataToOutput)
         {
             FileInOut.Input.InpFileReader.Read(fileName, FileInOut.Input.ElementsToImport.Solid, this, WriteDataToOutput);
             return FileInOut.Input.InpFileReader.Errors;
         }
-        private void ImportGeometry(FeMesh mesh)
+        private string[] ImportGeometry(FeMesh mesh, ICollection<string> reservedPartNames)
         {
             if (_geometry == null)
-            {
+            {                
+                _geometry = new FeMesh(MeshRepresentation.Geometry);
                 mesh.ResetPartsColor();
-                _geometry = mesh;
             }
-            else
-            {
-                _geometry.AddMesh(mesh);
-            }
+            string[] addedPartNames = _geometry.AddMesh(mesh, reservedPartNames);
+            return addedPartNames;
         }
-        public void ImportMesh(FeMesh mesh)
+        public void ImportMesh(FeMesh mesh, ICollection<string> reservedPartNames, bool forceRenameParts = true)
         {
             if (_mesh == null)
             {
+                _mesh = new FeMesh(MeshRepresentation.Mesh);
                 mesh.ResetPartsColor();
-                _mesh = mesh;
             }
-            else
+            _mesh.AddMesh(mesh, reservedPartNames, forceRenameParts);
+        }
+
+        // Getters
+        public string[] GetAllMeshEntityNames()
+        {
+            List<string> names = new List<string>();
+            if (_mesh != null)
             {
-                _mesh.AddMesh(mesh);
+                names.AddRange(_mesh.Parts.Keys);
+                names.AddRange(_mesh.NodeSets.Keys);
+                names.AddRange(_mesh.ElementSets.Keys);
+                names.AddRange(_mesh.Surfaces.Keys);
+                names.AddRange(_mesh.ReferencePoints.Keys);
             }
+            return names.ToArray();
+        }
+        public HashSet<string> GetReservedPartNames()
+        {
+            HashSet<string> reservedPartNames = new HashSet<string>();
+            if (_geometry != null && _geometry.Parts != null) reservedPartNames.UnionWith(_geometry.Parts.Keys);
+            reservedPartNames.UnionWith(GetAllMeshEntityNames());
+            return reservedPartNames;
         }
 
         // Loads

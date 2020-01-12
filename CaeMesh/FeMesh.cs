@@ -111,6 +111,10 @@ namespace CaeMesh
 
 
         // Constructors                                                                                                             
+        public FeMesh(MeshRepresentation representation)
+            : this(new Dictionary<int, FeNode>(), new Dictionary<int, FeElement>(), representation)
+        {
+        }
         public FeMesh(Dictionary<int, FeNode> nodes, Dictionary<int, FeElement> elements, MeshRepresentation representation,
                       ImportOptions importOptions = ImportOptions.None)
             : this(nodes, elements, representation, null, null, false, importOptions)
@@ -680,47 +684,72 @@ namespace CaeMesh
             watch.Start();
             // Find connected elements for each node
             FeElement element;
+            HashSet<int> partNodeIds = new HashSet<int>();
+            List<int> partElementIds = new List<int>();
+            HashSet<Type> partElementTypes = new HashSet<Type>();
+            //
+            HashSet<int> existingPartIds = new HashSet<int>();
+            Dictionary<int, HashSet<int>> existingPartNodeIds = new Dictionary<int, HashSet<int>>();
+            Dictionary<int, List<int>> existingPartElementIds = new Dictionary<int, List<int>>();
+            Dictionary<int, HashSet<Type>> existingPartElementTypes = new Dictionary<int, HashSet<Type>>();
             Dictionary<int, List<FeElement>> nodeElements = new Dictionary<int, List<FeElement>>();
             //
             foreach (var entry in _elements)
             {
-                element = entry.Value;
-                element.PartId = -1;
-
+                element = entry.Value;                
+                //
                 foreach (var nodeId in element.NodeIds)
                 {
                     if (nodeElements.ContainsKey(nodeId)) nodeElements[nodeId].Add(element);
                     else nodeElements.Add(nodeId, new List<FeElement>() { element });
                 }
+                // Get existing part data
+                if (element.PartId != -1)
+                {
+                    existingPartIds.Add(element.PartId);
+                    //
+                    if (existingPartElementIds.TryGetValue(element.PartId, out partElementIds)) partElementIds.Add(element.Id);
+                    else existingPartElementIds.Add(element.PartId, new List<int>() { element.Id });
+                    //
+                    if (existingPartNodeIds.TryGetValue(element.PartId, out partNodeIds)) partNodeIds.UnionWith(element.NodeIds);
+                    else existingPartNodeIds.Add(element.PartId, new HashSet<int>(element.NodeIds));
+                    //
+                    if (existingPartElementTypes.TryGetValue(element.PartId, out partElementTypes)) partElementTypes.Add(element.GetType());
+                    else existingPartElementTypes.Add(element.PartId, new HashSet<Type>() { element.GetType() });
+                }
             }
+            // Create new 
+            partNodeIds = new HashSet<int>();
+            partElementIds = new List<int>();
+            partElementTypes = new HashSet<Type>();
             //
             int partId = 0;
+            HashSet<int> addedPartIds = new HashSet<int>();
             string name;
             BasePart part;
-            HashSet<int> partNodeIds = new HashSet<int>();
-            List<int> sortedPartNodeIds = new List<int>();
-            List<int> partElementIds = new List<int>();
-            HashSet<Type> partElementTypes = new HashSet<Type>();
+            List<int> sortedPartNodeIds;
             HashSet<string> inpElementTypeNames = null;
             HashSet<int> inpElementTypeSetLabels = null;
+
             // Extract parts
             foreach (var entry in _elements)
             {
                 element = entry.Value;
                 if (element.PartId == -1)
                 {
-                    partId++;
+                    // Find new free partId
+                    partId = 0;
+                    do { partId++; } while (addedPartIds.Contains(partId) || existingPartIds.Contains(partId));
                     element.PartId = partId;    // set Part Id to the seed element of the Flood Fill
-
+                    //
                     partNodeIds.Clear();
                     partNodeIds.UnionWith(element.NodeIds);
-
+                    //
                     partElementIds.Clear();
                     partElementIds.Add(entry.Key);
-
+                    //
                     partElementTypes.Clear();
                     partElementTypes.Add(element.GetType());
-
                     // find inp element type set
                     if (inpElementTypeSets != null)
                     {
@@ -730,55 +759,67 @@ namespace CaeMesh
                             {
                                 if (inpElementTypeNames == null) inpElementTypeNames = new HashSet<string>();
                                 inpElementTypeNames.UnionWith(elementTypeEntry.InpElementTypeNames);
-
+                                //
                                 inpElementTypeSetLabels = elementTypeEntry.ElementLabels;
                                 break;
                             }
                         }
                     }
-
-                    if (namePrefix != null && namePrefix != "") name = namePrefix + "-";
-                    else name = "";
-
+                    // Find connected elements of the same type
                     if (element is FeElement1D)
                     {
-                        FloodFillFast<FeElement1D>(element, partId, nodeElements, ref partNodeIds, ref partElementIds, ref partElementTypes, inpElementTypeSetLabels);
-                        name += "Wire_Part-";
+                        FloodFillFast<FeElement1D>(element, partId, nodeElements, ref partNodeIds, ref partElementIds, ref partElementTypes,
+                                                   inpElementTypeSetLabels);
                     }
                     else if (element is FeElement2D)
                     {
-                        FloodFillFast<FeElement2D>(element, partId, nodeElements, ref partNodeIds, ref partElementIds, ref partElementTypes, inpElementTypeSetLabels);
-                        name += "Shell_Part-";
+                        FloodFillFast<FeElement2D>(element, partId, nodeElements, ref partNodeIds, ref partElementIds, ref partElementTypes,
+                                                   inpElementTypeSetLabels);
                     }
                     else if (element is FeElement3D)
                     {
-                        FloodFillFast<FeElement3D>(element, partId, nodeElements, ref partNodeIds, ref partElementIds, ref partElementTypes, inpElementTypeSetLabels);
-                        name += "Solid_Part-";
+                        FloodFillFast<FeElement3D>(element, partId, nodeElements, ref partNodeIds, ref partElementIds, ref partElementTypes,
+                                                   inpElementTypeSetLabels);
                     }
                     else throw new NotSupportedException();
-
-                    // sort node ids
-                    sortedPartNodeIds = new List<int>(partNodeIds);
-                    sortedPartNodeIds.Sort();
-
-                    // sort element ids
-                    partElementIds.Sort();
-
-                    name = NamedClass.GetNewValueName(_parts.Keys.ToArray(), name);
-
-                    if (_meshRepresentation == MeshRepresentation.Geometry)
-                        part = new GeometryPart(name, partId, sortedPartNodeIds.ToArray(), partElementIds.ToArray(), partElementTypes.ToArray());
-                    else if (_meshRepresentation == MeshRepresentation.Mesh)
-                    {
-                        part = new MeshPart(name, partId, sortedPartNodeIds.ToArray(), partElementIds.ToArray(), partElementTypes.ToArray());
-                        if (inpElementTypeNames != null) (part as MeshPart).SetPropertiesFromInpElementTypeName(inpElementTypeNames.ToArray());
-                    }
-                    else if (_meshRepresentation == MeshRepresentation.Results)
-                        part = new ResultPart(name, partId, sortedPartNodeIds.ToArray(), partElementIds.ToArray(), partElementTypes.ToArray());
-                    else throw new NotSupportedException();
-
-                    _parts.Add(name, part);
                 }
+                else if (existingPartIds.Contains(element.PartId) && !addedPartIds.Contains(element.PartId))
+                {
+                    partId = element.PartId;
+                    partNodeIds = existingPartNodeIds[element.PartId];
+                    partElementIds = existingPartElementIds[element.PartId];
+                    partElementTypes = existingPartElementTypes[element.PartId];
+                }
+                else if (addedPartIds.Contains(element.PartId)) continue;
+                else throw new NotSupportedException();
+                // Use name prefix
+                if (namePrefix != null && namePrefix != "") name = namePrefix + "-";
+                else name = "";
+                // Get new name
+                if (element is FeElement1D) name += "Wire_Part-";
+                else if (element is FeElement2D) name += "Shell_Part-";
+                else if (element is FeElement3D) name += "Solid_Part-";
+                else throw new NotSupportedException();
+                name = NamedClass.GetNewValueName(_parts.Keys, name);
+                // Sort node ids
+                sortedPartNodeIds = new List<int>(partNodeIds);
+                sortedPartNodeIds.Sort();
+                // Sort element ids
+                partElementIds.Sort();
+                // Create part
+                if (_meshRepresentation == MeshRepresentation.Geometry)
+                    part = new GeometryPart(name, partId, sortedPartNodeIds.ToArray(), partElementIds.ToArray(), partElementTypes.ToArray());
+                else if (_meshRepresentation == MeshRepresentation.Mesh)
+                {
+                    part = new MeshPart(name, partId, sortedPartNodeIds.ToArray(), partElementIds.ToArray(), partElementTypes.ToArray());
+                    if (inpElementTypeNames != null) (part as MeshPart).SetPropertiesFromInpElementTypeName(inpElementTypeNames.ToArray());
+                }
+                else if (_meshRepresentation == MeshRepresentation.Results)
+                    part = new ResultPart(name, partId, sortedPartNodeIds.ToArray(), partElementIds.ToArray(), partElementTypes.ToArray());
+                else throw new NotSupportedException();
+                // Add part
+                _parts.Add(name, part);
+                addedPartIds.Add(part.PartId);                
             }
             watch.Stop();
             // Bounding box of parts and mesh
@@ -818,12 +859,25 @@ namespace CaeMesh
             // Rename shell geometry parts to solid as shell parts
             foreach (var partName in partsToRename)
             {
-                geometryPart = Parts[partName] as GeometryPart;
-                Parts.Remove(partName);
+                geometryPart = _parts[partName] as GeometryPart;
+                _parts.Remove(partName);
                 geometryPart.Name = geometryPart.Name.Replace("Shell", "Solid");
                 geometryPart.SetPartType(PartType.SolidAsShell);
-                Parts.Add(geometryPart.Name, geometryPart);
+                _parts.Add(geometryPart.Name, geometryPart);
             }
+            // Sort parts by part id
+            string[] partNames = new string[_parts.Count];
+            int[] partIds = new int[_parts.Count];
+            int count = 0;
+            foreach (var entry in _parts)
+            {
+                partNames[count] = entry.Key;
+                partIds[count] = entry.Value.PartId;
+                count++;
+            }
+            Array.Sort(partIds, partNames);
+            _parts.SortKeysAs(partNames);
+            //
             //ResetPartsColor();
         }
         private void FloodFillFast<T>(FeElement element, int partId, Dictionary<int, List<FeElement>> nodeElements, ref HashSet<int> partNodeIds,
@@ -853,7 +907,6 @@ namespace CaeMesh
                 }
             }
         }
-
         // Merge geometry parts by type
         private void MergeGeometryParts()
         {
@@ -1432,7 +1485,7 @@ namespace CaeMesh
 
             return SortEdgeCellIds(part, edgeCellIds);
         }
-
+        //
         private int[] SortEdgeCellIds(BasePart part, HashSet<int> edgeCellIds)
         {
             int[][] edgeCells = part.Visualization.EdgeCells;
@@ -1566,7 +1619,7 @@ namespace CaeMesh
             surfaceCellIds = surfaceCellIdsHash.ToArray();
             surfaceEdgeIds = surfaceEdgeIdsHash.ToArray();
         }
-
+        //
         public void RenumberVisualizationSurfaces(Dictionary<int, HashSet<int>> surfaceIdNodeIds)
         {
             int[] cellIdsByFace;
@@ -1797,7 +1850,7 @@ namespace CaeMesh
             }
             return false;
         }
-
+        //
         public void MergeMeshParts(string[] partNamesToMerge, out MeshPart newMeshPart, out string[] mergedParts)
         {
             newMeshPart = null;
@@ -1829,7 +1882,7 @@ namespace CaeMesh
             part = CreateBasePartFromElementIds(allElementIds.ToArray());
 
             newMeshPart = new MeshPart(part);
-            newMeshPart.Name = NamedClass.GetNewValueName(_parts.Keys.ToArray(), "Merged_Part-");
+            newMeshPart.Name = NamedClass.GetNewValueName(_parts.Keys, "Merged_Part-");
             newMeshPart.PartId = minId;
             SetPartsColorFromId(newMeshPart);
 
@@ -1844,7 +1897,7 @@ namespace CaeMesh
             // update bounding boxes
             ComputeBoundingBox();
         }
-
+        //
         public void CreateMeshPartsFromElementSets(string[] elementSetNames, out BasePart[] modifiedParts, out BasePart[] newParts)
         {
             // get parts from ids
@@ -1928,7 +1981,7 @@ namespace CaeMesh
             // update bounding boxes
             ComputeBoundingBox();
         }
-
+        //
         public BasePart CreateBasePartFromElementIds(int[] elementIds)
         {
             HashSet<Type> partElementTypes = new HashSet<Type>();
@@ -1952,7 +2005,7 @@ namespace CaeMesh
 
             return part;
         }
-
+        //
         public BasePart GetPartContainingElementId(int elementId)
         {
             FeElement element = _elements[elementId];
@@ -1962,7 +2015,7 @@ namespace CaeMesh
             }
             return null;
         }
-
+        //
         public void ConvertLineFeElementsToEdges()
         {
             List<FeElement1D> edgeElements = new List<FeElement1D>();
@@ -2041,7 +2094,7 @@ namespace CaeMesh
                 }
             }
         }
-
+        //
         public BasePart GetPartById(int id)
         {
             // Find the part
@@ -2056,8 +2109,17 @@ namespace CaeMesh
             }
             return part;
         }
-
-
+        public int[] GetPartIds()
+        {
+            int count = 0;
+            int[] ids = new int[_parts.Count];
+            foreach (var entry in _parts)
+            {
+                ids[count++] = entry.Value.PartId;
+            }
+            return ids;
+        }
+        //
         public void ApplySectionView(Octree.Plane sectionPlane)
         {
             // Create octree if this is the first time the section cut was made
@@ -2257,9 +2319,10 @@ namespace CaeMesh
             int oldPartId;
             BasePart part = _parts[partName];
             oldPartId = part.PartId;
+            if (newPartId == oldPartId) return;
+            // REnumber
             part.PartId = newPartId;
             //SetPartsColorFromId(part);
-
             foreach (var entry in _elements)
             {
                 if (entry.Value.PartId == oldPartId) entry.Value.PartId = newPartId;
@@ -3145,6 +3208,8 @@ namespace CaeMesh
 
             foreach (var entry in _parts)
             {
+                if (entry.Value is CompoundGeometryPart) continue;
+                //
                 for (int i = 0; i < entry.Value.Visualization.CellIds.Length; i++)
                 {
                     elementId = entry.Value.Visualization.CellIds[i];
@@ -4017,7 +4082,7 @@ namespace CaeMesh
                     HashSet<string> allNames = new HashSet<string>(_elementSets.Keys);
                     allNames.UnionWith(_parts.Keys);
                     _parts.Remove(part.Name);
-                    part.Name = NamedClass.GetNewValueName(allNames.ToArray(), part.Name.Split('-')[0] + "-");
+                    part.Name = NamedClass.GetNewValueName(allNames, part.Name.Split('-')[0] + "-");
                     _parts.Add(part.Name, part);
                 }
             }
@@ -4121,11 +4186,10 @@ namespace CaeMesh
             _referencePoints.Add(name, point);
         }
 
-        public string[] AddMesh(FeMesh mesh)
+        public string[] AddMesh(FeMesh mesh, ICollection<string> reservedPartNames, bool forceRenameParts = true)
         {
             int count;
             string entryName;
-
             // Renumber nodes
             mesh.RenumberNodes(_maxNodeId + 1);
             foreach (var entry in mesh.Nodes)
@@ -4133,7 +4197,6 @@ namespace CaeMesh
                 _nodes.Add(entry.Key, entry.Value);
             }
             _maxNodeId = mesh.MaxNodeId;
-
             // Renumber elements
             mesh.RenumberElements(_maxElementId + 1);
             foreach (var entry in mesh.Elements)
@@ -4141,8 +4204,6 @@ namespace CaeMesh
                 _elements.Add(entry.Key, entry.Value);
             }
             _maxElementId = mesh.MaxElementId;
-
-
             // Add and rename nodeSets
             count = 1;
             foreach (var entry in mesh.NodeSets)
@@ -4157,7 +4218,6 @@ namespace CaeMesh
                 }
                 _nodeSets.Add(entry.Value.Name, entry.Value);
             }
-
             // Add and rename elementSets
             count = 1;
             foreach (var entry in mesh.ElementSets)
@@ -4172,7 +4232,6 @@ namespace CaeMesh
                 }
                 _elementSets.Add(entry.Value.Name, entry.Value);
             }
-
             // Renumber parts
             int maxPartID = 0;
             foreach (var entry in _parts)
@@ -4181,34 +4240,35 @@ namespace CaeMesh
             }
             mesh.RenumberParts(maxPartID + 1);
             mesh.ResetPartsColor();
-
             // Add and rename parts
             count = 1;
             List<string> addedPartNames = new List<string>();
+            HashSet<string> allNames = new HashSet<string>(_parts.Keys);
+            if (reservedPartNames != null) allNames.UnionWith(reservedPartNames);
+            //
             foreach (var entry in mesh.Parts)
             {
                 entryName = entry.Key;
-                if (_parts.ContainsKey(entryName))
+                if (forceRenameParts || allNames.Contains(entryName))
                 {
-                    entryName += "_Copy-";
-                    while (_parts.ContainsKey(entryName + count.ToString())) count++;
-                    entryName += count.ToString();
+                    entryName = NamedClass.GetNameWithoutLastValue(entryName);
+                    entryName = NamedClass.GetNewValueName(allNames, entryName);
                 }
-
+                //
                 entry.Value.Name = entryName;
                 _parts.Add(entryName, entry.Value);
                 addedPartNames.Add(entryName);
+                allNames.Add(entryName);
             }
-
             // Bounding box
             _boundingBox.CheckBox(mesh.BoundingBox);
-
+            //
             return addedPartNames.ToArray();
         }
-        public string[] AddPartsFromMesh(FeMesh mesh, string[] partNames)
+        public string[] AddPartsFromMesh(FeMesh mesh, string[] partNames, ICollection<string> reservedPartNames)
         {
             FeMesh partialMesh = new FeMesh(mesh, partNames);
-            return AddMesh(partialMesh);
+            return AddMesh(partialMesh, reservedPartNames);
         }
         #endregion #################################################################################################################
 
@@ -4391,7 +4451,7 @@ namespace CaeMesh
         {
             int[] removedPartIds = new int[partNames.Length];
             HashSet<int> possiblyUnrefNodeIds = new HashSet<int>();
-            HashSet<string> removedPartsHashSet = new HashSet<string>();
+            List<string> removedPartsList = new List<string>();     // Use a list to keep the sorting of the input partNames
             HashSet<int> removedElementIds = new HashSet<int>();
 
             int partCount = 0;
@@ -4418,11 +4478,11 @@ namespace CaeMesh
 
                 // remove parts
                 _parts.Remove(name);
-                removedPartsHashSet.Add(name);
+                removedPartsList.Add(name);
 
                 partCount++;
             }
-            removedParts = removedPartsHashSet.ToArray();
+            removedParts = removedPartsList.ToArray();
 
             // remove unreferenced nodes and keep empty node sets
             RemoveUnreferencedNodes(possiblyUnrefNodeIds, false, removeForRemeshing);
@@ -5182,6 +5242,8 @@ namespace CaeMesh
             VisualizationData visualization;
             foreach (var entry in _parts)
             {
+                if (entry.Value is CaeMesh.CompoundGeometryPart) continue;
+                //
                 visualization = entry.Value.Visualization;
                 // for each edge
                 for (int i = 0; i < visualization.EdgeLengths.Length; i++)
@@ -5203,6 +5265,8 @@ namespace CaeMesh
 
             foreach (var entry in _parts)
             {
+                if (entry.Value is CaeMesh.CompoundGeometryPart) continue;
+                //
                 visualization = entry.Value.Visualization;
                 // for each edge
                 for (int i = 0; i < visualization.EdgeLengths.Length; i++)                          
@@ -5221,6 +5285,8 @@ namespace CaeMesh
             VisualizationData visualization;
             foreach (var entry in _parts)
             {
+                if (entry.Value is CaeMesh.CompoundGeometryPart) continue;
+                //
                 visualization = entry.Value.Visualization;
                 // for each face
                 for (int i = 0; i < visualization.FaceAreas.Length; i++)
@@ -5239,6 +5305,8 @@ namespace CaeMesh
             VisualizationData visualization;
             foreach (var entry in _parts)
             {
+                if (entry.Value is CaeMesh.CompoundGeometryPart) continue;
+                //
                 visualization = entry.Value.Visualization;
                 // for each face
                 for (int i = 0; i < visualization.FaceAreas.Length; i++)
@@ -5280,14 +5348,14 @@ namespace CaeMesh
         }
        
         // Transform
-        public string[] TranslateParts(string[] partNames, double[] translateVector, bool copy)
+        public string[] TranslateParts(string[] partNames, double[] translateVector, bool copy, ICollection<string> reservedPartNames)
         {            
             string[] translatedPartNames = partNames.ToArray();
 
             if (copy)
             {
                 FeMesh mesh = this.DeepCopy();
-                translatedPartNames = this.AddPartsFromMesh(mesh, translatedPartNames);
+                translatedPartNames = this.AddPartsFromMesh(mesh, translatedPartNames, reservedPartNames);
             }
 
             HashSet<int> nodeLabels = new HashSet<int>();
@@ -5322,14 +5390,15 @@ namespace CaeMesh
             if (copy) return translatedPartNames;
             else return null;
         }
-        public string[] ScaleParts(string[] partNames, double[] scaleCenter, double[] scaleFactors, bool copy)
+        public string[] ScaleParts(string[] partNames, double[] scaleCenter, double[] scaleFactors, bool copy,
+                                   ICollection<string> reservedPartNames)
         {
             string[] scaledPartNames = partNames.ToArray();
 
             if (copy)
             {
                 FeMesh mesh = this.DeepCopy();
-                scaledPartNames = this.AddPartsFromMesh(mesh, scaledPartNames);
+                scaledPartNames = this.AddPartsFromMesh(mesh, scaledPartNames, reservedPartNames);
             }
 
             HashSet<int> nodeLabels = new HashSet<int>();
@@ -5362,14 +5431,15 @@ namespace CaeMesh
             if (copy) return scaledPartNames;
             else return null;
         }
-        public string[] RotateParts(string[] partNames, double[] rotateCenter, double[] rotateAxis, double rotateAngle, bool copy)
+        public string[] RotateParts(string[] partNames, double[] rotateCenter, double[] rotateAxis, double rotateAngle, bool copy,
+                                    ICollection<string> reservedPartNames)
         {
             string[] scaledPartNames = partNames.ToArray();
 
             if (copy)
             {
                 FeMesh mesh = this.DeepCopy();
-                scaledPartNames = this.AddPartsFromMesh(mesh, scaledPartNames);
+                scaledPartNames = this.AddPartsFromMesh(mesh, scaledPartNames, reservedPartNames);
             }
 
             HashSet<int> nodeLabels = new HashSet<int>();

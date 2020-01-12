@@ -132,7 +132,7 @@ namespace PrePoMax.Forms
                 cpd.SetIsBrowsable(false);
                 cpd = _dctd.GetProperty("NumberOfNodes");
                 cpd.SetIsBrowsable(false);
-
+                //
                 cpd = _dctd.GetProperty("LinearTetraType");
                 cpd.SetIsBrowsable(false);
                 cpd = _dctd.GetProperty("ParabolicTetraType");
@@ -145,6 +145,12 @@ namespace PrePoMax.Forms
                 cpd.SetIsBrowsable(false);
                 cpd = _dctd.GetProperty("ParabolicHexaType");
                 cpd.SetIsBrowsable(false);
+                //
+                if (PartType == PartType.Compound)
+                {
+                    cpd = _dctd.GetProperty("Color");
+                    cpd.SetIsBrowsable(false);
+                }
             }
             else //currentView == ViewGeometryMeshResults.Mesh
             {
@@ -174,8 +180,6 @@ namespace PrePoMax.Forms
         {
             return _partProperties;
         }
-
-       
        
 
     }

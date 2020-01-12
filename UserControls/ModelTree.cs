@@ -63,7 +63,7 @@ namespace UserControls
         private int _numUserKeywords;
         private const int WM_MOUSEMOVE = 0x0200;
         private bool _disableMouse;
-        private bool _disableAfterSelect;
+        private bool _disableSelectionsChanged;
         // Geometry
         private TreeNode _geomParts;
         private TreeNode _meshRefinements;
@@ -419,7 +419,7 @@ namespace UserControls
             // Delete
             tsmiDelete.Enabled = true;
         }
-
+        //
         private void AppendMenuFields(TreeNode node, ref ContextMenuFields menuFields)
         {
             // Check if selected node is Model
@@ -428,8 +428,9 @@ namespace UserControls
                 menuFields.Edit++;
                 return;
             }
-
+            //
             NamedClass item = (NamedClass)node.Tag;
+            bool subPart = node.Parent.Tag is CompoundGeometryPart;
             // Create
             if (CanCreate(node)) menuFields.Create++;
             // Edit
@@ -457,9 +458,12 @@ namespace UserControls
             // Geometry part - Mesh
             if (item != null && item is GeometryPart && GetActiveTree() == cltvGeometry)
             {
-                menuFields.MeshingParameters++;
-                menuFields.PreviewEdgeMesh++;
-                menuFields.CreateMesh++;
+                if (!subPart)
+                {
+                    menuFields.MeshingParameters++;
+                    menuFields.PreviewEdgeMesh++;
+                    menuFields.CreateMesh++;
+                }
                 menuFields.CopyPart++;
             }
             // Merge mesh parts
@@ -492,18 +496,21 @@ namespace UserControls
                 else menuFields.Activate++;
             }
             // Delete
-            if (item != null) menuFields.Delete++;
+            if (item != null && !subPart)
+            {
+                menuFields.Delete++;
+            }
         }
-
+        //
         private void cltv_MouseDown(object sender, MouseEventArgs e)
         {
             try
             {
                 CodersLabTreeView tree = (CodersLabTreeView)sender;
-
+                //
                 if (ModifierKeys != Keys.Shift && ModifierKeys != Keys.Control && e.Clicks > 1) _doubleClick = true;
-                else de-selection bug fix_doubleClick = false;
-
+                else _doubleClick = false;
+                //
                 if (tree.HitTest(e.Location).Node == null)
                 {
                     tree.SelectedNodes.Clear();
@@ -543,16 +550,9 @@ namespace UserControls
                 }
             }
         }
-        private void cltv_AfterSelect(object sender, TreeViewEventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine("cltv_AfterSelect");
-            //
-        }
         private void cltv_SelectionsChanged(object sender, EventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("cltv_SelectionsChanged");
-            //
-            if (_disableAfterSelect) return;
+            if (_disableSelectionsChanged) return;
 
             // this function is also called with sender as null parameter
             CodersLabTreeView tree = GetActiveTree();
@@ -681,15 +681,15 @@ namespace UserControls
             {
                 CodersLabTreeView tree = GetActiveTree();
                 if (tree.SelectedNodes.Count != 1) return;
-
+                //
                 TreeNode selectedNode = tree.SelectedNodes[0];
-
+                //
                 if (selectedNode.Tag == null) return;
-
+                //
                 string stepName = null;
                 if (selectedNode.Parent != null && selectedNode.Parent.Parent != null && selectedNode.Parent.Parent.Tag is Step)
                     stepName = selectedNode.Parent.Parent.Text;
-
+                //
                 EditEvent?.Invoke((NamedClass)selectedNode.Tag, stepName);
             }
             catch (Exception ex)
@@ -1216,13 +1216,12 @@ namespace UserControls
         public void UpdateHighlight()
         {
             cltv_SelectionsChanged(null, null);
-            //cltv_AfterSelect(null, null);
         }
         public int SelectBasePart(MouseEventArgs e, Keys modifierKeys, BasePart part)
         {
             try
             {
-                _disableAfterSelect = true;
+                _disableSelectionsChanged = true;
 
                 CodersLabTreeView tree = GetActiveTree();
                 TreeNode baseNode = tree.Nodes[0];
@@ -1274,13 +1273,13 @@ namespace UserControls
                     }
                 }
 
-                _disableAfterSelect = false;
+                _disableSelectionsChanged = false;
                 UpdateHighlight();
 
                 return tree.SelectedNodes.Count;
             }
             catch { return -1; }
-            finally { _disableAfterSelect = false; }
+            finally { _disableSelectionsChanged = false; }
         }
 
 
@@ -1302,7 +1301,8 @@ namespace UserControls
                     // Geom Parts
                     if (model.Geometry != null)
                     {
-                        AddObjectsToNode<string, CaeMesh.BasePart>(_geomPartsName, _geomParts, model.Geometry.Parts);
+                        //AddObjectsToNode<string, CaeMesh.BasePart>(_geomPartsName, _geomParts, model.Geometry.Parts);
+                        AddGeometryParts(model.Geometry.Parts);
                         _geomParts.Expand();
                         AddObjectsToNode<string, CaeMesh.FeMeshRefinement>(_meshRefinementsName, _meshRefinements, model.Geometry.MeshRefinements);
                         _meshRefinements.Expand();
@@ -1672,7 +1672,8 @@ namespace UserControls
             if (parent.Nodes.Count > 0) parent.Text += " (" + parent.Nodes.Count + ")";
         }
 
-        private void AddObjectsToNode<Tkey, Tval>(string initialNodeName, TreeNode node, IDictionary<Tkey, Tval> dictionary)
+        private void AddObjectsToNode<Tkey, Tval>(string initialNodeName, TreeNode node, IDictionary<Tkey, Tval> dictionary,
+                                                  bool countNodes = true)
         {
             TreeNode nodeToAdd;
 
@@ -1689,8 +1690,53 @@ namespace UserControls
                 SetNodeStatus(nodeToAdd);
             }
 
-            if (node.Nodes.Count > 0) node.Text = initialNodeName + " (" + node.Nodes.Count.ToString() + ")";
+            if (countNodes && node.Nodes.Count > 0) node.Text = initialNodeName + " (" + node.Nodes.Count.ToString() + ")";
             else node.Text = initialNodeName;
+        }
+        private void AddGeometryParts(IDictionary<string, BasePart> parts)
+        {
+            HashSet<string> dependentPartNames = new HashSet<string>();
+            foreach (var entry in parts)
+            {
+                if (entry.Value is CompoundGeometryPart cgp)
+                {
+                    dependentPartNames.UnionWith(cgp.SubPartNames);
+                }
+            }
+            //
+            BasePart part;
+            BasePart subPart;
+            TreeNode nodeToAdd;
+            TreeNode subNodeToAdd;
+            foreach (var entry in parts)
+            {
+                part = entry.Value;                
+                if (!dependentPartNames.Contains(part.Name))
+                {
+                    // Independent parts
+                    nodeToAdd = _geomParts.Nodes.Add(part.Name);
+                    nodeToAdd.Name = nodeToAdd.Text;
+                    nodeToAdd.Tag = part;
+                    SetNodeStatus(nodeToAdd);
+                    //Compound parts
+                    if (part is CompoundGeometryPart cgp)
+                    {
+                        for (int i = 0; i < cgp.SubPartNames.Length; i++)
+                        {
+                            subPart = parts[cgp.SubPartNames[i]];
+                            subNodeToAdd = nodeToAdd.Nodes.Add(subPart.Name);
+                            subNodeToAdd.Name = subNodeToAdd.Text;
+                            subNodeToAdd.Tag = subPart;
+                            SetNodeStatus(subNodeToAdd);
+                        }
+                        //
+                        nodeToAdd.Expand();
+                    }
+                }
+            }
+            //
+            if (_geomParts.Nodes.Count > 0) _geomParts.Text = _geomPartsName + " (" + _geomParts.Nodes.Count.ToString() + ")";
+            else _geomParts.Text = _geomPartsName;
         }
         private void AddSteps(List<Step> steps)
         {

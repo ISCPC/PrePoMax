@@ -191,7 +191,7 @@ namespace PrePoMax.Forms
         }
         private string GetSurfaceName()
         {
-            return NamedClass.GetNewValueName(_allExistingNames.ToArray(), "Surface-");
+            return NamedClass.GetNewValueName(_allExistingNames, "Surface-");
         }
         private void HighlightSurface()
         {

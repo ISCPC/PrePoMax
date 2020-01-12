@@ -21,6 +21,7 @@ namespace PrePoMax
         public static string ExportingText = "Exporting...";
         public static string MeshingText = "Meshing...";
         public static string UndoingText = "Undoing...";
+        public static string CreatingCompound = "Creating compound...";
         public static string RegeneratingText = "Regenerating history...";
         //
         public static string SettingsFileName = "settings.bin";

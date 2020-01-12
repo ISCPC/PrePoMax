@@ -15,7 +15,6 @@ namespace CaeMesh
         private int[] _errorElementIds;
         private int[] _errorNodeIds;
         private string _cadFileData;
-        private double[][] _edgeMeshNodes;
 
 
         // Properties                                                                                                               
@@ -69,19 +68,21 @@ namespace CaeMesh
         {
             return new GeometryPart(this);
         }
+        //
+        public void CADFileDataFromFile(string brepFileName)
+        {
+            if (System.IO.Path.GetExtension(brepFileName) == ".brep") CADFileData = System.IO.File.ReadAllText(brepFileName);
+            else throw new NotSupportedException();
+        }
+        //
         public override PartProperties GetProperties()
         {
             PartProperties properties = base.GetProperties();
-            //if (_meshingParameters != null) properties.MeshingParameters = _meshingParameters.DeepClone();
-            //else properties.MeshingParameters = null;
             return properties;
         }
         public override void SetProperties(PartProperties properties)
         {
             base.SetProperties(properties);
-
-            //if (properties.MeshingParameters != null) _meshingParameters = properties.MeshingParameters.DeepClone();
-            //else _meshingParameters = null;
         }
         public override void RenumberVisualizationElements(Dictionary<int, int> newIds)
         {

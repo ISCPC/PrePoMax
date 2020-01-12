@@ -103,34 +103,43 @@ namespace PrePoMax.Forms
         protected override bool OnPrepareForm(string stepName, string partToEditName)
         {
             this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
-
+            //
             _propertyItemChanged = false;
             _allExistingNames.Clear();
             _partToEditName = null;
             _viewPartProperties = null;
-
-            if (_currentView == ViewGeometryModelResults.Geometry) _allExistingNames.UnionWith(_controller.GetGeometryPartNames());
-            else if (_currentView == ViewGeometryModelResults.Model) _allExistingNames.UnionWith(_controller.GetAllMeshEntityNames());
-            else if (_currentView == ViewGeometryModelResults.Results) _allExistingNames.UnionWith(_controller.GetResultPartNames());
-            else throw new NotSupportedException();
-
+            //
+            if (_currentView == ViewGeometryModelResults.Geometry || _currentView == ViewGeometryModelResults.Model)
+            {
+                _allExistingNames.UnionWith(_controller.GetGeometryPartNames());
+                _allExistingNames.UnionWith(_controller.GetAllMeshEntityNames());
+            }
+            else if (_currentView == ViewGeometryModelResults.Results)
+                _allExistingNames.UnionWith(_controller.GetResultPartNames());
+            else
+                throw new NotSupportedException();
+            //
             _partToEditName = partToEditName;
-
+            //
             if (_partToEditName == null)
             {
                 throw new NotSupportedException();
             }
             else
             {
-                if (_currentView == ViewGeometryModelResults.Geometry) PartProperties = _controller.GetGeometryPart(_partToEditName).GetProperties();   // to clone
-                else if (_currentView == ViewGeometryModelResults.Model) PartProperties = _controller.GetModelPart(_partToEditName).GetProperties();    // to clone
-                else if (_currentView == ViewGeometryModelResults.Results) PartProperties = _controller.GetResultPart(_partToEditName).GetProperties(); // to clone
-                else throw new NotSupportedException();
+                if (_currentView == ViewGeometryModelResults.Geometry)
+                    PartProperties = _controller.GetGeometryPart(_partToEditName).GetProperties();   // to clone
+                else if (_currentView == ViewGeometryModelResults.Model)
+                    PartProperties = _controller.GetModelPart(_partToEditName).GetProperties();    // to clone
+                else if (_currentView == ViewGeometryModelResults.Results)
+                    PartProperties = _controller.GetResultPart(_partToEditName).GetProperties(); // to clone
+                else
+                    throw new NotSupportedException();
             }
-
+            //
             propertyGrid.SelectedObject = _viewPartProperties;
             propertyGrid.Select();
-
+            //
             return true;
         }
 

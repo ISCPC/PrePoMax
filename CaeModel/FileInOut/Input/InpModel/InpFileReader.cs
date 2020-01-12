@@ -140,7 +140,7 @@ namespace FileInOut.Input
                     if (elementsToImport != ElementsToImport.Solid) mesh.RemoveElementsByType<FeElement3D>();
                 }
 
-                model.ImportMesh(mesh);
+                model.ImportMesh(mesh, null);
 
                 // add model items
                 foreach (var entry in constraints) model.Constraints.Add(entry.Key, entry.Value);
@@ -531,13 +531,13 @@ namespace FileInOut.Input
                 // create a new reference point if it was not found
                 if (referencePointName == null)
                 {
-                    referencePointName = NamedClass.GetNewValueName(referencePoints.Keys.ToArray(), "RP-");
+                    referencePointName = NamedClass.GetNewValueName(referencePoints.Keys, "RP-");
                     FeNode node = nodes[nodeId1];
                     FeReferencePoint referencePoint = new FeReferencePoint(referencePointName, node, nodeId2);
                     referencePoints.Add(referencePointName, referencePoint);
                 }
 
-                string rigidBodyName = NamedClass.GetNewValueName(constraints.Keys.ToArray(), "Constraint-");
+                string rigidBodyName = NamedClass.GetNewValueName(constraints.Keys, "Constraint-");
                 RigidBody rigidBody = new RigidBody(rigidBodyName, referencePointName, nodeSetName, RegionTypeEnum.NodeSetName);
                 constraints.Add(rigidBodyName, rigidBody);
             }

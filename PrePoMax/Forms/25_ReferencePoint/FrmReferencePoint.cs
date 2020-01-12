@@ -188,7 +188,7 @@ namespace PrePoMax.Forms
         }
         private string GetReferencePointName()
         {
-            return NamedClass.GetNewValueName(_allExistingNames.ToArray(), "RP-");
+            return NamedClass.GetNewValueName(_allExistingNames, "RP-");
         }
 
         private void HighlightNodes()

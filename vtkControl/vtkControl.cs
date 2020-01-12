@@ -4967,13 +4967,16 @@ namespace vtkControl
         }
         public void UpdateActor(string oldName, string newName, Color newColor)
         {
+            if (!_renderingOn) return;
+            if (!_actors.ContainsKey(oldName)) return;
+            //
             vtkMaxActor actor = _actors[oldName];
             actor.Color = newColor;
             actor.Name = newName;
-
+            //
             _actors.Remove(oldName);
             _actors.Add(newName, actor);
-
+            //
             if (_sectionView)
             {
                 string oldsectionViewActorName = GetSectionViewActorName(oldName);
@@ -4989,9 +4992,9 @@ namespace vtkControl
                 _actors.Add(newsectionViewActorName, actor);
                 _sectionViewActors.Add(newsectionViewActorName, actor);
             }
-
+            //
             ApplyEdgesVisibilityAndBackfaceCulling();
-
+            //
             this.Invalidate();
         }
         public double[] GetBoundingBox()

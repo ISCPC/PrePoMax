@@ -21,18 +21,17 @@ namespace FileInOut.Input
             if (fileName != null && File.Exists(fileName))
             {
                 string[] lines = File.ReadAllLines(fileName);
-
+                //
                 List<List<string>> dataSets = GetDataSets(lines);
-
+                //
                 int elementStartId = 1;
                 Dictionary<int, FeNode> nodes = null;
                 Dictionary<int, FeElement> elements = new Dictionary<int,FeElement>();
-
                 // Geometry: itemId, allNodeIds
                 Dictionary<int, HashSet<int>> surfaceIdNodeIds = new Dictionary<int, HashSet<int>>();
                 Dictionary<int, HashSet<int>> edgeIdNodeIds = new Dictionary<int, HashSet<int>>();
                 Dictionary<int, HashSet<int>> vertices = new Dictionary<int, HashSet<int>>();
-
+                //
                 foreach (List<string> dataSet in dataSets)
                 {
                     if (dataSet[0] == VolKeywords.points.ToString()) // Nodes
@@ -53,23 +52,24 @@ namespace FileInOut.Input
                         AddLineElements(dataSet.ToArray(), elements, ref elementStartId, edgeIdNodeIds);
                     }
                 }
-                FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Mesh, null, null, convertToSecondOrder, ImportOptions.None);
-
+                FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Mesh, null, null, convertToSecondOrder,
+                                         ImportOptions.None);
+                //
                 mesh.ConvertLineFeElementsToEdges();
-
+                //
                 mesh.RenumberVisualizationSurfaces(surfaceIdNodeIds);
                 mesh.RenumberVisualizationEdges(edgeIdNodeIds);
-
+                //
                 if (elementsToImport != ElementsToImport.All)
                 {
                     if (elementsToImport != ElementsToImport.Beam) mesh.RemoveElementsByType<FeElement1D>();
                     if (elementsToImport != ElementsToImport.Shell) mesh.RemoveElementsByType<FeElement2D>();
                     if (elementsToImport != ElementsToImport.Solid) mesh.RemoveElementsByType<FeElement3D>();
                 }
-                
+                //
                 return mesh;
             }
-
+            //
             return null;
         }
 
@@ -129,16 +129,14 @@ namespace FileInOut.Input
 
             return nodes;
         }
-        static private void AddVolumeElements(string[] lines, Dictionary<int, FeElement> elements, ref int startId)
+        static private void AddVolumeElements(string[] lines, Dictionary<int, FeElement> elements, ref int elementStartId)
         {
             int numNodes;
             int N = int.Parse(lines[1]);
             string[] record;
             string[] splitter = new string[] { " " };
-
             FeElement3D element = null;
-
-            // line 0 is the line with the Keyword
+            // Line 0 is the line with the Keyword
             for (int i = 2; i < N + 2; i++)
             {
                 record = lines[i].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
@@ -146,16 +144,16 @@ namespace FileInOut.Input
                 switch (numNodes)
                 {
                     case 4:
-                        element = GetLinearTetraElement(startId, record);
+                        element = GetLinearTetraElement(elementStartId, record);
                         break;
                     case 10:
-                        element = GetParabolicTetraElement(startId, record);
+                        element = GetParabolicTetraElement(elementStartId, record);
                         break;
                     default:
                         throw new NotSupportedException();
                 }
-                elements.Add(startId, element);
-                startId++;
+                elements.Add(elementStartId, element);
+                elementStartId++;
             }
         }
         static private void AddSurfaceElements(string[] lines, Dictionary<int, FeElement> elements, ref int startId,
@@ -251,35 +249,34 @@ namespace FileInOut.Input
             int n = 2;
             int partId = int.Parse(record[0]);
             int[] nodes = new int[n];
-            for (int i = 0; i < n; i++)
-            {
-                nodes[i] = int.Parse(record[i + 2]);
-            }
-            return new LinearBeamElement(id, partId, nodes);
+            //
+            for (int i = 0; i < n; i++) nodes[i] = int.Parse(record[i + 2]);
+            //
+            return new LinearBeamElement(id, -1, nodes);
         }
         static private LinearTriangleElement GetLinearTriangleElement(int id, string[] record)
         {
             int n = 3;
-            int partId = int.Parse(record[0]);
+            int partId = int.Parse(record[1]);
             int[] nodes = new int[n];
-
+            //
             nodes[0] = int.Parse(record[5]);
             nodes[1] = int.Parse(record[6]);
             nodes[2] = int.Parse(record[7]);
-            
-            return new LinearTriangleElement(id, partId, nodes);
+            //
+            return new LinearTriangleElement(id, -1, nodes);
         }
         static private LinearTetraElement GetLinearTetraElement(int id, string[] record)
         {
             int n = 4;
             int partId = int.Parse(record[0]);
             int[] nodes = new int[n];
-
+            //
             nodes[0] = int.Parse(record[2]);
             nodes[1] = int.Parse(record[4]);    // swap 3 and 4
             nodes[2] = int.Parse(record[3]);
             nodes[3] = int.Parse(record[5]);
-
+            //
             return new LinearTetraElement(id, partId, nodes);
         }
 
@@ -288,24 +285,24 @@ namespace FileInOut.Input
         static private ParabolicTriangleElement GetParabolicTriangleElement(int id, string[] record)
         {
             int n = 6;
-            int partId = int.Parse(record[0]);
+            int partId = int.Parse(record[1]);
             int[] nodes = new int[n];
-
+            //
             nodes[0] = int.Parse(record[5]);
             nodes[1] = int.Parse(record[6]);
             nodes[2] = int.Parse(record[7]);
             nodes[3] = int.Parse(record[10]);
             nodes[4] = int.Parse(record[8]);
             nodes[5] = int.Parse(record[9]);
-
-            return new ParabolicTriangleElement(id, partId, nodes);
+            //
+            return new ParabolicTriangleElement(id, -1, nodes);
         }
         static private ParabolicTetraElement GetParabolicTetraElement(int id, string[] record)
         {
             int n = 10;
             int partId = int.Parse(record[0]);
             int[] nodes = new int[n];
-
+            //
             nodes[0] = int.Parse(record[2]);
             nodes[1] = int.Parse(record[4]);    // swap 3 and 4
             nodes[2] = int.Parse(record[3]);
@@ -316,7 +313,7 @@ namespace FileInOut.Input
             nodes[7] = int.Parse(record[8]);
             nodes[8] = int.Parse(record[11]);
             nodes[9] = int.Parse(record[10]);
-
+            //
             return new ParabolicTetraElement(id, partId, nodes);
         }
 

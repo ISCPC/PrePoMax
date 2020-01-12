@@ -160,7 +160,7 @@ namespace PrePoMax.Forms
         }
         private string GetNodeSetName()
         {
-            return NamedClass.GetNewValueName(_allExistingNames.ToArray(), "Node_Set-");
+            return NamedClass.GetNewValueName(_allExistingNames, "Node_Set-");
         }
 
 

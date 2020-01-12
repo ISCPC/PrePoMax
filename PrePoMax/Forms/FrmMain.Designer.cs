@@ -93,6 +93,7 @@
             this.tsmiDeleteGeometryPart = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerGeometry1 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiGeometryAnalyze = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiCreateAndImportCompoundPart = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiMesh = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiMeshingParameters = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiMeshRefinement = new System.Windows.Forms.ToolStripMenuItem();
@@ -727,7 +728,8 @@
             this.tsmiGeometry.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmiGeometryPart,
             this.tsmiDividerGeometry1,
-            this.tsmiGeometryAnalyze});
+            this.tsmiGeometryAnalyze,
+            this.tsmiCreateAndImportCompoundPart});
             this.tsmiGeometry.Name = "tsmiGeometry";
             this.tsmiGeometry.Size = new System.Drawing.Size(71, 20);
             this.tsmiGeometry.Text = "Geometry";
@@ -745,7 +747,7 @@
             this.tsmiDividerGeomPart3,
             this.tsmiDeleteGeometryPart});
             this.tsmiGeometryPart.Name = "tsmiGeometryPart";
-            this.tsmiGeometryPart.Size = new System.Drawing.Size(115, 22);
+            this.tsmiGeometryPart.Size = new System.Drawing.Size(194, 22);
             this.tsmiGeometryPart.Text = "Part";
             // 
             // tsmiEditGeometryPart
@@ -810,14 +812,21 @@
             // tsmiDividerGeometry1
             // 
             this.tsmiDividerGeometry1.Name = "tsmiDividerGeometry1";
-            this.tsmiDividerGeometry1.Size = new System.Drawing.Size(112, 6);
+            this.tsmiDividerGeometry1.Size = new System.Drawing.Size(191, 6);
             // 
             // tsmiGeometryAnalyze
             // 
             this.tsmiGeometryAnalyze.Name = "tsmiGeometryAnalyze";
-            this.tsmiGeometryAnalyze.Size = new System.Drawing.Size(115, 22);
+            this.tsmiGeometryAnalyze.Size = new System.Drawing.Size(194, 22);
             this.tsmiGeometryAnalyze.Text = "Analyze";
             this.tsmiGeometryAnalyze.Click += new System.EventHandler(this.tsmiGeometryAnalyze_Click);
+            // 
+            // tsmiCreateAndImportCompoundPart
+            // 
+            this.tsmiCreateAndImportCompoundPart.Name = "tsmiCreateAndImportCompoundPart";
+            this.tsmiCreateAndImportCompoundPart.Size = new System.Drawing.Size(194, 22);
+            this.tsmiCreateAndImportCompoundPart.Text = "Create compound part";
+            this.tsmiCreateAndImportCompoundPart.Click += new System.EventHandler(this.tsmiCreateAndImportCompoundPart_Click);
             // 
             // tsmiMesh
             // 
@@ -852,26 +861,26 @@
             // tsmiCreateMeshRefinement
             // 
             this.tsmiCreateMeshRefinement.Name = "tsmiCreateMeshRefinement";
-            this.tsmiCreateMeshRefinement.Size = new System.Drawing.Size(180, 22);
+            this.tsmiCreateMeshRefinement.Size = new System.Drawing.Size(108, 22);
             this.tsmiCreateMeshRefinement.Text = "Create";
             this.tsmiCreateMeshRefinement.Click += new System.EventHandler(this.tsmiCreateMeshRefinement_Click);
             // 
             // tsmiEditMeshRefinement
             // 
             this.tsmiEditMeshRefinement.Name = "tsmiEditMeshRefinement";
-            this.tsmiEditMeshRefinement.Size = new System.Drawing.Size(180, 22);
+            this.tsmiEditMeshRefinement.Size = new System.Drawing.Size(108, 22);
             this.tsmiEditMeshRefinement.Text = "Edit";
             this.tsmiEditMeshRefinement.Click += new System.EventHandler(this.tsmiEditMeshRefinement_Click);
             // 
             // tsmiDividerMeshRefinement1
             // 
             this.tsmiDividerMeshRefinement1.Name = "tsmiDividerMeshRefinement1";
-            this.tsmiDividerMeshRefinement1.Size = new System.Drawing.Size(177, 6);
+            this.tsmiDividerMeshRefinement1.Size = new System.Drawing.Size(105, 6);
             // 
             // tsmiDeleteMeshRefinement
             // 
             this.tsmiDeleteMeshRefinement.Name = "tsmiDeleteMeshRefinement";
-            this.tsmiDeleteMeshRefinement.Size = new System.Drawing.Size(180, 22);
+            this.tsmiDeleteMeshRefinement.Size = new System.Drawing.Size(108, 22);
             this.tsmiDeleteMeshRefinement.Text = "Delete";
             this.tsmiDeleteMeshRefinement.Click += new System.EventHandler(this.tsmiDeleteMeshRefinement_Click);
             // 
@@ -2715,6 +2724,7 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiEditMeshRefinement;
         private System.Windows.Forms.ToolStripSeparator tsmiDividerMeshRefinement1;
         private System.Windows.Forms.ToolStripMenuItem tsmiDeleteMeshRefinement;
+        private System.Windows.Forms.ToolStripMenuItem tsmiCreateAndImportCompoundPart;
     }
 }
 

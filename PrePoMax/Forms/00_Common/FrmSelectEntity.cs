@@ -19,6 +19,9 @@ namespace PrePoMax.Forms
         private NamedClass[] _entitiesToSelect;
         private string[] _preSelectedEntities;
         private Controller _controller;
+        private int _minNumOfEntities;
+        private int _maxNumOfEntities;
+
 
         // Properties                                                                                                               
         public string EntitiesName 
@@ -37,14 +40,36 @@ namespace PrePoMax.Forms
         public Action<string, string> OneEntitySelectedInStep { get; set; }
         public Action<string[]> MultipleEntitiesSelected { get; set; }
         public Action<string, string[]> MultipleEntitiesSelectedInStep { get; set; }
+        public int MinNumberOfEntities
+        { 
+            get { return _minNumOfEntities; }
+            set
+            {
+                _minNumOfEntities = value;
+                if (_minNumOfEntities < 1) _minNumOfEntities = 1;
+                if (_minNumOfEntities > _maxNumOfEntities) _minNumOfEntities = _maxNumOfEntities;
+            }
+        }
+        public int MaxNumberOfEntities 
+        {
+            get { return _maxNumOfEntities; }
+            set
+            {
+                _maxNumOfEntities = value;
+                if (_maxNumOfEntities < _minNumOfEntities) _maxNumOfEntities = _minNumOfEntities;
+            }
+        }
 
 
         // Constructors                                                                                                             
         public FrmSelectEntity(Controller controller)
         {
             InitializeComponent();
-
+            //
             _controller = controller;
+            //
+            _minNumOfEntities = 1;
+            _maxNumOfEntities = int.MaxValue;
         }
 
 
@@ -53,6 +78,8 @@ namespace PrePoMax.Forms
         {
             try
             {
+                string[] selectedEntityNames = GetSelectedEntityNames();
+                //
                 this.DialogResult = System.Windows.Forms.DialogResult.OK;
                 Hide();  // first hide since this form calls itself in the following lines
 
@@ -60,27 +87,29 @@ namespace PrePoMax.Forms
                 {
                     if (_stepName == null)
                     {
-                        if (MultipleEntitiesSelected != null) MultipleEntitiesSelected(GetSelectedEntityNames());
+                        if (MultipleEntitiesSelected != null) MultipleEntitiesSelected(selectedEntityNames);
                     }
                     else
                     {
-                        if (MultipleEntitiesSelectedInStep != null) MultipleEntitiesSelectedInStep(_stepName, GetSelectedEntityNames());
+                        if (MultipleEntitiesSelectedInStep != null) MultipleEntitiesSelectedInStep(_stepName, selectedEntityNames);
                     }
                 }
                 else
                 {
                     if (_stepName == null)
                     {
-                        if (OneEntitySelected != null) OneEntitySelected(GetSelectedEntityNames()[0]);
+                        if (OneEntitySelected != null) OneEntitySelected(selectedEntityNames[0]);
                     }
                     else
                     {
-                        if (OneEntitySelectedInStep != null) OneEntitySelectedInStep(_stepName, GetSelectedEntityNames()[0]);
+                        if (OneEntitySelectedInStep != null) OneEntitySelectedInStep(_stepName, selectedEntityNames[0]);
                     }
                 }
             }
-            catch
-            {}
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
         }
         private void btnCancel_Click(object sender, EventArgs e)
         {
@@ -133,7 +162,7 @@ namespace PrePoMax.Forms
                                 string stepName = null)
         {
             this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
-
+            //
             EntitiesName = title;
             MultiSelect = multiselect;
             _entitiesToSelect = entitiesToSelect;
@@ -144,6 +173,9 @@ namespace PrePoMax.Forms
             if (_preSelectedEntities == null) _preSelectedEntities = new string[0];
             if (_entitiesToSelect.Length > 0 && _preSelectedEntities.Length == 0)
                 _preSelectedEntities = new string[] { _entitiesToSelect[0].Name };
+            //
+            _minNumOfEntities = 1;
+            _maxNumOfEntities = int.MaxValue;
         }
         private void SetEntityNamesToSelect()
         {
@@ -170,6 +202,14 @@ namespace PrePoMax.Forms
             {
                 names.Add((string)row.Cells["colName"].Value);
             }
+            if (dgvNames.MultiSelect)
+            {
+                if (names.Count < _minNumOfEntities)
+                    throw new CaeException("Select at least " + _minNumOfEntities + " " + _entitiyNames.ToLower() + ".");
+                if (names.Count > _maxNumOfEntities)
+                    throw new CaeException("Select at most " + _maxNumOfEntities + " " + _entitiyNames.ToLower() + ".");
+            }
+            //
             return names.ToArray();
         }
 

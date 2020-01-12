@@ -92,6 +92,7 @@
     <Compile Include="FeElementSet.cs" />
     <Compile Include="FeNodeSet.cs" />
     <Compile Include="Parts\BasePart.cs" />
+    <Compile Include="Parts\CompoundGeometryPart.cs" />
     <Compile Include="Parts\GeometryPart.cs" />
     <Compile Include="Parts\ResultPart.cs" />
     <Compile Include="Parts\MeshPart.cs" />

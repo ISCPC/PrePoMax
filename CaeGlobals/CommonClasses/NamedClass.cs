@@ -79,7 +79,7 @@ namespace CaeGlobals
 
 
         // Static methods
-        public static string GetNewValueName(string[] existingNames, string nameRoot)
+        public static string GetNewValueName(ICollection<string> existingNames, string nameRoot)
         {
             int max = 0;
             int tmp;
@@ -98,6 +98,23 @@ namespace CaeGlobals
             max++;
 
             return nameRoot + max.ToString();
+        }
+
+        public static string GetNameWithoutLastValue(string name)
+        {
+            int tmp;
+            string[] parts;
+            parts = name.Split('-');
+            int numOfParts = parts.Length;
+            //
+            if (int.TryParse(parts.Last(), out tmp)) numOfParts--;
+            //
+            string newName = "";
+            for (int i = 0; i < numOfParts; i++)
+            {
+                newName += parts[i] + "-";
+            }
+            return newName;
         }
 
 

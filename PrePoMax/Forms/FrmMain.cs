@@ -824,7 +824,7 @@ namespace PrePoMax
             }
         }
 
-        #region File menu   ########################################################################################################
+        #region File menu ##########################################################################################################
 
         private void tsmiNew_Click(object sender, EventArgs e)
         {
@@ -1055,7 +1055,7 @@ namespace PrePoMax
 
         #endregion  ################################################################################################################
 
-        #region Edit menu  #########################################################################################################
+        #region Edit menu ##########################################################################################################
 
         private async void tsmiUndo_Click(object sender, EventArgs e)
         {
@@ -1176,7 +1176,7 @@ namespace PrePoMax
 
         #endregion  ################################################################################################################
 
-        #region View menu   ########################################################################################################
+        #region View menu ##########################################################################################################
 
         private void tsmiFrontView_Click(object sender, EventArgs e)
         {
@@ -1388,7 +1388,9 @@ namespace PrePoMax
 
         #endregion
 
-        #region Geometry part   ####################################################################################################
+        #region Geometry ###########################################################################################################
+        
+        //Geometry part
         private void tsmiEditGeometryPart_Click(object sender, EventArgs e)
         {
             try
@@ -1450,14 +1452,14 @@ namespace PrePoMax
         {
             try
             {
-                SelectMultipleEntities("Parts", _controller.GetGeometryParts(), DeleteGeometryParts);
+                SelectMultipleEntities("Parts", _controller.GetGeometryPartsWithoutSubParts(), DeleteGeometryParts);
             }
             catch (Exception ex)
             {
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-
+        //
         private void EditGeometryPart(string partName)
         {
             _frmPartProperties.View = ViewGeometryModelResults.Geometry;
@@ -1492,10 +1494,24 @@ namespace PrePoMax
         }
         private void ShowOnlyGeometryParts(string[] partNames)
         {
+            // If sub part is selected add the whole compound part
+            HashSet<string> partsToShow = new HashSet<string>(partNames);
+            foreach (var entry in _controller.Model.Geometry.Parts)
+            {
+                if (entry.Value is CaeMesh.CompoundGeometryPart cgp)
+                {
+                    if (partNames.Contains(cgp.Name))
+                    {
+                        partsToShow.Add(cgp.Name);
+                        partsToShow.UnionWith(cgp.SubPartNames);
+                    }
+                }
+            }
+            //
             HashSet<string> allNames = new HashSet<string>(_controller.Model.Geometry.Parts.Keys);
-            allNames.ExceptWith(partNames);
-            _controller.ShowGeometryPartsCommand(partNames);
+            allNames.ExceptWith(partsToShow);
             _controller.HideGeometryPartsCommand(allNames.ToArray());
+            _controller.ShowGeometryPartsCommand(partsToShow.ToArray());
         }
         private void CopyGeometryPartsToResults(string[] partNames)
         {
@@ -1503,13 +1519,13 @@ namespace PrePoMax
         }
         private void DeleteGeometryParts(string[] partNames)
         {
-            if (MessageBox.Show("OK to delete selected parts?", Globals.ProgramName, MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+            if (MessageBox.Show("OK to delete selected parts?", 
+                                Globals.ProgramName, MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
             {
                 _controller.RemoveGeometryPartsCommand(partNames);
             }
         }
-
-        // Analyze
+        // 
         private void tsmiGeometryAnalyze_Click(object sender, EventArgs e)
         {
             try
@@ -1528,6 +1544,45 @@ namespace PrePoMax
             }
             
         }
+        //
+        private void tsmiCreateAndImportCompoundPart_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Clear3DSelection();
+                SelectMultipleEntities("Parts", _controller.GetCADGeometryParts(), CreateAndImportCompoundPart);
+                _frmSelectEntity.MinNumberOfEntities = 2;
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
+        private async void CreateAndImportCompoundPart(string[] partNames)
+        {
+            try
+            {
+                SetStateWorking(Globals.CreatingCompound, true);
+                //
+                CaeMesh.GeometryPart part;
+                foreach (var partName in partNames)
+                {
+                    part = (CaeMesh.GeometryPart)_controller.Model.Geometry.Parts[partName];
+                    if (part.CADFileData == null)
+                        throw new CaeException("Compound part can only be made from CAD based geometry parts.");
+                }
+                //
+                await Task.Run(() => _controller.CreateAndImportCompoundPartCommand(partNames));
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+            finally
+            {
+                SetStateReady(Globals.CreatingCompound);
+            }
+        }
 
         #endregion  ################################################################################################################
 
@@ -1536,7 +1591,7 @@ namespace PrePoMax
         {
             try
             {
-                SelectMultipleEntities("Parts", _controller.GetGeometryParts(), GetSetMeshingParameters);
+                SelectMultipleEntities("Parts", _controller.GetGeometryPartsWithoutSubParts(), GetSetMeshingParameters);
             }
             catch (Exception ex)
             {
@@ -1547,7 +1602,7 @@ namespace PrePoMax
         {
             try
             {
-                SelectMultipleEntities("Parts", _controller.GetGeometryParts(), PreviewEdgeMeshes);
+                SelectMultipleEntities("Parts", _controller.GetGeometryPartsWithoutSubParts(), PreviewEdgeMeshes);
             }
             catch (Exception ex)
             {
@@ -1596,13 +1651,12 @@ namespace PrePoMax
         {
             try
             {
-                SelectMultipleEntities("Parts", _controller.GetGeometryParts(), CreateMeshes);
+                SelectMultipleEntities("Parts", _controller.GetGeometryPartsWithoutSubParts(), CreateMeshes);
             }
             catch (Exception ex)
             {
                 CaeGlobals.ExceptionTools.Show(this, ex);
-            }
-            
+            }            
         }
 
 
@@ -1890,6 +1944,7 @@ namespace PrePoMax
             try
             {
                 SelectMultipleEntities("Parts", _controller.GetModelParts(), MergeModelParts);
+                _frmSelectEntity.MinNumberOfEntities = 2;
             }
             catch (Exception ex)
             {
@@ -3209,8 +3264,8 @@ namespace PrePoMax
         }
         private void SetTransparencyForResultParts(string[] partNames)
         {
-            if (_controller.Model.Mesh == null) return;
-
+            if (_controller.Results == null || _controller.Results.Mesh == null) return;
+            //
             using (FrmGetValue frmGetValue = new FrmGetValue(128))
             {
                 frmGetValue.NumOfDigits = 0;
@@ -3733,7 +3788,7 @@ namespace PrePoMax
         }
         private void tsslCancel_Click(object sender, EventArgs e)
         {
-            _controller.StopMeshing();
+            _controller.StopNetGenJob();
         }
         #endregion  ################################################################################################################
 
