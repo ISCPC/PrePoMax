@@ -4816,13 +4816,15 @@ namespace PrePoMax
         }
         public void DrawMeshPart(FeMesh mesh, BasePart part, vtkControl.vtkRendererLayer layer)
         {
+            if (part is CompoundGeometryPart) return;
+            //
             vtkControl.vtkMaxActorData data;
             System.Drawing.Color color = part.Color;
             foreach (var elType in part.ElementTypes)
             {
                 if (elType == typeof(LinearBeamElement) || elType == typeof(ParabolicBeamElement)) color = System.Drawing.Color.Black;
             }
-
+            //
             data = new vtkControl.vtkMaxActorData();
             data.Name = part.Name;
             data.Color = color;
@@ -4831,19 +4833,14 @@ namespace PrePoMax
             data.Pickable = true;
             data.SmoothShaded = part.SmoothShaded;
             data.ActorRepresentation = GetRepresentation(part);
-
-            // get all nodes and elements for selection - renumbered
+            // Get all nodes and elements for selection - renumbered
             data.CellLocator = new PartExchangeData();
             mesh.GetAllNodesAndCells(part, out data.CellLocator.Nodes.Ids, out data.CellLocator.Nodes.Coor, out data.CellLocator.Cells.Ids,
                                      out data.CellLocator.Cells.CellNodeIds, out data.CellLocator.Cells.Types);
-
-
-
-            // get only needed nodes and elements - renumbered
+            // Get only needed nodes and elements - renumbered
             mesh.GetVisualizationNodesAndCells(part, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.Ids,
                                         out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
-
-            // model edges
+            // Model edges
             if (((part.PartType == PartType.Solid || part.PartType == PartType.SolidAsShell || part.PartType == PartType.Shell)
                 && part.Visualization.EdgeCells != null) || part.PartType == PartType.Wire)
             {
@@ -4851,7 +4848,7 @@ namespace PrePoMax
                 mesh.GetNodesAndCellsForModelEdges(part, out data.ModelEdges.Nodes.Ids, out data.ModelEdges.Nodes.Coor,
                                                    out data.ModelEdges.Cells.CellNodeIds, out data.ModelEdges.Cells.Types);
             }
-
+            //
             ApplyLighting(data);
             _form.Add3DCells(data);
         }

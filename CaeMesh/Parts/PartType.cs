@@ -8,12 +8,12 @@ namespace CaeMesh
 {
     [Serializable]
     public enum PartType
-    {
-        Compound,
-        Solid,
-        SolidAsShell,
-        Shell,
-        Wire,
-        Unknown
+    {        
+        Solid = 0,
+        SolidAsShell = 1,
+        Shell = 2,
+        Wire = 3,
+        Compound = 10,
+        Unknown = 100
     }
 }
