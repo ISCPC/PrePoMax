@@ -3829,7 +3829,7 @@ namespace PrePoMax
                 if (!selectionNodeIds.SelectAll)
                 {
                     FeMesh mesh = DisplayedMesh;
-
+                    //
                     if (_selection.SelectItem == vtkSelectItem.Node)
                     {
                         for (int i = 0; i < ids.Length; i++)
@@ -3868,9 +3868,10 @@ namespace PrePoMax
                 }
                 else ClearSelectionHistory();   // Before adding all clear selection
             }
-
-            _selection.Add(node);
+            //
+            _selection.Add(node, ids);
             if (highlight) HighlightSelection();
+            //
         }
         public void AddSelectionNodes(List<SelectionNode> nodes, bool highlight)
         {
@@ -4011,7 +4012,10 @@ namespace PrePoMax
             //
             if (selectionNodeMouse.PickedPoint != null)
             {
-                if (selectionNodeMouse.GeometryIds)
+                if (_selection.TryGetNodeIds(selectionNodeMouse, out ids))
+                {
+                }
+                else if (selectionNodeMouse.GeometryIds)
                 {
                     // Geometry selection - get geometry Ids
                     SelectionNodeIds selectionNodeIds = GetSelectionNodeIds(selectionNodeMouse);
