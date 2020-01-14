@@ -142,22 +142,20 @@ namespace PrePoMax.Forms
                 }
                 else
                 {
-                    if (tbOutput.Text.GetHashCode() != _job.OutputData.GetHashCode())
+                    if (tbOutput.Text.Length != _job.OutputData.Length)
                     {
                         // It's on the same thread, no need for Invoke
                         tbOutput.Text = _job.OutputData;
                         tbOutput.Select(tbOutput.TextLength, 0);
                         tbOutput.ScrollToCaret();
-
+                        //
                         tbStatus.Text = _job.StatusFileData;
                         tbStatus.Select(tbOutput.TextLength, 0);
                         tbStatus.ScrollToCaret();
-
+                        //
                         tbConvergence.Text = _job.ConvergenceFileData;
                         tbConvergence.Select(tbOutput.TextLength, 0);
                         tbConvergence.ScrollToCaret();
-
-                        Application.DoEvents();
                     }
                 }
             }
@@ -185,7 +183,5 @@ namespace PrePoMax.Forms
                 }
             }
         }
-
-       
     }
 }

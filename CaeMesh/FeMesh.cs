@@ -3322,7 +3322,7 @@ namespace CaeMesh
         }
 
         // Get geometry ids
-        public int GetGeometryId(double[] point, double dist, int elementId, int[] edgeNodeIds, int[] cellFaceNodeIds)
+        public int GetGeometryId(double[] point, int elementId, int[] edgeNodeIds, int[] cellFaceNodeIds)
         {
             // geometryId = itemId * 100000 + typeId * 10000 + partId;
 
@@ -3335,7 +3335,7 @@ namespace CaeMesh
             int partEdgeId;
 
             int[][] edgeCells = GetEdgeCells(elementId, edgeNodeIds, out part, out partEdgeId);
-            partId = part.PartId;
+            partId = part.PartId;            
 
             if (edgeCells != null)
             {
@@ -3346,6 +3346,9 @@ namespace CaeMesh
                     dSeg = Geometry.PointToSegmentDistance(point, _nodes[cell[0]].Coor, _nodes[cell[1]].Coor);
                     if (dSeg < dMin) dMin = dSeg;
                 }
+                //
+                double dist = part.Visualization.EdgeLengths[partEdgeId] / edgeCells.Length / 10;
+                //
                 //System.Diagnostics.Debug.WriteLine(string.Format("x: {0}   y: {1}   z: {2}", point[0], point[1], point[2]));
                 if (dMin <= dist)
                 {

@@ -430,7 +430,7 @@ namespace UserControls
             }
             //
             NamedClass item = (NamedClass)node.Tag;
-            bool subPart = node.Parent.Tag is CompoundGeometryPart;
+            bool subPart = node.Parent != null && node.Parent.Tag is CompoundGeometryPart;
             // Create
             if (CanCreate(node)) menuFields.Create++;
             // Edit

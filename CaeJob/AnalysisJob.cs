@@ -35,21 +35,18 @@ namespace CaeJob
         protected JobStatus _jobStatus;
         protected int _numCPUs;
         protected List<EnvironmentVariable> _environmentVariables;
-        protected string _output;
         protected long _statusFileLength;
         protected string _statusFileContents;
         protected long _convergenceFileLength;
         protected string _convergenceFileContents;
-        
 
-        [NonSerializedAttribute]
-        private System.Windows.Threading.DispatcherTimer _timer;
 
-        [NonSerializedAttribute]
-        protected System.Diagnostics.Stopwatch _watch;
-
-        [NonSerializedAttribute]
-        private Process _exe;
+        [NonSerialized] private System.Windows.Threading.DispatcherTimer _timer;
+        [NonSerialized] protected System.Diagnostics.Stopwatch _watch;
+        [NonSerialized] private Process _exe;
+        [NonSerialized] private StringBuilder _sbOutput;
+        [NonSerialized] private string _outputFileName;
+        [NonSerialized] private string _errorFileName;
 
 
         // Properties                                                                                                               
@@ -94,11 +91,17 @@ namespace CaeJob
             get { return _environmentVariables; }
             set { _environmentVariables = value; }
         }
-        public string OutputData { get { return _output; } }
+        public string OutputData
+        {
+            get
+            {
+                if (_sbOutput != null) return _sbOutput.ToString();
+                else return null;
+            }
+        }
         public string StatusFileData { get { return _statusFileContents; } }
         public string ConvergenceFileData { get { return _convergenceFileContents; } }
 
-        
 
         // Events                                                                                                                   
         public event Action DataOutput;
@@ -110,23 +113,29 @@ namespace CaeJob
 
         // Constructor                                                                                                              
         public AnalysisJob(string name, string executable, string argument, string workDirectory)
-            : base (name)
-        {            
+            : base(name)
+        {
             _executable = executable;
             _argument = argument;
             _workDirectory = workDirectory;
             _numCPUs = 1;
             _environmentVariables = new List<EnvironmentVariable>();
-
+            //
             _exe = null;
             _jobStatus = JobStatus.None;
             _watch = null;
+            _sbOutput = null;
         }
 
 
         // Event handlers                                                                                                           
         void Timer_Tick(object sender, EventArgs e)
         {
+            File.WriteAllText(_outputFileName, OutputData);
+            //
+            GetStatusFileContents();
+            GetConvergenceFileContents();
+            //
             DataOutput?.Invoke();
         }
 
@@ -134,9 +143,11 @@ namespace CaeJob
         // Methods                                                                                                                  
         public void Submit()
         {
-            _output = "";
-            AddDataToOutput(DateTime.Now + Environment.NewLine);
-            AddDataToOutput("Running command: " + _executable + " " + _argument);
+            if (_sbOutput == null) _sbOutput = new StringBuilder();
+            _sbOutput.Clear();
+            //
+            AppendDataToOutput(DateTime.Now + Environment.NewLine);
+            AppendDataToOutput("Running command: " + _executable + " " + _argument);
 
             _statusFileLength = -1;
             _statusFileContents = "";
@@ -147,9 +158,9 @@ namespace CaeJob
             _timer = new System.Windows.Threading.DispatcherTimer();
             _timer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
             _timer.Tick += Timer_Tick;
-            
+
             _watch = new Stopwatch();
-            
+
             _jobStatus = CaeJob.JobStatus.Running;
 
             JobStatusChanged?.Invoke(_name, _jobStatus);
@@ -168,43 +179,43 @@ namespace CaeJob
         }
         void bwStart_DoWork(object sender, DoWorkEventArgs e)
         {
+            string tmpName = Path.GetFileName(Name);
+            _outputFileName = Path.Combine(_workDirectory, "_output_" + tmpName + ".txt");
+            _errorFileName = Path.Combine(_workDirectory, "_error_" + tmpName + ".txt");
+            //
+            if (File.Exists(_outputFileName)) File.Delete(_outputFileName);
+            if (File.Exists(_errorFileName)) File.Delete(_errorFileName);
+            //
             if (CaeGlobals.Tools.IsWindows10orNewer()) Run_Win10();
             else Run_OldWin();
         }
         void bwStart_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            _timer.Stop();
             _watch.Stop();
-
-            AddDataToOutput("");
+            _timer.Stop();
+            //
+            AppendDataToOutput("");
             if (_jobStatus == JobStatus.OK && !File.Exists(Path.Combine(WorkDirectory, _name + ".frd")))
-                AddDataToOutput(" Job failed.");
+                AppendDataToOutput(" Job failed.");
             else if (_jobStatus == JobStatus.Killed)
-                AddDataToOutput(" Job killed.");
+                AppendDataToOutput(" Job killed.");
             else if (_jobStatus == JobStatus.Failed)
-                AddDataToOutput(" Job failed.");
-
-            AddDataToOutput("");
-            AddDataToOutput(" Elapsed time [s]: " + _watch.Elapsed.TotalSeconds.ToString());
-
+                AppendDataToOutput(" Job failed.");
+            //
+            AppendDataToOutput("");
+            AppendDataToOutput(" Elapsed time [s]: " + _watch.Elapsed.TotalSeconds.ToString());
+            //
             Timer_Tick(null, null);
-
+            //
             JobStatusChanged?.Invoke(_name, _jobStatus);
-
+            //
             JobStatusChanged = null;   // dereference the link to otheh objects
-
-            DataOutput = null;      
+            //
+            DataOutput = null;
         }
 
         private void Run_OldWin()
         {
-            string tmpName = Path.GetFileName(Name);
-            string outputFileName = Path.Combine(_workDirectory, "_output_" + tmpName + ".txt");
-            string errorFileName = Path.Combine(_workDirectory, "_error_" + tmpName + ".txt");
-
-            if (File.Exists(outputFileName)) File.Delete(outputFileName);
-            if (File.Exists(errorFileName)) File.Delete(errorFileName);
-
             ProcessStartInfo psi = new ProcessStartInfo();
             psi.FileName = _executable;
             psi.Arguments = _argument;
@@ -221,7 +232,7 @@ namespace CaeJob
             if (_exe.WaitForExit(ms))
             {
                 // Process completed. Check process.ExitCode here.
-                    
+
                 // after Kill() _jobStatus is Killed
                 _jobStatus = CaeJob.JobStatus.OK;
             }
@@ -229,20 +240,13 @@ namespace CaeJob
             {
                 // Timed out.
                 Kill("Time out.");
-                Debug.WriteLine(DateTime.Now + "   Timeout proces: " + tmpName + " in: " + _workDirectory);
+                Debug.WriteLine(DateTime.Now + "   Timeout proces: " + Name + " in: " + _workDirectory);
                 _jobStatus = CaeJob.JobStatus.TimedOut;
             }
             _exe.Close();
         }
         private void Run_Win10()
         {
-            string tmpName = Path.GetFileName(Name);
-            string outputFileName = Path.Combine(_workDirectory, "_output_" + tmpName + ".txt");
-            string errorFileName = Path.Combine(_workDirectory, "_error_" + tmpName + ".txt");
-
-            if (File.Exists(outputFileName)) File.Delete(outputFileName);
-            if (File.Exists(errorFileName)) File.Delete(errorFileName);
-
             ProcessStartInfo psi = new ProcessStartInfo();
             psi.CreateNoWindow = true;
             psi.FileName = _executable;
@@ -255,7 +259,7 @@ namespace CaeJob
 
             SetEnvironmentVariables(psi);
 
-             _exe = new Process();
+            _exe = new Process();
             _exe.StartInfo = psi;
 
             using (AutoResetEvent outputWaitHandle = new AutoResetEvent(false))
@@ -270,8 +274,7 @@ namespace CaeJob
                     }
                     else
                     {
-                        File.AppendAllText(outputFileName, e.Data + Environment.NewLine);
-                        AddDataToOutput(e.Data);
+                        AppendDataToOutput(e.Data);
                     }
                 };
 
@@ -284,8 +287,8 @@ namespace CaeJob
                     }
                     else
                     {
-                        File.AppendAllText(errorFileName, e.Data + Environment.NewLine);
-                        AddDataToOutput(e.Data);
+                        File.AppendAllText(_errorFileName, e.Data + Environment.NewLine);
+                        AppendDataToOutput(e.Data);
                     }
                 };
 
@@ -304,7 +307,7 @@ namespace CaeJob
                 {
                     // Timed out.
                     Kill("Time out.");
-                    Debug.WriteLine(DateTime.Now + "   Timeout proces: " + tmpName + " in: " + _workDirectory);
+                    Debug.WriteLine(DateTime.Now + "   Timeout proces: " + Name + " in: " + _workDirectory);
                     _jobStatus = CaeJob.JobStatus.TimedOut;
                 }
                 _exe.Close();
@@ -317,9 +320,10 @@ namespace CaeJob
             {
                 if (_exe != null)
                 {
-                    AddDataToOutput(message);
+                    AppendDataToOutput(message);
                     _watch.Stop();
-                    
+                    _timer.Stop();
+                    //
                     KillAllProcessesSpawnedBy((UInt32)_exe.Id);
                     _exe.Kill();
                 }
@@ -360,11 +364,9 @@ namespace CaeJob
             }
         }
 
-        private void AddDataToOutput(string data)
+        private void AppendDataToOutput(string data)
         {
-            _output += data + Environment.NewLine;
-            GetStatusFileContents();
-            GetConvergenceFileContents();
+            _sbOutput.AppendLine(data);
         }
         private void GetStatusFileContents()
         {
@@ -454,10 +456,8 @@ namespace CaeJob
             }
             catch
             {
-                AddDataToOutput("To add environmental variable '" + environmentVariable.Name + "' to the analysis the program must be run with elevated permisions (Run as administrator).");
+                AppendDataToOutput("To add environmental variable '" + environmentVariable.Name + "' to the analysis the program must be run with elevated permisions (Run as administrator).");
             }
         }
-
-
     }
 }

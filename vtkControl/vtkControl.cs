@@ -184,7 +184,7 @@ namespace vtkControl
         public Func<int, int[], vtkMaxActorData> Controller_GetEdgeActorData;
         public Func<int, int[], vtkMaxActorData> Controller_GetSurfaceEdgesActorData;
         public Func<int[], vtkMaxActorData> Controller_GetPartActorData;
-        public Func<double[], double, int, int[], int[], vtkMaxActorData> Controller_GetGeometryActorData;
+        public Func<double[], int, int[], int[], vtkMaxActorData> Controller_GetGeometryActorData;
 
         public Action<MouseEventArgs, Keys, string> Controller_ActorPicked;
         public Action Controller_ShowPostSettings;
@@ -887,10 +887,9 @@ namespace vtkControl
             int globalCellId = GetGlobalCellIdClosestTo3DPoint(ref pickedPoint, out cell, out cellLocator);
             int[] globalCellEdgeNodeIds = GetEdgeNodeIds(pickedPoint, globalCellId, cell, cellLocator);
             int[] globalCellFaceNodeIds = GetCellFaceNodeIds(cell, cellLocator);
-            double dist = vtkInteractorStyleControl.DisplayToWorldScale(_renderer, 7);
+            //double dist = vtkInteractorStyleControl.DisplayToWorldScale(_renderer, 7);
             //
             vtkMaxActorData actorData = Controller_GetGeometryActorData(pickedPoint,
-                                                                        dist,
                                                                         globalCellId, 
                                                                         globalCellEdgeNodeIds,
                                                                         globalCellFaceNodeIds);
@@ -1259,7 +1258,8 @@ namespace vtkControl
             else                // regeneration - the distance to the closest item if items changed
                 maxErrorDistance2 = double.MaxValue;
 
-            if (minDist > maxErrorDistance2) return -1;
+            if (minDist > maxErrorDistance2)
+                return -1;
             else
             {
                 point = pointOut;
@@ -1331,7 +1331,7 @@ namespace vtkControl
             }
             return coor;
         }
-        public void GetGeometryPickProperties(double[] point, out double dist, out int elementId, 
+        public void GetGeometryPickProperties(double[] point, out int elementId, 
                                               out int[] edgeNodeIds, out int[] cellFaceNodeIds)
         {
             vtkCellLocator cellLocator;
@@ -1339,7 +1339,7 @@ namespace vtkControl
             elementId = GetGlobalCellIdClosestTo3DPoint(ref point, out cell, out cellLocator);
             edgeNodeIds = GetEdgeNodeIds(point, elementId, cell, cellLocator);
             cellFaceNodeIds = GetCellFaceNodeIds(cell, cellLocator);
-            dist = vtkInteractorStyleControl.DisplayToWorldScale(_renderer, 7);
+            //dist = vtkInteractorStyleControl.DisplayToWorldScale(_renderer, 7);
         }
 
         // Item selection - Frustum                                                                                                 

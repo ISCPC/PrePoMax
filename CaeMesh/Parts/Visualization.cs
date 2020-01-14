@@ -95,7 +95,7 @@ namespace CaeMesh
 
         /// <summary>
         /// EdgeLengths
-        /// [0...num. of faces]
+        /// [0...num. of edges]
         /// </summary>
         public double[] EdgeLengths
         {

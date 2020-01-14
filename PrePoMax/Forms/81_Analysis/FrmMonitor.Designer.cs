@@ -36,10 +36,10 @@
             this.tpOutput = new System.Windows.Forms.TabPage();
             this.tpStatus = new System.Windows.Forms.TabPage();
             this.tbStatus = new System.Windows.Forms.TextBox();
-            this.pbAnalysisStatus = new System.Windows.Forms.ProgressBar();
-            this.labAnalysisStatus = new System.Windows.Forms.Label();
             this.tpCovergence = new System.Windows.Forms.TabPage();
             this.tbConvergence = new System.Windows.Forms.TextBox();
+            this.pbAnalysisStatus = new System.Windows.Forms.ProgressBar();
+            this.labAnalysisStatus = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.tpOutput.SuspendLayout();
             this.tpStatus.SuspendLayout();
@@ -146,27 +146,6 @@
             this.tbStatus.Size = new System.Drawing.Size(690, 314);
             this.tbStatus.TabIndex = 1;
             // 
-            // pbAnalysisStatus
-            // 
-            this.pbAnalysisStatus.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.pbAnalysisStatus.Location = new System.Drawing.Point(105, 375);
-            this.pbAnalysisStatus.MarqueeAnimationSpeed = 40;
-            this.pbAnalysisStatus.Name = "pbAnalysisStatus";
-            this.pbAnalysisStatus.Size = new System.Drawing.Size(195, 21);
-            this.pbAnalysisStatus.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
-            this.pbAnalysisStatus.TabIndex = 6;
-            // 
-            // labAnalysisStatus
-            // 
-            this.labAnalysisStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.labAnalysisStatus.AutoSize = true;
-            this.labAnalysisStatus.Location = new System.Drawing.Point(306, 378);
-            this.labAnalysisStatus.Name = "labAnalysisStatus";
-            this.labAnalysisStatus.Size = new System.Drawing.Size(23, 15);
-            this.labAnalysisStatus.TabIndex = 7;
-            this.labAnalysisStatus.Text = "OK";
-            // 
             // tpCovergence
             // 
             this.tpCovergence.Controls.Add(this.tbConvergence);
@@ -189,6 +168,27 @@
             this.tbConvergence.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this.tbConvergence.Size = new System.Drawing.Size(690, 314);
             this.tbConvergence.TabIndex = 2;
+            // 
+            // pbAnalysisStatus
+            // 
+            this.pbAnalysisStatus.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.pbAnalysisStatus.Location = new System.Drawing.Point(105, 375);
+            this.pbAnalysisStatus.MarqueeAnimationSpeed = 40;
+            this.pbAnalysisStatus.Name = "pbAnalysisStatus";
+            this.pbAnalysisStatus.Size = new System.Drawing.Size(195, 21);
+            this.pbAnalysisStatus.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
+            this.pbAnalysisStatus.TabIndex = 6;
+            // 
+            // labAnalysisStatus
+            // 
+            this.labAnalysisStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.labAnalysisStatus.AutoSize = true;
+            this.labAnalysisStatus.Location = new System.Drawing.Point(306, 378);
+            this.labAnalysisStatus.Name = "labAnalysisStatus";
+            this.labAnalysisStatus.Size = new System.Drawing.Size(23, 15);
+            this.labAnalysisStatus.TabIndex = 7;
+            this.labAnalysisStatus.Text = "OK";
             // 
             // FrmMonitor
             // 

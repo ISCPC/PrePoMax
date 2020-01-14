@@ -496,6 +496,7 @@ namespace vtkControl
 
                 vtkCamera camera = renderer.GetActiveCamera();
                 double factor = Math.Pow(1.1, this._motionFactor * 0.2 * this.GetMouseWheelMotionFactor());
+                //factor = 1.001;
                 camera.SetParallelScale(camera.GetParallelScale() / factor);
 
                 double[] worldPosAfter = DisplayToWorld(renderer, new double[] { clickPos[0], clickPos[1] });

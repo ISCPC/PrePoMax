@@ -4060,14 +4060,13 @@ namespace PrePoMax
 
         private int[] GetNodeIdsAtPoint(SelectionNodeMouse selectionNodeMouse)
         {
-            double dist;
             int elementId;
             int[] edgeNodeIds;
             int[] cellFaceNodeIds;
             double[] pickedPoint = selectionNodeMouse.PickedPoint;
             vtkSelectBy selectBy = selectionNodeMouse.SelectBy;
             //
-            _form.GetGeometryPickProperties(pickedPoint, out dist, out elementId, out edgeNodeIds, out cellFaceNodeIds);
+            _form.GetGeometryPickProperties(pickedPoint, out elementId, out edgeNodeIds, out cellFaceNodeIds);
             //
             if (selectBy == vtkSelectBy.Node || selectBy == vtkSelectBy.QueryNode)
             {
@@ -4119,15 +4118,13 @@ namespace PrePoMax
         }
         private int[] GetElementIdsAtPoint(SelectionNodeMouse selectionNodeMouse)
         {
-            double dist;
             int elementId;
             int[] edgeNodeIds;
             int[] cellFaceNodeIds;
             double[] pickedPoint = selectionNodeMouse.PickedPoint;
             vtkSelectBy selectBy = selectionNodeMouse.SelectBy;
 
-            _form.GetGeometryPickProperties(pickedPoint, out dist, out elementId,
-                                            out edgeNodeIds, out cellFaceNodeIds);
+            _form.GetGeometryPickProperties(pickedPoint, out elementId, out edgeNodeIds, out cellFaceNodeIds);
 
             if (selectBy == vtkSelectBy.Node)
             {
@@ -4208,8 +4205,7 @@ namespace PrePoMax
             double[] pickedPoint = selectionNodeMouse.PickedPoint;
             vtkSelectBy selectBy = selectionNodeMouse.SelectBy;
 
-            _form.GetGeometryPickProperties(pickedPoint, out dist, out elementId,
-                                            out edgeNodeIds, out cellFaceNodeIds);
+            _form.GetGeometryPickProperties(pickedPoint, out elementId, out edgeNodeIds, out cellFaceNodeIds);
 
             FeElement element;
             if (DisplayedMesh.Elements.TryGetValue(elementId, out element))
@@ -4528,13 +4524,13 @@ namespace PrePoMax
 
             return GetCellActorData(elementSet);
         }
-        public vtkControl.vtkMaxActorData GetGeometryActorData(double[] point, double dist, int elementId,
+        public vtkControl.vtkMaxActorData GetGeometryActorData(double[] point, int elementId,
                                                                int[] edgeNodeIds, int[] cellFaceNodeIds)
         {
-            int geomId = DisplayedMesh.GetGeometryId(point, dist, elementId, edgeNodeIds, cellFaceNodeIds);
+            int geomId = DisplayedMesh.GetGeometryId(point, elementId, edgeNodeIds, cellFaceNodeIds);
             int typeId = (geomId / 10000) % 10;
             int itemId = geomId / 100000;
-
+            //
             if (typeId == 1)
             {
                 int[] nodeIds = DisplayedMesh.GetNodeIdsFromGeometryId(geomId);
@@ -4547,35 +4543,29 @@ namespace PrePoMax
 
         private int GetGeometryId(double[] point)
         {
-            double dist;
             int elementId;
             int[] edgeNodeIds;
             int[] cellFaceNodeIds;
-
-            _form.GetGeometryPickProperties(point, out dist, out elementId,
-                                            out edgeNodeIds, out cellFaceNodeIds);
-            return DisplayedMesh.GetGeometryId(point, dist, elementId, edgeNodeIds, cellFaceNodeIds);
+            //
+            _form.GetGeometryPickProperties(point, out elementId, out edgeNodeIds, out cellFaceNodeIds);
+            return DisplayedMesh.GetGeometryId(point, elementId, edgeNodeIds, cellFaceNodeIds);
         }
         private int[] GetGeometryEdgeIdsByAngle(double[] point, double angle)
         {
-            double dist;
             int elementId;
             int[] edgeNodeIds;
             int[] cellFaceNodeIds;
-
-            _form.GetGeometryPickProperties(point, out dist, out elementId,
-                                            out edgeNodeIds, out cellFaceNodeIds);
+            //
+            _form.GetGeometryPickProperties(point, out elementId, out edgeNodeIds, out cellFaceNodeIds);
             return DisplayedMesh.GetGeometryEdgeIdsByAngle(elementId, edgeNodeIds, angle);
         }
         private int[] GetGeometrySurfaceIdsByAngle(double[] point, double angle)
         {
-            double dist;
             int elementId;
             int[] edgeNodeIds;
             int[] cellFaceNodeIds;
-
-            _form.GetGeometryPickProperties(point, out dist, out elementId,
-                                            out edgeNodeIds, out cellFaceNodeIds);
+            //
+            _form.GetGeometryPickProperties(point, out elementId, out edgeNodeIds, out cellFaceNodeIds);
             return DisplayedMesh.GetGeometrySurfaceIdsByAngle(elementId, cellFaceNodeIds, angle);
         }
 

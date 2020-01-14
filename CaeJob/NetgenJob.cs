@@ -36,14 +36,14 @@ namespace CaeJob
         protected string _output;
         protected object myLock = new object();
 
-        [NonSerializedAttribute]
-        protected System.Diagnostics.Stopwatch _watch;
-        [NonSerializedAttribute]
-        protected System.Diagnostics.Stopwatch _timerWatch;
-        [NonSerializedAttribute]
-        private Process _exe;
-        
-        
+
+        [NonSerializedAttribute] protected System.Diagnostics.Stopwatch _watch;
+        [NonSerializedAttribute] protected System.Diagnostics.Stopwatch _timerWatch;
+        [NonSerializedAttribute] private Process _exe;
+        [NonSerialized] private string _outputFileName;
+        [NonSerialized] private string _errorFileName;
+
+
         // Properties                                                                                                               
         //public string Name { get { return _name; } set { _name = value; } }
         public string Executable
@@ -56,10 +56,10 @@ namespace CaeJob
             get { return _argument; }
             set { _argument = value; }
         }
-        public string WorkDirectory 
+        public string WorkDirectory
         {
-            get { return _workDirectory; } 
-            set { _workDirectory = value; } 
+            get { return _workDirectory; }
+            set { _workDirectory = value; }
         }
         public JobStatus JobStatus { get { return _jobStatus; } }
         public string Output { get { return _output; } }
@@ -73,9 +73,9 @@ namespace CaeJob
 
 
         // Constructor                                                                                                              
-        public NetgenJob(string name, string executable, string argument, string workDirectory) 
-            : base (name)
-        {            
+        public NetgenJob(string name, string executable, string argument, string workDirectory)
+            : base(name)
+        {
             _executable = executable;
             _argument = argument;
             _workDirectory = workDirectory;
@@ -96,7 +96,7 @@ namespace CaeJob
             _jobStatus = CaeJob.JobStatus.Running;
 
             if (JobStarted != null) JobStarted(this);
-            
+
             Run();
             RunCompleted();
         }
@@ -112,11 +112,11 @@ namespace CaeJob
 
             //string tmpName = Path.GetFileName(_executable) + "_" + _argument.Substring(0, Math.Min(_argument.Length, 15));
             string tmpName = Path.GetFileName(Name);
-            string outputFileName = Path.Combine(_workDirectory, "_output_" + tmpName + ".txt");
-            string errorFileName = Path.Combine(_workDirectory, "_error_" + tmpName + ".txt");
+            _outputFileName = Path.Combine(_workDirectory, "_output_" + tmpName + ".txt");
+            _errorFileName = Path.Combine(_workDirectory, "_error_" + tmpName + ".txt");
 
-            if (File.Exists(outputFileName)) File.Delete(outputFileName);
-            if (File.Exists(errorFileName)) File.Delete(errorFileName);
+            if (File.Exists(_outputFileName)) File.Delete(_outputFileName);
+            if (File.Exists(_errorFileName)) File.Delete(_errorFileName);
 
             ProcessStartInfo psi = new ProcessStartInfo();
             psi.CreateNoWindow = true;
@@ -144,8 +144,7 @@ namespace CaeJob
                         if (!outputWaitHandle.SafeWaitHandle.IsClosed) outputWaitHandle.Set();
                     }
                     else
-                    {
-                        File.AppendAllText(outputFileName, e.Data + Environment.NewLine);
+                    {                        
                         AddDataToOutput(e.Data);
                     }
                 };
@@ -159,7 +158,7 @@ namespace CaeJob
                     }
                     else
                     {
-                        File.AppendAllText(errorFileName, e.Data + Environment.NewLine);
+                        File.AppendAllText(_errorFileName, e.Data + Environment.NewLine);
                         AddDataToOutput(e.Data);
                     }
                 };
@@ -172,7 +171,7 @@ namespace CaeJob
                 if (_exe.WaitForExit(ms) && outputWaitHandle.WaitOne(ms) && errorWaitHandle.WaitOne(ms))
                 {
                     // Process completed. Check process.ExitCode here.
-                    
+
                     // after Kill() _jobStatus is Killed
                     if (_jobStatus == CaeJob.JobStatus.Running) _jobStatus = CaeJob.JobStatus.OK;
                 }
@@ -191,20 +190,14 @@ namespace CaeJob
         {
             _timerWatch.Stop();
             _watch.Stop();
-
+            //
             AddDataToOutput("");
             AddDataToOutput("Elapsed time [s]: " + _watch.Elapsed.TotalSeconds.ToString(), 0);
-
-            //if (_jobStatus == JobStatus.OK)
-            //    Debug.WriteLine(DateTime.Now + "   Job finished.");
-            //else if (_jobStatus == JobStatus.Killed)
-            //    Debug.WriteLine(DateTime.Now + "   Job killed.");
-            //else if (_jobStatus == JobStatus.Failed)
-            //    Debug.WriteLine(DateTime.Now + "   Job failed.");
-
-            // dereference the link to otheh objects
+            // Wait for the last optput
+            lock (myLock) {}
+            // Dereference the link to otheh objects
             JobStarted = null;
-            //JobCompleted = null;
+            // JobCompleted = null;
             AppendOutput = null;
         }
 
@@ -215,15 +208,16 @@ namespace CaeJob
                 if (_exe != null)
                 {
                     myLock = new object();  // to unlock old lock in AddDataToOutput
-
+                    //
                     AddDataToOutput(message, 0);
+                    //
                     _timerWatch.Stop();
                     _watch.Stop();
 
                     _jobStatus = JobStatus.Killed;  // this has to be here before _exe.Kill, to return the correct status
 
                     KillAllProcessesSpawnedBy((UInt32)_exe.Id);
-                    
+
                     _exe.Kill();
                 }
             }
@@ -271,13 +265,20 @@ namespace CaeJob
         {
             lock (myLock)
             {
-                _output += data + Environment.NewLine;
-
-                if (_timerWatch.ElapsedMilliseconds > elapsedMilliseconds)
+                if (_output != null)
                 {
-                    if (AppendOutput != null && _output != null && _output.Length > 0) AppendOutput(_output);
-                    _output = "";
-                    _timerWatch.Restart();
+                    _output += data + Environment.NewLine;
+                    //
+                    if (_timerWatch.ElapsedMilliseconds > elapsedMilliseconds)
+                    {
+                        if (AppendOutput != null && _output.Length > 0)
+                        {
+                            AppendOutput(_output);
+                            File.AppendAllText(_outputFileName, _output);
+                        }
+                        _output = "";
+                        _timerWatch.Restart();
+                    }
                 }
             }
         }

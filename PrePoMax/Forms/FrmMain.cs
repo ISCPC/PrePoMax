@@ -3411,11 +3411,10 @@ namespace PrePoMax
             InvokeIfRequired(() => _vtk.SelectItem = selectItem);
         }
 
-        public void GetGeometryPickProperties(double[] point, out double dist, out int elementId,
+        public void GetGeometryPickProperties(double[] point, out int elementId, 
                                               out int[] edgeNodeIds, out int[] cellFaceNodeIds)
         {
-            _vtk.GetGeometryPickProperties(point, out dist, out elementId, 
-                                           out edgeNodeIds, out cellFaceNodeIds);
+            _vtk.GetGeometryPickProperties(point, out elementId, out edgeNodeIds, out cellFaceNodeIds);
         }
 
         public int[] GetNodeIdsFromFrustum(double[][] planeParameters, vtkSelectBy selectBy)
