@@ -125,6 +125,8 @@
             this.cltvModel = new UserControls.CodersLabTreeView();
             this.tpResults = new System.Windows.Forms.TabPage();
             this.cltvResults = new UserControls.CodersLabTreeView();
+            this.tsmiSpaceEditCalculiXKeywords = new System.Windows.Forms.ToolStripSeparator();
+            this.tsmiEditCalculiXKeywords = new System.Windows.Forms.ToolStripMenuItem();
             this.cmsTree.SuspendLayout();
             this.tcGeometryModelResults.SuspendLayout();
             this.tpGeometry.SuspendLayout();
@@ -143,6 +145,8 @@
             this.tsmiCreateMesh,
             this.tsmiSpaceCopyPart,
             this.tsmiCopyGeometryToResults,
+            this.tsmiSpaceEditCalculiXKeywords,
+            this.tsmiEditCalculiXKeywords,
             this.tsmiSpaceMergeParts,
             this.tsmiMergeParts,
             this.tsmiSpaceConvertToPart,
@@ -171,7 +175,7 @@
             this.tsmiSpaceDelete,
             this.tsmiDelete});
             this.cmsTree.Name = "cmsTree";
-            this.cmsTree.Size = new System.Drawing.Size(208, 598);
+            this.cmsTree.Size = new System.Drawing.Size(208, 648);
             // 
             // tsmiCreate
             // 
@@ -715,6 +719,18 @@
             this.cltvResults.MouseDown += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseDown);
             this.cltvResults.MouseUp += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseUp);
             // 
+            // tsmiSpaceEditCalculiXkeywords
+            // 
+            this.tsmiSpaceEditCalculiXKeywords.Name = "tsmiSpaceEditCalculiXkeywords";
+            this.tsmiSpaceEditCalculiXKeywords.Size = new System.Drawing.Size(204, 6);
+            // 
+            // tsmiEditCalculiXkeywords
+            // 
+            this.tsmiEditCalculiXKeywords.Name = "tsmiEditCalculiXkeywords";
+            this.tsmiEditCalculiXKeywords.Size = new System.Drawing.Size(207, 22);
+            this.tsmiEditCalculiXKeywords.Text = "Edit CalculiX keywords";
+            this.tsmiEditCalculiXKeywords.Click += new System.EventHandler(this.tsmiEditCalculiXKeywords_Click);
+            // 
             // ModelTree
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -783,5 +799,7 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiShowOnly;
         private System.Windows.Forms.ToolStripMenuItem tsmiSetTransparency;
         private System.Windows.Forms.ToolStripMenuItem tsmiPreviewEdgeMesh;
+        private System.Windows.Forms.ToolStripSeparator tsmiSpaceEditCalculiXKeywords;
+        private System.Windows.Forms.ToolStripMenuItem tsmiEditCalculiXKeywords;
     }
 }

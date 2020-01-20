@@ -1,12 +1,28 @@
 ﻿Requirements
 
-Querry - edges and surfaces
-Geometry selection by surface angle
 Selection - UNDO after empty click
+SAVE TO ANOTHER FILE AND THEN REMOVE THE OLDER FILE
+
 
 By others:
-Josh W: Support for viewing and editing materila data in material library
-SAVE TO ANOTHER FILE AND THEN REMOVE THE OLDER FILE
+Josh W: 
+Support for viewing and editing materila data in material library
+
+
+By Martin:
+19.1.2020
+1) Add a reference point on the centroid of the surface
+
+
+By Sergio:
+10. 7. 2020
+1) Move mesh refinements to the parts
+2) Add support for custom colors of supports and loads in the Edit menu - add a legend for colors
+3) Use the .pmx folder for all calculations
+4) Units
+5) Show the "Select set" window at the start of the set editing
+6)
+
 
 By Martin:
 7. 7. 2019
@@ -16,7 +32,6 @@ By Martin:
 5) support for moment loads on surfaces
 6) support for hydrostatic load
 7) support for de-featuring based on mesh???
-8) local mesh seed size on edges
 10) FORUM!
 11) highlight the parts for which the meshing parameters are changed while Regenerate for remeshing
 13) create node, element sets and surfaces when needed (load, support)
@@ -24,7 +39,6 @@ By Martin:
 17) shape optimization, adaptive mesh refinement
 18) automatic contact pair detection
 19) support for oppening older file versions
-21) pre-select the parts in the parts selection window before Transformations
 22) add support for changing the active step while the animation is on
 
 
@@ -41,7 +55,6 @@ By Emanuele:
 - add support for a bearing load - load distributed inside a hole
 
 
-
 By Ihor:
 30.5.2019
 - open older file -> error msg. Then open CAD file and the same error msg.
@@ -53,8 +66,6 @@ Old
 
 
 By Sergio:
-28.5.2019
-- Option to make all noncomputed parts transparent
 
 24.8.2018
 - basic contacts support
@@ -88,12 +99,8 @@ By Martin:
 - path plots based on geometric objects or sets of nodes
 - history plots based on dat and on multistep field output
 - support of contact including smart choice of master/slave and appropriate parameters, correction of overclosure or positioning for initial touch
-- Mesh-independent entity selections (possibly using Netgen groups, should these be mesh independent)
-- real cad support
 - symmetry expansion in post-processing
-10.1.2018
-- bring geometry data to the results view (Parts already added)
-- cutting planes for the results
+
 
 By Matej
 - wrong selection when using thin 3D structures due to the GetNearestPoint selection on actor locator
@@ -134,16 +141,22 @@ Dependency nglib - added following files for c++ redistriburable compatibility:
 
 Done
 
+Double-clicking the status block widget opens settings
+Add edit CalculiX keywords to the context menu of the model
 Version 0.5.3 Master branch
+Abbed compound part creation
+Optimized selection speed by keeping intermediate node results
+Fixed selections based on geometry
+Increased speed of meshing and analysis
 Added support for edges on symbols
 Added support for Submodel
 Added support for edge preview
 Added support for mesh refinement
-
+Fixed visualization error with to few colors for color contours
 
 
 Version 0.5.2 Master branch
-Added support for importing and meshing 'hollow' CAD files.
+Added support for importing and meshing 'hollow' CAD files
 Added support for importing .brep files
 Added support for section view
 Added support to query edges and surfaces

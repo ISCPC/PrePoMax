@@ -174,6 +174,7 @@ namespace PrePoMax
                 _modelTree.PreviewEdgeMesh += PreviewEdgeMeshes;
                 _modelTree.CreateMeshEvent += CreateMeshes;
                 _modelTree.CopyGeometryToResultsEvent += CopyGeometryPartsToResults;
+                _modelTree.EditCalculixKeywords += EditEditCalculiXKeywords;
                 _modelTree.MergeParts += MergeModelParts;
                 _modelTree.ConvertElementSetsToMeshParts += ConvertElementSetsToMeshParts;
                 _modelTree.MaterialLibrary += ShowMaterialLibrary;
@@ -326,6 +327,7 @@ namespace PrePoMax
         }
 
        
+
         private void FrmMain_Shown(object sender, EventArgs e)
         {
             // Set vtk control size
@@ -981,6 +983,7 @@ namespace PrePoMax
                 SetStateReady(Globals.SavingAsText);
             }
         }
+        //
         private void tsmiExportToCalculix_Click(object sender, EventArgs e)
         {
             try
@@ -1039,6 +1042,93 @@ namespace PrePoMax
                 SetStateReady(Globals.ExportingText);
             }
         }
+        private void tsmiExportToStep_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (_controller.Model.Geometry != null && _controller.Model.Geometry.Parts != null)
+                {
+                    SelectMultipleEntities("Parts", _controller.GetCADGeometryParts(), SaveCADPartsAsStep);
+                }
+                else throw new CaeException("No geometry to export.");
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiExportToBrep_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (_controller.Model.Geometry != null && _controller.Model.Geometry.Parts != null)
+                {
+                    SelectMultipleEntities("Parts", _controller.GetCADGeometryParts(), SaveCADPartsAsBrep);
+                }
+                else throw new CaeException("No geometry to export.");
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }        
+        private async void SaveCADPartsAsStep(string[] partNames)
+        {
+            try
+            {
+                using (SaveFileDialog saveFileDialog = new SaveFileDialog())
+                {
+                    saveFileDialog.Filter = "Step files | *.stp";
+                    if (_controller.OpenedFileName != null)
+                        saveFileDialog.FileName = Path.GetFileNameWithoutExtension(_controller.OpenedFileName) + ".stp";
+                    //
+                    if (saveFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                    {
+                        // The filter adds the extension to the file name
+                        SetStateWorking(Globals.ExportingText);
+                        //
+                        await Task.Run(() => _controller.ExportCADGeometryPartsAsStep(partNames, saveFileDialog.FileName));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+            finally
+            {
+                SetStateReady(Globals.ExportingText);
+            }
+        }
+        private async void SaveCADPartsAsBrep(string[] partNames)
+        {
+            try
+            {
+                using (SaveFileDialog saveFileDialog = new SaveFileDialog())
+                {
+                    saveFileDialog.Filter = "Brep files | *.brep";
+                    if (_controller.OpenedFileName != null)
+                        saveFileDialog.FileName = Path.GetFileNameWithoutExtension(_controller.OpenedFileName) + ".brep";
+                    //
+                    if (saveFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                    {
+                        // The filter adds the extension to the file name
+                        SetStateWorking(Globals.ExportingText);
+                        //
+                        await Task.Run(() => _controller.ExportCADGeometryPartsAsBrep(partNames, saveFileDialog.FileName));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+            finally
+            {
+                SetStateReady(Globals.ExportingText);
+            }
+        }
+        //
         private void tsmiCloseResults_Click(object sender, EventArgs e)
         {
             _controller.ClearResults();
@@ -1402,7 +1492,7 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiHideGeometryPart_Click(object sender, EventArgs e)
+        private void tsmiHideGeometryParts_Click(object sender, EventArgs e)
         {
             try
             {
@@ -1414,7 +1504,7 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiShowGeometryPart_Click(object sender, EventArgs e)
+        private void tsmiShowGeometryParts_Click(object sender, EventArgs e)
         {
             try
             {
@@ -1425,7 +1515,18 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiSetTransparencyForGeometryPart_Click(object sender, EventArgs e)
+        private void tsmiShowOnlyGeometryParts_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Parts", _controller.GetGeometryParts(), ShowOnlyGeometryParts);
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiSetTransparencyForGeometryParts_Click(object sender, EventArgs e)
         {
             try
             {
@@ -1437,7 +1538,7 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiCopyGeometryPartToResults_Click(object sender, EventArgs e)
+        private void tsmiCopyGeometryPartsToResults_Click(object sender, EventArgs e)
         {
             try
             {
@@ -1448,7 +1549,7 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiDeleteGeometryPart_Click(object sender, EventArgs e)
+        private void tsmiDeleteGeometryParts_Click(object sender, EventArgs e)
         {
             try
             {
@@ -1837,20 +1938,7 @@ namespace PrePoMax
         {
             try
             {
-                if (CheckValiditiy())
-                {
-                    _frmCalculixKeywordEditor = new FrmCalculixKeywordEditor();
-                    _frmCalculixKeywordEditor.Keywords = _controller.GetCalculixModelKeywords();
-                    _frmCalculixKeywordEditor.UserKeywords = _controller.GetCalculixUserKeywords();
-
-                    if (_frmCalculixKeywordEditor.Keywords != null)
-                    {
-                        if (_frmCalculixKeywordEditor.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-                        {
-                            _controller.SetCalculixUserKeywordsCommand(_frmCalculixKeywordEditor.UserKeywords);
-                        }
-                    }
-                }
+                EditEditCalculiXKeywords();
             }
             catch (Exception ex)
             {
@@ -1861,6 +1949,23 @@ namespace PrePoMax
         private void EditModel()
         {
             ShowForm(_frmModelProperties, "Edit Model", null);
+        }
+        private void EditEditCalculiXKeywords()
+        {
+            if (CheckValiditiy())
+            {
+                _frmCalculixKeywordEditor = new FrmCalculixKeywordEditor();
+                _frmCalculixKeywordEditor.Keywords = _controller.GetCalculixModelKeywords();
+                _frmCalculixKeywordEditor.UserKeywords = _controller.GetCalculixUserKeywords();
+
+                if (_frmCalculixKeywordEditor.Keywords != null)
+                {
+                    if (_frmCalculixKeywordEditor.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                    {
+                        _controller.SetCalculixUserKeywordsCommand(_frmCalculixKeywordEditor.UserKeywords);
+                    }
+                }
+            }
         }
 
         #endregion  ################################################################################################################
@@ -1906,7 +2011,7 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiTranslatePart_Click(object sender, EventArgs e)
+        private void tsmiTranslateParts_Click(object sender, EventArgs e)
         {
             try
             {
@@ -1917,7 +2022,7 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiScalePart_Click(object sender, EventArgs e)
+        private void tsmiScaleParts_Click(object sender, EventArgs e)
         {
             try
             {
@@ -1928,7 +2033,7 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiRotatePart_Click(object sender, EventArgs e)
+        private void tsmiRotateParts_Click(object sender, EventArgs e)
         {
             try
             {
@@ -1939,7 +2044,7 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiMergePart_Click(object sender, EventArgs e)
+        private void tsmiMergeParts_Click(object sender, EventArgs e)
         {
             try
             {
@@ -1951,7 +2056,7 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiHidePart_Click(object sender, EventArgs e)
+        private void tsmiHideParts_Click(object sender, EventArgs e)
         {
             try
             {
@@ -1963,7 +2068,7 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiShowPart_Click(object sender, EventArgs e)
+        private void tsmiShowParts_Click(object sender, EventArgs e)
         {
             try
             {
@@ -1974,7 +2079,18 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiSetTransparencyForPart_Click(object sender, EventArgs e)
+        private void tsmiShowOnlyParts_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Parts", _controller.GetModelParts(), ShowOnlyModelParts);
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiSetTransparencyForParts_Click(object sender, EventArgs e)
         {
             try
             {
@@ -1986,7 +2102,7 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiDeletePart_Click(object sender, EventArgs e)
+        private void tsmiDeleteParts_Click(object sender, EventArgs e)
         {
             try
             {
@@ -1997,7 +2113,7 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-
+        //
         private void EditModelPart(string partName)
         {
             _frmPartProperties.View = ViewGeometryModelResults.Model; 
@@ -3160,7 +3276,7 @@ namespace PrePoMax
 
         #region Result part menu  ##################################################################################################
 
-        private void tsmiEditResultPart_Click(object sender, EventArgs e)
+        private void tsmiEditResultParts_Click(object sender, EventArgs e)
         {
             try
             {
@@ -3171,7 +3287,7 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiHideResultPart_Click(object sender, EventArgs e)
+        private void tsmiHideResultParts_Click(object sender, EventArgs e)
         {
             try
             {
@@ -3183,7 +3299,7 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiShowResultPart_Click(object sender, EventArgs e)
+        private void tsmiShowResultParts_Click(object sender, EventArgs e)
         {
             try
             {
@@ -3194,7 +3310,18 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiSetTransparencyForResultPart_Click(object sender, EventArgs e)
+        private void tsmiShowOnlyResultParts_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Parts", _controller.GetResultParts(), ShowOnlyResultParts);
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiSetTransparencyForResultParts_Click(object sender, EventArgs e)
         {
             try
             {
@@ -3230,7 +3357,7 @@ namespace PrePoMax
 
             
         }
-        private void tsmiDeleteResultPart_Click(object sender, EventArgs e)
+        private void tsmiDeleteResultParts_Click(object sender, EventArgs e)
         {
             try
             {
@@ -3411,10 +3538,22 @@ namespace PrePoMax
             InvokeIfRequired(() => _vtk.SelectItem = selectItem);
         }
 
-        public void GetGeometryPickProperties(double[] point, out int elementId, 
-                                              out int[] edgeNodeIds, out int[] cellFaceNodeIds)
+        public void GetGeometryPickProperties(double[] point, out int elementId, out int[] edgeNodeIds, 
+                                              out int[] cellFaceNodeIds, string[] selectionPartNames = null)
         {
-            _vtk.GetGeometryPickProperties(point, out elementId, out edgeNodeIds, out cellFaceNodeIds);
+            elementId = -1;
+            edgeNodeIds = null;
+            cellFaceNodeIds = null;
+            try
+            {
+                _vtk.SetSelectableActorsFilter(selectionPartNames);
+                _vtk.GetGeometryPickProperties(point, out elementId, out edgeNodeIds, out cellFaceNodeIds);
+            }
+            catch { }
+            finally
+            {
+                _vtk.SetSelectableActorsFilter(null);
+            }
         }
 
         public int[] GetNodeIdsFromFrustum(double[][] planeParameters, vtkSelectBy selectBy)
@@ -4549,6 +4688,8 @@ namespace PrePoMax
             {}
         }
 
-        
+       
+
+       
     }
 }

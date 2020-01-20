@@ -42,6 +42,8 @@
             this.tsmiExport = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiExportToCalculix = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiExportToAbaqus = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiExportToStep = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiExportToBrep = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerFile3 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiCloseResults = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiExit = new System.Windows.Forms.ToolStripMenuItem();
@@ -84,13 +86,14 @@
             this.tsmiGeometryPart = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEditGeometryPart = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerGeomPart1 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsmiCopyGeometryPartToResults = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiCopyGeometryPartsToResults = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerGeomPart2 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsmiHideGeometryPart = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiShowGeometryPart = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiSetTransparencyForGeometryPart = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiHideGeometryParts = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiShowGeometryParts = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiShowOnlyGeometryParts = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiSetTransparencyForGeometryParts = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerGeomPart3 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsmiDeleteGeometryPart = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiDeleteGeometryParts = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerGeometry1 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiGeometryAnalyze = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiCreateAndImportCompoundPart = new System.Windows.Forms.ToolStripMenuItem();
@@ -111,17 +114,18 @@
             this.tsmiRenumberAllNodes = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiPart = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEditPart = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiTransformPart = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiTranslatePart = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiScalePart = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiRotatePart = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiMergePart = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiTransformParts = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiTranslateParts = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiScaleParts = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiRotateParts = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiMergeParts = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerPart2 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsmiHidePart = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiShowPart = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiSetTransparencyForPart = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiHideParts = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiShowParts = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiShowOnlyParts = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiSetTransparencyForParts = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerPart3 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsmiDeletePart = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiDeleteParts = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiNodeSet = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiCreateNodeSet = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEditNodeSet = new System.Windows.Forms.ToolStripMenuItem();
@@ -211,14 +215,15 @@
             this.tsmiResultPart = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEditResultPart = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerResultPart1 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsmiHideResultPart = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiShowResultPart = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiSetTransparencyForResultPart = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiHideResultParts = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiShowResultParts = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiShowOnlyResultParts = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiSetTransparencyForResultParts = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerResultPart2 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiColorContoursOff = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiColorContoursOn = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerResultPart3 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsmiDeleteResultPart = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiDeleteResultParts = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiTools = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSettings = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiQuery = new System.Windows.Forms.ToolStripMenuItem();
@@ -395,7 +400,9 @@
             // 
             this.tsmiExport.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmiExportToCalculix,
-            this.tsmiExportToAbaqus});
+            this.tsmiExportToAbaqus,
+            this.tsmiExportToStep,
+            this.tsmiExportToBrep});
             this.tsmiExport.Image = ((System.Drawing.Image)(resources.GetObject("tsmiExport.Image")));
             this.tsmiExport.Name = "tsmiExport";
             this.tsmiExport.Size = new System.Drawing.Size(140, 22);
@@ -414,6 +421,20 @@
             this.tsmiExportToAbaqus.Size = new System.Drawing.Size(144, 22);
             this.tsmiExportToAbaqus.Text = "Abaqus *.inp";
             this.tsmiExportToAbaqus.Click += new System.EventHandler(this.tsmiExportToAbaqus_Click);
+            // 
+            // tsmiExportToStep
+            // 
+            this.tsmiExportToStep.Name = "tsmiExportToStep";
+            this.tsmiExportToStep.Size = new System.Drawing.Size(144, 22);
+            this.tsmiExportToStep.Text = "Step *.stp";
+            this.tsmiExportToStep.Click += new System.EventHandler(this.tsmiExportToStep_Click);
+            // 
+            // tsmiExportToBrep
+            // 
+            this.tsmiExportToBrep.Name = "tsmiExportToBrep";
+            this.tsmiExportToBrep.Size = new System.Drawing.Size(144, 22);
+            this.tsmiExportToBrep.Text = "Brep *.brep";
+            this.tsmiExportToBrep.Click += new System.EventHandler(this.tsmiExportToBrep_Click);
             // 
             // tsmiDividerFile3
             // 
@@ -739,13 +760,14 @@
             this.tsmiGeometryPart.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmiEditGeometryPart,
             this.tsmiDividerGeomPart1,
-            this.tsmiCopyGeometryPartToResults,
+            this.tsmiCopyGeometryPartsToResults,
             this.tsmiDividerGeomPart2,
-            this.tsmiHideGeometryPart,
-            this.tsmiShowGeometryPart,
-            this.tsmiSetTransparencyForGeometryPart,
+            this.tsmiHideGeometryParts,
+            this.tsmiShowGeometryParts,
+            this.tsmiShowOnlyGeometryParts,
+            this.tsmiSetTransparencyForGeometryParts,
             this.tsmiDividerGeomPart3,
-            this.tsmiDeleteGeometryPart});
+            this.tsmiDeleteGeometryParts});
             this.tsmiGeometryPart.Name = "tsmiGeometryPart";
             this.tsmiGeometryPart.Size = new System.Drawing.Size(194, 22);
             this.tsmiGeometryPart.Text = "Part";
@@ -762,52 +784,60 @@
             this.tsmiDividerGeomPart1.Name = "tsmiDividerGeomPart1";
             this.tsmiDividerGeomPart1.Size = new System.Drawing.Size(204, 6);
             // 
-            // tsmiCopyGeometryPartToResults
+            // tsmiCopyGeometryPartsToResults
             // 
-            this.tsmiCopyGeometryPartToResults.Name = "tsmiCopyGeometryPartToResults";
-            this.tsmiCopyGeometryPartToResults.Size = new System.Drawing.Size(207, 22);
-            this.tsmiCopyGeometryPartToResults.Text = "Copy geometry to results";
-            this.tsmiCopyGeometryPartToResults.Click += new System.EventHandler(this.tsmiCopyGeometryPartToResults_Click);
+            this.tsmiCopyGeometryPartsToResults.Name = "tsmiCopyGeometryPartsToResults";
+            this.tsmiCopyGeometryPartsToResults.Size = new System.Drawing.Size(207, 22);
+            this.tsmiCopyGeometryPartsToResults.Text = "Copy geometry to results";
+            this.tsmiCopyGeometryPartsToResults.Click += new System.EventHandler(this.tsmiCopyGeometryPartsToResults_Click);
             // 
             // tsmiDividerGeomPart2
             // 
             this.tsmiDividerGeomPart2.Name = "tsmiDividerGeomPart2";
             this.tsmiDividerGeomPart2.Size = new System.Drawing.Size(204, 6);
             // 
-            // tsmiHideGeometryPart
+            // tsmiHideGeometryParts
             // 
-            this.tsmiHideGeometryPart.Image = global::PrePoMax.Properties.Resources.Hide;
-            this.tsmiHideGeometryPart.Name = "tsmiHideGeometryPart";
-            this.tsmiHideGeometryPart.Size = new System.Drawing.Size(207, 22);
-            this.tsmiHideGeometryPart.Text = "Hide";
-            this.tsmiHideGeometryPart.Click += new System.EventHandler(this.tsmiHideGeometryPart_Click);
+            this.tsmiHideGeometryParts.Image = global::PrePoMax.Properties.Resources.Hide;
+            this.tsmiHideGeometryParts.Name = "tsmiHideGeometryParts";
+            this.tsmiHideGeometryParts.Size = new System.Drawing.Size(207, 22);
+            this.tsmiHideGeometryParts.Text = "Hide";
+            this.tsmiHideGeometryParts.Click += new System.EventHandler(this.tsmiHideGeometryParts_Click);
             // 
-            // tsmiShowGeometryPart
+            // tsmiShowGeometryParts
             // 
-            this.tsmiShowGeometryPart.Image = global::PrePoMax.Properties.Resources.Show;
-            this.tsmiShowGeometryPart.Name = "tsmiShowGeometryPart";
-            this.tsmiShowGeometryPart.Size = new System.Drawing.Size(207, 22);
-            this.tsmiShowGeometryPart.Text = "Show";
-            this.tsmiShowGeometryPart.Click += new System.EventHandler(this.tsmiShowGeometryPart_Click);
+            this.tsmiShowGeometryParts.Image = global::PrePoMax.Properties.Resources.Show;
+            this.tsmiShowGeometryParts.Name = "tsmiShowGeometryParts";
+            this.tsmiShowGeometryParts.Size = new System.Drawing.Size(207, 22);
+            this.tsmiShowGeometryParts.Text = "Show";
+            this.tsmiShowGeometryParts.Click += new System.EventHandler(this.tsmiShowGeometryParts_Click);
             // 
-            // tsmiSetTransparencyForGeometryPart
+            // tsmiShowOnlyGeometryParts
             // 
-            this.tsmiSetTransparencyForGeometryPart.Name = "tsmiSetTransparencyForGeometryPart";
-            this.tsmiSetTransparencyForGeometryPart.Size = new System.Drawing.Size(207, 22);
-            this.tsmiSetTransparencyForGeometryPart.Text = "Set transparency";
-            this.tsmiSetTransparencyForGeometryPart.Click += new System.EventHandler(this.tsmiSetTransparencyForGeometryPart_Click);
+            this.tsmiShowOnlyGeometryParts.Image = global::PrePoMax.Properties.Resources.Show;
+            this.tsmiShowOnlyGeometryParts.Name = "tsmiShowOnlyGeometryParts";
+            this.tsmiShowOnlyGeometryParts.Size = new System.Drawing.Size(207, 22);
+            this.tsmiShowOnlyGeometryParts.Text = "Show only";
+            this.tsmiShowOnlyGeometryParts.Click += new System.EventHandler(this.tsmiShowOnlyGeometryParts_Click);
+            // 
+            // tsmiSetTransparencyForGeometryParts
+            // 
+            this.tsmiSetTransparencyForGeometryParts.Name = "tsmiSetTransparencyForGeometryParts";
+            this.tsmiSetTransparencyForGeometryParts.Size = new System.Drawing.Size(207, 22);
+            this.tsmiSetTransparencyForGeometryParts.Text = "Set transparency";
+            this.tsmiSetTransparencyForGeometryParts.Click += new System.EventHandler(this.tsmiSetTransparencyForGeometryParts_Click);
             // 
             // tsmiDividerGeomPart3
             // 
             this.tsmiDividerGeomPart3.Name = "tsmiDividerGeomPart3";
             this.tsmiDividerGeomPart3.Size = new System.Drawing.Size(204, 6);
             // 
-            // tsmiDeleteGeometryPart
+            // tsmiDeleteGeometryParts
             // 
-            this.tsmiDeleteGeometryPart.Name = "tsmiDeleteGeometryPart";
-            this.tsmiDeleteGeometryPart.Size = new System.Drawing.Size(207, 22);
-            this.tsmiDeleteGeometryPart.Text = "Delete";
-            this.tsmiDeleteGeometryPart.Click += new System.EventHandler(this.tsmiDeleteGeometryPart_Click);
+            this.tsmiDeleteGeometryParts.Name = "tsmiDeleteGeometryParts";
+            this.tsmiDeleteGeometryParts.Size = new System.Drawing.Size(207, 22);
+            this.tsmiDeleteGeometryParts.Text = "Delete";
+            this.tsmiDeleteGeometryParts.Click += new System.EventHandler(this.tsmiDeleteGeometryParts_Click);
             // 
             // tsmiDividerGeometry1
             // 
@@ -952,14 +982,15 @@
             // 
             this.tsmiPart.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmiEditPart,
-            this.tsmiTransformPart,
-            this.tsmiMergePart,
+            this.tsmiTransformParts,
+            this.tsmiMergeParts,
             this.tsmiDividerPart2,
-            this.tsmiHidePart,
-            this.tsmiShowPart,
-            this.tsmiSetTransparencyForPart,
+            this.tsmiHideParts,
+            this.tsmiShowParts,
+            this.tsmiShowOnlyParts,
+            this.tsmiSetTransparencyForParts,
             this.tsmiDividerPart3,
-            this.tsmiDeletePart});
+            this.tsmiDeleteParts});
             this.tsmiPart.Image = ((System.Drawing.Image)(resources.GetObject("tsmiPart.Image")));
             this.tsmiPart.Name = "tsmiPart";
             this.tsmiPart.Size = new System.Drawing.Size(193, 22);
@@ -968,87 +999,95 @@
             // tsmiEditPart
             // 
             this.tsmiEditPart.Name = "tsmiEditPart";
-            this.tsmiEditPart.Size = new System.Drawing.Size(161, 22);
+            this.tsmiEditPart.Size = new System.Drawing.Size(180, 22);
             this.tsmiEditPart.Text = "Edit";
             this.tsmiEditPart.Click += new System.EventHandler(this.tsmiEditPart_Click);
             // 
-            // tsmiTransformPart
+            // tsmiTransformParts
             // 
-            this.tsmiTransformPart.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsmiTranslatePart,
-            this.tsmiScalePart,
-            this.tsmiRotatePart});
-            this.tsmiTransformPart.Name = "tsmiTransformPart";
-            this.tsmiTransformPart.Size = new System.Drawing.Size(161, 22);
-            this.tsmiTransformPart.Text = "Transform";
+            this.tsmiTransformParts.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsmiTranslateParts,
+            this.tsmiScaleParts,
+            this.tsmiRotateParts});
+            this.tsmiTransformParts.Name = "tsmiTransformParts";
+            this.tsmiTransformParts.Size = new System.Drawing.Size(180, 22);
+            this.tsmiTransformParts.Text = "Transform";
             // 
-            // tsmiTranslatePart
+            // tsmiTranslateParts
             // 
-            this.tsmiTranslatePart.Name = "tsmiTranslatePart";
-            this.tsmiTranslatePart.Size = new System.Drawing.Size(120, 22);
-            this.tsmiTranslatePart.Text = "Translate";
-            this.tsmiTranslatePart.Click += new System.EventHandler(this.tsmiTranslatePart_Click);
+            this.tsmiTranslateParts.Name = "tsmiTranslateParts";
+            this.tsmiTranslateParts.Size = new System.Drawing.Size(180, 22);
+            this.tsmiTranslateParts.Text = "Translate";
+            this.tsmiTranslateParts.Click += new System.EventHandler(this.tsmiTranslateParts_Click);
             // 
-            // tsmiScalePart
+            // tsmiScaleParts
             // 
-            this.tsmiScalePart.Name = "tsmiScalePart";
-            this.tsmiScalePart.Size = new System.Drawing.Size(120, 22);
-            this.tsmiScalePart.Text = "Scale";
-            this.tsmiScalePart.Click += new System.EventHandler(this.tsmiScalePart_Click);
+            this.tsmiScaleParts.Name = "tsmiScaleParts";
+            this.tsmiScaleParts.Size = new System.Drawing.Size(180, 22);
+            this.tsmiScaleParts.Text = "Scale";
+            this.tsmiScaleParts.Click += new System.EventHandler(this.tsmiScaleParts_Click);
             // 
-            // tsmiRotatePart
+            // tsmiRotateParts
             // 
-            this.tsmiRotatePart.Name = "tsmiRotatePart";
-            this.tsmiRotatePart.Size = new System.Drawing.Size(120, 22);
-            this.tsmiRotatePart.Text = "Rotate";
-            this.tsmiRotatePart.Click += new System.EventHandler(this.tsmiRotatePart_Click);
+            this.tsmiRotateParts.Name = "tsmiRotateParts";
+            this.tsmiRotateParts.Size = new System.Drawing.Size(180, 22);
+            this.tsmiRotateParts.Text = "Rotate";
+            this.tsmiRotateParts.Click += new System.EventHandler(this.tsmiRotateParts_Click);
             // 
-            // tsmiMergePart
+            // tsmiMergeParts
             // 
-            this.tsmiMergePart.Name = "tsmiMergePart";
-            this.tsmiMergePart.Size = new System.Drawing.Size(161, 22);
-            this.tsmiMergePart.Text = "Merge";
-            this.tsmiMergePart.Click += new System.EventHandler(this.tsmiMergePart_Click);
+            this.tsmiMergeParts.Name = "tsmiMergeParts";
+            this.tsmiMergeParts.Size = new System.Drawing.Size(180, 22);
+            this.tsmiMergeParts.Text = "Merge";
+            this.tsmiMergeParts.Click += new System.EventHandler(this.tsmiMergeParts_Click);
             // 
             // tsmiDividerPart2
             // 
             this.tsmiDividerPart2.Name = "tsmiDividerPart2";
-            this.tsmiDividerPart2.Size = new System.Drawing.Size(158, 6);
+            this.tsmiDividerPart2.Size = new System.Drawing.Size(177, 6);
             // 
-            // tsmiHidePart
+            // tsmiHideParts
             // 
-            this.tsmiHidePart.Image = global::PrePoMax.Properties.Resources.Hide;
-            this.tsmiHidePart.Name = "tsmiHidePart";
-            this.tsmiHidePart.Size = new System.Drawing.Size(161, 22);
-            this.tsmiHidePart.Text = "Hide";
-            this.tsmiHidePart.Click += new System.EventHandler(this.tsmiHidePart_Click);
+            this.tsmiHideParts.Image = global::PrePoMax.Properties.Resources.Hide;
+            this.tsmiHideParts.Name = "tsmiHideParts";
+            this.tsmiHideParts.Size = new System.Drawing.Size(180, 22);
+            this.tsmiHideParts.Text = "Hide";
+            this.tsmiHideParts.Click += new System.EventHandler(this.tsmiHideParts_Click);
             // 
-            // tsmiShowPart
+            // tsmiShowParts
             // 
-            this.tsmiShowPart.Image = global::PrePoMax.Properties.Resources.Show;
-            this.tsmiShowPart.Name = "tsmiShowPart";
-            this.tsmiShowPart.Size = new System.Drawing.Size(161, 22);
-            this.tsmiShowPart.Text = "Show";
-            this.tsmiShowPart.Click += new System.EventHandler(this.tsmiShowPart_Click);
+            this.tsmiShowParts.Image = global::PrePoMax.Properties.Resources.Show;
+            this.tsmiShowParts.Name = "tsmiShowParts";
+            this.tsmiShowParts.Size = new System.Drawing.Size(180, 22);
+            this.tsmiShowParts.Text = "Show";
+            this.tsmiShowParts.Click += new System.EventHandler(this.tsmiShowParts_Click);
             // 
-            // tsmiSetTransparencyForPart
+            // tsmiShowOnlyParts
             // 
-            this.tsmiSetTransparencyForPart.Name = "tsmiSetTransparencyForPart";
-            this.tsmiSetTransparencyForPart.Size = new System.Drawing.Size(161, 22);
-            this.tsmiSetTransparencyForPart.Text = "Set transparency";
-            this.tsmiSetTransparencyForPart.Click += new System.EventHandler(this.tsmiSetTransparencyForPart_Click);
+            this.tsmiShowOnlyParts.Image = global::PrePoMax.Properties.Resources.Show;
+            this.tsmiShowOnlyParts.Name = "tsmiShowOnlyParts";
+            this.tsmiShowOnlyParts.Size = new System.Drawing.Size(180, 22);
+            this.tsmiShowOnlyParts.Text = "Show only";
+            this.tsmiShowOnlyParts.Click += new System.EventHandler(this.tsmiShowOnlyParts_Click);
+            // 
+            // tsmiSetTransparencyForParts
+            // 
+            this.tsmiSetTransparencyForParts.Name = "tsmiSetTransparencyForParts";
+            this.tsmiSetTransparencyForParts.Size = new System.Drawing.Size(180, 22);
+            this.tsmiSetTransparencyForParts.Text = "Set transparency";
+            this.tsmiSetTransparencyForParts.Click += new System.EventHandler(this.tsmiSetTransparencyForParts_Click);
             // 
             // tsmiDividerPart3
             // 
             this.tsmiDividerPart3.Name = "tsmiDividerPart3";
-            this.tsmiDividerPart3.Size = new System.Drawing.Size(158, 6);
+            this.tsmiDividerPart3.Size = new System.Drawing.Size(177, 6);
             // 
-            // tsmiDeletePart
+            // tsmiDeleteParts
             // 
-            this.tsmiDeletePart.Name = "tsmiDeletePart";
-            this.tsmiDeletePart.Size = new System.Drawing.Size(161, 22);
-            this.tsmiDeletePart.Text = "Delete";
-            this.tsmiDeletePart.Click += new System.EventHandler(this.tsmiDeletePart_Click);
+            this.tsmiDeleteParts.Name = "tsmiDeleteParts";
+            this.tsmiDeleteParts.Size = new System.Drawing.Size(180, 22);
+            this.tsmiDeleteParts.Text = "Delete";
+            this.tsmiDeleteParts.Click += new System.EventHandler(this.tsmiDeleteParts_Click);
             // 
             // tsmiNodeSet
             // 
@@ -1713,64 +1752,73 @@
             this.tsmiResultPart.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmiEditResultPart,
             this.tsmiDividerResultPart1,
-            this.tsmiHideResultPart,
-            this.tsmiShowResultPart,
-            this.tsmiSetTransparencyForResultPart,
+            this.tsmiHideResultParts,
+            this.tsmiShowResultParts,
+            this.tsmiShowOnlyResultParts,
+            this.tsmiSetTransparencyForResultParts,
             this.tsmiDividerResultPart2,
             this.tsmiColorContoursOff,
             this.tsmiColorContoursOn,
             this.tsmiDividerResultPart3,
-            this.tsmiDeleteResultPart});
+            this.tsmiDeleteResultParts});
             this.tsmiResultPart.Image = ((System.Drawing.Image)(resources.GetObject("tsmiResultPart.Image")));
             this.tsmiResultPart.Name = "tsmiResultPart";
-            this.tsmiResultPart.Size = new System.Drawing.Size(95, 22);
+            this.tsmiResultPart.Size = new System.Drawing.Size(180, 22);
             this.tsmiResultPart.Text = "Part";
             // 
             // tsmiEditResultPart
             // 
             this.tsmiEditResultPart.Name = "tsmiEditResultPart";
-            this.tsmiEditResultPart.Size = new System.Drawing.Size(171, 22);
+            this.tsmiEditResultPart.Size = new System.Drawing.Size(180, 22);
             this.tsmiEditResultPart.Text = "Edit";
-            this.tsmiEditResultPart.Click += new System.EventHandler(this.tsmiEditResultPart_Click);
+            this.tsmiEditResultPart.Click += new System.EventHandler(this.tsmiEditResultParts_Click);
             // 
             // tsmiDividerResultPart1
             // 
             this.tsmiDividerResultPart1.Name = "tsmiDividerResultPart1";
-            this.tsmiDividerResultPart1.Size = new System.Drawing.Size(168, 6);
+            this.tsmiDividerResultPart1.Size = new System.Drawing.Size(177, 6);
             // 
-            // tsmiHideResultPart
+            // tsmiHideResultParts
             // 
-            this.tsmiHideResultPart.Image = global::PrePoMax.Properties.Resources.Hide;
-            this.tsmiHideResultPart.Name = "tsmiHideResultPart";
-            this.tsmiHideResultPart.Size = new System.Drawing.Size(171, 22);
-            this.tsmiHideResultPart.Text = "Hide";
-            this.tsmiHideResultPart.Click += new System.EventHandler(this.tsmiHideResultPart_Click);
+            this.tsmiHideResultParts.Image = global::PrePoMax.Properties.Resources.Hide;
+            this.tsmiHideResultParts.Name = "tsmiHideResultParts";
+            this.tsmiHideResultParts.Size = new System.Drawing.Size(180, 22);
+            this.tsmiHideResultParts.Text = "Hide";
+            this.tsmiHideResultParts.Click += new System.EventHandler(this.tsmiHideResultParts_Click);
             // 
-            // tsmiShowResultPart
+            // tsmiShowResultParts
             // 
-            this.tsmiShowResultPart.Image = global::PrePoMax.Properties.Resources.Show;
-            this.tsmiShowResultPart.Name = "tsmiShowResultPart";
-            this.tsmiShowResultPart.Size = new System.Drawing.Size(171, 22);
-            this.tsmiShowResultPart.Text = "Show";
-            this.tsmiShowResultPart.Click += new System.EventHandler(this.tsmiShowResultPart_Click);
+            this.tsmiShowResultParts.Image = global::PrePoMax.Properties.Resources.Show;
+            this.tsmiShowResultParts.Name = "tsmiShowResultParts";
+            this.tsmiShowResultParts.Size = new System.Drawing.Size(180, 22);
+            this.tsmiShowResultParts.Text = "Show";
+            this.tsmiShowResultParts.Click += new System.EventHandler(this.tsmiShowResultParts_Click);
             // 
-            // tsmiSetTransparencyForResultPart
+            // tsmiShowOnlyResultParts
             // 
-            this.tsmiSetTransparencyForResultPart.Name = "tsmiSetTransparencyForResultPart";
-            this.tsmiSetTransparencyForResultPart.Size = new System.Drawing.Size(171, 22);
-            this.tsmiSetTransparencyForResultPart.Text = "Set transparency";
-            this.tsmiSetTransparencyForResultPart.Click += new System.EventHandler(this.tsmiSetTransparencyForResultPart_Click);
+            this.tsmiShowOnlyResultParts.Image = global::PrePoMax.Properties.Resources.Show;
+            this.tsmiShowOnlyResultParts.Name = "tsmiShowOnlyResultParts";
+            this.tsmiShowOnlyResultParts.Size = new System.Drawing.Size(180, 22);
+            this.tsmiShowOnlyResultParts.Text = "Show only";
+            this.tsmiShowOnlyResultParts.Click += new System.EventHandler(this.tsmiShowOnlyResultParts_Click);
+            // 
+            // tsmiSetTransparencyForResultParts
+            // 
+            this.tsmiSetTransparencyForResultParts.Name = "tsmiSetTransparencyForResultParts";
+            this.tsmiSetTransparencyForResultParts.Size = new System.Drawing.Size(180, 22);
+            this.tsmiSetTransparencyForResultParts.Text = "Set transparency";
+            this.tsmiSetTransparencyForResultParts.Click += new System.EventHandler(this.tsmiSetTransparencyForResultParts_Click);
             // 
             // tsmiDividerResultPart2
             // 
             this.tsmiDividerResultPart2.Name = "tsmiDividerResultPart2";
-            this.tsmiDividerResultPart2.Size = new System.Drawing.Size(168, 6);
+            this.tsmiDividerResultPart2.Size = new System.Drawing.Size(177, 6);
             // 
             // tsmiColorContoursOff
             // 
             this.tsmiColorContoursOff.Image = global::PrePoMax.Properties.Resources.Deformed;
             this.tsmiColorContoursOff.Name = "tsmiColorContoursOff";
-            this.tsmiColorContoursOff.Size = new System.Drawing.Size(171, 22);
+            this.tsmiColorContoursOff.Size = new System.Drawing.Size(180, 22);
             this.tsmiColorContoursOff.Text = "Color contours off";
             this.tsmiColorContoursOff.Click += new System.EventHandler(this.tsmiColorContoursOff_Click);
             // 
@@ -1778,21 +1826,21 @@
             // 
             this.tsmiColorContoursOn.Image = global::PrePoMax.Properties.Resources.Color_contours;
             this.tsmiColorContoursOn.Name = "tsmiColorContoursOn";
-            this.tsmiColorContoursOn.Size = new System.Drawing.Size(171, 22);
+            this.tsmiColorContoursOn.Size = new System.Drawing.Size(180, 22);
             this.tsmiColorContoursOn.Text = "Color contours on";
             this.tsmiColorContoursOn.Click += new System.EventHandler(this.tsmiColorContoursOn_Click);
             // 
             // tsmiDividerResultPart3
             // 
             this.tsmiDividerResultPart3.Name = "tsmiDividerResultPart3";
-            this.tsmiDividerResultPart3.Size = new System.Drawing.Size(168, 6);
+            this.tsmiDividerResultPart3.Size = new System.Drawing.Size(177, 6);
             // 
-            // tsmiDeleteResultPart
+            // tsmiDeleteResultParts
             // 
-            this.tsmiDeleteResultPart.Name = "tsmiDeleteResultPart";
-            this.tsmiDeleteResultPart.Size = new System.Drawing.Size(171, 22);
-            this.tsmiDeleteResultPart.Text = "Delete";
-            this.tsmiDeleteResultPart.Click += new System.EventHandler(this.tsmiDeleteResultPart_Click);
+            this.tsmiDeleteResultParts.Name = "tsmiDeleteResultParts";
+            this.tsmiDeleteResultParts.Size = new System.Drawing.Size(180, 22);
+            this.tsmiDeleteResultParts.Text = "Delete";
+            this.tsmiDeleteResultParts.Click += new System.EventHandler(this.tsmiDeleteResultParts_Click);
             // 
             // tsmiTools
             // 
@@ -2519,7 +2567,7 @@
         private System.Windows.Forms.SplitContainer splitContainer1;
         
         private System.Windows.Forms.ToolStripMenuItem tsmiPart;
-        private System.Windows.Forms.ToolStripMenuItem tsmiDeletePart;
+        private System.Windows.Forms.ToolStripMenuItem tsmiDeleteParts;
         private System.Windows.Forms.ToolStripButton tsbImport;
         private System.Windows.Forms.ToolStripMenuItem tsmiStep;
         private System.Windows.Forms.ToolStripSeparator tsmiDividerFile2;
@@ -2623,8 +2671,8 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiDeleteElementSet;
         private System.Windows.Forms.ToolStripMenuItem tsmiRegenerateUsingOtherFiles;
         private System.Windows.Forms.ToolStripProgressBar tspbProgress;
-        private System.Windows.Forms.ToolStripMenuItem tsmiHidePart;
-        private System.Windows.Forms.ToolStripMenuItem tsmiShowPart;
+        private System.Windows.Forms.ToolStripMenuItem tsmiHideParts;
+        private System.Windows.Forms.ToolStripMenuItem tsmiShowParts;
         private System.Windows.Forms.ToolStripSeparator tsmiDividerPart3;
         private System.Windows.Forms.ToolStripMenuItem tsmiEditCalculiXKeywords;
         private System.Windows.Forms.ToolStripLabel tslStepIncrement;
@@ -2636,9 +2684,9 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiGeometry;
         private System.Windows.Forms.ToolStripMenuItem tsmiGeometryPart;
         private System.Windows.Forms.ToolStripMenuItem tsmiEditGeometryPart;
-        private System.Windows.Forms.ToolStripMenuItem tsmiHideGeometryPart;
-        private System.Windows.Forms.ToolStripMenuItem tsmiShowGeometryPart;
-        private System.Windows.Forms.ToolStripMenuItem tsmiDeleteGeometryPart;
+        private System.Windows.Forms.ToolStripMenuItem tsmiHideGeometryParts;
+        private System.Windows.Forms.ToolStripMenuItem tsmiShowGeometryParts;
+        private System.Windows.Forms.ToolStripMenuItem tsmiDeleteGeometryParts;
         private System.Windows.Forms.ToolStripSeparator tsmiDividerGeomPart1;
         private System.Windows.Forms.ToolStripSeparator tsmiDividerGeomPart2;
         private System.Windows.Forms.ToolStripStatusLabel tsslCancel;
@@ -2660,11 +2708,11 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiResultPart;
         private System.Windows.Forms.ToolStripMenuItem tsmiEditResultPart;
         private System.Windows.Forms.ToolStripSeparator tsmiDividerResultPart1;
-        private System.Windows.Forms.ToolStripMenuItem tsmiHideResultPart;
-        private System.Windows.Forms.ToolStripMenuItem tsmiShowResultPart;
+        private System.Windows.Forms.ToolStripMenuItem tsmiHideResultParts;
+        private System.Windows.Forms.ToolStripMenuItem tsmiShowResultParts;
         private System.Windows.Forms.ToolStripSeparator tsmiDividerResultPart2;
-        private System.Windows.Forms.ToolStripMenuItem tsmiDeleteResultPart;
-        private System.Windows.Forms.ToolStripMenuItem tsmiCopyGeometryPartToResults;
+        private System.Windows.Forms.ToolStripMenuItem tsmiDeleteResultParts;
+        private System.Windows.Forms.ToolStripMenuItem tsmiCopyGeometryPartsToResults;
         private System.Windows.Forms.ToolStripSeparator tsmiDividerGeomPart3;
         private System.Windows.Forms.ToolStripSeparator tsmiDividerView2;
         private System.Windows.Forms.ToolStripMenuItem tsmiHideAllParts;
@@ -2689,7 +2737,7 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiColorContoursOn;
         private System.Windows.Forms.ToolStripSeparator tsmiDividerResultPart3;
         private System.Windows.Forms.ToolStripMenuItem tsmiMaterialLibrary;
-        private System.Windows.Forms.ToolStripMenuItem tsmiMergePart;
+        private System.Windows.Forms.ToolStripMenuItem tsmiMergeParts;
         private System.Windows.Forms.ToolStripSeparator tsmiDividerPart2;
         private System.Windows.Forms.ToolStripMenuItem tsmiConvertElementSetsToMeshParts;
         private System.Windows.Forms.ToolStripSeparator toolStripViewSeparator4;
@@ -2701,17 +2749,17 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiEditHistoryOutput;
         private System.Windows.Forms.ToolStripSeparator tsmiHistoryOutputDivider1;
         private System.Windows.Forms.ToolStripMenuItem tsmiDeleteHistoryOutput;
-        private System.Windows.Forms.ToolStripMenuItem tsmiTransformPart;
-        private System.Windows.Forms.ToolStripMenuItem tsmiTranslatePart;
-        private System.Windows.Forms.ToolStripMenuItem tsmiScalePart;
-        private System.Windows.Forms.ToolStripMenuItem tsmiRotatePart;
+        private System.Windows.Forms.ToolStripMenuItem tsmiTransformParts;
+        private System.Windows.Forms.ToolStripMenuItem tsmiTranslateParts;
+        private System.Windows.Forms.ToolStripMenuItem tsmiScaleParts;
+        private System.Windows.Forms.ToolStripMenuItem tsmiRotateParts;
         private System.Windows.Forms.ToolStripMenuItem tsmiSectionView;
         private System.Windows.Forms.ToolStripSeparator tsmiDividerView4;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripButton tsbSectionView;
-        private System.Windows.Forms.ToolStripMenuItem tsmiSetTransparencyForGeometryPart;
-        private System.Windows.Forms.ToolStripMenuItem tsmiSetTransparencyForPart;
-        private System.Windows.Forms.ToolStripMenuItem tsmiSetTransparencyForResultPart;
+        private System.Windows.Forms.ToolStripMenuItem tsmiSetTransparencyForGeometryParts;
+        private System.Windows.Forms.ToolStripMenuItem tsmiSetTransparencyForParts;
+        private System.Windows.Forms.ToolStripMenuItem tsmiSetTransparencyForResultParts;
         private System.Windows.Forms.ToolStripMenuItem tsmiTest;
         private System.Windows.Forms.Timer timerTest;
         private System.Windows.Forms.Timer timerOutput;
@@ -2725,6 +2773,11 @@
         private System.Windows.Forms.ToolStripSeparator tsmiDividerMeshRefinement1;
         private System.Windows.Forms.ToolStripMenuItem tsmiDeleteMeshRefinement;
         private System.Windows.Forms.ToolStripMenuItem tsmiCreateAndImportCompoundPart;
+        private System.Windows.Forms.ToolStripMenuItem tsmiExportToStep;
+        private System.Windows.Forms.ToolStripMenuItem tsmiExportToBrep;
+        private System.Windows.Forms.ToolStripMenuItem tsmiShowOnlyGeometryParts;
+        private System.Windows.Forms.ToolStripMenuItem tsmiShowOnlyParts;
+        private System.Windows.Forms.ToolStripMenuItem tsmiShowOnlyResultParts;
     }
 }
 

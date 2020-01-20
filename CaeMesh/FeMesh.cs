@@ -1682,14 +1682,13 @@ namespace CaeMesh
             int[] oldEdgeIds;
             int edgeCount;
             bool edgeFound;
-
-            // for each part
+            // For each part
             foreach (var partEntry in _parts)
             {
                 vis = partEntry.Value.Visualization;
-                if (vis.EdgeCellIdsByEdge == null) continue;    // for wire parts
-
-                // split edges with midpoints
+                // Skip wire parts
+                if (vis.EdgeCellIdsByEdge == null) continue;    
+                // Split edges with midpoints
                 if (SplitVizualizationEdges(vis, edgeIdNodeIds)) ComputeEdgeLengths(partEntry.Value);
 
                 edgeCount = 0;
@@ -1743,15 +1742,14 @@ namespace CaeMesh
                 HashSet<int> edgeNodeIds = new HashSet<int>();
                 HashSet<int> edgeCellHash = new HashSet<int>();
                 Dictionary<int, List<int>> edgeSplitTo = new Dictionary<int, List<int>>();
-
+                // For each edge
                 for (int i = 0; i < visualization.EdgeCellIdsByEdge.Length; i++)
                 {
-                    // create a list of nodes on the edge
+                    // Create a list of nodes on the edge
                     edgeNodeIds.Clear();
                     edgeCellIdsByEdge = visualization.EdgeCellIdsByEdge[i];
                     for (int j = 0; j < edgeCellIdsByEdge.Length; j++) edgeNodeIds.UnionWith(visualization.EdgeCells[edgeCellIdsByEdge[j]]);
-
-                    // find the edge with the same node ids
+                    // Find the edge with the same node ids
                     edgeFound = false;
                     foreach (var entry in edgeIdNodeIds)
                     {
@@ -1761,15 +1759,15 @@ namespace CaeMesh
                             break;
                         }
                     }
-
-                    // try to find all nodes of the new edge inside the existing edge
+                    // Try to find all nodes of the new edge inside the existing edge
                     if (!edgeFound)
                     {
                         int newEdgeId;
+                        edgeFound = false;
                         List<int> newEdgeIds = new List<int>();
                         foreach (var entry in edgeIdNodeIds)
                         {
-                            // chack if it is a part of the edge
+                            // Chack if it is a part of the edge
                             if (entry.Value.IsProperSubsetOf(edgeNodeIds))
                             {
                                 newEdge.Clear();
@@ -1779,26 +1777,31 @@ namespace CaeMesh
                                     edgeCell = visualization.EdgeCells[edgeCellIdsByEdge[j]];
                                     edgeCellHash.Clear();
                                     edgeCellHash.UnionWith(edgeCell);
-
-                                    // split edge to oldEdge and newEdge
-                                    if (edgeCellHash.IsProperSubsetOf(entry.Value)) oldEdge.Add(edgeCellIdsByEdge[j]);
+                                    // Split edge to oldEdge and newEdge
+                                    if (edgeCellHash.IsSubsetOf(entry.Value)) oldEdge.Add(edgeCellIdsByEdge[j]);
                                     else newEdge.Add(edgeCellIdsByEdge[j]);
                                 }
-                                // overwrite the old edge
+                                // Overwrite the old edge
                                 visualization.EdgeCellIdsByEdge[i] = oldEdge.ToArray();
-                                // add the new edge to the new edge list
+                                // Add the new edge to the new edge list
                                 newEdges.Add(newEdge.ToArray());
-                                // get the id for the new edge
+                                // Get the id for the new edge
                                 newEdgeId = visualization.EdgeCellIdsByEdge.Length + newEdges.Count - 1;
-                                // save the new id the edge was split into
+                                // Save the new id the edge was split into
                                 if (edgeSplitTo.TryGetValue(i, out newEdgeIds)) newEdgeIds.Add(newEdgeId);
                                 else edgeSplitTo.Add(i, new List<int>() { newEdgeId });
+                                //
+                                edgeFound = true;
                                 break;
                             }
                         }
+                        if (!edgeFound)
+                        {
+                            int error = 1;
+                        }
                     }
                 }
-                // add new vertices - end points of edges
+                // Add new vertices - end points of edges
                 int n1;
                 int n2;
                 HashSet<int> vertices = new HashSet<int>(visualization.VertexNodeIds);
@@ -1811,13 +1814,11 @@ namespace CaeMesh
                 }
                 visualization.VertexNodeIds = vertices.ToArray();
                 Array.Sort(visualization.VertexNodeIds);
-
-                // add new edges to the visualization
+                // Add new edges to the visualization
                 List<int[]> oldEdges = visualization.EdgeCellIdsByEdge.ToList();
                 oldEdges.AddRange(newEdges);
                 visualization.EdgeCellIdsByEdge = oldEdges.ToArray();
-
-                // add new edges to the surfaces
+                // Add new edges to the surfaces
                 HashSet<int> edgeIdsHash = new HashSet<int>();
                 Dictionary<int, HashSet<int>> surfaceIdNewEdgeIds = new Dictionary<int, HashSet<int>>();
                 int count = 0;
@@ -1845,7 +1846,7 @@ namespace CaeMesh
                 {
                     visualization.FaceEdgeIds[entry.Key] = entry.Value.ToArray();
                 }
-                // if changes were made return true in order to recompute edge lengths
+                // If changes were made return true in order to recompute edge lengths
                 return true;
             }
             return false;
@@ -2008,6 +2009,8 @@ namespace CaeMesh
         //
         public BasePart GetPartContainingElementId(int elementId)
         {
+            if (elementId < 0) return null;
+            //
             FeElement element = _elements[elementId];
             foreach (var entry in _parts)
             {
@@ -2921,10 +2924,12 @@ namespace CaeMesh
         }
         public bool GetFaceId(int elementId, int[] cellFaceGlobalNodeIds, out BasePart part, out int faceId)
         {
+            part = null;
             faceId = -1;
+            if (elementId < 0) return false;
+            //
             int partId = _elements[elementId].PartId;
             part = GetPartById(partId);
-
             // Find the picked surface cell
             int[][] cells = part.Visualization.Cells;
             int[] cellIds = part.Visualization.CellIds;
@@ -3335,7 +3340,7 @@ namespace CaeMesh
             int partEdgeId;
 
             int[][] edgeCells = GetEdgeCells(elementId, edgeNodeIds, out part, out partEdgeId);
-            partId = part.PartId;            
+            if (part != null) partId = part.PartId;            
 
             if (edgeCells != null)
             {
@@ -5251,7 +5256,8 @@ namespace CaeMesh
                 // for each edge
                 for (int i = 0; i < visualization.EdgeLengths.Length; i++)
                 {
-                    if (visualization.EdgeLengths[i] < min) min = visualization.EdgeLengths[i];
+                    if (visualization.EdgeLengths[i] < min) 
+                        min = visualization.EdgeLengths[i];
                 }
             }
             return min;

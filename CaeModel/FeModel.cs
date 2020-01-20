@@ -433,7 +433,9 @@ namespace CaeModel
             if (mesh.Parts.Count > 1)
                 throw new Exception("The geometry contains more than one part.");
             else if (mesh.Parts.Count <= 0)
-                throw new Exception("The geometry contains less than one part.");
+            {
+                //throw new Exception("The geometry contains less than one part."); 
+            }
             else
             {
                 if (mesh.Parts.GetValueByIndex(0) is GeometryPart gp)

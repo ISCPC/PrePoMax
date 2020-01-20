@@ -11,13 +11,15 @@ namespace CaeGlobals
     {
         // Variables                                                                                                                
         private List<SelectionNode> _nodes;
-        [NonSerialized] private Dictionary<SelectionNode, int[]> _nodeIds;  // for speed optimization: keep current ids; do not copy
-        private vtkSelectItem _selectItem;                                  // select node or element
+        private vtkSelectItem _selectItem;
+        // Temporary storage for speed optimization: keep current ids; do not copy
+        [NonSerialized] private Dictionary<SelectionNode, int[]> _nodeIds;  
 
 
         // Properties                                                                                                               
         public vtkSelectItem SelectItem { get { return _selectItem; } set { _selectItem = value; } }
         public List<SelectionNode> Nodes { get { return _nodes; } set { _nodes = value; } }
+
 
         // Constructors                                                                                                             
         public Selection()
@@ -66,13 +68,13 @@ namespace CaeGlobals
             _nodeIds = null;
             //_selectItem = vtkSelectItem.None; - must not be used!!!
         }
-
+        //
         public bool IsGeometryBased()
         {
             foreach (var node in _nodes)
             {
                 if (!((node is SelectionNodeIds sni && sni.GeometryIds) || 
-                      (node is SelectionNodeMouse snm && snm.GeometryIds))) return false;
+                      (node is SelectionNodeMouse snm && snm.IsGeometryBased))) return false;
             }
             return true;
         }

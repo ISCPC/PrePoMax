@@ -32,7 +32,6 @@ namespace vtkControl
         private bool _drawOnGeometry;
         
 
-
         // Properties                                                                                                               
         public string Name { get { return _name; } set { _name = value; } }
         public vtkMaxExtreemeNode MinNode { get { return _minNode; } set { _minNode = value; } }
@@ -84,7 +83,7 @@ namespace vtkControl
         }
         public bool ColorContours { get { return _colorContours; } set { _colorContours = value; } }
         public bool SectionViewPossible { get { return _sectionViewPossible; } set { _sectionViewPossible = value; } }
-        public bool DrawOnGeometry { get { return _drawOnGeometry; } }
+        public bool DrawOnGeometry { get { return _drawOnGeometry; } set { _drawOnGeometry = value; } }
 
 
         // Constructors                                                                                                             

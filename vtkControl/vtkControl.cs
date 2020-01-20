@@ -72,11 +72,13 @@ namespace vtkControl
         private vtkPointPicker _pointPicker;
         private vtkCellPicker _cellPicker;
         private vtkRenderedAreaPicker _areaPicker;
-        
+        //
         private vtkMaxActor _mouseSelectionActorCurrent;
         private HashSet<int> _mouseSelectionAllIds;
         private int[] _mouseSelectionCurrentIds;
-
+        //
+        private HashSet<string> _selectableActorsFilter;
+        //
         private object myLock = new object();
 
 
@@ -175,6 +177,11 @@ namespace vtkControl
         {
             _animationAcceleration = animationAcceleration;
         } 
+        public void SetSelectableActorsFilter(string[] selectableActors)
+        {
+            if (selectableActors != null) _selectableActorsFilter = new HashSet<string>(selectableActors);
+            else _selectableActorsFilter = null;
+        }
 
 
         // Callbacks                                                                                                                
@@ -240,6 +247,8 @@ namespace vtkControl
             _mouseSelectionActorCurrent = null;
             _mouseSelectionCurrentIds = null;
             _mouseSelectionAllIds = new HashSet<int>();
+            //
+            _selectableActorsFilter = null;
         }
 
         protected override void OnEnabledChanged(EventArgs e)
@@ -297,7 +306,7 @@ namespace vtkControl
             _renderWindow.SetCurrentCursor(0);  // Default
         }
 
-        private void scalarBarWidget_MouseDoubleClick()
+        private void widget_ShowPostSettings()
         {
             Controller_ShowPostSettings?.Invoke();
         }
@@ -638,6 +647,12 @@ namespace vtkControl
         private void GetClosestEdgeCell(double[] pickedPoint, vtkMaxActorData cellFaceData, out int[] nodeIds,
                                         out double[][] nodeCoor, out int[] edgeCell, out int edgeCelltype)
         {
+            nodeIds = null;
+            nodeCoor = null;
+            edgeCell = null;
+            edgeCelltype = -1;
+            if (cellFaceData == null) return;
+            //
             double[][] allNodeCoor = cellFaceData.Geometry.Nodes.Coor;
             int[] allNodeIds = cellFaceData.Geometry.Nodes.Ids;
 
@@ -942,6 +957,7 @@ namespace vtkControl
                 _mouseSelectionActorCurrent.Geometry.SetProperty(Globals.CurrentMouseSelectionProperty);
             }
         }
+        
         //private void PickByGeometrySurfaceAngle(out vtkActor pickedActor, int x, int y)
         //{
         //    double[] pickedPoint = GetPickPoint(out pickedActor, x, y);
@@ -1139,7 +1155,14 @@ namespace vtkControl
             vtkCellLocator locator;
 
             // Make all actors visible
-            foreach (var entry in _actors) entry.Value.Geometry.GetProperty().SetOpacity(1);
+            double opacity;
+            foreach (var entry in _actors)
+            {
+                if (_selectableActorsFilter != null && !_selectableActorsFilter.Contains(entry.Value.Name)) opacity = 0;
+                else opacity = 1;
+                //
+                entry.Value.Geometry.GetProperty().SetOpacity(opacity);
+            }
             // Pick actor by hardware rendering - render the sceene before Pick
             _renderer.Render();
             _propPicker.Pick(x, y, 0, _renderer);
@@ -1213,12 +1236,12 @@ namespace vtkControl
             // a 3D point is saved in history and used for regenerate
             cell = null;
             cellLocator = null;
-
+            //
             IntPtr x = System.Runtime.InteropServices.Marshal.AllocHGlobal(3 * 8);
             Marshal.Copy(point, 0, x, 3);
-
+            //
             IntPtr closestPoint = System.Runtime.InteropServices.Marshal.AllocHGlobal(3 * 8);
-
+            //
             int globalCellId = -1;
             double minDist = double.MaxValue;
             long localCellId = -1;
@@ -1226,13 +1249,14 @@ namespace vtkControl
             double distance2 = -1;
             double[] pointOut = new double[3];
             vtkCellLocator locator;
-
+            //
             foreach (var entry in _actors)
             {
                 // Skip invisible actors
                 if (entry.Value.Geometry.GetVisibility() == 0) continue;
-                //if (entry.Value.Geometry.GetProperty().GetOpacity() == 0) continue;
-
+                // Skip filtered actors
+                if (_selectableActorsFilter != null && !_selectableActorsFilter.Contains(entry.Value.Name)) continue;
+                //
                 locator = entry.Value.CellLocator;
                 if (locator != null)
                 {
@@ -1243,23 +1267,23 @@ namespace vtkControl
                         cellLocator = locator;
                         cell = locator.GetDataSet().GetCell(localCellId);
                         globalCellId = (int)locator.GetDataSet().GetCellData().GetGlobalIds().GetTuple1(localCellId);
-
+                        //
                         Marshal.Copy(closestPoint, pointOut, 0, 3);
                     }
                 }
             }
-
+            //
             Marshal.FreeHGlobal(x);
             Marshal.FreeHGlobal(closestPoint);
-
+            //
             double maxErrorDistance2;
             if (_renderingOn)   // user mouse interaction
                 maxErrorDistance2 = Math.Pow(vtkInteractorStyleControl.DisplayToWorldScale(_renderer, 7), 2);
             else                // regeneration - the distance to the closest item if items changed
                 maxErrorDistance2 = double.MaxValue;
-
-            if (minDist > maxErrorDistance2)
-                return -1;
+            //
+            //System.Diagnostics.Debug.WriteLine(DateTime.Now.ToLongTimeString() + " Min distance: " + minDist);
+            if (minDist > maxErrorDistance2) return -1;
             else
             {
                 point = pointOut;
@@ -1331,8 +1355,8 @@ namespace vtkControl
             }
             return coor;
         }
-        public void GetGeometryPickProperties(double[] point, out int elementId, 
-                                              out int[] edgeNodeIds, out int[] cellFaceNodeIds)
+        public void GetGeometryPickProperties(double[] point, out int elementId, out int[] edgeNodeIds, 
+                                              out int[] cellFaceNodeIds)
         {
             vtkCellLocator cellLocator;
             vtkCell cell;
@@ -1709,6 +1733,7 @@ namespace vtkControl
             _statusBlockWidget.GetBackgroundProperty().SetColor(1, 1, 1);
             _statusBlockWidget.BackgroundVisibilityOff();
             _statusBlockWidget.VisibilityOff();
+            _statusBlockWidget.MouseDoubleClick += widget_ShowPostSettings;
 
 
             // Max widget
@@ -1756,7 +1781,6 @@ namespace vtkControl
         {
             // Lookup table
             _lookupTable = vtkLookupTable.New();
-
             // Scalar bar
             _scalarBarWidget = new vtkMaxScalarBarWidget();
             _scalarBarWidget.SetInteractor(_renderer, _renderWindowInteractor);
@@ -1766,8 +1790,8 @@ namespace vtkControl
             _scalarBarWidget.SetLabelFormat("E3");
             _scalarBarWidget.SetPadding(15);
             _scalarBarWidget.VisibilityOn();
-
-            _scalarBarWidget.MouseDoubleClick += scalarBarWidget_MouseDoubleClick;
+            //
+            _scalarBarWidget.MouseDoubleClick += widget_ShowPostSettings;
         }
 
         public void InitializeWidgetPositions()
@@ -1894,28 +1918,35 @@ namespace vtkControl
                     maxNormalized = (_colorSpectrum.MaxUserValue - min) / (max - min);
                 }
             }
-
+            
             double[] color;
             double delta;
             _lookupTable = vtkLookupTable.New(); // this is a fix for a _lookupTable.DeepCopy later on
             _lookupTable.SetTableRange(min, max);
-
+            
             // create numOfAllColors discrete colors in the lookup table and then apply it to the actor
             if (addMinColor || addMaxColor)
             {
                 int colorCount = 0;
                 int countStart = 0;
                 int countEnd;
-                int numOfAllColors = 128;
-
+                // This sets the precision with which the colors are drawn on the actor: 5 is arbitrary factor
+                int numOfAllColors = (int)Math.Ceiling(10 * _colorSpectrum.NumberOfColors / (maxNormalized - minNormalized));
+                numOfAllColors = Math.Max(128, numOfAllColors);
                 _lookupTable.SetNumberOfColors(numOfAllColors);
 
                 // below range color
                 if (addMinColor)
                 {
-                    color = new double[] { _colorSpectrum.MinColor.R / 256.0, _colorSpectrum.MinColor.G / 256.0, _colorSpectrum.MinColor.B / 256.0 };
+                    color = new double[] { _colorSpectrum.MinColor.R / 256.0,
+                                           _colorSpectrum.MinColor.G / 256.0,
+                                           _colorSpectrum.MinColor.B / 256.0 };
                     countEnd = (int)Math.Round(minNormalized * numOfAllColors, 0);
-                    for (int i = countStart; i < countEnd; i++) _lookupTable.SetTableValue(colorCount++, color[0], color[1], color[2], 1.0); //R,G,B,A
+                    for (int i = countStart; i < countEnd; i++) _lookupTable.SetTableValue(colorCount++, 
+                                                                                           color[0],
+                                                                                           color[1],
+                                                                                           color[2],
+                                                                                           1.0); //R,G,B,A
                     countStart = countEnd;
                 }
 
@@ -1930,16 +1961,26 @@ namespace vtkControl
                     endValue = minNormalized + (i + 1) * deltaNormalized;
                     countEnd = (int)Math.Round(endValue * numOfAllColors, 0);
 
-                    for (int j = countStart; j < countEnd; j++) _lookupTable.SetTableValue(colorCount++, color[0], color[1], color[2], 1.0); //R,G,B,A
+                    for (int j = countStart; j < countEnd; j++) _lookupTable.SetTableValue(colorCount++,
+                                                                                           color[0],
+                                                                                           color[1],
+                                                                                           color[2],
+                                                                                           1.0); //R,G,B,A
                     countStart = countEnd;
                 }
 
                 // above range color
                 if (addMaxColor)
                 {
-                    color = new double[] { _colorSpectrum.MaxColor.R / 256.0, _colorSpectrum.MaxColor.G / 256.0, _colorSpectrum.MaxColor.B / 256.0 };
+                    color = new double[] { _colorSpectrum.MaxColor.R / 256.0,
+                                           _colorSpectrum.MaxColor.G / 256.0,
+                                           _colorSpectrum.MaxColor.B / 256.0 };
                     countEnd = (int)numOfAllColors;
-                    for (int i = countStart; i < countEnd; i++) _lookupTable.SetTableValue(colorCount++, color[0], color[1], color[2], 1.0); //R,G,B,A
+                    for (int i = countStart; i < countEnd; i++) _lookupTable.SetTableValue(colorCount++,
+                                                                                           color[0],
+                                                                                           color[1],
+                                                                                           color[2],
+                                                                                           1.0); //R,G,B,A
                     countStart = countEnd;
                 }
             }
@@ -3356,6 +3397,7 @@ namespace vtkControl
             vtkMaxActor actor = GetModelEdgesActor(actorName);
             if (actor != null)
             {
+                //actor.DrawOnGeometry = true;
                 AddActorGeometry(actor, vtkRendererLayer.Selection);
                 this.Invalidate();
             }
@@ -4283,7 +4325,8 @@ namespace vtkControl
             }
             else  // Manual and min max from current frame
             {
-                _scalarBarWidget.CreateLookupTable(GetColorTransferFunction(), minNode.Value, maxNode.Value, _colorSpectrum.MinUserValue, _colorSpectrum.MaxUserValue);
+                _scalarBarWidget.CreateLookupTable(GetColorTransferFunction(), minNode.Value, maxNode.Value, 
+                                                   _colorSpectrum.MinUserValue, _colorSpectrum.MaxUserValue);
                 PrepareActorLookupTable(minNode.Value, maxNode.Value);
             }
             

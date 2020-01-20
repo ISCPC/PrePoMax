@@ -29,10 +29,8 @@ namespace PrePoMax.Commands
 
 
         // Callbacks                                                                                                                
-        [NonSerialized]
-        public Action<string> WriteOutput;
-        [NonSerialized]
-        public Action ModelChanged_ResetJobStatus;
+        [NonSerialized] public Action<string> WriteOutput;
+        [NonSerialized] public Action ModelChanged_ResetJobStatus;
 
         // Events                                                                                                                   
         public event Action<string, string> EnableDisableUndoRedo;
@@ -92,6 +90,17 @@ namespace PrePoMax.Commands
             if (_currPositionIndex < _commands.Count - 1) _commands.RemoveRange(_currPositionIndex + 1, _commands.Count - _currPositionIndex - 1);
             _commands.Add(command);
         }
+        private void AddToHistory(Command command)
+        {
+            if (command is CClear) return;
+
+            string data = command.GetCommandString();
+
+            _history.Add(data);
+            _controller.ModelChanged = true;
+
+            ModelChanged_ResetJobStatus?.Invoke();
+        }
         private void ExecuteCommand(Command command)
         {
             // Write to form
@@ -109,24 +118,6 @@ namespace PrePoMax.Commands
             _currPositionIndex++;
 
             OnEnableDisableUndoRedo();
-        }
-        private void WriteToOutput(Command command)
-        {
-            if (command is CClear) return;
-            string data = command.GetCommandString();
-            if (data.Length > 20) data = data.Substring(20);    // Remove date and time for the write to form
-            WriteOutput?.Invoke(data);
-        }
-        private void AddToHistory(Command command)
-        {
-            if (command is CClear) return;
-
-            string data = command.GetCommandString();
-
-            _history.Add(data);
-            _controller.ModelChanged = true;
-
-            ModelChanged_ResetJobStatus?.Invoke();
         }
         private void ExecuteAllCommands()
         {
@@ -152,7 +143,7 @@ namespace PrePoMax.Commands
                         icwd.ExecuteWithDialogs(_controller);
                     }
                     else command.Execute(_controller);
-                    
+
                     // Add history
                     AddToHistory(command);
                 }
@@ -164,7 +155,22 @@ namespace PrePoMax.Commands
 
             OnEnableDisableUndoRedo();
         }
+        // Clear
+        public void Clear()
+        {
+            _currPositionIndex = -1;
+            _commands.Clear();
+            _history.Clear();
+            _prevView = ViewGeometryModelResults.Geometry;
 
+            // write to file
+            WriteToFile();
+
+            OnEnableDisableUndoRedo();
+            
+            ModelChanged_ResetJobStatus?.Invoke();
+        }
+        // Undo / Redo
         public void Undo()
         {
             if (IsUndoPossible)
@@ -183,22 +189,6 @@ namespace PrePoMax.Commands
                 ExecuteCommand(_commands[_currPositionIndex + 1]);  // also rewrites history
             }
         }
-
-        public void Clear()
-        {
-            _currPositionIndex = -1;
-            _commands.Clear();
-            _history.Clear();
-            _prevView = ViewGeometryModelResults.Geometry;
-
-            // write to file
-            WriteToFile();
-
-            OnEnableDisableUndoRedo();
-
-            ModelChanged_ResetJobStatus?.Invoke();
-        }
-
         public void OnEnableDisableUndoRedo()
         {
             string undo = null;
@@ -217,7 +207,14 @@ namespace PrePoMax.Commands
         {
             get { return _currPositionIndex < _commands.Count - 1; }
         }
-
+        // Write
+        private void WriteToOutput(Command command)
+        {
+            if (command is CClear) return;
+            string data = command.GetCommandString();
+            if (data.Length > 20) data = data.Substring(20);    // Remove date and time for the write to form
+            WriteOutput?.Invoke(data);
+        }
         private void WriteToFile()
         {
             // write to files

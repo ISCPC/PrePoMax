@@ -33,7 +33,8 @@ namespace UserControls
         public int MeshingParameters;
         public int PreviewEdgeMesh;
         public int CreateMesh;
-        public int CopyPart;
+        public int CopyPartToGeometry;
+        public int EditCalculixKeywords;
         public int MergePart;
         public int ConvertToPart;
         public int MaterialLibrary;
@@ -154,6 +155,7 @@ namespace UserControls
         public event Action<string[]> PreviewEdgeMesh;
         public event Action<string[]> CreateMeshEvent;
         public event Action<string[]> CopyGeometryToResultsEvent;
+        public event Action EditCalculixKeywords;
         public event Action<string[]> MergeParts;
         public event Action<string[]> ConvertElementSetsToMeshParts;
         public event Action MaterialLibrary;
@@ -328,6 +330,11 @@ namespace UserControls
             tsmiSpaceCopyPart.Visible = visible;
             tsmiCopyGeometryToResults.Visible = visible;
             oneAboveVisible |= visible;
+            // Edit Calculix Keywords                               
+            visible = menuFields.EditCalculixKeywords == n && n > 0;
+            tsmiSpaceEditCalculiXKeywords.Visible = visible && oneAboveVisible;
+            tsmiEditCalculiXKeywords.Visible = visible;
+            oneAboveVisible |= visible;
             // Merge mesh parts                                     
             visible = menuFields.MergePart == n && n > 1;
             //tsmiSpaceMergeParts.Visible = visible;
@@ -423,9 +430,11 @@ namespace UserControls
         private void AppendMenuFields(TreeNode node, ref ContextMenuFields menuFields)
         {
             // Check if selected node is Model
+            // Edit Calculix Keywords
             if (node == _model)
             {
                 menuFields.Edit++;
+                menuFields.EditCalculixKeywords++;
                 return;
             }
             //
@@ -464,7 +473,7 @@ namespace UserControls
                     menuFields.PreviewEdgeMesh++;
                     menuFields.CreateMesh++;
                 }
-                menuFields.CopyPart++;
+                menuFields.CopyPartToGeometry++;
             }
             // Merge mesh parts
             if (item != null && item is MeshPart && GetActiveTree() == cltvModel)
@@ -697,7 +706,7 @@ namespace UserControls
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-
+        // Visibility
         private void tsmiHideShow_Click(object sender, EventArgs e)
         {
             try
@@ -829,7 +838,7 @@ namespace UserControls
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-
+        // Meshing
         private void tsmiMeshingParameters_Click(object sender, EventArgs e)
         {
             try
@@ -878,7 +887,7 @@ namespace UserControls
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-
+        // Geometry
         private void tsmiCopyGeometryPartToResults_Click(object sender, EventArgs e)
         {
             try
@@ -895,7 +904,24 @@ namespace UserControls
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-
+        // Model
+        private void tsmiEditCalculiXKeywords_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                CodersLabTreeView tree = GetActiveTree();
+                if (tree.SelectedNodes.Count != 1) return;
+                //
+                TreeNode selectedNode = tree.SelectedNodes[0];
+                if (selectedNode != _model) return;
+                //
+                EditCalculixKeywords?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
         private void tsmiMergeParts_Click(object sender, EventArgs e)
         {
             try
@@ -912,7 +938,6 @@ namespace UserControls
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-
         private void tsmiConvertToPart_Click(object sender, EventArgs e)
         {
             try
@@ -929,17 +954,17 @@ namespace UserControls
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-
+        // Material
         private void tsmiMaterialLibrary_Click(object sender, EventArgs e)
         {
             try
             {
                 CodersLabTreeView tree = GetActiveTree();
                 if (tree.SelectedNodes.Count != 1) return;
-
+                //
                 TreeNode selectedNode = tree.SelectedNodes[0];
                 if (selectedNode.Tag != null) return;
-
+                //
                 MaterialLibrary?.Invoke();
             }
             catch (Exception ex)
@@ -947,7 +972,7 @@ namespace UserControls
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-
+        // Analysis
         private void tsmiRun_Click(object sender, EventArgs e)
         {
             try
@@ -1020,7 +1045,7 @@ namespace UserControls
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-
+        // Activate/Deactivate
         private void ActivateDeactivate_Click(object sender, EventArgs e)
         {
             try
@@ -1054,7 +1079,7 @@ namespace UserControls
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-
+        // Expand/Collapse
         private void tsmiExpandAll_Click(object sender, EventArgs e)
         {
             foreach (TreeNode selectedNode in GetActiveTree().SelectedNodes)
@@ -1069,7 +1094,7 @@ namespace UserControls
                 selectedNode.Collapse();
             }
         }
-
+        // Delete
         private void tsmiDelete_Click(object sender, EventArgs e)
         {
             try
@@ -1102,6 +1127,7 @@ namespace UserControls
             }
         }
         #endregion
+
 
         // Methods                                                                                                                  
         protected override void WndProc(ref Message m)
@@ -2069,6 +2095,6 @@ namespace UserControls
             }
         }
 
-       
+        
     }
 }

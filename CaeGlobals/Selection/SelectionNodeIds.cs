@@ -3,16 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Runtime.Serialization;
 
 namespace CaeGlobals
 {
     [Serializable]
-    public class SelectionNodeIds : SelectionNode
+    public class SelectionNodeIds : SelectionNode, ISerializable
     {
         // Variables                                                                                                                
-        private bool _selectAll;
-        private int[] _itemIds;
-        private bool _geometryIds;
+        private bool _selectAll;            //ISerializable
+        private int[] _itemIds;             //ISerializable
+        private bool _geometryIds;          //ISerializable
 
 
         // Properties                                                                                                               
@@ -29,6 +30,24 @@ namespace CaeGlobals
             if (itemIds != null) _itemIds = itemIds.ToArray(); // copy
             else _itemIds = null;
             _geometryIds = false;
+        }
+        public SelectionNodeIds(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+            foreach (SerializationEntry entry in info)
+            {
+                switch (entry.Name)
+                {
+                    case "_selectAll":
+                        _selectAll = (bool)entry.Value; break;
+                    case "_itemIds":
+                        _itemIds = (int[])entry.Value; break;
+                    case "_geometryIds":
+                        _geometryIds = (bool)entry.Value; break;
+                    default:
+                        break;
+                }
+            }
         }
 
 
@@ -55,6 +74,16 @@ namespace CaeGlobals
                 }
             }
             return false;
+        }
+
+        // ISerialization
+        public new void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            base.GetObjectData(info, context);
+            // using typeof() works also for null fields
+            info.AddValue("_selectAll", _selectAll, typeof(bool));
+            info.AddValue("_itemIds", _itemIds, typeof(int[]));
+            info.AddValue("_geometryIds", _geometryIds, typeof(bool));
         }
     }
 }

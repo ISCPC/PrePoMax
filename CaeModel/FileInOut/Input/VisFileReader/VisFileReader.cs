@@ -44,7 +44,7 @@ namespace FileInOut.Input
                                  surfaceIdNodeIds, edgeIdNodeIds, ref bBox);
                     }
 
-                    double epsilon = 1E-4;
+                    double epsilon = 1E-9;
                     double max = bBox.GetDiagonal();
                     MergeNodes(nodes, elements, surfaceIdNodeIds, edgeIdNodeIds, epsilon * max);
 
@@ -53,7 +53,7 @@ namespace FileInOut.Input
                     mesh.ConvertLineFeElementsToEdges();
 
                     mesh.RenumberVisualizationSurfaces(surfaceIdNodeIds);
-                    mesh.RenumberVisualizationEdges(edgeIdNodeIds);
+                    //mesh.RenumberVisualizationEdges(edgeIdNodeIds);
 
                     mesh.RemoveElementsByType<FeElement1D>();
                     mesh.RemoveElementsByType<FeElement3D>();
@@ -65,8 +65,8 @@ namespace FileInOut.Input
             return null;
         }
 
-        private static void ReadFace(string faceData, 
-                                     ref int offsetNodeId, Dictionary<int, FeNode> nodes, 
+        private static void ReadFace(string faceData,
+                                     ref int offsetNodeId, Dictionary<int, FeNode> nodes,
                                      ref int offsetElementId, Dictionary<int, FeElement> elements,
                                      Dictionary<int, HashSet<int>> surfaceIdNodeIds,
                                      Dictionary<int, HashSet<int>> edgeIdNodeIds,
@@ -74,14 +74,14 @@ namespace FileInOut.Input
         {
             int numOfNodes = 0;
             int numOfElements = 0;
-            string[] data = faceData.Split(new string[] { "*", "Number of "}, StringSplitOptions.RemoveEmptyEntries);
+            string[] data = faceData.Split(new string[] { "*", "Number of " }, StringSplitOptions.RemoveEmptyEntries);
 
             string[] tmp = data[0].Split(allSplitter, StringSplitOptions.RemoveEmptyEntries);
             int surfId = int.Parse(tmp[0]);
             int orientation = int.Parse(tmp[3]);
             bool reverse = orientation == 1;
 
-            Dictionary<int, FeNode> surfaceNodes = new Dictionary<int, FeNode>();            
+            Dictionary<int, FeNode> surfaceNodes = new Dictionary<int, FeNode>();
 
             for (int i = 1; i < data.Length; i++)
             {
@@ -104,7 +104,7 @@ namespace FileInOut.Input
             offsetNodeId += numOfNodes;
 
             // Add surface if it contains more than 1 node
-            if (surfaceNodes.Count > 0)  
+            if (surfaceNodes.Count > 0)
             {
                 HashSet<int> surface;
                 if (surfaceIdNodeIds.TryGetValue(surfId, out surface)) surface.UnionWith(surfaceNodes.Keys);
@@ -117,7 +117,7 @@ namespace FileInOut.Input
             string[] data = nodeData.Split(lineSplitter, StringSplitOptions.RemoveEmptyEntries);
             string[] tmp;
             FeNode node;
-            
+
             for (int i = 1; i < data.Length; i++)   // skip first row: Number of nodes: 14
             {
                 tmp = data[i].Split(spaceSplitter, StringSplitOptions.RemoveEmptyEntries);

@@ -18,40 +18,28 @@ namespace PrePoMax
     public class Controller
     {
         // Variables                                                                                                                
-        [NonSerialized]
-        protected FrmMain _form;
-        [NonSerialized]
-        protected Dictionary<string, ISettings> _settings;
-        [NonSerialized]
-        protected OrderedDictionary<string, AnalysisJob> _jobs;
+        [NonSerialized] protected FrmMain _form;
+        [NonSerialized] protected Dictionary<string, ISettings> _settings;
+        [NonSerialized] protected OrderedDictionary<string, AnalysisJob> _jobs;
         //
-        [NonSerialized]
-        protected bool _modelChanged;
-        [NonSerialized]
-        protected bool _savingFile;
+        [NonSerialized] protected bool _modelChanged;
+        [NonSerialized] protected bool _savingFile;       
+        // View
+        [NonSerialized] protected ViewGeometryModelResults _currentView;
+        [NonSerialized] protected string _drawSymbolsForStep;
+        [NonSerialized] protected Dictionary<ViewGeometryModelResults, Octree.Plane> _sectionViewPlanes;
+        // Selection
+        [NonSerialized] protected vtkSelectBy _selectBy;
+        [NonSerialized] protected double _selectAngle;
+        [NonSerialized] protected Selection _selection;
+        // Results
+        [NonSerialized] protected ViewResultsType _viewResultsType;
+        [NonSerialized] protected FieldData _currentFieldData;
+        //
         protected FeModel _model;
         protected NetgenJob _netgenJob;
         protected FeResults _results;
         protected HistoryResults _history;
-        // View
-        [NonSerialized]
-        protected ViewGeometryModelResults _currentView;
-        [NonSerialized]
-        protected string _drawSymbolsForStep;
-        [NonSerialized]
-        protected Dictionary<ViewGeometryModelResults, Octree.Plane> _sectionViewPlanes;
-        // Selection
-        [NonSerialized]
-        protected vtkSelectBy _selectBy;
-        [NonSerialized]
-        protected double _selectAngle;
-        [NonSerialized]
-        protected Selection _selection;
-        // Results
-        [NonSerialized]
-        protected ViewResultsType _viewResultsType;
-        [NonSerialized]
-        protected FieldData _currentFieldData;
         // History
         protected Commands.CommandsCollection _commands;
 
@@ -413,13 +401,14 @@ namespace PrePoMax
         private void OpenPmx(string fileName)
         {
             Clear();
-
+            //
             OpenedFileName = fileName;
-
+            //
             Controller tmp = null;
             object[] data = null;
-
-            data = TryReadCompressedPmx(fileName, out _model, out _results);
+            string fileVersion;
+            //
+            data = TryReadCompressedPmx(fileName, out _model, out _results, out fileVersion);
             if (data != null && data.Length == 1 && (string)data[0] == "UncompatibleVersion")
             {
                 New();
@@ -428,34 +417,37 @@ namespace PrePoMax
             if (data == null) data = TryReadUncompressedPmx(fileName, out _model, out _results);
             if (data == null || data.Length < 3)
                 throw new Exception("The file can not be read. It is either corrupt or was created by a previous version.");
-
+            // Get controller
             tmp = (Controller)data[0];
-
+            // Set history
             _history = tmp.History;
-
+            // Commands
             _commands.EnableDisableUndoRedo -= _commands_CommandExecuted;
             _commands = new Commands.CommandsCollection(this, tmp._commands); // to recreate the history file
             _commands.WriteOutput = _form.WriteDataToOutput;
             _commands.ModelChanged_ResetJobStatus = ResetAllJobStatus;
             _commands.EnableDisableUndoRedo += _commands_CommandExecuted;
             _commands.OnEnableDisableUndoRedo();
+            if (fileVersion == "PrePoMax v0.5.2" || fileVersion == "PrePoMax v0.5.1")
+            {
 
+            }
+
+            // Jobs
             // Compatibility for version v.0.5.2
             if (data[1] is Dictionary<string, AnalysisJob> d) _jobs = new OrderedDictionary<string, AnalysisJob>(d);
             else _jobs = (OrderedDictionary<string, AnalysisJob>)data[1];
-            
-
+            // Settings
             ApplySettings(); // work folder and executable
+            // After settings reset jobs
             ResetAllJobStatus();
-
+            // Determine view
             _currentView = ViewGeometryModelResults.Geometry;
             if (_model != null && _model.Mesh != null) _currentView = ViewGeometryModelResults.Model;
             else if (_results != null) _currentView = ViewGeometryModelResults.Results;
-
+            // Regenerate tree
             _form.RegenerateTree(_model, _jobs, _results, _history);
-
-            //_form.SetTreeExpandCollapseState((bool[])data[2]);
-
+            // Set view
             _form.SetCurrentView(_currentView); // at the end
         }
         private void OpenFrd(string fileName)
@@ -518,12 +510,15 @@ namespace PrePoMax
                 _modelChanged = true;
             }
         }
-        //
-        private object[] TryReadCompressedPmx(string fileName, out FeModel model, out FeResults results)
+        // Read pmx
+        private object[] TryReadCompressedPmx(string fileName, out FeModel model, out FeResults results, 
+                                              out string fileVersion)
         {
+            model = null;
+            results = null;
+            fileVersion = null;
             try
             {
-                string fileVersion;
                 object[] data = null;
                 Controller tmp = null;
                 byte[] versionBuffer = new byte[32];
@@ -556,8 +551,6 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                model = null;
-                results = null;
                 if (ex.Message == "UncompatibleVersion") return new object[] { ex.Message };
                 else return null;
             }
@@ -589,7 +582,7 @@ namespace PrePoMax
                 return null;
             }
         }
-        //
+        // Import
         public string GetFileNameToImport()
         {
             return _form.GetFileNameToImport();
@@ -619,11 +612,11 @@ namespace PrePoMax
                 }
             }
             else if (extension == ".stp" || extension == ".step")
-                ImportCADAssemblyFile(fileName, "STEP_ASSEMBLY_SPLIT");
+                ImportCADAssemblyFile(fileName, "STEP_ASSEMBLY_SPLIT_TO_COMPOUNDS");
             else if (extension == ".igs" || extension == ".iges")
-                ImportCADAssemblyFile(fileName, "IGES_ASSEMBLY_SPLIT");
+                ImportCADAssemblyFile(fileName, "IGES_ASSEMBLY_SPLIT_TO_COMPOUNDS");
             else if (extension == ".brep")
-                ImportCADAssemblyFile(fileName, "BREP_ASSEMBLY_SPLIT");
+                ImportCADAssemblyFile(fileName, "BREP_ASSEMBLY_SPLIT_TO_COMPOUNDS");
             else if (extension == ".unv")
                 _model.ImportMeshFromUnvFile(fileName);
             else if (extension == ".vol")
@@ -642,7 +635,7 @@ namespace PrePoMax
                 CheckAndUpdateValidity();
             }
             else throw new NotSupportedException();
-            //
+            //            
             UpdateAfterImport(extension);
         }
         private void UpdateAfterImport(string extension)
@@ -667,24 +660,32 @@ namespace PrePoMax
         }
         public string[] ImportCADAssemblyFile(string assemblyFileName, string splitCommand)
         {
-            string[] filesToImport = SplitAssemblyToBrepParts(assemblyFileName, splitCommand);
+            string[] filesToImport = SplitAssembly(assemblyFileName, splitCommand);
             string[] addedPartNames;
             List<string> allAddedPartNames = new List<string>();
             //
             if (filesToImport != null)
             {
-                foreach (var stepPartFileName in filesToImport)
+                foreach (var partFileName in filesToImport)
                 {
-                    addedPartNames = ImportBrepPartFile(stepPartFileName);
+                    if (partFileName.ToLower().Contains("compound"))
+                    {
+                        addedPartNames = ImportCompoundPart(partFileName);
+                    }
+                    else
+                    {
+                        addedPartNames = ImportBrepPartFile(partFileName);
+                    }
                     if (addedPartNames != null) allAddedPartNames.AddRange(addedPartNames);
                     //
-                    if (File.Exists(stepPartFileName)) File.Delete(stepPartFileName);
+                    if (File.Exists(partFileName)) File.Delete(partFileName);
                 }
             }
+            //
             return allAddedPartNames.ToArray();
         }
         //
-        public string[] SplitAssemblyToBrepParts(string assemblyFileName, string splitCommand)
+        public string[] SplitAssembly(string assemblyFileName, string splitCommand)
         {
             CalculixSettings settings = (CalculixSettings)Settings[Globals.CalculixSettingsName];
             if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
@@ -766,7 +767,9 @@ namespace PrePoMax
             _netgenJob.Submit();
             //
             for (int i = 0; i < inFileNames.Length; i++)
+            {
                 if (File.Exists(inFileNames[i])) File.Delete(inFileNames[i]);
+            }
             //
             if (_netgenJob.JobStatus == JobStatus.OK)
             {
@@ -776,7 +779,7 @@ namespace PrePoMax
         }
         private string[] ImportCompoundPart(string brepFileName)
         {
-            string[] importedPartNames = ImportCADAssemblyFile(brepFileName, "BREP_ASSEMBLY_SPLIT");
+            string[] importedPartNames = ImportCADAssemblyFile(brepFileName, "BREP_ASSEMBLY_SPLIT_TO_PARTS");
             //
             string compoundPartName = NamedClass.GetNewValueName(_model.Geometry.Parts.Keys, "Compound-");
             CompoundGeometryPart compPart = new CompoundGeometryPart(compoundPartName, importedPartNames);
@@ -936,7 +939,7 @@ namespace PrePoMax
                 UpdateSurfacesBasedOnGeometry();
             }
         }
-        //
+        // Save
         public string GetFileNameToSaveAs()
         {
             return _form.GetFileNameToSaveAs();
@@ -1018,6 +1021,7 @@ namespace PrePoMax
                 _savingFile = false;
             }
         }
+        // Export
         public void ExportToCalculix(string fileName)
         {
             FileInOut.Output.CalculixFileWriter.Write(fileName, _model);
@@ -1025,6 +1029,62 @@ namespace PrePoMax
         public void ExportToAbaqus(string fileName)
         {
             FileInOut.Output.AbaqusFileWriter.Write(fileName, _model);
+        }
+        public void ExportCADGeometryPartsAsStep(string[] partNames, string fileName)
+        {
+            string stepFileName;
+            string directory = Path.GetDirectoryName(fileName);
+            string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+            GeometryPart part;
+            foreach (var partName in partNames)
+            {
+                part = (GeometryPart)_model.Geometry.Parts[partName];
+                stepFileName = Path.Combine(directory, fileNameWithoutExtension + "-" + partName + ".stp");
+                ExportCADGeometryPartAsStep(part, stepFileName);
+            }
+        }
+        public void ExportCADGeometryPartsAsBrep(string[] partNames, string fileName)
+        {
+            string brepFileName;
+            string directory = Path.GetDirectoryName(fileName);
+            string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+            GeometryPart part;
+            foreach (var partName in partNames)
+            {
+                part = (GeometryPart)_model.Geometry.Parts[partName];
+                brepFileName = Path.Combine(directory, fileNameWithoutExtension + "-" + partName + ".brep");
+                File.WriteAllText(brepFileName, part.CADFileData);
+            }
+        }
+        public void ExportCADGeometryPartAsStep(GeometryPart part, string stepFileName)
+        {
+            CalculixSettings settings = (CalculixSettings)Settings[Globals.CalculixSettingsName];
+            if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
+            {
+                MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
+                return;
+            }
+            //
+            string executable = Application.StartupPath + Globals.NetGenMesher;
+            string brepFileName = Path.Combine(settings.WorkDirectory, Globals.BrepFileName);
+            //
+            if (File.Exists(brepFileName)) File.Delete(brepFileName);
+            if (File.Exists(stepFileName)) File.Delete(stepFileName);
+            //
+            File.WriteAllText(brepFileName, part.CADFileData);
+            //
+            string argument = "SAVE_BREP_AS_STEP " +
+                              "\"" + brepFileName.ToUTF8() + "\" " +
+                              "\"" + stepFileName.ToUTF8() + "\"";
+            //
+            _netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
+            _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
+            _netgenJob.Submit();
+            // Job completed
+            if (_netgenJob.JobStatus == JobStatus.OK)
+            {
+            }
+            else return;
         }
         //
         private static byte[] Compress(Stream input)
@@ -3784,32 +3844,32 @@ namespace PrePoMax
         public SelectionNodeIds GetSelectionNodeIds(SelectionNodeMouse selectionNodeMouse)
         {
             return GetSelectionNodeIds(selectionNodeMouse.PickedPoint, selectionNodeMouse.SelectOperation,
-                                       selectionNodeMouse.SelectBy, selectionNodeMouse.Angle);
+                                       selectionNodeMouse.SelectBy, selectionNodeMouse.Angle, selectionNodeMouse.PartId);
         }
         private SelectionNodeIds GetSelectionNodeIds(double[] pickedPoint, vtkSelectOperation selectOperation,
-                                                     vtkSelectBy selectBy, double angle)
+                                                     vtkSelectBy selectBy, double angle, int selectionOnPartId)
         {
             int[] ids = null;
             SelectionNodeIds selectionNode = null;
             if (selectBy == vtkSelectBy.QueryEdge)
             {
-                ids = GetGeometryEdgeIdsByAngle(pickedPoint, -1);
+                ids = GetGeometryEdgeIdsByAngle(pickedPoint, -1, selectionOnPartId);
             }
             else if (selectBy == vtkSelectBy.QuerySurface)
             {
-                ids = GetGeometrySurfaceIdsByAngle(pickedPoint, -1);
+                ids = GetGeometrySurfaceIdsByAngle(pickedPoint, -1, selectionOnPartId);
             }
             else if (selectBy == vtkSelectBy.Geometry)
             {
-                ids = new int[] { GetGeometryId(pickedPoint) };
+                ids = new int[] { GetGeometryId(pickedPoint, selectionOnPartId) };
             }
             else if (selectBy == vtkSelectBy.GeometryEdgeAngle)
             {
-                ids = GetGeometryEdgeIdsByAngle(pickedPoint, angle);
+                ids = GetGeometryEdgeIdsByAngle(pickedPoint, angle, selectionOnPartId);
             }
             else if (selectBy == vtkSelectBy.GeometrySurfaceAngle)
             {
-                ids = GetGeometrySurfaceIdsByAngle(pickedPoint, angle);
+                ids = GetGeometrySurfaceIdsByAngle(pickedPoint, angle, selectionOnPartId);
             }
             else throw new NotSupportedException();
 
@@ -3821,8 +3881,9 @@ namespace PrePoMax
 
         public void AddSelectionNode(SelectionNode node, bool highlight)
         {
-            // check for errors    
+            // Ger selected ids
             int[] ids = GetIdsFromSelectionNode(node, new HashSet<int>());
+            // Check for errors    
             if (node is SelectionNodeIds)
             {
                 SelectionNodeIds selectionNodeIds = node as SelectionNodeIds;
@@ -3873,14 +3934,6 @@ namespace PrePoMax
             if (highlight) HighlightSelection();
             //
         }
-        public void AddSelectionNodes(List<SelectionNode> nodes, bool highlight)
-        {
-            foreach (var node in nodes)
-            {
-                AddSelectionNode(node, false);
-            }
-            if (highlight) HighlightSelection();
-        }
         public void RemoveLastSelectionNode(bool highlight)
         {
             _selection.RemoveLast();
@@ -3895,40 +3948,15 @@ namespace PrePoMax
             // faces: 10 * global element ids + vtk face ids;   search: (% 10)
             // geometry: itemId * 100000 + typeId * 10000 + partId;
             HashSet<int> selectedIds = new HashSet<int>();
-            int[] ids;
-
-            foreach (SelectionNode node in _selection.Nodes)
-            {
-                ids = GetIdsFromSelectionNode(node, selectedIds);
-                if (ids == null) continue;
-
-                if (node.SelectOperation == vtkSelectOperation.None || node.SelectOperation == vtkSelectOperation.Invert)
-                {
-                    selectedIds.Clear();
-                    selectedIds.UnionWith(ids);
-                }
-                else if (node.SelectOperation == vtkSelectOperation.Add)
-                {
-                    selectedIds.UnionWith(ids);
-                }
-                else if (node.SelectOperation == vtkSelectOperation.Subtract)
-                {
-                    selectedIds.ExceptWith(ids);
-                }
-                else if (node.SelectOperation == vtkSelectOperation.Intersect)
-                {
-                    selectedIds.IntersectWith(ids);
-                }
-            }
-
-            ids = selectedIds.ToArray();
-
-            return ids;
+            //
+            foreach (SelectionNode node in _selection.Nodes) GetIdsFromSelectionNode(node, selectedIds);
+            //
+            return selectedIds.ToArray();
         }
         private int[] GetIdsFromSelectionNode(SelectionNode selectionNode, HashSet<int> selectedIds)
         {
-            int[] ids = null;
-
+            int[] ids;
+            //
             if (selectionNode is SelectionNodeInvert selectionNodeInvert)
             {
                 ids = GetIdsFromSelectionNodeInvert(selectionNodeInvert, selectedIds);
@@ -3941,7 +3969,31 @@ namespace PrePoMax
             {
                 ids = GetIdsFromSelectionNodeMouse(selectionNodeMouse);
             }
-
+            else throw new NotSupportedException();
+            //
+            // Append the new selection ids to the allready selected ids
+            if (ids != null)
+            {
+                if (selectionNode.SelectOperation == vtkSelectOperation.None ||
+                    selectionNode.SelectOperation == vtkSelectOperation.Invert)
+                {
+                    selectedIds.Clear();
+                    selectedIds.UnionWith(ids);
+                }
+                else if (selectionNode.SelectOperation == vtkSelectOperation.Add)
+                {
+                    selectedIds.UnionWith(ids);
+                }
+                else if (selectionNode.SelectOperation == vtkSelectOperation.Subtract)
+                {
+                    selectedIds.ExceptWith(ids);
+                }
+                else if (selectionNode.SelectOperation == vtkSelectOperation.Intersect)
+                {
+                    selectedIds.IntersectWith(ids);
+                }
+            }
+            //
             return ids;
         }
         private int[] GetIdsFromSelectionNodeInvert(SelectionNodeInvert selectionNodeInvert, HashSet<int> selectedIds)
@@ -4008,19 +4060,15 @@ namespace PrePoMax
         }
         private int[] GetIdsFromSelectionNodeMouse(SelectionNodeMouse selectionNodeMouse)
         {
-            int[] ids = null;
-            //
+            int[] ids;
+            // Pick a point
             if (selectionNodeMouse.PickedPoint != null)
             {
                 if (_selection.TryGetNodeIds(selectionNodeMouse, out ids))
+                { }
+                else if (selectionNodeMouse.IsGeometryBased)
                 {
-                }
-                else if (selectionNodeMouse.GeometryIds)
-                {
-                    // Geometry selection - get geometry Ids
-                    SelectionNodeIds selectionNodeIds = GetSelectionNodeIds(selectionNodeMouse);
-                    // Change geometry ids to node, cell ids
-                    ids = DisplayedMesh.GetIdsFromGeometryIds(selectionNodeIds.ItemIds, _selection.SelectItem);
+                    ids = GetGeometryIdsAtPoint(selectionNodeMouse);
                 }
                 else if (_selection.SelectItem == vtkSelectItem.None)
                 { }
@@ -4038,11 +4086,12 @@ namespace PrePoMax
                 }                
                 else if (_selection.SelectItem == vtkSelectItem.Part)
                 {
-                    ids = GetPartNameAtPoint(selectionNodeMouse);
+                    ids = GetPartIdAtPoint(selectionNodeMouse);
                 }
                 else throw new NotSupportedException();
             }
-            else    // pick an area
+            // Pick an area
+            else
             {
                 if (_selection.SelectItem == vtkSelectItem.Node)
                 {
@@ -4061,7 +4110,24 @@ namespace PrePoMax
             //
             return ids;
         }
-
+        //
+        private int[] GetGeometryIdsAtPoint(SelectionNodeMouse selectionNodeMouse)
+        {
+            // Geometry selection - get geometry Ids
+            // The first time the selectionNodeMouse.PartId equals -1
+            SelectionNodeIds selectionNodeIds = GetSelectionNodeIds(selectionNodeMouse);
+            //
+            int[] ids = selectionNodeIds.ItemIds;
+            if (selectionNodeMouse.PartId == -1 && ids.Length > 0)
+            {
+                int[] itemTypePart = FeMesh.GetItemTypePartIdsFromGeometryId(ids[0]);
+                // Set the part id for all future queries
+                selectionNodeMouse.PartId = itemTypePart[2];
+            }
+            // Change geometry ids to node, elemet or cell ids if necessary
+            ids = DisplayedMesh.GetIdsFromGeometryIds(ids, _selection.SelectItem);
+            return ids;
+        }
         private int[] GetNodeIdsAtPoint(SelectionNodeMouse selectionNodeMouse)
         {
             int elementId;
@@ -4200,20 +4266,18 @@ namespace PrePoMax
             }
             return ids;
         }
-        private int[] GetPartNameAtPoint(SelectionNodeMouse selectionNodeMouse)
+        private int[] GetPartIdAtPoint(SelectionNodeMouse selectionNodeMouse)
         {
-            double dist;
             int elementId;
             int[] edgeNodeIds;
             int[] cellFaceNodeIds;
             double[] pickedPoint = selectionNodeMouse.PickedPoint;
             vtkSelectBy selectBy = selectionNodeMouse.SelectBy;
-
+            //
             _form.GetGeometryPickProperties(pickedPoint, out elementId, out edgeNodeIds, out cellFaceNodeIds);
-
+            //
             FeElement element;
-            if (DisplayedMesh.Elements.TryGetValue(elementId, out element))
-                return new int[] { element.PartId };
+            if (DisplayedMesh.Elements.TryGetValue(elementId, out element)) return new int[] { element.PartId };
             else return null;
         }
         private int[] GetVisualizationFaceIdsFromArea(SelectionNodeMouse selectionNodeMouse)
@@ -4335,6 +4399,8 @@ namespace PrePoMax
         }
         public vtkControl.vtkMaxActorData GetCellFaceActorData(int elementId, int[] nodeIds)
         {
+            if (elementId < 0) return null;
+            //
             // get all faces containing at least 1 node id
             int[] faceIds = DisplayedMesh.GetVisualizationFaceIds(nodeIds, new int[] { elementId }, false, false);
             //
@@ -4545,31 +4611,46 @@ namespace PrePoMax
             else throw new NotSupportedException();
         }
 
-        private int GetGeometryId(double[] point)
+        private int GetGeometryId(double[] point, int selectionOnPartId)
         {
             int elementId;
             int[] edgeNodeIds;
             int[] cellFaceNodeIds;
             //
-            _form.GetGeometryPickProperties(point, out elementId, out edgeNodeIds, out cellFaceNodeIds);
+            string[] partNames;
+            BasePart part = DisplayedMesh.GetPartById(selectionOnPartId);
+            if (part != null) partNames = new string[] { part.Name };
+            else partNames = null;
+            //
+            _form.GetGeometryPickProperties(point, out elementId, out edgeNodeIds, out cellFaceNodeIds, partNames);
             return DisplayedMesh.GetGeometryId(point, elementId, edgeNodeIds, cellFaceNodeIds);
         }
-        private int[] GetGeometryEdgeIdsByAngle(double[] point, double angle)
+        private int[] GetGeometryEdgeIdsByAngle(double[] point, double angle, int selectionOnPartId)
         {
             int elementId;
             int[] edgeNodeIds;
             int[] cellFaceNodeIds;
             //
-            _form.GetGeometryPickProperties(point, out elementId, out edgeNodeIds, out cellFaceNodeIds);
+            string[] partNames;
+            BasePart part = DisplayedMesh.GetPartById(selectionOnPartId);
+            if (part != null) partNames = new string[] { part.Name };
+            else partNames = null;
+            //
+            _form.GetGeometryPickProperties(point, out elementId, out edgeNodeIds, out cellFaceNodeIds, partNames);
             return DisplayedMesh.GetGeometryEdgeIdsByAngle(elementId, edgeNodeIds, angle);
         }
-        private int[] GetGeometrySurfaceIdsByAngle(double[] point, double angle)
+        private int[] GetGeometrySurfaceIdsByAngle(double[] point, double angle, int selectionOnPartId)
         {
             int elementId;
             int[] edgeNodeIds;
             int[] cellFaceNodeIds;
             //
-            _form.GetGeometryPickProperties(point, out elementId, out edgeNodeIds, out cellFaceNodeIds);
+            string[] partNames;
+            BasePart part = DisplayedMesh.GetPartById(selectionOnPartId);
+            if (part != null) partNames = new string[] { part.Name };
+            else partNames = null;
+            //
+            _form.GetGeometryPickProperties(point, out elementId, out edgeNodeIds, out cellFaceNodeIds, partNames);
             return DisplayedMesh.GetGeometrySurfaceIdsByAngle(elementId, cellFaceNodeIds, angle);
         }
 

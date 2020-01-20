@@ -172,7 +172,7 @@ namespace CaeGlobals
         }
 
         // vtkSelectBy
-        public static bool GeometryId(this vtkSelectBy selectBy)
+        public static bool IsGeometryBased(this vtkSelectBy selectBy)
         {
             return (selectBy == vtkSelectBy.QuerySurface ||
                     selectBy == vtkSelectBy.QueryEdge ||

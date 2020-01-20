@@ -20,7 +20,7 @@ namespace CaeMesh
 
         // Constructors                                                                                                             
         public CompoundGeometryPart(string name, string[] subParts)
-            : base(name, -1, new int[0], new int[0], new Type[0])
+            : base(name, -111, new int[0], new int[0], new Type[0])
         {
             _subPartNames = subParts;
             _partType = PartType.Compound;
