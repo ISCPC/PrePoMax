@@ -1175,7 +1175,7 @@ namespace UserControls
                 }
             }
         }
-
+        // Clear                                                                                                                    
         public void Clear()
         {
             _geomParts.Nodes.Clear();
@@ -1238,7 +1238,7 @@ namespace UserControls
             //
             cltvResults.SelectedNodes.Clear();
         }
-
+        //
         public void UpdateHighlight()
         {
             cltv_SelectionsChanged(null, null);
@@ -1307,9 +1307,10 @@ namespace UserControls
             catch { return -1; }
             finally { _disableSelectionsChanged = false; }
         }
-
-
-        public void RegenerateTree(FeModel model, IDictionary<string, AnalysisJob> jobs, FeResults results, HistoryResults history)
+        
+        // Regenerate tree                                                                                                          
+        public void RegenerateTree(FeModel model, IDictionary<string, AnalysisJob> jobs, FeResults results,
+                                   HistoryResults history)
         {
             if (!_screenUpdating) return;
             //
@@ -1376,6 +1377,7 @@ namespace UserControls
                                 allComponents[i] = results.GetComponentNames(fieldNames[i]);
                             }
                             SetFieldOutputAndComponentNames(fieldNames, allComponents);
+                            //SelectFirstComponentOfFirstFieldOutput();
                         }
                     }
                     if (history != null) SetHistoryOutputNames(history);
@@ -1697,7 +1699,6 @@ namespace UserControls
             parent.Text = parent.Name;
             if (parent.Nodes.Count > 0) parent.Text += " (" + parent.Nodes.Count + ")";
         }
-
         private void AddObjectsToNode<Tkey, Tval>(string initialNodeName, TreeNode node, IDictionary<Tkey, Tval> dictionary,
                                                   bool countNodes = true)
         {
@@ -1810,7 +1811,7 @@ namespace UserControls
             return stepNode;
         }
 
-        //                                                                                                              
+        // Node status                                                                                                              
         private void SetAllNodesStatusIcons(TreeNode node)
         {
             if (node.ImageKey == "Dots.ico" || node.ImageKey == "Dots_t.ico")
@@ -1881,10 +1882,8 @@ namespace UserControls
                 node.SelectedImageKey = imageName;
             }
         }
-        //                                                                                                              
-     
 
-        //                                                                                                              
+        // Results                                                                                                                  
         public void SetFieldOutputAndComponentNames(string[] fieldNames, string[][] components)
         {
             TreeNode node;
@@ -1894,7 +1893,7 @@ namespace UserControls
                 node = _resultFieldOutputs.Nodes.Add(fieldNames[i]);
                 node.Name = node.Text;
                 SetNodeImage(node, "Dots.ico");
-
+                //
                 for (int j = 0; j < components[i].Length; j++)
                 {
                     child = node.Nodes.Add(components[i][j]);
@@ -1902,14 +1901,28 @@ namespace UserControls
                     child.Tag = new CaeResults.FieldData(child.Name);
                     SetNodeImage(child, "Dots.ico");
                 }
-
-                if (i == 0) node.Expand();
+                //
+                if (i <= 1) node.Expand();
             }
-
+            //
             _resultFieldOutputs.Expand();
-
+            //
             int n = _resultFieldOutputs.Nodes.Count;
             if (n > 0) _resultFieldOutputs.Text = _fieldOutputsName + " (" + n + ")";
+        }
+        public void SelectFirstComponentOfFirstFieldOutput()
+        {
+            if (_resultFieldOutputs.Nodes.Count > 0)
+            {
+                foreach (TreeNode node in _resultFieldOutputs.Nodes)
+                {
+                    if (node.Nodes.Count > 0)
+                    {
+                        cltvResults.SelectedNode = node.Nodes[0];
+                        return;
+                    }
+                }
+            }
         }
         public void SetHistoryOutputNames(HistoryResults historyOutput)
         {
@@ -1921,13 +1934,13 @@ namespace UserControls
                 node1 = _resultHistoryOutputs.Nodes.Add(setEntry.Key);
                 node1.Name = node1.Text;
                 SetNodeImage(node1, "Dots.ico");
-
+                //
                 foreach (var fieldEntry in setEntry.Value.Fields)
                 {
                     node2 = node1.Nodes.Add(fieldEntry.Key);
                     node2.Name = node2.Text;
                     SetNodeImage(node2, "Dots.ico");
-
+                    //
                     foreach (var componentEntry in fieldEntry.Value.Components)
                     {
                         node3 = node2.Nodes.Add(componentEntry.Key);
@@ -1937,14 +1950,15 @@ namespace UserControls
                     }
                 }
             }
-
+            //
             _resultHistoryOutputs.Expand();
-
+            //
             int n = _resultHistoryOutputs.Nodes.Count;
             if (n > 0) _resultHistoryOutputs.Text = _historyOutputsName + " (" + n + ")";
         }
+       
 
-        //                                                                                                              
+        // Expand/Collapse                                                                                                          
         private CodersLabTreeView GetActiveTree()
         {
             if (tcGeometryModelResults.TabPages.Count <= 0) return null;
@@ -2001,7 +2015,7 @@ namespace UserControls
             }
         }
 
-        //                                                                                                              
+        //                                                                                                                          
         private bool CanCreate(TreeNode node)
         {
             if (node.Name == _meshRefinementsName) return true;
@@ -2040,38 +2054,7 @@ namespace UserControls
             else return false;
         }
 
-
-        //                                                                                                              
-        public static void SetLabelColumnWidth(PropertyGrid grid, int width)
-        {
-            if (grid == null)
-                throw new ArgumentNullException("grid");
-
-            // get the grid view
-            Control view = (Control)grid.GetType().GetField("gridView", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(grid);
-
-            // set label width
-            FieldInfo fi = view.GetType().GetField("labelWidth", BindingFlags.Instance | BindingFlags.NonPublic);
-            fi.SetValue(view, width);
-
-            // refresh
-            view.Invalidate();
-        }
-        public static void SetLabelColumnWidth(PropertyGrid grid, double labelRatio)
-        {
-            if (grid == null) throw new ArgumentNullException("grid");
-
-            // get the grid view
-            Control view = (Control)grid.GetType().GetField("gridView", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(grid);
-
-            FieldInfo fi2 = view.GetType().GetField("labelRatio");
-            fi2.SetValue(view, labelRatio);
-
-            // refresh
-            view.Invalidate();
-        }
-
-        //                                                                                                              
+        //                                                                                                                          
         public void SetNumberOfUserKeywords(int numOfUserKeywords)
         {
             _numUserKeywords = numOfUserKeywords;
@@ -2079,7 +2062,7 @@ namespace UserControls
             if (_numUserKeywords > 0) cltvModel.Nodes[0].Text += " (User keywords: " + _numUserKeywords + ")";
         }
 
-        //                                                                                                              
+        //                                                                                                                          
         public void ShowContextMenu(Control control, int x, int y)
         {
             CodersLabTreeView tree = GetActiveTree();
@@ -2094,7 +2077,5 @@ namespace UserControls
                 cmsTree.Show(control, x, y);
             }
         }
-
-        
     }
 }

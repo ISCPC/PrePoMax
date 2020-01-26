@@ -42,7 +42,7 @@ namespace PrePoMax
         private Controller _controller;
         private string[] _args;
         private string[] outputLines;
-        private Dictionary<ViewGeometryModelResults, Action<object, EventArgs>> _edgeVisibilities;
+        private Dictionary<ViewGeometryModelResults, Action<object, EventArgs>> _edgeVisibilities; // save display style
 
         private Point _formLocation;
         private List<Form> _allForms;
@@ -909,20 +909,24 @@ namespace PrePoMax
         private void Open(string fileName, bool resetCamera = true)
         {
             _controller.Open(fileName);
-
+            //
             if (_controller.Results != null)
             {
-                // reset the previous step and increment
+                // Reset the previous step and increment
                 SetAllStepAndIncrementIds();
-                // set last increment
-                SetLastStepAndIncrementIds();   
+                // Set last increment
+                SetLastStepAndIncrementIds();
+                // Show the selection in the results tree
+                InvokeIfRequired(_modelTree.SelectFirstComponentOfFirstFieldOutput);
             }
-
+            //
             if (_controller.CurrentView == ViewGeometryModelResults.Geometry) _controller.DrawGeometry(resetCamera);
             else if (_controller.CurrentView == ViewGeometryModelResults.Model) _controller.DrawMesh(resetCamera);
             else if (_controller.CurrentView == ViewGeometryModelResults.Results)
             {
-                _controller.ViewResultsType = ViewResultsType.ColorContours; // this calls _controller.DrawResults(resetCamera);
+                // Set the representation which also calls Draw
+                _controller.ViewResultsType = ViewResultsType.ColorContours;  // Draw
+                   
                 if (resetCamera) tsmiFrontView_Click(null, null);
             }
             else throw new NotSupportedException();
@@ -1631,19 +1635,23 @@ namespace PrePoMax
         {
             try
             {
-                var parts = _controller.GetGeometryParts();
-                if (parts != null && parts.Length > 0 && !_frmAnalyzeGeometry.Visible)
-                {
-                    CloseAllForms();
-                    SetFormLoaction((Form)_frmAnalyzeGeometry);
-                    _frmAnalyzeGeometry.Show();
-                }
+                SelectMultipleEntities("Parts", _controller.GetGeometryParts(), AnalyzeGeometry);
             }
             catch (Exception ex)
             {
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
-            
+
+        }
+        private void AnalyzeGeometry(string[] partNames)
+        {
+            if (!_frmAnalyzeGeometry.Visible)
+            {
+                CloseAllForms();
+                SetFormLoaction((Form)_frmAnalyzeGeometry);
+                _frmAnalyzeGeometry.PartNamesToAnalyze = partNames;
+                _frmAnalyzeGeometry.Show();
+            }
         }
         //
         private void tsmiCreateAndImportCompoundPart_Click(object sender, EventArgs e)
@@ -1793,8 +1801,8 @@ namespace PrePoMax
                 sumMax += defaultMeshingParameters.MaxH;
                 sumMin += defaultMeshingParameters.MinH;
             }
-            defaultMeshingParameters.MaxH = Math.Round(sumMax / partNames.Length, 2);
-            defaultMeshingParameters.MinH = Math.Round(sumMin / partNames.Length, 2);
+            defaultMeshingParameters.MaxH = CaeGlobals.Tools.RoundToSignificantDigits(sumMax / partNames.Length, 2);
+            defaultMeshingParameters.MinH = CaeGlobals.Tools.RoundToSignificantDigits(sumMin / partNames.Length, 2);
             // use meshingParameters as default if meshing parameters are not equal
             if (meshingParameters == null) meshingParameters = defaultMeshingParameters;
             //
@@ -1910,7 +1918,9 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);                
+                CaeGlobals.ExceptionTools.Show(this, ex);
+                WriteDataToOutput("");
+                WriteDataToOutput("Mesh generation failed. Check the geometry and adjust the meshing parameters.");
             }
             finally
             {
@@ -4047,7 +4057,11 @@ namespace PrePoMax
         }
         public void ClearResults()
         {
-            tscbStepAndIncrement.Items.Clear();
+            InvokeIfRequired(() =>
+            {
+                tscbStepAndIncrement.Items.Clear();
+                _modelTree.ClearResults();
+            });
         }
         public void Clear3D()
         {
@@ -4248,7 +4262,9 @@ namespace PrePoMax
         {
             CaeResults.FieldData fieldData = new CaeResults.FieldData(name, component, stepId, stepIncrementId);
             CaeResults.FieldData currentData = _controller.CurrentFieldData;
-
+            // In case the currentData is null exit
+            if (currentData == null) return;
+            //
             if (!fieldData.Equals(currentData)) // update results only if field data changed
             {
                 // stop and update animation data only if field data changed
@@ -4286,6 +4302,7 @@ namespace PrePoMax
                     // draw field data
                     if (_controller.ViewResultsType == ViewResultsType.ColorContours) _controller.UpdatePartsScalarFields();
                 }
+                // Move focus from step and step increment dropdown menus
                 this.ActiveControl = null;
             }
         }
@@ -4298,7 +4315,6 @@ namespace PrePoMax
                 string[] prevStepIncrementIds = null;
                 if (currentStepIncrement != null)
                     prevStepIncrementIds = currentStepIncrement.Split(new string[] { ",", " " }, StringSplitOptions.RemoveEmptyEntries);
-
                 // Set all increments
                 tscbStepAndIncrement.SelectedIndexChanged -= FieldOutput_SelectionChanged;  // detach event
                 tscbStepAndIncrement.Items.Clear();
@@ -4312,7 +4328,6 @@ namespace PrePoMax
                     }
                 }
                 tscbStepAndIncrement.SelectedIndexChanged += FieldOutput_SelectionChanged;  // reattach event
-
                 // Reselect previous step and increment
                 if (prevStepIncrementIds != null)
                 {
@@ -4329,13 +4344,12 @@ namespace PrePoMax
             InvokeIfRequired(() =>
             {
                 string stepIncrement = stepId + ", " + incrementId;
-
-                // set the combobox
+                // Set the combobox
                 if (tscbStepAndIncrement.Items.Contains(stepIncrement))
                 {
                     tscbStepAndIncrement.SelectedIndexChanged -= FieldOutput_SelectionChanged;
                     tscbStepAndIncrement.SelectedItem = stepIncrement;
-                    // set the step and increment if the combobox set was successful
+                    // Set the step and increment if the combobox set was successful
                     CaeResults.FieldData data = _controller.CurrentFieldData;
                     data.StepId = stepId;
                     data.StepIncrementId = incrementId;

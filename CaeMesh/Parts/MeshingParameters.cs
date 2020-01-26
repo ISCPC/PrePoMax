@@ -11,15 +11,10 @@ namespace CaeMesh
     [Serializable]
     public class MeshingParameters
     {
-        //        double fineness...Mesh density: 0...1 (0 => coarse; 1 => fine)
-        //0.3
-        //double grading...Mesh grading: 0...1 (0 => uniform mesh; 1 => aggressive local grading)
-        //0.3
+        // fineness ... Mesh density: 0...1 (0 => coarse; 1 => fine)
+        // grading  ... Mesh grading: 0...1 (0 => uniform mesh; 1 => aggressive local grading)
 
         // Variables                                                                                                                
-        //[NonSerialized]
-        //private double[][] _edgeMeshNodes;
-        //
         private double _maxH;
         private double _minH;
         private double _fineness;
@@ -30,6 +25,7 @@ namespace CaeMesh
         private bool _midsideNodesOnGeometry;
         private int _optimizeSteps2D;
         private int _optimizeSteps3D;
+        private bool _splitCompoundMesh;
         
 
         // Properties                                                                                                               
@@ -114,7 +110,7 @@ namespace CaeMesh
             }
         }
         //
-        //public double[][] EdgeMeshNodes { get { return _edgeMeshNodes; } set { _edgeMeshNodes = value; } }
+        public bool SplitCompoundMesh { get { return _splitCompoundMesh; } set { _splitCompoundMesh = value; } }
 
 
         // Constructors                                                                                                             
@@ -131,6 +127,7 @@ namespace CaeMesh
             _optimizeSteps3D = 3;
             _secondOrder = false;
             _midsideNodesOnGeometry = true;
+            _splitCompoundMesh = false;
         }
 
 
@@ -203,6 +200,7 @@ namespace CaeMesh
             if (meshingParameters1._optimizeSteps3D != meshingParameters2._optimizeSteps3D) return false;
             if (meshingParameters1._secondOrder != meshingParameters2._secondOrder) return false;
             if (meshingParameters1._midsideNodesOnGeometry != meshingParameters2._midsideNodesOnGeometry) return false;
+            if (meshingParameters1._splitCompoundMesh != meshingParameters2._splitCompoundMesh) return false;
             return true;
         }
     }

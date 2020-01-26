@@ -337,6 +337,7 @@ namespace PrePoMax
         }
         public void ClearResults()
         {
+            // Section view
             _sectionViewPlanes[ViewGeometryModelResults.Results] = null;
             //
             if (_results != null || _history != null)
@@ -348,6 +349,7 @@ namespace PrePoMax
             //
             _currentFieldData = null;
             //
+            _form.ClearResults();
             ClearAllSelection();
         }
         public void ClearSelectionHistory()
@@ -389,14 +391,13 @@ namespace PrePoMax
         public void Open(string fileName)
         {
             string extension = Path.GetExtension(fileName).ToLower();
-
+            //
             if (extension == ".pmx") OpenPmx(fileName);
             else if (extension == ".frd") OpenFrd(fileName);
             else if (extension == ".dat") OpenDat(fileName);
             else throw new NotSupportedException();
-
             // Get first component of the first field for the last increment in the last step
-            if (_results != null) _currentFieldData = _results.GetFirstFieldAtLastIncrement();
+            if (_results != null) _currentFieldData = _results.GetFirstComponentOfTheFirstFieldAtLastIncrement();
         }
         private void OpenPmx(string fileName)
         {
@@ -454,7 +455,7 @@ namespace PrePoMax
         {
             ClearResults();
             _results = CaeResults.FrdFileReader.Read(fileName);
-
+            //
             if (_results == null)
             {
                 MessageBox.Show("The results file does not exist or is empty.", "Error");
@@ -463,8 +464,7 @@ namespace PrePoMax
             else
             {
                 _form.Clear3D();
-
-                // check if the meshes are the same and rename the parts
+                // Check if the meshes are the same and rename the parts
                 if (_model.Mesh != null && _results.Mesh != null)
                 {
                     double similarity = _model.Mesh.IsEqual(_results.Mesh);
@@ -477,19 +477,18 @@ namespace PrePoMax
                                                 "Apply model mesh properties (part names, geomery...) to the result mesh?", "Warning",
                                                 MessageBoxButtons.YesNo) == DialogResult.Yes) similarity = 1;
                         }
-
                         if (similarity == 1) _results.CopyPartsFromMesh(_model.Mesh);
                     }
                 }
-
-                _currentView = ViewGeometryModelResults.Results;     // do not draw
+                // Set the view but do not draw
+                _currentView = ViewGeometryModelResults.Results;     
                 _form.SetCurrentView(_currentView);
-
+                // Regenerate tree
                 _form.RegenerateTree(_model, _jobs, _results, _history);
-
+                // Set model changed
                 _modelChanged = true;
             }
-
+            // Open .dat file
             string datFileName = Path.GetFileNameWithoutExtension(fileName) + ".dat";
             datFileName = Path.Combine(Path.GetDirectoryName(fileName), datFileName);
             if (File.Exists(datFileName)) OpenDat(datFileName);
@@ -873,12 +872,11 @@ namespace PrePoMax
         {
             _form.WriteDataToOutput(data);
         }
-        public void ImportGeneratedMesh(string fileName, GeometryPart part, bool resetCamera, bool fromBrep,
-                                        bool convertToSecondOrder)
+        public void ImportGeneratedMesh(string fileName, GeometryPart part, bool resetCamera, bool fromBrep)
         {
             if (!File.Exists(fileName))
-                throw new FileNotFoundException("The file: '" + fileName + "' does not exist." + Environment.NewLine +
-                                                "The reason is a failed mesh generation procedure for part: " + part.Name);
+                throw new CaeException("The file: '" + fileName + "' does not exist." + Environment.NewLine +
+                                       "The reason is a failed mesh generation procedure for part: " + part.Name);
             //
             string[] partNames;
             if (part is CompoundGeometryPart cgp) partNames = cgp.SubPartNames.ToArray();
@@ -886,8 +884,13 @@ namespace PrePoMax
             //
             int[] removedPartIds = RemoveModelParts(partNames, false, true);
             // Convert mesh to second order
-            if (convertToSecondOrder) _form.WriteDataToOutput("Converting mesh to second order...");
-            _model.ImportGeneratedMeshFromVolFile(fileName, part, convertToSecondOrder);
+            bool convertToSecondOrder = part.MeshingParameters.SecondOrder && !part.MeshingParameters.MidsideNodesOnGeometry;
+            if (convertToSecondOrder)
+                _form.WriteDataToOutput("Converting mesh to second order...");
+            bool splitCompoundMesh = part.MeshingParameters.SplitCompoundMesh;
+            // Import, convert and split mesh
+            _model.ImportGeneratedMeshFromVolFile(fileName, part, convertToSecondOrder, splitCompoundMesh);
+            // Calculate the number of new nodes and elements
             if (convertToSecondOrder)
             {
                 int numPoints = 0;
@@ -897,15 +900,13 @@ namespace PrePoMax
                     numPoints += _model.Mesh.Parts[partName].NodeLabels.Length;
                     numElements += _model.Mesh.Parts[partName].Labels.Length;
                 }
-                _form.WriteDataToOutput("Points: " + numPoints);
+                _form.WriteDataToOutput("Nodes: " + numPoints);
                 _form.WriteDataToOutput("Elements: " + numElements);
             }
-
             // Regenerate and change the DisplayedMesh to Model before updating sets
             _form.Clear3D();
             _currentView = ViewGeometryModelResults.Model;
             _form.SetCurrentView(_currentView);
-
             // This is not executed for the first meshing                               
             // For geometry based sets the part id must remain the same after remesh    
             bool renumbered = false;
@@ -925,8 +926,7 @@ namespace PrePoMax
             {
                 foreach (var partName in partNames) _model.Mesh.Parts[partName].SmoothShaded = true;
             }
-            // Tree
-            //Update(UpdateType.Check);
+            // Regenerate tree
             _form.RegenerateTree(_model, _jobs, _results, _history);
             // Draw also draws the ymbols
             DrawMesh(resetCamera);
@@ -1008,6 +1008,8 @@ namespace PrePoMax
 
                     fs.Write(versionBuffer, 0, 32);
                     fs.Write(compressedData, 0, compressedData.Length);
+                    //
+                    _form.WriteDataToOutput("Model saved to file: " + fileName);
                 }
 
                 _modelChanged = false;
@@ -1025,10 +1027,14 @@ namespace PrePoMax
         public void ExportToCalculix(string fileName)
         {
             FileInOut.Output.CalculixFileWriter.Write(fileName, _model);
+            //
+            _form.WriteDataToOutput("Model exported to file: " + fileName);
         }
         public void ExportToAbaqus(string fileName)
         {
             FileInOut.Output.AbaqusFileWriter.Write(fileName, _model);
+            //
+            _form.WriteDataToOutput("Model exported to file: " + fileName);
         }
         public void ExportCADGeometryPartsAsStep(string[] partNames, string fileName)
         {
@@ -1054,6 +1060,8 @@ namespace PrePoMax
                 part = (GeometryPart)_model.Geometry.Parts[partName];
                 brepFileName = Path.Combine(directory, fileNameWithoutExtension + "-" + partName + ".brep");
                 File.WriteAllText(brepFileName, part.CADFileData);
+                //
+                _form.WriteDataToOutput("Part " + partName +" exported to file: " + brepFileName);
             }
         }
         public void ExportCADGeometryPartAsStep(GeometryPart part, string stepFileName)
@@ -1083,6 +1091,8 @@ namespace PrePoMax
             // Job completed
             if (_netgenJob.JobStatus == JobStatus.OK)
             {
+                //
+                _form.WriteDataToOutput("Part " + part.Name + " exported to file: " + stepFileName);
             }
             else return;
         }
@@ -1474,27 +1484,36 @@ namespace PrePoMax
 
         // Analyze geometry ***********************************************************************
 
-        public double GetShortestEdgeLen()
+        public double GetShortestEdgeLen(string[] partNames)
         {
-            return DisplayedMesh.GetShortestEdgeLen();
+            return DisplayedMesh.GetShortestEdgeLen(partNames);
         }
-        public void ShowShortEdges(double minEdgeLen)
+        public void ShowShortEdges(double minEdgeLen, string[] partNames)
         {
-            //ClearAllSelection();
-            double[][][] edgeNodeCoor = DisplayedMesh.GetShortEdges(minEdgeLen);
+            double[][][] edgeNodeCoor = DisplayedMesh.GetShortEdges(minEdgeLen, partNames);
             HighlightConnectedEdges(edgeNodeCoor, 7);
         }
-        public double GetSmallestFace()
+        public double GetClosestUnConnectedEdgesDistance(string[] partNames)
         {
-            return DisplayedMesh.GetSmallestFace();
+            return DisplayedMesh.GetClosestUnConnectedEdgesDistance(partNames);
         }
-        public void ShowSmallFaces(double minFaceArea)
+        public void ShowCloseUnConnectedEdges(double minDistance, string[] partNames)
+        {
+            double[][][] edgeNodeCoor = DisplayedMesh.ShowCloseUnConnectedEdges(minDistance, partNames);
+            HighlightConnectedEdges(edgeNodeCoor, 7);
+        }
+        public double GetSmallestFace(string[] partNames)
+        {
+            return DisplayedMesh.GetSmallestFace(partNames);
+        }
+        public void ShowSmallFaces(double minFaceArea, string[] partNames)
         {
             //ClearAllSelection();
             FeMesh mesh = DisplayedMesh;
-            int[][] cells = mesh.GetSmallestFaces(minFaceArea);
+            int[][] cells = mesh.GetSmallestFaces(minFaceArea, partNames);
             HighlightSurface(cells);
         }
+        
 
         #endregion #################################################################################################################
 
@@ -1579,7 +1598,7 @@ namespace PrePoMax
             if (File.Exists(edgeNodesFileName)) File.Delete(edgeNodesFileName);
             //
             FileInOut.Output.StlFileWriter.Write(stlFileName, _model.Geometry, part.Name);
-            CreateMeshRefinementFile(meshRefinementFileName, newMeshRefinement);
+            CreateMeshRefinementFile(part, meshRefinementFileName, newMeshRefinement);
             parameters.WriteToFile(meshParametersFileName);
             _model.Geometry.WriteEdgeNodesToFile(part, edgeNodesFileName);
             //
@@ -1622,7 +1641,7 @@ namespace PrePoMax
             if (File.Exists(meshRefinementFileName)) File.Delete(meshRefinementFileName);
             //
             File.WriteAllText(brepFileName, part.CADFileData);
-            CreateMeshRefinementFile(meshRefinementFileName, newMeshRefinement);
+            CreateMeshRefinementFile(part, meshRefinementFileName, newMeshRefinement);
             parameters.WriteToFile(meshParametersFileName);
             //
             string argument = "BREP_EDGE_MESH " +
@@ -1749,7 +1768,7 @@ namespace PrePoMax
             if (File.Exists(edgeNodesFileName)) File.Delete(edgeNodesFileName);
             //
             FileInOut.Output.StlFileWriter.Write(stlFileName, _model.Geometry, part.Name);
-            CreateMeshRefinementFile(meshRefinementFileName, null);
+            CreateMeshRefinementFile(part, meshRefinementFileName, null);
             part.MeshingParameters.WriteToFile(meshParametersFileName);
             _model.Geometry.WriteEdgeNodesToFile(part, edgeNodesFileName);
             //
@@ -1765,9 +1784,8 @@ namespace PrePoMax
             _netgenJob.Submit();
             // Job completed
             if (_netgenJob.JobStatus == JobStatus.OK)
-            {
-                bool convertToSecondOrder = part.MeshingParameters.SecondOrder && !part.MeshingParameters.MidsideNodesOnGeometry;
-                ImportGeneratedMesh(volFileName, part, false, false, convertToSecondOrder);
+            {                
+                ImportGeneratedMesh(volFileName, part, false, false);
                 return true;
             }
             else return false;
@@ -1793,7 +1811,7 @@ namespace PrePoMax
             if (File.Exists(meshRefinementFileName)) File.Delete(meshRefinementFileName);
             //
             File.WriteAllText(brepFileName, part.CADFileData);
-            CreateMeshRefinementFile(meshRefinementFileName, null);
+            CreateMeshRefinementFile(part, meshRefinementFileName, null);
             part.MeshingParameters.WriteToFile(meshParametersFileName);
             //
             string argument = "BREP_MESH " +
@@ -1809,15 +1827,15 @@ namespace PrePoMax
             if (_netgenJob.JobStatus == JobStatus.OK)
             {
                 bool convertToSecondOrder = part.MeshingParameters.SecondOrder && !part.MeshingParameters.MidsideNodesOnGeometry;
-                ImportGeneratedMesh(volFileName, part, false, true, convertToSecondOrder);
+                ImportGeneratedMesh(volFileName, part, false, true);
                 return true;
             }
             else return false;
         }
-        private void CreateMeshRefinementFile(string fileName, FeMeshRefinement newMeshRefinement)
+        private void CreateMeshRefinementFile(GeometryPart part, string fileName, FeMeshRefinement newMeshRefinement)
         {
             int count = 0;
-            int[] ids;
+            int[] geometryIds;
             double h;
             FeMeshRefinement meshRefinement;
             StringBuilder sb = new StringBuilder();
@@ -1827,27 +1845,43 @@ namespace PrePoMax
             if (newMeshRefinement != null)
             {
                 // Check for new mesh refinement
-                if (meshRefinements.ContainsKey(newMeshRefinement.Name)) meshRefinements[newMeshRefinement.Name] = newMeshRefinement;
-                else meshRefinements.Add(newMeshRefinement.Name, newMeshRefinement);
+                if (meshRefinements.ContainsKey(newMeshRefinement.Name))
+                    meshRefinements[newMeshRefinement.Name] = newMeshRefinement;
+                else
+                    meshRefinements.Add(newMeshRefinement.Name, newMeshRefinement);
             }
+            // Get part ids of the geometry to mesh
+            HashSet<int> meshPartIds = new HashSet<int>();
+            if (part is CaeMesh.CompoundGeometryPart cgp)
+            {
+                foreach (var partName in cgp.SubPartNames) meshPartIds.Add(_model.Geometry.Parts[partName].PartId);
+            }
+            else meshPartIds.Add(part.PartId);
             //
             foreach (var entry in meshRefinements)
             {
                 meshRefinement = entry.Value;
-                //
+                // Export refinement only if it is active
                 if (meshRefinement.Active)
                 {
-                    ids = meshRefinement.GeometryIds;
-                    if (ids == null || ids.Length == 0) break;
-                    //
-                    h = meshRefinement.MeshSize;
-                    double[][] coor = DisplayedMesh.GetVetexAndEdgeCoorFromGeometryIds(ids, h, false);
-                    //
-                    for (int i = 0; i < coor.Length; i++)
+                    // Get part ids of the mesh refinement
+                    geometryIds = meshRefinement.GeometryIds;
+                    HashSet<int> refinementPartIds = new HashSet<int>(FeMesh.GetPartIdsFromGeometryIds(geometryIds));
+                    refinementPartIds.IntersectWith(meshPartIds);
+                    // Export refinement only if it was created for the geometry to mesh
+                    if (refinementPartIds.Count > 0)
                     {
-                        sb.AppendFormat("{0} {1} {2} {3} {4}", coor[i][0], coor[i][1], coor[i][2], h, Environment.NewLine);
+                        if (geometryIds == null || geometryIds.Length == 0) break;
+                        //
+                        h = meshRefinement.MeshSize;
+                        double[][] coor = DisplayedMesh.GetVetexAndEdgeCoorFromGeometryIds(geometryIds, h, false);
+                        //
+                        for (int i = 0; i < coor.Length; i++)
+                        {
+                            sb.AppendFormat("{0} {1} {2} {3} {4}", coor[i][0], coor[i][1], coor[i][2], h, Environment.NewLine);
+                        }
+                        count += coor.Length;
                     }
-                    count += coor.Length;
                 }
             }
             sb.Insert(0, count + Environment.NewLine);  // number of points
@@ -3930,7 +3964,16 @@ namespace PrePoMax
                 else ClearSelectionHistory();   // Before adding all clear selection
             }
             //
-            _selection.Add(node, ids);
+            bool add = false;
+            if (_selection.IsGeometryBased() && _selection.LimitSelectionToFirstPart)
+            {
+                HashSet<int> prevPartIds = new HashSet<int>(FeMesh.GetPartIdsFromGeometryIds(GetSelectionIds()));
+                prevPartIds.UnionWith(FeMesh.GetPartIdsFromGeometryIds(ids));
+                if (prevPartIds.Count == 1) add = true;
+            }
+            else add = true;
+                
+            if (add) _selection.Add(node, ids);
             if (highlight) HighlightSelection();
             //
         }
@@ -5083,7 +5126,7 @@ namespace PrePoMax
             else if (rigidBody.RegionType == RegionTypeEnum.SurfaceName) nodeSetName = _model.Mesh.Surfaces[rigidBody.RegionName].NodeSetName;
             else throw new NotSupportedException();
 
-            if (_model.Mesh.NodeSets.ContainsKey(nodeSetName))
+            if (nodeSetName !=null && _model.Mesh.NodeSets.ContainsKey(nodeSetName))
             {
                 FeNodeSet nodeSet = _model.Mesh.NodeSets[nodeSetName];
                 if (nodeSet.Labels.Length == 0) return;     // after remeshing this is 0 before the node set update
@@ -5870,7 +5913,7 @@ namespace PrePoMax
         public void DrawNodeSet(string prefixName, string nodeSetName, System.Drawing.Color color, 
                                 vtkControl.vtkRendererLayer layer, int nodeSize = 5)
         {
-            if (_model.Mesh.NodeSets.ContainsKey(nodeSetName))
+            if (nodeSetName != null && _model.Mesh.NodeSets.ContainsKey(nodeSetName))
             {
                 FeNodeSet nodeSet = _model.Mesh.NodeSets[nodeSetName];
                 double[][] nodeCoor = _model.Mesh.GetNodeSetCoor(nodeSet.Labels);

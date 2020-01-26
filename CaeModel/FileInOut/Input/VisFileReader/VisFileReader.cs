@@ -53,7 +53,7 @@ namespace FileInOut.Input
                     mesh.ConvertLineFeElementsToEdges();
 
                     mesh.RenumberVisualizationSurfaces(surfaceIdNodeIds);
-                    //mesh.RenumberVisualizationEdges(edgeIdNodeIds);
+                    mesh.RenumberVisualizationEdges(edgeIdNodeIds);
 
                     mesh.RemoveElementsByType<FeElement1D>();
                     mesh.RemoveElementsByType<FeElement3D>();
@@ -219,16 +219,12 @@ namespace FileInOut.Input
         {
             int count = 0;
             FeNode[] sortedNodes = new FeNode[nodes.Count];
-
-            // sort the nodes by x
-            foreach (var entry in nodes)
-            {
-                sortedNodes[count++] = entry.Value;
-            }
+            // Sort the nodes by x
+            foreach (var entry in nodes) sortedNodes[count++] = entry.Value;
+            //
             IComparer<FeNode> comparerByX = new CompareFeNodeByX();
             Array.Sort(sortedNodes, comparerByX);
-
-            // create a map of node ids to be merged to another node id
+            // Create a map of node ids to be merged to another node id
             Dictionary<int, int> mergeMap = new Dictionary<int, int>();
             for (int i = 0; i < sortedNodes.Length - 1; i++)
             {
@@ -253,16 +249,10 @@ namespace FileInOut.Input
                         break;
                     }
                 }
-
             }
-
-            // remove unused nodes
-            foreach (var entry in mergeMap)
-            {
-                nodes.Remove(entry.Key);
-            }
-
-            // apply the map to the elements
+            // Remove unused nodes
+            foreach (var entry in mergeMap) nodes.Remove(entry.Key);
+            // Apply the map to the elements
             int newId;
             HashSet<int> nodeIds = new HashSet<int>();
             List<int> elementIdsToRemove = new List<int>();
@@ -271,22 +261,19 @@ namespace FileInOut.Input
                 nodeIds.Clear();
                 for (int i = 0; i < entry.Value.NodeIds.Length; i++)
                 {
-                    if (mergeMap.TryGetValue(entry.Value.NodeIds[i], out newId))
-                        entry.Value.NodeIds[i] = newId;
-
+                    if (mergeMap.TryGetValue(entry.Value.NodeIds[i], out newId)) entry.Value.NodeIds[i] = newId;
+                    //
                     nodeIds.Add(entry.Value.NodeIds[i]);
                 }
                 if (nodeIds.Count != entry.Value.NodeIds.Length) elementIdsToRemove.Add(entry.Key);
             }
-
-            // remove collapsed elements
+            // Remove collapsed elements
             foreach (var elementId in elementIdsToRemove)
             {
                 elements.Remove(elementId);
-                // might be also necessary to remove some nodes ?
+                // Might be also necessary to remove some nodes ?
             }
-
-            // surface node ids
+            // Surface node ids
             HashSet<int> newIds = new HashSet<int>();
             foreach (var entry in surfaceIdNodeIds)
             {
@@ -299,8 +286,7 @@ namespace FileInOut.Input
                 entry.Value.Clear();
                 entry.Value.UnionWith(newIds);
             }
-
-            // edge node ids
+            // Edge node ids
             foreach (var entry in edgeIdNodeIds)
             {
                 newIds.Clear();

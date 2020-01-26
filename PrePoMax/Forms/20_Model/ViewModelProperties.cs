@@ -28,7 +28,7 @@ namespace PrePoMax.Forms
         [Description("Name of the model.")]
         [Id(1, 1)]
         public string Name { get { return _name; } set { _name = value; } }
-
+        //
         [Category("Data")]
         [OrderedDisplayName(1, 10, "Model type")]
         [Description("Model type.")]
@@ -43,7 +43,7 @@ namespace PrePoMax.Forms
                 UpdateVisibility();
             }
         }
-
+        //
         [Category("Submodel")]
         [OrderedDisplayName(0, 10, "Global results .frd")]
         [Description("Enter the global results file name (.frd) without path.")]
@@ -81,7 +81,6 @@ namespace PrePoMax.Forms
         {
             return _modelProperties;
         }
-
         private void UpdateVisibility()
         {
             cpd = _dctd.GetProperty("GlobalResultsFileName");

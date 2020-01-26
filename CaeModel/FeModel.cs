@@ -348,8 +348,12 @@ namespace CaeModel
 
         public void RemoveLostUserKeywords(Action<int> SetNumberOfUserKeywords)
         {
-            FileInOut.Output.CalculixFileWriter.RemoveLostUserKeywords(this);
-            SetNumberOfUserKeywords?.Invoke(_calculixUserKeywords.Count);
+            try
+            {
+                FileInOut.Output.CalculixFileWriter.RemoveLostUserKeywords(this);
+                SetNumberOfUserKeywords?.Invoke(_calculixUserKeywords.Count);
+            }
+            catch { }
         }
         public void UpdateUserKeywordIndices_(object itemToRemove, Action<int> SetNumberOfUserKeywords)
         {
@@ -461,12 +465,15 @@ namespace CaeModel
             //
             ImportMesh(mesh, GetReservedPartNames());
         }
-        public void ImportGeneratedMeshFromVolFile(string fileName, GeometryPart part, bool convertToSecondorder)
+        public void ImportGeneratedMeshFromVolFile(string fileName, GeometryPart part, bool convertToSecondorder,
+                                                   bool splitCompoundMesh)
         {
             // Called after meshing in PrePoMax - the parts are sorted by id
             FeMesh mesh = FileInOut.Input.VolFileReader.Read(fileName, 
                                                              FileInOut.Input.ElementsToImport.Solid,
-                                                             convertToSecondorder);            
+                                                             convertToSecondorder);
+            // Split compound mesh
+            if (splitCompoundMesh) mesh.SplitCompoundMesh();
             // Get part names
             string[] partNames = mesh.Parts.Keys.ToArray();
             string[] prevPartNames;
@@ -546,10 +553,11 @@ namespace CaeModel
             int[] nodeIds;
             double[] equForces;
             Dictionary<int, double> nodalForces = new Dictionary<int, double>();
-
             double aSum = 0;
-
+            //
             FeSurface surface = _mesh.Surfaces[load.SurfaceName];
+            if (surface.ElementFaces == null) return null;
+            //
             foreach (var entry in surface.ElementFaces)
             {
                 foreach (var elementId in _mesh.ElementSets[entry.Value].Labels)
@@ -559,7 +567,7 @@ namespace CaeModel
                     aSum += A;
                     nodeIds = element.GetNodeIdsFromFaceName(entry.Key);
                     equForces = element.GetEquivalentForcesFromFaceName(entry.Key);
-
+                    //
                     for (int i = 0; i < nodeIds.Length; i++)
                     {
                         nodeId = nodeIds[i];
@@ -568,7 +576,7 @@ namespace CaeModel
                     }
                 }
             }
-
+            //
             List<CLoad> loads = new List<CLoad>();
             foreach (var entry in nodalForces)
             {
@@ -580,7 +588,7 @@ namespace CaeModel
                                         load.F3 / surface.Area * entry.Value));
                 }
             }
-
+            //
             return loads.ToArray();
         }
 

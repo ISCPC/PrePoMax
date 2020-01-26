@@ -13,12 +13,14 @@ namespace CaeGlobals
         private List<SelectionNode> _nodes;
         private vtkSelectItem _selectItem;
         // Temporary storage for speed optimization: keep current ids; do not copy
-        [NonSerialized] private Dictionary<SelectionNode, int[]> _nodeIds;  
+        [NonSerialized] private Dictionary<SelectionNode, int[]> _nodeIds;
+        [NonSerialized] private bool _limitSelectionToFirstPart;
 
 
         // Properties                                                                                                               
         public vtkSelectItem SelectItem { get { return _selectItem; } set { _selectItem = value; } }
         public List<SelectionNode> Nodes { get { return _nodes; } set { _nodes = value; } }
+        public bool LimitSelectionToFirstPart { get { return _limitSelectionToFirstPart; } set { _limitSelectionToFirstPart = value; } }
 
 
         // Constructors                                                                                                             
@@ -27,6 +29,7 @@ namespace CaeGlobals
             _nodes = new List<SelectionNode>();
             _nodeIds = null;
             _selectItem = vtkSelectItem.None;
+            _limitSelectionToFirstPart = false;
         }
 
 

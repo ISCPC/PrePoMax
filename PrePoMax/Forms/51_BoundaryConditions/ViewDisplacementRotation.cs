@@ -63,7 +63,7 @@ namespace PrePoMax
         // Constructors                                                                                                             
         public ViewDisplacementRotation(CaeModel.DisplacementRotation displacementRotation)
         {
-            // the order is important
+            // The order is important
             _displacementRotation = displacementRotation;
 
             Dictionary<RegionTypeEnum, string> regionTypePropertyNamePairs = new Dictionary<RegionTypeEnum, string>();

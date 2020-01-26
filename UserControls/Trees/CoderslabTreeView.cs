@@ -712,32 +712,40 @@ namespace UserControls
 		/// <param name="tva">Specifies the action that caused the selection change.</param>
 		private void SelectNodesInsideRange(TreeNode startNode, TreeNode endNode, TreeViewAction tva)
 		{
-			// Calculate start node and end node
-			TreeNode firstNode = null;
-			TreeNode lastNode = null;
-			if (startNode.Bounds.Y < endNode.Bounds.Y)
+			try
 			{
-				firstNode = startNode;
-				lastNode = endNode;
+				// Calculate start node and end node
+				TreeNode firstNode = null;
+				TreeNode lastNode = null;
+				if (startNode.Bounds.Y < endNode.Bounds.Y)
+				{
+					firstNode = startNode;
+					lastNode = endNode;
+				}
+				else
+				{
+					firstNode = endNode;
+					lastNode = startNode;
+				}
+
+				// Select each node in range
+				SelectNode(firstNode, true, tva);
+				TreeNode tnTemp = firstNode;
+				while (tnTemp != lastNode)
+				{
+					tnTemp = tnTemp.NextVisibleNode;
+					if (tnTemp != null)
+					{
+						SelectNode(tnTemp, true, tva);
+					}
+				}
+				SelectNode(lastNode, true, tva);
 			}
-			else
+			catch (Exception ex)
 			{
-				firstNode = endNode;
-				lastNode = startNode;
+				int error = 0;
 			}
 
-			// Select each node in range
-			SelectNode(firstNode, true, tva);
-			TreeNode tnTemp = firstNode;
-			while (tnTemp != lastNode)
-			{
-				tnTemp = tnTemp.NextVisibleNode;
-				if (tnTemp != null)
-				{
-					SelectNode(tnTemp, true, tva);
-				}
-			}
-			SelectNode(lastNode, true, tva);
 		}
 
 		/// <summary>
@@ -1676,6 +1684,9 @@ namespace UserControls
 		/// <param name="e"></param>
 		protected override void OnAfterCollapse(TreeViewEventArgs e)
 		{
+			base.OnAfterCollapse(e);
+			return;
+
 			blnSelectionChanged = false;
 
 			// All child nodes should be deselected
@@ -1696,7 +1707,7 @@ namespace UserControls
 
 			OnSelectionsChanged();
 
-			base.OnAfterCollapse(e);
+			//base.OnAfterCollapse(e);
 		}
 
 		#endregion

@@ -274,6 +274,7 @@ namespace vtkControl
             UpdateColor();
         }
 
+
         // Methods                                                                                                                  
         private void AddCellDataToGrid(vtkUnstructuredGrid source, vtkUnstructuredGrid uGridActor, vtkUnstructuredGrid uGridEdges)
         {
@@ -563,121 +564,7 @@ namespace vtkControl
 
            
         }
-        
-
-        //                          
-        private vtkActor GetActorEdgesFromGrid_(vtkUnstructuredGrid uGridEdges)
-        {
-            // SHOWS INTERNAL EDGES OF PARABOLIC ELEMENTS
-            if (uGridEdges.GetNumberOfCells() <= 0) return null;
-
-            //vtkLookupTable table = vtkLookupTable.New();
-            //table.SetNumberOfColors(1);
-            //table.SetTableValue(0, 0, 0, 0, 0);
-
-            vtkDataSetMapper mapper = vtkDataSetMapper.New();
-            mapper.SetInput(uGridEdges);
-            //mapper.SetLookupTable(table);
-
-            vtkProperty prop = vtkProperty.New();
-            prop.SetRepresentationToWireframe();
-            prop.SetColor(0, 0, 0);
-            prop.SetLighting(false);
-
-            vtkActor edges = vtkActor.New();
-            edges.SetMapper(mapper);
-            edges.SetProperty(prop);
-            edges.PickableOff();
-
-            return edges;
-        }
-        private vtkActor ExtractActorEdges_(vtkActor actor)
-        {
-            // Edges
-            vtkExtractEdges extractEdges = vtkExtractEdges.New();
-            extractEdges.SetInput(actor.GetMapper().GetInput());
-            extractEdges.Update();
-
-            // Visualize edges
-            vtkPolyDataMapper mapperEdges = vtkPolyDataMapper.New();
-            mapperEdges.SetInputConnection(extractEdges.GetOutputPort());
-            vtkActor actorEdges = vtkActor.New();
-            actorEdges.SetMapper(mapperEdges);
-            actorEdges.GetProperty().SetColor(0, 0, 0);
-            actorEdges.GetProperty().SetLineWidth(1);
-            actorEdges.GetProperty().EdgeVisibilityOn();
-            actorEdges.PickableOff();
-
-            return actorEdges;
-        }
-        private vtkActor GetActorEdgesFromGrid__(vtkUnstructuredGrid uGridEdges)
-        {
-            if (uGridEdges.GetNumberOfCells() <= 0) return null;
-
-            //vtkLookupTable table = vtkLookupTable.New();
-            //table.SetNumberOfColors(1);
-            //table.SetTableValue(0, 0, 0, 0, 0);
-
-            vtkDataSetMapper mapper = vtkDataSetMapper.New();
-            mapper.SetInput(uGridEdges);
-            //mapper.SetLookupTable(table);
-
-            vtkProperty prop = vtkProperty.New();
-            prop.SetRepresentationToWireframe();
-            prop.SetColor(0, 0, 0);
-            prop.SetLighting(false);
-
-            vtkActor edges = vtkActor.New();
-            edges.SetMapper(mapper);
-            edges.SetProperty(prop);
-            edges.PickableOff();
-
-            return edges;
-        }
-        private vtkActor GetActorEdgesFromGrid___(vtkUnstructuredGrid uGridEdges)
-        {
-            if (uGridEdges.GetNumberOfCells() <= 0) return null;
-
-
-            vtkDataSetSurfaceFilter surfaceFilter = vtkDataSetSurfaceFilter.New();
-            surfaceFilter.SetInput(uGridEdges);
-            //surfaceFilter.SetInputData(unstructuredGrid);
-            surfaceFilter.Update();
-
-            vtkPolyData polydata = surfaceFilter.GetOutput();
-
-            vtkFeatureEdges featureEdges = vtkFeatureEdges.New();
-            featureEdges.SetInput(polydata);
-            featureEdges.BoundaryEdgesOn();
-            featureEdges.FeatureEdgesOff();
-            featureEdges.ManifoldEdgesOff();
-            featureEdges.NonManifoldEdgesOn();
-            featureEdges.Update();
-
-            //vtkDataSetMapper mapper = vtkDataSetMapper.New();
-            //mapper.SetInput(uGridEdges);
-
-            vtkPolyDataMapper mapper = vtkPolyDataMapper.New();
-            mapper.SetInputConnection(featureEdges.GetOutputPort());
-
-            vtkProperty prop = vtkProperty.New();
-            prop.SetRepresentationToWireframe();
-            prop.SetColor(0, 0, 0);
-            prop.SetLighting(false);
-
-            vtkActor edges = vtkActor.New();
-            edges.SetMapper(mapper);
-            edges.SetProperty(prop);
-            edges.PickableOff();
-
-            return edges;
-        }
-        private void GetActorEdgesFromGrid_(vtkUnstructuredGrid uGridEdges, ref vtkActor actorEdges)
-        {
-            actorEdges = GetActorEdgesFromGridByVisualizationSurfaceExtraction(uGridEdges);
-        }
-
-       
+        //
         private void AddNodeAndCellDataToGrid(PartExchangeData data, out vtkUnstructuredGrid uGridActor)
         {           
             vtkUnstructuredGrid uGridEdges;
@@ -894,6 +781,11 @@ namespace vtkControl
                 property.SetLineWidth(0.5f);
                 property.SetOpacity(opacity * 0.4);
             }
+        }
+        public void UpdateVisibility()
+        {
+            // Update even if VtkMaxActorVisible == _visible to set the visibility for the geometry actor
+            VtkMaxActorVisible = _visible;
         }
         public void Highlight()
         {

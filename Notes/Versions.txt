@@ -10,8 +10,13 @@ Support for viewing and editing materila data in material library
 
 
 By Martin:
-19.1.2020
-1) Add a reference point on the centroid of the surface
+22.1.2020
+1) add access to the part context menu, in order to be able to hide parts on the selection
+2) let the eye icon in the model tree (or the place where it would be) toggle hide/show state (activated/deactivated)
+4) Refernece point on surface ceners and between two points and in the center of three points
+
+
+
 
 
 By Sergio:
@@ -103,7 +108,6 @@ By Martin:
 
 
 By Matej
-- wrong selection when using thin 3D structures due to the GetNearestPoint selection on actor locator
 - Custom Type Editor for units and BC https://www.cyotek.com/blog/creating-a-custom-typeconverter-part-1   
 									  https://msdn.microsoft.com/en-us/library/ayybcxe5.aspx#Type
 
@@ -141,10 +145,14 @@ Dependency nglib - added following files for c++ redistriburable compatibility:
 
 Done
 
+Version 0.5.3 Master branch
+
+Mesh refinement can only be specified for one part
+Added support for splitting of compound meshes
+Added support for regenerate to skipp over errors - needs further testing!!!
 Double-clicking the status block widget opens settings
 Add edit CalculiX keywords to the context menu of the model
-Version 0.5.3 Master branch
-Abbed compound part creation
+Added compound part creation
 Optimized selection speed by keeping intermediate node results
 Fixed selections based on geometry
 Increased speed of meshing and analysis

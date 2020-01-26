@@ -596,49 +596,7 @@ namespace FileInOut.Output
                 else throw new NotImplementedException();
             }
         }
-        static private void AppendCloadData(StringBuilder sb, CLoad cLoad, Dictionary<string, int[]> referencePointsNodeIds, FeModel model)
-        {
-            int[] rpNodeIds = null;
-            if (cLoad.RegionType == CaeGlobals.RegionTypeEnum.ReferencePointName) rpNodeIds = referencePointsNodeIds[cLoad.RegionName];
-
-            List<int> directions = new List<int>();
-            if (cLoad.F1 != 0) directions.Add(1);
-            if (cLoad.F2 != 0) directions.Add(2);
-            if (cLoad.F3 != 0) directions.Add(3);
-
-            foreach (var dir in directions)
-            {
-                if (cLoad.RegionType == CaeGlobals.RegionTypeEnum.NodeId)
-                    sb.AppendFormat("{0}, {1}, {2}", cLoad.NodeId, dir, cLoad.GetDirection(dir - 1).ToString());
-                else if (cLoad.RegionType == CaeGlobals.RegionTypeEnum.NodeSetName) // node set
-                    sb.AppendFormat("{0}, {1}, {2}", cLoad.RegionName, dir, cLoad.GetDirection(dir - 1).ToString());
-                else if (cLoad.RegionType == CaeGlobals.RegionTypeEnum.ReferencePointName) // reference point
-                    sb.AppendFormat("{0}, {1}, {2}", rpNodeIds[0], dir, cLoad.GetDirection(dir - 1).ToString());
-                
-                sb.AppendLine();
-            }
-        }
-        static private void AppendMomentLoadData(StringBuilder sb, MomentLoad momentLoad, Dictionary<string, int[]> referencePointsNodeIds, FeModel model)
-        {
-            int[] rpNodeIds = null;
-            if (momentLoad.RegionType == CaeGlobals.RegionTypeEnum.ReferencePointName) rpNodeIds = referencePointsNodeIds[momentLoad.RegionName];
-
-            List<int> directions = new List<int>();
-            if (momentLoad.M1 != 0) directions.Add(1);
-            if (momentLoad.M2 != 0) directions.Add(2);
-            if (momentLoad.M3 != 0) directions.Add(3);
-
-            foreach (var dir in directions)
-            {
-                if (momentLoad.RegionType == CaeGlobals.RegionTypeEnum.NodeId)
-                    sb.AppendFormat("{0}, {1}, {2}", momentLoad.NodeId, dir, momentLoad.GetDirection(dir - 1).ToString());
-                else if (momentLoad.RegionType == CaeGlobals.RegionTypeEnum.ReferencePointName) // reference point
-                    sb.AppendFormat("{0}, {1}, {2}", rpNodeIds[1], dir, momentLoad.GetDirection(dir - 1).ToString());
-
-                sb.AppendLine();
-            }
-        }
-
+        
         static private void AppendHistoryOutput(FeModel model, HistoryOutput historyOutput, CalculixKeyword parent)
         {
             if (historyOutput is NodalHistoryOutput nho)

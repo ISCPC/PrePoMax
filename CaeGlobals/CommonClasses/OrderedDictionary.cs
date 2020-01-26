@@ -153,7 +153,12 @@ namespace CaeGlobals
         /// 
         public TValue this[TKey key]
         {
-            get { return dictionary[key]; }
+            get
+            {
+                TValue value;
+                if (dictionary.TryGetValue(key, out value)) return value;
+                else throw new CaeException("The given key '" + key.ToString() + "' was not present in the dictionary.");
+            }
             set
             {
                 dictionary[key] = value;

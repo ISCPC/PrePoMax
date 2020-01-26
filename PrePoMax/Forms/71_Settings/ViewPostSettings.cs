@@ -240,27 +240,13 @@ namespace PrePoMax.Settings
         {
             _postSettings = postSettings;
             _dctd = ProviderInstaller.Install(this);
-
+            //
             DeformationScaleFactorType = _postSettings.DeformationScaleFactorType;      // add this also to Reset()
             ColorSpectrumMinMaxType = _postSettings.ColorSpectrum.MinMaxType;           // add this also to Reset()
-
-            CustomPropertyDescriptor cpd;
-
-            // now lets display Yes/No instead of True/False
-            cpd = _dctd.GetProperty("ShowMinValueLocation");
-            foreach (StandardValueAttribute sva in cpd.StatandardValues)
-            {
-                if ((bool)sva.Value == true) sva.DisplayName = "Yes";
-                else sva.DisplayName = "No";
-            }
-
-            // now lets display Yes/No instead of True/False
-            cpd = _dctd.GetProperty("ShowMaxValueLocation");
-            foreach (StandardValueAttribute sva in cpd.StatandardValues)
-            {
-                if ((bool)sva.Value == true) sva.DisplayName = "Yes";
-                else sva.DisplayName = "No";
-            }
+            // Now lets display Yes/No instead of True/False
+            _dctd.RenameBooleanPropertyToYesNo("ShowMinValueLocation");
+            _dctd.RenameBooleanPropertyToYesNo("ShowMaxValueLocation");
+            _dctd.RenameBooleanPropertyToYesNo("DrawUndeformedModel");
         }
 
         // Methods                                                                               

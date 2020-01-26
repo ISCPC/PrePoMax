@@ -13,7 +13,16 @@ namespace CaeGlobals
         // Properties                                                                                                               
         public double Len { get { return Math.Sqrt(X * X + Y * Y + Z * Z); } }
         public double Len2 { get { return X * X + Y * Y + Z * Z; } }
-        public double[] Coor { get { return new double[] { X, Y, Z }; } }
+        public double[] Coor
+        {
+            get { return new double[] { X, Y, Z }; }
+            set 
+            {
+                X = value[0];
+                Y = value[1];
+                Z = value[2];
+            }
+        }
 
 
         // Constructors                                                                                                             

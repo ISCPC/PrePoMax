@@ -27,7 +27,8 @@ namespace CaeModel
         {
             if (direction == 0) return M1;
             else if (direction == 1) return M2;
-            else return M3;
+            else if (direction == 2) return M3;
+            else throw new NotSupportedException();
         }
 
         // Constructors                                                                                                             

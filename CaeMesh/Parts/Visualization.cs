@@ -230,13 +230,14 @@ namespace CaeMesh
         public void RenumberNodes(Dictionary<int, int> newIds)
         {
             // Cells
+            int id;
             if (_cells != null)
             {
                 for (int i = 0; i < _cells.Length; i++)
                 {
                     for (int j = 0; j < _cells[i].Length; j++)
                     {
-                        _cells[i][j] = newIds[_cells[i][j]];
+                        if (newIds.TryGetValue(_cells[i][j], out id)) _cells[i][j] = id;
                     }
                 }
             }
@@ -248,7 +249,7 @@ namespace CaeMesh
                 {
                     for (int j = 0; j < _edgeCells[i].Length; j++)
                     {
-                        _edgeCells[i][j] = newIds[_edgeCells[i][j]];
+                        if (newIds.TryGetValue(_edgeCells[i][j], out id)) _edgeCells[i][j] = id;
                     }
                 }
             }
@@ -257,7 +258,7 @@ namespace CaeMesh
             {
                 for (int i = 0; i < _vertexNodeIds.Length; i++)
                 {
-                    _vertexNodeIds[i] = newIds[_vertexNodeIds[i]];
+                    if (newIds.TryGetValue(_vertexNodeIds[i], out id)) _vertexNodeIds[i] = id;
                 }
             }
         }

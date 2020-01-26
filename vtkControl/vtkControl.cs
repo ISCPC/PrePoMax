@@ -872,7 +872,7 @@ namespace vtkControl
             if (pickPoint == null) return;
 
             string actorName = GetActorName(pickedActor);
-            vtkMaxActor actor = GetModelEdgesActor(actorName);
+            vtkMaxActor actor = GetCopyOfModelEdgesActor(actorName);
             if (actor != null)
             {
                 _mouseSelectionActorCurrent = actor;
@@ -1149,27 +1149,33 @@ namespace vtkControl
 
         private double[] GetPickPoint(out vtkActor pickedActor, int x, int y)
         {
-            double[] p = null;
+            double[] p;
             int cellId;
             vtkCell cell;
             vtkCellLocator locator;
-
             // Make all actors visible
-            double opacity;
             foreach (var entry in _actors)
             {
-                if (_selectableActorsFilter != null && !_selectableActorsFilter.Contains(entry.Value.Name)) opacity = 0;
-                else opacity = 1;
-                //
-                entry.Value.Geometry.GetProperty().SetOpacity(opacity);
+                if (_selectableActorsFilter != null)
+                {
+                    // Change the visibility of geometry only to enable reset
+                    if (_selectableActorsFilter.Contains(entry.Value.Name)) entry.Value.Geometry.VisibilityOn();
+                    else entry.Value.Geometry.VisibilityOff();
+                }
+                // Set opacity for all visible actors to 1
+                entry.Value.Geometry.GetProperty().SetOpacity(1);
             }
             // Pick actor by hardware rendering - render the sceene before Pick
             _renderer.Render();
             _propPicker.Pick(x, y, 0, _renderer);
             pickedActor = _propPicker.GetActor();
             // Reset the actor visibility
-            foreach (var entry in _actors) entry.Value.UpdateColor();
-
+            foreach (var entry in _actors)
+            {
+                entry.Value.UpdateColor();
+                ApplyEdgeVisibilityAndBackfaceCullingToActor(entry.Value.Geometry, vtkRendererLayer.Base);
+            }
+            //
             int size = 5;
             int step = 2;
 
@@ -1252,25 +1258,33 @@ namespace vtkControl
             //
             foreach (var entry in _actors)
             {
-                // Skip invisible actors
-                if (entry.Value.Geometry.GetVisibility() == 0) continue;
-                // Skip filtered actors
-                if (_selectableActorsFilter != null && !_selectableActorsFilter.Contains(entry.Value.Name)) continue;
-                //
-                locator = entry.Value.CellLocator;
-                if (locator != null)
+                // Set filtered actors
+                if (_selectableActorsFilter != null)
                 {
-                    locator.FindClosestPoint(x, closestPoint, ref localCellId, ref subId, ref distance2);
-                    if (distance2 < minDist)
+                    if (_selectableActorsFilter.Contains(entry.Value.Name)) entry.Value.Geometry.VisibilityOn();
+                    else entry.Value.Geometry.VisibilityOff();
+                }
+                // Skip invisible actors in there is no filter
+                if (entry.Value.Geometry.GetVisibility() != 0)
+                {
+                    //
+                    locator = entry.Value.CellLocator;
+                    if (locator != null)
                     {
-                        minDist = distance2;
-                        cellLocator = locator;
-                        cell = locator.GetDataSet().GetCell(localCellId);
-                        globalCellId = (int)locator.GetDataSet().GetCellData().GetGlobalIds().GetTuple1(localCellId);
-                        //
-                        Marshal.Copy(closestPoint, pointOut, 0, 3);
+                        locator.FindClosestPoint(x, closestPoint, ref localCellId, ref subId, ref distance2);
+                        if (distance2 < minDist)
+                        {
+                            minDist = distance2;
+                            cellLocator = locator;
+                            cell = locator.GetDataSet().GetCell(localCellId);
+                            globalCellId = (int)locator.GetDataSet().GetCellData().GetGlobalIds().GetTuple1(localCellId);
+                            //
+                            Marshal.Copy(closestPoint, pointOut, 0, 3);
+                        }
                     }
                 }
+                // Reset visibility
+                ApplyEdgeVisibilityAndBackfaceCullingToActor(entry.Value.Geometry, vtkRendererLayer.Base);
             }
             //
             Marshal.FreeHGlobal(x);
@@ -1820,8 +1834,6 @@ namespace vtkControl
             textProperty.SetLineSpacing(1.5);
             return textProperty;
         }
-        
-     
        
         private vtkActor GetActorEdgesFromGrid(vtkUnstructuredGrid uGridEdges)
         {
@@ -1868,19 +1880,53 @@ namespace vtkControl
         }
         private void ApplySelectionFormatingToActor(vtkActor actor)
         {
+            // Get actor cell type
+            vtkCellTypes types = vtkCellTypes.New();
+            actor.GetMapper().GetInput().GetCellTypes(types);
+            int num = types.GetNumberOfTypes();
+            byte cellType;
+            bool onlyEdges = true;
+            bool onlyNodes = true;
+            for (int i = 0; i < num; i++)
+            {
+                cellType = types.GetCellType(i);
+                if (cellType != (int)vtkCellType.VTK_LINE && cellType != (int)vtkCellType.VTK_QUADRATIC_EDGE)
+                {
+                    onlyEdges = false;
+                    //break;
+                }
+                if (cellType != (int)vtkCellType.VTK_VERTEX)
+                {
+                    onlyNodes = false;
+                    //break;
+                }
+            }
+            //
+            double k;
+            double ambient;
+            double diffuse;
+            if (onlyNodes || onlyEdges)
+            {
+                k = 1;
+                ambient = 1;
+                diffuse = 1;
+            }
+            else
+            {
+                k = 0.7;
+                ambient = 0.6;
+                diffuse = 0.6;
+            }
+            // Get property
             vtkProperty property = actor.GetProperty();
-
             // if the point size was already set, do not change it
             if (property.GetPointSize() <= 1) property.SetPointSize(7);
-            double k = 0.9;
             property.SetColor(_highlightColor.R / 255d * k, _highlightColor.G / 255d * k, _highlightColor.B / 255d * k);
-            property.SetAmbient(0.6);    // color background - even away from light
-            property.SetDiffuse(0.6);    // color from the lights
-            property.SetLineWidth(2);
+            property.SetAmbient(ambient);    // color background - even away from light
+            property.SetDiffuse(diffuse);    // color from the lights
+            property.SetLineWidth(2f);
             property.SetOpacity(1);
-
             property.BackfaceCullingOn();
-
             actor.PickableOff();
         }
         private void ApplySymbolFormatingToActor(vtkActor actor)
@@ -3394,15 +3440,21 @@ namespace vtkControl
         }
         private void HighlightActorByName(string actorName)
         {
-            vtkMaxActor actor = GetModelEdgesActor(actorName);
-            if (actor != null)
+            //vtkMaxActor actor = GetCopyOfActor(actorName);
+            vtkMaxActor actorModelEdges = GetCopyOfModelEdgesActor(actorName);
+            //
+            //if (actor != null && actorModelEdges != null)
+            if (actorModelEdges != null)
             {
+                actorModelEdges.Geometry.GetProperty().SetOpacity(1);
+                AddActorGeometry(actorModelEdges, vtkRendererLayer.Selection);
                 //actor.DrawOnGeometry = true;
-                AddActorGeometry(actor, vtkRendererLayer.Selection);
+                //actor.Geometry.GetProperty().SetOpacity(1);
+                //AddActorGeometry(actor, vtkRendererLayer.Selection);
                 this.Invalidate();
             }
         }
-        private vtkMaxActor GetModelEdgesActor(string actorName)
+        private vtkMaxActor GetCopyOfModelEdgesActor(string actorName)
         {
             vtkMaxActor actor = null;
             if (_actors.ContainsKey(actorName))
@@ -3411,6 +3463,26 @@ namespace vtkControl
 
                 vtkPolyData data = vtkPolyData.New();
                 data.DeepCopy(actorToHighLight.ModelEdges.GetMapper().GetInput());
+
+                vtkDataSetMapper mapper = vtkDataSetMapper.New();
+                mapper.SetInput(data);
+
+                actor = new vtkMaxActor();
+                actor.Geometry.SetMapper(mapper);
+                actor.Geometry.PickableOff();
+            }
+            return actor;
+        }
+
+        private vtkMaxActor GetCopyOfActor(string actorName)
+        {
+            vtkMaxActor actor = null;
+            if (_actors.ContainsKey(actorName))
+            {
+                vtkMaxActor actorToHighLight = _actors[actorName];
+
+                vtkPolyData data = vtkPolyData.New();
+                data.DeepCopy(actorToHighLight.Geometry.GetMapper().GetInput());
 
                 vtkDataSetMapper mapper = vtkDataSetMapper.New();
                 mapper.SetInput(data);

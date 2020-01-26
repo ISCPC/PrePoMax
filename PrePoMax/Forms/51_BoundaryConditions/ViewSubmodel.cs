@@ -79,18 +79,8 @@ namespace PrePoMax
             for (int i = 1; i <= 3; i++)
             {
                 cpd = DynamicCustomTypeDescriptor.GetProperty("U" + i);
-                foreach (StandardValueAttribute sva in cpd.StatandardValues)
-                {
-                    if ((bool)sva.Value == true) sva.DisplayName = "From global model";
-                    else sva.DisplayName = "Unconstrained";
-                }
-
-                cpd = DynamicCustomTypeDescriptor.GetProperty("UR" + i);
-                foreach (StandardValueAttribute sva in cpd.StatandardValues)
-                {
-                    if ((bool)sva.Value == true) sva.DisplayName = "From global model";
-                    else sva.DisplayName = "Unconstrained";
-                }
+                DynamicCustomTypeDescriptor.RenameBooleanProperty("U" + i, "From global model", "Unconstrained");
+                DynamicCustomTypeDescriptor.RenameBooleanProperty("UR" + i, "From global model", "Unconstrained");
             }
         }
 

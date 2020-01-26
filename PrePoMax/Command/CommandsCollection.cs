@@ -128,31 +128,48 @@ namespace PrePoMax.Commands
             int count = 0;
             bool showDialogs = showImportDialog || showMeshParametersDialog;
             _history.Clear();
-
+            List<string> errors = new List<string>();
+            //
             foreach (Command command in _commands)
             {
                 if (count++ <= _currPositionIndex)
                 {
                     // Write to form
                     WriteToOutput(command);
-
-                    // Execute
-                    if (command is ICommandWithDialog icwd && showDialogs &&
-                        (showImportDialog && command is CImportFile || showMeshParametersDialog && command is CSetMeshingParameters))
+                    // Try
+                    try
                     {
-                        icwd.ExecuteWithDialogs(_controller);
+                        // Execute
+                        if (command is ICommandWithDialog icwd && showDialogs &&
+                            (showImportDialog && command is CImportFile || showMeshParametersDialog && command is CSetMeshingParameters))
+                        {
+                            icwd.ExecuteWithDialogs(_controller);
+                        }
+                        else command.Execute(_controller);
                     }
-                    else command.Execute(_controller);
-
+                    catch (Exception ex)
+                    {
+                        errors.Add(command.Name + ": " + ex.Message);
+                    }
                     // Add history
                     AddToHistory(command);
                 }
                 else break;
             }
-
-            // write to file
+            // Report Errors
+            if (errors.Count != 0)
+            {
+                WriteOutput?.Invoke("");
+                WriteOutput?.Invoke("****   Exceptions   ****");                
+                foreach (var error in errors)
+                {
+                    WriteOutput?.Invoke(error);
+                }
+                WriteOutput?.Invoke("****   Number of exceptions: " + errors.Count + "   ****");
+            }
+            // Write to file
             WriteToFile();
-
+            //
             OnEnableDisableUndoRedo();
         }
         // Clear

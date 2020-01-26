@@ -19,6 +19,7 @@ namespace PrePoMax.Forms
         private SelectionNodeIds _selectionNodeIds;
         private Button btnPreview;
         private Controller _controller;
+        private int _previewDx;
 
 
         // Properties                                                                                                               
@@ -37,6 +38,7 @@ namespace PrePoMax.Forms
             _controller = controller;
             _viewFeMeshRefinement = null;
             _meshRefinementNames = new HashSet<string>();
+            _previewDx = btnCancel.Left - btnOK.Right;
             //
             SelectionClear = _controller.Selection.Clear;
         }
@@ -46,9 +48,30 @@ namespace PrePoMax.Forms
             this.gbProperties.SuspendLayout();
             this.SuspendLayout();
             // 
+            // gbProperties
+            // 
+            this.gbProperties.Size = new System.Drawing.Size(329, 364);
+            // 
+            // propertyGrid
+            // 
+            this.propertyGrid.Size = new System.Drawing.Size(317, 336);
+            // 
+            // btnOK
+            // 
+            this.btnOK.Location = new System.Drawing.Point(179, 376);
+            // 
+            // btnCancel
+            // 
+            this.btnCancel.Location = new System.Drawing.Point(260, 376);
+            // 
+            // btnOkAddNew
+            // 
+            this.btnOkAddNew.Location = new System.Drawing.Point(98, 376);
+            // 
             // btnPreview
             // 
-            this.btnPreview.Location = new System.Drawing.Point(79, 376);
+            this.btnPreview.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnPreview.Location = new System.Drawing.Point(17, 376);
             this.btnPreview.Name = "btnPreview";
             this.btnPreview.Size = new System.Drawing.Size(75, 23);
             this.btnPreview.TabIndex = 17;
@@ -58,10 +81,13 @@ namespace PrePoMax.Forms
             // 
             // FrmMeshRefinement
             // 
-            this.ClientSize = new System.Drawing.Size(334, 411);
+            this.ClientSize = new System.Drawing.Size(353, 411);
             this.Controls.Add(this.btnPreview);
+            this.MaximumSize = new System.Drawing.Size(369, 450);
+            this.MinimumSize = new System.Drawing.Size(369, 450);
             this.Name = "FrmMeshRefinement";
             this.Text = "Edit Mesh Refinement";
+            this.VisibleChanged += new System.EventHandler(this.FrmMeshRefinement_VisibleChanged);
             this.Controls.SetChildIndex(this.gbProperties, 0);
             this.Controls.SetChildIndex(this.btnCancel, 0);
             this.Controls.SetChildIndex(this.btnOK, 0);
@@ -70,6 +96,14 @@ namespace PrePoMax.Forms
             this.gbProperties.ResumeLayout(false);
             this.ResumeLayout(false);
 
+        }
+
+
+        // Event handlers                                                                                                           
+        private void FrmMeshRefinement_VisibleChanged(object sender, EventArgs e)
+        {
+            // Limit selection to the first selected part
+            _controller.Selection.LimitSelectionToFirstPart = Visible;
         }
 
 
@@ -118,7 +152,16 @@ namespace PrePoMax.Forms
         protected override bool OnPrepareForm(string stepName, string meshRefinementToEditName)
         {
             this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
-            this.btnOkAddNew.Visible = meshRefinementToEditName == null;
+            if (meshRefinementToEditName == null)
+            {
+                btnOkAddNew.Visible = true;
+                btnPreview.Location = new System.Drawing.Point(btnOkAddNew.Left - _previewDx - btnPreview.Width, btnOkAddNew.Top);
+            }
+            else
+            {
+                btnOkAddNew.Visible = false;
+                btnPreview.Location = new System.Drawing.Point(btnOK.Left - _previewDx - btnPreview.Width, btnOkAddNew.Top);
+            }
             //
             _propertyItemChanged = false;
             _meshRefinementNames.Clear();
@@ -227,7 +270,6 @@ namespace PrePoMax.Forms
             if (_meshRefinementToEditName == null) return true;
             return _controller.GetMeshRefinement(_meshRefinementToEditName).CreationData.IsGeometryBased();
         }
-
         async private void btnPreview_Click(object sender, EventArgs e)
         {
             try
@@ -251,6 +293,8 @@ namespace PrePoMax.Forms
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
+
+       
     }
 
 

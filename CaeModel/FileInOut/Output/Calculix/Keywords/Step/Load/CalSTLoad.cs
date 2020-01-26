@@ -45,30 +45,31 @@ namespace FileInOut.Output.Calculix
         public override string GetDataString()
         {
             StringBuilder sb = new StringBuilder();
-
-            foreach (var stLoad in _cLoads)
+            if (_cLoads != null)
             {
-                int[] rpNodeIds = null;
-                if (stLoad.RegionType == CaeGlobals.RegionTypeEnum.ReferencePointName) rpNodeIds = _referencePointsNodeIds[stLoad.RegionName];
-
-                List<int> directions = new List<int>();
-                if (stLoad.F1 != 0) directions.Add(1);
-                if (stLoad.F2 != 0) directions.Add(2);
-                if (stLoad.F3 != 0) directions.Add(3);
-
-                foreach (var dir in directions)
+                foreach (var stLoad in _cLoads)
                 {
-                    if (stLoad.RegionType == CaeGlobals.RegionTypeEnum.NodeId)
-                        sb.AppendFormat("{0}, {1}, {2}", stLoad.NodeId, dir, stLoad.GetDirection(dir - 1).ToString());
-                    else if (stLoad.RegionType == CaeGlobals.RegionTypeEnum.NodeSetName) // node set
-                        sb.AppendFormat("{0}, {1}, {2}", stLoad.RegionName, dir, stLoad.GetDirection(dir - 1).ToString());
-                    else if (stLoad.RegionType == CaeGlobals.RegionTypeEnum.ReferencePointName) // reference point
-                        sb.AppendFormat("{0}, {1}, {2}", rpNodeIds[0], dir, stLoad.GetDirection(dir - 1).ToString());
+                    int[] rpNodeIds = null;
+                    if (stLoad.RegionType == CaeGlobals.RegionTypeEnum.ReferencePointName) rpNodeIds = _referencePointsNodeIds[stLoad.RegionName];
+                    //
+                    List<int> directions = new List<int>();
+                    if (stLoad.F1 != 0) directions.Add(1);
+                    if (stLoad.F2 != 0) directions.Add(2);
+                    if (stLoad.F3 != 0) directions.Add(3);
+                    //
+                    foreach (var dir in directions)
+                    {
+                        if (stLoad.RegionType == CaeGlobals.RegionTypeEnum.NodeId)
+                            sb.AppendFormat("{0}, {1}, {2}", stLoad.NodeId, dir, stLoad.GetDirection(dir - 1).ToString());
+                        else if (stLoad.RegionType == CaeGlobals.RegionTypeEnum.NodeSetName) // node set
+                            sb.AppendFormat("{0}, {1}, {2}", stLoad.RegionName, dir, stLoad.GetDirection(dir - 1).ToString());
+                        else if (stLoad.RegionType == CaeGlobals.RegionTypeEnum.ReferencePointName) // reference point
+                            sb.AppendFormat("{0}, {1}, {2}", rpNodeIds[0], dir, stLoad.GetDirection(dir - 1).ToString());
 
-                    sb.AppendLine();
+                        sb.AppendLine();
+                    }
                 }
             }
-
             return sb.ToString();
         }
     }

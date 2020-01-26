@@ -1555,8 +1555,21 @@ namespace DynamicTypeDescriptor
                 itemList.AddRange(cpd.StateItems as ICollection);
             }
         }
-
-
+        //
+        public void RenameBooleanPropertyToYesNo(string propertyName)
+        {
+            RenameBooleanProperty(propertyName, "Yes", "No");
+        }
+        public void RenameBooleanProperty(string propertyName, string trueName, string falseName)
+        {
+            CustomPropertyDescriptor cpd = GetProperty(propertyName);
+            foreach (StandardValueAttribute sva in cpd.StatandardValues)
+            {
+                if ((bool)sva.Value == true) sva.DisplayName = trueName;
+                else sva.DisplayName = falseName;
+            }
+        }
+        //
         public void PopulateProperty<T>(Expression<Func<T>> propertyLambda, string[] values, bool addBlankIfEmpty = true, int numOfItemsToBeBrowsable = 1)
         {
             var me = propertyLambda.Body as MemberExpression;

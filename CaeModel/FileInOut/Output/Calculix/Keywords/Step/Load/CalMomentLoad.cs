@@ -48,18 +48,18 @@ namespace FileInOut.Output.Calculix
             if (_load.RegionType == CaeGlobals.RegionTypeEnum.ReferencePointName) rpNodeIds = _referencePointsNodeIds[_load.RegionName];
 
             List<int> directions = new List<int>();
-            if (_load.M1 != 0) directions.Add(1);
-            if (_load.M2 != 0) directions.Add(2);
-            if (_load.M3 != 0) directions.Add(3);
+            if (_load.M1 != 0) directions.Add(4);
+            if (_load.M2 != 0) directions.Add(5);
+            if (_load.M3 != 0) directions.Add(6);
 
             foreach (var dir in directions)
             {
                 if (_load.RegionType == CaeGlobals.RegionTypeEnum.NodeId)
-                    sb.AppendFormat("{0}, {1}, {2}", _load.NodeId, dir, _load.GetDirection(dir - 1).ToString());
+                    sb.AppendFormat("{0}, {1}, {2}", _load.NodeId, dir, _load.GetDirection(dir - 4).ToString());
                 else if (_load.RegionType == CaeGlobals.RegionTypeEnum.NodeSetName) // node set
-                    sb.AppendFormat("{0}, {1}, {2}", _load.RegionName, dir, _load.GetDirection(dir - 1).ToString());
+                    sb.AppendFormat("{0}, {1}, {2}", _load.RegionName, dir, _load.GetDirection(dir - 4).ToString());
                 else if (_load.RegionType == CaeGlobals.RegionTypeEnum.ReferencePointName) // reference point
-                    sb.AppendFormat("{0}, {1}, {2}", rpNodeIds[1], dir, _load.GetDirection(dir - 1).ToString());
+                    sb.AppendFormat("{0}, {1}, {2}", rpNodeIds[1], dir - 3, _load.GetDirection(dir - 4).ToString());
 
                 sb.AppendLine();
             }

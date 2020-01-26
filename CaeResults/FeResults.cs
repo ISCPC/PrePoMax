@@ -226,7 +226,7 @@ namespace CaeResults
             
             return null;
         }
-        public FieldData GetFirstFieldAtLastIncrement()
+        public FieldData GetFirstComponentOfTheFirstFieldAtLastIncrement()
         {
             string name = GetAllFieldNames()[0];
             string component = GetComponentNames(name)[0];

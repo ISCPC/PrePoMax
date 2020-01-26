@@ -91,6 +91,7 @@ namespace PrePoMax.Forms
             // 
             // btnPreview
             // 
+            this.btnPreview.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnPreview.Location = new System.Drawing.Point(79, 376);
             this.btnPreview.Name = "btnPreview";
             this.btnPreview.Size = new System.Drawing.Size(75, 23);
@@ -124,6 +125,7 @@ namespace PrePoMax.Forms
             UpdateHighlightFromTree?.Invoke();
             btnPreview.Visible = Visible && !Modal;
         }
+
 
         // Overrides                                                                                                                
         protected override void Apply()
@@ -166,7 +168,5 @@ namespace PrePoMax.Forms
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-
-       
     }
 }
