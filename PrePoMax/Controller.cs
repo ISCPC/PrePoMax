@@ -88,6 +88,7 @@ namespace PrePoMax
                 {
                     _currentView = value;
                     ClearSelectionHistory(); // the selection nodes are only valid on default mesh
+                    _selection.CurrentView = (int)_currentView;
                     _form.SetCurrentView(_currentView);
                     if (_currentView == ViewGeometryModelResults.Geometry) DrawGeometry(false);
                     else if (_currentView == ViewGeometryModelResults.Model) DrawMesh(false);
@@ -256,6 +257,7 @@ namespace PrePoMax
 
             _jobs = new OrderedDictionary<string, AnalysisJob>();
             _selection = new Selection();
+            _selection.CurrentView = (int)_currentView;
 
             _sectionViewPlanes = new Dictionary<ViewGeometryModelResults, Octree.Plane>();
             _sectionViewPlanes.Add(ViewGeometryModelResults.Geometry, null);
@@ -3874,16 +3876,15 @@ namespace PrePoMax
             {
             }
         }
-
         public SelectionNodeIds GetSelectionNodeIds(SelectionNodeMouse selectionNodeMouse)
         {
-            return GetSelectionNodeIds(selectionNodeMouse.PickedPoint, selectionNodeMouse.SelectOperation,
-                                       selectionNodeMouse.SelectBy, selectionNodeMouse.Angle, selectionNodeMouse.PartId);
-        }
-        private SelectionNodeIds GetSelectionNodeIds(double[] pickedPoint, vtkSelectOperation selectOperation,
-                                                     vtkSelectBy selectBy, double angle, int selectionOnPartId)
-        {
-            int[] ids = null;
+            double[] pickedPoint = selectionNodeMouse.PickedPoint;
+            vtkSelectOperation selectOperation = selectionNodeMouse.SelectOperation;
+            vtkSelectBy selectBy = selectionNodeMouse.SelectBy;
+            double angle = selectionNodeMouse.Angle;
+            int selectionOnPartId = selectionNodeMouse.PartId;
+            //
+            int[] ids;
             SelectionNodeIds selectionNode = null;
             if (selectBy == vtkSelectBy.QueryEdge)
             {
@@ -3906,10 +3907,10 @@ namespace PrePoMax
                 ids = GetGeometrySurfaceIdsByAngle(pickedPoint, angle, selectionOnPartId);
             }
             else throw new NotSupportedException();
-
+            //
             selectionNode = new SelectionNodeIds(selectOperation, false, ids);
             selectionNode.GeometryIds = true;
-
+            //
             return selectionNode;
         }
 
@@ -3991,9 +3992,13 @@ namespace PrePoMax
             // faces: 10 * global element ids + vtk face ids;   search: (% 10)
             // geometry: itemId * 100000 + typeId * 10000 + partId;
             HashSet<int> selectedIds = new HashSet<int>();
+            // Compatibility for version v0.5.2
+            if (_selection.CurrentView == -1) _selection.CurrentView = (int)ViewGeometryModelResults.Model; 
+            // Set the selection view
+            CurrentView = (ViewGeometryModelResults)_selection.CurrentView;
             //
             foreach (SelectionNode node in _selection.Nodes) GetIdsFromSelectionNode(node, selectedIds);
-            //
+            // Return
             return selectedIds.ToArray();
         }
         private int[] GetIdsFromSelectionNode(SelectionNode selectionNode, HashSet<int> selectedIds)
@@ -4107,6 +4112,7 @@ namespace PrePoMax
             // Pick a point
             if (selectionNodeMouse.PickedPoint != null)
             {
+                // Are node ids allready recorded
                 if (_selection.TryGetNodeIds(selectionNodeMouse, out ids))
                 { }
                 else if (selectionNodeMouse.IsGeometryBased)

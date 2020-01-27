@@ -118,12 +118,14 @@ namespace PrePoMax
             //System.Threading.Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.CreateSpecificCulture("en-us");
 
             // Default culture settings
-            //System.Threading.Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;           // This thread
-            //System.Globalization.CultureInfo.DefaultThreadCurrentCulture = System.Globalization.CultureInfo.InvariantCulture;   // All feature threads
+            // This thread
+            //System.Threading.Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;           
+            // All feature threads
+            //System.Globalization.CultureInfo.DefaultThreadCurrentCulture = System.Globalization.CultureInfo.InvariantCulture;   
             //
             //System.Threading.Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.InvariantCulture;
             //System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = System.Globalization.CultureInfo.InvariantCulture;
-       
+
             InitializeComponent();
 
             // Initialize               
@@ -671,7 +673,8 @@ namespace PrePoMax
         }
 
         //                                                                              
-        private void HideShowItems<T>(NamedClass[] items, HideShowOperation operation, Action<string[]> Hide, Action<string[]> Show, Action<string[]> ShowOnly)
+        private void HideShowItems<T>(NamedClass[] items, HideShowOperation operation, Action<string[]> Hide, 
+                                      Action<string[]> Show, Action<string[]> ShowOnly)
         {
             List<string> names = new List<string>();
             for (int i = 0; i < items.Length; i++)
@@ -833,7 +836,9 @@ namespace PrePoMax
             try
             {
                 if (_controller.ModelChanged &&
-                    MessageBox.Show("OK to close current model?", Globals.ProgramName, MessageBoxButtons.OKCancel) != System.Windows.Forms.DialogResult.OK)
+                    MessageBox.Show("OK to close current model?",
+                                    Globals.ProgramName,
+                                    MessageBoxButtons.OKCancel) != System.Windows.Forms.DialogResult.OK)
                 {
                     return;
                 }
@@ -1892,7 +1897,9 @@ namespace PrePoMax
         }
         private void DeleteMeshRefinements(string[] meshRefinementNames)
         {
-            if (MessageBox.Show("OK to delete selected mesh refinements?", Globals.ProgramName, MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+            if (MessageBox.Show("OK to delete selected mesh refinements?",
+                                Globals.ProgramName,
+                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
             {
                 _controller.RemoveMeshRefinementsCommand(meshRefinementNames);
             }
@@ -2158,7 +2165,9 @@ namespace PrePoMax
         }
         private void MergeModelParts(string[] partNames)
         {
-            if (MessageBox.Show("OK to merge selected parts?", Globals.ProgramName, MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+            if (MessageBox.Show("OK to merge selected parts?",
+                                Globals.ProgramName,
+                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
             {
                 _controller.MergeModelPartsCommand(partNames);
             }
@@ -2200,7 +2209,9 @@ namespace PrePoMax
         }
         private void DeleteModelParts(string[] partNames)
         {
-            if (MessageBox.Show("OK to delete selected parts?", Globals.ProgramName, MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+            if (MessageBox.Show("OK to delete selected parts?",
+                                Globals.ProgramName,
+                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
             {
                 _controller.RemoveModelPartsCommand(partNames);
             }
@@ -2259,7 +2270,9 @@ namespace PrePoMax
         }
         private void DeleteNodeSets(string[] nodeSetNames)
         {
-            if (MessageBox.Show("OK to delete selected node sets?", Globals.ProgramName, MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+            if (MessageBox.Show("OK to delete selected node sets?",
+                                Globals.ProgramName,
+                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
             {
                 _controller.RemoveNodeSetsCommand(nodeSetNames);
             }
@@ -2333,7 +2346,9 @@ namespace PrePoMax
         }
         private void DeleteElementSets(string[] elementSetNames)
         {
-            if (MessageBox.Show("OK to delete selected element sets?", Globals.ProgramName, MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+            if (MessageBox.Show("OK to delete selected element sets?",
+                                Globals.ProgramName,
+                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
             {
                 _controller.RemoveElementSetsCommand(elementSetNames);
             }
@@ -2391,7 +2406,9 @@ namespace PrePoMax
         }
         private void DeleteSurfaces(string[] surfaceNames)
         {
-            if (MessageBox.Show("OK to delete selected surfaces?", Globals.ProgramName, MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+            if (MessageBox.Show("OK to delete selected surfaces?",
+                                Globals.ProgramName,
+                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
             {
                 _controller.RemoveSurfacesCommand(surfaceNames);
             }
@@ -2446,7 +2463,9 @@ namespace PrePoMax
         }
         private void DeleteRP(string[] referencePointNames)
         {
-            if (MessageBox.Show("OK to delete selected reference points?", Globals.ProgramName, MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+            if (MessageBox.Show("OK to delete selected reference points?",
+                                Globals.ProgramName,
+                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
             {
                 _controller.RemoveReferencePointsCommand(referencePointNames);
             }
@@ -2498,7 +2517,9 @@ namespace PrePoMax
         }
         private void DeleteMaterials(string[] materialNames)
         {
-            if (MessageBox.Show("OK to delete selected materials?", Globals.ProgramName, MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+            if (MessageBox.Show("OK to delete selected materials?",
+                                Globals.ProgramName,
+                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
             {
                 _controller.RemoveMaterialsCommand(materialNames);
             }
@@ -2567,7 +2588,9 @@ namespace PrePoMax
         }
         private void DeleteSections(string[] sectionNames)
         {
-            if (MessageBox.Show("OK to delete selected sections?", Globals.ProgramName, MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+            if (MessageBox.Show("OK to delete selected sections?",
+                                Globals.ProgramName,
+                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
             {
                 _controller.RemoveSectionsCommand(sectionNames);
             }
@@ -2654,7 +2677,9 @@ namespace PrePoMax
         }
         private void DeleteConstraints(string[] constraintNames)
         {
-            if (MessageBox.Show("OK to delete selected constraints?", Globals.ProgramName, MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+            if (MessageBox.Show("OK to delete selected constraints?",
+                                Globals.ProgramName,
+                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
             {
                 _controller.RemoveConstraintsCommand(constraintNames);
             }
@@ -2705,7 +2730,9 @@ namespace PrePoMax
         }
         private void DeleteSteps(string[] stepNames)
         {
-            if (MessageBox.Show("OK to delete selected steps?", Globals.ProgramName, MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+            if (MessageBox.Show("OK to delete selected steps?",
+                                Globals.ProgramName,
+                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
             {
                 _controller.RemoveStepsCommnad(stepNames);
             }
@@ -2755,7 +2782,8 @@ namespace PrePoMax
         }
         private void SelectAndDeleteHistoryOutputs(string stepName)
         {
-            SelectMultipleEntitiesInStep("History outputs", _controller.GetAllHistoryOutputs(stepName), stepName, DeleteHistoryOutputs);
+            SelectMultipleEntitiesInStep("History outputs", _controller.GetAllHistoryOutputs(stepName),
+                                         stepName, DeleteHistoryOutputs);
         }
 
         private void CreateHistoryOutput(string stepName)
@@ -2769,7 +2797,9 @@ namespace PrePoMax
         }
         private void DeleteHistoryOutputs(string stepName, string[] historyOutputNames)
         {
-            if (MessageBox.Show("OK to delete selected history outputs?", Globals.ProgramName, MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+            if (MessageBox.Show("OK to delete selected history outputs?",
+                                Globals.ProgramName,
+                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
             {
                 _controller.RemoveHistoryOutputsForStepCommand(stepName, historyOutputNames);
             }
@@ -2831,7 +2861,9 @@ namespace PrePoMax
         }
         private void DeleteFieldOutputs(string stepName, string[] fieldOutputNames)
         {
-            if (MessageBox.Show("OK to delete selected field outputs?", Globals.ProgramName, MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+            if (MessageBox.Show("OK to delete selected field outputs?",
+                                Globals.ProgramName,
+                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
             {
                 _controller.RemoveFieldOutputsForStepCommand(stepName, fieldOutputNames);
             }
@@ -2898,19 +2930,23 @@ namespace PrePoMax
 
         private void SelectAndEditBoundaryCondition(string stepName)
         {
-            SelectOneEntityInStep("Boundary conditions", _controller.GetStepBoundaryConditions(stepName), stepName, EditBoundaryCondition);
+            SelectOneEntityInStep("Boundary conditions", _controller.GetStepBoundaryConditions(stepName), stepName,
+                                  EditBoundaryCondition);
         }
         private void SelectAndHideBoundaryConditions(string stepName)
         {
-            SelectMultipleEntitiesInStep("Boundary conditions", _controller.GetStepBoundaryConditions(stepName), stepName, HideBoundaryConditions);
+            SelectMultipleEntitiesInStep("Boundary conditions", _controller.GetStepBoundaryConditions(stepName),
+                                         stepName, HideBoundaryConditions);
         }
         private void SelectAndShowBoundaryConditions(string stepName)
         {
-            SelectMultipleEntitiesInStep("Boundary conditions", _controller.GetStepBoundaryConditions(stepName), stepName, ShowBoundaryConditions);
+            SelectMultipleEntitiesInStep("Boundary conditions", _controller.GetStepBoundaryConditions(stepName),
+                                         stepName, ShowBoundaryConditions);
         }
         private void SelectAndDeleteBoundaryCondition(string stepName)
         {
-            SelectMultipleEntitiesInStep("Boundary conditions", _controller.GetStepBoundaryConditions(stepName), stepName, DeleteBoundaryConditions);
+            SelectMultipleEntitiesInStep("Boundary conditions", _controller.GetStepBoundaryConditions(stepName),
+                                         stepName, DeleteBoundaryConditions);
         }
 
         private void CreateBoundaryCondition(string stepName)
@@ -2939,7 +2975,9 @@ namespace PrePoMax
         }
         private void DeleteBoundaryConditions(string stepName, string[] boundaryConditionNames)
         {
-            if (MessageBox.Show("OK to delete selected boundary conditions?", Globals.ProgramName, MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+            if (MessageBox.Show("OK to delete selected boundary conditions?",
+                                Globals.ProgramName,
+                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
             {
                 _controller.RemoveBoundaryConditionsCommand(stepName, boundaryConditionNames);
             }
@@ -3048,7 +3086,9 @@ namespace PrePoMax
         }
         private void DeleteLoads(string stepName, string[] loadNames)
         {
-            if (MessageBox.Show("OK to delete selected loads?", Globals.ProgramName, MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+            if (MessageBox.Show("OK to delete selected loads?",
+                                Globals.ProgramName,
+                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
             {
                 _controller.RemoveLoadsCommand(stepName, loadNames);
             }
@@ -3214,7 +3254,9 @@ namespace PrePoMax
                     string inputFileName = Path.Combine(settings.WorkDirectory, jobName + ".inp");
                     if (File.Exists(inputFileName))
                     {
-                        if (MessageBox.Show("Overwrite existing analysis files?", "Warning", MessageBoxButtons.OKCancel) != DialogResult.OK) return;
+                        if (MessageBox.Show("Overwrite existing analysis files?",
+                                            "Warning",
+                                            MessageBoxButtons.OKCancel) != DialogResult.OK) return;
                     }
 
                     _controller.RunJob(inputFileName, job);
@@ -3260,7 +3302,9 @@ namespace PrePoMax
         {
             if (_controller.GetJob(jobName).JobStatus == JobStatus.Running)
             {
-                if (MessageBox.Show("OK to kill selected analysis?", Globals.ProgramName, MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+                if (MessageBox.Show("OK to kill selected analysis?",
+                                    Globals.ProgramName,
+                                    MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
                 {
                     _controller.KillJob(jobName);
                 }
@@ -3272,7 +3316,9 @@ namespace PrePoMax
         }
         private void DeleteAnalyses(string[] jobNames)
         {
-            if (MessageBox.Show("OK to delete selected analyses?", Globals.ProgramName, MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+            if (MessageBox.Show("OK to delete selected analyses?",
+                                Globals.ProgramName,
+                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
             {
                 _controller.RemoveJobsCommand(jobNames);
             }
@@ -3429,7 +3475,9 @@ namespace PrePoMax
         }
         private void DeleteResultParts(string[] partNames)
         {
-            if (MessageBox.Show("OK to delete selected parts?", Globals.ProgramName, MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+            if (MessageBox.Show("OK to delete selected parts?", 
+                                Globals.ProgramName,
+                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
             {
                 _controller.RemoveResultParts(partNames);
             }
@@ -3488,7 +3536,8 @@ namespace PrePoMax
             _frmSelectEntity.OneEntitySelected = OperateOnEntity;
             _frmSelectEntity.Show();
         }
-        private void SelectOneEntityInStep(string title, NamedClass[] entities, string stepName, Action<string, string> OperateOnEntityInStep)
+        private void SelectOneEntityInStep(string title, NamedClass[] entities, string stepName,
+                                           Action<string, string> OperateOnEntityInStep)
         {
             if (entities == null || entities.Length == 0) return;
 
@@ -3510,7 +3559,8 @@ namespace PrePoMax
             _frmSelectEntity.MultipleEntitiesSelected = OperateOnMultpleEntities;
             _frmSelectEntity.Show();
         }
-        private void SelectMultipleEntitiesInStep(string title, NamedClass[] entities, string stepName, Action<string, string[]> OperateOnMultpleEntitiesInStep)
+        private void SelectMultipleEntitiesInStep(string title, NamedClass[] entities, string stepName,
+                                                  Action<string, string[]> OperateOnMultpleEntitiesInStep)
         {
             if (entities == null || entities.Length == 0) return;
 
@@ -3850,7 +3900,8 @@ namespace PrePoMax
         {
             try
             {
-                if (_controller.ViewResultsType != ViewResultsType.Undeformed && _controller.GetResultStepIDs().Length > 0 && !_frmAnimation.Visible)
+                if (_controller.ViewResultsType != ViewResultsType.Undeformed &&
+                    _controller.GetResultStepIDs().Length > 0 && !_frmAnimation.Visible)
                 {
                     CloseAllForms();
                     DisableEnableControlsForAnimation(false);
@@ -4389,9 +4440,11 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.SetAnimationFrame, frameNum, scalarRangeFromAllFrames);
         }
-        public void SaveAnimationAsAVI(string fileName, int[] firstLastFrame, int step, int fps, bool scalarRangeFromAllFrames, bool swing, bool encoderOptions)
+        public void SaveAnimationAsAVI(string fileName, int[] firstLastFrame, int step, int fps, bool scalarRangeFromAllFrames,
+                                       bool swing, bool encoderOptions)
         {
-            InvokeIfRequired(_vtk.SaveAnimationAsAVI, fileName, firstLastFrame, step, fps, scalarRangeFromAllFrames, swing, encoderOptions);
+            InvokeIfRequired(_vtk.SaveAnimationAsAVI, fileName, firstLastFrame, step, fps, scalarRangeFromAllFrames,
+                             swing, encoderOptions);
         }
         public void SaveAnimationAsImages(string fileName, int[] firstLastFrame, int step, bool scalarRangeFromAllFrames, bool swing)
         {
@@ -4419,7 +4472,8 @@ namespace PrePoMax
             InvokeIfRequired(_modelTree.AddTreeNode, viewType, item, stepName);
             if (item is CaeModel.Step) UpadteSymbolsForStepList();
         }
-        public void UpdateTreeNode(ViewGeometryModelResults view, string oldItemName, NamedClass item, string stepName, bool updateSelection = true)
+        public void UpdateTreeNode(ViewGeometryModelResults view, string oldItemName, NamedClass item, string stepName,
+                                   bool updateSelection = true)
         {
             ViewType viewType;
             if (view == ViewGeometryModelResults.Geometry) viewType = ViewType.Geometry;
@@ -4588,7 +4642,8 @@ namespace PrePoMax
                 action(parameter1, parameter2, parameter3);
             }
         }
-        public void InvokeIfRequired<T1, T2, T3, T4>(Action<T1, T2, T3, T4> action, T1 parameter1, T2 parameter2, T3 parameter3, T4 parameter4)
+        public void InvokeIfRequired<T1, T2, T3, T4>(Action<T1, T2, T3, T4> action, T1 parameter1, T2 parameter2, T3 parameter3, 
+                                                     T4 parameter4)
         {
             if (this.InvokeRequired)
             {
@@ -4611,24 +4666,26 @@ namespace PrePoMax
                 action(parameter1, parameter2, parameter3, parameter4, parameter5);
             }
         }
-        public void InvokeIfRequired<T1, T2, T3, T4, T5, T6>(Action<T1, T2, T3, T4, T5, T6> action, T1 parameter1, T2 parameter2, T3 parameter3,
-                                    T4 parameter4, T5 parameter5, T6 parameter6)
+        public void InvokeIfRequired<T1, T2, T3, T4, T5, T6>(Action<T1, T2, T3, T4, T5, T6> action, T1 parameter1, T2 parameter2, 
+                                     T3 parameter3, T4 parameter4, T5 parameter5, T6 parameter6)
         {
             if (this.InvokeRequired)
             {
-                this.Invoke((MethodInvoker)delegate () { action(parameter1, parameter2, parameter3, parameter4, parameter5, parameter6); });
+                this.Invoke((MethodInvoker)delegate () { action(parameter1, parameter2, parameter3, parameter4, 
+                                                         parameter5, parameter6); });
             }
             else
             {
                 action(parameter1, parameter2, parameter3, parameter4, parameter5, parameter6);
             }
         }
-        public void InvokeIfRequired<T1, T2, T3, T4, T5, T6, T7>(Action<T1, T2, T3, T4, T5, T6, T7> action, T1 parameter1, T2 parameter2, T3 parameter3,
-                                    T4 parameter4, T5 parameter5, T6 parameter6, T7 parameter7)
+        public void InvokeIfRequired<T1, T2, T3, T4, T5, T6, T7>(Action<T1, T2, T3, T4, T5, T6, T7> action, T1 parameter1, 
+                                     T2 parameter2, T3 parameter3, T4 parameter4, T5 parameter5, T6 parameter6, T7 parameter7)
         {
             if (this.InvokeRequired)
             {
-                this.Invoke((MethodInvoker)delegate () { action(parameter1, parameter2, parameter3, parameter4, parameter5, parameter6, parameter7); });
+                this.Invoke((MethodInvoker)delegate () { action(parameter1, parameter2, parameter3, parameter4, parameter5,
+                                                         parameter6, parameter7); });
             }
             else
             {

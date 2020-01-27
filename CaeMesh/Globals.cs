@@ -13,7 +13,7 @@ namespace CaeMesh
         public static Color[] PartColors = new Color[] { Color.FromArgb(245, 245, 220),     // light beige
                                                          Color.FromArgb(69, 139, 116),      // dark green
                                                          Color.FromArgb(193, 205, 205),     // light gray
-                                                         Color.FromArgb(187, 58, 58),       // red 
+                                                         //Color.FromArgb(187, 58, 58),       // red 
                                                          Color.FromArgb(0, 94, 157),        // blue
                                                          Color.FromArgb(222, 184, 135),     // ligt brown
                                                          Color.FromArgb(177, 198, 237),     // light blue

@@ -14,7 +14,7 @@ namespace CaeGlobals
         private double[] _pickedPoint;                                  //ISerializable
         private double[][] _planeParameters; // Ox,Oy,Oz,Nx,Ny,Nz       //ISerializable
         private vtkSelectBy _selectBy;                                  //ISerializable
-        private double _angle;                                          //ISerializable
+        private double _angle;                                          //ISerializable        
         private int _partId;                                            //ISerializable
 
 
@@ -22,7 +22,7 @@ namespace CaeGlobals
         public double[] PickedPoint { get { return _pickedPoint; } set { _pickedPoint = value; } }
         public double[][] PlaneParameters { get { return _planeParameters; } set { _planeParameters = value; } }
         public vtkSelectBy SelectBy { get { return _selectBy; } set { _selectBy = value; } }
-        public double Angle { get { return _angle; } set { _angle = value; } }
+        public double Angle { get { return _angle; } set { _angle = value; } }        
         public int PartId { get { return _partId; } set { _partId = value; } }
         public bool IsGeometryBased
         {

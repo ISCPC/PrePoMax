@@ -117,9 +117,11 @@ namespace PrePoMax.Forms
         protected override void Apply()
         {
             _viewFeMeshRefinement = (ViewFeMeshRefinement)propertyGrid.SelectedObject;
-            //
-            if ((_meshRefinementToEditName == null && _meshRefinementNames.Contains(_viewFeMeshRefinement.Name)) ||                    // named to existing name
-                (_viewFeMeshRefinement.Name != _meshRefinementToEditName && _meshRefinementNames.Contains(_viewFeMeshRefinement.Name)))// renamed to existing name
+            // Check if the name exists
+            if ((_meshRefinementToEditName == null && 
+                 _meshRefinementNames.Contains(_viewFeMeshRefinement.Name)) ||  // named to existing name
+                (_viewFeMeshRefinement.Name != _meshRefinementToEditName && 
+                 _meshRefinementNames.Contains(_viewFeMeshRefinement.Name)))    // renamed to existing name
                 throw new CaeException("The selected name already exists.");
             //
             if (_viewFeMeshRefinement.ItemSetData.ItemIds == null || _viewFeMeshRefinement.ItemSetData.ItemIds.Length == 0)
@@ -214,6 +216,7 @@ namespace PrePoMax.Forms
                 if (this.DialogResult == System.Windows.Forms.DialogResult.OK)              // the FrmItemSet was closed with OK
                 {
                     MeshRefinement.CreationData = _controller.Selection.DeepClone();
+                    //MeshRefinement.CreationData.CopySelectonData(_controller.Selection);
                     _propertyItemChanged = true;
                 }
                 else if (this.DialogResult == System.Windows.Forms.DialogResult.Cancel)     // the FrmItemSet was closed with Cancel
