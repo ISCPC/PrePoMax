@@ -3993,11 +3993,13 @@ namespace PrePoMax
             // geometry: itemId * 100000 + typeId * 10000 + partId;
             HashSet<int> selectedIds = new HashSet<int>();
             // Compatibility for version v0.5.2
-            if (_selection.CurrentView == -1) _selection.CurrentView = (int)ViewGeometryModelResults.Model; 
+            if (_selection.CurrentView == -1) _selection.CurrentView = (int)ViewGeometryModelResults.Model;
+            // Copy selection - change of the current view clears the selection history
+            Selection selectionCopy = _selection.DeepClone();
             // Set the selection view
-            CurrentView = (ViewGeometryModelResults)_selection.CurrentView;
+            CurrentView = (ViewGeometryModelResults)selectionCopy.CurrentView;
             //
-            foreach (SelectionNode node in _selection.Nodes) GetIdsFromSelectionNode(node, selectedIds);
+            foreach (SelectionNode node in selectionCopy.Nodes) GetIdsFromSelectionNode(node, selectedIds);
             // Return
             return selectedIds.ToArray();
         }
@@ -4761,7 +4763,6 @@ namespace PrePoMax
 
 
         // Results                                          
-
         public FeNode GetScaledNode(float scale, int nodeId)
         {
             if (_currentView == ViewGeometryModelResults.Results)
@@ -4814,6 +4815,7 @@ namespace PrePoMax
                     if (_model.Geometry != null && _model.Geometry.Parts.Count > 0)
                     {
                         CurrentView = ViewGeometryModelResults.Geometry;
+                        //
                         DrawAllGeomParts();
                         //
                         Octree.Plane plane = _sectionViewPlanes[_currentView];
@@ -4896,7 +4898,7 @@ namespace PrePoMax
                     {
                         try // must be inside to continue screen update
                         {
-                            if (_currentView != ViewGeometryModelResults.Model) CurrentView = ViewGeometryModelResults.Model;
+                            CurrentView = ViewGeometryModelResults.Model;
                             //
                             DrawAllMeshParts();
                             DrawSymbols();
@@ -6895,7 +6897,6 @@ namespace PrePoMax
             else scale = (float)settings.DeformationScaleFactorValue;
             return scale;
         }
-
         public float GetScaleForAllStepsAndIncrements()
         {
             if (_viewResultsType == ViewResultsType.Undeformed) return 0;

@@ -19,7 +19,8 @@ namespace PrePoMax.Forms
         private SelectionNodeIds _selectionNodeIds;
         private Button btnPreview;
         private Controller _controller;
-        private int _previewDx;
+        private int _previewBtnDx;
+        private string _defaultName;
 
 
         // Properties                                                                                                               
@@ -38,7 +39,8 @@ namespace PrePoMax.Forms
             _controller = controller;
             _viewFeMeshRefinement = null;
             _meshRefinementNames = new HashSet<string>();
-            _previewDx = btnCancel.Left - btnOK.Right;
+            _previewBtnDx = btnCancel.Left - btnOK.Right;
+            _defaultName = null;
             //
             SelectionClear = _controller.Selection.Clear;
         }
@@ -157,12 +159,12 @@ namespace PrePoMax.Forms
             if (meshRefinementToEditName == null)
             {
                 btnOkAddNew.Visible = true;
-                btnPreview.Location = new System.Drawing.Point(btnOkAddNew.Left - _previewDx - btnPreview.Width, btnOkAddNew.Top);
+                btnPreview.Location = new System.Drawing.Point(btnOkAddNew.Left - _previewBtnDx - btnPreview.Width, btnOkAddNew.Top);
             }
             else
             {
                 btnOkAddNew.Visible = false;
-                btnPreview.Location = new System.Drawing.Point(btnOK.Left - _previewDx - btnPreview.Width, btnOkAddNew.Top);
+                btnPreview.Location = new System.Drawing.Point(btnOK.Left - _previewBtnDx - btnPreview.Width, btnOkAddNew.Top);
             }
             //
             _propertyItemChanged = false;
@@ -180,7 +182,8 @@ namespace PrePoMax.Forms
             //
             if (_meshRefinementToEditName == null)
             {
-                MeshRefinement = new FeMeshRefinement(GetMeshRefinementName());
+                _defaultName = GetMeshRefinementName();
+                MeshRefinement = new FeMeshRefinement(_defaultName);
                 _controller.Selection.Clear();
             }
             else
@@ -210,16 +213,27 @@ namespace PrePoMax.Forms
         }
         protected override void OnEnabledChanged()
         {
-            // form is Enabled On and Off by the itemSetForm
+            // Form is Enabled On and Off by the itemSetForm
             if (this.Enabled)
             {
-                if (this.DialogResult == System.Windows.Forms.DialogResult.OK)              // the FrmItemSet was closed with OK
+                // The FrmItemSet was closed with OK
+                if (this.DialogResult == System.Windows.Forms.DialogResult.OK)   
                 {
                     MeshRefinement.CreationData = _controller.Selection.DeepClone();
-                    //MeshRefinement.CreationData.CopySelectonData(_controller.Selection);
+                    if (_meshRefinementToEditName == null && _defaultName == _viewFeMeshRefinement.Name)
+                    {
+                        FeMeshRefinement meshRefinement = MeshRefinement.DeepClone();
+                        string[] partNames = _controller.GetPartNamesFromMeshRefinement(meshRefinement);
+                        if (partNames.Length > 0)
+                        {
+                            string newName = NamedClass.GetNewValueName(_meshRefinementNames, partNames[0] + "-Mr-");
+                            _viewFeMeshRefinement.Name = newName;
+                        }
+                    }
                     _propertyItemChanged = true;
                 }
-                else if (this.DialogResult == System.Windows.Forms.DialogResult.Cancel)     // the FrmItemSet was closed with Cancel
+                // The FrmItemSet was closed with Cancel
+                else if (this.DialogResult == System.Windows.Forms.DialogResult.Cancel)
                 {
                     if (MeshRefinement.CreationData != null)
                     {

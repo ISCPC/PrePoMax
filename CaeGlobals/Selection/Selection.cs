@@ -48,10 +48,7 @@ namespace CaeGlobals
                 switch (entry.Name)
                 {
                     case "_nodes":
-                        if (_nodes == null) _nodes = new List<SelectionNode>();
-                        _nodes.Clear();
-                        foreach (var selectionNode in (List<SelectionNode>)entry.Value) _nodes.Add(selectionNode);
-                        //_nodes = (List<SelectionNode>)entry.Value; 
+                        _nodes = (List<SelectionNode>)entry.Value; 
                         break;
                     case "_selectItem":
                         _selectItem = (vtkSelectItem)entry.Value; break;
@@ -122,8 +119,6 @@ namespace CaeGlobals
             info.AddValue("_nodes", _nodes, typeof(List<SelectionNode>));
             info.AddValue("_selectItem", _selectItem, typeof(vtkSelectItem));
             info.AddValue("_currentView", _currentView, typeof(int));
-
-            //info.AddValue("_node1", _nodes[0], typeof(SelectionNode));
         }
 
     }
