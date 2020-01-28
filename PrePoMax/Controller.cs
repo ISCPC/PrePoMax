@@ -2389,11 +2389,11 @@ namespace PrePoMax
                 //
                 if (nodeSet.CreationData.IsGeometryBased())
                 {
-                    // only mouse and geometry ids
+                    // Only mouse and geometry ids
                     geometryIds.Clear();
                     foreach (var node in nodeSet.CreationData.Nodes)
                     {
-                        if (node is SelectionNodeMouse snm) geometryIds.AddRange(GetSelectionNodeIds(snm).ItemIds);
+                        if (node is SelectionNodeMouse snm) geometryIds.AddRange(GetGeometryIdsAtPoint(snm));
                         else if (node is SelectionNodeIds sni) geometryIds.AddRange(sni.ItemIds);
                     }
                     string[] nodeSetPartNames = _model.Mesh.GetPartNamesFromGeometryIds(geometryIds.ToArray());
@@ -2591,11 +2591,11 @@ namespace PrePoMax
                 //
                 if (elementSet.CreationData.IsGeometryBased())
                 {
-                    // only mouse and geometry ids
+                    // Only mouse and geometry ids
                     geometryIds.Clear();
                     foreach (var node in elementSet.CreationData.Nodes)
                     {
-                        if (node is SelectionNodeMouse snm) geometryIds.AddRange(GetSelectionNodeIds(snm).ItemIds);
+                        if (node is SelectionNodeMouse snm) geometryIds.AddRange(GetGeometryIdsAtPoint(snm));
                         else if (node is SelectionNodeIds sni) geometryIds.AddRange(sni.ItemIds);
                     }
                     string[] elementSetPartNames = _model.Mesh.GetPartNamesFromGeometryIds(geometryIds.ToArray());
@@ -2792,11 +2792,11 @@ namespace PrePoMax
                 //
                 if (surface.CreationData.IsGeometryBased())
                 {
-                    // only mouse and geometry ids
+                    // Only mouse and geometry ids
                     geometryIds.Clear();
                     foreach (var node in surface.CreationData.Nodes)
                     {
-                        if (node is SelectionNodeMouse snm) geometryIds.AddRange(GetSelectionNodeIds(snm).ItemIds);
+                        if (node is SelectionNodeMouse snm) geometryIds.AddRange(GetGeometryIdsAtPoint(snm));
                         else if (node is SelectionNodeIds sni) geometryIds.AddRange(sni.ItemIds);
                     }
                     string[] surfacePartNames = _model.Mesh.GetPartNamesFromGeometryIds(geometryIds.ToArray());
@@ -3876,44 +3876,6 @@ namespace PrePoMax
             {
             }
         }
-        public SelectionNodeIds GetSelectionNodeIds(SelectionNodeMouse selectionNodeMouse)
-        {
-            double[] pickedPoint = selectionNodeMouse.PickedPoint;
-            vtkSelectOperation selectOperation = selectionNodeMouse.SelectOperation;
-            vtkSelectBy selectBy = selectionNodeMouse.SelectBy;
-            double angle = selectionNodeMouse.Angle;
-            int selectionOnPartId = selectionNodeMouse.PartId;
-            //
-            int[] ids;
-            SelectionNodeIds selectionNode = null;
-            if (selectBy == vtkSelectBy.QueryEdge)
-            {
-                ids = GetGeometryEdgeIdsByAngle(pickedPoint, -1, selectionOnPartId);
-            }
-            else if (selectBy == vtkSelectBy.QuerySurface)
-            {
-                ids = GetGeometrySurfaceIdsByAngle(pickedPoint, -1, selectionOnPartId);
-            }
-            else if (selectBy == vtkSelectBy.Geometry)
-            {
-                ids = new int[] { GetGeometryId(pickedPoint, selectionOnPartId) };
-            }
-            else if (selectBy == vtkSelectBy.GeometryEdgeAngle)
-            {
-                ids = GetGeometryEdgeIdsByAngle(pickedPoint, angle, selectionOnPartId);
-            }
-            else if (selectBy == vtkSelectBy.GeometrySurfaceAngle)
-            {
-                ids = GetGeometrySurfaceIdsByAngle(pickedPoint, angle, selectionOnPartId);
-            }
-            else throw new NotSupportedException();
-            //
-            selectionNode = new SelectionNodeIds(selectOperation, false, ids);
-            selectionNode.GeometryIds = true;
-            //
-            return selectionNode;
-        }
-
         public void AddSelectionNode(SelectionNode node, bool highlight)
         {
             // Ger selected ids
@@ -3983,7 +3945,7 @@ namespace PrePoMax
             _selection.RemoveLast();
             if (highlight) HighlightSelection();
         }
-
+        //
         public int[] GetSelectionIds()
         {
             // ids for:
@@ -4114,12 +4076,12 @@ namespace PrePoMax
             // Pick a point
             if (selectionNodeMouse.PickedPoint != null)
             {
-                // Are node ids allready recorded
+                // Are node ids allready recorded in this session
                 if (_selection.TryGetNodeIds(selectionNodeMouse, out ids))
                 { }
                 else if (selectionNodeMouse.IsGeometryBased)
                 {
-                    ids = GetGeometryIdsAtPoint(selectionNodeMouse);
+                    ids = GetIdsAtPointFromGeometrySelection(selectionNodeMouse);
                 }
                 else if (_selection.SelectItem == vtkSelectItem.None)
                 { }
@@ -4162,21 +4124,84 @@ namespace PrePoMax
             return ids;
         }
         //
-        private int[] GetGeometryIdsAtPoint(SelectionNodeMouse selectionNodeMouse)
+        private int[] GetIdsAtPointFromGeometrySelection(SelectionNodeMouse selectionNodeMouse)
         {
             // Geometry selection - get geometry Ids
-            // The first time the selectionNodeMouse.PartId equals -1
-            SelectionNodeIds selectionNodeIds = GetSelectionNodeIds(selectionNodeMouse);
-            //
-            int[] ids = selectionNodeIds.ItemIds;
+            // The first time the selectionNodeMouse.PartId equals -1; if so set the part id for all future queries
+            int[] ids = GetGeometryIdsAtPoint(selectionNodeMouse);
             if (selectionNodeMouse.PartId == -1 && ids.Length > 0)
-            {
-                int[] itemTypePart = FeMesh.GetItemTypePartIdsFromGeometryId(ids[0]);
-                // Set the part id for all future queries
-                selectionNodeMouse.PartId = itemTypePart[2];
-            }
+                selectionNodeMouse.PartId = FeMesh.GetPartIdFromGeometryId(ids[0]); 
             // Change geometry ids to node, elemet or cell ids if necessary
             ids = DisplayedMesh.GetIdsFromGeometryIds(ids, _selection.SelectItem);
+            return ids;
+        }
+        public SelectionNodeIds GetSelectionNodeIds(SelectionNodeMouse selectionNodeMouse)
+        {
+            double[] pickedPoint = selectionNodeMouse.PickedPoint;
+            vtkSelectOperation selectOperation = selectionNodeMouse.SelectOperation;
+            vtkSelectBy selectBy = selectionNodeMouse.SelectBy;
+            double angle = selectionNodeMouse.Angle;
+            int selectionOnPartId = selectionNodeMouse.PartId;
+            //
+            int[] ids;
+            SelectionNodeIds selectionNode = null;
+            if (selectBy == vtkSelectBy.QueryEdge)
+            {
+                ids = GetGeometryEdgeIdsByAngle(pickedPoint, -1, selectionOnPartId);
+            }
+            else if (selectBy == vtkSelectBy.QuerySurface)
+            {
+                ids = GetGeometrySurfaceIdsByAngle(pickedPoint, -1, selectionOnPartId);
+            }
+            else if (selectBy == vtkSelectBy.Geometry)
+            {
+                ids = new int[] { GetGeometryId(pickedPoint, selectionOnPartId) };
+            }
+            else if (selectBy == vtkSelectBy.GeometryEdgeAngle)
+            {
+                ids = GetGeometryEdgeIdsByAngle(pickedPoint, angle, selectionOnPartId);
+            }
+            else if (selectBy == vtkSelectBy.GeometrySurfaceAngle)
+            {
+                ids = GetGeometrySurfaceIdsByAngle(pickedPoint, angle, selectionOnPartId);
+            }
+            else throw new NotSupportedException();
+            //
+            selectionNode = new SelectionNodeIds(selectOperation, false, ids);
+            selectionNode.GeometryIds = true;
+            //
+            return selectionNode;
+        }
+        public int[] GetGeometryIdsAtPoint(SelectionNodeMouse selectionNodeMouse)
+        {
+            double[] pickedPoint = selectionNodeMouse.PickedPoint;
+            vtkSelectBy selectBy = selectionNodeMouse.SelectBy;
+            double angle = selectionNodeMouse.Angle;
+            int selectionOnPartId = selectionNodeMouse.PartId;
+            //
+            int[] ids;
+            if (selectBy == vtkSelectBy.QueryEdge)
+            {
+                ids = GetGeometryEdgeIdsByAngle(pickedPoint, -1, selectionOnPartId);
+            }
+            else if (selectBy == vtkSelectBy.QuerySurface)
+            {
+                ids = GetGeometrySurfaceIdsByAngle(pickedPoint, -1, selectionOnPartId);
+            }
+            else if (selectBy == vtkSelectBy.Geometry)
+            {
+                ids = new int[] { GetGeometryId(pickedPoint, selectionOnPartId) };
+            }
+            else if (selectBy == vtkSelectBy.GeometryEdgeAngle)
+            {
+                ids = GetGeometryEdgeIdsByAngle(pickedPoint, angle, selectionOnPartId);
+            }
+            else if (selectBy == vtkSelectBy.GeometrySurfaceAngle)
+            {
+                ids = GetGeometrySurfaceIdsByAngle(pickedPoint, angle, selectionOnPartId);
+            }
+            else throw new NotSupportedException();
+            //
             return ids;
         }
         private int[] GetNodeIdsAtPoint(SelectionNodeMouse selectionNodeMouse)

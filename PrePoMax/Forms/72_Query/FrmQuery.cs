@@ -162,8 +162,8 @@ namespace PrePoMax.Forms
                     SelectionNodeMouse selectionNodeMouse = _controller.Selection.Nodes[0] as SelectionNodeMouse;
                     if (selectionNodeMouse != null)
                     {
-                        SelectionNodeIds selectionNodeIds = _controller.GetSelectionNodeIds(selectionNodeMouse);
-                        OneSurfacePicked(selectionNodeIds.ItemIds[0]);
+                        ids = _controller.GetGeometryIdsAtPoint(selectionNodeMouse);
+                        OneSurfacePicked(ids[0]);
                     }
                 }
                 else if (_controller.SelectBy == vtkSelectBy.QueryPart && ids.Length == 1) OnePartPicked(ids[0]);

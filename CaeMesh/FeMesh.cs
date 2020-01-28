@@ -3863,6 +3863,10 @@ namespace CaeMesh
             //
             return partIds.ToArray();
         }
+        public static int GetPartIdFromGeometryId(int id)
+        {
+            return GetItemTypePartIdsFromGeometryId(id)[2];
+        }
         public static int[] GetItemTypePartIdsFromGeometryId(int geometryId)
         {
             // geometryId = itemId * 100000 + typeId * 10000 + partId;
