@@ -3841,7 +3841,6 @@ namespace PrePoMax
         #endregion #################################################################################################################
 
 
-        // Select
         #region Selection  #########################################################################################################
         // the function called from vtk_control
         public void SelectPointOrArea(double[] pickedPoint, double[][] planeParameters, vtkSelectOperation selectOperation)
@@ -4137,75 +4136,6 @@ namespace PrePoMax
             ids = DisplayedMesh.GetIdsFromGeometryIds(ids, _selection.SelectItem);
             return ids;
         }
-        public SelectionNodeIds GetSelectionNodeIds(SelectionNodeMouse selectionNodeMouse)
-        {
-            double[] pickedPoint = selectionNodeMouse.PickedPoint;
-            vtkSelectOperation selectOperation = selectionNodeMouse.SelectOperation;
-            vtkSelectBy selectBy = selectionNodeMouse.SelectBy;
-            double angle = selectionNodeMouse.Angle;
-            int selectionOnPartId = selectionNodeMouse.PartId;
-            //
-            int[] ids;
-            SelectionNodeIds selectionNode = null;
-            if (selectBy == vtkSelectBy.QueryEdge)
-            {
-                ids = GetGeometryEdgeIdsByAngle(pickedPoint, -1, selectionOnPartId);
-            }
-            else if (selectBy == vtkSelectBy.QuerySurface)
-            {
-                ids = GetGeometrySurfaceIdsByAngle(pickedPoint, -1, selectionOnPartId);
-            }
-            else if (selectBy == vtkSelectBy.Geometry)
-            {
-                ids = new int[] { GetGeometryId(pickedPoint, selectionOnPartId) };
-            }
-            else if (selectBy == vtkSelectBy.GeometryEdgeAngle)
-            {
-                ids = GetGeometryEdgeIdsByAngle(pickedPoint, angle, selectionOnPartId);
-            }
-            else if (selectBy == vtkSelectBy.GeometrySurfaceAngle)
-            {
-                ids = GetGeometrySurfaceIdsByAngle(pickedPoint, angle, selectionOnPartId);
-            }
-            else throw new NotSupportedException();
-            //
-            selectionNode = new SelectionNodeIds(selectOperation, false, ids);
-            selectionNode.GeometryIds = true;
-            //
-            return selectionNode;
-        }
-        public int[] GetGeometryIdsAtPoint(SelectionNodeMouse selectionNodeMouse)
-        {
-            double[] pickedPoint = selectionNodeMouse.PickedPoint;
-            vtkSelectBy selectBy = selectionNodeMouse.SelectBy;
-            double angle = selectionNodeMouse.Angle;
-            int selectionOnPartId = selectionNodeMouse.PartId;
-            //
-            int[] ids;
-            if (selectBy == vtkSelectBy.QueryEdge)
-            {
-                ids = GetGeometryEdgeIdsByAngle(pickedPoint, -1, selectionOnPartId);
-            }
-            else if (selectBy == vtkSelectBy.QuerySurface)
-            {
-                ids = GetGeometrySurfaceIdsByAngle(pickedPoint, -1, selectionOnPartId);
-            }
-            else if (selectBy == vtkSelectBy.Geometry)
-            {
-                ids = new int[] { GetGeometryId(pickedPoint, selectionOnPartId) };
-            }
-            else if (selectBy == vtkSelectBy.GeometryEdgeAngle)
-            {
-                ids = GetGeometryEdgeIdsByAngle(pickedPoint, angle, selectionOnPartId);
-            }
-            else if (selectBy == vtkSelectBy.GeometrySurfaceAngle)
-            {
-                ids = GetGeometrySurfaceIdsByAngle(pickedPoint, angle, selectionOnPartId);
-            }
-            else throw new NotSupportedException();
-            //
-            return ids;
-        }
         private int[] GetNodeIdsAtPoint(SelectionNodeMouse selectionNodeMouse)
         {
             int elementId;
@@ -4358,6 +4288,82 @@ namespace PrePoMax
             if (DisplayedMesh.Elements.TryGetValue(elementId, out element)) return new int[] { element.PartId };
             else return null;
         }
+        public int[] GetGeometryIdsAtPoint(SelectionNodeMouse selectionNodeMouse)
+        {
+            double[] pickedPoint = selectionNodeMouse.PickedPoint;
+            vtkSelectBy selectBy = selectionNodeMouse.SelectBy;
+            double angle = selectionNodeMouse.Angle;
+            int selectionOnPartId = selectionNodeMouse.PartId;
+            //
+            int[] ids;
+            if (selectBy == vtkSelectBy.QueryEdge)
+            {
+                ids = GetGeometryEdgeIdsByAngle(pickedPoint, -1, selectionOnPartId);
+            }
+            else if (selectBy == vtkSelectBy.QuerySurface)
+            {
+                ids = GetGeometrySurfaceIdsByAngle(pickedPoint, -1, selectionOnPartId);
+            }
+            else if (selectBy == vtkSelectBy.Geometry)
+            {
+                ids = new int[] { GetGeometryId(pickedPoint, selectionOnPartId) };
+            }
+            else if (selectBy == vtkSelectBy.GeometryEdgeAngle)
+            {
+                ids = GetGeometryEdgeIdsByAngle(pickedPoint, angle, selectionOnPartId);
+            }
+            else if (selectBy == vtkSelectBy.GeometrySurfaceAngle)
+            {
+                ids = GetGeometrySurfaceIdsByAngle(pickedPoint, angle, selectionOnPartId);
+            }
+            else throw new NotSupportedException();
+            //
+            return ids;
+        }
+        //
+        private int GetGeometryId(double[] point, int selectionOnPartId)
+        {
+            int elementId;
+            int[] edgeNodeIds;
+            int[] cellFaceNodeIds;
+            //
+            string[] partNames;
+            BasePart part = DisplayedMesh.GetPartById(selectionOnPartId);
+            if (part != null) partNames = new string[] { part.Name };
+            else partNames = null;
+            //
+            _form.GetGeometryPickProperties(point, out elementId, out edgeNodeIds, out cellFaceNodeIds, partNames);
+            return DisplayedMesh.GetGeometryId_2(point, elementId, edgeNodeIds, cellFaceNodeIds);
+        }
+        private int[] GetGeometryEdgeIdsByAngle(double[] point, double angle, int selectionOnPartId)
+        {
+            int elementId;
+            int[] edgeNodeIds;
+            int[] cellFaceNodeIds;
+            //
+            string[] partNames;
+            BasePart part = DisplayedMesh.GetPartById(selectionOnPartId);
+            if (part != null) partNames = new string[] { part.Name };
+            else partNames = null;
+            //
+            _form.GetGeometryPickProperties(point, out elementId, out edgeNodeIds, out cellFaceNodeIds, partNames);
+            return DisplayedMesh.GetGeometryEdgeIdsByAngle(elementId, edgeNodeIds, angle);
+        }
+        private int[] GetGeometrySurfaceIdsByAngle(double[] point, double angle, int selectionOnPartId)
+        {
+            int elementId;
+            int[] edgeNodeIds;
+            int[] cellFaceNodeIds;
+            //
+            string[] partNames;
+            BasePart part = DisplayedMesh.GetPartById(selectionOnPartId);
+            if (part != null) partNames = new string[] { part.Name };
+            else partNames = null;
+            //
+            _form.GetGeometryPickProperties(point, out elementId, out edgeNodeIds, out cellFaceNodeIds, partNames);
+            return DisplayedMesh.GetGeometrySurfaceIdsByAngle(elementId, cellFaceNodeIds, angle);
+        }
+        //
         private int[] GetVisualizationFaceIdsFromArea(SelectionNodeMouse selectionNodeMouse)
         {
             int[] ids = null;
@@ -4366,7 +4372,6 @@ namespace PrePoMax
             ids = DisplayedMesh.GetVisualizationFaceIds(null, ids, false, false);
             return ids;
         }
-
 
         #endregion #################################################################################################################
 
@@ -4398,7 +4403,7 @@ namespace PrePoMax
 
             return data;
         }
-
+        //
         public vtkControl.vtkMaxActorData GetCellActorData(int[] elementIds, int[] nodeIds)
         {
             FeGroup elementSet;
@@ -4675,7 +4680,8 @@ namespace PrePoMax
         public vtkControl.vtkMaxActorData GetGeometryActorData(double[] point, int elementId,
                                                                int[] edgeNodeIds, int[] cellFaceNodeIds)
         {
-            int geomId = DisplayedMesh.GetGeometryId(point, elementId, edgeNodeIds, cellFaceNodeIds);
+            int geomId = DisplayedMesh.GetGeometryId_2(point, elementId, edgeNodeIds, cellFaceNodeIds);
+            //int geomId = DisplayedMesh.GetGeometryId(point, elementId, edgeNodeIds, cellFaceNodeIds);
             int typeId = (geomId / 10000) % 10;
             int itemId = geomId / 100000;
             //
@@ -4684,52 +4690,9 @@ namespace PrePoMax
                 int[] nodeIds = DisplayedMesh.GetNodeIdsFromGeometryId(geomId);
                 return GetNodeActorData(nodeIds);
             }
-            else if (typeId == 2) return GetEdgeActorData(elementId, edgeNodeIds);
+            else if (typeId == 2) return GetGeometryEdgeActorData(new int[] { geomId });
             else if (typeId == 3) return GetSurfaceEdgeActorData(elementId, cellFaceNodeIds);
             else throw new NotSupportedException();
-        }
-
-        private int GetGeometryId(double[] point, int selectionOnPartId)
-        {
-            int elementId;
-            int[] edgeNodeIds;
-            int[] cellFaceNodeIds;
-            //
-            string[] partNames;
-            BasePart part = DisplayedMesh.GetPartById(selectionOnPartId);
-            if (part != null) partNames = new string[] { part.Name };
-            else partNames = null;
-            //
-            _form.GetGeometryPickProperties(point, out elementId, out edgeNodeIds, out cellFaceNodeIds, partNames);
-            return DisplayedMesh.GetGeometryId(point, elementId, edgeNodeIds, cellFaceNodeIds);
-        }
-        private int[] GetGeometryEdgeIdsByAngle(double[] point, double angle, int selectionOnPartId)
-        {
-            int elementId;
-            int[] edgeNodeIds;
-            int[] cellFaceNodeIds;
-            //
-            string[] partNames;
-            BasePart part = DisplayedMesh.GetPartById(selectionOnPartId);
-            if (part != null) partNames = new string[] { part.Name };
-            else partNames = null;
-            //
-            _form.GetGeometryPickProperties(point, out elementId, out edgeNodeIds, out cellFaceNodeIds, partNames);
-            return DisplayedMesh.GetGeometryEdgeIdsByAngle(elementId, edgeNodeIds, angle);
-        }
-        private int[] GetGeometrySurfaceIdsByAngle(double[] point, double angle, int selectionOnPartId)
-        {
-            int elementId;
-            int[] edgeNodeIds;
-            int[] cellFaceNodeIds;
-            //
-            string[] partNames;
-            BasePart part = DisplayedMesh.GetPartById(selectionOnPartId);
-            if (part != null) partNames = new string[] { part.Name };
-            else partNames = null;
-            //
-            _form.GetGeometryPickProperties(point, out elementId, out edgeNodeIds, out cellFaceNodeIds, partNames);
-            return DisplayedMesh.GetGeometrySurfaceIdsByAngle(elementId, cellFaceNodeIds, angle);
         }
 
         #endregion #################################################################################################################

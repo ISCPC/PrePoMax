@@ -3293,6 +3293,151 @@ namespace CaeMesh
         }
 
         // Get geometry ids
+        public int GetGeometryId_2(double[] point, int elementId, int[] edgeNodeIds, int[] cellFaceNodeIds)
+        {
+            // geometryId = itemId * 100000 + typeId * 10000 + partId;
+            int itemId = -1;
+            int typeId = -1;        // 1 ... vertex, 2 ... edge, 3 ... surface
+            int partId = -1;
+            int geometryId;
+            //
+            BasePart part;
+            int faceId;
+            if (GetFaceId(elementId, cellFaceNodeIds, out part, out faceId))
+            {
+                partId = part.PartId;
+                //
+                VisualizationData visualization = part.Visualization;
+                int vertexId;
+                int edgeId;
+                double vertexDist;
+                double edgeDist;
+                double[] sortedDistances;
+                // Get closest edge distance
+                edgeDist = PointToClosestFaceEdgeDistance(point, visualization, faceId, out edgeId, out sortedDistances);
+                vertexDist = PointToClosestEdgeVertexDistance(point, visualization, edgeId, out vertexId);
+                //
+                double edgeDelta = visualization.EdgeLengths[edgeId] / 20;
+                //double faceDelta = GetClosestUnConnectedEdgesDistanceOnFace(visualization, faceId) / 10;
+                double faceDelta = (sortedDistances[0] + sortedDistances[1]) / 10;
+                edgeDelta = Math.Min(edgeDelta, faceDelta * 10);
+                //
+                if (vertexDist < edgeDelta)
+                {
+                    typeId = 1;
+                    itemId = vertexId;
+                }
+                else if (edgeDist < faceDelta)
+                {
+                    typeId = 2;
+                    itemId = edgeId;
+                }
+                else
+                {
+                    typeId = 3;
+                    itemId = faceId;
+                }
+            }
+            //
+            geometryId = itemId * 100000 + typeId * 10000 + partId;
+            return geometryId;
+        }
+        private double PointToClosestFaceEdgeDistance(double[] point, VisualizationData visualization, int faceId, out int closestEdgeId,
+                                                      out double[] sortedDistances)
+        {
+            int currEdgeId;
+            int edgeIdMin = -1;
+            double minDist = double.MaxValue;
+            double dist;
+            sortedDistances = new double[visualization.FaceEdgeIds[faceId].Length];
+            // For each face edge
+            for (int i = 0; i < visualization.FaceEdgeIds[faceId].Length; i++)
+            {
+                currEdgeId = visualization.FaceEdgeIds[faceId][i];
+                dist = PointToFaceEdgeDistance(point, visualization, currEdgeId);
+                sortedDistances[i] = dist;
+                if (dist < minDist)
+                {
+                    minDist = dist;
+                    edgeIdMin = currEdgeId;
+                }
+            }
+            closestEdgeId = edgeIdMin;
+            Array.Sort(sortedDistances);
+            return minDist;
+        }
+        private double PointToFaceEdgeDistance(double[] point, VisualizationData visualization, int edgeId)
+        {
+            double min = double.MaxValue;
+            double dist = -1;
+            int edgeCellId;
+            int[] nodeIds;
+            // For each edge cell
+            for (int i = 0; i < visualization.EdgeCellIdsByEdge[edgeId].Length; i++)
+            {
+                edgeCellId = visualization.EdgeCellIdsByEdge[edgeId][i];
+                nodeIds = visualization.EdgeCells[edgeCellId];
+                if (nodeIds.Length == 3)
+                {
+                    int error = 1;
+                }
+                dist = Geometry.PointToSegmentDistance(point, _nodes[nodeIds[0]].Coor, _nodes[nodeIds[1]].Coor);
+                if (dist < min) min = dist;
+            }
+            return min;
+        }
+        private double PointToClosestEdgeVertexDistance(double[] point, VisualizationData visualization, int edgeId, out int vertexId)
+        {
+            int edgeCellId;
+            int node1Id;
+            int node2Id;
+            edgeCellId = visualization.EdgeCellIdsByEdge[edgeId][0];
+            node1Id = visualization.EdgeCells[edgeCellId][0];
+            edgeCellId = visualization.EdgeCellIdsByEdge[edgeId][visualization.EdgeCellIdsByEdge[edgeId].Length - 1];
+            node2Id = visualization.EdgeCells[edgeCellId][1];
+            // Compute distances
+            Vec3D p = new Vec3D(point);
+            Vec3D v1 = new Vec3D(_nodes[node1Id].Coor);
+            Vec3D v2 = new Vec3D(_nodes[node2Id].Coor);
+            double d1 = (v1 - p).Len;
+            double d2 = (v2 - p).Len;
+            // Find smallest distance
+            double minDist;
+            double minNodeId;
+            if (d1 < d2)
+            {
+                minDist = d1;
+                minNodeId = node1Id;
+            }
+            else
+            {
+                minDist = d2;
+                minNodeId = node2Id;
+            }
+            // Find vertex id
+            vertexId = -1;
+            for (int i = 0; i < visualization.VertexNodeIds.Length; i++)
+            {
+                if (visualization.VertexNodeIds[i] == minNodeId)
+                {
+                    vertexId = i;
+                    break;
+                }
+            }
+            return minDist;
+        }
+        private double GetFacePerimeter(VisualizationData visualization, int faceId)
+        {
+            double perimeter = 0;
+            int edgeId;
+            for (int i = 0; i < visualization.FaceEdgeIds[faceId].Length; i++)
+            {
+                edgeId = visualization.FaceEdgeIds[faceId][i];
+                perimeter += visualization.EdgeLengths[edgeId];
+            }
+            return perimeter;
+        }
+        //
         public int GetGeometryId(double[] point, int elementId, int[] edgeNodeIds, int[] cellFaceNodeIds)
         {
             // geometryId = itemId * 100000 + typeId * 10000 + partId;
@@ -3462,7 +3607,7 @@ namespace CaeMesh
                 int[][] cells = part.Visualization.Cells;
                 int count = 0;
                 int[] faceIdOfCells = new int[cells.Length];
-                // create array of face ids for all cells
+                // Create array of face ids for all cells
                 foreach (int[] faceCellIds in part.Visualization.CellIdsByFace)
                 {
                     foreach (int cellId in faceCellIds)
@@ -3471,20 +3616,19 @@ namespace CaeMesh
                     }
                     count++;
                 }
-
-
+                //
                 int cell1Id;
                 int cell2Id;
                 int face1Id;
                 int face2Id;
                 int[] edgeHash;
                 double alpha;
-                double[] minAngle;  // array for easyier/faster assignment of new values                
+                double[] minAngle;  // Array for easyier/faster assignment of new values                
                 HashSet<int> faceNeighbours;
                 Dictionary<int, HashSet<int>> allFaceNeighbours = new Dictionary<int, HashSet<int>>();
                 CompareIntArray comparer = new CompareIntArray();
                 Dictionary<int[], double[]> edgeAngles = new Dictionary<int[], double[]>(comparer);
-                // create a face neighbours map and compute edge angles
+                // Create a face neighbours map and compute edge angles
                 for (int i = 0; i < part.Visualization.Cells.Length; i++)
                 {
                     cell1Id = i;
@@ -3493,7 +3637,7 @@ namespace CaeMesh
                     {
                         cell2Id = part.Visualization.CellNeighboursOverCellEdge[i][j];
                         face2Id = faceIdOfCells[cell2Id];
-                        // compute angle only for edge cells
+                        // Compute angle only for edge cells
                         if (face1Id != face2Id)
                         {
                             if (allFaceNeighbours.TryGetValue(face1Id, out faceNeighbours)) faceNeighbours.Add(face2Id);
@@ -3513,18 +3657,17 @@ namespace CaeMesh
                         }
                     }
                 }
-
-
+                //
                 angle *= Math.PI / 180;
                 HashSet<int> surfaceIds = new HashSet<int>();
                 HashSet<int> notVisitedSurfaceIds = new HashSet<int>();
                 HashSet<int> newSurfaceIds = new HashSet<int>();
                 surfaceIds.Add(faceId);
                 notVisitedSurfaceIds.Add(faceId);
-                // spread
+                // Spread
                 do
                 {
-                    // find new surface candidates
+                    // Find new surface candidates
                     newSurfaceIds.Clear();
                     foreach (var notVisitedSurfaceId in notVisitedSurfaceIds)
                     {
@@ -3541,7 +3684,7 @@ namespace CaeMesh
                         }
                     }
 
-                    // add new surface candidates to surfaces and to surfaces to visit
+                    // Add new surface candidates to surfaces and to surfaces to visit
                     notVisitedSurfaceIds.Clear();
                     foreach (var newSurfaceId in newSurfaceIds)
                     {
@@ -3551,7 +3694,7 @@ namespace CaeMesh
                 }
                 while (newSurfaceIds.Count > 0);
 
-                // get geometry ids
+                // Get geometry ids
                 int typeId = 3;        // 1 ... vertex, 2 ... edge, 3 ... surface
                 int partId = part.PartId; ;
 
@@ -3563,7 +3706,7 @@ namespace CaeMesh
                 }
                 return geometryIds;
             }
-
+            //
             return null;
         }
 
@@ -5260,11 +5403,8 @@ namespace CaeMesh
         {
             double min = double.MaxValue;
             VisualizationData visualization;
-            BasePart part;
-            int edge1Id;
-            int edge2Id;
+            BasePart part;            
             double dist;
-            List<int[]> surfaceEdgeCellsList = new List<int[]>();
             //
             foreach (var partName in partNames)
             {
@@ -5275,34 +5415,41 @@ namespace CaeMesh
                 // For each face
                 for (int i = 0; i < visualization.FaceEdgeIds.Length; i++)
                 {
-                    surfaceEdgeCellsList.Clear();
-                    // For each face edge
-                    for (int j = 0; j < visualization.FaceEdgeIds[i].Length - 1; j++)
-                    {
-                        edge1Id = visualization.FaceEdgeIds[i][j];
-                        // Compare to each other face edge
-                        for (int k = j + 1; k < visualization.FaceEdgeIds[i].Length; k++)
-                        {
-                            edge2Id = visualization.FaceEdgeIds[i][k];
-                            // Get edge to edge distance; for connected edges the distance is -1
-                            dist = EdgeToEdgeMinDistance(visualization, edge1Id, edge2Id);
-                            //
-                            if (dist != -1 && dist < min) min = dist;
-                        }
-                    }
+                    dist = GetClosestUnConnectedEdgesDistanceOnFace(visualization, i);
+                    if (dist < min) min = dist;
+                }
+            }
+            return min;
+        }
+        public double GetClosestUnConnectedEdgesDistanceOnFace(VisualizationData visualization, int faceId)
+        {
+            double min = double.MaxValue;
+            int edge1Id;
+            int edge2Id;
+            double dist;
+            // For each face edge
+            for (int i = 0; i < visualization.FaceEdgeIds[faceId].Length - 1; i++)
+            {
+                edge1Id = visualization.FaceEdgeIds[faceId][i];
+                // Compare to each other face edge
+                for (int j = i + 1; j < visualization.FaceEdgeIds[faceId].Length; j++)
+                {
+                    edge2Id = visualization.FaceEdgeIds[faceId][j];
+                    // Get edge to edge distance; for connected edges the distance is -1
+                    dist = EdgeToEdgeMinDistance(visualization, edge1Id, edge2Id);
+                    //
+                    if (dist != -1 && dist < min) min = dist;
                 }
             }
             return min;
         }
         public double[][][] ShowCloseUnConnectedEdges(double minDistance, string[] partNames)
         {
-            double min = double.MaxValue;
             VisualizationData visualization;
             BasePart part;
             int edge1Id;
             int edge2Id;
             double dist;
-            List<int[]> surfaceEdgeCellsList = new List<int[]>();
             List<double[][]> allNodeCoor = new List<double[][]>();
             //
             foreach (var partName in partNames)
@@ -5314,7 +5461,6 @@ namespace CaeMesh
                 // For each face
                 for (int i = 0; i < visualization.FaceEdgeIds.Length; i++)
                 {
-                    surfaceEdgeCellsList.Clear();
                     // For each face edge
                     for (int j = 0; j < visualization.FaceEdgeIds[i].Length - 1; j++)
                     {
