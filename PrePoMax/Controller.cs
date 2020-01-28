@@ -88,7 +88,6 @@ namespace PrePoMax
                 {
                     _currentView = value;
                     ClearSelectionHistory(); // the selection nodes are only valid on default mesh
-                    _selection.CurrentView = (int)_currentView;
                     _form.SetCurrentView(_currentView);
                     if (_currentView == ViewGeometryModelResults.Geometry) DrawGeometry(false);
                     else if (_currentView == ViewGeometryModelResults.Model) DrawMesh(false);
@@ -254,18 +253,17 @@ namespace PrePoMax
             _commands.ModelChanged_ResetJobStatus = ResetAllJobStatus;
             _commands.EnableDisableUndoRedo += _commands_CommandExecuted;
             _commands.OnEnableDisableUndoRedo();
-
+            //
             _jobs = new OrderedDictionary<string, AnalysisJob>();
             _selection = new Selection();
-            _selection.CurrentView = (int)_currentView;
-
+            //
             _sectionViewPlanes = new Dictionary<ViewGeometryModelResults, Octree.Plane>();
             _sectionViewPlanes.Add(ViewGeometryModelResults.Geometry, null);
             _sectionViewPlanes.Add(ViewGeometryModelResults.Model, null);
             _sectionViewPlanes.Add(ViewGeometryModelResults.Results, null);
-
+            //
             Clear();
-
+            //
             try
             {
                 string fileName = Path.Combine(System.Windows.Forms.Application.StartupPath, Globals.SettingsFileName);
@@ -280,9 +278,9 @@ namespace PrePoMax
             {
                 PrepareSettings();
             }
-
+            //
             ApplySettings();
-
+            //
             ViewResultsType = ViewResultsType.ColorContours;
         }
 
@@ -1242,7 +1240,8 @@ namespace PrePoMax
 
         public string[] GetGeometryPartNames()
         {
-            return _model.Geometry.Parts.Keys.ToArray();
+            if (_model.Geometry != null) return _model.Geometry.Parts.Keys.ToArray();
+            else return new string[0];
         }
         public GeometryPart GetGeometryPart(string partName)
         {
@@ -3850,7 +3849,9 @@ namespace PrePoMax
             try
             {
                 if (_selectBy == vtkSelectBy.Id) return;
-
+                // Set the current view for the selection;
+                if (_selection.Nodes.Count == 0) _selection.CurrentView = (int)_currentView;
+                //
                 if (pickedPoint == null && planeParameters == null) ClearSelectionHistory();   // empty pick - clear
                 else
                 {
@@ -3935,10 +3936,9 @@ namespace PrePoMax
                 if (prevPartIds.Count == 1) add = true;
             }
             else add = true;
-                
+            //
             if (add) _selection.Add(node, ids);
             if (highlight) HighlightSelection();
-            //
         }
         public void RemoveLastSelectionNode(bool highlight)
         {
@@ -3948,6 +3948,8 @@ namespace PrePoMax
         //
         public int[] GetSelectionIds()
         {
+            // If no nodes are added - return empty
+            if (_selection.Nodes.Count == 0) return new int[0];
             // ids for:
             // nodes: global node ids
             // elements: global element ids

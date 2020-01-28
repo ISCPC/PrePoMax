@@ -2765,15 +2765,15 @@ namespace CaeMesh
         }
         public int[][] GetEdgeCells(int elementId, int[] edgeNodeIds, out BasePart part, out int edgeId)
         {
-            // get all faces containing at least 1 node id
-            // face id = 10 * elementId + vtkCellId
+            // Get all faces containing at least 1 node id
+            // Face id = 10 * elementId + vtkCellId
             int[] faceIds = GetVisualizationFaceIds(edgeNodeIds, new int[] { elementId }, false, false);
             bool add;
             int[] cell = null;
             FeElement element = null;
             HashSet<int> hashCell = new HashSet<int>();
             HashSet<int> allCells = new HashSet<int>();
-            // find a face containing all node ids
+            // Find the first face containing all edge node ids and save it to allCells
             foreach (int faceId in faceIds)
             {
                 cell = GetCellFromFaceId(faceId, out element);  // the same element is always returned, but not the same cell
@@ -2793,7 +2793,7 @@ namespace CaeMesh
                 }
                 if (add) break;
             }
-            // find "surface" edge cells that contain edgeNodeIds
+            // Find "surface" edge cells that contain edgeNodeIds
             CompareIntArray comparer = new CompareIntArray();
             int edgeCellId;
             int[] edgeCell;
@@ -2804,9 +2804,10 @@ namespace CaeMesh
             if (part == null) return null;
             VisualizationData visualization = part.Visualization;
             HashSet<int> intersection = new HashSet<int>();
-            //
+            // For each edge
             for (int i = 0; i < visualization.EdgeCellIdsByEdge.Length; i++)
             {
+                // For each edge cell
                 for (int j = 0; j < visualization.EdgeCellIdsByEdge[i].Length; j++)
                 {
                     edgeCellId = visualization.EdgeCellIdsByEdge[i][j];
@@ -2819,7 +2820,7 @@ namespace CaeMesh
                     if (intersection.Count > 0) edgeCellEdgeId.Add(edgeCell, i);
                 }
             }
-            // if the face is connected to more than one "surface" edge, find the one with the most equal nodes
+            // If the face is connected to more than one "surface" edge, find the one with the most equal nodes
             if (edgeCellEdgeId.Count == 1) edgeId = edgeCellEdgeId.Values.First();
             else if (edgeCellEdgeId.Count > 1)
             {
@@ -3295,18 +3296,17 @@ namespace CaeMesh
         public int GetGeometryId(double[] point, int elementId, int[] edgeNodeIds, int[] cellFaceNodeIds)
         {
             // geometryId = itemId * 100000 + typeId * 10000 + partId;
-
             int itemId = -1;
             int typeId = -1;        // 1 ... vertex, 2 ... edge, 3 ... surface
             int partId = -1;
             int geometryId;
-
+            //
             BasePart part;
             int partEdgeId;
-
+            //
             int[][] edgeCells = GetEdgeCells(elementId, edgeNodeIds, out part, out partEdgeId);
             if (part != null) partId = part.PartId;            
-
+            //
             if (edgeCells != null)
             {
                 double dSeg;
