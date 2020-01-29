@@ -957,30 +957,6 @@ namespace vtkControl
                 _mouseSelectionActorCurrent.Geometry.SetProperty(Globals.CurrentMouseSelectionProperty);
             }
         }
-        
-        //private void PickByGeometrySurfaceAngle(out vtkActor pickedActor, int x, int y)
-        //{
-        //    double[] pickedPoint = GetPickPoint(out pickedActor, x, y);
-        //    if (pickedPoint == null)
-        //    {
-        //        if (_probeWidget.GetVisibility() == 1) _probeWidget.VisibilityOff();
-        //        return;
-        //    }
-
-        //    vtkCellLocator cellLocator;
-        //    vtkCell cell;
-        //    int globalCellId = GetGlobalCellIdClosestTo3DPoint(ref pickedPoint, out cell, out cellLocator);
-        //    int[] globalCellFaceNodeIds = GetCellFaceNodeIds(cell, cellLocator);
-
-        //    vtkMaxActorData actorData = Controller_GetSurfaceEdgesActorData(globalCellId, globalCellFaceNodeIds);
-        //    actorData.CanHaveElementEdges = true;
-
-        //    vtkMaxActor actor = new vtkMaxActor(actorData);
-        //    _mouseSelectionActorCurrent = actor;
-
-        //    AddActor(_mouseSelectionActorCurrent, vtkRendererLayer.Selection);
-        //    _mouseSelectionActorCurrent.SetProperty(Globals.CurrentMouseSelectionProperty);
-        //}
 
         private void PickByArea(int x1, int y1, int x2, int y2)
         {
@@ -1369,15 +1345,17 @@ namespace vtkControl
             }
             return coor;
         }
-        public void GetGeometryPickProperties(double[] point, out int elementId, out int[] edgeNodeIds, 
-                                              out int[] cellFaceNodeIds)
+        public void GetGeometryPickProperties(double[] point, out int elementId, out int[] edgeNodeIds, out int[] cellFaceNodeIds)
         {
             vtkCellLocator cellLocator;
             vtkCell cell;
             elementId = GetGlobalCellIdClosestTo3DPoint(ref point, out cell, out cellLocator);
             edgeNodeIds = GetEdgeNodeIds(point, elementId, cell, cellLocator);
             cellFaceNodeIds = GetCellFaceNodeIds(cell, cellLocator);
-            //dist = vtkInteractorStyleControl.DisplayToWorldScale(_renderer, 7);
+        }
+        public double GetSelectionPrecision()
+        {
+            return vtkInteractorStyleControl.DisplayToWorldScale(_renderer, 7);
         }
 
         // Item selection - Frustum                                                                                                 

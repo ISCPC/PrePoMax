@@ -3588,7 +3588,6 @@ namespace PrePoMax
             else if (_frmReferencePoint.Visible) _frmReferencePoint.PickedIds(ids);
             else if (_frmQuery.Visible) _frmQuery.PickedIds(ids);
         }
-
         public void SetSelectBy(vtkSelectBy selectBy)
         {
             InvokeIfRequired(() => _vtk.SelectBy = selectBy);
@@ -3597,8 +3596,7 @@ namespace PrePoMax
         {
             InvokeIfRequired(() => _vtk.SelectItem = selectItem);
         }
-
-        public void GetGeometryPickProperties(double[] point, out int elementId, out int[] edgeNodeIds, 
+        public void GetGeometryPickProperties(double[] point, out int elementId, out int[] edgeNodeIds,
                                               out int[] cellFaceNodeIds, string[] selectionPartNames = null)
         {
             elementId = -1;
@@ -3615,7 +3613,10 @@ namespace PrePoMax
                 _vtk.SetSelectableActorsFilter(null);
             }
         }
-
+        public double GetSelectionPrecision()
+        {
+            return _vtk.GetSelectionPrecision();
+        }
         public int[] GetNodeIdsFromFrustum(double[][] planeParameters, vtkSelectBy selectBy)
         {
             return _vtk.GetGlobalNodeIdsFromFrustum(planeParameters, selectBy);
