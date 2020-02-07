@@ -15,18 +15,10 @@ namespace FileInOut.Output.Calculix
         private Step _step;
 
 
-        // Properties                                                                                                               
-        public override object BaseItem { get { return _step; } }
-
-
-        // Events                                                                                                                   
-
-
         // Constructor                                                                                                              
         public CalStep(Step step)
         {
             _step = step;
-            _active = step.Active;
         }
 
 
@@ -40,7 +32,6 @@ namespace FileInOut.Output.Calculix
             sb.AppendFormat("*Step{0}{1}", perturbation, nlGeom).AppendLine();
             return sb.ToString();
         }
-
         public override string GetDataString()
         {
             return "";

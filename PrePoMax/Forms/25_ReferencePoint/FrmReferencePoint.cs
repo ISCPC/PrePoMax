@@ -18,6 +18,8 @@ namespace PrePoMax.Forms
         private ViewFeReferencePoint _viewReferencePoint;
         private Controller _controller;
         private double[][] _coorNodesToDraw;
+        private string[] _nodeSetNames;
+        private string[] _surfaceNames;
 
 
         // Properties                                                                                                               
@@ -72,18 +74,16 @@ namespace PrePoMax.Forms
         // Overrides                                                                                                                
         protected override void OnPropertyGridPropertyValueChanged()
         {
-            if (nameof(_viewReferencePoint.CreateReferencePointFrom) == propertyGrid.SelectedGridItem.PropertyDescriptor.Name)
+            if (nameof(_viewReferencePoint.CreatedFrom) == propertyGrid.SelectedGridItem.PropertyDescriptor.Name
+                || nameof(_viewReferencePoint.RegionType) == propertyGrid.SelectedGridItem.PropertyDescriptor.Name
+                || nameof(_viewReferencePoint.NodeSetName) == propertyGrid.SelectedGridItem.PropertyDescriptor.Name
+                || nameof(_viewReferencePoint.SurfaceName) == propertyGrid.SelectedGridItem.PropertyDescriptor.Name)
             {
-                string value = (string)propertyGrid.SelectedGridItem.Value.ToString();
-                if (value != FeReferencePointCreatedFrom.Coordinates.ToString() && ReferencePoint.CreatedFromNodeSetName != null)
-                {
-                    if (_controller.GetUserNodeSetNames().Contains(ReferencePoint.CreatedFromNodeSetName))
-                        ReferencePoint.UpdateCoordinates(_controller.GetNodeSet(ReferencePoint.CreatedFromNodeSetName));
-                }
+                _controller.UpdateReferencePoint(ReferencePoint);
             }
-
-            HighlightNodes();
-
+            //
+            HighlightReferencePoint();
+            //
             base.OnPropertyGridPropertyValueChanged();
         }
         protected override void OnPropertyGridSelectedGridItemChanged()
@@ -92,18 +92,22 @@ namespace PrePoMax.Forms
             if (value != null)
             {
                 string valueString = value.ToString();
-
-                if (propertyGrid.SelectedObject == null) { }
+                object[] objects = null;
+                //
+                if (propertyGrid.SelectedObject == null)
+                { }
                 else if (propertyGrid.SelectedObject is ViewFeReferencePoint)
                 {
                     ViewFeReferencePoint vrp = propertyGrid.SelectedObject as ViewFeReferencePoint;
-                    if (valueString == vrp.NodeSetName) _controller.Highlight3DObjects(new object[] { vrp.NodeSetName });
-                    else _controller.Highlight3DObjects(null);
+                    if (valueString == vrp.NodeSetName) objects = new object[] { vrp.NodeSetName };
+                    if (valueString == vrp.SurfaceName) objects = new object[] { vrp.SurfaceName };
+                    else objects = null;
                 }
                 else throw new NotImplementedException();
+                //
+                _controller.Highlight3DObjects(objects);
             }
-
-            HighlightNodes();
+            HighlightReferencePoint();
         }
         protected override void Apply()
         {
@@ -128,35 +132,42 @@ namespace PrePoMax.Forms
         {
             this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
             this.btnOkAddNew.Visible = referencePointToEditName == null;
-
+            //
             _propertyItemChanged = false;
             _allExistingNames.Clear();
             _referencePointToEditName = null;
             _viewReferencePoint = null;
-
+            //
             _allExistingNames.UnionWith(_controller.GetAllMeshEntityNames());
             _referencePointToEditName = referencePointToEditName;
-
-            string[] nodeSetNames = _controller.GetUserNodeSetNames();
-
-            if (_referencePointToEditName == null) ReferencePoint = new FeReferencePoint(GetReferencePointName(), 0, 0, 0);
-            else ReferencePoint = _controller.GetReferencePoint(_referencePointToEditName); // to clone
-
-            if (ReferencePoint.CreatedFrom != FeReferencePointCreatedFrom.Coordinates)
+            //
+            _nodeSetNames = _controller.GetUserNodeSetNames();
+            _surfaceNames = _controller.GetSurfaceNames();
+            //
+            if (_referencePointToEditName == null)  ReferencePoint = new FeReferencePoint(GetReferencePointName(), 0, 0, 0);
+            else 
             {
-                CheckMissingValueRef(ref nodeSetNames, _viewReferencePoint.NodeSetName, s => { _viewReferencePoint.NodeSetName = s; });
-
+                ReferencePoint = _controller.GetReferencePoint(_referencePointToEditName); // to clone
+                // Check for deleted regions
+                ViewFeReferencePoint vrp = _viewReferencePoint;
+                if (vrp.CreatedFrom == FeReferencePointCreatedFrom.BoundingBoxCenter
+                    || vrp.CreatedFrom == FeReferencePointCreatedFrom.CenterOfGravity)
+                {                    
+                    if (vrp.RegionType == RegionTypeEnum.NodeSetName.ToFriendlyString())
+                        CheckMissingValueRef(ref _nodeSetNames, vrp.NodeSetName, s => { vrp.NodeSetName = s; });
+                    else if (vrp.RegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
+                        CheckMissingValueRef(ref _surfaceNames, vrp.SurfaceName, s => { vrp.SurfaceName = s; });
+                    else throw new NotSupportedException();
+                }
                 // CheckMissingValue changes _propertyItemChanged -> update coordinates
-                if (_propertyItemChanged && ReferencePoint.CreatedFromNodeSetName != null
-                    && _controller.GetReferencePointNames().Contains(ReferencePoint.CreatedFromNodeSetName))
-                    ReferencePoint.UpdateCoordinates(_controller.GetNodeSet(ReferencePoint.CreatedFromNodeSetName));
+                if (_propertyItemChanged) _controller.UpdateReferencePoint(ReferencePoint);
             }
-
-            _viewReferencePoint.PopululateDropDownList(nodeSetNames);
-
+            //
+            _viewReferencePoint.PopululateDropDownLists(_nodeSetNames, _surfaceNames);
+            //
             propertyGrid.SelectedObject = _viewReferencePoint;
             propertyGrid.Select();
-
+            //
             return true;
         }
 
@@ -169,21 +180,21 @@ namespace PrePoMax.Forms
         public void PickedIds(int[] ids)
         {
             this.Enabled = true;
-
+            //
             _controller.SelectBy = vtkSelectBy.Off;
             _controller.Selection.SelectItem = vtkSelectItem.None;
             _controller.ClearSelectionHistory();
-
+            //
             if (ids != null && ids.Length == 1)
             {
                 FeNode node = _controller.Model.Mesh.Nodes[ids[0]];
                 _viewReferencePoint.X = node.X;
                 _viewReferencePoint.Y = node.Y;
                 _viewReferencePoint.Z = node.Z;
-
+                //
                 propertyGrid.Refresh();
-
-                HighlightNodes();
+                //
+                HighlightReferencePoint();
             }
         }
         private string GetReferencePointName()
@@ -191,15 +202,15 @@ namespace PrePoMax.Forms
             return NamedClass.GetNewValueName(_allExistingNames, "RP-");
         }
 
-        private void HighlightNodes()
+        private void HighlightReferencePoint()
         {
             Color color = Color.Red;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
-
+            //
             _coorNodesToDraw[0][0] = _viewReferencePoint.X;
             _coorNodesToDraw[0][1] = _viewReferencePoint.Y;
             _coorNodesToDraw[0][2] = _viewReferencePoint.Z;
-
+            //
             _controller.DrawNodes("ReferencePoint", _coorNodesToDraw, color, layer, 7);
         }
     }

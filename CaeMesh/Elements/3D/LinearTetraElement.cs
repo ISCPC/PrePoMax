@@ -138,6 +138,12 @@ namespace CaeMesh
             int[] cell = GetVtkCellFromFaceName(faceName);
             return GeometryTools.TriangleArea(nodes[cell[0]], nodes[cell[1]], nodes[cell[2]]);
         }
+        public override double[] GetCG(FeFaceName faceName, Dictionary<int, FeNode> nodes, out double area)
+        {
+            int[] cell = GetVtkCellFromFaceName(faceName);
+            double[] cg = GeometryTools.TriangleCG(nodes[cell[0]], nodes[cell[1]], nodes[cell[2]], out area);
+            return cg;
+        }
         public override FeElement DeepCopy()
         {
             return new LinearTetraElement(Id, PartId, NodeIds.ToArray());

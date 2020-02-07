@@ -3259,8 +3259,7 @@ namespace PrePoMax
                                             MessageBoxButtons.OKCancel) != DialogResult.OK) return;
                     }
 
-                    _controller.RunJob(inputFileName, job);
-                    MonitorAnalysis(jobName);
+                    if (_controller.RunJob(inputFileName, job)) MonitorAnalysis(jobName);
                 }
                 else MessageBox.Show("The analysis is already running or in queue.", "Error", MessageBoxButtons.OK);
             }

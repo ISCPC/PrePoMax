@@ -328,7 +328,6 @@ namespace vtkControl
         {
             // Create the geometry of a point (the coordinate)
             vtkPoints points = vtkPoints.New();
-
             // Create the topology of the point (a vertex)
             vtkCellArray vertices = vtkCellArray.New();
             for (int i = 0; i < data.Geometry.Nodes.Coor.GetLength(0); i++)
@@ -337,22 +336,17 @@ namespace vtkControl
                 vertices.InsertNextCell(1);
                 vertices.InsertCellPoint(i);
             }
-
             // Create a polythis object
-            vtkPolyData pointsPolythis = vtkPolyData.New();
-
+            vtkPolyData pointsPolyData = vtkPolyData.New();
             // Set the points and vertices created as the geometry and topology of the polythis
-            pointsPolythis.SetPoints(points);
-            pointsPolythis.SetVerts(vertices);
-
+            pointsPolyData.SetPoints(points);
+            pointsPolyData.SetVerts(vertices);
             // Visualize
             vtkPolyDataMapper mapper = vtkPolyDataMapper.New();
-            mapper.SetInput(pointsPolythis);
-
-
+            mapper.SetInput(pointsPolyData);
+            //
             _geometry.SetMapper(mapper);
-
-            _geometry.GetProperty().SetColor(_color.R / 255d, _color.G / 255d, _color.B / 255d);
+            _geometry.GetProperty().SetColor(data.Color.R / 255d, data.Color.G / 255d, data.Color.B / 255d);
             _geometry.GetProperty().SetPointSize(data.NodeSize);
         }
         private void CreateFromDataByVisualizationSurfaceExtraction(vtkMaxActorData data)

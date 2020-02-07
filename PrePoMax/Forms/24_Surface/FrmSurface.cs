@@ -247,7 +247,9 @@ namespace PrePoMax.Forms
         {
             // prepare ItemSetDataEditor
             if (_surfaceToEditName == null) return true;
-            return _controller.GetSurface(_surfaceToEditName).CreationData.IsGeometryBased();
+            FeSurface surface = _controller.GetSurface(_surfaceToEditName);
+            if (surface == null || surface.CreationData == null) return true;
+            return surface.CreationData.IsGeometryBased();
         }
     }
 

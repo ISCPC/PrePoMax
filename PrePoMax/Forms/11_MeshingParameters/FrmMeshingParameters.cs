@@ -123,6 +123,7 @@ namespace PrePoMax.Forms
         private void FrmMeshingParameters_VisibleChanged(object sender, EventArgs e)
         {
             UpdateHighlightFromTree?.Invoke();
+            // Hide preview button during regeneartion 
             btnPreview.Visible = Visible && !Modal;
         }
 
@@ -153,6 +154,7 @@ namespace PrePoMax.Forms
         {
             try
             {
+                btnPreview.Enabled = false;
                 MeshingParameters parameters = ((ViewMeshingParameters)(propertyGrid.SelectedObject)).GetBase();
                 if (_partNames != null && _partNames.Length > 0)
                 {
@@ -165,7 +167,12 @@ namespace PrePoMax.Forms
             }
             catch (Exception ex)
             {
+                btnPreview.Enabled = true;
                 CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+            finally
+            {
+                btnPreview.Enabled = true;
             }
         }
     }

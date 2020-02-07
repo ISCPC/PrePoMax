@@ -3,44 +3,47 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CaeGlobals;
+using CaeModel;
+using CaeMesh;
 
 namespace FileInOut.Output.Calculix
 {
     [Serializable]
-    internal class CalSubmodel : CalculixKeyword
+    public class CalTitle : CalculixKeyword
     {
         // Variables                                                                                                                
-        string _globalResultsFileName;
-        string[] _nodeSetNames;
+        private string _title;
+        private string _data;
 
 
         // Properties                                                                                                               
-        public override object BaseItem { get { return _nodeSetNames; } }
-
-
-        // Events                                                                                                                   
-
+        public string Title { get { return _title; } }
+        
 
         // Constructor                                                                                                              
-        public CalSubmodel(string globalResultsFileName, string[] nodeSetNames)
+        public CalTitle(string title, string data)
+
         {
-            _globalResultsFileName = globalResultsFileName;
-            _nodeSetNames = nodeSetNames;
+            _title = title;
+            _data = data;
         }
 
 
         // Methods                                                                                                                  
         public override string GetKeywordString()
         {
-            return string.Format("*Submodel, Type=Node, Input=\"{0}\"{1}", _globalResultsFileName.ToUTF8(), Environment.NewLine);
+            StringBuilder sb = new StringBuilder();
+            //sb.AppendLine("************************************************************");
+            sb.AppendLine("**");
+            sb.AppendLine(("** " + _title + " ").PadRight(60, '+'));
+            sb.AppendLine("**");
+            //sb.AppendLine("************************************************************");
+            return sb.ToString();
         }
-
         public override string GetDataString()
         {
-            StringBuilder sb = new StringBuilder();
-            foreach (var nodeSetName in _nodeSetNames) sb.AppendLine(nodeSetName);
-            return sb.ToString();
+            if (_data != null && _data.Length > 0) return string.Format("{0}{1}", _data, Environment.NewLine);
+            else return "";
         }
     }
 }

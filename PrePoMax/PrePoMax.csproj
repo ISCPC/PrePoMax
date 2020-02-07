@@ -223,6 +223,7 @@
     <Compile Include="Forms\51_BoundaryConditions\ViewSubmodel.cs" />
     <Compile Include="Forms\61_Load\ViewCentrifLoad.cs" />
     <Compile Include="Forms\61_Load\ViewGravityLoad.cs" />
+    <Compile Include="Forms\61_Load\ViewPreTensionLoad.cs" />
     <Compile Include="Forms\71_Settings\FrmGetEnvVars.cs">
       <SubType>Form</SubType>
     </Compile>

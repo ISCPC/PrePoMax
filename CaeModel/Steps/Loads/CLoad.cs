@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CaeMesh;
 using CaeGlobals;
 
+
 namespace CaeModel
 {
     [Serializable]
@@ -30,6 +31,7 @@ namespace CaeModel
             else return F3;
         }
 
+
         // Constructors                                                                                                             
         public CLoad(string name, string regionName, RegionTypeEnum regionType, double f1, double f2, double f3)
             : base(name) 
@@ -42,7 +44,6 @@ namespace CaeModel
             F2 = f2;
             F3 = f3;
         }
-
         public CLoad(string name, int nodeId, double f1, double f2, double f3)
             : base(name)
         {
@@ -54,6 +55,7 @@ namespace CaeModel
             F2 = f2;
             F3 = f3;
         }
+
 
         // Methods                                                                                                                  
         

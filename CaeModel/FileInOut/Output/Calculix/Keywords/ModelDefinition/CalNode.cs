@@ -16,12 +16,6 @@ namespace FileInOut.Output.Calculix
         IDictionary<string, FeReferencePoint> _referencePoints;
         IDictionary<int, FeNode> _nodes;
 
-        // Properties                                                                                                               
-        public override object BaseItem { get { return _nodes; } }
-
-
-        // Events                                                                                                                   
-
 
         // Constructor                                                                                                              
         public CalNode(FeModel model, IDictionary<string, int[]> referencePointsNodeIds)
@@ -46,13 +40,19 @@ namespace FileInOut.Output.Calculix
                 node = entry.Value;
                 sb.AppendFormat("{0}, {1:E8}, {2:E8}, {3:E8}", node.Id, node.X, node.Y, node.Z).AppendLine();
             }
-
+            //
             FeReferencePoint rp;
             foreach (var entry in _referencePointsNodeIds)
             {
-                rp = _referencePoints[entry.Key];
-                sb.AppendFormat("{0}, {1:E8}, {2:E8}, {3:E8}", entry.Value[0], rp.X, rp.Y, rp.Z).AppendLine();
-                sb.AppendFormat("{0}, {1:E8}, {2:E8}, {3:E8}", entry.Value[1], rp.X, rp.Y, rp.Z).AppendLine();
+                if (_referencePoints.TryGetValue(entry.Key, out rp))
+                {
+                    sb.AppendFormat("{0}, {1:E8}, {2:E8}, {3:E8}", entry.Value[0], rp.X, rp.Y, rp.Z).AppendLine();
+                    sb.AppendFormat("{0}, {1:E8}, {2:E8}, {3:E8}", entry.Value[1], rp.X, rp.Y, rp.Z).AppendLine();
+                }
+                else
+                {
+                    sb.AppendFormat("{0}, {1:E8}, {2:E8}, {3:E8}", entry.Value[0], 0, 0, 0).AppendLine();
+                }
             }
             return sb.ToString();
         }

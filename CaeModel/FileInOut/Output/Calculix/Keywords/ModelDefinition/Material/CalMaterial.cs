@@ -4,38 +4,32 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CaeModel;
+using CaeMesh;
 
 namespace FileInOut.Output.Calculix
 {
     [Serializable]
-    internal class CalHeading : CalculixKeyword
+    internal class CalMaterial : CalculixKeyword
     {
         // Variables                                                                                                                
-        string _modelName;
-
-        // Properties                                                                                                               
-        public override object BaseItem { get { return _modelName; } }
-
-
-        // Events                                                                                                                   
+        private Material _material;
 
 
         // Constructor                                                                                                              
-        public CalHeading(string modelName)
+        public CalMaterial(Material material)
         {
-            _modelName = modelName;
+            _material = material;
         }
 
 
         // Methods                                                                                                                  
         public override string GetKeywordString()
         {
-            return string.Format("*Heading{0}", Environment.NewLine);
+            return string.Format("*Material, Name={0}{1}", _material.Name, Environment.NewLine);
         }
-
         public override string GetDataString()
         {
-            return string.Format("Model: {0},     Date: {1}" + Environment.NewLine, _modelName, DateTime.Now.ToShortDateString());
+            return "";
         }
     }
 }

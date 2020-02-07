@@ -15,13 +15,7 @@ namespace FileInOut.Output.Calculix
         private STLoad _load;
         private CLoad[] _cLoads;
         private Dictionary<string, int[]> _referencePointsNodeIds;
-
-        // Properties                                                                                                               
-        public override object BaseItem { get { return _load; } }
-
-
-        // Events                                                                                                                   
-
+      
 
         // Constructor                                                                                                              
         public CalSTLoad(FeModel model, STLoad load, Dictionary<string, int[]> referencePointsNodeIds)
@@ -29,7 +23,6 @@ namespace FileInOut.Output.Calculix
             _cLoads = model.GetNodalLoadsFromSurfaceTraction(load);
             _load = load;
             _referencePointsNodeIds = referencePointsNodeIds;
-            _active = load.Active;
         }
 
 
@@ -41,7 +34,6 @@ namespace FileInOut.Output.Calculix
             sb.AppendLine("*Cload");
             return sb.ToString();
         }
-
         public override string GetDataString()
         {
             StringBuilder sb = new StringBuilder();

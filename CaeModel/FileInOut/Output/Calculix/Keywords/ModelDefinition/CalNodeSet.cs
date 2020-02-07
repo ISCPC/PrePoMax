@@ -15,18 +15,10 @@ namespace FileInOut.Output.Calculix
         private FeNodeSet _nodeSet;
 
 
-        // Properties                                                                                                               
-        public override object BaseItem { get { return _nodeSet; } }
-
-
-        // Events                                                                                                                   
-
-
         // Constructor                                                                                                              
         public CalNodeSet(FeNodeSet nodeSet)
         {
             _nodeSet = nodeSet;
-            _active = nodeSet.Active;
         }
 
 
@@ -35,7 +27,6 @@ namespace FileInOut.Output.Calculix
         {
             return string.Format("*Nset, Nset={0}{1}", _nodeSet.Name, Environment.NewLine);
         }
-
         public override string GetDataString()
         {
             StringBuilder sb = new StringBuilder();

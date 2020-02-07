@@ -9,33 +9,27 @@ using CaeMesh;
 namespace FileInOut.Output.Calculix
 {
     [Serializable]
-    internal class CalEndStep : CalculixKeyword
+    internal class CalDensity : CalculixKeyword
     {
         // Variables                                                                                                                
+        private Density _density;
 
-
-        // Properties                                                                                                               
-        public override object BaseItem { get { return "End step"; } }
-
-
-        // Events                                                                                                                   
-
-
+       
         // Constructor                                                                                                              
-        public CalEndStep()
+        public CalDensity(Density density)
         {
+            _density = density;
         }
 
 
         // Methods                                                                                                                  
         public override string GetKeywordString()
         {
-            return string.Format("*End step{0}", Environment.NewLine);
+            return string.Format("*Density{0}", Environment.NewLine);
         }
-
         public override string GetDataString()
         {
-            return "";
+            return string.Format("{0}{1}", _density.Value, Environment.NewLine);
         }
     }
 }

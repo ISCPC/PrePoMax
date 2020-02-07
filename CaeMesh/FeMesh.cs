@@ -49,7 +49,7 @@ namespace CaeMesh
         private Dictionary<int, FeElement> _elements;
         [NonSerialized]
         private Octree.PointOctree<int> _octree;
-        
+
         private OrderedDictionary<string, FeNodeSet> _nodeSets;                 //ISerializable
         private OrderedDictionary<string, FeElementSet> _elementSets;           //ISerializable
         private OrderedDictionary<string, FeSurface> _surfaces;                 //ISerializable
@@ -147,7 +147,7 @@ namespace CaeMesh
             //
             _meshRefinements = new OrderedDictionary<string, FeMeshRefinement>();
             //
-            UpdateMaxNodeAndElementIds();            
+            UpdateMaxNodeAndElementIds();
         }
         public FeMesh(FeMesh mesh, string[] partsToKeep)
         {
@@ -551,10 +551,20 @@ namespace CaeMesh
 
             // Reference points
             FeReferencePoint referencePoint;
+            bool validFromCoordinates;
+            bool validFromBB;
+            bool validFromCG;
             foreach (var entry in _referencePoints)
             {
                 referencePoint = entry.Value;
-                valid = !(referencePoint.CreatedFrom != FeReferencePointCreatedFrom.Coordinates && !_nodeSets.ContainsValidKey(referencePoint.CreatedFromNodeSetName));
+                validFromCoordinates = referencePoint.CreatedFrom == FeReferencePointCreatedFrom.Coordinates;
+                validFromBB = (referencePoint.CreatedFrom == FeReferencePointCreatedFrom.BoundingBoxCenter &&
+                               (_nodeSets.ContainsValidKey(referencePoint.RegionName) ||
+                               _surfaces.ContainsValidKey(referencePoint.RegionName)));
+                validFromCG = (referencePoint.CreatedFrom == FeReferencePointCreatedFrom.CenterOfGravity &&
+                               (_nodeSets.ContainsValidKey(referencePoint.RegionName) ||
+                               _surfaces.ContainsValidKey(referencePoint.RegionName)));
+                valid = validFromCoordinates || validFromBB || validFromCG;
                 SetItemValidity(referencePoint, valid, items);
                 if (!valid && referencePoint.Active) invalidItems.Add("Reference point: " + referencePoint.Name);
             }
@@ -605,6 +615,7 @@ namespace CaeMesh
             return 1;
         }
 
+        // Bounding box
         private void UpdateMaxNodeAndElementIds()
         {
             // determine max node id
@@ -635,7 +646,7 @@ namespace CaeMesh
                     for (int i = 0; i < entry.Value.NodeLabels.Length; i++)
                     {
                         node = _nodes[entry.Value.NodeLabels[i]];
-                        entry.Value.BoundingBox.CheckNode(node);                        
+                        entry.Value.BoundingBox.CheckNode(node);
                     }
                     _boundingBox.CheckBox(entry.Value.BoundingBox);
                 }
@@ -655,7 +666,7 @@ namespace CaeMesh
 
 
         }
-        
+
         // Colors
         public void ResetPartsColor()
         {
@@ -696,7 +707,7 @@ namespace CaeMesh
             //
             foreach (var entry in _elements)
             {
-                element = entry.Value;                
+                element = entry.Value;
                 //
                 foreach (var nodeId in element.NodeIds)
                 {
@@ -819,14 +830,14 @@ namespace CaeMesh
                 else throw new NotSupportedException();
                 // Add part
                 _parts.Add(name, part);
-                addedPartIds.Add(part.PartId);                
+                addedPartIds.Add(part.PartId);
             }
             watch.Stop();
             // Bounding box of parts and mesh
             _boundingBox = new BoundingBox();
             ComputeBoundingBox();
             // Merge geometry parts
-            if (importOptions == ImportOptions.ImportOneSolidPart && 
+            if (importOptions == ImportOptions.ImportOneSolidPart &&
                 _meshRepresentation == MeshRepresentation.Geometry && _parts.Count > 1) MergeGeometryParts();
             //Extract visualization
             GeometryPart geometryPart;
@@ -916,7 +927,7 @@ namespace CaeMesh
             List<string> mergedPartNames = new List<string>();
             List<int> allNodeIds = new List<int>();
             List<int> allElementIds = new List<int>();
-            HashSet<Type> allElementTypes = new HashSet<Type>();           
+            HashSet<Type> allElementTypes = new HashSet<Type>();
             List<PartType> partTypes = new List<PartType>() { PartType.Shell, PartType.Wire };
             //
             foreach (var partType in partTypes)
@@ -1600,14 +1611,14 @@ namespace CaeMesh
                     {
                         if ((surfaceNodeIdsEntry.Value.Count == partFaceNodeIds.Count && surfaceNodeIdsEntry.Value.Except(partFaceNodeIds).Count() == 0)
                             // Next line is for when the mesh is converted to parabolic mesh outside netgen - before this method
-                            || (surfaceNodeIdsEntry.Value.Intersect(partFaceNodeIds).Count() == surfaceNodeIdsEntry.Value.Count()))   
+                            || (surfaceNodeIdsEntry.Value.Intersect(partFaceNodeIds).Count() == surfaceNodeIdsEntry.Value.Count()))
                         {
                             newSurfaceIds[surfaceCount] = surfaceNodeIdsEntry.Key;
                             oldSurfaceIds[surfaceCount] = surfaceCount;
                             surfaceCount++;
                             oneSurfCount++;
                             break;
-                        }                        
+                        }
                     }
                     if (oneSurfCount == 0)
                     {
@@ -1634,7 +1645,7 @@ namespace CaeMesh
             {
                 vis = partEntry.Value.Visualization;
                 // Skip wire parts
-                if (vis.EdgeCellIdsByEdge == null) continue;    
+                if (vis.EdgeCellIdsByEdge == null) continue;
                 // Split edges with midpoints
                 if (SplitVizualizationEdges(vis, edgeIdNodeIds)) ComputeEdgeLengths(partEntry.Value);
                 //
@@ -2026,7 +2037,7 @@ namespace CaeMesh
             // For each part
             foreach (var entry in _parts)
             {
-                if (entry.Value.PartType == PartType.Solid 
+                if (entry.Value.PartType == PartType.Solid
                     || entry.Value.PartType == PartType.SolidAsShell
                     || entry.Value.PartType == PartType.Shell)
                 {
@@ -2049,14 +2060,14 @@ namespace CaeMesh
                     {
                         n1 = element.NodeIds[0];
                         // Get neighbouring cells
-                        if (nodeCellIds.TryGetValue(n1, out cellIds))           
+                        if (nodeCellIds.TryGetValue(n1, out cellIds))
                         {
                             foreach (var cellId in cellIds)
                             {
                                 // Get linear or parabolic cell edge and compare it to LinearFeElement
                                 cellEdges = GetVisualizationEdgeCells(cells[cellId]);
                                 // Check all cell edges
-                                foreach (var cellEdge in cellEdges)             
+                                foreach (var cellEdge in cellEdges)
                                 {
                                     add = true;
                                     // Check all LinearFeElement nodeIds
@@ -2421,7 +2432,7 @@ namespace CaeMesh
                 else throw new NotSupportedException();
             }
         }
-
+        //
         public void CreateSurfaceItems(FeSurface surface)
         {
             surface.ClearElementFaces();     // area = 0;
@@ -2505,27 +2516,6 @@ namespace CaeMesh
         }
         private void GetNodeAndElementIdsFromNodeSetSurface(FeSurface surface, out int[] nodeIds, out int[] elementIds)
         {
-            //if (surface.CreatedFrom == FeSurfaceCreatedFrom.Selection)
-            //{
-            //    HashSet<int> hashElementIds = new HashSet<int>();
-            //    HashSet<int> hashNodeIds = new HashSet<int>();
-
-            //    BasePart part;
-            //    int localvisualizationCellId;
-            //    foreach (var faceId in surface.FaceIds)
-            //    {
-            //        GetLocalvisualizationCellId(faceId, out part, out localvisualizationCellId);
-            //        if (part != null)
-            //        {
-            //            foreach (var nodeId in part.Visualization.Cells[localvisualizationCellId]) hashNodeIds.Add(nodeId);
-            //            hashElementIds.Add(part.Visualization.CellIds[localvisualizationCellId]);
-            //        }
-            //    }
-
-            //    nodeIds = hashNodeIds.ToArray();
-            //    elementIds = hashElementIds.ToArray();
-            //}
-            //else
             if (surface.CreatedFrom == FeSurfaceCreatedFrom.NodeSet)
             {
                 if (_nodeSets.ContainsKey(surface.CreatedFromNodeSetName))
@@ -2567,40 +2557,41 @@ namespace CaeMesh
             }
             else throw new CaeException("The surface is not created from node set.");
         }
-        private void CreateSurfaceFacesFromSelection(int[] surfaceFaceIds, out int[] nodeIds, out Dictionary<FeFaceName, List<int>> elementSets, out double area)
+        private void CreateSurfaceFacesFromSelection(int[] surfaceFaceIds, out int[] nodeIds, out Dictionary<FeFaceName,
+                                                     List<int>> elementSets, out double area)
         {
             nodeIds = null;
             elementSets = new Dictionary<FeFaceName, List<int>>();
             area = 0;
-
+            //
             List<int> elementIds;
             HashSet<int> faceNodeIds = new HashSet<int>();
-            HashSet<int> hashElementIds = new HashSet<int>();
             HashSet<int> allNodeIds = new HashSet<int>();
             Dictionary<FeFaceName, double> faces;
-
+            //
             int[] cell;
             foreach (var faceId in surfaceFaceIds)
             {
                 cell = GetCellFromFaceId(faceId, out FeElement element);
-
+                //
                 faceNodeIds.Clear();
                 faceNodeIds.UnionWith(cell);
                 allNodeIds.UnionWith(faceNodeIds);
-
+                //
                 faces = element.GetFaceNamesAndAreasFromNodeSet(faceNodeIds, _nodes);
-
+                //
                 foreach (var entry in faces)
                 {
                     area += entry.Value;
-
+                    //
                     if (elementSets.TryGetValue(entry.Key, out elementIds)) elementIds.Add(element.Id);
                     else elementSets.Add(entry.Key, new List<int>() { element.Id });
                 }
             }
             nodeIds = allNodeIds.ToArray();
         }
-        private void CreateSurfaceFacesFromNodeSet(FeSurface surface, out int[] nodeIds, out Dictionary<FeFaceName, List<int>> elementSets, out double area)
+        private void CreateSurfaceFacesFromNodeSet(FeSurface surface, out int[] nodeIds, out Dictionary<FeFaceName,
+                                                   List<int>> elementSets, out double area)
         {
             int[] elementIds;
             elementSets = new Dictionary<FeFaceName, List<int>>();
@@ -2623,33 +2614,7 @@ namespace CaeMesh
                     else elementSets.Add(entry.Key, new List<int>() { elementID });
                 }
             }
-        }
-        public void UpdateSurfaceArea(FeSurface surface)
-        {
-            if (surface.Type == FeSurfaceType.Node)
-            {
-                surface.Area = 0;
-            }
-            else if (surface.Type == FeSurfaceType.Element)
-            {
-                double area;
-                int[] nodeIds;
-                Dictionary<FeFaceName, List<int>> elementSets;
-
-                if (surface.CreatedFrom == FeSurfaceCreatedFrom.Selection)
-                {
-                    CreateSurfaceFacesFromSelection(surface.FaceIds, out nodeIds, out elementSets, out area);
-                }
-                else if (surface.CreatedFrom == FeSurfaceCreatedFrom.NodeSet)
-                {
-                    CreateSurfaceFacesFromNodeSet(surface, out nodeIds, out elementSets, out area);
-                }
-                else throw new CaeException("The surface created from faces is not supported.");
-
-                surface.Area = area;
-            }
-            else throw new CaeException("The surface type is not supported.");
-        }
+        }        
         public int[] GetCellFromFaceId(int faceId, out FeElement element)
         {
             element = null;
@@ -2672,7 +2637,7 @@ namespace CaeMesh
             }
             else throw new CaeGlobals.CaeException("The selected face id does not exist.");
         }
-
+        //
         private string GetNextFreeInternalName<T>(IDictionary<string, T> dictionary)
         {
             int n = 0;
@@ -2691,6 +2656,70 @@ namespace CaeMesh
                 }
             }
             return "internal-" + n + "_";
+        }
+        //
+        public FeNodeSet GetSurfaceNodeSet(string surfaceName)
+        {
+            FeSurface surface;
+
+            if (_surfaces.TryGetValue(surfaceName, out surface)) return _nodeSets[surface.NodeSetName];
+            else return null;
+        }
+        public double GetSurfaceArea(int geometrySurfaceId)
+        {
+            int[] itemTypePart = GetItemTypePartIdsFromGeometryId(geometrySurfaceId);
+            BasePart part = GetPartById(itemTypePart[2]);
+            return part.Visualization.FaceAreas[itemTypePart[0]];
+        }
+        public int[][] GetSurfaceCells(int geometrySurfaceId)
+        {
+            int[] itemTypePart = GetItemTypePartIdsFromGeometryId(geometrySurfaceId);
+            BasePart part = GetPartById(itemTypePart[2]);
+            int[] cellIds = part.Visualization.CellIdsByFace[itemTypePart[0]];
+            int[][] cells = new int[cellIds.Length][];
+            for (int i = 0; i < cells.Length; i++)
+            {
+                cells[i] = part.Visualization.Cells[cellIds[i]].ToArray();
+            }
+            return cells;
+        }
+        //
+        public double[] GetSurfaceCG(string surfaceName)
+        {
+            FeSurface surface;
+            if (_surfaces.TryGetValue(surfaceName, out surface))
+            {
+                if (surface.Type == FeSurfaceType.Node)
+                {
+                    return _nodeSets[surface.NodeSetName].CenterOfGravity;
+                }
+                else if (surface.Type == FeSurfaceType.Element)
+                {
+                    double area = 0;
+                    double[] cg = new double[3];
+                    double elArea;
+                    double[] elCg;
+                    foreach (var entry in surface.ElementFaces)
+                    {
+                        foreach (var elementId in _elementSets[entry.Value].Labels)
+                        {
+                            elCg = _elements[elementId].GetCG(entry.Key, _nodes, out elArea);
+                            cg[0] += elCg[0] * elArea;
+                            cg[1] += elCg[1] * elArea;
+                            cg[2] += elCg[2] * elArea;
+                            area += elArea;
+                        }
+                    }
+                    cg[0] /= area;
+                    cg[1] /= area;
+                    cg[2] /= area;
+                    //
+                    return cg;
+                }
+                else throw new CaeException("The surface type is not supported.");
+            }
+            //
+            return new double[3];
         }
 
         #region Extraction  ########################################################################################################
@@ -3436,7 +3465,7 @@ namespace CaeMesh
             int partEdgeId;
             //
             int[][] edgeCells = GetEdgeCells(elementId, edgeNodeIds, out part, out partEdgeId);
-            if (part != null) partId = part.PartId;            
+            if (part != null) partId = part.PartId;
             //
             if (edgeCells != null)
             {
@@ -3632,7 +3661,7 @@ namespace CaeMesh
             while (true)
             {
                 // An attempt to prevent multiple loops
-                if (nodes.Contains(node1Id)) break; 
+                if (nodes.Contains(node1Id)) break;
                 nodes.Add(node1Id);
                 // This is computed on undeformed mesh
                 GetNextEdgeAndNodeId(edge1Id, node1Id, nodeEdgeIds[node1Id], angle, part.Visualization, out edge2Id, out node2Id);
@@ -4058,6 +4087,14 @@ namespace CaeMesh
             return coor;
         }
         //
+        public bool IsThisIdGeometryId(int id)
+        {
+            int[] itemTypePart = FeMesh.GetItemTypePartIdsFromGeometryId(id);
+            if (itemTypePart[0] > 0 && itemTypePart[1] >= 1 && itemTypePart[1] <= 3 && GetPartById(itemTypePart[2]) != null)
+                return true;
+            else
+                return false;
+        }
         public string[] GetPartNamesFromGeometryIds(int[] ids)
         {
             int[] partIds = GetPartIdsFromGeometryIds(ids);
@@ -4096,7 +4133,7 @@ namespace CaeMesh
             int itemId = geometryId / 100000;
             return new int[] { itemId, typeId, partId };
         }
-        
+        //
         private int GetNextEdgeNodeId(int n1Id, int n2Id, HashSet<int> n2Neighbours, double angle)
         {
             double minAngle = double.MaxValue;
@@ -4468,6 +4505,76 @@ namespace CaeMesh
         }
         #endregion #################################################################################################################
 
+        #region Update entities ####################################################################################################
+
+        public void UpdateSurfaceArea(FeSurface surface)
+        {
+            if (surface.Type == FeSurfaceType.Node)
+            {
+                surface.Area = 0;
+            }
+            else if (surface.Type == FeSurfaceType.Element)
+            {
+                double area;
+                int[] nodeIds;
+                Dictionary<FeFaceName, List<int>> elementSets;
+
+                if (surface.CreatedFrom == FeSurfaceCreatedFrom.Selection)
+                {
+                    CreateSurfaceFacesFromSelection(surface.FaceIds, out nodeIds, out elementSets, out area);
+                }
+                else if (surface.CreatedFrom == FeSurfaceCreatedFrom.NodeSet)
+                {
+                    CreateSurfaceFacesFromNodeSet(surface, out nodeIds, out elementSets, out area);
+                }
+                else throw new CaeException("The surface created from faces is not supported.");
+                //
+                surface.Area = area;
+            }
+            else throw new CaeException("The surface type is not supported.");
+        }
+        public void UpdateReferencePoint(FeReferencePoint referencePoint)
+        {
+            if (referencePoint.CreatedFrom == FeReferencePointCreatedFrom.BoundingBoxCenter
+                || referencePoint.CreatedFrom == FeReferencePointCreatedFrom.CenterOfGravity)
+            {
+                // Update reference point
+                FeNodeSet nodeSet;
+                string regionName = referencePoint.RegionName;
+                if (regionName != null)
+                {
+                    if (referencePoint.RegionType == RegionTypeEnum.NodeSetName)
+                    {
+                        if (_nodeSets.TryGetValue(regionName, out nodeSet))
+                        {
+                            if (referencePoint.CreatedFrom == FeReferencePointCreatedFrom.BoundingBoxCenter)
+                                referencePoint.UpdateCoordinates(nodeSet.BoundingBox);
+                            else if (referencePoint.CreatedFrom == FeReferencePointCreatedFrom.CenterOfGravity)
+                                referencePoint.UpdateCoordinates(nodeSet.CenterOfGravity);
+                            else throw new NotSupportedException();
+                        }
+                    }
+                    else if (referencePoint.RegionType == RegionTypeEnum.SurfaceName)
+                    {
+                        if (referencePoint.CreatedFrom == FeReferencePointCreatedFrom.BoundingBoxCenter)
+                        {
+                            nodeSet = GetSurfaceNodeSet(regionName);
+                            if (nodeSet != null) referencePoint.UpdateCoordinates(nodeSet.BoundingBox);
+                        }
+                        else if (referencePoint.CreatedFrom == FeReferencePointCreatedFrom.CenterOfGravity)
+                        {
+                            double[] cg = GetSurfaceCG(regionName);
+                            referencePoint.UpdateCoordinates(cg);
+                        }
+                        else throw new NotSupportedException();
+                    }
+                    else throw new NotSupportedException();
+                }
+            }
+        }
+
+        #endregion #################################################################################################################
+
         #region Remove entities ####################################################################################################
         public string[] RemoveUnreferencedNodes(HashSet<int> possiblyUnrefNodeIds, bool removeEmptyNodeSets, bool removeForRemeshing)
         {
@@ -4786,7 +4893,6 @@ namespace CaeMesh
         }
 
         #endregion #################################################################################################################
-
 
 
         // Nodes 
@@ -5405,25 +5511,7 @@ namespace CaeMesh
             return edgeNodeCoor.ToArray();
         }
 
-        // Surface
-        public double GetSurfaceArea(int geometrySurfaceId)
-        {
-            int[] itemTypePart = GetItemTypePartIdsFromGeometryId(geometrySurfaceId);
-            BasePart part = GetPartById(itemTypePart[2]);
-            return part.Visualization.FaceAreas[itemTypePart[0]];
-        }
-        public int[][] GetSurfaceCells(int geometrySurfaceId)
-        {
-            int[] itemTypePart = GetItemTypePartIdsFromGeometryId(geometrySurfaceId);
-            BasePart part = GetPartById(itemTypePart[2]);
-            int[] cellIds = part.Visualization.CellIdsByFace[itemTypePart[0]];
-            int[][] cells = new int[cellIds.Length][];
-            for (int i = 0; i < cells.Length; i++)
-            {
-                cells[i] = part.Visualization.Cells[cellIds[i]].ToArray();
-            }
-            return cells;
-        }
+        
 
         // Analyze
         public double GetShortestEdgeLen(string[] partNames)
@@ -5465,7 +5553,7 @@ namespace CaeMesh
                 //
                 visualization = part.Visualization;
                 // For each edge
-                for (int i = 0; i < visualization.EdgeLengths.Length; i++)                          
+                for (int i = 0; i < visualization.EdgeLengths.Length; i++)
                 {
                     if (visualization.EdgeLengths[i] < minEdgeLen)
                     {
@@ -5480,7 +5568,7 @@ namespace CaeMesh
         {
             double min = double.MaxValue;
             VisualizationData visualization;
-            BasePart part;            
+            BasePart part;
             double dist;
             //
             foreach (var partName in partNames)
@@ -5686,21 +5774,21 @@ namespace CaeMesh
 
             System.IO.File.WriteAllText(fileName, sb.ToString());
         }
-       
+
         // Transform
         public string[] TranslateParts(string[] partNames, double[] translateVector, bool copy, ICollection<string> reservedPartNames)
-        {            
+        {
             string[] translatedPartNames = partNames.ToArray();
-
+            //
             if (copy)
             {
                 FeMesh mesh = this.DeepCopy();
                 translatedPartNames = this.AddPartsFromMesh(mesh, translatedPartNames, reservedPartNames);
             }
-
+            //
             HashSet<int> nodeLabels = new HashSet<int>();
             foreach (var partName in translatedPartNames) nodeLabels.UnionWith(_parts[partName].NodeLabels);
-
+            // Translate nodes
             FeNode node;
             foreach (var nodeId in nodeLabels)
             {
@@ -5710,23 +5798,13 @@ namespace CaeMesh
                 node.Z += translateVector[2];
                 _nodes[nodeId] = node;
             }
-
-            // update node sets
+            // Update node sets
             foreach (var entry in _nodeSets) UpdateNodeSetCenterOfGravity(entry.Value);
-
-            // update reference points
-            FeNodeSet nodeSet;
-            string nodeSetName;
-            foreach (var entry in _referencePoints)
-            {
-                nodeSetName = entry.Value.CreatedFromNodeSetName;
-                if (nodeSetName != null && _nodeSets.TryGetValue(nodeSetName, out nodeSet))
-                    entry.Value.UpdateCoordinates(nodeSet);
-            }
-
-            // update bounding box
+            // Update reference points
+            foreach (var entry in _referencePoints) UpdateReferencePoint(entry.Value);
+            // Update bounding box
             ComputeBoundingBox();
-
+            //
             if (copy) return translatedPartNames;
             else return null;
         }
@@ -5734,16 +5812,16 @@ namespace CaeMesh
                                    ICollection<string> reservedPartNames)
         {
             string[] scaledPartNames = partNames.ToArray();
-
+            //
             if (copy)
             {
                 FeMesh mesh = this.DeepCopy();
                 scaledPartNames = this.AddPartsFromMesh(mesh, scaledPartNames, reservedPartNames);
             }
-
+            //
             HashSet<int> nodeLabels = new HashSet<int>();
             foreach (var partName in scaledPartNames) nodeLabels.UnionWith(_parts[partName].NodeLabels);
-
+            // Scale nodes
             FeNode node;
             foreach (var nodeId in nodeLabels)
             {
@@ -5753,21 +5831,13 @@ namespace CaeMesh
                 node.Z = scaleCenter[2] + (node.Z - scaleCenter[2]) * scaleFactors[2];
                 _nodes[nodeId] = node;
             }
-
-            // update node sets
+            // Update node sets
             foreach (var entry in _nodeSets) UpdateNodeSetCenterOfGravity(entry.Value);
-
-            // update reference points
-            FeNodeSet nodeSet;
-            foreach (var entry in _referencePoints)
-            {
-                if (_nodeSets.TryGetValue(entry.Value.CreatedFromNodeSetName, out nodeSet))
-                    entry.Value.UpdateCoordinates(nodeSet);
-            }
-
-            // update bounding box
+            // Update reference points
+            foreach (var entry in _referencePoints) UpdateReferencePoint(entry.Value);
+            // Update bounding box
             ComputeBoundingBox();
-
+            //
             if (copy) return scaledPartNames;
             else return null;
         }
@@ -5775,23 +5845,23 @@ namespace CaeMesh
                                     ICollection<string> reservedPartNames)
         {
             string[] scaledPartNames = partNames.ToArray();
-
+            //
             if (copy)
             {
                 FeMesh mesh = this.DeepCopy();
                 scaledPartNames = this.AddPartsFromMesh(mesh, scaledPartNames, reservedPartNames);
             }
-
+            //
             HashSet<int> nodeLabels = new HashSet<int>();
             foreach (var partName in scaledPartNames) nodeLabels.UnionWith(_parts[partName].NodeLabels);
-
+            // Rotate nodes
             FeNode node;
             double[] x;
             double[][] m = RotationMatrix(rotateAxis, rotateAngle);
             foreach (var nodeId in nodeLabels)
             {
                 node = _nodes[nodeId];
-                
+
                 // translate to origin
                 node.X -= rotateCenter[0];
                 node.Y -= rotateCenter[1];
@@ -5809,21 +5879,13 @@ namespace CaeMesh
                 // copy data
                 _nodes[nodeId] = node;
             }
-
-            // update node sets
+            // Update node sets
             foreach (var entry in _nodeSets) UpdateNodeSetCenterOfGravity(entry.Value);
-
-            // update reference points
-            FeNodeSet nodeSet;
-            foreach (var entry in _referencePoints)
-            {
-                if (_nodeSets.TryGetValue(entry.Value.CreatedFromNodeSetName, out nodeSet))
-                    entry.Value.UpdateCoordinates(nodeSet);
-            }
-
-            // update bounding box
+            // Update reference points
+            foreach (var entry in _referencePoints) UpdateReferencePoint(entry.Value);
+            // Update bounding box
             ComputeBoundingBox();
-
+            //
             if (copy) return scaledPartNames;
             else return null;
         }
@@ -5875,7 +5937,7 @@ namespace CaeMesh
             {
                 copy.Elements.Add(entry.Key, entry.Value.DeepCopy());
             }
-         
+
             return copy;
         }
 

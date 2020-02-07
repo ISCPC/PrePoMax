@@ -167,7 +167,7 @@ namespace CaeGlobals
             if (letterCount <= 0)
                 throw new CaeGlobals.CaeException("The name must contain at least one letter: '" + name + "'.");
         }
-
+        //
         public override string ToString()
         {
             return _name;

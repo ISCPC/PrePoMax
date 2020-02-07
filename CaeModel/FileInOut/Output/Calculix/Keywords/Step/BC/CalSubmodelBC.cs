@@ -16,19 +16,11 @@ namespace FileInOut.Output.Calculix
         private string _surfaceNodeSetName;
 
 
-        // Properties                                                                                                               
-        public override object BaseItem { get { return _submodel; } }
-
-
-        // Events                                                                                                                   
-
-
         // Constructor                                                                                                              
         public CalSubmodelBC(SubmodelBC submodel, string surfaceNodeSetName)
         {
             _submodel = submodel;
             _surfaceNodeSetName = surfaceNodeSetName;
-            _active = submodel.Active;
         }
 
 
@@ -40,7 +32,6 @@ namespace FileInOut.Output.Calculix
             sb.AppendLine("*Boundary, Submodel, Step=" + _submodel.StepNumber);
             return sb.ToString();
         }
-
         public override string GetDataString()
         {
             StringBuilder sb = new StringBuilder();

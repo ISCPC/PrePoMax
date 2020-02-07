@@ -15,18 +15,10 @@ namespace FileInOut.Output.Calculix
         private FeSurface _surface;
 
 
-        // Properties                                                                                                               
-        public override object BaseItem { get { return _surface; } }
-
-
-        // Events                                                                                                                   
-
-
         // Constructor                                                                                                              
         public CalSurface(FeSurface surface)
         {
             _surface = surface;
-            _active = surface.Active;
         }
 
 
@@ -35,7 +27,6 @@ namespace FileInOut.Output.Calculix
         {
             return string.Format("*Surface, Name={0}, Type={1}{2}", _surface.Name, _surface.Type, Environment.NewLine);
         }
-
         public override string GetDataString()
         {
             StringBuilder sb = new StringBuilder();

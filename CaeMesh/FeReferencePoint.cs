@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeGlobals;
 using DynamicTypeDescriptor;
+using System.Runtime.Serialization;
+
 
 namespace CaeMesh
 {
@@ -13,27 +15,29 @@ namespace CaeMesh
     {
         [StandardValue("Coordinates", DisplayName = "Coordinates")]
         Coordinates,
-        [StandardValue("NodeSetCG", DisplayName = "Center of gravity")]
-        NodeSetCG,
-        [StandardValue("NodeSetBB", DisplayName = "Bounding box center")]
-        NodeSetBB
+        [StandardValue("CenterOfGravity", DisplayName = "Center of gravity")]
+        CenterOfGravity,
+        [StandardValue("BoundingBoxCenter", DisplayName = "Bounding box center")]
+        BoundingBoxCenter
     }
 
     [Serializable]
-    public class FeReferencePoint : NamedClass
+    public class FeReferencePoint : NamedClass, IMultiRegion, ISerializable
     {
         // Variables                                                                                                                
-        private double _x;
-        private double _y;
-        private double _z;
-        private FeReferencePointCreatedFrom _createdFrom;
-        private int _createdFromRefNodeId1;
-        private int _createdFromRefNodeId2;
-        private string _createdFromNodeSetName;
-        private string _refNodeSetName;
-        private string _rotNodeSetName;
+        private double _x;                                      //ISerializable
+        private double _y;                                      //ISerializable
+        private double _z;                                      //ISerializable
+        private FeReferencePointCreatedFrom _createdFrom;       //ISerializable
+        private string _regionName;                 // new      //ISerializable
+        private RegionTypeEnum _regionType;         // new      //ISerializable
+        private int _createdFromRefNodeId1;                     //ISerializable
+        private int _createdFromRefNodeId2;                     //ISerializable
+        private string _refNodeSetName;                         //ISerializable
+        private string _rotNodeSetName;                         //ISerializable
         public const string RefName = "_ref_";
         public const string RotName = "_rot_";
+
 
         // Properties                                                                                                               
         public double X { get { return _x; } set { _x = value; } }
@@ -51,9 +55,10 @@ namespace CaeMesh
                 }
             }
         }
+        public string RegionName { get { return _regionName; } set { _regionName = value; } }
+        public RegionTypeEnum RegionType { get { return _regionType; } set { _regionType = value; } }
         public int CreatedFromRefNodeId1 { get { return _createdFromRefNodeId1; } set { _createdFromRefNodeId1 = value; } }
         public int CreatedFromRefNodeId2 { get { return _createdFromRefNodeId2; } set { _createdFromRefNodeId2 = value; } }
-        public string CreatedFromNodeSetName { get { return _createdFromNodeSetName; } set { _createdFromNodeSetName = value; } }
         public string RefNodeSetName { get { return _refNodeSetName; } set { _refNodeSetName = value; } }
         public string RotNodeSetName { get { return _rotNodeSetName; } set { _rotNodeSetName = value; } }
 
@@ -79,12 +84,48 @@ namespace CaeMesh
             _y = refNode1.Y;
             _z = refNode1.Z;
         }
-        public FeReferencePoint(string name, string nodeSetName, FeReferencePointCreatedFrom createdFrom)
-            : base(name)
+        public FeReferencePoint(SerializationInfo info, StreamingContext context)
+            : base(info, context)
         {
-            Clear();
-            _createdFromNodeSetName = nodeSetName;
-            _createdFrom = createdFrom;
+            bool version052 = false;
+            string createdFromNodeSetName = null;
+            foreach (SerializationEntry entry in info)
+            {
+                switch (entry.Name)
+                {
+                    case "_x":
+                        _x = (double)entry.Value; break;
+                    case "_y":
+                        _y = (double)entry.Value; break;
+                    case "_z":
+                        _z = (double)entry.Value; break;
+                    case "_createdFrom":
+                        _createdFrom = (FeReferencePointCreatedFrom)entry.Value; break;
+                    case "_regionName":
+                        _regionName = (string)entry.Value; break;
+                    case "_regionType":
+                        _regionType = (RegionTypeEnum)entry.Value; break;
+                    case "_createdFromRefNodeId1":
+                        _createdFromRefNodeId1 = (int)entry.Value; break;                    
+                    case "_createdFromRefNodeId2":
+                        _createdFromRefNodeId2 = (int)entry.Value; break;
+                    case "_refNodeSetName":
+                        _refNodeSetName = (string)entry.Value; break;
+                    case "_rotNodeSetName":
+                        _rotNodeSetName = (string)entry.Value; break;
+                    // Compatibility for version v0.5.2
+                    case "_createdFromNodeSetName":
+                        version052 = true;
+                        createdFromNodeSetName = (string)entry.Value; break;
+                }
+            }
+            // Compatibility for version v0.5.2
+            if (version052)
+            {
+                // This is null if reference point created from coordinates
+                _regionName = createdFromNodeSetName;
+                _regionType = RegionTypeEnum.NodeSetName;
+            }
         }
 
 
@@ -101,27 +142,44 @@ namespace CaeMesh
             _createdFrom = FeReferencePointCreatedFrom.Coordinates;
             _createdFromRefNodeId1 = -1;
             _createdFromRefNodeId2 = -1;
-            _createdFromNodeSetName = null;
+            _regionName = null;
+            _regionType = RegionTypeEnum.NodeSetName;
         }
         public double[] Coor()
         {
             return new double[] { _x, _y, _z };
         }
-        public void UpdateCoordinates(FeNodeSet nodeSet)
+        public void UpdateCoordinates(double[] centerOfGravity)
         {
-            if (_createdFrom == FeReferencePointCreatedFrom.NodeSetCG)
-            {
-                _x = nodeSet.CenterOfGravity[0];
-                _y = nodeSet.CenterOfGravity[1];
-                _z = nodeSet.CenterOfGravity[2];
-            }
-            else if (_createdFrom == FeReferencePointCreatedFrom.NodeSetBB)
-            {
-                _x = (nodeSet.BoundingBox[0][0] + nodeSet.BoundingBox[0][1]) / 2;
-                _y = (nodeSet.BoundingBox[1][0] + nodeSet.BoundingBox[1][1]) / 2;
-                _z = (nodeSet.BoundingBox[2][0] + nodeSet.BoundingBox[2][1]) / 2;
-            }
+            _x = centerOfGravity[0];
+            _y = centerOfGravity[1];
+            _z = centerOfGravity[2];
         }
+        public void UpdateCoordinates(double[][] boundingBox)
+        {
+            _x = (boundingBox[0][0] + boundingBox[0][1]) / 2;
+            _y = (boundingBox[1][0] + boundingBox[1][1]) / 2;
+            _z = (boundingBox[2][0] + boundingBox[2][1]) / 2;
+        }
+
+        // ISerialization
+        public new void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            // using typeof() works also for null fields
+            base.GetObjectData(info, context);
+            //
+            info.AddValue("_x", _x, typeof(double));
+            info.AddValue("_y", _y, typeof(double));
+            info.AddValue("_z", _z, typeof(double));
+            info.AddValue("_createdFrom", _createdFrom, typeof(FeReferencePointCreatedFrom));
+            info.AddValue("_regionName", _regionName, typeof(string));
+            info.AddValue("_regionType", _regionType, typeof(RegionTypeEnum));
+            info.AddValue("_createdFromRefNodeId1", _createdFromRefNodeId1, typeof(int));
+            info.AddValue("_createdFromRefNodeId2", _createdFromRefNodeId2, typeof(int));
+            info.AddValue("_refNodeSetName", _refNodeSetName, typeof(string));
+            info.AddValue("_rotNodeSetName", _rotNodeSetName, typeof(string));
+        }
+
 
     }
 }

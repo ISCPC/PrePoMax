@@ -10,6 +10,9 @@ namespace CaeGlobals
     [Serializable]
     public enum RegionTypeEnum
     {
+        [StandardValue("None")]
+        None = -1,
+
         [StandardValue("Part name")]
         PartName,
 

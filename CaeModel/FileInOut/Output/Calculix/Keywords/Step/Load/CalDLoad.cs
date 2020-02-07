@@ -15,19 +15,12 @@ namespace FileInOut.Output.Calculix
         private DLoad _load;
         private IDictionary<string, FeSurface> _surfaces;
 
-        // Properties                                                                                                               
-        public override object BaseItem { get { return _load; } }
-
-
-        // Events                                                                                                                   
-
-
+        
         // Constructor                                                                                                              
         public CalDLoad(IDictionary<string, FeSurface> surfaces, DLoad load)
         {
             _surfaces = surfaces;
             _load = load;
-            _active = load.Active;
         }
 
 
@@ -39,7 +32,6 @@ namespace FileInOut.Output.Calculix
             sb.AppendLine("*Dload");
             return sb.ToString();
         }
-
         public override string GetDataString()
         {
             //*Dload

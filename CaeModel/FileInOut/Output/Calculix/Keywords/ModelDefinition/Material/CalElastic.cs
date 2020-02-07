@@ -9,37 +9,27 @@ using CaeMesh;
 namespace FileInOut.Output.Calculix
 {
     [Serializable]
-    public class CalculixUserKeyword : CalculixKeyword
+    internal class CalElastic : CalculixKeyword
     {
         // Variables                                                                                                                
-        private string _data;
-
-
-        // Properties                                                                                                               
-        public string Data { get { return _data; } set { _data = value; } }
-        public override object BaseItem { get { return _data; } }
-
-
-        // Events                                                                                                                   
+        private Elastic _elastic;
 
 
         // Constructor                                                                                                              
-        public CalculixUserKeyword(string data)
+        public CalElastic(Elastic elastic)
         {
-            _data = data;
+            _elastic = elastic;
         }
 
 
         // Methods                                                                                                                  
         public override string GetKeywordString()
         {
-            if (_data != null && _data.Length > 0) return string.Format("{0}{1}", _data, Environment.NewLine);
-            else return "";
+            return string.Format("*Elastic{0}", Environment.NewLine);
         }
-
         public override string GetDataString()
         {
-            return "";
+            return string.Format("{0}, {1}{2}", _elastic.YoungsModulus, _elastic.PoissonsRatio, Environment.NewLine);
         }
     }
 }

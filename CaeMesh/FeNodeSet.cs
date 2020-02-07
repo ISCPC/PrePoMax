@@ -36,18 +36,6 @@ namespace CaeMesh
             _boundingBox = null;
         }
 
-        public FeNodeSet(FeNodeSet nodeSet)
-            : base(nodeSet.Name, nodeSet.Labels)
-        {
-            _creationData = nodeSet.CreationData;
-            _centerOfGravity = nodeSet.CenterOfGravity;
-            _boundingBox = nodeSet.BoundingBox;
-
-            _active = nodeSet.Active;
-            _visible = nodeSet.Visible;
-            _valid = nodeSet.Valid;
-            _internal = nodeSet.Internal;
-        }
 
         // Methods                                                                                                                  
         public int[] GetMaxNRandomNodeIds(int n)

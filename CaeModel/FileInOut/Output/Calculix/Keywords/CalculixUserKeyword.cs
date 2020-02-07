@@ -9,26 +9,19 @@ using CaeMesh;
 namespace FileInOut.Output.Calculix
 {
     [Serializable]
-    public class CalTitle : CalculixKeyword
+    public class CalculixUserKeyword : CalculixKeyword
     {
         // Variables                                                                                                                
-        private string _title;
         private string _data;
 
 
         // Properties                                                                                                               
-        public string Title { get { return _title; } }
-        public override object BaseItem { get { return _title; } }
-
-
-        // Events                                                                                                                   
-
+        public string Data { get { return _data; } set { _data = value; } }
+        
 
         // Constructor                                                                                                              
-        public CalTitle(string title, string data)
-
+        public CalculixUserKeyword(string data)
         {
-            _title = title;
             _data = data;
         }
 
@@ -36,19 +29,12 @@ namespace FileInOut.Output.Calculix
         // Methods                                                                                                                  
         public override string GetKeywordString()
         {
-            StringBuilder sb = new StringBuilder();
-            //sb.AppendLine("************************************************************");
-            sb.AppendLine("**");
-            sb.AppendLine(("** " + _title + " ").PadRight(60, '+'));
-            sb.AppendLine("**");
-            //sb.AppendLine("************************************************************");
-            return sb.ToString();
-        }
-
-        public override string GetDataString()
-        {
             if (_data != null && _data.Length > 0) return string.Format("{0}{1}", _data, Environment.NewLine);
             else return "";
+        }
+        public override string GetDataString()
+        {
+            return "";
         }
     }
 }

@@ -139,14 +139,15 @@ namespace CaeMesh
         public override double GetArea(FeFaceName faceName, Dictionary<int, FeNode> nodes)
         {
             int[] cell = GetVtkCellFromFaceName(faceName);
-
-            FeNode[] n = new FeNode[cell.Length];
-            for (int i = 0; i < n.Length; i++)
-            {
-                n[i] = nodes[cell[i]];
-            }
-
-            return GeometryTools.TriangleArea(n[0], n[1], n[2], n[3], n[4], n[5]);
+            return GeometryTools.TriangleArea(nodes[cell[0]], nodes[cell[1]], nodes[cell[2]],
+                                              nodes[cell[3]], nodes[cell[4]], nodes[cell[5]]);
+        }
+        public override double[] GetCG(FeFaceName faceName, Dictionary<int, FeNode> nodes, out double area)
+        {
+            int[] cell = GetVtkCellFromFaceName(faceName);
+            double[] cg = GeometryTools.TriangleCG(nodes[cell[0]], nodes[cell[1]], nodes[cell[2]],
+                                                   nodes[cell[3]], nodes[cell[4]], nodes[cell[5]], out area);
+            return cg;
         }
         public override FeElement DeepCopy()
         {

@@ -2879,7 +2879,7 @@ namespace vtkControl
         #region Add geometry  ######################################################################################################
         public void AddPoints(vtkMaxActorData data)
         {
-            vtkMaxActor actor = new vtkMaxActor(data, true, true);
+            vtkMaxActor actor = new vtkMaxActor(data, false, true);
             AddActorGeometry(actor, data.Layer);
 
             _style.AdjustCameraDistanceAndClipping();

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using CaeGlobals;
 using DynamicTypeDescriptor;
-using CaeGlobals;
+
 
 namespace PrePoMax
 {
@@ -82,8 +82,8 @@ namespace PrePoMax
             Dictionary<RegionTypeEnum, string> regionTypePropertyNamePairs = new Dictionary<RegionTypeEnum, string>();
             regionTypePropertyNamePairs.Add(RegionTypeEnum.NodeSetName, CaeGlobals.Tools.GetPropertyName(() => this.NodeSetName));
             regionTypePropertyNamePairs.Add(RegionTypeEnum.ReferencePointName, CaeGlobals.Tools.GetPropertyName(() => this.ReferencePointName));
-
             base.SetBase(_cLoad, regionTypePropertyNamePairs);
+            //
             base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
         }
 

@@ -15,18 +15,10 @@ namespace FileInOut.Output.Calculix
         private NodalFieldOutput _nodalFieldOutput;
 
 
-        // Properties                                                                                                               
-        public override object BaseItem { get { return _nodalFieldOutput; } }
-
-
-        // Events                                                                                                                   
-
-
         // Constructor                                                                                                              
         public CalNodeFile(NodalFieldOutput nodalFieldOutput)
         {
             _nodalFieldOutput = nodalFieldOutput;
-            _active = nodalFieldOutput.Active;
         }
 
 
@@ -37,7 +29,6 @@ namespace FileInOut.Output.Calculix
 
             return string.Format("*Node file{0}{1}", frequency, Environment.NewLine);
         }
-
         public override string GetDataString()
         {
             return string.Format("{0}{1}", _nodalFieldOutput.Variables.ToString(), Environment.NewLine);

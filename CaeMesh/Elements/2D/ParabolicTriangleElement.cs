@@ -61,6 +61,10 @@ namespace CaeMesh
         {
             throw new NotImplementedException();
         }
+        public override double[] GetCG(FeFaceName faceName, Dictionary<int, FeNode> nodes, out double area)
+        {
+            throw new NotImplementedException();
+        }
         public override FeElement DeepCopy()
         {
             return new ParabolicTriangleElement(Id, PartId, NodeIds.ToArray());

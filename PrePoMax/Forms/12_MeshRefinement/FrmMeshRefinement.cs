@@ -106,6 +106,7 @@ namespace PrePoMax.Forms
         {
             // Limit selection to the first selected part
             _controller.Selection.LimitSelectionToFirstPart = Visible;
+            btnPreview.Enabled = true;
         }
 
 
@@ -291,6 +292,7 @@ namespace PrePoMax.Forms
         {
             try
             {
+                btnPreview.Enabled = false;
                 FeMeshRefinement meshRefinement = MeshRefinement.DeepClone();
                 string[] partNames = _controller.GetPartNamesFromMeshRefinement(meshRefinement);
                 if (partNames != null && partNames.Length > 0)
@@ -308,6 +310,10 @@ namespace PrePoMax.Forms
             catch (Exception ex)
             {
                 CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+            finally
+            {
+                btnPreview.Enabled = true;
             }
         }
 

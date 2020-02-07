@@ -16,12 +16,6 @@ namespace FileInOut.Output.Calculix
         private Dictionary<string, int[]> _referencePointsNodeIds;
         private string _surfaceNodeSetName;
 
-        // Properties                                                                                                               
-        public override object BaseItem { get { return _rigidBody; } }
-
-
-        // Events                                                                                                                   
-
 
         // Constructor                                                                                                              
         public CalRigidBody(RigidBody rigidBody, Dictionary<string, int[]> referencePointsNodeIds, string surfaceNodeSetName)
@@ -29,7 +23,6 @@ namespace FileInOut.Output.Calculix
             _rigidBody = rigidBody;
             _referencePointsNodeIds = referencePointsNodeIds;
             _surfaceNodeSetName = surfaceNodeSetName;
-            _active = rigidBody.Active;
         }
 
 
@@ -44,11 +37,10 @@ namespace FileInOut.Output.Calculix
             else throw new NotSupportedException();
             
             return string.Format("*Rigid body, Nset={0}, Ref node={1}, Rot node={2}{3}", nodeSetName,
-                                                                                              _referencePointsNodeIds[_rigidBody.ReferencePointName][0],
-                                                                                              _referencePointsNodeIds[_rigidBody.ReferencePointName][1],
-                                                                                              Environment.NewLine);
+                                 _referencePointsNodeIds[_rigidBody.ReferencePointName][0],
+                                 _referencePointsNodeIds[_rigidBody.ReferencePointName][1],
+                                 Environment.NewLine);
         }
-
         public override string GetDataString()
         {
             return "";

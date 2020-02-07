@@ -9,34 +9,35 @@ using CaeMesh;
 namespace FileInOut.Output.Calculix
 {
     [Serializable]
-    internal class CalStaticStep : CalculixKeyword
+    internal class CalPreTensionSection : CalculixKeyword
     {
         // Variables                                                                                                                
-        private StaticStep _step;
+        private string _surfaceName;
+        private int _nodeId;
+        double _x;
+        double _y;
+        double _z;
 
 
         // Constructor                                                                                                              
-        public CalStaticStep(StaticStep step)
+        public CalPreTensionSection(string surfaceName, int nodeId, double x, double y, double z)
         {
-            _step = step;
+            _surfaceName = surfaceName;
+            _nodeId = nodeId;
+            _x = x;
+            _y = y;
+            _z = z;
         }
 
 
         // Methods                                                                                                                  
         public override string GetKeywordString()
         {
-            string direct = _step.Direct ? ", Direct" : "";
-            return string.Format("*Static{0}{1}", direct, Environment.NewLine);
+            return string.Format("*Pre-tension section, Surface={0}, Node={1}{2}", _surfaceName, _nodeId, Environment.NewLine);
         }
         public override string GetDataString()
         {
-            if (_step.Nlgeom)
-            {
-                string minMax = _step.Direct ? "" : string.Format(", {0}, {1}", _step.MinTimeIncrement, _step.MaxTimeIncrement);
-
-                return string.Format("{0}, {1}{2}{3}", _step.InitialTimeIncrement, _step.TimePeriod, minMax, Environment.NewLine);
-            }
-            else return "";
+            return string.Format("{0}, {1}, {2}{3}", _x, _y, _z, Environment.NewLine);
         }
     }
 }

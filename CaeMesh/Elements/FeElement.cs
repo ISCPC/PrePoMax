@@ -56,6 +56,7 @@ namespace CaeMesh
         abstract public Dictionary<FeFaceName, double> GetFaceNamesAndAreasFromNodeSet(HashSet<int> nodeSet, Dictionary<int, FeNode> nodes);
         abstract public double[] GetEquivalentForcesFromFaceName(FeFaceName faceName);
         abstract public double GetArea(FeFaceName faceName, Dictionary<int, FeNode> nodes);
+        abstract public double[] GetCG(FeFaceName faceName, Dictionary<int, FeNode> nodes, out double area);
         abstract public FeElement DeepCopy();
     }
 }

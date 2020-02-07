@@ -15,18 +15,10 @@ namespace FileInOut.Output.Calculix
         private FeGroup _elementSet;
 
 
-        // Properties                                                                                                               
-        public override object BaseItem { get { return _elementSet; } }
-
-
-        // Events                                                                                                                   
-
-
         // Constructor                                                                                                              
         public CalElementSet(FeGroup elementSet)
         {
             _elementSet = elementSet;
-            _active = elementSet.Active;
         }
 
 
@@ -35,7 +27,6 @@ namespace FileInOut.Output.Calculix
         {
             return string.Format("*Elset, Elset={0}{1}", _elementSet.Name, Environment.NewLine);
         }
-
         public override string GetDataString()
         {
             StringBuilder sb = new StringBuilder();

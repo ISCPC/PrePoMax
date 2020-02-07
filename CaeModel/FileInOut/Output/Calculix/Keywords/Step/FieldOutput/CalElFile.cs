@@ -15,18 +15,10 @@ namespace FileInOut.Output.Calculix
         private ElementFieldOutput _elementFieldOutput;
 
 
-        // Properties                                                                                                               
-        public override object BaseItem { get { return _elementFieldOutput; } }
-
-
-        // Events                                                                                                                   
-
-
         // Constructor                                                                                                              
         public CalElFile(ElementFieldOutput elementFieldOutput)
         {
             _elementFieldOutput = elementFieldOutput;
-            _active = elementFieldOutput.Active;
         }
 
 
@@ -37,7 +29,6 @@ namespace FileInOut.Output.Calculix
 
             return string.Format("*El file{0}{1}", frequency, Environment.NewLine);
         }
-
         public override string GetDataString()
         {
             return string.Format("{0}{1}", _elementFieldOutput.Variables.ToString(), Environment.NewLine);

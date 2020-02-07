@@ -4,40 +4,31 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CaeModel;
-using CaeMesh;
 
 namespace FileInOut.Output.Calculix
 {
     [Serializable]
-    internal class CalElastic : CalculixKeyword
+    internal class CalHeading : CalculixKeyword
     {
         // Variables                                                                                                                
-        private Elastic _elastic;
+        string _modelName;
 
-
-        // Properties                                                                                                               
-        public override object BaseItem { get { return _elastic; } }
-
-
-        // Events                                                                                                                   
-
-
+        
         // Constructor                                                                                                              
-        public CalElastic(Elastic elastic)
+        public CalHeading(string modelName)
         {
-            _elastic = elastic;
+            _modelName = modelName;
         }
 
 
         // Methods                                                                                                                  
         public override string GetKeywordString()
         {
-            return string.Format("*Elastic{0}", Environment.NewLine);
+            return string.Format("*Heading{0}", Environment.NewLine);
         }
-
         public override string GetDataString()
         {
-            return string.Format("{0}, {1}{2}", _elastic.YoungsModulus, _elastic.PoissonsRatio, Environment.NewLine);
+            return string.Format("Model: {0},     Date: {1}" + Environment.NewLine, _modelName, DateTime.Now.ToShortDateString());
         }
     }
 }

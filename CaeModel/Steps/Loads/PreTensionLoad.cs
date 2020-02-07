@@ -8,27 +8,33 @@ using CaeMesh;
 namespace CaeModel
 {
     [Serializable]
-    public class STLoad : Load
+    public class PreTensionLoad : Load
     {
         // Variables                                                                                                                
         private string _surfaceName;
+        private double _x;
+        private double _y;
+        private double _z;
+        private double _forceMagnitude;
 
 
         // Properties                                                                                                               
         public string SurfaceName { get { return _surfaceName; } set { _surfaceName = value; } }
-        public double F1 { get; set; }
-        public double F2 { get; set; }
-        public double F3 { get; set; }
+        public double X { get { return _x; } set { _x = value; } }
+        public double Y { get { return _y; } set { _y = value; } }
+        public double Z { get { return _z; } set { _z = value; } }
+        public double ForceMagnitude { get { return _forceMagnitude; } set { _forceMagnitude = value; } }
 
 
         // Constructors                                                                                                             
-        public STLoad(string name, string surfaceName, double f1, double f2, double f3)
+        public PreTensionLoad(string name, string surfaceName, double x, double y, double z, double forceMagnitude)
             : base(name) 
         {
             _surfaceName = surfaceName;
-            F1 = f1;
-            F2 = f2;
-            F3 = f3;
+            _x = x;
+            _y = y;
+            _z = z;
+            _forceMagnitude = forceMagnitude;
         }
 
 

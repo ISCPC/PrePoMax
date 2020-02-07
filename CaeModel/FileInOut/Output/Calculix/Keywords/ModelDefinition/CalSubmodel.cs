@@ -3,43 +3,40 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CaeModel;
-using CaeMesh;
+using CaeGlobals;
 
 namespace FileInOut.Output.Calculix
 {
     [Serializable]
-    internal class CalSolidSection : CalculixKeyword
+    internal class CalSubmodel : CalculixKeyword
     {
         // Variables                                                                                                                
-        private SolidSection _section;
+        string _globalResultsFileName;
+        string[] _nodeSetNames;
 
 
         // Properties                                                                                                               
-        public override object BaseItem { get { return _section; } }
-
-
-        // Events                                                                                                                   
 
 
         // Constructor                                                                                                              
-        public CalSolidSection(SolidSection section)
+        public CalSubmodel(string globalResultsFileName, string[] nodeSetNames)
         {
-            _section = section;
-            _active = section.Active;
+            _globalResultsFileName = globalResultsFileName;
+            _nodeSetNames = nodeSetNames;
         }
 
 
         // Methods                                                                                                                  
         public override string GetKeywordString()
         {
-            return string.Format("*Solid section, Elset={0}, Material={1}{2}", _section.RegionName, _section.MaterialName, Environment.NewLine);
+            return string.Format("*Submodel, Type=Node, Input=\"{0}\"{1}", _globalResultsFileName.ToUTF8(), Environment.NewLine);
         }
 
         public override string GetDataString()
         {
-            if (_section.Type == SolidSectionType.TwoDimensional) return string.Format("{0}{1}", _section.Thickness, Environment.NewLine);
-            return "";
+            StringBuilder sb = new StringBuilder();
+            foreach (var nodeSetName in _nodeSetNames) sb.AppendLine(nodeSetName);
+            return sb.ToString();
         }
     }
 }

@@ -51,8 +51,6 @@ namespace CaeModel
             _maxIncrements = 100;
             _supportsLoads = true;
         }
-
-        // ISerialization
         public Step(SerializationInfo info, StreamingContext context)
             :base(info, context)
         {

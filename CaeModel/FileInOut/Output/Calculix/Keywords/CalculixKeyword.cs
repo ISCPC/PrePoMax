@@ -11,16 +11,11 @@ namespace FileInOut.Output.Calculix
     public abstract class CalculixKeyword
     {
         // Variables                                                                                                                
-        protected bool _active;
         protected List<CalculixKeyword> _keywords;
 
+
         // Properties                                                                                                               
-        public bool Active { get { return _active; } }
         public List<CalculixKeyword> Keywords { get { return _keywords; } }
-        public abstract object BaseItem { get; }
-
-
-        // Events                                                                                                                   
 
 
         // Constructor                                                                                                              

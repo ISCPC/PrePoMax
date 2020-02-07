@@ -15,18 +15,10 @@ namespace FileInOut.Output.Calculix
         private Tie _tie;
 
 
-        // Properties                                                                                                               
-        public override object BaseItem { get { return _tie; } }
-
-
-        // Events                                                                                                                   
-
-
         // Constructor                                                                                                              
         public CalTie(Tie tie)
         {
             _tie = tie;
-            _active = tie.Active;
         }
 
 
@@ -42,7 +34,6 @@ namespace FileInOut.Output.Calculix
             sb.AppendLine();
             return sb.ToString();
         }
-
         public override string GetDataString()
         {
             return string.Format("{0}, {1}{2}", _tie.SlaveSurfaceName, _tie.MasterSurfaceName, Environment.NewLine);

@@ -309,6 +309,12 @@ namespace CaeModel
                         SetItemValidity(cf, valid, items);
                         if (!valid && cf.Active) invalidItems.Add("Load: " + step.Name + ", " + cf.Name);
                     }
+                    else if (load is PreTensionLoad ptl)
+                    {
+                        valid = (_mesh.Surfaces.TryGetValue(ptl.SurfaceName, out s) && s.Valid && s.Type == FeSurfaceType.Element);
+                        SetItemValidity(ptl, valid, items);
+                        if (!valid && ptl.Active) invalidItems.Add("Load: " + step.Name + ", " + ptl.Name);
+                    }
                     else throw new NotSupportedException();
                 }
             }
@@ -354,50 +360,6 @@ namespace CaeModel
                 SetNumberOfUserKeywords?.Invoke(_calculixUserKeywords.Count);
             }
             catch { }
-        }
-        public void UpdateUserKeywordIndices_(object itemToRemove, Action<int> SetNumberOfUserKeywords)
-        {
-            int parentLevel;
-            int itemLevel;
-            int[] userIndices;
-            List<int[]> allKeywordIndices = FileInOut.Output.CalculixFileWriter.GetKeywordIndices(this, itemToRemove);
-            OrderedDictionary<int[], Calculix.CalculixUserKeyword> userKeywordsCopy;
-            userKeywordsCopy = new OrderedDictionary<int[], Calculix.CalculixUserKeyword>();
-
-            foreach (var keywordIndices in allKeywordIndices)
-            {
-                userKeywordsCopy.Clear();
-                foreach (var entry in _calculixUserKeywords)
-                {
-                    userIndices = entry.Key;
-                    if (IndicesOfTheSameParent(userIndices, keywordIndices, out parentLevel))
-                    {
-                        itemLevel = parentLevel + 1;
-                        if (userIndices[itemLevel] == keywordIndices[itemLevel])
-                        {
-                            // delete keyword
-                        }
-                        else if (userIndices[itemLevel] > keywordIndices[itemLevel])
-                        {
-                            // renumber
-                            userIndices[itemLevel]--;
-                            userKeywordsCopy.Add(userIndices, entry.Value);
-                        }
-                        else
-                        {
-                            // copy
-                            userKeywordsCopy.Add(entry.Key, entry.Value);
-                        }
-                    }
-                    else
-                    {
-                        // copy
-                        userKeywordsCopy.Add(entry.Key, entry.Value);
-                    }
-                }
-                _calculixUserKeywords = userKeywordsCopy;
-            }
-            SetNumberOfUserKeywords?.Invoke(_calculixUserKeywords.Count);
         }
         private bool IndicesOfTheSameParent(int[] userIndices, int[] deletedItemIndces, out int parentLevel)
         {

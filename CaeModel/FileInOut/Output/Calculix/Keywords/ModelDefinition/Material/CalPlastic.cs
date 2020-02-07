@@ -15,13 +15,6 @@ namespace FileInOut.Output.Calculix
         private Plastic _plastic;
 
 
-        // Properties                                                                                                               
-        public override object BaseItem { get { return _plastic; } }
-
-
-        // Events                                                                                                                   
-
-
         // Constructor                                                                                                              
         public CalPlastic(Plastic plastic)
         {
@@ -36,7 +29,6 @@ namespace FileInOut.Output.Calculix
             if (_plastic.Hardening != PlasticHardening.Isotropic) hardening = ", Hardening=" + _plastic.Hardening;
             return string.Format("*Plastic{0}{1}", hardening, Environment.NewLine);
         }
-
         public override string GetDataString()
         {
             StringBuilder sb = new StringBuilder();

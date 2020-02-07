@@ -13,7 +13,7 @@ namespace PrePoMax
     public class ViewMultiRegion
     {
         // Variables                                                                                                                
-        private CaeModel.IMultiRegion _multiRegion;
+        private IMultiRegion _multiRegion;
         private Dictionary<RegionTypeEnum, string> _regionTypePropertyNamePairs;
         private Dictionary<string, RegionTypeEnum> _regionNameRegionTypePairs;
         private DynamicCustomTypeDescriptor _dctd = null;
@@ -51,13 +51,14 @@ namespace PrePoMax
 
 
         // Methods                                                                                                                  
-        public void SetBase(CaeModel.IMultiRegion multiRegion, Dictionary<RegionTypeEnum, string> regionTypePropertyNamePairs)
+        public void SetBase(IMultiRegion multiRegion, Dictionary<RegionTypeEnum, string> regionTypePropertyNamePairs)
         {
             _multiRegion = multiRegion;
             _regionTypePropertyNamePairs = regionTypePropertyNamePairs;
-
+            //
             _regionNameRegionTypePairs = new Dictionary<string, RegionTypeEnum>();
-            foreach (var entry in _regionTypePropertyNamePairs) _regionNameRegionTypePairs.Add(entry.Key.ToFriendlyString(), entry.Key);
+            foreach (var entry in _regionTypePropertyNamePairs)
+                _regionNameRegionTypePairs.Add(entry.Key.ToFriendlyString(), entry.Key);
         }
         public void PopululateDropDownLists(Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs)
         {

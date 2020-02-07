@@ -18,13 +18,6 @@ namespace FileInOut.Output.Calculix
         private MeshPart _part;
 
 
-        // Properties                                                                                                               
-        public override object BaseItem { get { return _part; } }
-
-
-        // Events                                                                                                                   
-
-
         // Constructor                                                                                                              
         public CalElement(string elementType, string elementSetName, List<FeElement> elements, MeshPart part)
         {
@@ -40,7 +33,6 @@ namespace FileInOut.Output.Calculix
         {
             return string.Format("*Element, Type={0}, Elset={1}{2}", _elementType, _elementSetName, Environment.NewLine);
         }
-
         public override string GetDataString()
         {
             StringBuilder sb = new StringBuilder();

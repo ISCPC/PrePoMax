@@ -82,6 +82,7 @@
     </Compile>
     <Compile Include="ExceptionTools.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="IMultiRegion.cs" />
     <Compile Include="MessageBoxManager.cs" />
     <Compile Include="Octree\BoundsOctree.cs" />
     <Compile Include="Octree\BoundsOctreeNode.cs" />

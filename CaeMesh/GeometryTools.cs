@@ -17,7 +17,6 @@ namespace CaeMesh
             double s = (a + b + c) / 2;
             return Math.Sqrt(s * (s - a) * (s - b) * (s - c));
         }
-
         static public double TriangleArea(FeNode n1, FeNode n2, FeNode n3, FeNode n4, FeNode n5, FeNode n6)
         {
             double area = 0;
@@ -27,7 +26,6 @@ namespace CaeMesh
             area += TriangleArea(n6, n5, n3);
             return area;
         }
-
         static public double RectangleArea(FeNode n1, FeNode n2, FeNode n3, FeNode n4)
         {
             double area = 0;
@@ -35,7 +33,6 @@ namespace CaeMesh
             area += TriangleArea(n1, n3, n4);
             return area;
         }
-
         static public double RectangleArea(FeNode n1, FeNode n2, FeNode n3, FeNode n4,
                                            FeNode n5, FeNode n6, FeNode n7, FeNode n8)
         {
@@ -48,6 +45,131 @@ namespace CaeMesh
             area += TriangleArea(n6, n7, n5);
             area += TriangleArea(n6, n5, n2);
             return area;
+        }
+
+        static public double[] TriangleCG(FeNode n1, FeNode n2, FeNode n3, out double area)
+        {
+            area = TriangleArea(n1, n2, n3);
+            //
+            double[] cg = new double[3];
+            cg[0] = (n1.X + n2.X + n3.X) / 3;
+            cg[1] = (n1.Y + n2.Y + n3.Y) / 3;
+            cg[2] = (n1.Z + n2.Z + n3.Z) / 3;
+            return cg;
+        }
+        static public double[] TriangleCG(FeNode n1, FeNode n2, FeNode n3, FeNode n4, FeNode n5, FeNode n6,
+                                          out double area)
+        {
+            double[] cg = new double[3];            
+            double[] cg1;
+            double a;
+            area = 0;
+            //
+            cg1 = TriangleCG(n4, n6, n1, out a);
+            cg[0] += cg1[0] * a;
+            cg[1] += cg1[1] * a;
+            cg[2] += cg1[2] * a;
+            area += a;
+            //
+            cg1 = TriangleCG(n4, n5, n6, out a);
+            cg[0] += cg1[0] * a;
+            cg[1] += cg1[1] * a;
+            cg[2] += cg1[2] * a;
+            area += a;
+            //
+            cg1 = TriangleCG(n4, n2, n5, out a);
+            cg[0] += cg1[0] * a;
+            cg[1] += cg1[1] * a;
+            cg[2] += cg1[2] * a;
+            area += a;
+            //
+            cg1 = TriangleCG(n6, n5, n3, out a);
+            cg[0] += cg1[0] * a;
+            cg[1] += cg1[1] * a;
+            cg[2] += cg1[2] * a;
+            area += a;
+            //
+            cg[0] /= area;
+            cg[1] /= area;
+            cg[2] /= area;
+            //
+            return cg;
+        }
+        static public double[] RectangleCG(FeNode n1, FeNode n2, FeNode n3, FeNode n4, out double area)
+        {
+            double[] cg = new double[3];
+            double[] cg1;
+            double a;
+            area = 0;
+            //
+            cg1 = TriangleCG(n1, n2, n3, out a);
+            cg[0] += cg1[0] * a;
+            cg[1] += cg1[1] * a;
+            cg[2] += cg1[2] * a;
+            area += a;
+            //
+            cg1 = TriangleCG(n1, n3, n4, out a);
+            cg[0] += cg1[0] * a;
+            cg[1] += cg1[1] * a;
+            cg[2] += cg1[2] * a;
+            area += a;
+            //
+            cg[0] /= area;
+            cg[1] /= area;
+            cg[2] /= area;
+            //
+            return cg;
+        }
+        static public double[] RectangleCG(FeNode n1, FeNode n2, FeNode n3, FeNode n4, FeNode n5, FeNode n6,
+                                           FeNode n7, FeNode n8, out double area)
+        {
+            double[] cg = new double[3];
+            double[] cg1;
+            double a;
+            area = 0;
+            //
+            cg1 = TriangleCG(n8, n1, n5, out a);
+            cg[0] += cg1[0] * a;
+            cg[1] += cg1[1] * a;
+            cg[2] += cg1[2] * a;
+            area += a;
+            //
+            cg1 = TriangleCG(n8, n5, n7, out a);
+            cg[0] += cg1[0] * a;
+            cg[1] += cg1[1] * a;
+            cg[2] += cg1[2] * a;
+            area += a;
+            //
+            cg1 = TriangleCG(n8, n7, n4, out a);
+            cg[0] += cg1[0] * a;
+            cg[1] += cg1[1] * a;
+            cg[2] += cg1[2] * a;
+            area += a;
+            //
+            //
+            cg1 = TriangleCG(n6, n3, n7, out a);
+            cg[0] += cg1[0] * a;
+            cg[1] += cg1[1] * a;
+            cg[2] += cg1[2] * a;
+            area += a;
+            //
+            cg1 = TriangleCG(n6, n7, n5, out a);
+            cg[0] += cg1[0] * a;
+            cg[1] += cg1[1] * a;
+            cg[2] += cg1[2] * a;
+            area += a;
+            //
+            cg1 = TriangleCG(n6, n5, n2, out a);
+            cg[0] += cg1[0] * a;
+            cg[1] += cg1[1] * a;
+            cg[2] += cg1[2] * a;
+            area += a;
+            //
+            cg[0] /= area;
+            cg[1] /= area;
+            cg[2] /= area;
+            //
+            return cg;
         }
     }
 }

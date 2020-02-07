@@ -15,18 +15,10 @@ namespace FileInOut.Output.Calculix
         private CentrifLoad _load;
 
 
-        // Properties                                                                                                               
-        public override object BaseItem { get { return _load; } }
-
-
-        // Events                                                                                                                   
-
-
         // Constructor                                                                                                              
         public CalCentrifLoad(CentrifLoad load)
         {
             _load = load;
-            _active = load.Active;
         }
 
 
@@ -38,7 +30,6 @@ namespace FileInOut.Output.Calculix
             sb.AppendLine("*Dload");
             return sb.ToString();
         }
-
         public override string GetDataString()
         {
             StringBuilder sb = new StringBuilder();

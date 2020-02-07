@@ -15,18 +15,10 @@ namespace FileInOut.Output.Calculix
         private readonly ElementHistoryOutput _elementHistoryOutput;
 
 
-        // Properties                                                                                                               
-        public override object BaseItem { get { return _elementHistoryOutput; } }
-
-
-        // Events                                                                                                                   
-
-
         // Constructor                                                                                                              
         public CalElPrint(ElementHistoryOutput elementHistoryOutput)
         {
             _elementHistoryOutput = elementHistoryOutput;
-            _active = elementHistoryOutput.Active;
         }
 
 
@@ -40,7 +32,6 @@ namespace FileInOut.Output.Calculix
             else if (_elementHistoryOutput.TotalsType == TotalsTypeEnum.Only) totals = ", Totals=Only";
             return string.Format("*El print{0}{1}{2}{3}", frequency, regionName, totals, Environment.NewLine);
         }
-
         public override string GetDataString()
         {
             return string.Format("{0}{1}", _elementHistoryOutput.Variables.ToString(), Environment.NewLine);

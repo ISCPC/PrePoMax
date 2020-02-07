@@ -15,19 +15,12 @@ namespace FileInOut.Output.Calculix
         private CLoad _load;
         private Dictionary<string, int[]> _referencePointsNodeIds;
 
-        // Properties                                                                                                               
-        public override object BaseItem { get { return _load; } }
-
-
-        // Events                                                                                                                   
-
 
         // Constructor                                                                                                              
         public CalCLoad(CLoad load, Dictionary<string, int[]> referencePointsNodeIds)
         {
             _load = load;
             _referencePointsNodeIds = referencePointsNodeIds;
-            _active = load.Active;
         }
 
 
@@ -39,7 +32,6 @@ namespace FileInOut.Output.Calculix
             sb.AppendLine("*Cload");
             return sb.ToString();
         }
-
         public override string GetDataString()
         {
             StringBuilder sb = new StringBuilder();

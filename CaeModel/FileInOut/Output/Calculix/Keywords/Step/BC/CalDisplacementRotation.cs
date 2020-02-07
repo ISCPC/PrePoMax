@@ -17,13 +17,6 @@ namespace FileInOut.Output.Calculix
         private string _surfaceNodeSetName;
 
 
-        // Properties                                                                                                               
-        public override object BaseItem { get { return _displacementRotation; } }
-
-
-        // Events                                                                                                                   
-
-
         // Constructor                                                                                                              
         public CalDisplacementRotation(DisplacementRotation displacementRotation, Dictionary<string, int[]> referencePointsNodeIds,
                                        string surfaceNodeSetName)
@@ -31,7 +24,6 @@ namespace FileInOut.Output.Calculix
             _displacementRotation = displacementRotation;
             _referencePointsNodeIds = referencePointsNodeIds;
             _surfaceNodeSetName = surfaceNodeSetName;
-            _active = displacementRotation.Active;
         }
 
 
@@ -43,7 +35,6 @@ namespace FileInOut.Output.Calculix
             sb.AppendLine("*Boundary");
             return sb.ToString();
         }
-
         public override string GetDataString()
         {
             StringBuilder sb = new StringBuilder();

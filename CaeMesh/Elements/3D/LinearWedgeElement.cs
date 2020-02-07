@@ -165,9 +165,17 @@ namespace CaeMesh
             if (cell.Length == 3)   //(faceName == FeFaceName.S1 || faceName == FeFaceName.S2)
                 return GeometryTools.TriangleArea(nodes[cell[0]], nodes[cell[1]], nodes[cell[2]]);
             else
-            {
                 return GeometryTools.RectangleArea(nodes[cell[0]], nodes[cell[1]], nodes[cell[2]], nodes[cell[3]]);
-            }
+        }
+        public override double[] GetCG(FeFaceName faceName, Dictionary<int, FeNode> nodes, out double area)
+        {
+            double[] cg;
+            int[] cell = GetVtkCellFromFaceName(faceName);
+            if (cell.Length == 3)   //(faceName == FeFaceName.S1 || faceName == FeFaceName.S2)
+                cg = GeometryTools.TriangleCG(nodes[cell[0]], nodes[cell[1]], nodes[cell[2]], out area);
+            else
+                cg = GeometryTools.RectangleCG(nodes[cell[0]], nodes[cell[1]], nodes[cell[2]], nodes[cell[3]], out area);
+            return cg;
         }
         public override FeElement DeepCopy()
         {

@@ -1,7 +1,7 @@
 ﻿Requirements
 
 Selection - UNDO after empty click
-SAVE TO ANOTHER FILE AND THEN REMOVE THE OLDER FILE
+
 
 
 By others:
@@ -17,16 +17,12 @@ By Martin:
 
 
 
-
-
 By Sergio:
 10. 7. 2020
-1) Move mesh refinements to the parts
 2) Add support for custom colors of supports and loads in the Edit menu - add a legend for colors
 3) Use the .pmx folder for all calculations
 4) Units
 5) Show the "Select set" window at the start of the set editing
-6)
 
 
 By Martin:
@@ -147,6 +143,7 @@ Done
 
 Version 0.5.3 Master branch
 
+At save a temporary file is first used which is then renamed to the selected file name.
 Mesh refinement can only be specified for one part
 Added support for splitting of compound meshes
 Added support for regenerate to skipp over errors - needs further testing!!!

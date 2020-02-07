@@ -15,18 +15,10 @@ namespace FileInOut.Output.Calculix
         private FrequencyStep _step;
 
 
-        // Properties                                                                                                               
-        public override object BaseItem { get { return _step; } }
-
-
-        // Events                                                                                                                   
-
-
         // Constructor                                                                                                              
         public CalFrequencyStep(FrequencyStep step)
         {
             _step = step;
-            _active = step.Active;
         }
 
 
@@ -37,7 +29,6 @@ namespace FileInOut.Output.Calculix
 
             return string.Format("*Frequency{0}{1}", storage, Environment.NewLine);
         }
-
         public override string GetDataString()
         {
             return string.Format("{0}{1}", _step.NumOfFrequencies, Environment.NewLine);

@@ -16,19 +16,11 @@ namespace FileInOut.Output.Calculix
         private readonly NodalHistoryOutput _nodalHistoryOutput;
 
 
-        // Properties                                                                                                               
-        public override object BaseItem { get { return _nodalHistoryOutput; } }
-
-
-        // Events                                                                                                                   
-
-
-        // Constructor                                                                                                              
+        // Constructors                                                                                                             
         public CalNodePrint(FeModel model, NodalHistoryOutput nodalHistoryOutput)
         {
             _nodalHistoryOutput = nodalHistoryOutput;   // set this first
-            _active = nodalHistoryOutput.Active;
-
+            //
             _regionName = ", Nset=";
             if (_nodalHistoryOutput.RegionType == CaeGlobals.RegionTypeEnum.NodeSetName)
                 _regionName += _nodalHistoryOutput.RegionName;
@@ -36,12 +28,10 @@ namespace FileInOut.Output.Calculix
                 _regionName += model.Mesh.Surfaces[_nodalHistoryOutput.RegionName].NodeSetName;
             else throw new NotSupportedException();
         }
-
         public CalNodePrint(FeModel model, NodalHistoryOutput nodalHistoryOutput, string regionName)
         {
             _regionName = ", Nset=" + regionName;
             _nodalHistoryOutput = nodalHistoryOutput;
-            _active = nodalHistoryOutput.Active;
         }
 
 
@@ -54,7 +44,6 @@ namespace FileInOut.Output.Calculix
             else if (_nodalHistoryOutput.TotalsType == TotalsTypeEnum.Only) totals = ", Totals=Only";
             return string.Format("*Node print{0}{1}{2}{3}", frequency, _regionName, totals, Environment.NewLine);
         }
-
         public override string GetDataString()
         {
             return string.Format("{0}{1}", _nodalHistoryOutput.Variables.ToString(), Environment.NewLine);
