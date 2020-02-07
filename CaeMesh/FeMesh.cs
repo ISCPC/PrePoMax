@@ -636,7 +636,7 @@ namespace CaeMesh
         {
             if (_boundingBox == null) _boundingBox = new BoundingBox();
             _boundingBox.Reset();
-
+            //
             if (_nodes != null && _nodes.Count > 0)
             {
                 FeNode node;
@@ -649,6 +649,18 @@ namespace CaeMesh
                         entry.Value.BoundingBox.CheckNode(node);
                     }
                     _boundingBox.CheckBox(entry.Value.BoundingBox);
+                }
+                // Compound parts
+                foreach (var entry in _parts)
+                {
+                    if (entry.Value is CompoundGeometryPart cgp)
+                    {
+                        cgp.BoundingBox.Reset();
+                        foreach (var partName in cgp.SubPartNames)
+                        {
+                            cgp.BoundingBox.CheckBox(_parts[partName].BoundingBox);
+                        }
+                    }
                 }
             }
         }

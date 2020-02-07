@@ -146,6 +146,9 @@ namespace FileInOut.Input
                     case 4:
                         element = GetLinearTetraElement(elementStartId, record);
                         break;
+                    case 6:
+                        element = GetLinearWedgeElement(elementStartId, record);
+                        break;
                     case 10:
                         element = GetParabolicTetraElement(elementStartId, record);
                         break;
@@ -184,6 +187,9 @@ namespace FileInOut.Input
                 {
                     case 3:
                         element = GetLinearTriangleElement(startId, record);
+                        break;
+                    case 4:
+                        element = GetLinearQuadrilateralElement(startId, record);
                         break;
                     case 6:
                         element = GetParabolicTriangleElement(startId, record);
@@ -266,6 +272,19 @@ namespace FileInOut.Input
             //
             return new LinearTriangleElement(id, -1, nodes);
         }
+        static private LinearQuadrilateralElement GetLinearQuadrilateralElement(int id, string[] record)
+        {
+            int n = 4;
+            int partId = int.Parse(record[1]);
+            int[] nodes = new int[n];
+            //
+            nodes[0] = int.Parse(record[5]);
+            nodes[1] = int.Parse(record[6]);
+            nodes[2] = int.Parse(record[7]);
+            nodes[3] = int.Parse(record[8]);
+            //
+            return new LinearQuadrilateralElement(id, -1, nodes);
+        }
         static private LinearTetraElement GetLinearTetraElement(int id, string[] record)
         {
             int n = 4;
@@ -278,6 +297,21 @@ namespace FileInOut.Input
             nodes[3] = int.Parse(record[5]);
             //
             return new LinearTetraElement(id, partId, nodes);
+        }
+        static private LinearWedgeElement GetLinearWedgeElement(int id, string[] record)
+        {
+            int n = 6;
+            int partId = int.Parse(record[0]);
+            int[] nodes = new int[n];
+            //
+            nodes[0] = int.Parse(record[2]);
+            nodes[1] = int.Parse(record[4]);    // swap 3 and 4
+            nodes[2] = int.Parse(record[3]);
+            nodes[3] = int.Parse(record[5]);
+            nodes[4] = int.Parse(record[7]);
+            nodes[5] = int.Parse(record[6]);
+            //
+            return new LinearWedgeElement(id, partId, nodes);
         }
 
 
