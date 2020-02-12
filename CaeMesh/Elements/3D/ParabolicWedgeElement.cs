@@ -171,7 +171,15 @@ namespace CaeMesh
         }
         public override double[] GetCG(FeFaceName faceName, Dictionary<int, FeNode> nodes, out double area)
         {
-            throw new NotImplementedException();
+            double[] cg;
+            int[] cell = GetVtkCellFromFaceName(faceName);
+            if (cell.Length == 6)   //(faceName == FeFaceName.S1 || faceName == FeFaceName.S2)
+                cg = GeometryTools.TriangleCG(nodes[cell[0]], nodes[cell[1]], nodes[cell[2]],
+                                              nodes[cell[3]], nodes[cell[4]], nodes[cell[5]], out area);
+            else
+                cg = GeometryTools.RectangleCG(nodes[cell[0]], nodes[cell[1]], nodes[cell[2]], nodes[cell[3]],
+                                               nodes[cell[4]], nodes[cell[5]], nodes[cell[6]], nodes[cell[7]], out area);
+            return cg;
         }
         public override FeElement DeepCopy()
         {

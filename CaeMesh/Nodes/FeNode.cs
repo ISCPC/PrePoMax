@@ -16,9 +16,6 @@ namespace CaeMesh
         public double Z;
 
 
-        // Properties                                                                                                               
-        
-
         // Constructors                                                                                                             
         public FeNode(int id, double x, double y, double z)
         {
@@ -27,6 +24,11 @@ namespace CaeMesh
             Y = y;
             Z = z;
         }
+        public FeNode(int id, double[] coor)
+            : this(id, coor[0], coor[1], coor[2])
+        {
+        }
+
 
         // Methods                                                                                                                  
         public double[] Coor
@@ -35,8 +37,13 @@ namespace CaeMesh
             {
                 return new double[] { X, Y, Z };
             }
+            set
+            {
+                X = value[0];
+                Y = value[1];
+                Z = value[2];
+            }
         }
-
         public bool IsEqual(FeNode node)
         {
             int div = 10000;
@@ -46,7 +53,6 @@ namespace CaeMesh
             else
                 return false;
         }
-
         public FeNode DeepCopy()
         {
             return new FeNode(Id, X, Y, Z);

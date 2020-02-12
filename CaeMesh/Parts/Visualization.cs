@@ -190,7 +190,7 @@ namespace CaeMesh
         public void ExtractVisualizationCells(Dictionary<int, FeElement> elements, int[] elementIds)
         {
             if (_cellNeighboursOverCell == null) ExtractCellNeighboursOverCell(elements, elementIds);
-
+            //
             List<int[]> visualizationCells = new List<int[]>();
             List<int> visualizationCellsIds = new List<int>();
             foreach (var entry in _cellNeighboursOverCell)
@@ -204,7 +204,6 @@ namespace CaeMesh
             // Save
             _cells = visualizationCells.ToArray();
             _cellIds = visualizationCellsIds.ToArray(); ;
-            
         }
         private void ExtractCellNeighboursOverCell(Dictionary<int, FeElement> elements, int[] elementIds)
         {
@@ -226,7 +225,7 @@ namespace CaeMesh
                 }
             }
         }
-
+        //
         public void RenumberNodes(Dictionary<int, int> newIds)
         {
             // Cells
@@ -264,11 +263,12 @@ namespace CaeMesh
         }
         public void RenumberElements(Dictionary<int, int> newIds)
         {
+            int id;
             if (_cellIds != null)
             {
                 for (int i = 0; i < _cellIds.Length; i++)
                 {
-                    _cellIds[i] = newIds[_cellIds[i]];
+                    if (newIds.TryGetValue(_cellIds[i], out id)) _cellIds[i] = id;
                 }
             }
         }
@@ -334,7 +334,69 @@ namespace CaeMesh
             }
             _edgeLengths = newEdgeLengths;
         }
-
+        //          
+        /// <summary>
+        /// Get node ids of all surface edges
+        /// </summary>
+        public HashSet<int> GetSurfaceEdgesNodeIds(int surfaceId)
+        {
+            HashSet<int> surfaceEdgesNodeIds = new HashSet<int>();
+            int edgeId;
+            for (int i = 0; i < _faceEdgeIds[surfaceId].Length; i++)
+            {
+                edgeId = _faceEdgeIds[surfaceId][i];
+                for (int j = 0; j < _edgeCellIdsByEdge[edgeId].Length; j++)
+                {
+                    surfaceEdgesNodeIds.UnionWith(_edgeCells[_edgeCellIdsByEdge[edgeId][j]]);
+                }
+            }
+            return surfaceEdgesNodeIds;
+        }
+        /// <summary>
+        /// Get node ids of all surface vertices
+        /// </summary>
+        public HashSet<int> GetSurfaceVerticesNodeIds(int surfaceId, HashSet<int> surfaceEdgesNodeIds)
+        {
+            //HashSet<int> surfaceEdgesNodeIds = GetSurfaceEdgesNodeIds(surfaceId);
+            HashSet<int> surfaceVerticesNodeIds = new HashSet<int>();
+            for (int i = 0; i < _vertexNodeIds.Length; i++)
+            {
+                if (surfaceEdgesNodeIds.Contains(_vertexNodeIds[i])) surfaceVerticesNodeIds.Add(_vertexNodeIds[i]);
+            }
+            return surfaceVerticesNodeIds;
+        }
+        public Dictionary<int, HashSet<int>> GetNodeIdsByEdges()
+        {
+            HashSet<int> edgeNodeIds;
+            Dictionary<int, HashSet<int>> edgeIdNodeIds = new Dictionary<int, HashSet<int>>();
+            //Dictionary<int, HashSet<int>> surfaceIdNodeIds = new Dictionary<int, HashSet<int>>();
+            for (int i = 0; i < _edgeCellIdsByEdge.Length; i++)
+            {
+                edgeNodeIds = new HashSet<int>();
+                for (int j = 0; j < _edgeCellIdsByEdge[i].Length; j++)
+                {
+                    edgeNodeIds.UnionWith(_edgeCells[_edgeCellIdsByEdge[i][j]]);
+                }
+                edgeIdNodeIds.Add(i, edgeNodeIds);
+            }
+            return edgeIdNodeIds;
+        }
+        public Dictionary<int, HashSet<int>> GetNodeIdsBySurfaces()
+        {
+            HashSet<int> surfaceNodeIds;
+            Dictionary<int, HashSet<int>> surfaceIdNodeIds = new Dictionary<int, HashSet<int>>();
+            for (int i = 0; i < _cellIdsByFace.Length; i++)
+            {
+                surfaceNodeIds = new HashSet<int>();
+                for (int j = 0; j < _cellIdsByFace[i].Length; j++)
+                {
+                    surfaceNodeIds.UnionWith(_cells[_cellIdsByFace[i][j]]);
+                }
+                surfaceIdNodeIds.Add(i, surfaceNodeIds);
+            }
+            return surfaceIdNodeIds;
+        }
+        //
         public VisualizationData DeepCopy()
         {
             return new VisualizationData(this);

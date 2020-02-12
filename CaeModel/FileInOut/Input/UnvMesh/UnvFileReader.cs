@@ -81,6 +81,7 @@ namespace FileInOut.Input
                     if (elementsToImport != ElementsToImport.Solid) mesh.RemoveElementsByType<FeElement3D>();
                 }
                 //return mesh.ExtractMeshType(MeshType.Solid);
+                //mesh.CreatePrismaticBoundaryLayer(new int[] { 120003 }, 1);
                 return mesh;
             }
 
