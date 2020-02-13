@@ -176,7 +176,7 @@ namespace PrePoMax.Forms
             _prevSelectionNodes = null;
             _selectionNodeIds = null;
             //
-            _controller.SetSelectItemToSurface();
+            _controller.SetSelectItemToGeometry();
             //
             _meshRefinementNames.UnionWith(_controller.GetMeshRefinementNames());
             _meshRefinementToEditName = meshRefinementToEditName;
@@ -199,7 +199,7 @@ namespace PrePoMax.Forms
                     _selectionNodeIds.GeometryIds = true;
                     _prevSelectionNodes = MeshRefinement.CreationData.Nodes;
                     _controller.ClearSelectionHistory();
-                    _controller.SelectItem = vtkSelectItem.Geometry;
+                    _controller.SetSelectItemToGeometry(); // is this necessary???
                     _controller.AddSelectionNode(_selectionNodeIds, true);
                     MeshRefinement.CreationData = _controller.Selection.DeepClone();
                 }

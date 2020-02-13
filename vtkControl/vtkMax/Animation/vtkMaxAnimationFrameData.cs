@@ -17,6 +17,7 @@ namespace vtkControl
         public double[] AllFramesScalarRange;
         public bool UseAllFrameData;
         public List<Dictionary<int, string>> AnimatedActorNames;
+        public Dictionary<string, bool> ActorVisible;
         public HashSet<string> InitializedActorNames;
         public double MemMb;
 
@@ -32,6 +33,7 @@ namespace vtkControl
             ScaleFactor = scale;
             AllFramesScalarRange = scalarRange;
             AnimatedActorNames = new List<Dictionary<int, string>>();
+            ActorVisible = new Dictionary<string, bool>();
             InitializedActorNames = new HashSet<string>();
             MemMb = 0;
         }

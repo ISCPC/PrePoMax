@@ -55,6 +55,7 @@ namespace PrePoMax
         private FrmModelProperties _frmModelProperties;
         private FrmCalculixKeywordEditor _frmCalculixKeywordEditor;
         private FrmPartProperties _frmPartProperties;
+        private FrmBoundaryLayer _frmBoundaryLayer;
         private FrmTranslate _frmTranslate;
         private FrmScale _frmScale;
         private FrmRotate _frmRotate;
@@ -240,6 +241,9 @@ namespace PrePoMax
 
                 _frmPartProperties = new FrmPartProperties(_controller);
                 AddFormToAllForms(_frmPartProperties);
+
+                _frmBoundaryLayer = new FrmBoundaryLayer(_controller);
+                AddFormToAllForms(_frmBoundaryLayer);
 
                 _frmTranslate = new FrmTranslate(_controller);
                 AddFormToAllForms(_frmTranslate);
@@ -1962,7 +1966,17 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-
+        private void tsmiCreateBoundaryLayer_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                CreateBoundaryLayer();
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+             }
         private void EditModel()
         {
             ShowForm(_frmModelProperties, "Edit Model", null);
@@ -1983,6 +1997,14 @@ namespace PrePoMax
                     }
                 }
             }
+        }
+        private void CreateBoundaryLayer()
+        {
+            // Data editor
+            ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
+            ItemSetDataEditor.ParentForm = _frmBoundaryLayer;
+            _frmSelectItemSet.SetOnlyGeometrySelection(true);
+            ShowForm(_frmBoundaryLayer, "Create Boundary Layer", null);
         }
 
         #endregion  ################################################################################################################
@@ -4759,8 +4781,6 @@ namespace PrePoMax
             {}
         }
 
-       
-
-       
+        
     }
 }

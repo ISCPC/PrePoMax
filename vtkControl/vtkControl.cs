@@ -3486,17 +3486,48 @@ namespace vtkControl
         }
         private void HideShowActors(string[] actorNames, bool updateColorContours, bool visible)
         {
+            vtkMaxActor maxActor;
+            HashSet<string> actorNamesHash = new HashSet<string>(actorNames);
             string sectionViewActorName;
+            string[] tmp;
+            string[] splitter = new string[] { "_animation-frame-" };
+            foreach (var entry in _actors)
+            {
+                // Check for animated actors
+                tmp = entry.Key.Split(splitter, StringSplitOptions.None);
+                if (tmp.Length == 2)
+                {
+                    // Name splitting also takes care of section view actors since they have the same base name
+                    if (actorNamesHash.Contains(tmp[0]))
+                    {
+                        entry.Value.VtkMaxActorVisible = visible;
+                        // Animated actors
+                        _animationFrameData.ActorVisible[tmp[0]] = visible;
+                    }
+                }
+                // Non animated actors
+                else
+                {
+                    if (actorNamesHash.Contains(entry.Key))
+                    {
+                        // Use vtkMaxActor Visibility setting
+                        entry.Value.VtkMaxActorVisible = visible;
+                        // Section view
+                        sectionViewActorName = GetSectionViewActorName(entry.Key);
+                        if (_sectionView && _actors.TryGetValue(sectionViewActorName, out maxActor))
+                            maxActor.VtkMaxActorVisible = visible;
+                    }
+                }
+            }
+            // Overlay actors
+            vtkActor actor;
             foreach (var name in actorNames)
             {
-                sectionViewActorName = GetSectionViewActorName(name);
-                if (_actors.ContainsKey(name)) _actors[name].VtkMaxActorVisible = visible;        // use vtkMaxActor Visibility setting
-                if (_sectionView && _actors.ContainsKey(sectionViewActorName)) _actors[sectionViewActorName].VtkMaxActorVisible = visible;
-                if (_overlayActors.ContainsKey(name)) _overlayActors[name].VisibilityOn();
+                if (_overlayActors.TryGetValue(name, out actor)) actor.VisibilityOn();
             }
-
+            //
             if (updateColorContours) UpdateScalarFormatting();
-
+            //
             ApplyEdgesVisibilityAndBackfaceCulling();
             _style.AdjustCameraDistanceAndClipping();
         }
@@ -4289,6 +4320,7 @@ namespace vtkControl
                 }
             }
 
+            _animationFrameData.ActorVisible.Add(data.Name, true);
             _animationFrameData.AnimatedActorNames.Add(animatedActorNames);
 
             // UpdateScalarFormatting();   // this is called for the first time in the SetAnimationFrame
@@ -4729,13 +4761,13 @@ namespace vtkControl
         private void SetAnimationFrameAddRemoveActors(int frameNumber, bool scalarRangeFromAllFrames)
         {
             _animationFrameData.UseAllFrameData = scalarRangeFromAllFrames;
-
+            //
             if (_statusBlockWidget != null && _animationFrameData != null)
             {
                 _statusBlockWidget.AnalysisTime = _animationFrameData.Time[frameNumber];
                 _statusBlockWidget.AnimationScaleFactor = _animationFrameData.ScaleFactor[frameNumber];
             }
-
+            //
             List<string> visibleActors = new List<string>();
             vtkMaxActor actor;
             bool applySectionView = false;
@@ -4748,76 +4780,94 @@ namespace vtkControl
                 applySectionView = true;
                 RemoveSectionView();
             }
+            bool visible;
             foreach (var entry in _animationActors)
             {
-                // get
-                actor = _actors[entry.Key];
-                // remove
-                _actors.Remove(entry.Key);
-                _renderer.RemoveActor(actor.Geometry);
-                _renderer.RemoveActor(actor.ElementEdges);
-                _renderer.RemoveActor(actor.ModelEdges);
-
-                // get
-                actor = entry.Value[frameNumber];
-                // add
-                _actors.Add(entry.Key, actor);
-                _renderer.AddActor(actor.Geometry);
-                _renderer.AddActor(actor.ElementEdges);
-                _renderer.AddActor(actor.ModelEdges);
-
-                visibleActors.Add(actor.Name);
+                // Find actor
+                if (_actors.TryGetValue(entry.Key, out actor))
+                {
+                    actor = _actors[entry.Key];
+                    visible = actor.VtkMaxActorVisible;
+                    // Remove actor
+                    _actors.Remove(entry.Key);
+                    _renderer.RemoveActor(actor.Geometry);
+                    _renderer.RemoveActor(actor.ElementEdges);
+                    _renderer.RemoveActor(actor.ModelEdges);
+                    //
+                    if (visible)
+                    {
+                        // Get animation actor
+                        actor = entry.Value[frameNumber];
+                        // Add actor
+                        _actors.Add(entry.Key, actor);
+                        _renderer.AddActor(actor.Geometry);
+                        _renderer.AddActor(actor.ElementEdges);
+                        _renderer.AddActor(actor.ModelEdges);
+                        // Add actor name
+                        visibleActors.Add(actor.Name);
+                    }
+                }
             }
             if (applySectionView) ApplySectionView(point, normal);
-
+            //
             UpdateScalarFormatting();
-
+            //
             _animationFrameData.InitializedActorNames.UnionWith(visibleActors); // add visible actors to initialized actors
-
+            //
             ApplyEdgesVisibilityAndBackfaceCulling();   // calls invalidate
             _style.AdjustCameraDistanceAndClipping();
-
+            //
             //countError++;
             //if (countError % 10 == 0) System.Diagnostics.Debug.WriteLine("Count: " + countError);
         }
         private void SetAnimationFrameAllActors(int frameNumber, bool scalarRangeFromAllFrames)
         {
             _animationFrameData.UseAllFrameData = scalarRangeFromAllFrames;
-
+            //
             if (_statusBlockWidget != null && _animationFrameData != null)
             {
                 _statusBlockWidget.AnalysisTime = _animationFrameData.Time[frameNumber];
                 _statusBlockWidget.AnimationScaleFactor = _animationFrameData.ScaleFactor[frameNumber];
             }
-
+            //
             List<string> visibleActors = new List<string>();
             string sectionViewActorName;
+            vtkMaxActor maxActor;
+            string[] tmp;
+            string[] splitter = new string[] { "_animation-frame-" };
             foreach (var listEntry in _animationFrameData.AnimatedActorNames)
             {
                 foreach (var entry in listEntry)
                 {
-                    sectionViewActorName = GetSectionViewActorName(entry.Value);
-                    if (entry.Key == frameNumber)
+                    tmp = entry.Value.Split(splitter, StringSplitOptions.None);
+                    if (_animationFrameData.ActorVisible[tmp[0]])
                     {
-                        _actors[entry.Value].VtkMaxActorVisible = true;
-                        //
-                        if (_sectionView && _actors.ContainsKey(sectionViewActorName)) _actors[sectionViewActorName].VtkMaxActorVisible = true;
-                        //
-                        visibleActors.Add(entry.Value);
-                    }
-                    else
-                    {
-                        _actors[entry.Value].VtkMaxActorVisible = false;
-                        //
-                        if (_sectionView && _actors.ContainsKey(sectionViewActorName)) _actors[sectionViewActorName].VtkMaxActorVisible = false;
+                        if (_actors.TryGetValue(entry.Value, out maxActor))
+                        {
+                            sectionViewActorName = GetSectionViewActorName(entry.Value);
+                            {
+                                if (entry.Key == frameNumber)
+                                {
+                                    maxActor.VtkMaxActorVisible = true;
+                                    if (_sectionView && _actors.TryGetValue(sectionViewActorName, out maxActor)) maxActor.VtkMaxActorVisible = true;
+                                    //
+                                    visibleActors.Add(entry.Value);
+                                }
+                                else
+                                {
+                                    maxActor.VtkMaxActorVisible = false;
+                                    if (_sectionView && _actors.TryGetValue(sectionViewActorName, out maxActor)) maxActor.VtkMaxActorVisible = false;
+                                }
+                            }
+                        }
                     }
                 }
             }
-
+            //
             UpdateScalarFormatting();
-
+            //
             _animationFrameData.InitializedActorNames.UnionWith(visibleActors); // add visible actors to initialized actors
-
+            //
             ApplyEdgesVisibilityAndBackfaceCulling();   // calls invalidate
             _style.AdjustCameraDistanceAndClipping();
         }

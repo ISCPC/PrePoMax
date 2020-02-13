@@ -587,16 +587,17 @@ namespace CaeMesh
         // Compare 
         public double IsEqual(FeMesh mesh)
         {
+            double similarity = 1;
             if (_nodes.Count != mesh.Nodes.Count) return 0;
             if (_elements.Count != mesh.Elements.Count) return 0;
-
+            //
             int numToCheck = 1000;
             int n = Math.Min(numToCheck, _nodes.Count);
             n = Math.Max(_nodes.Count / numToCheck, n);
-
+            //
             int nodeId;
             int[] keys = _nodes.Keys.ToArray();
-
+            //
             int count = 0;
             Random rand = new Random();
             FeNode node1;
@@ -609,13 +610,12 @@ namespace CaeMesh
                     if (node1.IsEqual(node2))
                         count++;
                 }
-                else
-                    return 0;
+                else return 0;
             }
-
-            if (count != n) return (double)count / n;
-
-            return 1;
+            //
+            if (count != n) similarity *= (double)count / n;
+            //
+            return similarity;
         }
 
         // Bounding box
@@ -6027,7 +6027,7 @@ namespace CaeMesh
             {
                 itemTypePartIds = GetItemTypePartIdsFromGeometryId(geometrySurfaceId);
                 // Use only geometry surface ids 
-                if (itemTypePartIds[1] != 2) continue;
+                if (itemTypePartIds[1] != 3) continue;
                 //
                 if (partIdSurfaceIds.TryGetValue(itemTypePartIds[2], out surfaceIds)) surfaceIds.Add(itemTypePartIds[0]);
                 else partIdSurfaceIds.Add(itemTypePartIds[2], new List<int>() { itemTypePartIds[0] });

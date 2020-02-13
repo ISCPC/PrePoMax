@@ -232,6 +232,10 @@ namespace PrePoMax
         {
             SelectItem = vtkSelectItem.Surface;
         }
+        public void SetSelectItemToGeometry()
+        {
+            SelectItem = vtkSelectItem.Geometry;
+        }
 
         public void SetSelectBy(vtkSelectBy selectBy)
         {
@@ -2054,6 +2058,12 @@ namespace PrePoMax
             Commands.CRemoveModelParts comm = new Commands.CRemoveModelParts(partNames);
             _commands.AddAndExecute(comm);
         }
+        //
+        public void CreateBoundaryLayerCommand(int[] geometryIds, double thickness)
+        {
+            Commands.CCreateBoundaryLayer comm = new Commands.CCreateBoundaryLayer(geometryIds, thickness);
+            _commands.AddAndExecute(comm);
+        }
 
         //******************************************************************************************
 
@@ -2228,7 +2238,7 @@ namespace PrePoMax
 
             return removedPartIds;
         }
-
+        //
         private void ChangeAllSelectionsToIdSelections(string[] partNames)
         {
             MeshPart[] parts = new MeshPart[partNames.Length];
@@ -2239,6 +2249,13 @@ namespace PrePoMax
             ChangeSelectedNodeSetsToIds(partNames, parts);
             ChangeSelectedElementSetsToIds(partNames, parts);
             ChangeSelectedSurfacesToIds(partNames, parts);
+        }
+        //
+        public void CreateBoundaryLayer(int[] geometryIds, double thickness)
+        {
+            if (_model != null) _model.Mesh.CreatePrismaticBoundaryLayer(geometryIds, thickness);
+            //
+            Update(UpdateType.Check | UpdateType.DrawMesh | UpdateType.RedrawSymbols);
         }
 
         #endregion #################################################################################################################

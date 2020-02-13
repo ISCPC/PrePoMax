@@ -125,6 +125,7 @@
     <Compile Include="Command\0050_Model\15_ReferencePoint\CAddReferencePoint.cs" />
     <Compile Include="Command\0050_Model\15_ReferencePoint\CRemoveReferencePoints.cs" />
     <Compile Include="Command\0050_Model\15_ReferencePoint\CReplaceReferencePoint.cs" />
+    <Compile Include="Command\0050_Model\CCreateBoundaryLayer.cs" />
     <Compile Include="Command\0061_Material\CAddMaterial.cs" />
     <Compile Include="Command\0061_Material\CRemoveMaterials.cs" />
     <Compile Include="Command\0061_Material\CReplaceMaterial.cs" />
@@ -189,9 +190,13 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\12_MeshRefinement\ViewFeMeshRefinement.cs" />
+    <Compile Include="Forms\20_Model\FrmBoundaryLayer.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Forms\20_Model\FrmModelProperties.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Forms\20_Model\ViewBoundaryLayer.cs" />
     <Compile Include="Forms\20_Model\ViewModelProperties.cs" />
     <Compile Include="Forms\21_Part\FrmScale.cs">
       <SubType>Form</SubType>
@@ -410,6 +415,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\12_MeshRefinement\FrmMeshRefinement.resx">
       <DependentUpon>FrmMeshRefinement.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\20_Model\FrmBoundaryLayer.resx">
+      <DependentUpon>FrmBoundaryLayer.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\20_Model\FrmModelProperties.resx">
       <DependentUpon>FrmModelProperties.cs</DependentUpon>
