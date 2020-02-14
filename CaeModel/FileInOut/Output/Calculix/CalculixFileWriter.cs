@@ -140,19 +140,25 @@ namespace FileInOut.Output
             }
             else
             {
+                bool deactivated = false;
                 CalculixKeyword keywordParent = keywords[indices[0]];
-                
+                if (keywordParent is CalDeactivated) deactivated = true;
                 // Find a parent
                 for (int i = 1; i < indices.Length - 1; i++)
                 {
-                    if (indices[i] < keywordParent.Keywords.Count) keywordParent = keywordParent.Keywords[indices[i]];
+                    if (indices[i] < keywordParent.Keywords.Count)
+                    {
+                        keywordParent = keywordParent.Keywords[indices[i]];
+                        if (keywordParent is CalDeactivated) deactivated = true;
+                    }
                     else return false;
                 }
 
                 // Add the keyword
                 if (keywordParent.Keywords.Count < indices[indices.Length - 1]) return false;
 
-                keywordParent.Keywords.Insert(indices[indices.Length - 1], keyword);
+                if (!deactivated) keywordParent.Keywords.Insert(indices[indices.Length - 1], keyword);
+                else keywordParent.Keywords.Insert(indices[indices.Length - 1], new CalDeactivated("User keyword"));
             }
             return true;
         }
@@ -297,6 +303,7 @@ namespace FileInOut.Output
                         nodeSet = new CalNodeSet(entry.Value);
                         parent.AddKeyword(nodeSet);
                     }
+                    else parent.AddKeyword(new CalDeactivated(entry.Value.Name));
                 }
                 FeReferencePoint rp;
                 FeNodeSet rpNodeSet;
@@ -330,6 +337,7 @@ namespace FileInOut.Output
                         part = new CalElementSet(entry.Value);
                         parent.AddKeyword(part);
                     }
+                    else parent.AddKeyword(new CalDeactivated(entry.Value.Name));
                 }
             }
         }
@@ -360,6 +368,7 @@ namespace FileInOut.Output
                         surface = new CalSurface(entry.Value);
                         parent.AddKeyword(surface);
                     }
+                    else parent.AddKeyword(new CalDeactivated(entry.Value.Name));
                 }
             }
         }
@@ -375,7 +384,7 @@ namespace FileInOut.Output
                 {
                     material = new CalMaterial(entry.Value);
                     parent.AddKeyword(material);
-
+                    //
                     foreach (var property in entry.Value.Properties)
                     {
                         if (property is Density) material.AddKeyword(new CalDensity(property as Density));
@@ -384,6 +393,7 @@ namespace FileInOut.Output
                         else throw new NotImplementedException();
                     }
                 }
+                else parent.AddKeyword(new CalDeactivated(entry.Value.Name));
             }
             
         }
@@ -403,6 +413,7 @@ namespace FileInOut.Output
                         }
                         else throw new NotImplementedException();
                     }
+                    else parent.AddKeyword(new CalDeactivated(entry.Value.Name));
                 }
             }
         }
@@ -423,6 +434,7 @@ namespace FileInOut.Output
                         CalPreTensionSection preTension = new CalPreTensionSection(ptl.SurfaceName, nodeId, ptl.X, ptl.Y, ptl.Z);
                         parent.AddKeyword(preTension);
                     }
+                    else parent.AddKeyword(new CalDeactivated(entry.Value.Name));
                 }
             }
         }
@@ -448,6 +460,7 @@ namespace FileInOut.Output
                         }
                         else throw new NotImplementedException();
                     }
+                    else parent.AddKeyword(new CalDeactivated(entry.Value.Name));
                 }
             }
         }
@@ -458,15 +471,17 @@ namespace FileInOut.Output
             foreach (var step in model.StepCollection.StepsList)
             {
                 if (step is InitialStep) continue;
-
+                //
+                title = new CalTitle(step.Name, "");
+                parent.AddKeyword(title);
+                //
+                CalculixKeyword calStep;
+                if (step.Active) calStep = new CalStep(step);
+                else calStep = new CalDeactivated(step.Name);
+                title.AddKeyword(calStep);
+                // Step type
                 if (step.Active)
                 {
-                    title = new CalTitle(step.Name, "");
-                    parent.AddKeyword(title);
-
-                    CalStep calStep = new CalStep(step);
-                    title.AddKeyword(calStep);
-
                     if (step is StaticStep staticStep)
                     {
                         CalStaticStep calStaticStep = new CalStaticStep(staticStep);
@@ -483,60 +498,58 @@ namespace FileInOut.Output
                         calStep.AddKeyword(calBuckleStep);
                     }
                     else throw new NotImplementedException();
-
-                    // boundary conditions
-                    title = new CalTitle("Boundary conditions", "*Boundary, op=New");
-                    calStep.AddKeyword(title);
-
-                    foreach (var bcEntry in step.BoundaryConditions)
-                    {
-                        if (bcEntry.Value.Active)
-                        {
-                            AppendBoundaryCondition(model, bcEntry.Value, referencePointsNodeIds, title);
-                        }
-                    }
-
-                    // loads
+                }
+                else calStep.AddKeyword(new CalDeactivated(step.GetType().ToString()));
+                //
+                // Boundary conditions
+                if (step.Active) title = new CalTitle("Boundary conditions", "*Boundary, op=New");
+                else title = new CalTitle("Boundary conditions", "");
+                calStep.AddKeyword(title);
+                //
+                foreach (var bcEntry in step.BoundaryConditions)
+                {
+                    if (step.Active && bcEntry.Value.Active)
+                        AppendBoundaryCondition(model, bcEntry.Value, referencePointsNodeIds, title);
+                    else title.AddKeyword(new CalDeactivated(bcEntry.Value.Name));
+                }
+                // Loads
+                if (step.Active && step.Loads.Count > 0)
                     title = new CalTitle("Loads", "*Dload, op=New" + Environment.NewLine + "*Cload, op=New");
-                    calStep.AddKeyword(title);
-
-                    foreach (var loadEntry in step.Loads)
-                    {
-                        if (loadEntry.Value.Active)
-                        {
-                            AppendLoad(model, step, loadEntry.Value, referencePointsNodeIds, title);
-                        }
-                    }
-
-                    // history outputs
-                    title = new CalTitle("History outputs", "");
-                    calStep.AddKeyword(title);
-
-                    foreach (var historyOutputEntry in step.HistoryOutputs)
-                    {
-                        if (historyOutputEntry.Value.Active)
-                        {
-                            AppendHistoryOutput(model, historyOutputEntry.Value, title);
-                        }
-                    }
-
-                    // field outputs
-                    title = new CalTitle("Field outputs", "");
-                    calStep.AddKeyword(title);
-
-                    foreach (var fieldOutputEntry in step.FieldOutputs)
-                    {
-                        if (fieldOutputEntry.Value.Active)
-                        {
-                            AppendFieldOutput(model, fieldOutputEntry.Value, title);
-                        }
-                    }
-
-                    title = new CalTitle("End step", "");
-                    calStep.AddKeyword(title);
+                else title = new CalTitle("Loads", "");
+                calStep.AddKeyword(title);
+                //
+                foreach (var loadEntry in step.Loads)
+                {
+                    if (step.Active && loadEntry.Value.Active) AppendLoad(model, step, loadEntry.Value, referencePointsNodeIds, title);
+                    else title.AddKeyword(new CalDeactivated(loadEntry.Value.Name));
+                }
+                // History outputs
+                title = new CalTitle("History outputs", "");
+                calStep.AddKeyword(title);
+                //
+                foreach (var historyOutputEntry in step.HistoryOutputs)
+                {
+                    if (step.Active && historyOutputEntry.Value.Active) AppendHistoryOutput(model, historyOutputEntry.Value, title);
+                    else title.AddKeyword(new CalDeactivated(historyOutputEntry.Value.Name));
+                }
+                // Field outputs
+                title = new CalTitle("Field outputs", "");
+                calStep.AddKeyword(title);
+                //
+                foreach (var fieldOutputEntry in step.FieldOutputs)
+                {
+                    if (step.Active && fieldOutputEntry.Value.Active) AppendFieldOutput(model, fieldOutputEntry.Value, title);
+                    else title.AddKeyword(new CalDeactivated(fieldOutputEntry.Value.Name));
+                }
+                //
+                title = new CalTitle("End step", "");
+                calStep.AddKeyword(title);
+                if (step.Active)
+                {
                     CalEndStep endStep = new CalEndStep();
                     title.AddKeyword(endStep);
                 }
+                else title.AddKeyword(new CalDeactivated(step.Name));
             }
         }
         static private void AppendBoundaryCondition(FeModel model, BoundaryCondition boundaryCondition,

@@ -132,8 +132,8 @@ namespace PrePoMax.Forms
 
             if (_viewBc is ViewDisplacementRotation vdr)
             {
-                if (((DisplacementRotation)vdr.GetBase()).GetConstrainedDirections().Length == 0)
-                    throw new CaeException("At least one degree of freedom must be defined for the boundary condition.");
+                if (!((DisplacementRotation)vdr.GetBase()).IsProperlyDefined(out string error))
+                    throw new CaeException(error);
             }
             else if (_viewBc is ViewSubmodel vsm)
             {

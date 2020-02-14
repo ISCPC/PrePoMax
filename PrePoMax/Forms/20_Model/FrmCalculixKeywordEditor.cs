@@ -296,19 +296,24 @@ namespace PrePoMax.Forms
         }
         private void AddUserKeywordToTreeByIndex(int[] indices, CalculixKeyword keyword)
         {
+            bool deactivated = false;
             TreeNode node = btvKeywordsTree.Nodes[0];
-
+            //
             for (int i = 0; i < indices.Length - 1; i++)
             {
                 node.Expand();
-                if (indices[i] < node.Nodes.Count) node = node.Nodes[indices[i]];
+                if (indices[i] < node.Nodes.Count)
+                {
+                    node = node.Nodes[indices[i]];
+                    if (node.Tag != null && node.Tag is CalDeactivated) deactivated = true;
+                }
                 else return;
             }
-
+            //
             TreeNode child = node.Nodes.Insert(indices[indices.Length - 1], "");
-            
+            // User keyword should not be deactivated in the user editor to enable editing
             AddUserKeywordToTreeNode(keyword, child);
-
+            //
             node.Expand();
         }
         private void AddUserKeywordToTreeNode(CalculixKeyword keyword, TreeNode node)

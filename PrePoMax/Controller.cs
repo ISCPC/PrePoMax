@@ -2253,9 +2253,13 @@ namespace PrePoMax
         //
         public void CreateBoundaryLayer(int[] geometryIds, double thickness)
         {
-            if (_model != null) _model.Mesh.CreatePrismaticBoundaryLayer(geometryIds, thickness);
+            if (_model != null) _model.Mesh.CreatePrismaticBoundaryLayer(geometryIds, thickness);           
             //
             Update(UpdateType.Check | UpdateType.DrawMesh | UpdateType.RedrawSymbols);
+            // At the end update the sets
+            UpdateNodeSetsBasedOnGeometry();
+            UpdateElementSetsBasedOnGeometry();
+            UpdateSurfacesBasedOnGeometry();
         }
 
         #endregion #################################################################################################################

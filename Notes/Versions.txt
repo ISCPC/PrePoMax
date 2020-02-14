@@ -143,20 +143,22 @@ Done
 
 Version 0.5.3 Master branch
 
+Added support for Kixed parameter for BSc
+Added support for creating prismatic boundy layer
+Added support for Pre-tension load
 At save a temporary file is first used which is then renamed to the selected file name.
-Mesh refinement can only be specified for one part
 Added support for splitting of compound meshes
 Added support for regenerate to skipp over errors - needs further testing!!!
 Double-clicking the status block widget opens settings
-Add edit CalculiX keywords to the context menu of the model
-Added compound part creation
+Add Edit CalculiX keywords menu to the context menu of the model tree
+Added support for compound part creation and meshing
 Optimized selection speed by keeping intermediate node results
 Fixed selections based on geometry
 Increased speed of meshing and analysis
-Added support for edges on symbols
-Added support for Submodel
+Added support for edges on symbols for icreased visibility
+Added support for Submodel boundary conditions
 Added support for edge preview
-Added support for mesh refinement
+Added support for mesh refinement - one part at a time
 Fixed visualization error with to few colors for color contours
 
 

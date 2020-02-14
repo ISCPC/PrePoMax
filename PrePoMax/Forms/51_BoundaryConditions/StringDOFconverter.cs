@@ -12,11 +12,12 @@ namespace PrePoMax
     public class StringDOFConverter : System.ComponentModel.TypeConverter
     {
         private ArrayList values;
-        private string free = "Unconstrained";
+        private string _free = "Unconstrained";
+        private string _fixed = "Fixed";
         public StringDOFConverter()
         {
             // Initializes the standard values list with defaults.
-            values = new ArrayList(new double[] { double.NaN, 0});
+            values = new ArrayList(new double[] { double.NaN, double.PositiveInfinity, 0});
         }
 
         // Indicates this converter provides a list of standard values.
@@ -54,7 +55,8 @@ namespace PrePoMax
             if (value.GetType() == typeof(string))
             {
                 double newVal;
-                if (String.Equals(free, value)) newVal = double.NaN;
+                if (String.Equals(value, _free)) newVal = double.NaN;
+                else if (String.Equals(value, _fixed)) newVal = double.PositiveInfinity;
                 else newVal = double.Parse((string)value);
                 return newVal;
             }
@@ -67,7 +69,8 @@ namespace PrePoMax
             {
                 if (destinationType == typeof(string))
                 {
-                    if (double.IsNaN((double)value)) return free;
+                    if (double.IsNaN((double)value)) return _free;
+                    if (double.IsPositiveInfinity((double)value)) return _fixed;
                     else return value.ToString();
                 }
                 return base.ConvertTo(context, culture, value, destinationType);

@@ -277,13 +277,12 @@ namespace CaeMesh
         {
             CompareIntArray comparer = new CompareIntArray();
             Dictionary<int[], FeNode> midNodesDic = new Dictionary<int[], FeNode>(comparer);
-
             Dictionary<int, FeNode> nodesOut = new Dictionary<int, FeNode>(nodes);
             Dictionary<int, FeElement> elementsOut = new Dictionary<int, FeElement>();
-
+            //
             int maxNodeId = int.MinValue;
             foreach (var entry in nodes) if (entry.Key > maxNodeId) maxNodeId = entry.Key;
-
+            //
             int[] nodeIds;
             FeNode[] elNodes;
             FeElement linElement;
@@ -335,13 +334,13 @@ namespace CaeMesh
                     parElement = new ParabolicTetraElement(entry.Key, nodeIds);
                 }
                 else throw new NotSupportedException();
-
+                //
+                parElement.PartId = linElement.PartId;
                 elementsOut.Add(parElement.Id, parElement);
             }
-
             // Add nodes
             foreach (var entry in midNodesDic) nodesOut.Add(entry.Value.Id, entry.Value);
-
+            //
             nodes = nodesOut;
             elements = elementsOut;
         }
@@ -6128,7 +6127,7 @@ namespace CaeMesh
                 FeElement3D element3D;
                 Dictionary<int, FeElement> newElements = new Dictionary<int, FeElement>();
                 List<int[]> newElementCells = new List<int[]>();
-                int[] elementNodeIds;
+                int[] elNodeIds;
                 HashSet<Type> newElementTypes = new HashSet<Type>();
                 FeNode midNode;
                 CompareIntArray comparer = new CompareIntArray();
@@ -6139,53 +6138,87 @@ namespace CaeMesh
                     if (modifiedCell.Length == 3)
                     {
                         // Linear wedge element
-                        elementNodeIds = new int[6];
-                        elementNodeIds[0] = oldNewNodeIds[modifiedCell[0]];
-                        elementNodeIds[1] = oldNewNodeIds[modifiedCell[1]];
-                        elementNodeIds[2] = oldNewNodeIds[modifiedCell[2]];
-                        elementNodeIds[3] = modifiedCell[0];
-                        elementNodeIds[4] = modifiedCell[1];
-                        elementNodeIds[5] = modifiedCell[2];
-                        element3D = new LinearWedgeElement(_maxElementId, partId, elementNodeIds);                        
+                        elNodeIds = new int[6];
+                        elNodeIds[0] = oldNewNodeIds[modifiedCell[0]];
+                        elNodeIds[1] = oldNewNodeIds[modifiedCell[1]];
+                        elNodeIds[2] = oldNewNodeIds[modifiedCell[2]];
+                        elNodeIds[3] = modifiedCell[0];
+                        elNodeIds[4] = modifiedCell[1];
+                        elNodeIds[5] = modifiedCell[2];
+                        element3D = new LinearWedgeElement(_maxElementId, partId, elNodeIds);                        
                     }
                     else if (modifiedCell.Length == 4)
                     {
                         // Linear hexa element
-                        elementNodeIds = new int[8];
-                        elementNodeIds[0] = oldNewNodeIds[modifiedCell[0]];
-                        elementNodeIds[1] = oldNewNodeIds[modifiedCell[1]];
-                        elementNodeIds[2] = oldNewNodeIds[modifiedCell[2]];
-                        elementNodeIds[3] = oldNewNodeIds[modifiedCell[3]];
-                        elementNodeIds[4] = modifiedCell[0];
-                        elementNodeIds[5] = modifiedCell[1];
-                        elementNodeIds[6] = modifiedCell[2];
-                        elementNodeIds[7] = modifiedCell[3];
-                        element3D = new LinearHexaElement(_maxElementId, partId, elementNodeIds);
+                        elNodeIds = new int[8];
+                        elNodeIds[0] = oldNewNodeIds[modifiedCell[0]];
+                        elNodeIds[1] = oldNewNodeIds[modifiedCell[1]];
+                        elNodeIds[2] = oldNewNodeIds[modifiedCell[2]];
+                        elNodeIds[3] = oldNewNodeIds[modifiedCell[3]];
+                        elNodeIds[4] = modifiedCell[0];
+                        elNodeIds[5] = modifiedCell[1];
+                        elNodeIds[6] = modifiedCell[2];
+                        elNodeIds[7] = modifiedCell[3];
+                        element3D = new LinearHexaElement(_maxElementId, partId, elNodeIds);
                     }
                     else if (modifiedCell.Length == 6)
                     {
                         // Parabolic wedge element
-                        elementNodeIds = new int[15];
-                        elementNodeIds[0] = oldNewNodeIds[modifiedCell[0]];
-                        elementNodeIds[1] = oldNewNodeIds[modifiedCell[1]];
-                        elementNodeIds[2] = oldNewNodeIds[modifiedCell[2]];
-                        elementNodeIds[3] = modifiedCell[0];
-                        elementNodeIds[4] = modifiedCell[1];
-                        elementNodeIds[5] = modifiedCell[2];
-                        elementNodeIds[6] = oldNewNodeIds[modifiedCell[3]];
-                        elementNodeIds[7] = oldNewNodeIds[modifiedCell[4]];
-                        elementNodeIds[8] = oldNewNodeIds[modifiedCell[5]];
-                        elementNodeIds[9] = modifiedCell[3];
-                        elementNodeIds[10] = modifiedCell[4];
-                        elementNodeIds[11] = modifiedCell[5];
-                        midNode = GetOrCreateMidNode(_nodes[elementNodeIds[0]], _nodes[elementNodeIds[3]], ref midNodes, ref _maxNodeId);
-                        elementNodeIds[12] = midNode.Id;
-                        midNode = GetOrCreateMidNode(_nodes[elementNodeIds[1]], _nodes[elementNodeIds[4]], ref midNodes, ref _maxNodeId);
-                        elementNodeIds[13] = midNode.Id;
-                        midNode = GetOrCreateMidNode(_nodes[elementNodeIds[2]], _nodes[elementNodeIds[5]], ref midNodes, ref _maxNodeId);
-                        elementNodeIds[14] = midNode.Id;
+                        elNodeIds = new int[15];
+                        elNodeIds[0] = oldNewNodeIds[modifiedCell[0]];
+                        elNodeIds[1] = oldNewNodeIds[modifiedCell[1]];
+                        elNodeIds[2] = oldNewNodeIds[modifiedCell[2]];
+                        elNodeIds[3] = modifiedCell[0];
+                        elNodeIds[4] = modifiedCell[1];
+                        elNodeIds[5] = modifiedCell[2];
+                        elNodeIds[6] = oldNewNodeIds[modifiedCell[3]];
+                        elNodeIds[7] = oldNewNodeIds[modifiedCell[4]];
+                        elNodeIds[8] = oldNewNodeIds[modifiedCell[5]];
+                        elNodeIds[9] = modifiedCell[3];
+                        elNodeIds[10] = modifiedCell[4];
+                        elNodeIds[11] = modifiedCell[5];
+                        midNode = GetOrCreateMidNode(_nodes[elNodeIds[0]], _nodes[elNodeIds[3]], ref midNodes, ref _maxNodeId);
+                        elNodeIds[12] = midNode.Id;
+                        midNode = GetOrCreateMidNode(_nodes[elNodeIds[1]], _nodes[elNodeIds[4]], ref midNodes, ref _maxNodeId);
+                        elNodeIds[13] = midNode.Id;
+                        midNode = GetOrCreateMidNode(_nodes[elNodeIds[2]], _nodes[elNodeIds[5]], ref midNodes, ref _maxNodeId);
+                        elNodeIds[14] = midNode.Id;
                         //
-                        element3D = new ParabolicWedgeElement(_maxElementId, partId, elementNodeIds);
+                        element3D = new ParabolicWedgeElement(_maxElementId, partId, elNodeIds);
+                    }
+                    else if (modifiedCell.Length == 8)
+                    {
+                        // Parabolic wedge element
+                        elNodeIds = new int[20];
+                        elNodeIds[0] = oldNewNodeIds[modifiedCell[0]];
+                        elNodeIds[1] = oldNewNodeIds[modifiedCell[1]];
+                        elNodeIds[2] = oldNewNodeIds[modifiedCell[2]];
+                        elNodeIds[3] = oldNewNodeIds[modifiedCell[3]];
+                        elNodeIds[4] = modifiedCell[0];
+                        elNodeIds[5] = modifiedCell[1];
+                        elNodeIds[6] = modifiedCell[2];
+                        elNodeIds[7] = modifiedCell[3];
+
+                        elNodeIds[8] = oldNewNodeIds[modifiedCell[4]];
+                        elNodeIds[9] = oldNewNodeIds[modifiedCell[5]];
+                        elNodeIds[10] = oldNewNodeIds[modifiedCell[6]];
+                        elNodeIds[11] = oldNewNodeIds[modifiedCell[7]];
+
+                        elNodeIds[12] = modifiedCell[4];
+                        elNodeIds[13] = modifiedCell[5];
+                        elNodeIds[14] = modifiedCell[6];
+                        elNodeIds[15] = modifiedCell[7];
+
+                        midNode = GetOrCreateMidNode(_nodes[elNodeIds[0]], _nodes[elNodeIds[4]], ref midNodes, ref _maxNodeId);
+                        elNodeIds[16] = midNode.Id;
+                        midNode = GetOrCreateMidNode(_nodes[elNodeIds[1]], _nodes[elNodeIds[5]], ref midNodes, ref _maxNodeId);
+                        elNodeIds[17] = midNode.Id;
+                        midNode = GetOrCreateMidNode(_nodes[elNodeIds[2]], _nodes[elNodeIds[6]], ref midNodes, ref _maxNodeId);
+                        elNodeIds[18] = midNode.Id;
+                        midNode = GetOrCreateMidNode(_nodes[elNodeIds[3]], _nodes[elNodeIds[7]], ref midNodes, ref _maxNodeId);
+                        elNodeIds[19] = midNode.Id;
+                        //
+                        element3D = new ParabolicHexaElement(_maxElementId, partId, elNodeIds);
                     }
                     else throw new NotSupportedException();
                     // Add elements

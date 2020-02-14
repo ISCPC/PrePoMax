@@ -65,5 +65,31 @@ namespace CaeModel
             if (!double.IsNaN(UR3)) values.Add(UR3);
             return values.ToArray();
         }
+        public int[] GetFixedDirections()
+        {
+            List<int> directions = new List<int>();
+            if (double.IsPositiveInfinity(U1)) directions.Add(1);
+            if (double.IsPositiveInfinity(U2)) directions.Add(2);
+            if (double.IsPositiveInfinity(U3)) directions.Add(3);
+            if (double.IsPositiveInfinity(UR1)) directions.Add(4);
+            if (double.IsPositiveInfinity(UR2)) directions.Add(5);
+            if (double.IsPositiveInfinity(UR3)) directions.Add(6);
+            return directions.ToArray();
+        }
+        public bool IsProperlyDefined(out string error)
+        {
+            error = "";
+            if (GetConstrainedDirections().Length + GetFixedDirections().Length == 0)
+            {
+                error = "At least one degree of freedom must be defined for the boundary condition.";
+                return false;
+            }
+            if (GetConstrainedDirections().Length != GetFixedDirections().Length)
+            {
+                error = "Only fixed and unconstrained degrees of freedom can be used at the same time.";
+                return false;
+            }
+            return true;
+        }
     }
 }
