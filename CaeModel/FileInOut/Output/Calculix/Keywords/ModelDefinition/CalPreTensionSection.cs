@@ -14,16 +14,24 @@ namespace FileInOut.Output.Calculix
         // Variables                                                                                                                
         private string _surfaceName;
         private int _nodeId;
+        bool _autoCompute;
         double _x;
         double _y;
         double _z;
 
 
         // Constructor                                                                                                              
+        public CalPreTensionSection(string surfaceName, int nodeId)
+        {
+            _surfaceName = surfaceName;
+            _nodeId = nodeId;
+            _autoCompute = true;
+        }
         public CalPreTensionSection(string surfaceName, int nodeId, double x, double y, double z)
         {
             _surfaceName = surfaceName;
             _nodeId = nodeId;
+            _autoCompute = false;
             _x = x;
             _y = y;
             _z = z;
@@ -37,7 +45,8 @@ namespace FileInOut.Output.Calculix
         }
         public override string GetDataString()
         {
-            return string.Format("{0}, {1}, {2}{3}", _x, _y, _z, Environment.NewLine);
+            if (_autoCompute) return "";
+            else return string.Format("{0}, {1}, {2}{3}", _x, _y, _z, Environment.NewLine);
         }
     }
 }

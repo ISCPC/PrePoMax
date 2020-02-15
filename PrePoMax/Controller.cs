@@ -5676,8 +5676,9 @@ namespace PrePoMax
                 else if (load is PreTensionLoad ptLoad)
                 {
                     if (!_model.Mesh.Surfaces.ContainsKey(ptLoad.SurfaceName)) return;
-                    coor = new double[1][];
+                    coor = new double[2][];
                     coor[0] = _model.Mesh.GetSurfaceCG(ptLoad.SurfaceName);
+                    coor[1] = coor[0];
                     //
                     DrawSurface(prefixName, ptLoad.SurfaceName, color, layer, true);
                     DrawPreTensionLoadSymbols(prefixName, ptLoad, coor, color, symbolSize, symbolLayer);
@@ -5862,12 +5863,13 @@ namespace PrePoMax
 
             // arrows
             List<double[]> allLoadNormals = new List<double[]>();
-            double[] normal = new double[] { ptLoad.X, ptLoad.Y, ptLoad.Z };
-            for (int i = 0; i < symbolCoor.GetLength(0); i++)
-            {
-                allLoadNormals.Add(normal);
-            }
-
+            double[] normal;
+            if (ptLoad.AutoComputeDirection) normal = _model.Mesh.GetSurfaceNormal(ptLoad.SurfaceName);
+            else normal = new double[] { ptLoad.X, ptLoad.Y, ptLoad.Z };
+            //
+            allLoadNormals.Add(normal);
+            allLoadNormals.Add(new double[] { -normal[0], -normal[1], -normal[2] });
+            //
             if (symbolCoor.GetLength(0) > 0)
             {
                 vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();

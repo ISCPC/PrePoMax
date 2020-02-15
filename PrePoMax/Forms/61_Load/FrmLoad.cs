@@ -209,9 +209,9 @@ namespace PrePoMax.Forms
             }
             else if (_viewLoad is ViewPreTensionLoad vptl)
             {
-                if (vptl.X == 0 && vptl.Y == 0 && vptl.Z == 0)
+                if (!vptl.AutoComputeDirection && vptl.X == 0 && vptl.Y == 0 && vptl.Z == 0)
                     throw new CaeException("At least one force direction component must not be equal to 0.");
-                if (vptl.ForceMagnitude == 0)
+                if (vptl.Type == PreTensionLoadType.Force && vptl.ForceMagnitude == 0)
                     throw new CaeException("Force magnitude must not be equal to 0.");
             }
             //
@@ -384,97 +384,105 @@ namespace PrePoMax.Forms
             ViewGravityLoad vgl = null;
             ViewCentrifLoad vcfl = null;
             ViewPreTensionLoad vptl = null;
+            string name;
+            string loadName;
             // Concentrated force -  node set, reference points
-            item = new ListViewItem("Concentrated force");
+            name = "Concentrated force";
+            loadName = GetLoadName(name);
+            item = new ListViewItem(name);
             if (nodeSetNames.Length > 0 || referencePointNames.Length > 0)
             {
-                if (nodeSetNames.Length > 0) vcl = new ViewCLoad(new CLoad(GetLoadName(), nodeSetNames[0], RegionTypeEnum.NodeSetName, 0, 0, 0));
-                else if (referencePointNames.Length > 0) vcl = new ViewCLoad(new CLoad(GetLoadName(), referencePointNames[0], RegionTypeEnum.ReferencePointName, 0, 0, 0));
+                if (nodeSetNames.Length > 0) vcl = new ViewCLoad(new CLoad(loadName, nodeSetNames[0], RegionTypeEnum.NodeSetName, 0, 0, 0));
+                else if (referencePointNames.Length > 0) vcl = new ViewCLoad(new CLoad(loadName, referencePointNames[0], RegionTypeEnum.ReferencePointName, 0, 0, 0));
                 vcl.PopululateDropDownLists(nodeSetNames, referencePointNames);
                 item.Tag = vcl;
             }
             else item.Tag = new ViewError("There is no node set/reference point defined to which a load could be applied.");
             lvTypes.Items.Add(item);
             // Moment
-            item = new ListViewItem("Moment");
+            name = "Moment";
+            loadName = GetLoadName(name);
+            item = new ListViewItem(name);
             if (nodeSetNames.Length > 0 || referencePointNames.Length > 0)
             {
-                if (nodeSetNames.Length > 0) vml = new ViewMomentLoad(new MomentLoad(GetLoadName(), nodeSetNames[0], RegionTypeEnum.NodeSetName, 0, 0, 0));
-                else if (referencePointNames.Length > 0) vml = new ViewMomentLoad(new MomentLoad(GetLoadName(), referencePointNames[0], RegionTypeEnum.ReferencePointName, 0, 0, 0));
+                if (nodeSetNames.Length > 0) vml = new ViewMomentLoad(new MomentLoad(loadName, nodeSetNames[0], RegionTypeEnum.NodeSetName, 0, 0, 0));
+                else if (referencePointNames.Length > 0) vml = new ViewMomentLoad(new MomentLoad(loadName, referencePointNames[0], RegionTypeEnum.ReferencePointName, 0, 0, 0));
                 vml.PopululateDropDownLists(nodeSetNames, referencePointNames);
                 item.Tag = vml;
             }
             else item.Tag = new ViewError("There is no node set/reference point defined to which a load could be applied.");
             lvTypes.Items.Add(item);
             // Pressure
-            item = new ListViewItem("Pressure");
+            name = "Pressure";
+            loadName = GetLoadName(name);
+            item = new ListViewItem(name);
             if (surfaceNames.Length > 0)
             {
-                vdl = new ViewDLoad(new DLoad(GetLoadName(), surfaceNames[0], 0));
+                vdl = new ViewDLoad(new DLoad(loadName, surfaceNames[0], 0));
                 vdl.PopululateDropDownLists(surfaceNames);
                 item.Tag = vdl;
             }
             else item.Tag = new ViewError("There is no surface defined to which a load could be applied.");
             lvTypes.Items.Add(item);
             // Surface traction
-            item = new ListViewItem("Surface traction");
+            name = "Surface traction";
+            loadName = GetLoadName(name);
+            item = new ListViewItem(name);
             if (surfaceNames.Length > 0)
             {
-                vstl = new ViewSTLoad(new STLoad(GetLoadName(), surfaceNames[0], 0, 0, 0));
+                vstl = new ViewSTLoad(new STLoad(loadName, surfaceNames[0], 0, 0, 0));
                 vstl.PopululateDropDownLists(surfaceNames);
                 item.Tag = vstl;
             }
             else item.Tag = new ViewError("There is no surface defined to which a load could be applied.");
             lvTypes.Items.Add(item);
             // Gravity load -  part, element sets
-            item = new ListViewItem("Gravity");
+            name = "Gravity";
+            loadName = GetLoadName(name);
+            item = new ListViewItem(name);
             if (partNames.Length > 0 || elementSetNames.Length > 0)
             {
-                if (partNames.Length > 0) vgl = new ViewGravityLoad(new GravityLoad(GetLoadName(), partNames[0], RegionTypeEnum.PartName));
-                else if (elementSetNames.Length > 0) vgl = new ViewGravityLoad(new GravityLoad(GetLoadName(), elementSetNames[0], RegionTypeEnum.ElementSetName));
+                if (partNames.Length > 0) vgl = new ViewGravityLoad(new GravityLoad(loadName, partNames[0], RegionTypeEnum.PartName));
+                else if (elementSetNames.Length > 0) vgl = new ViewGravityLoad(new GravityLoad(loadName, elementSetNames[0], RegionTypeEnum.ElementSetName));
                 vgl.PopululateDropDownLists(partNames, elementSetNames);
                 item.Tag = vgl;
             }
             else item.Tag = new ViewError("There is no part/element set defined to which a load could be applied.");
             lvTypes.Items.Add(item);
             // Centrifugal load -  part, element sets
-            item = new ListViewItem("Centrifugal load");
+            name = "Centrifugal load";
+            loadName = GetLoadName(name);
+            item = new ListViewItem(name);
             if (partNames.Length > 0 || elementSetNames.Length > 0)
             {
-                if (partNames.Length > 0) vcfl = new ViewCentrifLoad(new CentrifLoad(GetLoadName(), partNames[0], RegionTypeEnum.PartName));
-                else if (elementSetNames.Length > 0) vcfl = new ViewCentrifLoad(new CentrifLoad(GetLoadName(), elementSetNames[0], RegionTypeEnum.ElementSetName));
+                if (partNames.Length > 0) vcfl = new ViewCentrifLoad(new CentrifLoad(loadName, partNames[0], RegionTypeEnum.PartName));
+                else if (elementSetNames.Length > 0) vcfl = new ViewCentrifLoad(new CentrifLoad(loadName, elementSetNames[0], RegionTypeEnum.ElementSetName));
                 vcfl.PopululateDropDownLists(partNames, elementSetNames);
                 item.Tag = vcfl;
             }
             else item.Tag = new ViewError("There is no part/element set defined to which a load could be applied.");
             lvTypes.Items.Add(item);
             // Pre-tension load
-            item = new ListViewItem("Pre-tension");
+            name = "Pre-tension";
+            loadName = GetLoadName(name);
+            item = new ListViewItem(name);
             if (elementBasedSurfaceNames.Length > 0)
             {
-                vptl = new ViewPreTensionLoad(new PreTensionLoad(GetLoadName(), elementBasedSurfaceNames[0], 0, 0, 0, 0));
+                vptl = new ViewPreTensionLoad(new PreTensionLoad(loadName, elementBasedSurfaceNames[0], 0));
                 vptl.PopululateDropDownLists(elementBasedSurfaceNames);
                 item.Tag = vptl;
             }
             else item.Tag = new ViewError("There is no element based surface defined to which a load could be applied.");
             lvTypes.Items.Add(item);
         }
-        private string GetLoadName()
+        private string GetLoadName(string name)
         {
-            int max = 0;
-            int tmp;
-            string[] parts;
-            foreach (var loadName in _loadNames)
-            {
-                parts = loadName.Split('-');
-                if (int.TryParse(parts.Last(), out tmp))
-                {
-                    if (tmp > max) max = tmp;
-                }
-            }
-            max++;
-
-            return "Load-" + max.ToString();
+            if (name == null || name == "") name = "Load";
+            name = name.Replace(' ', '_');
+            if (name[name.Length - 1] != '-') name += '-';
+            name = NamedClass.GetNewValueName(_loadNames, name);
+            //
+            return name;
         }
         //
         private bool CheckIfStepSupportsLoads()

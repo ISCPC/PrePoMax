@@ -2805,8 +2805,43 @@ namespace CaeMesh
             //
             return new double[3];
         }
+        public double[] GetSurfaceNormal(string surfaceName)
+        {
+            FeSurface surface;
+            if (_surfaces.TryGetValue(surfaceName, out surface))
+            {
+                if (surface.Type == FeSurfaceType.Element)
+                {
+                    double elArea = 0;
+                    double[] normal = new double[3];
+                    double[] elNormal;
+                    foreach (var entry in surface.ElementFaces)
+                    {
+                        foreach (var elementId in _elementSets[entry.Value].Labels)
+                        {
+                            GetElementFaceNormalAndArea(elementId, entry.Key, out elNormal, out elArea);
+                            normal[0] += elNormal[0] * elArea;
+                            normal[1] += elNormal[1] * elArea;
+                            normal[2] += elNormal[2] * elArea;
+                        }
+                    }
+                    //
+                    double len = Math.Sqrt(Math.Pow(normal[0], 2) + Math.Pow(normal[1], 2) + Math.Pow(normal[2], 2));
+                    if (len > 0)
+                    {
+                        normal[0] /= len;
+                        normal[1] /= len;
+                        normal[2] /= len;
+                        return normal;
+                    }
+                }
+                else throw new CaeException("The surface type is not supported.");
+            }
+            //
+            return new double[3];
+        }
         #endregion #################################################################################################################
-        
+
         #region Extraction  ########################################################################################################
         public int[] GetPartNodeIds(int elementId)
         {
@@ -5116,8 +5151,12 @@ namespace CaeMesh
         }
         public void GetElementFaceNormal(int elementId, FeFaceName faceName, out double[] faceNormal)
         {
-            FeNode[] nodes;
             FeElement element = _elements[elementId];
+            GetElementFaceNormal(element, faceName, out faceNormal);
+        }
+        public void GetElementFaceNormal(FeElement element, FeFaceName faceName, out double[] faceNormal)
+        {
+            FeNode[] nodes;
             int[] nodeIds = element.GetNodeIdsFromFaceName(faceName);
             faceNormal = null;
             if (element is LinearTetraElement || element is ParabolicTetraElement)
@@ -5216,6 +5255,12 @@ namespace CaeMesh
                 faceNormal = ComputeNormalFromCellIndices(nodes[0], nodes[1], nodes[2]).Coor;
             }
             else throw new NotSupportedException();
+        }
+        public void GetElementFaceNormalAndArea(int elementId, FeFaceName faceName, out double[] faceNormal, out double area)
+        {
+            FeElement element = _elements[elementId];
+            GetElementFaceNormal(element, faceName, out faceNormal);
+            area = element.GetArea(faceName, _nodes);
         }
         public int[] GetVisibleElementIds()
         {

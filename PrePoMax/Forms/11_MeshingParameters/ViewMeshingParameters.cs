@@ -74,7 +74,7 @@ namespace PrePoMax.Forms
             set
             {
                 _parameters.SecondOrder = value;
-
+                //
                 cpd = _dctd.GetProperty("MidsideNodesOnGeometry");
                 cpd.SetIsBrowsable(value);
                 _dctd.PropertySortOrder = CustomSortOrder.AscendingById;

@@ -14,16 +14,16 @@ namespace FileInOut.Output.Calculix
         // Variables                                                                                                                
         private DisplacementRotation _displacementRotation;
         private Dictionary<string, int[]> _referencePointsNodeIds;
-        private string _surfaceNodeSetName;
+        private string _nodeSetNameOfSurface;
 
 
         // Constructor                                                                                                              
         public CalDisplacementRotation(DisplacementRotation displacementRotation, Dictionary<string, int[]> referencePointsNodeIds,
-                                       string surfaceNodeSetName)
+                                       string nodeSetNameOfSurface)
         {
             _displacementRotation = displacementRotation;
             _referencePointsNodeIds = referencePointsNodeIds;
-            _surfaceNodeSetName = surfaceNodeSetName;
+            _nodeSetNameOfSurface = nodeSetNameOfSurface;
         }
 
 
@@ -63,10 +63,10 @@ namespace FileInOut.Output.Calculix
             // Surface
             else if (_displacementRotation.RegionType == CaeGlobals.RegionTypeEnum.SurfaceName)
             {
-                if (_surfaceNodeSetName == null) throw new ArgumentException();
+                if (_nodeSetNameOfSurface == null) throw new ArgumentException();
                 for (int i = 0; i < directions.Length; i++)
                 {
-                    sb.AppendFormat("{0}, {1}, {2}", _surfaceNodeSetName, directions[i], directions[i]);
+                    sb.AppendFormat("{0}, {1}, {2}", _nodeSetNameOfSurface, directions[i], directions[i]);
                     if (!fixedBc) sb.AppendFormat(", {0}", values[i].ToString());
                     sb.AppendLine();
                 }

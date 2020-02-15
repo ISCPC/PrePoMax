@@ -84,7 +84,7 @@ namespace CaeModel
                 error = "At least one degree of freedom must be defined for the boundary condition.";
                 return false;
             }
-            if (GetConstrainedDirections().Length != GetFixedDirections().Length)
+            if (GetFixedDirections().Length != 0 && GetConstrainedDirections().Length != GetFixedDirections().Length)
             {
                 error = "Only fixed and unconstrained degrees of freedom can be used at the same time.";
                 return false;

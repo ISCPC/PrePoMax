@@ -49,12 +49,21 @@ namespace FileInOut.Output
             // Allways add a title keyword to get all possible keyword types to the keyword editor
             //
             // Collect pre-tension loads
-            OrderedDictionary<string, PreTensionLoad> preTensionLoads = new OrderedDictionary<string, PreTensionLoad>();
+            string name;
+            List<PreTensionLoad> preTensionLoadsList;
+            OrderedDictionary<string, List<PreTensionLoad>> preTensionLoads = new OrderedDictionary<string, List<PreTensionLoad>>();
             foreach (var step in model.StepCollection.StepsList)
             {
                 foreach (var entry in step.Loads)
                 {
-                    if (entry.Value is PreTensionLoad prl) preTensionLoads.Add(entry.Key + "@" + step.Name, prl);
+                    if (entry.Value is PreTensionLoad ptl)
+                    {
+                        name = ptl.SurfaceName;
+                        if (!ptl.AutoComputeDirection) name += "@" + ptl.X.ToString() + ptl.Y.ToString() + ptl.Z.ToString();
+                        //
+                        if (preTensionLoads.TryGetValue(name, out preTensionLoadsList)) preTensionLoadsList.Add(ptl);
+                        else preTensionLoads.Add(name, new List<PreTensionLoad>() { ptl });
+                    }
                 }
             }
             // Prepare reference points
@@ -417,24 +426,30 @@ namespace FileInOut.Output
                 }
             }
         }
-        static private void AppendPreTensionSections(OrderedDictionary<string, PreTensionLoad> preTensionLoads,
+        static private void AppendPreTensionSections(OrderedDictionary<string, List<PreTensionLoad>> preTensionLoads,
                                                      Dictionary<string, int[]> referencePointsNodeIds,
                                                      CalculixKeyword parent)
         {
             if (preTensionLoads != null)
             {
                 int nodeId;
+                bool atLeastOneActive;
                 PreTensionLoad ptl;
-                foreach (var entry in preTensionLoads)
+                foreach (var preTensionOnSurfaceEntry in preTensionLoads)
                 {
-                    if (entry.Value.Active)
+                    atLeastOneActive = false;
+                    foreach (var item in preTensionOnSurfaceEntry.Value) atLeastOneActive |= item.Active;
+                    // Take the first one since all the others are the same
+                    ptl = preTensionOnSurfaceEntry.Value[0];
+                    if (atLeastOneActive)
                     {
-                        ptl = entry.Value;
-                        nodeId = referencePointsNodeIds[entry.Key][0];
-                        CalPreTensionSection preTension = new CalPreTensionSection(ptl.SurfaceName, nodeId, ptl.X, ptl.Y, ptl.Z);
+                        nodeId = referencePointsNodeIds[preTensionOnSurfaceEntry.Key][0];
+                        CalPreTensionSection preTension;
+                        if (ptl.AutoComputeDirection) preTension = new CalPreTensionSection(ptl.SurfaceName, nodeId);
+                        else preTension = new CalPreTensionSection(ptl.SurfaceName, nodeId, ptl.X, ptl.Y, ptl.Z);
                         parent.AddKeyword(preTension);
                     }
-                    else parent.AddKeyword(new CalDeactivated(entry.Value.Name));
+                    else parent.AddKeyword(new CalDeactivated("Pre-tension " + ptl.SurfaceName));
                 }
             }
         }
@@ -559,10 +574,10 @@ namespace FileInOut.Output
             {
                 if (boundaryCondition is DisplacementRotation dispRot)
                 {
-                    string surfaceNodeSetName = null;
+                    string nodeSetNameOfSurface = null;
                     if (dispRot.RegionType == CaeGlobals.RegionTypeEnum.SurfaceName)
-                        surfaceNodeSetName = model.Mesh.Surfaces[dispRot.RegionName].NodeSetName;
-                    CalDisplacementRotation calDisplacementRotation = new CalDisplacementRotation(dispRot, referencePointsNodeIds, surfaceNodeSetName);
+                        nodeSetNameOfSurface = model.Mesh.Surfaces[dispRot.RegionName].NodeSetName;
+                    CalDisplacementRotation calDisplacementRotation = new CalDisplacementRotation(dispRot, referencePointsNodeIds, nodeSetNameOfSurface);
                     parent.AddKeyword(calDisplacementRotation);
                 }
                 else if (boundaryCondition is SubmodelBC sm)
@@ -613,10 +628,25 @@ namespace FileInOut.Output
                 }
                 else if (load is PreTensionLoad ptl)
                 {
-                    int nodeId = referencePointsNodeIds[ptl.Name + "@" + step.Name][0];
-                    CLoad cLoad = new CLoad(ptl.Name, nodeId, ptl.ForceMagnitude, 0, 0);
-                    CalCLoad calCload = new CalCLoad(cLoad, referencePointsNodeIds);
-                    parent.AddKeyword(calCload);
+                    string name = ptl.SurfaceName;
+                    if (!ptl.AutoComputeDirection) name += "@" + ptl.X.ToString() + ptl.Y.ToString() + ptl.Z.ToString();
+                    //
+                    CalculixKeyword calKey;
+                    if (ptl.Type == PreTensionLoadType.Force)
+                    {
+                        int nodeId = referencePointsNodeIds[name][0];
+                        CLoad cLoad = new CLoad(ptl.Name, nodeId, ptl.Magnitude, 0, 0);
+                        calKey = new CalCLoad(cLoad, referencePointsNodeIds);
+                    }
+                    else if (ptl.Type == PreTensionLoadType.Displacement)
+                    {
+                        DisplacementRotation dr = new DisplacementRotation(ptl.Name, name, RegionTypeEnum.ReferencePointName);
+                        dr.U1 = ptl.Magnitude;
+                        calKey = new CalDisplacementRotation(dr, referencePointsNodeIds, null);
+                    }
+                    else throw new NotSupportedException();
+                    //
+                    parent.AddKeyword(calKey);
                 }
                 else throw new NotImplementedException();
             }
