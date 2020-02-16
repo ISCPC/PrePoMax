@@ -5337,7 +5337,7 @@ namespace PrePoMax
             // cones
             List<double[]> allCoor = new List<double[]>();
             List<double[]> allNormals = new List<double[]>();
-            if (dispRot.U1 == 0)
+            if (dispRot.U1 == 0 || double.IsPositiveInfinity(dispRot.U1))
             {
                 double[] normalX = new double[] { 1, 0, 0 };
                 for (int i = 0; i < symbolCoor.Length; i++)
@@ -5346,7 +5346,7 @@ namespace PrePoMax
                     allNormals.Add(normalX);
                 }
             }
-            if (dispRot.U2 == 0)
+            if (dispRot.U2 == 0 || double.IsPositiveInfinity(dispRot.U2))
             {
                 double[] normalY = new double[] { 0, 1, 0 };
                 for (int i = 0; i < symbolCoor.Length; i++)
@@ -5355,7 +5355,7 @@ namespace PrePoMax
                     allNormals.Add(normalY);
                 }
             }
-            if (dispRot.U3 == 0)
+            if (dispRot.U3 == 0 || double.IsPositiveInfinity(dispRot.U3))
             {
                 double[] normalZ = new double[] { 0, 0, 1 };
                 for (int i = 0; i < symbolCoor.Length; i++)
@@ -5379,7 +5379,7 @@ namespace PrePoMax
             // cylinders
             allCoor.Clear();
             allNormals.Clear();
-            if (dispRot.UR1 == 0)
+            if (dispRot.UR1 == 0 || double.IsPositiveInfinity(dispRot.UR1))
             {
                 double[] normalX = new double[] { 1, 0, 0 };
                 for (int i = 0; i < symbolCoor.Length; i++)
@@ -5388,7 +5388,7 @@ namespace PrePoMax
                     allNormals.Add(normalX);
                 }
             }
-            if (dispRot.UR2 == 0)
+            if (dispRot.UR2 == 0 || double.IsPositiveInfinity(dispRot.UR2))
             {
                 double[] normalY = new double[] { 0, 1, 0 };
                 for (int i = 0; i < symbolCoor.Length; i++)
@@ -5397,7 +5397,7 @@ namespace PrePoMax
                     allNormals.Add(normalY);
                 }
             }
-            if (dispRot.UR3 == 0)
+            if (dispRot.UR3 == 0 || double.IsPositiveInfinity(dispRot.UR3))
             {
                 double[] normalZ = new double[] { 0, 0, 1 };
                 for (int i = 0; i < symbolCoor.Length; i++)
