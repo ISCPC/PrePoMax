@@ -495,37 +495,39 @@ namespace CaeResults
         }
 
         // Animation        
-        public PartExchangeData GetScaleFactorAnimationDataVisualizationNodesCellsAndValues(BasePart part, FieldData fData, float scale, int numFrames)
+        public PartExchangeData GetScaleFactorAnimationDataVisualizationNodesCellsAndValues(BasePart part, FieldData fData,
+                                                                                            float scale, int numFrames)
         {
             PartExchangeData pData = new PartExchangeData();
-            _mesh.GetVisualizationNodesAndCells(part, out pData.Nodes.Ids, out pData.Nodes.Coor, out pData.Cells.Ids, out pData.Cells.CellNodeIds, out pData.Cells.Types);
+            _mesh.GetVisualizationNodesAndCells(part, out pData.Nodes.Ids, out pData.Nodes.Coor, out pData.Cells.Ids,
+                                                out pData.Cells.CellNodeIds, out pData.Cells.Types);
             pData.Nodes.Values = GetValues(fData, pData.Nodes.Ids);
             pData.ExtremeNodes = GetExtremeValues(part.Name, fData);
-
+            //
             pData.NodesAnimation = new NodesExchangeData[numFrames];
             pData.ExtremeNodesAnimation = new NodesExchangeData[numFrames];
-
+            //
             float[] ratios;
             if (fData.Type == StepType.Frequency || fData.Type == StepType.Buckling) ratios = GetRelativeModalScales(numFrames);
             else ratios = GetRelativeScales(numFrames);
-
+            //
             float absoluteScale;
             float relativeScale;
             bool invariant = IsComponentInvariant(fData);
-
+            //
             for (int i = 0; i < numFrames; i++)
             {
                 relativeScale = ratios[i];
                 absoluteScale = relativeScale * scale;
-
+                //
                 pData.NodesAnimation[i] = new NodesExchangeData();
                 ScaleNodeCoordinates(absoluteScale, fData.StepId, fData.StepIncrementId, pData.Nodes.Ids, pData.Nodes.Coor, out pData.NodesAnimation[i].Coor);
-
+                //
                 if (invariant) relativeScale = Math.Abs(relativeScale);
                 ScaleValues(relativeScale, pData.Nodes.Values, out pData.NodesAnimation[i].Values);
                 pData.ExtremeNodesAnimation[i] = GetScaledExtremeValues(part.Name, fData, absoluteScale, relativeScale);
             }
-
+            //
             return pData;
         }
         public PartExchangeData GetScaleFactorAnimationDataEdgesNodesAndCells(BasePart part, FieldData fData, float scale, int numFrames)

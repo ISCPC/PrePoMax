@@ -6857,22 +6857,24 @@ namespace PrePoMax
 
             return result;
         }        
-        private vtkControl.vtkMaxActorData GetScaleFactorAnimationDataFromPart(ResultPart part, FieldData fieldData, float scale, int numFrames)
+        private vtkControl.vtkMaxActorData GetScaleFactorAnimationDataFromPart(ResultPart part, FieldData fieldData,
+                                                                               float scale, int numFrames)
         {
-            // get visualization nodes and renumbered elements
-            PartExchangeData actorResultData = _results.GetScaleFactorAnimationDataVisualizationNodesCellsAndValues(part, fieldData, scale, numFrames);
-            
-            // model edges
+            // Get visualization nodes and renumbered elements
+            PartExchangeData actorResultData = _results.GetScaleFactorAnimationDataVisualizationNodesCellsAndValues(part, 
+                                                                                                                    fieldData,
+                                                                                                                    scale, 
+                                                                                                                    numFrames);
+            // Model edges
             PartExchangeData modelEdgesResultData = null;
             if (_results.Mesh.Elements[part.Labels[0]] is FeElement3D && part.Visualization.EdgeCells != null)
             {
                 modelEdgesResultData = _results.GetScaleFactorAnimationDataEdgesNodesAndCells(part, fieldData, scale, numFrames);
             }
-
-            // get all needed nodes and elements - renumbered            
-            PartExchangeData locatorResultData = null;
-            locatorResultData = _results.GetScaleFactorAnimationDataAllNodesCellsAndValues(part, fieldData, scale, numFrames);
-
+            // Get all needed nodes and elements - renumbered
+            PartExchangeData locatorResultData = _results.GetScaleFactorAnimationDataAllNodesCellsAndValues(part, fieldData,
+                                                                                                            scale, numFrames);
+            //
             vtkControl.vtkMaxActorData data = GetVtkData(actorResultData, modelEdgesResultData, locatorResultData);
             data.Name = part.Name;
             data.Color = part.Color;
@@ -6880,7 +6882,8 @@ namespace PrePoMax
             data.CanHaveElementEdges = true;
             data.Pickable = false;
             data.SmoothShaded = part.SmoothShaded;
-            if (_results.Mesh.Elements[part.Labels[0]] is FeElement3D) data.ActorRepresentation = vtkControl.vtkMaxActorRepresentation.Solid;
+            if (_results.Mesh.Elements[part.Labels[0]] is FeElement3D)
+                data.ActorRepresentation = vtkControl.vtkMaxActorRepresentation.Solid;
             else throw new NotSupportedException();
             return data;
         }
@@ -6965,8 +6968,9 @@ namespace PrePoMax
             ApplyLighting(data);
             _form.Add3DCells(data);
         }
-
-        private vtkControl.vtkMaxActorData GetVtkData(PartExchangeData actorData, PartExchangeData modelEdgesData, PartExchangeData locatorData)
+        //
+        private vtkControl.vtkMaxActorData GetVtkData(PartExchangeData actorData, PartExchangeData modelEdgesData,
+                                                      PartExchangeData locatorData)
         {
             vtkControl.vtkMaxActorData vtkData = new vtkControl.vtkMaxActorData();
             

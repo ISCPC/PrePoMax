@@ -141,9 +141,9 @@ Dependency nglib - added following files for c++ redistriburable compatibility:
 
 Done
 
-Version 0.5.3 Master branch
+Version 0.6.0 Master branch
 
-Added support for Kixed parameter for BSc
+Added support for Fixed parameter for BSc
 Added support for creating prismatic boundy layer
 Added support for Pre-tension load
 At save a temporary file is first used which is then renamed to the selected file name.
