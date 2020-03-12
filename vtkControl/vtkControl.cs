@@ -143,20 +143,21 @@ namespace vtkControl
                 if (_selectBy != value)
                 {
                     _selectBy = value;
-
+                    //
                     if (_selectBy == vtkSelectBy.Off) _style.Selection = false;
                     else _style.Selection = true;
-
+                    //
                     switch (_selectBy)
                     {
+                        case vtkSelectBy.Off:
                         case vtkSelectBy.Node:
-                        case vtkSelectBy.Element:                        
+                        case vtkSelectBy.Element:
+                        case vtkSelectBy.Part:
                             _style.RubberBandEnabled = true;
                             break;
                         case vtkSelectBy.Id:
                         case vtkSelectBy.Surface:
                         case vtkSelectBy.SurfaceAngle:
-                        case vtkSelectBy.Part:
                         default:
                             _style.RubberBandEnabled = false;
                             break;
@@ -193,7 +194,7 @@ namespace vtkControl
         public Func<int[], vtkMaxActorData> Controller_GetPartActorData;
         public Func<double[], int, int[], int[], vtkMaxActorData> Controller_GetGeometryActorData;
 
-        public Action<MouseEventArgs, Keys, string> Controller_ActorPicked;
+        public Action<MouseEventArgs, Keys, string[]> Controller_ActorsPicked;
         public Action Controller_ShowPostSettings;
 
 
@@ -316,19 +317,19 @@ namespace vtkControl
         {
             try
             {
-                if (_probeWidget == null) return;
-
+                if (_probeWidget == null || _selectBy == vtkSelectBy.Off) return;
+                //
                 if (rubberBandSelection)
                 {
                     ClearCurrentMouseSelection();
-                    PickByArea(x1, y1, x2, y2);
+                    PickByArea(x1, y1, x2, y2, true, out string[] pickedActorNAmes);
                 }
                 else
                 {
                     vtkActor pickedActor = null;
-
+                    //
                     ClearCurrentMouseSelection();
-
+                    //
                     switch (_selectBy)
                     {
                         case vtkSelectBy.Off:
@@ -382,7 +383,7 @@ namespace vtkControl
                         default:
                             throw new NotSupportedException();
                     }
-
+                    //
                     if (pickedActor == null) ClearCurrentMouseSelection();
                 }
             }
@@ -390,50 +391,71 @@ namespace vtkControl
         }
         private void _style_PointPickedOnLeftUpEvt(int x1, int y1, bool rubberBandSelection, int x2, int y2)
         {
-            vtkSelectOperation selectOperation;
-            if (Control.ModifierKeys == (Keys.Shift | Keys.Control)) selectOperation = vtkSelectOperation.Intersect;
-            else if (Control.ModifierKeys == Keys.Shift) selectOperation = vtkSelectOperation.Add;
-            else if (Control.ModifierKeys == Keys.Control) selectOperation = vtkSelectOperation.Subtract;
-            else selectOperation = vtkSelectOperation.None;
-
-            vtkActor pickedActor = null;
-
-            if (!rubberBandSelection)
+            // Default selection of parts
+            if (_selectBy == vtkSelectBy.Off)
             {
+                string[] pickedActorNames = null;
                 // Point selection
-                double[] pickedPoint = GetPickPoint(out pickedActor, x1, y1);
-                if (OnMouseLeftButtonUpSelection != null) OnMouseLeftButtonUpSelection(pickedPoint, null, selectOperation);
+                if (!rubberBandSelection)
+                {
+                    vtkActor pickedActor;
+                    GetPickPoint(out pickedActor, x1, y1);
+                    pickedActorNames = new string[] { GetActorName(pickedActor) };
+                }
+                // Area selection
+                else
+                {
+                    PickByArea(x1, y1, x2, y2, false, out pickedActorNames);
+                }
+                MouseEventArgs e = new MouseEventArgs(MouseButtons.Left, 1, x1, y1, 0);
+                //
+                Controller_ActorsPicked?.Invoke(e, ModifierKeys, pickedActorNames.ToArray());
             }
             else
             {
-                // Area selection
-                _areaPicker.AreaPick(x1, y1, x2, y2, _renderer);
-                vtkPlanes planes = _areaPicker.GetFrustum();
-                vtkPlane plane;
-                double[] origin;
-                double[] normal;
-                double[][] planeParameters = new double[planes.GetNumberOfPlanes()][];
-                for (int i = 0; i < planes.GetNumberOfPlanes(); i++)
+                vtkSelectOperation selectOperation;
+                if (Control.ModifierKeys == (Keys.Shift | Keys.Control)) selectOperation = vtkSelectOperation.Intersect;
+                else if (Control.ModifierKeys == Keys.Shift) selectOperation = vtkSelectOperation.Add;
+                else if (Control.ModifierKeys == Keys.Control) selectOperation = vtkSelectOperation.Subtract;
+                else selectOperation = vtkSelectOperation.None;
+                //
+                vtkActor pickedActor = null;
+                // Point selection
+                if (!rubberBandSelection)
                 {
-                    plane = planes.GetPlane(i);
-                    origin = plane.GetOrigin();
-                    normal = plane.GetNormal();
-                    planeParameters[i] = new double[] { origin[0], origin[1], origin[2], normal[0], normal[1], normal[2] };
+                    double[] pickedPoint = GetPickPoint(out pickedActor, x1, y1);
+                    OnMouseLeftButtonUpSelection?.Invoke(pickedPoint, null, selectOperation);
                 }
-                if (OnMouseLeftButtonUpSelection != null) OnMouseLeftButtonUpSelection(null, planeParameters, selectOperation);
+                // Area selection
+                else
+                {
+                    _areaPicker.AreaPick(x1, y1, x2, y2, _renderer);
+                    vtkPlanes planes = _areaPicker.GetFrustum();
+                    vtkPlane plane;
+                    double[] origin;
+                    double[] normal;
+                    double[][] planeParameters = new double[planes.GetNumberOfPlanes()][];
+                    for (int i = 0; i < planes.GetNumberOfPlanes(); i++)
+                    {
+                        plane = planes.GetPlane(i);
+                        origin = plane.GetOrigin();
+                        normal = plane.GetNormal();
+                        planeParameters[i] = new double[] { origin[0], origin[1], origin[2], normal[0], normal[1], normal[2] };
+                    }
+                    OnMouseLeftButtonUpSelection?.Invoke(null, planeParameters, selectOperation);
+                }
             }
         }
         private void _style_LeftButtonPressEvent(int x, int y)
         {
-            if (_selectBy == vtkSelectBy.Off)
-            {
-                vtkActor pickedActor = null;
-                GetPickPoint(out pickedActor, x, y);
-                MouseEventArgs e = new MouseEventArgs(MouseButtons.Left, 1, x, y, 0);
-                
-                if (pickedActor == null) Controller_ActorPicked?.Invoke(e, ModifierKeys, null);
-                else Controller_ActorPicked?.Invoke(e, ModifierKeys, GetActorName(pickedActor));
-            }
+            //if (_selectBy == vtkSelectBy.Off)
+            //{
+            //    vtkActor pickedActor = null;
+            //    GetPickPoint(out pickedActor, x, y);
+            //    MouseEventArgs e = new MouseEventArgs(MouseButtons.Left, 1, x, y, 0);
+            //    //
+            //    Controller_ActorPicked?.Invoke(e, ModifierKeys, GetActorName(pickedActor));
+            //}
         }
         private void _style_RightButtonPressEvent(int x, int y)
         {
@@ -444,7 +466,7 @@ namespace vtkControl
                 if (pickedActor != null)
                 {
                     MouseEventArgs e = new MouseEventArgs(MouseButtons.Right, 1, x, y, 0);
-                    Controller_ActorPicked?.Invoke(e, ModifierKeys, GetActorName(pickedActor));
+                    Controller_ActorsPicked?.Invoke(e, ModifierKeys, new string[] { GetActorName(pickedActor) });
                 }
             }
         }
@@ -541,7 +563,6 @@ namespace vtkControl
 
                     if (_probeWidget.GetVisibility() == 0) _probeWidget.VisibilityOn();
                 }
-                
             }
         }
         private void PickByEdge(out vtkActor pickedActor, int x, int y, bool showLabel)
@@ -870,16 +891,16 @@ namespace vtkControl
         {
             double[] pickPoint = GetPickPoint(out pickedActor, x, y);
             if (pickPoint == null) return;
-
+            //
             string actorName = GetActorName(pickedActor);
             vtkMaxActor actor = GetCopyOfModelEdgesActor(actorName);
             if (actor != null)
             {
                 _mouseSelectionActorCurrent = actor;
-
+                //
                 AddActorGeometry(_mouseSelectionActorCurrent, vtkRendererLayer.Selection);
                 _mouseSelectionActorCurrent.Geometry.SetProperty(Globals.CurrentMouseSelectionProperty);
-
+                //
                 if (actor.ElementEdges != null)
                 {
                     AddActorEdges(_mouseSelectionActorCurrent, false, vtkRendererLayer.Selection);
@@ -958,37 +979,38 @@ namespace vtkControl
             }
         }
 
-        private void PickByArea(int x1, int y1, int x2, int y2)
+        private void PickByArea(int x1, int y1, int x2, int y2, bool highlight, out string[] pickedActorNames)
         {
-            bool pickNodes = _selectBy == vtkSelectBy.Node;
-
             _areaPicker.AreaPick(x1, y1, x2, y2, _renderer);
             vtkPlanes planes = _areaPicker.GetFrustum();
-
+            //
+            List<string> selectedActorNames = new List<string>();
             HashSet<int> selectedPointGlobalIds = new HashSet<int>();
             HashSet<int> selectedCellGlobalIds = new HashSet<int>();
             vtkActor pickedActor;
             vtkProp3DCollection pickedActors = _areaPicker.GetProp3Ds();
-
+            //
             pickedActors.InitTraversal();
             pickedActor = (vtkActor)pickedActors.GetNextProp3D();
-
+            //
             vtkCellLocator locator;
             vtkExtractSelectedFrustum extractor;
-
+            //
             while (pickedActor != null)
             {
-                string pickedActorName = GetActorName(pickedActor);
+                string pickedActorName = GetActorName(pickedActor);                
                 vtkMaxActor maxActor;
-
+                //
                 if (!(_actors.TryGetValue(pickedActorName, out maxActor) && maxActor.FrustumCellLocator != null))
                 {
-                    // actor has no locator
+                    // Actor has no locator
                 }
                 else
                 {
+                    // Actors               
+                    selectedActorNames.Add(pickedActorName);
+                    //
                     locator = maxActor.FrustumCellLocator;
-
                     // Points               
                     extractor = vtkExtractSelectedFrustum.New(); // must be inside the loop
                     extractor.SetFieldType((int)vtkSelectionField.POINT);
@@ -996,10 +1018,10 @@ namespace vtkControl
                     extractor.SetInput(0, locator.GetDataSet());
                     extractor.SetFrustum(planes);
                     extractor.Update();
-
+                    //
                     vtkUnstructuredGrid selected = vtkUnstructuredGrid.New();
                     selected.ShallowCopy(extractor.GetOutput());
-
+                    //
                     vtkDataArray globalPointIds = selected.GetPointData().GetGlobalIds();
                     if (globalPointIds == null)  // skip actor
                     {
@@ -1013,15 +1035,13 @@ namespace vtkControl
                             selectedPointGlobalIds.Add((int)globalPointIds.GetTuple1(i));
                         }
                     }
-
-
                     // Cells                
                     extractor.SetFieldType((int)vtkSelectionField.CELL);
                     extractor.Update();
-
+                    //
                     selected = vtkUnstructuredGrid.New();
                     selected.ShallowCopy(extractor.GetOutput());
-
+                    //
                     vtkDataArray globalCellIds = selected.GetCellData().GetGlobalIds();
                     if (globalCellIds == null)  // skip actor
                     {
@@ -1038,45 +1058,57 @@ namespace vtkControl
                 }
                 pickedActor = (vtkActor)pickedActors.GetNextProp3D();
             }
-
-            
+            //
+            pickedActorNames = selectedActorNames.ToArray();
+            //
             // Graphics
-            int[] pointIds = new int[selectedPointGlobalIds.Count];
-            selectedPointGlobalIds.CopyTo(pointIds);
-
-            vtkMaxActorData data = null;
-            vtkMaxActor actor = null;
-            if (pickNodes)
+            if (highlight)
             {
-                if (pointIds.Length <= 0) return;
-
-                data = Controller_GetNodeActorData(pointIds);
-
-                _mouseSelectionCurrentIds = pointIds;
-                _mouseSelectionActorCurrent = new vtkMaxActor(data, true, true);
-            }
-            else
-            {
-                if (selectedCellGlobalIds.Count <= 0) return;
-
-                int[] cellIds = new int[selectedCellGlobalIds.Count];
-                selectedCellGlobalIds.CopyTo(cellIds);
-
-                if (_selectItem == vtkSelectItem.Element && _selectBy == vtkSelectBy.Node) data = Controller_GetCellActorData(cellIds, null);
-                else data = Controller_GetCellActorData(cellIds, pointIds);
-
-                _mouseSelectionCurrentIds = data.Geometry.Cells.Ids;
-                actor = new vtkMaxActor(data, true, false);
-                _mouseSelectionActorCurrent = actor;
-            }
-
-            AddActorGeometry(_mouseSelectionActorCurrent, vtkRendererLayer.Selection);
-            _mouseSelectionActorCurrent.Geometry.SetProperty(Globals.CurrentMouseSelectionProperty);
-
-            if (!pickNodes && actor.ElementEdges != null)
-            {
-                AddActorEdges(_mouseSelectionActorCurrent, false, vtkRendererLayer.Selection);
-                _selectedActors.Remove(_mouseSelectionActorCurrent);
+                int[] pointIds = new int[selectedPointGlobalIds.Count];
+                selectedPointGlobalIds.CopyTo(pointIds);
+                //
+                vtkMaxActorData data = null;
+                if (_selectBy == vtkSelectBy.Node)
+                {
+                    if (pointIds.Length <= 0) return;
+                    //
+                    data = Controller_GetNodeActorData(pointIds);
+                    //
+                    _mouseSelectionCurrentIds = pointIds;
+                    _mouseSelectionActorCurrent = new vtkMaxActor(data, true, true);
+                }
+                else if (_selectBy == vtkSelectBy.Element)
+                {
+                    if (selectedCellGlobalIds.Count <= 0) return;
+                    //
+                    int[] cellIds = new int[selectedCellGlobalIds.Count];
+                    selectedCellGlobalIds.CopyTo(cellIds);
+                    //
+                    if (_selectItem == vtkSelectItem.Element && _selectBy == vtkSelectBy.Node)
+                        data = Controller_GetCellActorData(cellIds, null);
+                    else data = Controller_GetCellActorData(cellIds, pointIds);
+                    //
+                    _mouseSelectionCurrentIds = data.Geometry.Cells.Ids;
+                    _mouseSelectionActorCurrent = new vtkMaxActor(data, true, false);
+                }
+                else if (_selectBy == vtkSelectBy.Part)
+                {
+                    //_mouseSelectionCurrentIds = ???;
+                    _mouseSelectionActorCurrent = GetCopyOfModelEdgesActor(pickedActorNames);
+                    //
+                    if (_mouseSelectionActorCurrent == null) return;
+                }
+                else throw new NotSupportedException();
+                //
+                AddActorGeometry(_mouseSelectionActorCurrent, vtkRendererLayer.Selection);
+                _mouseSelectionActorCurrent.Geometry.SetProperty(Globals.CurrentMouseSelectionProperty);
+                //
+                if ((_selectBy == vtkSelectBy.Element || _selectBy == vtkSelectBy.Part)
+                    && _mouseSelectionActorCurrent.ElementEdges != null)
+                {
+                    AddActorEdges(_mouseSelectionActorCurrent, false, vtkRendererLayer.Selection);
+                    _selectedActors.Remove(_mouseSelectionActorCurrent);
+                }
             }
         }
         private void PickAreaHardware(int x1, int y1, int x2, int y2)
@@ -1154,7 +1186,7 @@ namespace vtkControl
             //
             int size = 5;
             int step = 2;
-
+            //
             if (pickedActor != null)
             {
                 p = _propPicker.GetPickPosition();      // this function sometimes gives strange values
@@ -1162,7 +1194,7 @@ namespace vtkControl
                 if (cellId != -1)
                     return p;
             }
-                
+                //
             for (int i = 1; i <= size; i+=step)   // try in a cross shape of the size 21 x 21 pixels
             {
                 _propPicker.Pick(x + i, y, 0, _renderer);
@@ -1174,7 +1206,7 @@ namespace vtkControl
                     if (cellId != -1)
                         return p;
                 }
-
+                //
                 _propPicker.Pick(x - i, y, 0, _renderer);
                 pickedActor = _propPicker.GetActor();
                 if (pickedActor != null)
@@ -1184,7 +1216,7 @@ namespace vtkControl
                     if (cellId != -1)
                         return p;
                 }
-
+                //
                 _propPicker.Pick(x, y + i, 0, _renderer);
                 pickedActor = _propPicker.GetActor();
                 if (pickedActor != null)
@@ -1194,7 +1226,7 @@ namespace vtkControl
                     if (cellId != -1)
                         return p;
                 }
-
+                //
                 _propPicker.Pick(x, y - i, 0, _renderer);
                 pickedActor = _propPicker.GetActor();
                 if (pickedActor != null)
@@ -1205,10 +1237,10 @@ namespace vtkControl
                         return p;
                 }
             }
-
+            //
             p = null;
             pickedActor = null;
-
+            //
             return p;
         }
 
@@ -1240,7 +1272,7 @@ namespace vtkControl
                     if (_selectableActorsFilter.Contains(entry.Value.Name)) entry.Value.Geometry.VisibilityOn();
                     else entry.Value.Geometry.VisibilityOff();
                 }
-                // Skip invisible actors in there is no filter
+                // Skip invisible actors
                 if (entry.Value.Geometry.GetVisibility() != 0)
                 {
                     //
@@ -1359,123 +1391,54 @@ namespace vtkControl
         }
 
         // Item selection - Frustum                                                                                                 
-        public int[] GetGlobalNodeIdsFromFrustum(double[][] planeParameters, vtkSelectBy selectBy)
+        public void GetPointAndCellIdsInsideFrustum(double[][] planeParameters, out int[] pointIds, out int[] cellIds)
         {
             vtkDataArray normals = vtkDoubleArray.New();
             normals.SetNumberOfComponents(3);
             vtkPoints points = vtkPoints.New();
-
+            //
             for (int i = 0; i < planeParameters.Length; i++)
             {
                 normals.InsertNextTuple3(planeParameters[i][3], planeParameters[i][4], planeParameters[i][5]);
                 points.InsertNextPoint(planeParameters[i][0], planeParameters[i][1], planeParameters[i][2]);
             }
-
+            //
             vtkPlanes planes = vtkPlanes.New();
             planes.SetPoints(points);
             planes.SetNormals(normals);
-
-            if (selectBy == vtkSelectBy.Node)
-            {
-                int[] globalPointIds = GetPointIdsInsideFrustum(planes);
-                return globalPointIds;
-            }
-            else if (selectBy == vtkSelectBy.Element)
-            {
-                int[] globalPointIds = GetPointIdsFromCellsInsideFrustum(planes);
-                return globalPointIds;
-            }
-            return null;
-        }
-        public int[] GetGlobalElementIdsFromFrustum(double[][] planeParameters, vtkSelectBy selectBy)
-        {
-            vtkDataArray normals = vtkDoubleArray.New();
-            normals.SetNumberOfComponents(3);
-            vtkPoints points = vtkPoints.New();
-
-            for (int i = 0; i < planeParameters.Length; i++)
-            {
-                normals.InsertNextTuple3(planeParameters[i][3], planeParameters[i][4], planeParameters[i][5]);
-                points.InsertNextPoint(planeParameters[i][0], planeParameters[i][1], planeParameters[i][2]);
-            }
-
-            vtkPlanes planes = vtkPlanes.New();
-            planes.SetPoints(points);
-            planes.SetNormals(normals);
-
-            if (selectBy == vtkSelectBy.Node)
-            {
-                int[] elementIds = elementIds = GetCellIdsInsideFrustum(planes);
-                return elementIds;
-            }
-            else if (selectBy == vtkSelectBy.Element)
-            {
-                int[] elementIds = GetEntireCellIdsInsideFrustum(planes);
-                return elementIds;
-            }
-            return null;
-        }
-        public int[] GetPointIdsInsideFrustum(vtkPlanes frustumPlanes)
-        {
-            HashSet<int> selectedPointGlobalIds = new HashSet<int>();
+            //
+            pointIds = new int[0];
+            cellIds = new int[0];
+            //
             vtkExtractSelectedFrustum extractor;
-
-            vtkCellLocator locator;
-            foreach (var entry in _actors)
-            {
-                if (entry.Value.Geometry.GetVisibility() == 0) continue;
-
-                locator = entry.Value.FrustumCellLocator;
-                if (locator != null)
-                {
-                    extractor = vtkExtractSelectedFrustum.New(); // must be inside the loop
-                    extractor.SetFieldType((int)vtkSelectionField.POINT);
-                    extractor.SetContainingCells(0);
-                    extractor.SetInput(0, locator.GetDataSet());
-                    extractor.SetFrustum(frustumPlanes);
-                    extractor.Update();
-
-                    vtkDataArray globalPointIds = (extractor.GetOutput() as vtkUnstructuredGrid).GetPointData().GetGlobalIds();
-                    if (globalPointIds != null)
-                    {
-                        for (int i = 0; i < globalPointIds.GetNumberOfTuples(); i++)
-                        {
-                            selectedPointGlobalIds.Add((int)globalPointIds.GetTuple1(i));
-                        }
-                    }
-                }
-            }
-
-            int[] pointIds = new int[selectedPointGlobalIds.Count];
-            selectedPointGlobalIds.CopyTo(pointIds);
-
-            return pointIds;
-        }
-        public int[] GetPointIdsFromCellsInsideFrustum(vtkPlanes frustumPlanes)
-        {
-            vtkExtractSelectedFrustum extractor;
-            List<int> globalPointIdsFromCells = new List<int>();
             vtkDataArray globalPointIdsDataArray;
             vtkDataArray globalCellIdsDataArray;
             HashSet<int> globalPointIds = new HashSet<int>();
             HashSet<int> globalCellIds = new HashSet<int>();
             vtkCellLocator locator;
-
+            //
             foreach (var entry in _actors)
             {
-                if (entry.Value.Geometry.GetVisibility() == 0) continue; // skip hidden actors
-
+                // Set filtered actors
+                if (_selectableActorsFilter != null)
+                {
+                    if (_selectableActorsFilter.Contains(entry.Value.Name)) entry.Value.Geometry.VisibilityOn();
+                    else entry.Value.Geometry.VisibilityOff();
+                }
+                // Skip invisible actors
+                if (entry.Value.Geometry.GetVisibility() == 0) continue;
+                //
                 locator = entry.Value.FrustumCellLocator;
                 if (locator != null)
                 {
-                    // inside points                
+                    // Inside points                
                     extractor = vtkExtractSelectedFrustum.New(); // must be inside the loop
                     extractor.SetFieldType((int)vtkSelectionField.POINT);
                     extractor.SetContainingCells(0);
                     extractor.SetInput(0, locator.GetDataSet());
-                    extractor.SetFrustum(frustumPlanes);
+                    extractor.SetFrustum(planes);
                     extractor.Update();
-
+                    //
                     globalPointIdsDataArray = (extractor.GetOutput() as vtkUnstructuredGrid).GetPointData().GetGlobalIds();
                     if (globalPointIdsDataArray != null)
                     {
@@ -1484,11 +1447,10 @@ namespace vtkControl
                             globalPointIds.Add((int)globalPointIdsDataArray.GetTuple1(i));
                         }
                     }
-
-                    // inside and border cells      
+                    // Inside and border cells      
                     extractor.SetFieldType((int)vtkSelectionField.CELL);
                     extractor.Update();
-
+                    //
                     globalCellIdsDataArray = (extractor.GetOutput() as vtkUnstructuredGrid).GetCellData().GetGlobalIds();
                     if (globalCellIdsDataArray != null)
                     {
@@ -1497,111 +1459,12 @@ namespace vtkControl
                             globalCellIds.Add((int)globalCellIdsDataArray.GetTuple1(i));
                         }
                     }
-
-                    if (globalPointIds.Count > 0 && globalCellIds.Count > 0)
-                    {
-                        // extract inside cells         
-                        vtkMaxActorData data = Controller_GetCellActorData(globalCellIds.ToArray(), globalPointIds.ToArray());
-                        globalPointIdsFromCells.AddRange(data.Geometry.Nodes.Ids);
-                    }
                 }
             }
-
-            return globalPointIdsFromCells.ToArray();
+            //
+            pointIds = globalPointIds.ToArray();
+            cellIds = globalCellIds.ToArray();
         }
-        public int[] GetCellIdsInsideFrustum(vtkPlanes frustumPlanes)
-        {
-            HashSet<int> selectedCellGlobalIds = new HashSet<int>();
-            vtkExtractSelectedFrustum extractor;
-            vtkCellLocator locator;
-
-            foreach (var entry in _actors)
-            {
-                if (entry.Value.Geometry.GetVisibility() == 0) continue;
-
-                locator = entry.Value.FrustumCellLocator;
-                if (locator != null)
-                {
-                    extractor = vtkExtractSelectedFrustum.New(); // must be inside the loop
-                    extractor.SetFieldType((int)vtkSelectionField.CELL);
-                    extractor.SetInput(0, locator.GetDataSet());
-                    extractor.SetFrustum(frustumPlanes);
-                    extractor.Update();
-
-                    vtkDataArray globalCellIds = (extractor.GetOutput() as vtkUnstructuredGrid).GetCellData().GetGlobalIds();
-                    if (globalCellIds != null)
-                    {
-                        for (int i = 0; i < globalCellIds.GetNumberOfTuples(); i++)
-                        {
-                            selectedCellGlobalIds.Add((int)globalCellIds.GetTuple1(i));
-                        }
-                    }
-                }
-            }
-
-            int[] cellIds = new int[selectedCellGlobalIds.Count];
-            selectedCellGlobalIds.CopyTo(cellIds);
-
-            return cellIds;
-        }
-        public int[] GetEntireCellIdsInsideFrustum(vtkPlanes frustumPlanes)
-        {
-            HashSet<int> selectedPointGlobalIds = new HashSet<int>();
-            HashSet<int> selectedCellGlobalIds = new HashSet<int>();
-
-            vtkExtractSelectedFrustum extractor;
-            vtkDataArray globalPointIds;
-            vtkDataArray globalCellIds;
-
-            vtkCellLocator locator;
-            foreach (var entry in _actors)
-            {
-                if (entry.Value.Geometry.GetVisibility() == 0) continue;
-
-                locator = entry.Value.FrustumCellLocator;
-                if (locator != null)
-                {
-                    extractor = vtkExtractSelectedFrustum.New(); // must be inside the loop
-                    extractor.SetFieldType((int)vtkSelectionField.POINT);
-                    extractor.SetContainingCells(0);
-                    extractor.SetInput(0, locator.GetDataSet());
-                    extractor.SetFrustum(frustumPlanes);
-                    extractor.Update();
-
-                    globalPointIds = (extractor.GetOutput() as vtkUnstructuredGrid).GetPointData().GetGlobalIds();
-                    if (globalPointIds != null)
-                    {
-                        for (int i = 0; i < globalPointIds.GetNumberOfTuples(); i++)
-                        {
-                            selectedPointGlobalIds.Add((int)globalPointIds.GetTuple1(i));
-                        }
-                    }
-
-                    extractor.SetFieldType((int)vtkSelectionField.CELL);
-                    extractor.Update();
-
-                    globalCellIds = (extractor.GetOutput() as vtkUnstructuredGrid).GetCellData().GetGlobalIds();
-                    if (globalCellIds != null)
-                    {
-                        for (int i = 0; i < globalCellIds.GetNumberOfTuples(); i++)
-                        {
-                            selectedCellGlobalIds.Add((int)globalCellIds.GetTuple1(i));
-                        }
-                    }
-                }
-            }
-
-            int[] pointIds = new int[selectedPointGlobalIds.Count];
-            selectedPointGlobalIds.CopyTo(pointIds);
-
-            int[] cellIds = new int[selectedCellGlobalIds.Count];
-            selectedCellGlobalIds.CopyTo(cellIds);
-
-            vtkMaxActorData data = Controller_GetCellActorData(cellIds, pointIds);
-
-            return data.Geometry.Cells.Ids;
-        }
-        
 
         #endregion #################################################################################################################
 
@@ -1758,8 +1621,6 @@ namespace vtkControl
             _probeWidget.SetPadding(5);
             _probeWidget.GetBackgroundProperty().SetColor(1, 1, 1);
             _probeWidget.VisibilityOff();
-
-            
 
             // Add the actors to the scene
             //Hexahedron();
@@ -2110,14 +1971,14 @@ namespace vtkControl
         }
         private void ApplyEdgeVisibilityAndBackfaceCullingToActor(vtkActor actor, vtkRendererLayer layer)
         {
-            // visibility functions must use vtkMaxActor.Visible property to determine visibility
-            
-            // skip formatting for the overlay layer
+            // Visibility functions must use vtkMaxActor.Visible property to determine visibility
+            //
+            // Skip formatting for the overlay layer
             if (layer == vtkRendererLayer.Overlay) return;
-
+            //
             if (_edgesVisibility == vtkEdgesVisibility.ElementEdges) actor.GetProperty().SetInterpolationToFlat();
             else actor.GetProperty().SetInterpolationToPhong();
-
+            //
             if (_edgesVisibility == vtkEdgesVisibility.Wireframe && layer == vtkRendererLayer.Base)
             {
                 actor.VisibilityOff();
@@ -2130,10 +1991,10 @@ namespace vtkControl
                     string actorName = GetActorName(actor);
                     vtkMaxActor maxActor = _actors[actorName];
                     if (maxActor.VtkMaxActorVisible) actor.VisibilityOn();
-
+                    //
                     if (maxActor.BackfaceCulling) actor.GetProperty().BackfaceCullingOn();
                     else actor.GetProperty().BackfaceCullingOff();
-
+                    //
                     if (maxActor.ActorRepresentation == vtkMaxActorRepresentation.SolidAsShell && _sectionView)
                         actor.GetProperty().BackfaceCullingOff();
                 }
@@ -3438,17 +3299,50 @@ namespace vtkControl
             if (_actors.ContainsKey(actorName))
             {
                 vtkMaxActor actorToHighLight = _actors[actorName];
-
+                //
                 vtkPolyData data = vtkPolyData.New();
                 data.DeepCopy(actorToHighLight.ModelEdges.GetMapper().GetInput());
-
+                //
                 vtkDataSetMapper mapper = vtkDataSetMapper.New();
                 mapper.SetInput(data);
-
+                //
                 actor = new vtkMaxActor();
                 actor.Geometry.SetMapper(mapper);
                 actor.Geometry.PickableOff();
             }
+            return actor;
+        }
+        private vtkMaxActor GetCopyOfModelEdgesActor(string[] actorNames)
+        {
+            if (actorNames == null || actorNames.Length == 0) return null;
+            //
+            if (actorNames.Length == 1) return GetCopyOfModelEdgesActor(actorNames[0]);
+            //
+            vtkMaxActor actor = null;
+            vtkMaxActor actorToHighLight;
+            vtkPolyData data;
+            vtkAppendPolyData appendFilter = vtkAppendPolyData.New();
+            //
+            foreach (var actorName in actorNames)
+            {
+                if (_actors.ContainsKey(actorName))
+                {
+                    actorToHighLight = _actors[actorName];
+                    //
+                    data = vtkPolyData.New();
+                    data.DeepCopy(actorToHighLight.ModelEdges.GetMapper().GetInput());
+                    //
+                    appendFilter.AddInput(data);
+                }
+            }
+            //
+            vtkDataSetMapper mapper = vtkDataSetMapper.New();
+            mapper.SetInput(appendFilter.GetOutput());
+            //
+            actor = new vtkMaxActor();
+            actor.Geometry.SetMapper(mapper);
+            actor.Geometry.PickableOff();
+            //
             return actor;
         }
 
@@ -5102,10 +4996,14 @@ namespace vtkControl
         }
         private string GetActorName(vtkActor actor)
         {
+            if (actor == null) return null;
+            //
             foreach (var entry in _actors)
             {
-                if (entry.Value.Geometry == actor || entry.Value.ElementEdges == actor ||entry.Value.ModelEdges == actor) return entry.Key;
+                if (entry.Value.Geometry == actor || entry.Value.ElementEdges == actor ||entry.Value.ModelEdges == actor)
+                    return entry.Key;
             }
+            //
             return null;
         }
         public void UpdateActor(string oldName, string newName, Color newColor)

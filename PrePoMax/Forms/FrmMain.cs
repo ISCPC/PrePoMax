@@ -210,7 +210,7 @@ namespace PrePoMax
                 _vtk.Controller_GetPartActorData = _controller.GetPartActorData;
                 _vtk.Controller_GetGeometryActorData = _controller.GetGeometryActorData;
 
-                _vtk.Controller_ActorPicked = SelectBasePart;
+                _vtk.Controller_ActorsPicked = SelectBaseParts;
                 _vtk.Controller_ShowPostSettings = ShowPostSettings;
 
                 // Forms
@@ -3625,26 +3625,34 @@ namespace PrePoMax
             cellFaceNodeIds = null;
             try
             {
-                _vtk.SetSelectableActorsFilter(selectionPartNames);
+                if (selectionPartNames != null) _vtk.SetSelectableActorsFilter(selectionPartNames);
                 _vtk.GetGeometryPickProperties(point, out elementId, out edgeNodeIds, out cellFaceNodeIds);
             }
             catch { }
             finally
             {
-                _vtk.SetSelectableActorsFilter(null);
+                if (selectionPartNames != null) _vtk.SetSelectableActorsFilter(null);
             }
         }
         public double GetSelectionPrecision()
         {
             return _vtk.GetSelectionPrecision();
         }
-        public int[] GetNodeIdsFromFrustum(double[][] planeParameters, vtkSelectBy selectBy)
+        public void GetPointAndCellIdsInsideFrustum(double[][] planeParameters, out int[] pointIds, out int[] cellIds,
+                                                    string[] selectionPartNames = null)
         {
-            return _vtk.GetGlobalNodeIdsFromFrustum(planeParameters, selectBy);
-        }
-        public int[] GetElementIdsFromFrustum(double[][] planeParameters, vtkSelectBy selectBy)
-        {
-            return _vtk.GetGlobalElementIdsFromFrustum(planeParameters, selectBy);
+            cellIds = null;
+            pointIds = null;
+            try
+            {
+                if (selectionPartNames != null) _vtk.SetSelectableActorsFilter(selectionPartNames);
+                _vtk.GetPointAndCellIdsInsideFrustum(planeParameters, out pointIds, out cellIds);
+            }
+            catch { }
+            finally
+            {
+                if (selectionPartNames != null) _vtk.SetSelectableActorsFilter(null);
+            }
         }
 
         #endregion  ################################################################################################################
@@ -4536,25 +4544,34 @@ namespace PrePoMax
         {
             InvokeIfRequired(_modelTree.UpdateHighlight);
         }
-        public void SelectBasePart(MouseEventArgs e, Keys modifierKeys, string partName)
+        public void SelectBaseParts(MouseEventArgs e, Keys modifierKeys, string[] partNames)
         {
             // this is called from _vtk on part selection            
             if (!_modelTree.DisableMouse)
             {
-                if (partName == null)
+                if (partNames != null && partNames.Length > 0 && partNames[0] == null)
                 {
                     if (modifierKeys != Keys.Shift && modifierKeys != Keys.Control) _controller.ClearAllSelection();
                 }
                 else
                 {
+                    int count = 0;
                     CaeMesh.BasePart part;
-                    if (GetCurrentView() == ViewGeometryModelResults.Geometry) part = _controller.GetGeometryPart(partName);
-                    else if (GetCurrentView() == ViewGeometryModelResults.Model) part = _controller.GetModelPart(partName);
-                    else if (GetCurrentView() == ViewGeometryModelResults.Results) part = _controller.GetResultPart(partName);
-                    else throw new NotSupportedException();
-
-                    int numOfSelectedTreeNodes = _modelTree.SelectBasePart(e, modifierKeys, part);
-
+                    int numOfSelectedTreeNodes = 0;
+                    //
+                    foreach (var partName in partNames)
+                    {
+                        if (GetCurrentView() == ViewGeometryModelResults.Geometry) part = _controller.GetGeometryPart(partName);
+                        else if (GetCurrentView() == ViewGeometryModelResults.Model) part = _controller.GetModelPart(partName);
+                        else if (GetCurrentView() == ViewGeometryModelResults.Results) part = _controller.GetResultPart(partName);
+                        else throw new NotSupportedException();
+                        //
+                        numOfSelectedTreeNodes = _modelTree.SelectBasePart(e, modifierKeys, part);
+                        count++;
+                        //
+                        if (count == 1 && modifierKeys == Keys.None) modifierKeys |= Keys.Shift;
+                    }
+                    //
                     if (numOfSelectedTreeNodes > 0 && e.Button == MouseButtons.Right)
                     {
                         _modelTree.ShowContextMenu(_vtk, e.X, _vtk.Height - e.Y);

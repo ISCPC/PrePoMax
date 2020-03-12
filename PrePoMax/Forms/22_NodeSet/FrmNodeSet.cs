@@ -117,8 +117,7 @@ namespace PrePoMax.Forms
                 int[] ids = NodeSet.Labels;                             // change node selection history to ids to speed up
                 _selectionNodeIds = new SelectionNodeIds(vtkSelectOperation.None, false, ids);
                 _prevSelectionNodes = NodeSet.CreationData.Nodes;
-                _controller.ClearSelectionHistory();
-                _controller.AddSelectionNode(_selectionNodeIds, true);
+                _controller.CreateNewSelection(NodeSet.CreationData.CurrentView, _selectionNodeIds, true);
                 NodeSet.CreationData = _controller.Selection.DeepClone();
             }
 

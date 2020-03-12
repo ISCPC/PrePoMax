@@ -75,7 +75,7 @@ namespace PrePoMax
             else
             {
                 // Form was just hidden
-                _controller.SetSelectionOff();
+                _controller.SetSelectionToDefault();
             }
         }
         private void FrmSelectItemSet_FormClosing(object sender, FormClosingEventArgs e)

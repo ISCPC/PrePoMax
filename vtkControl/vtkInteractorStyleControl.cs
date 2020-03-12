@@ -108,9 +108,9 @@ namespace vtkControl
         protected bool _selectionCanceled;
         protected vtkRenderer _selectionRenderer;
         protected vtkRenderer _overlayRenderer;
-        protected vtkPolyDataMapper2D _backgroundMapper;
-        protected vtkActor2D _backgroundActor;
-        protected vtkActor2D _borderActor;
+        protected vtkPolyDataMapper2D _selectionBackgroundMapper;
+        protected vtkActor2D _selectionBackgroundActor;
+        protected vtkActor2D _selectionBorderActor;
 
         protected List<vtkMaxBorderWidget> _widgets;
 
@@ -164,92 +164,71 @@ namespace vtkControl
         // Event handlers                                                                                                           
         void vtkInteractorStyleControl_LeftButtonPressEvt(vtkObject sender, vtkObjectEventArgs e)
         {
-            //int[] clickPos = this.GetInteractor().GetEventPosition();
-            //vtkRenderer renderer = this.GetInteractor().GetRenderWindow().GetRenderers().GetFirstRenderer();
-
-            //double[] worldPos = DisplayToWorld(renderer, new double[] { clickPos[0], clickPos[1] });
-
-            //vtkCamera camera = renderer.GetActiveCamera();
-            //camera.SetParallelScale(camera.GetParallelScale() / 1.2);
-
-            //double[] worldPosAfter = DisplayToWorld(renderer, new double[] { clickPos[0], clickPos[1] });
-
-            //double[] motionVector = new double[3];
-            //motionVector[0] = worldPosAfter[0] - worldPos[0];
-            //motionVector[1] = worldPosAfter[1] - worldPos[1];
-            //motionVector[2] = worldPosAfter[2] - worldPos[2];
-
-            //double[] cPos = camera.GetPosition();
-            //double[] fPos = camera.GetFocalPoint();
-
-            //// Camera motion is reversed
-            //camera.SetPosition(cPos[0] - motionVector[0], cPos[1] - motionVector[1], cPos[2] - motionVector[2]);
-            //camera.SetFocalPoint(fPos[0] - motionVector[0], fPos[1] - motionVector[1], fPos[2] - motionVector[2]);
-
-            //DrawSphereOnLeft(sender, e);
-
             vtkRenderWindowInteractor rwi = this.GetInteractor();
-
+            //
             int x = rwi.GetEventPosition()[0];
             int y = rwi.GetEventPosition()[1];
             this.FindPokedRenderer(x, y);
-
+            //
             vtkRenderer renderer = this.GetCurrentRenderer();
             if (renderer == null) return;
-
             // Widgets - left pressed
             foreach (vtkMaxBorderWidget widget in _widgets)
             {
                 if (widget.LeftButtonPress(x, y)) return;
             }
-
-            _clickPos = rwi.GetEventPosition();     // set global variable
-
-            if (_selection)
-            {
-                _leftMouseButtonPressed = true;
-                _rubberBandSelection = false;
-                _selectionCanceled = false;
-
-                vtkPoints backgroundPoints = _backgroundMapper.GetInput().GetPoints();
-
+            // Set global variable
+            _clickPos = rwi.GetEventPosition();
+            //
+            _leftMouseButtonPressed = true;
+            _rubberBandSelection = false;
+            _selectionCanceled = false;
+            //
+            //if (_selection)
+            {                
+                vtkPoints backgroundPoints = _selectionBackgroundMapper.GetInput().GetPoints();
+                //
                 backgroundPoints.SetPoint(0, _clickPos[0], _clickPos[1], 0.0);
                 backgroundPoints.SetPoint(1, _clickPos[0], _clickPos[1], 0.0);
                 backgroundPoints.SetPoint(2, _clickPos[0], _clickPos[1], 0.0);
                 backgroundPoints.SetPoint(3, _clickPos[0], _clickPos[1], 0.0);
                 backgroundPoints.Modified();
-
-                _backgroundActor.VisibilityOn();
-                _borderActor.VisibilityOn();
+                //
+                //_selectionBackgroundActor.VisibilityOn();
+                //_selectionBorderActor.VisibilityOn();
             }
-            else LeftButtonPressEvent?.Invoke(_clickPos[0], _clickPos[1]);
+            //else 
+            LeftButtonPressEvent?.Invoke(_clickPos[0], _clickPos[1]);
         }
         void vtkInteractorStyleControl_LeftButtonReleaseEvt(vtkObject sender, vtkObjectEventArgs e)
         {
             // Widgets
             foreach (vtkMaxBorderWidget widget in _widgets) widget.LeftButtonRelease();
-
-            if (_selection)
+            //
+            //if (_selection)
             {
                 if (!_selectionCanceled)
                 {
                     vtkRenderWindowInteractor rwi = this.GetInteractor();
                     int[] mousePos = rwi.GetEventPosition();
-
+                    //
                     if (PointPickedOnLeftUpEvt != null)
                     {
                         if (_clickPos == null) PointPickedOnLeftUpEvt(mousePos[0], mousePos[1], _rubberBandSelection, 0, 0);
                         else PointPickedOnLeftUpEvt(mousePos[0], mousePos[1], _rubberBandSelection, _clickPos[0], _clickPos[1]);
                     }
                 }
-                
-                _clickPos = null;
-                _leftMouseButtonPressed = false;
-                _rubberBandSelection = false;
-
-                _backgroundActor.VisibilityOff();
-                _borderActor.VisibilityOff();
+                //
             }
+            //
+            _clickPos = null;
+            _leftMouseButtonPressed = false;
+            _rubberBandSelection = false;
+            //
+            _selectionBackgroundActor.VisibilityOff();
+            _selectionBorderActor.VisibilityOff();
+            //
+            this.GetInteractor().Render();
         }
         
         void vtkInteractorStyleControl_MiddleButtonPressEvt(vtkObject sender, vtkObjectEventArgs e)
@@ -392,7 +371,6 @@ namespace vtkControl
         {
             _x = this.GetInteractor().GetEventPosition()[0];
             _y = this.GetInteractor().GetEventPosition()[1];
-
             // Widgets - Move
             foreach (vtkMaxBorderWidget widget in _widgets)
             {
@@ -402,20 +380,19 @@ namespace vtkControl
                     return;
                 }
             }
-
+            //
             switch (this.GetState())
             {
                 case VTKIS_NONE:
-                    if (_selection)
+                    //if (_selection)
                     {
                         _timer.Stop();
                         _timer.Start();
-                        //this.FindPokedRenderer(_x, _y);
-                        //this.Select(_x, _y);
-
+                        //
                         if (_rubberBandEnabled)
                         {
-                            if (!_rubberBandSelection && _leftMouseButtonPressed && _clickPos != null && Math.Abs(_x - _clickPos[0]) > 1 && Math.Abs(_y - _clickPos[1]) > 1)
+                            if (!_rubberBandSelection && _leftMouseButtonPressed && _clickPos != null &&
+                                Math.Abs(_x - _clickPos[0]) > 1 && Math.Abs(_y - _clickPos[1]) > 1)
                             {
                                 _rubberBandSelection = true;
                             }
@@ -425,34 +402,14 @@ namespace vtkControl
                     break;
                 case VTKIS_ROTATE:
                     this.FindPokedRenderer(_x, _y);
-                    //renderer = this.GetCurrentRenderer();
-                    //vtkCamera camera = renderer.GetActiveCamera();
-                    //double[] focalPos1 = camera.GetFocalPoint();
                     this.Rotate();
                     this.InvokeEvent((uint)EventIds.InteractionEvent, IntPtr.Zero);
-                    //double[] focalPos2 = camera.GetFocalPoint();
-                    //double[] output = new double[3];
-                    //output[0] = focalPos1[0] - focalPos2[0];
-                    //Console.WriteLine(output[0].ToString() + ": " + output[1].ToString() + ": " + output[2].ToString());
                     break;
-
                 case VTKIS_PAN:
                     this.FindPokedRenderer(_x, _y);
                     this.Pan();
                     this.InvokeEvent((uint)EventIds.InteractionEvent, IntPtr.Zero);
                     break;
-
-                //case VTKIS_DOLLY:
-                //    this.FindPokedRenderer(_x, _y);
-                //    this.Dolly();
-                //    this.InvokeEvent((uint)EventIds.InteractionEvent, IntPtr.Zero);
-                //    break;
-
-                //case VTKIS_SPIN:
-                //    this.FindPokedRenderer(_x, _y);
-                //    this.Spin();
-                //    this.InvokeEvent((uint)EventIds.InteractionEvent, IntPtr.Zero);
-                //    break;
             }
         }
         
@@ -547,8 +504,8 @@ namespace vtkControl
                 //_leftMouseButtonPressed = false;
                 _rubberBandSelection = false;
 
-                _backgroundActor.VisibilityOff();
-                _borderActor.VisibilityOff();
+                _selectionBackgroundActor.VisibilityOff();
+                _selectionBorderActor.VisibilityOff();
 
                 ClearCurrentMouseSelection?.Invoke();
 
@@ -757,26 +714,28 @@ namespace vtkControl
         private void DrawRubberBandSelection(int x, int y)
         {
             if (_clickPos == null) return;
-
+            //
+            _selectionBackgroundActor.VisibilityOn();
+            _selectionBorderActor.VisibilityOn();
+            //
             vtkRenderWindowInteractor rwi = this.GetInteractor();
-            vtkPoints backgroundPoints = _backgroundMapper.GetInput().GetPoints();
-
+            vtkPoints backgroundPoints = _selectionBackgroundMapper.GetInput().GetPoints();
+            //
             int id1 = 1;
             int id2 = 2;
             int id3 = 3;
-
-            // switch ids 1 and 3 if II or IV quadrant
+            // Switch ids 1 and 3 if II or IV quadrant
             if ((x < _clickPos[0] && y > _clickPos[1]) || (x > _clickPos[0] && y < _clickPos[1]))
             {
                 id1 = 3;
                 id3 = 1;
             }
-
+            //
             backgroundPoints.SetPoint(id1, x, _clickPos[1], 0.0);
             backgroundPoints.SetPoint(id2, x, y, 0.0);
             backgroundPoints.SetPoint(id3, _clickPos[0], y, 0.0);
             backgroundPoints.Modified();
-
+            //
             rwi.Render();
         }
 
@@ -991,15 +950,15 @@ namespace vtkControl
             backgroundPolyData.SetPoints(backgroundPoints);
             backgroundPolyData.SetPolys(backgroundPolygon);
 
-            _backgroundMapper = vtkPolyDataMapper2D.New();
-            _backgroundMapper.SetInput(backgroundPolyData);
+            _selectionBackgroundMapper = vtkPolyDataMapper2D.New();
+            _selectionBackgroundMapper.SetInput(backgroundPolyData);
 
-            _backgroundActor = vtkActor2D.New();
-            _backgroundActor.SetMapper(_backgroundMapper);
-            _backgroundActor.GetProperty().SetOpacity(0.2);
-            _backgroundActor.VisibilityOff();
-            _backgroundActor.GetProperty().SetColor(0.2, 0.5, 1);
-            _selectionRenderer.AddActor(_backgroundActor);
+            _selectionBackgroundActor = vtkActor2D.New();
+            _selectionBackgroundActor.SetMapper(_selectionBackgroundMapper);
+            _selectionBackgroundActor.GetProperty().SetOpacity(0.2);
+            _selectionBackgroundActor.VisibilityOff();
+            _selectionBackgroundActor.GetProperty().SetColor(0.2, 0.5, 1);
+            _selectionRenderer.AddActor(_selectionBackgroundActor);
 
 
             vtkCellArray borderPolygon = vtkCellArray.New();
@@ -1017,12 +976,12 @@ namespace vtkControl
             vtkPolyDataMapper2D borderMapper = vtkPolyDataMapper2D.New();
             borderMapper.SetInput(borderPolyData);
 
-            _borderActor = vtkActor2D.New();
-            _borderActor.SetMapper(borderMapper);
-            _borderActor.GetProperty().SetColor(0.3, 0.3, 1.0);
-            _borderActor.VisibilityOff();
+            _selectionBorderActor = vtkActor2D.New();
+            _selectionBorderActor.SetMapper(borderMapper);
+            _selectionBorderActor.GetProperty().SetColor(0.3, 0.3, 1.0);
+            _selectionBorderActor.VisibilityOff();
 
-            _selectionRenderer.AddActor(_borderActor);
+            _selectionRenderer.AddActor(_selectionBorderActor);
         }
 
         private void DrawSphereOnLeft(vtkObject sender, vtkObjectEventArgs e)

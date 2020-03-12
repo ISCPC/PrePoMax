@@ -140,12 +140,11 @@ namespace PrePoMax.Forms
                 // Replace
                 if (_propertyItemChanged || !MeshRefinement.Valid)
                 {
-                    // replace back the ids by the previous selection
-                    Selection selection = MeshRefinement.CreationData;
-                    if (selection.Nodes[0] is SelectionNodeIds sn && sn.Equals(_selectionNodeIds))
+                    // Replace back the ids by the previous selection
+                    if (MeshRefinement.CreationData.Nodes[0] is SelectionNodeIds sn && sn.Equals(_selectionNodeIds))
                     {
-                        selection.Nodes.RemoveAt(0);
-                        selection.Nodes.InsertRange(0, _prevSelectionNodes);
+                        MeshRefinement.CreationData.Nodes.RemoveAt(0);
+                        MeshRefinement.CreationData.Nodes.InsertRange(0, _prevSelectionNodes);
                     }
                     //
                     MeshRefinement.Valid = true;
@@ -156,7 +155,8 @@ namespace PrePoMax.Forms
         }
         protected override bool OnPrepareForm(string stepName, string meshRefinementToEditName)
         {
-            this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
+            // To prevent the call to frmMain.itemForm_VisibleChanged when minimized
+            this.DialogResult = DialogResult.None;      
             if (meshRefinementToEditName == null)
             {
                 btnOkAddNew.Visible = true;
@@ -193,21 +193,19 @@ namespace PrePoMax.Forms
                 //
                 if (MeshRefinement.GeometryIds != null)
                 {
-                    // change node selection history to ids to speed up
+                    // Change node selection history to ids to speed up
                     int[] ids = MeshRefinement.GeometryIds;
-                    _selectionNodeIds = new SelectionNodeIds(vtkSelectOperation.None, false, ids);
-                    _selectionNodeIds.GeometryIds = true;
+                    _selectionNodeIds = new SelectionNodeIds(vtkSelectOperation.None, false, ids, true);
                     _prevSelectionNodes = MeshRefinement.CreationData.Nodes;
-                    _controller.ClearSelectionHistory();
-                    _controller.SetSelectItemToGeometry(); // is this necessary???
-                    _controller.AddSelectionNode(_selectionNodeIds, true);
+                    _controller.CreateNewSelection(MeshRefinement.CreationData.CurrentView, _selectionNodeIds, true);
+                    // Copy selection
                     MeshRefinement.CreationData = _controller.Selection.DeepClone();
                 }
             }
             //
             propertyGrid.SelectedObject = _viewFeMeshRefinement;
             propertyGrid.Select();
-            // add surface selection data to selection history
+            // Add surface selection data to selection history
             HighlightMeshRefinement();
             //
             return true;
@@ -221,6 +219,7 @@ namespace PrePoMax.Forms
                 if (this.DialogResult == System.Windows.Forms.DialogResult.OK)   
                 {
                     MeshRefinement.CreationData = _controller.Selection.DeepClone();
+                    // Get new default name from part
                     if (_meshRefinementToEditName == null && _defaultName == _viewFeMeshRefinement.Name)
                     {
                         FeMeshRefinement meshRefinement = MeshRefinement.DeepClone();

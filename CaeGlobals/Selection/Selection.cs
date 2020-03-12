@@ -28,7 +28,11 @@ namespace CaeGlobals
             get { return _limitSelectionToFirstPart; }
             set { _limitSelectionToFirstPart = value; } 
         }
-        public int CurrentView { get { return _currentView; } set { _currentView = value; } }
+        public int CurrentView 
+        { 
+            get { return _currentView; } 
+            set { _currentView = value; } 
+        }
 
 
         // Constructors                                                                                                             

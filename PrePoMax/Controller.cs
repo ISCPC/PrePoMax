@@ -216,7 +216,7 @@ namespace PrePoMax
 
 
         // Setters                                                                                                                  
-        public void SetSelectionOff()
+        public void SetSelectionToDefault()
         {
             SelectBy = vtkSelectBy.Off;
         }
@@ -326,6 +326,8 @@ namespace PrePoMax
             //
             ClearModel();
             ClearResults();
+            //
+            SetSelectionToDefault();
         }
         public void ClearModel()
         {
@@ -356,17 +358,17 @@ namespace PrePoMax
             _form.ClearResults();
             ClearAllSelection();
         }
+        public void ClearAllSelection()
+        {
+            ClearSelectionHistory();
+            _form.ClearActiveTreeSelection();
+        }
         public void ClearSelectionHistory()
         {
             _selection.Clear();
             _form.Clear3DSelection();
         }
-        public void ClearAllSelection()
-        {
-            _selection.Clear();
-            _form.Clear3DSelection();
-            _form.ClearActiveTreeSelection();
-        }
+        
         #endregion ################################################################################################################
 
         // Menus
@@ -3914,6 +3916,25 @@ namespace PrePoMax
 
 
         #region Selection  #########################################################################################################
+        public void SetSelectionView(ViewGeometryModelResults selectionView)
+        {
+            _selection.CurrentView = (int)selectionView;
+        }
+        public void SetSelectionView(int selectionView)
+        {
+            _selection.CurrentView = selectionView;
+        }
+        public static ViewGeometryModelResults GetSelectionView(Selection selection)
+        {
+            return (ViewGeometryModelResults)selection.CurrentView;
+        }
+        public void CreateNewSelection(int selectionView, SelectionNode selectionNode, bool highlight)
+        {
+            ClearSelectionHistory();
+            SetSelectionView(selectionView);
+            AddSelectionNode(selectionNode, true);
+        }
+        //
         // the function called from vtk_control
         public void SelectPointOrArea(double[] pickedPoint, double[][] planeParameters, vtkSelectOperation selectOperation)
         {
@@ -3921,7 +3942,7 @@ namespace PrePoMax
             {
                 if (_selectBy == vtkSelectBy.Id) return;
                 // Set the current view for the selection;
-                if (_selection.Nodes.Count == 0) _selection.CurrentView = (int)_currentView;
+                if (_selection.Nodes.Count == 0) SetSelectionView(_currentView);
                 //
                 if (pickedPoint == null && planeParameters == null) ClearSelectionHistory();   // empty pick - clear
                 else
@@ -4028,12 +4049,12 @@ namespace PrePoMax
             // geometry: itemId * 100000 + typeId * 10000 + partId;
             HashSet<int> selectedIds = new HashSet<int>();
             // Compatibility for version v0.5.2
-            if (_selection.CurrentView == -1) _selection.CurrentView = (int)ViewGeometryModelResults.Model;
+            if (_selection.CurrentView == -1) SetSelectionView(ViewGeometryModelResults.Model);
             // Copy selection - change of the current view clears the selection history
             Selection selectionCopy = _selection.DeepClone();
             // Set the selection view
-            CurrentView = (ViewGeometryModelResults)selectionCopy.CurrentView;
-            //
+            CurrentView = GetSelectionView(selectionCopy);
+            // Execute selection
             foreach (SelectionNode node in selectionCopy.Nodes) GetIdsFromSelectionNode(node, selectedIds);
             // Return
             return selectedIds.ToArray();
@@ -4181,22 +4202,22 @@ namespace PrePoMax
             {
                 if (_selection.SelectItem == vtkSelectItem.Node)
                 {
-                    ids = _form.GetNodeIdsFromFrustum(selectionNodeMouse.PlaneParameters, selectionNodeMouse.SelectBy);
+                    ids = GetNodeIdsFromFrustum(selectionNodeMouse.PlaneParameters, selectionNodeMouse.SelectBy);
                 }
                 else if (_selection.SelectItem == vtkSelectItem.Element)
                 {
-                    ids = _form.GetElementIdsFromFrustum(selectionNodeMouse.PlaneParameters, selectionNodeMouse.SelectBy);
+                    ids = GetElementIdsFromFrustum(selectionNodeMouse.PlaneParameters, selectionNodeMouse.SelectBy);
                 }
                 else if (_selection.SelectItem == vtkSelectItem.Surface)
                 {
                     ids = GetVisualizationFaceIdsFromArea(selectionNodeMouse);
                 }
-                else throw new NotSupportedException();
+                else ids = new int[0];// throw new NotSupportedException();
             }
             //
             return ids;
         }
-        //
+        // At point
         private int[] GetIdsAtPointFromGeometrySelection(SelectionNodeMouse selectionNodeMouse)
         {
             // Geometry selection - get geometry Ids
@@ -4397,6 +4418,72 @@ namespace PrePoMax
             //
             return ids;
         }
+        // Inside frustum
+        private int[] GetNodeIdsFromFrustum(double[][] planeParameters, vtkSelectBy selectBy)
+        {
+            int[] nodeIds;
+            int[] elementIds;
+            _form.GetPointAndCellIdsInsideFrustum(planeParameters, out nodeIds, out elementIds);
+            //
+            if (selectBy == vtkSelectBy.Node)
+            {
+                if (nodeIds.Length > 0) return nodeIds;
+            }
+            else if (selectBy == vtkSelectBy.Element)
+            {
+                if (nodeIds.Length > 0 && elementIds.Length > 0)
+                {
+                    // Extract inside cells
+                    vtkControl.vtkMaxActorData data = GetCellActorData(elementIds, nodeIds);
+                    return data.Geometry.Nodes.Ids;
+                }
+            }
+            else if (selectBy == vtkSelectBy.Part)
+            {
+                if (elementIds.Length > 0)
+                {
+                    FeMesh mesh = DisplayedMesh;
+                    int[] partIds = mesh.GetPartIdsFromElementIds(elementIds);
+                    HashSet<int> partNodeIds = new HashSet<int>();
+                    foreach (var partId in partIds) partNodeIds.UnionWith(mesh.GetPartById(partId).NodeLabels);
+                    return partNodeIds.ToArray();
+                }
+            }
+            else throw new NotSupportedException();
+            //
+            return new int[0];
+        }
+        public int[] GetElementIdsFromFrustum(double[][] planeParameters, vtkSelectBy selectBy)
+        {
+            int[] nodeIds;
+            int[] elementIds;
+            _form.GetPointAndCellIdsInsideFrustum(planeParameters, out nodeIds, out elementIds);
+            //
+            if (selectBy == vtkSelectBy.Node)
+            {
+                if (elementIds.Length > 0) return elementIds;
+            }
+            else if (selectBy == vtkSelectBy.Element)
+            {
+                // Extract inside cells
+                vtkControl.vtkMaxActorData data = GetCellActorData(elementIds, nodeIds);
+                return data.Geometry.Cells.Ids;
+            }
+            else if (selectBy == vtkSelectBy.Part)
+            {
+                if (elementIds.Length > 0)
+                {
+                    FeMesh mesh = DisplayedMesh;
+                    int[] partIds = mesh.GetPartIdsFromElementIds(elementIds);
+                    HashSet<int> partElementIds = new HashSet<int>();
+                    foreach (var partId in partIds) partElementIds.UnionWith(mesh.GetPartById(partId).Labels);
+                    return partElementIds.ToArray();
+                }
+            }
+            else throw new NotSupportedException();
+            //
+            return new int[0];
+        }
         //
         private int GetGeometryId(double[] point, int selectionOnPartId, double precision)
         {
@@ -4444,8 +4531,8 @@ namespace PrePoMax
         private int[] GetVisualizationFaceIdsFromArea(SelectionNodeMouse selectionNodeMouse)
         {
             int[] ids = null;
-            // create surface by area selecting nodes or elements
-            ids = _form.GetElementIdsFromFrustum(selectionNodeMouse.PlaneParameters, selectionNodeMouse.SelectBy);
+            // Create surface by area selecting nodes or elements
+            ids = GetElementIdsFromFrustum(selectionNodeMouse.PlaneParameters, selectionNodeMouse.SelectBy);
             ids = DisplayedMesh.GetVisualizationFaceIds(null, ids, false, false);
             return ids;
         }

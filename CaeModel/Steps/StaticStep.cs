@@ -16,6 +16,7 @@ namespace CaeModel
         private double _initialTimeIncrement;       //ISerializable
         private double _minTimeIncrement;           //ISerializable
         private double _maxTimeIncrement;           //ISerializable
+        private bool _direct;                       //ISerializable
 
 
         // Properties                                                                                                               
@@ -55,7 +56,7 @@ namespace CaeModel
                 _maxTimeIncrement = value;
             }
         }
-        public bool Direct { get; set; }
+        public bool Direct { get { return _direct; } set { _direct = value; } }
 
 
         // Constructors                                                                                                             
@@ -66,8 +67,8 @@ namespace CaeModel
             _initialTimeIncrement = 1;
             _minTimeIncrement = 1E-5;
             _maxTimeIncrement = 1E30;
-            Direct = false;
-
+            _direct = false;
+            //
             AddFieldOutput(new NodalFieldOutput("NF-Output-1", NodalFieldVariable.U | NodalFieldVariable.RF));
             AddFieldOutput(new ElementFieldOutput("EF-Output-1", ElementFieldVariable.E | ElementFieldVariable.S));
         }
@@ -75,7 +76,10 @@ namespace CaeModel
         //ISerializable
         public StaticStep(SerializationInfo info, StreamingContext context)
             :base(info, context)
-        {
+        {            
+            // Compatibility for version v.0.5.3
+            _direct = false;
+            //
             int count = 0;
             foreach (SerializationEntry entry in info)
             {
@@ -88,7 +92,9 @@ namespace CaeModel
                     case "_minTimeIncrement":
                         _minTimeIncrement = (double)entry.Value; count++; break;
                     case "_maxTimeIncrement":
-                        _maxTimeIncrement = (double)entry.Value; count++; break;                   
+                        _maxTimeIncrement = (double)entry.Value; count++; break;
+                    case "_direct":
+                        _direct = (bool)entry.Value; break;
                 }
             }
             if (count != 4) throw new NotSupportedException();
@@ -107,6 +113,7 @@ namespace CaeModel
             info.AddValue("_initialTimeIncrement", _initialTimeIncrement, typeof(double));
             info.AddValue("_minTimeIncrement", _minTimeIncrement, typeof(double));
             info.AddValue("_maxTimeIncrement", _maxTimeIncrement, typeof(double));
+            info.AddValue("_direct", _direct, typeof(bool));
         }
     }
 }

@@ -23,13 +23,13 @@ namespace CaeGlobals
 
 
         // Constructors                                                                                                             
-        public SelectionNodeIds(vtkSelectOperation selectOpreation, bool selectAll, int[] itemIds = null)
+        public SelectionNodeIds(vtkSelectOperation selectOpreation, bool selectAll, int[] itemIds = null, bool geometryIds = false)
             : base(selectOpreation)
         {
             _selectAll = selectAll;
             if (itemIds != null) _itemIds = itemIds.ToArray(); // copy
             else _itemIds = null;
-            _geometryIds = false;
+            _geometryIds = geometryIds;
         }
         public SelectionNodeIds(SerializationInfo info, StreamingContext context)
             : base(info, context)

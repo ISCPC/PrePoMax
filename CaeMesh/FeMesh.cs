@@ -2196,6 +2196,12 @@ namespace CaeMesh
             }
             return ids;
         }
+        public int[] GetPartIdsFromElementIds(int[] elementIds)
+        {
+            HashSet<int> partIds = new HashSet<int>();
+            foreach (var elementId in elementIds) partIds.Add(_elements[elementId].PartId);
+            return partIds.ToArray();
+        }
         // Section view - OLD
         public void ApplySectionView(Octree.Plane sectionPlane)
         {
