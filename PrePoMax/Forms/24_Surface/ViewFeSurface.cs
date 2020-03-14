@@ -26,12 +26,12 @@ namespace PrePoMax.Forms
         [OrderedDisplayName(0, 10, "Name")]
         [DescriptionAttribute("Name of the surface.")]
         public string Name { get { return _surface.Name; } set { _surface.Name = value; } }
-
+        //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(1, 10, "Surface type")]
         [DescriptionAttribute("Select the surface type.")]
         public FeSurfaceType SurfaceType { get { return _surface.Type; } set { _surface.Type = value; } }
-
+        //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(2, 10, "Create by/from")]
         [DescriptionAttribute("Select the way the surface will be created.")]
@@ -44,7 +44,7 @@ namespace PrePoMax.Forms
                 SetPropertiesVisibility();
             }
         }
-
+        //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(3, 10, "Select items")]
         [DescriptionAttribute("Select the items for the surface.")]
@@ -54,17 +54,12 @@ namespace PrePoMax.Forms
             get { return _itemSetData; }
             set { if (value != _itemSetData) _itemSetData = value; }
         }
-
+        //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(4, 10, "Node set")]
         [DescriptionAttribute("Select the node set for the surface creation.")]
         public string NodeSetName { get { return _surface.CreatedFromNodeSetName; } set { _surface.CreatedFromNodeSetName = value; } }
-
-        //[CategoryAttribute("Data")]
-        //[OrderedDisplayName(5, 10, "Geom. based")]
-        //[DescriptionAttribute("Is surface selection based on geometry?")]
-        //public bool GeomBased { get { return _surface.CreationData.IsGeometryBased(); } }
-
+        //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(6, 10, "Area")]
         [DescriptionAttribute("Area of the surface.")]
@@ -78,14 +73,15 @@ namespace PrePoMax.Forms
             _dctd = ProviderInstaller.Install(this);                // 2 command
             SetPropertiesVisibility();                              // 3 command
             _itemSetData = new ItemSetData(_surface.FaceIds);       // 4 command
+            //
+            _itemSetData.ItemIdsChangedEvent += ItemSetData_ItemIdsChangedEvent;
         }
 
 
         // Methods                                                                                                                  
-        
+
         public FeSurface GetBase()
         {
-            _surface.FaceIds = _itemSetData.ItemIds;        // this must be here, since _itemSetData is changed as pointer
             return _surface;
         }
         public void PopululateDropDownList(string[] nodeSetNames)
@@ -131,11 +127,15 @@ namespace PrePoMax.Forms
                 }
             }
         }
+        private void ItemSetData_ItemIdsChangedEvent()
+        {
+            _surface.FaceIds = _itemSetData.ItemIds;
+        }
 
 
 
 
-       
+
 
     }
 }

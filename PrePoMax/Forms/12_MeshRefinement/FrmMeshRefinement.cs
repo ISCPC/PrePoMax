@@ -186,6 +186,9 @@ namespace PrePoMax.Forms
                 _defaultName = GetMeshRefinementName();
                 MeshRefinement = new FeMeshRefinement(_defaultName);
                 _controller.Selection.Clear();
+                //
+                ItemSetDataEditor.SelectionForm.ItemSetData = _viewFeMeshRefinement.ItemSetData;
+                ItemSetDataEditor.SelectionForm.Show(this);
             }
             else
             {
@@ -283,7 +286,7 @@ namespace PrePoMax.Forms
         // IFormItemSetDataParent
         public bool IsSelectionGeometryBased()
         {
-            // prepare ItemSetDataEditor
+            // Prepare ItemSetDataEditor
             if (_meshRefinementToEditName == null) return true;
             return _controller.GetMeshRefinement(_meshRefinementToEditName).CreationData.IsGeometryBased();
         }

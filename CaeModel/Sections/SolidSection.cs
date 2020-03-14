@@ -20,7 +20,8 @@ namespace CaeModel
         // Variables                                                                                                                
         private double _thickness;
         private SolidSectionType _type;
-       
+        private int[] _partIds;
+
 
         // Properties                                                                                                               
         public double Thickness 
@@ -34,6 +35,7 @@ namespace CaeModel
             }
         }
         public SolidSectionType Type { get { return _type; } }
+        public int[] PartIds { get { return _partIds; } set { _partIds = value; } }
 
 
         // Constructors                                                                                                             
@@ -41,6 +43,7 @@ namespace CaeModel
             : base(name, materialName, regionName, regionType)
         {
             Thickness = thickness;  // sets the section type
+            _partIds = null;
         }
     }
 }

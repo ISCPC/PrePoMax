@@ -18,13 +18,14 @@ namespace PrePoMax.Forms
         private ItemSetData _itemSetData;
         private DynamicCustomTypeDescriptor _dctd = null;           // needed for sorting properties
 
+
         // Properties                                                                                                               
         [CategoryAttribute("Data")]
         [DisplayName("Name")]
         [DescriptionAttribute("Name of the node set.")]
         [Id(0, 0)]
         public string Name { get { return _nodeSet.Name; } set { _nodeSet.Name = value; } }
-
+        //
         [CategoryAttribute("Data")]
         [DisplayName("Select items")]
         [DescriptionAttribute("Select the items for the node set.")]
@@ -35,7 +36,7 @@ namespace PrePoMax.Forms
             get { return _itemSetData; }
             set { if (value != _itemSetData) _itemSetData = value; }
         }
-
+        //
         [CategoryAttribute("Center of gravity")]
         [DisplayName("X")]
         [DescriptionAttribute("X center of gravity.")]
@@ -48,7 +49,7 @@ namespace PrePoMax.Forms
                 else return 0;
             }
         }
-
+        //
         [CategoryAttribute("Center of gravity")]
         [DisplayName("Y")]
         [DescriptionAttribute("Y center of gravity.")]
@@ -61,7 +62,7 @@ namespace PrePoMax.Forms
                 else return 0;
             }
         }
-
+        //
         [CategoryAttribute("Center of gravity")]
         [DisplayName("Z")]
         [DescriptionAttribute("Z center of gravity.")]
@@ -74,7 +75,7 @@ namespace PrePoMax.Forms
                 else return 0;
             }
         }
-
+        //
         [CategoryAttribute("Bounding box center")]
         [DisplayName("X")]
         [DescriptionAttribute("Bounding box X center of gravity.")]
@@ -87,7 +88,7 @@ namespace PrePoMax.Forms
                 else return 0;
             }
         }
-
+        //
         [CategoryAttribute("Bounding box center")]
         [DisplayName("Y")]
         [DescriptionAttribute("Bounding box Y center of gravity.")]
@@ -100,7 +101,7 @@ namespace PrePoMax.Forms
                 else return 0;
             }
         }
-
+        //
         [CategoryAttribute("Bounding box center")]
         [DisplayName("Z")]
         [DescriptionAttribute("Bounding box Z center of gravity.")]
@@ -121,14 +122,19 @@ namespace PrePoMax.Forms
             _nodeSet = nodeSet;
             _dctd = ProviderInstaller.Install(this);
             _itemSetData = new ItemSetData(_nodeSet.Labels);
+            //
+            _itemSetData.ItemIdsChangedEvent += ItemSetData_ItemIdsChangedEvent;
         }
 
 
         // Methods                                                                                                                  
         public FeNodeSet GetBase()
         {
-            _nodeSet.Labels = _itemSetData.ItemIds;
             return _nodeSet;
+        }
+        private void ItemSetData_ItemIdsChangedEvent()
+        {
+            _nodeSet.Labels = _itemSetData.ItemIds;
         }
     }
 }

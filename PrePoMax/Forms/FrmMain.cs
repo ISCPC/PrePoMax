@@ -2574,6 +2574,10 @@ namespace PrePoMax
             try
             {
                 if (_controller.Model.Mesh == null) return;
+                // Data editor
+                ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
+                ItemSetDataEditor.ParentForm = _frmSection;
+                _frmSelectItemSet.SetOnlyGeometrySelection(false);
                 ShowForm(_frmSection, "Create Section", null);
             }
             catch (Exception ex)
@@ -2606,6 +2610,10 @@ namespace PrePoMax
 
         private void EditSection(string sectionName)
         {
+            // Data editor
+            ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
+            ItemSetDataEditor.ParentForm = _frmSection;
+            _frmSelectItemSet.SetOnlyGeometrySelection(false);
             ShowForm(_frmSection, "Edit Section", sectionName);
         }
         private void DeleteSections(string[] sectionNames)

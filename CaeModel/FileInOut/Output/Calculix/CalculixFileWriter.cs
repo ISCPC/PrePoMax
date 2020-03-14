@@ -415,9 +415,11 @@ namespace FileInOut.Output
                 {
                     if (entry.Value.Active)
                     {
-                        if (entry.Value is SolidSection)
+                        if (entry.Value is SolidSection ss)
                         {
-                            solidSection = new CalSolidSection(entry.Value as SolidSection);
+                            if (ss.RegionType == RegionTypeEnum.Selection)
+                                solidSection = new CalSolidSection(ss, model.Mesh.GetPartNamesByIds(ss.PartIds));
+                            else solidSection = new CalSolidSection(ss);
                             parent.AddKeyword(solidSection);
                         }
                         else throw new NotImplementedException();

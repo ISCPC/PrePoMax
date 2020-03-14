@@ -18,12 +18,13 @@ namespace PrePoMax.Forms
         private ItemSetData _itemSetData;
         private DynamicCustomTypeDescriptor _dctd = null;           // needed for sorting properties
 
+
         // Properties                                                                                                               
         [CategoryAttribute("Data")]
         [OrderedDisplayName(0, 10, "Name")]
         [DescriptionAttribute("Name of the element set.")]
         public string Name { get { return _elementSet.Name; } set { _elementSet.Name = value; } }
-
+        //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(1, 10, "Select items")]
         [DescriptionAttribute("Select the items for the element set.")]
@@ -41,14 +42,19 @@ namespace PrePoMax.Forms
             _elementSet = elementSet;
             _dctd = ProviderInstaller.Install(this);
             _itemSetData = new ItemSetData(_elementSet.Labels);
+            //
+            _itemSetData.ItemIdsChangedEvent += ItemSetData_ItemIdsChangedEvent;
         }
 
 
         // Methods                                                                                                                  
         public FeElementSet GetBase()
         {
-            _elementSet.Labels = _itemSetData.ItemIds;
             return _elementSet;
+        }
+        private void ItemSetData_ItemIdsChangedEvent()
+        {
+            _elementSet.Labels = _itemSetData.ItemIds;
         }
     }
 }

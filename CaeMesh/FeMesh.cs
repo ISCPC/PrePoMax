@@ -2186,6 +2186,18 @@ namespace CaeMesh
             }
             return null;
         }
+        public string[] GetPartNamesByIds(int[] ids)
+        {
+            if (ids == null) return null;
+            //
+            HashSet<int> idsHash = new HashSet<int>(ids);
+            List<string> partNames = new List<string>();
+            foreach (var entry in _parts)
+            {
+                if (idsHash.Contains(entry.Value.PartId)) partNames.Add(entry.Key); 
+            }
+            return partNames.ToArray();
+        }
         public int[] GetPartIds()
         {
             int count = 0;
@@ -2196,10 +2208,20 @@ namespace CaeMesh
             }
             return ids;
         }
-        public int[] GetPartIdsFromElementIds(int[] elementIds)
+        public int[] GetPartIdsByElementIds(int[] elementIds)
         {
             HashSet<int> partIds = new HashSet<int>();
             foreach (var elementId in elementIds) partIds.Add(_elements[elementId].PartId);
+            return partIds.ToArray();
+        }
+        public int[] GetPartIdsByNodeIds(int[] nodeIds)
+        {
+            List<int> partIds = new List<int>();
+            HashSet<int> nodeIdsHash = new HashSet<int>();
+            foreach (var entry in _parts)
+            {
+                if (entry.Value.NodeLabels.Intersect(nodeIds).Count() > 0) partIds.Add(entry.Value.PartId);
+            }
             return partIds.ToArray();
         }
         // Section view - OLD
@@ -3984,6 +4006,10 @@ namespace CaeMesh
             {
                 if (itemTypePart[1] == 3) return GetVisualizationFaceIds(itemTypePart[0], itemTypePart[2]);
                 else return new int[] { };
+            }
+            else if (selectItem == vtkSelectItem.Part)
+            {
+                return new int[] { itemTypePart[2] };
             }
             else throw new NotSupportedException();
         }

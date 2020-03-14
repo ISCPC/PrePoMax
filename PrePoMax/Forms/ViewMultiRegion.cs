@@ -35,7 +35,7 @@ namespace PrePoMax
                 _multiRegion.RegionType =_regionNameRegionTypePairs[value];
                 CustomPropertyDescriptor cpd = _dctd.GetProperty(_regionTypePropertyNamePairs[_multiRegion.RegionType]);
                 _multiRegion.RegionName = cpd.StatandardValues.First().ToString();
-
+                //
                 UpdateRegionVisibility();
             }
         }
@@ -81,7 +81,7 @@ namespace PrePoMax
 
             _dctd.PopulateProperty(() => this.RegionType, types.ToArray(), false, 2);
         }
-        public void UpdateRegionVisibility()
+        public virtual void UpdateRegionVisibility()
         {
             bool browsable;
             foreach (var entry in _regionTypePropertyNamePairs)

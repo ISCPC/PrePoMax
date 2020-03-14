@@ -389,6 +389,7 @@
             this.Text = "Set selection";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmSelectItemSet_FormClosing);
             this.VisibleChanged += new System.EventHandler(this.FrmSelectItemSet_VisibleChanged);
+            this.Move += new System.EventHandler(this.FrmSelectItemSet_Move);
             this.gbFEMesh.ResumeLayout(false);
             this.gbFEMesh.PerformLayout();
             this.gbGeometry.ResumeLayout(false);

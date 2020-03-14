@@ -176,7 +176,7 @@ namespace CaeModel
             if (_mesh == null) return new string[0];
 
             List<string> invalidItems = new List<string>();
-            bool valid;
+            bool valid = false;
             invalidItems.AddRange(_mesh.CheckValidity(items));
 
             // Sections
@@ -184,9 +184,16 @@ namespace CaeModel
             foreach (var entry in _sections)
             {
                 section = entry.Value;
-                valid = _materials.ContainsKey(section.MaterialName) 
-                        && ((section.RegionType == RegionTypeEnum.PartName && _mesh.Parts.ContainsKey(section.RegionName))
-                        || (section.RegionType == RegionTypeEnum.ElementSetName && _mesh.ElementSets.ContainsValidKey(section.RegionName)));
+                if (section is SolidSection ss)
+                {
+                    valid = _materials.ContainsKey(section.MaterialName)
+                        && ((ss.RegionType == RegionTypeEnum.PartName && _mesh.Parts.ContainsKey(section.RegionName))
+                        || (ss.RegionType == RegionTypeEnum.ElementSetName && _mesh.ElementSets.ContainsValidKey(section.RegionName))
+                        || (ss.RegionType == RegionTypeEnum.Selection && _mesh.GetPartNamesByIds(ss.PartIds) != null) &&
+                            _mesh.GetPartNamesByIds(ss.PartIds).Length == ss.PartIds.Length);
+                }
+                else throw new NotSupportedException();
+                //
                 SetItemValidity(section, valid, items);
                 if (!valid && section.Active) invalidItems.Add("Section: " + section.Name);
             }
@@ -201,23 +208,22 @@ namespace CaeModel
                     valid = (_mesh.ReferencePoints.ContainsValidKey(rb.ReferencePointName))
                             && ((rb.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(rb.RegionName))
                             || (rb.RegionType == RegionTypeEnum.SurfaceName && _mesh.Surfaces.ContainsKey(rb.RegionName)));
-                    SetItemValidity(rb, valid, items);
-                    if (!valid && constraint.Active) invalidItems.Add("Constraint: " + constraint.Name);
                 }
                 else if (constraint is Tie t)
                 {
                     valid = (_mesh.Surfaces.ContainsValidKey(t.SlaveSurfaceName))
                             && (_mesh.Surfaces.ContainsValidKey(t.MasterSurfaceName))
                             && (t.SlaveSurfaceName != t.MasterSurfaceName);
-                    SetItemValidity(t, valid, items);
-                    if (!valid && constraint.Active) invalidItems.Add("Constraint: " + constraint.Name);
                 }
                 else throw new NotSupportedException();
+                //
+                SetItemValidity(constraint, valid, items);
+                if (!valid && constraint.Active) invalidItems.Add("Constraint: " + constraint.Name);
             }
 
             // Steps
             HistoryOutput historyOutput;
-            BoundaryCondition boundaryCondition;
+            BoundaryCondition bc;
             Load load;
             FeSurface s;
             foreach (var step in _stepCollection.StepsList)
@@ -231,38 +237,36 @@ namespace CaeModel
                         valid = (nho.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(nho.RegionName))
                                 || (nho.RegionType == RegionTypeEnum.SurfaceName && _mesh.Surfaces.ContainsValidKey(nho.RegionName))
                                 || (nho.RegionType == RegionTypeEnum.ReferencePointName && _mesh.ReferencePoints.ContainsValidKey(nho.RegionName));
-                        SetItemValidity(nho, valid, items);
-                        if (!valid && nho.Active) invalidItems.Add("History output: " + step.Name + ", " + nho.Name);
                     }
                     else if (historyOutput is ElementHistoryOutput eho)
                     {
-                        valid = _mesh.ElementSets.ContainsValidKey(eho.RegionName);
-                        SetItemValidity(eho, valid, items);
-                        if (!valid && eho.Active) invalidItems.Add("History output: " + step.Name + ", " + eho.Name);
+                        valid = _mesh.ElementSets.ContainsValidKey(eho.RegionName);                        
                     }
                     else throw new NotSupportedException();
+                    //
+                    SetItemValidity(historyOutput, valid, items);
+                    if (!valid && historyOutput.Active) invalidItems.Add("History output: " + step.Name + ", " + historyOutput.Name);
                 }
 
                 // Boundary conditions
                 foreach (var bcEntry in step.BoundaryConditions)
                 {
-                    boundaryCondition = bcEntry.Value;
-                    if (boundaryCondition is DisplacementRotation dr)
+                    bc = bcEntry.Value;
+                    if (bc is DisplacementRotation dr)
                     {
                         valid = (dr.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(dr.RegionName))
                                 || (dr.RegionType == RegionTypeEnum.SurfaceName && (_mesh.Surfaces.ContainsValidKey(dr.RegionName)))
                                 || (dr.RegionType == RegionTypeEnum.ReferencePointName && (_mesh.ReferencePoints.ContainsValidKey(dr.RegionName)));
-                        SetItemValidity(dr, valid, items);
-                        if (!valid && dr.Active) invalidItems.Add("Boundary condition: " + step.Name + ", " + dr.Name);
                     }
-                    else if (boundaryCondition is SubmodelBC sm)
+                    else if (bc is SubmodelBC sm)
                     {
                         valid = (sm.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(sm.RegionName))
                                 || (sm.RegionType == RegionTypeEnum.SurfaceName && (_mesh.Surfaces.ContainsValidKey(sm.RegionName)));
-                        SetItemValidity(sm, valid, items);
-                        if (!valid && sm.Active) invalidItems.Add("Boundary condition: " + step.Name + ", " + sm.Name);
                     }
                     else throw new NotSupportedException();
+                    //
+                    SetItemValidity(bc, valid, items);
+                    if (!valid && bc.Active) invalidItems.Add("Boundary condition: " + step.Name + ", " + bc.Name);
                 }
 
                 // Loads
@@ -273,49 +277,38 @@ namespace CaeModel
                     {
                         valid = (cl.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(cl.RegionName))
                                 || (cl.RegionType == RegionTypeEnum.ReferencePointName && (_mesh.ReferencePoints.ContainsValidKey(cl.RegionName)));
-                        SetItemValidity(cl, valid, items);
-                        if (!valid && cl.Active) invalidItems.Add("Load: " + step.Name + ", " + cl.Name);
                     }
                     else if (load is MomentLoad ml)
                     {
                         valid = (ml.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(ml.RegionName))
                                 || (ml.RegionType == RegionTypeEnum.ReferencePointName && (_mesh.ReferencePoints.ContainsValidKey(ml.RegionName)));
-                        SetItemValidity(ml, valid, items);
-                        if (!valid && ml.Active) invalidItems.Add("Load: " + step.Name + ", " + ml.Name);
                     }
                     else if (load is DLoad dl)
                     {
                         valid = (_mesh.Surfaces.TryGetValue(dl.SurfaceName, out s) && s.Valid);
-                        SetItemValidity(dl, valid, items);
-                        if (!valid && dl.Active) invalidItems.Add("Load: " + step.Name + ", " + dl.Name);
                     }
                     else if (load is STLoad stl)
                     {
                         valid = (_mesh.Surfaces.TryGetValue(stl.SurfaceName, out s) && s.Valid);
-                        SetItemValidity(stl, valid, items);
-                        if (!valid && stl.Active) invalidItems.Add("Load: " + step.Name + ", " + stl.Name);
                     }
                     else if (load is GravityLoad gl)
                     {
                         valid = (gl.RegionType == RegionTypeEnum.PartName && _mesh.Parts.ContainsValidKey(gl.RegionName))
                                 || (gl.RegionType == RegionTypeEnum.ElementSetName && (_mesh.ElementSets.ContainsValidKey(gl.RegionName)));
-                        SetItemValidity(gl, valid, items);
-                        if (!valid && gl.Active) invalidItems.Add("Load: " + step.Name + ", " + gl.Name);
                     }
                     else if (load is CentrifLoad cf)
                     {
                         valid = (cf.RegionType == RegionTypeEnum.PartName && _mesh.Parts.ContainsValidKey(cf.RegionName))
                                 || (cf.RegionType == RegionTypeEnum.ElementSetName && (_mesh.ElementSets.ContainsValidKey(cf.RegionName)));
-                        SetItemValidity(cf, valid, items);
-                        if (!valid && cf.Active) invalidItems.Add("Load: " + step.Name + ", " + cf.Name);
                     }
                     else if (load is PreTensionLoad ptl)
                     {
                         valid = (_mesh.Surfaces.TryGetValue(ptl.SurfaceName, out s) && s.Valid && s.Type == FeSurfaceType.Element);
-                        SetItemValidity(ptl, valid, items);
-                        if (!valid && ptl.Active) invalidItems.Add("Load: " + step.Name + ", " + ptl.Name);
                     }
                     else throw new NotSupportedException();
+                    //
+                    SetItemValidity(load, valid, items);
+                    if (!valid && load.Active) invalidItems.Add("Load: " + step.Name + ", " + load.Name);
                 }
             }
 
@@ -344,11 +337,23 @@ namespace CaeModel
                 {
                     elementIds.UnionWith(_mesh.ElementSets[entry.Value.RegionName].Labels);
                 }
+                else if (entry.Value.RegionType == RegionTypeEnum.Selection)
+                {
+                    if (entry.Value is SolidSection ss)
+                    {
+                        string[] partNames = _mesh.GetPartNamesByIds(ss.PartIds);
+                        foreach (var partName in partNames)
+                        {
+                            elementIds.UnionWith(_mesh.Parts[partName].Labels);
+                        }
+                    }
+                    else throw new NotSupportedException();
+                }
                 else throw new NotSupportedException();
             }
-
+            //
             var notSpecifiedIds = _mesh.Elements.Keys.Except(elementIds);
-
+            //
             return notSpecifiedIds.Count();
         }
 

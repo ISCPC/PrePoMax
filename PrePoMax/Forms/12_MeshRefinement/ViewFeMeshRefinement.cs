@@ -24,7 +24,7 @@ namespace PrePoMax.Forms
         [OrderedDisplayName(0, 10, "Name")]
         [DescriptionAttribute("Name of the mesh refinement.")]
         public string Name { get { return _meshRefinement.Name; } set { _meshRefinement.Name = value; } }
-
+        //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(1, 10, "Select items")]
         [DescriptionAttribute("Select the items for the mesh refinement.")]
@@ -34,7 +34,7 @@ namespace PrePoMax.Forms
             get { return _itemSetData; }
             set { if (value != _itemSetData) _itemSetData = value; }
         }
-
+        //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(2, 10, "Mesh size")]
         [DescriptionAttribute("Local size of the mesh.")]
@@ -47,14 +47,19 @@ namespace PrePoMax.Forms
             _meshRefinement = meshRefinement;                               // 1 command
             _dctd = ProviderInstaller.Install(this);                        // 2 command
             _itemSetData = new ItemSetData(_meshRefinement.GeometryIds);    // 3 command
+            //
+            _itemSetData.ItemIdsChangedEvent += ItemSetData_ItemIdsChangedEvent;
         }
 
 
         // Methods                                                                                                                  
         public FeMeshRefinement GetBase()
         {
-            _meshRefinement.GeometryIds = _itemSetData.ItemIds;     // this must be here, since _itemSetData is changed as pointer
             return _meshRefinement;
+        }
+        private void ItemSetData_ItemIdsChangedEvent()
+        {
+            _meshRefinement.GeometryIds = _itemSetData.ItemIds;
         }
     }
 }

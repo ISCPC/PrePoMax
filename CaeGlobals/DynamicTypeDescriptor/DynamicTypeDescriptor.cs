@@ -1570,19 +1570,21 @@ namespace DynamicTypeDescriptor
             }
         }
         //
-        public void PopulateProperty<T>(Expression<Func<T>> propertyLambda, string[] values, bool addBlankIfEmpty = true, int numOfItemsToBeBrowsable = 1)
+        public void PopulateProperty<T>(Expression<Func<T>> propertyLambda, string[] values, bool addBlankIfEmpty = true,
+                                        int numOfItemsToBeBrowsable = 1)
         {
             var me = propertyLambda.Body as MemberExpression;
-            if (me == null) throw new ArgumentException("You must pass a lambda of the form: '() => Class.Property' or '() => object.Property'");
-
+            if (me == null) throw new ArgumentException("You must pass a lambda of the form: "
+                                                        + "'() => Class.Property' or '() => object.Property'");
+            //
             CustomPropertyDescriptor cpd = GetProperty(me.Member.Name);
             cpd.StatandardValues.Clear();
             cpd.PropertyFlags |= PropertyFlags.ExclusiveStandardValues;
-
+            //
             cpd.SetIsBrowsable(values.Length >= numOfItemsToBeBrowsable);
-
+            //
             if (values.Length == 0 && addBlankIfEmpty) cpd.StatandardValues.Add(new StandardValueAttribute(""));
-
+            //
             foreach (var name in values)
             {
                 StandardValueAttribute sva = new StandardValueAttribute(name);

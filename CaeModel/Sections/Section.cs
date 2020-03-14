@@ -15,13 +15,14 @@ namespace CaeModel
         private string _materialName;
         private RegionTypeEnum _regionType;
         private string _regionName;
+        private Selection _creationData;
 
 
         // Properties                                                                                                               
         public string MaterialName { get { return _materialName; } set { _materialName = value; } }
         public string RegionName { get { return _regionName; } set { _regionName = value; } }
         public RegionTypeEnum RegionType { get { return _regionType; } set { _regionType = value; } }
-        
+        public Selection CreationData { get { return _creationData; } set { _creationData = value; } }
 
 
         // Constructors                                                                                                             
@@ -31,6 +32,7 @@ namespace CaeModel
             _materialName = materialName;
             _regionName = regionName;
             _regionType = regionType;
+            _creationData = null;
         }
     }
 

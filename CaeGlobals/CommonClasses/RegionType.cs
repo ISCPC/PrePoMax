@@ -32,7 +32,10 @@ namespace CaeGlobals
         SurfaceName,
 
         [StandardValue("Reference point name")]
-        ReferencePointName
+        ReferencePointName,
+
+        [StandardValue("Selection")]
+        Selection = 20
     }
 
     public static class RegionTypeExtensionMethods
@@ -50,11 +53,13 @@ namespace CaeGlobals
                 case RegionTypeEnum.ElementId:
                     return "Element id";
                 case RegionTypeEnum.ElementSetName:
-                    return "Element set name";
-                case RegionTypeEnum.ReferencePointName:
-                    return "Reference point name";
+                    return "Element set name";                
                 case RegionTypeEnum.SurfaceName:
                     return "Surface name";
+                case RegionTypeEnum.ReferencePointName:
+                    return "Reference point name";
+                case RegionTypeEnum.Selection:
+                    return "Selection";
                 default:
                     throw new NotSupportedException();
             }

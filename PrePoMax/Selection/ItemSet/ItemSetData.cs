@@ -23,8 +23,23 @@ namespace PrePoMax
 
 
         // Properties                                                                                                               
-        public int[] ItemIds { get { return _itemIds; } set { if (value != _itemIds) _itemIds = value; } }
+        public int[] ItemIds 
+        { 
+            get { return _itemIds; } 
+            set 
+            {
+                if (value != _itemIds)
+                {
+                    _itemIds = value;
+                    ItemIdsChangedEvent?.Invoke();
+                }
+            }
+        }
         public ItemSetDataToStringType ToStringType { get { return _toStringType; } set { _toStringType = value; } }
+
+
+        // Events
+        public event Action ItemIdsChangedEvent;
 
 
         // Constructors                                                                                                             

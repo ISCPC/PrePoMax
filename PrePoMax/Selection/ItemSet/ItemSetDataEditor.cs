@@ -23,7 +23,6 @@ namespace PrePoMax
         // Variables                                                                                                                
         private static FrmSelectItemSet _frmSelectItemSet;
         private static Form _parentForm;
-        private ItemSetData _itemSetData;
         
 
         // Properties                                                                                                               
@@ -39,41 +38,22 @@ namespace PrePoMax
         public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value)
         {
             IWindowsFormsEditorService editorService = null;
-
+            //
             if (provider != null)
             {
                 editorService = provider.GetService(typeof(IWindowsFormsEditorService)) as IWindowsFormsEditorService;
-            }
-
-            if (editorService != null)
-            {
-                if (_frmSelectItemSet != null)    // IsDisposed is true if the form was closed on Cancel or OK button
+                //
+                if (editorService != null)
                 {
-                    _itemSetData = value as ItemSetData;
-
-                    _frmSelectItemSet.ItemSetData = _itemSetData;
-                    _frmSelectItemSet.Location = _parentForm.Location;
-                    _frmSelectItemSet.VisibleChanged += _frmSelectItemSet_VisibleChanged;
-
-                    if (_parentForm is IFormItemSetDataParent fdsp)
-                        _frmSelectItemSet.SetGeometrySelection(fdsp.IsSelectionGeometryBased());
-
-                    _parentForm.Enabled = false;
-                    _frmSelectItemSet.Show();
+                    if (_frmSelectItemSet != null)
+                    {
+                        _frmSelectItemSet.ItemSetData = value as ItemSetData;
+                        _frmSelectItemSet.Show();
+                    }
                 }
             }
-          
+            //
             return value;
-        }
-        void _frmSelectItemSet_VisibleChanged(object sender, EventArgs e)
-        {
-            // OK or Cancel are user events at closing the form
-            if (_frmSelectItemSet.Visible == false && (_frmSelectItemSet.DialogResult == DialogResult.OK || _frmSelectItemSet.DialogResult == DialogResult.Cancel))
-            {
-                _parentForm.DialogResult = _frmSelectItemSet.DialogResult;
-                _parentForm.Enabled = true;
-                _frmSelectItemSet.VisibleChanged -= _frmSelectItemSet_VisibleChanged;
-            }
         }
         
 
@@ -92,7 +72,6 @@ namespace PrePoMax
         {
             try
             {
-                //ItemSetData setData = (ItemSetData)e.Value;
                 using (Pen p = Pens.Black)
                 {
                     //e.Graphics.DrawLine(p, 1, 1, 10, 10);

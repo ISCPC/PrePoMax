@@ -232,6 +232,10 @@ namespace PrePoMax
         {
             SelectItem = vtkSelectItem.Surface;
         }
+        public void SetSelectItemToPart()
+        {
+            SelectItem = vtkSelectItem.Part;
+        }
         public void SetSelectItemToGeometry()
         {
             SelectItem = vtkSelectItem.Geometry;
@@ -934,8 +938,8 @@ namespace PrePoMax
             }
             // Regenerate tree
             _form.RegenerateTree(_model, _jobs, _results, _history);
-            // Draw also draws the ymbols
-            DrawMesh(resetCamera);
+            // Update also draws the symbols
+            Update(UpdateType.Check | UpdateType.DrawMesh | UpdateType.RedrawSymbols);
             // At the end update the sets
             if (renumbered)
             {
@@ -1753,9 +1757,13 @@ namespace PrePoMax
         public bool CreateMesh(string partName)
         {
             GeometryPart part = (GeometryPart)_model.Geometry.Parts[partName];
-
+            //
             if (part.CADFileData == null) return CreateMeshFromStl(part);
             else return CreateMeshFromBrep(part);
+            //
+            UpdateType ut = UpdateType.Check;
+            //if (invalidate) ut |= UpdateType.DrawMesh | UpdateType.RedrawSymbols;
+            //Update(ut);
         }
         private bool CreateMeshFromStl(GeometryPart part)
         {
@@ -2229,15 +2237,15 @@ namespace PrePoMax
             {
                 string[] removedParts;
                 removedPartIds = _model.Mesh.RemoveParts(partNames, out removedParts, removeForRemeshing);
-
+                //
                 ViewGeometryModelResults view = ViewGeometryModelResults.Model;
                 foreach (var name in removedParts) _form.RemoveTreeNode<MeshPart>(view, name, null);
             }
-
+            //
             UpdateType ut = UpdateType.Check;
             if (invalidate) ut |= UpdateType.DrawMesh | UpdateType.RedrawSymbols;
             Update(ut);
-
+            //
             return removedPartIds;
         }
         //
@@ -3060,6 +3068,15 @@ namespace PrePoMax
         }
         public void AddSection(Section section)
         {
+            if (section.RegionType == RegionTypeEnum.Selection)
+            {
+                // In order for the Regenerate history to work perform the selection
+                _selection = section.CreationData.DeepClone();
+                if (section is SolidSection ss) ss.PartIds = GetSelectionIds();
+                else throw new NotSupportedException();
+                _selection.Clear();
+            }
+            //
             _model.Sections.Add(section.Name, section);
             _form.AddTreeNode(ViewGeometryModelResults.Model, section, null);
 
@@ -3075,6 +3092,15 @@ namespace PrePoMax
         }
         public void ReplaceSection(string oldSectionName, Section newSection)
         {
+            if (newSection.RegionType == RegionTypeEnum.Selection)
+            {
+                // In order for the Regenerate history to work perform the selection
+                _selection = newSection.CreationData.DeepClone();
+                if (newSection is SolidSection ss) ss.PartIds = GetSelectionIds();
+                else throw new NotSupportedException();
+                _selection.Clear();
+            }
+            //
             _model.Sections.Replace(oldSectionName, newSection.Name, newSection);
             //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldSectionName, newSection, null);
@@ -4212,7 +4238,11 @@ namespace PrePoMax
                 {
                     ids = GetVisualizationFaceIdsFromArea(selectionNodeMouse);
                 }
-                else ids = new int[0];// throw new NotSupportedException();
+                else if (_selection.SelectItem == vtkSelectItem.Part)
+                {
+                    ids = GetPartIdsFromFrustum(selectionNodeMouse.PlaneParameters, selectionNodeMouse.SelectBy);
+                }
+                else throw new NotSupportedException();
             }
             //
             return ids;
@@ -4443,7 +4473,7 @@ namespace PrePoMax
                 if (elementIds.Length > 0)
                 {
                     FeMesh mesh = DisplayedMesh;
-                    int[] partIds = mesh.GetPartIdsFromElementIds(elementIds);
+                    int[] partIds = mesh.GetPartIdsByElementIds(elementIds);
                     HashSet<int> partNodeIds = new HashSet<int>();
                     foreach (var partId in partIds) partNodeIds.UnionWith(mesh.GetPartById(partId).NodeLabels);
                     return partNodeIds.ToArray();
@@ -4474,11 +4504,35 @@ namespace PrePoMax
                 if (elementIds.Length > 0)
                 {
                     FeMesh mesh = DisplayedMesh;
-                    int[] partIds = mesh.GetPartIdsFromElementIds(elementIds);
+                    int[] partIds = mesh.GetPartIdsByElementIds(elementIds);
                     HashSet<int> partElementIds = new HashSet<int>();
                     foreach (var partId in partIds) partElementIds.UnionWith(mesh.GetPartById(partId).Labels);
                     return partElementIds.ToArray();
                 }
+            }
+            else throw new NotSupportedException();
+            //
+            return new int[0];
+        }
+        public int[] GetPartIdsFromFrustum(double[][] planeParameters, vtkSelectBy selectBy)
+        {
+            int[] nodeIds;
+            int[] elementIds;
+            FeMesh mesh = DisplayedMesh;
+            _form.GetPointAndCellIdsInsideFrustum(planeParameters, out nodeIds, out elementIds);
+            //
+            if (selectBy == vtkSelectBy.Node)
+            {
+                 if (nodeIds.Length > 0) return mesh.GetPartIdsByNodeIds(nodeIds);
+            }
+            else if (selectBy == vtkSelectBy.Element)
+            {
+                if (elementIds.Length > 0) return mesh.GetPartIdsByElementIds(elementIds);
+            }
+            else if (selectBy == vtkSelectBy.Part)
+            {
+                if (nodeIds.Length > 0) return mesh.GetPartIdsByNodeIds(nodeIds);
+                else if (elementIds.Length > 0) return mesh.GetPartIdsByElementIds(elementIds);
             }
             else throw new NotSupportedException();
             //
@@ -4530,7 +4584,7 @@ namespace PrePoMax
         //
         private int[] GetVisualizationFaceIdsFromArea(SelectionNodeMouse selectionNodeMouse)
         {
-            int[] ids = null;
+            int[] ids;
             // Create surface by area selecting nodes or elements
             ids = GetElementIdsFromFrustum(selectionNodeMouse.PlaneParameters, selectionNodeMouse.SelectBy);
             ids = DisplayedMesh.GetVisualizationFaceIds(null, ids, false, false);
@@ -6248,6 +6302,11 @@ namespace PrePoMax
                     {
                         if (ss.RegionType == RegionTypeEnum.PartName) HighlightModelParts(new string[] { ss.RegionName });
                         else if (ss.RegionType == RegionTypeEnum.ElementSetName) HighlightElementSets(new string[] { ss.RegionName });
+                        else if (ss.RegionType == RegionTypeEnum.Selection)
+                        {
+                            string[] partNames = DisplayedMesh.GetPartNamesByIds(ss.PartIds);
+                            if (partNames != null) HighlightModelParts(partNames.ToArray());
+                        }
                         else throw new NotSupportedException();
                     }
                     else if (obj is CaeModel.Constraint c)
@@ -6624,6 +6683,7 @@ namespace PrePoMax
         {
             _form.Clear3DSelection();
             int[] ids = GetSelectionIds();
+            HashSet<int> idsHash = new HashSet<int>(ids);
             if (ids.Length == 0) return;
 
             if (_selection.SelectItem == vtkSelectItem.Node)
@@ -6638,15 +6698,11 @@ namespace PrePoMax
                 HighlightItemsByGeometryIds(ids);
             else if (_selection.SelectItem == vtkSelectItem.Part)
             {
-                foreach (var entry in DisplayedMesh.Parts)
-                {
-                    if (entry.Value.PartId == ids[0])
-                    {
-                        if (entry.Value is GeometryPart) HighlightGeometryParts(new string[] { entry.Key });
-                        else if (entry.Value is MeshPart) HighlightModelParts(new string[] { entry.Key });
-                        return;
-                    }
-                }
+                string[] partNames = DisplayedMesh.GetPartNamesByIds(ids);
+                //
+                if (_currentView == ViewGeometryModelResults.Geometry) HighlightGeometryParts(partNames.ToArray());
+                else if (_currentView == ViewGeometryModelResults.Model) HighlightModelParts(partNames.ToArray());
+                return;
             }
             else throw new NotSupportedException();
         }

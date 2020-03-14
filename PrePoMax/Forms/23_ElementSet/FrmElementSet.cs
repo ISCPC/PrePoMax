@@ -32,7 +32,7 @@ namespace PrePoMax.Forms
         public FrmElementSet(Controller controller)
         {
             InitializeComponent();
-
+            //
             _controller = controller;
             _viewElementSet = null;
             _allExistingNames = new HashSet<string>();
@@ -49,7 +49,6 @@ namespace PrePoMax.Forms
             this.Text = "Edit Element Set";
             this.gbProperties.ResumeLayout(false);
             this.ResumeLayout(false);
-
         }
 
 
@@ -57,14 +56,14 @@ namespace PrePoMax.Forms
         protected override void Apply()
         {
             _viewElementSet = (ViewElementSet)propertyGrid.SelectedObject;            
-
+            //
             if ((_elementSetToEditName == null && _allExistingNames.Contains(_viewElementSet.Name)) ||                   // named to existing name
                 (_viewElementSet.Name != _elementSetToEditName && _allExistingNames.Contains(_viewElementSet.Name)))     // renamed to existing name
                 throw new CaeException("The selected name already exists.");
-
+            //
             if (ElementSet.Labels == null || ElementSet.Labels.Length <= 0)
                 throw new CaeException("The element set must contain at least one item.");
-
+            //
             if (_elementSetToEditName == null)
             {
                 // Create
@@ -82,7 +81,7 @@ namespace PrePoMax.Forms
                         selection.Nodes.RemoveAt(0);
                         selection.Nodes.InsertRange(0, _prevSelectionNodes);
                     }
-
+                    //
                     ElementSet.Valid = true;
                     _controller.ReplaceElementSetCommand(_elementSetToEditName, ElementSet);
                 }
@@ -92,9 +91,9 @@ namespace PrePoMax.Forms
         {
             this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
             this.btnOkAddNew.Visible = elementSetToEditName == null;
-
+            //
             _controller.SetSelectItemToElement();
-
+            //
             _propertyItemChanged = false;
             _allExistingNames.Clear();
             _elementSetToEditName = null;
@@ -102,44 +101,49 @@ namespace PrePoMax.Forms
             propertyGrid.SelectedObject = null;
             _prevSelectionNodes = null;
             _selectionNodeIds = null;
-
+            //
             _allExistingNames.UnionWith(_controller.GetAllMeshEntityNames());
             _elementSetToEditName = elementSetToEditName;
-
+            //
             if (_elementSetToEditName == null)
             {
                 ElementSet = new FeElementSet(GetElementSetName(), null);
                 _controller.Selection.Clear();
+                //
+                ItemSetDataEditor.SelectionForm.ItemSetData = _viewElementSet.ItemSetData;
+                ItemSetDataEditor.SelectionForm.Show(this);
             }
             else
             {
                 ElementSet = _controller.GetElementSet(_elementSetToEditName);  // to clone
-
-                int[] ids = ElementSet.Labels;                                  // change node selection history to ids to speed up
+                // Change node selection history to ids to speed up
+                int[] ids = ElementSet.Labels;                                  
                 _selectionNodeIds = new SelectionNodeIds(vtkSelectOperation.None, false, ids);
                 _prevSelectionNodes = ElementSet.CreationData.Nodes;
                 _controller.CreateNewSelection(ElementSet.CreationData.CurrentView, _selectionNodeIds, true);
                 ElementSet.CreationData = _controller.Selection.DeepClone();
             }
-
+            //
             propertyGrid.SelectedObject = _viewElementSet;
             propertyGrid.Select();
-
+            //
             _controller.HighlightSelection();
-
+            //
             return true;
         }
         protected override void OnEnabledChanged()
         {
-            // form is Enabled On and Off by the itemSetForm
+            // Form is Enabled On and Off by the itemSetForm
             if (this.Enabled)
             {
-                if (this.DialogResult == System.Windows.Forms.DialogResult.OK)              // the FrmItemSet was closed with OK
+                // The FrmItemSet was closed with OK
+                if (this.DialogResult == System.Windows.Forms.DialogResult.OK)
                 {
                     ElementSet.CreationData = _controller.Selection.DeepClone();
                     _propertyItemChanged = true;
                 }
-                else if (this.DialogResult == System.Windows.Forms.DialogResult.Cancel)     // the FrmItemSet was closed with Cancel
+                // The FrmItemSet was closed with Cancel
+                else if (this.DialogResult == System.Windows.Forms.DialogResult.Cancel)
                 {
                     if (ElementSet.CreationData != null)
                     {

@@ -129,6 +129,9 @@ namespace PrePoMax.Forms
             {
                 Surface = new FeSurface(GetSurfaceName());
                 _controller.Selection.Clear();
+                //
+                ItemSetDataEditor.SelectionForm.ItemSetData = _viewSurface.ItemSetData;
+                ItemSetDataEditor.SelectionForm.Show(this);
             }
             else
             {
@@ -159,16 +162,18 @@ namespace PrePoMax.Forms
         }
         protected override void OnEnabledChanged()
         {
-            // form is Enabled On and Off by the itemSetForm
+            // Form is Enabled On and Off by the itemSetForm
             if (this.Enabled)
             {
-                if (this.DialogResult == System.Windows.Forms.DialogResult.OK)              // the FrmItemSet was closed with OK
+                // The FrmItemSet was closed with OK
+                if (this.DialogResult == System.Windows.Forms.DialogResult.OK)
                 {
                     Surface.CreationData = _controller.Selection.DeepClone();
                     _propertyItemChanged = true;
                     UpdateSurfaceArea();
                 }
-                else if (this.DialogResult == System.Windows.Forms.DialogResult.Cancel)     // the FrmItemSet was closed with Cancel
+                // The FrmItemSet was closed with Cancel
+                else if (this.DialogResult == System.Windows.Forms.DialogResult.Cancel)
                 {
                     if (Surface.CreationData != null)
                     {
@@ -203,7 +208,7 @@ namespace PrePoMax.Forms
                     {
                         _controller.Selection.SelectItem = vtkSelectItem.Surface;
                         // Surface.CreationData is set to null when the CreatedFrom is changed
-                        if (Surface.CreationData != null) _controller.Selection.CopySelectonData(Surface.CreationData);  // deep copy to not clear
+                        if (Surface.CreationData != null) _controller.Selection.CopySelectonData(Surface.CreationData); // deep copy to not clear
                     }
                     else if (Surface.CreatedFrom == FeSurfaceCreatedFrom.NodeSet && Surface.CreatedFromNodeSetName != null)
                     {
