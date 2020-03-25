@@ -460,10 +460,8 @@ namespace PrePoMax
         {
             Form form = sender as Form;
             int count = 0;
-
-            // one or two forms can be open
+            // One or two forms can be open
             foreach (var oneForm in _allForms) if (oneForm.Visible) count++;
-
             // Disable model tree mouse and keyboard actions for the form
             bool unactive;
             if (count > 0) unactive = true;
@@ -471,11 +469,13 @@ namespace PrePoMax
             _modelTree.DisableMouse = unactive;
             menuStripMain.DisableMouseButtons = unactive;
             tsFile.DisableMouseButtons = unactive;
-
-            // this gets also called from item selection form: by angle, by edge ...
-            if (form.Visible == false && form.DialogResult == System.Windows.Forms.DialogResult.Cancel)
-                UpdateHighlightFromTree();
-
+            // This gets also called from item selection form: by angle, by edge ...
+            if (form.Visible == false)
+            {
+                if (form.DialogResult == System.Windows.Forms.DialogResult.Cancel) UpdateHighlightFromTree();
+                GetFormLoaction(form);
+            }
+            //
             if (form.Visible == false) this.Focus();
         }
         private void itemForm_Move(object sender, EventArgs e)
@@ -486,7 +486,6 @@ namespace PrePoMax
             //else if (form.Left + form.Width > screenSize.Width) form.Left = screenSize.Width - form.Width;
             //if (form.Top < 0) form.Top = 0;
             //else if (form.Top + form.Height > screenSize.Height) form.Top = screenSize.Height - form.Height;
-
             GetFormLoaction(form);
         }
 

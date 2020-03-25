@@ -66,8 +66,7 @@ namespace PrePoMax
         private void FrmSelectItemSet_Move(object sender, EventArgs e)
         {
             Point location = Location.DeepClone();
-            location.X -= 20;
-            location.Y -= 20;
+            location.X -= ItemSetDataEditor.ParentForm.Width - 15;
             ItemSetDataEditor.ParentForm.Location = location;
         }
         //
@@ -78,18 +77,15 @@ namespace PrePoMax
             {
                 // Form was just shown
                 Point location = ItemSetDataEditor.ParentForm.Location.DeepClone();
-                location.X += 20;
-                location.Y += 20;
-                //this.Move -= new System.EventHandler(this.FrmSelectItemSet_Move);
+                location.X += ItemSetDataEditor.ParentForm.Width - 15;
                 Location = location;
-                //this.Move += new System.EventHandler(this.FrmSelectItemSet_Move);
                 //
                 if (ItemSetDataEditor.ParentForm is Forms.IFormItemSetDataParent fdsp) 
                     SetGeometrySelection(fdsp.IsSelectionGeometryBased());
                 //
                 ItemSetDataEditor.ParentForm.Enabled = false;
-                //
-                this.DialogResult = DialogResult.None; // to prevent the call to _frmSelectItemSet_VisibleChanged when minimized
+                // To prevent the call to _frmSelectItemSet_VisibleChanged when minimized
+                this.DialogResult = DialogResult.None; 
                 rbSelectBy_CheckedChanged(null, null);
             }
             else

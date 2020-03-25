@@ -24,6 +24,13 @@ namespace UserControls
 
         // Properties                                                                                                               
         public Action SelectionClear { get { return _controller_SelectionClear; } set { _controller_SelectionClear = value; } }
+        public Point PropertyGridLocation 
+        {
+            get 
+            {
+                return propertyGrid.FindForm().PointToClient(propertyGrid.Parent.PointToScreen(propertyGrid.Location));
+            } 
+        }
 
 
         // Constructors                                                                                                             
