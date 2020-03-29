@@ -73,7 +73,7 @@ namespace PrePoMax.Forms
 
 
         // Overrides                                                                                                                
-        protected override void Apply()
+        protected override void Apply(bool onOkAddNew)
         {
             _viewPartProperties = (ViewPartProperties)propertyGrid.SelectedObject;
 

@@ -117,7 +117,7 @@ namespace PrePoMax.Forms
             //HighlightMeshRefinement()
             base.OnPropertyGridPropertyValueChanged();
         }
-        protected override void Apply()
+        protected override void Apply(bool onOkAddNew)
         {
             _viewFeMeshRefinement = (ViewFeMeshRefinement)propertyGrid.SelectedObject;
             // Check if the name exists
@@ -127,7 +127,7 @@ namespace PrePoMax.Forms
                  _meshRefinementNames.Contains(_viewFeMeshRefinement.Name)))    // renamed to existing name
                 throw new CaeException("The selected name already exists.");
             //
-            if (_viewFeMeshRefinement.ItemSetData.ItemIds == null || _viewFeMeshRefinement.ItemSetData.ItemIds.Length == 0)
+            if (MeshRefinement.GeometryIds == null || MeshRefinement.GeometryIds.Length == 0)
                 throw new CaeException("The mesh refinement must contain at least one item.");
             //
             if (_meshRefinementToEditName == null)
@@ -151,7 +151,13 @@ namespace PrePoMax.Forms
                     _controller.ReplaceMeshRefinementCommand(_meshRefinementToEditName, MeshRefinement);
                 }
             }
-            _controller.Selection.Clear();
+            // If all is successful close the ItemSetSelectionForm - except for OKAddNew
+            if (!onOkAddNew) ItemSetDataEditor.SelectionForm.Hide();
+        }
+        protected override void Cancel()
+        {
+            // Close the ItemSetSelectionForm
+            ItemSetDataEditor.SelectionForm.Hide();
         }
         protected override bool OnPrepareForm(string stepName, string meshRefinementToEditName)
         {
@@ -180,16 +186,14 @@ namespace PrePoMax.Forms
             //
             _meshRefinementNames.UnionWith(_controller.GetMeshRefinementNames());
             _meshRefinementToEditName = meshRefinementToEditName;
-            //
+            // Create new mesh refinement
             if (_meshRefinementToEditName == null)
             {
                 _defaultName = GetMeshRefinementName();
                 MeshRefinement = new FeMeshRefinement(_defaultName);
                 _controller.Selection.Clear();
-                //
-                ItemSetDataEditor.SelectionForm.ItemSetData = _viewFeMeshRefinement.ItemSetData;
-                ItemSetDataEditor.SelectionForm.Show(this);
             }
+            // Edit existing mesh refinement
             else
             {
                 MeshRefinement = _controller.GetMeshRefinement(_meshRefinementToEditName);   // to clone
@@ -208,49 +212,13 @@ namespace PrePoMax.Forms
             //
             propertyGrid.SelectedObject = _viewFeMeshRefinement;
             propertyGrid.Select();
-            // Add surface selection data to selection history
+            // Show ItemSetDataForm
+            ItemSetDataEditor.SelectionForm.ItemSetData = new ItemSetData(MeshRefinement.GeometryIds);
+            ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
+            //
             HighlightMeshRefinement();
             //
             return true;
-        }
-        protected override void OnEnabledChanged()
-        {
-            // Form is Enabled On and Off by the itemSetForm
-            if (this.Enabled)
-            {
-                // The FrmItemSet was closed with OK
-                if (this.DialogResult == System.Windows.Forms.DialogResult.OK)   
-                {
-                    MeshRefinement.CreationData = _controller.Selection.DeepClone();
-                    // Get new default name from part
-                    if (_meshRefinementToEditName == null && _defaultName == _viewFeMeshRefinement.Name)
-                    {
-                        FeMeshRefinement meshRefinement = MeshRefinement.DeepClone();
-                        string[] partNames = _controller.GetPartNamesFromMeshRefinement(meshRefinement);
-                        if (partNames.Length > 0)
-                        {
-                            string newName = NamedClass.GetNewValueName(_meshRefinementNames, partNames[0] + "-Mr-");
-                            _viewFeMeshRefinement.Name = newName;
-                        }
-                    }
-                    _propertyItemChanged = true;
-                }
-                // The FrmItemSet was closed with Cancel
-                else if (this.DialogResult == System.Windows.Forms.DialogResult.Cancel)
-                {
-                    if (MeshRefinement.CreationData != null)
-                    {
-                        _controller.Selection.CopySelectonData(MeshRefinement.CreationData);
-                        HighlightMeshRefinement();
-                    }
-                }
-            }
-            else
-            {
-                // When the itemSetForm is shown, reset the highlight (after Preview Edge Mesh)
-                HighlightMeshRefinement();
-            }
-            this.DialogResult = System.Windows.Forms.DialogResult.None;
         }
 
 
@@ -281,7 +249,19 @@ namespace PrePoMax.Forms
             }
             catch { }
         }
-
+        //
+        public void SelectionChanged(int[] ids)
+        {
+            if (btnPreview.Enabled)
+            {
+                MeshRefinement.GeometryIds = ids;
+                MeshRefinement.CreationData = _controller.Selection.DeepClone();
+                //
+                propertyGrid.Refresh();
+                //
+                _propertyItemChanged = true;
+            }
+        }
 
         // IFormItemSetDataParent
         public bool IsSelectionGeometryBased()

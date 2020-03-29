@@ -15,7 +15,6 @@ namespace PrePoMax.Forms
     {
         // Variables                                                                                                                
         private FeNodeSet _nodeSet;
-        private ItemSetData _itemSetData;
         private DynamicCustomTypeDescriptor _dctd = null;           // needed for sorting properties
 
 
@@ -25,17 +24,6 @@ namespace PrePoMax.Forms
         [DescriptionAttribute("Name of the node set.")]
         [Id(0, 0)]
         public string Name { get { return _nodeSet.Name; } set { _nodeSet.Name = value; } }
-        //
-        [CategoryAttribute("Data")]
-        [DisplayName("Select items")]
-        [DescriptionAttribute("Select the items for the node set.")]
-        [EditorAttribute(typeof(ItemSetDataEditor), typeof(System.Drawing.Design.UITypeEditor))]
-        [Id(1, 0)]
-        public ItemSetData ItemSetData 
-        {
-            get { return _itemSetData; }
-            set { if (value != _itemSetData) _itemSetData = value; }
-        }
         //
         [CategoryAttribute("Center of gravity")]
         [DisplayName("X")]
@@ -121,9 +109,6 @@ namespace PrePoMax.Forms
         {
             _nodeSet = nodeSet;
             _dctd = ProviderInstaller.Install(this);
-            _itemSetData = new ItemSetData(_nodeSet.Labels);
-            //
-            _itemSetData.ItemIdsChangedEvent += ItemSetData_ItemIdsChangedEvent;
         }
 
 
@@ -131,10 +116,6 @@ namespace PrePoMax.Forms
         public FeNodeSet GetBase()
         {
             return _nodeSet;
-        }
-        private void ItemSetData_ItemIdsChangedEvent()
-        {
-            _nodeSet.Labels = _itemSetData.ItemIds;
         }
     }
 }

@@ -59,23 +59,31 @@ namespace PrePoMax.Forms
         protected override void OnPropertyGridPropertyValueChanged()
         {
             string value = (string)propertyGrid.SelectedGridItem.Value.ToString();
-
-            if (value == FeSurfaceCreatedFrom.Selection.ToString()) HighlightSurface();
-            else if (value == FeSurfaceCreatedFrom.NodeSet.ToString()) HighlightSurface();
+            //
+            if (value == FeSurfaceCreatedFrom.Selection.ToString())
+            {
+                ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
+                HighlightSurface();
+            }
+            else if (value == FeSurfaceCreatedFrom.NodeSet.ToString())
+            {
+                ItemSetDataEditor.SelectionForm.Hide();
+                HighlightSurface();
+            }
             else if (value == _viewSurface.NodeSetName) HighlightSurface();
-
+            //
             base.OnPropertyGridPropertyValueChanged();
         }
-        protected override void Apply()
+        protected override void Apply(bool onOkAddNew)
         {
             _viewSurface = (ViewFeSurface)propertyGrid.SelectedObject;
             // Check if the name exists
-            if ((_surfaceToEditName == null && _allExistingNames.Contains(_viewSurface.Name)) ||                // named to existing name
-                (_viewSurface.Name != _surfaceToEditName && _allExistingNames.Contains(_viewSurface.Name)))     // renamed to existing name
+            if ((_surfaceToEditName == null && _allExistingNames.Contains(_viewSurface.Name)) ||            // named to existing name
+                (_viewSurface.Name != _surfaceToEditName && _allExistingNames.Contains(_viewSurface.Name))) // renamed to existing name
                 throw new CaeException("The selected name already exists.");
             //
             if (_viewSurface.CreateSurfaceFrom == FeSurfaceCreatedFrom.Selection &&
-                (_viewSurface.ItemSetData.ItemIds == null || _viewSurface.ItemSetData.ItemIds.Length == 0))
+                (Surface.FaceIds == null || Surface.FaceIds.Length == 0))
                 throw new CaeException("The surface must contain at least one item.");
             //
             if (_surfaceToEditName == null)
@@ -102,7 +110,13 @@ namespace PrePoMax.Forms
                     _controller.ReplaceSurfaceCommand(_surfaceToEditName, Surface);
                 }
             }
-            _controller.Selection.Clear();
+            // If all is successful close the ItemSetSelectionForm - except for OKAddNew
+            if (!onOkAddNew) ItemSetDataEditor.SelectionForm.Hide();
+        }
+        protected override void Cancel() 
+        {
+            // Close the ItemSetSelectionForm
+            ItemSetDataEditor.SelectionForm.Hide();
         }
         protected override bool OnPrepareForm(string stepName, string surfaceToEditName)
         {
@@ -124,15 +138,13 @@ namespace PrePoMax.Forms
             _surfaceToEditName = surfaceToEditName;
             //
             string[] nodeSetNames = _controller.GetUserNodeSetNames();
-            //
+            // Create new surface
             if (_surfaceToEditName == null)
             {
                 Surface = new FeSurface(GetSurfaceName());
-                _controller.Selection.Clear();
-                //
-                ItemSetDataEditor.SelectionForm.ItemSetData = _viewSurface.ItemSetData;
-                ItemSetDataEditor.SelectionForm.Show(this);
+                _controller.Selection.Clear();                
             }
+            // Edit existing surface
             else
             {
                 Surface = _controller.GetSurface(_surfaceToEditName);   // to clone
@@ -155,34 +167,16 @@ namespace PrePoMax.Forms
             //
             propertyGrid.SelectedObject = _viewSurface;
             propertyGrid.Select();
-            // Add surface selection data to selection history
+            // Show ItemSetDataForm
+            if (Surface.CreatedFrom == FeSurfaceCreatedFrom.Selection)
+            {
+                ItemSetDataEditor.SelectionForm.ItemSetData = new ItemSetData(Surface.FaceIds);
+                ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
+            }
+            //
             HighlightSurface();
             //
             return true;
-        }
-        protected override void OnEnabledChanged()
-        {
-            // Form is Enabled On and Off by the itemSetForm
-            if (this.Enabled)
-            {
-                // The FrmItemSet was closed with OK
-                if (this.DialogResult == System.Windows.Forms.DialogResult.OK)
-                {
-                    Surface.CreationData = _controller.Selection.DeepClone();
-                    _propertyItemChanged = true;
-                    UpdateSurfaceArea();
-                }
-                // The FrmItemSet was closed with Cancel
-                else if (this.DialogResult == System.Windows.Forms.DialogResult.Cancel)
-                {
-                    if (Surface.CreationData != null)
-                    {
-                        _controller.Selection.CopySelectonData(Surface.CreationData);
-                        HighlightSurface();
-                    }
-                }
-            }
-            this.DialogResult = System.Windows.Forms.DialogResult.None;
         }
 
 
@@ -200,20 +194,21 @@ namespace PrePoMax.Forms
             try
             {
                 UpdateSurfaceArea();
-
+                //
                 if (_controller != null)
                 {
                     _controller.ClearSelectionHistory();
+                    //
                     if (Surface.CreatedFrom == FeSurfaceCreatedFrom.Selection)
                     {
-                        _controller.Selection.SelectItem = vtkSelectItem.Surface;
                         // Surface.CreationData is set to null when the CreatedFrom is changed
-                        if (Surface.CreationData != null) _controller.Selection.CopySelectonData(Surface.CreationData); // deep copy to not clear
+                        if (Surface.CreationData != null)
+                            _controller.Selection.CopySelectonData(Surface.CreationData); // deep copy to not clear
                     }
                     else if (Surface.CreatedFrom == FeSurfaceCreatedFrom.NodeSet && Surface.CreatedFromNodeSetName != null)
                     {
-                        _controller.ClearSelectionHistory();
-                        _controller.Selection.SelectItem = vtkSelectItem.Node;
+                        _controller.SetSelectItemToNode();
+                        //
                         if (_controller.GetUserNodeSetNames().Contains(Surface.CreatedFromNodeSetName))
                         {
                             int[] ids = _controller.GetNodeSet(Surface.CreatedFromNodeSetName).Labels;
@@ -225,6 +220,10 @@ namespace PrePoMax.Forms
                 }
             }
             catch { }
+            finally 
+            {
+                _controller.SetSelectItemToSurface();
+            }
         }
         private void UpdateSurfaceArea()
         {
@@ -237,10 +236,24 @@ namespace PrePoMax.Forms
                          && _controller.GetUserNodeSetNames().Contains(Surface.CreatedFromNodeSetName))
                     _controller.UpdateSurfaceArea(Surface);
                 else Surface.Area = 0;
-
+                //
                 propertyGrid.Refresh();
             }
             catch { }
+        }
+        //
+        public void SelectionChanged(int[] ids)
+        {
+            if (Surface.CreatedFrom == FeSurfaceCreatedFrom.Selection)
+            {
+                Surface.FaceIds = ids;
+                Surface.CreationData = _controller.Selection.DeepClone();
+                UpdateSurfaceArea();
+                //
+                propertyGrid.Refresh();
+                //
+                _propertyItemChanged = true;
+            }
         }
 
 

@@ -371,6 +371,8 @@ namespace PrePoMax
         {
             _selection.Clear();
             _form.Clear3DSelection();
+            //
+            _form.SelectionChanged();
         }
         
         #endregion ################################################################################################################
@@ -2390,7 +2392,7 @@ namespace PrePoMax
         }
         private void UpdateNodeSetsBasedOnGeometry()
         {
-            // use list not to throw collection moddified exception
+            // Use list not to throw collection moddified exception
             List<CaeMesh.FeNodeSet> geomNodeSets = new List<FeNodeSet>();
             if (_model != null && _model.Mesh != null)
             {
@@ -4061,6 +4063,9 @@ namespace PrePoMax
         public void RemoveLastSelectionNode(bool highlight)
         {
             _selection.RemoveLast();
+            //
+            _form.SelectionChanged();
+            //
             if (highlight) HighlightSelection();
         }
         //
@@ -6678,7 +6683,7 @@ namespace PrePoMax
             }
             DrawNodes("short_edges", nodeCoor.ToArray(), System.Drawing.Color.Empty, layer, nodeSize);
         }
-
+        //
         public void HighlightSelection()
         {
             _form.Clear3DSelection();

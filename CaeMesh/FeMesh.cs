@@ -4670,7 +4670,7 @@ namespace CaeMesh
                 double area;
                 int[] nodeIds;
                 Dictionary<FeFaceName, List<int>> elementSets;
-
+                //
                 if (surface.CreatedFrom == FeSurfaceCreatedFrom.Selection)
                 {
                     CreateSurfaceFacesFromSelection(surface.FaceIds, out nodeIds, out elementSets, out area);

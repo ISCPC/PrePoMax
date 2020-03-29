@@ -472,7 +472,8 @@ namespace PrePoMax
             // This gets also called from item selection form: by angle, by edge ...
             if (form.Visible == false)
             {
-                if (form.DialogResult == System.Windows.Forms.DialogResult.Cancel) UpdateHighlightFromTree();
+                //if (form.DialogResult == System.Windows.Forms.DialogResult.Cancel)
+                UpdateHighlightFromTree();
                 GetFormLoaction(form);
             }
             //
@@ -1975,26 +1976,35 @@ namespace PrePoMax
             {
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
-             }
+        }
         private void EditModel()
         {
             ShowForm(_frmModelProperties, "Edit Model", null);
         }
         private void EditEditCalculiXKeywords()
         {
-            if (CheckValiditiy())
+            // This is also called from the model tree - needs try, catch
+            try
             {
-                _frmCalculixKeywordEditor = new FrmCalculixKeywordEditor();
-                _frmCalculixKeywordEditor.Keywords = _controller.GetCalculixModelKeywords();
-                _frmCalculixKeywordEditor.UserKeywords = _controller.GetCalculixUserKeywords();
-
-                if (_frmCalculixKeywordEditor.Keywords != null)
+                if (CheckValiditiy())
                 {
-                    if (_frmCalculixKeywordEditor.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                    _frmCalculixKeywordEditor = new FrmCalculixKeywordEditor();
+                    _frmCalculixKeywordEditor.Keywords = _controller.GetCalculixModelKeywords();
+                    _frmCalculixKeywordEditor.UserKeywords = _controller.GetCalculixUserKeywords();
+                    //
+                    if (_frmCalculixKeywordEditor.Keywords != null)
                     {
-                        _controller.SetCalculixUserKeywordsCommand(_frmCalculixKeywordEditor.UserKeywords);
+                        _frmCalculixKeywordEditor.PrepareForm(); // must be here to check for errors
+                        if (_frmCalculixKeywordEditor.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                        {
+                            _controller.SetCalculixUserKeywordsCommand(_frmCalculixKeywordEditor.UserKeywords);
+                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
         private void CreateBoundaryLayer()
@@ -3556,9 +3566,9 @@ namespace PrePoMax
         private void SelectOneEntity(string title, NamedClass[] entities, Action<string> OperateOnEntity)
         {
             if (entities == null || entities.Length == 0) return;
-
+            //
             string[] preSelectedEntityNames = _modelTree.IntersectSelectionWithList(entities);
-
+            //
             _frmSelectEntity.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
             _frmSelectEntity.PrepareForm(title, false, entities, preSelectedEntityNames, null);
             _frmSelectEntity.OneEntitySelected = OperateOnEntity;
@@ -3568,9 +3578,9 @@ namespace PrePoMax
                                            Action<string, string> OperateOnEntityInStep)
         {
             if (entities == null || entities.Length == 0) return;
-
+            //
             string[] preSelectedEntityNames = _modelTree.IntersectSelectionWithList(entities);
-
+            //
             _frmSelectEntity.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
             _frmSelectEntity.PrepareForm(title, false, entities, preSelectedEntityNames, stepName);
             _frmSelectEntity.OneEntitySelectedInStep = OperateOnEntityInStep;
@@ -3579,9 +3589,9 @@ namespace PrePoMax
         private void SelectMultipleEntities(string title, NamedClass[] entities, Action<string[]> OperateOnMultpleEntities)
         {
             if (entities == null || entities.Length == 0) return;
-
+            //
             string[] preSelectedEntityNames = _modelTree.IntersectSelectionWithList(entities);
-
+            //
             _frmSelectEntity.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
             _frmSelectEntity.PrepareForm(title, true, entities, preSelectedEntityNames, null);
             _frmSelectEntity.MultipleEntitiesSelected = OperateOnMultpleEntities;
@@ -3591,9 +3601,9 @@ namespace PrePoMax
                                                   Action<string, string[]> OperateOnMultpleEntitiesInStep)
         {
             if (entities == null || entities.Length == 0) return;
-
+            //
             string[] preSelectedEntityNames = _modelTree.IntersectSelectionWithList(entities);
-
+            //
             _frmSelectEntity.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
             _frmSelectEntity.PrepareForm(title, true, entities, preSelectedEntityNames, stepName);
             _frmSelectEntity.MultipleEntitiesSelectedInStep = OperateOnMultpleEntitiesInStep;
@@ -3607,14 +3617,27 @@ namespace PrePoMax
         public void SelectPointOrArea(double[] pickedPoint, double[][] planeParameters, vtkSelectOperation selectOperation)
         {
             _controller.SelectPointOrArea(pickedPoint, planeParameters, selectOperation);
+            //
             int[] ids = _controller.GetSelectionIds();
-
+            //
             if (_frmSectionView.Visible) _frmSectionView.PickedIds(ids);
             else if (_frmTranslate.Visible) _frmTranslate.PickedIds(ids);
             else if (_frmScale.Visible) _frmScale.PickedIds(ids);
             else if (_frmRotate.Visible) _frmRotate.PickedIds(ids);
             else if (_frmReferencePoint.Visible) _frmReferencePoint.PickedIds(ids);
             else if (_frmQuery.Visible) _frmQuery.PickedIds(ids);
+            //
+            SelectionChanged(ids);
+        }
+        public void SelectionChanged(int[] ids = null)
+        {
+            if (ids == null) ids = _controller.GetSelectionIds();
+            //
+            if (_frmMeshRefinement != null && _frmMeshRefinement.Visible) _frmMeshRefinement.SelectionChanged(ids);
+            if (_frmNodeSet != null && _frmNodeSet.Visible) _frmNodeSet.SelectionChanged(ids);
+            if (_frmElementSet != null && _frmElementSet.Visible) _frmElementSet.SelectionChanged(ids);
+            if (_frmSurface != null && _frmSurface.Visible) _frmSurface.SelectionChanged(ids);
+            if (_frmSection != null && _frmSection.Visible) _frmSection.SelectionChanged(ids);
         }
         public void SetSelectBy(vtkSelectBy selectBy)
         {

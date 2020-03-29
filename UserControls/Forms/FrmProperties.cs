@@ -24,13 +24,6 @@ namespace UserControls
 
         // Properties                                                                                                               
         public Action SelectionClear { get { return _controller_SelectionClear; } set { _controller_SelectionClear = value; } }
-        public Point PropertyGridLocation 
-        {
-            get 
-            {
-                return propertyGrid.FindForm().PointToClient(propertyGrid.Parent.PointToScreen(propertyGrid.Location));
-            } 
-        }
 
 
         // Constructors                                                                                                             
@@ -83,9 +76,9 @@ namespace UserControls
         {
             try
             {
-                Apply();
-
-                this.DialogResult = DialogResult.OK;       // use this value to update the model tree selected item highlight
+                Apply(false);
+                //
+                this.DialogResult = DialogResult.OK;       // use OK to update the model tree selected item highlight
                 if (_hideOnClose) Hide();
                 else Close();
             }
@@ -98,8 +91,8 @@ namespace UserControls
         {
             try
             {
-                Apply();
-
+                Apply(true);
+                //
                 if (_addNew) OnPrepareForm(_stepName, null);
             }
             catch (Exception ex)
@@ -107,10 +100,12 @@ namespace UserControls
                 ExceptionTools.Show(this, ex);
             }
         }
-        protected void btnCancel_Click(object sender, EventArgs e)
+        protected virtual void btnCancel_Click(object sender, EventArgs e)
         {
             try
             {
+                Cancel();
+                //
                 _controller_SelectionClear?.Invoke();
                 this.DialogResult = DialogResult.Cancel;
                 if (_hideOnClose) Hide();
@@ -121,7 +116,7 @@ namespace UserControls
                 ExceptionTools.Show(this, ex);
             }
         }
-        private void FrmSurface_FormClosing(object sender, FormClosingEventArgs e)
+        private void FrmProperties_FormClosing(object sender, FormClosingEventArgs e)
         {
             try
             {
@@ -162,8 +157,9 @@ namespace UserControls
         {
         }
         protected virtual void OnEnabledChanged() { }
-        protected virtual void Apply() { }
+        protected virtual void Apply(bool onOkAddNew) { }
+        protected virtual void Cancel() { }
 
-        
+
     }
 }

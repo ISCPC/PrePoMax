@@ -116,7 +116,7 @@
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "FrmProperties";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmSurface_FormClosing);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmProperties_FormClosing);
             this.EnabledChanged += new System.EventHandler(this.FrmProperties_EnabledChanged);
             this.gbProperties.ResumeLayout(false);
             this.ResumeLayout(false);

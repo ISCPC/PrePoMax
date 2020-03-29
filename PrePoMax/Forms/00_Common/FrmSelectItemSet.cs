@@ -30,7 +30,7 @@ namespace PrePoMax
         private Size _expandedSize;
         private Point _btnUndoPosition;
         private Point _btnClearPosition;
-
+                
 
         // Properties                                                                                                               
         public ItemSetData ItemSetData
@@ -65,6 +65,8 @@ namespace PrePoMax
         // Event handlers                                                                                                           
         private void FrmSelectItemSet_Move(object sender, EventArgs e)
         {
+            return;
+            //
             Point location = Location.DeepClone();
             location.X -= ItemSetDataEditor.ParentForm.Width - 15;
             ItemSetDataEditor.ParentForm.Location = location;
@@ -75,15 +77,9 @@ namespace PrePoMax
             // Called every time the form is shown with: form.Show()
             if (this.Visible)
             {
-                // Form was just shown
-                Point location = ItemSetDataEditor.ParentForm.Location.DeepClone();
-                location.X += ItemSetDataEditor.ParentForm.Width - 15;
-                Location = location;
-                //
+                // Form was just shown                
                 if (ItemSetDataEditor.ParentForm is Forms.IFormItemSetDataParent fdsp) 
                     SetGeometrySelection(fdsp.IsSelectionGeometryBased());
-                //
-                ItemSetDataEditor.ParentForm.Enabled = false;
                 // To prevent the call to _frmSelectItemSet_VisibleChanged when minimized
                 this.DialogResult = DialogResult.None; 
                 rbSelectBy_CheckedChanged(null, null);
@@ -94,7 +90,6 @@ namespace PrePoMax
                 if (this.DialogResult == DialogResult.OK || this.DialogResult == DialogResult.Cancel)
                 {
                     ItemSetDataEditor.ParentForm.DialogResult = this.DialogResult;
-                    ItemSetDataEditor.ParentForm.Enabled = true;
                 }
                 //
                 _controller.SetSelectionToDefault();
@@ -330,6 +325,23 @@ namespace PrePoMax
         }
 
         // Methods                                                                                                                  
+        public void ShowIfHidden(IWin32Window owner)
+        {
+            if (!this.Visible)
+            {
+                ItemSetDataEditor.SelectionForm.ResetLocation();
+                ItemSetDataEditor.SelectionForm.Show(owner);
+            }
+        }
+        public void ResetLocation()
+        {
+            
+            {
+                Point location = ItemSetDataEditor.ParentForm.Location.DeepClone();
+                location.X += ItemSetDataEditor.ParentForm.Width - 15 + 3;
+                Location = location;
+            }
+        }
         public void SetGeometrySelection(bool selectGeometry)
         {
             if (selectGeometry)
@@ -367,8 +379,20 @@ namespace PrePoMax
             if (double.TryParse(tbAngle.Text, out angle)) _controller.SetSelectAngle(angle);
             else MessageBox.Show("The selection angle is not a valid number.");
         }
+        //
+        // Disable close X button
+        protected override CreateParams CreateParams
+        {
+            get
+            {
+                CreateParams myCp = base.CreateParams;
+                const int CP_NOCLOSE_BUTTON = 0x200;
+                myCp.ClassStyle = myCp.ClassStyle | CP_NOCLOSE_BUTTON;
+                return myCp;
+            }
+        }
 
-       
+
     }
 }
 

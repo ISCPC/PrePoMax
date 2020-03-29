@@ -53,7 +53,7 @@ namespace PrePoMax.Forms
 
 
         // Overrides                                                                                                                
-        protected override void Apply()
+        protected override void Apply(bool onOkAddNew)
         {
             _viewNodeSet = (ViewNodeSet)propertyGrid.SelectedObject;
             //
@@ -85,6 +85,13 @@ namespace PrePoMax.Forms
                     _controller.ReplaceNodeSetCommand(_nodeSetToEditName, NodeSet);
                 }
             }
+            // If all is successful close the ItemSetSelectionForm
+            ItemSetDataEditor.SelectionForm.Hide();
+        }
+        protected override void Cancel()
+        {
+            // Close the ItemSetSelectionForm
+            ItemSetDataEditor.SelectionForm.Hide();
         }
         protected override bool OnPrepareForm(string stepName, string nodeSetToEditName)
         {
@@ -103,15 +110,13 @@ namespace PrePoMax.Forms
             //
             _allExistingNames.UnionWith(_controller.GetAllMeshEntityNames());
             _nodeSetToEditName = nodeSetToEditName;
-            //
+            // Create new nodeset
             if (_nodeSetToEditName == null)
             {
                 NodeSet = new FeNodeSet(GetNodeSetName(), null);
                 _controller.Selection.Clear();
-                //
-                ItemSetDataEditor.SelectionForm.ItemSetData = _viewNodeSet.ItemSetData;
-                ItemSetDataEditor.SelectionForm.Show(this);
             }
+            // Edit existing nodeset
             else
             {
                 NodeSet = _controller.GetNodeSet(_nodeSetToEditName);   // to clone
@@ -125,34 +130,13 @@ namespace PrePoMax.Forms
             //
             propertyGrid.SelectedObject = _viewNodeSet;
             propertyGrid.Select();
+            // Show ItemSetDataForm
+            ItemSetDataEditor.SelectionForm.ItemSetData = new ItemSetData(NodeSet.Labels);
+            ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
             //
             _controller.HighlightSelection();
             //
             return true;
-        }
-        protected override void OnEnabledChanged()
-        {
-            // form is Enabled On and Off by the itemSetForm
-            if (this.Enabled)
-            {
-                // The FrmItemSet was closed with OK
-                if (this.DialogResult == System.Windows.Forms.DialogResult.OK)
-                {
-                    NodeSet.CreationData = _controller.Selection.DeepClone();
-                    _controller.GetNodesCenterOfGravity(NodeSet);
-                    _propertyItemChanged = true;
-                }
-                // The FrmItemSet was closed with Cancel
-                else if (this.DialogResult == System.Windows.Forms.DialogResult.Cancel)
-                {
-                    if (NodeSet.CreationData != null)
-                    {
-                        _controller.Selection.CopySelectonData(NodeSet.CreationData);
-                        _controller.HighlightSelection();
-                    }
-                }
-            }
-            this.DialogResult = System.Windows.Forms.DialogResult.None;
         }
 
 
@@ -165,7 +149,17 @@ namespace PrePoMax.Forms
         {
             return NamedClass.GetNewValueName(_allExistingNames, "Node_Set-");
         }
-
+        //
+        public void SelectionChanged(int[] ids)
+        {
+            NodeSet.Labels = ids;
+            NodeSet.CreationData = _controller.Selection.DeepClone();
+            _controller.GetNodesCenterOfGravity(NodeSet);
+            //
+            propertyGrid.Refresh();
+            //
+            _propertyItemChanged = true;
+        }
 
         // IFormItemSetDataParent
         public bool IsSelectionGeometryBased()

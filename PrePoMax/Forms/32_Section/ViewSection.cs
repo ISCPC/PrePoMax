@@ -15,7 +15,6 @@ namespace PrePoMax
         // Variables                                                                                                                
         private string _selectionTmp;
         private CaeModel.Section _section;
-        protected ItemSetData _itemSetData;
 
 
         // Properties                                                                                                               
@@ -39,16 +38,6 @@ namespace PrePoMax
             {
                 base.RegionType = value;
             } 
-        }
-        //
-        [CategoryAttribute("Data")]
-        [OrderedDisplayName(3, 10, "Select items")]
-        [DescriptionAttribute("Select the items for the section.")]
-        [EditorAttribute(typeof(ItemSetDataEditor), typeof(System.Drawing.Design.UITypeEditor))]
-        public ItemSetData Selection
-        {
-            get { return _itemSetData; }
-            set { if (value != _itemSetData) _itemSetData = value; }
         }
         //
         [CategoryAttribute("Data")]
@@ -109,13 +98,6 @@ namespace PrePoMax
             if (base.RegionType == RegionTypeEnum.Selection.ToFriendlyString())
             {
                 cpd = base.DynamicCustomTypeDescriptor.GetProperty("SelectionTmp");
-                cpd.SetIsBrowsable(false);
-                cpd = base.DynamicCustomTypeDescriptor.GetProperty("Selection");
-                cpd.SetIsBrowsable(true);
-            }
-            else
-            {
-                cpd = base.DynamicCustomTypeDescriptor.GetProperty("Selection");
                 cpd.SetIsBrowsable(false);
             }
         }

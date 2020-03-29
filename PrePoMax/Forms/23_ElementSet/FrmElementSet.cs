@@ -24,7 +24,7 @@ namespace PrePoMax.Forms
         public FeElementSet ElementSet
         {
             get { return _viewElementSet.GetBase(); }
-            set { _viewElementSet = new ViewElementSet(this, value.DeepClone()); }
+            set { _viewElementSet = new ViewElementSet(value.DeepClone()); }
         }
 
 
@@ -53,7 +53,7 @@ namespace PrePoMax.Forms
 
 
         // Overrides                                                                                                                
-        protected override void Apply()
+        protected override void Apply(bool onOkAddNew)
         {
             _viewElementSet = (ViewElementSet)propertyGrid.SelectedObject;            
             //
@@ -86,6 +86,13 @@ namespace PrePoMax.Forms
                     _controller.ReplaceElementSetCommand(_elementSetToEditName, ElementSet);
                 }
             }
+            // If all is successful close the ItemSetSelectionForm - except for OKAddNew
+            if (!onOkAddNew) ItemSetDataEditor.SelectionForm.Hide();
+        }
+        protected override void Cancel()
+        {
+            // Close the ItemSetSelectionForm
+            ItemSetDataEditor.SelectionForm.Hide();
         }
         protected override bool OnPrepareForm(string stepName, string elementSetToEditName)
         {
@@ -109,9 +116,6 @@ namespace PrePoMax.Forms
             {
                 ElementSet = new FeElementSet(GetElementSetName(), null);
                 _controller.Selection.Clear();
-                //
-                ItemSetDataEditor.SelectionForm.ItemSetData = _viewElementSet.ItemSetData;
-                ItemSetDataEditor.SelectionForm.Show(this);
             }
             else
             {
@@ -126,33 +130,13 @@ namespace PrePoMax.Forms
             //
             propertyGrid.SelectedObject = _viewElementSet;
             propertyGrid.Select();
+            // Show ItemSetDataForm
+            ItemSetDataEditor.SelectionForm.ItemSetData = new ItemSetData(ElementSet.Labels);
+            ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
             //
             _controller.HighlightSelection();
             //
             return true;
-        }
-        protected override void OnEnabledChanged()
-        {
-            // Form is Enabled On and Off by the itemSetForm
-            if (this.Enabled)
-            {
-                // The FrmItemSet was closed with OK
-                if (this.DialogResult == System.Windows.Forms.DialogResult.OK)
-                {
-                    ElementSet.CreationData = _controller.Selection.DeepClone();
-                    _propertyItemChanged = true;
-                }
-                // The FrmItemSet was closed with Cancel
-                else if (this.DialogResult == System.Windows.Forms.DialogResult.Cancel)
-                {
-                    if (ElementSet.CreationData != null)
-                    {
-                        _controller.Selection.CopySelectonData(ElementSet.CreationData);
-                        _controller.HighlightSelection();
-                    }
-                }
-            }
-            this.DialogResult = System.Windows.Forms.DialogResult.None;
         }
 
 
@@ -165,7 +149,16 @@ namespace PrePoMax.Forms
         {
             return NamedClass.GetNewValueName(_allExistingNames, "Element_Set-");
         }
-
+        //
+        public void SelectionChanged(int[] ids)
+        {
+            ElementSet.Labels = ids;
+            ElementSet.CreationData = _controller.Selection.DeepClone();
+            //
+            propertyGrid.Refresh();
+            //
+            _propertyItemChanged = true;
+        }
 
         // IFormItemSetDataParent
         public bool IsSelectionGeometryBased()

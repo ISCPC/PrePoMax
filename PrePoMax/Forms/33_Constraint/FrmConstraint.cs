@@ -133,7 +133,7 @@ namespace PrePoMax.Forms
                 _controller.Highlight3DObjects(objects);
             }
         }
-        protected override void Apply()
+        protected override void Apply(bool onOkAddNew)
         {
             if (propertyGrid.SelectedObject == null) throw new CaeException("No item selected.");
 

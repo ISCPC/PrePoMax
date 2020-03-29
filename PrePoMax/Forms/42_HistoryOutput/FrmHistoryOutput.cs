@@ -96,7 +96,7 @@ namespace PrePoMax.Forms
                 _controller.Highlight3DObjects(objects);
             }
         }
-        protected override void Apply()
+        protected override void Apply(bool onOkAddNew)
         {
             _viewHistoryOutput = (ViewHistoryOutput)propertyGrid.SelectedObject;
 

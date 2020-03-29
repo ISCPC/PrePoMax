@@ -21,7 +21,7 @@ namespace PrePoMax.Forms
         // Properties                                                                                                               
         public Section Section
         {
-            get { return _viewSection.GetBase(); }
+            get { return _viewSection != null ? _viewSection.GetBase() : null; }
             set
             {
                 if (value is SolidSection) _viewSection = new ViewSolidSection((SolidSection)value.DeepClone());
@@ -73,20 +73,26 @@ namespace PrePoMax.Forms
                 propertyGrid.Select();
             }
         }
-        protected override void OnPropertyGridSelectedGridItemChanged()
+        protected override void OnPropertyGridPropertyValueChanged()
         {
-            object value = propertyGrid.SelectedGridItem.Value;
-            if (value != null)
+            string property = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
+            //
+            if (property == CaeGlobals.Tools.GetPropertyName(() => _viewSection.RegionType))
             {
-                string valueString = value.ToString();
+                string value = propertyGrid.SelectedGridItem.Value.ToString();
+                if (value == RegionTypeEnum.Selection.ToFriendlyString()) ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
+                else ItemSetDataEditor.SelectionForm.Hide();
                 //
-                if (propertyGrid.SelectedObject == null) { }
-                else if (propertyGrid.SelectedObject is ViewError) { }
-                else if (propertyGrid.SelectedObject is ViewSolidSection) HighlightSection();
-                else throw new NotImplementedException();
+                HighlightSection();
             }
+            else if (property == CaeGlobals.Tools.GetPropertyName(() => _viewSection.PartName))
+            {
+                HighlightSection();
+            }
+            //
+            base.OnPropertyGridPropertyValueChanged();
         }
-        protected override void Apply()
+        protected override void Apply(bool onOkAddNew)
         {
             _viewSection = (ViewSection)propertyGrid.SelectedObject;
             //
@@ -104,6 +110,13 @@ namespace PrePoMax.Forms
                 // Replace
                 if (_propertyItemChanged) _controller.ReplaceSectionCommand(_sectionToEditName, Section);
             }
+            // If all is successful close the ItemSetSelectionForm - except for OKAddNew
+            if (!onOkAddNew) ItemSetDataEditor.SelectionForm.Hide();
+        }
+        protected override void Cancel()
+        {
+            // Close the ItemSetSelectionForm
+            ItemSetDataEditor.SelectionForm.Hide();
         }
         protected override bool OnPrepareForm(string stepName, string sectionToEditName)
         {
@@ -132,7 +145,7 @@ namespace PrePoMax.Forms
                 throw new CaeGlobals.CaeException("The section names must be defined first.");
             //
             PopulateListOfSections(materialNames, solidPartNames, solidElementSetNames);
-            // Add sectios
+            // Create new section
             if (_sectionToEditName == null)
             {
                 lvTypes.Enabled = true;
@@ -144,14 +157,13 @@ namespace PrePoMax.Forms
                     // ??? The code in the previous line does not call OnListViewTypeSelectedIndexChanged ???
                     if (lvTypes.Items[0].Tag is ViewSection vs)
                     {
-                        _viewSection = vs;
-                        propertyGrid.SelectedObject = _viewSection;
-                        propertyGrid.Select();
-                        ItemSetDataEditor.SelectionForm.ItemSetData = _viewSection.Selection;
-                        ItemSetDataEditor.SelectionForm.Show(this);
+                        _viewSection = vs;                          // ??? repeate ???
+                        propertyGrid.SelectedObject = _viewSection; // ??? repeate ???
+                        propertyGrid.Select();                      // ??? repeate ???
                     }
                 }
             }
+            // Edit existing section
             else
             {
                 Section = _controller.GetSection(_sectionToEditName); // to clone
@@ -178,31 +190,19 @@ namespace PrePoMax.Forms
                 propertyGrid.Select();
             }
             _selectedPropertyGridItemChangedEventActive = true;
-            //
-            return true;
-        }
-        protected override void OnEnabledChanged()
-        {
-            // Form is Enabled On and Off by the itemSetForm
-            if (this.Enabled)
+            // Show ItemSetDataForm
+            if (Section != null && Section.RegionType == RegionTypeEnum.Selection)
             {
-                // The FrmItemSet was closed with OK
-                if (this.DialogResult == System.Windows.Forms.DialogResult.OK)
+                if (Section is SolidSection ss)
                 {
-                    Section.CreationData = _controller.Selection.DeepClone();
-                    _propertyItemChanged = true;
-                }
-                // The FrmItemSet was closed with Cancel
-                else if (this.DialogResult == System.Windows.Forms.DialogResult.Cancel)
-                {
-                    if (Section.CreationData != null)
-                    {
-                        _controller.Selection.CopySelectonData(Section.CreationData);
-                        HighlightSection();
-                    }
+                    ItemSetDataEditor.SelectionForm.ItemSetData = new ItemSetData(ss.PartIds);
+                    ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
                 }
             }
-            this.DialogResult = System.Windows.Forms.DialogResult.None;
+            //
+            HighlightSection();
+            //
+            return true;
         }
 
 
@@ -238,6 +238,8 @@ namespace PrePoMax.Forms
         {
             try
             {
+                _controller.ClearSelectionHistory();
+                //
                 if (propertyGrid.SelectedObject is ViewSolidSection vss)
                 {
                     if (vss.RegionType == RegionTypeEnum.PartName.ToFriendlyString())
@@ -259,5 +261,22 @@ namespace PrePoMax.Forms
             }
             catch { }
         }
+        //
+        public void SelectionChanged(int[] ids)
+        {
+            if (Section.RegionType == RegionTypeEnum.Selection)
+            {
+                if (Section is SolidSection ss)
+                {
+                    ss.PartIds = ids;
+                    ss.CreationData = _controller.Selection.DeepClone();
+                    //
+                    propertyGrid.Refresh();
+                    //
+                    _propertyItemChanged = true;
+                }
+            }
+        }
+
     }
 }

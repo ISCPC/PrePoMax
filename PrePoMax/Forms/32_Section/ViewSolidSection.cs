@@ -17,11 +17,13 @@ namespace PrePoMax
         
 
         // Properties                                                                                                               
+        [Browsable(false)]
         [CategoryAttribute("Data")]
         [OrderedDisplayName(6, 10, "Thickness")]
         [DescriptionAttribute("Set the thickness in the case of 2D plain strain/stress state.")]
         public double Thickness { get { return _solidSection.Thickness; } set { _solidSection.Thickness = value; } }
         //
+        [Browsable(false)]
         [CategoryAttribute("Data")]
         [OrderedDisplayName(7, 10, "Type")]
         [DescriptionAttribute("The type of the solid section.")]
@@ -33,17 +35,10 @@ namespace PrePoMax
         {
             _solidSection = solidSection;
             SetBase(_solidSection);
-            _itemSetData = new ItemSetData(solidSection.PartIds);
-            //
-            _itemSetData.ItemIdsChangedEvent += ItemSetData_ItemIdsChangedEvent;
         }
 
 
         // Methods                                                                                                                  
-        private void ItemSetData_ItemIdsChangedEvent()
-        {
-            _solidSection.PartIds = _itemSetData.ItemIds;
-        }
 
 
     }

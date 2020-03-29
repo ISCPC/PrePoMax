@@ -17,7 +17,6 @@ namespace PrePoMax.Forms
     {
         // Variables                                                                                                                
         private FeSurface _surface;
-        private ItemSetData _itemSetData;
         private DynamicCustomTypeDescriptor _dctd = null;
 
 
@@ -46,22 +45,12 @@ namespace PrePoMax.Forms
         }
         //
         [CategoryAttribute("Data")]
-        [OrderedDisplayName(3, 10, "Select items")]
-        [DescriptionAttribute("Select the items for the surface.")]
-        [EditorAttribute(typeof(ItemSetDataEditor), typeof(System.Drawing.Design.UITypeEditor))]
-        public ItemSetData ItemSetData
-        {
-            get { return _itemSetData; }
-            set { if (value != _itemSetData) _itemSetData = value; }
-        }
-        //
-        [CategoryAttribute("Data")]
-        [OrderedDisplayName(4, 10, "Node set")]
+        [OrderedDisplayName(3, 10, "Node set")]
         [DescriptionAttribute("Select the node set for the surface creation.")]
         public string NodeSetName { get { return _surface.CreatedFromNodeSetName; } set { _surface.CreatedFromNodeSetName = value; } }
         //
         [CategoryAttribute("Data")]
-        [OrderedDisplayName(6, 10, "Area")]
+        [OrderedDisplayName(4, 10, "Area")]
         [DescriptionAttribute("Area of the surface.")]
         public double Area { get { return _surface.Area; } }
 
@@ -72,9 +61,6 @@ namespace PrePoMax.Forms
             _surface = surface;                                     // 1 command
             _dctd = ProviderInstaller.Install(this);                // 2 command
             SetPropertiesVisibility();                              // 3 command
-            _itemSetData = new ItemSetData(_surface.FaceIds);       // 4 command
-            //
-            _itemSetData.ItemIdsChangedEvent += ItemSetData_ItemIdsChangedEvent;
         }
 
 
@@ -112,24 +98,17 @@ namespace PrePoMax.Forms
         {
             if (_surface.CreatedFrom == FeSurfaceCreatedFrom.Selection)
             {
-                if (_itemSetData != null) _itemSetData.ItemIds = null;
-                _dctd.GetProperty("ItemSetData").SetIsBrowsable(true);
                 _dctd.GetProperty("NodeSetName").SetIsBrowsable(false);
             }
             else if (_surface.CreatedFrom == FeSurfaceCreatedFrom.NodeSet)
             {
-                _dctd.GetProperty("ItemSetData").SetIsBrowsable(false);
                 _dctd.GetProperty("NodeSetName").SetIsBrowsable(true);
-
+                //
                 if (_surface.CreatedFromNodeSetName == null && _dctd.GetProperty("NodeSetName").StatandardValues.Count > 0)
                 {
                     _surface.CreatedFromNodeSetName = _dctd.GetProperty("NodeSetName").StatandardValues.First().ToString();
                 }
             }
-        }
-        private void ItemSetData_ItemIdsChangedEvent()
-        {
-            _surface.FaceIds = _itemSetData.ItemIds;
         }
 
 

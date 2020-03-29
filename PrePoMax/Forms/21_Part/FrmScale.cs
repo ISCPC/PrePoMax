@@ -109,7 +109,7 @@ namespace PrePoMax.Forms
 
             base.OnPropertyGridPropertyValueChanged();
         }
-        protected override void Apply()
+        protected override void Apply(bool onOkAddNew)
         {
             _controller.ScaleModelPartsCommand(_partNames, ScaleCenter, ScaleFactors, _scaleParameters.Copy);
             HighlightNodes();

@@ -72,7 +72,7 @@ namespace PrePoMax.Forms
         {
             base.OnPropertyGridPropertyValueChanged();
         }
-        protected override void Apply()
+        protected override void Apply(bool onOkAddNew)
         {
             _viewBoundaryLayer = (ViewBoundaryLayer)propertyGrid.SelectedObject;
             

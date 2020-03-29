@@ -68,7 +68,7 @@ namespace PrePoMax.Forms
                 propertyGrid.Select();
             }
         }
-        protected override void Apply()
+        protected override void Apply(bool onOkAddNew)
         {
             if (propertyGrid.SelectedObject == null) throw new CaeException("No item selected.");
 

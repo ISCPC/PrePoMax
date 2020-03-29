@@ -63,7 +63,7 @@ namespace PrePoMax.Forms
 
 
         // Overrides                                                                                                                
-        protected override void Apply()
+        protected override void Apply(bool onOkAddNew)
         {
             _viewModelProperties = (ViewModelProperties)propertyGrid.SelectedObject;
             //
@@ -74,7 +74,7 @@ namespace PrePoMax.Forms
                 fileName = System.IO.Path.Combine(settings.WorkDirectory, fileName);
                 //
                 if (!System.IO.File.Exists(fileName))
-                    throw new CaeGlobals.CaeException("The selected global results file does not exist.");
+                    throw new CaeGlobals.CaeException("The selected global results file " + fileName +" does not exist.");
             }
             // Replace
             if (_propertyItemChanged)

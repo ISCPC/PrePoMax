@@ -43,10 +43,6 @@ namespace PrePoMax.Forms
 
 
         // Event handlers                                                                                                           
-        private void FrmCalculixKeywordEditor_Load(object sender, EventArgs e)
-        {
-            PrepareForm();
-        }
         private void btvKeywordsTree_AfterSelect(object sender, TreeViewEventArgs e)
         {
             // Set tree selection color
@@ -241,11 +237,10 @@ namespace PrePoMax.Forms
         public void PrepareForm()
         {
             this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
-
+            //
             TreeNode node = new TreeNode();
             node.Text = "CalculiX inp file";
             btvKeywordsTree.Nodes.Add(node);
-
             // Build the keyword tree
             int index;
             foreach (CalculixKeyword keyword in _keywords)
@@ -253,16 +248,12 @@ namespace PrePoMax.Forms
                 index = node.Nodes.Add(new TreeNode());
                 AddKeywordToTreeNode(keyword, node.Nodes[index]);
             }
-
             // Output tree to the inp read-only textbox
             WriteTreeToTextBox();
-
             // Apply formating
             FormatInp(rtbInpFile);
-
             // Expant first tree node
             btvKeywordsTree.Nodes[0].Expand();
-
             // Add user keywords
             if (_userKeywords != null)
             {
@@ -271,7 +262,6 @@ namespace PrePoMax.Forms
                     AddUserKeywordToTreeByIndex(entry.Key, entry.Value);
                 }
             }
-
         }
 
         // Add keywords to tree
