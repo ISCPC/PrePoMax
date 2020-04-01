@@ -116,7 +116,7 @@ namespace PrePoMax.Forms
 
             base.OnPropertyGridPropertyValueChanged();
         }
-        protected override void Apply(bool onOkAddNew)
+        protected override void OnApply(bool onOkAddNew)
         {
             double angle = _rotateParameters.AngleDeg * Math.PI / 180;
             _controller.RotateModelPartsCommand(_partNames, RotateCenter, RotateAxis, angle, _rotateParameters.Copy);

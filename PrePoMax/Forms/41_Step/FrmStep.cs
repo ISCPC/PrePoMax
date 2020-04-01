@@ -95,7 +95,7 @@ namespace PrePoMax.Forms
             //_viewStep.UpdateFieldView(); // update visibility of fields
             base.OnPropertyGridPropertyValueChanged();
         }
-        protected override void Apply(bool onOkAddNew)
+        protected override void OnApply(bool onOkAddNew)
         {
             _viewStep = (ViewStep)propertyGrid.SelectedObject;
 

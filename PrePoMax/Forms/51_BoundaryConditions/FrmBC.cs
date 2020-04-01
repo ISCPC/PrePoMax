@@ -122,7 +122,7 @@ namespace PrePoMax.Forms
                 else throw new NotImplementedException();
             }
         }
-        protected override void Apply(bool onOkAddNews)
+        protected override void OnApply(bool onOkAddNews)
         {
             _viewBc = (ViewBoundaryCondition)propertyGrid.SelectedObject;
 

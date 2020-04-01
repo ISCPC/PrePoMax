@@ -109,7 +109,7 @@ namespace PrePoMax.Forms
 
             base.OnPropertyGridPropertyValueChanged();
         }
-        protected override void Apply(bool onOkAddNew)
+        protected override void OnApply(bool onOkAddNew)
         {
             _translateParameters = (TranslateParameters)propertyGrid.SelectedObject;
 

@@ -63,14 +63,23 @@ namespace PrePoMax.Forms
         {
             if (lvTypes.Enabled && lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)
             {
-                if (lvTypes.SelectedItems[0].Tag is ViewError) { }
-                else if (lvTypes.SelectedItems[0].Tag is ViewSection vs)
+                object itemTag = lvTypes.SelectedItems[0].Tag;
+                if (itemTag is ViewError) 
+                {
+                    _viewSection = null;
+                }
+                else if (itemTag is ViewSection vs)
                 {
                     _viewSection = vs;
                 }
+                else throw new NotImplementedException();
                 //
-                propertyGrid.SelectedObject = lvTypes.SelectedItems[0].Tag;
+                ShowHideSelectionForm();
+                //
+                propertyGrid.SelectedObject = itemTag;
                 propertyGrid.Select();
+                //
+                HighlightSection();
             }
         }
         protected override void OnPropertyGridPropertyValueChanged()
@@ -79,9 +88,7 @@ namespace PrePoMax.Forms
             //
             if (property == CaeGlobals.Tools.GetPropertyName(() => _viewSection.RegionType))
             {
-                string value = propertyGrid.SelectedGridItem.Value.ToString();
-                if (value == RegionTypeEnum.Selection.ToFriendlyString()) ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
-                else ItemSetDataEditor.SelectionForm.Hide();
+                ShowHideSelectionForm();
                 //
                 HighlightSection();
             }
@@ -92,31 +99,39 @@ namespace PrePoMax.Forms
             //
             base.OnPropertyGridPropertyValueChanged();
         }
-        protected override void Apply(bool onOkAddNew)
+        protected override void OnApply(bool onOkAddNew)
         {
+            if (propertyGrid.SelectedObject is ViewError ve) throw new CaeGlobals.CaeException(ve.Message);
+            //
             _viewSection = (ViewSection)propertyGrid.SelectedObject;
+            //
+            if (_viewSection == null) throw new CaeGlobals.CaeException("No section was selected.");
             //
             if ((_sectionToEditName == null && _sectionNames.Contains(_viewSection.Name)) ||                // create
                 (_viewSection.Name != _sectionToEditName && _sectionNames.Contains(_viewSection.Name)))     // edit
                 throw new CaeGlobals.CaeException("The selected section name already exists.");
             //
+            if (Section.RegionType == RegionTypeEnum.Selection && (Section.CreationIds == null || Section.CreationIds.Length == 0))
+                throw new CaeException("The section must contain at least one item.");
+            // Create
             if (_sectionToEditName == null)
             {
-                // Create
                 _controller.AddSectionCommand(Section);
             }
-            else
+            // Replace
+            else if(_propertyItemChanged)
             {
-                // Replace
-                if (_propertyItemChanged) _controller.ReplaceSectionCommand(_sectionToEditName, Section);
+                _controller.ReplaceSectionCommand(_sectionToEditName, Section);
             }
             // If all is successful close the ItemSetSelectionForm - except for OKAddNew
             if (!onOkAddNew) ItemSetDataEditor.SelectionForm.Hide();
         }
-        protected override void Cancel()
+        protected override void OnHideOrClose()
         {
             // Close the ItemSetSelectionForm
             ItemSetDataEditor.SelectionForm.Hide();
+            //
+            base.OnHideOrClose();
         }
         protected override bool OnPrepareForm(string stepName, string sectionToEditName)
         {
@@ -131,9 +146,7 @@ namespace PrePoMax.Forms
             _sectionToEditName = null;
             _viewSection = null;
             lvTypes.Items.Clear();
-            propertyGrid.SelectedObject = null;
-            //
-            _controller.SetSelectItemToPart();
+            propertyGrid.SelectedObject = null;            
             //
             _sectionNames = _controller.GetSectionNames();
             _sectionToEditName = sectionToEditName;
@@ -150,7 +163,7 @@ namespace PrePoMax.Forms
             {
                 lvTypes.Enabled = true;
                 _viewSection = null;
-                //
+                // Choose one - this is not needed if the user chooses
                 if (lvTypes.Items.Count == 1)
                 {
                     lvTypes.Items[0].Selected = true;
@@ -177,7 +190,7 @@ namespace PrePoMax.Forms
                 {
                     // Check for deleted entities
                     CheckMissingValueRef(ref materialNames, vss.MaterialName, s => { vss.MaterialName = s; });
-                    if (vss.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) {}
+                    if (vss.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else if (vss.RegionType == RegionTypeEnum.PartName.ToFriendlyString())
                         CheckMissingValueRef(ref solidPartNames, vss.PartName, s => { vss.PartName = s; });
                     else if (vss.RegionType == RegionTypeEnum.ElementSetName.ToFriendlyString())
@@ -185,32 +198,25 @@ namespace PrePoMax.Forms
                     else throw new NotSupportedException();
                     //
                     _viewSection.PopululateDropDownLists(materialNames, solidPartNames, solidElementSetNames);
+                    //
+                    _controller.SetSelectItemToPart();
                 }
+                else throw new NotSupportedException();
+                //
                 propertyGrid.SelectedObject = _viewSection;
                 propertyGrid.Select();
             }
             _selectedPropertyGridItemChangedEventActive = true;
-            // Show ItemSetDataForm
-            if (Section != null && Section.RegionType == RegionTypeEnum.Selection)
-            {
-                if (Section is SolidSection ss)
-                {
-                    ItemSetDataEditor.SelectionForm.ItemSetData = new ItemSetData(ss.PartIds);
-                    ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
-                }
-            }
             //
-            HighlightSection();
+            ShowHideSelectionForm();
+            //
+            HighlightSection(); // must be here if called from the menu
             //
             return true;
         }
 
 
         // Methods                                                                                                                  
-        public bool PrepareForm(string stepName, string sectionToEditName)
-        {
-            return OnPrepareForm(stepName, sectionToEditName);
-        }
         private void PopulateListOfSections(string[] materialNames, string[] partNames, string[] elementSetNames)
         {
             ListViewItem item;
@@ -218,14 +224,14 @@ namespace PrePoMax.Forms
             item = new ListViewItem("Solid section");
             if (materialNames.Length > 0)
             {
-                if (partNames.Length + elementSetNames.Length >= 1)
+                //if (partNames.Length + elementSetNames.Length >= 1)
                 {
                     SolidSection ss = new SolidSection(GetSectionName(), materialNames[0], "", RegionTypeEnum.Selection);
                     ViewSolidSection vss = new ViewSolidSection(ss);
                     vss.PopululateDropDownLists(materialNames, partNames, elementSetNames);
                     item.Tag = vss;
                 }
-                else item.Tag = new ViewError("There is no part/element set defined for the solid section definition.");
+                //else item.Tag = new ViewError("There is no part/element set defined for the solid section definition.");
             }
             else item.Tag = new ViewError("There is no material defined for the solid section definition.");
             lvTypes.Items.Add(item);
@@ -240,41 +246,47 @@ namespace PrePoMax.Forms
             {
                 _controller.ClearSelectionHistory();
                 //
-                if (propertyGrid.SelectedObject is ViewSolidSection vss)
+                if (_viewSection == null) { }
+                else if (_viewSection is ViewSolidSection)
                 {
-                    if (vss.RegionType == RegionTypeEnum.PartName.ToFriendlyString())
+                    if (Section.RegionType == RegionTypeEnum.PartName || Section.RegionType == RegionTypeEnum.ElementSetName)
                     {
-                        _controller.Highlight3DObjects(new object[] { vss.PartName });
+                        _controller.Highlight3DObjects(new object[] { Section.RegionName });
                     }
-                    else if (vss.RegionType == RegionTypeEnum.ElementSetName.ToFriendlyString())
+                    else if (Section.RegionType == RegionTypeEnum.Selection)
                     {
-                        _controller.Highlight3DObjects(new object[] { vss.ElementSetName });
-                    }
-                    else if (vss.RegionType == RegionTypeEnum.Selection.ToFriendlyString())
-                    {
-                        _controller.Selection.SelectItem = vtkSelectItem.Part;
-                        if (Section.CreationData != null) _controller.Selection.CopySelectonData(Section.CreationData); // deep copy to not clear
+                        _controller.SetSelectItemToPart();
+                        if (Section.CreationData != null) _controller.Selection = Section.CreationData.DeepClone();
                         _controller.HighlightSelection();
                     }
                     else throw new NotSupportedException();
                 }
+                else throw new NotSupportedException();
             }
             catch { }
+        }
+        private void ShowHideSelectionForm()
+        {
+            if (Section != null && Section.RegionType == RegionTypeEnum.Selection)
+                ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
+            else
+                ItemSetDataEditor.SelectionForm.Hide();
         }
         //
         public void SelectionChanged(int[] ids)
         {
-            if (Section.RegionType == RegionTypeEnum.Selection)
+            if (Section != null && Section.RegionType == RegionTypeEnum.Selection)
             {
-                if (Section is SolidSection ss)
+                if (Section is SolidSection)
                 {
-                    ss.PartIds = ids;
-                    ss.CreationData = _controller.Selection.DeepClone();
+                    Section.CreationIds = ids;
+                    Section.CreationData = _controller.Selection.DeepClone();
                     //
                     propertyGrid.Refresh();
                     //
                     _propertyItemChanged = true;
                 }
+                else throw new NotSupportedException();
             }
         }
 

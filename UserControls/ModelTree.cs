@@ -1666,19 +1666,18 @@ namespace UserControls
             if (typeof(T) == typeof(AnalysisJob)) baseNode = _analyses;
             if (typeof(T) == typeof(FeMeshRefinement)) baseNode = _meshRefinements;
             else baseNode = tree.Nodes[0];
-
+            //
             TreeNode[] tmp;
-
             if (stepName != null)
             {
                 tmp = _steps.Nodes.Find(stepName, true);
                 if (tmp.Length > 1) throw new Exception("Tree update failed. More than one step named: " + stepName);
                 baseNode = tmp[0];
             }
-
+            //
             tmp = baseNode.Nodes.Find(nodeName, true);
             int count = 0;
-
+            //
             for (int i = 0; i < tmp.Length; i++)
             {
                 if (tmp[i].Tag is T)
@@ -1687,15 +1686,15 @@ namespace UserControls
                     count++;
                 }
             }
-
+            //
             if (count > 1) throw new Exception("Tree update failed. More than one tree node named: " + nodeName);
             if (count < 1) throw new Exception("Tree update failed. There is no tree node named: " + nodeName);
-
+            //
             TreeNode parent = tmp[0].Parent;
-
+            //
             tmp[0].Remove();
             tree.SelectedNodes.Remove(tmp[0]);
-
+            //
             parent.Text = parent.Name;
             if (parent.Nodes.Count > 0) parent.Text += " (" + parent.Nodes.Count + ")";
         }
@@ -1870,6 +1869,7 @@ namespace UserControls
                 if (!item.Valid)
                 {
                     cltv.SetNodeForeColor(node, cltv.HighlightForeErrorColor);
+                    node.Parent.Expand();
                 }
             }
             //node.TreeView.Invalidate();

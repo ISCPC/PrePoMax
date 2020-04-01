@@ -2750,24 +2750,13 @@ namespace CaeMesh
             else throw new CaeGlobals.CaeException("The selected face id does not exist.");
         }
         //
-        private string GetNextFreeInternalName<T>(IDictionary<string, T> dictionary)
+        public static string GetNextFreeInternalName<T>(IDictionary<string, T> dictionary)
         {
-            int n = 0;
-            bool contains = true;
-            while (contains)
-            {
-                n++;
-                contains = false;
-                foreach (var entry in dictionary)
-                {
-                    if (entry.Key.StartsWith("internal-" + n + "_"))
-                    {
-                        contains = true;
-                        break;
-                    }
-                }
-            }
-            return "internal-" + n + "_";
+            return dictionary.GetNextNumberedKey(Globals.InternalName);
+        }
+        public static string GetNextFreeSelectionName<T>(IDictionary<string, T> dictionary)
+        {
+            return dictionary.GetNextNumberedKey(Globals.InternalSelectionName);
         }
         //
         public FeNodeSet GetSurfaceNodeSet(string surfaceName)

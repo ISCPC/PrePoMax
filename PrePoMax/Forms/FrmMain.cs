@@ -2616,7 +2616,7 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-
+        //
         private void EditSection(string sectionName)
         {
             // Data editor
@@ -2791,7 +2791,6 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-
         private void tsmiEditHistoryOutput_Click(object sender, EventArgs e)
         {
             try
@@ -2803,7 +2802,6 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-
         private void tsmiDeleteHistoryOutput_Click(object sender, EventArgs e)
         {
             try
@@ -2815,6 +2813,7 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
+        //
         private void SelectAndEditHistoryOutput(string stepName)
         {
             SelectOneEntityInStep("History outputs", _controller.GetAllHistoryOutputs(stepName), stepName, EditHistoryOutput);
@@ -2824,14 +2823,22 @@ namespace PrePoMax
             SelectMultipleEntitiesInStep("History outputs", _controller.GetAllHistoryOutputs(stepName),
                                          stepName, DeleteHistoryOutputs);
         }
-
+        //
         private void CreateHistoryOutput(string stepName)
         {
+            // Data editor
+            ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
+            ItemSetDataEditor.ParentForm = _frmHistoryOutput;
+            _frmSelectItemSet.SetOnlyGeometrySelection(false);
             if (_controller.Model.Mesh == null) return;
             ShowForm(_frmHistoryOutput, "Create History Output", stepName, null);
         }
         private void EditHistoryOutput(string stepName, string historyOutputName)
         {
+            // Data editor
+            ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
+            ItemSetDataEditor.ParentForm = _frmHistoryOutput;
+            _frmSelectItemSet.SetOnlyGeometrySelection(false);
             ShowForm(_frmHistoryOutput, "Edit History Output", stepName, historyOutputName);
         }
         private void DeleteHistoryOutputs(string stepName, string[] historyOutputNames)
@@ -3638,6 +3645,8 @@ namespace PrePoMax
             if (_frmElementSet != null && _frmElementSet.Visible) _frmElementSet.SelectionChanged(ids);
             if (_frmSurface != null && _frmSurface.Visible) _frmSurface.SelectionChanged(ids);
             if (_frmSection != null && _frmSection.Visible) _frmSection.SelectionChanged(ids);
+            //
+            if (_frmHistoryOutput != null && _frmHistoryOutput.Visible) _frmHistoryOutput.SelectionChanged(ids);
         }
         public void SetSelectBy(vtkSelectBy selectBy)
         {
@@ -4528,7 +4537,7 @@ namespace PrePoMax
             else if (view == ViewGeometryModelResults.Model) viewType = ViewType.Model;
             else if (view == ViewGeometryModelResults.Results) viewType = ViewType.Results;
             else throw new NotSupportedException();
-
+            //
             InvokeIfRequired(_modelTree.AddTreeNode, viewType, item, stepName);
             if (item is CaeModel.Step) UpadteSymbolsForStepList();
         }
@@ -4551,7 +4560,7 @@ namespace PrePoMax
             else if (view == ViewGeometryModelResults.Model) viewType = ViewType.Model;
             else if (view == ViewGeometryModelResults.Results) viewType = ViewType.Results;
             else throw new NotSupportedException();
-
+            //
             InvokeIfRequired(_modelTree.RemoveTreeNode<T>, viewType, nodeName, stepName);
             if (typeof(T) == typeof(CaeModel.Step)) RemoveOneStepInSymbolsForStepList(nodeName);
         }

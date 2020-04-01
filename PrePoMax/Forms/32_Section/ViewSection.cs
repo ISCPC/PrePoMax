@@ -13,7 +13,7 @@ namespace PrePoMax
     public class ViewSection : ViewMultiRegion
     {
         // Variables                                                                                                                
-        private string _selectionTmp;
+        private string _selectionHidden;
         private CaeModel.Section _section;
 
 
@@ -41,17 +41,17 @@ namespace PrePoMax
         }
         //
         [CategoryAttribute("Data")]
-        [OrderedDisplayName(3, 10, "Tmp")]
-        [DescriptionAttribute("Tmp.")]
-        public string SelectionTmp { get { return _selectionTmp; } set { _selectionTmp = value; } }
+        [OrderedDisplayName(2, 10, "Hidden")]
+        [DescriptionAttribute("Hidden.")]
+        public string SelectionHidden { get { return _selectionHidden; } set { _selectionHidden = value; } }
         //
         [CategoryAttribute("Data")]
-        [OrderedDisplayName(4, 10, "Part")]        
+        [OrderedDisplayName(3, 10, "Part")]        
         [DescriptionAttribute("Select the part which will be used for the section definition.")]
         public string PartName { get { return _section.RegionName; } set { _section.RegionName = value; } }
         //
         [CategoryAttribute("Data")]
-        [OrderedDisplayName(5, 10, "Element set")]
+        [OrderedDisplayName(4, 10, "Element set")]
         [DescriptionAttribute("Select the element set which will be used for the section definition.")]
         public string ElementSetName { get { return _section.RegionName; } set { _section.RegionName = value; } }
 
@@ -68,7 +68,7 @@ namespace PrePoMax
             _section = section;
             //
             Dictionary<RegionTypeEnum, string> regionTypePropertyNamePairs = new Dictionary<RegionTypeEnum, string>();
-            regionTypePropertyNamePairs.Add(RegionTypeEnum.Selection, CaeGlobals.Tools.GetPropertyName(() => this.SelectionTmp));
+            regionTypePropertyNamePairs.Add(RegionTypeEnum.Selection, CaeGlobals.Tools.GetPropertyName(() => this.SelectionHidden));
             regionTypePropertyNamePairs.Add(RegionTypeEnum.PartName, CaeGlobals.Tools.GetPropertyName(() => this.PartName));
             regionTypePropertyNamePairs.Add(RegionTypeEnum.ElementSetName, CaeGlobals.Tools.GetPropertyName(() => this.ElementSetName));
             //
@@ -84,7 +84,7 @@ namespace PrePoMax
             base.DynamicCustomTypeDescriptor.PopulateProperty(() => this.MaterialName, materialNames);
             //
             Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
-            regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Tmp" });
+            regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
             regionTypeListItemsPairs.Add(RegionTypeEnum.PartName, partNames);
             regionTypeListItemsPairs.Add(RegionTypeEnum.ElementSetName, elementSetNames);
             base.PopululateDropDownLists(regionTypeListItemsPairs);
@@ -97,7 +97,7 @@ namespace PrePoMax
             CustomPropertyDescriptor cpd;
             if (base.RegionType == RegionTypeEnum.Selection.ToFriendlyString())
             {
-                cpd = base.DynamicCustomTypeDescriptor.GetProperty("SelectionTmp");
+                cpd = base.DynamicCustomTypeDescriptor.GetProperty("SelectionHidden");
                 cpd.SetIsBrowsable(false);
             }
         }

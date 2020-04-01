@@ -76,7 +76,7 @@ namespace UserControls
         {
             try
             {
-                Apply(false);
+                OnApply(false);
                 //
                 this.DialogResult = DialogResult.OK;       // use OK to update the model tree selected item highlight
                 if (_hideOnClose) Hide();
@@ -91,7 +91,7 @@ namespace UserControls
         {
             try
             {
-                Apply(true);
+                OnApply(true);
                 //
                 if (_addNew) OnPrepareForm(_stepName, null);
             }
@@ -104,12 +104,7 @@ namespace UserControls
         {
             try
             {
-                Cancel();
-                //
-                _controller_SelectionClear?.Invoke();
-                this.DialogResult = DialogResult.Cancel;
-                if (_hideOnClose) Hide();
-                else Close();
+                OnHideOrClose();
             }
             catch (Exception ex)
             {
@@ -123,9 +118,8 @@ namespace UserControls
                 if (_hideOnClose && e.CloseReason == CloseReason.UserClosing)
                 {
                     e.Cancel = true;
-                    _controller_SelectionClear?.Invoke();
-                    this.DialogResult = DialogResult.Cancel;
-                    Hide();
+                    //
+                    OnHideOrClose();
                 }
             }
             catch (Exception ex)
@@ -147,6 +141,18 @@ namespace UserControls
 
 
         // Methods                                                                                                                  
+        public bool PrepareForm(string stepName, string sectionToEditName)
+        {
+            return OnPrepareForm(stepName, sectionToEditName);
+        }
+        //
+        protected virtual void OnHideOrClose()
+        {
+            _controller_SelectionClear?.Invoke();
+            this.DialogResult = DialogResult.Cancel;
+            if (_hideOnClose) Hide();
+            else Close();
+        }
         protected virtual bool OnPrepareForm(string stepName, string itemToEditName) { return true; }
         protected virtual void OnPropertyGridPropertyValueChanged()
         {
@@ -157,9 +163,7 @@ namespace UserControls
         {
         }
         protected virtual void OnEnabledChanged() { }
-        protected virtual void Apply(bool onOkAddNew) { }
-        protected virtual void Cancel() { }
-
+        protected virtual void OnApply(bool onOkAddNew) { }
 
     }
 }

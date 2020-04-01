@@ -78,12 +78,13 @@ namespace PrePoMax
         // Constructors                                                                                                             
         public ViewElementHistoryOutput(CaeModel.ElementHistoryOutput historyOutput)
         {
-            // the order is important
+            // The order is important
             _historyOutput = historyOutput;
-
+            //
             Dictionary<RegionTypeEnum, string> regionTypePropertyNamePairs = new Dictionary<RegionTypeEnum, string>();
+            regionTypePropertyNamePairs.Add(RegionTypeEnum.Selection, CaeGlobals.Tools.GetPropertyName(() => this.SelectionHidden));
             regionTypePropertyNamePairs.Add(RegionTypeEnum.ElementSetName, CaeGlobals.Tools.GetPropertyName(() => this.ElementSetName));
-
+            //
             base.SetBase(_historyOutput, regionTypePropertyNamePairs);
             base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
         }
@@ -97,8 +98,20 @@ namespace PrePoMax
         public void PopululateDropDownLists(string[] elementSetNames)
         {
             Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
+            regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
             regionTypeListItemsPairs.Add(RegionTypeEnum.ElementSetName, elementSetNames);
             base.PopululateDropDownLists(regionTypeListItemsPairs);
+        }
+        public override void UpdateRegionVisibility()
+        {
+            base.UpdateRegionVisibility();
+            //
+            CustomPropertyDescriptor cpd;
+            if (base.RegionType == RegionTypeEnum.Selection.ToFriendlyString())
+            {
+                cpd = base.DynamicCustomTypeDescriptor.GetProperty("SelectionHidden");
+                cpd.SetIsBrowsable(false);
+            }
         }
     }
 

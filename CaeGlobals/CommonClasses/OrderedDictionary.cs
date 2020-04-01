@@ -348,6 +348,18 @@ namespace CaeGlobals
             return false;
         }
 
+        public bool TryRemove(TKey key, out TValue value)
+        {
+            if (dictionary.TryGetValue(key, out value))
+            {
+                dictionary.Remove(key);
+                list.Remove(key);
+                return true;
+            }
+            //
+            return false;
+        }
+
         /// <summary>
         /// Removes the first occurrence of a specific object from the <see cref="T:System.Collections.Generic.ICollection`1" />.
         /// </summary>
@@ -366,6 +378,7 @@ namespace CaeGlobals
 
             return false;
         }
+       
 
         /// <summary>
         /// Gets the value associated with the specified key.

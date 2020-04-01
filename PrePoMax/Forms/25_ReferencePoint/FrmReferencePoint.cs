@@ -109,7 +109,7 @@ namespace PrePoMax.Forms
             }
             HighlightReferencePoint();
         }
-        protected override void Apply(bool onOkAddNew)
+        protected override void OnApply(bool onOkAddNew)
         {
             _viewReferencePoint = (ViewFeReferencePoint)propertyGrid.SelectedObject;
 

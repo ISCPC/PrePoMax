@@ -63,7 +63,7 @@ namespace PrePoMax.Forms
 
 
         // Overrides                                                                                                                
-        protected override void Apply(bool onOkAddNew)
+        protected override void OnApply(bool onOkAddNew)
         {
             _viewModelProperties = (ViewModelProperties)propertyGrid.SelectedObject;
             //

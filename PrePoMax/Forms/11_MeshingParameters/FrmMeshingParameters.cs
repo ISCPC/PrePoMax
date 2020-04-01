@@ -129,7 +129,7 @@ namespace PrePoMax.Forms
 
 
         // Overrides                                                                                                                
-        protected override void Apply(bool onOkAddNew)
+        protected override void OnApply(bool onOkAddNew)
         {
             // OK
             _viewMeshingParameters = (ViewMeshingParameters)propertyGrid.SelectedObject;

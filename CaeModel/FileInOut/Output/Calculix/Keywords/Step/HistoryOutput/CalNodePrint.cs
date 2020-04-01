@@ -26,6 +26,8 @@ namespace FileInOut.Output.Calculix
                 _regionName += _nodalHistoryOutput.RegionName;
             else if (_nodalHistoryOutput.RegionType == CaeGlobals.RegionTypeEnum.SurfaceName)
                 _regionName += model.Mesh.Surfaces[_nodalHistoryOutput.RegionName].NodeSetName;
+            else if (_nodalHistoryOutput.RegionType == CaeGlobals.RegionTypeEnum.Selection)
+            { }
             else throw new NotSupportedException();
         }
         public CalNodePrint(FeModel model, NodalHistoryOutput nodalHistoryOutput, string regionName)

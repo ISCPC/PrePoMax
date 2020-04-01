@@ -21,7 +21,7 @@ namespace PrePoMax.Forms
         // Properties                                                                                                               
         public HistoryOutput HistoryOutput
         {
-            get { return _viewHistoryOutput.GetBase(); }
+            get { return _viewHistoryOutput != null ? _viewHistoryOutput.GetBase() : null; }
             set
             {
                 if (value is NodalHistoryOutput nho) _viewHistoryOutput = new ViewNodalHistoryOutput(nho.DeepClone());
@@ -35,10 +35,10 @@ namespace PrePoMax.Forms
         public FrmHistoryOutput(Controller controller)
         {
             InitializeComponent();
-
+            //
             _controller = controller;
             _viewHistoryOutput = null;
-
+            //
             _selectedPropertyGridItemChangedEventActive = true;
         }
         private void InitializeComponent()
@@ -46,7 +46,6 @@ namespace PrePoMax.Forms
             this.gbType.SuspendLayout();
             this.gbProperties.SuspendLayout();
             this.SuspendLayout();
-           
             // 
             // FrmSection
             // 
@@ -65,63 +64,99 @@ namespace PrePoMax.Forms
         {
             if (lvTypes.Enabled && lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)
             {
-                propertyGrid.SelectedObject = lvTypes.SelectedItems[0].Tag;
-                propertyGrid.Select();
-            }
-        }
-        protected override void OnPropertyGridSelectedGridItemChanged()
-        {
-            object value = propertyGrid.SelectedGridItem.Value;
-            if (value != null)
-            {
-                string valueString = value.ToString();
-                object[] objects = null;
-
-                if (propertyGrid.SelectedObject == null) { }
-                else if (propertyGrid.SelectedObject is ViewNodalHistoryOutput nho)
+                object itemTag = lvTypes.SelectedItems[0].Tag;
+                if (itemTag is ViewError) 
                 {
-                    if (valueString == nho.NodeSetName) objects = new object[] { nho.NodeSetName };
-                    else if (valueString == nho.SurfaceName) objects = new object[] { nho.SurfaceName };
-                    else objects = null;
+                    _viewHistoryOutput = null;
                 }
-                else if (propertyGrid.SelectedObject is ViewElementHistoryOutput eho)
+                else if (itemTag is ViewNodalHistoryOutput vnho)
                 {
-                    objects = new object[] { eho.ElementSetName };
+                    _viewHistoryOutput = vnho;
+                    _controller.SetSelectItemToNode();
                 }
-                else if (propertyGrid.SelectedObject is PrePoMax.Forms.ViewError)
+                else if (itemTag is ViewElementHistoryOutput veho)
                 {
+                    _viewHistoryOutput = veho;
+                    _controller.SetSelectItemToElement();
                 }
                 else throw new NotImplementedException();
-
-                _controller.Highlight3DObjects(objects);
+                //
+                ShowHideSelectionForm();
+                //
+                propertyGrid.SelectedObject = itemTag;
+                propertyGrid.Select();
+                //
+                HighlightHistoryOutput();
             }
         }
-        protected override void Apply(bool onOkAddNew)
+        protected override void OnPropertyGridPropertyValueChanged()
         {
+            string property = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
+            //
+            if (property == CaeGlobals.Tools.GetPropertyName(() => _viewHistoryOutput.RegionType))
+            {
+                ShowHideSelectionForm();
+                //
+                HighlightHistoryOutput();
+            }
+            else if (_viewHistoryOutput is ViewNodalHistoryOutput vnho &&
+                    (property == CaeGlobals.Tools.GetPropertyName(() => vnho.NodeSetName) ||
+                     property == CaeGlobals.Tools.GetPropertyName(() => vnho.ReferencePointName) ||
+                     property == CaeGlobals.Tools.GetPropertyName(() => vnho.SurfaceName)))
+            {
+                HighlightHistoryOutput();
+            }
+            else if (_viewHistoryOutput is ViewElementHistoryOutput veho &&
+                    property == CaeGlobals.Tools.GetPropertyName(() => veho.ElementSetName))
+            {
+                HighlightHistoryOutput();
+            }
+            //
+            base.OnPropertyGridPropertyValueChanged();
+        }
+        protected override void OnApply(bool onOkAddNew)
+        {
+            if (propertyGrid.SelectedObject is ViewError ve) throw new CaeGlobals.CaeException(ve.Message);
+            //
             _viewHistoryOutput = (ViewHistoryOutput)propertyGrid.SelectedObject;
-
-            if ((_historyOutputToEditName == null && _historyOutputNames.Contains(_viewHistoryOutput.Name)) ||                      // create
-                (_viewHistoryOutput.Name != _historyOutputToEditName && _historyOutputNames.Contains(_viewHistoryOutput.Name)))     // edit
+            //
+            if (_viewHistoryOutput == null) throw new CaeGlobals.CaeException("No history output was selected.");
+            //
+            if ((_historyOutputToEditName == null && _historyOutputNames.Contains(HistoryOutput.Name)) ||                      // create
+                (HistoryOutput.Name != _historyOutputToEditName && _historyOutputNames.Contains(HistoryOutput.Name)))     // edit
                 throw new CaeGlobals.CaeException("The selected history output name already exists.");
-
+            //
+            if (HistoryOutput.RegionType == RegionTypeEnum.Selection && 
+                (HistoryOutput.CreationIds == null || HistoryOutput.CreationIds.Length == 0))
+                throw new CaeException("The history output must contain at least one item.");
+            // Create
             if (_historyOutputToEditName == null)
             {
-                // Create
                 _controller.AddHistoryOutputCommand(_stepName, HistoryOutput);
             }
-            else
+            // Replace
+            else if (_propertyItemChanged)
             {
-                // Replace
-                if (_propertyItemChanged) _controller.ReplaceHistoryOutputCommand(_stepName, _historyOutputToEditName, HistoryOutput);
+                _controller.ReplaceHistoryOutputCommand(_stepName, _historyOutputToEditName, HistoryOutput);
             }
+            // If all is successful close the ItemSetSelectionForm - except for OKAddNew
+            if (!onOkAddNew) ItemSetDataEditor.SelectionForm.Hide();
+        }
+        protected override void OnHideOrClose()
+        {
+            // Close the ItemSetSelectionForm
+            ItemSetDataEditor.SelectionForm.Hide();
+            //
+            base.OnHideOrClose();
         }
         protected override bool OnPrepareForm(string stepName, string historyToOutputToEditName)
         {
-            _selectedPropertyGridItemChangedEventActive = false;                             // to prevent clear of the selection
-
-            this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
+            // To prevent clear of the selection
+            _selectedPropertyGridItemChangedEventActive = false;
+            // To prevent the call to frmMain.itemForm_VisibleChanged when minimized
+            this.DialogResult = DialogResult.None;      
             this.btnOkAddNew.Visible = historyToOutputToEditName == null;
-
+            //
             _propertyItemChanged = false;
             _stepName = null;
             _historyOutputNames = null;
@@ -129,7 +164,7 @@ namespace PrePoMax.Forms
             _viewHistoryOutput = null;
             lvTypes.Items.Clear();
             propertyGrid.SelectedObject = null;
-
+            //
             _stepName = stepName;
             _historyOutputNames = _controller.GetHistoryOutputNamesForStep(_stepName);
             _historyOutputToEditName = historyToOutputToEditName;
@@ -137,105 +172,160 @@ namespace PrePoMax.Forms
             string[] elementSetNames = _controller.GetUserElementSetNames();
             string[] surfaceNames = _controller.GetSurfaceNames();
             string[] referencePointNames = _controller.GetReferencePointNames();
-
+            //
             if (_historyOutputNames == null)
                 throw new CaeGlobals.CaeException("The history output names must be defined first.");
-
+            //
             PopulateListOfHistoryOutputs(nodeSetNames, elementSetNames, surfaceNames, referencePointNames);
-
-            // Add history outputs
+            // Create new history output
             if (_historyOutputToEditName == null)
             {
                 lvTypes.Enabled = true;
                 _viewHistoryOutput = null;
-
-                if (lvTypes.Items.Count == 1) lvTypes.Items[0].Selected = true;
             }
             else
+            // Edit existing history output
             {
                 HistoryOutput = _controller.GetHistoryOutput(_stepName, _historyOutputToEditName); // to clone
-
-                // select the appropriate history output in the list view - disable event SelectedIndexChanged
+                // Select the appropriate history output in the list view - disable event SelectedIndexChanged
                 _lvTypesSelectedIndexChangedEventActive = false;
                 if (_viewHistoryOutput is ViewNodalHistoryOutput) lvTypes.Items[0].Selected = true;
                 else if (_viewHistoryOutput is ViewElementHistoryOutput) lvTypes.Items[1].Selected = true;
                 lvTypes.Enabled = false;
                 _lvTypesSelectedIndexChangedEventActive = true;
-
+                //
                 if (_viewHistoryOutput is ViewNodalHistoryOutput vnho)
                 {
                     // Check for deleted entities
-                    if (vnho.RegionType == RegionTypeEnum.NodeSetName.ToFriendlyString())
+                    if (vnho.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
+                    else if (vnho.RegionType == RegionTypeEnum.NodeSetName.ToFriendlyString())
                         CheckMissingValueRef(ref nodeSetNames, vnho.NodeSetName, s => { vnho.NodeSetName = s; });
                     else if (vnho.RegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
                         CheckMissingValueRef(ref surfaceNames, vnho.SurfaceName, s => { vnho.SurfaceName = s; });
                     else if (vnho.RegionType == RegionTypeEnum.ReferencePointName.ToFriendlyString())
                         CheckMissingValueRef(ref referencePointNames, vnho.ReferencePointName, s => { vnho.ReferencePointName = s; });
                     else throw new NotSupportedException();
-
+                    //
                     vnho.PopululateDropDownLists(nodeSetNames, surfaceNames, referencePointNames);
+                    //
+                    _controller.SetSelectItemToNode();
                 }
                 else if (_viewHistoryOutput is ViewElementHistoryOutput veho)
                 {
                     // Check for deleted entities
-                    CheckMissingValueRef(ref elementSetNames, veho.ElementSetName, s => { veho.ElementSetName = s; });
+                    if (veho.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
+                    else if (veho.RegionType == RegionTypeEnum.ElementSetName.ToFriendlyString())
+                        CheckMissingValueRef(ref elementSetNames, veho.ElementSetName, s => { veho.ElementSetName = s; });
+                    else throw new NotSupportedException();
+                    //
                     veho.PopululateDropDownLists(elementSetNames);
+                    //
+                    _controller.SetSelectItemToElement();
                 }
-
+                else throw new NotSupportedException();
+                //
                 propertyGrid.SelectedObject = _viewHistoryOutput;
                 propertyGrid.Select();
-
             }
             _selectedPropertyGridItemChangedEventActive = true;
-
+            //
+            ShowHideSelectionForm();
+            //
+            HighlightHistoryOutput(); // must be here if called from the menu
+            //
             return true;
         }
 
 
         // Methods                                                                                                                  
-        public bool PrepareForm(string stepName, string sectionToEditName)
-        {
-            return OnPrepareForm(stepName, sectionToEditName);
-        }
         private void PopulateListOfHistoryOutputs(string[] nodeSetNames, string[] elementSetNames, 
                                                   string[] surfaceNames, string[] referencePointNames)
         {
             ListViewItem item;
-
             // Node
             item = new ListViewItem("Node output");
-            if (nodeSetNames.Length + surfaceNames.Length >= 1)
+            //if (nodeSetNames.Length + surfaceNames.Length >= 1)
             {
-                NodalHistoryOutput nho;
-                if (nodeSetNames.Length > 0)
-                    nho = new NodalHistoryOutput(GetHistoryOutputName("N"), NodalHistoryVariable.U, nodeSetNames[0], RegionTypeEnum.NodeSetName);
-                else
-                    nho = new NodalHistoryOutput(GetHistoryOutputName("N"), NodalHistoryVariable.U, surfaceNames[0], RegionTypeEnum.SurfaceName);
-
+                NodalHistoryOutput nho = new NodalHistoryOutput(GetHistoryOutputName("N"), NodalHistoryVariable.U,
+                                                                "", RegionTypeEnum.Selection);
+                //
                 ViewNodalHistoryOutput vnho = new ViewNodalHistoryOutput(nho);
                 vnho.PopululateDropDownLists(nodeSetNames, surfaceNames, referencePointNames);
                 item.Tag = vnho;
             }
-            else item.Tag = new ViewError("There is no node set/surface defined for the history output definition.");
+            //else item.Tag = new ViewError("There is no node set/surface defined for the history output definition.");
             lvTypes.Items.Add(item);
-
             // Element
             item = new ListViewItem("Element output");
-            if (elementSetNames.Length >= 1)
+            //if (elementSetNames.Length >= 1)
             {
-                ElementHistoryOutput eho;
-                eho = new ElementHistoryOutput(GetHistoryOutputName("E"), ElementHistoryVariable.S, elementSetNames[0], RegionTypeEnum.ElementSetName);
-
+                ElementHistoryOutput eho = new ElementHistoryOutput(GetHistoryOutputName("E"), ElementHistoryVariable.S,
+                                                                    "", RegionTypeEnum.Selection);
+                //
                 ViewElementHistoryOutput veho = new ViewElementHistoryOutput(eho);
                 veho.PopululateDropDownLists(elementSetNames);
                 item.Tag = veho;
             }
-            else item.Tag = new ViewError("There is no element set defined for the history output definition.");
+            //else item.Tag = new ViewError("There is no element set defined for the history output definition.");
             lvTypes.Items.Add(item);
         }
         private string GetHistoryOutputName(string prefix)
         {
             return NamedClass.GetNewValueName(_historyOutputNames, prefix + "H-Output-");
+        }
+        private void HighlightHistoryOutput()
+        {
+            try
+            {
+                _controller.ClearSelectionHistory();
+                //
+                if (_viewHistoryOutput == null) { }
+                else if (HistoryOutput is NodalHistoryOutput || HistoryOutput is ElementHistoryOutput)
+                {
+                    if (HistoryOutput.RegionType == RegionTypeEnum.NodeSetName ||
+                        HistoryOutput.RegionType == RegionTypeEnum.ReferencePointName ||
+                        HistoryOutput.RegionType == RegionTypeEnum.SurfaceName ||
+                        HistoryOutput.RegionType == RegionTypeEnum.ElementSetName)
+                    {
+                        _controller.Highlight3DObjects(new object[] { HistoryOutput.RegionName });
+                    }
+                    else if (HistoryOutput.RegionType == RegionTypeEnum.Selection)
+                    {
+                        if (HistoryOutput is NodalHistoryOutput) _controller.SetSelectItemToNode();
+                        else if (HistoryOutput is ElementHistoryOutput) _controller.SetSelectItemToElement();
+                        //
+                        if (HistoryOutput.CreationData != null) _controller.Selection = HistoryOutput.CreationData.DeepClone();
+                        _controller.HighlightSelection();
+                    }
+                    else throw new NotImplementedException();
+                }
+                else throw new NotSupportedException();
+            }
+            catch { }
+        }
+        private void ShowHideSelectionForm()
+        {
+            if (HistoryOutput != null && HistoryOutput.RegionType == RegionTypeEnum.Selection)
+                ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
+            else
+                ItemSetDataEditor.SelectionForm.Hide();
+        }
+        //
+        public void SelectionChanged(int[] ids)
+        {
+            if (HistoryOutput != null && HistoryOutput.RegionType == RegionTypeEnum.Selection)
+            {
+                if (HistoryOutput is NodalHistoryOutput || HistoryOutput is ElementHistoryOutput)
+                {
+                    HistoryOutput.CreationIds = ids;
+                    HistoryOutput.CreationData = _controller.Selection.DeepClone();
+                    //
+                    propertyGrid.Refresh();
+                    //
+                    _propertyItemChanged = true;
+                }
+                else throw new NotSupportedException();
+            }
         }
     }
 }

@@ -418,7 +418,7 @@ namespace FileInOut.Output
                         if (entry.Value is SolidSection ss)
                         {
                             if (ss.RegionType == RegionTypeEnum.Selection)
-                                solidSection = new CalSolidSection(ss, model.Mesh.GetPartNamesByIds(ss.PartIds));
+                                solidSection = new CalSolidSection(ss, model.Mesh.GetPartNamesByIds(ss.CreationIds));
                             else solidSection = new CalSolidSection(ss);
                             parent.AddKeyword(solidSection);
                         }

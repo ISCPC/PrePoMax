@@ -53,7 +53,7 @@ namespace PrePoMax.Forms
 
 
         // Overrides                                                                                                                
-        protected override void Apply(bool onOkAddNew)
+        protected override void OnApply(bool onOkAddNew)
         {
             _viewElementSet = (ViewElementSet)propertyGrid.SelectedObject;            
             //
@@ -89,10 +89,12 @@ namespace PrePoMax.Forms
             // If all is successful close the ItemSetSelectionForm - except for OKAddNew
             if (!onOkAddNew) ItemSetDataEditor.SelectionForm.Hide();
         }
-        protected override void Cancel()
+        protected override void OnHideOrClose()
         {
             // Close the ItemSetSelectionForm
             ItemSetDataEditor.SelectionForm.Hide();
+            //
+            base.OnHideOrClose();
         }
         protected override bool OnPrepareForm(string stepName, string elementSetToEditName)
         {

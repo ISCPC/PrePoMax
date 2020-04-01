@@ -44,7 +44,6 @@ namespace CaeGlobals
                 fs.Close();
             }
         }
-
         public static void DumpToStream<T>(this T a, BinaryWriter bw)
         {
             using (MemoryStream stream = new MemoryStream())
@@ -59,7 +58,6 @@ namespace CaeGlobals
                 stream.CopyTo(bw.BaseStream);
             }
         }
-
         public static string SerializeToXML<T>(this T value)
         {
             if (value == null)
@@ -81,7 +79,6 @@ namespace CaeGlobals
                 throw new Exception("An error occurred", ex);
             }
         }
-
         public static T GetNewObject<T>()
         {
             try
@@ -108,6 +105,25 @@ namespace CaeGlobals
         public static void AddRange<TKey, TValue>(this Dictionary<TKey, TValue> dic, Dictionary<TKey, TValue> dicToAdd)
         {
             foreach (var item in dicToAdd) dic.Add(item.Key, item.Value);
+        }
+        public static string GetNextNumberedKey<T>(this IDictionary<string, T> dictionary, string keyBase)
+        {
+            int n = 0;
+            bool contains = true;
+            while (contains)
+            {
+                n++;
+                contains = false;
+                foreach (var entry in dictionary)
+                {
+                    if (entry.Key.StartsWith(keyBase + "-" + n + "_"))
+                    {
+                        contains = true;
+                        break;
+                    }
+                }
+            }
+            return keyBase + "-" + n + "_";
         }
 
         // Property grid items

@@ -10,6 +10,9 @@ namespace CaeMesh
 {
     public class Globals
     {
+        public static string InternalName = "Internal";
+        public static string InternalSelectionName = "Internal_Selection";
+        //
         public static Color[] PartColors = new Color[] { Color.FromArgb(245, 245, 220),     // light beige
                                                          Color.FromArgb(69, 139, 116),      // dark green
                                                          Color.FromArgb(193, 205, 205),     // light gray

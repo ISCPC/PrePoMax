@@ -189,8 +189,8 @@ namespace CaeModel
                     valid = _materials.ContainsKey(section.MaterialName)
                         && ((ss.RegionType == RegionTypeEnum.PartName && _mesh.Parts.ContainsKey(section.RegionName))
                         || (ss.RegionType == RegionTypeEnum.ElementSetName && _mesh.ElementSets.ContainsValidKey(section.RegionName))
-                        || (ss.RegionType == RegionTypeEnum.Selection && _mesh.GetPartNamesByIds(ss.PartIds) != null) &&
-                            _mesh.GetPartNamesByIds(ss.PartIds).Length == ss.PartIds.Length);
+                        || (ss.RegionType == RegionTypeEnum.Selection && _mesh.GetPartNamesByIds(ss.CreationIds) != null) &&
+                            _mesh.GetPartNamesByIds(ss.CreationIds).Length == ss.CreationIds.Length);
                 }
                 else throw new NotSupportedException();
                 //
@@ -236,7 +236,8 @@ namespace CaeModel
                     {
                         valid = (nho.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(nho.RegionName))
                                 || (nho.RegionType == RegionTypeEnum.SurfaceName && _mesh.Surfaces.ContainsValidKey(nho.RegionName))
-                                || (nho.RegionType == RegionTypeEnum.ReferencePointName && _mesh.ReferencePoints.ContainsValidKey(nho.RegionName));
+                                || (nho.RegionType == RegionTypeEnum.ReferencePointName
+                                && _mesh.ReferencePoints.ContainsValidKey(nho.RegionName));
                     }
                     else if (historyOutput is ElementHistoryOutput eho)
                     {
@@ -256,7 +257,8 @@ namespace CaeModel
                     {
                         valid = (dr.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(dr.RegionName))
                                 || (dr.RegionType == RegionTypeEnum.SurfaceName && (_mesh.Surfaces.ContainsValidKey(dr.RegionName)))
-                                || (dr.RegionType == RegionTypeEnum.ReferencePointName && (_mesh.ReferencePoints.ContainsValidKey(dr.RegionName)));
+                                || (dr.RegionType == RegionTypeEnum.ReferencePointName
+                                && (_mesh.ReferencePoints.ContainsValidKey(dr.RegionName)));
                     }
                     else if (bc is SubmodelBC sm)
                     {
@@ -276,12 +278,14 @@ namespace CaeModel
                     if (load is CLoad cl)
                     {
                         valid = (cl.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(cl.RegionName))
-                                || (cl.RegionType == RegionTypeEnum.ReferencePointName && (_mesh.ReferencePoints.ContainsValidKey(cl.RegionName)));
+                                || (cl.RegionType == RegionTypeEnum.ReferencePointName
+                                && (_mesh.ReferencePoints.ContainsValidKey(cl.RegionName)));
                     }
                     else if (load is MomentLoad ml)
                     {
                         valid = (ml.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(ml.RegionName))
-                                || (ml.RegionType == RegionTypeEnum.ReferencePointName && (_mesh.ReferencePoints.ContainsValidKey(ml.RegionName)));
+                                || (ml.RegionType == RegionTypeEnum.ReferencePointName
+                                && (_mesh.ReferencePoints.ContainsValidKey(ml.RegionName)));
                     }
                     else if (load is DLoad dl)
                     {
@@ -341,11 +345,8 @@ namespace CaeModel
                 {
                     if (entry.Value is SolidSection ss)
                     {
-                        string[] partNames = _mesh.GetPartNamesByIds(ss.PartIds);
-                        foreach (var partName in partNames)
-                        {
-                            elementIds.UnionWith(_mesh.Parts[partName].Labels);
-                        }
+                        string[] partNames = _mesh.GetPartNamesByIds(ss.CreationIds);
+                        foreach (var partName in partNames) elementIds.UnionWith(_mesh.Parts[partName].Labels);
                     }
                     else throw new NotSupportedException();
                 }

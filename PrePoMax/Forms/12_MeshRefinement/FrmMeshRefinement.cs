@@ -117,7 +117,7 @@ namespace PrePoMax.Forms
             //HighlightMeshRefinement()
             base.OnPropertyGridPropertyValueChanged();
         }
-        protected override void Apply(bool onOkAddNew)
+        protected override void OnApply(bool onOkAddNew)
         {
             _viewFeMeshRefinement = (ViewFeMeshRefinement)propertyGrid.SelectedObject;
             // Check if the name exists
@@ -154,10 +154,12 @@ namespace PrePoMax.Forms
             // If all is successful close the ItemSetSelectionForm - except for OKAddNew
             if (!onOkAddNew) ItemSetDataEditor.SelectionForm.Hide();
         }
-        protected override void Cancel()
+        protected override void OnHideOrClose()
         {
             // Close the ItemSetSelectionForm
             ItemSetDataEditor.SelectionForm.Hide();
+            //
+            base.OnHideOrClose();
         }
         protected override bool OnPrepareForm(string stepName, string meshRefinementToEditName)
         {
