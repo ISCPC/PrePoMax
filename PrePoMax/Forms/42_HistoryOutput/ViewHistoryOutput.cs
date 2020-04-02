@@ -26,13 +26,13 @@ namespace PrePoMax
         [DescriptionAttribute("Integer N, which indicates that only results of every N-th increment will be stored.")]
         public abstract int Frequency { get; set; }
         //
-        [CategoryAttribute("Data")]
-        [OrderedDisplayName(2, 10, "Region type")]
-        [DescriptionAttribute("Select the region type which will be used for the section definition.")]
+        [CategoryAttribute("Region")]
+        [OrderedDisplayName(0, 10, "Region type")]
+        [DescriptionAttribute("Select the region type for the creation of the history output.")]
         public override string RegionType { get { return base.RegionType; } set { base.RegionType = value; } }
         //
-        [CategoryAttribute("Data")]
-        [OrderedDisplayName(2, 10, "Hidden")]
+        [CategoryAttribute("Region")]
+        [OrderedDisplayName(1, 10, "Hidden")]
         [DescriptionAttribute("Hidden.")]
         public string SelectionHidden { get { return _selectionHidden; } set { _selectionHidden = value; } }
 

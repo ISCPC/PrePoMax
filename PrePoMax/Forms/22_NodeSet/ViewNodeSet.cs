@@ -25,6 +25,12 @@ namespace PrePoMax.Forms
         [Id(0, 0)]
         public string Name { get { return _nodeSet.Name; } set { _nodeSet.Name = value; } }
         //
+        [CategoryAttribute("Data")]
+        [DisplayName("Number of nodes")]
+        [DescriptionAttribute("Number of nodes in the nodes set.")]
+        [Id(1, 0)]
+        public int NumberOfNodes { get { return _nodeSet.Labels == null ? 0 : _nodeSet.Labels.Length; } }
+        //
         [CategoryAttribute("Center of gravity")]
         [DisplayName("X")]
         [DescriptionAttribute("X center of gravity.")]

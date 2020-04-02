@@ -13,8 +13,8 @@ namespace CaeMesh
     [Serializable]
     public enum FeReferencePointCreatedFrom
     {
-        [StandardValue("Coordinates", DisplayName = "Coordinates")]
-        Coordinates,
+        [StandardValue("Selection", DisplayName = "Selection/Coordinates")]
+        Selection,
         [StandardValue("CenterOfGravity", DisplayName = "Center of gravity")]
         CenterOfGravity,
         [StandardValue("BoundingBoxCenter", DisplayName = "Bounding box center")]
@@ -68,7 +68,7 @@ namespace CaeMesh
             :base(name)
         {
             Clear();
-            _createdFrom = FeReferencePointCreatedFrom.Coordinates;
+            _createdFrom = FeReferencePointCreatedFrom.Selection;
             _x = x;
             _y = y;
             _z = z;
@@ -77,7 +77,7 @@ namespace CaeMesh
             : base(name)
         {
             Clear();
-            _createdFrom = FeReferencePointCreatedFrom.Coordinates;
+            _createdFrom = FeReferencePointCreatedFrom.Selection;
             _createdFromRefNodeId1 = refNode1.Id;
             _createdFromRefNodeId2 = refNode2Id;
             _x = refNode1.X;
@@ -139,7 +139,7 @@ namespace CaeMesh
         }
         private void ClearKeepCoordinates()
         {
-            _createdFrom = FeReferencePointCreatedFrom.Coordinates;
+            _createdFrom = FeReferencePointCreatedFrom.Selection;
             _createdFromRefNodeId1 = -1;
             _createdFromRefNodeId2 = -1;
             _regionName = null;

@@ -23,7 +23,12 @@ namespace PrePoMax.Forms
         [OrderedDisplayName(0, 10, "Name")]
         [DescriptionAttribute("Name of the element set.")]
         public string Name { get { return _elementSet.Name; } set { _elementSet.Name = value; } }
-        
+
+        [CategoryAttribute("Data")]
+        [OrderedDisplayName(1, 10, "Number of elements")]
+        [DescriptionAttribute("Number of elements in the element set.")]
+        public int NumberOfElements { get { return  _elementSet.Labels == null ? 0 : _elementSet.Labels.Length; } }
+
 
         // Constructors                                                                                                             
         public ViewElementSet(FeElementSet elementSet)

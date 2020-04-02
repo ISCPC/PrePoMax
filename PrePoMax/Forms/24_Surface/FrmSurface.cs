@@ -77,13 +77,14 @@ namespace PrePoMax.Forms
         protected override void OnApply(bool onOkAddNew)
         {
             _viewSurface = (ViewFeSurface)propertyGrid.SelectedObject;
+            //
+            if (_viewSurface == null) throw new CaeGlobals.CaeException("No surface was selected.");
             // Check if the name exists
-            if ((_surfaceToEditName == null && _allExistingNames.Contains(_viewSurface.Name)) ||            // named to existing name
-                (_viewSurface.Name != _surfaceToEditName && _allExistingNames.Contains(_viewSurface.Name))) // renamed to existing name
+            if ((_surfaceToEditName == null && _allExistingNames.Contains(Surface.Name)) ||       // named to existing name
+                (Surface.Name != _surfaceToEditName && _allExistingNames.Contains(Surface.Name))) // renamed to existing name
                 throw new CaeException("The selected name already exists.");
             //
-            if (_viewSurface.CreateSurfaceFrom == FeSurfaceCreatedFrom.Selection &&
-                (Surface.FaceIds == null || Surface.FaceIds.Length == 0))
+            if (Surface.CreatedFrom == FeSurfaceCreatedFrom.Selection && (Surface.FaceIds == null || Surface.FaceIds.Length == 0))
                 throw new CaeException("The surface must contain at least one item.");
             //
             if (_surfaceToEditName == null)
@@ -161,8 +162,10 @@ namespace PrePoMax.Forms
                     Surface.CreationData = _controller.Selection.DeepClone();
                 }
                 //
-                if (Surface.CreatedFrom == FeSurfaceCreatedFrom.NodeSet)
+                if (Surface.CreatedFrom == FeSurfaceCreatedFrom.Selection) { }
+                else if (Surface.CreatedFrom == FeSurfaceCreatedFrom.NodeSet)
                     CheckMissingValueRef(ref nodeSetNames, _viewSurface.NodeSetName, s => { _viewSurface.NodeSetName = s; });
+                else throw new NotSupportedException();
             }
             //
             _viewSurface.PopululateDropDownList(nodeSetNames);
@@ -183,10 +186,6 @@ namespace PrePoMax.Forms
 
 
         // Methods                                                                                                                  
-        public bool PrepareForm(string stepName, string surfaceToEditName)
-        {
-            return OnPrepareForm(stepName, surfaceToEditName);
-        }
         private string GetSurfaceName()
         {
             return NamedClass.GetNewValueName(_allExistingNames, "Surface-");

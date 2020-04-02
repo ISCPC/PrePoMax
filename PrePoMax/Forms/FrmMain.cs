@@ -2454,10 +2454,9 @@ namespace PrePoMax
             try
             {
                 if (_controller.Model.Mesh == null) return;
-
+                //
                 SinglePointDataEditor.ParentForm = _frmReferencePoint;
                 SinglePointDataEditor.Controller = _controller;
-
                 ShowForm(_frmReferencePoint, "Create Reference Point", null);
             }
             catch (Exception ex)

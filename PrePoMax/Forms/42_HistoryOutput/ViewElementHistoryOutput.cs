@@ -82,8 +82,8 @@ namespace PrePoMax
             _historyOutput = historyOutput;
             //
             Dictionary<RegionTypeEnum, string> regionTypePropertyNamePairs = new Dictionary<RegionTypeEnum, string>();
-            regionTypePropertyNamePairs.Add(RegionTypeEnum.Selection, CaeGlobals.Tools.GetPropertyName(() => this.SelectionHidden));
-            regionTypePropertyNamePairs.Add(RegionTypeEnum.ElementSetName, CaeGlobals.Tools.GetPropertyName(() => this.ElementSetName));
+            regionTypePropertyNamePairs.Add(RegionTypeEnum.Selection, nameof(SelectionHidden));
+            regionTypePropertyNamePairs.Add(RegionTypeEnum.ElementSetName, nameof(ElementSetName));
             //
             base.SetBase(_historyOutput, regionTypePropertyNamePairs);
             base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
@@ -109,7 +109,7 @@ namespace PrePoMax
             CustomPropertyDescriptor cpd;
             if (base.RegionType == RegionTypeEnum.Selection.ToFriendlyString())
             {
-                cpd = base.DynamicCustomTypeDescriptor.GetProperty("SelectionHidden");
+                cpd = base.DynamicCustomTypeDescriptor.GetProperty(() => SelectionHidden);
                 cpd.SetIsBrowsable(false);
             }
         }

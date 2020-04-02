@@ -72,14 +72,14 @@ namespace PrePoMax.Forms
                 else if (itemTag is ViewNodalHistoryOutput vnho)
                 {
                     _viewHistoryOutput = vnho;
-                    _controller.SetSelectItemToNode();
                 }
                 else if (itemTag is ViewElementHistoryOutput veho)
                 {
                     _viewHistoryOutput = veho;
-                    _controller.SetSelectItemToElement();
                 }
                 else throw new NotImplementedException();
+                //
+                SetSelectItem();
                 //
                 ShowHideSelectionForm();
                 //
@@ -207,8 +207,6 @@ namespace PrePoMax.Forms
                     else throw new NotSupportedException();
                     //
                     vnho.PopululateDropDownLists(nodeSetNames, surfaceNames, referencePointNames);
-                    //
-                    _controller.SetSelectItemToNode();
                 }
                 else if (_viewHistoryOutput is ViewElementHistoryOutput veho)
                 {
@@ -219,8 +217,6 @@ namespace PrePoMax.Forms
                     else throw new NotSupportedException();
                     //
                     veho.PopululateDropDownLists(elementSetNames);
-                    //
-                    _controller.SetSelectItemToElement();
                 }
                 else throw new NotSupportedException();
                 //
@@ -228,6 +224,8 @@ namespace PrePoMax.Forms
                 propertyGrid.Select();
             }
             _selectedPropertyGridItemChangedEventActive = true;
+            //
+            SetSelectItem();
             //
             ShowHideSelectionForm();
             //
@@ -291,8 +289,7 @@ namespace PrePoMax.Forms
                     }
                     else if (HistoryOutput.RegionType == RegionTypeEnum.Selection)
                     {
-                        if (HistoryOutput is NodalHistoryOutput) _controller.SetSelectItemToNode();
-                        else if (HistoryOutput is ElementHistoryOutput) _controller.SetSelectItemToElement();
+                        SetSelectItem();
                         //
                         if (HistoryOutput.CreationData != null) _controller.Selection = HistoryOutput.CreationData.DeepClone();
                         _controller.HighlightSelection();
@@ -309,6 +306,12 @@ namespace PrePoMax.Forms
                 ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
             else
                 ItemSetDataEditor.SelectionForm.Hide();
+        }
+        private void SetSelectItem()
+        {
+            if (HistoryOutput is null) { }
+            else if (HistoryOutput is NodalHistoryOutput) _controller.SetSelectItemToNode();
+            else if (HistoryOutput is ElementHistoryOutput) _controller.SetSelectItemToElement();
         }
         //
         public void SelectionChanged(int[] ids)

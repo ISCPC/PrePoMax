@@ -48,18 +48,6 @@ namespace PrePoMax.Forms
             this.gbProperties.SuspendLayout();
             this.SuspendLayout();
             // 
-            // btnOK
-            // 
-            this.btnOK.Location = new System.Drawing.Point(160, 376);
-            // 
-            // btnCancel
-            // 
-            this.btnCancel.Location = new System.Drawing.Point(241, 376);
-            // 
-            // btnOkAddNew
-            // 
-            this.btnOkAddNew.Location = new System.Drawing.Point(65, 376);
-            // 
             // FrmReferencePoint
             // 
             this.ClientSize = new System.Drawing.Size(334, 411);
@@ -74,10 +62,15 @@ namespace PrePoMax.Forms
         // Overrides                                                                                                                
         protected override void OnPropertyGridPropertyValueChanged()
         {
-            if (nameof(_viewReferencePoint.CreatedFrom) == propertyGrid.SelectedGridItem.PropertyDescriptor.Name
-                || nameof(_viewReferencePoint.RegionType) == propertyGrid.SelectedGridItem.PropertyDescriptor.Name
-                || nameof(_viewReferencePoint.NodeSetName) == propertyGrid.SelectedGridItem.PropertyDescriptor.Name
-                || nameof(_viewReferencePoint.SurfaceName) == propertyGrid.SelectedGridItem.PropertyDescriptor.Name)
+            string property = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
+            //
+            if (property == nameof(_viewReferencePoint.CreatedFrom))
+            {
+                SetSelectItemAndSelection();
+                _controller.UpdateReferencePoint(ReferencePoint);
+            }
+            else if (property == nameof(_viewReferencePoint.RegionType) || property == nameof(_viewReferencePoint.NodeSetName) ||
+                     property == nameof(_viewReferencePoint.SurfaceName))
             {
                 _controller.UpdateReferencePoint(ReferencePoint);
             }
@@ -116,17 +109,25 @@ namespace PrePoMax.Forms
             if ((_referencePointToEditName == null && _allExistingNames.Contains(_viewReferencePoint.Name)) ||                       // named to existing name
                 (_viewReferencePoint.Name != _referencePointToEditName && _allExistingNames.Contains(_viewReferencePoint.Name)))     // renamed to existing name
                 throw new CaeGlobals.CaeException("The selected name already exists.");
-
+            // Create
             if (_referencePointToEditName == null)
             {
-                // Create
                 _controller.AddReferencePointCommand(ReferencePoint);
             }
-            else
+            // Replace
+            else if (_propertyItemChanged)
             {
-                // Replace
-                if (_propertyItemChanged) _controller.ReplaceReferencePointCommand(_referencePointToEditName, ReferencePoint);
+                 _controller.ReplaceReferencePointCommand(_referencePointToEditName, ReferencePoint);
             }
+            // If all is successful turn off the selection
+            TurnOffSelection();
+        }
+        protected override void OnHideOrClose()
+        {
+            // Close the ItemSetSelectionForm
+            TurnOffSelection();
+            //
+            base.OnHideOrClose();
         }
         protected override bool OnPrepareForm(string stepName, string referencePointToEditName)
         {
@@ -143,16 +144,18 @@ namespace PrePoMax.Forms
             //
             _nodeSetNames = _controller.GetUserNodeSetNames();
             _surfaceNames = _controller.GetSurfaceNames();
-            //
-            if (_referencePointToEditName == null)  ReferencePoint = new FeReferencePoint(GetReferencePointName(), 0, 0, 0);
-            else 
+            // Create new reference point
+            if (_referencePointToEditName == null)
+                ReferencePoint = new FeReferencePoint(GetReferencePointName(), 0, 0, 0);
+            // Edit existing reference point
+            else
             {
                 ReferencePoint = _controller.GetReferencePoint(_referencePointToEditName); // to clone
                 // Check for deleted regions
-                ViewFeReferencePoint vrp = _viewReferencePoint;
-                if (vrp.CreatedFrom == FeReferencePointCreatedFrom.BoundingBoxCenter
-                    || vrp.CreatedFrom == FeReferencePointCreatedFrom.CenterOfGravity)
-                {                    
+                if (ReferencePoint.CreatedFrom == FeReferencePointCreatedFrom.BoundingBoxCenter ||
+                    ReferencePoint.CreatedFrom == FeReferencePointCreatedFrom.CenterOfGravity)
+                {
+                    ViewFeReferencePoint vrp = _viewReferencePoint; // shorten
                     if (vrp.RegionType == RegionTypeEnum.NodeSetName.ToFriendlyString())
                         CheckMissingValueRef(ref _nodeSetNames, vrp.NodeSetName, s => { vrp.NodeSetName = s; });
                     else if (vrp.RegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
@@ -168,21 +171,21 @@ namespace PrePoMax.Forms
             propertyGrid.SelectedObject = _viewReferencePoint;
             propertyGrid.Select();
             //
+            SetSelectItemAndSelection();
+            //
+            HighlightReferencePoint();
+            //
             return true;
         }
 
 
         // Methods                                                                                                                  
-        public bool PrepareForm(string stepName, string referencePointToEditName)
-        {
-            return OnPrepareForm(stepName, referencePointToEditName);
-        }
         public void PickedIds(int[] ids)
         {
             this.Enabled = true;
             //
-            _controller.SelectBy = vtkSelectBy.Off;
-            _controller.Selection.SelectItem = vtkSelectItem.None;
+            //_controller.SelectBy = vtkSelectBy.Off;
+            //_controller.Selection.SelectItem = vtkSelectItem.None;
             _controller.ClearSelectionHistory();
             //
             if (ids != null && ids.Length == 1)
@@ -191,6 +194,8 @@ namespace PrePoMax.Forms
                 _viewReferencePoint.X = node.X;
                 _viewReferencePoint.Y = node.Y;
                 _viewReferencePoint.Z = node.Z;
+                //
+                //_controller.UpdateReferencePoint(ReferencePoint);
                 //
                 propertyGrid.Refresh();
                 //
@@ -201,7 +206,6 @@ namespace PrePoMax.Forms
         {
             return NamedClass.GetNewValueName(_allExistingNames, "RP-");
         }
-
         private void HighlightReferencePoint()
         {
             Color color = Color.Red;
@@ -213,5 +217,25 @@ namespace PrePoMax.Forms
             //
             _controller.DrawNodes("ReferencePoint", _coorNodesToDraw, color, layer, 7);
         }
+        private void TurnOffSelection()
+        {
+            _controller.SelectBy = vtkSelectBy.Off;
+            _controller.Selection.SelectItem = vtkSelectItem.None;
+        }
+        private void SetSelectItemAndSelection()
+        {
+            if (ReferencePoint is null) { }
+            else if (ReferencePoint.CreatedFrom == FeReferencePointCreatedFrom.Selection)
+            {
+                _controller.SelectBy = vtkSelectBy.QueryNode;
+                _controller.Selection.SelectItem = vtkSelectItem.Node;
+            }
+            else
+            {
+                TurnOffSelection();
+            }
+            _controller.ClearSelectionHistory();
+        }
+       
     }
 }

@@ -64,22 +64,24 @@ namespace PrePoMax
         {
             foreach (var entry in regionTypeListItemsPairs)
                 _dctd.PopulateProperty(_regionTypePropertyNamePairs[entry.Key], entry.Value);
-
             // Prepare the region drop down list
             PopululateDropDownListForRegionType(regionTypeListItemsPairs);
-
             // Update visible dorp down lists
             UpdateRegionVisibility();
         }
         private void PopululateDropDownListForRegionType(Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs)
         {
             List<string> types = new List<string>();
+            bool selection = false;
             foreach (var entry in regionTypeListItemsPairs)
             {
                 if (entry.Value.Length > 0) types.Add(entry.Key.ToFriendlyString());
+                if (entry.Key == RegionTypeEnum.Selection) selection = true;
             }
-
-            _dctd.PopulateProperty(() => this.RegionType, types.ToArray(), false, 2);
+            //
+            int numOfItemsToBeBrowsable = 2;
+            if (selection) numOfItemsToBeBrowsable = 1;
+            _dctd.PopulateProperty(() => this.RegionType, types.ToArray(), false, numOfItemsToBeBrowsable);
         }
         public virtual void UpdateRegionVisibility()
         {

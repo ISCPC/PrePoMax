@@ -74,6 +74,8 @@ namespace PrePoMax.Forms
                 }
                 else throw new NotImplementedException();
                 //
+                SetSelectItem();
+                //
                 ShowHideSelectionForm();
                 //
                 propertyGrid.SelectedObject = itemTag;
@@ -86,13 +88,13 @@ namespace PrePoMax.Forms
         {
             string property = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
             //
-            if (property == CaeGlobals.Tools.GetPropertyName(() => _viewSection.RegionType))
+            if (property == nameof(_viewSection.RegionType))
             {
                 ShowHideSelectionForm();
                 //
                 HighlightSection();
             }
-            else if (property == CaeGlobals.Tools.GetPropertyName(() => _viewSection.PartName))
+            else if (property == nameof(_viewSection.PartName) || property == nameof(_viewSection.ElementSetName))
             {
                 HighlightSection();
             }
@@ -208,6 +210,8 @@ namespace PrePoMax.Forms
             }
             _selectedPropertyGridItemChangedEventActive = true;
             //
+            SetSelectItem();
+            //
             ShowHideSelectionForm();
             //
             HighlightSection(); // must be here if called from the menu
@@ -255,7 +259,8 @@ namespace PrePoMax.Forms
                     }
                     else if (Section.RegionType == RegionTypeEnum.Selection)
                     {
-                        _controller.SetSelectItemToPart();
+                        SetSelectItem();
+                        //
                         if (Section.CreationData != null) _controller.Selection = Section.CreationData.DeepClone();
                         _controller.HighlightSelection();
                     }
@@ -271,6 +276,11 @@ namespace PrePoMax.Forms
                 ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
             else
                 ItemSetDataEditor.SelectionForm.Hide();
+        }
+        private void SetSelectItem()
+        {
+            if (Section is null) { }
+            else if (Section is SolidSection) _controller.SetSelectItemToPart();
         }
         //
         public void SelectionChanged(int[] ids)

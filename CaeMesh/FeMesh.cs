@@ -559,7 +559,7 @@ namespace CaeMesh
             foreach (var entry in _referencePoints)
             {
                 referencePoint = entry.Value;
-                validFromCoordinates = referencePoint.CreatedFrom == FeReferencePointCreatedFrom.Coordinates;
+                validFromCoordinates = referencePoint.CreatedFrom == FeReferencePointCreatedFrom.Selection;
                 validFromBB = (referencePoint.CreatedFrom == FeReferencePointCreatedFrom.BoundingBoxCenter &&
                                (_nodeSets.ContainsValidKey(referencePoint.RegionName) ||
                                _surfaces.ContainsValidKey(referencePoint.RegionName)));
