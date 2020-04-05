@@ -172,13 +172,11 @@ namespace CaeModel
         public string[] CheckValidity(List<Tuple<NamedClass, string>> items)
         {
             // Tuple<NamedClass, string>   ...   Tuple<invalidItem, stepName>
-
             if (_mesh == null) return new string[0];
-
+            //
             List<string> invalidItems = new List<string>();
             bool valid = false;
             invalidItems.AddRange(_mesh.CheckValidity(items));
-
             // Sections
             Section section;
             foreach (var entry in _sections)
@@ -188,16 +186,14 @@ namespace CaeModel
                 {
                     valid = _materials.ContainsKey(section.MaterialName)
                         && ((ss.RegionType == RegionTypeEnum.PartName && _mesh.Parts.ContainsKey(section.RegionName))
-                        || (ss.RegionType == RegionTypeEnum.ElementSetName && _mesh.ElementSets.ContainsValidKey(section.RegionName))
-                        || (ss.RegionType == RegionTypeEnum.Selection && _mesh.GetPartNamesByIds(ss.CreationIds) != null &&
-                            _mesh.GetPartNamesByIds(ss.CreationIds).Length == ss.CreationIds.Length));
+                        || (ss.RegionType == RegionTypeEnum.ElementSetName 
+                            && _mesh.ElementSets.ContainsValidKey(section.RegionName)));
                 }
                 else throw new NotSupportedException();
                 //
                 SetItemValidity(section, valid, items);
                 if (!valid && section.Active) invalidItems.Add("Section: " + section.Name);
             }
-
             // Constraints
             Constraint constraint;
             foreach (var entry in _constraints)
@@ -220,7 +216,6 @@ namespace CaeModel
                 SetItemValidity(constraint, valid, items);
                 if (!valid && constraint.Active) invalidItems.Add("Constraint: " + constraint.Name);
             }
-
             // Steps
             HistoryOutput historyOutput;
             BoundaryCondition bc;
@@ -248,7 +243,6 @@ namespace CaeModel
                     SetItemValidity(historyOutput, valid, items);
                     if (!valid && historyOutput.Active) invalidItems.Add("History output: " + step.Name + ", " + historyOutput.Name);
                 }
-
                 // Boundary conditions
                 foreach (var bcEntry in step.BoundaryConditions)
                 {
@@ -270,7 +264,6 @@ namespace CaeModel
                     SetItemValidity(bc, valid, items);
                     if (!valid && bc.Active) invalidItems.Add("Boundary condition: " + step.Name + ", " + bc.Name);
                 }
-
                 // Loads
                 foreach (var loadEntry in step.Loads)
                 {
@@ -345,14 +338,15 @@ namespace CaeModel
                 }
                 else if (entry.Value.RegionType == RegionTypeEnum.ElementSetName)
                 {
-                    elementIds.UnionWith(_mesh.ElementSets[entry.Value.RegionName].Labels);
-                }
-                else if (entry.Value.RegionType == RegionTypeEnum.Selection)
-                {
                     if (entry.Value is SolidSection ss)
                     {
-                        string[] partNames = _mesh.GetPartNamesByIds(ss.CreationIds);
-                        foreach (var partName in partNames) elementIds.UnionWith(_mesh.Parts[partName].Labels);
+                        FeElementSet elementSet = _mesh.ElementSets[entry.Value.RegionName];
+                        if (elementSet.CreatedFromParts)
+                        {
+                            string[] partNames = _mesh.GetPartNamesByIds(elementSet.Labels);
+                            foreach (var partName in partNames) elementIds.UnionWith(_mesh.Parts[partName].Labels);
+                        }
+                        else  elementIds.UnionWith(elementSet.Labels);
                     }
                     else throw new NotSupportedException();
                 }

@@ -182,6 +182,7 @@ namespace PrePoMax.Forms
             else
             {
                 Section = _controller.GetSection(_sectionToEditName); // to clone
+                if (Section.CreationData != null) Section.RegionType = RegionTypeEnum.Selection;
                 // Select the appropriate constraint in the list view - disable event SelectedIndexChanged
                 _lvTypesSelectedIndexChangedEventActive = false;
                 if (_viewSection is ViewSolidSection) lvTypes.Items[0].Selected = true;

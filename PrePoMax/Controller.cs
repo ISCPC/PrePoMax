@@ -2777,7 +2777,7 @@ namespace PrePoMax
             //
             Update(UpdateType.Check | UpdateType.RedrawSymbols);
         }
-        public void RemoveSurfaces(string[] surfaceNames)
+        public void RemoveSurfaces(string[] surfaceNames, bool update = true)
         {
             FeSurface[] removedSurfaces = RemoveSurfaceAndElementFacesFromModel(surfaceNames);
             //
@@ -2788,7 +2788,7 @@ namespace PrePoMax
                 UpdateReferencePointsDependentOnSurface(surface.Name);
             }
             //
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            if (update) Update(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         private void AddSurfaceAndElementFaces(FeSurface surface)
         {
@@ -3088,22 +3088,11 @@ namespace PrePoMax
         }
         public void AddSection(Section section)
         {
-            if (section.RegionType == RegionTypeEnum.Selection)
-            {
-                // In order for the Regenerate history to work perform the selection
-                _selection = section.CreationData.DeepClone();
-                if (section is SolidSection ss)
-                {
-                    ss.CreationIds = GetSelectionIds();
-                    _model.Mesh.GetPartNamesByIds(section.CreationIds)
-                }
-                else throw new NotSupportedException();
-                _selection.Clear();
-            }
+            ConvertSelectionBasedSection(section);
             //
             _model.Sections.Add(section.Name, section);
             _form.AddTreeNode(ViewGeometryModelResults.Model, section, null);
-
+            //
             CheckAndUpdateValidity();
         }
         public Section GetSection(string sectionName)
@@ -3114,20 +3103,14 @@ namespace PrePoMax
         {
             return _model.Sections.Values.ToArray();
         }
-        public void ReplaceSection(string oldSectionName, Section newSection)
+        public void ReplaceSection(string oldSectionName, Section section)
         {
-            if (newSection.RegionType == RegionTypeEnum.Selection)
-            {
-                // In order for the Regenerate history to work perform the selection
-                _selection = newSection.CreationData.DeepClone();
-                if (newSection is SolidSection ss) ss.CreationIds = GetSelectionIds();
-                else throw new NotSupportedException();
-                _selection.Clear();
-            }
+            DeleteSelectionBasedSectionSets(oldSectionName);
+            ConvertSelectionBasedSection(section);
             //
-            _model.Sections.Replace(oldSectionName, newSection.Name, newSection);
+            _model.Sections.Replace(oldSectionName, section.Name, section);
             //
-            _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldSectionName, newSection, null);
+            _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldSectionName, section, null);
             //
             CheckAndUpdateValidity();
         }
@@ -3135,59 +3118,48 @@ namespace PrePoMax
         {
             foreach (var name in sectionNames)
             {
+                DeleteSelectionBasedSectionSets(name);
                 _model.Sections.Remove(name);
                 _form.RemoveTreeNode<Section>(ViewGeometryModelResults.Model, name, null);
             }
-
+            //
             CheckAndUpdateValidity();
         }
         //
-        private void ConvertSelectionBasedHistoryOutput(HistoryOutput historyOutput)
+        private void ConvertSelectionBasedSection(Section section)
         {
             // Create a named set and convert a selection to a named set
-            if (historyOutput.RegionType == RegionTypeEnum.Selection)
+            if (section.RegionType == RegionTypeEnum.Selection)
             {
                 string name;
-                // Node output
-                if (historyOutput is NodalHistoryOutput)
+                // Element set output
+                if (section is SolidSection)
                 {
-                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.NodeSets) + historyOutput.Name;
-                    FeNodeSet nodeSet = new FeNodeSet(name, historyOutput.CreationIds);
-                    nodeSet.CreationData = historyOutput.CreationData.DeepClone();
-                    nodeSet.Internal = true;
-                    AddNodeSet(nodeSet);
-                    //
-                    historyOutput.RegionName = name;
-                    historyOutput.RegionType = RegionTypeEnum.NodeSetName;
-                }
-                // Element output
-                else if (historyOutput is ElementHistoryOutput)
-                {
-                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.ElementSets) + historyOutput.Name;
-                    FeElementSet elementSet = new FeElementSet(name, historyOutput.CreationIds);
-                    elementSet.CreationData = historyOutput.CreationData.DeepClone();
+                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.ElementSets) + section.Name;
+                    FeElementSet elementSet = new FeElementSet(name, section.CreationIds, true);
+                    elementSet.CreationData = section.CreationData.DeepClone();
                     elementSet.Internal = true;
                     AddelementSet(elementSet);
                     //
-                    historyOutput.RegionName = name;
-                    historyOutput.RegionType = RegionTypeEnum.ElementSetName;
+                    section.RegionName = name;
+                    section.RegionType = RegionTypeEnum.ElementSetName;
                 }
                 else throw new NotSupportedException();
             }
             // Clear the creation data if not used
             else
             {
-                historyOutput.CreationData = null;
-                historyOutput.CreationIds = null;
+                section.CreationData = null;
+                section.CreationIds = null;
             }
         }
-        private void DeleteSelectionBasedHistoryOutputSets(HistoryOutput historyOutput)
+        private void DeleteSelectionBasedSectionSets(string oldSectionName)
         {
             // Delete previously created sets
-            if (historyOutput.CreationData != null && historyOutput.RegionName != null)
+            Section section = GetSection(oldSectionName);
+            if (section.CreationData != null && section.RegionName != null)
             {
-                if (historyOutput is NodalHistoryOutput) RemoveNodeSets(new string[] { historyOutput.RegionName });
-                else if (historyOutput is ElementHistoryOutput) RemoveElementSets(new string[] { historyOutput.RegionName });
+                if (section is SolidSection) RemoveElementSets(new string[] { section.RegionName });
                 else throw new NotSupportedException();
             }
         }
@@ -3391,7 +3363,7 @@ namespace PrePoMax
         }
         public void ReplaceHistoryOutput(string stepName, string oldHistoryOutputName, HistoryOutput historyOutput)
         {
-            DeleteSelectionBasedHistoryOutputSets(historyOutput);
+            DeleteSelectionBasedHistoryOutputSets(stepName, oldHistoryOutputName);
             ConvertSelectionBasedHistoryOutput(historyOutput);
             //
             _model.StepCollection.GetStep(stepName).HistoryOutputs.Replace(oldHistoryOutputName, historyOutput.Name, historyOutput);
@@ -3402,14 +3374,11 @@ namespace PrePoMax
         }
         public void RemoveHistoryOutputs(string stepName, string[] historyOutputNames)
         {
-            HistoryOutput historyOutput;
             foreach (var name in historyOutputNames)
             {
-                if (_model.StepCollection.GetStep(stepName).HistoryOutputs.TryRemove(name, out historyOutput))
-                {
-                    DeleteSelectionBasedHistoryOutputSets(historyOutput);
-                    _form.RemoveTreeNode<HistoryOutput>(ViewGeometryModelResults.Model, name, stepName);
-                }
+                DeleteSelectionBasedHistoryOutputSets(stepName, name);
+                _model.StepCollection.GetStep(stepName).HistoryOutputs.Remove(name);
+                _form.RemoveTreeNode<HistoryOutput>(ViewGeometryModelResults.Model, name, stepName);
             }
             //
             CheckAndUpdateValidity();
@@ -3454,8 +3423,9 @@ namespace PrePoMax
                 historyOutput.CreationIds = null;
             }
         }
-        private void DeleteSelectionBasedHistoryOutputSets(HistoryOutput historyOutput)
+        private void DeleteSelectionBasedHistoryOutputSets(string stepName, string oldHistoryOutputName)
         {
+            HistoryOutput historyOutput = _model.StepCollection.GetStep(stepName).HistoryOutputs[oldHistoryOutputName];
             // Delete previously created sets
             if (historyOutput.CreationData != null && historyOutput.RegionName != null)
             {
@@ -3605,7 +3575,7 @@ namespace PrePoMax
         public void ReplaceBoundaryCondition(string stepName, string oldBoundaryConditionName,
                                              BoundaryCondition boundaryCondition)
         {
-            DeleteSelectionBasedBoundaryConditionSets(boundaryCondition);
+            DeleteSelectionBasedBoundaryConditionSets(stepName, oldBoundaryConditionName);
             ConvertSelectionBasedBoundaryCondition(boundaryCondition);
             //
             _model.StepCollection.GetStep(stepName).BoundaryConditions.Replace(oldBoundaryConditionName, 
@@ -3618,16 +3588,13 @@ namespace PrePoMax
         }
         public void RemoveBoundaryConditions(string stepName, string[] boundaryConditionNames)
         {
-            BoundaryCondition boundaryCondition;
             foreach (var name in boundaryConditionNames)
             {
-                if (_model.StepCollection.GetStep(stepName).BoundaryConditions.TryRemove(name, out boundaryCondition))
-                {
-                    DeleteSelectionBasedBoundaryConditionSets(boundaryCondition);
-                    _form.RemoveTreeNode<BoundaryCondition>(ViewGeometryModelResults.Model, name, stepName);
-                }
+                DeleteSelectionBasedBoundaryConditionSets(stepName, name);
+                _model.StepCollection.GetStep(stepName).BoundaryConditions.Remove(name);
+                _form.RemoveTreeNode<BoundaryCondition>(ViewGeometryModelResults.Model, name, stepName);
             }
-
+            //
             Update(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         //
@@ -3658,13 +3625,15 @@ namespace PrePoMax
                 boundaryCondition.CreationIds = null;
             }
         }
-        private void DeleteSelectionBasedBoundaryConditionSets(BoundaryCondition boundaryCondition)
+        private void DeleteSelectionBasedBoundaryConditionSets(string stepName, string oldBoundaryConditionName)
         {
+            BoundaryCondition boundaryCondition = 
+                _model.StepCollection.GetStep(stepName).BoundaryConditions[oldBoundaryConditionName];
             // Delete previously created sets
             if (boundaryCondition.CreationData != null && boundaryCondition.RegionName != null)
             {
                 if (boundaryCondition is DisplacementRotation || boundaryCondition is SubmodelBC)
-                    RemoveSurfaces(new string[] { boundaryCondition.RegionName });
+                    RemoveSurfaces(new string[] { boundaryCondition.RegionName }, false);
                 else throw new NotSupportedException();
             }
         }
@@ -3743,7 +3712,7 @@ namespace PrePoMax
         }
         public void ReplaceLoad(string stepName, string oldLoadName, Load load)
         {
-            DeleteSelectionBasedLoadSets(load);
+            DeleteSelectionBasedLoadSets(stepName, oldLoadName);
             ConvertSelectionBasedLoad(load);
             //
             _model.StepCollection.GetStep(stepName).Loads.Replace(oldLoadName, load.Name, load);
@@ -3754,14 +3723,11 @@ namespace PrePoMax
         }
         public void RemoveLoads(string stepName, string[] loadNames)
         {
-            Load load;
             foreach (var name in loadNames)
             {
-                if (_model.StepCollection.GetStep(stepName).Loads.TryRemove(name, out load))
-                {
-                    DeleteSelectionBasedLoadSets(load);
-                    _form.RemoveTreeNode<Load>(ViewGeometryModelResults.Model, name, stepName);
-                }
+                DeleteSelectionBasedLoadSets(stepName, name);
+                _model.StepCollection.GetStep(stepName).Loads.Remove(name);
+                _form.RemoveTreeNode<Load>(ViewGeometryModelResults.Model, name, stepName);
             }
             Update(UpdateType.Check | UpdateType.RedrawSymbols);
         }
@@ -3784,6 +3750,18 @@ namespace PrePoMax
                     load.RegionName = name;
                     load.RegionType = RegionTypeEnum.NodeSetName;
                 }
+                // Element set from parts
+                else if (load is GravityLoad || load is CentrifLoad)
+                {
+                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.ElementSets) + load.Name;
+                    FeElementSet elementSet = new FeElementSet(name, load.CreationIds, true);
+                    elementSet.CreationData = load.CreationData.DeepClone();
+                    elementSet.Internal = true;
+                    AddelementSet(elementSet);
+                    //
+                    load.RegionName = name;
+                    load.RegionType = RegionTypeEnum.ElementSetName;
+                }
                 // Surface
                 else if (load is DLoad || load is STLoad || load is PreTensionLoad)
                 {
@@ -3795,9 +3773,6 @@ namespace PrePoMax
                     load.RegionName = name;
                     load.RegionType = RegionTypeEnum.SurfaceName;
                 }
-                // Part
-                else if (load is GravityLoad || load is CentrifLoad)
-                {}
                 else throw new NotSupportedException();
             }
             // Clear the creation data if not used
@@ -3807,17 +3782,18 @@ namespace PrePoMax
                 load.CreationIds = null;
             }
         }
-        private void DeleteSelectionBasedLoadSets(Load load)
+        private void DeleteSelectionBasedLoadSets(string stepName, string oldLoadName)
         {
+            Load load = _model.StepCollection.GetStep(stepName).Loads[oldLoadName];
             // Delete previously created sets
             if (load.CreationData != null && load.RegionName != null)
             {
                 if (load is CLoad || load is MomentLoad)
                     RemoveNodeSets(new string[] { load.RegionName });
-                else if (load is DLoad || load is STLoad || load is PreTensionLoad)
-                    RemoveSurfaces(new string[] { load.RegionName });
                 else if (load is GravityLoad || load is CentrifLoad)
-                { }
+                    RemoveElementSets(new string[] { load.RegionName });
+                else if (load is DLoad || load is STLoad || load is PreTensionLoad)
+                    RemoveSurfaces(new string[] { load.RegionName }, false);
                 else throw new NotSupportedException();
             }
         }
@@ -6046,42 +6022,41 @@ namespace PrePoMax
                 else if (load is GravityLoad gLoad)
                 {
                     string[] partNames = null;
+                    FeElementSet elementSet = null;
                     if (layer == vtkControl.vtkRendererLayer.Selection)
                     {
                         if (gLoad.RegionType == RegionTypeEnum.PartName) HighlightModelParts(new string[] { gLoad.RegionName });
-                        else if (gLoad.RegionType == RegionTypeEnum.ElementSetName) 
-                            HighlightElementSet(_model.Mesh.ElementSets[gLoad.RegionName], _model.Mesh);
-                        else if (gLoad.RegionType == RegionTypeEnum.Selection)
+                        else if (gLoad.RegionType == RegionTypeEnum.ElementSetName)
                         {
-                            partNames = _model.Mesh.GetPartNamesByIds(gLoad.CreationIds);
-                            if (partNames != null) HighlightModelParts(partNames.ToArray());
-                            else throw new NotSupportedException();
+                            elementSet = _model.Mesh.ElementSets[gLoad.RegionName];
+                            HighlightElementSet(elementSet, _model.Mesh);
                         }
                         else throw new NotSupportedException();
                     }
-                    FeNodeSet nodeSet;
-                    if (gLoad.RegionType == RegionTypeEnum.Selection)
+                    FeNodeSet nodeSet = null;
+                    if (gLoad.RegionType == RegionTypeEnum.ElementSetName)
                     {
-                        partNames = _model.Mesh.GetPartNamesByIds(gLoad.CreationIds);
-                        if (partNames != null) nodeSet = _model.Mesh.GetNodeSetFromPartNames(partNames);
-                        else throw new NotSupportedException();
+                        elementSet = _model.Mesh.ElementSets[gLoad.RegionName];
+                        if (elementSet != null && elementSet.CreatedFromParts)
+                        {
+                            partNames = _model.Mesh.GetPartNamesByIds(elementSet.Labels);
+                            if (partNames != null) nodeSet = _model.Mesh.GetNodeSetFromPartNames(partNames);
+                            else throw new NotSupportedException();
+                        }
                     }
-                    else nodeSet = _model.Mesh.GetNodeSetFromPartOrElementSetName(gLoad.RegionName);
+                    if (nodeSet == null) nodeSet = _model.Mesh.GetNodeSetFromPartOrElementSetName(gLoad.RegionName);
                     DrawGravityLoadSymbol(prefixName, gLoad, nodeSet.CenterOfGravity, color, symbolSize, symbolLayer);
                 }
                 else if (load is CentrifLoad cfLoad)
                 {
-                    string[] partNames = null;
+                    FeElementSet elementSet;
                     if (layer == vtkControl.vtkRendererLayer.Selection)
                     {
                         if (cfLoad.RegionType == RegionTypeEnum.PartName) HighlightModelParts(new string[] { cfLoad.RegionName });
                         else if (cfLoad.RegionType == RegionTypeEnum.ElementSetName)
-                            HighlightElementSet(_model.Mesh.ElementSets[cfLoad.RegionName], _model.Mesh);
-                        else if (cfLoad.RegionType == RegionTypeEnum.Selection)
                         {
-                            partNames = _model.Mesh.GetPartNamesByIds(cfLoad.CreationIds);
-                            if (partNames != null) HighlightModelParts(partNames.ToArray());
-                            else throw new NotSupportedException();
+                            elementSet = _model.Mesh.ElementSets[cfLoad.RegionName];
+                            HighlightElementSet(elementSet, _model.Mesh);
                         }
                         else throw new NotSupportedException();
                     }
@@ -6574,12 +6549,7 @@ namespace PrePoMax
                     else if (obj is CaeModel.Section sec)
                     {
                         if (sec.RegionType == RegionTypeEnum.PartName) HighlightModelParts(new string[] { sec.RegionName });
-                        else if (sec.RegionType == RegionTypeEnum.ElementSetName) HighlightElementSets(new string[] { sec.RegionName });
-                        else if (sec.RegionType == RegionTypeEnum.Selection)
-                        {
-                            string[] partNames = DisplayedMesh.GetPartNamesByIds(sec.CreationIds);
-                            if (partNames != null) HighlightModelParts(partNames.ToArray());
-                        }
+                        else if (sec.RegionType == RegionTypeEnum.ElementSetName) HighlightElementSets(new string[] { sec.RegionName });                        
                         else throw new NotSupportedException();
                     }
                     else if (obj is CaeModel.Constraint c)
@@ -6757,7 +6727,8 @@ namespace PrePoMax
         }
         private void HighlightElementSet(FeElementSet elementSet, FeMesh mesh)
         {
-            HighlightElements(elementSet.Labels, mesh);
+            if (elementSet.CreatedFromParts) HighlightModelParts(_model.Mesh.GetPartNamesByIds(elementSet.Labels));
+            else HighlightElements(elementSet.Labels, mesh);
         }
         public void HighlightSurface(int[][] cells)
         {

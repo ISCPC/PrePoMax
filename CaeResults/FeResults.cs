@@ -661,9 +661,9 @@ namespace CaeResults
                 string name = "DISP";
 
                 float[][] disp = new float[3][];
-                disp[0] = GetValues(new FieldData(name, "D1", stepId, stepIncrementId), globalNodeIds);
-                disp[1] = GetValues(new FieldData(name, "D2", stepId, stepIncrementId), globalNodeIds);
-                disp[2] = GetValues(new FieldData(name, "D3", stepId, stepIncrementId), globalNodeIds);
+                disp[0] = GetValues(new FieldData(name, "U1", stepId, stepIncrementId), globalNodeIds);
+                disp[1] = GetValues(new FieldData(name, "U2", stepId, stepIncrementId), globalNodeIds);
+                disp[2] = GetValues(new FieldData(name, "U3", stepId, stepIncrementId), globalNodeIds);
 
                 scaledNodes = new double[nodes.GetLength(0)][];
                 for (int i = 0; i < nodes.GetLength(0); i++) scaledNodes[i] = nodes[i].ToArray();  // copy coordinates
@@ -687,9 +687,9 @@ namespace CaeResults
                 string name = "DISP";
 
                 float[][] disp = new float[3][];
-                disp[0] = GetValues(new FieldData(name, "D1", stepId, stepIncrementId), globalNodeIds);
-                disp[1] = GetValues(new FieldData(name, "D2", stepId, stepIncrementId), globalNodeIds);
-                disp[2] = GetValues(new FieldData(name, "D3", stepId, stepIncrementId), globalNodeIds);
+                disp[0] = GetValues(new FieldData(name, "U1", stepId, stepIncrementId), globalNodeIds);
+                disp[1] = GetValues(new FieldData(name, "U2", stepId, stepIncrementId), globalNodeIds);
+                disp[2] = GetValues(new FieldData(name, "U3", stepId, stepIncrementId), globalNodeIds);
 
                 if (disp[0] != null && disp[1] != null && disp[2] != null)
                 {

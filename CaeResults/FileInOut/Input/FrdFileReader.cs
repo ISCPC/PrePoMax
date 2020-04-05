@@ -12,6 +12,27 @@ namespace CaeResults
     [Serializable]
     public static class FrdFileReader
     {
+        static Dictionary<string, string> componentRenamer = new Dictionary<string, string>()
+        {
+            { "D1", "U1"},
+            { "D2", "U2"},
+            { "D3", "U3"},
+            //
+            { "SXX", "S11"},
+            { "SYY", "S22"},
+            { "SZZ", "S33"},
+            { "SXY", "S12"},
+            { "SYZ", "S23"},
+            { "SZX", "S13"},
+            //
+            //
+            { "EXX", "E11"},
+            { "EYY", "E22"},
+            { "EZZ", "E33"},
+            { "EXY", "E12"},
+            { "EYZ", "E23"},
+            { "EZX", "E13"}
+        };
         // Methods                                                                                                                  
         static public FeResults Read(string fileName)
         {
@@ -460,12 +481,18 @@ namespace CaeResults
             // -5  D2          1    2    2    0                                          
             // -5  D3          1    2    3    0                                          
             // -5  ALL         1    2    0    0    1ALL                                  
+            string componentName;
+            string componentRename;
             components = new List<string>();
             while (true)
             {
                 record = lines[lineNum++].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
-                if (record[0] == "-5") components.Add(record[1]);
+                if (record[0] == "-5") componentName = record[1];
                 else break;
+                //
+                if (componentRenamer.TryGetValue(componentName, out componentRename))
+                    componentName = componentRename;
+                components.Add(componentName);
             }
             lineNum--;
 

@@ -48,32 +48,32 @@ namespace PrePoMax
         // Properties                                                                                                               
         public override string Name { get { return _historyOutput.Name; } set { _historyOutput.Name = value; } }
         public override int Frequency { get { return _historyOutput.Frequency; } set { _historyOutput.Frequency = value; } }
-
-        [OrderedDisplayName(3, 10, "Element set")]
+        //
         [CategoryAttribute("Data")]
-        [DescriptionAttribute("Select the element set for the creation of the history output.")]
-        public string ElementSetName { get { return _historyOutput.RegionName; } set { _historyOutput.RegionName = value; } }
-
-        [OrderedDisplayName(4, 10, "Variables to output")]
-        [CategoryAttribute("Data")]
+        [OrderedDisplayName(2, 10, "Variables to output")]
         [DescriptionAttribute("Element history variables")]
-        public ViewElementHistoryVariable Variables 
-        { 
+        public ViewElementHistoryVariable Variables
+        {
             get
-            { 
-                return (ViewElementHistoryVariable)_historyOutput.Variables; 
-            } 
+            {
+                return (ViewElementHistoryVariable)_historyOutput.Variables;
+            }
             set
-            { 
+            {
                 _historyOutput.Variables = (CaeModel.ElementHistoryVariable)value;
-            } 
+            }
         }
-
-        [OrderedDisplayName(5, 10, "Totals")]
+        //
         [CategoryAttribute("Data")]
+        [OrderedDisplayName(3, 10, "Totals")]
         [DescriptionAttribute("The parameter totals only applies to whole element variables (ELSE, EVOL).")]
         public CaeModel.TotalsTypeEnum TotalsType { get { return _historyOutput.TotalsType; } set { _historyOutput.TotalsType = value; } }
-
+        //
+        [CategoryAttribute("Region")]
+        [OrderedDisplayName(2, 10, "Element set")]
+        [DescriptionAttribute("Select the element set for the creation of the history output.")]
+        public string ElementSetName { get { return _historyOutput.RegionName; } set { _historyOutput.RegionName = value; } }
+        
 
         // Constructors                                                                                                             
         public ViewElementHistoryOutput(CaeModel.ElementHistoryOutput historyOutput)

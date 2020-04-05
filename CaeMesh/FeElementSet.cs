@@ -12,32 +12,31 @@ namespace CaeMesh
     {
         // Variables                                                                                                                
         private Selection _creationData;
-        private string[] _elementSetNames;
+        private bool _createdFromParts;
 
 
         // Properties                                                                                                               
         public Selection CreationData { get { return _creationData; } set { _creationData = value; } }
+        public bool CreatedFromParts
+        {
+            get { return _createdFromParts; }
+            //set { _createdFromOtherElementSets = value; } 
+        }
 
 
         // Constructors                                                                                                             
-        public FeElementSet(string name, int[] labels) 
+        public FeElementSet(string name, int[] labels, bool createdFromParts = false)
             : base(name, labels)
         {
             _creationData = null;
-            _elementSetNames = null;
+            _createdFromParts = false;
+            _createdFromParts = createdFromParts;
         }
-        public FeElementSet(string name, string[] elementSetNames)
-            : base(name, null)
-        {
-            _creationData = null;
-            _elementSetNames = elementSetNames.ToArray();
-        }
-
         public FeElementSet(FeElementSet elementSet)
            : base(elementSet.Name, elementSet.Labels)
         {
             _creationData = elementSet.CreationData.DeepClone();
-            _elementSetNames = elementSet._elementSetNames.ToArray();
+            _createdFromParts = elementSet._createdFromParts;
             //
             _active = elementSet.Active;
             _visible = elementSet.Visible;

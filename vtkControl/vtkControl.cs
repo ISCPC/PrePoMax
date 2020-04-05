@@ -265,7 +265,7 @@ namespace vtkControl
             if (_renderWindow != null) _renderWindow.Modified();     // this has to be here in order for the vtkMAx widgets to work on maximize/minimize
             //if (_renderWindowInteractor != null) _renderWindowInteractor.Render();
 
-            if (_coorSys != null && _drawCoorSys) _coorSys.SetViewport(0.0, 0.0, 200f / Width, 200f / Height);
+            if (_coorSys != null ) SetCoorSysVisibility(_drawCoorSys);
             if (_renderer != null)
             {
                 //float scale = vtkTextActor.GetFontScale(_renderer);
@@ -1516,12 +1516,9 @@ namespace vtkControl
             _coorSys.SetOutlineColor(0.9300, 0.5700, 0.1300);
             _coorSys.SetOrientationMarker(axes);
             _coorSys.SetInteractor(_renderWindowInteractor);
-            _coorSys.SetViewport(0, 0, 200f / Width, 200f / Height);
             _coorSys.KeyPressActivationOff();   // char i or I turns off the widget otherwise
-            if (_drawCoorSys) _coorSys.SetEnabled(1);
-            else _coorSys.SetEnabled(0);
+            SetCoorSysVisibility(_drawCoorSys);
             _coorSys.InteractiveOff();  // must be after enabled ???
-            
 
 
             // interactor style
@@ -3962,12 +3959,14 @@ namespace vtkControl
         #region Settings ###########################################################################################################
         public void SetCoorSysVisibility(bool visibility)
         {
+            if (_coorSys == null) return;
+            //
             _drawCoorSys = visibility;
             if (_coorSys != null)
             {
                 if (_drawCoorSys)
                 {
-                    _coorSys.SetViewport(0, 0, 200f / Width, 200f / Height);
+                    _coorSys.SetViewport(1 - 200f / Width, 0, 1, 200f / Height);
                     _coorSys.SetEnabled(1);
                 }
                 else _coorSys.SetEnabled(0);

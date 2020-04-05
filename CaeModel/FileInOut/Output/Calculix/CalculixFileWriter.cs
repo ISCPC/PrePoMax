@@ -343,7 +343,7 @@ namespace FileInOut.Output
                 {
                     if (entry.Value.Active)
                     {
-                        part = new CalElementSet(entry.Value);
+                        part = new CalElementSet(entry.Value, model);
                         parent.AddKeyword(part);
                     }
                     else parent.AddKeyword(new CalDeactivated(entry.Value.Name));
@@ -359,7 +359,7 @@ namespace FileInOut.Output
                 {
                     if (entry.Value.Active)
                     {
-                        elementSet = new CalElementSet(entry.Value);
+                        elementSet = new CalElementSet(entry.Value, model);
                         parent.AddKeyword(elementSet);
                     }
                 }
@@ -410,18 +410,11 @@ namespace FileInOut.Output
         {
             if (model.Mesh != null)
             {
-                CalSolidSection solidSection;
                 foreach (var entry in model.Sections)
                 {
                     if (entry.Value.Active)
                     {
-                        if (entry.Value is SolidSection ss)
-                        {
-                            if (ss.RegionType == RegionTypeEnum.Selection)
-                                solidSection = new CalSolidSection(ss, model.Mesh.GetPartNamesByIds(ss.CreationIds));
-                            else solidSection = new CalSolidSection(ss);
-                            parent.AddKeyword(solidSection);
-                        }
+                        if (entry.Value is SolidSection ss) parent.AddKeyword(new CalSolidSection(ss));
                         else throw new NotImplementedException();
                     }
                     else parent.AddKeyword(new CalDeactivated(entry.Value.Name));

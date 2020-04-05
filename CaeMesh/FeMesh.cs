@@ -502,7 +502,6 @@ namespace CaeMesh
             // Tuple<NamedClass, string>   ...   Tuple<invalidItem, stepName>
             List<string> invalidItems = new List<string>();
             bool valid;
-
             // Node set
             FeNodeSet nodeSet;
             foreach (var entry in _nodeSets)
@@ -514,34 +513,35 @@ namespace CaeMesh
                     invalidItems.Add("Node set: " + nodeSet.Name);
                 }
             }
-
             // Element set
             FeElementSet elementSet;
             foreach (var entry in _elementSets)
             {
                 elementSet = entry.Value;
+                // Element set from parts
+                if (elementSet.CreatedFromParts)
+                    elementSet.Valid = GetPartNamesByIds(elementSet.Labels).Length == elementSet.Labels.Length;
+                //
                 if (!elementSet.Valid)
                 {
                     items.Add(new Tuple<NamedClass, string>(elementSet, null));
                     invalidItems.Add("Element set: " + elementSet.Name);
                 }
             }
-
             // Surfaces
             FeSurface surface = null;
             foreach (var entry in _surfaces)
             {
                 surface = entry.Value;
-
+                //
                 valid = surface.Valid;              // this is set to invalid after deleting a part
                 if (!valid) surface.Valid = true;   // set this to true to detect a change in validity
-
-                // type node and created from selection - surface creates a node set with name: surface.NodeSetName
+                // Type node and created from selection - surface creates a node set with name: surface.NodeSetName
                 valid &= !(surface.Type == FeSurfaceType.Node && surface.CreatedFrom == FeSurfaceCreatedFrom.Selection
                           && !_nodeSets.ContainsValidKey(surface.NodeSetName));
-                // from node set
+                // From node set
                 valid &= !(surface.CreatedFrom == FeSurfaceCreatedFrom.NodeSet && !_nodeSets.ContainsValidKey(surface.CreatedFromNodeSetName));
-                // has element faces
+                // Has element faces
                 if (surface.ElementFaces != null)
                 {
                     foreach (var faceEntry in surface.ElementFaces) valid &= _elementSets.ContainsValidKey(faceEntry.Value);
@@ -550,7 +550,6 @@ namespace CaeMesh
                 SetItemValidity(surface, valid, items);
                 if (!valid && surface.Active) invalidItems.Add("Surface: " + surface.Name);
             }
-
             // Reference points
             FeReferencePoint referencePoint;
             bool validFromCoordinates;
@@ -570,7 +569,7 @@ namespace CaeMesh
                 SetItemValidity(referencePoint, valid, items);
                 if (!valid && referencePoint.Active) invalidItems.Add("Reference point: " + referencePoint.Name);
             }
-
+            //
             return invalidItems.ToArray();
         }
         private void SetItemValidity(NamedClass item, bool validity, List<Tuple<NamedClass, string>> items)
@@ -4436,7 +4435,7 @@ namespace CaeMesh
         public FeNodeSet GetNodeSetFromPartNames(string[] partNames)
         {
             // Create a node set from parts
-            string nodeSetName = "";
+            string nodeSetName = "_";
             HashSet<int> nodeIds = new HashSet<int>();
             foreach (var partName in partNames)
             {

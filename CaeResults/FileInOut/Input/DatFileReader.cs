@@ -29,24 +29,24 @@ namespace CaeResults
 
         private static readonly string[] spaceSplitter = new string[] { " " };
         private static readonly string[] commaSplitter = new string[] { "," };
+        private static readonly string[] underscoreSplitter = new string[] { "_" };
         private static readonly string[] parenthesesSplitter = new string[] { "(", ")" };
         private static readonly string[] componentsSplitter = new string[] { " ", "," };
         private static readonly string[] dataSplitter = new string[] { " ", "for set", "and time" };
 
-       
-
         private static readonly Dictionary<string, string> compMap = new Dictionary<string, string>()
         {
             { "Id", "Id" },
-
+            //
             { "U1", "UR1" },
             { "U2", "UR2" },
             { "U3", "UR3" },
-
+            //
             { "RF1", "RM1" },
             { "RF2", "RM2" },
             { "RF3", "RM3" },
         };
+
 
         // Methods                                                                                                                  
         static public HistoryResults Read(string fileName)
@@ -92,6 +92,7 @@ namespace CaeResults
                 }
 
                 HistoryResults historyOutput = GetHistoryOutput(dataSets);
+                AddVonMisesStressComponent(historyOutput);
                 return historyOutput;
             }
 
@@ -242,6 +243,31 @@ namespace CaeResults
                 }
             }
         }
+        static private string RepairSetName(string setName)
+        {
+            string[] tmp;
+            if (setName.StartsWith(CaeMesh.Globals.InternalSelectionName.ToUpper()))
+            {
+                tmp = setName.Split(underscoreSplitter, StringSplitOptions.None);
+                setName = "";
+                for (int i = 2; i < tmp.Length; i++)
+                {
+                    setName += tmp[i];
+                    if (i < tmp.Length - 1) setName += "_";
+                }
+            }
+            else if (setName.StartsWith(CaeMesh.Globals.InternalName.ToUpper()))
+            {
+                tmp = setName.Split(underscoreSplitter, StringSplitOptions.None);
+                setName = "";
+                for (int i = 1; i < tmp.Length; i++)
+                {
+                    setName += tmp[i];
+                    if (i < tmp.Length - 1) setName += "_";
+                }
+            }
+            return setName;
+        }
         static private DatDataSet GetDatDataSet(List<string> dataSetNames, string[] dataSetLines)
         {
             try
@@ -266,9 +292,9 @@ namespace CaeResults
                 componentNames = tmp2.ToList();
 
                 tmp2 = tmp[2].Split(dataSplitter, StringSplitOptions.RemoveEmptyEntries);
-                dataSet.SetName = tmp2[0].Trim();
+                dataSet.SetName = RepairSetName(tmp2[0].Trim());
                 dataSet.Time = double.Parse(tmp2[1]);
-
+                //
                 double[] values;
                 List<double[]> allValues = new List<double[]>();
                 for (int i = 1; i < dataSetLines.Length; i++)
@@ -298,43 +324,48 @@ namespace CaeResults
             HistoryResultField field;
             HistoryResultComponent component;
             HistoryResultEntries entries;
-
+            //
             DatDataSet repairedDataSet;
             int offset;
             string valueId;
             string id;
             double time;
             double[] values;
-
+            //
             foreach (var dataSet in dataSets)
             {
                 repairedDataSet = RepairReferencePointDataSet(dataSet);
-
+                //
                 time = repairedDataSet.Time;
-                // get or create a set
+                // Get or create a set
                 if (!historyOutput.Sets.TryGetValue(repairedDataSet.SetName, out set))
                 {
                     set = new HistoryResultSet(repairedDataSet.SetName);
                     historyOutput.Sets.Add(set.Name, set);
                 }
-                // get or create a field
+                // Get or create a field
                 if (!set.Fields.TryGetValue(repairedDataSet.FieldName, out field))
                 {
                     field = new HistoryResultField(repairedDataSet.FieldName);
                     set.Fields.Add(field.Name, field);
+                    // Add MISES component
+                    if (field.Name == nameStresses)
+                    {
+                        component = new HistoryResultComponent("MISES");
+                        field.Components.Add(component.Name, component);
+                    }
                 }
-
-                // for each value line in data set: id x y z
+                // For each value line in data set: id x y z
                 for (int i = 0; i < repairedDataSet.Values.Length; i++)
                 {
                     values = repairedDataSet.Values[i];
-
+                    //
                     if (repairedDataSet.ComponentNames.Length > 0 && repairedDataSet.ComponentNames[0] == "Id")
                     {
-                        // the first column is id column
+                        // The first column is id column
                         if (repairedDataSet.ComponentNames[1] == "Int.Pnt.")
                         {
-                            // the second column in In.Pnt. column
+                            // The second column in In.Pnt. column
                             valueId = values[0].ToString() + "_" + values[1].ToString();
                             offset = 2;
                         }
@@ -344,35 +375,32 @@ namespace CaeResults
                             offset = 1;
                         }
                     }
-                    else // there is no id
+                    // There is no id
+                    else
                     {
                         valueId = null;
                         offset = 0;
-                    }
-                    
+                    }                    
                     //                                                                                  
-
-                    // for ecah component
+                    // For ecah component
                     for (int j = 0; j < values.Length - offset; j++)
                     {
-                        // get or create a component
+                        // Get or create a component
                         if (!field.Components.TryGetValue(repairedDataSet.ComponentNames[j + offset], out component))
                         {
                             component = new HistoryResultComponent(repairedDataSet.ComponentNames[j + offset]);
                             field.Components.Add(component.Name, component);
                         }
-                        
-                        // for the case of total forces
+                        // For the case of total forces
                         if (valueId == null) id = component.Name;
                         else id = valueId;
-
-                        // get or create historyValues as component entries
+                        // Get or create historyValues as component entries
                         if (!component.Entries.TryGetValue(id, out entries))
                         {
                             entries = new HistoryResultEntries(id);
                             component.Entries.Add(entries.Name, entries);
                         }
-
+                        //
                         entries.Time.Add(time);
                         entries.Values.Add(values[j + offset]);
                     }
@@ -381,17 +409,14 @@ namespace CaeResults
 
             return historyOutput;
         }
-
         static private DatDataSet RepairReferencePointDataSet(DatDataSet dataSet)
         {
             string setName = dataSet.SetName;
             string[] tmp;
-
             // Ref node
             tmp = setName.ToUpper().Split(new string[] { FeReferencePoint.RefName.ToUpper() }, 
                                           StringSplitOptions.RemoveEmptyEntries);
             if (tmp.Length == 2) dataSet.SetName = tmp[0];
-
             // Rot node
             tmp = setName.ToUpper().Split(new string[] { FeReferencePoint.RotName.ToUpper() },
                                           StringSplitOptions.RemoveEmptyEntries);
@@ -403,8 +428,135 @@ namespace CaeResults
                     dataSet.ComponentNames[i] = compMap[dataSet.ComponentNames[i]];
                 }
             }
-
+            //
             return dataSet;
+        }
+        //
+        static private void AddVonMisesStressComponent(HistoryResults historyOutput)
+        {
+            foreach (var setsEntry in historyOutput.Sets)
+            {
+                foreach (var fieldEntry in setsEntry.Value.Fields)
+                {
+                    if (fieldEntry.Key == nameStresses)
+                    {
+                        HistoryResultComponent vonMisesCom = fieldEntry.Value.Components["MISES"];
+                        HistoryResultComponent sgnMaxAbsPrinCom = new HistoryResultComponent("SGN-MAX-ABS-PRI");
+                        HistoryResultComponent prinMaxCom = new HistoryResultComponent("PRINCIPAL-MAX");
+                        HistoryResultComponent prinMidCom = new HistoryResultComponent("PRINCIPAL-MID");
+                        HistoryResultComponent prinMinCom = new HistoryResultComponent("PRINCIPAL-MIN");
+                        //
+                        string[] entryNames = fieldEntry.Value.Components["S11"].Entries.Keys.ToArray();
+                        double[][] values = new double[6][];
+                        double[] vmArray;
+                        double[] sgnMaxAbsPrinArray;
+                        double[] prinMaxArray;
+                        double[] prinMidArray;
+                        double[] prinMinArray;
+                        HistoryResultEntries hrEntries;
+                        //
+                        double s11;
+                        double s22;
+                        double s33;
+                        double s12;
+                        double s23;
+                        double s31;
+                        double I1;
+                        double I2;
+                        double I3;
+                        double sp1, sp2, sp3;                        
+                        //
+                        foreach (var entryName in entryNames)
+                        {
+                            values[0] = fieldEntry.Value.Components["S11"].Entries[entryName].Values.ToArray();
+                            values[1] = fieldEntry.Value.Components["S22"].Entries[entryName].Values.ToArray();
+                            values[2] = fieldEntry.Value.Components["S33"].Entries[entryName].Values.ToArray();
+                            values[3] = fieldEntry.Value.Components["S12"].Entries[entryName].Values.ToArray();
+                            values[4] = fieldEntry.Value.Components["S23"].Entries[entryName].Values.ToArray();
+                            values[5] = fieldEntry.Value.Components["S13"].Entries[entryName].Values.ToArray();
+                            //
+                            vmArray = new double[values[0].Length];
+                            sgnMaxAbsPrinArray = new double[values[0].Length];
+                            prinMaxArray = new double[values[0].Length];
+                            prinMidArray = new double[values[0].Length];
+                            prinMinArray = new double[values[0].Length];
+                            //
+                            for (int i = 0; i < vmArray.Length; i++)
+                            {
+                                vmArray[i] = Math.Sqrt(0.5 * (
+                                                               Math.Pow(values[0][i] - values[1][i], 2)
+                                                             + Math.Pow(values[1][i] - values[2][i], 2)
+                                                             + Math.Pow(values[2][i] - values[0][i], 2)
+                                                             + 6 * (
+                                                                      Math.Pow(values[3][i], 2)
+                                                                    + Math.Pow(values[4][i], 2)
+                                                                    + Math.Pow(values[5][i], 2)
+                                                                   )
+                                                            )
+                                                     );
+                                //
+                                s11 = values[0][i];
+                                s22 = values[1][i];
+                                s33 = values[2][i];
+                                s12 = values[3][i];
+                                s23 = values[4][i];
+                                s31 = values[5][i];
+                                //
+                                I1 = s11 + s22 + s33;
+                                I2 = s11 * s22 + s22 * s33 + s33 * s11 -
+                                     Math.Pow(s12, 2.0) - Math.Pow(s23, 2.0) - Math.Pow(s31, 2.0);
+                                I3 = s11 * s22 * s33 - s11 * Math.Pow(s23, 2.0) -
+                                     s22 * Math.Pow(s31, 2.0) - s33 * Math.Pow(s12, 2.0) + 2.0 * s12 * s23 * s31;
+                                //
+                                sp1 = sp2 = sp3 = 0;
+                                Tools.SolveQubicEquationDepressedCubic(1.0, -I1, I2, -I3, ref sp1, ref sp2, ref sp3);
+                                Tools.Sort3_descending(ref sp1, ref sp2, ref sp3);
+                                //
+                                sgnMaxAbsPrinArray[i] = Math.Abs(sp1) > Math.Abs(sp3) ? (float)sp1 : (float)sp3;
+                                prinMaxArray[i] = sp1;
+                                prinMidArray[i] = sp2;
+                                prinMinArray[i] = sp3;
+                                //
+                                if (double.IsNaN(sgnMaxAbsPrinArray[i])) sgnMaxAbsPrinArray[i] = 0;
+                                if (double.IsNaN(prinMaxArray[i])) prinMaxArray[i] = 0;
+                                if (double.IsNaN(prinMidArray[i])) prinMidArray[i] = 0;
+                                if (double.IsNaN(prinMinArray[i])) prinMinArray[i] = 0;
+                            }
+                            //
+                            hrEntries = new HistoryResultEntries(entryName);
+                            hrEntries.Time = fieldEntry.Value.Components["S11"].Entries[entryName].Time;
+                            hrEntries.Values = vmArray.ToList();
+                            vonMisesCom.Entries.Add(entryName, hrEntries);
+                            //
+                            hrEntries = new HistoryResultEntries(entryName);
+                            hrEntries.Time = fieldEntry.Value.Components["S11"].Entries[entryName].Time;
+                            hrEntries.Values = sgnMaxAbsPrinArray.ToList();
+                            sgnMaxAbsPrinCom.Entries.Add(entryName, hrEntries);
+                            //
+                            hrEntries = new HistoryResultEntries(entryName);
+                            hrEntries.Time = fieldEntry.Value.Components["S11"].Entries[entryName].Time;
+                            hrEntries.Values = prinMaxArray.ToList();
+                            prinMaxCom.Entries.Add(entryName, hrEntries);
+                            //
+                            hrEntries = new HistoryResultEntries(entryName);
+                            hrEntries.Time = fieldEntry.Value.Components["S11"].Entries[entryName].Time;
+                            hrEntries.Values = prinMidArray.ToList();
+                            prinMidCom.Entries.Add(entryName, hrEntries);
+                            //
+                            hrEntries = new HistoryResultEntries(entryName);
+                            hrEntries.Time = fieldEntry.Value.Components["S11"].Entries[entryName].Time;
+                            hrEntries.Values = prinMinArray.ToList();
+                            prinMinCom.Entries.Add(entryName, hrEntries);
+                        }
+                        //
+                        fieldEntry.Value.Components["MISES"] = vonMisesCom;
+                        fieldEntry.Value.Components.Add(sgnMaxAbsPrinCom.Name, sgnMaxAbsPrinCom);
+                        fieldEntry.Value.Components.Add(prinMaxCom.Name, prinMaxCom);
+                        fieldEntry.Value.Components.Add(prinMidCom.Name, prinMidCom);
+                        fieldEntry.Value.Components.Add(prinMinCom.Name, prinMinCom);
+                    }
+                }
+            }
         }
 
      

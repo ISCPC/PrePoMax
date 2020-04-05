@@ -13,12 +13,15 @@ namespace FileInOut.Output.Calculix
     {
         // Variables                                                                                                                
         private FeGroup _elementSet;
+        private string[] _partNames;
 
 
         // Constructor                                                                                                              
-        public CalElementSet(FeGroup elementSet)
+        public CalElementSet(FeGroup elementSet, FeModel model)
         {
             _elementSet = elementSet;
+            if (_elementSet is FeElementSet es && es.CreatedFromParts) _partNames = model.Mesh.GetPartNamesByIds(es.Labels);
+            else _partNames = null;
         }
 
 
@@ -31,12 +34,30 @@ namespace FileInOut.Output.Calculix
         {
             StringBuilder sb = new StringBuilder();
             int count = 0;
-            foreach (var elementId in _elementSet.Labels)
+            if (_partNames != null)
             {
-                sb.Append(elementId);
-                if (count < _elementSet.Labels.Length - 1)
-                    sb.Append(", ");
-                if (++count % 16 == 0) sb.AppendLine();
+                foreach (var partName in _partNames)
+                {
+                    sb.Append(partName);
+                    if (count < _partNames.Length - 1)
+                    {
+                        sb.Append(", ");
+                        if (++count % 1 == 0) sb.AppendLine();
+                    }
+                }
+            }
+            else
+            {
+
+                foreach (var elementId in _elementSet.Labels)
+                {
+                    sb.Append(elementId);
+                    if (count < _elementSet.Labels.Length - 1)
+                    {
+                        sb.Append(", ");
+                        if (++count % 16 == 0) sb.AppendLine();
+                    }
+                }
             }
             sb.AppendLine();
             return sb.ToString();
