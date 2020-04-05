@@ -23,6 +23,7 @@ namespace PrePoMax
         [CategoryAttribute("Data")]
         [OrderedDisplayName(1, 10, "Type")]
         [DescriptionAttribute("Select the pre-tension type.")]
+        [Id(2, 1)]
         public CaeModel.PreTensionLoadType Type 
         { 
             get { return _preTenLoad.Type; } 
@@ -40,15 +41,16 @@ namespace PrePoMax
             }
         }
         //
-        [CategoryAttribute("Data")]
+        [CategoryAttribute("Region")]
         [OrderedDisplayName(2, 10, "Surface")]
-        [DescriptionAttribute("Select the surface which will be used for the load.")]
+        [DescriptionAttribute("Select the surface for the creation of the load.")]
+        [Id(3, 2)]
         public string SurfaceName { get { return _preTenLoad.SurfaceName; } set { _preTenLoad.SurfaceName = value; } }
         //
         [CategoryAttribute("Pre-tension direction")]
-        [OrderedDisplayName(1, 10, "Auto compute")]
+        [OrderedDisplayName(0, 10, "Auto compute")]
         [DescriptionAttribute("Auto compute the pre-tension direction.")]
-        [Id(1, 2)]
+        [Id(1, 3)]
         public bool AutoComputeDirection 
         { 
             get { return _preTenLoad.AutoComputeDirection; }
@@ -66,34 +68,34 @@ namespace PrePoMax
         }
         //
         [CategoryAttribute("Pre-tension direction")]
-        [OrderedDisplayName(2, 10, "X")]
+        [OrderedDisplayName(1, 10, "X")]
         [DescriptionAttribute("X component of the pre-tension direction.")]
-        [Id(1, 2)]
+        [Id(2, 3)]
         public double X { get { return _preTenLoad.X; } set { _preTenLoad.X = value; } }
         //
         [CategoryAttribute("Pre-tension direction")]
-        [OrderedDisplayName(3, 10, "Y")]
+        [OrderedDisplayName(2, 10, "Y")]
         [DescriptionAttribute("Y component of the pre-tension direction.")]
-        [Id(1, 2)]
+        [Id(3, 3)]
         public double Y { get { return _preTenLoad.Y; } set { _preTenLoad.Y = value; } }
         //
         [CategoryAttribute("Pre-tension direction")]
-        [OrderedDisplayName(4, 10, "Z")]
+        [OrderedDisplayName(3, 10, "Z")]
         [DescriptionAttribute("Z component of the pre-tension direction.")]
-        [Id(1, 2)]
+        [Id(4, 3)]
         public double Z { get { return _preTenLoad.Z; } set { _preTenLoad.Z = value; } }
         //
         [CategoryAttribute("Force magnitude")]
-        [OrderedDisplayName(5, 10, "Magnitude")]
-        [DescriptionAttribute("Force magnitude for the pre-tension.")]
-        [Id(1, 3)]
+        [OrderedDisplayName(0, 10, "Magnitude")]
+        [DescriptionAttribute("Force magnitude for the pre-tension load.")]
+        [Id(1, 4)]
         public double ForceMagnitude { get { return _preTenLoad.Magnitude; } set { _preTenLoad.Magnitude = value; } }
         //
         [CategoryAttribute("Displacement magnitude")]
-        [OrderedDisplayName(5, 10, "Magnitude")]
-        [DescriptionAttribute("Displacement magnitude for the pre-tension.")]
+        [OrderedDisplayName(0, 10, "Magnitude")]
+        [DescriptionAttribute("Displacement magnitude for the pre-tension load.")]
         [TypeConverter(typeof(StringConstrainedDOFConverter))]
-        [Id(1, 3)]
+        [Id(1, 5)]
         public double DisplacementMagnitude { get { return _preTenLoad.Magnitude; } set { _preTenLoad.Magnitude = value; } }
 
 
@@ -102,9 +104,13 @@ namespace PrePoMax
         {
             // The order is important
             _preTenLoad = preTenLoad;
+            //
+            Dictionary<RegionTypeEnum, string> regionTypePropertyNamePairs = new Dictionary<RegionTypeEnum, string>();
+            regionTypePropertyNamePairs.Add(RegionTypeEnum.Selection, nameof(SelectionHidden));
+            regionTypePropertyNamePairs.Add(RegionTypeEnum.SurfaceName, nameof(SurfaceName));
+            //
+            base.SetBase(_preTenLoad, regionTypePropertyNamePairs);
             base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
-            // Category sorting
-            base.DynamicCustomTypeDescriptor.CategorySortOrder = CustomSortOrder.AscendingById;
             // Now lets display Yes/No instead of True/False
             base.DynamicCustomTypeDescriptor.RenameBooleanPropertyToYesNo("AutoComputeDirection");
             // Set initial visibilities
@@ -121,7 +127,10 @@ namespace PrePoMax
 
         public void PopululateDropDownLists(string[] surfaceNames)
         {
-            base.DynamicCustomTypeDescriptor.PopulateProperty(() => this.SurfaceName, surfaceNames);
+            Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
+            regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
+            regionTypeListItemsPairs.Add(RegionTypeEnum.SurfaceName, surfaceNames);
+            base.PopululateDropDownLists(regionTypeListItemsPairs);
         }
     }
 

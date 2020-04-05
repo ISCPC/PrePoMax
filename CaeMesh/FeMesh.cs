@@ -4409,10 +4409,10 @@ namespace CaeMesh
         }
         public void AddNodeSetFromElementSet(string elementSetName)
         {
-            FeNodeSet nodeSet = GetNodeSetFromPartOrElementSet(elementSetName);
+            FeNodeSet nodeSet = GetNodeSetFromPartOrElementSetName(elementSetName);
             _nodeSets.Add(nodeSet.Name, nodeSet);
         }
-        public FeNodeSet GetNodeSetFromPartOrElementSet(string regionName)
+        public FeNodeSet GetNodeSetFromPartOrElementSetName(string regionName)
         {
             FeGroup group;
             if (_elementSets.ContainsKey(regionName)) group = _elementSets[regionName];
@@ -4429,6 +4429,21 @@ namespace CaeMesh
             }
 
             string nodeSetName = regionName + "_el";
+            FeNodeSet nodeSet = new FeNodeSet(nodeSetName, nodeIds.ToArray());
+            UpdateNodeSetCenterOfGravity(nodeSet);
+            return nodeSet;
+        }
+        public FeNodeSet GetNodeSetFromPartNames(string[] partNames)
+        {
+            // Create a node set from parts
+            string nodeSetName = "";
+            HashSet<int> nodeIds = new HashSet<int>();
+            foreach (var partName in partNames)
+            {
+                nodeIds.UnionWith(_parts[partName].NodeLabels);
+                nodeSetName += partName + "_";
+            }
+            nodeSetName += DateTime.Now.Ticks;
             FeNodeSet nodeSet = new FeNodeSet(nodeSetName, nodeIds.ToArray());
             UpdateNodeSetCenterOfGravity(nodeSet);
             return nodeSet;
@@ -4935,15 +4950,16 @@ namespace CaeMesh
             //
             return removedPartIds;
         }
-        public void RemoveSurfaces(string[] surfaceNames, out string[] removedNodeSets, out string[] removedElementSets)
+        public FeSurface[] RemoveSurfaces(string[] surfaceNames, out string[] removedNodeSets, out string[] removedElementSets)
         {
             HashSet<string> removedElementSetsHashSet = new HashSet<string>();
             HashSet<string> removedNodeSetsHashSet = new HashSet<string>();
             FeSurface surface;
+            List<FeSurface> removedSurfaces = new List<FeSurface>();
             //
             foreach (var name in surfaceNames)
             {
-                // remove old element sets
+                // Remove old element sets
                 surface = Surfaces[name];
                 if (surface.ElementFaces != null)
                 {
@@ -4956,21 +4972,24 @@ namespace CaeMesh
                         }
                     }
                 }
-
+                //
                 if (!(surface.Type == FeSurfaceType.Node && surface.CreatedFrom == FeSurfaceCreatedFrom.NodeSet))
                 {
-                    if (surface.NodeSetName != null) // null is in the case when no elements were found to form a surface
+                    // Null is in the case when no elements were found to form a surface
+                    if (surface.NodeSetName != null) 
                     {
                         removedNodeSetsHashSet.Add(surface.NodeSetName);
                         _nodeSets.Remove(surface.NodeSetName);
                     }
                 }
-
-                // remove surface
+                // Remove surface
                 Surfaces.Remove(name);
+                removedSurfaces.Add(surface);
             }
             removedNodeSets = removedNodeSetsHashSet.ToArray();
             removedElementSets = removedElementSetsHashSet.ToArray();
+            //
+            return removedSurfaces.ToArray();
         }
         public void RemoveElementsByType<T>()
         {

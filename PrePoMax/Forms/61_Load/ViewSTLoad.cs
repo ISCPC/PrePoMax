@@ -18,30 +18,35 @@ namespace PrePoMax
 
         // Properties                                                                                                               
         public override string Name { get { return _stLoad.Name; } set { _stLoad.Name = value; } }
-
-        [OrderedDisplayName(1, 10, "Surface")]
-        [CategoryAttribute("Data")]
-        [DescriptionAttribute("Select the surface which will be used for the load.")]
+        //
+        [CategoryAttribute("Region")]
+        [OrderedDisplayName(2, 10, "Surface")]
+        [DescriptionAttribute("Select the surface for the creation of the load.")]
+        [Id(3, 2)]
         public string SurfaceName { get { return _stLoad.SurfaceName; } set { _stLoad.SurfaceName = value; } }
-
-        [OrderedDisplayName(2, 10, "F1")]
+        //
         [CategoryAttribute("Force components")]
-        [DescriptionAttribute("Force in the direction of the first axis.")]
+        [OrderedDisplayName(0, 10, "F1")]
+        [DescriptionAttribute("Force component in the direction of the first axis.")]
+        [Id(1, 3)]
         public double F1 { get { return _stLoad.F1; } set { _stLoad.F1 = value; } }
-        
-        [OrderedDisplayName(3, 10, "F2")]
+        //
         [CategoryAttribute("Force components")]
-        [DescriptionAttribute("Force in the direction of the second axis.")]
+        [OrderedDisplayName(1, 10, "F2")]
+        [DescriptionAttribute("Force component in the direction of the second axis.")]
+        [Id(2, 3)]
         public double F2 { get { return _stLoad.F2; } set { _stLoad.F2 = value; } }
-
-        [OrderedDisplayName(4, 10, "F3")]
+        //
         [CategoryAttribute("Force components")]
-        [DescriptionAttribute("Force in the direction of the third axis.")]
+        [OrderedDisplayName(2, 10, "F3")]
+        [DescriptionAttribute("Force component in the direction of the third axis.")]
+        [Id(3, 3)]
         public double F3 { get { return _stLoad.F3; } set { _stLoad.F3 = value; } }
-
-        [OrderedDisplayName(5, 10, "Magnitude")]
+        //
         [CategoryAttribute("Force magnitude")]
-        [DescriptionAttribute("Force magnitude.")]
+        [OrderedDisplayName(0, 10, "Magnitude")]
+        [DescriptionAttribute("The magnitude of the surface traction load.")]
+        [Id(1, 4)]
         public double Flength
         {
             get { return Math.Sqrt(_stLoad.F1 * _stLoad.F1 + _stLoad.F2 * _stLoad.F2 + _stLoad.F3 * _stLoad.F3); }
@@ -64,8 +69,14 @@ namespace PrePoMax
         // Constructors                                                                                                             
         public ViewSTLoad(CaeModel.STLoad stLoad)
         {
-            // the order is important
+            // The order is important
             _stLoad = stLoad;
+            //
+            Dictionary<RegionTypeEnum, string> regionTypePropertyNamePairs = new Dictionary<RegionTypeEnum, string>();
+            regionTypePropertyNamePairs.Add(RegionTypeEnum.Selection, nameof(SelectionHidden));
+            regionTypePropertyNamePairs.Add(RegionTypeEnum.SurfaceName, nameof(SurfaceName));
+            //
+            base.SetBase(_stLoad, regionTypePropertyNamePairs);
             base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
         }
 
@@ -79,7 +90,10 @@ namespace PrePoMax
 
         public void PopululateDropDownLists(string[] surfaceNames)
         {
-            base.DynamicCustomTypeDescriptor.PopulateProperty(() => this.SurfaceName, surfaceNames);
+            Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
+            regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
+            regionTypeListItemsPairs.Add(RegionTypeEnum.SurfaceName, surfaceNames);
+            base.PopululateDropDownLists(regionTypeListItemsPairs);
         }
     }
 

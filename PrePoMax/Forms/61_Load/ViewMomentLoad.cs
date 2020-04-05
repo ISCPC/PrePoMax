@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using CaeGlobals;
 using DynamicTypeDescriptor;
-using CaeGlobals;
 
 namespace PrePoMax
 {
@@ -19,52 +18,77 @@ namespace PrePoMax
 
         // Properties                                                                                                               
         public override string Name { get { return _momentLoad.Name; } set { _momentLoad.Name = value; } }
-
-        [OrderedDisplayName(1, 10, "Region type")]
-        [CategoryAttribute("Data")]
-        [DescriptionAttribute("Select the region type which will be used for the load.")]
-        public override string RegionType { get { return base.RegionType; } set { base.RegionType = value; } }
-
+        //
+        [CategoryAttribute("Region")]
         [OrderedDisplayName(2, 10, "Node set")]
-        [CategoryAttribute("Data")]
-        [DescriptionAttribute("Select the node set which will be used for the load.")]
+        [DescriptionAttribute("Select the node set for the creation of the load.")]
+        [Id(3, 2)]
         public string NodeSetName { get { return _momentLoad.RegionName; } set { _momentLoad.RegionName = value; } }
-
+        //
+        [CategoryAttribute("Region")]
         [OrderedDisplayName(3, 10, "Reference point")]
-        [CategoryAttribute("Data")]
-        [DescriptionAttribute("Select the reference point which will be used for the load.")]
+        [DescriptionAttribute("Select the reference point for the creation of the load.")]
+        [Id(4, 2)]
         public string ReferencePointName { get { return _momentLoad.RegionName; } set { _momentLoad.RegionName = value; } }
-
-        [OrderedDisplayName(4, 10, "M1")]
+        //
         [CategoryAttribute("Moment components")]
-        [DescriptionAttribute("Moment per item in the direction of the first axis.")]
-        public double F1 { get { return _momentLoad.M1; } set { _momentLoad.M1 = value; } }
-        
-        [OrderedDisplayName(5, 10, "M2")]
+        [OrderedDisplayName(0, 10, "M1")]
+        [DescriptionAttribute("Moment component per node in the direction of the first axis.")]
+        [Id(1, 3)]
+        public double M1 { get { return _momentLoad.M1; } set { _momentLoad.M1 = value; } }
+        //
         [CategoryAttribute("Moment components")]
-        [DescriptionAttribute("Moment per item in the direction of the second axis.")]
-        public double F2 { get { return _momentLoad.M2; } set { _momentLoad.M2 = value; } }
-
-        [OrderedDisplayName(6, 10, "M3")]
+        [OrderedDisplayName(1, 10, "M2")]
+        [DescriptionAttribute("Moment component per node in the direction of the second axis.")]
+        [Id(2, 3)]
+        public double M2 { get { return _momentLoad.M2; } set { _momentLoad.M2 = value; } }
+        //
         [CategoryAttribute("Moment components")]
-        [DescriptionAttribute("Moment per item in the direction of the third axis.")]
-        public double F3 { get { return _momentLoad.M3; } set { _momentLoad.M3 = value; } }
-
+        [OrderedDisplayName(2, 10, "M3")]
+        [DescriptionAttribute("Moment component per node in the direction of the third axis.")]
+        [Id(3, 3)]
+        public double M3 { get { return _momentLoad.M3; } set { _momentLoad.M3 = value; } }
+        //
+        [CategoryAttribute("Moment magnitude")]
+        [OrderedDisplayName(3, 10, "Magnitude")]
+        [DescriptionAttribute("The magnitude of the moment load.")]
+        [Id(1, 4)]
+        public double Mlength
+        {
+            get { return Math.Sqrt(_momentLoad.M1 * _momentLoad.M1 + 
+                                   _momentLoad.M2 * _momentLoad.M2 + 
+                                   _momentLoad.M3 * _momentLoad.M3); }
+            set
+            {
+                if (value <= 0)
+                    throw new Exception("The magnitude of the moment must be greater than 0.");
+                //
+                double len = Math.Sqrt(_momentLoad.M1 * _momentLoad.M1 +
+                                       _momentLoad.M2 * _momentLoad.M2 +
+                                       _momentLoad.M3 * _momentLoad.M3);
+                double r;
+                if (len == 0) r = 0;
+                else r = value / len;
+                _momentLoad.M1 *= r;
+                _momentLoad.M2 *= r;
+                _momentLoad.M3 *= r;
+            }
+        }
 
         // Constructors                                                                                                             
         public ViewMomentLoad(CaeModel.MomentLoad momentLoad)
         {
-            // the order is important
+            // The order is important
             _momentLoad = momentLoad;
-
+            //
             Dictionary<RegionTypeEnum, string> regionTypePropertyNamePairs = new Dictionary<RegionTypeEnum, string>();
-            regionTypePropertyNamePairs.Add(RegionTypeEnum.NodeSetName, CaeGlobals.Tools.GetPropertyName(() => this.NodeSetName));
-            regionTypePropertyNamePairs.Add(RegionTypeEnum.ReferencePointName, CaeGlobals.Tools.GetPropertyName(() => this.ReferencePointName));
-
+            regionTypePropertyNamePairs.Add(RegionTypeEnum.Selection, nameof(SelectionHidden));
+            regionTypePropertyNamePairs.Add(RegionTypeEnum.NodeSetName, nameof(NodeSetName));
+            regionTypePropertyNamePairs.Add(RegionTypeEnum.ReferencePointName, nameof(ReferencePointName));
+            //
             base.SetBase(_momentLoad, regionTypePropertyNamePairs);
             base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
         }
-
 
 
         // Methods                                                                                                                  
@@ -75,6 +99,7 @@ namespace PrePoMax
         public void PopululateDropDownLists(string[] nodeSetNames, string[] referencePointNames)
         {
             Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
+            regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
             regionTypeListItemsPairs.Add(RegionTypeEnum.NodeSetName, nodeSetNames);
             regionTypeListItemsPairs.Add(RegionTypeEnum.ReferencePointName, referencePointNames);
             base.PopululateDropDownLists(regionTypeListItemsPairs);

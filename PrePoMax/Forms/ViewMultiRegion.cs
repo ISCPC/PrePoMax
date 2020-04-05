@@ -23,7 +23,7 @@ namespace PrePoMax
         [Browsable(false)]
         public virtual string RegionType
         {
-            // this function returns strings bacause using enum RegionType shows all items in the drop down box
+            // This function returns strings bacause using enum RegionType shows all items in the drop down box
             get
             {
                 if (_multiRegion == null) return "";

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using CaeGlobals;
+using DynamicTypeDescriptor;
 
 namespace PrePoMax
 {
@@ -12,33 +13,45 @@ namespace PrePoMax
     public abstract class ViewBoundaryCondition : ViewMultiRegion
     {
         // Variables                                                                                                                
+        private string _selectionHidden;
 
 
         // Properties                                                                                                               
         [CategoryAttribute("Data")]
         [ReadOnly(false)]
-        [OrderedDisplayName(0, 20, "Name")]
+        [OrderedDisplayName(0, 10, "Name")]
         [DescriptionAttribute("Name of the boundary condition.")]
+        [Id(1, 1)]
         public abstract string Name { get; set; }
-
-        [OrderedDisplayName(1, 20, "Region type")]
-        [CategoryAttribute("Data")]
-        [DescriptionAttribute("Select the region type which will be used for the boundary condition.")]
+        //
+        [CategoryAttribute("Region")]
+        [OrderedDisplayName(0, 10, "Region type")]
+        [DescriptionAttribute("Select the region type for the creation of the boundary condition.")]
+        [Id(1, 2)]
         public override string RegionType { get { return base.RegionType; } set { base.RegionType = value; } }
-
-        [OrderedDisplayName(2, 20, "Node set")]
-        [CategoryAttribute("Data")]
-        [DescriptionAttribute("Select the node set which will be used for the boundary condition.")]
+        //
+        [CategoryAttribute("Region")]
+        [OrderedDisplayName(1, 10, "Hidden")]
+        [DescriptionAttribute("Hidden.")]
+        [Id(2, 2)]
+        public string SelectionHidden { get { return _selectionHidden; } set { _selectionHidden = value; } }
+        //
+        [CategoryAttribute("Region")]
+        [OrderedDisplayName(2, 10, "Node set")]
+        [DescriptionAttribute("Select the node set for the creation of the boundary condition.")]
+        [Id(3, 2)]
         public abstract string NodeSetName { get; set; }
-
-        [OrderedDisplayName(3, 20, "Surface")]
-        [CategoryAttribute("Data")]
-        [DescriptionAttribute("Select the surface which will be used for the boundary condition.")]
+        //
+        [CategoryAttribute("Region")]
+        [OrderedDisplayName(3, 10, "Surface")]
+        [DescriptionAttribute("Select the surface for the creation of the boundary condition.")]
+        [Id(4, 2)]
         public abstract string SurfaceName { get; set; }
-
-        [OrderedDisplayName(4, 20, "Reference point")]
-        [CategoryAttribute("Data")]
-        [DescriptionAttribute("Select the reference point which will be used for the boundary condition.")]
+        //
+        [CategoryAttribute("Region")]
+        [OrderedDisplayName(4, 10, "Reference point")]
+        [DescriptionAttribute("Select the reference point for the creation of the boundary condition.")]
+        [Id(5, 2)]
         public abstract string ReferencePointName { get; set; }
 
 
@@ -47,6 +60,17 @@ namespace PrePoMax
 
         // Methods
         public abstract CaeModel.BoundaryCondition GetBase();
+        public override void UpdateRegionVisibility()
+        {
+            base.UpdateRegionVisibility();
+            // Hide SelectionHidden
+            DynamicTypeDescriptor.CustomPropertyDescriptor cpd;
+            if (base.RegionType == RegionTypeEnum.Selection.ToFriendlyString())
+            {
+                cpd = base.DynamicCustomTypeDescriptor.GetProperty(() => SelectionHidden);
+                cpd.SetIsBrowsable(false);
+            }
+        }
     }
 
 

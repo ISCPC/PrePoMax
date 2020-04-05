@@ -51,7 +51,7 @@ namespace PrePoMax
 
         [OrderedDisplayName(3, 10, "Element set")]
         [CategoryAttribute("Data")]
-        [DescriptionAttribute("Select the element set which will be used for the history output definition.")]
+        [DescriptionAttribute("Select the element set for the creation of the history output.")]
         public string ElementSetName { get { return _historyOutput.RegionName; } set { _historyOutput.RegionName = value; } }
 
         [OrderedDisplayName(4, 10, "Variables to output")]
@@ -101,17 +101,6 @@ namespace PrePoMax
             regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
             regionTypeListItemsPairs.Add(RegionTypeEnum.ElementSetName, elementSetNames);
             base.PopululateDropDownLists(regionTypeListItemsPairs);
-        }
-        public override void UpdateRegionVisibility()
-        {
-            base.UpdateRegionVisibility();
-            //
-            CustomPropertyDescriptor cpd;
-            if (base.RegionType == RegionTypeEnum.Selection.ToFriendlyString())
-            {
-                cpd = base.DynamicCustomTypeDescriptor.GetProperty(() => SelectionHidden);
-                cpd.SetIsBrowsable(false);
-            }
         }
     }
 

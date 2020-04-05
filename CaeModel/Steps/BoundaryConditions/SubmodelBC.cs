@@ -9,7 +9,7 @@ using CaeGlobals;
 namespace CaeModel
 {
     [Serializable]
-    public class SubmodelBC : BoundaryCondition, IMultiRegion
+    public class SubmodelBC : BoundaryCondition
     {
         // Variables                                                                                                                
         private RegionTypeEnum _regionType;
@@ -17,8 +17,8 @@ namespace CaeModel
         private int _stepNumber;
 
         // Properties                                                                                                               
-        public string RegionName { get { return _regionName; } set { _regionName = value; } }
-        public RegionTypeEnum RegionType { get { return _regionType; } set { _regionType = value; } }
+        public override string RegionName { get { return _regionName; } set { _regionName = value; } }
+        public override RegionTypeEnum RegionType { get { return _regionType; } set { _regionType = value; } }
         public int StepNumber 
         { 
             get { return _stepNumber; } 

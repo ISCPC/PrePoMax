@@ -2689,9 +2689,22 @@ namespace PrePoMax
 
         //******************************************************************************************
 
-        public string[] GetSurfaceNames()
+        public string[] GetAllSurfaceNames()
         {
             if (_model.Mesh != null) return _model.Mesh.Surfaces.Keys.ToArray();
+            else return null;
+        }
+        public string[] GetUserSurfaceNames()
+        {
+            if (_model.Mesh != null)
+            {
+                List<string> userSurfaceNames = new List<string>();
+                foreach (var entry in _model.Mesh.Surfaces)
+                {
+                    if (!entry.Value.Internal) userSurfaceNames.Add(entry.Key);
+                }
+                return userSurfaceNames.ToArray();
+            }
             else return null;
         }
         public string[] GetElementBasedSurfaceNames()
@@ -2766,13 +2779,13 @@ namespace PrePoMax
         }
         public void RemoveSurfaces(string[] surfaceNames)
         {
-            RemoveSurfaceAndElementFacesFromModel(surfaceNames);
+            FeSurface[] removedSurfaces = RemoveSurfaceAndElementFacesFromModel(surfaceNames);
             //
-            foreach (var name in surfaceNames)
+            foreach (var surface in removedSurfaces)
             {
-                _form.RemoveTreeNode<FeSurface>(ViewGeometryModelResults.Model, name, null);
+                if (!surface.Internal) _form.RemoveTreeNode<FeSurface>(ViewGeometryModelResults.Model, surface.Name, null);
                 //
-                UpdateReferencePointsDependentOnSurface(name);
+                UpdateReferencePointsDependentOnSurface(surface.Name);
             }
             //
             Update(UpdateType.Check | UpdateType.RedrawSymbols);
@@ -2790,14 +2803,11 @@ namespace PrePoMax
             }
             _model.Mesh.Surfaces.Add(surface.Name, surface);
         }
-        private void RemoveSurfaceAndElementFacesFromModel(string[] surfaceNames)
+        private FeSurface[] RemoveSurfaceAndElementFacesFromModel(string[] surfaceNames)
         {
             string[] removedNodeSets;
             string[] removedElementSets;
-            _model.Mesh.RemoveSurfaces(surfaceNames, out removedNodeSets, out removedElementSets);
-
-            //foreach (var nodeSetName in removedNodeSets) _form.RemoveTreeNode<FeNodeSet>(ViewGeometryModelResults.Model, nodeSetName, null);
-            //foreach (var elementSetName in removedElementSets) _form.RemoveTreeNode<FeElementSet>(ViewGeometryModelResults.Model, elementSetName, null);
+            return _model.Mesh.RemoveSurfaces(surfaceNames, out removedNodeSets, out removedElementSets);
         }
         private int[] GetVisibleFaceIds()
         {
@@ -3082,7 +3092,11 @@ namespace PrePoMax
             {
                 // In order for the Regenerate history to work perform the selection
                 _selection = section.CreationData.DeepClone();
-                if (section is SolidSection ss) ss.CreationIds = GetSelectionIds();
+                if (section is SolidSection ss)
+                {
+                    ss.CreationIds = GetSelectionIds();
+                    _model.Mesh.GetPartNamesByIds(section.CreationIds)
+                }
                 else throw new NotSupportedException();
                 _selection.Clear();
             }
@@ -3126,6 +3140,56 @@ namespace PrePoMax
             }
 
             CheckAndUpdateValidity();
+        }
+        //
+        private void ConvertSelectionBasedHistoryOutput(HistoryOutput historyOutput)
+        {
+            // Create a named set and convert a selection to a named set
+            if (historyOutput.RegionType == RegionTypeEnum.Selection)
+            {
+                string name;
+                // Node output
+                if (historyOutput is NodalHistoryOutput)
+                {
+                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.NodeSets) + historyOutput.Name;
+                    FeNodeSet nodeSet = new FeNodeSet(name, historyOutput.CreationIds);
+                    nodeSet.CreationData = historyOutput.CreationData.DeepClone();
+                    nodeSet.Internal = true;
+                    AddNodeSet(nodeSet);
+                    //
+                    historyOutput.RegionName = name;
+                    historyOutput.RegionType = RegionTypeEnum.NodeSetName;
+                }
+                // Element output
+                else if (historyOutput is ElementHistoryOutput)
+                {
+                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.ElementSets) + historyOutput.Name;
+                    FeElementSet elementSet = new FeElementSet(name, historyOutput.CreationIds);
+                    elementSet.CreationData = historyOutput.CreationData.DeepClone();
+                    elementSet.Internal = true;
+                    AddelementSet(elementSet);
+                    //
+                    historyOutput.RegionName = name;
+                    historyOutput.RegionType = RegionTypeEnum.ElementSetName;
+                }
+                else throw new NotSupportedException();
+            }
+            // Clear the creation data if not used
+            else
+            {
+                historyOutput.CreationData = null;
+                historyOutput.CreationIds = null;
+            }
+        }
+        private void DeleteSelectionBasedHistoryOutputSets(HistoryOutput historyOutput)
+        {
+            // Delete previously created sets
+            if (historyOutput.CreationData != null && historyOutput.RegionName != null)
+            {
+                if (historyOutput is NodalHistoryOutput) RemoveNodeSets(new string[] { historyOutput.RegionName });
+                else if (historyOutput is ElementHistoryOutput) RemoveElementSets(new string[] { historyOutput.RegionName });
+                else throw new NotSupportedException();
+            }
         }
 
         #endregion #################################################################################################################
@@ -3319,11 +3383,7 @@ namespace PrePoMax
         }
         public HistoryOutput GetHistoryOutput(string stepName, string historyOutputName)
         {
-            HistoryOutput historyOutput = _model.StepCollection.GetStep(stepName).HistoryOutputs[historyOutputName];
-            // Convert a converted history output back to selection
-            if (historyOutput.CreationData != null) historyOutput.RegionType = RegionTypeEnum.Selection;
-            //
-            return historyOutput;
+            return _model.StepCollection.GetStep(stepName).HistoryOutputs[historyOutputName]; ;
         }
         public HistoryOutput[] GetAllHistoryOutputs(string stepName)
         {
@@ -3487,7 +3547,8 @@ namespace PrePoMax
             Commands.CShowBCs comm = new Commands.CShowBCs(stepName, boundaryConditionNames);
             _commands.AddAndExecute(comm);
         }
-        public void ReplaceBoundaryConditionCommand(string stepName, string oldBoundaryConditionName, BoundaryCondition boundaryCondition)
+        public void ReplaceBoundaryConditionCommand(string stepName, string oldBoundaryConditionName,
+                                                    BoundaryCondition boundaryCondition)
         {
             Commands.CReplaceBC comm = new Commands.CReplaceBC(stepName, oldBoundaryConditionName, boundaryCondition);
             _commands.AddAndExecute(comm);
@@ -3506,10 +3567,12 @@ namespace PrePoMax
         }
         public void AddBoundaryCondition(string stepName, BoundaryCondition boundaryCondition)
         {
+            ConvertSelectionBasedBoundaryCondition(boundaryCondition);
+            //
             _model.StepCollection.AddBoundaryCondition(boundaryCondition, stepName);
-
+            //
             _form.AddTreeNode(ViewGeometryModelResults.Model, boundaryCondition, stepName);
-
+            //
             Update(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public BoundaryCondition GetBoundaryCondition(string stepName, string boundaryConditionName)
@@ -3520,7 +3583,7 @@ namespace PrePoMax
         {
             return _model.StepCollection.GetStep(stepName).BoundaryConditions.Values.ToArray();
         }
-
+        //
         public void HideBoundaryConditions(string stepName, string[] boundaryConditionNames)
         {
             foreach (var name in boundaryConditionNames)
@@ -3539,8 +3602,12 @@ namespace PrePoMax
             }
             Update(UpdateType.RedrawSymbols);
         }
-        public void ReplaceBoundaryCondition(string stepName, string oldBoundaryConditionName, BoundaryCondition boundaryCondition)
+        public void ReplaceBoundaryCondition(string stepName, string oldBoundaryConditionName,
+                                             BoundaryCondition boundaryCondition)
         {
+            DeleteSelectionBasedBoundaryConditionSets(boundaryCondition);
+            ConvertSelectionBasedBoundaryCondition(boundaryCondition);
+            //
             _model.StepCollection.GetStep(stepName).BoundaryConditions.Replace(oldBoundaryConditionName, 
                                                                                boundaryCondition.Name, 
                                                                                boundaryCondition);
@@ -3551,13 +3618,55 @@ namespace PrePoMax
         }
         public void RemoveBoundaryConditions(string stepName, string[] boundaryConditionNames)
         {
+            BoundaryCondition boundaryCondition;
             foreach (var name in boundaryConditionNames)
             {
-                _model.StepCollection.GetStep(stepName).BoundaryConditions.Remove(name);
-                _form.RemoveTreeNode<BoundaryCondition>(ViewGeometryModelResults.Model, name, stepName);
+                if (_model.StepCollection.GetStep(stepName).BoundaryConditions.TryRemove(name, out boundaryCondition))
+                {
+                    DeleteSelectionBasedBoundaryConditionSets(boundaryCondition);
+                    _form.RemoveTreeNode<BoundaryCondition>(ViewGeometryModelResults.Model, name, stepName);
+                }
             }
 
             Update(UpdateType.Check | UpdateType.RedrawSymbols);
+        }
+        //
+        private void ConvertSelectionBasedBoundaryCondition(BoundaryCondition boundaryCondition)
+        {
+            // Create a named set and convert a selection to a named set
+            if (boundaryCondition.RegionType == RegionTypeEnum.Selection)
+            {
+                string name;
+                // Surface
+                if (boundaryCondition is DisplacementRotation || boundaryCondition is SubmodelBC)
+                {
+                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.Surfaces) + boundaryCondition.Name;
+                    FeSurface surface = new FeSurface(name, boundaryCondition.CreationIds,
+                                                      boundaryCondition.CreationData.DeepClone());
+                    surface.Internal = true;
+                    AddSurface(surface);
+                    //
+                    boundaryCondition.RegionName = name;
+                    boundaryCondition.RegionType = RegionTypeEnum.SurfaceName;
+                }
+                else throw new NotSupportedException();
+            }
+            // Clear the creation data if not used
+            else
+            {
+                boundaryCondition.CreationData = null;
+                boundaryCondition.CreationIds = null;
+            }
+        }
+        private void DeleteSelectionBasedBoundaryConditionSets(BoundaryCondition boundaryCondition)
+        {
+            // Delete previously created sets
+            if (boundaryCondition.CreationData != null && boundaryCondition.RegionName != null)
+            {
+                if (boundaryCondition is DisplacementRotation || boundaryCondition is SubmodelBC)
+                    RemoveSurfaces(new string[] { boundaryCondition.RegionName });
+                else throw new NotSupportedException();
+            }
         }
 
         #endregion #################################################################################################################
@@ -3598,10 +3707,12 @@ namespace PrePoMax
         }
         public void AddLoad(string stepName, Load load)
         {
+            ConvertSelectionBasedLoad(load);
+            //
             _model.StepCollection.GetStep(stepName).Loads.Add(load.Name, load);
-
+            //
             _form.AddTreeNode(ViewGeometryModelResults.Model, load, stepName);
-
+            //
             Update(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public Load GetLoad(string stepName, string loadName)
@@ -3632,6 +3743,9 @@ namespace PrePoMax
         }
         public void ReplaceLoad(string stepName, string oldLoadName, Load load)
         {
+            DeleteSelectionBasedLoadSets(load);
+            ConvertSelectionBasedLoad(load);
+            //
             _model.StepCollection.GetStep(stepName).Loads.Replace(oldLoadName, load.Name, load);
             //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldLoadName, load, stepName);
@@ -3640,12 +3754,72 @@ namespace PrePoMax
         }
         public void RemoveLoads(string stepName, string[] loadNames)
         {
+            Load load;
             foreach (var name in loadNames)
             {
-                _model.StepCollection.GetStep(stepName).Loads.Remove(name);
-                _form.RemoveTreeNode<Load>(ViewGeometryModelResults.Model, name, stepName);
+                if (_model.StepCollection.GetStep(stepName).Loads.TryRemove(name, out load))
+                {
+                    DeleteSelectionBasedLoadSets(load);
+                    _form.RemoveTreeNode<Load>(ViewGeometryModelResults.Model, name, stepName);
+                }
             }
             Update(UpdateType.Check | UpdateType.RedrawSymbols);
+        }
+        //
+        private void ConvertSelectionBasedLoad(Load load)
+        {
+            // Create a named set and convert a selection to a named set
+            if (load.RegionType == RegionTypeEnum.Selection)
+            {
+                string name;
+                // Node set
+                if (load is CLoad || load is MomentLoad)
+                {
+                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.NodeSets) + load.Name;
+                    FeNodeSet nodeSet = new FeNodeSet(name, load.CreationIds);
+                    nodeSet.CreationData = load.CreationData.DeepClone();
+                    nodeSet.Internal = true;
+                    AddNodeSet(nodeSet);
+                    //
+                    load.RegionName = name;
+                    load.RegionType = RegionTypeEnum.NodeSetName;
+                }
+                // Surface
+                else if (load is DLoad || load is STLoad || load is PreTensionLoad)
+                {
+                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.Surfaces) + load.Name;
+                    FeSurface surface = new FeSurface(name, load.CreationIds, load.CreationData.DeepClone());
+                    surface.Internal = true;
+                    AddSurface(surface);
+                    //
+                    load.RegionName = name;
+                    load.RegionType = RegionTypeEnum.SurfaceName;
+                }
+                // Part
+                else if (load is GravityLoad || load is CentrifLoad)
+                {}
+                else throw new NotSupportedException();
+            }
+            // Clear the creation data if not used
+            else
+            {
+                load.CreationData = null;
+                load.CreationIds = null;
+            }
+        }
+        private void DeleteSelectionBasedLoadSets(Load load)
+        {
+            // Delete previously created sets
+            if (load.CreationData != null && load.RegionName != null)
+            {
+                if (load is CLoad || load is MomentLoad)
+                    RemoveNodeSets(new string[] { load.RegionName });
+                else if (load is DLoad || load is STLoad || load is PreTensionLoad)
+                    RemoveSurfaces(new string[] { load.RegionName });
+                else if (load is GravityLoad || load is CentrifLoad)
+                { }
+                else throw new NotSupportedException();
+            }
         }
 
         #endregion #################################################################################################################
@@ -5549,11 +5723,10 @@ namespace PrePoMax
                                                     System.Drawing.Color color, int symbolSize, vtkControl.vtkRendererLayer layer)
         {
             if (!dispRot.Visible) return;
-
-            // cones
+            // Cones
             List<double[]> allCoor = new List<double[]>();
             List<double[]> allNormals = new List<double[]>();
-            if (dispRot.U1 == 0 || double.IsPositiveInfinity(dispRot.U1))
+            if (dispRot.GetDofType(1) == DOFType.Zero || dispRot.GetDofType(1) == DOFType.Fixed)
             {
                 double[] normalX = new double[] { 1, 0, 0 };
                 for (int i = 0; i < symbolCoor.Length; i++)
@@ -5562,7 +5735,7 @@ namespace PrePoMax
                     allNormals.Add(normalX);
                 }
             }
-            if (dispRot.U2 == 0 || double.IsPositiveInfinity(dispRot.U2))
+            if (dispRot.GetDofType(2) == DOFType.Zero || dispRot.GetDofType(2) == DOFType.Fixed)
             {
                 double[] normalY = new double[] { 0, 1, 0 };
                 for (int i = 0; i < symbolCoor.Length; i++)
@@ -5571,7 +5744,7 @@ namespace PrePoMax
                     allNormals.Add(normalY);
                 }
             }
-            if (dispRot.U3 == 0 || double.IsPositiveInfinity(dispRot.U3))
+            if (dispRot.GetDofType(3) == DOFType.Zero || dispRot.GetDofType(3) == DOFType.Fixed)
             {
                 double[] normalZ = new double[] { 0, 0, 1 };
                 for (int i = 0; i < symbolCoor.Length; i++)
@@ -5591,11 +5764,10 @@ namespace PrePoMax
                 ApplyLighting(data);
                 _form.AddOrientedDisplacementConstraintActor(data, symbolSize);
             }
-
-            // cylinders
+            // Cylinders
             allCoor.Clear();
             allNormals.Clear();
-            if (dispRot.UR1 == 0 || double.IsPositiveInfinity(dispRot.UR1))
+            if (dispRot.GetDofType(4) == DOFType.Zero || dispRot.GetDofType(4) == DOFType.Fixed)
             {
                 double[] normalX = new double[] { 1, 0, 0 };
                 for (int i = 0; i < symbolCoor.Length; i++)
@@ -5604,7 +5776,7 @@ namespace PrePoMax
                     allNormals.Add(normalX);
                 }
             }
-            if (dispRot.UR2 == 0 || double.IsPositiveInfinity(dispRot.UR2))
+            if (dispRot.GetDofType(5) == DOFType.Zero || dispRot.GetDofType(5) == DOFType.Fixed)
             {
                 double[] normalY = new double[] { 0, 1, 0 };
                 for (int i = 0; i < symbolCoor.Length; i++)
@@ -5613,7 +5785,7 @@ namespace PrePoMax
                     allNormals.Add(normalY);
                 }
             }
-            if (dispRot.UR3 == 0 || double.IsPositiveInfinity(dispRot.UR3))
+            if (dispRot.GetDofType(6) == DOFType.Zero || dispRot.GetDofType(6) == DOFType.Fixed)
             {
                 double[] normalZ = new double[] { 0, 0, 1 };
                 for (int i = 0; i < symbolCoor.Length; i++)
@@ -5633,18 +5805,20 @@ namespace PrePoMax
                 ApplyLighting(data);
                 _form.AddOrientedRotationalConstraintActor(data, symbolSize);
             }
-
-            // arrows
+            //                                                                                                                      
+            // Arrows
             allCoor.Clear();
             allNormals.Clear();
-
-            if ((!double.IsNaN(dispRot.U1) && dispRot.U1 != 0) || (!double.IsNaN(dispRot.U2) && dispRot.U2 != 0) || (!double.IsNaN(dispRot.U3) && dispRot.U3 != 0))
+            //
+            if (dispRot.GetDofType(1) == DOFType.Prescribed ||
+                dispRot.GetDofType(2) == DOFType.Prescribed ||
+                dispRot.GetDofType(3) == DOFType.Prescribed)
             {
                 double[] normal = new double[3];
-                if (!double.IsNaN(dispRot.U1) && dispRot.U1 != 0) normal[0] = dispRot.U1;
-                if (!double.IsNaN(dispRot.U2) && dispRot.U2 != 0) normal[1] = dispRot.U2;
-                if (!double.IsNaN(dispRot.U3) && dispRot.U3 != 0) normal[2] = dispRot.U3;
-
+                if (dispRot.GetDofType(1) == DOFType.Prescribed) normal[0] = dispRot.U1;
+                if (dispRot.GetDofType(2) == DOFType.Prescribed) normal[1] = dispRot.U2;
+                if (dispRot.GetDofType(3) == DOFType.Prescribed) normal[2] = dispRot.U3;
+                //
                 for (int i = 0; i < symbolCoor.Length; i++)
                 {
                     allCoor.Add(symbolCoor[i]);
@@ -5662,17 +5836,18 @@ namespace PrePoMax
                 ApplyLighting(data);
                 _form.AddOrientedArrowsActor(data, symbolSize);
             }
-
-            // double arrows
+            // Double arrows
             allCoor.Clear();
             allNormals.Clear();
-            if ((!double.IsNaN(dispRot.UR1) && dispRot.UR1 != 0) || (!double.IsNaN(dispRot.UR2) && dispRot.UR2 != 0) || (!double.IsNaN(dispRot.UR3) && dispRot.UR3 != 0))
+            if (dispRot.GetDofType(4) == DOFType.Prescribed ||
+                dispRot.GetDofType(5) == DOFType.Prescribed ||
+                dispRot.GetDofType(6) == DOFType.Prescribed)
             {
                 double[] normal = new double[3];
-                if (!double.IsNaN(dispRot.UR1) && dispRot.UR1 != 0) normal[0] = dispRot.UR1;
-                if (!double.IsNaN(dispRot.UR2) && dispRot.UR2 != 0) normal[1] = dispRot.UR2;
-                if (!double.IsNaN(dispRot.UR3) && dispRot.UR3 != 0) normal[2] = dispRot.UR3;
-
+                if (dispRot.GetDofType(4) == DOFType.Prescribed) normal[0] = dispRot.UR1;
+                if (dispRot.GetDofType(5) == DOFType.Prescribed) normal[1] = dispRot.UR2;
+                if (dispRot.GetDofType(6) == DOFType.Prescribed) normal[2] = dispRot.UR3;
+                //
                 for (int i = 0; i < symbolCoor.Length; i++)
                 {
                     allCoor.Add(symbolCoor[i]);
@@ -5695,8 +5870,7 @@ namespace PrePoMax
                                                     int symbolSize, vtkControl.vtkRendererLayer layer)
         {
             if (!submodel.Visible) return;
-
-            // cones
+            // Cones
             List<double[]> allCoor = new List<double[]>();
             List<double[]> allNormals = new List<double[]>();
             if (submodel.U1)
@@ -5737,8 +5911,7 @@ namespace PrePoMax
                 ApplyLighting(data);
                 _form.AddOrientedDisplacementConstraintActor(data, symbolSize);
             }
-
-            // cylinders
+            // Cylinders
             allCoor.Clear();
             allNormals.Clear();
             if (submodel.UR1)
@@ -5807,11 +5980,11 @@ namespace PrePoMax
             try
             {
                 if (!(load.Active && load.Visible && load.Valid)) return;
-
+                //
                 double[][] coor = null;
                 string prefixName = stepName + Globals.NameSeparator + "LOAD" + Globals.NameSeparator + load.Name;
                 vtkControl.vtkRendererLayer symbolLayer = layer == vtkControl.vtkRendererLayer.Selection ? layer : vtkControl.vtkRendererLayer.Overlay;
-
+                //
                 if (load is CLoad cLoad)
                 {
                     if (cLoad.RegionType == RegionTypeEnum.NodeSetName)
@@ -5820,7 +5993,7 @@ namespace PrePoMax
                         FeNodeSet nodeSet = _model.Mesh.NodeSets[cLoad.RegionName];
                         coor = new double[nodeSet.Labels.Length][];
                         for (int i = 0; i < nodeSet.Labels.Length; i++) coor[i] = _model.Mesh.Nodes[nodeSet.Labels[i]].Coor;
-
+                        //
                         DrawNodeSet(prefixName, nodeSet.Name, color, layer, nodeSymbolSize);
                     }
                     else if (cLoad.RegionType == RegionTypeEnum.ReferencePointName)
@@ -5841,7 +6014,7 @@ namespace PrePoMax
                         FeNodeSet nodeSet = _model.Mesh.NodeSets[momentLoad.RegionName];
                         coor = new double[nodeSet.Labels.Length][];
                         for (int i = 0; i < nodeSet.Labels.Length; i++) coor[i] = _model.Mesh.Nodes[nodeSet.Labels[i]].Coor;
-
+                        //
                         DrawNodeSet(prefixName, nodeSet.Name, color, layer, nodeSymbolSize);
                     }
                     else if (momentLoad.RegionType == RegionTypeEnum.ReferencePointName)
@@ -5866,26 +6039,51 @@ namespace PrePoMax
                 else if (load is DLoad dLoad)
                 {
                     if (!_model.Mesh.Surfaces.ContainsKey(dLoad.SurfaceName)) return;
-
+                    //
                     DrawSurface(prefixName, dLoad.SurfaceName, color, layer, true);
                     DrawDLoadSymbols(prefixName, dLoad, color, symbolSize, layer);
                 }
                 else if (load is GravityLoad gLoad)
                 {
+                    string[] partNames = null;
                     if (layer == vtkControl.vtkRendererLayer.Selection)
                     {
                         if (gLoad.RegionType == RegionTypeEnum.PartName) HighlightModelParts(new string[] { gLoad.RegionName });
-                        else if (gLoad.RegionType == RegionTypeEnum.ElementSetName) HighlightElementSet(_model.Mesh.ElementSets[gLoad.RegionName], _model.Mesh);
+                        else if (gLoad.RegionType == RegionTypeEnum.ElementSetName) 
+                            HighlightElementSet(_model.Mesh.ElementSets[gLoad.RegionName], _model.Mesh);
+                        else if (gLoad.RegionType == RegionTypeEnum.Selection)
+                        {
+                            partNames = _model.Mesh.GetPartNamesByIds(gLoad.CreationIds);
+                            if (partNames != null) HighlightModelParts(partNames.ToArray());
+                            else throw new NotSupportedException();
+                        }
+                        else throw new NotSupportedException();
                     }
-                    FeNodeSet nodeSet = _model.Mesh.GetNodeSetFromPartOrElementSet(gLoad.RegionName);
+                    FeNodeSet nodeSet;
+                    if (gLoad.RegionType == RegionTypeEnum.Selection)
+                    {
+                        partNames = _model.Mesh.GetPartNamesByIds(gLoad.CreationIds);
+                        if (partNames != null) nodeSet = _model.Mesh.GetNodeSetFromPartNames(partNames);
+                        else throw new NotSupportedException();
+                    }
+                    else nodeSet = _model.Mesh.GetNodeSetFromPartOrElementSetName(gLoad.RegionName);
                     DrawGravityLoadSymbol(prefixName, gLoad, nodeSet.CenterOfGravity, color, symbolSize, symbolLayer);
                 }
                 else if (load is CentrifLoad cfLoad)
                 {
+                    string[] partNames = null;
                     if (layer == vtkControl.vtkRendererLayer.Selection)
                     {
                         if (cfLoad.RegionType == RegionTypeEnum.PartName) HighlightModelParts(new string[] { cfLoad.RegionName });
-                        else if (cfLoad.RegionType == RegionTypeEnum.ElementSetName) HighlightElementSet(_model.Mesh.ElementSets[cfLoad.RegionName], _model.Mesh);
+                        else if (cfLoad.RegionType == RegionTypeEnum.ElementSetName)
+                            HighlightElementSet(_model.Mesh.ElementSets[cfLoad.RegionName], _model.Mesh);
+                        else if (cfLoad.RegionType == RegionTypeEnum.Selection)
+                        {
+                            partNames = _model.Mesh.GetPartNamesByIds(cfLoad.CreationIds);
+                            if (partNames != null) HighlightModelParts(partNames.ToArray());
+                            else throw new NotSupportedException();
+                        }
+                        else throw new NotSupportedException();
                     }
                     DrawCentrifLoadSymbol(prefixName, cfLoad, color, symbolSize, symbolLayer);
                 }

@@ -65,18 +65,9 @@ namespace PrePoMax.Forms
             if (lvTypes.Enabled && lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)
             {
                 object itemTag = lvTypes.SelectedItems[0].Tag;
-                if (itemTag is ViewError) 
-                {
-                    _viewHistoryOutput = null;
-                }
-                else if (itemTag is ViewNodalHistoryOutput vnho)
-                {
-                    _viewHistoryOutput = vnho;
-                }
-                else if (itemTag is ViewElementHistoryOutput veho)
-                {
-                    _viewHistoryOutput = veho;
-                }
+                if (itemTag is ViewError)  _viewHistoryOutput = null;
+                else if (itemTag is ViewNodalHistoryOutput vnho) _viewHistoryOutput = vnho;
+                else if (itemTag is ViewElementHistoryOutput veho) _viewHistoryOutput = veho;
                 else throw new NotImplementedException();
                 //
                 SetSelectItem();
@@ -93,21 +84,21 @@ namespace PrePoMax.Forms
         {
             string property = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
             //
-            if (property == CaeGlobals.Tools.GetPropertyName(() => _viewHistoryOutput.RegionType))
+            if (property == nameof(_viewHistoryOutput.RegionType))
             {
                 ShowHideSelectionForm();
                 //
                 HighlightHistoryOutput();
             }
             else if (_viewHistoryOutput is ViewNodalHistoryOutput vnho &&
-                    (property == CaeGlobals.Tools.GetPropertyName(() => vnho.NodeSetName) ||
-                     property == CaeGlobals.Tools.GetPropertyName(() => vnho.ReferencePointName) ||
-                     property == CaeGlobals.Tools.GetPropertyName(() => vnho.SurfaceName)))
+                     (property == nameof(vnho.NodeSetName) ||
+                      property == nameof(vnho.ReferencePointName) ||
+                      property == nameof(vnho.SurfaceName)))
             {
                 HighlightHistoryOutput();
             }
             else if (_viewHistoryOutput is ViewElementHistoryOutput veho &&
-                    property == CaeGlobals.Tools.GetPropertyName(() => veho.ElementSetName))
+                    property == nameof(veho.ElementSetName))
             {
                 HighlightHistoryOutput();
             }
@@ -120,15 +111,17 @@ namespace PrePoMax.Forms
             //
             _viewHistoryOutput = (ViewHistoryOutput)propertyGrid.SelectedObject;
             //
-            if (_viewHistoryOutput == null) throw new CaeGlobals.CaeException("No history output was selected.");
+            if (HistoryOutput == null) throw new CaeGlobals.CaeException("No history output was selected.");
             //
-            if ((_historyOutputToEditName == null && _historyOutputNames.Contains(HistoryOutput.Name)) ||                      // create
-                (HistoryOutput.Name != _historyOutputToEditName && _historyOutputNames.Contains(HistoryOutput.Name)))     // edit
-                throw new CaeGlobals.CaeException("The selected history output name already exists.");
-            //
-            if (HistoryOutput.RegionType == RegionTypeEnum.Selection && 
+            if (HistoryOutput.RegionType == RegionTypeEnum.Selection &&
                 (HistoryOutput.CreationIds == null || HistoryOutput.CreationIds.Length == 0))
                 throw new CaeException("The history output must contain at least one item.");
+            //
+            if ((_historyOutputToEditName == null &&
+                 _historyOutputNames.Contains(HistoryOutput.Name)) ||   // named to existing name
+                (HistoryOutput.Name != _historyOutputToEditName &&
+                 _historyOutputNames.Contains(HistoryOutput.Name)))     // renamed to existing name
+                throw new CaeGlobals.CaeException("The selected history output name already exists.");            
             // Create
             if (_historyOutputToEditName == null)
             {
@@ -170,12 +163,12 @@ namespace PrePoMax.Forms
             _historyOutputToEditName = historyToOutputToEditName;
             string[] nodeSetNames = _controller.GetUserNodeSetNames();
             string[] elementSetNames = _controller.GetUserElementSetNames();
-            string[] surfaceNames = _controller.GetSurfaceNames();
+            string[] surfaceNames = _controller.GetUserSurfaceNames();
             string[] referencePointNames = _controller.GetReferencePointNames();
             //
             if (_historyOutputNames == null)
                 throw new CaeGlobals.CaeException("The history output names must be defined first.");
-            //
+            // Populate list view
             PopulateListOfHistoryOutputs(nodeSetNames, elementSetNames, surfaceNames, referencePointNames);
             // Create new history output
             if (_historyOutputToEditName == null)
@@ -186,11 +179,15 @@ namespace PrePoMax.Forms
             else
             // Edit existing history output
             {
+                // Get and convert a converted load back to selection
                 HistoryOutput = _controller.GetHistoryOutput(_stepName, _historyOutputToEditName); // to clone
+                if (HistoryOutput.CreationData != null) HistoryOutput.RegionType = RegionTypeEnum.Selection;
                 // Select the appropriate history output in the list view - disable event SelectedIndexChanged
                 _lvTypesSelectedIndexChangedEventActive = false;
                 if (_viewHistoryOutput is ViewNodalHistoryOutput) lvTypes.Items[0].Selected = true;
                 else if (_viewHistoryOutput is ViewElementHistoryOutput) lvTypes.Items[1].Selected = true;
+                else throw new NotSupportedException();
+                //
                 lvTypes.Enabled = false;
                 _lvTypesSelectedIndexChangedEventActive = true;
                 //
@@ -240,31 +237,21 @@ namespace PrePoMax.Forms
                                                   string[] surfaceNames, string[] referencePointNames)
         {
             ListViewItem item;
-            // Node
+            // Node output
             item = new ListViewItem("Node output");
-            //if (nodeSetNames.Length + surfaceNames.Length >= 1)
-            {
-                NodalHistoryOutput nho = new NodalHistoryOutput(GetHistoryOutputName("N"), NodalHistoryVariable.U,
-                                                                "", RegionTypeEnum.Selection);
-                //
-                ViewNodalHistoryOutput vnho = new ViewNodalHistoryOutput(nho);
-                vnho.PopululateDropDownLists(nodeSetNames, surfaceNames, referencePointNames);
-                item.Tag = vnho;
-            }
-            //else item.Tag = new ViewError("There is no node set/surface defined for the history output definition.");
+            NodalHistoryOutput nho = new NodalHistoryOutput(GetHistoryOutputName("N"), NodalHistoryVariable.U,
+                                                            "", RegionTypeEnum.Selection);
+            ViewNodalHistoryOutput vnho = new ViewNodalHistoryOutput(nho);
+            vnho.PopululateDropDownLists(nodeSetNames, surfaceNames, referencePointNames);
+            item.Tag = vnho;
             lvTypes.Items.Add(item);
-            // Element
+            // Element output
             item = new ListViewItem("Element output");
-            //if (elementSetNames.Length >= 1)
-            {
-                ElementHistoryOutput eho = new ElementHistoryOutput(GetHistoryOutputName("E"), ElementHistoryVariable.S,
-                                                                    "", RegionTypeEnum.Selection);
-                //
-                ViewElementHistoryOutput veho = new ViewElementHistoryOutput(eho);
-                veho.PopululateDropDownLists(elementSetNames);
-                item.Tag = veho;
-            }
-            //else item.Tag = new ViewError("There is no element set defined for the history output definition.");
+            ElementHistoryOutput eho = new ElementHistoryOutput(GetHistoryOutputName("E"), ElementHistoryVariable.S,
+                                                                "", RegionTypeEnum.Selection);
+            ViewElementHistoryOutput veho = new ViewElementHistoryOutput(eho);
+            veho.PopululateDropDownLists(elementSetNames);
+            item.Tag = veho;
             lvTypes.Items.Add(item);
         }
         private string GetHistoryOutputName(string prefix)

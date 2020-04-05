@@ -109,12 +109,12 @@ namespace PrePoMax.Forms
             //
             if (_viewSection == null) throw new CaeGlobals.CaeException("No section was selected.");
             //
-            if ((_sectionToEditName == null && _sectionNames.Contains(_viewSection.Name)) ||                // create
-                (_viewSection.Name != _sectionToEditName && _sectionNames.Contains(_viewSection.Name)))     // edit
-                throw new CaeGlobals.CaeException("The selected section name already exists.");
-            //
             if (Section.RegionType == RegionTypeEnum.Selection && (Section.CreationIds == null || Section.CreationIds.Length == 0))
                 throw new CaeException("The section must contain at least one item.");
+            //
+            if ((_sectionToEditName == null && _sectionNames.Contains(_viewSection.Name)) ||                // create
+                (_viewSection.Name != _sectionToEditName && _sectionNames.Contains(_viewSection.Name)))     // edit
+                throw new CaeGlobals.CaeException("The selected section name already exists.");            
             // Create
             if (_sectionToEditName == null)
             {
@@ -224,18 +224,14 @@ namespace PrePoMax.Forms
         private void PopulateListOfSections(string[] materialNames, string[] partNames, string[] elementSetNames)
         {
             ListViewItem item;
-            // Initialize sections
+            // Solid section
             item = new ListViewItem("Solid section");
             if (materialNames.Length > 0)
             {
-                //if (partNames.Length + elementSetNames.Length >= 1)
-                {
-                    SolidSection ss = new SolidSection(GetSectionName(), materialNames[0], "", RegionTypeEnum.Selection);
-                    ViewSolidSection vss = new ViewSolidSection(ss);
-                    vss.PopululateDropDownLists(materialNames, partNames, elementSetNames);
-                    item.Tag = vss;
-                }
-                //else item.Tag = new ViewError("There is no part/element set defined for the solid section definition.");
+                SolidSection ss = new SolidSection(GetSectionName(), materialNames[0], "", RegionTypeEnum.Selection);
+                ViewSolidSection vss = new ViewSolidSection(ss);
+                vss.PopululateDropDownLists(materialNames, partNames, elementSetNames);
+                item.Tag = vss;
             }
             else item.Tag = new ViewError("There is no material defined for the solid section definition.");
             lvTypes.Items.Add(item);

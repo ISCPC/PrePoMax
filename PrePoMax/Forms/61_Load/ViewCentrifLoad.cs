@@ -14,101 +14,92 @@ namespace PrePoMax
     public class ViewCentrifLoad : ViewLoad
     {
         // Variables                                                                                                                
-        private CaeModel.CentrifLoad _cLoad;
+        private CaeModel.CentrifLoad _cenLoad;
 
 
         // Properties                                                                                                               
-        [Id(1, 1)]
-        public override string Name { get { return _cLoad.Name; } set { _cLoad.Name = value; } }
-
-        [OrderedDisplayName(1, 10, "Region type")]
-        [CategoryAttribute("Data")]
-        [DescriptionAttribute("Select the region type which will be used for the load.")]
-        [Id(1, 1)]
-        public override string RegionType { get { return base.RegionType; } set { base.RegionType = value; } }
-
+        public override string Name { get { return _cenLoad.Name; } set { _cenLoad.Name = value; } }
+        //
+        [CategoryAttribute("Region")]
         [OrderedDisplayName(2, 10, "Part")]
-        [CategoryAttribute("Data")]
-        [DescriptionAttribute("Select the part which will be used for the load.")]
-        [Id(1, 1)]
-        public string PartName { get { return _cLoad.RegionName; } set { _cLoad.RegionName = value; } }
-
+        [DescriptionAttribute("Select the part for the creation of the load.")]
+        [Id(3, 2)]
+        public string PartName { get { return _cenLoad.RegionName; } set { _cenLoad.RegionName = value; } }
+        //
+        [CategoryAttribute("Region")]
         [OrderedDisplayName(3, 10, "Element set")]
-        [CategoryAttribute("Data")]
-        [DescriptionAttribute("Select the element set which will be used for the load.")]
-        [Id(1, 1)]
-        public string ElementSetName { get { return _cLoad.RegionName; } set { _cLoad.RegionName = value; } }
-
-
+        [DescriptionAttribute("Select the element set for the creation of the load.")]
+        [Id(4, 2)]
+        public string ElementSetName { get { return _cenLoad.RegionName; } set { _cenLoad.RegionName = value; } }
+        //
+        [CategoryAttribute("Axis point")]
         [OrderedDisplayName(0, 10, "X")]
-        [CategoryAttribute("Axis point")]
         [DescriptionAttribute("X coordinate of the axis point.")]
-        [Id(1, 2)]
-        public double X { get { return _cLoad.X; } set { _cLoad.X = value; } }
-
+        [Id(1, 3)]
+        public double X { get { return _cenLoad.X; } set { _cenLoad.X = value; } }
+        //
+        [CategoryAttribute("Axis point")]
         [OrderedDisplayName(1, 10, "Y")]
-        [CategoryAttribute("Axis point")]
         [DescriptionAttribute("X coordinate of the axis point.")]
-        [Id(1, 2)]
-        public double Y { get { return _cLoad.Y; } set { _cLoad.Y = value; } }
-
+        [Id(2, 3)]
+        public double Y { get { return _cenLoad.Y; } set { _cenLoad.Y = value; } }
+        //
+        [CategoryAttribute("Axis point")]
         [OrderedDisplayName(2, 10, "Z")]
-        [CategoryAttribute("Axis point")]
         [DescriptionAttribute("X coordinate of the axis point.")]
-        [Id(1, 2)]
-        public double Z { get { return _cLoad.Z; } set { _cLoad.Z = value; } }
-
-
+        [Id(3, 3)]
+        public double Z { get { return _cenLoad.Z; } set { _cenLoad.Z = value; } }
+        //
+        [CategoryAttribute("Axis direction")]
         [OrderedDisplayName(0, 10, "N1")]
-        [CategoryAttribute("Axis direction")]
         [DescriptionAttribute("Axis component in the direction of the first axis.")]
-        [Id(1, 3)]
-        public double N1 { get { return _cLoad.N1; } set { _cLoad.N1 = value; } }
-        
-        [OrderedDisplayName(1, 10, "N2")]
-        [CategoryAttribute("Axis direction")]
-        [DescriptionAttribute("Axis component in the direction of the second axis.")]
-        [Id(1, 3)]
-        public double N2 { get { return _cLoad.N2; } set { _cLoad.N2 = value; } }
-
-        [OrderedDisplayName(2, 10, "N3")]
-        [CategoryAttribute("Axis direction")]
-        [DescriptionAttribute("Axis component in the direction of the third axis.")]
-        [Id(1, 3)]
-        public double N3 { get { return _cLoad.N3; } set { _cLoad.N3 = value; } }
-
-        [OrderedDisplayName(0, 10, "Rot. speed square")]
-        [CategoryAttribute("Magnitude")]
-        [DescriptionAttribute("The square of the rotational speed omega.")]
         [Id(1, 4)]
-        public double RotationalSpeed2 { get { return _cLoad.RotationalSpeed2; } set { _cLoad.RotationalSpeed2 = value; } }
-
+        public double N1 { get { return _cenLoad.N1; } set { _cenLoad.N1 = value; } }
+        //
+        [CategoryAttribute("Axis direction")]
+        [OrderedDisplayName(1, 10, "N2")]
+        [DescriptionAttribute("Axis component in the direction of the second axis.")]
+        [Id(2, 4)]
+        public double N2 { get { return _cenLoad.N2; } set { _cenLoad.N2 = value; } }
+        //
+        [CategoryAttribute("Axis direction")]
+        [OrderedDisplayName(2, 10, "N3")]
+        [DescriptionAttribute("Axis component in the direction of the third axis.")]
+        [Id(3, 4)]
+        public double N3 { get { return _cenLoad.N3; } set { _cenLoad.N3 = value; } }
+        //
+        [CategoryAttribute("Magnitude")]
+        [OrderedDisplayName(0, 10, "Rot. speed square")]
+        [DescriptionAttribute("The square of the rotational speed omega.")]
+        [Id(1, 5)]
+        public double RotationalSpeed2 { get { return _cenLoad.RotationalSpeed2; } set { _cenLoad.RotationalSpeed2 = value; } }
 
 
         // Constructors                                                                                                             
         public ViewCentrifLoad(CaeModel.CentrifLoad cLoad)
         {
-            // the order is important
-            _cLoad = cLoad;
-
+            // The order is important
+            _cenLoad = cLoad;
+            //
             Dictionary<RegionTypeEnum, string> regionTypePropertyNamePairs = new Dictionary<RegionTypeEnum, string>();
-            regionTypePropertyNamePairs.Add(RegionTypeEnum.PartName, CaeGlobals.Tools.GetPropertyName(() => this.PartName));
-            regionTypePropertyNamePairs.Add(RegionTypeEnum.ElementSetName, CaeGlobals.Tools.GetPropertyName(() => this.ElementSetName));
-
-            base.SetBase(_cLoad, regionTypePropertyNamePairs);
+            regionTypePropertyNamePairs.Add(RegionTypeEnum.Selection, nameof(SelectionHidden));
+            regionTypePropertyNamePairs.Add(RegionTypeEnum.PartName, nameof(PartName));
+            regionTypePropertyNamePairs.Add(RegionTypeEnum.ElementSetName, nameof(ElementSetName));
+            //
+            base.SetBase(_cenLoad, regionTypePropertyNamePairs);
             base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
         }
-
 
 
         // Methods                                                                                                                  
         public override CaeModel.Load GetBase()
         {
-            return _cLoad;
+            return _cenLoad;
         }
         public void PopululateDropDownLists(string[] partNames, string[] elementSetNames)
         {
             Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
+            regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
             regionTypeListItemsPairs.Add(RegionTypeEnum.PartName, partNames);
             regionTypeListItemsPairs.Add(RegionTypeEnum.ElementSetName, elementSetNames);
             base.PopululateDropDownLists(regionTypeListItemsPairs);

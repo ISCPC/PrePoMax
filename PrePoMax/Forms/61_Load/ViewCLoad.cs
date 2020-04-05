@@ -19,41 +19,41 @@ namespace PrePoMax
 
         // Properties                                                                                                               
         public override string Name { get { return _cLoad.Name; } set { _cLoad.Name = value; } }
-
-        [OrderedDisplayName(1, 10, "Region type")]
-        [CategoryAttribute("Data")]
-        [DescriptionAttribute("Select the region type which will be used for the load.")]
-        public override string RegionType { get { return base.RegionType; } set { base.RegionType = value; } }
-
-
+        //       
+        [CategoryAttribute("Region")]
         [OrderedDisplayName(2, 10, "Node set")]
-        [CategoryAttribute("Data")]
-        [DescriptionAttribute("Select the node set which will be used for the load.")]
+        [DescriptionAttribute("Select the node set for the creation of the load.")]
+        [Id(3, 2)]
         public string NodeSetName { get { return _cLoad.RegionName; } set { _cLoad.RegionName = value; } }
-
+        //
+        [CategoryAttribute("Region")]
         [OrderedDisplayName(3, 10, "Reference point")]
-        [CategoryAttribute("Data")]
-        [DescriptionAttribute("Select the reference point which will be used for the load.")]
+        [DescriptionAttribute("Select the reference point for the creation of the load.")]
+        [Id(4, 2)]
         public string ReferencePointName { get { return _cLoad.RegionName; } set { _cLoad.RegionName = value; } }
-
-        [OrderedDisplayName(4, 10, "F1")]
+        //
         [CategoryAttribute("Force components")]
-        [DescriptionAttribute("Force per item in the direction of the first axis.")]
+        [OrderedDisplayName(0, 10, "F1")]
+        [DescriptionAttribute("Force component per node in the direction of the first axis.")]
+        [Id(1, 3)]
         public double F1 { get { return _cLoad.F1; } set { _cLoad.F1 = value; } }
-        
-        [OrderedDisplayName(5, 10, "F2")]
+        //
         [CategoryAttribute("Force components")]
-        [DescriptionAttribute("Force per item in the direction of the second axis.")]
+        [OrderedDisplayName(1, 10, "F2")]
+        [DescriptionAttribute("Force component per node in the direction of the second axis.")]
+        [Id(2, 3)]
         public double F2 { get { return _cLoad.F2; } set { _cLoad.F2 = value; } }
-
-        [OrderedDisplayName(6, 10, "F3")]
+        //
         [CategoryAttribute("Force components")]
-        [DescriptionAttribute("Force per item in the direction of the third axis.")]
+        [OrderedDisplayName(2, 10, "F3")]
+        [DescriptionAttribute("Force component per node in the direction of the third axis.")]
+        [Id(3, 3)]
         public double F3 { get { return _cLoad.F3; } set { _cLoad.F3 = value; } }
-
-        [OrderedDisplayName(7, 10, "Magnitude")]
+        //
         [CategoryAttribute("Force magnitude")]
-        [DescriptionAttribute("Force magnitude.")]
+        [OrderedDisplayName(3, 10, "Magnitude")]
+        [DescriptionAttribute("The magnitude of the force load.")]
+        [Id(1, 4)]
         public double Flength
         {
             get { return Math.Sqrt(_cLoad.F1 * _cLoad.F1 + _cLoad.F2 * _cLoad.F2 + _cLoad.F3 * _cLoad.F3); }
@@ -76,12 +76,13 @@ namespace PrePoMax
         // Constructors                                                                                                             
         public ViewCLoad(CaeModel.CLoad cLoad)
         {
-            // the order is important
+            // The order is important
             _cLoad = cLoad;
-
+            //
             Dictionary<RegionTypeEnum, string> regionTypePropertyNamePairs = new Dictionary<RegionTypeEnum, string>();
-            regionTypePropertyNamePairs.Add(RegionTypeEnum.NodeSetName, CaeGlobals.Tools.GetPropertyName(() => this.NodeSetName));
-            regionTypePropertyNamePairs.Add(RegionTypeEnum.ReferencePointName, CaeGlobals.Tools.GetPropertyName(() => this.ReferencePointName));
+            regionTypePropertyNamePairs.Add(RegionTypeEnum.Selection, nameof(SelectionHidden));
+            regionTypePropertyNamePairs.Add(RegionTypeEnum.NodeSetName, nameof(NodeSetName));
+            regionTypePropertyNamePairs.Add(RegionTypeEnum.ReferencePointName, nameof(ReferencePointName));
             base.SetBase(_cLoad, regionTypePropertyNamePairs);
             //
             base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
@@ -96,6 +97,7 @@ namespace PrePoMax
         public void PopululateDropDownLists(string[] nodeSetNames, string[] referencePointNames)
         {
             Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
+            regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
             regionTypeListItemsPairs.Add(RegionTypeEnum.NodeSetName, nodeSetNames);
             regionTypeListItemsPairs.Add(RegionTypeEnum.ReferencePointName, referencePointNames);
             base.PopululateDropDownLists(regionTypeListItemsPairs);

@@ -10,7 +10,7 @@ using CaeGlobals;
 namespace CaeModel
 {
     [Serializable]
-    public class CLoad : Load, IMultiRegion
+    public class CLoad : Load
     {
         // Variables                                                                                                                
         private string _regionName;
@@ -18,8 +18,8 @@ namespace CaeModel
         private int _nodeId;
 
         // Properties                                                                                                               
-        public string RegionName { get { return _regionName; } set { _regionName = value; } }
-        public RegionTypeEnum RegionType { get { return _regionType; } set { _regionType = value; } }
+        public override string RegionName { get { return _regionName; } set { _regionName = value; } }
+        public override RegionTypeEnum RegionType { get { return _regionType; } set { _regionType = value; } }
         public int NodeId { get { return _nodeId; } set { _nodeId = value; } }
         public double F1 { get; set; }
         public double F2 { get; set; }

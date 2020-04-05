@@ -42,5 +42,16 @@ namespace PrePoMax
 
         // Methods
         public abstract CaeModel.HistoryOutput GetBase();
+        public override void UpdateRegionVisibility()
+        {
+            base.UpdateRegionVisibility();
+            // Hide SelectionHidden
+            DynamicTypeDescriptor.CustomPropertyDescriptor cpd;
+            if (base.RegionType == RegionTypeEnum.Selection.ToFriendlyString())
+            {
+                cpd = base.DynamicCustomTypeDescriptor.GetProperty(() => SelectionHidden);
+                cpd.SetIsBrowsable(false);
+            }
+        }
     }
 }

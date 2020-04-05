@@ -20,18 +20,15 @@ namespace PrePoMax.Forms
 
         // Properties                                                                                                               
         // SetLoad and GetLoad to distinguish from Load event
-        public Load GetLoad 
+        public Load FELoad 
         {
-            get { return _viewLoad.GetBase(); }
-        }
-        public Load SetLoad
-        {
+            get { return _viewLoad != null ? _viewLoad.GetBase() : null; }
             set
             {
                 var clone = value.DeepClone();
-                if (clone is DLoad dl) _viewLoad = new ViewDLoad(dl);
-                else if (clone is CLoad cl) _viewLoad = new ViewCLoad(cl);
+                if (clone is CLoad cl) _viewLoad = new ViewCLoad(cl);
                 else if (clone is MomentLoad ml) _viewLoad = new ViewMomentLoad(ml);
+                else if (clone is DLoad dl) _viewLoad = new ViewDLoad(dl);
                 else if (clone is STLoad stl) _viewLoad = new ViewSTLoad(stl);
                 else if (clone is GravityLoad gl) _viewLoad = new ViewGravityLoad(gl);
                 else if (clone is CentrifLoad cfl) _viewLoad = new ViewCentrifLoad(cfl);
@@ -51,7 +48,7 @@ namespace PrePoMax.Forms
             //
             _selectedPropertyGridItemChangedEventActive = true;
             //
-            this.Height = 600;
+            this.Height = 637;
         }
         private void InitializeComponent()
         {
@@ -70,33 +67,34 @@ namespace PrePoMax.Forms
             // gbProperties
             // 
             this.gbProperties.Location = new System.Drawing.Point(12, 179);
-            this.gbProperties.Size = new System.Drawing.Size(310, 291);
+            this.gbProperties.Size = new System.Drawing.Size(310, 334);
             // 
             // propertyGrid
             // 
-            this.propertyGrid.Size = new System.Drawing.Size(298, 263);
+            this.propertyGrid.Size = new System.Drawing.Size(298, 306);
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(160, 476);
+            this.btnOK.Location = new System.Drawing.Point(160, 519);
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(241, 476);
+            this.btnCancel.Location = new System.Drawing.Point(241, 519);
             // 
             // btnOkAddNew
             // 
-            this.btnOkAddNew.Location = new System.Drawing.Point(79, 476);
+            this.btnOkAddNew.Location = new System.Drawing.Point(79, 519);
             // 
             // FrmLoad
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.ClientSize = new System.Drawing.Size(334, 511);
+            this.ClientSize = new System.Drawing.Size(334, 554);
             this.Name = "FrmLoad";
             this.Text = "Edit Load";
             this.gbType.ResumeLayout(false);
             this.gbProperties.ResumeLayout(false);
             this.ResumeLayout(false);
+
         }
 
 
@@ -105,126 +103,147 @@ namespace PrePoMax.Forms
         {
             if (lvTypes.Enabled && lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)
             {
-                propertyGrid.SelectedObject = lvTypes.SelectedItems[0].Tag;
-                propertyGrid.Select();
-            }
-        }
-        protected override void OnPropertyGridSelectedGridItemChanged()
-        {
-            object value = propertyGrid.SelectedGridItem.Value;
-            if (value != null)
-            {
-                string valueString = value.ToString();
-                object[] objects = null;
-                //
-                if (propertyGrid.SelectedObject == null) { }
-                else if (propertyGrid.SelectedObject is ViewCLoad vcl)
-                {
-                    if (valueString == vcl.NodeSetName) objects = new object[] { vcl.NodeSetName };
-                    else if (valueString == vcl.ReferencePointName) objects = new object[] { vcl.ReferencePointName };
-                    else objects = null;
-                }
-                else if (propertyGrid.SelectedObject is ViewMomentLoad vml)
-                {
-                    if (valueString == vml.ReferencePointName) objects = new object[] { vml.ReferencePointName };
-                    else objects = null;
-                }
-                else if (propertyGrid.SelectedObject is ViewDLoad vdl)
-                {
-                    if (valueString == vdl.SurfaceName) objects = new object[] { vdl.SurfaceName };
-                    else objects = null;
-                }
-                else if (propertyGrid.SelectedObject is ViewSTLoad vstl)
-                {
-                    if (valueString == vstl.SurfaceName) objects = new object[] { vstl.SurfaceName };
-                    else objects = null;
-                }
-                else if (propertyGrid.SelectedObject is ViewGravityLoad vgl)
-                {
-                    if (valueString == vgl.PartName) objects = new object[] { vgl.PartName };
-                    else if (valueString == vgl.ElementSetName) objects = new object[] { vgl.ElementSetName };
-                    else objects = null;
-                }
-                else if (propertyGrid.SelectedObject is ViewCentrifLoad vcfl)
-                {
-                    if (valueString == vcfl.PartName) objects = new object[] { vcfl.PartName };
-                    else if (valueString == vcfl.ElementSetName) objects = new object[] { vcfl.ElementSetName };
-                    else objects = null;
-                }
-                else if (propertyGrid.SelectedObject is ViewPreTensionLoad vptl)
-                {
-                    if (valueString == vptl.SurfaceName) objects = new object[] { vptl.SurfaceName };
-                    else objects = null;
-                }
-                else if (propertyGrid.SelectedObject is PrePoMax.Forms.ViewError)
-                {
-                }
+                object itemTag = lvTypes.SelectedItems[0].Tag;
+                if (itemTag is ViewError) _viewLoad = null;
+                else if (itemTag is ViewCLoad vcl) _viewLoad = vcl;
+                else if (itemTag is ViewMomentLoad vml) _viewLoad = vml;
+                else if (itemTag is ViewDLoad vdl) _viewLoad = vdl;
+                else if (itemTag is ViewSTLoad vstl) _viewLoad = vstl;
+                else if (itemTag is ViewGravityLoad vgl) _viewLoad = vgl;
+                else if (itemTag is ViewCentrifLoad vcfl) _viewLoad = vcfl;
+                else if (itemTag is ViewPreTensionLoad vprl) _viewLoad = vprl;
                 else throw new NotImplementedException();
                 //
-                _controller.Highlight3DObjects(objects);
+                SetSelectItem();
+                //
+                ShowHideSelectionForm();
+                //
+                propertyGrid.SelectedObject = itemTag;
+                propertyGrid.Select();
+                //
+                HighlightLoad();
             }
+        }
+        protected override void OnPropertyGridPropertyValueChanged()
+        {
+            string property = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
+            //
+            if (property == nameof(_viewLoad.RegionType))
+            {
+                ShowHideSelectionForm();
+                //
+                HighlightLoad();
+            }
+            else if (_viewLoad is ViewCLoad vcl &&
+                     (property == nameof(vcl.NodeSetName) || property == nameof(vcl.ReferencePointName)))
+            {
+                HighlightLoad();
+            }
+            else if (_viewLoad is ViewMomentLoad vml &&
+                     (property == nameof(vml.NodeSetName) || property == nameof(vml.ReferencePointName)))
+            {
+                HighlightLoad();
+            }
+            else if (_viewLoad is ViewDLoad vdl && property == nameof(vdl.SurfaceName))
+            {
+                HighlightLoad();
+            }
+            else if (_viewLoad is ViewSTLoad vstl && property == nameof(vstl.SurfaceName))
+            {
+                HighlightLoad();
+            }
+            else if (_viewLoad is ViewGravityLoad vgl &&
+                     (property == nameof(vgl.PartName) || property == nameof(vgl.ElementSetName)))
+            {
+                HighlightLoad();
+            }
+            else if (_viewLoad is ViewCentrifLoad vcfl &&
+                     (property == nameof(vcfl.PartName) || property == nameof(vcfl.ElementSetName)))
+            {
+                HighlightLoad();
+            }
+            else if (_viewLoad is ViewPreTensionLoad vptl && property == nameof(vptl.SurfaceName))
+            {
+                HighlightLoad();
+            }
+            //
+            base.OnPropertyGridPropertyValueChanged();
         }
         protected override void OnApply(bool onOkAddNew)
         {
-            if (propertyGrid.SelectedObject == null) throw new CaeException("No item selected.");
+            if (propertyGrid.SelectedObject is ViewError ve) throw new CaeGlobals.CaeException(ve.Message);
             //
             _viewLoad = (ViewLoad)propertyGrid.SelectedObject;
             //
-            if ((_loadToEditName == null && _loadNames.Contains(_viewLoad.Name)) ||                 // named to existing name
-                (_viewLoad.Name != _loadToEditName && _loadNames.Contains(_viewLoad.Name)))         // renamed to existing name
+            if (_viewLoad == null) throw new CaeException("No load selected.");
+            //
+            if ((_loadToEditName == null && _loadNames.Contains(FELoad.Name)) ||        // named to existing name
+                (FELoad.Name != _loadToEditName && _loadNames.Contains(FELoad.Name)))   // renamed to existing name
                 throw new CaeException("The selected load name already exists.");
             //
+            if (FELoad.RegionType == RegionTypeEnum.Selection &&
+                (FELoad.CreationIds == null || FELoad.CreationIds.Length == 0))
+                throw new CaeException("The load must contain at least one item.");
+            //
             // check for 0 values
-            if (_viewLoad is ViewCLoad vcl)
+            if (FELoad is CLoad cl)
             {
-                if (vcl.F1 == 0 && vcl.F2 == 0 && vcl.F3 == 0)
-                    throw new CaeException("At least one load component must not be equal to 0.");
+                if (cl.F1 == 0 && cl.F2 == 0 && cl.F3 == 0)
+                    throw new CaeException("At least one force component must not be equal to 0.");
             }
-            else if (_viewLoad is ViewMomentLoad vml)
+            else if (FELoad is MomentLoad ml)
             {
-                if (vml.F1 == 0 && vml.F2 == 0 && vml.F3 == 0)
-                    throw new CaeException("At least one load component must not be equal to 0.");
+                if (ml.M1 == 0 && ml.M2 == 0 && ml.M3 == 0)
+                    throw new CaeException("At least one moment component must not be equal to 0.");
             }
-            else if (_viewLoad is ViewDLoad vdl)
+            else if (FELoad is DLoad dl)
             {
-                if (vdl.Magnitude == 0)
-                    throw new CaeException("The load magnitude must not be equal to 0.");
+                if (dl.Magnitude == 0)
+                    throw new CaeException("The pressure magnitude must not be equal to 0.");
             }
-            else if (_viewLoad is ViewSTLoad vstl)
+            else if (FELoad is STLoad stl)
             {
-                if (vstl.F1 == 0 && vstl.F2 == 0 && vstl.F3 == 0)
-                    throw new CaeException("At least one load component must not be equal to 0.");
+                if (stl.F1 == 0 && stl.F2 == 0 && stl.F3 == 0)
+                    throw new CaeException("At least one surface traction load component must not be equal to 0.");
             }
-            else if (_viewLoad is ViewGravityLoad vgl)
+            else if (FELoad is GravityLoad gl)
             {
-                if (vgl.F1 == 0 && vgl.F2 == 0 && vgl.F3 == 0)
-                    throw new CaeException("At least one load component must not be equal to 0.");
+                if (gl.F1 == 0 && gl.F2 == 0 && gl.F3 == 0)
+                    throw new CaeException("At least one gravity load component must not be equal to 0.");
             }
-            else if (_viewLoad is ViewCentrifLoad vcfl)
+            else if (FELoad is CentrifLoad cfl)
             {
-                if (vcfl.N1 == 0 && vcfl.N2 == 0 && vcfl.N3 == 0)
+                if (cfl.N1 == 0 && cfl.N2 == 0 && cfl.N3 == 0)
                     throw new CaeException("At least one axis direction component must not be equal to 0.");
-                if (vcfl.RotationalSpeed2 == 0)
+                if (cfl.RotationalSpeed2 == 0)
                     throw new CaeException("Rotational speed square must not be equal to 0.");
             }
-            else if (_viewLoad is ViewPreTensionLoad vptl)
+            else if (FELoad is PreTensionLoad ptl)
             {
-                if (!vptl.AutoComputeDirection && vptl.X == 0 && vptl.Y == 0 && vptl.Z == 0)
-                    throw new CaeException("At least one force direction component must not be equal to 0.");
-                if (vptl.Type == PreTensionLoadType.Force && vptl.ForceMagnitude == 0)
-                    throw new CaeException("Force magnitude must not be equal to 0.");
+                if (!ptl.AutoComputeDirection && ptl.X == 0 && ptl.Y == 0 && ptl.Z == 0)
+                    throw new CaeException("At least one pre-tension direction component must not be equal to 0.");
+                if (ptl.Type == PreTensionLoadType.Force && ptl.Magnitude == 0)
+                    throw new CaeException("Pre-tension magnitude must not be equal to 0.");
             }
-            //
+            // Create
             if (_loadToEditName == null)
             {
-                // Create
-                _controller.AddLoadCommand(_stepName, GetLoad);
+                _controller.AddLoadCommand(_stepName, FELoad);
             }
-            else
+            // Replace
+            else if (_propertyItemChanged)
             {
-                // Replace
-                if (_propertyItemChanged) _controller.ReplaceLoadCommand(_stepName, _loadToEditName, GetLoad);
+                _controller.ReplaceLoadCommand(_stepName, _loadToEditName, FELoad);
             }
+            // If all is successful close the ItemSetSelectionForm - except for OKAddNew
+            if (!onOkAddNew) ItemSetDataEditor.SelectionForm.Hide();
+        }
+        protected override void OnHideOrClose()
+        {
+            // Close the ItemSetSelectionForm
+            ItemSetDataEditor.SelectionForm.Hide();
+            //
+            base.OnHideOrClose();
         }
         protected override bool OnPrepareForm(string stepName, string loadToEditName)
         {
@@ -251,7 +270,7 @@ namespace PrePoMax.Forms
             string[] partNames = _controller.GetModelPartNames();
             string[] nodeSetNames = _controller.GetUserNodeSetNames();
             string[] elementSetNames = _controller.GetUserElementSetNames();
-            string[] surfaceNames = _controller.GetSurfaceNames();
+            string[] surfaceNames = _controller.GetUserSurfaceNames();
             string[] elementBasedSurfaceNames = _controller.GetElementBasedSurfaceNames();
             string[] referencePointNames = _controller.GetReferencePointNames();
             if (partNames == null) partNames = new string[0];
@@ -266,20 +285,19 @@ namespace PrePoMax.Forms
             //
             PopulateListOfLoads(partNames, nodeSetNames, elementSetNames, referencePointNames,
                                 surfaceNames, elementBasedSurfaceNames);
-            // Add loads                                                                                                            
+            // Create new load
             if (_loadToEditName == null)
             {
-                if (nodeSetNames.Length + referencePointNames.Length + surfaceNames.Length == 0)
-                    throw new CaeException("There is no node set/reference point/surface defined to which a load could be applied.");
-                //
                 lvTypes.Enabled = true;
-                //
                 _viewLoad = null;
             }
             else
             {
-                SetLoad = _controller.GetLoad(stepName, _loadToEditName); // to clone
+                // Get and convert a converted load back to selection
+                FELoad = _controller.GetLoad(stepName, _loadToEditName); // to clone
+                if (FELoad.CreationData != null) FELoad.RegionType = RegionTypeEnum.Selection;
                 // Select the appropriate load in the list view - disable event SelectedIndexChanged
+                _lvTypesSelectedIndexChangedEventActive = false;
                 if (_viewLoad is ViewCLoad) lvTypes.Items[0].Selected = true;
                 else if (_viewLoad is ViewMomentLoad) lvTypes.Items[1].Selected = true;
                 else if (_viewLoad is ViewDLoad) lvTypes.Items[2].Selected = true;
@@ -287,14 +305,16 @@ namespace PrePoMax.Forms
                 else if (_viewLoad is ViewGravityLoad) lvTypes.Items[4].Selected = true;
                 else if (_viewLoad is ViewCentrifLoad) lvTypes.Items[5].Selected = true;
                 else if (_viewLoad is ViewPreTensionLoad) lvTypes.Items[6].Selected = true;
-                else throw new Exception();
+                else throw new NotSupportedException();
                 //
                 lvTypes.Enabled = false;
+                _lvTypesSelectedIndexChangedEventActive = true;
                 //
                 if (_viewLoad is ViewCLoad vcl)
                 {
                     // Check for deleted regions
-                    if (vcl.RegionType == RegionTypeEnum.NodeSetName.ToFriendlyString())
+                    if (vcl.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
+                    else if (vcl.RegionType == RegionTypeEnum.NodeSetName.ToFriendlyString())
                         CheckMissingValueRef(ref nodeSetNames, vcl.NodeSetName, s => { vcl.NodeSetName = s; });
                     else if (vcl.RegionType == RegionTypeEnum.ReferencePointName.ToFriendlyString())
                         CheckMissingValueRef(ref referencePointNames, vcl.ReferencePointName, s => { vcl.ReferencePointName = s; });
@@ -305,7 +325,8 @@ namespace PrePoMax.Forms
                 else if (_viewLoad is ViewMomentLoad vml)
                 {
                     // Check for deleted regions
-                    if (vml.RegionType == RegionTypeEnum.NodeSetName.ToFriendlyString())
+                    if (vml.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
+                    else if (vml.RegionType == RegionTypeEnum.NodeSetName.ToFriendlyString())
                         CheckMissingValueRef(ref nodeSetNames, vml.NodeSetName, s => { vml.NodeSetName = s; });
                     else if (vml.RegionType == RegionTypeEnum.ReferencePointName.ToFriendlyString())
                         CheckMissingValueRef(ref referencePointNames, vml.ReferencePointName, s => { vml.ReferencePointName = s; });
@@ -316,21 +337,28 @@ namespace PrePoMax.Forms
                 else if (_viewLoad is ViewDLoad vdl)
                 {
                     // Check for deleted regions
-                    CheckMissingValueRef(ref surfaceNames, vdl.SurfaceName, s => { vdl.SurfaceName = s; });
+                    if (vdl.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
+                    else if (vdl.RegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
+                        CheckMissingValueRef(ref surfaceNames, vdl.SurfaceName, s => { vdl.SurfaceName = s; });
+                    else throw new NotSupportedException();
                     //
                     vdl.PopululateDropDownLists(surfaceNames);
                 }
                 else if (_viewLoad is ViewSTLoad vstl)
                 {
                     // Check for deleted regions
-                    CheckMissingValueRef(ref surfaceNames, vstl.SurfaceName, s => { vstl.SurfaceName = s; });
+                    if (vstl.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
+                    else if (vstl.RegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
+                        CheckMissingValueRef(ref surfaceNames, vstl.SurfaceName, s => { vstl.SurfaceName = s; });
+                    else throw new NotSupportedException();
                     //
                     vstl.PopululateDropDownLists(surfaceNames);
                 }
                 else if (_viewLoad is ViewGravityLoad vgl)
                 {
                     // Check for deleted regions
-                    if (vgl.RegionType == RegionTypeEnum.PartName.ToFriendlyString())
+                    if (vgl.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
+                    else if (vgl.RegionType == RegionTypeEnum.PartName.ToFriendlyString())
                         CheckMissingValueRef(ref partNames, vgl.PartName, s => { vgl.PartName = s; });
                     else if (vgl.RegionType == RegionTypeEnum.ElementSetName.ToFriendlyString())
                         CheckMissingValueRef(ref elementSetNames, vgl.ElementSetName, s => { vgl.ElementSetName = s; });
@@ -341,7 +369,8 @@ namespace PrePoMax.Forms
                 else if (_viewLoad is ViewCentrifLoad vcfl)
                 {
                     // Check for deleted regions
-                    if (vcfl.RegionType == RegionTypeEnum.PartName.ToFriendlyString())
+                    if (vcfl.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
+                    else if (vcfl.RegionType == RegionTypeEnum.PartName.ToFriendlyString())
                         CheckMissingValueRef(ref partNames, vcfl.PartName, s => { vcfl.PartName = s; });
                     else if (vcfl.RegionType == RegionTypeEnum.ElementSetName.ToFriendlyString())
                         CheckMissingValueRef(ref elementSetNames, vcfl.ElementSetName, s => { vcfl.ElementSetName = s; });
@@ -352,7 +381,10 @@ namespace PrePoMax.Forms
                 else if (_viewLoad is ViewPreTensionLoad vptl)
                 {
                     // Check for deleted regions
-                    CheckMissingValueRef(ref elementBasedSurfaceNames, vptl.SurfaceName, s => { vptl.SurfaceName = s; });
+                    if (vptl.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
+                    else if (vptl.RegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
+                        CheckMissingValueRef(ref elementBasedSurfaceNames, vptl.SurfaceName, s => { vptl.SurfaceName = s; });
+                    else throw new NotSupportedException();
                     //
                     vptl.PopululateDropDownLists(elementBasedSurfaceNames);
                 }
@@ -363,116 +395,79 @@ namespace PrePoMax.Forms
             }
             _selectedPropertyGridItemChangedEventActive = true;
             //
+            SetSelectItem();
+            //
+            ShowHideSelectionForm();
+            //
+            HighlightLoad(); // must be here if called from the menu
+            //
             return true;
         }
 
 
         // Methods                                                                                                                  
-        public bool PrepareForm(string stepName, string loadToEditName)
-        {
-            return OnPrepareForm(stepName, loadToEditName);
-        }
         private void PopulateListOfLoads(string[] partNames, string[] nodeSetNames, string[] elementSetNames, 
                                          string[] referencePointNames, string[] surfaceNames, string[] elementBasedSurfaceNames)
         {
             // Populate list view                                                                               
             ListViewItem item;
-            ViewCLoad vcl = null;
-            ViewMomentLoad vml = null;
-            ViewDLoad vdl;
-            ViewSTLoad vstl;
-            ViewGravityLoad vgl = null;
-            ViewCentrifLoad vcfl = null;
-            ViewPreTensionLoad vptl = null;
             string name;
             string loadName;
             // Concentrated force -  node set, reference points
             name = "Concentrated force";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            if (nodeSetNames.Length > 0 || referencePointNames.Length > 0)
-            {
-                if (nodeSetNames.Length > 0) vcl = new ViewCLoad(new CLoad(loadName, nodeSetNames[0], RegionTypeEnum.NodeSetName, 0, 0, 0));
-                else if (referencePointNames.Length > 0) vcl = new ViewCLoad(new CLoad(loadName, referencePointNames[0], RegionTypeEnum.ReferencePointName, 0, 0, 0));
-                vcl.PopululateDropDownLists(nodeSetNames, referencePointNames);
-                item.Tag = vcl;
-            }
-            else item.Tag = new ViewError("There is no node set/reference point defined to which a load could be applied.");
+            ViewCLoad vcl = new ViewCLoad(new CLoad(loadName, "", RegionTypeEnum.Selection, 0, 0, 0));
+            vcl.PopululateDropDownLists(nodeSetNames, referencePointNames);
+            item.Tag = vcl;
             lvTypes.Items.Add(item);
             // Moment
             name = "Moment";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            if (nodeSetNames.Length > 0 || referencePointNames.Length > 0)
-            {
-                if (nodeSetNames.Length > 0) vml = new ViewMomentLoad(new MomentLoad(loadName, nodeSetNames[0], RegionTypeEnum.NodeSetName, 0, 0, 0));
-                else if (referencePointNames.Length > 0) vml = new ViewMomentLoad(new MomentLoad(loadName, referencePointNames[0], RegionTypeEnum.ReferencePointName, 0, 0, 0));
-                vml.PopululateDropDownLists(nodeSetNames, referencePointNames);
-                item.Tag = vml;
-            }
-            else item.Tag = new ViewError("There is no node set/reference point defined to which a load could be applied.");
+            ViewMomentLoad vml = new ViewMomentLoad(new MomentLoad(loadName, "", RegionTypeEnum.Selection, 0, 0, 0));
+            vml.PopululateDropDownLists(nodeSetNames, referencePointNames);
+            item.Tag = vml;
             lvTypes.Items.Add(item);
             // Pressure
             name = "Pressure";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            if (surfaceNames.Length > 0)
-            {
-                vdl = new ViewDLoad(new DLoad(loadName, surfaceNames[0], 0));
-                vdl.PopululateDropDownLists(surfaceNames);
-                item.Tag = vdl;
-            }
-            else item.Tag = new ViewError("There is no surface defined to which a load could be applied.");
+            ViewDLoad vdl = new ViewDLoad(new DLoad(loadName, "", RegionTypeEnum.Selection, 0));
+            vdl.PopululateDropDownLists(surfaceNames);
+            item.Tag = vdl;
             lvTypes.Items.Add(item);
             // Surface traction
             name = "Surface traction";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            if (surfaceNames.Length > 0)
-            {
-                vstl = new ViewSTLoad(new STLoad(loadName, surfaceNames[0], 0, 0, 0));
-                vstl.PopululateDropDownLists(surfaceNames);
-                item.Tag = vstl;
-            }
-            else item.Tag = new ViewError("There is no surface defined to which a load could be applied.");
+            ViewSTLoad vstl = new ViewSTLoad(new STLoad(loadName, "", RegionTypeEnum.Selection, 0, 0, 0));
+            vstl.PopululateDropDownLists(surfaceNames);
+            item.Tag = vstl;
             lvTypes.Items.Add(item);
             // Gravity load -  part, element sets
             name = "Gravity";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            if (partNames.Length > 0 || elementSetNames.Length > 0)
-            {
-                if (partNames.Length > 0) vgl = new ViewGravityLoad(new GravityLoad(loadName, partNames[0], RegionTypeEnum.PartName));
-                else if (elementSetNames.Length > 0) vgl = new ViewGravityLoad(new GravityLoad(loadName, elementSetNames[0], RegionTypeEnum.ElementSetName));
-                vgl.PopululateDropDownLists(partNames, elementSetNames);
-                item.Tag = vgl;
-            }
-            else item.Tag = new ViewError("There is no part/element set defined to which a load could be applied.");
+            ViewGravityLoad vgl = new ViewGravityLoad(new GravityLoad(loadName, "", RegionTypeEnum.Selection));
+            vgl.PopululateDropDownLists(partNames, elementSetNames);
+            item.Tag = vgl;
             lvTypes.Items.Add(item);
             // Centrifugal load -  part, element sets
             name = "Centrifugal load";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            if (partNames.Length > 0 || elementSetNames.Length > 0)
-            {
-                if (partNames.Length > 0) vcfl = new ViewCentrifLoad(new CentrifLoad(loadName, partNames[0], RegionTypeEnum.PartName));
-                else if (elementSetNames.Length > 0) vcfl = new ViewCentrifLoad(new CentrifLoad(loadName, elementSetNames[0], RegionTypeEnum.ElementSetName));
-                vcfl.PopululateDropDownLists(partNames, elementSetNames);
-                item.Tag = vcfl;
-            }
-            else item.Tag = new ViewError("There is no part/element set defined to which a load could be applied.");
+            ViewCentrifLoad vcfl = new ViewCentrifLoad(new CentrifLoad(loadName, "", RegionTypeEnum.Selection));
+            vcfl.PopululateDropDownLists(partNames, elementSetNames);
+            item.Tag = vcfl;
             lvTypes.Items.Add(item);
             // Pre-tension load
             name = "Pre-tension";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            if (elementBasedSurfaceNames.Length > 0)
-            {
-                vptl = new ViewPreTensionLoad(new PreTensionLoad(loadName, elementBasedSurfaceNames[0], 0));
-                vptl.PopululateDropDownLists(elementBasedSurfaceNames);
-                item.Tag = vptl;
-            }
-            else item.Tag = new ViewError("There is no element based surface defined to which a load could be applied.");
+            ViewPreTensionLoad vptl = new ViewPreTensionLoad(new PreTensionLoad(loadName, "", RegionTypeEnum.Selection, 0));
+            vptl.PopululateDropDownLists(elementBasedSurfaceNames);
+            item.Tag = vptl;
             lvTypes.Items.Add(item);
         }
         private string GetLoadName(string name)
@@ -484,7 +479,6 @@ namespace PrePoMax.Forms
             //
             return name;
         }
-        //
         private bool CheckIfStepSupportsLoads()
         {
             Step step = _controller.GetStep(_stepName);
@@ -493,6 +487,74 @@ namespace PrePoMax.Forms
             {
                 MessageBox.Show("The selected step does not support loads.", "Warning");
                 return false;
+            }
+        }
+        private void HighlightLoad()
+        {
+            try
+            {
+                _controller.ClearSelectionHistory();
+                //
+                if (_viewLoad == null) { }
+                else if (FELoad is CLoad || FELoad is MomentLoad || FELoad is DLoad || FELoad is STLoad 
+                         || FELoad is GravityLoad || FELoad is CentrifLoad || FELoad is PreTensionLoad)
+                {
+                    if (FELoad.RegionType == RegionTypeEnum.NodeSetName ||
+                        FELoad.RegionType == RegionTypeEnum.ReferencePointName ||
+                        FELoad.RegionType == RegionTypeEnum.SurfaceName ||
+                        FELoad.RegionType == RegionTypeEnum.PartName ||
+                        FELoad.RegionType == RegionTypeEnum.ElementSetName)
+                    {
+                        _controller.Highlight3DObjects(new object[] { FELoad.RegionName });
+                    }
+                    else if (FELoad.RegionType == RegionTypeEnum.Selection)
+                    {
+                        SetSelectItem();
+                        //
+                        if (FELoad.CreationData != null) _controller.Selection = FELoad.CreationData.DeepClone();
+                        _controller.HighlightSelection();
+                    }
+                    else throw new NotImplementedException();
+                }
+                else throw new NotSupportedException();
+            }
+            catch { }
+        }
+        private void ShowHideSelectionForm()
+        {
+            if (FELoad != null && FELoad.RegionType == RegionTypeEnum.Selection)
+                ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
+            else
+                ItemSetDataEditor.SelectionForm.Hide();
+        }
+        private void SetSelectItem()
+        {
+            if (FELoad is null) { }
+            else if (FELoad is CLoad) _controller.SetSelectItemToNode();
+            else if (FELoad is MomentLoad) _controller.SetSelectItemToNode();
+            else if (FELoad is DLoad) _controller.SetSelectItemToSurface();
+            else if (FELoad is STLoad) _controller.SetSelectItemToSurface();
+            else if (FELoad is GravityLoad) _controller.SetSelectItemToPart();
+            else if (FELoad is CentrifLoad) _controller.SetSelectItemToPart();
+            else if (FELoad is PreTensionLoad) _controller.SetSelectItemToSurface();
+        }
+
+        //
+        public void SelectionChanged(int[] ids)
+        {
+            if (FELoad != null && FELoad.RegionType == RegionTypeEnum.Selection)
+            {
+                if (FELoad is CLoad || FELoad is MomentLoad || FELoad is DLoad || FELoad is STLoad
+                    || FELoad is GravityLoad || FELoad is CentrifLoad || FELoad is PreTensionLoad)
+                {
+                    FELoad.CreationIds = ids;
+                    FELoad.CreationData = _controller.Selection.DeepClone();
+                    //
+                    propertyGrid.Refresh();
+                    //
+                    _propertyItemChanged = true;
+                }
+                else throw new NotSupportedException();
             }
         }
     }

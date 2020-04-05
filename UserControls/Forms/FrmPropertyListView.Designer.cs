@@ -106,6 +106,7 @@
             this.lvTypes.UseCompatibleStateImageBehavior = false;
             this.lvTypes.View = System.Windows.Forms.View.List;
             this.lvTypes.SelectedIndexChanged += new System.EventHandler(this.lvTypes_SelectedIndexChanged);
+            this.lvTypes.MouseUp += new System.Windows.Forms.MouseEventHandler(this.lvTypes_MouseUp);
             // 
             // FrmPropertyListView
             // 

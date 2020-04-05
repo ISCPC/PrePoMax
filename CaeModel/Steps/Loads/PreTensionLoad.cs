@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeMesh;
 using DynamicTypeDescriptor;
+using CaeGlobals;
 
 namespace CaeModel
 {
@@ -16,13 +17,13 @@ namespace CaeModel
         [StandardValue("Displacement", Description = "Pre-tension by displacement.")]
         Displacement = 1
     }
-
-
+    //
     [Serializable]
     public class PreTensionLoad : Load
     {
         // Variables                                                                                                                
         private string _surfaceName;
+        private RegionTypeEnum _regionType;
         private bool _autoComputeDirection;
         private double _x;
         private double _y;
@@ -32,6 +33,8 @@ namespace CaeModel
 
 
         // Properties                                                                                                               
+        public override string RegionName { get { return _surfaceName; } set { _surfaceName = value; } }
+        public override RegionTypeEnum RegionType { get { return _regionType; } set { _regionType = value; } }
         public string SurfaceName { get { return _surfaceName; } set { _surfaceName = value; } }
         public bool AutoComputeDirection { get { return _autoComputeDirection; } set { _autoComputeDirection = value; } }
         public double X { get { return _x; } set { _x = value; } }
@@ -42,17 +45,20 @@ namespace CaeModel
 
 
         // Constructors                                                                                                             
-        public PreTensionLoad(string name, string surfaceName, double magnitude)
+        public PreTensionLoad(string name, string surfaceName, RegionTypeEnum regionType, double magnitude)
             : base(name)
         {
             _surfaceName = surfaceName;
+            _regionType = regionType;
             _autoComputeDirection = true;
             _magnitude = magnitude;
         }
-        public PreTensionLoad(string name, string surfaceName, double x, double y, double z, double magnitude)
+        public PreTensionLoad(string name, string surfaceName, RegionTypeEnum regionType,
+                              double x, double y, double z, double magnitude)
             : base(name) 
         {
             _surfaceName = surfaceName;
+            _regionType = regionType;
             _autoComputeDirection = false;
             _x = x;
             _y = y;

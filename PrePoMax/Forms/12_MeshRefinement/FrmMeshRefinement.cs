@@ -121,10 +121,9 @@ namespace PrePoMax.Forms
         {
             _viewFeMeshRefinement = (ViewFeMeshRefinement)propertyGrid.SelectedObject;
             // Check if the name exists
-            if ((_meshRefinementToEditName == null && 
-                 _meshRefinementNames.Contains(_viewFeMeshRefinement.Name)) ||  // named to existing name
-                (_viewFeMeshRefinement.Name != _meshRefinementToEditName && 
-                 _meshRefinementNames.Contains(_viewFeMeshRefinement.Name)))    // renamed to existing name
+            if ((_meshRefinementToEditName == null && _meshRefinementNames.Contains(MeshRefinement.Name)) ||  // named to existing name
+                (MeshRefinement.Name != _meshRefinementToEditName
+                 && _meshRefinementNames.Contains(MeshRefinement.Name))) // renamed to existing name
                 throw new CaeException("The selected name already exists.");
             //
             if (MeshRefinement.GeometryIds == null || MeshRefinement.GeometryIds.Length == 0)
@@ -225,10 +224,6 @@ namespace PrePoMax.Forms
 
 
         // Methods                                                                                                                  
-        public bool PrepareForm(string stepName, string meshRefinementToEditName)
-        {
-            return OnPrepareForm(stepName, meshRefinementToEditName);
-        }
         private string GetMeshRefinementName()
         {
             return NamedClass.GetNewValueName(_meshRefinementNames, "Mesh_Refinement-");

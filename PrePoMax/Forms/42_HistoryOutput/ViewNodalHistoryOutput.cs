@@ -57,17 +57,17 @@ namespace PrePoMax
         //
         [CategoryAttribute("Region")]
         [OrderedDisplayName(2, 10, "Node set")]
-        [DescriptionAttribute("Select the node set which will be used for the history output definition.")]
+        [DescriptionAttribute("Select the node set for the creation of the history output.")]
         public string NodeSetName { get { return _historyOutput.RegionName; } set { _historyOutput.RegionName = value; } }
         //
         [CategoryAttribute("Region")]
         [OrderedDisplayName(3, 10, "Reference point")]
-        [DescriptionAttribute("Select the reference point which will be used for the history output definition.")]
+        [DescriptionAttribute("Select the reference point for the creation of the history output.")]
         public string ReferencePointName { get { return _historyOutput.RegionName; } set { _historyOutput.RegionName = value; } }
         //
         [CategoryAttribute("Region")]
         [OrderedDisplayName(4, 10, "Surface")]
-        [DescriptionAttribute("Select the surface which will be used for the history output definition.")]
+        [DescriptionAttribute("Select the surface for the creation of the history output.")]
         public string SurfaceName { get { return _historyOutput.RegionName; } set { _historyOutput.RegionName = value; } }
 
        
@@ -101,17 +101,6 @@ namespace PrePoMax
             regionTypeListItemsPairs.Add(RegionTypeEnum.SurfaceName, surfaceNames);
             regionTypeListItemsPairs.Add(RegionTypeEnum.ReferencePointName, referencePointNames);
             base.PopululateDropDownLists(regionTypeListItemsPairs);
-        }
-        public override void UpdateRegionVisibility()
-        {
-            base.UpdateRegionVisibility();
-            //
-            CustomPropertyDescriptor cpd;
-            if (base.RegionType == RegionTypeEnum.Selection.ToFriendlyString())
-            {
-                cpd = base.DynamicCustomTypeDescriptor.GetProperty(() => SelectionHidden);
-                cpd.SetIsBrowsable(false);
-            }
         }
     }
 

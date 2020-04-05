@@ -143,7 +143,7 @@ namespace PrePoMax.Forms
             _referencePointToEditName = referencePointToEditName;
             //
             _nodeSetNames = _controller.GetUserNodeSetNames();
-            _surfaceNames = _controller.GetSurfaceNames();
+            _surfaceNames = _controller.GetUserSurfaceNames();
             // Create new reference point
             if (_referencePointToEditName == null)
                 ReferencePoint = new FeReferencePoint(GetReferencePointName(), 0, 0, 0);

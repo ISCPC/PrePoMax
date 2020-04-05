@@ -179,7 +179,7 @@ namespace PrePoMax.Forms
 
             string[] referencePointNames = _controller.GetReferencePointNames();
             string[] nodeSetNames = _controller.GetUserNodeSetNames();
-            string[] surfaceNames = _controller.GetSurfaceNames();
+            string[] surfaceNames = _controller.GetUserSurfaceNames();
             if (referencePointNames == null) referencePointNames = new string[0];
             if (nodeSetNames == null) nodeSetNames = new string[0];
             if (surfaceNames == null) surfaceNames = new string[0];

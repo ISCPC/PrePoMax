@@ -20,23 +20,33 @@ namespace PrePoMax
 
         // Properties                                                                                                               
         public override string Name { get { return _dLoad.Name; } set { _dLoad.Name = value; } }
-
-        [OrderedDisplayName(1, 10, "Surface")]
-        [CategoryAttribute("Data")]
-        [DescriptionAttribute("Select the surface which will be used for the load.")]
+        //
+        [CategoryAttribute("Region")]
+        [OrderedDisplayName(2, 10, "Surface")]
+        [DescriptionAttribute("Select the surface for the creation of the load.")]
+        [Id(3, 2)]
         public string SurfaceName { get { return _dLoad.SurfaceName; } set {_dLoad.SurfaceName = value;} }
-
-        [OrderedDisplayName(2, 10, "Magnitude")]
-        [CategoryAttribute("Data")]
-        [DescriptionAttribute("Magnitude of the pressure load.")]
+        //
+        [CategoryAttribute("Pressure magnitude")]
+        [OrderedDisplayName(0, 10, "Magnitude")]
+        [DescriptionAttribute("The magnitude of the pressure load.")]
+        [Id(1, 3)]
         public double Magnitude { get { return _dLoad.Magnitude; } set { _dLoad.Magnitude = value; } }
+
 
         // Constructors                                                                                                             
         public ViewDLoad(DLoad dLoad)
         {
             _dLoad = dLoad;
+            //
+            Dictionary<RegionTypeEnum, string> regionTypePropertyNamePairs = new Dictionary<RegionTypeEnum, string>();
+            regionTypePropertyNamePairs.Add(RegionTypeEnum.Selection, nameof(SelectionHidden));
+            regionTypePropertyNamePairs.Add(RegionTypeEnum.SurfaceName, nameof(SurfaceName));
+            //
+            base.SetBase(_dLoad, regionTypePropertyNamePairs);
             base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
         }
+
 
         // Methods                                                                                                                  
         public override Load GetBase()
@@ -45,7 +55,10 @@ namespace PrePoMax
         }
         public void PopululateDropDownLists(string[] surfaceNames)
         {
-            base.DynamicCustomTypeDescriptor.PopulateProperty(() => this.SurfaceName, surfaceNames);
+            Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
+            regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
+            regionTypeListItemsPairs.Add(RegionTypeEnum.SurfaceName, surfaceNames);
+            base.PopululateDropDownLists(regionTypeListItemsPairs);
         }
     }
 }

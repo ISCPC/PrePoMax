@@ -9,7 +9,16 @@ using CaeGlobals;
 namespace CaeModel
 {
     [Serializable]
-    public class DisplacementRotation : BoundaryCondition, IMultiRegion
+    public enum DOFType
+    {
+        Free,
+        Zero,
+        Fixed,
+        Prescribed
+    }
+
+    [Serializable]
+    public class DisplacementRotation : BoundaryCondition
     {
         // Variables                                                                                                                
         private RegionTypeEnum _regionType;
@@ -17,8 +26,8 @@ namespace CaeModel
 
 
         // Properties                                                                                                               
-        public string RegionName { get { return _regionName; } set { _regionName = value; } }
-        public RegionTypeEnum RegionType { get { return _regionType; } set { _regionType = value; } }
+        public override string RegionName { get { return _regionName; } set { _regionName = value; } }
+        public override RegionTypeEnum RegionType { get { return _regionType; } set { _regionType = value; } }
         public double U1 { get; set; }
         public double U2 { get; set; }
         public double U3 { get; set; }
@@ -90,6 +99,24 @@ namespace CaeModel
                 return false;
             }
             return true;
+        }
+        public DOFType GetDofType(int dof)
+        {
+            double value;
+            switch (dof)
+            {
+                case 1: value = U1; break;
+                case 2: value = U2; break;
+                case 3: value = U3; break;
+                case 4: value = UR1; break;
+                case 5: value = UR2; break;
+                case 6: value = UR3; break;
+                default: throw new NotSupportedException();
+            }
+            if (double.IsNaN(value)) return DOFType.Free;
+            else if (double.IsPositiveInfinity(value)) return DOFType.Fixed;
+            else if (value == 0) return DOFType.Zero;
+            else return DOFType.Prescribed;
         }
     }
 }

@@ -29,8 +29,8 @@ namespace CaeModel
         private RegionTypeEnum _regionType;
         private string _regionName;
         private TotalsTypeEnum _totals;
-        private Selection _creationData;
         private int[] _creationIds;
+        private Selection _creationData;
 
 
         // Properties                                                                                                               

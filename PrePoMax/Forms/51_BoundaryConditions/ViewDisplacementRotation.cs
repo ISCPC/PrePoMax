@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using CaeGlobals;
 using DynamicTypeDescriptor;
-using CaeGlobals;
 
 namespace PrePoMax
 {
@@ -23,40 +22,46 @@ namespace PrePoMax
         public override string ReferencePointName { get { return _displacementRotation.RegionName; } set { _displacementRotation.RegionName = value; } }
         public override string SurfaceName { get { return _displacementRotation.RegionName; } set { _displacementRotation.RegionName = value; } }
 
-        [OrderedDisplayName(6, 20, "U1")]
         [CategoryAttribute("DOF")]
+        [OrderedDisplayName(0, 10, "U1")]
         [DescriptionAttribute("Displacement in the direction of the first axis.")]
         [TypeConverter(typeof(StringDOFConverter))]
+        [Id(1, 3)]
         public double U1 { get { return _displacementRotation.U1; } set { _displacementRotation.U1 = value; } }
-        
-        [OrderedDisplayName(7, 20, "U2")]
+
         [CategoryAttribute("DOF")]
+        [OrderedDisplayName(1, 10, "U2")]        
         [DescriptionAttribute("Displacement in the direction of the second axis.")]
         [TypeConverter(typeof(StringDOFConverter))]
+        [Id(2, 3)]
         public double U2 { get { return _displacementRotation.U2; } set { _displacementRotation.U2 = value; } }
 
-        [OrderedDisplayName(8, 20, "U3")]
         [CategoryAttribute("DOF")]
+        [OrderedDisplayName(2, 10, "U3")]
         [DescriptionAttribute("Displacement in the direction of the third axis.")]
         [TypeConverter(typeof(StringDOFConverter))]
+        [Id(3, 3)]
         public double U3 { get { return _displacementRotation.U3; } set { _displacementRotation.U3 = value; } }
 
-        [OrderedDisplayName(9, 20, "UR1")]
         [CategoryAttribute("DOF")]
+        [OrderedDisplayName(3, 10, "UR1")]
         [DescriptionAttribute("Rotation around the first axis.")]
         [TypeConverter(typeof(StringDOFConverter))]
+        [Id(4, 3)]
         public double UR1 { get { return _displacementRotation.UR1; } set { _displacementRotation.UR1 = value; } }
 
-        [OrderedDisplayName(10, 20, "UR2")]
         [CategoryAttribute("DOF")]
+        [OrderedDisplayName(4, 10, "UR2")]
         [DescriptionAttribute("Rotation around the second axis.")]
         [TypeConverter(typeof(StringDOFConverter))]
+        [Id(5, 3)]
         public double UR2 { get { return _displacementRotation.UR2; } set { _displacementRotation.UR2 = value; } }
 
-        [OrderedDisplayName(11, 20, "UR3")]
         [CategoryAttribute("DOF")]
+        [OrderedDisplayName(5, 10, "UR3")]
         [DescriptionAttribute("Rotation around the third axis.")]
         [TypeConverter(typeof(StringDOFConverter))]
+        [Id(6, 3)]
         public double UR3 { get { return _displacementRotation.UR3; } set { _displacementRotation.UR3 = value; } }
 
 
@@ -65,12 +70,13 @@ namespace PrePoMax
         {
             // The order is important
             _displacementRotation = displacementRotation;
-
+            //
             Dictionary<RegionTypeEnum, string> regionTypePropertyNamePairs = new Dictionary<RegionTypeEnum, string>();
-            regionTypePropertyNamePairs.Add(RegionTypeEnum.NodeSetName, CaeGlobals.Tools.GetPropertyName(() => this.NodeSetName));
-            regionTypePropertyNamePairs.Add(RegionTypeEnum.SurfaceName, CaeGlobals.Tools.GetPropertyName(() => this.SurfaceName));
-            regionTypePropertyNamePairs.Add(RegionTypeEnum.ReferencePointName, CaeGlobals.Tools.GetPropertyName(() => this.ReferencePointName));
-
+            regionTypePropertyNamePairs.Add(RegionTypeEnum.Selection, nameof(SelectionHidden));
+            regionTypePropertyNamePairs.Add(RegionTypeEnum.NodeSetName, nameof(NodeSetName));
+            regionTypePropertyNamePairs.Add(RegionTypeEnum.SurfaceName, nameof(SurfaceName));
+            regionTypePropertyNamePairs.Add(RegionTypeEnum.ReferencePointName, nameof(ReferencePointName));
+            //
             base.SetBase(_displacementRotation, regionTypePropertyNamePairs);
             base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
         }
@@ -79,11 +85,12 @@ namespace PrePoMax
         // Methods                                                                                                                  
         public override CaeModel.BoundaryCondition GetBase()
         {
-            return (CaeModel.BoundaryCondition)_displacementRotation;
+            return _displacementRotation;
         }
         public void PopululateDropDownLists(string[] nodeSetNames, string[] surfaceNames, string[] referencePointNames)
         {
             Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
+            regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
             regionTypeListItemsPairs.Add(RegionTypeEnum.NodeSetName, nodeSetNames);
             regionTypeListItemsPairs.Add(RegionTypeEnum.SurfaceName, surfaceNames);
             regionTypeListItemsPairs.Add(RegionTypeEnum.ReferencePointName, referencePointNames);

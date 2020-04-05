@@ -2455,8 +2455,6 @@ namespace PrePoMax
             {
                 if (_controller.Model.Mesh == null) return;
                 //
-                SinglePointDataEditor.ParentForm = _frmReferencePoint;
-                SinglePointDataEditor.Controller = _controller;
                 ShowForm(_frmReferencePoint, "Create Reference Point", null);
             }
             catch (Exception ex)
@@ -2997,10 +2995,18 @@ namespace PrePoMax
         private void CreateBoundaryCondition(string stepName)
         {
             if (_controller.Model.Mesh == null) return;
+            // Data editor
+            ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
+            ItemSetDataEditor.ParentForm = _frmBoundaryCondition;
+            _frmSelectItemSet.SetOnlyGeometrySelection(false);
             ShowForm(_frmBoundaryCondition, "Create Boundary Condition", stepName, null);
         }
         private void EditBoundaryCondition(string stepName, string boundaryConditionName)
         {
+            // Data editor
+            ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
+            ItemSetDataEditor.ParentForm = _frmBoundaryCondition;
+            _frmSelectItemSet.SetOnlyGeometrySelection(false);
             ShowForm(_frmBoundaryCondition, "Edit Boundary Condition", stepName, boundaryConditionName);
         }
         private void HideBoundaryConditions(string stepName, string[] boundaryConditionNames)
@@ -3108,10 +3114,18 @@ namespace PrePoMax
         private void CreateLoad(string stepName)
         {
             if (_controller.Model.Mesh == null) return;
+            // Data editor
+            ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
+            ItemSetDataEditor.ParentForm = _frmLoad;
+            _frmSelectItemSet.SetOnlyGeometrySelection(false);
             ShowForm(_frmLoad, "Create Load", stepName, null);
         }
         private void EditLoad(string stepName, string loadName)
         {
+            // Data editor
+            ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
+            ItemSetDataEditor.ParentForm = _frmLoad;
+            _frmSelectItemSet.SetOnlyGeometrySelection(false);
             ShowForm(_frmLoad, "Edit Load", stepName, loadName);
         }
         private void HideLoads(string stepName, string[] loadNames)
@@ -3646,6 +3660,8 @@ namespace PrePoMax
             if (_frmSection != null && _frmSection.Visible) _frmSection.SelectionChanged(ids);
             //
             if (_frmHistoryOutput != null && _frmHistoryOutput.Visible) _frmHistoryOutput.SelectionChanged(ids);
+            if (_frmBoundaryCondition != null && _frmBoundaryCondition.Visible) _frmBoundaryCondition.SelectionChanged(ids);
+            if (_frmLoad != null && _frmLoad.Visible) _frmLoad.SelectionChanged(ids);
         }
         public void SetSelectBy(vtkSelectBy selectBy)
         {

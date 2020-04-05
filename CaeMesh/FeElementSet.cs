@@ -12,6 +12,7 @@ namespace CaeMesh
     {
         // Variables                                                                                                                
         private Selection _creationData;
+        private string[] _elementSetNames;
 
 
         // Properties                                                                                                               
@@ -23,13 +24,21 @@ namespace CaeMesh
             : base(name, labels)
         {
             _creationData = null;
+            _elementSetNames = null;
+        }
+        public FeElementSet(string name, string[] elementSetNames)
+            : base(name, null)
+        {
+            _creationData = null;
+            _elementSetNames = elementSetNames.ToArray();
         }
 
         public FeElementSet(FeElementSet elementSet)
            : base(elementSet.Name, elementSet.Labels)
         {
-            _creationData = elementSet.CreationData;
-
+            _creationData = elementSet.CreationData.DeepClone();
+            _elementSetNames = elementSet._elementSetNames.ToArray();
+            //
             _active = elementSet.Active;
             _visible = elementSet.Visible;
             _valid = elementSet.Valid;
