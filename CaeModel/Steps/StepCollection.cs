@@ -65,7 +65,7 @@ namespace CaeModel
             }
             _steps = newSteps;
         }
-        public void RemoveStep(string stepName)
+        public Step RemoveStep(string stepName)
         {
             Step stepToRemove = null;
             foreach (var step in _steps)
@@ -77,9 +77,10 @@ namespace CaeModel
                 }
             }
             if (stepToRemove != null) _steps.Remove(stepToRemove);
-
+            //
+            return stepToRemove;
         }
-
+        // History
         public void AddHistoryOutput(HistoryOutput historyOutput, string stepName)
         {
             foreach (var step in _steps)
@@ -96,7 +97,20 @@ namespace CaeModel
             }
             return names.ToArray();
         }
-
+        public Dictionary<string, int> GetHistoryOutputRegionsCount()
+        {
+            Dictionary<string, int> regionsCount = new Dictionary<string, int>();
+            foreach (var step in _steps)
+            {
+                foreach (var entry in step.HistoryOutputs)
+                {
+                    if (regionsCount.ContainsKey(entry.Value.RegionName)) regionsCount[entry.Value.RegionName]++;
+                    else regionsCount.Add(entry.Value.RegionName, 1);
+                }
+            }
+            return regionsCount;
+        }
+        // Field
         public void AddFieldOutput(FieldOutput fieldOutput, string stepName)
         {
             foreach (var step in _steps)
@@ -113,7 +127,13 @@ namespace CaeModel
             }
             return names.ToArray();
         }
-
+        // Boundary condition
+        public string[] GetAllBoundaryConditionNames()
+        {
+            HashSet<string> allNames = new HashSet<string>();
+            foreach (var step in _steps) allNames.UnionWith(step.BoundaryConditions.Keys);
+            return allNames.ToArray();
+        }
         public void AddBoundaryCondition(BoundaryCondition boundaryCondition, string stepName)
         {
             foreach (var step in _steps)
@@ -121,7 +141,26 @@ namespace CaeModel
                 if (step.Name == stepName) step.AddBoundaryCondition(boundaryCondition);
             }
         }
-
+        public Dictionary<string, int> GetBoundaryConditionRegionsCount()
+        {
+            Dictionary<string, int> regionsCount = new Dictionary<string, int>();
+            foreach (var step in _steps)
+            {
+                foreach (var entry in step.BoundaryConditions)
+                {
+                    if (regionsCount.ContainsKey(entry.Value.RegionName)) regionsCount[entry.Value.RegionName]++;
+                    else regionsCount.Add(entry.Value.RegionName, 1);
+                }
+            }
+            return regionsCount;
+        }
+        // Load
+        public string[] GetAllLoadNames()
+        {
+            HashSet<string> allNames = new HashSet<string>();
+            foreach (var step in _steps) allNames.UnionWith(step.Loads.Keys);
+            return allNames.ToArray();
+        }
         public void AddLoad(Load load, string stepName)
         {
             foreach (var step in _steps)
@@ -129,9 +168,19 @@ namespace CaeModel
                 if (step.Name == stepName)  step.AddLoad(load);
             }
         }
+        public Dictionary<string, int> GetLoadRegionsCount()
+        {
+            Dictionary<string, int> regionsCount = new Dictionary<string, int>();
+            foreach (var step in _steps)
+            {
+                foreach (var entry in step.Loads)
+                {
+                    if (regionsCount.ContainsKey(entry.Value.RegionName)) regionsCount[entry.Value.RegionName]++;
+                    else regionsCount.Add(entry.Value.RegionName, 1);
+                }
+            }
+            return regionsCount;
+        }
 
-      
-
-       
     }
 }

@@ -262,7 +262,7 @@ namespace PrePoMax.Forms
             propertyGrid.SelectedObject = null;
             //
             _stepName = stepName;
-            _loadNames = _controller.GetLoadNames(stepName);
+            _loadNames = _controller.GetAllLoadNames();
             _loadToEditName = loadToEditName;
             //
             if (!CheckIfStepSupportsLoads()) return false;

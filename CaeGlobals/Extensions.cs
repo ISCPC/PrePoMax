@@ -196,5 +196,17 @@ namespace CaeGlobals
                     selectBy == vtkSelectBy.GeometryEdgeAngle ||
                     selectBy == vtkSelectBy.GeometrySurfaceAngle);
         }
+
+        // String[]
+        public static string ToRows(this string[] names)
+        {
+            string rows = "";
+            for (int i = 0; i < names.Length; i++)
+            {
+                rows += names[i];
+                if (i < names.Length - 1) rows += Environment.NewLine;
+            }
+            return rows;
+        }
     }
 }

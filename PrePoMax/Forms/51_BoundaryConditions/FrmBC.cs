@@ -191,7 +191,7 @@ namespace PrePoMax.Forms
             propertyGrid.SelectedObject = null;
             //
             _stepName = stepName;
-            _boundaryConditionNames = _controller.GetBoundaryConditionNames(stepName);
+            _boundaryConditionNames = _controller.GetAllBoundaryConditionNames();
             _boundaryConditionToEditName = boundaryConditionToEditName;
             //
             string[] nodeSetNames = _controller.GetUserNodeSetNames();

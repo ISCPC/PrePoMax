@@ -3285,7 +3285,7 @@ namespace PrePoMax
         {
             _model.StepCollection.AddStep(step);
             _form.AddTreeNode(ViewGeometryModelResults.Model, step, null);
-
+            //
             Update(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public Step GetStep(string stepName)
@@ -3300,17 +3300,23 @@ namespace PrePoMax
         {
             _model.StepCollection.ReplaceStep(oldStepName, newStep);
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldStepName, newStep, null);
-
+            //
             Update(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void RemoveSteps(string[] stepNames)
         {
+            Step step;
             foreach (var name in stepNames)
             {
+                step = _model.StepCollection.GetStep(name);
+                RemoveHistoryOutputs(name, step.HistoryOutputs.Keys.ToArray());
+                RemoveFieldOutputs(name, step.FieldOutputs.Keys.ToArray());
+                RemoveBoundaryConditions(name, step.BoundaryConditions.Keys.ToArray());
+                RemoveLoads(name, step.Loads.Keys.ToArray());
                 _model.StepCollection.RemoveStep(name);
                 _form.RemoveTreeNode<Step>(ViewGeometryModelResults.Model, name, null);
             }
-
+            //
             Update(UpdateType.Check | UpdateType.RedrawSymbols);
         }
 
@@ -3426,8 +3432,11 @@ namespace PrePoMax
         private void DeleteSelectionBasedHistoryOutputSets(string stepName, string oldHistoryOutputName)
         {
             HistoryOutput historyOutput = _model.StepCollection.GetStep(stepName).HistoryOutputs[oldHistoryOutputName];
+            //
+            Dictionary<string, int> regionsCount = _model.StepCollection.GetHistoryOutputRegionsCount();
             // Delete previously created sets
-            if (historyOutput.CreationData != null && historyOutput.RegionName != null)
+            if (historyOutput.CreationData != null && historyOutput.RegionName != null &&
+                regionsCount[historyOutput.RegionName] == 1)
             {
                 if (historyOutput is NodalHistoryOutput) RemoveNodeSets(new string[] { historyOutput.RegionName });
                 else if (historyOutput is ElementHistoryOutput) RemoveElementSets(new string[] { historyOutput.RegionName });
@@ -3531,9 +3540,9 @@ namespace PrePoMax
 
         //******************************************************************************************
 
-        public string[] GetBoundaryConditionNames(string stepName)
+        public string[] GetAllBoundaryConditionNames()
         {
-            return _model.StepCollection.GetStep(stepName).BoundaryConditions.Keys.ToArray();
+            return _model.StepCollection.GetAllBoundaryConditionNames();
         }
         public void AddBoundaryCondition(string stepName, BoundaryCondition boundaryCondition)
         {
@@ -3610,7 +3619,7 @@ namespace PrePoMax
                     name = FeMesh.GetNextFreeSelectionName(_model.Mesh.Surfaces) + boundaryCondition.Name;
                     FeSurface surface = new FeSurface(name, boundaryCondition.CreationIds,
                                                       boundaryCondition.CreationData.DeepClone());
-                    surface.Internal = true;
+                    surface.Internal = false;
                     AddSurface(surface);
                     //
                     boundaryCondition.RegionName = name;
@@ -3629,8 +3638,11 @@ namespace PrePoMax
         {
             BoundaryCondition boundaryCondition = 
                 _model.StepCollection.GetStep(stepName).BoundaryConditions[oldBoundaryConditionName];
+            //
+            Dictionary<string, int> regionsCount = _model.StepCollection.GetBoundaryConditionRegionsCount();
             // Delete previously created sets
-            if (boundaryCondition.CreationData != null && boundaryCondition.RegionName != null)
+            if (boundaryCondition.CreationData != null && boundaryCondition.RegionName != null &&
+                regionsCount[boundaryCondition.RegionName] == 1)
             {
                 if (boundaryCondition is DisplacementRotation || boundaryCondition is SubmodelBC)
                     RemoveSurfaces(new string[] { boundaryCondition.RegionName }, false);
@@ -3670,9 +3682,9 @@ namespace PrePoMax
 
         //******************************************************************************************
 
-        public string[] GetLoadNames(string stepName)
+        public string[] GetAllLoadNames()
         {
-            return _model.StepCollection.GetStep(stepName).Loads.Keys.ToArray();
+            return _model.StepCollection.GetAllLoadNames();
         }
         public void AddLoad(string stepName, Load load)
         {
@@ -3785,8 +3797,10 @@ namespace PrePoMax
         private void DeleteSelectionBasedLoadSets(string stepName, string oldLoadName)
         {
             Load load = _model.StepCollection.GetStep(stepName).Loads[oldLoadName];
+            //
+            Dictionary<string, int> regionsCount = _model.StepCollection.GetLoadRegionsCount();
             // Delete previously created sets
-            if (load.CreationData != null && load.RegionName != null)
+            if (load.CreationData != null && load.RegionName != null && regionsCount[load.RegionName] == 1)
             {
                 if (load is CLoad || load is MomentLoad)
                     RemoveNodeSets(new string[] { load.RegionName });
