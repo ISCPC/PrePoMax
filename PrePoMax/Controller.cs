@@ -3664,7 +3664,7 @@ namespace PrePoMax
                     name = FeMesh.GetNextFreeSelectionName(_model.Mesh.Surfaces) + boundaryCondition.Name;
                     FeSurface surface = new FeSurface(name, boundaryCondition.CreationIds,
                                                       boundaryCondition.CreationData.DeepClone());
-                    surface.Internal = false;
+                    surface.Internal = true;
                     AddSurface(surface);
                     //
                     boundaryCondition.RegionName = name;
