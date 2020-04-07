@@ -21,42 +21,42 @@ namespace PrePoMax
         public override string NodeSetName { get { return _displacementRotation.RegionName; } set { _displacementRotation.RegionName = value; } }
         public override string ReferencePointName { get { return _displacementRotation.RegionName; } set { _displacementRotation.RegionName = value; } }
         public override string SurfaceName { get { return _displacementRotation.RegionName; } set { _displacementRotation.RegionName = value; } }
-
+        //
         [CategoryAttribute("DOF")]
         [OrderedDisplayName(0, 10, "U1")]
         [DescriptionAttribute("Displacement in the direction of the first axis.")]
         [TypeConverter(typeof(StringDOFConverter))]
         [Id(1, 3)]
         public double U1 { get { return _displacementRotation.U1; } set { _displacementRotation.U1 = value; } }
-
+        //
         [CategoryAttribute("DOF")]
         [OrderedDisplayName(1, 10, "U2")]        
         [DescriptionAttribute("Displacement in the direction of the second axis.")]
         [TypeConverter(typeof(StringDOFConverter))]
         [Id(2, 3)]
         public double U2 { get { return _displacementRotation.U2; } set { _displacementRotation.U2 = value; } }
-
+        //
         [CategoryAttribute("DOF")]
         [OrderedDisplayName(2, 10, "U3")]
         [DescriptionAttribute("Displacement in the direction of the third axis.")]
         [TypeConverter(typeof(StringDOFConverter))]
         [Id(3, 3)]
         public double U3 { get { return _displacementRotation.U3; } set { _displacementRotation.U3 = value; } }
-
+        //
         [CategoryAttribute("DOF")]
         [OrderedDisplayName(3, 10, "UR1")]
         [DescriptionAttribute("Rotation around the first axis.")]
         [TypeConverter(typeof(StringDOFConverter))]
         [Id(4, 3)]
         public double UR1 { get { return _displacementRotation.UR1; } set { _displacementRotation.UR1 = value; } }
-
+        //
         [CategoryAttribute("DOF")]
         [OrderedDisplayName(4, 10, "UR2")]
         [DescriptionAttribute("Rotation around the second axis.")]
         [TypeConverter(typeof(StringDOFConverter))]
         [Id(5, 3)]
         public double UR2 { get { return _displacementRotation.UR2; } set { _displacementRotation.UR2 = value; } }
-
+        //
         [CategoryAttribute("DOF")]
         [OrderedDisplayName(5, 10, "UR3")]
         [DescriptionAttribute("Rotation around the third axis.")]

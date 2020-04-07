@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CaeMesh;
 using System.ComponentModel;
 using CaeGlobals;
+using DynamicTypeDescriptor;
 
 namespace PrePoMax
 {
@@ -17,9 +18,9 @@ namespace PrePoMax
 
         // Properties                                                                                                               
         [CategoryAttribute("Data")]
-        [ReadOnly(false)]
         [OrderedDisplayName(0, 10, "Name")]
         [DescriptionAttribute("Name of the constraint.")]
+        [Id(1, 1)]
         public abstract string Name { get; set; }
 
 

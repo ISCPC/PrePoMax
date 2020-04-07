@@ -234,7 +234,7 @@ namespace PrePoMax.Forms
             {
                 if (_controller != null)
                 {
-                    _controller.ClearSelectionHistory();
+                    _controller.ClearSelectionHistoryAndSelectionChanged();
                     //
                     _controller.Selection.SelectItem = vtkSelectItem.Geometry;
                     // Surface.CreationData is set to null when the CreatedFrom is changed

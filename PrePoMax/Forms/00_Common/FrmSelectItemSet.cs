@@ -153,7 +153,7 @@ namespace PrePoMax
             // Clear selection - if geometry selection type changed by the USER: 
             // sender != null                                                    
             // Visible = true - user action                                      
-            if (sender != null && Visible && selectionTypeChanged) _controller.ClearSelectionHistory();
+            if (sender != null && Visible && selectionTypeChanged) _controller.ClearSelectionHistoryAndSelectionChanged();
 
             // Enable/disable Textboxes
             tbGeometryEdgeAngle.Enabled = rbGeometryEdgeAngle.Checked;
@@ -219,7 +219,7 @@ namespace PrePoMax
         }
         private void btnClearSelection_Click(object sender, EventArgs e)
         {
-            _controller.ClearSelectionHistory();
+            _controller.ClearSelectionHistoryAndSelectionChanged();
         }
         private void btnMoreLess_Click(object sender, EventArgs e)
         {

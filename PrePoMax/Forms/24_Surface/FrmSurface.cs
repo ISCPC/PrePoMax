@@ -198,7 +198,7 @@ namespace PrePoMax.Forms
                 //
                 if (_controller != null)
                 {
-                    _controller.ClearSelectionHistory();
+                    _controller.ClearSelectionHistoryAndSelectionChanged();
                     //
                     if (Surface.CreatedFrom == FeSurfaceCreatedFrom.Selection)
                     {

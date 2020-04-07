@@ -296,7 +296,7 @@ namespace PrePoMax.Forms
         {
             try
             {
-                _controller.ClearSelectionHistory();
+                _controller.ClearSelectionHistoryAndSelectionChanged();
                 //
                 if (_viewBc == null) { }
                 else if (BoundaryCondition is DisplacementRotation || BoundaryCondition is SubmodelBC)
@@ -312,8 +312,10 @@ namespace PrePoMax.Forms
                         SetSelectItem();
                         //
                         if (BoundaryCondition.CreationData != null)
+                        {
                             _controller.Selection = BoundaryCondition.CreationData.DeepClone();
-                        _controller.HighlightSelection();
+                            _controller.HighlightSelection();
+                        }
                     }
                     else throw new NotImplementedException();
                 }

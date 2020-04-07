@@ -101,7 +101,7 @@ namespace PrePoMax.Forms
                     default:
                         break;
                 }
-                _controller.ClearSelectionHistory();
+                _controller.ClearSelectionHistoryAndSelectionChanged();
             }
         }
         private void btnClose_Click(object sender, EventArgs e)
@@ -124,7 +124,7 @@ namespace PrePoMax.Forms
             if (!this.Visible)
             {
                 _controller.SelectBy = vtkSelectBy.Off;
-                _controller.ClearSelectionHistory();
+                _controller.ClearSelectionHistoryAndSelectionChanged();
             }                
         }
 
@@ -167,7 +167,7 @@ namespace PrePoMax.Forms
                     // Three nodes
                     else if (ids.Length == 3) ThreeNodesPicked(ids[0], ids[1], ids[2]);
                     //
-                    _controller.ClearSelectionHistory();
+                    _controller.ClearSelectionHistoryAndSelectionChanged();
                     HighlightNodes();
                 }
             }
@@ -220,7 +220,7 @@ namespace PrePoMax.Forms
             Form_WriteDataToOutput(data);
             Form_WriteDataToOutput("");
             //
-            _controller.ClearSelectionHistory();
+            _controller.ClearSelectionHistoryAndSelectionChanged();
             _controller.HighlightElement(id);
         }
         public void OneEdgePicked(int id)
@@ -238,7 +238,7 @@ namespace PrePoMax.Forms
             Form_WriteDataToOutput(data);
             Form_WriteDataToOutput("");
             //
-            _controller.ClearSelectionHistory();
+            _controller.ClearSelectionHistoryAndSelectionChanged();
             //
             _controller.HighlightItemsByGeometryEdgeIds(new int[] { id });
         }
@@ -257,7 +257,7 @@ namespace PrePoMax.Forms
             Form_WriteDataToOutput(data);
             Form_WriteDataToOutput("");
             //
-            _controller.ClearSelectionHistory();    // in order to prevent SHIFT ADD
+            _controller.ClearSelectionHistoryAndSelectionChanged();    // in order to prevent SHIFT ADD
             //
             _controller.HighlightItemsBySurfaceIds(new int[] { id });
         }
@@ -286,9 +286,9 @@ namespace PrePoMax.Forms
             Form_WriteDataToOutput(data);
             Form_WriteDataToOutput("");
             //
-            _controller.ClearSelectionHistory();
+            _controller.ClearSelectionHistoryAndSelectionChanged();
             //
-            _controller.Highlight3DObjects(_controller.CurrentView, new object[] { part });
+            _controller.Highlight3DObjects(new object[] { part });
         }
         private void OutputAssemblyData()
         {

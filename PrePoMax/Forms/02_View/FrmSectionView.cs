@@ -198,7 +198,7 @@ namespace PrePoMax.Forms
         // IFormBase
         public bool PrepareForm(string stepName, string partToEditName)
         {
-            _controller.ClearSelectionHistory();
+            _controller.ClearSelectionHistoryAndSelectionChanged();
             _sectionViewParameters.Clear();
 
 
@@ -255,7 +255,7 @@ namespace PrePoMax.Forms
                 this.Enabled = true;
                 _controller.SelectBy = vtkSelectBy.Off;
                 _controller.Selection.SelectItem = vtkSelectItem.None;
-                _controller.ClearSelectionHistory();
+                _controller.ClearSelectionHistoryAndSelectionChanged();
                 //
                 PointOrNormalChanged();
                 //

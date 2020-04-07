@@ -22,11 +22,13 @@ namespace PrePoMax
         [OrderedDisplayName(1, 10, "Slave surface")]
         [CategoryAttribute("Data")]
         [DescriptionAttribute("Select the slave surface which will be used for the tie definition.")]
+        [Id(2, 1)]
         public string SlaveSurfaceName { get { return _tie.SlaveSurfaceName; } set { _tie.SlaveSurfaceName = value; } }
 
         [OrderedDisplayName(2, 10, "Master surface")]
         [CategoryAttribute("Data")]
         [DescriptionAttribute("Select the master surface which will be used for the tie definition.")]
+        [Id(3, 1)]
         public string MasterSurfaceName { get { return _tie.MasterSurfaceName; } set { _tie.MasterSurfaceName = value; } }
 
         [OrderedDisplayName(3, 10, "Position tolerance")]
@@ -34,11 +36,13 @@ namespace PrePoMax
         [DescriptionAttribute("Enter the value of largest distance from the master surface for which the slave nodes will be included in the tie constraint."
                               + " Default value equals 2.5 % of the typical element size.")]
         [TypeConverter(typeof(StringPosTolConverter))]
+        [Id(4, 1)]
         public double PositionTolerance { get { return _tie.PositionTolerance; } set { _tie.PositionTolerance = value; } }
 
         [OrderedDisplayName(4, 10, "Adjust")]
         [CategoryAttribute("Data")]
         [DescriptionAttribute("Set adjust to No to prevent the projection of the slave nodes on the master surface.")]
+        [Id(5, 1)]
         public bool Adjust { get { return _tie.Adjust; } set { _tie.Adjust = value; } }
 
 

@@ -24,7 +24,7 @@ namespace PrePoMax.Forms
         // Properties                                                                                                               
         public Constraint Constraint
         {
-            get { return _viewConstraint.GetBase(); }
+            get { return _viewConstraint != null ? _viewConstraint.GetBase() : null; }
             set
             {
                 var clone = value.DeepClone();
@@ -39,10 +39,10 @@ namespace PrePoMax.Forms
         public FrmConstraint(Controller controller)
         {
             InitializeComponent();
-
+            //
             _controller = controller;
             _viewConstraint = null;
-
+            //
             _selectedPropertyGridItemChangedEventActive = true;
         }
         private void InitializeComponent()
@@ -97,181 +97,186 @@ namespace PrePoMax.Forms
         {
             if (lvTypes.Enabled && lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)
             {
-                propertyGrid.SelectedObject = lvTypes.SelectedItems[0].Tag;
+                object itemTag = lvTypes.SelectedItems[0].Tag;
+                if (itemTag is ViewError) _viewConstraint = null;
+                else if (itemTag is ViewRigidBody vrd) _viewConstraint = vrd;
+                else if (itemTag is ViewTie vt) _viewConstraint = vt;
+                else throw new NotImplementedException();
+                //
+                SetSelectItem();
+                //
+                ShowHideSelectionForm();
+                //
+                propertyGrid.SelectedObject = itemTag;
                 propertyGrid.Select();
-
-                if (propertyGrid.SelectedObject is ViewRigidBody vrb)
-                    propertyGrid.ContextMenuStrip = null;
-                else if (propertyGrid.SelectedObject is ViewTie vt)
-                    propertyGrid.ContextMenuStrip = cmsPropertyGrid;
+                //
+                HighlightConstraint();
+                // Context menu
+                if (propertyGrid.SelectedObject is ViewRigidBody vrb) propertyGrid.ContextMenuStrip = null;
+                else if (propertyGrid.SelectedObject is ViewTie vt) propertyGrid.ContextMenuStrip = cmsPropertyGrid;
             }
         }
         protected override void OnPropertyGridSelectedGridItemChanged()
         {
-            object value = propertyGrid.SelectedGridItem.Value;
-            if (value != null)
-            {
-                string valueString = value.ToString();
-                object[] objects = null;
-
-                if (propertyGrid.SelectedObject == null) return;
-                else if (propertyGrid.SelectedObject is ViewError) return;
-                else if (propertyGrid.SelectedObject is ViewRigidBody vrb)
-                {
-                    if (valueString == vrb.NodeSetName) objects = new object[] { vrb.NodeSetName };
-                    else if (valueString == vrb.ReferencePointName) objects = new object[] { vrb.ReferencePointName };
-                    else objects = null;
-                }
-                else if (propertyGrid.SelectedObject is ViewTie vt)
-                {
-                    if (valueString == vt.SlaveSurfaceName) objects = new object[] { vt.SlaveSurfaceName };
-                    else if (valueString == vt.MasterSurfaceName) objects = new object[] { vt.MasterSurfaceName };
-                    else objects = null;
-                }
-                else throw new NotImplementedException();
-
-                _controller.Highlight3DObjects(objects);
-            }
+            if (propertyGrid.SelectedGridItem.PropertyDescriptor == null) return;
+            //
+            string property = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
+            //
+            if (property == nameof(_viewConstraint.RegionType)) ShowHideSelectionForm();
+            //
+            HighlightConstraint();
+            //
+            base.OnPropertyGridSelectedGridItemChanged();
         }
         protected override void OnApply(bool onOkAddNew)
         {
-            if (propertyGrid.SelectedObject == null) throw new CaeException("No item selected.");
-
+            if (propertyGrid.SelectedObject is ViewError ve) throw new CaeGlobals.CaeException(ve.Message);
+            //
             _viewConstraint = (ViewConstraint)propertyGrid.SelectedObject;
-
-            if ((_constraintToEditName == null && _constraintNames.Contains(_viewConstraint.Name)) ||                       // named to existing name
-                (_viewConstraint.Name != _constraintToEditName && _constraintNames.Contains(_viewConstraint.Name)))         // renamed to existing name
+            //
+            if (Constraint == null) throw new CaeException("No constraint was selected.");
+            //
+            if (Constraint is RigidBody rb && rb.RegionType == RegionTypeEnum.Selection &&
+                (rb.CreationIds == null || rb.CreationIds.Length == 0))
+                throw new CaeException("The rigid body region must contain at least one item.");
+            //
+            if ((_constraintToEditName == null && 
+                 _constraintNames.Contains(_viewConstraint.Name)) ||    // named to existing name
+                (_viewConstraint.Name != _constraintToEditName &&
+                 _constraintNames.Contains(_viewConstraint.Name)))      // renamed to existing name
                 throw new CaeException("The selected constraint name already exists.");
-
+            //
             if (_viewConstraint is ViewTie vt)
             {
                 // Check for errors with constructor
                 var tie = new Tie(vt.Name, vt.SlaveSurfaceName, vt.MasterSurfaceName);
             }
-
+            // Create
             if (_constraintToEditName == null)
             {
-                // Create
                 _controller.AddConstraintCommand(Constraint);
             }
-            else
+            // Replace
+            else if (_propertyItemChanged)
             {
-                // Replace
-                if (_propertyItemChanged) _controller.ReplaceConstraintCommand(_constraintToEditName, Constraint);
+                _controller.ReplaceConstraintCommand(_constraintToEditName, Constraint);
             }
+            // If all is successful close the ItemSetSelectionForm - except for OKAddNew
+            if (!onOkAddNew) ItemSetDataEditor.SelectionForm.Hide();
+        }
+        protected override void OnHideOrClose()
+        {
+            // Close the ItemSetSelectionForm
+            ItemSetDataEditor.SelectionForm.Hide();
+            //
+            base.OnHideOrClose();
         }
         protected override bool OnPrepareForm(string stepName, string constraintToEditName)
         {
-            _selectedPropertyGridItemChangedEventActive = false;                             // to prevent clear of the selection
-
-            this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
+            // To prevent clear of the selection
+            _selectedPropertyGridItemChangedEventActive = false;
+            // To prevent the call to frmMain.itemForm_VisibleChanged when minimized
+            this.DialogResult = DialogResult.None;
             this.btnOkAddNew.Visible = constraintToEditName == null;
-
+            //
             _propertyItemChanged = false;
             _constraintNames = null;
             _constraintToEditName = null;
             _viewConstraint = null;
             lvTypes.Items.Clear();
             propertyGrid.SelectedObject = null;
-
+            //
             _constraintNames = _controller.GetConstraintNames();
             _constraintToEditName = constraintToEditName;
-
+            //
             string[] referencePointNames = _controller.GetReferencePointNames();
             string[] nodeSetNames = _controller.GetUserNodeSetNames();
             string[] surfaceNames = _controller.GetUserSurfaceNames();
             if (referencePointNames == null) referencePointNames = new string[0];
             if (nodeSetNames == null) nodeSetNames = new string[0];
             if (surfaceNames == null) surfaceNames = new string[0];
-
+            //
             if (_constraintNames == null)
                 throw new CaeException("The constraint names must be defined first.");
-
+            // Populate list view
             PopulateListOfConstraints(referencePointNames, nodeSetNames, surfaceNames);
-
-            // add constraints                                                                                            
+            // Create new constraint
             if (_constraintToEditName == null)
             {
                 lvTypes.Enabled = true;
                 _viewConstraint = null;
-
-                if (lvTypes.Items.Count == 1) lvTypes.Items[0].Selected = true;
             }
+            // Edit existing constraint
             else
             {
+                // Get and convert a converted load back to selection
                 Constraint = _controller.GetConstraint(_constraintToEditName);    // to clone
-
-                // select the appropriate constraint in the list view - disable event SelectedIndexChanged
+                if (Constraint is RigidBody rb && rb.CreationData != null) rb.RegionType = RegionTypeEnum.Selection;
+                // Select the appropriate constraint in the list view - disable event SelectedIndexChanged
                 _lvTypesSelectedIndexChangedEventActive = false;
                 if (_viewConstraint is ViewRigidBody) lvTypes.Items[0].Selected = true;
                 else if (_viewConstraint is ViewTie) lvTypes.Items[1].Selected = true;
                 lvTypes.Enabled = false;
                 _lvTypesSelectedIndexChangedEventActive = true;
-
+                //
                 if (_viewConstraint is ViewRigidBody vrb)
                 {
                     CheckMissingValueRef(ref referencePointNames, vrb.ReferencePointName, s => { vrb.ReferencePointName = s; });
-                    if (vrb.RegionType == RegionTypeEnum.NodeSetName.ToFriendlyString())
+                    //
+                    if (vrb.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
+                    else if (vrb.RegionType == RegionTypeEnum.NodeSetName.ToFriendlyString())
                         CheckMissingValueRef(ref nodeSetNames, vrb.NodeSetName, s => { vrb.NodeSetName = s; });
                     else if (vrb.RegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
                         CheckMissingValueRef(ref surfaceNames, vrb.SurfaceName, s => { vrb.SurfaceName = s; });
                     else throw new NotSupportedException();
-
+                    //
                     vrb.PopululateDropDownLists(referencePointNames, nodeSetNames, surfaceNames);
-
+                    // Context menu strip
                     propertyGrid.ContextMenuStrip = null;
                 }
                 else if (_viewConstraint is ViewTie vt)
                 {
                     CheckMissingValueRef(ref surfaceNames, vt.SlaveSurfaceName, s => { vt.SlaveSurfaceName = s; });
                     CheckMissingValueRef(ref surfaceNames, vt.MasterSurfaceName, s => { vt.MasterSurfaceName = s; });
-
+                    //
                     vt.PopululateDropDownLists(surfaceNames);
-
+                    // Context menu strip
                     propertyGrid.ContextMenuStrip = cmsPropertyGrid;
                 }
                 else throw new NotSupportedException();
-
+                //
                 propertyGrid.SelectedObject = _viewConstraint;
                 propertyGrid.Select();
             }
             _selectedPropertyGridItemChangedEventActive = true;
-
+            //
+            SetSelectItem();
+            //
+            ShowHideSelectionForm();
+            //
+            HighlightConstraint(); // must be here if called from the menu
+            //
             return true;
         }
         
 
         // Methods                                                                                                                  
-        public bool PrepareForm(string stepName, string constraintToEditName)
-        {
-            return OnPrepareForm(stepName, constraintToEditName);
-        }
         private void PopulateListOfConstraints(string[] referencePointNames, string[] nodeSetNames, string[] surfaceNames)
         {
-            // populate list view                                                                               
+            // Populate list view                                                                               
             ListViewItem item;
-            ViewRigidBody vrb = null;
             ViewTie vt = null;
-
-            // rigid body
+            // Rigid body
             item = new ListViewItem("Rigid body");
             if (referencePointNames.Length > 0)
             {
-                if (nodeSetNames.Length > 0)
-                    vrb = new ViewRigidBody(new RigidBody(GetConstraintName("Rigid-body-"), referencePointNames[0], nodeSetNames[0], RegionTypeEnum.NodeSetName));
-                else if (surfaceNames.Length > 0)
-                    vrb = new ViewRigidBody(new RigidBody(GetConstraintName("Rigid-body-"), referencePointNames[0], surfaceNames[0], RegionTypeEnum.SurfaceName));
-
-                if (vrb != null)
-                {
-                    vrb.PopululateDropDownLists(referencePointNames, nodeSetNames, surfaceNames);
-                    item.Tag = vrb;
-                }
-                else item.Tag = new ViewError("There is no node set/surface defined for the rigid body constraint definition.");
+                RigidBody rb = new RigidBody(GetConstraintName("Rigid-body-"), referencePointNames[0], "", RegionTypeEnum.Selection);
+                ViewRigidBody vrb = new ViewRigidBody(rb);
+                vrb.PopululateDropDownLists(referencePointNames, nodeSetNames, surfaceNames);
+                item.Tag = vrb;
             }
             else item.Tag = new ViewError("There is no reference point defined for the rigid body constraint definition.");
             lvTypes.Items.Add(item);
-
             // Tie
             item = new ListViewItem("Tie");
             if (surfaceNames.Length >= 2)
@@ -287,7 +292,6 @@ namespace PrePoMax.Forms
         {
             return NamedClass.GetNewValueName(_constraintNames, namePrefix);
         }
-
         private void tsmiSwapMasterSlave_Click(object sender, EventArgs e)
         {
             if (propertyGrid.SelectedObject is ViewTie vt)
@@ -299,6 +303,78 @@ namespace PrePoMax.Forms
 
                 OnPropertyGridSelectedGridItemChanged();    // highlight
                 _propertyItemChanged = true;
+            }
+        }
+        private void HighlightConstraint()
+        {
+            try
+            {
+                if (propertyGrid.SelectedGridItem == null) return;
+                //
+                _controller.ClearSelectionHistory();
+                //
+                if (_viewConstraint == null) { }
+                else if (Constraint is RigidBody rb)
+                {
+                    _controller.Highlight3DObjects(new object[] { rb.ReferencePointName });
+                    if (rb.RegionType == RegionTypeEnum.NodeSetName ||
+                        rb.RegionType == RegionTypeEnum.SurfaceName)
+                    {
+                        _controller.Highlight3DObjects(new object[] { rb.RegionName }, false);
+                    }
+                    else if (rb.RegionType == RegionTypeEnum.Selection)
+                    {
+                        SetSelectItem();
+                        //
+                        if (rb.CreationData != null)
+                        {
+                            _controller.Selection = rb.CreationData.DeepClone();
+                            _controller.HighlightSelection(false);
+                        }
+                    }
+                    else throw new NotImplementedException();
+                }
+                else if (Constraint is Tie tie)
+                {
+                    _controller.Highlight3DObjects(new object[] { tie.SlaveSurfaceName });
+                    _controller.Highlight3DObjects(new object[] { tie.MasterSurfaceName }, false);
+                }
+                else throw new NotSupportedException();
+            }
+            catch { }
+        }
+        private void ShowHideSelectionForm()
+        {
+            if (Constraint != null && Constraint is RigidBody rb && rb.RegionType == RegionTypeEnum.Selection)
+                ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
+            else
+                ItemSetDataEditor.SelectionForm.Hide();
+        }
+        private void SetSelectItem()
+        {
+            if (Constraint is null) { }
+            else if (Constraint is RigidBody) _controller.SetSelectItemToSurface();
+            else if (Constraint is Tie) _controller.SetSelectItemToSurface();
+        }
+        //
+        public void SelectionChanged(int[] ids)
+        {
+            if (Constraint != null)
+            {
+                if (Constraint is RigidBody rb)
+                {
+                    if (rb.RegionType == RegionTypeEnum.Selection)
+                    {
+                        rb.CreationIds = ids;
+                        rb.CreationData = _controller.Selection.DeepClone();
+                        //
+                        propertyGrid.Refresh();
+                        //
+                        _propertyItemChanged = true;
+                    }
+                }
+                else if (Constraint is Tie tie) { }
+                else throw new NotSupportedException();
             }
         }
     }

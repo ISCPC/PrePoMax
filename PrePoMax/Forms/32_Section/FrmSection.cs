@@ -245,7 +245,7 @@ namespace PrePoMax.Forms
         {
             try
             {
-                _controller.ClearSelectionHistory();
+                _controller.ClearSelectionHistoryAndSelectionChanged();
                 //
                 if (_viewSection == null) { }
                 else if (_viewSection is ViewSolidSection)
@@ -258,8 +258,11 @@ namespace PrePoMax.Forms
                     {
                         SetSelectItem();
                         //
-                        if (Section.CreationData != null) _controller.Selection = Section.CreationData.DeepClone();
-                        _controller.HighlightSelection();
+                        if (Section.CreationData != null)
+                        {
+                            _controller.Selection = Section.CreationData.DeepClone();
+                            _controller.HighlightSelection();
+                        }
                     }
                     else throw new NotSupportedException();
                 }

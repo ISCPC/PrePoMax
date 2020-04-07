@@ -493,7 +493,7 @@ namespace PrePoMax.Forms
         {
             try
             {
-                _controller.ClearSelectionHistory();
+                _controller.ClearSelectionHistoryAndSelectionChanged();
                 //
                 if (_viewLoad == null) { }
                 else if (FELoad is CLoad || FELoad is MomentLoad || FELoad is DLoad || FELoad is STLoad 
@@ -511,8 +511,11 @@ namespace PrePoMax.Forms
                     {
                         SetSelectItem();
                         //
-                        if (FELoad.CreationData != null) _controller.Selection = FELoad.CreationData.DeepClone();
-                        _controller.HighlightSelection();
+                        if (FELoad.CreationData != null)
+                        {
+                            _controller.Selection = FELoad.CreationData.DeepClone();
+                            _controller.HighlightSelection();
+                        }
                     }
                     else throw new NotImplementedException();
                 }

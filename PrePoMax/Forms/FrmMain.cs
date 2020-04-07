@@ -461,18 +461,22 @@ namespace PrePoMax
             Form form = sender as Form;
             int count = 0;
             // One or two forms can be open
-            foreach (var oneForm in _allForms) if (oneForm.Visible) count++;
+            foreach (var aForm in _allForms)
+            {
+                // Do not count the Query form
+                if (aForm.Visible && !(aForm is FrmQuery)) count++;
+            }
             // Disable model tree mouse and keyboard actions for the form
             bool unactive;
             if (count > 0) unactive = true;
             else unactive = false;
+            //
             _modelTree.DisableMouse = unactive;
             menuStripMain.DisableMouseButtons = unactive;
             tsFile.DisableMouseButtons = unactive;
             // This gets also called from item selection form: by angle, by edge ...
             if (form.Visible == false)
             {
-                //if (form.DialogResult == System.Windows.Forms.DialogResult.Cancel)
                 UpdateHighlightFromTree();
                 GetFormLoaction(form);
             }
@@ -2643,6 +2647,10 @@ namespace PrePoMax
             try
             {
                 if (_controller.Model.Mesh == null) return;
+                // Data editor
+                ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
+                ItemSetDataEditor.ParentForm = _frmConstraint;
+                _frmSelectItemSet.SetOnlyGeometrySelection(false);
                 ShowForm(_frmConstraint, "Create Constraint", null);
             }
             catch (Exception ex)
@@ -2697,6 +2705,10 @@ namespace PrePoMax
 
         private void EditConstraint(string constraintName)
         {
+            // Data editor
+            ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
+            ItemSetDataEditor.ParentForm = _frmConstraint;
+            _frmSelectItemSet.SetOnlyGeometrySelection(false);
             ShowForm(_frmConstraint, "Edit Constraint", constraintName);
         }
         private void HideConstraints(string[] constraintNames)
@@ -3666,6 +3678,7 @@ namespace PrePoMax
             if (_frmElementSet != null && _frmElementSet.Visible) _frmElementSet.SelectionChanged(ids);
             if (_frmSurface != null && _frmSurface.Visible) _frmSurface.SelectionChanged(ids);
             if (_frmSection != null && _frmSection.Visible) _frmSection.SelectionChanged(ids);
+            if (_frmConstraint != null && _frmConstraint.Visible) _frmConstraint.SelectionChanged(ids);
             //
             if (_frmHistoryOutput != null && _frmHistoryOutput.Visible) _frmHistoryOutput.SelectionChanged(ids);
             if (_frmBoundaryCondition != null && _frmBoundaryCondition.Visible) _frmBoundaryCondition.SelectionChanged(ids);
@@ -4216,7 +4229,7 @@ namespace PrePoMax
         }
         public void ClearSelection()
         {
-            _controller.ClearSelectionHistory();
+            _controller.ClearSelectionHistoryAndSelectionChanged();
         }
         public void Clear3DSelection()
         {

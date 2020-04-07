@@ -123,7 +123,7 @@ namespace PrePoMax.Forms
         // Methods                                                                                                                  
         public bool PrepareForm(string stepName, string partToEditName)
         {
-            _controller.ClearSelectionHistory();
+            _controller.ClearSelectionHistoryAndSelectionChanged();
             _translateParameters.Clear();
             
 
@@ -145,7 +145,7 @@ namespace PrePoMax.Forms
 
             _controller.SelectBy = vtkSelectBy.Off;
             _controller.Selection.SelectItem = vtkSelectItem.None;
-            _controller.ClearSelectionHistory();
+            _controller.ClearSelectionHistoryAndSelectionChanged();
 
             if (ids != null && ids.Length == 1)
             {

@@ -262,7 +262,7 @@ namespace PrePoMax.Forms
         {
             try
             {
-                _controller.ClearSelectionHistory();
+                _controller.ClearSelectionHistoryAndSelectionChanged();
                 //
                 if (_viewHistoryOutput == null) { }
                 else if (HistoryOutput is NodalHistoryOutput || HistoryOutput is ElementHistoryOutput)
@@ -278,8 +278,11 @@ namespace PrePoMax.Forms
                     {
                         SetSelectItem();
                         //
-                        if (HistoryOutput.CreationData != null) _controller.Selection = HistoryOutput.CreationData.DeepClone();
-                        _controller.HighlightSelection();
+                        if (HistoryOutput.CreationData != null)
+                        {
+                            _controller.Selection = HistoryOutput.CreationData.DeepClone();
+                            _controller.HighlightSelection();
+                        }
                     }
                     else throw new NotImplementedException();
                 }

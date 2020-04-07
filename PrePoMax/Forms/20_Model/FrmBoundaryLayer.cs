@@ -146,7 +146,7 @@ namespace PrePoMax.Forms
             {
                 if (_controller != null)
                 {
-                    _controller.ClearSelectionHistory();
+                    _controller.ClearSelectionHistoryAndSelectionChanged();
                     _controller.SetSelectItemToGeometry();
                     // Surface.CreationData is set to null when the CreatedFrom is changed
                     if (_viewBoundaryLayer.CreationData != null)

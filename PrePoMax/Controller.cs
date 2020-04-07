@@ -87,7 +87,7 @@ namespace PrePoMax
                 if (_currentView != value)
                 {
                     _currentView = value;
-                    ClearSelectionHistory(); // the selection nodes are only valid on default mesh
+                    ClearSelectionHistoryAndSelectionChanged(); // the selection nodes are only valid on default mesh
                     _form.SetCurrentView(_currentView);
                     if (_currentView == ViewGeometryModelResults.Geometry) DrawGeometry(false);
                     else if (_currentView == ViewGeometryModelResults.Model) DrawMesh(false);
@@ -364,17 +364,21 @@ namespace PrePoMax
         }
         public void ClearAllSelection()
         {
-            ClearSelectionHistory();
+            ClearSelectionHistoryAndSelectionChanged();
             _form.ClearActiveTreeSelection();
+        }
+        public void ClearSelectionHistoryAndSelectionChanged()
+        {
+            ClearSelectionHistory();
+            //
+            _form.SelectionChanged();
         }
         public void ClearSelectionHistory()
         {
             _selection.Clear();
             _form.Clear3DSelection();
-            //
-            _form.SelectionChanged();
         }
-        
+
         #endregion ################################################################################################################
 
         // Menus
@@ -3202,10 +3206,12 @@ namespace PrePoMax
         }
         public void AddConstraint(Constraint constraint)
         {
+            ConvertSelectionBasedConstraint(constraint);
+            //
             _model.Constraints.Add(constraint.Name, constraint);
-
+            //
             _form.AddTreeNode(ViewGeometryModelResults.Model, constraint, null);
-
+            //
             Update(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public Constraint GetConstraint(string constraintName)
@@ -3223,7 +3229,7 @@ namespace PrePoMax
                 _model.Constraints[name].Visible = false;
                 _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.Constraints[name], null);
             }
-            //_form.HideActors(constraintNames);
+            //
             Update(UpdateType.RedrawSymbols);
         }
         public void ShowConstraints(string[] constraintNames)
@@ -3233,14 +3239,17 @@ namespace PrePoMax
                 _model.Constraints[name].Visible = true;
                 _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.Constraints[name], null);
             }
-            //_form.ShowActors(constraintNames);
+            //
             Update(UpdateType.RedrawSymbols);
         }
-        public void ReplaceConstraint(string oldConstraintName, Constraint newConstraint)
+        public void ReplaceConstraint(string oldConstraintName, Constraint constraint)
         {
-            _model.Constraints.Replace(oldConstraintName, newConstraint.Name, newConstraint);
+            DeleteSelectionBasedConstraintSets(oldConstraintName);
+            ConvertSelectionBasedConstraint(constraint);
             //
-            _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldConstraintName, newConstraint, null);
+            _model.Constraints.Replace(oldConstraintName, constraint.Name, constraint);
+            //
+            _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldConstraintName, constraint, null);
             //
             Update(UpdateType.Check | UpdateType.RedrawSymbols);
         }
@@ -3248,11 +3257,47 @@ namespace PrePoMax
         {
             foreach (var name in constraintNames)
             {
+                DeleteSelectionBasedConstraintSets(name);
                 _model.Constraints.Remove(name);
                 _form.RemoveTreeNode<Constraint>(ViewGeometryModelResults.Model, name, null);
             }
 
             Update(UpdateType.Check | UpdateType.RedrawSymbols);
+        }
+        //
+        private void ConvertSelectionBasedConstraint(Constraint constraint)
+        {
+            // Create a named set and convert a selection to a named set
+            if (constraint is RigidBody rb)                
+            {
+                string name;
+                // Surface
+                if (rb.RegionType == RegionTypeEnum.Selection)
+                {
+                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.Surfaces) + constraint.Name;
+                    FeSurface surface = new FeSurface(name, rb.CreationIds, rb.CreationData.DeepClone());
+                    surface.Internal = true;
+                    AddSurface(surface);
+                    //
+                    rb.RegionName = name;
+                    rb.RegionType = RegionTypeEnum.SurfaceName;
+                }
+                // Clear the creation data if not used
+                else
+                {
+                    rb.CreationData = null;
+                    rb.CreationIds = null;
+                }
+            }            
+        }
+        private void DeleteSelectionBasedConstraintSets(string oldConstraintName)
+        {
+            // Delete previously created sets
+            Constraint constraint = GetConstraint(oldConstraintName);
+            if (constraint is RigidBody rb && rb.CreationData != null && rb.RegionName != null)
+            {
+                RemoveSurfaces(new string[] { rb.RegionName }, false);
+            }
         }
 
         #endregion #################################################################################################################
@@ -3431,7 +3476,7 @@ namespace PrePoMax
         }
         private void DeleteSelectionBasedHistoryOutputSets(string stepName, string oldHistoryOutputName)
         {
-            HistoryOutput historyOutput = _model.StepCollection.GetStep(stepName).HistoryOutputs[oldHistoryOutputName];
+            HistoryOutput historyOutput = GetHistoryOutput(stepName, oldHistoryOutputName);
             //
             Dictionary<string, int> regionsCount = _model.StepCollection.GetHistoryOutputRegionsCount();
             // Delete previously created sets
@@ -3636,8 +3681,7 @@ namespace PrePoMax
         }
         private void DeleteSelectionBasedBoundaryConditionSets(string stepName, string oldBoundaryConditionName)
         {
-            BoundaryCondition boundaryCondition = 
-                _model.StepCollection.GetStep(stepName).BoundaryConditions[oldBoundaryConditionName];
+            BoundaryCondition boundaryCondition = GetBoundaryCondition(stepName, oldBoundaryConditionName);
             //
             Dictionary<string, int> regionsCount = _model.StepCollection.GetBoundaryConditionRegionsCount();
             // Delete previously created sets
@@ -3796,7 +3840,7 @@ namespace PrePoMax
         }
         private void DeleteSelectionBasedLoadSets(string stepName, string oldLoadName)
         {
-            Load load = _model.StepCollection.GetStep(stepName).Loads[oldLoadName];
+            Load load = GetLoad(stepName, oldLoadName);
             //
             Dictionary<string, int> regionsCount = _model.StepCollection.GetLoadRegionsCount();
             // Delete previously created sets
@@ -4192,7 +4236,7 @@ namespace PrePoMax
         }
         public void CreateNewSelection(int selectionView, SelectionNode selectionNode, bool highlight)
         {
-            ClearSelectionHistory();
+            ClearSelectionHistoryAndSelectionChanged();
             SetSelectionView(selectionView);
             AddSelectionNode(selectionNode, true);
         }
@@ -4206,7 +4250,7 @@ namespace PrePoMax
                 // Set the current view for the selection;
                 if (_selection.Nodes.Count == 0) SetSelectionView(_currentView);
                 //
-                if (pickedPoint == null && planeParameters == null) ClearSelectionHistory();   // empty pick - clear
+                if (pickedPoint == null && planeParameters == null) ClearSelectionHistoryAndSelectionChanged();   // empty pick - clear
                 else
                 {
                     vtkSelectBy selectBy = _selectBy;
@@ -4219,7 +4263,7 @@ namespace PrePoMax
                     else
                     {
                         // New pick - Clear history
-                        if (selectOperation == vtkSelectOperation.None) ClearSelectionHistory();
+                        if (selectOperation == vtkSelectOperation.None) ClearSelectionHistoryAndSelectionChanged();
                     }
                     SelectionNode selectionNode = new SelectionNodeMouse(pickedPoint, planeParameters,
                                                                          selectOperation,
@@ -4279,7 +4323,7 @@ namespace PrePoMax
                     }
                     else throw new NotSupportedException();
                 }
-                else ClearSelectionHistory();   // Before adding all clear selection
+                else ClearSelectionHistoryAndSelectionChanged();   // Before adding all clear selection
             }
             //
             bool add = false;
@@ -6497,21 +6541,18 @@ namespace PrePoMax
             _form.Clear3DSelection();
             _form.UpdateHighlightFromTree();
         }
-        public void Highlight3DObjects(object[] obj)
+        public void Highlight3DObjects(object[] obj, bool clear = true)
         {
-            Highlight3DObjects(CurrentView, obj);
+            Highlight3DObjects(CurrentView, obj, clear);
         }
-        public void Highlight3DObjects(ViewGeometryModelResults view, object[] obj)
+        public void Highlight3DObjects(ViewGeometryModelResults view, object[] obj, bool clear)
         {
-            _form.Clear3DSelection();       // must be here: clears the highlight in the results
-
+            if (clear) _form.Clear3DSelection();       // must be here: clears the highlight in the results
+            //
             if (obj != null)
             {
-                foreach (var item in obj)
-                {
-                    Highlight3DObject(view, item);
-                }
-
+                foreach (var item in obj) Highlight3DObject(view, item);
+                //
                 _form.AdjustCameraDistanceAndClipping();
             }
         }
@@ -6938,9 +6979,9 @@ namespace PrePoMax
             DrawNodes("short_edges", nodeCoor.ToArray(), System.Drawing.Color.Empty, layer, nodeSize);
         }
         //
-        public void HighlightSelection()
+        public void HighlightSelection(bool clear = true)
         {
-            _form.Clear3DSelection();
+            if (clear) _form.Clear3DSelection();
             int[] ids = GetSelectionIds();
             HashSet<int> idsHash = new HashSet<int>(ids);
             if (ids.Length == 0) return;
