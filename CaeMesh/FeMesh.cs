@@ -4128,7 +4128,7 @@ namespace CaeMesh
             Vec3D n1 = new Vec3D(_nodes[edgeNodeIds[0]].Coor);
             Vec3D n2 = new Vec3D(_nodes[edgeNodeIds[1]].Coor);
             Vec3D e = n2 - n1;
-
+            //
             int numSeg = (int)(e.Len / meshSize) + 1;
             double[][] coor = new double[numSeg + 1][];
             coor[0] = n1.Coor;
@@ -4139,6 +4139,24 @@ namespace CaeMesh
                 for (int i = 1; i < numSeg; i++)
                 {
                     coor[i] = (n1 + i * e).Coor;
+                }
+            }
+            return coor;
+        }
+        private Vec3D[] SplitTriangleEdge(Vec3D n1, Vec3D n2, double meshSize)
+        {
+            Vec3D e = n2 - n1;
+            //
+            int numSeg = (int)(e.Len / meshSize) + 1;
+            Vec3D[] coor = new Vec3D[numSeg + 1];
+            coor[0] = n1;
+            coor[numSeg] = n2;
+            if (numSeg > 1)
+            {
+                e *= (1.0 / numSeg);
+                for (int i = 1; i < numSeg; i++)
+                {
+                    coor[i] = (n1 + i * e);
                 }
             }
             return coor;
@@ -4174,7 +4192,12 @@ namespace CaeMesh
             }
             //
             HashSet<Vec3D> nodes = new HashSet<Vec3D>();
-            foreach (var splitTriangle in splitTriangles) nodes.UnionWith(splitTriangle);
+            foreach (var splitTriangle in splitTriangles)
+            {
+                nodes.UnionWith(SplitTriangleEdge(splitTriangle[0], splitTriangle[1], meshSize));
+                nodes.UnionWith(SplitTriangleEdge(splitTriangle[1], splitTriangle[2], meshSize));
+                nodes.UnionWith(SplitTriangleEdge(splitTriangle[2], splitTriangle[0], meshSize));
+            }
             //
             int count = 0;
             double[][] coor = new double[nodes.Count][];
@@ -4191,7 +4214,12 @@ namespace CaeMesh
             double l1 = (n2 - n1).Len;
             double l2 = (n3 - n2).Len;
             double l3 = (n1 - n3).Len;
-            return Math.Max(Math.Max(l1, l2), l3);
+            //
+            double s = (l1 + l2 + l3) / 2;
+            // Heurons formula for area
+            double A = Math.Sqrt(s * (s - l1) * (s - l2) * (s - l3));
+            // Return min triangle height
+            return 2 * A / Math.Max(Math.Max(l1, l2), l3);
         }
         private Vec3D[][] SplitTriangle(Vec3D[] triangle)
         {
