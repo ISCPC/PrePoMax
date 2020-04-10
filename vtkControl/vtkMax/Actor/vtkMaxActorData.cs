@@ -32,6 +32,7 @@ namespace vtkControl
         public bool ColorContours;
         public bool SmoothShaded;
         public bool DrawOnGeometry;
+        public bool UseSecondaryHighightColor;
         public vtkMaxActorRepresentation ActorRepresentation;
         public bool SectionViewPossible;
         //
@@ -55,6 +56,7 @@ namespace vtkControl
             ColorContours = false;
             SmoothShaded = false;
             DrawOnGeometry = false;
+            UseSecondaryHighightColor = false;
             ActorRepresentation = vtkMaxActorRepresentation.Unknown;
             SectionViewPossible = true;
             //

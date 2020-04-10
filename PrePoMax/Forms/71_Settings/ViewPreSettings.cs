@@ -20,23 +20,32 @@ namespace PrePoMax.Settings
 
         // Properties                                                                                                               
         [CategoryAttribute("Selection")]
-        [OrderedDisplayName(0, 10, "Highlight color")]
-        [DescriptionAttribute("Select the highlight color.")]
-        public Color HighlightColor
+        [OrderedDisplayName(0, 10, "Primary highlight color")]
+        [DescriptionAttribute("Select the primary highlight color.")]
+        public Color PrimaryHighlightColor
         {
-            get { return _preSettings.HighlightColor; }
-            set { _preSettings.HighlightColor = value; }
+            get { return _preSettings.PrimaryHighlightColor; }
+            set { _preSettings.PrimaryHighlightColor = value; }
         }
-
+        //
         [CategoryAttribute("Selection")]
-        [OrderedDisplayName(1, 10, "Mouse highlight color")]
+        [OrderedDisplayName(1, 10, "Secundary highlight color")]
+        [DescriptionAttribute("Select the secundary highlight color.")]
+        public Color SecundaryHighlightColor
+        {
+            get { return _preSettings.SecundaryHighlightColor; }
+            set { _preSettings.SecundaryHighlightColor = value; }
+        }
+        //
+        [CategoryAttribute("Selection")]
+        [OrderedDisplayName(2, 10, "Mouse highlight color")]
         [DescriptionAttribute("Select the mouse highlight color.")]
         public Color MouseHighlightColor
         {
             get { return _preSettings.MouseHighlightColor; }
             set { _preSettings.MouseHighlightColor = value; }
         }
-
+        //
         [CategoryAttribute("Symbols")]
         [OrderedDisplayName(0, 10, "Constraint color")]
         [DescriptionAttribute("Select the constraint symbol color.")]
@@ -45,7 +54,7 @@ namespace PrePoMax.Settings
             get { return _preSettings.ConstraintSymbolColor; }
             set { _preSettings.ConstraintSymbolColor = value; }
         }
-
+        //
         [CategoryAttribute("Symbols")]
         [OrderedDisplayName(1, 10, "Boundary condition color")]
         [DescriptionAttribute("Select the boundary condition symbol color.")]
@@ -54,7 +63,7 @@ namespace PrePoMax.Settings
             get { return _preSettings.BoundaryConditionSymbolColor; }
             set { _preSettings.BoundaryConditionSymbolColor = value; }
         }
-
+        //
         [CategoryAttribute("Symbols")]
         [OrderedDisplayName(2, 10, "Load color")]
         [DescriptionAttribute("Select the load symbol color.")]
@@ -63,7 +72,7 @@ namespace PrePoMax.Settings
             get { return _preSettings.LoadSymbolColor; }
             set { _preSettings.LoadSymbolColor = value; }
         }
-        
+        //
         [CategoryAttribute("Symbols")]
         [OrderedDisplayName(3, 10, "Symbol size")]
         [DescriptionAttribute("Select the symbol size.")]
@@ -72,7 +81,7 @@ namespace PrePoMax.Settings
             get { return _preSettings.SymbolSize; }
             set { _preSettings.SymbolSize = value; }
         }
-        
+        //
         [CategoryAttribute("Symbols")]
         [OrderedDisplayName(4, 10, "Node symbol size")]
         [DescriptionAttribute("Select the node symbol size.")]
@@ -81,7 +90,7 @@ namespace PrePoMax.Settings
             get { return _preSettings.NodeSymbolSize; }
             set { _preSettings.NodeSymbolSize = value; }
         }
-
+        //
         [CategoryAttribute("Symbols")]
         [OrderedDisplayName(5, 10, "Draw symbol edges")]
         [DescriptionAttribute("Draw symbol edges.")]

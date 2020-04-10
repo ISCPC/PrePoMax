@@ -15,7 +15,8 @@ namespace PrePoMax
     public class PreSettings : ISettings
     {
         // Variables                                                                                                                
-        private Color _highlightColor;
+        private Color _primaryHighlightColor;
+        private Color _secundaryHighlightColor;
         private Color _mouseHighlightColor;
         private Color _constraintSymbolColor;
         private Color _boundaryConditionSymbolColor;
@@ -26,10 +27,15 @@ namespace PrePoMax
 
 
         // Properties                                                                                                               
-        public Color HighlightColor
+        public Color PrimaryHighlightColor
         {
-            get { return _highlightColor; }
-            set { _highlightColor = value; }
+            get { return _primaryHighlightColor; }
+            set { _primaryHighlightColor = value; }
+        }
+        public Color SecundaryHighlightColor
+        {
+            get { return _secundaryHighlightColor; }
+            set { _secundaryHighlightColor = value; }
         }
         public Color MouseHighlightColor
         {
@@ -81,7 +87,8 @@ namespace PrePoMax
         }
         public void Reset()
         {
-            _highlightColor = Color.Red;
+            _primaryHighlightColor = Color.Red;
+            _secundaryHighlightColor = Color.Violet;
             _mouseHighlightColor = Color.Orange;
             _constraintSymbolColor = Color.Yellow;
             _boundaryConditionSymbolColor = Color.Lime;

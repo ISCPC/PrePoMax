@@ -3753,8 +3753,7 @@ namespace PrePoMax
                 SetFormLoaction((Form)form);
                 form.Text = text;
                 if (itemToEditName != null) form.Text += ": " + itemToEditName;
-                if (form.PrepareForm(stepName, itemToEditName))
-                    form.Show();
+                if (form.PrepareForm(stepName, itemToEditName)) form.Show();
             }
         }
         private void SetFormLoaction(Form form)
@@ -4398,9 +4397,9 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.SetSmoothing, pointSmoothing, lineSmoothing, redraw);
         }
-        public void SetHighlightColor(Color highlightColor)
+        public void SetHighlightColor(Color primaryHighlightColor, Color secundaryHighlightColor)
         {
-            InvokeIfRequired(_vtk.SetHighlightColor, highlightColor);
+            InvokeIfRequired(_vtk.SetHighlightColor, primaryHighlightColor, secundaryHighlightColor);
         }
         public void SetMouseHighlightColor(Color mousehighlightColor)
         {

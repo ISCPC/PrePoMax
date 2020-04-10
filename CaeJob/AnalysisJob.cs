@@ -95,8 +95,15 @@ namespace CaeJob
         {
             get
             {
-                if (_sbOutput != null) return _sbOutput.ToString();
-                else return null;
+                try
+                {
+                    if (_sbOutput != null) return _sbOutput.ToString();
+                    else return null;
+                }
+                catch
+                {
+                    return null;
+                }
             }
         }
         public string StatusFileData { get { return _statusFileContents; } }

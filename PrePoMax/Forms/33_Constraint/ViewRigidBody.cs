@@ -30,7 +30,7 @@ namespace PrePoMax
         [OrderedDisplayName(0, 10, "Region type")]
         [DescriptionAttribute("Select the region type for the creation of the rigid body definition.")]
         [Id(1, 3)]
-        public override string RegionType { get { return base.RegionType; } set { base.RegionType = value; } }
+        public override string SlaveRegionType { get { return base.SlaveRegionType; } set { base.SlaveRegionType = value; } }
         //
         [CategoryAttribute("Region")]
         [OrderedDisplayName(1, 10, "Hidden")]
@@ -54,15 +54,18 @@ namespace PrePoMax
         // Constructors                                                                                                             
         public ViewRigidBody(CaeModel.RigidBody rigidBody)
         {
-            // the order is important
+            // The order is important
             _rigidBody = rigidBody;
             //
-            Dictionary<RegionTypeEnum, string> regionTypePropertyNamePairs = new Dictionary<RegionTypeEnum, string>();
-            regionTypePropertyNamePairs.Add(RegionTypeEnum.Selection, nameof(SelectionHidden));
-            regionTypePropertyNamePairs.Add(RegionTypeEnum.NodeSetName, nameof(NodeSetName));
-            regionTypePropertyNamePairs.Add(RegionTypeEnum.SurfaceName, nameof(SurfaceName));
+            Dictionary<RegionTypeEnum, string> masterRegionTypePropertyNamePairs = new Dictionary<RegionTypeEnum, string>();
+            masterRegionTypePropertyNamePairs.Add(RegionTypeEnum.ReferencePointName, nameof(ReferencePointName));
             //
-            base.SetBase(_rigidBody, regionTypePropertyNamePairs);
+            Dictionary<RegionTypeEnum, string> slaveRegionTypePropertyNamePairs = new Dictionary<RegionTypeEnum, string>();
+            slaveRegionTypePropertyNamePairs.Add(RegionTypeEnum.Selection, nameof(SelectionHidden));
+            slaveRegionTypePropertyNamePairs.Add(RegionTypeEnum.NodeSetName, nameof(NodeSetName));
+            slaveRegionTypePropertyNamePairs.Add(RegionTypeEnum.SurfaceName, nameof(SurfaceName));
+            //
+            base.SetBase(_rigidBody, masterRegionTypePropertyNamePairs, slaveRegionTypePropertyNamePairs);
             base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
         }
 
@@ -75,19 +78,24 @@ namespace PrePoMax
         public void PopululateDropDownLists(string[] referencePointNames, string[] nodeSetNames, string[] surfaceNames)
         {
             base.DynamicCustomTypeDescriptor.PopulateProperty(nameof(ReferencePointName), referencePointNames);
+            // Master
+            Dictionary<RegionTypeEnum, string[]> masterRegionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
+            masterRegionTypeListItemsPairs.Add(RegionTypeEnum.ReferencePointName, referencePointNames);
+            // Slave
+            Dictionary<RegionTypeEnum, string[]> slaveRegionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
+            slaveRegionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
+            slaveRegionTypeListItemsPairs.Add(RegionTypeEnum.NodeSetName, nodeSetNames);
+            slaveRegionTypeListItemsPairs.Add(RegionTypeEnum.SurfaceName, surfaceNames);
             //
-            Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
-            regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
-            regionTypeListItemsPairs.Add(RegionTypeEnum.NodeSetName, nodeSetNames);
-            regionTypeListItemsPairs.Add(RegionTypeEnum.SurfaceName, surfaceNames);
-            base.PopululateDropDownLists(regionTypeListItemsPairs);
+           
+            base.PopululateDropDownLists(masterRegionTypeListItemsPairs, slaveRegionTypeListItemsPairs);
         }
         public override void UpdateRegionVisibility()
         {
             base.UpdateRegionVisibility();
             // Hide SelectionHidden
             DynamicTypeDescriptor.CustomPropertyDescriptor cpd;
-            if (base.RegionType == RegionTypeEnum.Selection.ToFriendlyString())
+            if (base.SlaveRegionType == RegionTypeEnum.Selection.ToFriendlyString())
             {
                 cpd = base.DynamicCustomTypeDescriptor.GetProperty(() => SelectionHidden);
                 cpd.SetIsBrowsable(false);

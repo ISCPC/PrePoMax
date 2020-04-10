@@ -382,6 +382,7 @@
     <Compile Include="Forms\FrmSplash.Designer.cs">
       <DependentUpon>FrmSplash.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\ViewMasterSlaveMultiRegion.cs" />
     <Compile Include="Forms\ViewMultiRegion.cs" />
     <Compile Include="Forms\ViewError.cs" />
     <Compile Include="Globals.cs" />

@@ -55,7 +55,8 @@ namespace vtkControl
         private Dictionary<string, vtkMaxActor[]> _animationActors;
         private vtkMaxAnimationFrameData _animationFrameData;
         private bool _animationAcceleration;
-        private Color _highlightColor;
+        private Color _primaryHighlightColor;
+        private Color _secundaryHighlightColor;
         private double _maxSymbolSize;
         private bool _drawSymbolEdges;
 
@@ -223,7 +224,8 @@ namespace vtkControl
             _overlayActors = new Dictionary<string, vtkActor>();
             _animationActors = new Dictionary<string, vtkMaxActor[]>();
             _animationFrameData = null;
-            _highlightColor = Color.Red;
+            _primaryHighlightColor = Color.Red;
+            _secundaryHighlightColor = Color.Violet;
             _drawSymbolEdges = true;
             //
             _animating = false;
@@ -1714,11 +1716,11 @@ namespace vtkControl
             actor.GetProperty().SetLighting(false);
             actor.GetProperty().SetLineWidth(0.5f);
         }
-        private void ApplySelectionFormatingToActor(vtkActor actor)
+        private void ApplySelectionFormatingToActor(vtkMaxActor actor)
         {
             // Get actor cell type
             vtkCellTypes types = vtkCellTypes.New();
-            actor.GetMapper().GetInput().GetCellTypes(types);
+            actor.Geometry.GetMapper().GetInput().GetCellTypes(types);
             int num = types.GetNumberOfTypes();
             byte cellType;
             bool onlyEdges = true;
@@ -1754,16 +1756,23 @@ namespace vtkControl
                 diffuse = 0.6;
             }
             // Get property
-            vtkProperty property = actor.GetProperty();
+            vtkProperty property = actor.Geometry.GetProperty();
             // if the point size was already set, do not change it
             if (property.GetPointSize() <= 1) property.SetPointSize(7);
-            property.SetColor(_highlightColor.R / 255d * k, _highlightColor.G / 255d * k, _highlightColor.B / 255d * k);
+            //
+            Color highlightColor;
+            if (actor.UseSecondaryHighightColor) highlightColor = _secundaryHighlightColor;
+            else highlightColor = _primaryHighlightColor;
+            //
+            property.SetColor(highlightColor.R / 255d * k,
+                              highlightColor.G / 255d * k,
+                              highlightColor.B / 255d * k);
             property.SetAmbient(ambient);    // color background - even away from light
             property.SetDiffuse(diffuse);    // color from the lights
             property.SetLineWidth(2f);
             property.SetOpacity(1);
             property.BackfaceCullingOn();
-            actor.PickableOff();
+            actor.Geometry.PickableOff();
         }
         private void ApplySymbolFormatingToActor(vtkActor actor)
         {
@@ -2739,7 +2748,7 @@ namespace vtkControl
         {
             vtkMaxActor actor = new vtkMaxActor(data, false, true);
             AddActorGeometry(actor, data.Layer);
-
+            //
             _style.AdjustCameraDistanceAndClipping();
             this.Invalidate();
         }
@@ -3176,7 +3185,7 @@ namespace vtkControl
                 if (actor.Name == null) actor.Name = (_actors.Count + 1).ToString();
                 _actors.Add(actor.Name, actor);
                 _renderer.AddActor(actor.Geometry);
-
+                //
                 if (actor.Geometry.GetPickable() == 1)
                 {
                     if (actor.CellLocator != null) _cellPicker.AddLocator(actor.CellLocator);
@@ -3215,7 +3224,7 @@ namespace vtkControl
                 else _selectionRenderer.AddActor(actor.Geometry);
                 //
                 actor.Geometry.PickableOff();
-                ApplySelectionFormatingToActor(actor.Geometry);
+                ApplySelectionFormatingToActor(actor);
             }
             //
             ApplyEdgeVisibilityAndBackfaceCullingToActor(actor.Geometry, layer);            
@@ -4066,12 +4075,20 @@ namespace vtkControl
             
             if (redraw) this.Invalidate();
         }
-        public void SetHighlightColor(Color highlightColor)
+        public void SetHighlightColor(Color primaryHighlightColor, Color secundaryHighlightColor)
         {
-            _highlightColor = highlightColor;
+            _primaryHighlightColor = primaryHighlightColor;
+            _secundaryHighlightColor = secundaryHighlightColor;
+            //
+            Color highlightColor;
             foreach (var actor in _selectedActors)
             {
-                actor.Geometry.GetProperty().SetColor(_highlightColor.R / 255.0, _highlightColor.G / 255.0, _highlightColor.B / 255.0);
+                if (actor.UseSecondaryHighightColor) highlightColor = secundaryHighlightColor;
+                else highlightColor = primaryHighlightColor;
+                //
+                actor.Geometry.GetProperty().SetColor(highlightColor.R / 255.0,
+                                                      highlightColor.G / 255.0,
+                                                      highlightColor.B / 255.0);
             }
             this.Invalidate();
         }

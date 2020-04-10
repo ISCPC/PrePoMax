@@ -4035,29 +4035,34 @@ namespace CaeMesh
             return nodeIds.ToArray();
         }
         // Get node, edge or triangle coordinates for mesh refinement
-        public double[][] GetVetexAndEdgeCoorFromGeometryIds(int[] ids, double meshSize, bool edgeRepresentation)
+        public void GetVetexAndEdgeCoorFromGeometryIds(int[] ids, double meshSize, bool edgeRepresentation,
+                                                             out double[][] points, out double[][][] lines)
         {
             int[][] cells = GetCellsFromGeometryIds(ids, edgeRepresentation);
-            List<double[]> coor = new List<double[]>();
-            List<double[][]> triangleList = new List<double[][]>();
+            List<double[]> pointList = new List<double[]>();
+            List<double[][]> lineList = new List<double[][]>();
             //
             for (int i = 0; i < cells.Length; i++)
             {
                 if (cells[i].Length == 1)
                 {
-                    coor.Add(_nodes[cells[i][0]].Coor);
+                    pointList.Add(_nodes[cells[i][0]].Coor);
                 }
                 else if (cells[i].Length == 2)
                 {
-                    coor.AddRange(SplitEdge(cells[i], meshSize));
+                    //pointList.AddRange(SplitEdge(cells[i], meshSize));
+                    lineList.Add(GetEdgePointCoor(cells[i]));
                 }
                 else if (cells[i].Length == 3)
                 {
-                    coor.AddRange(SplitTriangle(cells[i], meshSize));
+                    SplitTriangle(cells[i], meshSize, out double[][] trianglePoints, out double[][][] triangleLines);
+                    pointList.AddRange(trianglePoints);
+                    lineList.AddRange(triangleLines);
                 }
                 else throw new NotSupportedException();
             }
-            return coor.ToArray();
+            points = pointList.ToArray();
+            lines = lineList.ToArray();
         }
         private int[][] GetCellsFromGeometryIds(int[] ids, bool edgeRepresentation)
         {
@@ -4143,6 +4148,16 @@ namespace CaeMesh
             }
             return coor;
         }
+        private double[][] GetEdgePointCoor(int[] edgeNodeIds)
+        {
+            Vec3D n1 = new Vec3D(_nodes[edgeNodeIds[0]].Coor);
+            Vec3D n2 = new Vec3D(_nodes[edgeNodeIds[1]].Coor);
+            //
+            double[][] coor = new double[2][];
+            coor[0] = n1.Coor;
+            coor[1] = n2.Coor;
+            return coor;
+        }
         private Vec3D[] SplitTriangleEdge(Vec3D n1, Vec3D n2, double meshSize)
         {
             Vec3D e = n2 - n1;
@@ -4161,7 +4176,7 @@ namespace CaeMesh
             }
             return coor;
         }
-        private double[][] SplitTriangle(int[] triangleNodeIds, double meshSize)
+        private void SplitTriangle(int[] triangleNodeIds, double meshSize, out double[][] points, out double[][][] lines)
         {
             Vec3D[] triangle = new Vec3D[3];
             triangle[0] = new Vec3D(_nodes[triangleNodeIds[0]].Coor);
@@ -4192,18 +4207,35 @@ namespace CaeMesh
             }
             //
             HashSet<Vec3D> nodes = new HashSet<Vec3D>();
+            List<double[][]> lineList = new List<double[][]>();
+            double[][] line;
             foreach (var splitTriangle in splitTriangles)
             {
-                nodes.UnionWith(SplitTriangleEdge(splitTriangle[0], splitTriangle[1], meshSize));
-                nodes.UnionWith(SplitTriangleEdge(splitTriangle[1], splitTriangle[2], meshSize));
-                nodes.UnionWith(SplitTriangleEdge(splitTriangle[2], splitTriangle[0], meshSize));
+                //nodes.UnionWith(SplitTriangleEdge(splitTriangle[0], splitTriangle[1], meshSize));
+                //nodes.UnionWith(SplitTriangleEdge(splitTriangle[1], splitTriangle[2], meshSize));
+                //nodes.UnionWith(SplitTriangleEdge(splitTriangle[2], splitTriangle[0], meshSize));
+                //
+                line = new double[2][];
+                line[0] = splitTriangle[0].Coor;
+                line[1] = splitTriangle[1].Coor;
+                lineList.Add(line);
+                //
+                line = new double[2][];
+                line[0] = splitTriangle[1].Coor;
+                line[1] = splitTriangle[2].Coor;
+                lineList.Add(line);
+                //
+                line = new double[2][];
+                line[0] = splitTriangle[2].Coor;
+                line[1] = splitTriangle[1].Coor;
+                lineList.Add(line);
             }
             //
             int count = 0;
-            double[][] coor = new double[nodes.Count][];
-            foreach (var node in nodes) coor[count++] = node.Coor;
+            points = new double[nodes.Count][];
+            foreach (var node in nodes) points[count++] = node.Coor;
             //
-            return coor;
+            lines = lineList.ToArray();
         }
         private double TriangleSize(Vec3D[] triangle)
         {

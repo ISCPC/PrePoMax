@@ -207,9 +207,9 @@ namespace CaeModel
                 }
                 else if (constraint is Tie t)
                 {
-                    valid = (_mesh.Surfaces.ContainsValidKey(t.SlaveSurfaceName))
-                            && (_mesh.Surfaces.ContainsValidKey(t.MasterSurfaceName))
-                            && (t.SlaveSurfaceName != t.MasterSurfaceName);
+                    valid = (_mesh.Surfaces.ContainsValidKey(t.SlaveRegionName))
+                            && (_mesh.Surfaces.ContainsValidKey(t.MasterRegionName))
+                            && (t.SlaveRegionName != t.MasterRegionName);
                 }
                 else throw new NotSupportedException();
                 //

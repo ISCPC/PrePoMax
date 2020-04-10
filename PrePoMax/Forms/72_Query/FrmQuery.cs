@@ -221,6 +221,7 @@ namespace PrePoMax.Forms
             Form_WriteDataToOutput("");
             //
             _controller.ClearSelectionHistoryAndSelectionChanged();
+            //
             _controller.HighlightElement(id);
         }
         public void OneEdgePicked(int id)
@@ -240,7 +241,7 @@ namespace PrePoMax.Forms
             //
             _controller.ClearSelectionHistoryAndSelectionChanged();
             //
-            _controller.HighlightItemsByGeometryEdgeIds(new int[] { id });
+            _controller.HighlightItemsByGeometryEdgeIds(new int[] { id }, false);
         }
         public void OneSurfacePicked(int id)
         {
@@ -259,7 +260,7 @@ namespace PrePoMax.Forms
             //
             _controller.ClearSelectionHistoryAndSelectionChanged();    // in order to prevent SHIFT ADD
             //
-            _controller.HighlightItemsBySurfaceIds(new int[] { id });
+            _controller.HighlightItemsBySurfaceIds(new int[] { id }, false);
         }
         public void OnePartPicked(int id)
         {

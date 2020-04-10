@@ -10,8 +10,7 @@ using DynamicTypeDescriptor;
 
 namespace PrePoMax
 {
-    [Serializable]
-    public abstract class ViewConstraint : ViewMultiRegion
+    public abstract class ViewConstraint : ViewMasterSlaveMultiRegion
     {
         // Variables                                                                                                                
 
@@ -23,9 +22,6 @@ namespace PrePoMax
         [Id(1, 1)]
         public abstract string Name { get; set; }
 
-
-        // Constructors                                                                                                             
-       
 
         // Methods                                                                                                                  
         public abstract CaeModel.Constraint GetBase();

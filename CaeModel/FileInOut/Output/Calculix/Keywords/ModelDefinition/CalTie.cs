@@ -36,7 +36,7 @@ namespace FileInOut.Output.Calculix
         }
         public override string GetDataString()
         {
-            return string.Format("{0}, {1}{2}", _tie.SlaveSurfaceName, _tie.MasterSurfaceName, Environment.NewLine);
+            return string.Format("{0}, {1}{2}", _tie.SlaveRegionName, _tie.MasterRegionName, Environment.NewLine);
         }
     }
 }

@@ -30,7 +30,8 @@ namespace vtkControl
         private bool _colorContours;
         private bool _sectionViewPossible;
         private bool _drawOnGeometry;
-        
+        private bool _useSecondaryHighightColor;
+
 
         // Properties                                                                                                               
         public string Name { get { return _name; } set { _name = value; } }
@@ -43,7 +44,11 @@ namespace vtkControl
         public vtkCellLocator CellLocator { get { return _cellLocator; } set { _cellLocator = value; } }
         public vtkCellLocator FrustumCellLocator { get { return _frustumCellLocator; } set { _frustumCellLocator = value; } }
         public vtkPointData FrustumPointData { get { return _frustumPointData; } }
-        public vtkMaxActorRepresentation ActorRepresentation { get { return _actorRepresentation; } set { _actorRepresentation = value; } }
+        public vtkMaxActorRepresentation ActorRepresentation 
+        { 
+            get { return _actorRepresentation; } 
+            set { _actorRepresentation = value; } 
+        }
         public bool VtkMaxActorVisible
         {
             get { return _visible; }
@@ -84,6 +89,11 @@ namespace vtkControl
         public bool ColorContours { get { return _colorContours; } set { _colorContours = value; } }
         public bool SectionViewPossible { get { return _sectionViewPossible; } set { _sectionViewPossible = value; } }
         public bool DrawOnGeometry { get { return _drawOnGeometry; } set { _drawOnGeometry = value; } }
+        public bool UseSecondaryHighightColor 
+        { 
+            get { return _useSecondaryHighightColor; } 
+            set { _useSecondaryHighightColor = value; } 
+        }
 
 
         // Constructors                                                                                                             
@@ -106,6 +116,7 @@ namespace vtkControl
             _colorContours = false;
             _sectionViewPossible = true;
             _drawOnGeometry = false;
+            _useSecondaryHighightColor = false;
             //
             UpdateColor();
         }
@@ -162,7 +173,11 @@ namespace vtkControl
             else
             {
                 if (extractVisualizationSurface) CreateFromDataByVisualizationSurfaceExtraction(data);
-                else CreateFromData(data);
+                else
+                {
+                    //CreateFromData(data);
+                    CreatePolyFromData(data);
+                }
                 //
                 if (data.Pickable && _geometry.GetMapper().GetInputAsDataSet().GetCellData().GetGlobalIds() != null)
                 {
@@ -185,6 +200,7 @@ namespace vtkControl
             this._colorContours = data.ColorContours;
             this._sectionViewPossible = data.SectionViewPossible;
             this._drawOnGeometry = data.DrawOnGeometry;
+            this._useSecondaryHighightColor = data.UseSecondaryHighightColor;
             //
             UpdateColor();
         }
@@ -270,6 +286,7 @@ namespace vtkControl
             this._colorContours = sourceActor.ColorContours;
             this._sectionViewPossible = sourceActor.SectionViewPossible;
             this._drawOnGeometry = sourceActor.DrawOnGeometry;
+            this._useSecondaryHighightColor = sourceActor.UseSecondaryHighightColor;
             //
             UpdateColor();
         }
@@ -414,10 +431,10 @@ namespace vtkControl
             }
 
             // Actor                                                                                   
-            
-            // Create polydata from unstructured grid
 
-            vtkGeometryFilter geometryFilter = vtkGeometryFilter.New();
+            // Create polydata from unstructured grid
+            vtkGeometryFilter geometryFilter;
+            geometryFilter = vtkGeometryFilter.New();
             geometryFilter.SetInput(uGridActor);
             geometryFilter.Update();
             vtkPolyData polydata = geometryFilter.GetOutput();
@@ -558,6 +575,119 @@ namespace vtkControl
 
            
         }
+        private void CreatePolyFromData(vtkMaxActorData data)
+        {
+            // Unstructured grid
+            vtkPolyData polyActor;
+            vtkPolyData polyEdges;
+            //
+            AddNodeAndCellDataToPoly(data.Geometry, out polyActor, out polyEdges, true);
+            // Add scalars
+            if (data.Geometry.Nodes.Values != null)
+            {
+                vtkFloatArray scalars = vtkFloatArray.New();
+                scalars.SetName(Globals.ScalarArrayName);
+                scalars.SetNumberOfValues(data.Geometry.Nodes.Values.Length);
+                for (int i = 0; i < data.Geometry.Nodes.Values.Length; i++)
+                {
+                    scalars.SetValue(i, data.Geometry.Nodes.Values[i]);
+                }
+                // Set scalars
+                polyActor.GetPointData().SetScalars(scalars);
+                // Set extreme nodes data
+                if (data.Geometry.ExtremeNodes.Ids != null)
+                {
+                    _minNode = new vtkMaxExtreemeNode(data.Geometry.ExtremeNodes.Ids[0], data.Geometry.ExtremeNodes.Coor[0], data.Geometry.ExtremeNodes.Values[0]);
+                    _maxNode = new vtkMaxExtreemeNode(data.Geometry.ExtremeNodes.Ids[1], data.Geometry.ExtremeNodes.Coor[1], data.Geometry.ExtremeNodes.Values[1]);
+                }
+            }
+            // Actor                                                                                                                
+
+            // Polydata
+            vtkPolyData polydata = polyActor;
+            polydata.GetPointData().CopyScalarsOn();
+            // Normals
+            if (data.SmoothShaded) polydata.GetPointData().SetNormals(ComputeNormals(polydata));
+            // Mapper
+            vtkDataSetMapper mapper = vtkDataSetMapper.New();
+            //mapper.SetInputConnection(transformFilter.GetOutputPort());
+            mapper.SetInput(polydata);
+            // Actor
+            _geometry.SetMapper(mapper);
+            _geometryPointData = polydata.GetPointData();
+            //
+            if (data.Pickable) _geometry.PickableOn();
+            else _geometry.PickableOff();
+            // Frustum locator
+            //if (data.Layer == vtkRendererLayer.Base && data.Pickable && data.CellLocator != null)
+            if (data.Layer == vtkRendererLayer.Base && data.CellLocator != null)
+            {
+                vtkUnstructuredGrid uGridCellLocator;
+                //
+                AddNodeAndCellDataToGrid(data.CellLocator, out uGridCellLocator);
+                //
+                _frustumCellLocator = vtkCellLocator.New();
+                _frustumCellLocator.SetDataSet(uGridCellLocator);
+                _frustumCellLocator.LazyEvaluationOn();
+                _frustumCellLocator.GetDataSet().GetPointData().SetGlobalIds((vtkUnsignedLongArray)uGridCellLocator.GetPointData().GetGlobalIds());
+                _frustumCellLocator.GetDataSet().GetCellData().SetGlobalIds((vtkUnsignedLongArray)uGridCellLocator.GetCellData().GetGlobalIds());
+                // Add scalars
+                if (data.CellLocator.Nodes.Values != null)
+                {
+                    vtkFloatArray scalars = vtkFloatArray.New();
+                    scalars.SetName(Globals.ScalarArrayName);
+                    scalars.SetNumberOfValues(data.CellLocator.Nodes.Values.Length);
+                    for (int i = 0; i < data.CellLocator.Nodes.Values.Length; i++)
+                    {
+                        scalars.SetValue(i, data.CellLocator.Nodes.Values[i]);
+                    }
+                    // Set scalars
+                    _frustumPointData = _frustumCellLocator.GetDataSet().GetPointData();
+                    _frustumPointData.SetScalars(scalars);
+                }
+            }
+            // Element edges                                                                                                        
+            if (data.CanHaveElementEdges)
+            {
+                // Mapper
+                mapper = vtkDataSetMapper.New();
+                mapper.SetInput(polyEdges);
+                // Actor
+                _elementEdges = new vtkActor();
+                _elementEdges.SetMapper(mapper);
+                _elementEdges.GetProperty().SetLighting(true);
+                _elementEdges.PickableOff();
+            }
+            // Model edges                                                                                                          
+            if (data.ModelEdges != null)
+            {
+                AddNodeAndCellDataToPoly(data.ModelEdges, out polyActor, out polyEdges, false);
+                // Polydata
+                polydata = polyActor;
+                // Mapper
+                mapper = vtkDataSetMapper.New();
+                mapper.SetInput(polydata);
+                // Actor
+                _modelEdges = vtkActor.New();
+                _modelEdges.SetMapper(mapper);
+                _modelEdges.GetProperty().SetLighting(true);
+                _modelEdges.PickableOff();
+                //
+                if (!data.CanHaveElementEdges)
+                {
+                    // recreate data
+                    polydata.DeepCopy(polydata);
+                    // Mapper
+                    mapper = vtkDataSetMapper.New();
+                    mapper.SetInput(polydata);
+                    // Actor
+                    _elementEdges = new vtkActor();
+                    _elementEdges.SetMapper(mapper);
+                    _elementEdges.GetProperty().SetLighting(true);
+                    _elementEdges.PickableOff();
+                }
+            }
+        }
         //
         private void AddNodeAndCellDataToGrid(PartExchangeData data, out vtkUnstructuredGrid uGridActor)
         {           
@@ -612,6 +742,49 @@ namespace vtkControl
             // Update grid
             uGridActor.Update();
             uGridEdges.Update();                        
+        }
+
+        private void AddNodeAndCellDataToPoly(PartExchangeData data, out vtkPolyData polyActor, out vtkPolyData polyEdges,
+                                              bool extractEdges)
+        {
+            polyActor = vtkPolyData.New();
+            polyEdges = vtkPolyData.New();
+            // Add the points
+            vtkPoints points = vtkPoints.New();
+            points.SetNumberOfPoints(data.Nodes.Coor.Length);
+            for (int i = 0; i < data.Nodes.Coor.Length; i++)
+            {
+                points.SetPoint(i, data.Nodes.Coor[i][0], data.Nodes.Coor[i][1], data.Nodes.Coor[i][2]);
+            }
+            polyActor.SetPoints(points);
+            polyEdges.SetPoints(points);
+            // Add the cells
+            AddCellDataToPoly(data, ref polyActor, ref polyEdges, extractEdges);
+            // Add node ids to points in the grid
+            if (data.Nodes.Ids != null)
+            {
+                vtkUnsignedLongArray pointIds = vtkUnsignedLongArray.New();
+                pointIds.SetNumberOfValues(data.Nodes.Ids.Length);
+                for (int i = 0; i < data.Nodes.Ids.Length; i++)
+                {
+                    pointIds.SetValue(i, (uint)data.Nodes.Ids[i]);
+                }
+                polyActor.GetPointData().SetGlobalIds(pointIds);
+            }
+            // Add cell ids to cells in the grid
+            if (data.Cells.Ids != null)
+            {
+                vtkUnsignedLongArray cellIds = vtkUnsignedLongArray.New();
+                cellIds.SetNumberOfValues(data.Cells.Ids.Length);
+                for (int i = 0; i < data.Cells.Ids.Length; i++)
+                {
+                    cellIds.SetValue(i, (uint)data.Cells.Ids[i]);
+                }
+                polyActor.GetCellData().SetGlobalIds(cellIds);
+            }
+            // Update grid
+            polyActor.Update();
+            polyEdges.Update();
         }
         private void AddCellDataToGrid(PartExchangeData data, ref vtkUnstructuredGrid uGridActor, ref vtkUnstructuredGrid uGridEdges, 
                                        bool extractEdges, bool addBackFace)
@@ -736,7 +909,220 @@ namespace vtkControl
             }
 
             if (data.Cells.Ids != null) data.Cells.Ids = actorCellIds.ToArray();
-        }        
+        }
+        private void AddCellDataToPoly(PartExchangeData data, ref vtkPolyData polyActor, ref vtkPolyData polyEdges,
+                                       bool extractEdges)
+        {
+            int[] nodeIds;
+            int cellType;
+            bool isEdge;
+            bool isSurface;
+            vtkIdList nodeList = vtkIdList.New();
+            vtkIdList edgeNodeList = vtkIdList.New();
+            List<int> actorCellIds = new List<int>();
+            //
+            bool addIds = false;
+            if (data.Cells.Ids != null) addIds = true;
+            //
+            int lineType = (int)vtkCellType.VTK_LINE;
+            int quadraticEdgeType = (int)vtkCellType.VTK_QUADRATIC_EDGE;
+            int triangleType = (int)vtkCellType.VTK_TRIANGLE;
+            int quadType = (int)vtkCellType.VTK_QUAD;
+            int quadraticTriangleType = (int)vtkCellType.VTK_QUADRATIC_TRIANGLE;
+            int quadraticQuadType = (int)vtkCellType.VTK_QUADRATIC_QUAD;
+            //
+            polyActor.Allocate(10000, 10000);
+            if (extractEdges) polyEdges.Allocate(1000, 1000);
+            //
+            for (int i = 0; i < data.Cells.CellNodeIds.GetLength(0); i++)
+            {
+                nodeIds = data.Cells.CellNodeIds[i];
+                cellType = data.Cells.Types[i];
+                isEdge = cellType == lineType || cellType == quadraticEdgeType;
+                isSurface = cellType == triangleType || cellType == quadType || cellType == quadraticTriangleType ||
+                            cellType == quadraticQuadType;
+                // Cell edges                                                                                                       
+                if (!isEdge)
+                {
+                    if (!extractEdges)
+                    {
+                        // Node list
+                        //nodeList.SetNumberOfIds(nodeIds.Length);
+                        //for (int j = 0; j < nodeIds.Length; j++) nodeList.SetId(j, nodeIds[j]);
+                        //polyEdges.InsertNextCell(cellType, nodeList);
+                    }
+                    else
+                    {
+                        edgeNodeList.SetNumberOfIds(2);
+                        if (cellType == triangleType)
+                        {
+                            for (int j = 0; j < 3; j++)
+                            {
+                                edgeNodeList.SetId(0, nodeIds[j]);
+                                edgeNodeList.SetId(1, nodeIds[(j + 1) % 3]);
+                                polyEdges.InsertNextCell(lineType, edgeNodeList);
+                            }
+                        }
+                        else if (cellType == quadType)
+                        {
+                            for (int j = 0; j < 4; j++)
+                            {
+                                edgeNodeList.SetId(0, nodeIds[j]);
+                                edgeNodeList.SetId(1, nodeIds[(j + 1) % 4]);
+                                polyEdges.InsertNextCell(lineType, edgeNodeList);
+                            }
+                        }
+                        else if (cellType == quadraticTriangleType)
+                        {
+                            for (int j = 0; j < 3; j++)
+                            {
+                                edgeNodeList.SetId(0, nodeIds[j]);
+                                edgeNodeList.SetId(1, nodeIds[j + 3]);
+                                polyEdges.InsertNextCell(lineType, edgeNodeList);
+                                edgeNodeList.SetId(0, nodeIds[j + 3]);
+                                edgeNodeList.SetId(1, nodeIds[(j + 1) % 3]);
+                                polyEdges.InsertNextCell(lineType, edgeNodeList);
+                            }
+                        }
+                        else if (cellType == quadraticQuadType)
+                        {
+                            for (int j = 0; j < 4; j++)
+                            {
+                                edgeNodeList.SetId(0, nodeIds[j]);
+                                edgeNodeList.SetId(1, nodeIds[j + 4]);
+                                polyEdges.InsertNextCell(lineType, edgeNodeList);
+                                edgeNodeList.SetId(0, nodeIds[j + 4]);
+                                edgeNodeList.SetId(1, nodeIds[(j + 1) % 4]);
+                                polyEdges.InsertNextCell(lineType, edgeNodeList);
+                            }
+                        }
+                    }
+                }
+                // Cells                                                                                                            
+                if (isEdge)
+                {
+                    nodeList.SetNumberOfIds(2);
+                    if (cellType == lineType)
+                    {
+                        nodeList.SetId(0, nodeIds[0]);
+                        nodeList.SetId(1, nodeIds[1]);
+                        polyActor.InsertNextCell(lineType, nodeList);
+                        if (data.Cells.Ids != null) actorCellIds.Add(data.Cells.Ids[i]);
+                    }
+                    else if (cellType == quadraticEdgeType)
+                    {
+                        nodeList.SetId(0, nodeIds[0]);
+                        nodeList.SetId(1, nodeIds[2]);
+                        polyActor.InsertNextCell(lineType, nodeList);
+                        nodeList.SetId(0, nodeIds[2]);
+                        nodeList.SetId(1, nodeIds[1]);
+                        polyActor.InsertNextCell(lineType, nodeList);
+                        if (addIds)
+                        {
+                            actorCellIds.Add(data.Cells.Ids[i]);
+                            actorCellIds.Add(data.Cells.Ids[i]);
+                        }
+                    }
+                }
+                else if (isSurface)
+                {
+                    nodeList.SetNumberOfIds(3);
+                    if (cellType == triangleType)
+                    {
+                        nodeList.SetId(0, nodeIds[0]);
+                        nodeList.SetId(1, nodeIds[1]);
+                        nodeList.SetId(2, nodeIds[2]);
+                        polyActor.InsertNextCell(triangleType, nodeList);
+                        if (addIds) actorCellIds.Add(data.Cells.Ids[i]);
+                    }
+                    else if (cellType == quadType)
+                    {
+                        nodeList.SetId(0, nodeIds[0]);
+                        nodeList.SetId(1, nodeIds[1]);
+                        nodeList.SetId(2, nodeIds[2]);
+                        polyActor.InsertNextCell(triangleType, nodeList);
+                        nodeList.SetId(0, nodeIds[0]);
+                        nodeList.SetId(1, nodeIds[2]);
+                        nodeList.SetId(2, nodeIds[3]);
+                        polyActor.InsertNextCell(triangleType, nodeList);
+                        if (addIds)
+                        {
+                            actorCellIds.Add(data.Cells.Ids[i]);
+                            actorCellIds.Add(data.Cells.Ids[i]);
+                        }
+                    }
+                    else if (cellType == quadraticTriangleType)
+                    {
+                        nodeList.SetId(0, nodeIds[0]);
+                        nodeList.SetId(1, nodeIds[3]);
+                        nodeList.SetId(2, nodeIds[5]);
+                        polyActor.InsertNextCell(triangleType, nodeList);
+                        nodeList.SetId(0, nodeIds[3]);
+                        nodeList.SetId(1, nodeIds[4]);
+                        nodeList.SetId(2, nodeIds[5]);
+                        polyActor.InsertNextCell(triangleType, nodeList);
+                        nodeList.SetId(0, nodeIds[3]);
+                        nodeList.SetId(1, nodeIds[1]);
+                        nodeList.SetId(2, nodeIds[4]);
+                        polyActor.InsertNextCell(triangleType, nodeList);
+                        nodeList.SetId(0, nodeIds[5]);
+                        nodeList.SetId(1, nodeIds[4]);
+                        nodeList.SetId(2, nodeIds[2]);
+                        polyActor.InsertNextCell(triangleType, nodeList);
+                        if (addIds)
+                        {
+                            actorCellIds.Add(data.Cells.Ids[i]);
+                            actorCellIds.Add(data.Cells.Ids[i]);
+                            actorCellIds.Add(data.Cells.Ids[i]);
+                            actorCellIds.Add(data.Cells.Ids[i]);
+                        }
+                    }
+                    else if (cellType == quadraticQuadType)
+                    {
+                        nodeList.SetId(0, nodeIds[4]);
+                        nodeList.SetId(1, nodeIds[7]);
+                        nodeList.SetId(2, nodeIds[0]);
+                        polyActor.InsertNextCell(triangleType, nodeList);
+                        nodeList.SetId(0, nodeIds[4]);
+                        nodeList.SetId(1, nodeIds[5]);
+                        nodeList.SetId(2, nodeIds[7]);
+                        polyActor.InsertNextCell(triangleType, nodeList);
+                        nodeList.SetId(0, nodeIds[4]);
+                        nodeList.SetId(1, nodeIds[1]);
+                        nodeList.SetId(2, nodeIds[5]);
+                        polyActor.InsertNextCell(triangleType, nodeList);
+                        nodeList.SetId(0, nodeIds[6]);
+                        nodeList.SetId(1, nodeIds[5]);
+                        nodeList.SetId(2, nodeIds[2]);
+                        polyActor.InsertNextCell(triangleType, nodeList);
+                        nodeList.SetId(0, nodeIds[6]);
+                        nodeList.SetId(1, nodeIds[7]);
+                        nodeList.SetId(2, nodeIds[5]);
+                        polyActor.InsertNextCell(triangleType, nodeList);
+                        nodeList.SetId(0, nodeIds[6]);
+                        nodeList.SetId(1, nodeIds[3]);
+                        nodeList.SetId(2, nodeIds[7]);
+                        polyActor.InsertNextCell(triangleType, nodeList);
+                        if (addIds)
+                        {
+                            actorCellIds.Add(data.Cells.Ids[i]);
+                            actorCellIds.Add(data.Cells.Ids[i]);
+                            actorCellIds.Add(data.Cells.Ids[i]);
+                            actorCellIds.Add(data.Cells.Ids[i]);
+                            actorCellIds.Add(data.Cells.Ids[i]);
+                            actorCellIds.Add(data.Cells.Ids[i]);
+                        }
+                    }
+                    else throw new NotSupportedException();
+                }
+                else throw new NotSupportedException();
+            }
+            //
+            if (addIds) data.Cells.Ids = actorCellIds.ToArray();
+            //
+            polyActor.Squeeze();
+            if (extractEdges) polyEdges.Squeeze();
+        }
 
         // Color and visuals
         public void UpdateColor()
