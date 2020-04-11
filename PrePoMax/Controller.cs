@@ -2166,6 +2166,8 @@ namespace PrePoMax
                 }
             }
             _form.HideActors(partNames, false);
+            //
+            Update(UpdateType.RedrawSymbols);
         }
         public void ShowModelParts(string[] partNames)
         {
@@ -2179,6 +2181,8 @@ namespace PrePoMax
                 }
             }
             _form.ShowActors(partNames, false);
+            //
+            Update(UpdateType.RedrawSymbols);
         }
         public void SetTransparencyForModelParts(string[] partNames, byte alpha)
         {

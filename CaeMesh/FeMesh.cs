@@ -2437,20 +2437,23 @@ namespace CaeMesh
         {
             FeSurface surface = _surfaces[name];
             KeyValuePair<FeFaceName, string>[] elementSets = surface.ElementFaces.ToArray();
-
+            //
             List<int[]> cellList = new List<int[]>();
             FeElement element;
-
+            //
+            Dictionary<int, bool> partVisibilities = new Dictionary<int, bool>();
+            foreach (var part in _parts) partVisibilities.Add(part.Value.PartId, part.Value.Visible);
+            //
             foreach (var entry in elementSets)
             {
                 foreach (int elementId in _elementSets[entry.Value].Labels)
                 {
                     element = _elements[elementId];
-                    cellList.Add(element.GetVtkCellFromFaceName(entry.Key));
+                    if (partVisibilities[element.PartId]) cellList.Add(element.GetVtkCellFromFaceName(entry.Key));
                 }
             }
             cells = cellList.ToArray();
-
+            //
             GetSurfaceGeometry(cells, out nodeCoor, out cellTypes);
         }
         public void GetSurfaceGeometry(int[][] cells, out double[][] nodeCoor, out int[] cellTypes)
@@ -2459,11 +2462,10 @@ namespace CaeMesh
         }
         public void GetSurfaceGeometry(int[][] cells, out int[] nodeIds, out double[][] nodeCoor, out int[] cellTypes)
         {
-            // get the node ids of the used nodes
+            // Get the node ids of the used nodes
             HashSet<int> nodesNeeded = new HashSet<int>();
             for (int i = 0; i < cells.Length; i++) nodesNeeded.UnionWith(cells[i]);
-
-            // create node array and a lookup table
+            // Create node array and a lookup table
             nodeCoor = new double[nodesNeeded.Count][];
             nodeIds = new int[nodesNeeded.Count];
             Dictionary<int, int> oldNew = new Dictionary<int, int>();
@@ -2475,8 +2477,7 @@ namespace CaeMesh
                 oldNew.Add(id, count);
                 count++;
             }
-
-            // renumber triangles and add cell type
+            // Renumber triangles and add cell type
             cellTypes = new int[cells.Length];
             for (int i = 0; i < cells.Length; i++)
             {
@@ -2500,12 +2501,15 @@ namespace CaeMesh
             List<int[]> cellList = new List<int[]>();
             FeElement element;
             //
+            Dictionary<int, bool> partVisibilities = new Dictionary<int, bool>();
+            foreach (var part in _parts) partVisibilities.Add(part.Value.PartId, part.Value.Visible);
+            //
             foreach (var entry in elementSets)
             {
                 foreach (int elementId in _elementSets[entry.Value].Labels)
                 {
                     element = _elements[elementId];
-                    cellList.Add(element.GetVtkCellFromFaceName(entry.Key));
+                    if (partVisibilities[element.PartId]) cellList.Add(element.GetVtkCellFromFaceName(entry.Key));
                 }
             }
             // Get edges
