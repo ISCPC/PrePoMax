@@ -2433,7 +2433,8 @@ namespace CaeMesh
         #endregion #################################################################################################################
 
         #region Surfaces  ##########################################################################################################
-        public void GetSurfaceGeometry(string name, out double[][] nodeCoor, out int[][] cells, out int[] cellTypes)
+        public void GetSurfaceGeometry(string name, out double[][] nodeCoor, out int[][] cells, out int[] cellTypes,
+                                       bool onlyVisible)
         {
             FeSurface surface = _surfaces[name];
             KeyValuePair<FeFaceName, string>[] elementSets = surface.ElementFaces.ToArray();
@@ -2449,7 +2450,7 @@ namespace CaeMesh
                 foreach (int elementId in _elementSets[entry.Value].Labels)
                 {
                     element = _elements[elementId];
-                    if (partVisibilities[element.PartId]) cellList.Add(element.GetVtkCellFromFaceName(entry.Key));
+                    if (!(onlyVisible && !partVisibilities[element.PartId])) cellList.Add(element.GetVtkCellFromFaceName(entry.Key));
                 }
             }
             cells = cellList.ToArray();
@@ -2493,7 +2494,8 @@ namespace CaeMesh
                 else throw new NotSupportedException();
             }
         }
-        public void GetSurfaceEdgesGeometry(string name, out double[][] nodeCoor, out int[][] cells, out int[] cellTypes)
+        public void GetSurfaceEdgesGeometry(string name, out double[][] nodeCoor, out int[][] cells, out int[] cellTypes,
+                                            bool onlyVisible)
         {
             FeSurface surface = _surfaces[name];
             KeyValuePair<FeFaceName, string>[] elementSets = surface.ElementFaces.ToArray();
@@ -2509,7 +2511,7 @@ namespace CaeMesh
                 foreach (int elementId in _elementSets[entry.Value].Labels)
                 {
                     element = _elements[elementId];
-                    if (partVisibilities[element.PartId]) cellList.Add(element.GetVtkCellFromFaceName(entry.Key));
+                    if (!(onlyVisible && !partVisibilities[element.PartId])) cellList.Add(element.GetVtkCellFromFaceName(entry.Key));
                 }
             }
             // Get edges
@@ -5170,17 +5172,21 @@ namespace CaeMesh
             nodeSet.CenterOfGravity = centerOfGravity;
             nodeSet.BoundingBox = boundingBox;
         }
-        public double[][] GetNodeSetCoor(int[] nodeIds)
+        public double[][] GetNodeSetCoor(int[] nodeIds, bool onlyVisible)
         {
-            double[][] coor = null;
-
-            coor = new double[nodeIds.Length][];
+            int nodeId;
+            List<double[]> coor = new List<double[]>();
+            //
+            HashSet<int> visibleNodes = new HashSet<int>();
+            foreach (var part in _parts) if (part.Value.Visible) visibleNodes.UnionWith(part.Value.NodeLabels);
+            //
             for (int i = 0; i < nodeIds.Length; i++)
             {
-                coor[i] = _nodes[nodeIds[i]].Coor;
+                nodeId = nodeIds[i];
+                if (!(onlyVisible && !visibleNodes.Contains(nodeId))) coor.Add(_nodes[nodeIds[i]].Coor);
             }
-
-            return coor;
+            //
+            return coor.ToArray();
         }
         public int[] GetVisibleNodeIds()
         {

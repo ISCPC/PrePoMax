@@ -103,12 +103,12 @@ namespace PrePoMax.Forms
                 else if (itemTag is ViewTie vt) _viewConstraint = vt;
                 else throw new NotImplementedException();
                 //
+                propertyGrid.SelectedObject = itemTag;
+                propertyGrid.Select();
+                //
                 SetSelectItem();
                 //
                 ShowHideSelectionForm();
-                //
-                propertyGrid.SelectedObject = itemTag;
-                propertyGrid.Select();
                 //
                 HighlightConstraint();
                 // Context menu

@@ -1771,7 +1771,7 @@ namespace vtkControl
             property.SetDiffuse(diffuse);    // color from the lights
             property.SetLineWidth(2f);
             property.SetOpacity(1);
-            property.BackfaceCullingOn();
+            //property.BackfaceCullingOn();
             actor.Geometry.PickableOff();
         }
         private void ApplySymbolFormatingToActor(vtkActor actor)
@@ -2756,9 +2756,9 @@ namespace vtkControl
         {
             // Create actor
             vtkMaxActor actor = new vtkMaxActor(data);
-
+            //
             AddActor(actor, data.Layer, data.CanHaveElementEdges);
-
+            //
             _style.AdjustCameraDistanceAndClipping();
             this.Invalidate();
         }
@@ -3170,10 +3170,8 @@ namespace vtkControl
         {
             // Add actor
             AddActorGeometry(actor, layer);
-
             // Add actorElementEdges
             if (actor.ElementEdges != null) AddActorEdges(actor, false, layer);
-
             // Add modelEdges
             if (actor.ModelEdges != null) AddActorEdges(actor, true, layer);
         }

@@ -5705,55 +5705,55 @@ namespace PrePoMax
 
             foreach (var entry in _model.Constraints)
             {
-                DrawConstraint(entry.Value, color, nodeSymbolSize, layer);
+                DrawConstraint(entry.Value, color, nodeSymbolSize, layer, true);
             }
         }
         public void DrawConstraint(Constraint constraint, System.Drawing.Color color, int nodeSymbolSize,
-                                   vtkControl.vtkRendererLayer layer)
+                                   vtkControl.vtkRendererLayer layer, bool onlyVisible)
         {
             try
             {
-                if (!(constraint.Active && constraint.Visible && constraint.Valid)) return;
+                if (!(((constraint.Active && constraint.Visible ) || layer == vtkControl.vtkRendererLayer.Selection) && constraint.Valid))
+                    return;
                 //
                 string prefixName = "CONSTRAINT" + Globals.NameSeparator + constraint.Name;
                 vtkControl.vtkRendererLayer symbolLayer = layer == vtkControl.vtkRendererLayer.Selection ? 
                                                                    layer : vtkControl.vtkRendererLayer.Overlay;
-                string nodeSetName;
                 //
                 if (constraint is RigidBody rb)
                 {
+                    // Master
                     if (!_model.Mesh.ReferencePoints.ContainsKey(rb.ReferencePointName)) return;
-                    //
+                    else HighlightReferencePoints(new string[] { rb.ReferencePointName });
+                    // Slave
                     if (rb.RegionType == RegionTypeEnum.NodeSetName)
-                        DrawNodeSet(prefixName, rb.RegionName, color, layer, nodeSymbolSize, true);
+                        DrawNodeSet(prefixName, rb.RegionName, color, layer, nodeSymbolSize, true, onlyVisible);
                     else if (rb.RegionType == RegionTypeEnum.SurfaceName)
                     {
-                        DrawSurface(prefixName, rb.RegionName, color, layer, true, true);
-                        //if (!_model.Mesh.Surfaces.ContainsKey(rb.RegionName)) return;
-                        //nodeSetName = _model.Mesh.Surfaces[rb.RegionName].NodeSetName;
+                        DrawSurface(prefixName, rb.RegionName, color, layer, true, true, onlyVisible);
+                        if (layer == vtkControl.vtkRendererLayer.Selection)
+                            DrawSurfaceEdge(prefixName, rb.RegionName, color, layer, true, true, onlyVisible);
                     }
                     else throw new NotSupportedException();
-                    //
-                    DrawRigidBodySymbol(rb, color, symbolLayer);
+                    // Symbol
+                    DrawRigidBodySymbol(rb, color, symbolLayer, onlyVisible);
                 }
                 else if (constraint is Tie t)
                 {
-                    //if (!_model.Mesh.Surfaces.ContainsKey(t.SlaveRegionName) || 
-                    //    !_model.Mesh.Surfaces.ContainsKey(t.MasterRegionName)) return;
-                    ////
-                    //nodeSetName = _model.Mesh.Surfaces[t.SlaveRegionName].NodeSetName;
-                    //DrawNodeSet(prefixName + Globals.NameSeparator + "Slave", nodeSetName, color, layer, nodeSymbolSize, true);
-                    //
-                    //nodeSetName = _model.Mesh.Surfaces[t.MasterSurfaceName].NodeSetName;
-                    //DrawNodeSet(prefixName + Globals.NameSeparator + "Master", nodeSetName, color, layer, nodeSymbolSize);
-                    DrawSurface(prefixName, t.MasterRegionName, color, layer, true);
-                    DrawSurface(prefixName, t.SlaveRegionName, color, layer, true, true);
+                    // Master
+                    DrawSurface(prefixName, t.MasterRegionName, color, layer, false, false, onlyVisible);
+                    if (layer == vtkControl.vtkRendererLayer.Selection)
+                        DrawSurfaceEdge(prefixName, t.MasterRegionName, color, layer, false, false, onlyVisible);
+                    // Slave
+                    DrawSurface(prefixName, t.SlaveRegionName, color, layer, false, true, onlyVisible);
+                    if (layer == vtkControl.vtkRendererLayer.Selection)
+                        DrawSurfaceEdge(prefixName, t.SlaveRegionName, color, layer, false, true, onlyVisible);
                 }
                 else throw new NotSupportedException();
             }
             catch { } // do not show the exception to the user
         }
-        public void DrawRigidBodySymbol(RigidBody rigidBody, System.Drawing.Color color, vtkControl.vtkRendererLayer layer)
+        public void DrawRigidBodySymbol(RigidBody rigidBody, System.Drawing.Color color, vtkControl.vtkRendererLayer layer, bool onlyVisible)
         {
             int[][] cells;
             int[] cellsTypes;
@@ -5775,7 +5775,9 @@ namespace PrePoMax
                 if (nodeSet.Labels.Length == 0) return;     // after remeshing this is 0 before the node set update
 
                 // all nodes
-                nodeCoor = _model.Mesh.GetNodeSetCoor(nodeSet.Labels);
+                nodeCoor = _model.Mesh.GetNodeSetCoor(nodeSet.Labels, onlyVisible);
+                // If all nodes are hidden
+                if (nodeCoor == null || nodeCoor.Length == 0) return;
                 // ids go from 0 to Length
                 int[] distributedIds = GetSpatiallyEquallyDistributedCoor(nodeCoor, 3);
                 // distributed nodes
@@ -6609,22 +6611,23 @@ namespace PrePoMax
         public void DrawNodes(string prefixName, int[] nodeIds, System.Drawing.Color color, vtkControl.vtkRendererLayer layer,
                               int nodeSize = 5)
         {
-            DrawNodes(prefixName, _model.Geometry.GetNodeSetCoor(nodeIds), color, layer, nodeSize);
+            DrawNodes(prefixName, _model.Geometry.GetNodeSetCoor(nodeIds, true), color, layer, nodeSize);
         }
         public void DrawNodeSet(string prefixName, string nodeSetName, System.Drawing.Color color, 
                                 vtkControl.vtkRendererLayer layer, int nodeSize = 5,
-                                bool useSecondaryHighlightColor = false)
+                                bool useSecondaryHighlightColor = false, bool onlyVisible = false)
         {
             if (nodeSetName != null && _model.Mesh.NodeSets.ContainsKey(nodeSetName))
             {
                 FeNodeSet nodeSet = _model.Mesh.NodeSets[nodeSetName];
-                double[][] nodeCoor = _model.Mesh.GetNodeSetCoor(nodeSet.Labels);
+                double[][] nodeCoor = _model.Mesh.GetNodeSetCoor(nodeSet.Labels, onlyVisible);
                 DrawNodes(prefixName + Globals.NameSeparator + nodeSetName, nodeCoor, color,
                           layer, nodeSize, false, useSecondaryHighlightColor);
             }
         }
         public void DrawSurface(string prefixName, string surfaceName, System.Drawing.Color color,
-                                vtkControl.vtkRendererLayer layer, bool backfaceCulling = true, bool useSecondaryHighlightColor = false)
+                                vtkControl.vtkRendererLayer layer, bool backfaceCulling = true,
+                                bool useSecondaryHighlightColor = false, bool onlyVisible = false)
         {
             FeSurface s;
             FeNodeSet ns;
@@ -6640,7 +6643,8 @@ namespace PrePoMax
                     data.BackfaceCulling = backfaceCulling;
                     data.DrawOnGeometry = true;
                     data.UseSecondaryHighightColor = useSecondaryHighlightColor;
-                    _model.Mesh.GetSurfaceGeometry(surfaceName, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
+                    _model.Mesh.GetSurfaceGeometry(surfaceName, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.CellNodeIds,
+                                                   out data.Geometry.Cells.Types, onlyVisible);
                     //
                     ApplyLighting(data);
                     _form.Add3DCells(data);
@@ -6652,7 +6656,8 @@ namespace PrePoMax
             }
         }
         public void DrawSurfaceEdge(string prefixName, string surfaceName, System.Drawing.Color color,
-                                    vtkControl.vtkRendererLayer layer, bool backfaceCulling = true, bool useSecondaryHighlightColor = false)
+                                    vtkControl.vtkRendererLayer layer, bool backfaceCulling = true,
+                                    bool useSecondaryHighlightColor = false, bool onlyVisible = false)
         {
             FeSurface s;
             FeNodeSet ns;
@@ -6667,7 +6672,7 @@ namespace PrePoMax
                     data.CanHaveElementEdges = true;
                     data.BackfaceCulling = backfaceCulling;
                     data.UseSecondaryHighightColor = useSecondaryHighlightColor;
-                    _model.Mesh.GetSurfaceEdgesGeometry(surfaceName, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
+                    _model.Mesh.GetSurfaceEdgesGeometry(surfaceName, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types, onlyVisible);
 
                     ApplyLighting(data);
                     _form.Add3DCells(data);
@@ -6889,7 +6894,7 @@ namespace PrePoMax
                 DrawNodeSet("Highlight", nodeSetName, color, layer, nodeSize, useSecondaryHighlightColor);
             }
         }
-
+        //
         public void HighlightElement(int elementId)
         {
             HighlightElements(new int[] { elementId }, DisplayedMesh);
@@ -7024,16 +7029,9 @@ namespace PrePoMax
             {
                 constraint = _model.Constraints[constraintName];
                 //
-                if (!constraint.Visible) return;
-                //
-                if (constraint is RigidBody rb)
+                if (constraint is RigidBody || constraint is Tie)
                 {
-                    DrawConstraint(constraint, System.Drawing.Color.Red, 4, vtkControl.vtkRendererLayer.Selection);
-                    HighlightReferencePoints(new string[] { rb.ReferencePointName });
-                }
-                else if (constraint is Tie t)
-                {
-                    DrawConstraint(constraint, System.Drawing.Color.Red, 4, vtkControl.vtkRendererLayer.Selection);
+                    DrawConstraint(constraint, System.Drawing.Color.Red, 4, vtkControl.vtkRendererLayer.Selection, false);
                 }
                 else throw new NotSupportedException();
             }
