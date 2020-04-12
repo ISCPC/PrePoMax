@@ -9,7 +9,7 @@ using System.Windows.Forms;
 
 namespace PrePoMax.Forms
 {
-    class FrmHistoryOutput : UserControls.FrmPropertyListView, IFormBase
+    class FrmHistoryOutput : UserControls.FrmPropertyListView, IFormBase, IFormHighlight
     {
         // Variables                                                                                                                
         private string[] _historyOutputNames;
@@ -262,8 +262,6 @@ namespace PrePoMax.Forms
         {
             try
             {
-                _controller.ClearSelectionHistoryAndSelectionChanged();
-                //
                 if (_viewHistoryOutput == null) { }
                 else if (HistoryOutput is NodalHistoryOutput || HistoryOutput is ElementHistoryOutput)
                 {
@@ -319,6 +317,12 @@ namespace PrePoMax.Forms
                 }
                 else throw new NotSupportedException();
             }
+        }
+
+        // IFormHighlight
+        public void Highlight()
+        {
+            HighlightHistoryOutput();
         }
     }
 }

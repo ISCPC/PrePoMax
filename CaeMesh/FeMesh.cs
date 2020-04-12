@@ -4040,7 +4040,7 @@ namespace CaeMesh
             //
             return nodeIds.ToArray();
         }
-        // Get node, edge or triangle coordinates for mesh refinement
+        // Get node, edge or triangle coordinates for mesh refinement for Netgen
         public void GetVetexAndEdgeCoorFromGeometryIds(int[] ids, double meshSize, bool edgeRepresentation,
                                                              out double[][] points, out double[][][] lines)
         {
@@ -4056,7 +4056,6 @@ namespace CaeMesh
                 }
                 else if (cells[i].Length == 2)
                 {
-                    //pointList.AddRange(SplitEdge(cells[i], meshSize));
                     lineList.Add(GetEdgePointCoor(cells[i]));
                 }
                 else if (cells[i].Length == 3)
@@ -4069,6 +4068,32 @@ namespace CaeMesh
             }
             points = pointList.ToArray();
             lines = lineList.ToArray();
+        }
+        // Get node, edge or triangle coordinates for mesh refinement for Highlight
+        public void GetVetexAndEdgeCoorFromGeometryIds(int[] ids, double meshSize, bool edgeRepresentation,
+                                                       out double[][] points)
+        {
+            int[][] cells = GetCellsFromGeometryIds(ids, edgeRepresentation);
+            List<double[]> pointList = new List<double[]>();
+            //
+            for (int i = 0; i < cells.Length; i++)
+            {
+                if (cells[i].Length == 1)
+                {
+                    pointList.Add(_nodes[cells[i][0]].Coor);
+                }
+                else if (cells[i].Length == 2)
+                {
+                    pointList.AddRange(SplitEdge(cells[i], meshSize));
+                }
+                else if (cells[i].Length == 3)
+                {
+                    SplitTriangle(cells[i], meshSize, out double[][] trianglePoints, out double[][][] triangleLines);
+                    pointList.AddRange(trianglePoints);
+                }
+                else throw new NotSupportedException();
+            }
+            points = pointList.ToArray();
         }
         private int[][] GetCellsFromGeometryIds(int[] ids, bool edgeRepresentation)
         {
@@ -4474,38 +4499,42 @@ namespace CaeMesh
         }
         public void AddNodeSetFromElementSet(string elementSetName)
         {
-            FeNodeSet nodeSet = GetNodeSetFromPartOrElementSetName(elementSetName);
+            FeNodeSet nodeSet = GetNodeSetFromPartOrElementSetName(elementSetName, false);
             _nodeSets.Add(nodeSet.Name, nodeSet);
         }
-        public FeNodeSet GetNodeSetFromPartOrElementSetName(string regionName)
+        public FeNodeSet GetNodeSetFromPartOrElementSetName(string regionName, bool onlyVisible)
         {
             FeGroup group;
             if (_elementSets.ContainsKey(regionName)) group = _elementSets[regionName];
             else if (_parts.ContainsKey(regionName)) group = _parts[regionName];
             else throw new CaeException("The element set name or part name does not exist.");
-
-            // create a node set from the element set
+            //
+            Dictionary<int, bool> partVisibilities = new Dictionary<int, bool>();
+            foreach (var part in _parts) partVisibilities.Add(part.Value.PartId, part.Value.Visible);
+            // Create a node set from the element set
             HashSet<int> nodeIds = new HashSet<int>();
             FeElement element;
             for (int i = 0; i < group.Labels.Length; i++)
             {
                 element = _elements[group.Labels[i]];
-                for (int j = 0; j < element.NodeIds.Length; j++) nodeIds.Add(element.NodeIds[j]);
+                if (!(onlyVisible && !partVisibilities[element.PartId])) nodeIds.UnionWith(element.NodeIds);
             }
-
+            //
             string nodeSetName = regionName + "_el";
             FeNodeSet nodeSet = new FeNodeSet(nodeSetName, nodeIds.ToArray());
             UpdateNodeSetCenterOfGravity(nodeSet);
             return nodeSet;
         }
-        public FeNodeSet GetNodeSetFromPartNames(string[] partNames)
+        public FeNodeSet GetNodeSetFromPartNames(string[] partNames, bool onlyVisible)
         {
             // Create a node set from parts
             string nodeSetName = "_";
             HashSet<int> nodeIds = new HashSet<int>();
+            BasePart part;
             foreach (var partName in partNames)
             {
-                nodeIds.UnionWith(_parts[partName].NodeLabels);
+                part = _parts[partName];
+                if (!(onlyVisible && !part.Visible)) nodeIds.UnionWith(part.NodeLabels);
                 nodeSetName += partName + "_";
             }
             nodeSetName += DateTime.Now.Ticks;

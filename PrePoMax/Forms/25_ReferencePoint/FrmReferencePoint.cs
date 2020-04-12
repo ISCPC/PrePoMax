@@ -10,7 +10,7 @@ using System.Drawing;
 
 namespace PrePoMax.Forms
 {
-    class FrmReferencePoint : UserControls.FrmProperties, IFormBase
+    class FrmReferencePoint : UserControls.FrmProperties, IFormBase, IFormHighlight
     {
         // Variables                                                                                                                
         private HashSet<string> _allExistingNames;
@@ -93,7 +93,7 @@ namespace PrePoMax.Forms
                 {
                     ViewFeReferencePoint vrp = propertyGrid.SelectedObject as ViewFeReferencePoint;
                     if (valueString == vrp.NodeSetName) objects = new object[] { vrp.NodeSetName };
-                    if (valueString == vrp.SurfaceName) objects = new object[] { vrp.SurfaceName };
+                    else if (valueString == vrp.SurfaceName) objects = new object[] { vrp.SurfaceName };
                     else objects = null;
                 }
                 else throw new NotImplementedException();
@@ -119,6 +119,11 @@ namespace PrePoMax.Forms
             {
                  _controller.ReplaceReferencePointCommand(_referencePointToEditName, ReferencePoint);
             }
+            // Convert the reference point from internal to show it
+            else
+            {
+                ReferencePointInternal(false);
+            }
             // If all is successful turn off the selection
             TurnOffSelection();
         }
@@ -126,6 +131,8 @@ namespace PrePoMax.Forms
         {
             // Close the ItemSetSelectionForm
             TurnOffSelection();
+            // Convert the reference point from internal to show it
+            ReferencePointInternal(false);
             //
             base.OnHideOrClose();
         }
@@ -151,6 +158,8 @@ namespace PrePoMax.Forms
             else
             {
                 ReferencePoint = _controller.GetReferencePoint(_referencePointToEditName); // to clone
+                // Convert the reference point to internal to hide it
+                ReferencePointInternal(true);
                 // Check for deleted regions
                 if (ReferencePoint.CreatedFrom == FeReferencePointCreatedFrom.BoundingBoxCenter ||
                     ReferencePoint.CreatedFrom == FeReferencePointCreatedFrom.CenterOfGravity)
@@ -182,22 +191,25 @@ namespace PrePoMax.Forms
         // Methods                                                                                                                  
         public void PickedIds(int[] ids)
         {
-            this.Enabled = true;
-            //
-            //_controller.SelectBy = vtkSelectBy.Off;
-            //_controller.Selection.SelectItem = vtkSelectItem.None;
-            _controller.ClearSelectionHistoryAndSelectionChanged();
-            //
-            if (ids != null && ids.Length == 1)
+            if (ids != null)
             {
-                FeNode node = _controller.Model.Mesh.Nodes[ids[0]];
-                _viewReferencePoint.X = node.X;
-                _viewReferencePoint.Y = node.Y;
-                _viewReferencePoint.Z = node.Z;
-                //
-                //_controller.UpdateReferencePoint(ReferencePoint);
+                if (ids.Length == 0)
+                {
+                    _viewReferencePoint.X = 0;
+                    _viewReferencePoint.Y = 0;
+                    _viewReferencePoint.Z = 0;
+                }
+                else if (ids.Length == 1)
+                {
+                    FeNode node = _controller.Model.Mesh.Nodes[ids[0]];
+                    _viewReferencePoint.X = node.X;
+                    _viewReferencePoint.Y = node.Y;
+                    _viewReferencePoint.Z = node.Z;
+                }
                 //
                 propertyGrid.Refresh();
+                //
+                _propertyItemChanged = true;
                 //
                 HighlightReferencePoint();
             }
@@ -236,6 +248,20 @@ namespace PrePoMax.Forms
             }
             _controller.ClearSelectionHistoryAndSelectionChanged();
         }
-       
+        private void ReferencePointInternal(bool toInternal)
+        {
+            if (_referencePointToEditName != null)
+            {
+                // Convert the constraint from/to internal to hide/show it
+                _controller.GetReferencePoint(_referencePointToEditName).Internal = toInternal;
+                _controller.Update(UpdateType.RedrawSymbols);
+            }
+        }
+        // IFormHighlight
+        public void Highlight()
+        {
+            HighlightReferencePoint();
+        }
+
     }
 }

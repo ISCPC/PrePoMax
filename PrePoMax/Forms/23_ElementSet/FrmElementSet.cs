@@ -9,7 +9,7 @@ using CaeGlobals;
 
 namespace PrePoMax.Forms
 {
-    class FrmElementSet : UserControls.FrmProperties, IFormBase, IFormItemSetDataParent
+    class FrmElementSet : UserControls.FrmProperties, IFormBase, IFormItemSetDataParent, IFormHighlight
     {
         // Variables                                                                                                                
         private HashSet<string> _allExistingNames;
@@ -143,13 +143,21 @@ namespace PrePoMax.Forms
 
 
         // Methods                                                                                                                  
-        public bool PrepareForm(string stepName, string elementSetToEditName)
-        {
-            return OnPrepareForm(stepName, elementSetToEditName);
-        }
         private string GetElementSetName()
         {
             return NamedClass.GetNewValueName(_allExistingNames, "Element_Set-");
+        }
+        private void HighlightElementSet()
+        {
+            try
+            {
+                if (ElementSet.CreationData != null)
+                {
+                    _controller.Selection = ElementSet.CreationData.DeepClone();
+                    _controller.HighlightSelection();
+                }
+            }
+            catch { }
         }
         //
         public void SelectionChanged(int[] ids)
@@ -162,6 +170,12 @@ namespace PrePoMax.Forms
             _propertyItemChanged = true;
         }
 
+        // IFormHighlight
+        public void Highlight()
+        {
+            HighlightElementSet();
+        }
+        
         // IFormItemSetDataParent
         public bool IsSelectionGeometryBased()
         {

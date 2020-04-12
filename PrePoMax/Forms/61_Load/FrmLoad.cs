@@ -9,7 +9,7 @@ using CaeGlobals;
 
 namespace PrePoMax.Forms
 {
-    class FrmLoad : UserControls.FrmPropertyListView, IFormBase
+    class FrmLoad : UserControls.FrmPropertyListView, IFormBase, IFormHighlight
     {
         // Variables                                                                                                                
         private string[] _loadNames;
@@ -271,7 +271,7 @@ namespace PrePoMax.Forms
             string[] nodeSetNames = _controller.GetUserNodeSetNames();
             string[] elementSetNames = _controller.GetUserElementSetNames();
             string[] surfaceNames = _controller.GetUserSurfaceNames();
-            string[] elementBasedSurfaceNames = _controller.GetElementBasedSurfaceNames();
+            string[] elementBasedSurfaceNames = _controller.GetUserElementBasedSurfaceNames();
             string[] referencePointNames = _controller.GetReferencePointNames();
             if (partNames == null) partNames = new string[0];
             if (nodeSetNames == null) nodeSetNames = new string[0];
@@ -493,8 +493,6 @@ namespace PrePoMax.Forms
         {
             try
             {
-                _controller.ClearSelectionHistoryAndSelectionChanged();
-                //
                 if (_viewLoad == null) { }
                 else if (FELoad is CLoad || FELoad is MomentLoad || FELoad is DLoad || FELoad is STLoad 
                          || FELoad is GravityLoad || FELoad is CentrifLoad || FELoad is PreTensionLoad)
@@ -541,7 +539,6 @@ namespace PrePoMax.Forms
             else if (FELoad is CentrifLoad) _controller.SetSelectItemToPart();
             else if (FELoad is PreTensionLoad) _controller.SetSelectItemToSurface();
         }
-
         //
         public void SelectionChanged(int[] ids)
         {
@@ -559,6 +556,12 @@ namespace PrePoMax.Forms
                 }
                 else throw new NotSupportedException();
             }
+        }
+
+        // IFormHighlight
+        public void Highlight()
+        {
+            HighlightLoad();
         }
     }
 }

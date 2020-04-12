@@ -332,8 +332,6 @@ namespace PrePoMax
             }
         }
 
-       
-
         private void FrmMain_Shown(object sender, EventArgs e)
         {
             // Set vtk control size
@@ -1374,18 +1372,21 @@ namespace PrePoMax
         private void SetEdgesVisibility(vtkControl.vtkEdgesVisibility edgesVisibility)
         {
             _vtk.EdgesVisibility = edgesVisibility;
-            if (_controller.Selection != null && _controller.Selection.Nodes.Count > 0)
-                _controller.HighlightSelection();
-            else if (_frmSelectItemSet != null && !_frmSelectItemSet.Visible)   // null for the initiation
-                // if everything is deselectd in _frmSelectItemSet do not highlight from tree
-                _modelTree.UpdateHighlight();
+            //
+            UpdateHighlight();
+
+            //if (_controller.Selection != null && _controller.Selection.Nodes.Count > 0)
+            //    _controller.HighlightSelection();
+            //else if (_frmSelectItemSet != null && !_frmSelectItemSet.Visible)   // null for the initiation
+            //    // if everything is deselectd in _frmSelectItemSet do not highlight from tree
+            //    _modelTree.UpdateHighlight();
         }
         //
         private void tsmiSectionView_Click(object sender, EventArgs e)
         {
             SinglePointDataEditor.ParentForm = _frmSectionView;
             SinglePointDataEditor.Controller = _controller;
-
+            //
             ShowForm(_frmSectionView, tsmiSectionView.Text, null);
         }
         //
@@ -4613,6 +4614,20 @@ namespace PrePoMax
         public void SetTreeExpandCollapseState(bool[] states)
         {
             InvokeIfRequired(_modelTree.SetTreeExpandCollapseState, states);
+        }
+        public void UpdateHighlight()
+        {
+            if (_allForms == null) return;
+            //
+            List<IFormHighlight> highlightForms = new List<IFormHighlight>();
+            foreach (var aForm in _allForms)
+            {
+                // Do not count the Query form
+                if (aForm.Visible && (aForm is IFormHighlight ihf)) highlightForms.Add(ihf);
+            }
+            if (highlightForms.Count == 0) UpdateHighlightFromTree();
+            else if (highlightForms.Count == 1) highlightForms[0].Highlight();
+            else throw new NotSupportedException();
         }
         public void UpdateHighlightFromTree()
         {

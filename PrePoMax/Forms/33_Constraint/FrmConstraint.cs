@@ -9,7 +9,7 @@ using System.Windows.Forms;
 
 namespace PrePoMax.Forms
 {
-    class FrmConstraint : UserControls.FrmPropertyListView, IFormBase
+    class FrmConstraint : UserControls.FrmPropertyListView, IFormBase, IFormHighlight
     {
         // Variables                                                                                                                
         private string[] _constraintNames;
@@ -170,6 +170,11 @@ namespace PrePoMax.Forms
             {
                 _controller.ReplaceConstraintCommand(_constraintToEditName, Constraint);
             }
+            // Convert the constraint from internal to show it
+            else
+            {
+                ConstraintInternal(false);
+            }
             // If all is successful close the ItemSetSelectionForm - except for OKAddNew
             if (!onOkAddNew) ItemSetDataEditor.SelectionForm.Hide();
         }
@@ -177,6 +182,8 @@ namespace PrePoMax.Forms
         {
             // Close the ItemSetSelectionForm
             ItemSetDataEditor.SelectionForm.Hide();
+            // Convert the constraint from internal to show it
+            ConstraintInternal(false);
             //
             base.OnHideOrClose();
         }
@@ -219,7 +226,10 @@ namespace PrePoMax.Forms
             else
             {
                 // Get and convert a converted load back to selection
-                Constraint = _controller.GetConstraint(_constraintToEditName);    // to clone
+                Constraint = _controller.GetConstraint(_constraintToEditName); // to clone
+                // Convert the constraint to internal to hide it
+                ConstraintInternal(true);
+                //
                 if (Constraint is RigidBody rb && rb.CreationData != null) rb.RegionType = RegionTypeEnum.Selection;
                 else if (Constraint is Tie tie)
                 {
@@ -342,13 +352,16 @@ namespace PrePoMax.Forms
                 {
                     if (property == nameof(ViewTie.MasterRegionType))
                     {
-                        HighlightRegion(tie.SlaveRegionType, tie.SlaveRegionName, tie.SlaveCreationData, true, true);        // slave
-                        HighlightRegion(tie.MasterRegionType, tie.MasterRegionName, tie.MasterCreationData, false, false);   // master
+                        HighlightRegion(tie.MasterRegionType, tie.MasterRegionName, tie.MasterCreationData, true, false);   // master
+                    }
+                    else if(property == nameof(ViewTie.SlaveRegionType))
+                    {
+                        HighlightRegion(tie.SlaveRegionType, tie.SlaveRegionName, tie.SlaveCreationData, true, true);       // slave
                     }
                     else
                     {
-                        HighlightRegion(tie.MasterRegionType, tie.MasterRegionName, tie.MasterCreationData, true, false);    // master
-                        HighlightRegion(tie.SlaveRegionType, tie.SlaveRegionName, tie.SlaveCreationData, false, true);       // slave
+                        HighlightRegion(tie.MasterRegionType, tie.MasterRegionName, tie.MasterCreationData, true, false);   // master
+                        HighlightRegion(tie.SlaveRegionType, tie.SlaveRegionName, tie.SlaveCreationData, false, true);      // slave
                     }
                 }
                 else throw new NotSupportedException();
@@ -371,7 +384,6 @@ namespace PrePoMax.Forms
                 }
             }
         }
-
         private void ShowHideSelectionForm()
         {
             if (propertyGrid.SelectedGridItem == null || propertyGrid.SelectedGridItem.PropertyDescriptor == null) return;
@@ -399,6 +411,15 @@ namespace PrePoMax.Forms
             if (Constraint is null) { }
             else if (Constraint is RigidBody) _controller.SetSelectItemToSurface();
             else if (Constraint is Tie) _controller.SetSelectItemToSurface();
+        }
+        private void ConstraintInternal(bool toInternal)
+        {
+            if (_constraintToEditName != null)
+            {
+                // Convert the constraint from/to internal to hide/show it
+                _controller.GetConstraint(_constraintToEditName).Internal = toInternal;
+                _controller.Update(UpdateType.RedrawSymbols);
+            }
         }
         //
         public void SelectionChanged(int[] ids)
@@ -443,6 +464,12 @@ namespace PrePoMax.Forms
                     _propertyItemChanged = true;
                 }
             }
+        }
+        
+        // IFormHighlight
+        public void Highlight()
+        {
+            HighlightConstraint();
         }
     }
 }

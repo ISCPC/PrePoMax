@@ -1997,6 +1997,7 @@ namespace vtkControl
                     string actorName = GetActorName(actor);
                     vtkMaxActor maxActor = _actors[actorName];
                     if (maxActor.VtkMaxActorVisible) actor.VisibilityOn();
+                    else actor.VisibilityOff();
                     //
                     if (maxActor.BackfaceCulling) actor.GetProperty().BackfaceCullingOn();
                     else actor.GetProperty().BackfaceCullingOff();

@@ -9,7 +9,7 @@ using CaeGlobals;
 
 namespace PrePoMax.Forms
 {
-    class FrmMeshRefinement : UserControls.FrmProperties, IFormBase, IFormItemSetDataParent
+    class FrmMeshRefinement : UserControls.FrmProperties, IFormBase, IFormItemSetDataParent, IFormHighlight
     {
         // Variables                                                                                                                
         private HashSet<string> _meshRefinementNames;
@@ -234,14 +234,13 @@ namespace PrePoMax.Forms
             {
                 if (_controller != null)
                 {
-                    _controller.ClearSelectionHistoryAndSelectionChanged();
-                    //
                     _controller.Selection.SelectItem = vtkSelectItem.Geometry;
                     // Surface.CreationData is set to null when the CreatedFrom is changed
                     if (MeshRefinement.CreationData != null)
-                        _controller.Selection.CopySelectonData(MeshRefinement.CreationData);  // deep copy to not clear
-                    //
-                    _controller.HighlightSelection();
+                    {
+                        _controller.Selection = MeshRefinement.CreationData;  // deep copy to not clear
+                        _controller.HighlightSelection();
+                    }
                 }
             }
             catch { }
@@ -258,6 +257,12 @@ namespace PrePoMax.Forms
                 //
                 _propertyItemChanged = true;
             }
+        }
+
+        // IFormHighlight
+        public void Highlight()
+        {
+            HighlightMeshRefinement();
         }
 
         // IFormItemSetDataParent

@@ -9,7 +9,7 @@ using System.Windows.Forms;
 
 namespace PrePoMax.Forms
 {
-    class FrmSection : UserControls.FrmPropertyListView, IFormBase
+    class FrmSection : UserControls.FrmPropertyListView, IFormBase, IFormHighlight
     {
         // Variables                                                                                                                
         private string[] _sectionNames;
@@ -245,8 +245,6 @@ namespace PrePoMax.Forms
         {
             try
             {
-                _controller.ClearSelectionHistoryAndSelectionChanged();
-                //
                 if (_viewSection == null) { }
                 else if (_viewSection is ViewSolidSection)
                 {
@@ -298,6 +296,12 @@ namespace PrePoMax.Forms
                 }
                 else throw new NotSupportedException();
             }
+        }
+
+        // IFormHighlight
+        public void Highlight()
+        {
+            HighlightSection();
         }
 
     }

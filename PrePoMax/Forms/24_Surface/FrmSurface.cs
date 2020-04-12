@@ -9,7 +9,7 @@ using CaeGlobals;
 
 namespace PrePoMax.Forms
 {
-    class FrmSurface : UserControls.FrmProperties, IFormBase, IFormItemSetDataParent
+    class FrmSurface : UserControls.FrmProperties, IFormBase, IFormItemSetDataParent, IFormHighlight
     {
         // Variables                                                                                                                
         private HashSet<string> _allExistingNames;
@@ -198,13 +198,11 @@ namespace PrePoMax.Forms
                 //
                 if (_controller != null)
                 {
-                    _controller.ClearSelectionHistoryAndSelectionChanged();
-                    //
                     if (Surface.CreatedFrom == FeSurfaceCreatedFrom.Selection)
                     {
                         // Surface.CreationData is set to null when the CreatedFrom is changed
                         if (Surface.CreationData != null)
-                            _controller.Selection.CopySelectonData(Surface.CreationData); // deep copy to not clear
+                            _controller.Selection = Surface.CreationData.DeepClone(); // deep copy to not clear
                     }
                     else if (Surface.CreatedFrom == FeSurfaceCreatedFrom.NodeSet && Surface.CreatedFromNodeSetName != null)
                     {
@@ -257,6 +255,11 @@ namespace PrePoMax.Forms
             }
         }
 
+        // IFormHighlight
+        public void Highlight()
+        {
+            HighlightSurface();
+        }
 
         // IFormItemSetDataParent
         public bool IsSelectionGeometryBased()

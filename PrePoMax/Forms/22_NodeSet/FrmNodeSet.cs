@@ -9,7 +9,7 @@ using System.Windows.Forms;
 
 namespace PrePoMax.Forms
 {
-    class FrmNodeSet : UserControls.FrmProperties, IFormBase, IFormItemSetDataParent
+    class FrmNodeSet : UserControls.FrmProperties, IFormBase, IFormItemSetDataParent, IFormHighlight
     {
         // Variables                                                                                                                
         private HashSet<string> _allExistingNames;
@@ -143,13 +143,21 @@ namespace PrePoMax.Forms
 
 
         // Methods                                                                                                                  
-        public bool PrepareForm(string stepName, string nodeSetToEditName)
-        {
-            return OnPrepareForm(stepName, nodeSetToEditName);
-        }
         private string GetNodeSetName()
         {
             return NamedClass.GetNewValueName(_allExistingNames, "Node_Set-");
+        }
+        private void HighlightNodeSet()
+        {
+            try
+            {
+                if (NodeSet.CreationData != null)
+                {
+                    _controller.Selection = NodeSet.CreationData.DeepClone();
+                    _controller.HighlightSelection();
+                }
+            }
+            catch { }
         }
         //
         public void SelectionChanged(int[] ids)
@@ -161,6 +169,12 @@ namespace PrePoMax.Forms
             propertyGrid.Refresh();
             //
             _propertyItemChanged = true;
+        }
+
+        // IFormHighlight
+        public void Highlight()
+        {
+            HighlightNodeSet();
         }
 
         // IFormItemSetDataParent

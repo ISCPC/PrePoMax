@@ -284,6 +284,7 @@
     <Compile Include="Forms\92_HistoryResultsOutput\FrmHistoryResultsOutput.Designer.cs">
       <DependentUpon>FrmHistoryResultsOutput.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\IFormHighlight.cs" />
     <Compile Include="Forms\IFormItemSetDataParent.cs" />
     <Compile Include="Forms\IFormBase.cs" />
     <Compile Include="Forms\00_Common\ViewValue.cs" />

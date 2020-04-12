@@ -2756,14 +2756,14 @@ namespace PrePoMax
             }
             else return null;
         }
-        public string[] GetElementBasedSurfaceNames()
+        public string[] GetUserElementBasedSurfaceNames()
         {
             List<string> surfaceNames = new List<string>();
             if (_model.Mesh != null)
             {
                 foreach (var entry in _model.Mesh.Surfaces)
                 {
-                    if (entry.Value.Type == FeSurfaceType.Element) surfaceNames.Add(entry.Key);
+                    if (!entry.Value.Internal && entry.Value.Type == FeSurfaceType.Element) surfaceNames.Add(entry.Key);
                 }
                 return surfaceNames.ToArray();
             }
@@ -4214,7 +4214,7 @@ namespace PrePoMax
                 if (_results.Mesh.Parts[name] is ResultPart resultPart) resultPart.ColorContours = colorContours;
             }
             _form.UpdateActorColorContoursVisibility(partNames, colorContours);
-            UpdateHighlightFromTree();
+            UpdateHighlight();
         }
         public void ReplaceResultPartProperties(string oldPartName, PartProperties newPartProperties)
         {
@@ -5457,7 +5457,7 @@ namespace PrePoMax
                         Octree.Plane plane = _sectionViewPlanes[_currentView];
                         if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
                     }
-                    UpdateHighlightFromTree();
+                    UpdateHighlight();
                 }
                 if (resetCamera) _form.SetFrontBackView(false, true);
                 _form.AdjustCameraDistanceAndClipping();
@@ -5544,7 +5544,7 @@ namespace PrePoMax
                         }
                         catch { }
                     }
-                    UpdateHighlightFromTree();
+                    UpdateHighlight();
                 }
 
                 if (resetCamera) _form.SetFrontBackView(false, true);
@@ -5652,7 +5652,7 @@ namespace PrePoMax
                         }
                         catch { }
                         //
-                        UpdateHighlightFromTree();
+                        UpdateHighlight();
                         _form.AdjustCameraDistanceAndClipping();
                     }
                 }
@@ -5672,25 +5672,25 @@ namespace PrePoMax
             //
             foreach (var entry in _model.Mesh.ReferencePoints)
             {
-                DrawReferencePoint(entry.Key, color, layer);
+                DrawReferencePoint(entry.Value, color, layer);
             }
         }
-        public void DrawReferencePoint(string referencePointName, System.Drawing.Color color, vtkControl.vtkRendererLayer layer,
+        public void DrawReferencePoint(FeReferencePoint referencePoint, System.Drawing.Color color, vtkControl.vtkRendererLayer layer,
                                        int nodeSize = 10)
         {
             try
             {
+                if (!((referencePoint.Active && referencePoint.Visible && referencePoint.Valid &&
+                      !referencePoint.Internal) || layer == vtkControl.vtkRendererLayer.Selection)) return;
+                //
                 PreSettings preSettings = (PreSettings)_settings[Globals.PreSettingsName];
                 nodeSize = (int)(nodeSize * preSettings.SymbolSize / 50.0);  // 50 is the defoult size
-                FeReferencePoint rp;
-                if (_model.Mesh.ReferencePoints.TryGetValue(referencePointName, out rp) && rp.Active && rp.Visible && rp.Valid)
-                {
-                    System.Drawing.Color colorBorder = System.Drawing.Color.Black;
-                    //
-                    double[][] coor = new double[][] { rp.Coor() };
-                    DrawNodes(referencePointName + Globals.NameSeparator + "Border", coor, colorBorder, layer, nodeSize);
-                    DrawNodes(referencePointName, coor, color, layer, nodeSize - 3);
-                }
+                //
+                System.Drawing.Color colorBorder = System.Drawing.Color.Black;
+                //
+                double[][] coor = new double[][] { referencePoint.Coor() };
+                DrawNodes(referencePoint.Name + Globals.NameSeparator + "Border", coor, colorBorder, layer, nodeSize);
+                DrawNodes(referencePoint.Name, coor, color, layer, nodeSize - 3);
             }
             catch { } // do not show the exception to the user
         }
@@ -5713,13 +5713,12 @@ namespace PrePoMax
         {
             try
             {
-                if (!(((constraint.Active && constraint.Visible ) || layer == vtkControl.vtkRendererLayer.Selection) && constraint.Valid))
-                    return;
+                if (!((constraint.Active && constraint.Visible && constraint.Valid && !constraint.Internal)
+                       || layer == vtkControl.vtkRendererLayer.Selection)) return;
                 //
                 string prefixName = "CONSTRAINT" + Globals.NameSeparator + constraint.Name;
-                vtkControl.vtkRendererLayer symbolLayer = layer == vtkControl.vtkRendererLayer.Selection ? 
-                                                                   layer : vtkControl.vtkRendererLayer.Overlay;
                 //
+                int count = 0;
                 if (constraint is RigidBody rb)
                 {
                     // Master
@@ -5727,25 +5726,30 @@ namespace PrePoMax
                     else HighlightReferencePoints(new string[] { rb.ReferencePointName });
                     // Slave
                     if (rb.RegionType == RegionTypeEnum.NodeSetName)
-                        DrawNodeSet(prefixName, rb.RegionName, color, layer, nodeSymbolSize, true, onlyVisible);
+                        count += DrawNodeSet(prefixName, rb.RegionName, color, layer, nodeSymbolSize, true, onlyVisible);
                     else if (rb.RegionType == RegionTypeEnum.SurfaceName)
                     {
-                        DrawSurface(prefixName, rb.RegionName, color, layer, true, true, onlyVisible);
+                        count += DrawSurface(prefixName, rb.RegionName, color, layer, true, true, onlyVisible);
                         if (layer == vtkControl.vtkRendererLayer.Selection)
                             DrawSurfaceEdge(prefixName, rb.RegionName, color, layer, true, true, onlyVisible);
                     }
                     else throw new NotSupportedException();
                     // Symbol
-                    DrawRigidBodySymbol(rb, color, symbolLayer, onlyVisible);
+                    if (count > 0)
+                    {
+                        vtkControl.vtkRendererLayer symbolLayer = layer == vtkControl.vtkRendererLayer.Selection ?
+                                                                       layer : vtkControl.vtkRendererLayer.Overlay;
+                        DrawRigidBodySymbol(rb, color, symbolLayer, onlyVisible);
+                    }
                 }
                 else if (constraint is Tie t)
                 {
                     // Master
-                    DrawSurface(prefixName, t.MasterRegionName, color, layer, false, false, onlyVisible);
+                    count += DrawSurface(prefixName, t.MasterRegionName, color, layer, false, false, onlyVisible);
                     if (layer == vtkControl.vtkRendererLayer.Selection)
                         DrawSurfaceEdge(prefixName, t.MasterRegionName, color, layer, false, false, onlyVisible);
                     // Slave
-                    DrawSurface(prefixName, t.SlaveRegionName, color, layer, false, true, onlyVisible);
+                    count += DrawSurface(prefixName, t.SlaveRegionName, color, layer, false, true, onlyVisible);
                     if (layer == vtkControl.vtkRendererLayer.Selection)
                         DrawSurfaceEdge(prefixName, t.SlaveRegionName, color, layer, false, true, onlyVisible);
                 }
@@ -5832,23 +5836,25 @@ namespace PrePoMax
                 {
                     foreach (var bcEntry in step.BoundaryConditions)
                     {
-                        DrawBoundaryCondition(step.Name, bcEntry.Value, color, symbolSize, nodeSymbolSize, layer);
+                        DrawBoundaryCondition(step.Name, bcEntry.Value, color, symbolSize, nodeSymbolSize, layer, true);
                     }
                     break;
                 }
             }
         }
         public void DrawBoundaryCondition(string stepName, BoundaryCondition boundaryCondition, System.Drawing.Color color, 
-                                          int symbolSize, int nodeSymbolSize, vtkControl.vtkRendererLayer layer)
+                                          int symbolSize, int nodeSymbolSize, vtkControl.vtkRendererLayer layer, bool onlyVisible)
         {
             try
             {
-                if (!(boundaryCondition.Active && boundaryCondition.Visible && boundaryCondition.Valid)) return;
-
+                if (!((boundaryCondition.Active && boundaryCondition.Visible && boundaryCondition.Valid &&
+                      !boundaryCondition.Internal) || layer == vtkControl.vtkRendererLayer.Selection)) return;
+                //
                 double[][] coor = null;
                 string prefixName = stepName + Globals.NameSeparator + "BC" + Globals.NameSeparator + boundaryCondition.Name;
                 vtkControl.vtkRendererLayer symbolLayer = layer == vtkControl.vtkRendererLayer.Selection ? layer : vtkControl.vtkRendererLayer.Overlay;
-
+                //
+                int count = 0;
                 if (boundaryCondition is DisplacementRotation dispRot)
                 {
                     if (dispRot.RegionType == RegionTypeEnum.NodeSetName)
@@ -5857,8 +5863,8 @@ namespace PrePoMax
                         FeNodeSet nodeSet = _model.Mesh.NodeSets[dispRot.RegionName];
                         coor = new double[1][];
                         coor[0] = nodeSet.CenterOfGravity;
-
-                        DrawNodeSet(prefixName, nodeSet.Name, color, layer, nodeSymbolSize);
+                        //
+                        count += DrawNodeSet(prefixName, nodeSet.Name, color, layer, nodeSymbolSize, false, onlyVisible);
                     }
                     else if (dispRot.RegionType == RegionTypeEnum.SurfaceName)
                     {
@@ -5866,8 +5872,10 @@ namespace PrePoMax
                         FeSurface surface = _model.Mesh.Surfaces[dispRot.RegionName];
                         coor = new double[1][];
                         coor[0] = _model.Mesh.NodeSets[surface.NodeSetName].CenterOfGravity;
-
-                        DrawSurface(prefixName, surface.Name, color, layer, true);
+                        //
+                        count += DrawSurface(prefixName, surface.Name, color, layer, true, false, onlyVisible);
+                        if (layer == vtkControl.vtkRendererLayer.Selection)
+                            DrawSurfaceEdge(prefixName, surface.Name, color, layer, true, false, onlyVisible);
                     }
                     else if (dispRot.RegionType == RegionTypeEnum.ReferencePointName)
                     {
@@ -5875,9 +5883,10 @@ namespace PrePoMax
                         FeReferencePoint referencePoint = _model.Mesh.ReferencePoints[dispRot.RegionName];
                         coor = new double[1][];
                         coor[0] = referencePoint.Coor();
+                        count++;
                     }
                     else throw new NotSupportedException();
-                    DrawDisplacementRotationSymbols(prefixName, dispRot, coor, color, symbolSize, symbolLayer);
+                    if (count > 0) DrawDisplacementRotationSymbols(prefixName, dispRot, coor, color, symbolSize, symbolLayer);
                 }
                 else if (boundaryCondition is SubmodelBC submodel)
                 {
@@ -5887,8 +5896,8 @@ namespace PrePoMax
                         FeNodeSet nodeSet = _model.Mesh.NodeSets[submodel.RegionName];
                         coor = new double[1][];
                         coor[0] = nodeSet.CenterOfGravity;
-
-                        DrawNodeSet(prefixName, nodeSet.Name, color, layer, nodeSymbolSize);
+                        //
+                        count += DrawNodeSet(prefixName, nodeSet.Name, color, layer, nodeSymbolSize, false, onlyVisible);
                     }
                     else if (submodel.RegionType == RegionTypeEnum.SurfaceName)
                     {
@@ -5896,11 +5905,13 @@ namespace PrePoMax
                         FeSurface surface = _model.Mesh.Surfaces[submodel.RegionName];
                         coor = new double[1][];
                         coor[0] = _model.Mesh.NodeSets[surface.NodeSetName].CenterOfGravity;
-
-                        DrawSurface(prefixName, surface.Name, color, layer, true);
+                        //
+                        count += DrawSurface(prefixName, surface.Name, color, layer, true, false, onlyVisible);
+                        if (layer == vtkControl.vtkRendererLayer.Selection)
+                            DrawSurfaceEdge(prefixName, surface.Name, color, layer, true, false, onlyVisible);
                     }
                     else throw new NotSupportedException();
-                    DrawSubmodelSymbols(prefixName, submodel, coor, color, symbolSize, symbolLayer);
+                    if (count > 0) DrawSubmodelSymbols(prefixName, submodel, coor, color, symbolSize, symbolLayer);
                 }
             }
             catch { } // do not show the exception to the user
@@ -5908,7 +5919,6 @@ namespace PrePoMax
         public void DrawDisplacementRotationSymbols(string prefixName, DisplacementRotation dispRot, double[][] symbolCoor,
                                                     System.Drawing.Color color, int symbolSize, vtkControl.vtkRendererLayer layer)
         {
-            if (!dispRot.Visible) return;
             // Cones
             List<double[]> allCoor = new List<double[]>();
             List<double[]> allNormals = new List<double[]>();
@@ -6055,7 +6065,6 @@ namespace PrePoMax
         public void DrawSubmodelSymbols(string prefixName, SubmodelBC submodel, double[][] symbolCoor, System.Drawing.Color color,
                                                     int symbolSize, vtkControl.vtkRendererLayer layer)
         {
-            if (!submodel.Visible) return;
             // Cones
             List<double[]> allCoor = new List<double[]>();
             List<double[]> allNormals = new List<double[]>();
@@ -6147,30 +6156,31 @@ namespace PrePoMax
             int nodeSymbolSize = preSettings.NodeSymbolSize;
             System.Drawing.Color color = preSettings.LoadSymbolColor;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
-
+            //
             foreach (var step in _model.StepCollection.StepsList)
             {
                 if (step.Name == stepName)
                 {
                     foreach (var loadEntry in step.Loads)
                     {
-                        DrawLoad(step.Name, loadEntry.Value, color, symbolSize, nodeSymbolSize, layer);
+                        DrawLoad(step.Name, loadEntry.Value, color, symbolSize, nodeSymbolSize, layer, true);
                     }
                     break;
                 }
             }
         }
         public void DrawLoad(string stepName, Load load, System.Drawing.Color color, int symbolSize, int nodeSymbolSize,
-                             vtkControl.vtkRendererLayer layer)
+                             vtkControl.vtkRendererLayer layer, bool onlyVisible)
         {
             try
             {
-                if (!(load.Active && load.Visible && load.Valid)) return;
+                if (!((load.Active && load.Visible && load.Valid) || layer == vtkControl.vtkRendererLayer.Selection)) return;
                 //
                 double[][] coor = null;
                 string prefixName = stepName + Globals.NameSeparator + "LOAD" + Globals.NameSeparator + load.Name;
                 vtkControl.vtkRendererLayer symbolLayer = layer == vtkControl.vtkRendererLayer.Selection ? layer : vtkControl.vtkRendererLayer.Overlay;
                 //
+                int count = 0;
                 if (load is CLoad cLoad)
                 {
                     if (cLoad.RegionType == RegionTypeEnum.NodeSetName)
@@ -6180,7 +6190,7 @@ namespace PrePoMax
                         coor = new double[nodeSet.Labels.Length][];
                         for (int i = 0; i < nodeSet.Labels.Length; i++) coor[i] = _model.Mesh.Nodes[nodeSet.Labels[i]].Coor;
                         //
-                        DrawNodeSet(prefixName, nodeSet.Name, color, layer, nodeSymbolSize);
+                        count += DrawNodeSet(prefixName, nodeSet.Name, color, layer, nodeSymbolSize, false, onlyVisible);
                     }
                     else if (cLoad.RegionType == RegionTypeEnum.ReferencePointName)
                     {
@@ -6188,9 +6198,10 @@ namespace PrePoMax
                         FeReferencePoint referencePoint = _model.Mesh.ReferencePoints[cLoad.RegionName];
                         coor = new double[1][];
                         coor[0] = referencePoint.Coor();
+                        count++;
                     }
                     else throw new NotSupportedException();
-                    DrawCLoadSymbols(prefixName, cLoad, coor, color, symbolSize, symbolLayer);
+                    if (count > 0) DrawCLoadSymbols(prefixName, cLoad, coor, color, symbolSize, symbolLayer);
                 }
                 else if (load is MomentLoad momentLoad)
                 {
@@ -6201,7 +6212,7 @@ namespace PrePoMax
                         coor = new double[nodeSet.Labels.Length][];
                         for (int i = 0; i < nodeSet.Labels.Length; i++) coor[i] = _model.Mesh.Nodes[nodeSet.Labels[i]].Coor;
                         //
-                        DrawNodeSet(prefixName, nodeSet.Name, color, layer, nodeSymbolSize);
+                        count += DrawNodeSet(prefixName, nodeSet.Name, color, layer, nodeSymbolSize, false, onlyVisible);
                     }
                     else if (momentLoad.RegionType == RegionTypeEnum.ReferencePointName)
                     {
@@ -6209,9 +6220,10 @@ namespace PrePoMax
                         FeReferencePoint referencePoint = _model.Mesh.ReferencePoints[momentLoad.RegionName];
                         coor = new double[1][];
                         coor[0] = referencePoint.Coor();
+                        count++;
                     }
                     else throw new NotSupportedException();
-                    DrawMomentLoadSymbols(prefixName, momentLoad, coor, color, symbolSize, symbolLayer);
+                    if (count > 0) DrawMomentLoadSymbols(prefixName, momentLoad, coor, color, symbolSize, symbolLayer);
                 }
                 else if (load is STLoad stLoad)
                 {
@@ -6219,15 +6231,21 @@ namespace PrePoMax
                     coor = new double[1][];
                     coor[0] = _model.Mesh.GetSurfaceCG(stLoad.SurfaceName);
                     //
-                    DrawSurface(prefixName, stLoad.SurfaceName, color, layer, true);
-                    DrawSTLoadSymbols(prefixName, stLoad, coor, color, symbolSize, symbolLayer);
+                    count += DrawSurface(prefixName, stLoad.SurfaceName, color, layer, true, false, onlyVisible);
+                    if (layer == vtkControl.vtkRendererLayer.Selection)
+                        DrawSurfaceEdge(prefixName, stLoad.SurfaceName, color, layer, true, false, onlyVisible);
+                    //
+                    if (count > 0) DrawSTLoadSymbols(prefixName, stLoad, coor, color, symbolSize, symbolLayer);
                 }
                 else if (load is DLoad dLoad)
                 {
                     if (!_model.Mesh.Surfaces.ContainsKey(dLoad.SurfaceName)) return;
                     //
-                    DrawSurface(prefixName, dLoad.SurfaceName, color, layer, true);
-                    DrawDLoadSymbols(prefixName, dLoad, color, symbolSize, layer);
+                    count += DrawSurface(prefixName, dLoad.SurfaceName, color, layer, true, false, onlyVisible);
+                    if (layer == vtkControl.vtkRendererLayer.Selection)
+                        DrawSurfaceEdge(prefixName, dLoad.SurfaceName, color, layer, true, false, onlyVisible);
+                    //
+                    if (count > 0) DrawDLoadSymbols(prefixName, dLoad, color, symbolSize, layer);
                 }
                 else if (load is GravityLoad gLoad)
                 {
@@ -6235,11 +6253,12 @@ namespace PrePoMax
                     FeElementSet elementSet = null;
                     if (layer == vtkControl.vtkRendererLayer.Selection)
                     {
-                        if (gLoad.RegionType == RegionTypeEnum.PartName) HighlightModelParts(new string[] { gLoad.RegionName });
+                        if (gLoad.RegionType == RegionTypeEnum.PartName)
+                            count += HighlightModelParts(new string[] { gLoad.RegionName });
                         else if (gLoad.RegionType == RegionTypeEnum.ElementSetName)
                         {
                             elementSet = _model.Mesh.ElementSets[gLoad.RegionName];
-                            HighlightElementSet(elementSet, _model.Mesh);
+                            count += HighlightElementSet(elementSet, _model.Mesh);
                         }
                         else throw new NotSupportedException();
                     }
@@ -6250,27 +6269,54 @@ namespace PrePoMax
                         if (elementSet != null && elementSet.CreatedFromParts)
                         {
                             partNames = _model.Mesh.GetPartNamesByIds(elementSet.Labels);
-                            if (partNames != null) nodeSet = _model.Mesh.GetNodeSetFromPartNames(partNames);
+                            if (partNames != null) nodeSet = _model.Mesh.GetNodeSetFromPartNames(partNames, onlyVisible);
                             else throw new NotSupportedException();
                         }
                     }
-                    if (nodeSet == null) nodeSet = _model.Mesh.GetNodeSetFromPartOrElementSetName(gLoad.RegionName);
-                    DrawGravityLoadSymbol(prefixName, gLoad, nodeSet.CenterOfGravity, color, symbolSize, symbolLayer);
+                    if (nodeSet == null) nodeSet = _model.Mesh.GetNodeSetFromPartOrElementSetName(gLoad.RegionName, false);
+                    //
+                    if (nodeSet.Labels.Length > 0)
+                        DrawGravityLoadSymbol(prefixName, gLoad, nodeSet.CenterOfGravity, color, symbolSize, symbolLayer);
                 }
                 else if (load is CentrifLoad cfLoad)
                 {
                     FeElementSet elementSet;
                     if (layer == vtkControl.vtkRendererLayer.Selection)
                     {
-                        if (cfLoad.RegionType == RegionTypeEnum.PartName) HighlightModelParts(new string[] { cfLoad.RegionName });
+                        if (cfLoad.RegionType == RegionTypeEnum.PartName)
+                            count +=  HighlightModelParts(new string[] { cfLoad.RegionName });
                         else if (cfLoad.RegionType == RegionTypeEnum.ElementSetName)
                         {
                             elementSet = _model.Mesh.ElementSets[cfLoad.RegionName];
-                            HighlightElementSet(elementSet, _model.Mesh);
+                            count+= HighlightElementSet(elementSet, _model.Mesh);
                         }
                         else throw new NotSupportedException();
                     }
-                    DrawCentrifLoadSymbol(prefixName, cfLoad, color, symbolSize, symbolLayer);
+                    else
+                    {
+                        if (cfLoad.RegionType == RegionTypeEnum.PartName && _model.Mesh.Parts[cfLoad.RegionName].Visible) count++;
+                        else if (cfLoad.RegionType == RegionTypeEnum.ElementSetName)
+                        {
+                            elementSet = _model.Mesh.ElementSets[cfLoad.RegionName];
+                            if (elementSet.CreatedFromParts)
+                            {
+                                string[] partNames = _model.Mesh.GetPartNamesByIds(elementSet.Labels);
+                                foreach (var partName in partNames) if (_model.Mesh.Parts[partName].Visible) { count++; break; }
+                            }
+                            else
+                            {
+                                Dictionary<int, bool> partVisibilities = new Dictionary<int, bool>();
+                                foreach (var part in _model.Mesh.Parts) partVisibilities.Add(part.Value.PartId, part.Value.Visible);
+                                FeElement element;
+                                foreach (var elementId in elementSet.Labels)
+                                {
+                                    element = _model.Mesh.Elements[elementId];
+                                    if (partVisibilities[element.PartId]) { count++; break; }
+                                }
+                            }
+                        }
+                    }
+                    if (count > 0) DrawCentrifLoadSymbol(prefixName, cfLoad, color, symbolSize, symbolLayer);
                 }
                 else if (load is PreTensionLoad ptLoad)
                 {
@@ -6279,8 +6325,11 @@ namespace PrePoMax
                     coor[0] = _model.Mesh.GetSurfaceCG(ptLoad.SurfaceName);
                     coor[1] = coor[0];
                     //
-                    DrawSurface(prefixName, ptLoad.SurfaceName, color, layer, true);
-                    DrawPreTensionLoadSymbols(prefixName, ptLoad, coor, color, symbolSize, symbolLayer);
+                    count += DrawSurface(prefixName, ptLoad.SurfaceName, color, layer, true, false, onlyVisible);
+                    if (layer == vtkControl.vtkRendererLayer.Selection)
+                        DrawSurfaceEdge(prefixName, ptLoad.SurfaceName, color, layer, true, false, onlyVisible);
+                    //
+                    if (count > 0) DrawPreTensionLoadSymbols(prefixName, ptLoad, coor, color, symbolSize, symbolLayer);
                 }
                 else throw new NotSupportedException();
             }
@@ -6289,16 +6338,14 @@ namespace PrePoMax
         public void DrawCLoadSymbols(string prefixName, CLoad cLoad, double[][] symbolCoor, System.Drawing.Color color,
                                     int symbolSize, vtkControl.vtkRendererLayer layer)
         {
-            if (!cLoad.Visible) return;
-
-            // arrows
+            // Arrows
             List<double[]> allLoadNormals = new List<double[]>();
             double[] normal = new double[] { cLoad.F1, cLoad.F2, cLoad.F3 };
             for (int i = 0; i < symbolCoor.GetLength(0); i++)
             {
                 allLoadNormals.Add(normal);
             }
-
+            //
             if (symbolCoor.GetLength(0) > 0)
             {
                 vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
@@ -6314,16 +6361,14 @@ namespace PrePoMax
         public void DrawMomentLoadSymbols(string prefixName, MomentLoad momentLoad, double[][] symbolCoor, 
                                           System.Drawing.Color color, int symbolSize, vtkControl.vtkRendererLayer layer)
         {
-            if (!momentLoad.Visible) return;
-
-            // arrows
+            // Arrows
             List<double[]> allLoadNormals = new List<double[]>();
             double[] normal = new double[] { momentLoad.M1, momentLoad.M2, momentLoad.M3 };
             for (int i = 0; i < symbolCoor.GetLength(0); i++)
             {
                 allLoadNormals.Add(normal);
             }
-
+            //
             if (symbolCoor.GetLength(0) > 0)
             {
                 vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
@@ -6339,16 +6384,14 @@ namespace PrePoMax
         public void DrawSTLoadSymbols(string prefixName, STLoad stLoad, double[][] symbolCoor, System.Drawing.Color color,
                                       int symbolSize, vtkControl.vtkRendererLayer layer)
         {
-            if (!stLoad.Visible) return;
-
-            // arrows
+            // Arrows
             List<double[]> allLoadNormals = new List<double[]>();
             double[] normal = new double[] { stLoad.F1, stLoad.F2, stLoad.F3 };
             for (int i = 0; i < symbolCoor.GetLength(0); i++)
             {
                 allLoadNormals.Add(normal);
             }
-
+            //
             if (symbolCoor.GetLength(0) > 0)
             {
                 vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
@@ -6365,7 +6408,7 @@ namespace PrePoMax
                                      vtkControl.vtkRendererLayer layer)
         {
             FeSurface surface = _model.Mesh.Surfaces[dLoad.SurfaceName];
-
+            //
             List<int> allElementIds = new List<int>();
             List<FeFaceName> allElementFaceNames = new List<FeFaceName>();
             List<double[]> allCoor = new List<double[]>();
@@ -6382,11 +6425,9 @@ namespace PrePoMax
                     allCoor.Add(faceCenter);
                 }
             }
-
-            if (!dLoad.Visible) return;
-
+            //
             int[] distributedElementIds = GetSpatiallyEquallyDistributedCoor(allCoor.ToArray(), 6);
-
+            //
             int id;
             double[] faceNormal;
             List<double[]> distributedCoor = new List<double[]>();
@@ -6404,8 +6445,7 @@ namespace PrePoMax
                 distributedCoor.Add(faceCenter);
                 distributedLoadNormals.Add(faceNormal);
             }
-
-            // arrows
+            // Arrows
             if (allCoor.Count > 0)
             {
                 vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
@@ -6422,11 +6462,9 @@ namespace PrePoMax
         public void DrawGravityLoadSymbol(string prefixName, GravityLoad gLoad, double[] symbolCoor, System.Drawing.Color color, 
                                           int symbolSize, vtkControl.vtkRendererLayer layer)
         {
-            if (!gLoad.Visible) return;
-
-            // arrows
+            // Arrows
             double[] normal = new double[] { gLoad.F1, gLoad.F2, gLoad.F3 };
-
+            //
             vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
             data.Name = prefixName;
             data.Color = color;
@@ -6440,11 +6478,9 @@ namespace PrePoMax
         public void DrawCentrifLoadSymbol(string prefixName, CentrifLoad cfLoad, System.Drawing.Color color, int symbolSize, 
                                           vtkControl.vtkRendererLayer layer)
         {
-            if (!cfLoad.Visible) return;
-
-            // arrows
+            // Arrows
             double[] normal = new double[] { cfLoad.N1, cfLoad.N2, cfLoad.N3 };
-
+            //
             vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
             data.Name = prefixName;
             data.Color = color;
@@ -6458,9 +6494,7 @@ namespace PrePoMax
         public void DrawPreTensionLoadSymbols(string prefixName, PreTensionLoad ptLoad, double[][] symbolCoor, System.Drawing.Color color,
                                               int symbolSize, vtkControl.vtkRendererLayer layer)
         {
-            if (!ptLoad.Visible) return;
-
-            // arrows
+            // Arrows
             List<double[]> allLoadNormals = new List<double[]>();
             double[] normal;
             if (ptLoad.AutoComputeDirection) normal = _model.Mesh.GetSurfaceNormal(ptLoad.SurfaceName);
@@ -6613,7 +6647,7 @@ namespace PrePoMax
         {
             DrawNodes(prefixName, _model.Geometry.GetNodeSetCoor(nodeIds, true), color, layer, nodeSize);
         }
-        public void DrawNodeSet(string prefixName, string nodeSetName, System.Drawing.Color color, 
+        public int DrawNodeSet(string prefixName, string nodeSetName, System.Drawing.Color color, 
                                 vtkControl.vtkRendererLayer layer, int nodeSize = 5,
                                 bool useSecondaryHighlightColor = false, bool onlyVisible = false)
         {
@@ -6623,9 +6657,11 @@ namespace PrePoMax
                 double[][] nodeCoor = _model.Mesh.GetNodeSetCoor(nodeSet.Labels, onlyVisible);
                 DrawNodes(prefixName + Globals.NameSeparator + nodeSetName, nodeCoor, color,
                           layer, nodeSize, false, useSecondaryHighlightColor);
+                return nodeCoor.Length;
             }
+            return 0;
         }
-        public void DrawSurface(string prefixName, string surfaceName, System.Drawing.Color color,
+        public int DrawSurface(string prefixName, string surfaceName, System.Drawing.Color color,
                                 vtkControl.vtkRendererLayer layer, bool backfaceCulling = true,
                                 bool useSecondaryHighlightColor = false, bool onlyVisible = false)
         {
@@ -6648,12 +6684,16 @@ namespace PrePoMax
                     //
                     ApplyLighting(data);
                     _form.Add3DCells(data);
+                    //
+                    return data.Geometry.Cells.CellNodeIds.Length;
                 }
                 else if (s.Type == FeSurfaceType.Node && Model.Mesh.NodeSets.TryGetValue(s.NodeSetName, out ns))
                 {
-                    DrawNodeSet(prefixName + Globals.NameSeparator + surfaceName, s.NodeSetName, color, layer);
+                    return DrawNodeSet(prefixName + Globals.NameSeparator + surfaceName, s.NodeSetName, color, layer, 
+                                       5, useSecondaryHighlightColor, onlyVisible);
                 }
             }
+            return 0;
         }
         public void DrawSurfaceEdge(string prefixName, string surfaceName, System.Drawing.Color color,
                                     vtkControl.vtkRendererLayer layer, bool backfaceCulling = true,
@@ -6696,10 +6736,9 @@ namespace PrePoMax
         #endregion #################################################################################################################
 
         #region Highlight  #########################################################################################################
-        public void UpdateHighlightFromTree()
-        {
-            _form.Clear3DSelection();
-            _form.UpdateHighlightFromTree();
+        public void UpdateHighlight()
+        {            
+            _form.UpdateHighlight();
         }
         public void Highlight3DObjects(object[] obj, bool clear = true)
         {
@@ -6848,26 +6887,30 @@ namespace PrePoMax
                     if (ids.Length == 0) return;
                     //
                     double[][] points;
-                    double[][][] lines;
-                    DisplayedMesh.GetVetexAndEdgeCoorFromGeometryIds(ids, meshRefinement.MeshSize, true, out points, out lines);
+                    DisplayedMesh.GetVetexAndEdgeCoorFromGeometryIds(ids, meshRefinement.MeshSize, true, out points);
                     DrawNodes(meshRefinement.Name, points, System.Drawing.Color.Red, vtkControl.vtkRendererLayer.Selection);
                     HighlightItemsByGeometryIds(ids, false);
                 }
             }
         }
-        public void HighlightModelParts(string[] partsToSelect)
+        public int HighlightModelParts(string[] partsToSelect)
         {
             MeshPart[] parts = GetModelParts();
             System.Drawing.Color color = System.Drawing.Color.Red;
-
+            //
+            int count = 0;
             foreach (var part in parts)
             {
-                //if (part.Visible && partsToSelect.Contains(part.Name))
                 if (partsToSelect.Contains(part.Name))
                 {
-                    if (_form.ContainsActor(part.Name)) _form.HighlightActor(part.Name);
+                    if (_form.ContainsActor(part.Name))
+                    {
+                        _form.HighlightActor(part.Name);
+                        count++;
+                    }
                 }
             }
+            return count;
         }
         public void HighlightResultParts(string[] partsToSelect)
         {
@@ -6899,7 +6942,7 @@ namespace PrePoMax
         {
             HighlightElements(new int[] { elementId }, DisplayedMesh);
         }
-        private void HighlightElements(int[] elementIds, FeMesh mesh)
+        private int HighlightElements(int[] elementIds, FeMesh mesh)
         {
             int[] nodeIds;
             double[][] nodeCoor;
@@ -6933,6 +6976,8 @@ namespace PrePoMax
             //
             ApplyLighting(data);
             _form.Add3DCells(data);
+            //
+            return cellIds.Length;
         }
         public void HighlightElementSets(string[] elementSetsToSelect)
         {
@@ -6942,10 +6987,12 @@ namespace PrePoMax
                     HighlightElementSet(_model.Mesh.ElementSets[elementSetName], _model.Mesh);
             }
         }
-        private void HighlightElementSet(FeElementSet elementSet, FeMesh mesh)
+        private int HighlightElementSet(FeElementSet elementSet, FeMesh mesh)
         {
-            if (elementSet.CreatedFromParts) HighlightModelParts(_model.Mesh.GetPartNamesByIds(elementSet.Labels));
-            else HighlightElements(elementSet.Labels, mesh);
+            int count = 0;
+            if (elementSet.CreatedFromParts) count += HighlightModelParts(_model.Mesh.GetPartNamesByIds(elementSet.Labels));
+            else count += HighlightElements(elementSet.Labels, mesh);
+            return count;
         }
         public void HighlightSurface(int[][] cells, bool useSecondaryHighlightColor)
         {
@@ -7016,10 +7063,11 @@ namespace PrePoMax
             System.Drawing.Color color = System.Drawing.Color.Red;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
             vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
-
+            //
+            FeReferencePoint rp;
             foreach (var name in referencePointsToSelect)
             {
-                DrawReferencePoint(name, color, layer);
+                if (_model.Mesh.ReferencePoints.TryGetValue(name, out rp))  DrawReferencePoint(rp, color, layer);
             }
         }
         public void HighlightConstraints(string[] constraintsToSelect)
@@ -7041,14 +7089,16 @@ namespace PrePoMax
             PreSettings preSettings = (PreSettings)_settings[Globals.PreSettingsName];
             int symbolSize = preSettings.SymbolSize;
             int nodeSymbolSize = preSettings.NodeSymbolSize;
-            DrawBoundaryCondition("Step-Highlight", boundaryCondition, System.Drawing.Color.Red, symbolSize, nodeSymbolSize, vtkControl.vtkRendererLayer.Selection);
+            DrawBoundaryCondition("Step-Highlight", boundaryCondition, System.Drawing.Color.Red, symbolSize,
+                                  nodeSymbolSize, vtkControl.vtkRendererLayer.Selection, false);
         }
         public void HighlightLoad(Load load)
         {
             PreSettings preSettings = (PreSettings)_settings[Globals.PreSettingsName];
             int symbolSize = preSettings.SymbolSize;
             int nodeSymbolSize = preSettings.NodeSymbolSize;
-            DrawLoad("Highlight", load, System.Drawing.Color.Red, symbolSize, nodeSymbolSize, vtkControl.vtkRendererLayer.Selection);
+            DrawLoad("Highlight", load, System.Drawing.Color.Red, symbolSize, nodeSymbolSize,
+                     vtkControl.vtkRendererLayer.Selection, false);
         }
         public void HighlightConnectedLines(double[][] lineNodeCoor)
         {
