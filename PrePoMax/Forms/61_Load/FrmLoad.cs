@@ -235,6 +235,11 @@ namespace PrePoMax.Forms
             {
                 _controller.ReplaceLoadCommand(_stepName, _loadToEditName, FELoad);
             }
+            // Convert the load from internal to show it
+            else
+            {
+                LoadInternal(false);
+            }
             // If all is successful close the ItemSetSelectionForm - except for OKAddNew
             if (!onOkAddNew) ItemSetDataEditor.SelectionForm.Hide();
         }
@@ -242,6 +247,8 @@ namespace PrePoMax.Forms
         {
             // Close the ItemSetSelectionForm
             ItemSetDataEditor.SelectionForm.Hide();
+            // Convert the load from internal to show it
+            LoadInternal(false);
             //
             base.OnHideOrClose();
         }
@@ -295,6 +302,9 @@ namespace PrePoMax.Forms
             {
                 // Get and convert a converted load back to selection
                 FELoad = _controller.GetLoad(stepName, _loadToEditName); // to clone
+                // Convert the load to internal to hide it
+                LoadInternal(true);
+                //
                 if (FELoad.CreationData != null) FELoad.RegionType = RegionTypeEnum.Selection;
                 // Select the appropriate load in the list view - disable event SelectedIndexChanged
                 _lvTypesSelectedIndexChangedEventActive = false;
@@ -538,6 +548,15 @@ namespace PrePoMax.Forms
             else if (FELoad is GravityLoad) _controller.SetSelectItemToPart();
             else if (FELoad is CentrifLoad) _controller.SetSelectItemToPart();
             else if (FELoad is PreTensionLoad) _controller.SetSelectItemToSurface();
+        }
+        private void LoadInternal(bool toInternal)
+        {
+            if (_stepName != null && _loadToEditName != null)
+            {
+                // Convert the load from/to internal to hide/show it
+                _controller.GetLoad(_stepName, _loadToEditName).Internal = toInternal;
+                _controller.Update(UpdateType.RedrawSymbols);
+            }
         }
         //
         public void SelectionChanged(int[] ids)

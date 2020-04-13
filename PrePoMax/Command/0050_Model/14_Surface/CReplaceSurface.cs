@@ -30,7 +30,7 @@ namespace PrePoMax.Commands
         // Methods                                                                                                                  
         public override bool Execute(Controller receiver)
         {
-            receiver.ReplaceSurface(_oldSurfaceName, _newSurface.DeepClone());
+            receiver.ReplaceSurface(_oldSurfaceName, _newSurface.DeepClone(), true);
             return true;
         }
 

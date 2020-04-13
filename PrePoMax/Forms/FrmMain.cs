@@ -3675,6 +3675,7 @@ namespace PrePoMax
             if (ids == null) ids = _controller.GetSelectionIds();
             //
             if (_frmMeshRefinement != null && _frmMeshRefinement.Visible) _frmMeshRefinement.SelectionChanged(ids);
+            if (_frmBoundaryLayer != null && _frmBoundaryLayer.Visible) _frmBoundaryLayer.SelectionChanged(ids);
             if (_frmNodeSet != null && _frmNodeSet.Visible) _frmNodeSet.SelectionChanged(ids);
             if (_frmElementSet != null && _frmElementSet.Visible) _frmElementSet.SelectionChanged(ids);
             if (_frmSurface != null && _frmSurface.Visible) _frmSurface.SelectionChanged(ids);

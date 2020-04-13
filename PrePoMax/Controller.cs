@@ -944,16 +944,18 @@ namespace PrePoMax
             }
             // Regenerate tree
             _form.RegenerateTree(_model, _jobs, _results, _history);
-            // Update also draws the symbols
-            Update(UpdateType.Check | UpdateType.DrawMesh | UpdateType.RedrawSymbols);
+            // Redraw to be able to update sets based on selection
+            Update(UpdateType.DrawMesh);
             // At the end update the sets
             if (renumbered)
             {
                 // Update sets
-                UpdateNodeSetsBasedOnGeometry();
-                UpdateElementSetsBasedOnGeometry();
-                UpdateSurfacesBasedOnGeometry();
+                UpdateNodeSetsBasedOnGeometry(false);
+                UpdateElementSetsBasedOnGeometry(false);
+                UpdateSurfacesBasedOnGeometry(false);
             }
+            // Update the sets and symbols
+            Update(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         // Save
         public string GetFileNameToSaveAs()
@@ -2314,13 +2316,15 @@ namespace PrePoMax
         //
         public void CreateBoundaryLayer(int[] geometryIds, double thickness)
         {
-            if (_model != null) _model.Mesh.CreatePrismaticBoundaryLayer(geometryIds, thickness);           
-            //
-            Update(UpdateType.Check | UpdateType.DrawMesh | UpdateType.RedrawSymbols);
+            if (_model != null) _model.Mesh.CreatePrismaticBoundaryLayer(geometryIds, thickness);
+            // Redraw the geometry for update of the selection based sets
+            Update(UpdateType.DrawMesh);
             // At the end update the sets
-            UpdateNodeSetsBasedOnGeometry();
-            UpdateElementSetsBasedOnGeometry();
-            UpdateSurfacesBasedOnGeometry();
+            UpdateNodeSetsBasedOnGeometry(false);
+            UpdateElementSetsBasedOnGeometry(false);
+            UpdateSurfacesBasedOnGeometry(false);
+            // Update the sets and symbols
+            Update(UpdateType.Check | UpdateType.RedrawSymbols);
         }
 
         #endregion #################################################################################################################
@@ -2402,7 +2406,7 @@ namespace PrePoMax
             }
             else return null;
         }
-        public void ReplaceNodeSet(string oldNodeSetName, FeNodeSet nodeSet)
+        public void ReplaceNodeSet(string oldNodeSetName, FeNodeSet nodeSet, bool update)
         {
             if (nodeSet.CreationData != null)
             {
@@ -2422,7 +2426,7 @@ namespace PrePoMax
             UpdateSurfacesBasedOnNodeSet(nodeSet.Name);
             UpdateReferencePointsDependentOnNodeSet(nodeSet.Name);
             //
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            if (update) Update(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void RemoveNodeSets(string[] nodeSetNames)
         {
@@ -2443,7 +2447,7 @@ namespace PrePoMax
         {
             _model.Mesh.UpdateNodeSetCenterOfGravity(nodeSet);
         }
-        private void UpdateNodeSetsBasedOnGeometry()
+        private void UpdateNodeSetsBasedOnGeometry(bool update)
         {
             // Use list not to throw collection moddified exception
             List<CaeMesh.FeNodeSet> geomNodeSets = new List<FeNodeSet>();
@@ -2459,7 +2463,7 @@ namespace PrePoMax
                     foreach (FeNodeSet nodeSet in geomNodeSets)
                     {
                         nodeSet.Valid = true;
-                        ReplaceNodeSet(nodeSet.Name, nodeSet);
+                        ReplaceNodeSet(nodeSet.Name, nodeSet, update);
                     }
                 }
             }
@@ -2599,7 +2603,7 @@ namespace PrePoMax
             }
             else return null;
         }
-        public void ReplaceElementSet(string oldElementSetName, FeElementSet elementSet)
+        public void ReplaceElementSet(string oldElementSetName, FeElementSet elementSet, bool update)
         {
             if (elementSet.CreationData != null)
             {
@@ -2614,7 +2618,7 @@ namespace PrePoMax
             //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldElementSetName, elementSet, null);
             //
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            if (update) Update(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void ConvertElementSetsToMeshParts(string[] elementSetNames)
         {
@@ -2649,7 +2653,7 @@ namespace PrePoMax
             //
             Update(UpdateType.Check | UpdateType.RedrawSymbols);
         }
-        private void UpdateElementSetsBasedOnGeometry()
+        private void UpdateElementSetsBasedOnGeometry(bool update)
         {
             // use list not to throw collection moddified exception
             List<CaeMesh.FeElementSet> geomElementSets = new List<FeElementSet>();
@@ -2665,7 +2669,7 @@ namespace PrePoMax
                     foreach (FeElementSet elementSet in geomElementSets)
                     {
                         elementSet.Valid = true;
-                        ReplaceElementSet(elementSet.Name, elementSet);
+                        ReplaceElementSet(elementSet.Name, elementSet, update);
                     }
                 }
             }
@@ -2800,7 +2804,7 @@ namespace PrePoMax
             if (_model.Mesh == null) return null;
             return _model.Mesh.Surfaces.Values.ToArray();
         }
-        public void ReplaceSurface(string oldSurfaceName, FeSurface surface)
+        public void ReplaceSurface(string oldSurfaceName, FeSurface surface, bool update)
         {
             List<string> keys = _model.Mesh.Surfaces.Keys.ToList();     // copy
             RemoveSurfaceAndElementFacesFromModel(new string[] { oldSurfaceName });
@@ -2824,7 +2828,7 @@ namespace PrePoMax
             //
             UpdateReferencePointsDependentOnSurface(surface.Name);
             //
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            if (update) Update(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void RemoveSurfaces(string[] surfaceNames, bool update = true)
         {
@@ -2882,11 +2886,11 @@ namespace PrePoMax
                 }
                 if (changedSurfaces.Count > 0)
                 {
-                    foreach (FeSurface surface in changedSurfaces) ReplaceSurface(surface.Name, surface);
+                    foreach (FeSurface surface in changedSurfaces) ReplaceSurface(surface.Name, surface, false);
                 }
             }
         }
-        private void UpdateSurfacesBasedOnGeometry()
+        private void UpdateSurfacesBasedOnGeometry(bool update)
         {
             // use list not to throw collection moddified exception
             List<CaeMesh.FeSurface> geomSurfaces = new List<FeSurface>();
@@ -2902,7 +2906,7 @@ namespace PrePoMax
                     foreach (FeSurface surface in geomSurfaces)
                     {
                         surface.Valid = true;
-                        ReplaceSurface(surface.Name, surface);
+                        ReplaceSurface(surface.Name, surface, update);
                     }
                 }
             }
@@ -5429,7 +5433,6 @@ namespace PrePoMax
             if (updateType.HasFlag(UpdateType.DrawMesh)) DrawMesh(updateType.HasFlag(UpdateType.ResetCamera));
             if (updateType.HasFlag(UpdateType.RedrawSymbols)) RedrawSymbols();
         }
-
         private vtkControl.vtkMaxActorRepresentation GetRepresentation(BasePart part)
         {
             if (part.PartType == PartType.Solid) return vtkControl.vtkMaxActorRepresentation.Solid;
@@ -5438,7 +5441,6 @@ namespace PrePoMax
             else if (part.PartType == PartType.Wire) return vtkControl.vtkMaxActorRepresentation.Wire;
             else throw new NotSupportedException();
         }
-
         // Geometry mesh
         public void DrawGeometry(bool resetCamera)
         {
@@ -5521,7 +5523,6 @@ namespace PrePoMax
             ApplyLighting(data);
             _form.Add3DCells(data);
         }
-
         // Mesh
         public void DrawMesh(bool resetCamera)
         {
@@ -5610,7 +5611,6 @@ namespace PrePoMax
             ApplyLighting(data);
             _form.Add3DCells(data);
         }
-
         // Symbols
         public void DrawSymbols()
         {
@@ -5662,7 +5662,6 @@ namespace PrePoMax
                 // do not throw an error - it might cancel a procedure
             }
         }
-
         // Reference points
         public void DrawAllReferencePoints()
         {
@@ -5694,7 +5693,6 @@ namespace PrePoMax
             }
             catch { } // do not show the exception to the user
         }
-
         // Constraints
         public void DrawAllConstraints()
         {
@@ -5702,7 +5700,7 @@ namespace PrePoMax
             System.Drawing.Color color = preSettings.ConstraintSymbolColor;
             int nodeSymbolSize = preSettings.NodeSymbolSize;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
-
+            //
             foreach (var entry in _model.Constraints)
             {
                 DrawConstraint(entry.Value, color, nodeSymbolSize, layer, true);
@@ -5757,17 +5755,17 @@ namespace PrePoMax
             }
             catch { } // do not show the exception to the user
         }
-        public void DrawRigidBodySymbol(RigidBody rigidBody, System.Drawing.Color color, vtkControl.vtkRendererLayer layer, bool onlyVisible)
+        public void DrawRigidBodySymbol(RigidBody rigidBody, System.Drawing.Color color, vtkControl.vtkRendererLayer layer,
+                                        bool onlyVisible)
         {
             int[][] cells;
             int[] cellsTypes;
             double[][] nodeCoor;
             double[][] distributedNodeCoor;
             bool canHaveEdges = false;
-
+            //
             if (!GetReferencePointNames().Contains(rigidBody.ReferencePointName)) return;
-
-            // node set
+            // Node set
             string nodeSetName;
             if (rigidBody.RegionType == RegionTypeEnum.NodeSetName) nodeSetName = rigidBody.RegionName;
             else if (rigidBody.RegionType == RegionTypeEnum.SurfaceName) nodeSetName = _model.Mesh.Surfaces[rigidBody.RegionName].NodeSetName;
@@ -5777,23 +5775,21 @@ namespace PrePoMax
             {
                 FeNodeSet nodeSet = _model.Mesh.NodeSets[nodeSetName];
                 if (nodeSet.Labels.Length == 0) return;     // after remeshing this is 0 before the node set update
-
-                // all nodes
+                // All nodes
                 nodeCoor = _model.Mesh.GetNodeSetCoor(nodeSet.Labels, onlyVisible);
                 // If all nodes are hidden
                 if (nodeCoor == null || nodeCoor.Length == 0) return;
-                // ids go from 0 to Length
+                // Ids go from 0 to Length
                 int[] distributedIds = GetSpatiallyEquallyDistributedCoor(nodeCoor, 3);
-                // distributed nodes
+                // Distributed nodes
                 distributedNodeCoor = new double[distributedIds.Length][];
                 for (int i = 0; i < distributedIds.Length; i++) distributedNodeCoor[i] = nodeCoor[distributedIds[i]];
-
-                // create wire elements
-                // distributed coor +1 for reference point
+                // Create wire elements
+                // Distributed coor +1 for reference point
                 nodeCoor = new double[distributedIds.Length + 1][];
                 nodeCoor[0] = GetReferencePoint(rigidBody.ReferencePointName).Coor();
                 for (int i = 0; i < distributedIds.Length; i++) nodeCoor[i + 1] = distributedNodeCoor[i];
-
+                //
                 cells = new int[distributedIds.Length][];
                 cellsTypes = new int[distributedIds.Length];
                 LinearBeamElement element = new LinearBeamElement(0, null);
@@ -5802,7 +5798,7 @@ namespace PrePoMax
                     cells[i] = new int[] { 0, i + 1 };
                     cellsTypes[i] = element.GetVtkCellType();
                 }
-
+                //
                 if (cells.Length > 0)
                 {
                     vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
@@ -5820,7 +5816,6 @@ namespace PrePoMax
                 }
             }
         }
-
         // BCs
         public void DrawAllBoundaryConditions(string stepName)
         {
@@ -5829,7 +5824,7 @@ namespace PrePoMax
             int symbolSize = preSettings.SymbolSize;
             int nodeSymbolSize = preSettings.NodeSymbolSize;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
-
+            //
             foreach (var step in _model.StepCollection.StepsList)
             {
                 if (step.Name == stepName)
@@ -6174,11 +6169,13 @@ namespace PrePoMax
         {
             try
             {
-                if (!((load.Active && load.Visible && load.Valid) || layer == vtkControl.vtkRendererLayer.Selection)) return;
+                if (!((load.Active && load.Visible && load.Valid && !load.Internal) || layer == vtkControl.vtkRendererLayer.Selection))
+                    return;
                 //
                 double[][] coor = null;
                 string prefixName = stepName + Globals.NameSeparator + "LOAD" + Globals.NameSeparator + load.Name;
-                vtkControl.vtkRendererLayer symbolLayer = layer == vtkControl.vtkRendererLayer.Selection ? layer : vtkControl.vtkRendererLayer.Overlay;
+                vtkControl.vtkRendererLayer symbolLayer = 
+                    layer == vtkControl.vtkRendererLayer.Selection ? layer : vtkControl.vtkRendererLayer.Overlay;
                 //
                 int count = 0;
                 if (load is CLoad cLoad)
@@ -6517,9 +6514,9 @@ namespace PrePoMax
         }
         private int[] GetSpatiallyEquallyDistributedCoor(double[][] coor, int n)
         {
-            // divide space into boxes and then find the coor closest to the box center
+            // Divide space into boxes and then find the coor closest to the box center
             if (coor.Length <= 0) return null;
-            // bounding box
+            // Bounding box
             BoundingBox box = new BoundingBox();
             box.CheckCoors(coor);
             //
@@ -6531,9 +6528,9 @@ namespace PrePoMax
         }
         private int[] GetSpatiallyEquallyDistributedCoor(double[][] coor, double delta)
         {
-            // divide space into boxes and then find the coor closest to the box center
+            // Divide space into boxes and then find the coor closest to the box center
             if (coor.Length <= 0) return null;
-            // bounding box
+            // Bounding box
             BoundingBox box = new BoundingBox();
             box.CheckCoors(coor);
             //
@@ -6541,26 +6538,27 @@ namespace PrePoMax
         }
         private int[] GetSpatiallyEquallyDistributedCoor(double[][] coor, BoundingBox box, double delta)
         {
-            // divide space into boxes and then find the coor closest to the box center
+            // Divide space into boxes and then find the coor closest to the box center
             if (coor.Length <= 0) return null;
-            // divide space into hexahedrons
+            // Divide space into hexahedrons
             int nX = 1;
             int nY = 1;
             int nZ = 1;
             if (box.MaxX - box.MinX != 0) nX = (int)Math.Ceiling((box.MaxX - box.MinX) / delta);
             if (box.MaxY - box.MinY != 0) nY = (int)Math.Ceiling((box.MaxY - box.MinY) / delta);
             if (box.MaxZ - box.MinZ != 0) nZ = (int)Math.Ceiling((box.MaxZ - box.MinZ) / delta);
-
+            //
             double deltaX = 1;
             double deltaY = 1;
             double deltaZ = 1;
-            if (box.MaxX - box.MinX != 0) deltaX = ((box.MaxX - box.MinX) / nX) * 1.01;    // interval from 0...2 has 2 segments; value 2 is out of it
+            // Interval from 0...2 has 2 segments; value 2 is out of it
+            if (box.MaxX - box.MinX != 0) deltaX = ((box.MaxX - box.MinX) / nX) * 1.01;    
             if (box.MaxY - box.MinY != 0) deltaY = ((box.MaxY - box.MinY) / nY) * 1.01;
             if (box.MaxZ - box.MinZ != 0) deltaZ = ((box.MaxZ - box.MinZ) / nZ) * 1.01;
             box.MinX -= deltaX * 0.005;
             box.MinY -= deltaY * 0.005;
             box.MinZ -= deltaZ * 0.005;
-
+            //
             List<int>[][][] spatialIds = new List<int>[nX][][];
             for (int i = 0; i < nX; i++)
             {
@@ -6570,8 +6568,7 @@ namespace PrePoMax
                     spatialIds[i][j] = new List<int>[nZ];
                 }
             }
-
-            // fill space hexahedrons
+            // Fill space hexahedrons
             int idX;
             int idY;
             int idZ;
@@ -6583,7 +6580,7 @@ namespace PrePoMax
                 if (spatialIds[idX][idY][idZ] == null) spatialIds[idX][idY][idZ] = new List<int>();
                 spatialIds[idX][idY][idZ].Add(i);
             }
-
+            //
             double[] center = new double[3];
             List<int> centerIds = new List<int>();
             for (int i = 0; i < nX; i++)
@@ -6597,14 +6594,13 @@ namespace PrePoMax
                             center[0] = box.MinX + (i + 0.5) * deltaX;
                             center[1] = box.MinY + (j + 0.5) * deltaY;
                             center[2] = box.MinZ + (k + 0.5) * deltaZ;
-
+                            //
                             centerIds.Add(FindClosestIdFromIds(spatialIds[i][j][k].ToArray(), center, coor));
-                            //centerIds.Add(spatialIds[i][j][k].First());
                         }
                     }
                 }
             }
-
+            //
             return centerIds.ToArray();
         }
         private int FindClosestIdFromIds(int[] ids, double[] center, double[][] coor)
@@ -6617,7 +6613,7 @@ namespace PrePoMax
             {
                 id = ids[i];
                 d = Math.Pow(center[0] - coor[id][0], 2) + Math.Pow(center[1] - coor[id][1], 2) + Math.Pow(center[2] - coor[id][2], 2);
-
+                //
                 if (d < minDist)
                 {
                     minDist = d;
@@ -6626,7 +6622,6 @@ namespace PrePoMax
             }
             return minId;
         }
-
         // Geometry
         public void DrawNodes(string prefixName, double[][] nodeCoor, System.Drawing.Color color, vtkControl.vtkRendererLayer layer,
                               int nodeSize = 5, bool drawOnGeometry = false, bool useSecondaryHighlightColor = false)

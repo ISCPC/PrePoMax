@@ -164,6 +164,11 @@ namespace PrePoMax.Forms
             {
                 _controller.ReplaceBoundaryConditionCommand(_stepName, _boundaryConditionToEditName, BoundaryCondition);
             }
+            // Convert the boundary condition from internal to show it
+            else
+            {
+                BoundaryConditionInternal(false);
+            }
             // If all is successful close the ItemSetSelectionForm - except for OKAddNew
             if (!onOkAddNew) ItemSetDataEditor.SelectionForm.Hide();
         }
@@ -171,6 +176,8 @@ namespace PrePoMax.Forms
         {
             // Close the ItemSetSelectionForm
             ItemSetDataEditor.SelectionForm.Hide();
+            // Convert the boundary condition from internal to show it
+            BoundaryConditionInternal(false);
             //
             base.OnHideOrClose();
         }
@@ -216,6 +223,9 @@ namespace PrePoMax.Forms
             {
                 // Get and convert a converted load back to selection
                 BoundaryCondition = _controller.GetBoundaryCondition(stepName, _boundaryConditionToEditName); // to clone
+                // Convert the boundary condition to internal to hide it
+                BoundaryConditionInternal(true);
+                //
                 if (BoundaryCondition.CreationData != null) BoundaryCondition.RegionType = RegionTypeEnum.Selection;
                 // Select the appropriate boundary condition in the list view - disable event SelectedIndexChanged
                 _lvTypesSelectedIndexChangedEventActive = false;
@@ -333,6 +343,15 @@ namespace PrePoMax.Forms
             if (BoundaryCondition is null) { }
             else if (BoundaryCondition is DisplacementRotation) _controller.SetSelectItemToSurface();
             else if (BoundaryCondition is SubmodelBC) _controller.SetSelectItemToSurface();
+        }
+        private void BoundaryConditionInternal(bool toInternal)
+        {
+            if (_stepName != null && _boundaryConditionToEditName != null)
+            {
+                // Convert the boundary condition from/to internal to hide/show it
+                _controller.GetBoundaryCondition(_stepName, _boundaryConditionToEditName).Internal = toInternal;
+                _controller.Update(UpdateType.RedrawSymbols);
+            }
         }
         //
         public void SelectionChanged(int[] ids)

@@ -9,7 +9,7 @@ using CaeGlobals;
 
 namespace PrePoMax.Forms
 {
-    class FrmBoundaryLayer : UserControls.FrmProperties, IFormBase, IFormItemSetDataParent
+    class FrmBoundaryLayer : UserControls.FrmProperties, IFormBase, IFormItemSetDataParent, IFormHighlight
     {
         // Variables                                                                                                                
         private ViewBoundaryLayer _viewBoundaryLayer;
@@ -64,28 +64,31 @@ namespace PrePoMax.Forms
         }
 
 
-        // Event handlers                                                                                                           
-
-
         // Overrides                                                                                                                
-        protected override void OnPropertyGridPropertyValueChanged()
-        {
-            base.OnPropertyGridPropertyValueChanged();
-        }
         protected override void OnApply(bool onOkAddNew)
         {
             _viewBoundaryLayer = (ViewBoundaryLayer)propertyGrid.SelectedObject;
-            
-            if (_viewBoundaryLayer.ItemSetData.ItemIds == null || _viewBoundaryLayer.GetGeometryIds().Length == 0)
+            //
+            if (_viewBoundaryLayer.GeometryIds == null || _viewBoundaryLayer.GeometryIds.Length == 0)
                 throw new CaeException("The boundary layer must contain at least one item.");
             // Create
-            _controller.CreateBoundaryLayerCommand(_viewBoundaryLayer.GetGeometryIds(), _viewBoundaryLayer.Thickness);
+            _controller.CreateBoundaryLayerCommand(_viewBoundaryLayer.GeometryIds, _viewBoundaryLayer.Thickness);
             //
-            _controller.Selection.Clear();
+            _controller.ClearSelectionHistoryAndSelectionChanged();
+            // If all is successful close the ItemSetSelectionForm - except for OKAddNew
+            if (!onOkAddNew) ItemSetDataEditor.SelectionForm.Hide();
+        }
+        protected override void OnHideOrClose()
+        {
+            // Close the ItemSetSelectionForm
+            ItemSetDataEditor.SelectionForm.Hide();
+            //
+            base.OnHideOrClose();
         }
         protected override bool OnPrepareForm(string stepName, string meshRefinementToEditName)
         {
-            this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
+            // To prevent the call to frmMain.itemForm_VisibleChanged when minimized
+            this.DialogResult = DialogResult.None;      
             //
             _propertyItemChanged = false;
             _viewBoundaryLayer = null;
@@ -99,64 +102,54 @@ namespace PrePoMax.Forms
             propertyGrid.SelectedObject = _viewBoundaryLayer;
             propertyGrid.Select();
             //
+            ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
+            //
             return true;
         }
-        protected override void OnEnabledChanged()
-        {
-            // Form is Enabled On and Off by the itemSetForm
-            if (this.Enabled)
-            {
-                // The FrmItemSet was closed with OK
-                if (this.DialogResult == System.Windows.Forms.DialogResult.OK)   
-                {
-                    _viewBoundaryLayer.CreationData = _controller.Selection.DeepClone();
-                    _propertyItemChanged = true;
-                }
-                // The FrmItemSet was closed with Cancel
-                else if (this.DialogResult == System.Windows.Forms.DialogResult.Cancel)
-                {
-                    if (_viewBoundaryLayer.CreationData != null)
-                    {
-                        _controller.Selection.CopySelectonData(_viewBoundaryLayer.CreationData);
-                    }
-                }
-            }
-            // When the itemSetForm is shown, reset the highlight (after Preview Edge Mesh)
-            HighlightSurface();
-            this.DialogResult = System.Windows.Forms.DialogResult.None;
-        }
 
 
-        // Methods                                                                                                                  
-        public bool PrepareForm(string stepName, string meshRefinementToEditName)
-        {
-            return OnPrepareForm(stepName, meshRefinementToEditName);
-        }
-
-
-        // IFormItemSetDataParent
-        public bool IsSelectionGeometryBased()
-        {
-            return true;
-        }
-        
+        // Methods                                                                                                                         
         private void HighlightSurface()
         {
             try
             {
                 if (_controller != null)
                 {
-                    _controller.ClearSelectionHistoryAndSelectionChanged();
                     _controller.SetSelectItemToGeometry();
                     // Surface.CreationData is set to null when the CreatedFrom is changed
                     if (_viewBoundaryLayer.CreationData != null)
-                        _controller.Selection.CopySelectonData(_viewBoundaryLayer.CreationData.DeepClone()); // Deep copy to not clear
-                    _controller.HighlightSelection();
+                    {
+                        _controller.Selection = _viewBoundaryLayer.CreationData.DeepClone(); // Deep copy to not clear
+                        _controller.HighlightSelection();
+                    }
                 }
             }
             catch { }
         }
+        public void SelectionChanged(int[] ids)
+        {
+            if (_viewBoundaryLayer != null)
+            {
+                _viewBoundaryLayer.GeometryIds = ids;
+                _viewBoundaryLayer.CreationData = _controller.Selection.DeepClone();
+                //
+                propertyGrid.Refresh();
+                //
+                _propertyItemChanged = true;
+            }
+        }
 
+        // IFormHighlight
+        public void Highlight()
+        {
+            HighlightSurface();
+        }
+
+        // IFormItemSetDataParent
+        public bool IsSelectionGeometryBased()
+        {
+            return true;
+        }
     }
 
 

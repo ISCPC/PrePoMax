@@ -111,12 +111,6 @@ namespace PrePoMax.Forms
 
 
         // Overrides                                                                                                                
-        protected override void OnPropertyGridPropertyValueChanged()
-        {
-            //string value = (string)propertyGrid.SelectedGridItem.Value.ToString();
-            //HighlightMeshRefinement()
-            base.OnPropertyGridPropertyValueChanged();
-        }
         protected override void OnApply(bool onOkAddNew)
         {
             _viewFeMeshRefinement = (ViewFeMeshRefinement)propertyGrid.SelectedObject;
@@ -234,7 +228,7 @@ namespace PrePoMax.Forms
             {
                 if (_controller != null)
                 {
-                    _controller.Selection.SelectItem = vtkSelectItem.Geometry;
+                    _controller.SetSelectItemToGeometry();
                     // Surface.CreationData is set to null when the CreatedFrom is changed
                     if (MeshRefinement.CreationData != null)
                     {

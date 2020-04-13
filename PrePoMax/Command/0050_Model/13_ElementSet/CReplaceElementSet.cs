@@ -30,7 +30,7 @@ namespace PrePoMax.Commands
         // Methods                                                                                                                  
         public override bool Execute(Controller receiver)
         {
-            receiver.ReplaceElementSet(_oldElementSetName, _newElementSet.DeepClone());
+            receiver.ReplaceElementSet(_oldElementSetName, _newElementSet.DeepClone(), true);
             return true;
         }
 
