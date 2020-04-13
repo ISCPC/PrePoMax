@@ -19,6 +19,7 @@ namespace PrePoMax.Forms
         // Variables                                                                                                                
         private ViewDoubleValue _viewValue;
         private double _labelRatio = 2.0; // larger value means wider second column
+        
 
 
         // Properties                                                                                                               
@@ -33,11 +34,12 @@ namespace PrePoMax.Forms
 
 
         // Constructors                                                                                                             
-        public FrmGetValue(double value)
+        public FrmGetValue()
         {
             InitializeComponent();
-            _viewValue = new ViewDoubleValue(value);
-
+            //
+            _viewValue = new ViewDoubleValue();
+            //
             propertyGrid.SetParent(this);   // for the Tab key to work
             propertyGrid.SetLabelColumnWidth(_labelRatio);
         }
@@ -64,19 +66,19 @@ namespace PrePoMax.Forms
      
 
         // Methods                                                                                                                  
-        public void PrepareForm(string title, string valueName, string valueDescription)
+        public void PrepareForm(string title, string valueName, string valueDescription,
+                                double value, OrderedDictionary<string, double> presetValues)
         {
             this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
-
+            //
             Text = title;
-
-            DynamicCustomTypeDescriptor _dctd = ProviderInstaller.Install(_viewValue);
-
-            CustomPropertyDescriptor cpd = _dctd.GetProperty("Value");
-            cpd.SetCategory("Value");
-            cpd.SetDisplayName(valueName);
-            cpd.SetDescription(valueDescription);
-
+            //
+            _viewValue.Value = value;
+            _viewValue.PresetValues = presetValues;
+            //
+            _viewValue.SetDisplayName(valueName);
+            _viewValue.SetDescription(valueDescription);
+            //
             propertyGrid.SelectedObject = _viewValue;
             propertyGrid.Select();
         }

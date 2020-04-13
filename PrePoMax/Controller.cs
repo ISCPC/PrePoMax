@@ -949,7 +949,7 @@ namespace PrePoMax
             // At the end update the sets
             if (renumbered)
             {
-                // Update sets
+                // Update sets - must be called with rendering off - SetStateWorking
                 UpdateNodeSetsBasedOnGeometry(false);
                 UpdateElementSetsBasedOnGeometry(false);
                 UpdateSurfacesBasedOnGeometry(false);
@@ -1777,10 +1777,6 @@ namespace PrePoMax
             //
             if (part.CADFileData == null) return CreateMeshFromStl(part);
             else return CreateMeshFromBrep(part);
-            //
-            UpdateType ut = UpdateType.Check;
-            //if (invalidate) ut |= UpdateType.DrawMesh | UpdateType.RedrawSymbols;
-            //Update(ut);
         }
         private bool CreateMeshFromStl(GeometryPart part)
         {
@@ -2316,15 +2312,26 @@ namespace PrePoMax
         //
         public void CreateBoundaryLayer(int[] geometryIds, double thickness)
         {
-            if (_model != null) _model.Mesh.CreatePrismaticBoundaryLayer(geometryIds, thickness);
-            // Redraw the geometry for update of the selection based sets
-            Update(UpdateType.DrawMesh);
-            // At the end update the sets
-            UpdateNodeSetsBasedOnGeometry(false);
-            UpdateElementSetsBasedOnGeometry(false);
-            UpdateSurfacesBasedOnGeometry(false);
-            // Update the sets and symbols
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            try
+            {
+                _form.SetStateWorking("Creating...");
+                //
+                if (_model != null) _model.Mesh.CreatePrismaticBoundaryLayer(geometryIds, thickness);
+                // Redraw the geometry for update of the selection based sets
+                Update(UpdateType.DrawMesh);
+                // Update sets - must be called with rendering off - SetStateWorking
+                UpdateNodeSetsBasedOnGeometry(false);
+                UpdateElementSetsBasedOnGeometry(false);
+                UpdateSurfacesBasedOnGeometry(false);
+                // Update the sets and symbols
+                Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            }
+            catch
+            { }
+            finally
+            {
+                _form.SetStateReady("Creating...");
+            }
         }
 
         #endregion #################################################################################################################

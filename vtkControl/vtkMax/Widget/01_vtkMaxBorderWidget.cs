@@ -285,43 +285,52 @@ namespace vtkControl
         public bool LeftButtonPress(int x, int y)
         {
             if (!_visibility) return false;
-
+            //
             int[] size = _renderer.GetSize();
             double[] position = _position.ToArray();
             if (_widgetPosition == vtkMaxWidgetPosition.FromTopLeft)
             {
                 position[1] = size[1] - _size[1] - position[1];
             }
-
-            if (x >= position[0] && x <= position[0] + _size[0] &&
-                y >= position[1] && y <= position[1] + _size[1])
+            // Inside click
+            if (x >= position[0] && x <= position[0] + _size[0] && y >= position[1] && y <= position[1] + _size[1])
             {
-                // inside click
-                
-                if ((DateTime.Now - _lastClickTime).TotalMilliseconds < 200 && 
+                //System.Diagnostics.Debug.WriteLine(DateTime.Now.Millisecond);
+                // Double click
+                if ((DateTime.Now - _lastClickTime).TotalMilliseconds < 300 && 
                     Math.Abs(x - _lastClickPos[0]) < 5 && Math.Abs(y - _lastClickPos[1]) < 5)
                 {
-                    // double click
                     MouseDoubleClick?.Invoke();
                     return true;
                 }
+                // Single click
                 else
                 {
-                    // single click
                     _clickPos = new int[] { x, y };
                     _lastClickPos = _clickPos.ToArray();
                     _lastClickTime = DateTime.Now;
                     return true;
                 }
             }
-            else
-                return false;
+            // Outside click
+            else return false;   
         }
-        public void LeftButtonRelease()
+        public bool LeftButtonRelease(int x, int y)
         {
-            if (!_visibility) return;
-
+            if (!_visibility) return false;
+            //
             _clickPos = null;
+            //
+            int[] size = _renderer.GetSize();
+            double[] position = _position.ToArray();
+            if (_widgetPosition == vtkMaxWidgetPosition.FromTopLeft)
+            {
+                position[1] = size[1] - _size[1] - position[1];
+            }
+            // Inside click
+            if (x >= position[0] && x <= position[0] + _size[0] && y >= position[1] && y <= position[1] + _size[1]) return true;
+            // Outside click
+            else return false;
         }
         public virtual void MiddleButtonPress(int x, int y)
         {

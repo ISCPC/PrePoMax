@@ -30,6 +30,7 @@ namespace UserControls
         public int Transparency;
         public int Deformed;
         public int ColorContours;
+        public int CompoundPart;
         public int MeshingParameters;
         public int PreviewEdgeMesh;
         public int CreateMesh;
@@ -151,6 +152,7 @@ namespace UserControls
         public event Action<NamedClass[], HideShowOperation, string[]> HideShowEvent;
         public event Action<string[]> SetTransparencyEvent;
         public event Action<NamedClass[], bool> ColorContoursVisibilityEvent;
+        public event Action<string[]> CreateCompoundPart;
         public event Action<string[]> MeshingParametersEvent;
         public event Action<string[]> PreviewEdgeMesh;
         public event Action<string[]> CreateMeshEvent;
@@ -302,13 +304,12 @@ namespace UserControls
         private void PrepareToolStripItem(CodersLabTreeView tree)
         {
             int n = tree.SelectedNodes.Count;
-
+            //
             ContextMenuFields menuFields = new ContextMenuFields();
             foreach (TreeNode node in tree.SelectedNodes)
             {
                 AppendMenuFields(node, ref menuFields);
             }
-
             bool oneAboveVisible = false;
             // Visibility                                                                                           
             bool visible;
@@ -319,6 +320,11 @@ namespace UserControls
             // Edit
             visible = menuFields.Edit == n;
             tsmiEdit.Visible = visible;
+            oneAboveVisible |= visible;
+            //Geometry                                              
+            visible = menuFields.CompoundPart == n && n > 1;
+            tsmiSpaceCompoundPart.Visible = false;
+            tsmiCompoundPart.Visible = visible;
             oneAboveVisible |= visible;
             //Mesh                                                  
             visible = menuFields.MeshingParameters == n;
@@ -337,7 +343,6 @@ namespace UserControls
             oneAboveVisible |= visible;
             // Merge mesh parts                                     
             visible = menuFields.MergePart == n && n > 1;
-            //tsmiSpaceMergeParts.Visible = visible;
             tsmiSpaceMergeParts.Visible = false;
             tsmiMergeParts.Visible = visible;
             oneAboveVisible |= visible;
@@ -463,6 +468,11 @@ namespace UserControls
                     menuFields.Deformed++;
                     menuFields.ColorContours++;
                 }
+            }
+            // Geometry part - Geometry
+            if (item != null && item is GeometryPart && GetActiveTree() == cltvGeometry)
+            {
+                menuFields.CompoundPart++;
             }
             // Geometry part - Mesh
             if (item != null && item is GeometryPart && GetActiveTree() == cltvGeometry)
@@ -838,6 +848,23 @@ namespace UserControls
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
+        // Geometry - compound
+        private void tsmiCompoundPart_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                List<string> names = new List<string>();
+                foreach (TreeNode node in cltvGeometry.SelectedNodes)
+                {
+                    if (node.Tag != null) names.Add(((NamedClass)node.Tag).Name);
+                }
+                if (names.Count > 0) CreateCompoundPart?.Invoke(names.ToArray());
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
         // Meshing
         private void tsmiMeshingParameters_Click(object sender, EventArgs e)
         {
@@ -887,7 +914,7 @@ namespace UserControls
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-        // Geometry
+        // Geometry - copy
         private void tsmiCopyGeometryPartToResults_Click(object sender, EventArgs e)
         {
             try
@@ -1702,20 +1729,19 @@ namespace UserControls
                                                   bool countNodes = true)
         {
             TreeNode nodeToAdd;
-
+            //
             var list = dictionary.Keys.ToList();
-            //list.Sort();
-
+            //
             foreach (var key in list)
             {
-                if (dictionary[key] is NamedClass && (dictionary[key] as NamedClass).Internal) continue;
-
+                if (dictionary[key] is NamedClass nc && nc.Internal) continue;
+                //
                 nodeToAdd = node.Nodes.Add(key.ToString());
                 nodeToAdd.Name = nodeToAdd.Text;
                 nodeToAdd.Tag = dictionary[key];
                 SetNodeStatus(nodeToAdd);
             }
-
+            //
             if (countNodes && node.Nodes.Count > 0) node.Text = initialNodeName + " (" + node.Nodes.Count.ToString() + ")";
             else node.Text = initialNodeName;
         }
@@ -2077,5 +2103,7 @@ namespace UserControls
                 cmsTree.Show(control, x, y);
             }
         }
+
+        
     }
 }

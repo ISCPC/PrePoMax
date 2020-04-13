@@ -33,15 +33,10 @@ namespace CaeMesh
             _createdFromParts = createdFromParts;
         }
         public FeElementSet(FeElementSet elementSet)
-           : base(elementSet.Name, elementSet.Labels)
+           : base(elementSet)
         {
             _creationData = elementSet.CreationData.DeepClone();
             _createdFromParts = elementSet._createdFromParts;
-            //
-            _active = elementSet.Active;
-            _visible = elementSet.Visible;
-            _valid = elementSet.Valid;
-            _internal = elementSet.Internal;
         }
 
 

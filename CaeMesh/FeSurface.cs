@@ -92,20 +92,16 @@ namespace CaeMesh
             _creationData = creationDataClone;
         }
         public FeSurface(FeSurface surface)
-            : this(surface.Name)
+            : base(surface)
         {
-            _type = surface.Type;
-            _createdFrom = surface.CreatedFrom;
-            _nodeSetName = surface.NodeSetName;
-            _createdFromNodeSetName = surface.CreatedFromNodeSetName;
-            _faceIds = surface.FaceIds != null ? surface.FaceIds.ToArray() : null;
-            _area = surface.Area;
-            if (surface.ElementFaces != null)
-            {
-                _elementFaces = new Dictionary<FeFaceName, string>();
-                foreach (var entry in surface.ElementFaces) _elementFaces.Add(entry.Key, entry.Value);
-            }
-            _creationData = surface.CreationData != null ? surface.CreationData.DeepClone() : null;
+            _type = surface._type;
+            _createdFrom = surface._createdFrom;
+            _nodeSetName = surface._nodeSetName;
+            _createdFromNodeSetName = surface._createdFromNodeSetName;
+            _faceIds = surface._faceIds != null ? surface._faceIds.ToArray() : null;
+            _area = surface._area;
+            _elementFaces = surface._elementFaces != null ? new Dictionary<FeFaceName, string>(surface._elementFaces) : null;
+            _creationData = surface._creationData != null ? surface._creationData.DeepClone() : null;
         }
 
 

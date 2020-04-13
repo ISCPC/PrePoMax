@@ -172,7 +172,8 @@ namespace PrePoMax
                 _modelTree.EditEvent += ModelTree_Edit;
                 _modelTree.HideShowEvent += ModelTree_HideShowEvent;
                 _modelTree.SetTransparencyEvent += ModelTree_SetTransparencyEvent;
-                _modelTree.ColorContoursVisibilityEvent += ModelTree_ColorContoursVisibilityEvent; 
+                _modelTree.ColorContoursVisibilityEvent += ModelTree_ColorContoursVisibilityEvent;
+                _modelTree.CreateCompoundPart += CreateAndImportCompoundPart;
                 _modelTree.MeshingParametersEvent += GetSetMeshingParameters;
                 _modelTree.PreviewEdgeMesh += PreviewEdgeMeshes;
                 _modelTree.CreateMeshEvent += CreateMeshes;
@@ -1598,15 +1599,18 @@ namespace PrePoMax
         private void SetTransparencyForGeometryParts(string[] partNames)
         {
             if (_controller.Model.Geometry == null) return;
-
-            using (FrmGetValue frmGetValue = new FrmGetValue(128))
+            //
+            using (FrmGetValue frmGetValue = new FrmGetValue())
             {
                 frmGetValue.NumOfDigits = 0;
                 frmGetValue.MinValue = 25;
                 frmGetValue.MaxValue = 255;
                 SetFormLoaction(frmGetValue);
-                frmGetValue.PrepareForm("Set Transparency", "Transparency", "Enter the transparency between 0 and 255.\n" +
-                                                                            "(0 - transparent; 255 - opaque)");
+                OrderedDictionary<string, double> presetValues = new OrderedDictionary<string, double>();
+                presetValues.Add("Semi-transparent", 128);
+                presetValues.Add("Opaque", 255);
+                string desc = "Enter the transparency between 0 and 255.\n" + "(0 - transparent; 255 - opaque)";
+                frmGetValue.PrepareForm("Set Transparency", "Transparency",  desc, 128, presetValues);
                 if (frmGetValue.ShowDialog() == DialogResult.OK)
                 {
                     _controller.SetTransparencyForGeometryPartsCommand(partNames,(byte)frmGetValue.Value);
@@ -1929,9 +1933,9 @@ namespace PrePoMax
                 {
                     CaeMesh.GeometryPart part = _controller.GetGeometryPart(partName);
                     if (part.MeshingParameters == null) SetDefaultMeshingParameters(partName);
-
+                    //
                      await Task.Run(() => _controller.CreateMeshCommand(partName));
-
+                    //
                     _modelTree.SelectBasePart(e, modifierKeys, part);
                 }
             }
@@ -2033,13 +2037,13 @@ namespace PrePoMax
             {
                 if (_controller.Model.Mesh == null) return;
 
-                using (FrmGetValue frmGetValue = new FrmGetValue(1))
+                using (FrmGetValue frmGetValue = new FrmGetValue())
                 {
                     frmGetValue.NumOfDigits = 0;
                     frmGetValue.MinValue = 1;
                     SetFormLoaction(frmGetValue);
-                    frmGetValue.PrepareForm("Renumber Nodes", "Start node id", "Enter the starting node id " +
-                                                                               "for the node renumbering.");
+                    string desc = "Enter the starting node id for the node renumbering.";
+                    frmGetValue.PrepareForm("Renumber Nodes", "Start node id", desc, 1, null);
                     if (frmGetValue.ShowDialog() == DialogResult.OK)
                     {
                         _controller.RenumberNodesCommand((int)frmGetValue.Value);
@@ -2229,16 +2233,18 @@ namespace PrePoMax
         private void SetTransparencyForModelParts(string[] partNames)
         {
             if (_controller.Model.Mesh == null) return;
-
-            using (FrmGetValue frmGetValue = new FrmGetValue(128))
+            //
+            using (FrmGetValue frmGetValue = new FrmGetValue())
             {
                 frmGetValue.NumOfDigits = 0;
                 frmGetValue.MinValue = 25;
                 frmGetValue.MaxValue = 255;
                 SetFormLoaction(frmGetValue);
-                frmGetValue.StartPosition = FormStartPosition.Manual;
-                frmGetValue.PrepareForm("Set Transparency", "Transparency", "Enter the transparency between 0 and 255.\n" +
-                                                                            "(0 - transparent; 255 - opaque)");
+                OrderedDictionary<string, double> presetValues = new OrderedDictionary<string, double>();
+                presetValues.Add("Semi-transparent", 128);
+                presetValues.Add("Opaque", 255);
+                string desc = "Enter the transparency between 0 and 255.\n" + "(0 - transparent; 255 - opaque)";
+                frmGetValue.PrepareForm("Set Transparency", "Transparency", desc, 128, presetValues);
                 if (frmGetValue.ShowDialog() == DialogResult.OK)
                 {
                     _controller.SetTransparencyForModelPartsCommand(partNames, (byte)frmGetValue.Value);
@@ -3528,15 +3534,17 @@ namespace PrePoMax
         {
             if (_controller.Results == null || _controller.Results.Mesh == null) return;
             //
-            using (FrmGetValue frmGetValue = new FrmGetValue(128))
+            using (FrmGetValue frmGetValue = new FrmGetValue())
             {
                 frmGetValue.NumOfDigits = 0;
                 frmGetValue.MinValue = 25;
                 frmGetValue.MaxValue = 255;
                 SetFormLoaction(frmGetValue);
-                frmGetValue.StartPosition = FormStartPosition.Manual;
-                frmGetValue.PrepareForm("Set Transparency", "Transparency", "Enter the transparency between 0 and 255.\n" +
-                                                                            "(0 - transparent; 255 - opaque)");
+                OrderedDictionary<string, double> presetValues = new OrderedDictionary<string, double>();
+                presetValues.Add("Semi-transparent", 128);
+                presetValues.Add("Opaque", 255);
+                string desc = "Enter the transparency between 0 and 255.\n" + "(0 - transparent; 255 - opaque)";
+                frmGetValue.PrepareForm("Set Transparency", "Transparency", desc, 128, presetValues);
                 if (frmGetValue.ShowDialog() == DialogResult.OK)
                 {
                     _controller.SetTransparencyForResultParts(partNames, (byte)frmGetValue.Value);
@@ -4636,8 +4644,8 @@ namespace PrePoMax
         }
         public void SelectBaseParts(MouseEventArgs e, Keys modifierKeys, string[] partNames)
         {
-            // this is called from _vtk on part selection            
-            if (!_modelTree.DisableMouse)
+            // This is called from _vtk on part selection
+            //if (!_modelTree.DisableMouse)
             {
                 if (partNames != null && partNames.Length > 0 && partNames[0] == null)
                 {

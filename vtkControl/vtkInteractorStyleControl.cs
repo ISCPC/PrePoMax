@@ -202,14 +202,19 @@ namespace vtkControl
         }
         void vtkInteractorStyleControl_LeftButtonReleaseEvt(vtkObject sender, vtkObjectEventArgs e)
         {
-            // Widgets
-            foreach (vtkMaxBorderWidget widget in _widgets) widget.LeftButtonRelease();
+            vtkRenderWindowInteractor rwi = this.GetInteractor();
             //
+            int x = rwi.GetEventPosition()[0];
+            int y = rwi.GetEventPosition()[1];
+            // Widgets
+            foreach (vtkMaxBorderWidget widget in _widgets)
+            {
+                if (widget.LeftButtonRelease(x, y)) return;
+            }
             //if (_selection)
             {
                 if (!_selectionCanceled)
                 {
-                    vtkRenderWindowInteractor rwi = this.GetInteractor();
                     int[] mousePos = rwi.GetEventPosition();
                     //
                     if (PointPickedOnLeftUpEvt != null)

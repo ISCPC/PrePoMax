@@ -461,7 +461,7 @@ namespace vtkControl
         }
         private void _style_RightButtonPressEvent(int x, int y)
         {
-            if (_selectBy == vtkSelectBy.Off)
+            //if (_selectBy == vtkSelectBy.Off)
             {
                 vtkActor pickedActor = null;
                 GetPickPoint(out pickedActor, x, y);
@@ -1381,6 +1381,7 @@ namespace vtkControl
         }
         public void GetGeometryPickProperties(double[] point, out int elementId, out int[] edgeNodeIds, out int[] cellFaceNodeIds)
         {
+            // Turn rendering off in order to 
             vtkCellLocator cellLocator;
             vtkCell cell;
             elementId = GetGlobalCellIdClosestTo3DPoint(ref point, out cell, out cellLocator);

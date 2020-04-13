@@ -47,11 +47,20 @@ namespace CaeGlobals
         {
             _checkName = true;
             Name = name;
-
+            //
             _active = true;
             _visible = true;
             _valid = true;
             _internal = false;
+        }
+        public NamedClass(NamedClass namedClass)
+        {
+            _name = namedClass._name;
+            _active = namedClass._active;
+            _visible = namedClass._visible;
+            _valid = namedClass._valid;
+            _internal = namedClass._internal;
+            _checkName = namedClass._checkName;
         }
         public NamedClass(SerializationInfo info, StreamingContext context)
         {

@@ -4952,7 +4952,7 @@ namespace CaeMesh
             foreach (var entry in _surfaces)
             {
                 newSurfaceFaceIds.Clear();
-
+                //
                 if (entry.Value.FaceIds != null)
                 {
                     foreach (var faceId in entry.Value.FaceIds)
@@ -4968,17 +4968,14 @@ namespace CaeMesh
                     if (entry.Value.FaceIds.Length == 0) emptySurfaces.Add(entry.Key);
                 }
             }
-
-
-            // changed surfaces
+            // Changed surfaces
             bool geometryBased;
             FeSurface surface;
             foreach (string name in changedSurfaces)
             {
                 surface = _surfaces[name];
                 geometryBased = surface.CreationData.IsGeometryBased();
-
-                // do not change the geometry based surface if remeshing is done
+                // Do not change the geometry based surface if remeshing is done
                 if (!(removeForRemeshing && geometryBased))
                 {
                     surface = new FeSurface(_surfaces[name]);
@@ -4988,15 +4985,14 @@ namespace CaeMesh
                     _surfaces[name] = surface;
                 }
             }
-
-            // remove empty surfaces
+            // Remove empty surfaces
             if (removeEmptySurfaces)
             {
                 string[] nodeSets;
                 string[] elementSets;
                 RemoveSurfaces(emptySurfaces.ToArray(), out nodeSets, out elementSets);
             }
-
+            //
             return changedSurfaces.ToArray();
         }
 

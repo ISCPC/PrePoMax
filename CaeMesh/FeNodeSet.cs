@@ -28,7 +28,6 @@ namespace CaeMesh
             _centerOfGravity = null;
             _boundingBox = null;
         }
-
         public FeNodeSet(string name, int[] labels, double[] centerOfGravity)
             : base(name, labels)
         {

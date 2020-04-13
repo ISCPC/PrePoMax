@@ -28,9 +28,14 @@ namespace CaeMesh
         public FeGroup(string name, int[] labels) 
             : base(name)
         {
-            //_name = name;
             _labels = labels;
         }
+        public FeGroup(FeGroup group)
+            :base(group) // NamedClass
+        {
+            _labels = group.Labels.ToArray();
+        }
+
 
         // Methods                                                                                                                  
     }

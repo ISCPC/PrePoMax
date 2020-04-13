@@ -81,7 +81,7 @@ namespace PrePoMax
             //
             int numOfItemsToBeBrowsable = 2;
             if (selection) numOfItemsToBeBrowsable = 1;
-            _dctd.PopulateProperty(() => this.RegionType, types.ToArray(), false, numOfItemsToBeBrowsable);
+            _dctd.PopulateProperty(nameof(RegionType), types.ToArray(), false, numOfItemsToBeBrowsable);
         }
         public virtual void UpdateRegionVisibility()
         {
