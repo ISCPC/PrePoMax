@@ -112,6 +112,14 @@ namespace CaeGlobals
             vector.Normalize();
             return vector;
         }
+        public static Vec3D GetDirVec(double[] p1, double[] p2)
+        {
+            Vec3D vector = new Vec3D();
+            vector.X = p2[0] - p1[0];
+            vector.Y = p2[1] - p1[1];
+            vector.Z = p2[2] - p1[2];
+            return vector;
+        }
 
         // Add
         public static Vec3D operator +(Vec3D v1, Vec3D v2)

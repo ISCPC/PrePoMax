@@ -913,7 +913,13 @@ namespace vtkControl
         private void AddCellDataToPoly(PartExchangeData data, ref vtkPolyData polyActor, ref vtkPolyData polyEdges,
                                        bool extractEdges)
         {
+            double d1;
+            double d2;
+            Vec3D n1 = new Vec3D();
+            Vec3D n2 = new Vec3D();
+            //
             int[] nodeIds;
+            double[][] nodeCoor;
             int cellType;
             bool isEdge;
             bool isSurface;
@@ -936,7 +942,7 @@ namespace vtkControl
             //
             for (int i = 0; i < data.Cells.CellNodeIds.GetLength(0); i++)
             {
-                nodeIds = data.Cells.CellNodeIds[i];
+                nodeIds = data.Cells.CellNodeIds[i];                
                 cellType = data.Cells.Types[i];
                 isEdge = cellType == lineType || cellType == quadraticEdgeType;
                 isSurface = cellType == triangleType || cellType == quadType || cellType == quadraticTriangleType ||
@@ -1079,30 +1085,63 @@ namespace vtkControl
                     }
                     else if (cellType == quadraticQuadType)
                     {
-                        nodeList.SetId(0, nodeIds[4]);
-                        nodeList.SetId(1, nodeIds[7]);
-                        nodeList.SetId(2, nodeIds[0]);
-                        polyActor.InsertNextCell(triangleType, nodeList);
-                        nodeList.SetId(0, nodeIds[4]);
-                        nodeList.SetId(1, nodeIds[5]);
-                        nodeList.SetId(2, nodeIds[7]);
-                        polyActor.InsertNextCell(triangleType, nodeList);
-                        nodeList.SetId(0, nodeIds[4]);
-                        nodeList.SetId(1, nodeIds[1]);
-                        nodeList.SetId(2, nodeIds[5]);
-                        polyActor.InsertNextCell(triangleType, nodeList);
-                        nodeList.SetId(0, nodeIds[6]);
-                        nodeList.SetId(1, nodeIds[5]);
-                        nodeList.SetId(2, nodeIds[2]);
-                        polyActor.InsertNextCell(triangleType, nodeList);
-                        nodeList.SetId(0, nodeIds[6]);
-                        nodeList.SetId(1, nodeIds[7]);
-                        nodeList.SetId(2, nodeIds[5]);
-                        polyActor.InsertNextCell(triangleType, nodeList);
-                        nodeList.SetId(0, nodeIds[6]);
-                        nodeList.SetId(1, nodeIds[3]);
-                        nodeList.SetId(2, nodeIds[7]);
-                        polyActor.InsertNextCell(triangleType, nodeList);
+                        nodeCoor = data.Nodes.Coor;
+                        d1 = Vec3D.GetDirVec(nodeCoor[nodeIds[4]], nodeCoor[nodeIds[6]]).Len2;
+                        d2 = Vec3D.GetDirVec(nodeCoor[nodeIds[5]], nodeCoor[nodeIds[7]]).Len2;
+                        if (d1 < d2)
+                        {
+                            nodeList.SetId(0, nodeIds[7]);
+                            nodeList.SetId(1, nodeIds[0]);
+                            nodeList.SetId(2, nodeIds[4]);
+                            polyActor.InsertNextCell(triangleType, nodeList);
+                            nodeList.SetId(0, nodeIds[7]);
+                            nodeList.SetId(1, nodeIds[4]);
+                            nodeList.SetId(2, nodeIds[6]);
+                            polyActor.InsertNextCell(triangleType, nodeList);
+                            nodeList.SetId(0, nodeIds[7]);
+                            nodeList.SetId(1, nodeIds[6]);
+                            nodeList.SetId(2, nodeIds[3]);
+                            polyActor.InsertNextCell(triangleType, nodeList);
+                            nodeList.SetId(0, nodeIds[5]);
+                            nodeList.SetId(1, nodeIds[4]);
+                            nodeList.SetId(2, nodeIds[1]);
+                            polyActor.InsertNextCell(triangleType, nodeList);
+                            nodeList.SetId(0, nodeIds[5]);
+                            nodeList.SetId(1, nodeIds[6]);
+                            nodeList.SetId(2, nodeIds[4]);
+                            polyActor.InsertNextCell(triangleType, nodeList);
+                            nodeList.SetId(0, nodeIds[5]);
+                            nodeList.SetId(1, nodeIds[2]);
+                            nodeList.SetId(2, nodeIds[6]);
+                            polyActor.InsertNextCell(triangleType, nodeList);                            
+                        }
+                        else
+                        {
+                            nodeList.SetId(0, nodeIds[4]);
+                            nodeList.SetId(1, nodeIds[7]);
+                            nodeList.SetId(2, nodeIds[0]);
+                            polyActor.InsertNextCell(triangleType, nodeList);
+                            nodeList.SetId(0, nodeIds[4]);
+                            nodeList.SetId(1, nodeIds[5]);
+                            nodeList.SetId(2, nodeIds[7]);
+                            polyActor.InsertNextCell(triangleType, nodeList);
+                            nodeList.SetId(0, nodeIds[4]);
+                            nodeList.SetId(1, nodeIds[1]);
+                            nodeList.SetId(2, nodeIds[5]);
+                            polyActor.InsertNextCell(triangleType, nodeList);
+                            nodeList.SetId(0, nodeIds[6]);
+                            nodeList.SetId(1, nodeIds[5]);
+                            nodeList.SetId(2, nodeIds[2]);
+                            polyActor.InsertNextCell(triangleType, nodeList);
+                            nodeList.SetId(0, nodeIds[6]);
+                            nodeList.SetId(1, nodeIds[7]);
+                            nodeList.SetId(2, nodeIds[5]);
+                            polyActor.InsertNextCell(triangleType, nodeList);
+                            nodeList.SetId(0, nodeIds[6]);
+                            nodeList.SetId(1, nodeIds[3]);
+                            nodeList.SetId(2, nodeIds[7]);
+                            polyActor.InsertNextCell(triangleType, nodeList);
+                        }
                         if (addIds)
                         {
                             actorCellIds.Add(data.Cells.Ids[i]);

@@ -2316,7 +2316,8 @@ namespace PrePoMax
             {
                 _form.SetStateWorking("Creating...");
                 //
-                if (_model != null) _model.Mesh.CreatePrismaticBoundaryLayer(geometryIds, thickness);
+                string[] errors = null;
+                if (_model != null) errors = _model.Mesh.CreatePrismaticBoundaryLayer(geometryIds, thickness);                
                 // Redraw the geometry for update of the selection based sets
                 Update(UpdateType.DrawMesh);
                 // Update sets - must be called with rendering off - SetStateWorking
@@ -2325,9 +2326,13 @@ namespace PrePoMax
                 UpdateSurfacesBasedOnGeometry(false);
                 // Update the sets and symbols
                 Update(UpdateType.Check | UpdateType.RedrawSymbols);
+                //
+                if (errors.Length > 0) throw new CaeException(errors[0]);
             }
-            catch
-            { }
+            catch (Exception ex)
+            {
+                throw new CaeException(ex.Message);
+            }
             finally
             {
                 _form.SetStateReady("Creating...");

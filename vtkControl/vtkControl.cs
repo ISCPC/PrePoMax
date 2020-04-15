@@ -2007,6 +2007,7 @@ namespace vtkControl
                         actor.GetProperty().BackfaceCullingOff();
                 }
             }
+            //actor.GetProperty().SetRepresentationToWireframe();
         }
         private void ApplyEdgeVisibilityAndBackfaceCullingToActorEdges(vtkActor actorEdges, string actorName)
         {

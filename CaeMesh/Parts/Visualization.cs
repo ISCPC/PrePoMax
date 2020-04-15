@@ -396,6 +396,26 @@ namespace CaeMesh
             }
             return surfaceIdNodeIds;
         }
+        public Dictionary<int, HashSet<int>> GetSurfaceNeighboursData()
+        {
+            Dictionary<int, HashSet<int>> surfaceIdSurfaceNeighbourIds = new Dictionary<int, HashSet<int>>();
+            HashSet<int> surfaceNeighbourIds;
+            for (int i = 0; i < _faceEdgeIds.Length; i++)
+            {
+                for (int j = 0; j < _faceEdgeIds.Length; j++)
+                {
+                    if (i == j) continue;
+                    //
+                    if (_faceEdgeIds[i].Intersect(_faceEdgeIds[j]).Count() > 0)
+                    {
+                        if (surfaceIdSurfaceNeighbourIds.TryGetValue(i, out surfaceNeighbourIds)) surfaceNeighbourIds.Add(j);
+                        else surfaceIdSurfaceNeighbourIds.Add(i, new HashSet<int>() { j });
+                    }
+                }
+            }
+            return surfaceIdSurfaceNeighbourIds;
+        }
+
         //
         public VisualizationData DeepCopy()
         {
