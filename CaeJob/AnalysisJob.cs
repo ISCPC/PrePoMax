@@ -138,12 +138,15 @@ namespace CaeJob
         // Event handlers                                                                                                           
         void Timer_Tick(object sender, EventArgs e)
         {
-            File.WriteAllText(_outputFileName, OutputData);
+            //File.WriteAllText(_outputFileName, OutputData);
+            File.AppendAllText(_outputFileName, OutputData);
             //
             GetStatusFileContents();
             GetConvergenceFileContents();
             //
             DataOutput?.Invoke();
+            //
+            _sbOutput.Clear();
         }
 
 

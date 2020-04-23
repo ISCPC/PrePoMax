@@ -20,6 +20,7 @@ namespace CaeModel
         private OrderedDictionary<string, Material> _materials;                                 //ISerializable
         private OrderedDictionary<string, Section> _sections;                                   //ISerializable
         private OrderedDictionary<string, Constraint> _constraints;                             //ISerializable
+        private OrderedDictionary<string, SurfaceInteraction> _surfaceInteractions;             //ISerializable
         private StepCollection _stepCollection;                                                 //ISerializable
         private OrderedDictionary<int[], Calculix.CalculixUserKeyword> _calculixUserKeywords;   //ISerializable
         private ModelProperties _properties;                                                    //ISerializable
@@ -32,6 +33,7 @@ namespace CaeModel
         public OrderedDictionary<string, Material> Materials { get { return _materials; } }
         public OrderedDictionary<string, Section> Sections { get { return _sections; } }
         public OrderedDictionary<string, Constraint> Constraints { get { return _constraints; } }
+        public OrderedDictionary<string, SurfaceInteraction> SurfaceInteractions { get { return _surfaceInteractions; } }
         public StepCollection StepCollection { get { return _stepCollection; } }
         public OrderedDictionary<int[], Calculix.CalculixUserKeyword> CalculixUserKeywords 
         { 
@@ -51,12 +53,16 @@ namespace CaeModel
             _materials = new OrderedDictionary<string, Material>();
             _sections = new OrderedDictionary<string, Section>();
             _constraints = new OrderedDictionary<string, Constraint>();
+            _surfaceInteractions = new OrderedDictionary<string, SurfaceInteraction>();
             _stepCollection = new StepCollection();
         }
         
         // ISerialization
         public FeModel(SerializationInfo info, StreamingContext context)
         {
+            // Compatibility for version v.0.6.0
+            _surfaceInteractions = new OrderedDictionary<string, SurfaceInteraction>();
+            //
             foreach (SerializationEntry entry in info)
             {
                 switch (entry.Name)
@@ -101,6 +107,8 @@ namespace CaeModel
                         else if (entry.Value == null) _constraints = null;
                         else throw new NotSupportedException();
                         break;
+                    case "_surfaceInteractions":
+                        _surfaceInteractions = (OrderedDictionary<string, SurfaceInteraction>)entry.Value; break;
                     case "_stepCollection":
                         _stepCollection = (StepCollection)entry.Value; break;
                     case "_calculixUserKeywords":
@@ -125,11 +133,10 @@ namespace CaeModel
 
 
         // Methods                                                                                                                  
-        
         // Static methods
         public static void WriteToFile(FeModel model, System.IO.BinaryWriter bw)
         {
-            // write geometry
+            // Write geometry
             if (model == null || model.Geometry == null)
             {
                 bw.Write((int)0);
@@ -139,8 +146,7 @@ namespace CaeModel
                 bw.Write((int)1);
                 FeMesh.WriteToBinaryFile(model.Geometry, bw);
             }
-
-            // write mesh
+            // Write mesh
             if (model == null || model.Mesh == null)
             {
                 bw.Write((int)0);
@@ -153,21 +159,19 @@ namespace CaeModel
         }
         public static void ReadFromFile(FeModel model, System.IO.BinaryReader br)
         {
-            // read geometry
+            // Read geometry
             int geometryExists = br.ReadInt32();
             if (geometryExists == 1)
             {
                 FeMesh.ReadFromBinaryFile(model.Geometry, br);
             }
-
-            // read mesh
+            // Read mesh
             int meshExists = br.ReadInt32();
             if (meshExists == 1)
             {
                 FeMesh.ReadFromBinaryFile(model.Mesh, br);
             }
         }
-        
         //
         public string[] CheckValidity(List<Tuple<NamedClass, string>> items)
         {
@@ -325,8 +329,7 @@ namespace CaeModel
                 items.Add(new Tuple<NamedClass, string>(item, null));
             }
         }
-
-
+        //
         public int CheckSectionAssignments()
         {
             HashSet<int> elementIds = new HashSet<int>();
@@ -357,7 +360,7 @@ namespace CaeModel
             //
             return notSpecifiedIds.Count();
         }
-
+        //
         public void RemoveLostUserKeywords(Action<int> SetNumberOfUserKeywords)
         {
             try
@@ -378,7 +381,6 @@ namespace CaeModel
             }
             return true;
         }
-
         // Input
         public bool ImportGeometryFromStlFile(string fileName)
         {
@@ -489,7 +491,6 @@ namespace CaeModel
             }
             _mesh.AddMesh(mesh, reservedPartNames, forceRenameParts);
         }
-
         // Getters
         public string[] GetAllMeshEntityNames()
         {
@@ -511,7 +512,6 @@ namespace CaeModel
             reservedPartNames.UnionWith(GetAllMeshEntityNames());
             return reservedPartNames;
         }
-
         // Loads
         public CLoad[] GetNodalLoadsFromSurfaceTraction(STLoad load)
         {
@@ -559,7 +559,6 @@ namespace CaeModel
             //
             return loads.ToArray();
         }
-
         // ISerialization
         public void GetObjectData(SerializationInfo info, StreamingContext context)
         {
@@ -570,6 +569,7 @@ namespace CaeModel
             info.AddValue("_materials", _materials, typeof(OrderedDictionary<string, Material>));
             info.AddValue("_sections", _sections, typeof(OrderedDictionary<string, Section>));
             info.AddValue("_constraints", _constraints, typeof(OrderedDictionary<string, Constraint>));
+            info.AddValue("_surfaceInteractions", _surfaceInteractions, typeof(OrderedDictionary<string, SurfaceInteraction>));
             info.AddValue("_stepCollection", _stepCollection, typeof(StepCollection));
             info.AddValue("_calculixUserKeywords", _calculixUserKeywords, typeof(OrderedDictionary<int[], Calculix.CalculixUserKeyword>));
             info.AddValue("_properties", _properties, typeof(ModelProperties));

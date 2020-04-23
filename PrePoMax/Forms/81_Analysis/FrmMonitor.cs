@@ -142,10 +142,10 @@ namespace PrePoMax.Forms
                 }
                 else
                 {
-                    if (tbOutput.Text.Length != _job.OutputData.Length)
+                    //if (tbOutput.Text.Length != _job.OutputData.Length)
                     {
                         // It's on the same thread, no need for Invoke
-                        tbOutput.Text = _job.OutputData;
+                        tbOutput.Text += _job.OutputData;
                         tbOutput.Select(tbOutput.TextLength, 0);
                         tbOutput.ScrollToCaret();
                         //

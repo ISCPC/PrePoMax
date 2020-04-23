@@ -93,6 +93,16 @@ namespace PrePoMax.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        public static System.Drawing.Bitmap Constraints {
+            get {
+                object obj = ResourceManager.GetObject("Constraints", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         public static System.Drawing.Bitmap Deformed {
             get {
                 object obj = ResourceManager.GetObject("Deformed", resourceCulture);
@@ -236,6 +246,16 @@ namespace PrePoMax.Properties {
         public static System.Drawing.Bitmap Stop {
             get {
                 object obj = ResourceManager.GetObject("Stop", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap SurfaceInteraction {
+            get {
+                object obj = ResourceManager.GetObject("SurfaceInteraction", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

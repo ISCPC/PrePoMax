@@ -66,6 +66,7 @@ namespace PrePoMax
         private FrmMaterial _frmMaterial;
         private FrmSection _frmSection;
         private FrmConstraint _frmConstraint;
+        private FrmSurfaceInteraction _frmSurfaceInteraction;
         private FrmStep _frmStep;
         private FrmHistoryOutput _frmHistoryOutput;
         private FrmFieldOutput _frmFieldOutput;
@@ -152,19 +153,18 @@ namespace PrePoMax
             try
             {
                 //
-                // vtk
+                // Vtk
                 //
                 _vtk = new vtkControl.vtkControl();
                 panelControl.Parent.Controls.Add(_vtk);
                 panelControl.SendToBack();
-
-                // tree
+                // Tree
                 this._modelTree = new UserControls.ModelTree();
                 this._modelTree.Name = "modelTree";
                 this.splitContainer1.Panel1.Controls.Add(this._modelTree);
                 this._modelTree.Dock = System.Windows.Forms.DockStyle.Fill;
                 this._modelTree.TabIndex = 0;
-
+                //
                 _modelTree.GeometryMeshResultsEvent += ModelTree_ViewEvent;
                 _modelTree.SelectEvent += ModelTree_Select;
                 _modelTree.ClearSelectionEvent += Clear3DSelection;
@@ -191,17 +191,14 @@ namespace PrePoMax
                 _modelTree.FieldDataSelectEvent += ModelTree_FieldDataSelectEvent;
                 _modelTree.RenderingOff += () => _vtk.RenderingOn = false;
                 _modelTree.RenderingOn += () => _vtk.RenderingOn = true;
-
                 // Strip menus
                 tsFile.Location = new Point(0, 0);
                 tsViews.Location = new Point(tsFile.Left + tsFile.Width, 0);
                 tsResults.Location = new Point(tsViews.Left + tsViews.Width, 0);
                 tscbSymbolsForStep.SelectedIndexChanged += tscbSymbolsForStep_SelectedIndexChanged;
-
-                // controller
+                // Controller
                 _controller = new PrePoMax.Controller(this);
-
-                // vtk
+                // Vtk
                 _vtk.OnMouseLeftButtonUpSelection += SelectPointOrArea;
                 _vtk.Controller_GetNodeActorData = _controller.GetNodeActorData;
                 _vtk.Controller_GetCellActorData = _controller.GetCellActorData;
@@ -210,123 +207,124 @@ namespace PrePoMax
                 _vtk.Controller_GetSurfaceEdgesActorData = _controller.GetSurfaceEdgeActorData;
                 _vtk.Controller_GetPartActorData = _controller.GetPartActorData;
                 _vtk.Controller_GetGeometryActorData = _controller.GetGeometryActorData;
-
                 _vtk.Controller_ActorsPicked = SelectBaseParts;
                 _vtk.Controller_ShowPostSettings = ShowPostSettings;
-
                 // Forms
                 _formLocation = new Point(100, 100);
                 _allForms = new List<Form>();
-
+                //
                 _frmSelectEntity = new FrmSelectEntity(_controller);
                 AddFormToAllForms(_frmSelectEntity);
-
+                //
                 _frmSelectItemSet = new FrmSelectItemSet(_controller);
                 AddFormToAllForms(_frmSelectItemSet);
-
+                //
                 _frmSectionView = new FrmSectionView(_controller);
                 AddFormToAllForms(_frmSectionView);
-
+                //
                 _frmAnalyzeGeometry = new FrmAnalyzeGeometry(_controller);
                 AddFormToAllForms(_frmAnalyzeGeometry);
-
+                //
                 _frmMeshingParameters = new FrmMeshingParameters(_controller);
                 _frmMeshingParameters.UpdateHighlightFromTree = UpdateHighlightFromTree;
                 AddFormToAllForms(_frmMeshingParameters);
-
+                //
                 _frmMeshRefinement = new FrmMeshRefinement(_controller);
                 AddFormToAllForms(_frmMeshRefinement);
-
+                //
                 _frmModelProperties = new FrmModelProperties(_controller);
                 AddFormToAllForms(_frmModelProperties);
-
+                //
                 _frmPartProperties = new FrmPartProperties(_controller);
                 AddFormToAllForms(_frmPartProperties);
-
+                //
                 _frmBoundaryLayer = new FrmBoundaryLayer(_controller);
                 AddFormToAllForms(_frmBoundaryLayer);
-
+                //
                 _frmTranslate = new FrmTranslate(_controller);
                 AddFormToAllForms(_frmTranslate);
-
+                //
                 _frmScale = new FrmScale(_controller);
                 AddFormToAllForms(_frmScale);
-
+                //
                 _frmRotate = new FrmRotate(_controller);
                 AddFormToAllForms(_frmRotate);
-
+                //
                 _frmNodeSet = new FrmNodeSet(_controller);
                 AddFormToAllForms(_frmNodeSet);
-
+                //
                 _frmElementSet = new FrmElementSet(_controller);
                 AddFormToAllForms(_frmElementSet);
-
+                //
                 _frmSurface = new FrmSurface(_controller);                
                 AddFormToAllForms(_frmSurface);
-
+                //
                 _frmReferencePoint = new FrmReferencePoint(_controller);
                 AddFormToAllForms(_frmReferencePoint);
-
+                //
                 _frmMaterial = new FrmMaterial(_controller);
                 AddFormToAllForms(_frmMaterial);
-
+                //
                 _frmSection = new FrmSection(_controller);
                 AddFormToAllForms(_frmSection);
-
+                //
                 _frmConstraint = new FrmConstraint(_controller);
                 AddFormToAllForms(_frmConstraint);
-
+                //
+                _frmSurfaceInteraction = new FrmSurfaceInteraction(_controller);
+                AddFormToAllForms(_frmSurfaceInteraction);
+                //
                 _frmStep = new FrmStep(_controller);
                 AddFormToAllForms(_frmStep);
-
+                //
                 _frmHistoryOutput = new FrmHistoryOutput(_controller);
                 AddFormToAllForms(_frmHistoryOutput);
-
+                //
                 _frmFieldOutput = new FrmFieldOutput(_controller);
                 AddFormToAllForms(_frmFieldOutput);
-
+                //
                 _frmBoundaryCondition = new FrmBC(_controller);
                 AddFormToAllForms(_frmBoundaryCondition);
-
+                //
                 _frmLoad = new FrmLoad(_controller);
                 AddFormToAllForms(_frmLoad);
-
+                //
                 _frmAnalysis = new FrmAnalysis(_controller);
                 AddFormToAllForms(_frmAnalysis);
-
+                //
                 _frmMonitor = new FrmMonitor();
                 _frmMonitor.KillJob += KillAnalysis;
                 _frmMonitor.Results += ResultsAnalysis;
                 AddFormToAllForms(_frmMonitor);
-
+                //
                 _frmSettings = new FrmSettings();
                 _frmSettings.UpdateSettings += UpdateSettings;
                 AddFormToAllForms(_frmSettings);
-
+                //
                 _frmQuery = new FrmQuery();
                 _frmQuery.Form_WriteDataToOutput = WriteDataToOutput;
                 AddFormToAllForms(_frmQuery);
-
+                //
                 _frmAnimation = new FrmAnimation();
                 _frmAnimation.Form_ControlsEnable = DisableEnableControlsForAnimation;
                 AddFormToAllForms(_frmAnimation);
-
+                //
                 _frmHistoryResultsOutput = new FrmHistoryResultsOutput(_controller);
                 AddFormToAllForms(_frmHistoryResultsOutput);
-
+                //
                 _vtk.Hide();
                 _vtk.Enabled = false;
             }
             catch
             {
-                // if no error the splash is closed latter
+                // If no error the splash is closed latter
                 splash.BeginInvoke((MethodInvoker)delegate () { splash.Close(); });
             }
             finally
             {
                 this.TopMost = false;
             }
-
+            //
             if (!System.Diagnostics.Debugger.IsAttached)
             {
                 tsmiTest.Visible = false;
@@ -502,7 +500,7 @@ namespace PrePoMax
         }
 
         #region ModelTree Events ###################################################################################################
-
+        //
         private void ModelTree_ViewEvent(ViewType viewType)
         {
             try
@@ -530,7 +528,7 @@ namespace PrePoMax
             {
             }
         }       
-
+        //
         private void ModelTree_CreateEvent(string nodeName, string stepName)
         {
             if (_controller.Model.Geometry != null && _controller.CurrentView == ViewGeometryModelResults.Geometry)
@@ -546,6 +544,7 @@ namespace PrePoMax
                 else if (nodeName == "Materials") tsmiCreateMaterial_Click(null, null);
                 else if (nodeName == "Sections") tsmiCreateSection_Click(null, null);
                 else if (nodeName == "Constraints") tsmiCreateConstraint_Click(null, null);
+                else if (nodeName == "Surface interactions") tsmiCreateSurfaceInteraction_Click(null, null);
                 else if (nodeName == "Steps") tsmiCreateStep_Click(null, null);
                 else if (nodeName == "History outputs" && stepName != null) CreateHistoryOutput(stepName);
                 else if (nodeName == "Field outputs" && stepName != null) CreateFieldOutput(stepName);
@@ -577,6 +576,7 @@ namespace PrePoMax
                 else if (namedClass is CaeModel.Material) EditMaterial((namedClass).Name);
                 else if (namedClass is CaeModel.Section) EditSection((namedClass).Name);
                 else if (namedClass is CaeModel.Constraint) EditConstraint((namedClass).Name);
+                else if (namedClass is CaeModel.SurfaceInteraction) EditSurfaceInteraction((namedClass).Name);
                 else if (namedClass is CaeModel.Step) EditStep((namedClass).Name);
                 else if (namedClass is CaeModel.HistoryOutput) EditHistoryOutput(stepName, (namedClass).Name);
                 else if (namedClass is CaeModel.FieldOutput) EditFieldOutput(stepName, (namedClass).Name);
@@ -591,7 +591,7 @@ namespace PrePoMax
                 else if (namedClass is CaeResults.HistoryResultData hd) ShowHistoryOutput(hd);
             }
         }
-
+        //
         private void ModelTree_HideShowEvent(NamedClass[] items, HideShowOperation operation, string[] stepNames)
         {
             if (_controller.CurrentView == ViewGeometryModelResults.Geometry)
@@ -632,7 +632,7 @@ namespace PrePoMax
                 else ColorContoursOffResultPart(names.ToArray());
             }
         }
-      
+        //
         private void ModelTree_Delete(NamedClass[] items, string[] stepNames)
         {
             if (_controller.CurrentView == ViewGeometryModelResults.Geometry)
@@ -650,6 +650,7 @@ namespace PrePoMax
                 DeleteItems<CaeModel.Material>(items, DeleteMaterials);
                 DeleteItems<CaeModel.Section>(items, DeleteSections);
                 DeleteItems<CaeModel.Constraint>(items, DeleteConstraints);
+                DeleteItems<CaeModel.SurfaceInteraction>(items, DeleteSurfaceInteraction);
                 //
                 DeleteStepItems<CaeModel.HistoryOutput>(items, stepNames, DeleteHistoryOutputs);
                 DeleteStepItems<CaeModel.FieldOutput>(items, stepNames, DeleteFieldOutputs);
@@ -681,7 +682,6 @@ namespace PrePoMax
             }
             catch { }
         }
-
         //                                                                              
         private void HideShowItems<T>(NamedClass[] items, HideShowOperation operation, Action<string[]> Hide, 
                                       Action<string[]> Show, Action<string[]> ShowOnly)
@@ -724,7 +724,6 @@ namespace PrePoMax
                 }
             }
         }
-
         private void DeleteItems<T>(NamedClass[] items, Action<string[]> Delete)
         {
             List<string> names = new List<string>();
@@ -2742,6 +2741,63 @@ namespace PrePoMax
                 _controller.RemoveConstraintsCommand(constraintNames);
             }
         }
+
+        #endregion  ################################################################################################################
+
+        #region Contact interaction menu  ##########################################################################################
+
+        private void tsmiCreateSurfaceInteraction_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (_controller.Model.Mesh == null) return;
+                ShowForm(_frmSurfaceInteraction, "Create surface interaction", null);
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiEditSurfaceInteraction_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectOneEntity("Surface interactions", _controller.GetAllSurfaceInteractions(), EditSurfaceInteraction);
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiDeleteSurfaceInteraction_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Surface interactions", _controller.GetAllSurfaceInteractions(), DeleteSurfaceInteraction);
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+
+        }
+
+        private void EditSurfaceInteraction(string surfaceInteractionName)
+        {
+            ShowForm(_frmSurfaceInteraction, "Edit surface interaction", surfaceInteractionName);
+        }
+        private void DeleteSurfaceInteraction(string[] surfaceInteractionNames)
+        {
+            if (MessageBox.Show("OK to delete selected surface interactions?" + Environment.NewLine +
+                                surfaceInteractionNames.ToRows(),
+                                Globals.ProgramName,
+                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+            {
+                _controller.RemoveSurfaceInteractionsCommand(surfaceInteractionNames);
+            }
+        }
+
+        
 
         #endregion  ################################################################################################################
 

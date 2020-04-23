@@ -59,8 +59,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Contact\SurfaceBehavior.cs" />
+    <Compile Include="Contact\SurfaceInteraction.cs" />
+    <Compile Include="Contact\SurfaceInteractionProperty.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalPreTensionSection.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalDeactivated.cs" />
+    <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\SurfaceInteraction\CalSurfaceBehavior.cs" />
+    <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\SurfaceInteraction\CalSurfaceInteraction.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\BC\CalSubmodelBC.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\HistoryOutput\CalElPrint.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\HistoryOutput\CalNodePrint.cs" />

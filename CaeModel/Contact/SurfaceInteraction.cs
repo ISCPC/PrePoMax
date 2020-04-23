@@ -10,26 +10,26 @@ using CaeGlobals;
 namespace CaeModel
 {
     [Serializable]
-    public class Material : NamedClass
+    public class SurfaceInteraction : NamedClass
     {
         // Variables                                                                                                                
-        private List<MaterialProperty> _properties;
+        private List<SurfaceInteractionProperty> _properties;
 
 
         // Properties                                                                                                               
-        public List<MaterialProperty> Properties { get { return _properties; } }
+        public List<SurfaceInteractionProperty> Properties { get { return _properties; } }
 
 
         // Constructors                                                                                                             
-        public Material(string name)
+        public SurfaceInteraction(string name)
             : base(name)
         {
-            _properties = new List<MaterialProperty>();
+            _properties = new List<SurfaceInteractionProperty>();
         }
 
 
         // Methods                                                                                                                  
-        public void AddProperty(MaterialProperty property)
+        public void AddProperty(SurfaceInteractionProperty property)
         {
             _properties.Add(property);
         }

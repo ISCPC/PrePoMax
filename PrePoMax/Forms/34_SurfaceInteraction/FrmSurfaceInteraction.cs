@@ -13,27 +13,31 @@ using PrePoMax.PropertyViews;
 
 namespace PrePoMax.Forms
 {
-    public partial class FrmMaterial : UserControls.PrePoMaxChildForm, IFormBase
+    public partial class FrmSurfaceInteraction : UserControls.PrePoMaxChildForm, IFormBase
     {
         // Variables                                                                                                                
         private bool _propertyChanged;
-        private string[] _materialNames;
-        private string _materialToEditName;
-        private Material _material;
+        private string[] _surfraceInteractionNames;
+        private string _surfaceInteractionToEditName;
+        private SurfaceInteraction _surfaceInteraction;
         private Controller _controller;
         private TabPage[] _pages;
         
         // Properties                                                                                                               
-        public Material Material { get { return _material; } set { _material = value.DeepClone(); } }
+        public SurfaceInteraction SurfaceInteraction 
+        { 
+            get { return _surfaceInteraction; } 
+            set { _surfaceInteraction = value.DeepClone(); } 
+        }
 
 
         // Constructors                                                                                                             
-        public FrmMaterial(Controller controller)
+        public FrmSurfaceInteraction(Controller controller)
         {
             InitializeComponent();
             //
             _controller = controller;
-            _material = null;
+            _surfaceInteraction = null;
             //
             propertyGrid.SetParent(this);   // for the Tab key to work
             //
@@ -65,8 +69,8 @@ namespace PrePoMax.Forms
         {
             if (tvProperties.SelectedNode != null && tvProperties.SelectedNode.Tag != null)
             {
-                string propertyName = tvProperties.SelectedNode.Name;
-
+                string propertyName = tvProperties.SelectedNode.Text;
+                //
                 if (lvAddedProperties.FindItemWithText(propertyName) == null)
                 {
                     ListViewItem item = new ListViewItem(propertyName);
@@ -92,25 +96,21 @@ namespace PrePoMax.Forms
         {
             if (lvAddedProperties.SelectedItems.Count == 1)
             {
-                if (lvAddedProperties.SelectedItems[0].Tag is ViewDensity || lvAddedProperties.SelectedItems[0].Tag is ViewElastic)
+                if (lvAddedProperties.SelectedItems[0].Tag is ViewSurfaceBehavior vsb)
                 {
                     tcProperties.TabPages.Clear();
                     tcProperties.TabPages.Add(_pages[0]);
-                    propertyGrid.SelectedObject = lvAddedProperties.SelectedItems[0].Tag;
-                }
-                else if (lvAddedProperties.SelectedItems[0].Tag is ViewPlastic)
-                {
-                    tcProperties.TabPages.Clear();
-                    tcProperties.TabPages.Add(_pages[0]);
-                    tcProperties.TabPages.Add(_pages[1]);
                     //
                     BindingSource binding = new BindingSource();
-                    binding.DataSource = (lvAddedProperties.SelectedItems[0].Tag as ViewPlastic).DataPoints;
+                    binding.DataSource = vsb.DataPoints;
                     dgvData.DataSource = binding; //bind datagridview to binding source - enables adding of new lines
                     binding.ListChanged += Binding_ListChanged;
                     //
-                    propertyGrid.SelectedObject = lvAddedProperties.SelectedItems[0].Tag;
+                    propertyGrid.SelectedObject = vsb;
+                    //
+                    propertyGrid_PropertyValueChanged(null, null);
                 }
+                else throw new NotSupportedException();
             }
             lvAddedProperties.Select();
         }
@@ -120,6 +120,14 @@ namespace PrePoMax.Forms
         }
         private void propertyGrid_PropertyValueChanged(object s, PropertyValueChangedEventArgs e)
         {
+            if (propertyGrid.SelectedObject != null && propertyGrid.SelectedObject is ViewSurfaceBehavior vsb)
+            {
+                if (vsb.PressureOverclosureType == PressureOverclosureEnum.Tabular && tcProperties.TabPages.Count == 1)
+                    tcProperties.TabPages.Add(_pages[1]);
+                else if (vsb.PressureOverclosureType != PressureOverclosureEnum.Tabular && tcProperties.TabPages.Count == 2)
+                    tcProperties.TabPages.Remove(_pages[1]);
+            }
+            //
             propertyGrid.Refresh();
             _propertyItemChanged = true;
         }
@@ -132,7 +140,7 @@ namespace PrePoMax.Forms
             try
             {
                 Add();
-
+                //
                 this.DialogResult = DialogResult.OK;       // use this value to update the model tree selected item highlight
                 Hide();
             }
@@ -147,7 +155,7 @@ namespace PrePoMax.Forms
             try
             {
                 Add();
-
+                //
                 PrepareForm(null, null);
             }
             catch (Exception ex)
@@ -159,7 +167,7 @@ namespace PrePoMax.Forms
         {
             Hide();
         }
-        private void FrmMaterial_FormClosing(object sender, FormClosingEventArgs e)
+        private void FrmSurfaceInteraction_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (e.CloseReason == CloseReason.UserClosing)
             {
@@ -170,97 +178,85 @@ namespace PrePoMax.Forms
 
 
         // Methods                                                                                                                  
-        public bool PrepareForm(string stepName, string materialToEditName)
+        public bool PrepareForm(string stepName, string surfaceInteractionToEditName)
         {
             this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
-            this.btnOKAddNew.Visible = materialToEditName == null;
-
+            this.btnOKAddNew.Visible = surfaceInteractionToEditName == null;
+            //
             _propertyChanged = false;
             _propertyItemChanged = false;
-            _materialNames = null;
-            _materialToEditName = null;
-            _material = null;
+            _surfraceInteractionNames = null;
+            _surfaceInteractionToEditName = null;
+            _surfaceInteraction = null;
             lvAddedProperties.Clear();
             propertyGrid.SelectedObject = null;
-
-            _materialNames = _controller.GetMaterialNames();
-            _materialToEditName = materialToEditName;
-            
-            // Initialize material properties
-            tvProperties.Nodes.Find("Density", true)[0].Tag = new ViewDensity(new Density(0));
-            tvProperties.Nodes.Find("Elastic", true)[0].Tag = new ViewElastic(new Elastic(0, 0));
-            tvProperties.Nodes.Find("Plastic", true)[0].Tag = new ViewPlastic(new Plastic(new double[][] { new double[] { 0, 0 } }));
+            //
+            _surfraceInteractionNames = _controller.GetSurfaceInteractionNames();
+            _surfaceInteractionToEditName = surfaceInteractionToEditName;
+            // Initialize surface interaction properties
+            tvProperties.Nodes.Find("SurfaceBehavior", true)[0].Tag = new ViewSurfaceBehavior(new SurfaceBehavior());
             tvProperties.ExpandAll();
-
-            if (_materialToEditName == null)
+            //
+            if (_surfaceInteractionToEditName == null)
             {
-                _material = null;
-                tbName.Text = GetMaterialName();
+                _surfaceInteraction = null;
+                tbName.Text = GetSurfaceInteractionName();
             }
             else
             {
-                Material = _controller.GetMaterial(_materialToEditName); // to clone
-
-                tbName.Text = _material.Name;
-                if (_material.Properties.Count > 0)
+                SurfaceInteraction = _controller.GetSurfaceInteraction(_surfaceInteractionToEditName); // to clone
+                //
+                tbName.Text = _surfaceInteraction.Name;
+                if (_surfaceInteraction.Properties.Count > 0)
                 {
                     ListViewItem item;
-                    IViewMaterialProperty view = null;
-                    foreach (var property in _material.Properties)
+                    ViewSurfaceInteractionProperty view;
+                    foreach (var property in _surfaceInteraction.Properties)
                     {
-                        if (property is Density) view = new ViewDensity((Density)property);
-                        else if (property is Elastic) view = new ViewElastic((Elastic)property);
-                        else if (property is Plastic) view = new ViewPlastic((Plastic)property);
+                        if (property is SurfaceBehavior sb) view = new ViewSurfaceBehavior(sb);
                         else throw new NotSupportedException();
-
+                        //
                         item = new ListViewItem(view.Name);
                         item.Tag = view;
                         lvAddedProperties.Items.Add(item);
                     }
-
+                    //
                     lvAddedProperties.Items[0].Selected = true;
                     lvAddedProperties.Select();
                 }
             }
-
+            //
             return true;
         }
         public void Add()
         {
-            if ((_materialToEditName == null && _materialNames.Contains(tbName.Text)) ||            // create
-                    (tbName.Text != _materialToEditName && _materialNames.Contains(tbName.Text)))       // edit
-                throw new CaeGlobals.CaeException("The selected material name already exists.");
+            if ((_surfaceInteractionToEditName == null && _surfraceInteractionNames.Contains(tbName.Text)) ||           // Create
+                    (tbName.Text != _surfaceInteractionToEditName && _surfraceInteractionNames.Contains(tbName.Text)))  // Edit
+                throw new CaeGlobals.CaeException("The selected surface interaction name already exists.");
             //
-            _material = new CaeModel.Material(tbName.Text);
-            IViewMaterialProperty property;
+            _surfaceInteraction = new CaeModel.SurfaceInteraction(tbName.Text);
             foreach (ListViewItem item in lvAddedProperties.Items)
             {
-                property = (IViewMaterialProperty)item.Tag;
-                if (property is ViewDensity vd && vd.Value <= 0)
-                    throw new CaeGlobals.CaeException("The density must be larger than 0.");
-                if (property is ViewElastic ve && ve.YoungsModulus <= 0)
-                    throw new CaeGlobals.CaeException("The Young's modulus must be larger than 0.");
-                //
-                _material.AddProperty(property.Base);
+                _surfaceInteraction.AddProperty(((ViewSurfaceInteractionProperty)(item.Tag)).Base);
             }
             //
-            if (_materialToEditName == null)
+            if (_surfaceInteractionToEditName == null)
             {
                 // Create
-                _controller.AddMaterialCommand(Material);
+                _controller.AddSurfaceInteractionCommand(SurfaceInteraction);
             }
             else
             {
                 // Replace
-                if (_materialToEditName != Material.Name || _propertyChanged || _propertyItemChanged)
+                if (_surfaceInteractionToEditName != SurfaceInteraction.Name || _propertyChanged || _propertyItemChanged)
                 {
-                    _controller.ReplaceMaterialCommand(_materialToEditName, Material);
+                    _controller.ReplaceSurfaceInteractionCommand(_surfaceInteractionToEditName, SurfaceInteraction);
                 }
             }
         }
-        private string GetMaterialName()
+        private string GetSurfaceInteractionName()
         {
-            return NamedClass.GetNewValueName(_materialNames, "Material-");
+            return NamedClass.GetNewValueName(_surfraceInteractionNames, "SurfaceInteraction-");
         }
     }
 }

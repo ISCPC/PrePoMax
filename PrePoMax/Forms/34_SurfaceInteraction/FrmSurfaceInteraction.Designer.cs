@@ -1,6 +1,6 @@
 ﻿namespace PrePoMax.Forms
 {
-    partial class FrmMaterial
+    partial class FrmSurfaceInteraction
     {
         /// <summary>
         /// Required designer variable.
@@ -28,16 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("Density");
-            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("General", new System.Windows.Forms.TreeNode[] {
-            treeNode1});
-            System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("Elastic");
-            System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("Elasticity", new System.Windows.Forms.TreeNode[] {
-            treeNode3});
-            System.Windows.Forms.TreeNode treeNode5 = new System.Windows.Forms.TreeNode("Plastic");
-            System.Windows.Forms.TreeNode treeNode6 = new System.Windows.Forms.TreeNode("Plasticity", new System.Windows.Forms.TreeNode[] {
-            treeNode5});
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmMaterial));
+            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("Surface behavior");
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmSurfaceInteraction));
             this.tvProperties = new System.Windows.Forms.TreeView();
             this.propertyGrid = new UserControls.TabbedPropertyGrid();
             this.btnOK = new System.Windows.Forms.Button();
@@ -69,28 +61,12 @@
             this.tvProperties.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.tvProperties.Location = new System.Drawing.Point(6, 38);
             this.tvProperties.Name = "tvProperties";
-            treeNode1.Name = "Density";
-            treeNode1.Text = "Density";
-            treeNode1.ToolTipText = "Density";
-            treeNode2.Name = "General";
-            treeNode2.Text = "General";
-            treeNode3.Name = "Elastic";
-            treeNode3.Text = "Elastic";
-            treeNode3.ToolTipText = "Elastic";
-            treeNode4.Name = "Elasticity";
-            treeNode4.Text = "Elasticity";
-            treeNode4.ToolTipText = "Elasticity";
-            treeNode5.Name = "Plastic";
-            treeNode5.Text = "Plastic";
-            treeNode5.ToolTipText = "Plastic";
-            treeNode6.Name = "Plasticity";
-            treeNode6.Text = "Plasticity";
-            treeNode6.ToolTipText = "Plasticity";
+            treeNode2.Name = "SurfaceBehavior";
+            treeNode2.Text = "Surface behavior";
+            treeNode2.ToolTipText = "Surface behavior";
             this.tvProperties.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
-            treeNode2,
-            treeNode4,
-            treeNode6});
-            this.tvProperties.Size = new System.Drawing.Size(137, 149);
+            treeNode2});
+            this.tvProperties.Size = new System.Drawing.Size(137, 101);
             this.tvProperties.TabIndex = 2;
             this.tvProperties.DoubleClick += new System.EventHandler(this.tvProperties_DoubleClick);
             // 
@@ -104,7 +80,7 @@
             this.propertyGrid.LineColor = System.Drawing.SystemColors.Control;
             this.propertyGrid.Location = new System.Drawing.Point(0, 0);
             this.propertyGrid.Name = "propertyGrid";
-            this.propertyGrid.Size = new System.Drawing.Size(295, 194);
+            this.propertyGrid.Size = new System.Drawing.Size(295, 258);
             this.propertyGrid.TabIndex = 6;
             this.propertyGrid.ToolbarVisible = false;
             this.propertyGrid.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.propertyGrid_PropertyValueChanged);
@@ -149,9 +125,9 @@
             // 
             this.tbName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbName.Location = new System.Drawing.Point(95, 19);
+            this.tbName.Location = new System.Drawing.Point(109, 19);
             this.tbName.Name = "tbName";
-            this.tbName.Size = new System.Drawing.Size(209, 23);
+            this.tbName.Size = new System.Drawing.Size(195, 23);
             this.tbName.TabIndex = 1;
             // 
             // lName
@@ -159,9 +135,9 @@
             this.lName.AutoSize = true;
             this.lName.Location = new System.Drawing.Point(6, 22);
             this.lName.Name = "lName";
-            this.lName.Size = new System.Drawing.Size(83, 15);
+            this.lName.Size = new System.Drawing.Size(97, 15);
             this.lName.TabIndex = 0;
-            this.lName.Text = "Material name";
+            this.lName.Text = "Interaction name";
             // 
             // gbProperties
             // 
@@ -180,7 +156,7 @@
             this.gbProperties.Size = new System.Drawing.Size(310, 431);
             this.gbProperties.TabIndex = 0;
             this.gbProperties.TabStop = false;
-            this.gbProperties.Text = "Material models";
+            this.gbProperties.Text = "Interaction models";
             // 
             // tcProperties
             // 
@@ -189,11 +165,11 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tcProperties.Controls.Add(this.tabPage1);
             this.tcProperties.Controls.Add(this.tabPage2);
-            this.tcProperties.Location = new System.Drawing.Point(6, 190);
+            this.tcProperties.Location = new System.Drawing.Point(6, 142);
             this.tcProperties.Margin = new System.Windows.Forms.Padding(0);
             this.tcProperties.Name = "tcProperties";
             this.tcProperties.SelectedIndex = 0;
-            this.tcProperties.Size = new System.Drawing.Size(303, 238);
+            this.tcProperties.Size = new System.Drawing.Size(303, 286);
             this.tcProperties.TabIndex = 11;
             // 
             // tabPage1
@@ -203,7 +179,7 @@
             this.tabPage1.Location = new System.Drawing.Point(4, 24);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(295, 210);
+            this.tabPage1.Size = new System.Drawing.Size(295, 258);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Properties";
             // 
@@ -214,7 +190,7 @@
             this.tabPage2.Location = new System.Drawing.Point(4, 24);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(295, 210);
+            this.tabPage2.Size = new System.Drawing.Size(295, 258);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Data points";
             // 
@@ -226,7 +202,7 @@
             this.dgvData.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvData.Location = new System.Drawing.Point(0, 0);
             this.dgvData.Name = "dgvData";
-            this.dgvData.Size = new System.Drawing.Size(295, 202);
+            this.dgvData.Size = new System.Drawing.Size(295, 258);
             this.dgvData.TabIndex = 0;
             this.dgvData.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dgvData_DataError);
             // 
@@ -258,7 +234,7 @@
             this.lvAddedProperties.Location = new System.Drawing.Point(177, 38);
             this.lvAddedProperties.MultiSelect = false;
             this.lvAddedProperties.Name = "lvAddedProperties";
-            this.lvAddedProperties.Size = new System.Drawing.Size(128, 149);
+            this.lvAddedProperties.Size = new System.Drawing.Size(128, 101);
             this.lvAddedProperties.TabIndex = 5;
             this.lvAddedProperties.UseCompatibleStateImageBehavior = false;
             this.lvAddedProperties.View = System.Windows.Forms.View.List;
@@ -295,7 +271,7 @@
             this.btnOKAddNew.UseVisualStyleBackColor = true;
             this.btnOKAddNew.Click += new System.EventHandler(this.btnOKAddNew_Click);
             // 
-            // FrmMaterial
+            // FrmSurfaceInteraction
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.CancelButton = this.btnCancel;
@@ -309,11 +285,11 @@
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.MinimumSize = new System.Drawing.Size(350, 530);
-            this.Name = "FrmMaterial";
+            this.Name = "FrmSurfaceInteraction";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
-            this.Text = "Edit Material";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmMaterial_FormClosing);
+            this.Text = "Edit Interaction";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmSurfaceInteraction_FormClosing);
             this.gbData.ResumeLayout(false);
             this.gbData.PerformLayout();
             this.gbProperties.ResumeLayout(false);

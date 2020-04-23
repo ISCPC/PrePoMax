@@ -134,6 +134,10 @@ namespace FileInOut.Output
             title = new CalTitle("Constraints", "");
             keywords.Add(title);
             AppendConstraints(model, referencePointsNodeIds, title);
+            // Surface interactions
+            title = new CalTitle("Surface interactions", "");
+            keywords.Add(title);
+            AppendSurfaceInteractions(model, title);
             // Steps
             title = new CalTitle("Steps", "");
             keywords.Add(title);
@@ -448,7 +452,8 @@ namespace FileInOut.Output
                 }
             }
         }
-        static private void AppendConstraints(FeModel model, Dictionary<string, int[]> referencePointsNodeIds, CalculixKeyword parent)
+        static private void AppendConstraints(FeModel model, Dictionary<string, int[]> referencePointsNodeIds,
+                                              CalculixKeyword parent)
         {
             if (model.Mesh != null)
             {
@@ -474,7 +479,27 @@ namespace FileInOut.Output
                 }
             }
         }
-
+        static private void AppendSurfaceInteractions(FeModel model, CalculixKeyword parent)
+        {
+            CalSurfaceInteraction surfaceInteraction;
+            foreach (var entry in model.SurfaceInteractions)
+            {
+                if (entry.Value.Active)
+                {
+                    surfaceInteraction = new CalSurfaceInteraction(entry.Value);
+                    parent.AddKeyword(surfaceInteraction);
+                    //
+                    foreach (var property in entry.Value.Properties)
+                    {
+                        if (property is SurfaceBehavior sb) 
+                            surfaceInteraction.AddKeyword(new CalSurfaceBehavior(sb));
+                        else throw new NotImplementedException();
+                    }
+                }
+                else parent.AddKeyword(new CalDeactivated(entry.Value.Name));
+            }
+        }
+        //
         static private void AppendSteps(FeModel model, Dictionary<string, int[]> referencePointsNodeIds, CalculixKeyword parent)
         {
             CalTitle title;

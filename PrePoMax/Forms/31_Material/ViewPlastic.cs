@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using CaeModel;
 
-namespace PrePoMax.PropertyViews
+namespace PrePoMax
 {
     [Serializable]
-    public class DataPoint
+    public class MaterialDataPoint
     {
         // Variables                                                                                                                
         private double _strain;
@@ -25,12 +25,12 @@ namespace PrePoMax.PropertyViews
 
 
         // Constructors                                                                                                             
-        public DataPoint()
+        public MaterialDataPoint()
         {
             _stress = 0;
             _strain = 0;
         }
-        public DataPoint(double stress, double strain)
+        public MaterialDataPoint(double stress, double strain)
         {
             _stress = stress;
             _strain = strain;
@@ -41,7 +41,7 @@ namespace PrePoMax.PropertyViews
     public class ViewPlastic : IViewMaterialProperty
     {
         // Variables                                                                                                                
-        private List<DataPoint> _points;
+        private List<MaterialDataPoint> _points;
         private PlasticHardening _hardening;
 
 
@@ -59,7 +59,7 @@ namespace PrePoMax.PropertyViews
             {
                 int i = 0;
                 double[][] stressStrain = new double[_points.Count][];
-                foreach (DataPoint point in _points)
+                foreach (MaterialDataPoint point in _points)
                 {
                     stressStrain[i] = new double[2];
                     stressStrain[i][0] = point.Stress;
@@ -73,7 +73,7 @@ namespace PrePoMax.PropertyViews
         }
 
         [Browsable(false)]
-        public List<DataPoint> DataPoints { get { return _points; } set { _points = value; } }
+        public List<MaterialDataPoint> DataPoints { get { return _points; } set { _points = value; } }
 
         [CategoryAttribute("Data")]
         [Description("Select the hardening rule.")]
@@ -83,10 +83,10 @@ namespace PrePoMax.PropertyViews
         // Constructors                                                                                                             
         public ViewPlastic(Plastic plastic)
         {
-            _points = new List<DataPoint>();
+            _points = new List<MaterialDataPoint>();
             for (int i = 0; i < plastic.StressStrain.GetLength(0); i++)
             {
-                _points.Add(new DataPoint(plastic.StressStrain[i][0], plastic.StressStrain[i][1]));
+                _points.Add(new MaterialDataPoint(plastic.StressStrain[i][0], plastic.StressStrain[i][1]));
             }
             _hardening = plastic.Hardening;
         }

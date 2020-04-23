@@ -126,6 +126,9 @@
     <Compile Include="Command\0050_Model\15_ReferencePoint\CRemoveReferencePoints.cs" />
     <Compile Include="Command\0050_Model\15_ReferencePoint\CReplaceReferencePoint.cs" />
     <Compile Include="Command\0050_Model\CCreateBoundaryLayer.cs" />
+    <Compile Include="Command\0072_SurfaceInteraction\CAddSurfaceInteraction.cs" />
+    <Compile Include="Command\0072_SurfaceInteraction\CRemoveSurfaceInteractions.cs" />
+    <Compile Include="Command\0072_SurfaceInteraction\CReplaceSurfaceInteraction.cs" />
     <Compile Include="Command\0061_Material\CAddMaterial.cs" />
     <Compile Include="Command\0061_Material\CRemoveMaterials.cs" />
     <Compile Include="Command\0061_Material\CReplaceMaterial.cs" />
@@ -217,6 +220,14 @@
     <Compile Include="Forms\31_Material\FrmMaterialLibrary.Designer.cs">
       <DependentUpon>FrmMaterialLibrary.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\34_SurfaceInteraction\FrmSurfaceInteraction.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\34_SurfaceInteraction\FrmSurfaceInteraction.Designer.cs">
+      <DependentUpon>FrmSurfaceInteraction.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\34_SurfaceInteraction\ViewSurfaceInteractionProperty.cs" />
+    <Compile Include="Forms\34_SurfaceInteraction\ViewSurfaceBehavior.cs" />
     <Compile Include="Forms\41_Step\ViewBuckleStep.cs" />
     <Compile Include="Forms\41_Step\ViewFrequencyStep.cs" />
     <Compile Include="Forms\42_HistoryOutput\FrmHistoryOutput.cs">
@@ -318,7 +329,7 @@
       <DependentUpon>FrmMaterial.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\31_Material\ViewElastic.cs" />
-    <Compile Include="Forms\31_Material\IViewProperty.cs" />
+    <Compile Include="Forms\31_Material\IViewMaterialProperty.cs" />
     <Compile Include="Forms\31_Material\ViewDensity.cs" />
     <Compile Include="Forms\32_Section\ViewSection.cs" />
     <Compile Include="Forms\32_Section\ViewSolidSection.cs" />
@@ -435,6 +446,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\31_Material\FrmMaterialLibrary.resx">
       <DependentUpon>FrmMaterialLibrary.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\34_SurfaceInteraction\FrmSurfaceInteraction.resx">
+      <DependentUpon>FrmSurfaceInteraction.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\42_HistoryOutput\FrmHistoryOutput.resx">
       <DependentUpon>FrmHistoryOutput.cs</DependentUpon>
@@ -597,6 +611,9 @@
     <None Include="Icons\View\SectionCut.ico" />
     <None Include="Icons\View\SectionView.ico" />
     <None Include="Icons\Geometry\Mesh_refinement.ico" />
+    <None Include="Icons\Constraints\Constraints.png" />
+    <None Include="Icons\Contact\ContactInteraction.ico" />
+    <None Include="Icons\Contact\SurfaceInteraction.ico" />
     <Content Include="main.ico" />
   </ItemGroup>
   <ItemGroup>

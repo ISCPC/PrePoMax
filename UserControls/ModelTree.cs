@@ -80,6 +80,7 @@ namespace UserControls
         private TreeNode _materials;
         private TreeNode _sections;
         private TreeNode _constraints;
+        private TreeNode _surfaceInteractions;
         private TreeNode _steps;
         private TreeNode _analyses;
         // Results
@@ -98,7 +99,8 @@ namespace UserControls
         private string _referencePointsName;
         private string _materialsName;
         private string _sectionsName;
-        private string _constraintName;
+        private string _constraintsName;
+        private string _surfaceInteractionsName;
         private string _stepsName;
         private string _historyOutputsName;
         private string _fieldOutputsName;
@@ -191,7 +193,8 @@ namespace UserControls
             _referencePointsName = "Reference points";
             _materialsName = "Materials";
             _sectionsName = "Sections";
-            _constraintName = "Constraints";
+            _constraintsName = "Constraints";
+            _surfaceInteractionsName = "Surface interactions";
             _stepsName = "Steps";
             _boundaryConditionsName = "BCs";
             _loadsName = "Loads";
@@ -212,7 +215,8 @@ namespace UserControls
             _referencePoints = cltvModel.Nodes.Find(_referencePointsName, true)[0];
             _materials = cltvModel.Nodes.Find(_materialsName, true)[0];
             _sections = cltvModel.Nodes.Find(_sectionsName, true)[0];
-            _constraints = cltvModel.Nodes.Find(_constraintName, true)[0];
+            _surfaceInteractions = cltvModel.Nodes.Find(_surfaceInteractionsName, true)[0];
+            _constraints = cltvModel.Nodes.Find(_constraintsName, true)[0];
             _steps = cltvModel.Nodes.Find(_stepsName, true)[0];
             _analyses = cltvModel.Nodes.Find(_analysesName, true)[0];
             _resultFieldOutputs = cltvResults.Nodes.Find(_fieldOutputsName, true)[0];
@@ -1230,7 +1234,8 @@ namespace UserControls
             _referencePoints.Text = _referencePointsName;
             _materials.Text = _materialsName;
             _sections.Text = _sectionsName;
-            _constraints.Text = _constraintName;
+            _constraints.Text = _constraintsName;
+            _surfaceInteractions.Text = _surfaceInteractionsName;
             _steps.Text = _stepsName;
             _analyses.Text = _analysesName;
             //
@@ -1358,7 +1363,8 @@ namespace UserControls
                         //AddObjectsToNode<string, CaeMesh.BasePart>(_geomPartsName, _geomParts, model.Geometry.Parts);
                         AddGeometryParts(model.Geometry.Parts);
                         _geomParts.Expand();
-                        AddObjectsToNode<string, CaeMesh.FeMeshRefinement>(_meshRefinementsName, _meshRefinements, model.Geometry.MeshRefinements);
+                        AddObjectsToNode<string, CaeMesh.FeMeshRefinement>(_meshRefinementsName, _meshRefinements, 
+                                                                           model.Geometry.MeshRefinements);
                         _meshRefinements.Expand();
                     }
                     //
@@ -1373,14 +1379,18 @@ namespace UserControls
                         // Surfaces
                         AddObjectsToNode<string, CaeMesh.FeSurface>(_surfacesName, _surfaces, model.Mesh.Surfaces);
                         // Reference points
-                        AddObjectsToNode<string, CaeMesh.FeReferencePoint>(_referencePointsName, _referencePoints, model.Mesh.ReferencePoints);
+                        AddObjectsToNode<string, CaeMesh.FeReferencePoint>(_referencePointsName, _referencePoints,
+                                                                           model.Mesh.ReferencePoints);
                     }
                     // Materials
                     AddObjectsToNode<string, Material>(_materialsName, _materials, model.Materials);
                     // Sections
                     AddObjectsToNode<string, Section>(_sectionsName, _sections, model.Sections);
                     // Constraints
-                    AddObjectsToNode<string, Constraint>(_constraintName, _constraints, model.Constraints);
+                    AddObjectsToNode<string, Constraint>(_constraintsName, _constraints, model.Constraints);
+                    // Constraints
+                    AddObjectsToNode<string, SurfaceInteraction>(_surfaceInteractionsName, _surfaceInteractions,
+                                                                 model.SurfaceInteractions);
                     // Steps
                     AddSteps(model.StepCollection.StepsList);
                     // Analyses
@@ -1546,6 +1556,13 @@ namespace UserControls
                 node.Name = node.Text;
                 node.Tag = item;
                 parent = _constraints;
+            }
+            else if (item is SurfaceInteraction)
+            {
+                node = _surfaceInteractions.Nodes.Add(item.Name);
+                node.Name = node.Text;
+                node.Tag = item;
+                parent = _surfaceInteractions;
             }
             else if (item is Step)
             {
@@ -2051,7 +2068,8 @@ namespace UserControls
             else if (node.Name == _referencePointsName) return true;
             else if (node.Name == _materialsName) return true;
             else if (node.Name == _sectionsName) return true;
-            else if (node.Name == _constraintName) return true;
+            else if (node.Name == _constraintsName) return true;
+            else if (node.Name == _surfaceInteractionsName) return true;
             else if (node.Name == _stepsName) return true;
             else if (node.Name == _historyOutputsName) return true;
             else if (node.Name == _fieldOutputsName) return true;

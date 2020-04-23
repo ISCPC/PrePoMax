@@ -3095,7 +3095,7 @@ namespace PrePoMax
         {
             _model.Materials.Add(material.Name, material);
             _form.AddTreeNode(ViewGeometryModelResults.Model, material, null);
-
+            //
             CheckAndUpdateValidity();
         }
         public Material GetMaterial(string materialName)
@@ -3121,7 +3121,7 @@ namespace PrePoMax
                 _model.Materials.Remove(name);
                 _form.RemoveTreeNode<Material>(ViewGeometryModelResults.Model, name, null);
             }
-
+            //
             CheckAndUpdateValidity();
         }
 
@@ -3414,6 +3414,67 @@ namespace PrePoMax
                 if (tie.SlaveCreationData != null && tie.SlaveRegionName != null)
                     RemoveSurfaces(new string[] { tie.SlaveRegionName }, false);
             }
+        }
+
+        #endregion #################################################################################################################
+
+        #region Surface Interaction menu   #########################################################################################
+        // COMMANDS ********************************************************************************
+        public void AddSurfaceInteractionCommand(SurfaceInteraction surfaceInteraction)
+        {
+            Commands.CAddSurfaceInteraction comm = new Commands.CAddSurfaceInteraction(surfaceInteraction);
+            _commands.AddAndExecute(comm);
+        }
+        public void ReplaceSurfaceInteractionCommand(string oldSurfaceInteractionName, SurfaceInteraction newSurfaceInteraction)
+        {
+            Commands.CReplaceSurfaceInteraction comm = new Commands.CReplaceSurfaceInteraction(oldSurfaceInteractionName,
+                                                                                               newSurfaceInteraction);
+            _commands.AddAndExecute(comm);
+        }
+        public void RemoveSurfaceInteractionsCommand(string[] surfaceInteractionNames)
+        {
+            Commands.CRemoveSurfaceInteractions comm = new Commands.CRemoveSurfaceInteractions(surfaceInteractionNames);
+            _commands.AddAndExecute(comm);
+        }
+
+        //******************************************************************************************
+
+        public string[] GetSurfaceInteractionNames()
+        {
+            return _model.SurfaceInteractions.Keys.ToArray();
+        }
+        public void AddSurfaceInteraction(SurfaceInteraction surfaceInteraction)
+        {
+            _model.SurfaceInteractions.Add(surfaceInteraction.Name, surfaceInteraction);
+            _form.AddTreeNode(ViewGeometryModelResults.Model, surfaceInteraction, null);
+            //
+            CheckAndUpdateValidity();
+        }
+        public SurfaceInteraction GetSurfaceInteraction(string surfaceInteractionName)
+        {
+            return _model.SurfaceInteractions[surfaceInteractionName];
+        }
+        public SurfaceInteraction[] GetAllSurfaceInteractions()
+        {
+            return _model.SurfaceInteractions.Values.ToArray();
+        }
+        public void ReplaceSurfaceInteraction(string oldSurfaceInteractionName, SurfaceInteraction newSurfaceInteraction)
+        {
+            _model.SurfaceInteractions.Replace(oldSurfaceInteractionName, newSurfaceInteraction.Name, newSurfaceInteraction);
+            //
+            _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldSurfaceInteractionName, newSurfaceInteraction, null);
+            //
+            CheckAndUpdateValidity();
+        }
+        public void RemoveSurfaceInteractions(string[] surfaceInteractionNames)
+        {
+            foreach (var name in surfaceInteractionNames)
+            {
+                _model.SurfaceInteractions.Remove(name);
+                _form.RemoveTreeNode<SurfaceInteraction>(ViewGeometryModelResults.Model, name, null);
+            }
+            //
+            CheckAndUpdateValidity();
         }
 
         #endregion #################################################################################################################
