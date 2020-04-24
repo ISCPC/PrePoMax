@@ -8,8 +8,7 @@ using DynamicTypeDescriptor;
 
 namespace PrePoMax
 {
-    [Serializable]
-    public abstract class ViewSurfaceInteractionProperty
+    public abstract class ViewMaterialProperty
     {
         // Variables                                                                                                                
         private DynamicCustomTypeDescriptor _dctd;
@@ -17,9 +16,8 @@ namespace PrePoMax
 
         // Properties                                                                                                               
         public abstract string Name { get; }
-        //
         [Browsable(false)]
         public DynamicCustomTypeDescriptor DynamicCustomTypeDescriptor { get { return _dctd; } set { _dctd = value; } }
-        public abstract CaeModel.SurfaceInteractionProperty Base { get; }
+        public abstract CaeModel.MaterialProperty Base { get; }
     }
 }

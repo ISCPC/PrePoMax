@@ -85,6 +85,7 @@ namespace PrePoMax.Forms
             {
                 lvAddedProperties.SelectedItems[0].Remove();
                 if (lvAddedProperties.Items.Count > 0) lvAddedProperties.Items[0].Selected = true;
+                else propertyGrid.SelectedObject = null;
             }
             _propertyChanged = true;
         }
@@ -172,9 +173,10 @@ namespace PrePoMax.Forms
         // Methods                                                                                                                  
         public bool PrepareForm(string stepName, string materialToEditName)
         {
-            this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
+            // To prevent the call to frmMain.itemForm_VisibleChanged when minimized
+            this.DialogResult = DialogResult.None;      
             this.btnOKAddNew.Visible = materialToEditName == null;
-
+            //
             _propertyChanged = false;
             _propertyItemChanged = false;
             _materialNames = null;
@@ -182,16 +184,15 @@ namespace PrePoMax.Forms
             _material = null;
             lvAddedProperties.Clear();
             propertyGrid.SelectedObject = null;
-
+            //
             _materialNames = _controller.GetMaterialNames();
             _materialToEditName = materialToEditName;
-            
             // Initialize material properties
             tvProperties.Nodes.Find("Density", true)[0].Tag = new ViewDensity(new Density(0));
             tvProperties.Nodes.Find("Elastic", true)[0].Tag = new ViewElastic(new Elastic(0, 0));
             tvProperties.Nodes.Find("Plastic", true)[0].Tag = new ViewPlastic(new Plastic(new double[][] { new double[] { 0, 0 } }));
             tvProperties.ExpandAll();
-
+            //
             if (_materialToEditName == null)
             {
                 _material = null;
@@ -200,29 +201,29 @@ namespace PrePoMax.Forms
             else
             {
                 Material = _controller.GetMaterial(_materialToEditName); // to clone
-
+                //
                 tbName.Text = _material.Name;
                 if (_material.Properties.Count > 0)
                 {
                     ListViewItem item;
-                    IViewMaterialProperty view = null;
+                    ViewMaterialProperty view = null;
                     foreach (var property in _material.Properties)
                     {
-                        if (property is Density) view = new ViewDensity((Density)property);
-                        else if (property is Elastic) view = new ViewElastic((Elastic)property);
-                        else if (property is Plastic) view = new ViewPlastic((Plastic)property);
+                        if (property is Density den) view = new ViewDensity(den);
+                        else if (property is Elastic el) view = new ViewElastic(el);
+                        else if (property is Plastic pl) view = new ViewPlastic(pl);
                         else throw new NotSupportedException();
-
+                        //
                         item = new ListViewItem(view.Name);
                         item.Tag = view;
                         lvAddedProperties.Items.Add(item);
                     }
-
+                    //
                     lvAddedProperties.Items[0].Selected = true;
                     lvAddedProperties.Select();
                 }
             }
-
+            //
             return true;
         }
         public void Add()
@@ -232,10 +233,10 @@ namespace PrePoMax.Forms
                 throw new CaeGlobals.CaeException("The selected material name already exists.");
             //
             _material = new CaeModel.Material(tbName.Text);
-            IViewMaterialProperty property;
+            ViewMaterialProperty property;
             foreach (ListViewItem item in lvAddedProperties.Items)
             {
-                property = (IViewMaterialProperty)item.Tag;
+                property = (ViewMaterialProperty)item.Tag;
                 if (property is ViewDensity vd && vd.Value <= 0)
                     throw new CaeGlobals.CaeException("The density must be larger than 0.");
                 if (property is ViewElastic ve && ve.YoungsModulus <= 0)

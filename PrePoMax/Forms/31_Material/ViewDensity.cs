@@ -4,24 +4,25 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel;
+using DynamicTypeDescriptor;
 
 namespace PrePoMax.PropertyViews
 {
     [Serializable]
-    public class ViewDensity : IViewMaterialProperty
+    public class ViewDensity : ViewMaterialProperty
     {
         // Variables                                                                                                                
         private CaeModel.Density _density;
 
         // Properties                                                                                                               
         [Browsable(false)]
-        public string Name
+        public override string Name
         {
             get { return "Density"; }
         }
 
         [Browsable(false)]
-        public CaeModel.MaterialProperty Base
+        public override CaeModel.MaterialProperty Base
         {
             get { return _density; }
         }
@@ -35,6 +36,8 @@ namespace PrePoMax.PropertyViews
         public ViewDensity(CaeModel.Density density)
         {
             _density = density;
+            //
+            base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
         }
 
     }

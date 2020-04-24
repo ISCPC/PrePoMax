@@ -174,7 +174,7 @@
             this.tsmiSurfaceInteraction = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiCreateSurfaceInteraction = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEditSurfaceInteraction = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiDividerContactInteraction1 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsmiDividerSurfaceInteraction1 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiDeleteSurfaceInteraction = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiStepMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiStep = new System.Windows.Forms.ToolStripMenuItem();
@@ -1447,12 +1447,12 @@
             this.tsmiSurfaceInteraction.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmiCreateSurfaceInteraction,
             this.tsmiEditSurfaceInteraction,
-            this.tsmiDividerContactInteraction1,
+            this.tsmiDividerSurfaceInteraction1,
             this.tsmiDeleteSurfaceInteraction});
             this.tsmiSurfaceInteraction.Image = global::PrePoMax.Properties.Resources.SurfaceInteraction;
             this.tsmiSurfaceInteraction.Name = "tsmiSurfaceInteraction";
             this.tsmiSurfaceInteraction.Size = new System.Drawing.Size(180, 22);
-            this.tsmiSurfaceInteraction.Text = "Contact interaction";
+            this.tsmiSurfaceInteraction.Text = "Surface interaction";
             // 
             // tsmiCreateSurfaceInteraction
             // 
@@ -1468,10 +1468,10 @@
             this.tsmiEditSurfaceInteraction.Text = "Edit";
             this.tsmiEditSurfaceInteraction.Click += new System.EventHandler(this.tsmiEditSurfaceInteraction_Click);
             // 
-            // tsmiDividerContactInteraction1
+            // tsmiDividerSurfaceInteraction1
             // 
-            this.tsmiDividerContactInteraction1.Name = "tsmiDividerContactInteraction1";
-            this.tsmiDividerContactInteraction1.Size = new System.Drawing.Size(177, 6);
+            this.tsmiDividerSurfaceInteraction1.Name = "tsmiDividerSurfaceInteraction1";
+            this.tsmiDividerSurfaceInteraction1.Size = new System.Drawing.Size(177, 6);
             // 
             // tsmiDeleteSurfaceInteraction
             // 
@@ -2852,7 +2852,7 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiSurfaceInteraction;
         private System.Windows.Forms.ToolStripMenuItem tsmiCreateSurfaceInteraction;
         private System.Windows.Forms.ToolStripMenuItem tsmiEditSurfaceInteraction;
-        private System.Windows.Forms.ToolStripSeparator tsmiDividerContactInteraction1;
+        private System.Windows.Forms.ToolStripSeparator tsmiDividerSurfaceInteraction1;
         private System.Windows.Forms.ToolStripMenuItem tsmiDeleteSurfaceInteraction;
     }
 }

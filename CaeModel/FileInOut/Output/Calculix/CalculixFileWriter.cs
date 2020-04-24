@@ -491,8 +491,8 @@ namespace FileInOut.Output
                     //
                     foreach (var property in entry.Value.Properties)
                     {
-                        if (property is SurfaceBehavior sb) 
-                            surfaceInteraction.AddKeyword(new CalSurfaceBehavior(sb));
+                        if (property is SurfaceBehavior sb) surfaceInteraction.AddKeyword(new CalSurfaceBehavior(sb));
+                        else if (property is Friction fr) surfaceInteraction.AddKeyword(new CalFriction(fr));
                         else throw new NotImplementedException();
                     }
                 }

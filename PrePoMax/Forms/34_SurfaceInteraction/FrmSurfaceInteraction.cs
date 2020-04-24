@@ -10,9 +10,10 @@ using System.Windows.Forms;
 using CaeModel;
 using CaeGlobals;
 using PrePoMax.PropertyViews;
+using System.Collections;
 
 namespace PrePoMax.Forms
-{
+{    
     public partial class FrmSurfaceInteraction : UserControls.PrePoMaxChildForm, IFormBase
     {
         // Variables                                                                                                                
@@ -51,7 +52,7 @@ namespace PrePoMax.Forms
             tcProperties.TabPages.Clear();
             tcProperties.TabPages.Add(_pages[0]);
             //
-            lvAddedProperties.Sorting = SortOrder.Ascending;
+            this.lvAddedProperties.ListViewItemSorter = new ListViewItemComparer(0);
         }
 
 
@@ -75,7 +76,8 @@ namespace PrePoMax.Forms
                 {
                     ListViewItem item = new ListViewItem(propertyName);
                     item.Tag = tvProperties.SelectedNode.Tag;
-                    lvAddedProperties.Items.Add(item);                    
+                    lvAddedProperties.Sorting = SortOrder.None;
+                    lvAddedProperties.Items.Add(item);
                     int id = lvAddedProperties.Items.IndexOf(item);
                     lvAddedProperties.Items[id].Selected = true;
                     lvAddedProperties.Select();
@@ -89,7 +91,9 @@ namespace PrePoMax.Forms
             {
                 lvAddedProperties.SelectedItems[0].Remove();
                 if (lvAddedProperties.Items.Count > 0) lvAddedProperties.Items[0].Selected = true;
+                else propertyGrid.SelectedObject = null;
             }
+            //
             _propertyChanged = true;
         }
         private void lvAddedProperties_SelectedIndexChanged(object sender, EventArgs e)
@@ -109,6 +113,13 @@ namespace PrePoMax.Forms
                     propertyGrid.SelectedObject = vsb;
                     //
                     propertyGrid_PropertyValueChanged(null, null);
+                }
+                else if (lvAddedProperties.SelectedItems[0].Tag is ViewFriction vf)
+                {
+                    tcProperties.TabPages.Clear();
+                    tcProperties.TabPages.Add(_pages[0]);
+                    //
+                    propertyGrid.SelectedObject = vf;
                 }
                 else throw new NotSupportedException();
             }
@@ -194,7 +205,8 @@ namespace PrePoMax.Forms
             _surfraceInteractionNames = _controller.GetSurfaceInteractionNames();
             _surfaceInteractionToEditName = surfaceInteractionToEditName;
             // Initialize surface interaction properties
-            tvProperties.Nodes.Find("SurfaceBehavior", true)[0].Tag = new ViewSurfaceBehavior(new SurfaceBehavior());
+            tvProperties.Nodes.Find("Surface behavior", true)[0].Tag = new ViewSurfaceBehavior(new SurfaceBehavior());
+            tvProperties.Nodes.Find("Friction", true)[0].Tag = new ViewFriction(new Friction());
             tvProperties.ExpandAll();
             //
             if (_surfaceInteractionToEditName == null)
@@ -214,6 +226,7 @@ namespace PrePoMax.Forms
                     foreach (var property in _surfaceInteraction.Properties)
                     {
                         if (property is SurfaceBehavior sb) view = new ViewSurfaceBehavior(sb);
+                        else if (property is Friction fr) view = new ViewFriction(fr);
                         else throw new NotSupportedException();
                         //
                         item = new ListViewItem(view.Name);
@@ -258,5 +271,7 @@ namespace PrePoMax.Forms
         {
             return NamedClass.GetNewValueName(_surfraceInteractionNames, "SurfaceInteraction-");
         }
+        //
+        
     }
 }

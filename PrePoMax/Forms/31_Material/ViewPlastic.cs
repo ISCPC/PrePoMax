@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel;
+using DynamicTypeDescriptor;
 using CaeModel;
 
 namespace PrePoMax
@@ -38,7 +39,7 @@ namespace PrePoMax
     }
 
     [Serializable]
-    public class ViewPlastic : IViewMaterialProperty
+    public class ViewPlastic : ViewMaterialProperty
     {
         // Variables                                                                                                                
         private List<MaterialDataPoint> _points;
@@ -47,13 +48,13 @@ namespace PrePoMax
 
         // Properties                                                                                                               
         [Browsable(false)]
-        public string Name
+        public override string Name
         {
             get { return "Plastic"; }
         }
 
         [Browsable(false)]
-        public MaterialProperty Base
+        public override MaterialProperty Base
         {
             get
             {
@@ -89,6 +90,8 @@ namespace PrePoMax
                 _points.Add(new MaterialDataPoint(plastic.StressStrain[i][0], plastic.StressStrain[i][1]));
             }
             _hardening = plastic.Hardening;
+            //
+            base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
         }
 
 

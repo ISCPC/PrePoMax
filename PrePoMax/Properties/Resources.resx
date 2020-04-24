@@ -133,6 +133,9 @@
   <data name="Color_contours" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Results\Color_contours.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="SurfaceInteraction" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Icons\Contact\SurfaceInteraction.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Deformed" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Results\Deformed.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -142,14 +145,14 @@
   <data name="SymbolsOff" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\View\SymbolsOff.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="SectionView" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Icons\View\SectionView.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Constraints" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Constraints\Constraints.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Animate" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Results\Animate.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Stop" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Icons\Results\Stop.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Undeformed" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Results\Undeformed.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -175,8 +178,8 @@
   <data name="Hide" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Common\Hide.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="SectionView" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Icons\View\SectionView.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Stop" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Icons\Results\Stop.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Up_arrow" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Common\Up_arrow.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -187,7 +190,7 @@
   <data name="SymbolsOn" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\View\SymbolsOn.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="SurfaceInteraction" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Icons\Contact\SurfaceInteraction.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Remove" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Icons\Material\Remove.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

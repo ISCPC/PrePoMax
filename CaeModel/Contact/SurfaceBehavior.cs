@@ -31,7 +31,11 @@ namespace CaeModel
 
 
         // Properties                                                                                                               
-        public double C0 { get { return _c0; } set { if (value > 0) _c0 = value; else throw new CaeException(_positive); } }
+        public double C0
+        {
+            get { return _c0; }
+            set { if (double.IsNaN(value) || value > 0) _c0 = value; else throw new CaeException(_positive); }
+        }
         public double P0 { get { return _p0; } set { if (value > 0) _p0 = value; else throw new CaeException(_positive); } }
         public double K { get { return _k; } set { if (value > 0) _k = value; else throw new CaeException(_positive); } }
         public double Sinf { get { return _sInf; } set { if (value > 0) _sInf = value; else throw new CaeException(_positive); } }
@@ -93,7 +97,9 @@ namespace CaeModel
         // Methods                                                                                                                  
         private void SetDefaultValues()
         {
-            _c0 = 1E-3;
+            if (_pressureOverclosureType == PressureOverclosureEnum.Linear) _c0 = double.NaN;
+            else _c0 = 1E-3;
+            //
             _p0 = 0.1;
             _k = 10000000;
             _sInf = 1;

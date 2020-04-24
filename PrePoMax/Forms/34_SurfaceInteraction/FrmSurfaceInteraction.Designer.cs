@@ -28,8 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("Surface behavior");
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmSurfaceInteraction));
+            System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("Surface behavior");
+            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("Friction");
             this.tvProperties = new System.Windows.Forms.TreeView();
             this.propertyGrid = new UserControls.TabbedPropertyGrid();
             this.btnOK = new System.Windows.Forms.Button();
@@ -45,9 +45,9 @@
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.lvAddedProperties = new System.Windows.Forms.ListView();
-            this.btnAdd = new System.Windows.Forms.Button();
             this.btnRemove = new System.Windows.Forms.Button();
             this.btnOKAddNew = new System.Windows.Forms.Button();
+            this.btnAdd = new System.Windows.Forms.Button();
             this.gbData.SuspendLayout();
             this.gbProperties.SuspendLayout();
             this.tcProperties.SuspendLayout();
@@ -61,10 +61,14 @@
             this.tvProperties.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.tvProperties.Location = new System.Drawing.Point(6, 38);
             this.tvProperties.Name = "tvProperties";
-            treeNode2.Name = "SurfaceBehavior";
-            treeNode2.Text = "Surface behavior";
-            treeNode2.ToolTipText = "Surface behavior";
+            treeNode1.Name = "Surface behavior";
+            treeNode1.Text = "Surface behavior";
+            treeNode1.ToolTipText = "Surface behavior";
+            treeNode2.Name = "Friction";
+            treeNode2.Text = "Friction";
+            treeNode2.ToolTipText = "Friction";
             this.tvProperties.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
+            treeNode1,
             treeNode2});
             this.tvProperties.Size = new System.Drawing.Size(137, 101);
             this.tvProperties.TabIndex = 2;
@@ -80,7 +84,7 @@
             this.propertyGrid.LineColor = System.Drawing.SystemColors.Control;
             this.propertyGrid.Location = new System.Drawing.Point(0, 0);
             this.propertyGrid.Name = "propertyGrid";
-            this.propertyGrid.Size = new System.Drawing.Size(295, 258);
+            this.propertyGrid.Size = new System.Drawing.Size(295, 252);
             this.propertyGrid.TabIndex = 6;
             this.propertyGrid.ToolbarVisible = false;
             this.propertyGrid.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.propertyGrid_PropertyValueChanged);
@@ -187,10 +191,10 @@
             // 
             this.tabPage2.BackColor = System.Drawing.SystemColors.Control;
             this.tabPage2.Controls.Add(this.dgvData);
-            this.tabPage2.Location = new System.Drawing.Point(4, 24);
+            this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(295, 258);
+            this.tabPage2.Size = new System.Drawing.Size(295, 260);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Data points";
             // 
@@ -202,7 +206,7 @@
             this.dgvData.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvData.Location = new System.Drawing.Point(0, 0);
             this.dgvData.Name = "dgvData";
-            this.dgvData.Size = new System.Drawing.Size(295, 258);
+            this.dgvData.Size = new System.Drawing.Size(295, 254);
             this.dgvData.TabIndex = 0;
             this.dgvData.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dgvData_DataError);
             // 
@@ -240,19 +244,9 @@
             this.lvAddedProperties.View = System.Windows.Forms.View.List;
             this.lvAddedProperties.SelectedIndexChanged += new System.EventHandler(this.lvAddedProperties_SelectedIndexChanged);
             // 
-            // btnAdd
-            // 
-            this.btnAdd.Image = global::PrePoMax.Properties.Resources.Right_arrow;
-            this.btnAdd.Location = new System.Drawing.Point(149, 38);
-            this.btnAdd.Name = "btnAdd";
-            this.btnAdd.Size = new System.Drawing.Size(22, 22);
-            this.btnAdd.TabIndex = 3;
-            this.btnAdd.UseVisualStyleBackColor = true;
-            this.btnAdd.Click += new System.EventHandler(this.btnAdd_Click);
-            // 
             // btnRemove
             // 
-            this.btnRemove.Image = ((System.Drawing.Image)(resources.GetObject("btnRemove.Image")));
+            this.btnRemove.Image = global::PrePoMax.Properties.Resources.Remove;
             this.btnRemove.Location = new System.Drawing.Point(149, 66);
             this.btnRemove.Name = "btnRemove";
             this.btnRemove.Size = new System.Drawing.Size(22, 22);
@@ -270,6 +264,16 @@
             this.btnOKAddNew.Text = "OK - Add new";
             this.btnOKAddNew.UseVisualStyleBackColor = true;
             this.btnOKAddNew.Click += new System.EventHandler(this.btnOKAddNew_Click);
+            // 
+            // btnAdd
+            // 
+            this.btnAdd.Image = global::PrePoMax.Properties.Resources.Right_arrow;
+            this.btnAdd.Location = new System.Drawing.Point(149, 38);
+            this.btnAdd.Name = "btnAdd";
+            this.btnAdd.Size = new System.Drawing.Size(22, 22);
+            this.btnAdd.TabIndex = 3;
+            this.btnAdd.UseVisualStyleBackColor = true;
+            this.btnAdd.Click += new System.EventHandler(this.btnAdd_Click);
             // 
             // FrmSurfaceInteraction
             // 

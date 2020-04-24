@@ -4,12 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel;
+using DynamicTypeDescriptor;
 using CaeGlobals;
 
 namespace PrePoMax.PropertyViews
 {
     [Serializable]
-    public class ViewElastic : IViewMaterialProperty
+    public class ViewElastic : ViewMaterialProperty
     {
         // Variables                                                                                                                
         private CaeModel.Elastic _elastic;
@@ -17,13 +18,13 @@ namespace PrePoMax.PropertyViews
 
         // Properties                                                                                                               
         [Browsable(false)]
-        public string Name
+        public override string Name
         {
             get { return "Elastic"; }
         }
 
         [Browsable(false)]
-        public CaeModel.MaterialProperty Base
+        public override CaeModel.MaterialProperty Base
         {
             get { return _elastic; }
         }
@@ -43,6 +44,8 @@ namespace PrePoMax.PropertyViews
         public ViewElastic(CaeModel.Elastic elastic)
         {
             _elastic = elastic;
+            //
+            base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
         }
 
         // Methods                                                                                                                  

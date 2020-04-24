@@ -117,17 +117,4 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="btnRemove.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
-        xAAADsQBlSsOGwAAAUlJREFUOE+lU6GOg1AQ5BP6Cf2E+4QLnqQWV4EHjUJhGzxJJbICDxpFQvCHg4DA
-        Yd/tLPvK4wJ34iaZ9GVndxh4WwtYluVCfBIVcSYGLPwA1SPp0bxpIaiqSjmOw2zbdhMJdL4S6yzLlG3b
-        qigK6JHI3FCmacoi6HmeGscRSZAswDmOY9bQR7WXjK5AExJoAzBJEjTOXdexIWowoVpNvMjoChQg5Hm+
-        M8HT8Eo4G6muMrbHmQkIk2ma8PRPaT8G3Ikc1TSAKdWf0nYMGT5M4Lrun/E/iDM+nDlofgPf9/kDysgG
-        PXwSuzZvQW7mIaMrEC0Mw90wFoYa+a7p944eJDCM30tm6e3SPLprOiPlFzS8UtM0vGQsmgani0JAjVii
-        H6/U933JwjAMvOMSe3M+AekP/BewuXSOtHMg/HVYg/ruxBK0lFL/oLK+AaMj/dL+UYA6AAAAAElFTkSu
-        QmCC
-</value>
-  </data>
 </root>

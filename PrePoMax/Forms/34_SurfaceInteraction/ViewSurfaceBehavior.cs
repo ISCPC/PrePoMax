@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using DynamicTypeDescriptor;
 using CaeGlobals;
-using System.Security.AccessControl;
 
 namespace PrePoMax
 {
@@ -74,14 +73,31 @@ namespace PrePoMax
         public double Sinf { get { return _surfaceBehavior.Sinf; } set { _surfaceBehavior.Sinf = value; } }
         //
         [CategoryAttribute("Data")]
-        [OrderedDisplayName(2, 10, "p0")]
+        [OrderedDisplayName(3, 10, "c0")]
+        [DescriptionAttribute("The value from which the maximum clearance is calculated for which a spring contact " +
+                              "element is generated.")]
+        [TypeConverter(typeof(StringDefaultDoubleConverter))]
+        public double C0_lin
+        {
+            get
+            {
+                StringDefaultDoubleConverter.InitialValue = 0.001;
+                //
+                return _surfaceBehavior.C0;
+            }
+            set { _surfaceBehavior.C0 = value; }
+        }
+        //
+        [CategoryAttribute("Data")]
+        [OrderedDisplayName(4, 10, "p0")]
         [DescriptionAttribute("The contact pressure at zero clerance (p0 > 0).")]
         public double P0 { get { return _surfaceBehavior.P0; } set { _surfaceBehavior.P0 = value; } }
         //
         [CategoryAttribute("Data")]
-        [OrderedDisplayName(3, 10, "c0")]
+        [OrderedDisplayName(5, 10, "c0")]
         [DescriptionAttribute("The clerance at which the contact pressure is decreased to 1 % of p0 (c0 > 0).")]
-        public double C0 { get { return _surfaceBehavior.C0; } set { _surfaceBehavior.C0 = value; } }
+        public double C0_exp { get { return _surfaceBehavior.C0; } set { _surfaceBehavior.C0 = value; } }
+        
         //
         [Browsable(false)]
         public List<PressureOverclosureDataPoint> DataPoints { get { return _points; } set { _points = value; } }
@@ -127,16 +143,18 @@ namespace PrePoMax
         private void UpdateVisibility()
         {
             DynamicTypeDescriptor.CustomPropertyDescriptor cpd;
-            if (_surfaceBehavior.PressureOverclosureType == CaeModel.PressureOverclosureEnum.Exponential)
+            if (_surfaceBehavior.PressureOverclosureType == CaeModel.PressureOverclosureEnum.Hard)
             {
                 cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(K));
                 cpd.SetIsBrowsable(false);
                 cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(Sinf));
                 cpd.SetIsBrowsable(false);
+                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(C0_lin));
+                cpd.SetIsBrowsable(false);
                 cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(P0));
-                cpd.SetIsBrowsable(true);
-                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(C0));
-                cpd.SetIsBrowsable(true);
+                cpd.SetIsBrowsable(false);
+                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(C0_exp));
+                cpd.SetIsBrowsable(false);
             }
             else if (_surfaceBehavior.PressureOverclosureType == CaeModel.PressureOverclosureEnum.Linear)
             {
@@ -144,9 +162,24 @@ namespace PrePoMax
                 cpd.SetIsBrowsable(true);
                 cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(Sinf));
                 cpd.SetIsBrowsable(true);
+                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(C0_lin));
+                cpd.SetIsBrowsable(true);
                 cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(P0));
                 cpd.SetIsBrowsable(false);
-                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(C0));
+                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(C0_exp));
+                cpd.SetIsBrowsable(false);
+            }
+            else if (_surfaceBehavior.PressureOverclosureType == CaeModel.PressureOverclosureEnum.Exponential)
+            {
+                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(K));
+                cpd.SetIsBrowsable(false);
+                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(Sinf));
+                cpd.SetIsBrowsable(false);
+                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(C0_lin));
+                cpd.SetIsBrowsable(false);
+                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(P0));
+                cpd.SetIsBrowsable(true);
+                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(C0_exp));
                 cpd.SetIsBrowsable(true);
             }
             else if (_surfaceBehavior.PressureOverclosureType == CaeModel.PressureOverclosureEnum.Tabular)
@@ -155,9 +188,11 @@ namespace PrePoMax
                 cpd.SetIsBrowsable(false);
                 cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(Sinf));
                 cpd.SetIsBrowsable(false);
+                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(C0_lin));
+                cpd.SetIsBrowsable(false);
                 cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(P0));
                 cpd.SetIsBrowsable(false);
-                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(C0));
+                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(C0_exp));
                 cpd.SetIsBrowsable(false);
             }
             else if (_surfaceBehavior.PressureOverclosureType == CaeModel.PressureOverclosureEnum.Tied)
@@ -166,20 +201,11 @@ namespace PrePoMax
                 cpd.SetIsBrowsable(true);
                 cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(Sinf));
                 cpd.SetIsBrowsable(false);
-                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(P0));
-                cpd.SetIsBrowsable(false);
-                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(C0));
-                cpd.SetIsBrowsable(false);
-            }
-            else if (_surfaceBehavior.PressureOverclosureType == CaeModel.PressureOverclosureEnum.Hard)
-            {
-                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(K));
-                cpd.SetIsBrowsable(false);
-                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(Sinf));
+                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(C0_lin));
                 cpd.SetIsBrowsable(false);
                 cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(P0));
                 cpd.SetIsBrowsable(false);
-                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(C0));
+                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(C0_exp));
                 cpd.SetIsBrowsable(false);
             }
             else throw new NotSupportedException();

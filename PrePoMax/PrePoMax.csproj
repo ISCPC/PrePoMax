@@ -220,12 +220,15 @@
     <Compile Include="Forms\31_Material\FrmMaterialLibrary.Designer.cs">
       <DependentUpon>FrmMaterialLibrary.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\34_SurfaceInteraction\ListViewItemComparer.cs" />
     <Compile Include="Forms\34_SurfaceInteraction\FrmSurfaceInteraction.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\34_SurfaceInteraction\FrmSurfaceInteraction.Designer.cs">
       <DependentUpon>FrmSurfaceInteraction.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\34_SurfaceInteraction\StringDefaultDoubleConverter.cs" />
+    <Compile Include="Forms\34_SurfaceInteraction\ViewFriction.cs" />
     <Compile Include="Forms\34_SurfaceInteraction\ViewSurfaceInteractionProperty.cs" />
     <Compile Include="Forms\34_SurfaceInteraction\ViewSurfaceBehavior.cs" />
     <Compile Include="Forms\41_Step\ViewBuckleStep.cs" />
@@ -329,7 +332,7 @@
       <DependentUpon>FrmMaterial.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\31_Material\ViewElastic.cs" />
-    <Compile Include="Forms\31_Material\IViewMaterialProperty.cs" />
+    <Compile Include="Forms\31_Material\ViewMaterialProperty.cs" />
     <Compile Include="Forms\31_Material\ViewDensity.cs" />
     <Compile Include="Forms\32_Section\ViewSection.cs" />
     <Compile Include="Forms\32_Section\ViewSolidSection.cs" />
@@ -614,6 +617,7 @@
     <None Include="Icons\Constraints\Constraints.png" />
     <None Include="Icons\Contact\ContactInteraction.ico" />
     <None Include="Icons\Contact\SurfaceInteraction.ico" />
+    <None Include="Icons\Material\Remove.png" />
     <Content Include="main.ico" />
   </ItemGroup>
   <ItemGroup>

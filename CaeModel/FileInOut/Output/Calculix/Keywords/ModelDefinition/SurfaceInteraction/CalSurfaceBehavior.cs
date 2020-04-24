@@ -35,8 +35,9 @@ namespace FileInOut.Output.Calculix
             { }
             else if (_surfaceBehavior.PressureOverclosureType == PressureOverclosureEnum.Linear)
             {
-                sb.AppendFormat("{0}, {1}, {2}{3}", _surfaceBehavior.K, _surfaceBehavior.Sinf, _surfaceBehavior.C0,
-                    Environment.NewLine);
+                sb.AppendFormat("{0}, {1}", _surfaceBehavior.K, _surfaceBehavior.Sinf);
+                if (!double.IsNaN(_surfaceBehavior.C0)) sb.AppendFormat(", {0}", _surfaceBehavior.C0);
+                sb.AppendLine();
             }
             else if (_surfaceBehavior.PressureOverclosureType == PressureOverclosureEnum.Exponential)
             {
