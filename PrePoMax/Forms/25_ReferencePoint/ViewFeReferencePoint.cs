@@ -130,16 +130,16 @@ namespace PrePoMax.Forms
             //
             if (CreatedFrom == FeReferencePointCreatedFrom.Selection.ToString())
             {
-                dctd.GetProperty(() => RegionType).SetIsBrowsable(false);
-                dctd.GetProperty(() => NodeSetName).SetIsBrowsable(false);
-                dctd.GetProperty(() => SurfaceName).SetIsBrowsable(false);
-                dctd.GetProperty(() => X).SetIsReadOnly(false);
-                dctd.GetProperty(() => Y).SetIsReadOnly(false);
-                dctd.GetProperty(() => Z).SetIsReadOnly(false);
+                dctd.GetProperty(nameof(RegionType)).SetIsBrowsable(false);
+                dctd.GetProperty(nameof(NodeSetName)).SetIsBrowsable(false);
+                dctd.GetProperty(nameof(SurfaceName)).SetIsBrowsable(false);
+                dctd.GetProperty(nameof(X)).SetIsReadOnly(false);
+                dctd.GetProperty(nameof(Y)).SetIsReadOnly(false);
+                dctd.GetProperty(nameof(Z)).SetIsReadOnly(false);
             }
             else
             {
-                dctd.GetProperty(() => RegionType).SetIsBrowsable(true);
+                dctd.GetProperty(nameof(RegionType)).SetIsBrowsable(true);
                 //
                 if (_numOfNodeSets > 0 && _referencePoint.RegionType == RegionTypeEnum.NodeSetName)
                     RegionType = RegionTypeEnum.NodeSetName.ToFriendlyString();
@@ -151,9 +151,9 @@ namespace PrePoMax.Forms
                 else
                     RegionType = RegionTypeEnum.NodeSetName.ToFriendlyString();
                 //
-                dctd.GetProperty(() => X).SetIsReadOnly(true);
-                dctd.GetProperty(() => Y).SetIsReadOnly(true);
-                dctd.GetProperty(() => Z).SetIsReadOnly(true);
+                dctd.GetProperty(nameof(X)).SetIsReadOnly(true);
+                dctd.GetProperty(nameof(Y)).SetIsReadOnly(true);
+                dctd.GetProperty(nameof(Z)).SetIsReadOnly(true);
             }
         }
     }

@@ -225,7 +225,7 @@ namespace PrePoMax.Forms
             // Edit existing constraint
             else
             {
-                // Get and convert a converted load back to selection
+                // Get and convert a converted constraint back to selection
                 Constraint = _controller.GetConstraint(_constraintToEditName); // to clone
                 // Convert the constraint to internal to hide it
                 ConstraintInternal(true);
@@ -408,9 +408,7 @@ namespace PrePoMax.Forms
         }
         private void SetSelectItem()
         {
-            if (Constraint is null) { }
-            else if (Constraint is RigidBody) _controller.SetSelectItemToSurface();
-            else if (Constraint is Tie) _controller.SetSelectItemToSurface();
+            _controller.SetSelectItemToSurface();
         }
         private void ConstraintInternal(bool toInternal)
         {

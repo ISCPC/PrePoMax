@@ -32,7 +32,7 @@ namespace UserControls
 
         [OrderedDisplayName(2, 10, "Region type")]
         [CategoryAttribute("Data")]
-        [DescriptionAttribute("Select the region type which will be used for the section definition.")]
+        [DescriptionAttribute("Select the region type for the creation of the section definition.")]
         public string RegionType
         {
             get
@@ -64,12 +64,12 @@ namespace UserControls
 
         [OrderedDisplayName(3, 10, "Part")]
         [CategoryAttribute("Data")]
-        [DescriptionAttribute("Select the part which will be used for the section definition.")]
+        [DescriptionAttribute("Select the part for the creation of the section definition.")]
         public string PartName { get { return _section.RegionName; } set { _section.RegionName = value; } }
 
         [OrderedDisplayName(4, 10, "Element set")]
         [CategoryAttribute("Data")]
-        [DescriptionAttribute("Select the element set which will be used for the section definition.")]
+        [DescriptionAttribute("Select the element set for the creation of the section definition.")]
         public string ElementSetName { get { return _section.RegionName; } set { _section.RegionName = value; } }
 
 

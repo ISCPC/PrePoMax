@@ -59,10 +59,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Contact\Friction.cs" />
-    <Compile Include="Contact\SurfaceBehavior.cs" />
-    <Compile Include="Contact\SurfaceInteraction.cs" />
-    <Compile Include="Contact\SurfaceInteractionProperty.cs" />
+    <Compile Include="Contact\ContactPair.cs" />
+    <Compile Include="Contact\Surface interaction\Friction.cs" />
+    <Compile Include="Contact\Surface interaction\SurfaceBehavior.cs" />
+    <Compile Include="Contact\Surface interaction\SurfaceInteraction.cs" />
+    <Compile Include="Contact\Surface interaction\SurfaceInteractionProperty.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalPreTensionSection.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalDeactivated.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\SurfaceInteraction\CalFriction.cs" />
@@ -171,6 +172,7 @@
   <ItemGroup>
     <None Include="ClassDiagram1.cd" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

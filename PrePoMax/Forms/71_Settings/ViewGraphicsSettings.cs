@@ -152,36 +152,10 @@ namespace PrePoMax.Settings
             CustomPropertyDescriptor cpd;
 
             // now lets display On/Off instead of True/False
-            cpd = _dctd.GetProperty("CoorSysVisibility");
-            foreach (StandardValueAttribute sva in cpd.StatandardValues)
-            {
-                if ((bool)sva.Value == true) sva.DisplayName = "On";
-                else sva.DisplayName = "Off";
-            }
-
-            // now lets display On/Off instead of True/False
-            cpd = _dctd.GetProperty("ScaleWidgetVisibility");
-            foreach (StandardValueAttribute sva in cpd.StatandardValues)
-            {
-                if ((bool)sva.Value == true) sva.DisplayName = "On";
-                else sva.DisplayName = "Off";
-            }
-
-            // now lets display On/Off instead of True/False
-            cpd = _dctd.GetProperty("PointSmoothing");
-            foreach (StandardValueAttribute sva in cpd.StatandardValues)
-            {
-                if ((bool)sva.Value == true) sva.DisplayName = "On";
-                else sva.DisplayName = "Off";
-            }
-
-            // now lets display On/Off instead of True/False
-            cpd = _dctd.GetProperty("LineSmoothing");
-            foreach (StandardValueAttribute sva in cpd.StatandardValues)
-            {
-                if ((bool)sva.Value == true) sva.DisplayName = "On";
-                else sva.DisplayName = "Off";
-            }
+            _dctd.RenameBooleanPropertyToOnOff(nameof(CoorSysVisibility));
+            _dctd.RenameBooleanPropertyToOnOff(nameof(ScaleWidgetVisibility));
+            _dctd.RenameBooleanPropertyToOnOff(nameof(PointSmoothing));
+            _dctd.RenameBooleanPropertyToOnOff(nameof(LineSmoothing));
         }
 
 

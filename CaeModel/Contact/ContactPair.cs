@@ -4,18 +4,33 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CaeMesh;
+using DynamicTypeDescriptor;
 using CaeGlobals;
 
 namespace CaeModel
 {
     [Serializable]
-    public class Tie : Constraint, IMasterSlaveMultiRegion
+    public enum ContactPairMethod
+    {
+        [StandardValue("Node to surface", "Node to surface",  Description =
+                       "Use node-to-face penalty contact method. All contact pairs in the model must use the same contact type.")]
+        NodeToSurface,
+        [StandardValue("Surface to surface", "Surface to surface", Description =
+                       "Use face-to-face penalty contact method. All contact pairs in the model must use the same contact type.")]
+        SurfaceToSurface
+    }
+
+    [Serializable]
+    public class ContactPair : NamedClass, IMasterSlaveMultiRegion
     {
         // Variables                                                                                                                
         private static string _positive = "The value must be larger than 0.";
         //
-        private double _positionTolerance;
+        private string _surfaceInteractionName;
+        private ContactPairMethod _method;
+        private bool _smallSliding;
         private bool _adjust;
+        private double _adjustmentSize;
         //
         private RegionTypeEnum _slaveRegionType;
         private string _slaveSurfaceName;
@@ -29,17 +44,37 @@ namespace CaeModel
 
 
         // Properties                                                                                                               
-        public double PositionTolerance
+        public string SurfaceInteractionName { get { return _surfaceInteractionName; } set { _surfaceInteractionName = value; } }
+        public ContactPairMethod Method
         {
-            get { return _positionTolerance; }
-            set { if (double.IsNaN(value) || value > 0) _positionTolerance = value; else throw new CaeException(_positive); }
+            get { return _method; }
+            set
+            {
+                _method = value;
+                if (_method == ContactPairMethod.SurfaceToSurface) _smallSliding = false;
+            }
+        }
+        public bool SmallSliding
+        {
+            get { return _smallSliding; }
+            set
+            {
+                _smallSliding = value;
+                Method = _method; // check the compatibility
+            }
         }
         public bool Adjust { get { return _adjust; } set { _adjust = value; } }
+        public double AdjustmentSize 
+        {
+            get { return _adjustmentSize; }
+            set { if (double.IsNaN(value) || value >= 0) _adjustmentSize = value; else throw new CaeException(_positive); }
+        }
         //
         public RegionTypeEnum MasterRegionType { get { return _masterRegionType; } set { _masterRegionType = value; } }
         public string MasterRegionName { get { return _masterSurfaceName; } set { _masterSurfaceName = value; } }
         public RegionTypeEnum SlaveRegionType { get { return _slaveRegionType; } set { _slaveRegionType = value; } }
-        public string SlaveRegionName { get { return _slaveSurfaceName; } set { _slaveSurfaceName = value; } }
+        public string SlaveRegionName { get { return _slaveSurfaceName; } set { _slaveSurfaceName = value; } }        
+        
         //
         public int[] SlaveCreationIds { get { return _slaveCreationIds; } set { _slaveCreationIds = value; } }
         public Selection SlaveCreationData { get { return _slaveCreationData; } set { _slaveCreationData = value; } }
@@ -48,20 +83,25 @@ namespace CaeModel
 
 
         // Constructors                                                                                                             
-        public Tie(string name, string masterSurfaceName, RegionTypeEnum masterRegionType,
-                   string slaveSurfaceName, RegionTypeEnum slaveRegionType)
-           : this(name, double.NaN, true, masterSurfaceName, masterRegionType, slaveSurfaceName, slaveRegionType)
+        public ContactPair(string name, string surfaceInteractionName, string masterSurfaceName, RegionTypeEnum masterRegionType,
+                           string slaveSurfaceName, RegionTypeEnum slaveRegionType)
+           : this(name, surfaceInteractionName, ContactPairMethod.SurfaceToSurface, false, true, double.NaN,
+                  masterSurfaceName, masterRegionType, slaveSurfaceName, slaveRegionType)
         {
         }
-        public Tie(string name, double positionTolerance, bool adjust, string masterSurfaceName, RegionTypeEnum masterRegionType,
-                   string slaveSurfaceName, RegionTypeEnum slaveRegionType)
+        public ContactPair(string name, string surfaceInteractionName, ContactPairMethod method, bool smallSliding, bool adjust,
+                           double adjustmentSize, string masterSurfaceName, RegionTypeEnum masterRegionType, 
+                           string slaveSurfaceName, RegionTypeEnum slaveRegionType)
             : base(name)
         {
             if (masterRegionType == RegionTypeEnum.SurfaceName && slaveRegionType == RegionTypeEnum.SurfaceName &&
                 slaveSurfaceName == masterSurfaceName) throw new CaeException("The master and slave surface names must be different.");
             //
-            PositionTolerance = positionTolerance;
+            _surfaceInteractionName = surfaceInteractionName;
+            Method = method;
+            SmallSliding = smallSliding;
             _adjust = adjust;
+            AdjustmentSize = adjustmentSize;
             //
             _masterRegionType = masterRegionType;
             _masterSurfaceName = masterSurfaceName;

@@ -21,6 +21,7 @@ namespace CaeModel
         private OrderedDictionary<string, Section> _sections;                                   //ISerializable
         private OrderedDictionary<string, Constraint> _constraints;                             //ISerializable
         private OrderedDictionary<string, SurfaceInteraction> _surfaceInteractions;             //ISerializable
+        private OrderedDictionary<string, ContactPair> _contactPairs;                           //ISerializable
         private StepCollection _stepCollection;                                                 //ISerializable
         private OrderedDictionary<int[], Calculix.CalculixUserKeyword> _calculixUserKeywords;   //ISerializable
         private ModelProperties _properties;                                                    //ISerializable
@@ -34,6 +35,7 @@ namespace CaeModel
         public OrderedDictionary<string, Section> Sections { get { return _sections; } }
         public OrderedDictionary<string, Constraint> Constraints { get { return _constraints; } }
         public OrderedDictionary<string, SurfaceInteraction> SurfaceInteractions { get { return _surfaceInteractions; } }
+        public OrderedDictionary<string, ContactPair> ContactPairs { get { return _contactPairs; } }
         public StepCollection StepCollection { get { return _stepCollection; } }
         public OrderedDictionary<int[], Calculix.CalculixUserKeyword> CalculixUserKeywords 
         { 
@@ -54,6 +56,7 @@ namespace CaeModel
             _sections = new OrderedDictionary<string, Section>();
             _constraints = new OrderedDictionary<string, Constraint>();
             _surfaceInteractions = new OrderedDictionary<string, SurfaceInteraction>();
+            _contactPairs = new OrderedDictionary<string, ContactPair>();
             _stepCollection = new StepCollection();
         }
         
@@ -62,6 +65,8 @@ namespace CaeModel
         {
             // Compatibility for version v.0.6.0
             _surfaceInteractions = new OrderedDictionary<string, SurfaceInteraction>();
+            // Compatibility for version v.0.6.0
+            _contactPairs = new OrderedDictionary<string, ContactPair>();
             //
             foreach (SerializationEntry entry in info)
             {
@@ -109,6 +114,8 @@ namespace CaeModel
                         break;
                     case "_surfaceInteractions":
                         _surfaceInteractions = (OrderedDictionary<string, SurfaceInteraction>)entry.Value; break;
+                    case "_contactPairs":
+                        _contactPairs = (OrderedDictionary<string, ContactPair>)entry.Value; break;
                     case "_stepCollection":
                         _stepCollection = (StepCollection)entry.Value; break;
                     case "_calculixUserKeywords":
@@ -205,20 +212,33 @@ namespace CaeModel
                 constraint = entry.Value;
                 if (constraint is RigidBody rb)
                 {
-                    valid = (_mesh.ReferencePoints.ContainsValidKey(rb.ReferencePointName))
+                    valid = _mesh.ReferencePoints.ContainsValidKey(rb.ReferencePointName)
                             && ((rb.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(rb.RegionName))
                             || (rb.RegionType == RegionTypeEnum.SurfaceName && _mesh.Surfaces.ContainsKey(rb.RegionName)));
                 }
                 else if (constraint is Tie t)
                 {
-                    valid = (_mesh.Surfaces.ContainsValidKey(t.SlaveRegionName))
-                            && (_mesh.Surfaces.ContainsValidKey(t.MasterRegionName))
+                    valid = _mesh.Surfaces.ContainsValidKey(t.SlaveRegionName)
+                            && _mesh.Surfaces.ContainsValidKey(t.MasterRegionName)
                             && (t.SlaveRegionName != t.MasterRegionName);
                 }
                 else throw new NotSupportedException();
                 //
                 SetItemValidity(constraint, valid, items);
                 if (!valid && constraint.Active) invalidItems.Add("Constraint: " + constraint.Name);
+            }
+            // Contact pairs
+            ContactPair contactPair;
+            foreach (var entry in _contactPairs)
+            {
+                contactPair = entry.Value;
+                valid = _surfaceInteractions.ContainsValidKey(contactPair.SurfaceInteractionName)
+                        && _mesh.Surfaces.ContainsValidKey(contactPair.SlaveRegionName)
+                        && _mesh.Surfaces.ContainsValidKey(contactPair.MasterRegionName)
+                        && (contactPair.SlaveRegionName != contactPair.MasterRegionName);
+                //
+                SetItemValidity(contactPair, valid, items);
+                if (!valid && contactPair.Active) invalidItems.Add("Contact pair: " + contactPair.Name);
             }
             // Steps
             HistoryOutput historyOutput;
@@ -570,6 +590,7 @@ namespace CaeModel
             info.AddValue("_sections", _sections, typeof(OrderedDictionary<string, Section>));
             info.AddValue("_constraints", _constraints, typeof(OrderedDictionary<string, Constraint>));
             info.AddValue("_surfaceInteractions", _surfaceInteractions, typeof(OrderedDictionary<string, SurfaceInteraction>));
+            info.AddValue("_contactPairs", _contactPairs, typeof(OrderedDictionary<string, ContactPair>));
             info.AddValue("_stepCollection", _stepCollection, typeof(StepCollection));
             info.AddValue("_calculixUserKeywords", _calculixUserKeywords, typeof(OrderedDictionary<int[], Calculix.CalculixUserKeyword>));
             info.AddValue("_properties", _properties, typeof(ModelProperties));

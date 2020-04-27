@@ -1560,6 +1560,11 @@ namespace DynamicTypeDescriptor
         {
             RenameBooleanProperty(propertyName, "Yes", "No");
         }
+        //
+        public void RenameBooleanPropertyToOnOff(string propertyName)
+        {
+            RenameBooleanProperty(propertyName, "On", "Off");
+        }
         public void RenameBooleanProperty(string propertyName, string trueName, string falseName)
         {
             CustomPropertyDescriptor cpd = GetProperty(propertyName);

@@ -106,15 +106,8 @@ namespace PrePoMax.Settings
         {
             _preSettings = preSettings;
             _dctd = ProviderInstaller.Install(this);
-            //
-            CustomPropertyDescriptor cpd;
             // Now lets display Yes/No instead of True/False
-            cpd = _dctd.GetProperty("DrawSymbolEdges");
-            foreach (StandardValueAttribute sva in cpd.StatandardValues)
-            {
-                if ((bool)sva.Value == true) sva.DisplayName = "Yes";
-                else sva.DisplayName = "No";
-            }
+            _dctd.RenameBooleanPropertyToYesNo(nameof(DrawSymbolEdges));
         }
 
 

@@ -74,12 +74,11 @@ namespace PrePoMax.Forms
         }
         public void PopululateDropDownList(string[] nodeSetNames)
         {
-            StandardValueAttribute sva;
             CustomPropertyDescriptor cpd;
             // Selection
-            cpd = _dctd.GetProperty(() => CreateSurfaceFrom);
+            cpd = _dctd.GetProperty(nameof(CreateSurfaceFrom));
             cpd.StatandardValues.Clear();
-            // Always shoe selection
+            // Always show selection
             cpd.StatandardValues.Add(new StandardValueAttribute(FeSurfaceCreatedFrom.Selection.ToString()));
             //
             if (nodeSetNames.Length > 0)
@@ -87,30 +86,22 @@ namespace PrePoMax.Forms
                 // NodeSet
                 cpd.StatandardValues.Add(new StandardValueAttribute(FeSurfaceCreatedFrom.NodeSet.ToString()));
                 // Add node set names
-                cpd = _dctd.GetProperty(() => NodeSetName);
-                cpd.StatandardValues.Clear();
-                cpd.PropertyFlags |= PropertyFlags.ExclusiveStandardValues;
-                //
-                foreach (var name in nodeSetNames)
-                {
-                    sva = new StandardValueAttribute(name);
-                    cpd.StatandardValues.Add(sva);
-                }
+                _dctd.PopulateProperty(nameof(NodeSetName), nodeSetNames);
             }
         }
         private void SetPropertiesVisibility()
         {
             if (_surface.CreatedFrom == FeSurfaceCreatedFrom.Selection)
             {
-                _dctd.GetProperty(() => NodeSetName).SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(NodeSetName)).SetIsBrowsable(false);
             }
             else if (_surface.CreatedFrom == FeSurfaceCreatedFrom.NodeSet)
             {
-                _dctd.GetProperty(() => NodeSetName).SetIsBrowsable(true);
+                _dctd.GetProperty(nameof(NodeSetName)).SetIsBrowsable(true);
                 //
-                if (_surface.CreatedFromNodeSetName == null && _dctd.GetProperty(() => NodeSetName).StatandardValues.Count > 0)
+                if (_surface.CreatedFromNodeSetName == null && _dctd.GetProperty(nameof(NodeSetName)).StatandardValues.Count > 0)
                 {
-                    _surface.CreatedFromNodeSetName = _dctd.GetProperty(() => NodeSetName).StatandardValues.First().ToString();
+                    _surface.CreatedFromNodeSetName = _dctd.GetProperty(nameof(NodeSetName)).StatandardValues.First().ToString();
                 }
             }
         }

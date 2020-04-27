@@ -3331,7 +3331,7 @@ namespace PrePoMax
                 _model.Constraints.Remove(name);
                 _form.RemoveTreeNode<Constraint>(ViewGeometryModelResults.Model, name, null);
             }
-
+            //
             Update(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         //
@@ -3475,6 +3475,162 @@ namespace PrePoMax
             }
             //
             CheckAndUpdateValidity();
+        }
+
+        #endregion #################################################################################################################
+
+        #region Contact pair menu   ################################################################################################
+        // COMMANDS ********************************************************************************
+        public void AddContactPairCommand(ContactPair contactPair)
+        {
+            Commands.CAddContactPair comm = new Commands.CAddContactPair(contactPair);
+            _commands.AddAndExecute(comm);
+        }
+        public void HideContactPairsCommand(string[] contactPairNames)
+        {
+            Commands.CHideContactPairs comm = new Commands.CHideContactPairs(contactPairNames);
+            _commands.AddAndExecute(comm);
+        }
+        public void ShowContactPairsCommand(string[] contactPairNames)
+        {
+            Commands.CShowContactPairs comm = new Commands.CShowContactPairs(contactPairNames);
+            _commands.AddAndExecute(comm);
+        }
+        public void ReplaceContactPairCommand(string oldContactPairName, ContactPair newContactPair)
+        {
+            Commands.CReplaceContactPair comm = new Commands.CReplaceContactPair(oldContactPairName, newContactPair);
+            _commands.AddAndExecute(comm);
+        }
+        public void RemoveContactPairsCommand(string[] contactPairNames)
+        {
+            Commands.CRemoveContactPairs comm = new Commands.CRemoveContactPairs(contactPairNames);
+            _commands.AddAndExecute(comm);
+        }
+
+        //******************************************************************************************
+
+        public string[] GetContactPairNames()
+        {
+            return _model.ContactPairs.Keys.ToArray();
+        }
+        public void AddContactPair(ContactPair contactPair)
+        {
+            ConvertSelectionBasedContactPair(contactPair);
+            //
+            _model.ContactPairs.Add(contactPair.Name, contactPair);
+            //
+            _form.AddTreeNode(ViewGeometryModelResults.Model, contactPair, null);
+            //
+            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+        }
+        public ContactPair GetContactPair(string contactPairName)
+        {
+            return _model.ContactPairs[contactPairName];
+        }
+        public ContactPair[] GetAllContactPairs()
+        {
+            return _model.ContactPairs.Values.ToArray();
+        }
+        public void HideContactPairs(string[] contactPairNames)
+        {
+            foreach (var name in contactPairNames)
+            {
+                _model.ContactPairs[name].Visible = false;
+                _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.ContactPairs[name], null);
+            }
+            //
+            Update(UpdateType.RedrawSymbols);
+        }
+        public void ShowContactPairs(string[] contactPairNames)
+        {
+            foreach (var name in contactPairNames)
+            {
+                _model.ContactPairs[name].Visible = true;
+                _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.ContactPairs[name], null);
+            }
+            //
+            Update(UpdateType.RedrawSymbols);
+        }
+        public void ReplaceContactPair(string oldContactPairName, ContactPair contactPair)
+        {
+            DeleteSelectionBasedContactPairSets(oldContactPairName);
+            ConvertSelectionBasedContactPair(contactPair);
+            //
+            _model.ContactPairs.Replace(oldContactPairName, contactPair.Name, contactPair);
+            //
+            _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldContactPairName, contactPair, null);
+            //
+            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+        }
+        public void ActivateDeactivateContactPair(string contactPairName, bool active)
+        {
+            ContactPair contactPair = _model.ContactPairs[contactPairName];
+            contactPair.Active = active;
+            //
+            _form.UpdateTreeNode(ViewGeometryModelResults.Model, contactPairName, contactPair, null);
+            //
+            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+        }
+        public void RemoveContactPairs(string[] contactPairNames)
+        {
+            foreach (var name in contactPairNames)
+            {
+                DeleteSelectionBasedContactPairSets(name);
+                _model.ContactPairs.Remove(name);
+                _form.RemoveTreeNode<ContactPair>(ViewGeometryModelResults.Model, name, null);
+            }
+            //
+            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+        }
+        //
+        private void ConvertSelectionBasedContactPair(ContactPair contactPair)
+        {
+            // Create a named set and convert a selection to a named set
+            string name;
+            // Master Surface
+            if (contactPair.MasterRegionType == RegionTypeEnum.Selection)
+            {
+                name = FeMesh.GetNextFreeSelectionName(_model.Mesh.Surfaces) + contactPair.Name + "_Master";
+                FeSurface surface = new FeSurface(name, contactPair.MasterCreationIds, contactPair.MasterCreationData.DeepClone());
+                surface.Internal = true;
+                AddSurface(surface);
+                //
+                contactPair.MasterRegionName = name;
+                contactPair.MasterRegionType = RegionTypeEnum.SurfaceName;
+            }
+            // Clear the creation data if not used
+            else
+            {
+                contactPair.MasterCreationData = null;
+                contactPair.MasterCreationIds = null;
+            }
+            // Slave Surface
+            if (contactPair.SlaveRegionType == RegionTypeEnum.Selection)
+            {
+                name = FeMesh.GetNextFreeSelectionName(_model.Mesh.Surfaces) + contactPair.Name + "_Slave";
+                FeSurface surface = new FeSurface(name, contactPair.SlaveCreationIds, contactPair.SlaveCreationData.DeepClone());
+                surface.Internal = true;
+                AddSurface(surface);
+                //
+                contactPair.SlaveRegionName = name;
+                contactPair.SlaveRegionType = RegionTypeEnum.SurfaceName;
+            }
+            // Clear the creation data if not used
+            else
+            {
+                contactPair.SlaveCreationData = null;
+                contactPair.SlaveCreationIds = null;
+            }
+         
+        }
+        private void DeleteSelectionBasedContactPairSets(string oldContactPairName)
+        {
+            // Delete previously created sets
+            ContactPair contactPair = GetContactPair(oldContactPairName);
+            if (contactPair.MasterCreationData != null && contactPair.MasterRegionName != null)
+                RemoveSurfaces(new string[] { contactPair.MasterRegionName }, false);
+            if (contactPair.SlaveCreationData != null && contactPair.SlaveRegionName != null)
+                RemoveSurfaces(new string[] { contactPair.SlaveRegionName }, false);
         }
 
         #endregion #################################################################################################################
@@ -4407,6 +4563,10 @@ namespace PrePoMax
             else if (item is Constraint co)
             {
                 ActivateDeactivateConstraint(co.Name, activate);
+            }
+            else if (item is ContactPair cp)
+            {
+                ActivateDeactivateContactPair(cp.Name, activate);
             }
             else if (item is Step st)
             {

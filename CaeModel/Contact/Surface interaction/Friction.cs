@@ -12,6 +12,7 @@ namespace CaeModel
     {
         // Variables                                                                                                                
         private static string _positive = "The value must be larger than 0.";
+        //
         private double _coefficient;
         private double _stikSlope;
 

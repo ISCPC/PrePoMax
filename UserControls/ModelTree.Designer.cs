@@ -29,7 +29,6 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ModelTree));
             System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("Solid-Part-1");
             System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("Solid-Part-2");
             System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("Solid-Part-4");
@@ -65,7 +64,7 @@
             System.Windows.Forms.TreeNode treeNode19 = new System.Windows.Forms.TreeNode("Sections");
             System.Windows.Forms.TreeNode treeNode20 = new System.Windows.Forms.TreeNode("Constraints");
             System.Windows.Forms.TreeNode treeNode21 = new System.Windows.Forms.TreeNode("Surface interactions");
-            System.Windows.Forms.TreeNode treeNode22 = new System.Windows.Forms.TreeNode("Surface pairs");
+            System.Windows.Forms.TreeNode treeNode22 = new System.Windows.Forms.TreeNode("Contact pairs");
             System.Windows.Forms.TreeNode treeNode23 = new System.Windows.Forms.TreeNode("Contact", new System.Windows.Forms.TreeNode[] {
             treeNode21,
             treeNode22});
@@ -86,6 +85,7 @@
             System.Windows.Forms.TreeNode treeNode31 = new System.Windows.Forms.TreeNode("Results", new System.Windows.Forms.TreeNode[] {
             treeNode29,
             treeNode30});
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ModelTree));
             this.cmsTree = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.tsmiCreate = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEdit = new System.Windows.Forms.ToolStripMenuItem();
@@ -104,15 +104,9 @@
             this.tsmiSpaceConvertToPart = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiConvertToPart = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSpaceHideShow = new System.Windows.Forms.ToolStripSeparator();
-            this.tsmiHide = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiShow = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiShowOnly = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSetTransparency = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSpaceColorContours = new System.Windows.Forms.ToolStripSeparator();
-            this.tsmiColorContoursOff = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiColorContoursOn = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSpaceMaterialLibrary = new System.Windows.Forms.ToolStripSeparator();
-            this.tsmiMaterialLibrary = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSpaceAnalysis = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiRun = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiMonitor = new System.Windows.Forms.ToolStripMenuItem();
@@ -120,7 +114,6 @@
             this.tsmiKill = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSpaceActive = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiActivate = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiDeactivate = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSpaceExpandColapse = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiExpandAll = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiCollapseAll = new System.Windows.Forms.ToolStripMenuItem();
@@ -130,11 +123,18 @@
             this.ilStatusIcons = new System.Windows.Forms.ImageList(this.components);
             this.tcGeometryModelResults = new System.Windows.Forms.TabControl();
             this.tpGeometry = new System.Windows.Forms.TabPage();
-            this.cltvGeometry = new UserControls.CodersLabTreeView();
             this.tpModel = new System.Windows.Forms.TabPage();
-            this.cltvModel = new UserControls.CodersLabTreeView();
             this.tpResults = new System.Windows.Forms.TabPage();
+            this.cltvGeometry = new UserControls.CodersLabTreeView();
+            this.cltvModel = new UserControls.CodersLabTreeView();
             this.cltvResults = new UserControls.CodersLabTreeView();
+            this.tsmiHide = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiShow = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiShowOnly = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiColorContoursOff = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiColorContoursOn = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiMaterialLibrary = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiDeactivate = new System.Windows.Forms.ToolStripMenuItem();
             this.cmsTree.SuspendLayout();
             this.tcGeometryModelResults.SuspendLayout();
             this.tpGeometry.SuspendLayout();
@@ -292,30 +292,6 @@
             this.tsmiSpaceHideShow.Name = "tsmiSpaceHideShow";
             this.tsmiSpaceHideShow.Size = new System.Drawing.Size(204, 6);
             // 
-            // tsmiHide
-            // 
-            this.tsmiHide.Image = ((System.Drawing.Image)(resources.GetObject("tsmiHide.Image")));
-            this.tsmiHide.Name = "tsmiHide";
-            this.tsmiHide.Size = new System.Drawing.Size(207, 22);
-            this.tsmiHide.Text = "Hide";
-            this.tsmiHide.Click += new System.EventHandler(this.tsmiHideShow_Click);
-            // 
-            // tsmiShow
-            // 
-            this.tsmiShow.Image = global::UserControls.Properties.Resources.Show;
-            this.tsmiShow.Name = "tsmiShow";
-            this.tsmiShow.Size = new System.Drawing.Size(207, 22);
-            this.tsmiShow.Text = "Show";
-            this.tsmiShow.Click += new System.EventHandler(this.tsmiHideShow_Click);
-            // 
-            // tsmiShowOnly
-            // 
-            this.tsmiShowOnly.Image = global::UserControls.Properties.Resources.Show;
-            this.tsmiShowOnly.Name = "tsmiShowOnly";
-            this.tsmiShowOnly.Size = new System.Drawing.Size(207, 22);
-            this.tsmiShowOnly.Text = "Show only";
-            this.tsmiShowOnly.Click += new System.EventHandler(this.tsmiHideShow_Click);
-            // 
             // tsmiSetTransparency
             // 
             this.tsmiSetTransparency.Name = "tsmiSetTransparency";
@@ -328,34 +304,10 @@
             this.tsmiSpaceColorContours.Name = "tsmiSpaceColorContours";
             this.tsmiSpaceColorContours.Size = new System.Drawing.Size(204, 6);
             // 
-            // tsmiColorContoursOff
-            // 
-            this.tsmiColorContoursOff.Image = global::UserControls.Properties.Resources.Deformed;
-            this.tsmiColorContoursOff.Name = "tsmiColorContoursOff";
-            this.tsmiColorContoursOff.Size = new System.Drawing.Size(207, 22);
-            this.tsmiColorContoursOff.Text = "Color contours off";
-            this.tsmiColorContoursOff.Click += new System.EventHandler(this.tsmiResultColorContoutsVisibility_Click);
-            // 
-            // tsmiColorContoursOn
-            // 
-            this.tsmiColorContoursOn.Image = global::UserControls.Properties.Resources.Color_contours;
-            this.tsmiColorContoursOn.Name = "tsmiColorContoursOn";
-            this.tsmiColorContoursOn.Size = new System.Drawing.Size(207, 22);
-            this.tsmiColorContoursOn.Text = "Color contours on";
-            this.tsmiColorContoursOn.Click += new System.EventHandler(this.tsmiResultColorContoutsVisibility_Click);
-            // 
             // tsmiSpaceMaterialLibrary
             // 
             this.tsmiSpaceMaterialLibrary.Name = "tsmiSpaceMaterialLibrary";
             this.tsmiSpaceMaterialLibrary.Size = new System.Drawing.Size(204, 6);
-            // 
-            // tsmiMaterialLibrary
-            // 
-            this.tsmiMaterialLibrary.Image = global::UserControls.Properties.Resources.Library;
-            this.tsmiMaterialLibrary.Name = "tsmiMaterialLibrary";
-            this.tsmiMaterialLibrary.Size = new System.Drawing.Size(207, 22);
-            this.tsmiMaterialLibrary.Text = "Material library";
-            this.tsmiMaterialLibrary.Click += new System.EventHandler(this.tsmiMaterialLibrary_Click);
             // 
             // tsmiSpaceAnalysis
             // 
@@ -401,14 +353,6 @@
             this.tsmiActivate.Size = new System.Drawing.Size(207, 22);
             this.tsmiActivate.Text = "Activate";
             this.tsmiActivate.Click += new System.EventHandler(this.ActivateDeactivate_Click);
-            // 
-            // tsmiDeactivate
-            // 
-            this.tsmiDeactivate.Image = ((System.Drawing.Image)(resources.GetObject("tsmiDeactivate.Image")));
-            this.tsmiDeactivate.Name = "tsmiDeactivate";
-            this.tsmiDeactivate.Size = new System.Drawing.Size(207, 22);
-            this.tsmiDeactivate.Text = "Deactivate";
-            this.tsmiDeactivate.Click += new System.EventHandler(this.ActivateDeactivate_Click);
             // 
             // tsmiSpaceExpandColapse
             // 
@@ -463,7 +407,7 @@
             this.ilIcons.Images.SetKeyName(15, "Constraints.ico");
             this.ilIcons.Images.SetKeyName(16, "Contact.ico");
             this.ilIcons.Images.SetKeyName(17, "SurfaceInteraction.ico");
-            this.ilIcons.Images.SetKeyName(18, "SurfacePair.ico");
+            this.ilIcons.Images.SetKeyName(18, "ContactPair.ico");
             this.ilIcons.Images.SetKeyName(19, "Step.ico");
             this.ilIcons.Images.SetKeyName(20, "History_output.ico");
             this.ilIcons.Images.SetKeyName(21, "Field_output.ico");
@@ -508,6 +452,27 @@
             this.tpGeometry.TabIndex = 2;
             this.tpGeometry.Text = "Geometry";
             this.tpGeometry.UseVisualStyleBackColor = true;
+            // 
+            // tpModel
+            // 
+            this.tpModel.Controls.Add(this.cltvModel);
+            this.tpModel.Location = new System.Drawing.Point(4, 24);
+            this.tpModel.Name = "tpModel";
+            this.tpModel.Size = new System.Drawing.Size(231, 470);
+            this.tpModel.TabIndex = 0;
+            this.tpModel.Text = "FE Model";
+            this.tpModel.UseVisualStyleBackColor = true;
+            // 
+            // tpResults
+            // 
+            this.tpResults.Controls.Add(this.cltvResults);
+            this.tpResults.Location = new System.Drawing.Point(4, 24);
+            this.tpResults.Name = "tpResults";
+            this.tpResults.Padding = new System.Windows.Forms.Padding(3);
+            this.tpResults.Size = new System.Drawing.Size(231, 470);
+            this.tpResults.TabIndex = 1;
+            this.tpResults.Text = "Results";
+            this.tpResults.UseVisualStyleBackColor = true;
             // 
             // cltvGeometry
             // 
@@ -586,16 +551,6 @@
             this.cltvGeometry.MouseDown += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseDown);
             this.cltvGeometry.MouseUp += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseUp);
             // 
-            // tpModel
-            // 
-            this.tpModel.Controls.Add(this.cltvModel);
-            this.tpModel.Location = new System.Drawing.Point(4, 24);
-            this.tpModel.Name = "tpModel";
-            this.tpModel.Size = new System.Drawing.Size(231, 470);
-            this.tpModel.TabIndex = 0;
-            this.tpModel.Text = "FE Model";
-            this.tpModel.UseVisualStyleBackColor = true;
-            // 
             // cltvModel
             // 
             this.cltvModel.BackColor = System.Drawing.SystemColors.Window;
@@ -660,11 +615,11 @@
             treeNode21.SelectedImageKey = "SurfaceInteraction.ico";
             treeNode21.Text = "Surface interactions";
             treeNode21.ToolTipText = "Surface interactions";
-            treeNode22.ImageKey = "SurfacePair.ico";
-            treeNode22.Name = "SurfacePairs";
-            treeNode22.SelectedImageKey = "SurfacePair.ico";
-            treeNode22.Text = "Surface pairs";
-            treeNode22.ToolTipText = "Surface pairs";
+            treeNode22.ImageKey = "ContactPair.ico";
+            treeNode22.Name = "Contact pairs";
+            treeNode22.SelectedImageKey = "ContactPair.ico";
+            treeNode22.Text = "Contact pairs";
+            treeNode22.ToolTipText = "Contact pairs";
             treeNode23.ImageKey = "Contact.ico";
             treeNode23.Name = "Contact";
             treeNode23.SelectedImageIndex = 16;
@@ -701,17 +656,6 @@
             this.cltvModel.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseDoubleClick);
             this.cltvModel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseDown);
             this.cltvModel.MouseUp += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseUp);
-            // 
-            // tpResults
-            // 
-            this.tpResults.Controls.Add(this.cltvResults);
-            this.tpResults.Location = new System.Drawing.Point(4, 24);
-            this.tpResults.Name = "tpResults";
-            this.tpResults.Padding = new System.Windows.Forms.Padding(3);
-            this.tpResults.Size = new System.Drawing.Size(231, 470);
-            this.tpResults.TabIndex = 1;
-            this.tpResults.Text = "Results";
-            this.tpResults.UseVisualStyleBackColor = true;
             // 
             // cltvResults
             // 
@@ -770,6 +714,62 @@
             this.cltvResults.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseDoubleClick);
             this.cltvResults.MouseDown += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseDown);
             this.cltvResults.MouseUp += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseUp);
+            // 
+            // tsmiHide
+            // 
+            this.tsmiHide.Image = ((System.Drawing.Image)(resources.GetObject("tsmiHide.Image")));
+            this.tsmiHide.Name = "tsmiHide";
+            this.tsmiHide.Size = new System.Drawing.Size(207, 22);
+            this.tsmiHide.Text = "Hide";
+            this.tsmiHide.Click += new System.EventHandler(this.tsmiHideShow_Click);
+            // 
+            // tsmiShow
+            // 
+            this.tsmiShow.Image = global::UserControls.Properties.Resources.Show;
+            this.tsmiShow.Name = "tsmiShow";
+            this.tsmiShow.Size = new System.Drawing.Size(207, 22);
+            this.tsmiShow.Text = "Show";
+            this.tsmiShow.Click += new System.EventHandler(this.tsmiHideShow_Click);
+            // 
+            // tsmiShowOnly
+            // 
+            this.tsmiShowOnly.Image = global::UserControls.Properties.Resources.Show;
+            this.tsmiShowOnly.Name = "tsmiShowOnly";
+            this.tsmiShowOnly.Size = new System.Drawing.Size(207, 22);
+            this.tsmiShowOnly.Text = "Show only";
+            this.tsmiShowOnly.Click += new System.EventHandler(this.tsmiHideShow_Click);
+            // 
+            // tsmiColorContoursOff
+            // 
+            this.tsmiColorContoursOff.Image = global::UserControls.Properties.Resources.Deformed;
+            this.tsmiColorContoursOff.Name = "tsmiColorContoursOff";
+            this.tsmiColorContoursOff.Size = new System.Drawing.Size(207, 22);
+            this.tsmiColorContoursOff.Text = "Color contours off";
+            this.tsmiColorContoursOff.Click += new System.EventHandler(this.tsmiResultColorContoutsVisibility_Click);
+            // 
+            // tsmiColorContoursOn
+            // 
+            this.tsmiColorContoursOn.Image = global::UserControls.Properties.Resources.Color_contours;
+            this.tsmiColorContoursOn.Name = "tsmiColorContoursOn";
+            this.tsmiColorContoursOn.Size = new System.Drawing.Size(207, 22);
+            this.tsmiColorContoursOn.Text = "Color contours on";
+            this.tsmiColorContoursOn.Click += new System.EventHandler(this.tsmiResultColorContoutsVisibility_Click);
+            // 
+            // tsmiMaterialLibrary
+            // 
+            this.tsmiMaterialLibrary.Image = global::UserControls.Properties.Resources.Library;
+            this.tsmiMaterialLibrary.Name = "tsmiMaterialLibrary";
+            this.tsmiMaterialLibrary.Size = new System.Drawing.Size(207, 22);
+            this.tsmiMaterialLibrary.Text = "Material library";
+            this.tsmiMaterialLibrary.Click += new System.EventHandler(this.tsmiMaterialLibrary_Click);
+            // 
+            // tsmiDeactivate
+            // 
+            this.tsmiDeactivate.Image = ((System.Drawing.Image)(resources.GetObject("tsmiDeactivate.Image")));
+            this.tsmiDeactivate.Name = "tsmiDeactivate";
+            this.tsmiDeactivate.Size = new System.Drawing.Size(207, 22);
+            this.tsmiDeactivate.Text = "Deactivate";
+            this.tsmiDeactivate.Click += new System.EventHandler(this.ActivateDeactivate_Click);
             // 
             // ModelTree
             // 

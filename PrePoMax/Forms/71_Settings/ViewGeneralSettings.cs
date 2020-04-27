@@ -41,22 +41,9 @@ namespace PrePoMax.Settings
         {
             _generalSettings = generalSettings;
             _dctd = ProviderInstaller.Install(this);
-
-            CustomPropertyDescriptor cpd;
-
-            // now lets display Yes/No instead of True/False
-            cpd = _dctd.GetProperty("OpenLastFile");
-            foreach (StandardValueAttribute sva in cpd.StatandardValues)
-            {
-                if ((bool)sva.Value == true) sva.DisplayName = "Yes";
-                else sva.DisplayName = "No";
-            }
-            cpd = _dctd.GetProperty("SaveResultsInPmx");
-            foreach (StandardValueAttribute sva in cpd.StatandardValues)
-            {
-                if ((bool)sva.Value == true) sva.DisplayName = "Yes";
-                else sva.DisplayName = "No";
-            }
+            // Now lets display Yes/No instead of True/False
+            _dctd.RenameBooleanPropertyToYesNo(nameof(OpenLastFile));
+            _dctd.RenameBooleanPropertyToYesNo(nameof(SaveResultsInPmx));
         }
 
         // Methods                                                                                                                  

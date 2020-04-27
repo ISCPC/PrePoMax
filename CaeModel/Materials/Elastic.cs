@@ -12,6 +12,7 @@ namespace CaeModel
     {
         // Variables                                                                                                                
         private static string _positive = "The value must be larger than 0.";
+        //
         private double _youngsModulus;
         private double _poissonsRatio;
 
@@ -19,8 +20,7 @@ namespace CaeModel
         public double YoungsModulus 
         { 
             get { return _youngsModulus; }
-            //set { if (value > 0) _youngsModulus = value; else throw new CaeException(_positive); } 
-            set { _youngsModulus = value; }
+            set { if (value > 0) _youngsModulus = value; else throw new CaeException(_positive); } 
         }
         public double PoissonsRatio
         {
@@ -32,7 +32,7 @@ namespace CaeModel
         // Constructors                                                                                                             
         public Elastic(double youngsModulus, double poissonsRatio)
         {
-            YoungsModulus = youngsModulus;
+            _youngsModulus = youngsModulus;
             PoissonsRatio = poissonsRatio;
         }
 

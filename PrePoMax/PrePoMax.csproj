@@ -140,6 +140,11 @@
     <Compile Include="Command\0071_Constraint\CRemoveConstraints.cs" />
     <Compile Include="Command\0071_Constraint\CReplaceConstraint.cs" />
     <Compile Include="Command\0071_Constraint\CShowConstraints.cs" />
+    <Compile Include="Command\0073_ContactPair\CAddContactPair.cs" />
+    <Compile Include="Command\0073_ContactPair\CHideContactPairs.cs" />
+    <Compile Include="Command\0073_ContactPair\CRemoveContactPairs.cs" />
+    <Compile Include="Command\0073_ContactPair\CReplaceContactPair.cs" />
+    <Compile Include="Command\0073_ContactPair\CShowContactPairs.cs" />
     <Compile Include="Command\0081_Step\CAddStep.cs" />
     <Compile Include="Command\0081_Step\CRemoveSteps.cs" />
     <Compile Include="Command\0081_Step\CReplaceStep.cs" />
@@ -227,7 +232,11 @@
     <Compile Include="Forms\34_SurfaceInteraction\FrmSurfaceInteraction.Designer.cs">
       <DependentUpon>FrmSurfaceInteraction.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\34_SurfaceInteraction\StringDefaultDoubleConverter.cs" />
+    <Compile Include="Forms\35_ContactPair\FrmContactPair.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\35_ContactPair\ViewContactPair.cs" />
+    <Compile Include="Forms\StringDefaultDoubleConverter.cs" />
     <Compile Include="Forms\34_SurfaceInteraction\ViewFriction.cs" />
     <Compile Include="Forms\34_SurfaceInteraction\ViewSurfaceInteractionProperty.cs" />
     <Compile Include="Forms\34_SurfaceInteraction\ViewSurfaceBehavior.cs" />
@@ -453,6 +462,9 @@
     <EmbeddedResource Include="Forms\34_SurfaceInteraction\FrmSurfaceInteraction.resx">
       <DependentUpon>FrmSurfaceInteraction.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Forms\35_ContactPair\FrmContactPair.resx">
+      <DependentUpon>FrmContactPair.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\42_HistoryOutput\FrmHistoryOutput.resx">
       <DependentUpon>FrmHistoryOutput.cs</DependentUpon>
     </EmbeddedResource>
@@ -618,6 +630,7 @@
     <None Include="Icons\Contact\ContactInteraction.ico" />
     <None Include="Icons\Contact\SurfaceInteraction.ico" />
     <None Include="Icons\Material\Remove.png" />
+    <None Include="Icons\Contact\ContactPair.ico" />
     <Content Include="main.ico" />
   </ItemGroup>
   <ItemGroup>

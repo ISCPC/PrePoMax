@@ -34,9 +34,9 @@ namespace PrePoMax
                 if (_preTenLoad.Type == CaeModel.PreTensionLoadType.Force && double.IsInfinity(_preTenLoad.Magnitude))
                     _preTenLoad.Magnitude = 0;
                 //
-                cpd = base.DynamicCustomTypeDescriptor.GetProperty("ForceMagnitude");
+                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(ForceMagnitude));
                 cpd.SetIsBrowsable(_preTenLoad.Type == CaeModel.PreTensionLoadType.Force);
-                cpd = base.DynamicCustomTypeDescriptor.GetProperty("DisplacementMagnitude");
+                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(DisplacementMagnitude));
                 cpd.SetIsBrowsable(_preTenLoad.Type == CaeModel.PreTensionLoadType.Displacement);
             }
         }
@@ -58,11 +58,11 @@ namespace PrePoMax
             {
                 _preTenLoad.AutoComputeDirection = value;
                 //
-                cpd = base.DynamicCustomTypeDescriptor.GetProperty("X");
+                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(X));
                 cpd.SetIsBrowsable(!_preTenLoad.AutoComputeDirection);
-                cpd = base.DynamicCustomTypeDescriptor.GetProperty("Y");
+                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(Y));
                 cpd.SetIsBrowsable(!_preTenLoad.AutoComputeDirection);
-                cpd = base.DynamicCustomTypeDescriptor.GetProperty("Z");
+                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(Z));
                 cpd.SetIsBrowsable(!_preTenLoad.AutoComputeDirection);
             }
         }

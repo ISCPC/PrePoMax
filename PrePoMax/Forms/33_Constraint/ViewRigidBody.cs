@@ -87,7 +87,6 @@ namespace PrePoMax
             slaveRegionTypeListItemsPairs.Add(RegionTypeEnum.NodeSetName, nodeSetNames);
             slaveRegionTypeListItemsPairs.Add(RegionTypeEnum.SurfaceName, surfaceNames);
             //
-           
             base.PopululateDropDownLists(masterRegionTypeListItemsPairs, slaveRegionTypeListItemsPairs);
         }
         public override void UpdateRegionVisibility()
@@ -97,7 +96,7 @@ namespace PrePoMax
             DynamicTypeDescriptor.CustomPropertyDescriptor cpd;
             if (base.SlaveRegionType == RegionTypeEnum.Selection.ToFriendlyString())
             {
-                cpd = base.DynamicCustomTypeDescriptor.GetProperty(() => SelectionHidden);
+                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(SelectionHidden));
                 cpd.SetIsBrowsable(false);
             }
         }

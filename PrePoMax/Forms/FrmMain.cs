@@ -67,6 +67,7 @@ namespace PrePoMax
         private FrmSection _frmSection;
         private FrmConstraint _frmConstraint;
         private FrmSurfaceInteraction _frmSurfaceInteraction;
+        private FrmContactPair _frmContactPair;
         private FrmStep _frmStep;
         private FrmHistoryOutput _frmHistoryOutput;
         private FrmFieldOutput _frmFieldOutput;
@@ -273,6 +274,9 @@ namespace PrePoMax
                 //
                 _frmSurfaceInteraction = new FrmSurfaceInteraction(_controller);
                 AddFormToAllForms(_frmSurfaceInteraction);
+                //
+                _frmContactPair = new FrmContactPair(_controller);
+                AddFormToAllForms(_frmContactPair);
                 //
                 _frmStep = new FrmStep(_controller);
                 AddFormToAllForms(_frmStep);
@@ -2744,7 +2748,7 @@ namespace PrePoMax
 
         #endregion  ################################################################################################################
 
-        #region Contact interaction menu  ##########################################################################################
+        #region Surface interaction menu  ##########################################################################################
 
         private void tsmiCreateSurfaceInteraction_Click(object sender, EventArgs e)
         {
@@ -2797,9 +2801,107 @@ namespace PrePoMax
             }
         }
 
-        
+
 
         #endregion  ################################################################################################################
+
+        private void tsmiCreateContactPair_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (_controller.Model.Mesh == null) return;
+                // Data editor
+                ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
+                ItemSetDataEditor.ParentForm = _frmContactPair;
+                _frmSelectItemSet.SetOnlyGeometrySelection(false);
+                ShowForm(_frmContactPair, "Create Contact Pair", null);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+
+        private void tsmiEditContactPair_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectOneEntity("Contact pairs", _controller.GetAllContactPairs(), EditContactPair);
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
+
+        private void tsmiHideContactPair_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Contact pairs", _controller.GetAllContactPairs(), HideContactPairs);
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
+
+        private void tsmiShowContactPair_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Contact pairs", _controller.GetAllContactPairs(), ShowContactPairs);
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
+
+        private void tsmiDeleteContactPair_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Contact pairs", _controller.GetAllContactPairs(), DeleteContactPairs);
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
+
+        private void EditContactPair(string contactPairName)
+        {
+            // Data editor
+            ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
+            ItemSetDataEditor.ParentForm = _frmContactPair;
+            _frmSelectItemSet.SetOnlyGeometrySelection(false);
+            ShowForm(_frmContactPair, "Edit Contact Pair", contactPairName);
+        }
+        private void HideContactPairs(string[] contactPairNames)
+        {
+            _controller.HideContactPairsCommand(contactPairNames);
+        }
+        private void ShowContactPairs(string[] contactPairNames)
+        {
+            _controller.ShowContactPairsCommand(contactPairNames);
+        }
+        private void ShowOnlyContactPairs(string[] contactPairNames)
+        {
+            HashSet<string> allNames = new HashSet<string>(_controller.Model.ContactPairs.Keys);
+            allNames.ExceptWith(contactPairNames);
+            _controller.ShowContactPairsCommand(contactPairNames);
+            _controller.HideContactPairsCommand(allNames.ToArray());
+        }
+        private void DeleteContactPairs(string[] contactPairNames)
+        {
+            if (MessageBox.Show("OK to delete selected contact pairs?" + Environment.NewLine + contactPairNames.ToRows(),
+                                Globals.ProgramName,
+                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+            {
+                _controller.RemoveContactPairsCommand(contactPairNames);
+            }
+        }
 
         #region Step menu  #########################################################################################################
 
@@ -3745,6 +3847,7 @@ namespace PrePoMax
             if (_frmSurface != null && _frmSurface.Visible) _frmSurface.SelectionChanged(ids);
             if (_frmSection != null && _frmSection.Visible) _frmSection.SelectionChanged(ids);
             if (_frmConstraint != null && _frmConstraint.Visible) _frmConstraint.SelectionChanged(ids);
+            if (_frmContactPair != null && _frmContactPair.Visible) _frmContactPair.SelectionChanged(ids);
             //
             if (_frmHistoryOutput != null && _frmHistoryOutput.Visible) _frmHistoryOutput.SelectionChanged(ids);
             if (_frmBoundaryCondition != null && _frmBoundaryCondition.Visible) _frmBoundaryCondition.SelectionChanged(ids);
@@ -4952,6 +5055,6 @@ namespace PrePoMax
             {}
         }
 
-        
+       
     }
 }
