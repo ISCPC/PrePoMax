@@ -11,7 +11,7 @@ namespace CaeModel
     [Flags]
     public enum ElementFieldVariable
     {
-        // must start at 1 for the UI to work
+        // Must start at 1 for the UI to work
         E = 1,
         PEEQ = 2,
         S = 4,

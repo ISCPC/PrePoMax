@@ -138,6 +138,10 @@ namespace FileInOut.Output
             title = new CalTitle("Surface interactions", "");
             keywords.Add(title);
             AppendSurfaceInteractions(model, title);
+            // Contact pairs
+            title = new CalTitle("Contact pairs", "");
+            keywords.Add(title);
+            AppendContactPairs(model, title);
             // Steps
             title = new CalTitle("Steps", "");
             keywords.Add(title);
@@ -499,6 +503,21 @@ namespace FileInOut.Output
                 else parent.AddKeyword(new CalDeactivated(entry.Value.Name));
             }
         }
+        static private void AppendContactPairs(FeModel model, CalculixKeyword parent)
+        {
+            if (model.Mesh != null)
+            {
+                foreach (var entry in model.ContactPairs)
+                {
+                    if (entry.Value.Active)
+                    {
+                        CalContactPair calContactPair = new CalContactPair(entry.Value);
+                        parent.AddKeyword(calContactPair);
+                    }
+                    else parent.AddKeyword(new CalDeactivated(entry.Value.Name));
+                }
+            }
+        }
         //
         static private void AppendSteps(FeModel model, Dictionary<string, int[]> referencePointsNodeIds, CalculixKeyword parent)
         {
@@ -700,25 +719,24 @@ namespace FileInOut.Output
         }
         static private void AppendFieldOutput(FeModel model, FieldOutput fieldOutput, CalculixKeyword parent)
         {
-            if (fieldOutput is NodalFieldOutput)
+            if (fieldOutput is NodalFieldOutput nfo)
             {
-                CalNodeFile nodeFile = new CalNodeFile(fieldOutput as NodalFieldOutput);
+                CalNodeFile nodeFile = new CalNodeFile(nfo);
                 parent.AddKeyword(nodeFile);
             }
-            else if (fieldOutput is ElementFieldOutput)
+            else if (fieldOutput is ElementFieldOutput efo)
             {
-                CalElFile elFile = new CalElFile(fieldOutput as ElementFieldOutput);
+                CalElFile elFile = new CalElFile(efo);
                 parent.AddKeyword(elFile);
+            }
+            else if (fieldOutput is ContactFieldOutput cfo)
+            {
+                CalContactFile conFile = new CalContactFile(cfo);
+                parent.AddKeyword(conFile);
             }
             else throw new NotImplementedException();
         }
-
-        
-
-
-
-
-
+        //
         static void AppendTitle(StringBuilder sb, string title)
         {
             sb.AppendLine("************************************************************");

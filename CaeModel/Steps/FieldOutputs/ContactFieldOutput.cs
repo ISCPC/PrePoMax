@@ -10,26 +10,28 @@ namespace CaeModel
 {
     [Serializable]
     [Flags]
-    public enum NodalFieldVariable
+    public enum ContactFieldVariable
     {
-        // Must start at 1 for the UI to work
-        RF = 1,
-        U = 2
+        // must start at 1 for the UI to work
+        CDIS = 1,
+        CSTR = 2,
+        //CELS = 4,
+        PCON = 8
     }
 
     [Serializable]
-    public class NodalFieldOutput : FieldOutput
+    public class ContactFieldOutput : FieldOutput
     {
         // Variables                                                                                                                
-        private NodalFieldVariable _variables;
+        private ContactFieldVariable _variables;
 
 
         // Properties                                                                                                               
-        public NodalFieldVariable Variables { get { return _variables; } set { _variables = value; } }
+        public ContactFieldVariable Variables { get { return _variables; } set { _variables = value; } }
      
 
         // Constructors                                                                                                             
-        public NodalFieldOutput(string name, NodalFieldVariable variables)
+        public ContactFieldOutput(string name, ContactFieldVariable variables)
             : base(name) 
         {
             _variables |= variables;

@@ -66,10 +66,12 @@
     <Compile Include="Contact\Surface interaction\SurfaceInteractionProperty.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalPreTensionSection.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalDeactivated.cs" />
+    <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalContactPair.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\SurfaceInteraction\CalFriction.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\SurfaceInteraction\CalSurfaceBehavior.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\SurfaceInteraction\CalSurfaceInteraction.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\BC\CalSubmodelBC.cs" />
+    <Compile Include="FileInOut\Output\Calculix\Keywords\Step\FieldOutput\CalContactFile.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\HistoryOutput\CalElPrint.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\HistoryOutput\CalNodePrint.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalSubmodel.cs" />
@@ -82,6 +84,7 @@
     <Compile Include="Constraints\Constraint.cs" />
     <Compile Include="FeModel.cs" />
     <Compile Include="Steps\FieldOutputs\ElementFieldOutput.cs" />
+    <Compile Include="Steps\FieldOutputs\ContactFieldOutput.cs" />
     <Compile Include="Steps\FieldOutputs\NodalFieldOutput.cs" />
     <Compile Include="Steps\FieldOutputs\FieldOutput.cs" />
     <Compile Include="FileInOut\Common\InpFeDescriptor.cs" />
@@ -129,6 +132,7 @@
     <Compile Include="GeometricRegionType.cs" />
     <Compile Include="Steps\HistoryOutputs\HistoryOutput.cs" />
     <Compile Include="Steps\HistoryOutputs\ElementHistoryOutput.cs" />
+    <Compile Include="Steps\HistoryOutputs\ContactHistoryOutput.cs" />
     <Compile Include="Steps\HistoryOutputs\NodalHistoryOutput.cs" />
     <Compile Include="Steps\Loads\CentrifLoad.cs" />
     <Compile Include="Steps\Loads\GravityLoad.cs" />

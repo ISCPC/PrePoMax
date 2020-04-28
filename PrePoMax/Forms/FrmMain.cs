@@ -549,6 +549,7 @@ namespace PrePoMax
                 else if (nodeName == "Sections") tsmiCreateSection_Click(null, null);
                 else if (nodeName == "Constraints") tsmiCreateConstraint_Click(null, null);
                 else if (nodeName == "Surface interactions") tsmiCreateSurfaceInteraction_Click(null, null);
+                else if (nodeName == "Contact pairs") tsmiCreateContactPair_Click(null, null);
                 else if (nodeName == "Steps") tsmiCreateStep_Click(null, null);
                 else if (nodeName == "History outputs" && stepName != null) CreateHistoryOutput(stepName);
                 else if (nodeName == "Field outputs" && stepName != null) CreateFieldOutput(stepName);
@@ -562,8 +563,8 @@ namespace PrePoMax
             // Geometry
             if (_controller.CurrentView == ViewGeometryModelResults.Geometry)
             {
-                if (namedClass is CaeMesh.GeometryPart) EditGeometryPart((namedClass).Name);
-                else if (namedClass is CaeMesh.FeMeshRefinement) EditMeshRefinement((namedClass).Name);
+                if (namedClass is CaeMesh.GeometryPart) EditGeometryPart(namedClass.Name);
+                else if (namedClass is CaeMesh.FeMeshRefinement) EditMeshRefinement(namedClass.Name);
             }
             // Model
             else if (_controller.CurrentView == ViewGeometryModelResults.Model)
@@ -572,26 +573,27 @@ namespace PrePoMax
                 {
                     if (namedClass.Name == typeof(CaeModel.FeModel).ToString()) tsmiEditModel_Click(null, null);
                 }
-                else if (namedClass is CaeMesh.MeshPart) EditModelPart((namedClass).Name);
-                else if (namedClass is CaeMesh.FeNodeSet) EditNodeSet((namedClass).Name);
-                else if (namedClass is CaeMesh.FeElementSet) EditElementSet((namedClass).Name);
-                else if (namedClass is CaeMesh.FeSurface) EditSurface((namedClass).Name);
-                else if (namedClass is CaeMesh.FeReferencePoint) EditRP((namedClass).Name);
-                else if (namedClass is CaeModel.Material) EditMaterial((namedClass).Name);
-                else if (namedClass is CaeModel.Section) EditSection((namedClass).Name);
-                else if (namedClass is CaeModel.Constraint) EditConstraint((namedClass).Name);
-                else if (namedClass is CaeModel.SurfaceInteraction) EditSurfaceInteraction((namedClass).Name);
-                else if (namedClass is CaeModel.Step) EditStep((namedClass).Name);
-                else if (namedClass is CaeModel.HistoryOutput) EditHistoryOutput(stepName, (namedClass).Name);
-                else if (namedClass is CaeModel.FieldOutput) EditFieldOutput(stepName, (namedClass).Name);
-                else if (namedClass is CaeModel.BoundaryCondition) EditBoundaryCondition(stepName, (namedClass).Name);
-                else if (namedClass is CaeModel.Load) EditLoad(stepName, (namedClass).Name);
-                else if (namedClass is CaeJob.AnalysisJob) EditAnalysis((namedClass).Name);
+                else if (namedClass is CaeMesh.MeshPart) EditModelPart(namedClass.Name);
+                else if (namedClass is CaeMesh.FeNodeSet) EditNodeSet(namedClass.Name);
+                else if (namedClass is CaeMesh.FeElementSet) EditElementSet(namedClass.Name);
+                else if (namedClass is CaeMesh.FeSurface) EditSurface(namedClass.Name);
+                else if (namedClass is CaeMesh.FeReferencePoint) EditRP(namedClass.Name);
+                else if (namedClass is CaeModel.Material) EditMaterial(namedClass.Name);
+                else if (namedClass is CaeModel.Section) EditSection(namedClass.Name);
+                else if (namedClass is CaeModel.Constraint) EditConstraint(namedClass.Name);
+                else if (namedClass is CaeModel.SurfaceInteraction) EditSurfaceInteraction(namedClass.Name);
+                else if (namedClass is CaeModel.ContactPair) EditContactPair(namedClass.Name);
+                else if (namedClass is CaeModel.Step) EditStep(namedClass.Name);
+                else if (namedClass is CaeModel.HistoryOutput) EditHistoryOutput(stepName, namedClass.Name);
+                else if (namedClass is CaeModel.FieldOutput) EditFieldOutput(stepName, namedClass.Name);
+                else if (namedClass is CaeModel.BoundaryCondition) EditBoundaryCondition(stepName, namedClass.Name);
+                else if (namedClass is CaeModel.Load) EditLoad(stepName, namedClass.Name);
+                else if (namedClass is CaeJob.AnalysisJob) EditAnalysis(namedClass.Name);
             }
             // Results
             else if (_controller.CurrentView == ViewGeometryModelResults.Results)
             {
-                if (namedClass is CaeMesh.ResultPart || namedClass is CaeMesh.GeometryPart) EditResultPart((namedClass).Name);
+                if (namedClass is CaeMesh.ResultPart || namedClass is CaeMesh.GeometryPart) EditResultPart(namedClass.Name);
                 else if (namedClass is CaeResults.HistoryResultData hd) ShowHistoryOutput(hd);
             }
         }
@@ -606,6 +608,7 @@ namespace PrePoMax
             {
                 HideShowItems<CaeMesh.MeshPart>(items, operation, HideModelParts, ShowModelParts, ShowOnlyModelParts);
                 HideShowItems<CaeModel.Constraint>(items, operation, HideConstraints, ShowConstraints, ShowOnlyConstraints);
+                HideShowItems<CaeModel.ContactPair>(items, operation, HideContactPairs, ShowContactPairs, ShowOnlyContactPairs);
                 HideShowStepItems<CaeModel.BoundaryCondition>(items, operation, stepNames, HideBoundaryConditions, 
                                                               ShowBoundaryConditions, ShowOnlyBoundaryConditions);
                 HideShowStepItems<CaeModel.Load>(items, operation, stepNames, HideLoads, ShowLoads, ShowOnlyLoads);
@@ -655,6 +658,7 @@ namespace PrePoMax
                 DeleteItems<CaeModel.Section>(items, DeleteSections);
                 DeleteItems<CaeModel.Constraint>(items, DeleteConstraints);
                 DeleteItems<CaeModel.SurfaceInteraction>(items, DeleteSurfaceInteraction);
+                DeleteItems<CaeModel.ContactPair>(items, DeleteContactPairs);
                 //
                 DeleteStepItems<CaeModel.HistoryOutput>(items, stepNames, DeleteHistoryOutputs);
                 DeleteStepItems<CaeModel.FieldOutput>(items, stepNames, DeleteFieldOutputs);

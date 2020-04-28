@@ -3,36 +3,41 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CaeMesh;
 using System.ComponentModel;
+using CaeGlobals;
 
 namespace CaeModel
 {
     [Serializable]
     [Flags]
-    public enum NodalFieldVariable
+    public enum ContactHistoryVariable
     {
         // Must start at 1 for the UI to work
-        RF = 1,
-        U = 2
+        CDIS = 1,
+        CSTR = 2,
+        CELS = 4,
+        CNUM = 8,
+        CF = 16,
+        CFN = 32,
+        CFS = 64
     }
 
     [Serializable]
-    public class NodalFieldOutput : FieldOutput
+    public class ContactHistoryOutput : HistoryOutput
     {
         // Variables                                                                                                                
-        private NodalFieldVariable _variables;
+        private ContactHistoryVariable _variables;
 
 
         // Properties                                                                                                               
-        public NodalFieldVariable Variables { get { return _variables; } set { _variables = value; } }
-     
+        public ContactHistoryVariable Variables { get { return _variables; } set { _variables = value; } }
+
 
         // Constructors                                                                                                             
-        public NodalFieldOutput(string name, NodalFieldVariable variables)
-            : base(name) 
+        public ContactHistoryOutput(string name, ContactHistoryVariable variables, string regionName, RegionTypeEnum regionType)
+            : base(name, regionName, regionType)
         {
-            _variables |= variables;
+            _variables = variables;
         }
 
 

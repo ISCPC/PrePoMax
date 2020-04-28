@@ -20,21 +20,32 @@ namespace CaeResults
         private static readonly string nameMechanicalStrains = "Mechanical strains";
         private static readonly string nameEquivalentPlasticStrains = "Equivalent plastic strain";
         private static readonly string nameInternalEnergyDensity = "Internal energy density";
+        // Contact
+        private static readonly string nameRelativeContactDisplacement = "Relative contact displacement";
+        private static readonly string nameContactStress = "Contact stress";
+        private static readonly string nameContactPrintEnergy = "Contact print energy";
+        private static readonly string nameContactStatistics = "Statistics for slave set";
+        private static readonly string nameTotalSurfaceForce = "Total surface force";
+        private static readonly string nameMomentAboutOrigin = "Moment about origin";
+        private static readonly string nameCenterOfGravity = "Center of gravity";
+        private static readonly string nameMeanSurfaceNormal = "Mean surface normal";
 
+
+        //
         private static readonly string nameVolume = "Volume";
         private static readonly string nameTotalVolume = "Total volume";
         private static readonly string nameInternalEnergy = "Internal energy";
         private static readonly string nameTotalInternalEnergy = "Total internal energy";
         private static readonly string nameError = "Error";
-
+        //
         private static readonly string[] spaceSplitter = new string[] { " " };
         private static readonly string[] commaSplitter = new string[] { "," };
         private static readonly string[] underscoreSplitter = new string[] { "_" };
         private static readonly string[] parenthesesSplitter = new string[] { "(", ")" };
         private static readonly string[] componentsSplitter = new string[] { " ", "," };
         private static readonly string[] dataSplitter = new string[] { " ", "for set", "and time" };
-
-        private static readonly Dictionary<string, string> compMap = new Dictionary<string, string>()
+        //
+        private static readonly Dictionary<string, string> compMapRP = new Dictionary<string, string>()
         {
             { "Id", "Id" },
             //
@@ -67,7 +78,8 @@ namespace CaeResults
                 }
 
                 List<string> dataSetNames = new List<string>();
-                dataSetNames.Add(nameDisplacements);
+                // Nodal
+                dataSetNames.Add(nameDisplacements);                
                 dataSetNames.Add(nameForces);
                 dataSetNames.Add(nameTotalForce);
                 dataSetNames.Add(nameStresses);
@@ -75,10 +87,21 @@ namespace CaeResults
                 dataSetNames.Add(nameMechanicalStrains);
                 dataSetNames.Add(nameEquivalentPlasticStrains);
                 dataSetNames.Add(nameInternalEnergyDensity);
-                dataSetNames.Add(nameInternalEnergy);
-                dataSetNames.Add(nameTotalInternalEnergy);
+                // Contact
+                dataSetNames.Add(nameRelativeContactDisplacement);
+                dataSetNames.Add(nameContactStress);
+                dataSetNames.Add(nameContactPrintEnergy);
+                dataSetNames.Add(nameContactStatistics);
+                dataSetNames.Add(nameTotalSurfaceForce);
+                dataSetNames.Add(nameMomentAboutOrigin);
+                dataSetNames.Add(nameCenterOfGravity);
+                dataSetNames.Add(nameMeanSurfaceNormal);
+                // element
                 dataSetNames.Add(nameVolume);
                 dataSetNames.Add(nameTotalVolume);
+                dataSetNames.Add(nameInternalEnergy);
+                dataSetNames.Add(nameTotalInternalEnergy);
+                
 
                 List<string[]> dataSetLinesList = SplitToDataSetLinesList(dataSetNames, lines.ToArray());
                 Repair(dataSetLinesList, dataSetNames);
@@ -109,42 +132,117 @@ namespace CaeResults
             // stresses (elem, integ.pnt.,sxx,syy,szz,sxy,sxz,syz) for set ELEMENTSET-1 and time  0.1000000E+01
             //         2030   1 -1.824212E-11 -1.000000E-01 -1.062898E-10 -6.614340E-11 -5.298272E-10  3.899325E-10
             //         2030   2 -2.853204E-09 -1.000000E-01 -3.195191E-11  1.074865E-09 -1.638492E-10 -3.539078E-10
-
-            List<string> dataSet = new List<string>();
+            Dictionary<string, HashSet<string>> existingNames = new Dictionary<string, HashSet<string>>();
+            List<string> dataSet;
             List<string[]> dataSets = new List<string[]>();
-
-            bool containsName;
+            //
+            string theName;
             for (int i = 0; i < lines.Length; i++)
             {
-                containsName = false;
+                theName = null;
                 foreach (var name in dataSetNames)
                 {
                     if (lines[i].ToLower().Trim().StartsWith(name.ToLower()))
                     {
-                        containsName = true;
+                        theName = name;
                         break;
                     }
                 }
-                if (containsName)
+                // Contact statistics
+                if (theName == nameContactStatistics)
+                {
+                    dataSet = new List<string>();
+                    for (int j = 0; j <= 8; j++)
+                    {
+                        if (lines[i].Trim().Length != 0) dataSet.Add(lines[i]);
+                        i+=2;
+                    }
+                    List<string[]> repairedSets = RepairContactStatistics(dataSet.ToArray(), ref existingNames);
+                    //
+                    if (repairedSets != null) dataSets.AddRange(repairedSets);
+                }
+                else if (theName != null)
                 {
                     dataSet = new List<string>();
                     dataSet.Add(lines[i]);
                     i++;
-
+                    //
                     while (i < lines.Length && lines[i].Trim().Length == 0) i++;    // skip empty lines
-
+                    //
                     while (i < lines.Length)
                     {
                         if (lines[i].Trim().Length == 0) break;                     // last line is empty
                         else dataSet.Add(lines[i]);
                         i++;
                     }
-
+                    //
                     dataSets.Add(dataSet.ToArray());
                 }
             }
-
+            //
             return dataSets;
+        }
+        static private List<string[]> RepairContactStatistics(string[] lines, ref Dictionary<string, HashSet<string>> existingNames)
+        {
+            //statistics for slave set INTERNAL_SELECTION - 2_CONTACTPAIR - 1_SLAVE, master set INTERNAL_SELECTION - 1_CONTACTPAIR - 1_MASTER and time  0.5000000E+00
+            //total surface force (fx, fy, fz) and moment about the origin (mx, my, mz)
+            //3.821561E+02  1.814803E+02 - 5.224860E+03  4.075417E+05  3.873634E+03  2.996193E+04
+            //center of gravity and mean normal
+            //- 6.862848E+00 - 8.165902E+01  1.040585E+02  0.000000E+00  0.000000E+00  1.000000E+00
+            //moment about the center of gravity(mx, my, mz)
+            //- 2.306952E+02 - 3.552590E+01  9.056343E-01
+            //area, normal force(+ = tension) and shear force(size)
+            //7.729843E+03 - 5.224860E+03  4.230584E+02
+            //
+            string[] dataSet;
+            List<string[]> repairedDataSets = new List<string[]>();
+            //
+            string[] tmp = lines[0].Split(new string[] { "slave set", "master set", "and time"}, 
+                                          StringSplitOptions.RemoveEmptyEntries);
+            string slaveName = RepairSetName(tmp[1].Trim(new char[] { ' ', ','}));
+            string masterName = RepairSetName(tmp[2].Trim());
+            string time = tmp[3].Trim();
+            //
+            if (slaveName.EndsWith(CaeMesh.Globals.SlaveNameSuffix.ToUpper()))
+                slaveName = slaveName.Replace(CaeMesh.Globals.SlaveNameSuffix.ToUpper(), "");
+            if (masterName.EndsWith(CaeMesh.Globals.MasterNameSuffix.ToUpper()))
+                masterName = masterName.Replace(CaeMesh.Globals.MasterNameSuffix.ToUpper(), "");
+            //
+            string name = slaveName == masterName ? slaveName : slaveName + "_" + masterName;
+            //
+            HashSet<string> existingNamesAtTime;
+            if (existingNames.TryGetValue(time, out existingNamesAtTime))
+            {
+                if (existingNamesAtTime.Contains(name)) return null;
+            }
+            else
+            {
+                existingNames.Add(time, new HashSet<string>() { name });
+            }
+            // Total surface force
+            tmp = lines[2].Split(spaceSplitter, StringSplitOptions.RemoveEmptyEntries);
+            dataSet = new string[2];
+            dataSet[0] = "Total surface force (FX, FY, FZ) for set " + name + " and time " + time;
+            dataSet[1] = string.Format("{0} {1} {2}", tmp[0], tmp[1], tmp[2]);
+            repairedDataSets.Add(dataSet);
+            // Moment about origin
+            dataSet = new string[2];
+            dataSet[0] = "Moment about origin (MX, MY, MZ) for set " + name + " and time " + time;
+            dataSet[1] = string.Format("{0} {1} {2}", tmp[3], tmp[4], tmp[5]);
+            repairedDataSets.Add(dataSet);
+            // Center of gravity
+            tmp = lines[4].Split(spaceSplitter, StringSplitOptions.RemoveEmptyEntries);
+            dataSet = new string[2];
+            dataSet[0] = "Center of gravity (X, Y, Z) for set " + name + " and time " + time;
+            dataSet[1] = string.Format("{0} {1} {2}", tmp[0], tmp[1], tmp[2]);
+            repairedDataSets.Add(dataSet);
+            // Mean normal
+            dataSet = new string[2];
+            dataSet[0] = "Mean surface normal (NX, NY, NZ) for set " + name + " and time " + time;
+            dataSet[1] = string.Format("{0} {1} {2}", tmp[3], tmp[4], tmp[5]);
+            repairedDataSets.Add(dataSet);
+            //
+            return repairedDataSets;
         }
         static private void Repair(List<string[]> dataSetLinesList, List<string> dataSetNames)
         {
@@ -237,6 +335,33 @@ namespace CaeResults
                                 //        2.322033E+03
                                 lines[0] = lines[0].Replace("total volume for set", "total volume (VOL) for set");
                             }
+                            else if (name == nameRelativeContactDisplacement)
+                            {
+                                // relative contact displacement (slave element+face,normal,tang1,tang2) for all contact elements and time 0.1000000E+01
+                                //     84102          4 -1.111983E-07 -2.300226E-07  1.142343E-07
+                                lines[0] = lines[0].Replace("(slave element+face,normal,tang1,tang2)",
+                                                            "(Id,Int.Pnt.,Normal,Tang1,Tang2)");
+                                lines[0] = lines[0].Replace("for all contact elements", "for set ALL_CONTACT_ELEMENTS");
+                            }
+                            else if (name == nameContactStress)
+                            {
+                                // contact stress (slave element+face,press,tang1,tang2) for all contact elements and time 0.5000000E+00
+                                //     97837          4  9.511105E-01 -2.082501E-01 -2.605988E-02
+                                lines[0] = lines[0].Replace("(slave element+face,press,tang1,tang2)",
+                                                            "(Id,Int.Pnt.,Press,Tang1,Tang2)");
+                                lines[0] = lines[0].Replace("for all contact elements", "for set ALL_CONTACT_ELEMENTS");
+                            }
+                            else if (name == nameContactPrintEnergy)
+                            {
+                                // contact print energy (slave element+face,energy)for all contact elements and time 0.5000000E+00
+                                //     98823          4  6.898953E-06
+                                lines[0] = lines[0].Replace("(slave element+face,energy)for",
+                                                            "(Id,Int.Pnt.,Energy) for");
+                                lines[0] = lines[0].Replace("for all contact elements", "for set ALL_CONTACT_ELEMENTS");
+                            }
+
+
+
                         }
                     }
                     
@@ -400,9 +525,18 @@ namespace CaeResults
                             entries = new HistoryResultEntries(id);
                             component.Entries.Add(entries.Name, entries);
                         }
-                        //
-                        entries.Time.Add(time);
-                        entries.Values.Add(values[j + offset]);
+                        // If the same Id exista for the same time sum them together (contact relative displacement)
+                        if ((field.Name == nameRelativeContactDisplacement ||
+                             field.Name == nameContactStress ||
+                             field.Name == nameContactPrintEnergy) && entries.Time.Contains(time))
+                        {
+                            entries.Values[entries.Values.Count - 1] += values[j + offset];
+                        }
+                        else
+                        {
+                            entries.Time.Add(time);
+                            entries.Values.Add(values[j + offset]);
+                        }
                     }
                 }
             }
@@ -425,7 +559,7 @@ namespace CaeResults
                 dataSet.SetName = tmp[0];
                 for (int i = 0; i < dataSet.ComponentNames.Length; i++)
                 {
-                    dataSet.ComponentNames[i] = compMap[dataSet.ComponentNames[i]];
+                    dataSet.ComponentNames[i] = compMapRP[dataSet.ComponentNames[i]];
                 }
             }
             //

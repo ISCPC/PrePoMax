@@ -12,6 +12,8 @@ namespace CaeMesh
     {
         public static string InternalName = "Internal";
         public static string InternalSelectionName = "Internal_Selection";
+        public static string SlaveNameSuffix = "_Slave";
+        public static string MasterNameSuffix = "_Master";
         //
         public static Color[] PartColors = new Color[] { Color.FromArgb(245, 245, 220),     // light beige
                                                          Color.FromArgb(69, 139, 116),      // dark green

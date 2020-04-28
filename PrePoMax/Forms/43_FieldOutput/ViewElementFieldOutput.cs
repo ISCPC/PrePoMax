@@ -40,12 +40,13 @@ namespace PrePoMax
     {
         // Variables                                                                                                                
         private CaeModel.ElementFieldOutput _fieldOutput;
-        private DynamicCustomTypeDescriptor _dctd = null;
+        private DynamicCustomTypeDescriptor _dctd;
+
 
         // Properties                                                                                                               
         public override string Name { get { return _fieldOutput.Name; } set { _fieldOutput.Name = value; } }
         public override int Frequency { get { return _fieldOutput.Frequency; } set { _fieldOutput.Frequency = value; } }
-
+        //
         [OrderedDisplayName(2, 10, "Variables to output")]
         [CategoryAttribute("Data")]
         [DescriptionAttribute("Element field variables")]
@@ -60,7 +61,7 @@ namespace PrePoMax
                 _fieldOutput.Variables = (CaeModel.ElementFieldVariable)value;
             }
         }
-
+        //
         public override CaeModel.FieldOutput Base { get { return _fieldOutput; } set { _fieldOutput = (CaeModel.ElementFieldOutput)value; } }
 
 

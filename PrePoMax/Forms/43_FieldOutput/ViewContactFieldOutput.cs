@@ -13,21 +13,27 @@ namespace PrePoMax
     [EnumResource("PrePoMax.Properties.Resources")]
     [Editor(typeof(StandardValueEditor), typeof(System.Drawing.Design.UITypeEditor))]
     [Flags]
-    public enum ViewNodalFieldVariable
+    public enum ViewContactFieldVariable
     {
-        // must start at 1 for the UI to work
-        [StandardValue("RF", Description = "Reaction forces.")]
-        RF = 1,
+        // Must start at 1 for the UI to work
+        [StandardValue("CDIS", Description = "Relative contact displacements.")]
+        CDIS = 1,
 
-        [StandardValue("U", Description = "Displacements.")]
-        U = 2
+        [StandardValue("CSTR", Description = "Contact stresses.")]
+        CSTR = 2,
+
+        //[StandardValue("CELS", Description = "Contact energy.")]
+        //CELS = 4,
+
+        [StandardValue("PCON", Description = "Contact states for frequency and steady state dynamics calculations.")]
+        PCON = 8
     }
 
     [Serializable]
-    public class ViewNodalFieldOutput : ViewFieldOutput
+    public class ViewContactFieldOutput : ViewFieldOutput
     {
         // Variables                                                                                                                
-        private CaeModel.NodalFieldOutput _fieldOutput;
+        private CaeModel.ContactFieldOutput _fieldOutput;
         private DynamicCustomTypeDescriptor _dctd;
 
 
@@ -37,24 +43,28 @@ namespace PrePoMax
         //
         [OrderedDisplayName(2, 10, "Variables to output")]
         [CategoryAttribute("Data")]
-        [DescriptionAttribute("Nodal field variables")]
-        public ViewNodalFieldVariable Variables 
+        [DescriptionAttribute("Contact field variables")]
+        public ViewContactFieldVariable Variables 
         { 
             get
             { 
-                return (ViewNodalFieldVariable)_fieldOutput.Variables; 
+                return (ViewContactFieldVariable)_fieldOutput.Variables; 
             } 
             set
             { 
-                _fieldOutput.Variables = (CaeModel.NodalFieldVariable)value;
+                _fieldOutput.Variables = (CaeModel.ContactFieldVariable)value;
             } 
         }
         //
-        public override CaeModel.FieldOutput Base { get { return _fieldOutput; } set { _fieldOutput = (CaeModel.NodalFieldOutput)value; } }
+        public override CaeModel.FieldOutput Base
+        {
+            get { return _fieldOutput; }
+            set { _fieldOutput = (CaeModel.ContactFieldOutput)value; }
+        }
 
 
         // Constructors                                                                                                             
-        public ViewNodalFieldOutput(CaeModel.NodalFieldOutput fieldOutput)
+        public ViewContactFieldOutput(CaeModel.ContactFieldOutput fieldOutput)
         {
             _fieldOutput = fieldOutput;
             _dctd = ProviderInstaller.Install(this);

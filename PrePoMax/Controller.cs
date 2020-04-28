@@ -3365,7 +3365,7 @@ namespace PrePoMax
                 // Master Surface
                 if (tie.MasterRegionType == RegionTypeEnum.Selection)
                 {
-                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.Surfaces) + constraint.Name + "_Master";
+                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.Surfaces) + constraint.Name + CaeMesh.Globals.MasterNameSuffix;
                     FeSurface surface = new FeSurface(name, tie.MasterCreationIds, tie.MasterCreationData.DeepClone());
                     surface.Internal = true;
                     AddSurface(surface);
@@ -3382,7 +3382,7 @@ namespace PrePoMax
                 // Slave Surface
                 if (tie.SlaveRegionType == RegionTypeEnum.Selection)
                 {
-                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.Surfaces) + constraint.Name + "_Slave";
+                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.Surfaces) + constraint.Name + CaeMesh.Globals.SlaveNameSuffix;
                     FeSurface surface = new FeSurface(name, tie.SlaveCreationIds, tie.SlaveCreationData.DeepClone());
                     surface.Internal = true;
                     AddSurface(surface);
@@ -3590,7 +3590,7 @@ namespace PrePoMax
             // Master Surface
             if (contactPair.MasterRegionType == RegionTypeEnum.Selection)
             {
-                name = FeMesh.GetNextFreeSelectionName(_model.Mesh.Surfaces) + contactPair.Name + "_Master";
+                name = FeMesh.GetNextFreeSelectionName(_model.Mesh.Surfaces) + contactPair.Name + CaeMesh.Globals.MasterNameSuffix;
                 FeSurface surface = new FeSurface(name, contactPair.MasterCreationIds, contactPair.MasterCreationData.DeepClone());
                 surface.Internal = true;
                 AddSurface(surface);
@@ -3607,7 +3607,7 @@ namespace PrePoMax
             // Slave Surface
             if (contactPair.SlaveRegionType == RegionTypeEnum.Selection)
             {
-                name = FeMesh.GetNextFreeSelectionName(_model.Mesh.Surfaces) + contactPair.Name + "_Slave";
+                name = FeMesh.GetNextFreeSelectionName(_model.Mesh.Surfaces) + contactPair.Name + CaeMesh.Globals.SlaveNameSuffix;
                 FeSurface surface = new FeSurface(name, contactPair.SlaveCreationIds, contactPair.SlaveCreationData.DeepClone());
                 surface.Internal = true;
                 AddSurface(surface);
@@ -5851,6 +5851,7 @@ namespace PrePoMax
             {
                 DrawAllReferencePoints();
                 DrawAllConstraints();
+                DrawAllContactPairs();
                 if (_drawSymbolsForStep != "Model")
                 {
                     DrawAllBoundaryConditions(_drawSymbolsForStep);
@@ -6049,6 +6050,35 @@ namespace PrePoMax
                 }
             }
         }
+        // Contact pairs
+        public void DrawAllContactPairs()
+        {
+            PreSettings preSettings = (PreSettings)_settings[Globals.PreSettingsName];
+            System.Drawing.Color color = preSettings.ConstraintSymbolColor;
+            vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
+            //
+            foreach (var entry in _model.ContactPairs)
+            {
+                DrawContactPair(entry.Value, color, layer, true);
+            }
+        }
+        public void DrawContactPair(ContactPair contactPair, System.Drawing.Color color, vtkControl.vtkRendererLayer layer,
+                                    bool onlyVisible)
+        {
+            try
+            {
+                if (!((contactPair.Active && contactPair.Visible && contactPair.Valid && !contactPair.Internal)
+                       || layer == vtkControl.vtkRendererLayer.Selection)) return;
+                //
+                string prefixName = "CONTACT_PAIR" + Globals.NameSeparator + contactPair.Name;
+                // Master
+                DrawSurfaceWithEdge(prefixName, contactPair.MasterRegionName, color, layer, false, false, onlyVisible);
+                // Slave
+                DrawSurfaceWithEdge(prefixName, contactPair.SlaveRegionName, color, layer, false, true, onlyVisible);
+            }
+            catch { } // do not show the exception to the user
+        }
+
         // BCs
         public void DrawAllBoundaryConditions(string stepName)
         {
@@ -6889,6 +6919,15 @@ namespace PrePoMax
             }
             return 0;
         }
+        public int DrawSurfaceWithEdge(string prefixName, string surfaceName, System.Drawing.Color color,
+                                       vtkControl.vtkRendererLayer layer, bool backfaceCulling = true,
+                                       bool useSecondaryHighlightColor = false, bool onlyVisible = false)
+        {
+            int count = DrawSurface(prefixName, surfaceName, color, layer, backfaceCulling, useSecondaryHighlightColor, onlyVisible);
+            if (layer == vtkControl.vtkRendererLayer.Selection)
+                DrawSurfaceEdge(prefixName, surfaceName, color, layer, backfaceCulling, useSecondaryHighlightColor, onlyVisible);
+            return count;
+        }
         public int DrawSurface(string prefixName, string surfaceName, System.Drawing.Color color,
                                 vtkControl.vtkRendererLayer layer, bool backfaceCulling = true,
                                 bool useSecondaryHighlightColor = false, bool onlyVisible = false)
@@ -7037,6 +7076,10 @@ namespace PrePoMax
                     else if (obj is CaeModel.Constraint c)
                     {
                         HighlightConstraints(new string[] { c.Name });
+                    }
+                    else if (obj is CaeModel.ContactPair cp)
+                    {
+                        HighlightContactPairs(new string[] { cp.Name });
                     }
                     else if (obj is CaeModel.HistoryOutput ho)
                     {
@@ -7310,6 +7353,15 @@ namespace PrePoMax
                     DrawConstraint(constraint, System.Drawing.Color.Red, 4, vtkControl.vtkRendererLayer.Selection, false);
                 }
                 else throw new NotSupportedException();
+            }
+        }
+        public void HighlightContactPairs(string[] contactPairsToSelect)
+        {
+            ContactPair contactPair;
+            foreach (var contactPairName in contactPairsToSelect)
+            {
+                contactPair = _model.ContactPairs[contactPairName];
+                DrawContactPair(contactPair, System.Drawing.Color.Red, vtkControl.vtkRendererLayer.Selection, false);
             }
         }
         public void HighlightBoundaryCondition(BoundaryCondition boundaryCondition)

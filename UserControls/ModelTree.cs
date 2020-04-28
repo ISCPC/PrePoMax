@@ -81,6 +81,7 @@ namespace UserControls
         private TreeNode _sections;
         private TreeNode _constraints;
         private TreeNode _surfaceInteractions;
+        private TreeNode _contactPairs;
         private TreeNode _steps;
         private TreeNode _analyses;
         // Results
@@ -101,6 +102,7 @@ namespace UserControls
         private string _sectionsName;
         private string _constraintsName;
         private string _surfaceInteractionsName;
+        private string _contactPairsName;
         private string _stepsName;
         private string _historyOutputsName;
         private string _fieldOutputsName;
@@ -195,6 +197,7 @@ namespace UserControls
             _sectionsName = "Sections";
             _constraintsName = "Constraints";
             _surfaceInteractionsName = "Surface interactions";
+            _contactPairsName = "Contact pairs";
             _stepsName = "Steps";
             _boundaryConditionsName = "BCs";
             _loadsName = "Loads";
@@ -215,8 +218,9 @@ namespace UserControls
             _referencePoints = cltvModel.Nodes.Find(_referencePointsName, true)[0];
             _materials = cltvModel.Nodes.Find(_materialsName, true)[0];
             _sections = cltvModel.Nodes.Find(_sectionsName, true)[0];
-            _surfaceInteractions = cltvModel.Nodes.Find(_surfaceInteractionsName, true)[0];
             _constraints = cltvModel.Nodes.Find(_constraintsName, true)[0];
+            _surfaceInteractions = cltvModel.Nodes.Find(_surfaceInteractionsName, true)[0];
+            _contactPairs = cltvModel.Nodes.Find(_contactPairsName, true)[0];
             _steps = cltvModel.Nodes.Find(_stepsName, true)[0];
             _analyses = cltvModel.Nodes.Find(_analysesName, true)[0];
             _resultFieldOutputs = cltvResults.Nodes.Find(_fieldOutputsName, true)[0];
@@ -236,6 +240,8 @@ namespace UserControls
             _materials.StateImageKey = "Material";
             _sections.StateImageKey = "Section";
             _constraints.StateImageKey = "Constraints";
+            _surfaceInteractions.StateImageKey = "SurfaceInteractions";
+            _contactPairs.StateImageKey = "ContactPairs";
             _steps.StateImageKey = "Step";
             _analyses.StateImageKey = "Bc";
             // Results icons
@@ -1220,6 +1226,8 @@ namespace UserControls
             _materials.Nodes.Clear();
             _sections.Nodes.Clear();
             _constraints.Nodes.Clear();
+            _surfaceInteractions.Nodes.Clear();
+            _contactPairs.Nodes.Clear();
             _steps.Nodes.Clear();
             _analyses.Nodes.Clear();
             //
@@ -1236,6 +1244,7 @@ namespace UserControls
             _sections.Text = _sectionsName;
             _constraints.Text = _constraintsName;
             _surfaceInteractions.Text = _surfaceInteractionsName;
+            _contactPairs.Text = _contactPairsName;
             _steps.Text = _stepsName;
             _analyses.Text = _analysesName;
             //
@@ -1388,9 +1397,11 @@ namespace UserControls
                     AddObjectsToNode<string, Section>(_sectionsName, _sections, model.Sections);
                     // Constraints
                     AddObjectsToNode<string, Constraint>(_constraintsName, _constraints, model.Constraints);
-                    // Constraints
+                    // Surface interactions
                     AddObjectsToNode<string, SurfaceInteraction>(_surfaceInteractionsName, _surfaceInteractions,
                                                                  model.SurfaceInteractions);
+                    // Contact pairs
+                    AddObjectsToNode<string, ContactPair>(_contactPairsName, _contactPairs, model.ContactPairs);
                     // Steps
                     AddSteps(model.StepCollection.StepsList);
                     // Analyses
@@ -1563,6 +1574,13 @@ namespace UserControls
                 node.Name = node.Text;
                 node.Tag = item;
                 parent = _surfaceInteractions;
+            }
+            else if (item is ContactPair)
+            {
+                node = _contactPairs.Nodes.Add(item.Name);
+                node.Name = node.Text;
+                node.Tag = item;
+                parent = _contactPairs;
             }
             else if (item is Step)
             {
@@ -2070,6 +2088,7 @@ namespace UserControls
             else if (node.Name == _sectionsName) return true;
             else if (node.Name == _constraintsName) return true;
             else if (node.Name == _surfaceInteractionsName) return true;
+            else if (node.Name == _contactPairsName) return true;
             else if (node.Name == _stepsName) return true;
             else if (node.Name == _historyOutputsName) return true;
             else if (node.Name == _fieldOutputsName) return true;
@@ -2082,6 +2101,7 @@ namespace UserControls
         {
             if (node.Tag is FeMeshRefinement) return true;
             else if (node.Tag is Constraint) return true;
+            else if (node.Tag is ContactPair) return true;
             else if (node.Tag is Step) return true;
             else if (node.Tag is HistoryOutput) return true;
             else if (node.Tag is FieldOutput) return true;
@@ -2093,6 +2113,7 @@ namespace UserControls
         {
             if (item is BasePart) return true;
             else if (item is Constraint) return true;
+            else if (item is ContactPair) return true;
             else if (item is BoundaryCondition) return true;
             else if (item is Load) return true;
             else return false;
@@ -2117,7 +2138,7 @@ namespace UserControls
                 tsmiSpaceExpandColapse.Visible = false;
                 tsmiExpandAll.Visible = false;
                 tsmiCollapseAll.Visible = false;
-
+                //
                 cmsTree.Show(control, x, y);
             }
         }
