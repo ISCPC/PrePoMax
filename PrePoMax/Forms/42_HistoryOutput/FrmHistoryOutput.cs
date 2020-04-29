@@ -26,6 +26,7 @@ namespace PrePoMax.Forms
             {
                 if (value is NodalHistoryOutput nho) _viewHistoryOutput = new ViewNodalHistoryOutput(nho.DeepClone());
                 else if (value is ElementHistoryOutput eho) _viewHistoryOutput = new ViewElementHistoryOutput(eho.DeepClone());
+                else if (value is ContactHistoryOutput cho) _viewHistoryOutput = new ViewContactHistoryOutput(cho.DeepClone());
                 else throw new NotImplementedException();
             }
         }
@@ -47,7 +48,20 @@ namespace PrePoMax.Forms
             this.gbProperties.SuspendLayout();
             this.SuspendLayout();
             // 
-            // FrmSection
+            // lvTypes
+            // 
+            this.lvTypes.Size = new System.Drawing.Size(298, 69);
+            // 
+            // gbProperties
+            // 
+            this.gbProperties.Location = new System.Drawing.Point(12, 109);
+            this.gbProperties.Size = new System.Drawing.Size(310, 311);
+            // 
+            // propertyGrid
+            // 
+            this.propertyGrid.Size = new System.Drawing.Size(298, 283);
+            // 
+            // FrmHistoryOutput
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.ClientSize = new System.Drawing.Size(334, 461);
@@ -56,6 +70,7 @@ namespace PrePoMax.Forms
             this.gbType.ResumeLayout(false);
             this.gbProperties.ResumeLayout(false);
             this.ResumeLayout(false);
+
         }
 
 
@@ -68,6 +83,7 @@ namespace PrePoMax.Forms
                 if (itemTag is ViewError)  _viewHistoryOutput = null;
                 else if (itemTag is ViewNodalHistoryOutput vnho) _viewHistoryOutput = vnho;
                 else if (itemTag is ViewElementHistoryOutput veho) _viewHistoryOutput = veho;
+                else if (itemTag is ViewContactHistoryOutput vcho) _viewHistoryOutput = vcho;
                 else throw new NotImplementedException();
                 //
                 SetSelectItem();
@@ -99,6 +115,11 @@ namespace PrePoMax.Forms
             }
             else if (_viewHistoryOutput is ViewElementHistoryOutput veho &&
                     property == nameof(veho.ElementSetName))
+            {
+                HighlightHistoryOutput();
+            }
+            else if (_viewHistoryOutput is ViewContactHistoryOutput vcho &&
+                    property == nameof(vcho.ContactPairName))
             {
                 HighlightHistoryOutput();
             }
@@ -165,11 +186,12 @@ namespace PrePoMax.Forms
             string[] elementSetNames = _controller.GetUserElementSetNames();
             string[] surfaceNames = _controller.GetUserSurfaceNames();
             string[] referencePointNames = _controller.GetReferencePointNames();
+            string[] contactPairNames = _controller.GetContactPairNames();
             //
             if (_historyOutputNames == null)
                 throw new CaeGlobals.CaeException("The history output names must be defined first.");
             // Populate list view
-            PopulateListOfHistoryOutputs(nodeSetNames, elementSetNames, surfaceNames, referencePointNames);
+            PopulateListOfHistoryOutputs(nodeSetNames, elementSetNames, surfaceNames, referencePointNames, contactPairNames);
             // Create new history output
             if (_historyOutputToEditName == null)
             {
@@ -186,6 +208,7 @@ namespace PrePoMax.Forms
                 _lvTypesSelectedIndexChangedEventActive = false;
                 if (_viewHistoryOutput is ViewNodalHistoryOutput) lvTypes.Items[0].Selected = true;
                 else if (_viewHistoryOutput is ViewElementHistoryOutput) lvTypes.Items[1].Selected = true;
+                else if (_viewHistoryOutput is ViewContactHistoryOutput) lvTypes.Items[2].Selected = true;
                 else throw new NotSupportedException();
                 //
                 lvTypes.Enabled = false;
@@ -215,6 +238,14 @@ namespace PrePoMax.Forms
                     //
                     veho.PopululateDropDownLists(elementSetNames);
                 }
+
+                else if (_viewHistoryOutput is ViewContactHistoryOutput vcho)
+                {
+                    // Check for deleted entities
+                    CheckMissingValueRef(ref contactPairNames, vcho.ContactPairName, s => { vcho.ContactPairName = s; });
+                    //
+                    vcho.PopululateDropDownLists(contactPairNames);
+                }
                 else throw new NotSupportedException();
                 //
                 propertyGrid.SelectedObject = _viewHistoryOutput;
@@ -234,7 +265,7 @@ namespace PrePoMax.Forms
 
         // Methods                                                                                                                  
         private void PopulateListOfHistoryOutputs(string[] nodeSetNames, string[] elementSetNames, 
-                                                  string[] surfaceNames, string[] referencePointNames)
+                                                  string[] surfaceNames, string[] referencePointNames, string[] contactPairNames)
         {
             ListViewItem item;
             // Node output
@@ -252,6 +283,22 @@ namespace PrePoMax.Forms
             ViewElementHistoryOutput veho = new ViewElementHistoryOutput(eho);
             veho.PopululateDropDownLists(elementSetNames);
             item.Tag = veho;
+            lvTypes.Items.Add(item);
+            // Contact output
+            item = new ListViewItem("Contact output");
+            if (contactPairNames.Length > 0)
+            {
+                ContactHistoryOutput cho = new ContactHistoryOutput(GetHistoryOutputName("C"),
+                                                                    //ContactHistoryVariable.CDIS |
+                                                                    //ContactHistoryVariable.CSTR |
+                                                                    ContactHistoryVariable.CF,
+                                                                    contactPairNames[0]);
+                ViewContactHistoryOutput vcho = new ViewContactHistoryOutput(cho);
+                vcho.PopululateDropDownLists(contactPairNames);
+                item.Tag = vcho;
+            }
+            else item.Tag = new ViewError("There is no contact pair defined for the history output definition.");
+            //
             lvTypes.Items.Add(item);
         }
         private string GetHistoryOutputName(string prefix)
@@ -281,8 +328,15 @@ namespace PrePoMax.Forms
                             _controller.Selection = HistoryOutput.CreationData.DeepClone();
                             _controller.HighlightSelection();
                         }
+                        // If contact output is selected first and then node or element output, clear the selection
+                        else _controller.ClearAllSelection(); 
                     }
                     else throw new NotImplementedException();
+                }
+                else if (HistoryOutput is ContactHistoryOutput)
+                {
+                    _controller.ClearAllSelection();
+                    _controller.HighlightContactPairs(new string[] { HistoryOutput.RegionName });
                 }
                 else throw new NotSupportedException();
             }
@@ -300,6 +354,7 @@ namespace PrePoMax.Forms
             if (HistoryOutput is null) { }
             else if (HistoryOutput is NodalHistoryOutput) _controller.SetSelectItemToNode();
             else if (HistoryOutput is ElementHistoryOutput) _controller.SetSelectItemToElement();
+            else if (HistoryOutput is ContactHistoryOutput) _controller.SelectItem = vtkSelectItem.None;
         }
         //
         public void SelectionChanged(int[] ids)

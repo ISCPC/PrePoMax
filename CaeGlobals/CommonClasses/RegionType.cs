@@ -35,7 +35,10 @@ namespace CaeGlobals
         ReferencePointName,
 
         [StandardValue("Selection")]
-        Selection = 20
+        Selection = 20,
+
+        [StandardValue("Contact pair")]
+        ContactPair = 30
     }
 
     public static class RegionTypeExtensionMethods
@@ -60,6 +63,8 @@ namespace CaeGlobals
                     return "Reference point name";
                 case RegionTypeEnum.Selection:
                     return "Selection";
+                case RegionTypeEnum.ContactPair:
+                    return "Contact pair";
                 default:
                     throw new NotSupportedException();
             }

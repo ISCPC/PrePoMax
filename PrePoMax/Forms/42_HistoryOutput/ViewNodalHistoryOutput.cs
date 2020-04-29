@@ -24,7 +24,6 @@ namespace PrePoMax
     }
 
     [Serializable]
-    //[ClassResource(BaseName = "PrePoMax.Properties.Resources", KeyPrefix = "ViewNodalFieldOutput_")]
     public class ViewNodalHistoryOutput : ViewHistoryOutput
     {
         // Variables                                                                                                                
@@ -52,7 +51,7 @@ namespace PrePoMax
         //
         [OrderedDisplayName(3, 10, "Totals")]
         [CategoryAttribute("Data")]
-        [DescriptionAttribute("The parameter totals only applies to external forces.")]
+        [DescriptionAttribute("The parameter totals only applies to the external forces.")]
         public CaeModel.TotalsTypeEnum TotalsType { get { return _historyOutput.TotalsType; } set { _historyOutput.TotalsType = value; } }
         //
         [CategoryAttribute("Region")]

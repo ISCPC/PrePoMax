@@ -7087,6 +7087,7 @@ namespace PrePoMax
                         else if (ho.RegionType == RegionTypeEnum.ElementSetName) HighlightElementSets(new string[] { ho.RegionName });
                         else if (ho.RegionType == RegionTypeEnum.SurfaceName) HighlightSurfaces(new string[] { ho.RegionName });
                         else if (ho.RegionType == RegionTypeEnum.ReferencePointName) HighlightReferencePoints(new string[] { ho.RegionName });
+                        else if (ho.RegionType == RegionTypeEnum.ContactPair) HighlightContactPairs(new string[] { ho.RegionName });
                         else if (ho.RegionType == RegionTypeEnum.Selection) { }
                         else throw new NotSupportedException();
                     }
@@ -7360,8 +7361,10 @@ namespace PrePoMax
             ContactPair contactPair;
             foreach (var contactPairName in contactPairsToSelect)
             {
-                contactPair = _model.ContactPairs[contactPairName];
-                DrawContactPair(contactPair, System.Drawing.Color.Red, vtkControl.vtkRendererLayer.Selection, false);
+                if (_model.ContactPairs.TryGetValue(contactPairName, out contactPair))
+                {
+                    DrawContactPair(contactPair, System.Drawing.Color.Red, vtkControl.vtkRendererLayer.Selection, false);
+                }
             }
         }
         public void HighlightBoundaryCondition(BoundaryCondition boundaryCondition)

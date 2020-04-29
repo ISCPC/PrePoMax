@@ -24,13 +24,16 @@ namespace CaeResults
         private static readonly string nameRelativeContactDisplacement = "Relative contact displacement";
         private static readonly string nameContactStress = "Contact stress";
         private static readonly string nameContactPrintEnergy = "Contact print energy";
+        private static readonly string nameTotalNumberOfContactElements = "Total number of contact elements";
         private static readonly string nameContactStatistics = "Statistics for slave set";
         private static readonly string nameTotalSurfaceForce = "Total surface force";
         private static readonly string nameMomentAboutOrigin = "Moment about origin";
-        private static readonly string nameCenterOfGravity = "Center of gravity";
+        private static readonly string nameCenterOfGravity = "Center of gravity CG";
         private static readonly string nameMeanSurfaceNormal = "Mean surface normal";
-
-
+        private static readonly string nameMomentAboutCG = "Moment about CG";
+        private static readonly string nameSurfaceArea = "Surface area";
+        private static readonly string nameNormalSurfaceForce = "Normal surface force";
+        private static readonly string nameShearSurfaceForce = "Shear surface force";
         //
         private static readonly string nameVolume = "Volume";
         private static readonly string nameTotalVolume = "Total volume";
@@ -65,18 +68,18 @@ namespace CaeResults
             if (fileName != null && File.Exists(fileName))
             {
                 List<string> lines = new List<string>();
-
+                //
                 if (!CaeGlobals.Tools.WaitForFileToUnlock(fileName, 5000)) return null;
-
+                //
                 using (FileStream fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 using (StreamReader streamReader = new StreamReader(fileStream))
                 {
                     while (!streamReader.EndOfStream) lines.Add(streamReader.ReadLine()); // faster than streamReader.ReadToEnd().Split ...
-
+                    //
                     streamReader.Close();
                     fileStream.Close();
                 }
-
+                //
                 List<string> dataSetNames = new List<string>();
                 // Nodal
                 dataSetNames.Add(nameDisplacements);                
@@ -91,21 +94,25 @@ namespace CaeResults
                 dataSetNames.Add(nameRelativeContactDisplacement);
                 dataSetNames.Add(nameContactStress);
                 dataSetNames.Add(nameContactPrintEnergy);
+                dataSetNames.Add(nameTotalNumberOfContactElements);
                 dataSetNames.Add(nameContactStatistics);
                 dataSetNames.Add(nameTotalSurfaceForce);
                 dataSetNames.Add(nameMomentAboutOrigin);
                 dataSetNames.Add(nameCenterOfGravity);
                 dataSetNames.Add(nameMeanSurfaceNormal);
-                // element
+                dataSetNames.Add(nameMomentAboutCG);
+                dataSetNames.Add(nameSurfaceArea);
+                dataSetNames.Add(nameNormalSurfaceForce);
+                dataSetNames.Add(nameShearSurfaceForce);
+                // Element
                 dataSetNames.Add(nameVolume);
                 dataSetNames.Add(nameTotalVolume);
                 dataSetNames.Add(nameInternalEnergy);
                 dataSetNames.Add(nameTotalInternalEnergy);
-                
-
+                //
                 List<string[]> dataSetLinesList = SplitToDataSetLinesList(dataSetNames, lines.ToArray());
                 Repair(dataSetLinesList, dataSetNames);
-
+                //
                 DatDataSet dataSet;
                 List<DatDataSet> dataSets = new List<DatDataSet>();
                 foreach (string[] dataSetLines in dataSetLinesList)
@@ -113,12 +120,12 @@ namespace CaeResults
                     dataSet = GetDatDataSet(dataSetNames, dataSetLines);
                     if (dataSet.FieldName != nameError) dataSets.Add(dataSet);
                 }
-
+                //
                 HistoryResults historyOutput = GetHistoryOutput(dataSets);
                 AddVonMisesStressComponent(historyOutput);
                 return historyOutput;
             }
-
+            //
             return null;
         }
         static private List<string[]> SplitToDataSetLinesList(List<string> dataSetNames, string[] lines)
@@ -157,6 +164,9 @@ namespace CaeResults
                         if (lines[i].Trim().Length != 0) dataSet.Add(lines[i]);
                         i+=2;
                     }
+                    // At the end reduce the i for 1 since it will be increased next time in the loop
+                    i--;
+                    //
                     List<string[]> repairedSets = RepairContactStatistics(dataSet.ToArray(), ref existingNames);
                     //
                     if (repairedSets != null) dataSets.AddRange(repairedSets);
@@ -230,16 +240,39 @@ namespace CaeResults
             dataSet[0] = "Moment about origin (MX, MY, MZ) for set " + name + " and time " + time;
             dataSet[1] = string.Format("{0} {1} {2}", tmp[3], tmp[4], tmp[5]);
             repairedDataSets.Add(dataSet);
-            // Center of gravity
+            // Center of gravity CG
             tmp = lines[4].Split(spaceSplitter, StringSplitOptions.RemoveEmptyEntries);
             dataSet = new string[2];
-            dataSet[0] = "Center of gravity (X, Y, Z) for set " + name + " and time " + time;
+            dataSet[0] = "Center of gravity CG (X, Y, Z) for set " + name + " and time " + time;
             dataSet[1] = string.Format("{0} {1} {2}", tmp[0], tmp[1], tmp[2]);
             repairedDataSets.Add(dataSet);
             // Mean normal
             dataSet = new string[2];
             dataSet[0] = "Mean surface normal (NX, NY, NZ) for set " + name + " and time " + time;
             dataSet[1] = string.Format("{0} {1} {2}", tmp[3], tmp[4], tmp[5]);
+            repairedDataSets.Add(dataSet);
+            // Moment about CG
+            tmp = lines[6].Split(spaceSplitter, StringSplitOptions.RemoveEmptyEntries);
+            dataSet = new string[2];
+            dataSet[0] = "Moment about CG (MX, MY, MZ) for set " + name + " and time " + time;
+            dataSet[1] = string.Format("{0} {1} {2}", tmp[0], tmp[1], tmp[2]);
+            repairedDataSets.Add(dataSet);
+            // Area
+            tmp = lines[8].Split(spaceSplitter, StringSplitOptions.RemoveEmptyEntries);
+            dataSet = new string[2];
+            dataSet[0] = "Surface area (A) for set " + name + " and time " + time;
+            dataSet[1] = tmp[0];
+            repairedDataSets.Add(dataSet);
+            //
+            // Normal surface force
+            dataSet = new string[2];
+            dataSet[0] = "Normal surface force (FN) for set " + name + " and time " + time;
+            dataSet[1] = tmp[1];
+            repairedDataSets.Add(dataSet);
+            // Shear surface force
+            dataSet = new string[2];
+            dataSet[0] = "Shear surface force (FS) for set " + name + " and time " + time;
+            dataSet[1] = tmp[2];
             repairedDataSets.Add(dataSet);
             //
             return repairedDataSets;
@@ -355,13 +388,15 @@ namespace CaeResults
                             {
                                 // contact print energy (slave element+face,energy)for all contact elements and time 0.5000000E+00
                                 //     98823          4  6.898953E-06
-                                lines[0] = lines[0].Replace("(slave element+face,energy)for",
-                                                            "(Id,Int.Pnt.,Energy) for");
+                                lines[0] = lines[0].Replace("(slave element+face,energy)for", "(Id,Int.Pnt.,Energy) for");
                                 lines[0] = lines[0].Replace("for all contact elements", "for set ALL_CONTACT_ELEMENTS");
                             }
-
-
-
+                            else if (name == nameTotalNumberOfContactElements)
+                            {
+                                // total number of contact elements for time  0.5000000E+00
+                                // 560
+                                lines[0] = lines[0].Replace("elements for time", "elements (Num) for set ALL_CONTACT_ELEMENTS and time");
+                            }
                         }
                     }
                     
@@ -525,13 +560,17 @@ namespace CaeResults
                             entries = new HistoryResultEntries(id);
                             component.Entries.Add(entries.Name, entries);
                         }
-                        // If the same Id exista for the same time sum them together (contact relative displacement)
+                        // Sum - If the same Id exista for the same time sum them together
                         if ((field.Name == nameRelativeContactDisplacement ||
                              field.Name == nameContactStress ||
                              field.Name == nameContactPrintEnergy) && entries.Time.Contains(time))
                         {
                             entries.Values[entries.Values.Count - 1] += values[j + offset];
                         }
+                        // Skip repeating
+                        else if (field.Name == nameTotalNumberOfContactElements && entries.Time.Contains(time)) 
+                        { }
+                        // Add
                         else
                         {
                             entries.Time.Add(time);

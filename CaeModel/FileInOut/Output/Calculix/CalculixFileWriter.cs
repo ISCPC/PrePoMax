@@ -715,6 +715,12 @@ namespace FileInOut.Output
                 CalElPrint elPrint = new CalElPrint(eho);
                 parent.AddKeyword(elPrint);
             }
+            else if (historyOutput is ContactHistoryOutput cho)
+            {
+                ContactPair cp = model.ContactPairs[cho.RegionName];
+                CalContactPrint contactPrint = new CalContactPrint(cho, cp.MasterRegionName, cp.SlaveRegionName);
+                parent.AddKeyword(contactPrint);
+            }
             else throw new NotImplementedException();
         }
         static private void AppendFieldOutput(FeModel model, FieldOutput fieldOutput, CalculixKeyword parent)

@@ -17,9 +17,9 @@ namespace CaeModel
         CSTR = 2,
         CELS = 4,
         CNUM = 8,
-        CF = 16,
-        CFN = 32,
-        CFS = 64
+        CF = 16
+        //CFN = 32,
+        //CFS = 64
     }
 
     [Serializable]
@@ -34,8 +34,8 @@ namespace CaeModel
 
 
         // Constructors                                                                                                             
-        public ContactHistoryOutput(string name, ContactHistoryVariable variables, string regionName, RegionTypeEnum regionType)
-            : base(name, regionName, regionType)
+        public ContactHistoryOutput(string name, ContactHistoryVariable variables, string regionName)
+            : base(name, regionName, RegionTypeEnum.ContactPair)
         {
             _variables = variables;
         }

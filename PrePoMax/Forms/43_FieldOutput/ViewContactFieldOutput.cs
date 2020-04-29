@@ -18,13 +18,13 @@ namespace PrePoMax
         // Must start at 1 for the UI to work
         [StandardValue("CDIS", Description = "Relative contact displacements.")]
         CDIS = 1,
-
+        //
         [StandardValue("CSTR", Description = "Contact stresses.")]
         CSTR = 2,
-
+        //
         //[StandardValue("CELS", Description = "Contact energy.")]
         //CELS = 4,
-
+        //
         [StandardValue("PCON", Description = "Contact states for frequency and steady state dynamics calculations.")]
         PCON = 8
     }

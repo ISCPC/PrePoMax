@@ -236,6 +236,7 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\35_ContactPair\ViewContactPair.cs" />
+    <Compile Include="Forms\42_HistoryOutput\ViewContactHistoryOutput.cs" />
     <Compile Include="Forms\43_FieldOutput\ViewContactFieldOutput.cs" />
     <Compile Include="Forms\StringDefaultDoubleConverter.cs" />
     <Compile Include="Forms\34_SurfaceInteraction\ViewFriction.cs" />

@@ -262,6 +262,10 @@ namespace CaeModel
                     {
                         valid = _mesh.ElementSets.ContainsValidKey(eho.RegionName);                        
                     }
+                    else if (historyOutput is ContactHistoryOutput cho)
+                    {
+                        valid = _contactPairs.ContainsValidKey(cho.RegionName);
+                    }
                     else throw new NotSupportedException();
                     //
                     SetItemValidity(historyOutput, valid, items);
