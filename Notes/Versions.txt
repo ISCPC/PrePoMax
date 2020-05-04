@@ -156,8 +156,17 @@ Dependency nglib - added following files for c++ redistriburable compatibility:
 
 Done
 
-Version 0.6.0 Master branch
+Version 0.7.0 Master branch
+More???
+Added support for Open Recent Files
+Added support for contact history and field output
+Added support for Contact Pairs creation
+Added support for Surface Interaction creation
+Added support for set creation on the fly
+Simplified the creation of new sets
 
+
+Version 0.6.0 Master branch
 Added support for Fixed parameter for BSc
 Added support for creating prismatic boundy layer
 Added support for Pre-tension load

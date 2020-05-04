@@ -12,8 +12,7 @@ namespace PrePoMax
     [Serializable]
     public class GeneralSettings : ISettings
     {
-        // Variables                                                                                                                
-        private int _maxRecentFiles = 10;
+        // Variables                                                                                                                        
         private bool _openLastFile;
         private string _lastFileName;
         private bool _saveResultsInPmx;
@@ -57,6 +56,7 @@ namespace PrePoMax
             {
                 if (!_recentFiles.Contains(fileNameWithpPath))
                 {
+                    int _maxRecentFiles = 15;
                     while (_recentFiles.Count >= _maxRecentFiles) _recentFiles.Pop();
                     _recentFiles.Push(fileNameWithpPath);
                 }
