@@ -9,7 +9,7 @@ using System.Windows.Forms;
 
 namespace PrePoMax.Forms
 {
-    class FrmConstraint : UserControls.FrmPropertyListView, IFormBase, IFormHighlight
+    class FrmConstraint : UserControls.FrmPropertyListView, IFormBase, IFormItemSetDataParent, IFormHighlight
     {
         // Variables                                                                                                                
         private string[] _constraintNames;
@@ -386,6 +386,7 @@ namespace PrePoMax.Forms
         }
         private void ShowHideSelectionForm()
         {
+            //
             if (propertyGrid.SelectedGridItem == null || propertyGrid.SelectedGridItem.PropertyDescriptor == null) return;
             //
             string property = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
@@ -468,6 +469,39 @@ namespace PrePoMax.Forms
         public void Highlight()
         {
             HighlightConstraint();
+        }
+
+        // IFormItemSetDataParent
+        public bool IsSelectionGeometryBased()
+        {
+            // Prepare ItemSetDataEditor - prepare Geometry or Mesh based selection
+            if (propertyGrid.SelectedGridItem == null || propertyGrid.SelectedGridItem.PropertyDescriptor == null) return true;
+            //
+            string property = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
+            //
+            if (Constraint != null)
+            {
+                if (Constraint is RigidBody rb)
+                {
+                    if (rb.CreationData != null) return rb.CreationData.IsGeometryBased();
+                    else return true;
+                }
+                else if (Constraint is Tie tie)
+                {
+                    if (property == nameof(ViewTie.MasterRegionType) && tie.MasterRegionType == RegionTypeEnum.Selection)
+                    {
+                        if (tie.MasterCreationData != null) return tie.MasterCreationData.IsGeometryBased();
+                        else return true;
+                    }
+                    else if (property == nameof(ViewTie.SlaveRegionType) && tie.SlaveRegionType == RegionTypeEnum.Selection)
+                    {
+                        if (tie.SlaveCreationData != null) return tie.SlaveCreationData.IsGeometryBased();
+                        else return true;
+                    }
+                }
+                else throw new NotSupportedException();
+            }
+            return true;
         }
     }
 }

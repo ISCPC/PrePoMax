@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using CaeGlobals;
+using CaeMesh;
 
 namespace PrePoMax.Forms
 {
@@ -216,7 +217,7 @@ namespace PrePoMax.Forms
         public void OneElementPicked(int id)
         {
             Form_WriteDataToOutput("");
-            string data = string.Format("Element id: {0}", id);
+            string data = string.Format("Element              id: {0,16}", id);
             Form_WriteDataToOutput(data);
             Form_WriteDataToOutput("");
             //
@@ -224,43 +225,79 @@ namespace PrePoMax.Forms
             //
             _controller.HighlightElement(id);
         }
-        public void OneEdgePicked(int id)
+        public void OneEdgePicked(int geometryId)
         {
-            int[] itemTypePart = CaeMesh.FeMesh.GetItemTypePartIdsFromGeometryId(id);
+            int[] itemTypePart = CaeMesh.FeMesh.GetItemTypePartIdsFromGeometryId(geometryId);
             CaeMesh.BasePart part = _controller.DisplayedMesh.GetPartById(itemTypePart[2]);
-            double length = _controller.DisplayedMesh.GetEdgeLength(id);
+            double length1 = _controller.DisplayedMesh.GetEdgeLength(geometryId);
             //
             Form_WriteDataToOutput("");
-            string data = string.Format("Edge part name: {0}", part.Name);
+            string data = string.Format("Edge on part: {0}", part.Name);
             Form_WriteDataToOutput(data);
-            data = string.Format("Edge id: {0}", itemTypePart[0]);
+            data = string.Format("Edge                 id: {0,16}", itemTypePart[0]);
             Form_WriteDataToOutput(data);
-            data = string.Format("Edge length: {0:E}", length);
+            data = string.Format("Base                  L: {0,16:E}", length1);
             Form_WriteDataToOutput(data);
+            //
+            if (_controller.CurrentView == ViewGeometryModelResults.Results)
+            {
+                int[] nodeIds;
+                _controller.DisplayedMesh.GetEdgeNodeCoor(geometryId, out nodeIds, out double[][] nodeCoor);
+                FeNode[] nodes = _controller.GetScaledNodes(1, nodeIds);
+                double length2 = 0;
+                Vec3D n1;
+                Vec3D n2;
+                for (int i = 0; i < nodes.Length - 1; i++)
+                {
+                    n1 = new Vec3D(nodes[i].Coor);
+                    n2 = new Vec3D(nodes[i + 1].Coor);
+                    length2 += (n2 - n1).Len;
+                }
+                data = string.Format("Deformed              L: {0,16:E}", length2);
+                Form_WriteDataToOutput(data);
+                data = string.Format("Delta                 L: {0,16:E}", length2 - length1);
+                Form_WriteDataToOutput(data);
+            }
             Form_WriteDataToOutput("");
             //
             _controller.ClearSelectionHistoryAndSelectionChanged();
             //
-            _controller.HighlightItemsByGeometryEdgeIds(new int[] { id }, false);
+            _controller.HighlightItemsByGeometryEdgeIds(new int[] { geometryId }, false);
         }
-        public void OneSurfacePicked(int id)
+        public void OneSurfacePicked(int geometryId)
         {
-            int[] itemTypePart = CaeMesh.FeMesh.GetItemTypePartIdsFromGeometryId(id);
+            int[] itemTypePart = CaeMesh.FeMesh.GetItemTypePartIdsFromGeometryId(geometryId);
             CaeMesh.BasePart part = _controller.DisplayedMesh.GetPartById(itemTypePart[2]);
-            double area = _controller.DisplayedMesh.GetSurfaceArea(id);
+            int faceId = itemTypePart[0];
+            double area1 = _controller.DisplayedMesh.GetSurfaceArea(geometryId);
             //
             Form_WriteDataToOutput("");
-            string data = string.Format("Surface part name: {0}", part.Name);
+            string data = string.Format("Surface on part: {0}", part.Name);
             Form_WriteDataToOutput(data);
-            data = string.Format("Surface id: {0}", itemTypePart[0]);
+            data = string.Format("Surface              id: {0,16}", faceId);
             Form_WriteDataToOutput(data);
-            data = string.Format("Surface area: {0:E}", area);
+            data = string.Format("Base                  A: {0,16:E}", area1);
             Form_WriteDataToOutput(data);
+            //
+            if (_controller.CurrentView == ViewGeometryModelResults.Results)
+            {
+                int[] nodeIds;
+                _controller.DisplayedMesh.GetFaceNodes(geometryId, out nodeIds);
+                FeNode[] nodes = _controller.GetScaledNodes(1, nodeIds);
+                Dictionary<int, FeNode> nodesDic = new Dictionary<int, FeNode>();
+                for (int i = 0; i < nodes.Length; i++) nodesDic.Add(nodes[i].Id, nodes[i]);
+                double area2 = _controller.DisplayedMesh.ComputeFaceArea(part.Visualization, faceId, nodesDic);
+                //
+                data = string.Format("Deformed              A: {0,16:E}", area2);
+                Form_WriteDataToOutput(data);
+                data = string.Format("Delta                 A: {0,16:E}", area2 - area1);
+                Form_WriteDataToOutput(data);
+            }
             Form_WriteDataToOutput("");
             //
             _controller.ClearSelectionHistoryAndSelectionChanged();    // in order to prevent SHIFT ADD
             //
-            _controller.HighlightItemsBySurfaceIds(new int[] { id }, false);
+            _controller.HighlightItemsBySurfaceIds(new int[] { geometryId }, false);
         }
         public void OnePartPicked(int id)
         {
@@ -317,6 +354,12 @@ namespace PrePoMax.Forms
             Form_WriteDataToOutput("");
             string data = string.Format("Bounding box");
             Form_WriteDataToOutput(data);
+            if (_controller.CurrentView == ViewGeometryModelResults.Results)
+            {
+                double scale = _controller.GetScale();
+                data = string.Format("Def. scale factor      : {0,16:E}", scale);
+                Form_WriteDataToOutput(data);
+            }
             data = string.Format("Min             x, y, z: {0,16:E}, {1,16:E}, {2,16:E}", bb[0], bb[2], bb[4]);
             Form_WriteDataToOutput(data);
             data = string.Format("Max             x, y, z: {0,16:E}, {1,16:E}, {2,16:E}", bb[1], bb[3], bb[5]);

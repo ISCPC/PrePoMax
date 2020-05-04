@@ -1770,7 +1770,7 @@ namespace vtkControl
                               highlightColor.B / 255d * k);
             property.SetAmbient(ambient);    // color background - even away from light
             property.SetDiffuse(diffuse);    // color from the lights
-            property.SetLineWidth(2f);
+            property.SetLineWidth(2.2f);
             property.SetOpacity(1);
             //property.BackfaceCullingOn();
             actor.Geometry.PickableOff();
@@ -5024,8 +5024,7 @@ namespace vtkControl
             return null;
         }
         public void UpdateActor(string oldName, string newName, Color newColor)
-        {
-            if (!_renderingOn) return;
+        {            
             if (!_actors.ContainsKey(oldName)) return;
             //
             vtkMaxActor actor = _actors[oldName];
@@ -5039,21 +5038,21 @@ namespace vtkControl
             {
                 string oldsectionViewActorName = GetSectionViewActorName(oldName);
                 string newsectionViewActorName = oldsectionViewActorName;
-
+                //
                 actor = _actors[oldsectionViewActorName];
                 actor.Color = newColor;
                 actor.Name = newsectionViewActorName;
-
+                //
                 _actors.Remove(oldsectionViewActorName);
                 _sectionViewActors.Remove(oldsectionViewActorName);
-
+                //
                 _actors.Add(newsectionViewActorName, actor);
                 _sectionViewActors.Add(newsectionViewActorName, actor);
             }
             //
             ApplyEdgesVisibilityAndBackfaceCulling();
             //
-            this.Invalidate();
+            if (_renderingOn) this.Invalidate();
         }
         public double[] GetBoundingBox()
         {

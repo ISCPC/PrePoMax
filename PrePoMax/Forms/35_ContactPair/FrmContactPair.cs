@@ -10,7 +10,7 @@ using CaeModel;
 
 namespace PrePoMax.Forms
 {
-    class FrmContactPair : UserControls.FrmProperties, IFormBase, IFormHighlight
+    class FrmContactPair : UserControls.FrmProperties, IFormBase, IFormItemSetDataParent, IFormHighlight
     {
         // Variables                                                                                                                
         private string[] _contactPairNames;
@@ -313,7 +313,35 @@ namespace PrePoMax.Forms
         {
             HighlightContactPair();
         }
-       
+
+        // IFormItemSetDataParent
+        public bool IsSelectionGeometryBased()
+        {
+            // Prepare ItemSetDataEditor - prepare Geometry or Mesh based selection
+            if (propertyGrid.SelectedGridItem == null || propertyGrid.SelectedGridItem.PropertyDescriptor == null) return true;
+            //
+            string property = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
+            //
+            if (ContactPair != null)
+            {
+                if (ContactPair is ContactPair cp)
+                {
+                    if (property == nameof(ViewTie.MasterRegionType) && cp.MasterRegionType == RegionTypeEnum.Selection)
+                    {
+                        if (cp.MasterCreationData != null) return cp.MasterCreationData.IsGeometryBased();
+                        else return true;
+                    }
+                    else if (property == nameof(ViewTie.SlaveRegionType) && cp.SlaveRegionType == RegionTypeEnum.Selection)
+                    {
+                        if (cp.SlaveCreationData != null) return cp.SlaveCreationData.IsGeometryBased();
+                        else return true;
+                    }
+                }
+                else throw new NotSupportedException();
+            }
+            return true;
+        }
+
     }
 
 

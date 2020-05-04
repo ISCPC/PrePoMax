@@ -381,6 +381,21 @@ namespace CaeMesh
             }
             return edgeIdNodeIds;
         }
+        public int[] GetOrderedNodeIdsForEdge(int edgeId)
+        {
+            int[] edgeNodeIds;
+            List<int> allEdgeNodeIds = new List<int>();
+            for (int i = 0; i < _edgeCellIdsByEdge[edgeId].Length; i++)
+            {
+                edgeNodeIds = _edgeCells[_edgeCellIdsByEdge[edgeId][i]];
+                //
+                if (i == 0) allEdgeNodeIds.Add(edgeNodeIds[0]);     // add the first node only once
+                if (edgeNodeIds.Length == 3) allEdgeNodeIds.Add(edgeNodeIds[2]);
+                allEdgeNodeIds.Add(edgeNodeIds[1]);
+            }
+            //
+            return allEdgeNodeIds.ToArray();
+        }
         public Dictionary<int, HashSet<int>> GetNodeIdsBySurfaces()
         {
             HashSet<int> surfaceNodeIds;

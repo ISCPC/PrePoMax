@@ -12,11 +12,13 @@ namespace CaeMesh
     {
         // Variables                                                                                                                
         private Selection _creationData;
+        private int[] _creationIds;
         private double[] _centerOfGravity;
         private double[][] _boundingBox;
 
         // Properties                                                                                                               
         public Selection CreationData { get { return _creationData; } set { _creationData = value; } }
+        public int[] CreationIds { get { return _creationIds; } set { _creationIds = value; } }
         public double[] CenterOfGravity { get { return _centerOfGravity; } set { _centerOfGravity = value; } }
         public double[][] BoundingBox { get { return _boundingBox; } set { _boundingBox = value; } }
 
@@ -25,12 +27,16 @@ namespace CaeMesh
         public FeNodeSet(string name, int[] labels) 
             : base(name, labels)
         {
+            _creationData = null;
+            _creationIds = null;
             _centerOfGravity = null;
             _boundingBox = null;
         }
         public FeNodeSet(string name, int[] labels, double[] centerOfGravity)
             : base(name, labels)
         {
+            _creationData = null;
+            _creationIds = null;
             _centerOfGravity = centerOfGravity;
             _boundingBox = null;
         }

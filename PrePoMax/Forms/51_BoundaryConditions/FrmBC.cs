@@ -9,7 +9,7 @@ using System.Windows.Forms;
 
 namespace PrePoMax.Forms
 {
-    class FrmBC : UserControls.FrmPropertyListView, IFormBase, IFormHighlight
+    class FrmBC : UserControls.FrmPropertyListView, IFormBase, IFormItemSetDataParent, IFormHighlight
     {
         // Variables                                                                                                                
         private string[] _boundaryConditionNames;
@@ -341,8 +341,8 @@ namespace PrePoMax.Forms
         private void SetSelectItem()
         {
             if (BoundaryCondition is null) { }
-            else if (BoundaryCondition is DisplacementRotation) _controller.SetSelectItemToSurface();
-            else if (BoundaryCondition is SubmodelBC) _controller.SetSelectItemToSurface();
+            else if (BoundaryCondition is DisplacementRotation) _controller.SetSelectItemToGeometry();
+            else if (BoundaryCondition is SubmodelBC) _controller.SetSelectItemToGeometry();
         }
         private void BoundaryConditionInternal(bool toInternal)
         {
@@ -375,6 +375,12 @@ namespace PrePoMax.Forms
         public void Highlight()
         {
             HighlightBoundaryCondition();
+        }
+
+        public bool IsSelectionGeometryBased()
+        {
+            // Prepare ItemSetDataEditor - prepare Geometry or Mesh based selection
+            return true;
         }
     }
 }

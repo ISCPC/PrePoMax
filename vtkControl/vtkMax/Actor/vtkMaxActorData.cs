@@ -22,6 +22,7 @@ namespace vtkControl
         // Variables                                                                                                                
         public string Name;
         public float NodeSize;
+        public float LineWidth;
         public Color Color;
         public double Ambient;
         public double Diffuse;
@@ -46,6 +47,7 @@ namespace vtkControl
         {
             Name = null;
             NodeSize = 1;
+            LineWidth = 1;
             Color = Color.Black;
             Ambient = 0.1;
             Diffuse = 0.1;

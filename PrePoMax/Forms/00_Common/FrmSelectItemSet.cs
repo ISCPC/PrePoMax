@@ -30,6 +30,7 @@ namespace PrePoMax
         private Size _expandedSize;
         private Point _btnUndoPosition;
         private Point _btnClearPosition;
+        private bool _initialSetup;
                 
 
         // Properties                                                                                                               
@@ -52,6 +53,7 @@ namespace PrePoMax
             _expandedSize = Size;
             _btnUndoPosition = btnUndoSelection.Location;
             _btnClearPosition = btnClearSelection.Location;
+            _initialSetup = false;
             //
             btnMoreLess_Click(null, null);
         }
@@ -74,26 +76,33 @@ namespace PrePoMax
         //
         private void FrmSelectItemSet_VisibleChanged(object sender, EventArgs e)
         {
-            // Called every time the form is shown with: form.Show()
-            if (this.Visible)
+            try
             {
-                // Form was just shown                
-                if (ItemSetDataEditor.ParentForm is Forms.IFormItemSetDataParent fdsp) 
-                    SetGeometrySelection(fdsp.IsSelectionGeometryBased());
-                // To prevent the call to _frmSelectItemSet_VisibleChanged when minimized
-                this.DialogResult = DialogResult.None; 
-                rbSelectBy_CheckedChanged(null, null);
-            }
-            else
-            {
-                // Form was just hidden
-                if (this.DialogResult == DialogResult.OK || this.DialogResult == DialogResult.Cancel)
+                // Set a marker that auto setup is running
+                _initialSetup = true;
+                // Called every time the form is shown with: form.Show()
+                if (this.Visible)
                 {
-                    ItemSetDataEditor.ParentForm.DialogResult = this.DialogResult;
+                    // Form was just shown                
+                    if (ItemSetDataEditor.ParentForm is Forms.IFormItemSetDataParent fdsp)
+                        SetGeometrySelection(fdsp.IsSelectionGeometryBased());
+                    // To prevent the call to _frmSelectItemSet_VisibleChanged when minimized
+                    this.DialogResult = DialogResult.None;
+                    rbSelectBy_CheckedChanged(null, null);
                 }
-                //
-                _controller.SetSelectionToDefault();
+                else
+                {
+                    // Form was just hidden
+                    if (this.DialogResult == DialogResult.OK || this.DialogResult == DialogResult.Cancel)
+                    {
+                        ItemSetDataEditor.ParentForm.DialogResult = this.DialogResult;
+                    }
+                    //
+                    _controller.SetSelectionToDefault();
+                }
             }
+            catch { }
+            finally { _initialSetup = false; }
         }
         private void FrmSelectItemSet_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -109,7 +118,6 @@ namespace PrePoMax
             // Allow only one running function - disable check box event
             if (_checkBoxEventRunning) return;  
             else _checkBoxEventRunning = true;
-
             // Connect two group boxes of radio buttons
             if (sender != null) // radio button check was activated by user
             {
@@ -126,7 +134,7 @@ namespace PrePoMax
                     rbGeometryEdgeAngle.Checked = false;
                 if (rbGeometrySurfaceAngle.Checked && sender != rbGeometrySurfaceAngle)
                     rbGeometrySurfaceAngle.Checked = false;
-
+                //
                 if (rbNode.Checked && sender != rbNode) rbNode.Checked = false;
                 if (rbElement.Checked && sender != rbElement) rbElement.Checked = false;
                 if (rbEdge.Checked && sender != rbEdge) rbEdge.Checked = false;
@@ -136,7 +144,6 @@ namespace PrePoMax
                 if (rbSurfaceAngle.Checked && sender != rbSurfaceAngle) rbSurfaceAngle.Checked = false;
                 if (rbId.Checked && sender != rbId) rbId.Checked = false;
             }
-
             // Determine selection type and change of selection type
             bool selectionTypeChanged = false;
             SelectionType currentSelectionType;
@@ -153,8 +160,8 @@ namespace PrePoMax
             // Clear selection - if geometry selection type changed by the USER: 
             // sender != null                                                    
             // Visible = true - user action                                      
-            if (sender != null && Visible && selectionTypeChanged) _controller.ClearSelectionHistoryAndSelectionChanged();
-
+            if (!_initialSetup && sender != null && Visible && selectionTypeChanged) 
+                _controller.ClearSelectionHistoryAndSelectionChanged();
             // Enable/disable Textboxes
             tbGeometryEdgeAngle.Enabled = rbGeometryEdgeAngle.Checked;
             tbGeometrySurfaceAngle.Enabled = rbGeometrySurfaceAngle.Checked;
@@ -167,7 +174,7 @@ namespace PrePoMax
             // Check All and Invert buttons
             btnSelectAll.Enabled = currentSelectionType == SelectionType.Mesh;
             btnInvertSelection.Enabled = currentSelectionType == SelectionType.Mesh;
-
+            //
             vtkSelectBy selectBy;
             if (rbGeometry.Checked) selectBy = vtkSelectBy.Geometry;
             else if (rbGeometryEdgeAngle.Checked)
@@ -197,7 +204,6 @@ namespace PrePoMax
             }
             else if (rbId.Checked) selectBy = vtkSelectBy.Id;
             else selectBy = vtkSelectBy.Off;
-
             // Set selection
             _controller.SelectBy = selectBy;
             // Set previous selection type

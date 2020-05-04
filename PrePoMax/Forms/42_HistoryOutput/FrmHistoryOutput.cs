@@ -9,7 +9,7 @@ using System.Windows.Forms;
 
 namespace PrePoMax.Forms
 {
-    class FrmHistoryOutput : UserControls.FrmPropertyListView, IFormBase, IFormHighlight
+    class FrmHistoryOutput : UserControls.FrmPropertyListView, IFormBase, IFormItemSetDataParent, IFormHighlight
     {
         // Variables                                                                                                                
         private string[] _historyOutputNames;
@@ -378,6 +378,14 @@ namespace PrePoMax.Forms
         public void Highlight()
         {
             HighlightHistoryOutput();
+        }
+
+        // IFormItemSetDataParent
+        public bool IsSelectionGeometryBased()
+        {
+            // Prepare ItemSetDataEditor - prepare Geometry or Mesh based selection
+            if (HistoryOutput == null || HistoryOutput.CreationData == null) return true;
+            return HistoryOutput.CreationData.IsGeometryBased();
         }
     }
 }

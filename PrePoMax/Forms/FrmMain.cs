@@ -2809,6 +2809,7 @@ namespace PrePoMax
 
         #endregion  ################################################################################################################
 
+        #region Contact pair menu  #################################################################################################
         private void tsmiCreateContactPair_Click(object sender, EventArgs e)
         {
             try
@@ -2825,7 +2826,6 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
-
         private void tsmiEditContactPair_Click(object sender, EventArgs e)
         {
             try
@@ -2837,7 +2837,6 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-
         private void tsmiHideContactPair_Click(object sender, EventArgs e)
         {
             try
@@ -2849,7 +2848,6 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-
         private void tsmiShowContactPair_Click(object sender, EventArgs e)
         {
             try
@@ -2861,7 +2859,6 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-
         private void tsmiDeleteContactPair_Click(object sender, EventArgs e)
         {
             try
@@ -2873,7 +2870,7 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-
+        //
         private void EditContactPair(string contactPairName)
         {
             // Data editor
@@ -2906,6 +2903,7 @@ namespace PrePoMax
                 _controller.RemoveContactPairsCommand(contactPairNames);
             }
         }
+        #endregion  ################################################################################################################
 
         #region Step menu  #########################################################################################################
 
@@ -3184,7 +3182,7 @@ namespace PrePoMax
             // Data editor
             ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
             ItemSetDataEditor.ParentForm = _frmBoundaryCondition;
-            _frmSelectItemSet.SetOnlyGeometrySelection(false);
+            _frmSelectItemSet.SetOnlyGeometrySelection(true);
             ShowForm(_frmBoundaryCondition, "Create Boundary Condition", stepName, null);
         }
         private void EditBoundaryCondition(string stepName, string boundaryConditionName)
@@ -3192,7 +3190,7 @@ namespace PrePoMax
             // Data editor
             ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
             ItemSetDataEditor.ParentForm = _frmBoundaryCondition;
-            _frmSelectItemSet.SetOnlyGeometrySelection(false);
+            _frmSelectItemSet.SetOnlyGeometrySelection(true);
             ShowForm(_frmBoundaryCondition, "Edit Boundary Condition", stepName, boundaryConditionName);
         }
         private void HideBoundaryConditions(string stepName, string[] boundaryConditionNames)

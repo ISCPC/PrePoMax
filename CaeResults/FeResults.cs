@@ -127,7 +127,7 @@ namespace CaeResults
 
             _nodeIdsLookUp = nodeIdsLookUp;
         }
-
+        //
         public void CopyPartsFromMesh(FeMesh mesh)
         {
             _mesh.Parts.Clear();
@@ -182,13 +182,13 @@ namespace CaeResults
             //    }
             //}
         }
-
+        //
         public void AddFiled(FieldData fieldData, Field field)
         {
             _fieldLookUp.Add(_fields.Count, fieldData);
             _fields.Add(fieldData, field);
         }
-
+        //
         public string[] GetComponentNames(string fieldName)
         {
             foreach (var entry in _fields)
@@ -443,7 +443,6 @@ namespace CaeResults
             }
             return nodesData;
         }
-
         // Scaled results
         public void GetScaledNodesAndValues(FieldData fieldData, float scale, int[] nodeIds, out double[][] nodeCoor, out float[] values)
         {
@@ -461,7 +460,7 @@ namespace CaeResults
             int[] nodeIds, cellIds;
             _mesh.GetVisualizationNodesAndCells(part, out nodeIds, out nodeCoor, out cellIds, out cells, out cellTypes);
         }
-
+        //
         public PartExchangeData GetScaledAllNodesCellsAndValues(FeGroup elementSet, FieldData fData, float scale)
         {
             PartExchangeData pData = new PartExchangeData();
@@ -493,7 +492,6 @@ namespace CaeResults
             if (scale != 0) ScaleNodeCoordinates(scale, fData.StepId, fData.StepIncrementId, resultData.Nodes.Ids, ref resultData.Nodes.Coor);
             return resultData;
         }
-
         // Animation        
         public PartExchangeData GetScaleFactorAnimationDataVisualizationNodesCellsAndValues(BasePart part, FieldData fData,
                                                                                             float scale, int numFrames)
@@ -586,7 +584,7 @@ namespace CaeResults
             
             return pData;
         }
-
+        //
         private float[] GetRelativeScales(int numFrames)
         {
             float ratio = 1f / (numFrames - 1);
@@ -649,7 +647,7 @@ namespace CaeResults
 
             return pData;
         }
-
+        //
         public void ScaleNodeCoordinates(float scale, int stepId, int stepIncrementId, int[] globalNodeIds, double[][] nodes, out double[][] scaledNodes)
         {
             if (scale == 0)
@@ -703,7 +701,7 @@ namespace CaeResults
                 }
             }
         }
-        
+        //
         public void ScaleValues(float scale, float[] values, out float[] scaledValues)
         {
             scaledValues = new float[values.Length];
@@ -716,7 +714,7 @@ namespace CaeResults
                 }
             }
         }
-
+        //
         public float GetMaxDisplacement()
         {
             float max = -1;
@@ -743,5 +741,15 @@ namespace CaeResults
             }
             return max;
         }
+        //
+        public double GetEdgeLength(int geometryEdgeId)
+        {
+            int[] itemTypePart = FeMesh.GetItemTypePartIdsFromGeometryId(geometryEdgeId);
+            BasePart part = _mesh.GetPartById(itemTypePart[2]);
+            int[] nodeIds = part.Visualization.GetOrderedNodeIdsForEdge(itemTypePart[0]);
+            //
+            return 0;
+        }
+
     }
 }

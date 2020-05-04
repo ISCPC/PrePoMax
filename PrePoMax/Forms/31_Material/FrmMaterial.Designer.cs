@@ -89,7 +89,7 @@
             treeNode2,
             treeNode4,
             treeNode6});
-            this.tvProperties.Size = new System.Drawing.Size(137, 149);
+            this.tvProperties.Size = new System.Drawing.Size(137, 122);
             this.tvProperties.TabIndex = 2;
             this.tvProperties.DoubleClick += new System.EventHandler(this.tvProperties_DoubleClick);
             // 
@@ -103,7 +103,7 @@
             this.propertyGrid.LineColor = System.Drawing.SystemColors.Control;
             this.propertyGrid.Location = new System.Drawing.Point(0, 0);
             this.propertyGrid.Name = "propertyGrid";
-            this.propertyGrid.Size = new System.Drawing.Size(295, 192);
+            this.propertyGrid.Size = new System.Drawing.Size(295, 235);
             this.propertyGrid.TabIndex = 6;
             this.propertyGrid.ToolbarVisible = false;
             this.propertyGrid.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.propertyGrid_PropertyValueChanged);
@@ -188,11 +188,11 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tcProperties.Controls.Add(this.tabPage1);
             this.tcProperties.Controls.Add(this.tabPage2);
-            this.tcProperties.Location = new System.Drawing.Point(6, 190);
+            this.tcProperties.Location = new System.Drawing.Point(6, 163);
             this.tcProperties.Margin = new System.Windows.Forms.Padding(0);
             this.tcProperties.Name = "tcProperties";
             this.tcProperties.SelectedIndex = 0;
-            this.tcProperties.Size = new System.Drawing.Size(303, 238);
+            this.tcProperties.Size = new System.Drawing.Size(303, 265);
             this.tcProperties.TabIndex = 11;
             // 
             // tabPage1
@@ -202,7 +202,7 @@
             this.tabPage1.Location = new System.Drawing.Point(4, 24);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(295, 210);
+            this.tabPage1.Size = new System.Drawing.Size(295, 237);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Properties";
             // 
@@ -213,7 +213,7 @@
             this.tabPage2.Location = new System.Drawing.Point(4, 24);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(295, 210);
+            this.tabPage2.Size = new System.Drawing.Size(295, 237);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Data points";
             // 
@@ -225,7 +225,7 @@
             this.dgvData.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvData.Location = new System.Drawing.Point(0, 0);
             this.dgvData.Name = "dgvData";
-            this.dgvData.Size = new System.Drawing.Size(295, 200);
+            this.dgvData.Size = new System.Drawing.Size(295, 235);
             this.dgvData.TabIndex = 0;
             this.dgvData.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dgvData_DataError);
             // 
@@ -257,7 +257,7 @@
             this.lvAddedProperties.Location = new System.Drawing.Point(177, 38);
             this.lvAddedProperties.MultiSelect = false;
             this.lvAddedProperties.Name = "lvAddedProperties";
-            this.lvAddedProperties.Size = new System.Drawing.Size(128, 149);
+            this.lvAddedProperties.Size = new System.Drawing.Size(128, 122);
             this.lvAddedProperties.TabIndex = 5;
             this.lvAddedProperties.UseCompatibleStateImageBehavior = false;
             this.lvAddedProperties.View = System.Windows.Forms.View.List;

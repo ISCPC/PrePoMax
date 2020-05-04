@@ -9,7 +9,7 @@ using CaeGlobals;
 
 namespace PrePoMax.Forms
 {
-    class FrmLoad : UserControls.FrmPropertyListView, IFormBase, IFormHighlight
+    class FrmLoad : UserControls.FrmPropertyListView, IFormBase, IFormItemSetDataParent, IFormHighlight
     {
         // Variables                                                                                                                
         private string[] _loadNames;
@@ -581,6 +581,14 @@ namespace PrePoMax.Forms
         public void Highlight()
         {
             HighlightLoad();
+        }
+
+        // IFormItemSetDataParent
+        public bool IsSelectionGeometryBased()
+        {
+            // Prepare ItemSetDataEditor - prepare Geometry or Mesh based selection
+            if (FELoad == null || FELoad.CreationData == null) return true;   // element set based section
+            return FELoad.CreationData.IsGeometryBased();
         }
     }
 }

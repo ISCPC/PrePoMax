@@ -152,6 +152,7 @@ namespace vtkControl
             this._name = data.Name;
             _geometry.SetMapper(mapper);
             _geometry.SetPickable(data.Pickable ? 1 : 0);
+            _geometry.GetProperty().SetLineWidth(data.LineWidth);
             this._actorRepresentation = data.ActorRepresentation;
             this._backfaceCulling = data.BackfaceCulling;
             this._color = data.Color;
@@ -191,6 +192,7 @@ namespace vtkControl
                     _geometry.SetPickable(0);
                 }
             }
+            _geometry.GetProperty().SetLineWidth(data.LineWidth);
             //
             this._actorRepresentation = data.ActorRepresentation;
             this._backfaceCulling = data.BackfaceCulling;
@@ -222,6 +224,7 @@ namespace vtkControl
             // Actor
             _geometry.SetMapper(mapper);
             _geometry.GetProperty().DeepCopy(sourceActor.Geometry.GetProperty());
+            //_geometry.GetProperty().SetLineWidth(sourceActor.Geometry.GetProperty().GetLineWidth());
             _geometry.SetVisibility(sourceActor.Geometry.GetVisibility());
             _geometry.SetPickable(sourceActor.Geometry.GetPickable());
             //
@@ -1188,7 +1191,7 @@ namespace vtkControl
                 property = _modelEdges.GetProperty();
                 property.SetColor(0, 0, 0);
                 property.SetLighting(false);
-                property.SetLineWidth(1.2f);
+                property.SetLineWidth(0.8f);
                 property.SetOpacity(opacity * 0.7);
             }
             //if (opacity < 1) opacity = Math.Min(0.2, opacity);

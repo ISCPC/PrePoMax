@@ -264,10 +264,11 @@ namespace PrePoMax.Forms
         // IFormItemSetDataParent
         public bool IsSelectionGeometryBased()
         {
-            // prepare ItemSetDataEditor
+            // Prepare ItemSetDataEditor - prepare Geometry or Mesh based selection
             if (_surfaceToEditName == null) return true;
-            FeSurface surface = _controller.GetSurface(_surfaceToEditName);
-            if (surface == null || surface.CreationData == null) return true;
+            //
+            FeSurface surface = _controller.GetSurface(_surfaceToEditName);     // Surface was modified for speed up
+            if (surface == null || surface.CreationData == null) return true;   // node based surface
             return surface.CreationData.IsGeometryBased();
         }
     }

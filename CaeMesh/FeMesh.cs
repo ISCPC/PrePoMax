@@ -272,101 +272,7 @@ namespace CaeMesh
             if (_meshRefinements == null) _meshRefinements = new OrderedDictionary<string, FeMeshRefinement>();
         }
 
-
-        private static void LinearToParabolic(ref Dictionary<int, FeNode> nodes, ref Dictionary<int, FeElement> elements)
-        {
-            CompareIntArray comparer = new CompareIntArray();
-            Dictionary<int[], FeNode> midNodesDic = new Dictionary<int[], FeNode>(comparer);
-            Dictionary<int, FeNode> nodesOut = new Dictionary<int, FeNode>(nodes);
-            Dictionary<int, FeElement> elementsOut = new Dictionary<int, FeElement>();
-            //
-            int maxNodeId = int.MinValue;
-            foreach (var entry in nodes) if (entry.Key > maxNodeId) maxNodeId = entry.Key;
-            //
-            int[] nodeIds;
-            FeNode[] elNodes;
-            FeElement linElement;
-            FeElement parElement;
-            foreach (var entry in elements)
-            {
-                linElement = entry.Value;
-                if (linElement is LinearBeamElement)
-                {
-                    elNodes = new FeNode[3];
-                    elNodes[0] = nodes[linElement.NodeIds[0]];
-                    elNodes[1] = nodes[linElement.NodeIds[1]];
-                    elNodes[2] = GetOrCreateMidNode(elNodes[0], elNodes[1], ref midNodesDic, ref maxNodeId);
-
-                    nodeIds = new int[] { elNodes[0].Id, elNodes[1].Id, elNodes[2].Id };
-                    parElement = new ParabolicBeamElement(entry.Key, nodeIds);
-                }
-                else if (linElement is LinearTriangleElement)
-                {
-                    elNodes = new FeNode[6];
-                    elNodes[0] = nodes[linElement.NodeIds[0]];
-                    elNodes[1] = nodes[linElement.NodeIds[1]];
-                    elNodes[2] = nodes[linElement.NodeIds[2]];
-                    elNodes[3] = GetOrCreateMidNode(elNodes[0], elNodes[1], ref midNodesDic, ref maxNodeId);
-                    elNodes[4] = GetOrCreateMidNode(elNodes[1], elNodes[2], ref midNodesDic, ref maxNodeId);
-                    elNodes[5] = GetOrCreateMidNode(elNodes[2], elNodes[0], ref midNodesDic, ref maxNodeId);
-
-                    nodeIds = new int[] { elNodes[0].Id, elNodes[1].Id, elNodes[2].Id,
-                                          elNodes[3].Id, elNodes[4].Id, elNodes[5].Id };
-                    parElement = new ParabolicTriangleElement(entry.Key, nodeIds);
-                }
-                else if (linElement is LinearTetraElement linTetEl)
-                {
-                    elNodes = new FeNode[10];
-                    elNodes[0] = nodes[linElement.NodeIds[0]];
-                    elNodes[1] = nodes[linElement.NodeIds[1]];
-                    elNodes[2] = nodes[linElement.NodeIds[2]];
-                    elNodes[3] = nodes[linElement.NodeIds[3]];
-                    elNodes[4] = GetOrCreateMidNode(elNodes[0], elNodes[1], ref midNodesDic, ref maxNodeId);
-                    elNodes[5] = GetOrCreateMidNode(elNodes[1], elNodes[2], ref midNodesDic, ref maxNodeId);
-                    elNodes[6] = GetOrCreateMidNode(elNodes[2], elNodes[0], ref midNodesDic, ref maxNodeId);
-                    elNodes[7] = GetOrCreateMidNode(elNodes[0], elNodes[3], ref midNodesDic, ref maxNodeId);
-                    elNodes[8] = GetOrCreateMidNode(elNodes[1], elNodes[3], ref midNodesDic, ref maxNodeId);
-                    elNodes[9] = GetOrCreateMidNode(elNodes[2], elNodes[3], ref midNodesDic, ref maxNodeId);
-
-                    nodeIds = new int[] { elNodes[0].Id, elNodes[1].Id, elNodes[2].Id, elNodes[3].Id,
-                                          elNodes[4].Id, elNodes[5].Id, elNodes[6].Id,
-                                          elNodes[7].Id, elNodes[8].Id, elNodes[9].Id };
-                    parElement = new ParabolicTetraElement(entry.Key, nodeIds);
-                }
-                else throw new NotSupportedException();
-                //
-                parElement.PartId = linElement.PartId;
-                elementsOut.Add(parElement.Id, parElement);
-            }
-            // Add nodes
-            foreach (var entry in midNodesDic) nodesOut.Add(entry.Value.Id, entry.Value);
-            //
-            nodes = nodesOut;
-            elements = elementsOut;
-        }
-        private static FeNode GetOrCreateMidNode(FeNode n1, FeNode n2, ref Dictionary<int[], FeNode> midNodes, ref int maxNodeId)
-        {
-            int[] ids;
-            if (n1.Id < n2.Id) ids = new int[] { n1.Id, n2.Id };
-            else ids = new int[] { n2.Id, n1.Id };
-            //
-            FeNode newNode;
-            if (!midNodes.TryGetValue(ids, out newNode))
-            {
-                maxNodeId++;
-                newNode = new FeNode(maxNodeId, GetMidNodeCoor(n1, n2));
-                midNodes.Add(ids, newNode);
-            }
-            return newNode;
-        }
-        private static double[] GetMidNodeCoor(FeNode n1, FeNode n2)
-        {
-            double[] coor = new double[3];
-            coor[0] = 0.5 * (n1.X + n2.X);
-            coor[1] = 0.5 * (n1.Y + n2.Y);
-            coor[2] = 0.5 * (n1.Z + n2.Z);
-            return coor;
-        }
+       
         // Static methods                                                                                                           
         public static void WriteToBinaryFile(FeMesh mesh, System.IO.BinaryWriter bw)
         {
@@ -678,6 +584,102 @@ namespace CaeMesh
                             (_boundingBox.MaxZ - _boundingBox.MinZ), 1.0 / 3.0);
 
 
+        }
+
+        // Convert to parabolic
+        private static void LinearToParabolic(ref Dictionary<int, FeNode> nodes, ref Dictionary<int, FeElement> elements)
+        {
+            CompareIntArray comparer = new CompareIntArray();
+            Dictionary<int[], FeNode> midNodesDic = new Dictionary<int[], FeNode>(comparer);
+            Dictionary<int, FeNode> nodesOut = new Dictionary<int, FeNode>(nodes);
+            Dictionary<int, FeElement> elementsOut = new Dictionary<int, FeElement>();
+            //
+            int maxNodeId = int.MinValue;
+            foreach (var entry in nodes) if (entry.Key > maxNodeId) maxNodeId = entry.Key;
+            //
+            int[] nodeIds;
+            FeNode[] elNodes;
+            FeElement linElement;
+            FeElement parElement;
+            foreach (var entry in elements)
+            {
+                linElement = entry.Value;
+                if (linElement is LinearBeamElement)
+                {
+                    elNodes = new FeNode[3];
+                    elNodes[0] = nodes[linElement.NodeIds[0]];
+                    elNodes[1] = nodes[linElement.NodeIds[1]];
+                    elNodes[2] = GetOrCreateMidNode(elNodes[0], elNodes[1], ref midNodesDic, ref maxNodeId);
+
+                    nodeIds = new int[] { elNodes[0].Id, elNodes[1].Id, elNodes[2].Id };
+                    parElement = new ParabolicBeamElement(entry.Key, nodeIds);
+                }
+                else if (linElement is LinearTriangleElement)
+                {
+                    elNodes = new FeNode[6];
+                    elNodes[0] = nodes[linElement.NodeIds[0]];
+                    elNodes[1] = nodes[linElement.NodeIds[1]];
+                    elNodes[2] = nodes[linElement.NodeIds[2]];
+                    elNodes[3] = GetOrCreateMidNode(elNodes[0], elNodes[1], ref midNodesDic, ref maxNodeId);
+                    elNodes[4] = GetOrCreateMidNode(elNodes[1], elNodes[2], ref midNodesDic, ref maxNodeId);
+                    elNodes[5] = GetOrCreateMidNode(elNodes[2], elNodes[0], ref midNodesDic, ref maxNodeId);
+
+                    nodeIds = new int[] { elNodes[0].Id, elNodes[1].Id, elNodes[2].Id,
+                                          elNodes[3].Id, elNodes[4].Id, elNodes[5].Id };
+                    parElement = new ParabolicTriangleElement(entry.Key, nodeIds);
+                }
+                else if (linElement is LinearTetraElement linTetEl)
+                {
+                    elNodes = new FeNode[10];
+                    elNodes[0] = nodes[linElement.NodeIds[0]];
+                    elNodes[1] = nodes[linElement.NodeIds[1]];
+                    elNodes[2] = nodes[linElement.NodeIds[2]];
+                    elNodes[3] = nodes[linElement.NodeIds[3]];
+                    elNodes[4] = GetOrCreateMidNode(elNodes[0], elNodes[1], ref midNodesDic, ref maxNodeId);
+                    elNodes[5] = GetOrCreateMidNode(elNodes[1], elNodes[2], ref midNodesDic, ref maxNodeId);
+                    elNodes[6] = GetOrCreateMidNode(elNodes[2], elNodes[0], ref midNodesDic, ref maxNodeId);
+                    elNodes[7] = GetOrCreateMidNode(elNodes[0], elNodes[3], ref midNodesDic, ref maxNodeId);
+                    elNodes[8] = GetOrCreateMidNode(elNodes[1], elNodes[3], ref midNodesDic, ref maxNodeId);
+                    elNodes[9] = GetOrCreateMidNode(elNodes[2], elNodes[3], ref midNodesDic, ref maxNodeId);
+
+                    nodeIds = new int[] { elNodes[0].Id, elNodes[1].Id, elNodes[2].Id, elNodes[3].Id,
+                                          elNodes[4].Id, elNodes[5].Id, elNodes[6].Id,
+                                          elNodes[7].Id, elNodes[8].Id, elNodes[9].Id };
+                    parElement = new ParabolicTetraElement(entry.Key, nodeIds);
+                }
+                else throw new NotSupportedException();
+                //
+                parElement.PartId = linElement.PartId;
+                elementsOut.Add(parElement.Id, parElement);
+            }
+            // Add nodes
+            foreach (var entry in midNodesDic) nodesOut.Add(entry.Value.Id, entry.Value);
+            //
+            nodes = nodesOut;
+            elements = elementsOut;
+        }
+        private static FeNode GetOrCreateMidNode(FeNode n1, FeNode n2, ref Dictionary<int[], FeNode> midNodes, ref int maxNodeId)
+        {
+            int[] ids;
+            if (n1.Id < n2.Id) ids = new int[] { n1.Id, n2.Id };
+            else ids = new int[] { n2.Id, n1.Id };
+            //
+            FeNode newNode;
+            if (!midNodes.TryGetValue(ids, out newNode))
+            {
+                maxNodeId++;
+                newNode = new FeNode(maxNodeId, GetMidNodeCoor(n1, n2));
+                midNodes.Add(ids, newNode);
+            }
+            return newNode;
+        }
+        private static double[] GetMidNodeCoor(FeNode n1, FeNode n2)
+        {
+            double[] coor = new double[3];
+            coor[0] = 0.5 * (n1.X + n2.X);
+            coor[1] = 0.5 * (n1.Y + n2.Y);
+            coor[2] = 0.5 * (n1.Z + n2.Z);
+            return coor;
         }
 
         #region Parts  #############################################################################################################
@@ -1310,38 +1312,41 @@ namespace CaeMesh
         }
         private void ComputeFaceAreas(BasePart part)
         {
-            int faceCellId;
-            int[] cell;
             VisualizationData visualization = part.Visualization;
-            double[] faceAreas = new double[visualization.CellIdsByFace.Length];
-
-            // for each face
+            visualization.FaceAreas = new double[visualization.CellIdsByFace.Length];
+            // For each face
             for (int i = 0; i < visualization.CellIdsByFace.Length; i++)
             {
-                faceAreas[i] = 0;
-                // for each face cell
-                for (int j = 0; j < visualization.CellIdsByFace[i].Length; j++)
-                {
-                    faceCellId = visualization.CellIdsByFace[i][j];
-                    cell = visualization.Cells[faceCellId];
-
-                    if (cell.Length == 3)
-                        faceAreas[i] += GeometryTools.TriangleArea(_nodes[cell[0]], _nodes[cell[1]], _nodes[cell[2]]);
-                    else if (cell.Length == 4)
-                        faceAreas[i] += GeometryTools.RectangleArea(_nodes[cell[0]], _nodes[cell[1]], _nodes[cell[2]],
-                                                                    _nodes[cell[3]]);
-                    else if (cell.Length == 6)
-                        faceAreas[i] += GeometryTools.TriangleArea(_nodes[cell[0]], _nodes[cell[1]], _nodes[cell[2]],
-                                                                   _nodes[cell[3]], _nodes[cell[4]], _nodes[cell[5]]);
-                    else if (cell.Length == 8)
-                        faceAreas[i] += GeometryTools.RectangleArea(_nodes[cell[0]], _nodes[cell[1]], _nodes[cell[2]],
-                                                                    _nodes[cell[3]], _nodes[cell[4]], _nodes[cell[5]],
-                                                                    _nodes[cell[6]], _nodes[cell[7]]);
-                    else throw new NotSupportedException();
-                }
+                visualization.FaceAreas[i] = ComputeFaceArea(visualization, i, _nodes);
             }
-
-            visualization.FaceAreas = faceAreas;
+        }
+        public double ComputeFaceArea(VisualizationData visualization, int faceId, Dictionary<int, FeNode> nodes)
+        {
+            int faceCellId;
+            int[] cell;
+            double faceArea = 0;
+            // For each face cell
+            for (int i = 0; i < visualization.CellIdsByFace[faceId].Length; i++)
+            {
+                faceCellId = visualization.CellIdsByFace[faceId][i];
+                cell = visualization.Cells[faceCellId];
+                //
+                if (cell.Length == 3)
+                    faceArea += GeometryTools.TriangleArea(nodes[cell[0]], nodes[cell[1]], nodes[cell[2]]);
+                else if (cell.Length == 4)
+                    faceArea += GeometryTools.RectangleArea(nodes[cell[0]], nodes[cell[1]], nodes[cell[2]],
+                                                            nodes[cell[3]]);
+                else if (cell.Length == 6)
+                    faceArea += GeometryTools.TriangleArea(nodes[cell[0]], nodes[cell[1]], nodes[cell[2]],
+                                                           nodes[cell[3]], nodes[cell[4]], nodes[cell[5]]);
+                else if (cell.Length == 8)
+                    faceArea += GeometryTools.RectangleArea(nodes[cell[0]], nodes[cell[1]], nodes[cell[2]],
+                                                            nodes[cell[3]], nodes[cell[4]], nodes[cell[5]],
+                                                            nodes[cell[6]], nodes[cell[7]]);
+                else throw new NotSupportedException();
+            }
+            //
+            return faceArea;
         }
         public double ComputeAngleInRadFromCellIndices(int[] cell1, int[] cell2)
         {
@@ -4669,7 +4674,7 @@ namespace CaeMesh
             FeReferencePoint point = new FeReferencePoint(name, x, y, z);
             _referencePoints.Add(name, point);
         }
-
+        //
         public string[] AddMesh(FeMesh mesh, ICollection<string> reservedPartNames, bool forceRenameParts = true)
         {
             int count;
@@ -4996,7 +5001,7 @@ namespace CaeMesh
             //
             return changedSurfaces.ToArray();
         }
-
+        //
         public int[] RemoveParts(string[] partNames, out string[] removedParts, bool removeForRemeshing)
         {
             int[] removedPartIds = new int[partNames.Length];
@@ -5204,7 +5209,7 @@ namespace CaeMesh
             List<double[]> coor = new List<double[]>();
             //
             HashSet<int> visibleNodes = new HashSet<int>();
-            foreach (var part in _parts) if (part.Value.Visible) visibleNodes.UnionWith(part.Value.NodeLabels);
+            foreach (var entry in _parts) if (entry.Value.Visible) visibleNodes.UnionWith(entry.Value.NodeLabels);
             //
             for (int i = 0; i < nodeIds.Length; i++)
             {
@@ -5324,7 +5329,8 @@ namespace CaeMesh
             }
             else throw new NotSupportedException();
         }
-        public void GetElementFaceCenterAndNormal(int elementId, FeFaceName faceName, out double[] faceCenter, out double[] faceNormal)
+        public void GetElementFaceCenterAndNormal(int elementId, FeFaceName faceName, out double[] faceCenter,
+                                                  out double[] faceNormal)
         {
             FeNode[] nodes;
             FeElement element = _elements[elementId];
@@ -5409,7 +5415,8 @@ namespace CaeMesh
 
 
         // Cells 
-        public void GetAllNodesAndCells(FeGroup elementSet, out int[] nodeIds, out double[][] nodeCoor, out int[] cellIds, out int[][] cells, out int[] cellTypes)
+        public void GetAllNodesAndCells(FeGroup elementSet, out int[] nodeIds, out double[][] nodeCoor, out int[] cellIds,
+                                        out int[][] cells, out int[] cellTypes)
         {
             cellIds = elementSet.Labels;
             cells = new int[cellIds.Length][];
@@ -5456,7 +5463,8 @@ namespace CaeMesh
             }
             nodeIds = GetRenumberedNodesAndCells(out nodeCoor, ref cells);
         }
-        public void GetVisualizationNodesAndCells(BasePart part, out int[] nodeIds, out double[][] nodeCoor, out int[] cellIds, out int[][] cells, out int[] cellTypes)
+        public void GetVisualizationNodesAndCells(BasePart part, out int[] nodeIds, out double[][] nodeCoor, out int[] cellIds,
+                                                  out int[][] cells, out int[] cellTypes)
         {
             cellIds = part.Visualization.CellIds.ToArray();
             int[][] visualizationCells = part.Visualization.Cells;
@@ -5528,7 +5536,8 @@ namespace CaeMesh
 
 
         }
-        public void GetNodesAndCellsForModelEdges(FeGroup elementSet, out int[] nodeIds, out double[][] nodeCoor, out int[][] cells, out int[] cellTypes)
+        public void GetNodesAndCellsForModelEdges(FeGroup elementSet, out int[] nodeIds, out double[][] nodeCoor,
+                                                  out int[][] cells, out int[] cellTypes)
         {
             nodeIds = null;
             nodeCoor = null;
@@ -5567,7 +5576,8 @@ namespace CaeMesh
             }
             return edgeCells.ToArray();
         }
-        public void GetNodesAndCellsForEdges(int[][] edgeCells, out int[] nodeIds, out double[][] nodeCoor, out int[][] cells, out int[] cellTypes)
+        public void GetNodesAndCellsForEdges(int[][] edgeCells, out int[] nodeIds, out double[][] nodeCoor, out int[][] cells,
+                                             out int[] cellTypes)
         {
             cells = new int[edgeCells.Length][];
             cellTypes = new int[edgeCells.Length];
@@ -5734,16 +5744,24 @@ namespace CaeMesh
         public double GetEdgeLength(int geometryEdgeId)
         {
             int[] itemTypePart = GetItemTypePartIdsFromGeometryId(geometryEdgeId);
-            BasePart part = GetPartById(itemTypePart[2]);
-            return part.Visualization.EdgeLengths[itemTypePart[0]];
+            if (itemTypePart[1] == 2)
+            {
+                BasePart part = GetPartById(itemTypePart[2]);
+                return part.Visualization.EdgeLengths[itemTypePart[0]];
+            }
+            else throw new NotSupportedException();
         }
-        public double[][] GetEdgeNodeCoor(int geometryEdgeId, out int[] nodeIds)
+        public void GetEdgeNodeCoor(int geometryEdgeId, out int[] nodeIds, out double[][] nodeCoor)
         {
             int[] itemTypePart = GetItemTypePartIdsFromGeometryId(geometryEdgeId);
-            VisualizationData visualization = GetPartById(itemTypePart[2]).Visualization;
-            return GetEdgeNodeCoor(itemTypePart[0], visualization, out nodeIds);
+            if (itemTypePart[1] == 2)
+            {
+                VisualizationData visualization = GetPartById(itemTypePart[2]).Visualization;
+                GetEdgeNodeCoor(itemTypePart[0], visualization, out nodeIds, out nodeCoor);
+            }
+            else throw new NotSupportedException();
         }
-        public double[][] GetEdgeNodeCoor(int edgeId, VisualizationData visualization, out int[] nodeIds)
+        public void GetEdgeNodeCoor(int edgeId, VisualizationData visualization, out int[] nodeIds, out double[][] nodeCoor)
         {
             int edgeCellId;
             int[] oneEdgeNodeIds;
@@ -5773,10 +5791,30 @@ namespace CaeMesh
                 }
             }
             nodeIds = allNodeIds.ToArray();
-            return edgeNodeCoor.ToArray();
+            nodeCoor = edgeNodeCoor.ToArray();
         }
 
-        
+        // Faces
+        public void GetFaceNodes(int geometryFaceId, out int[] nodeIds)
+        {
+            int[] itemTypePart = GetItemTypePartIdsFromGeometryId(geometryFaceId);
+            VisualizationData vis = GetPartById(itemTypePart[2]).Visualization;
+            if (itemTypePart[1] == 3)
+            {
+                int cellId;
+                int faceId = itemTypePart[0];
+                HashSet<int> allNodeIds = new HashSet<int>();
+                //
+                for (int i = 0; i < vis.CellIdsByFace[faceId].Length; i++)
+                {
+                    cellId = vis.CellIdsByFace[faceId][i];
+                    allNodeIds.UnionWith(vis.Cells[cellId]);
+                }
+                //
+                nodeIds = allNodeIds.ToArray();
+            }
+            else throw new NotSupportedException();
+        }
 
         // Analyze
         public double GetShortestEdgeLen(string[] partNames)
@@ -5807,6 +5845,7 @@ namespace CaeMesh
         /// <returns></returns>
         public double[][][] GetShortEdges(double minEdgeLen, string[] partNames)
         {
+            double[][] nodeCoor;
             List<double[][]> allNodeCoor = new List<double[][]>();
             VisualizationData visualization;
             BasePart part;
@@ -5822,7 +5861,8 @@ namespace CaeMesh
                 {
                     if (visualization.EdgeLengths[i] < minEdgeLen)
                     {
-                        allNodeCoor.Add(GetEdgeNodeCoor(i, visualization, out int[] nodeIds));
+                        GetEdgeNodeCoor(i, visualization, out int[] nodeIds, out nodeCoor);
+                        allNodeCoor.Add(nodeCoor);
                     }
                 }
             }
@@ -5880,6 +5920,7 @@ namespace CaeMesh
             int edge1Id;
             int edge2Id;
             double dist;
+            double[][] nodeCoor;
             List<double[][]> allNodeCoor = new List<double[][]>();
             //
             foreach (var partName in partNames)
@@ -5904,8 +5945,10 @@ namespace CaeMesh
                             //
                             if (dist != -1 && dist <= minDistance)
                             {
-                                allNodeCoor.Add(GetEdgeNodeCoor(edge1Id, visualization, out int[] nodeIds1));
-                                allNodeCoor.Add(GetEdgeNodeCoor(edge2Id, visualization, out int[] nodeIds2));
+                                GetEdgeNodeCoor(edge1Id, visualization, out int[] nodeIds1, out nodeCoor);
+                                allNodeCoor.Add(nodeCoor);
+                                GetEdgeNodeCoor(edge2Id, visualization, out int[] nodeIds2, out nodeCoor);
+                                allNodeCoor.Add(nodeCoor);
                             }
                         }
                     }
@@ -6041,7 +6084,8 @@ namespace CaeMesh
         }
 
         // Operations
-        public string[] TranslateParts(string[] partNames, double[] translateVector, bool copy, ICollection<string> reservedPartNames)
+        public string[] TranslateParts(string[] partNames, double[] translateVector, bool copy,
+                                       ICollection<string> reservedPartNames)
         {
             string[] translatedPartNames = partNames.ToArray();
             //

@@ -239,33 +239,6 @@ namespace PrePoMax.Forms
             }
             catch { }
         }
-        //
-        public void SelectionChanged(int[] ids)
-        {
-            if (btnPreview.Enabled)
-            {
-                MeshRefinement.GeometryIds = ids;
-                MeshRefinement.CreationData = _controller.Selection.DeepClone();
-                //
-                propertyGrid.Refresh();
-                //
-                _propertyItemChanged = true;
-            }
-        }
-
-        // IFormHighlight
-        public void Highlight()
-        {
-            HighlightMeshRefinement();
-        }
-
-        // IFormItemSetDataParent
-        public bool IsSelectionGeometryBased()
-        {
-            // Prepare ItemSetDataEditor
-            if (_meshRefinementToEditName == null) return true;
-            return _controller.GetMeshRefinement(_meshRefinementToEditName).CreationData.IsGeometryBased();
-        }
         async private void btnPreview_Click(object sender, EventArgs e)
         {
             try
@@ -294,6 +267,34 @@ namespace PrePoMax.Forms
                 btnPreview.Enabled = true;
             }
         }
+        //
+        public void SelectionChanged(int[] ids)
+        {
+            if (btnPreview.Enabled)
+            {
+                MeshRefinement.GeometryIds = ids;
+                MeshRefinement.CreationData = _controller.Selection.DeepClone();
+                //
+                propertyGrid.Refresh();
+                //
+                _propertyItemChanged = true;
+            }
+        }
+
+        // IFormHighlight
+        public void Highlight()
+        {
+            HighlightMeshRefinement();
+        }
+
+        // IFormItemSetDataParent
+        public bool IsSelectionGeometryBased()
+        {
+            // Prepare ItemSetDataEditor - prepare Geometry or Mesh based selection
+            // All mesh refinements are geometry based
+            return true;
+        }
+        
 
        
     }
