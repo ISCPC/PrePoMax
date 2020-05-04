@@ -633,6 +633,7 @@
     <None Include="Icons\Contact\SurfaceInteraction.ico" />
     <None Include="Icons\Material\Remove.png" />
     <None Include="Icons\Contact\ContactPair.ico" />
+    <None Include="Icons\File\Open.png" />
     <Content Include="main.ico" />
   </ItemGroup>
   <ItemGroup>

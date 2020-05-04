@@ -880,23 +880,7 @@ namespace PrePoMax
                     openFileDialog.FileName = "";
                     if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                     {
-                        if (_controller.ModelChanged)
-                        {
-                            if (Path.GetExtension(openFileDialog.FileName).ToLower() == ".pmx")
-                            {
-                                if (MessageBox.Show("OK to close current model?", 
-                                    Globals.ProgramName, 
-                                    MessageBoxButtons.OKCancel) != System.Windows.Forms.DialogResult.OK) return;
-                            }
-                            else if (Path.GetExtension(openFileDialog.FileName).ToLower() == ".frd" && _controller.Results != null)
-                            {
-                                if (MessageBox.Show("OK to overwrite current results?",
-                                    Globals.ProgramName,
-                                    MessageBoxButtons.OKCancel) != System.Windows.Forms.DialogResult.OK) return;
-                            }
-                        }
-
-                        OpenAsync(openFileDialog.FileName);
+                        if (CheckBeforeOpen(openFileDialog.FileName)) OpenAsync(openFileDialog.FileName);
                     }
                 }
             }
@@ -905,6 +889,25 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
                 _controller.New();
             }
+        }
+        private bool CheckBeforeOpen(string fileName)
+        {
+            if (_controller.ModelChanged)
+            {
+                if (Path.GetExtension(fileName).ToLower() == ".pmx")
+                {
+                    if (MessageBox.Show("OK to close current model?",
+                        Globals.ProgramName,
+                        MessageBoxButtons.OKCancel) != System.Windows.Forms.DialogResult.OK) return false;
+                }
+                else if (Path.GetExtension(fileName).ToLower() == ".frd" && _controller.Results != null)
+                {
+                    if (MessageBox.Show("OK to overwrite current results?",
+                        Globals.ProgramName,
+                        MessageBoxButtons.OKCancel) != System.Windows.Forms.DialogResult.OK) return false;
+                }
+            }
+            return true;
         }
         private async void OpenAsync(string fileName, bool resetCamera = true, Action callback = null)
         {
@@ -1167,6 +1170,64 @@ namespace PrePoMax
         private void tsmiExit_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+        //Recent
+        public void UpdateRecentFilesThreadSafe(string[] fileNames)
+        {
+            InvokeIfRequired(UpdateRecentFiles, fileNames);
+        }
+        public void UpdateRecentFiles(string[] fileNames)
+        {
+            try
+            {
+                if (fileNames != null)
+                {
+                    tsmiOpenRecent.DropDownItems.Clear();
+                    //
+                    ToolStripMenuItem menuItem;
+                    foreach (var fileName in fileNames)
+                    {
+                        menuItem = new ToolStripMenuItem(fileName);
+                        menuItem.Click += tsmiRecentFile_Click;
+                        tsmiOpenRecent.DropDownItems.Add(menuItem);
+                    }
+                    if (fileNames.Length > 0)
+                    {
+                        ToolStripSeparator separator = new ToolStripSeparator();
+                        tsmiOpenRecent.DropDownItems.Add(separator);
+                    }
+                    menuItem = new ToolStripMenuItem("Clear Recent Files");
+                    menuItem.Click += tsmiClearRecentFiles_Click;
+                    tsmiOpenRecent.DropDownItems.Add(menuItem);
+                }
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiRecentFile_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string fileName = ((ToolStripMenuItem)sender).Text;
+                if (CheckBeforeOpen(fileName)) OpenAsync(fileName);
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiClearRecentFiles_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                _controller.ClearRecentFiles();
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
         }
 
         #endregion  ################################################################################################################

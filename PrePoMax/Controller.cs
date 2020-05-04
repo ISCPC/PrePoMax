@@ -183,7 +183,7 @@ namespace PrePoMax
             return _commands.HistoryFileNameTxt;
         }
         //
-        public String OpenedFileName
+        public string OpenedFileName
         {
             get
             {
@@ -416,6 +416,8 @@ namespace PrePoMax
             else throw new NotSupportedException();
             // Get first component of the first field for the last increment in the last step
             if (_results != null) _currentFieldData = _results.GetFirstComponentOfTheFirstFieldAtLastIncrement();
+            // Settings
+            AddFileNameToRecent(fileName);
         }
         private void OpenPmx(string fileName)
         {
@@ -994,8 +996,7 @@ namespace PrePoMax
                     FeResults results = null;
                     HistoryResults history = null;
                     bool saveResults = ((GeneralSettings)Settings[Globals.GeneralSettingsName]).SaveResultsInPmx;
-
-                    // when controller (data[0]) is dumped to stream, the results should be null if selected
+                    // When controller (data[0]) is dumped to stream, the results should be null if selected
                     if (saveResults == false)
                     {
                         results = _results;
@@ -1003,30 +1004,28 @@ namespace PrePoMax
                         history = _history;
                         _history = null;
                     }
-
                     // Controller
                     data.DumpToStream(bw);
                     // Model - data is saved inside data[0]._model but without mesh data - speed up
                     FeModel.WriteToFile(_model, bw);
                     // Results - data is saved inside data[0]._results but without mesh data - speed up
                     FeResults.WriteToFile(_results, bw);
-
-                    // after dumping restore the results
+                    // After dumping restore the results
                     if (saveResults == false)
                     {
                         _results = results;
                         _history = history;
                     }
-
+                    //
                     bw.Flush();
                     bw.BaseStream.Position = 0;
-
+                    //
                     byte[] compressedData = Compress(bw.BaseStream);
-
+                    //
                     byte[] version = Encoding.ASCII.GetBytes(Globals.ProgramName);
                     byte[] versionBuffer = new byte[32];
                     version.CopyTo(versionBuffer, 0);
-
+                    //
                     fs.Write(versionBuffer, 0, 32);
                     fs.Write(compressedData, 0, compressedData.Length);
                     //
@@ -1035,6 +1034,8 @@ namespace PrePoMax
                 //
                 File.Copy(tmpFileName, fileName, true);
                 File.Delete(tmpFileName);
+                // Settings
+                AddFileNameToRecent(fileName);
                 //
                 _modelChanged = false;
             }
@@ -1143,6 +1144,26 @@ namespace PrePoMax
             output.Position = 0;
             return output;
         }
+        // Recent
+        private void AddFileNameToRecent(string fileName)
+        {
+            // Settings
+            GeneralSettings generalSettings = (GeneralSettings)_settings[Globals.GeneralSettingsName];
+            generalSettings.AddRecentFile(fileName);
+            Settings = _settings;   // save to file
+            //
+            _form.UpdateRecentFilesThreadSafe(generalSettings.GetRecentFiles());
+        }
+        public void ClearRecentFiles()
+        {
+            // Settings
+            GeneralSettings generalSettings = (GeneralSettings)_settings[Globals.GeneralSettingsName];
+            generalSettings.ClearRecentFiles();
+            Settings = _settings;   // save to file
+            //
+            _form.UpdateRecentFilesThreadSafe(generalSettings.GetRecentFiles());
+        }
+
         #endregion ################################################################################################################
 
         #region Edit menu   ########################################################################################################
@@ -4274,7 +4295,8 @@ namespace PrePoMax
         {
             // Graphics settings
             GraphicsSettings graphicsSettings = (GraphicsSettings)_settings[Globals.GraphicsSettingsName];
-            _form.SetBackground(graphicsSettings.BackgroundType == BackgroundType.Gradient, graphicsSettings.TopColor, graphicsSettings.BottomColor, false);
+            _form.SetBackground(graphicsSettings.BackgroundType == BackgroundType.Gradient, graphicsSettings.TopColor,
+                                graphicsSettings.BottomColor, false);
             _form.SetCoorSysVisibility(graphicsSettings.CoorSysVisibility);
             _form.SetScaleWidgetVisibility(graphicsSettings.ScaleWidgetVisibility);
             _form.SetLighting(graphicsSettings.AmbientComponent, graphicsSettings.DiffuseComponent, false);
@@ -4297,7 +4319,7 @@ namespace PrePoMax
                 }
             }
         }
-
+        
         #endregion #################################################################################################################
 
         #region Analysis menu   ####################################################################################################
