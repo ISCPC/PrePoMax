@@ -49,28 +49,28 @@ namespace PrePoMax.Forms
             // 
             // gbProperties
             // 
-            this.gbProperties.Size = new System.Drawing.Size(310, 343);
+            this.gbProperties.Size = new System.Drawing.Size(310, 380);
             // 
             // propertyGrid
             // 
-            this.propertyGrid.Size = new System.Drawing.Size(298, 315);
+            this.propertyGrid.Size = new System.Drawing.Size(298, 352);
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(160, 457);
+            this.btnOK.Location = new System.Drawing.Point(160, 494);
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(241, 457);
+            this.btnCancel.Location = new System.Drawing.Point(241, 494);
             // 
             // btnOkAddNew
             // 
-            this.btnOkAddNew.Location = new System.Drawing.Point(79, 457);
+            this.btnOkAddNew.Location = new System.Drawing.Point(79, 494);
             // 
             // FrmBC
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.ClientSize = new System.Drawing.Size(334, 492);
+            this.ClientSize = new System.Drawing.Size(334, 529);
             this.Name = "FrmBC";
             this.Text = "Edit Boundary Condition";
             this.gbType.ResumeLayout(false);
@@ -282,12 +282,14 @@ namespace PrePoMax.Forms
         // Methods                                                                                                                  
         private void PopulateListOfBCs(string[] nodeSetNames, string[] surfaceNames, string[] referencePointNames)
         {
+            System.Drawing.Color color = _controller.Settings.Pre.BoundaryConditionSymbolColor;
             ListViewItem item;
             // Displacement/Rotation"
             item = new ListViewItem("Displacement/Rotation");
             DisplacementRotation dr = new DisplacementRotation(GetBoundaryConditionName(), "", RegionTypeEnum.Selection);
             ViewDisplacementRotation vdr = new ViewDisplacementRotation(dr);
             vdr.PopululateDropDownLists(nodeSetNames, surfaceNames, referencePointNames);
+            vdr.Color = color;
             item.Tag = vdr;
             lvTypes.Items.Add(item);
             // Submodel
@@ -295,6 +297,7 @@ namespace PrePoMax.Forms
             SubmodelBC sm = new SubmodelBC(GetBoundaryConditionName(), "", RegionTypeEnum.Selection);
             ViewSubmodel vsm = new ViewSubmodel(sm);
             vsm.PopululateDropDownLists(nodeSetNames, surfaceNames);
+            vsm.Color = color;
             item.Tag = vsm;
             lvTypes.Items.Add(item);
         }

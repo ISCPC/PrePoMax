@@ -145,6 +145,7 @@ namespace PrePoMax.Forms
                 {
                     ContactPair = new ContactPair(GetContactPairName(), surfaceInteractionNames[0], "", RegionTypeEnum.Selection,
                                                   "", RegionTypeEnum.Selection);
+                    ContactPair.Color = _controller.Settings.Pre.ConstraintSymbolColor;
                     //
                     _viewContactPair.PopululateDropDownLists(surfaceInteractionNames, surfaceNames);
                     //

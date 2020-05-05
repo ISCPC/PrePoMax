@@ -74,6 +74,9 @@ namespace PrePoMax
                 _momentLoad.M3 *= r;
             }
         }
+        //
+        public override System.Drawing.Color Color { get { return _momentLoad.Color; } set { _momentLoad.Color = value; } }
+
 
         // Constructors                                                                                                             
         public ViewMomentLoad(CaeModel.MomentLoad momentLoad)

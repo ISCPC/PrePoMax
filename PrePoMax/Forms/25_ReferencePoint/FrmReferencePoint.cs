@@ -153,7 +153,10 @@ namespace PrePoMax.Forms
             _surfaceNames = _controller.GetUserSurfaceNames();
             // Create new reference point
             if (_referencePointToEditName == null)
+            {
                 ReferencePoint = new FeReferencePoint(GetReferencePointName(), 0, 0, 0);
+                ReferencePoint.Color = _controller.Settings.Pre.ConstraintSymbolColor;
+            }
             // Edit existing reference point
             else
             {

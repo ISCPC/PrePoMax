@@ -111,7 +111,7 @@ namespace PrePoMax.Forms
 
             if (_jobToEditName == null)
             {
-                CalculixSettings settings = (CalculixSettings)_controller.Settings[Globals.CalculixSettingsName];
+                CalculixSettings settings = _controller.Settings.Calculix;
                 Job = new AnalysisJob(GetJobName(), settings.CalculixExe, GetJobName(), settings.WorkDirectory);
             }
             else

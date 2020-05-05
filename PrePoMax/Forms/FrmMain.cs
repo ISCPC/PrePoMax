@@ -341,39 +341,34 @@ namespace PrePoMax
             _vtk.Location = panelControl.Location;
             _vtk.Top += 1;
             _vtk.Left += 1;
-
+            //
             _vtk.Size = panelControl.Size;
             _vtk.Width -= 2;
             _vtk.Height -= 2;
-
+            //
             _vtk.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
-
             // Set pass through control for the mouse wheel event
             this.PassThroughControl = _vtk;
-
             // Timer to delay the rendering of the vtk so that menus get rendered first
             Timer timer = new Timer();
             timer.Interval = 50;
             timer.Tick += new EventHandler(async (object s, EventArgs ea) =>
             {
                 timer.Stop();
-
+                //
                 _vtk.Show();
                 _vtk.Enabled = true;
-
-                // close splash 
+                // Close splash 
                 splash.BeginInvoke((MethodInvoker)delegate () { splash.Close(); });
-
-                // at the end when vtk is loaded open the file
+                // At the end when vtk is loaded open the file
                 string fileName = null;
                 if (_args != null && _args.Length == 1) fileName = _args[0];
                 else
                 {
-                    // chack for open last file
-                    GeneralSettings gs = (GeneralSettings)_controller.Settings[Globals.GeneralSettingsName];
-                    if (gs.OpenLastFile) fileName = gs.LastFileName;
+                    // Check for open last file
+                    if (_controller.Settings.General.OpenLastFile) fileName = _controller.Settings.General.LastFileName;
                 }
-
+                //
                 if (File.Exists(fileName))
                 {
                     try
@@ -388,7 +383,7 @@ namespace PrePoMax
                             _controller.OpenedFileName = null; // otherwise the previous OpenedFileName gets overwriten on Save
                         }
                         else MessageBox.Show("The file name extension is not supported.", "Error", MessageBoxButtons.OK);
-
+                        //
                         _vtk.SetFrontBackView(false, true);
                     }
                     catch (Exception ex)
@@ -406,7 +401,6 @@ namespace PrePoMax
                     // New file
                     _controller.New();
                 }
-
             });
             timer.Start();
         }
@@ -3431,9 +3425,9 @@ namespace PrePoMax
             tsmiSettings_Click(null, null);
         }
 
-        private void UpdateSettings(Dictionary<string, ISettings> settings)
+        private void UpdateSettings(Dictionary<string, ISettings> items)
         {
-            _controller.Settings = settings;    // this calls the redraw functions
+            _controller.Settings = new SettingsContainer(items);
         }
         #endregion  ################################################################################################################
 
@@ -3550,7 +3544,7 @@ namespace PrePoMax
             string[] invalidItems = _controller.CheckAndUpdateValidity();
             if (CheckValiditiy())
             {
-                CalculixSettings settings = (CalculixSettings)_controller.Settings[Globals.CalculixSettingsName];
+                CalculixSettings settings = _controller.Settings.Calculix;
 
                 if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
                     throw new Exception("The work directory of the analysis does not exist.");

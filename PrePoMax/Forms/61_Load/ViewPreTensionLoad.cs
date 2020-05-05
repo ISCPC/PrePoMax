@@ -97,6 +97,8 @@ namespace PrePoMax
         [TypeConverter(typeof(StringConstrainedDOFConverter))]
         [Id(1, 5)]
         public double DisplacementMagnitude { get { return _preTenLoad.Magnitude; } set { _preTenLoad.Magnitude = value; } }
+        //
+        public override System.Drawing.Color Color { get { return _preTenLoad.Color; } set { _preTenLoad.Color = value; } }
 
 
         // Constructors                                                                                                             

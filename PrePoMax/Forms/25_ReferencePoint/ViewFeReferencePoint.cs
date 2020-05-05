@@ -7,6 +7,7 @@ using CaeMesh;
 using CaeGlobals;
 using System.ComponentModel;
 using DynamicTypeDescriptor;
+using System.Drawing.Design;
 
 namespace PrePoMax.Forms
 {
@@ -19,15 +20,15 @@ namespace PrePoMax.Forms
         private int _numOfSurfaces;
 
         // Properties                                                                                                               
-        [CategoryAttribute("Data")]
+        [Category("Data")]
         [DisplayName("Name")]
-        [DescriptionAttribute("Name of the reference point.")]
+        [Description("Name of the reference point.")]
         [Id(1, 1)]
         public string Name { get { return _referencePoint.Name; } set { _referencePoint.Name = value; } }
         //
-        [CategoryAttribute("Region")]
+        [Category("Region")]
         [OrderedDisplayName(1, 10, "Create by/from")]
-        [DescriptionAttribute("Select the method for the creation of the reference point.")]
+        [Description("Select the method for the creation of the reference point.")]
         [Id(1, 2)]
         public string CreatedFrom
         {
@@ -42,41 +43,48 @@ namespace PrePoMax.Forms
             }
         }
         //
-        [CategoryAttribute("Region")]
+        [Category("Region")]
         [OrderedDisplayName(2, 10, "Region type")]
-        [DescriptionAttribute("Select the region type for the creation of the reference point.")]
+        [Description("Select the region type for the creation of the reference point.")]
         [Id(2, 2)]
         public override string RegionType { get { return base.RegionType; } set { base.RegionType = value; } }
         //
-        [CategoryAttribute("Region")]
+        [Category("Region")]
         [OrderedDisplayName(3, 10, "Node set")]
-        [DescriptionAttribute("Select the node set for the creation of the reference point.")]
+        [Description("Select the node set for the creation of the reference point.")]
         [Id(3, 2)]
         public string NodeSetName { get { return _referencePoint.RegionName; } set { _referencePoint.RegionName = value; } }
         //
-        [CategoryAttribute("Region")]
+        [Category("Region")]
         [OrderedDisplayName(4, 10, "Surface")]
-        [DescriptionAttribute("Select the surface for the creation of the reference point.")]
+        [Description("Select the surface for the creation of the reference point.")]
         [Id(4, 2)]
         public string SurfaceName { get { return _referencePoint.RegionName; } set { _referencePoint.RegionName = value; } }
         //
-        [CategoryAttribute("Coordinates")]
+        [Category("Coordinates")]
         [DisplayName("X")]
-        [DescriptionAttribute("X coordinate of the reference point.")]
+        [Description("X coordinate of the reference point.")]
         [Id(2, 3)]
         public double X { get { return _referencePoint.X; } set { _referencePoint.X = value; } }
         //
-        [CategoryAttribute("Coordinates")]
+        [Category("Coordinates")]
         [DisplayName("Y")]
-        [DescriptionAttribute("Y coordinate of the reference point.")]
+        [Description("Y coordinate of the reference point.")]
         [Id(3, 3)]
         public double Y { get { return _referencePoint.Y; } set { _referencePoint.Y = value; } }
         //
-        [CategoryAttribute("Coordinates")]
+        [Category("Coordinates")]
         [DisplayName("Z")]
-        [DescriptionAttribute("Z coordinate of the reference point.")]
+        [Description("Z coordinate of the reference point.")]
         [Id(4, 3)]
         public double Z { get { return _referencePoint.Z; } set { _referencePoint.Z = value; } }
+        
+        [Category("Appearance")]
+        [DisplayName("Color")]
+        [Description("Select reference point color.")]
+        [Editor(typeof(UserControls.ColorEditorEx), typeof(UITypeEditor))]
+        [Id(1, 10)]
+        public System.Drawing.Color Color { get { return _referencePoint.Color; } set { _referencePoint.Color = value; } }
 
 
         // Constructors                                                                                                             

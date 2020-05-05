@@ -4,8 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel;
-using CaeGlobals;
+using System.Drawing.Design;
 using DynamicTypeDescriptor;
+using CaeGlobals;
 
 namespace PrePoMax
 {
@@ -53,7 +54,13 @@ namespace PrePoMax
         [DescriptionAttribute("Select the reference point for the creation of the boundary condition.")]
         [Id(5, 2)]
         public abstract string ReferencePointName { get; set; }
-
+        //
+        [Category("Appearance")]
+        [DisplayName("Color")]
+        [Description("Select boundary condition color.")]
+        [Editor(typeof(UserControls.ColorEditorEx), typeof(UITypeEditor))]
+        [Id(1, 10)]
+        public abstract System.Drawing.Color Color { get; set; }
 
         // Constructors                                                                                                             
 

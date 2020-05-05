@@ -49,6 +49,8 @@ namespace PrePoMax
         [DescriptionAttribute("Select the surface for the creation of the rigid body definition.")]
         [Id(4, 3)]
         public string SurfaceName { get { return _rigidBody.RegionName; } set { _rigidBody.RegionName = value; } }
+        //
+        public override System.Drawing.Color Color { get { return _rigidBody.Color; } set { _rigidBody.Color = value; } }
 
 
         // Constructors                                                                                                             

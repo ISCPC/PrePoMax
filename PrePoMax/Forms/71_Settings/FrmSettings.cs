@@ -146,21 +146,22 @@ namespace PrePoMax.Forms
         // Methods                                                                                                                  
         public void PrepareForm(Controller controller)
         {
-            this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
-
+            // To prevent the call to frmMain.itemForm_VisibleChanged when minimized
+            this.DialogResult = DialogResult.None;      
+            //
             _propertyItemChanged = false;
             _viewSettings = null;
             lvSettings.Items.Clear();
             propertyGrid.SelectedObject = null;
-
+            //
             if (controller.Settings == null)
             {
-                throw new Exception("There are no setting to show.");
+                throw new Exception("There are no settings to show.");
             }
             else
             {
-                Settings = controller.Settings; //to clone
-
+                Settings = controller.Settings.ToDictionary();
+                //
                 ListViewItem lvi;
                 foreach (var entry in _viewSettings)
                 {
@@ -168,8 +169,7 @@ namespace PrePoMax.Forms
                     lvi.Tag = entry.Value;
                 }
             }
-
-            // open previously shown settings
+            // Open previously shown settings
             if (_previousSettings != null)
             {
                 foreach (ListViewItem item in lvSettings.Items)

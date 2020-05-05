@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using CaeGlobals;
 using DynamicTypeDescriptor;
+using System.Drawing;
 
 namespace PrePoMax
 {
@@ -63,6 +64,8 @@ namespace PrePoMax
         [TypeConverter(typeof(StringDOFConverter))]
         [Id(6, 3)]
         public double UR3 { get { return _displacementRotation.UR3; } set { _displacementRotation.UR3 = value; } }
+        //
+        public override Color Color { get { return _displacementRotation.Color; } set { _displacementRotation.Color = value; } }
 
 
         // Constructors                                                                                                             

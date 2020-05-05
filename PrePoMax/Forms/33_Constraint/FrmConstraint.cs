@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CaeModel;
 using CaeGlobals;
 using System.Windows.Forms;
+using System.Drawing;
 
 namespace PrePoMax.Forms
 {
@@ -291,6 +292,7 @@ namespace PrePoMax.Forms
         // Methods                                                                                                                  
         private void PopulateListOfConstraints(string[] referencePointNames, string[] nodeSetNames, string[] surfaceNames)
         {
+            Color color = _controller.Settings.Pre.ConstraintSymbolColor;
             // Populate list view                                                                               
             ListViewItem item;
             // Rigid body   
@@ -300,6 +302,7 @@ namespace PrePoMax.Forms
                 RigidBody rb = new RigidBody(GetConstraintName("Rigid-body-"), referencePointNames[0], "", RegionTypeEnum.Selection);
                 ViewRigidBody vrb = new ViewRigidBody(rb);
                 vrb.PopululateDropDownLists(referencePointNames, nodeSetNames, surfaceNames);
+                vrb.Color = color;
                 item.Tag = vrb;
             }
             else item.Tag = new ViewError("There is no reference point defined for the rigid body constraint definition.");
@@ -310,6 +313,7 @@ namespace PrePoMax.Forms
             ViewTie vt = new ViewTie(tie);
             vt.PopululateDropDownLists(surfaceNames);
             item.Tag = vt;
+            vt.Color = color;
             lvTypes.Items.Add(item);
         }
         private string GetConstraintName(string namePrefix)

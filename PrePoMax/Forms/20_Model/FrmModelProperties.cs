@@ -69,9 +69,8 @@ namespace PrePoMax.Forms
             //
             if (_viewModelProperties.ModelType == CaeModel.ModelType.Submodel)
             {
-                CalculixSettings settings = (CalculixSettings)(_controller.Settings[Globals.CalculixSettingsName]);
                 string fileName = _viewModelProperties.GlobalResultsFileName;
-                fileName = System.IO.Path.Combine(settings.WorkDirectory, fileName);
+                fileName = System.IO.Path.Combine(_controller.Settings.Calculix.WorkDirectory, fileName);
                 //
                 if (!System.IO.File.Exists(fileName))
                     throw new CaeGlobals.CaeException("The selected global results file " + fileName +" does not exist.");

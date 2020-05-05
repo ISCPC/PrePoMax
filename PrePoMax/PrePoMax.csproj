@@ -428,6 +428,7 @@
     <Compile Include="Settings\GeneralSettings.cs" />
     <Compile Include="Settings\GraphicsSettings.cs" />
     <Compile Include="Forms\71_Settings\IReset.cs" />
+    <Compile Include="Settings\SettingsContainer.cs" />
     <Compile Include="Settings\PreSettings.cs" />
     <Compile Include="Settings\PostSettings.cs" />
     <Compile Include="Settings\ISettings.cs" />

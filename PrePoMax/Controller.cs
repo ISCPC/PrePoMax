@@ -21,7 +21,7 @@ namespace PrePoMax
     {
         // Variables                                                                                                                
         [NonSerialized] protected FrmMain _form;
-        [NonSerialized] protected Dictionary<string, ISettings> _settings;
+        [NonSerialized] protected SettingsContainer _settings;
         [NonSerialized] protected OrderedDictionary<string, AnalysisJob> _jobs;
         //
         [NonSerialized] protected bool _modelChanged;
@@ -47,7 +47,7 @@ namespace PrePoMax
 
 
         // Properties                                                                                                               
-        public Dictionary<string, ISettings> Settings
+        public SettingsContainer Settings
         {
             get { return _settings; }
             set
@@ -55,7 +55,7 @@ namespace PrePoMax
                 try
                 {
                     _settings = value;
-                    _settings.DumpToFile(Path.Combine(System.Windows.Forms.Application.StartupPath, Globals.SettingsFileName));
+                    _settings.SaveToFile(Path.Combine(System.Windows.Forms.Application.StartupPath, Globals.SettingsFileName));
                     //
                     ApplySettings();
                     // Redraw model with new settings
@@ -187,20 +187,20 @@ namespace PrePoMax
         {
             get
             {
-                return ((GeneralSettings)_settings[Globals.GeneralSettingsName]).LastFileName;
+                return _settings.General.LastFileName;
             }
             set
             {
                 if (_settings != null)
                 {
-                    GeneralSettings gs = (GeneralSettings)_settings[Globals.GeneralSettingsName];
-                    if (value != gs.LastFileName)
+                    if (value != _settings.General.LastFileName)
                     {
-                        gs.LastFileName = value;
-                        _settings.DumpToFile(Path.Combine(System.Windows.Forms.Application.StartupPath, Globals.SettingsFileName));
+                        _settings.General.LastFileName = value;
+                        _settings.SaveToFile(Path.Combine(System.Windows.Forms.Application.StartupPath, Globals.SettingsFileName));
                     }
-
-                    if (gs.LastFileName != null) _form.SetTitle(Globals.ProgramName + "   " + gs.LastFileName);
+                    //
+                    if (_settings.General.LastFileName != null)
+                        _form.SetTitle(Globals.ProgramName + "   " + _settings.General.LastFileName);
                     else _form.SetTitle(Globals.ProgramName);
                 }
             }
@@ -274,19 +274,18 @@ namespace PrePoMax
             //
             Clear();
             //
+            _settings = new SettingsContainer();
             try
             {
                 string fileName = Path.Combine(System.Windows.Forms.Application.StartupPath, Globals.SettingsFileName);
                 if (File.Exists(fileName))
                 {
-                    var t = Task.Run(() => _settings = CaeGlobals.Tools.LoadDumpFromFile<Dictionary<string, ISettings>>(fileName));
+                    var t = Task.Run(() => _settings.LoadFromFile(fileName));
                     t.Wait();
                 }
-                else PrepareSettings();
             }
             catch
             {
-                PrepareSettings();
             }
             //
             ApplySettings();
@@ -297,15 +296,6 @@ namespace PrePoMax
         void _commands_CommandExecuted(string undo, string redo)
         {
             _form.EnableDisableUndoRedo(undo, redo);
-        }
-        private void PrepareSettings()
-        {
-            _settings = new Dictionary<string, ISettings>();
-            _settings.Add(Globals.GeneralSettingsName, new GeneralSettings());
-            _settings.Add(Globals.GraphicsSettingsName, new GraphicsSettings());
-            _settings.Add(Globals.PreSettingsName, new PreSettings());
-            _settings.Add(Globals.CalculixSettingsName, new CalculixSettings());
-            _settings.Add(Globals.PostSettingsName, new PostSettings());
         }
 
         #region Clear   ############################################################################################################
@@ -705,7 +695,7 @@ namespace PrePoMax
         //
         public string[] SplitAssembly(string assemblyFileName, string splitCommand)
         {
-            CalculixSettings settings = (CalculixSettings)Settings[Globals.CalculixSettingsName];
+            CalculixSettings settings = _settings.Calculix;
             if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
             {
                 MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
@@ -756,7 +746,7 @@ namespace PrePoMax
         }
         public string[] CreateCompoundPart(string[] partNames)
         {
-            CalculixSettings settings = (CalculixSettings)Settings[Globals.CalculixSettingsName];
+            CalculixSettings settings = _settings.Calculix;
             if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
             {
                 MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
@@ -813,8 +803,7 @@ namespace PrePoMax
         //
         public string[] ImportBrepPartFile(string brepFileName)
         {
-            CalculixSettings calculixSettings = (CalculixSettings)Settings[Globals.CalculixSettingsName];
-            GraphicsSettings graphicsSettings = (GraphicsSettings)Settings[Globals.GraphicsSettingsName];
+            CalculixSettings calculixSettings = _settings.Calculix;
             //
             if (calculixSettings.WorkDirectory == null || !Directory.Exists(calculixSettings.WorkDirectory))
             {
@@ -830,7 +819,7 @@ namespace PrePoMax
             string argument = "BREP_VISUALIZATION " +
                               "\"" + brepFileName.ToUTF8() + "\" " +
                               "\"" + visFileName + "\" " +
-                              graphicsSettings.GeometryDeflection.ToString();
+                              _settings.Graphics.GeometryDeflection.ToString();
             //
             _netgenJob = new NetgenJob("Brep", executable, argument, calculixSettings.WorkDirectory);
             _netgenJob.AppendOutput += netgenJob_AppendOutput;
@@ -995,7 +984,7 @@ namespace PrePoMax
                 {
                     FeResults results = null;
                     HistoryResults history = null;
-                    bool saveResults = ((GeneralSettings)Settings[Globals.GeneralSettingsName]).SaveResultsInPmx;
+                    bool saveResults = _settings.General.SaveResultsInPmx;
                     // When controller (data[0]) is dumped to stream, the results should be null if selected
                     if (saveResults == false)
                     {
@@ -1091,7 +1080,7 @@ namespace PrePoMax
         }
         public void ExportCADGeometryPartAsStep(GeometryPart part, string stepFileName)
         {
-            CalculixSettings settings = (CalculixSettings)Settings[Globals.CalculixSettingsName];
+            CalculixSettings settings = _settings.Calculix;
             if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
             {
                 MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
@@ -1148,20 +1137,18 @@ namespace PrePoMax
         private void AddFileNameToRecent(string fileName)
         {
             // Settings
-            GeneralSettings generalSettings = (GeneralSettings)_settings[Globals.GeneralSettingsName];
-            generalSettings.AddRecentFile(fileName);
+            _settings.General.AddRecentFile(fileName);
             Settings = _settings;   // save to file
             //
-            _form.UpdateRecentFilesThreadSafe(generalSettings.GetRecentFiles());
+            _form.UpdateRecentFilesThreadSafe(_settings.General.GetRecentFiles());
         }
         public void ClearRecentFiles()
         {
             // Settings
-            GeneralSettings generalSettings = (GeneralSettings)_settings[Globals.GeneralSettingsName];
-            generalSettings.ClearRecentFiles();
+            _settings.General.ClearRecentFiles();
             Settings = _settings;   // save to file
             //
-            _form.UpdateRecentFilesThreadSafe(generalSettings.GetRecentFiles());
+            _form.UpdateRecentFilesThreadSafe(_settings.General.GetRecentFiles());
         }
 
         #endregion ################################################################################################################
@@ -1623,7 +1610,7 @@ namespace PrePoMax
         }
         public bool PreviewEdgeMeshFromStl(GeometryPart part, MeshingParameters parameters, FeMeshRefinement newMeshRefinement)
         {
-            CalculixSettings settings = (CalculixSettings)Settings[Globals.CalculixSettingsName];
+            CalculixSettings settings = _settings.Calculix;
             if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
             {
                 MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
@@ -1668,7 +1655,7 @@ namespace PrePoMax
         }
         public bool PreviewEdgeMeshFromBrep(GeometryPart part, MeshingParameters parameters, FeMeshRefinement newMeshRefinement)
         {
-            CalculixSettings settings = (CalculixSettings)Settings[Globals.CalculixSettingsName];
+            CalculixSettings settings = _settings.Calculix;
             if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
             {
                 MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
@@ -1802,7 +1789,7 @@ namespace PrePoMax
         }
         private bool CreateMeshFromStl(GeometryPart part)
         {
-            CalculixSettings settings = (CalculixSettings)Settings[Globals.CalculixSettingsName];
+            CalculixSettings settings = _settings.Calculix;
             if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
             {
                 MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
@@ -1847,7 +1834,7 @@ namespace PrePoMax
         }
         private bool CreateMeshFromBrep(GeometryPart part)
         {
-            CalculixSettings settings = (CalculixSettings)Settings[Globals.CalculixSettingsName];
+            CalculixSettings settings = _settings.Calculix;
             if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
             {
                 MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
@@ -4294,28 +4281,27 @@ namespace PrePoMax
         public void ApplySettings()
         {
             // Graphics settings
-            GraphicsSettings graphicsSettings = (GraphicsSettings)_settings[Globals.GraphicsSettingsName];
-            _form.SetBackground(graphicsSettings.BackgroundType == BackgroundType.Gradient, graphicsSettings.TopColor,
-                                graphicsSettings.BottomColor, false);
-            _form.SetCoorSysVisibility(graphicsSettings.CoorSysVisibility);
-            _form.SetScaleWidgetVisibility(graphicsSettings.ScaleWidgetVisibility);
-            _form.SetLighting(graphicsSettings.AmbientComponent, graphicsSettings.DiffuseComponent, false);
-            _form.SetSmoothing(graphicsSettings.PointSmoothing, graphicsSettings.LineSmoothing, false);
+            GraphicsSettings gs = _settings.Graphics;
+            _form.SetBackground(gs.BackgroundType == BackgroundType.Gradient, gs.TopColor, gs.BottomColor, false);
+            _form.SetCoorSysVisibility(gs.CoorSysVisibility);
+            _form.SetScaleWidgetVisibility(gs.ScaleWidgetVisibility);
+            _form.SetLighting(gs.AmbientComponent, gs.DiffuseComponent, false);
+            _form.SetSmoothing(gs.PointSmoothing, gs.LineSmoothing, false);
             // Pre-processing settings
-            PreSettings preSettings = (PreSettings)_settings[Globals.PreSettingsName];
-            _form.SetHighlightColor(preSettings.PrimaryHighlightColor, preSettings.SecundaryHighlightColor);
-            _form.SetMouseHighlightColor(preSettings.MouseHighlightColor);
-            _form.SetDrawSymbolEdges(preSettings.DrawSymbolEdges);
+            PreSettings ps = _settings.Pre;
+            _form.SetHighlightColor(ps.PrimaryHighlightColor, ps.SecundaryHighlightColor);
+            _form.SetMouseHighlightColor(ps.MouseHighlightColor);
+            _form.SetDrawSymbolEdges(ps.DrawSymbolEdges);
             // Job settings
             if (_jobs != null)
             {
-                CalculixSettings settings = (CalculixSettings)_settings[Globals.CalculixSettingsName];
+                CalculixSettings cs = _settings.Calculix;
                 foreach (var entry in _jobs)
                 {
-                    entry.Value.WorkDirectory = settings.WorkDirectory;
-                    entry.Value.Executable = settings.CalculixExe;
-                    entry.Value.NumCPUs = settings.NumCPUs;
-                    entry.Value.EnvironmentVariables = settings.EnvironmentVariables;
+                    entry.Value.WorkDirectory = cs.WorkDirectory;
+                    entry.Value.Executable = cs.CalculixExe;
+                    entry.Value.NumCPUs = cs.NumCPUs;
+                    entry.Value.EnvironmentVariables = cs.EnvironmentVariables;
                 }
             }
         }
@@ -5689,44 +5675,7 @@ namespace PrePoMax
         }
 
 
-        // Results                                          
-        public FeNode GetScaledNode(float scale, int nodeId)
-        {
-            if (_currentView == ViewGeometryModelResults.Results)
-            {
-                FeNode node = _results.Mesh.Nodes[nodeId].DeepClone();
-                double[][] coor = new double[][] { node.Coor };
-                _results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId, 
-                                              new int[] { nodeId }, ref coor);
-                node.X = coor[0][0];
-                node.Y = coor[0][1];
-                node.Z = coor[0][2];
-                return node;
-            }
-            return new FeNode();
-        }
-        public FeNode[] GetScaledNodes(float scale, int[] nodeIds)
-        {
-            if (_currentView == ViewGeometryModelResults.Results)
-            {
-                double[][] coor = new double[nodeIds.Length][];
-                for (int i = 0; i < nodeIds.Length; i++) coor[i] = _results.Mesh.Nodes[nodeIds[i]].Coor;
-                //
-                _results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId,
-                                              nodeIds, ref coor);
-                //
-                FeNode[] nodes = new FeNode[nodeIds.Length];
-                for (int i = 0; i < nodes.Length; i++) nodes[i] = new FeNode(nodeIds[i], coor[i]);
-                return nodes;
-            }
-            return new FeNode[0];
-        }
-        public float GetNodalValue(int nodeId)
-        {
-            float[] values = _results.GetValues(_currentFieldData, new int[] { nodeId });
-            if (values == null) return 0;
-            else return values[0];
-        }
+       
 
         // Visualize
         #region Draw  ##############################################################################################################
@@ -5970,13 +5919,11 @@ namespace PrePoMax
         // Reference points
         public void DrawAllReferencePoints()
         {
-            PreSettings preSettings = (PreSettings)_settings[Globals.PreSettingsName];
-            System.Drawing.Color color = preSettings.ConstraintSymbolColor;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Overlay;
             //
             foreach (var entry in _model.Mesh.ReferencePoints)
             {
-                DrawReferencePoint(entry.Value, color, layer);
+                DrawReferencePoint(entry.Value, entry.Value.Color, layer);
             }
         }
         public void DrawReferencePoint(FeReferencePoint referencePoint, System.Drawing.Color color, vtkControl.vtkRendererLayer layer,
@@ -5987,10 +5934,9 @@ namespace PrePoMax
                 if (!((referencePoint.Active && referencePoint.Visible && referencePoint.Valid &&
                       !referencePoint.Internal) || layer == vtkControl.vtkRendererLayer.Selection)) return;
                 //
-                PreSettings preSettings = (PreSettings)_settings[Globals.PreSettingsName];
-                nodeSize = (int)(nodeSize * preSettings.SymbolSize / 50.0);  // 50 is the defoult size
+                nodeSize = (int)(nodeSize * _settings.Pre.SymbolSize / 50.0);  // 50 is the defoult size
                 //
-                System.Drawing.Color colorBorder = System.Drawing.Color.Black;
+                Color colorBorder = Color.Black;
                 //
                 double[][] coor = new double[][] { referencePoint.Coor() };
                 DrawNodes(referencePoint.Name + Globals.NameSeparator + "Border", coor, colorBorder, layer, nodeSize);
@@ -6001,14 +5947,12 @@ namespace PrePoMax
         // Constraints
         public void DrawAllConstraints()
         {
-            PreSettings preSettings = (PreSettings)_settings[Globals.PreSettingsName];
-            System.Drawing.Color color = preSettings.ConstraintSymbolColor;
-            int nodeSymbolSize = preSettings.NodeSymbolSize;
+            int nodeSymbolSize = _settings.Pre.NodeSymbolSize;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
             //
             foreach (var entry in _model.Constraints)
             {
-                DrawConstraint(entry.Value, color, nodeSymbolSize, layer, true);
+                DrawConstraint(entry.Value, entry.Value.Color, nodeSymbolSize, layer, true);
             }
         }
         public void DrawConstraint(Constraint constraint, System.Drawing.Color color, int nodeSymbolSize,
@@ -6124,13 +6068,11 @@ namespace PrePoMax
         // Contact pairs
         public void DrawAllContactPairs()
         {
-            PreSettings preSettings = (PreSettings)_settings[Globals.PreSettingsName];
-            System.Drawing.Color color = preSettings.ConstraintSymbolColor;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
             //
             foreach (var entry in _model.ContactPairs)
             {
-                DrawContactPair(entry.Value, color, layer, true);
+                DrawContactPair(entry.Value, entry.Value.Color, layer, true);
             }
         }
         public void DrawContactPair(ContactPair contactPair, System.Drawing.Color color, vtkControl.vtkRendererLayer layer,
@@ -6153,19 +6095,17 @@ namespace PrePoMax
         // BCs
         public void DrawAllBoundaryConditions(string stepName)
         {
-            PreSettings preSettings = (PreSettings)_settings[Globals.PreSettingsName];
-            System.Drawing.Color color = preSettings.BoundaryConditionSymbolColor;
-            int symbolSize = preSettings.SymbolSize;
-            int nodeSymbolSize = preSettings.NodeSymbolSize;
+            int symbolSize = _settings.Pre.SymbolSize;
+            int nodeSymbolSize = _settings.Pre.NodeSymbolSize;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
             //
             foreach (var step in _model.StepCollection.StepsList)
             {
                 if (step.Name == stepName)
                 {
-                    foreach (var bcEntry in step.BoundaryConditions)
+                    foreach (var entry in step.BoundaryConditions)
                     {
-                        DrawBoundaryCondition(step.Name, bcEntry.Value, color, symbolSize, nodeSymbolSize, layer, true);
+                        DrawBoundaryCondition(step.Name, entry.Value, entry.Value.Color, symbolSize, nodeSymbolSize, layer, true);
                     }
                     break;
                 }
@@ -6480,19 +6420,17 @@ namespace PrePoMax
         // Loads
         private void DrawAllLoads(string stepName)
         {
-            PreSettings preSettings = (PreSettings)_settings[Globals.PreSettingsName];
-            int symbolSize = preSettings.SymbolSize;
-            int nodeSymbolSize = preSettings.NodeSymbolSize;
-            System.Drawing.Color color = preSettings.LoadSymbolColor;
+            int symbolSize = _settings.Pre.SymbolSize;
+            int nodeSymbolSize = _settings.Pre.NodeSymbolSize;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
             //
             foreach (var step in _model.StepCollection.StepsList)
             {
                 if (step.Name == stepName)
                 {
-                    foreach (var loadEntry in step.Loads)
+                    foreach (var entry in step.Loads)
                     {
-                        DrawLoad(step.Name, loadEntry.Value, color, symbolSize, nodeSymbolSize, layer, true);
+                        DrawLoad(step.Name, entry.Value, entry.Value.Color, symbolSize, nodeSymbolSize, layer, true);
                     }
                     break;
                 }
@@ -7206,9 +7144,8 @@ namespace PrePoMax
         // Apply settings
         private void ApplyLighting(vtkControl.vtkMaxActorData data)
         {
-            GraphicsSettings graphicsSettings = (GraphicsSettings)_settings[Globals.GraphicsSettingsName];
-            data.Ambient = graphicsSettings.AmbientComponent;
-            data.Diffuse = graphicsSettings.DiffuseComponent;
+            data.Ambient = _settings.Graphics.AmbientComponent;
+            data.Diffuse = _settings.Graphics.DiffuseComponent;
         }
 
 
@@ -7581,17 +7518,15 @@ namespace PrePoMax
         }
         public void HighlightBoundaryCondition(BoundaryCondition boundaryCondition)
         {
-            PreSettings preSettings = (PreSettings)_settings[Globals.PreSettingsName];
-            int symbolSize = preSettings.SymbolSize;
-            int nodeSymbolSize = 2 * preSettings.NodeSymbolSize;
+            int symbolSize = _settings.Pre.SymbolSize;
+            int nodeSymbolSize = 2 * _settings.Pre.NodeSymbolSize;
             DrawBoundaryCondition("Step-Highlight", boundaryCondition, System.Drawing.Color.Red, symbolSize,
                                   nodeSymbolSize, vtkControl.vtkRendererLayer.Selection, false);
         }
         public void HighlightLoad(Load load)
         {
-            PreSettings preSettings = (PreSettings)_settings[Globals.PreSettingsName];
-            int symbolSize = preSettings.SymbolSize;
-            int nodeSymbolSize = 2 * preSettings.NodeSymbolSize;
+            int symbolSize = _settings.Pre.SymbolSize;
+            int nodeSymbolSize = 2 * _settings.Pre.NodeSymbolSize;
             DrawLoad("Highlight", load, System.Drawing.Color.Red, symbolSize, nodeSymbolSize,
                      vtkControl.vtkRendererLayer.Selection, false);
         }
@@ -7772,12 +7707,11 @@ namespace PrePoMax
         public void DrawResults(bool resetCamera)
         {
             _form.Clear3D();
-
+            //
             if (_results == null) return;
-
             // Settings                                                              
-            // must be here before drawing parts to correctly set the numer of colors
-            PostSettings postSettings = (PostSettings)_settings[Globals.PostSettingsName];
+            // Must be here before drawing parts to correctly set the numer of colors
+            PostSettings postSettings = _settings.Post;
             if (_viewResultsType != ViewResultsType.Undeformed)
             {
                 _form.SetColorSpectrum(postSettings.ColorSpectrum);
@@ -7869,7 +7803,7 @@ namespace PrePoMax
 
             // Settings                                                              
             // must be here before drawing parts to correctly set the numer of colors
-            PostSettings postSettings = (PostSettings)_settings[Globals.PostSettingsName];
+            PostSettings postSettings = _settings.Post;
             _form.SetColorSpectrum(postSettings.ColorSpectrum);
             _form.SetScalarBarText(_currentFieldData.Name + ": " + _currentFieldData.Component + Environment.NewLine 
                                    + postSettings.ColorSpectrum.MinMaxType.ToString());
@@ -7940,7 +7874,7 @@ namespace PrePoMax
 
             // Settings                                                              
             // must be here before drawing parts to correctly set the numer of colors
-            PostSettings postSettings = (PostSettings)_settings[Globals.PostSettingsName];
+            PostSettings postSettings = _settings.Post;
             _form.SetColorSpectrum(postSettings.ColorSpectrum);
             _form.SetScalarBarText(_currentFieldData.Name + ": " + _currentFieldData.Component + Environment.NewLine 
                                    + postSettings.ColorSpectrum.MinMaxType.ToString());
@@ -8075,12 +8009,9 @@ namespace PrePoMax
         public void UpdatePartsScalarFields()
         {
             if (_results == null) return;
-
-            PostSettings settings = (PostSettings)_settings[Globals.PostSettingsName];
-
             // Settings                                                              
             _form.SetScalarBarText(_currentFieldData.Name + ": " + _currentFieldData.Component + Environment.NewLine 
-                                   + settings.ColorSpectrum.MinMaxType.ToString());
+                                   + _settings.Post.ColorSpectrum.MinMaxType.ToString());
             //
             Octree.Plane plane = _sectionViewPlanes[_currentView];
             if (plane != null) RemoveSectionView();
@@ -8090,11 +8021,10 @@ namespace PrePoMax
             {
                 if (entry.Value is ResultPart)
                 {
-                    // get all needed nodes and elements - renumbered            
+                    // Get all needed nodes and elements - renumbered            
                     PartExchangeData locatorResultData = null;
                     locatorResultData = _results.GetScaledAllNodesCellsAndValues(entry.Value, _currentFieldData, scale);
-
-                    // get visualization nodes and renumbered elements
+                    // Get visualization nodes and renumbered elements
                     PartExchangeData actorResultData = _results.GetScaledVisualizationNodesCellsAndValues(entry.Value, _currentFieldData, scale);  // to scale min nad max nodes coor
                     _form.UpdateActorSurfaceScalarField(entry.Key, actorResultData.Nodes.Values, actorResultData.ExtremeNodes,
                                                         locatorResultData.Nodes.Values);
@@ -8128,6 +8058,44 @@ namespace PrePoMax
 
             return vtkData;
         }
+        // Scale 
+        public FeNode GetScaledNode(float scale, int nodeId)
+        {
+            if (_currentView == ViewGeometryModelResults.Results)
+            {
+                FeNode node = _results.Mesh.Nodes[nodeId].DeepClone();
+                double[][] coor = new double[][] { node.Coor };
+                _results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId,
+                                              new int[] { nodeId }, ref coor);
+                node.X = coor[0][0];
+                node.Y = coor[0][1];
+                node.Z = coor[0][2];
+                return node;
+            }
+            return new FeNode();
+        }
+        public FeNode[] GetScaledNodes(float scale, int[] nodeIds)
+        {
+            if (_currentView == ViewGeometryModelResults.Results)
+            {
+                double[][] coor = new double[nodeIds.Length][];
+                for (int i = 0; i < nodeIds.Length; i++) coor[i] = _results.Mesh.Nodes[nodeIds[i]].Coor;
+                //
+                _results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId,
+                                              nodeIds, ref coor);
+                //
+                FeNode[] nodes = new FeNode[nodeIds.Length];
+                for (int i = 0; i < nodes.Length; i++) nodes[i] = new FeNode(nodeIds[i], coor[i]);
+                return nodes;
+            }
+            return new FeNode[0];
+        }
+        public float GetNodalValue(int nodeId)
+        {
+            float[] values = _results.GetValues(_currentFieldData, new int[] { nodeId });
+            if (values == null) return 0;
+            else return values[0];
+        }
         #endregion #################################################################################################################
 
 
@@ -8137,31 +8105,29 @@ namespace PrePoMax
             if (_viewResultsType == ViewResultsType.Undeformed) return 0;
             //
             float scale = 1;
-            PostSettings settings = (PostSettings)_settings[Globals.PostSettingsName];
             //
-            if (settings.DeformationScaleFactorType == DeformationScaleFactorType.Automatic)
+            if (_settings.Post.DeformationScaleFactorType == DeformationScaleFactorType.Automatic)
             {
                 float size = (float)_results.Mesh.GetBoundingBoxVolumeAsCubeSide();
                 float maxDisp = _results.GetMaxDisplacement(_currentFieldData.StepId, _currentFieldData.StepIncrementId);
                 if (maxDisp != 0) scale = size * 0.25f / maxDisp;
             }
-            else scale = (float)settings.DeformationScaleFactorValue;
+            else scale = (float)_settings.Post.DeformationScaleFactorValue;
             return scale;
         }
         public float GetScaleForAllStepsAndIncrements()
         {
             if (_viewResultsType == ViewResultsType.Undeformed) return 0;
-
+            //
             float scale = 1;
-            PostSettings settings = (PostSettings)_settings[Globals.PostSettingsName];
-
-            if (settings.DeformationScaleFactorType == DeformationScaleFactorType.Automatic)
+            //
+            if (_settings.Post.DeformationScaleFactorType == DeformationScaleFactorType.Automatic)
             {
                 float size = (float)_results.Mesh.GetBoundingBoxVolumeAsCubeSide();
                 float maxDisp = _results.GetMaxDisplacement();
                 if (maxDisp != 0) scale = size * 0.25f / maxDisp;
             }
-            else scale = (float)settings.DeformationScaleFactorValue;
+            else scale = (float)_settings.Post.DeformationScaleFactorValue;
             return scale;
         }
     }

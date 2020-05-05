@@ -283,14 +283,15 @@ namespace PrePoMax.Forms
         public void PrepareForm(FrmMain form, Controller controller)
         {
             this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
-
+            //
             _form = form;
             _controller = controller;
-
-            InitializeVariables();   // this calls UpdateFrame
-
-            PostSettings settings = (PostSettings)_controller.Settings[Globals.PostSettingsName];
-            gbColorSpectrumLimits.Enabled = settings.ColorSpectrum.MinMaxType == vtkControl.vtkColorSpectrumMinMaxType.Automatic;
+            // This calls UpdateFrame
+            InitializeVariables();   
+            //
+            gbColorSpectrumLimits.Enabled =
+                _controller.Settings.Post.ColorSpectrum.MinMaxType == vtkControl.vtkColorSpectrumMinMaxType.Automatic;
+            //
             if (!gbColorSpectrumLimits.Enabled)
             {
                 rbLimitsCurrentFrame.Checked = false;

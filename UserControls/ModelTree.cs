@@ -1902,18 +1902,20 @@ namespace UserControls
                     }
                     else
                     {
-                        if (CanHide(item) && !item.Visible)     // hide
+                        // Hide
+                        if (CanHide(item) && !item.Visible)
                         {
                             cltv.SetNodeForeColor(node, Color.Gray);
                             SetNodeImage(node, "Hide.ico");
                         }
-                        else                                    // show
+                        // Show
+                        else
                         {
                             cltv.SetNodeForeColor(node, Color.Black);
-
+                            //
                             if (node.Nodes.Count == 0 || !node.IsExpanded) SetNodeImage(node, "Dots.ico");
                             else SetNodeImage(node, "Dots_t.ico");
-
+                            //
                             if (item is GeometryPart && ((GeometryPart)item).ErrorElementIds != null)
                             {
                                 SetNodeImage(node, "Warning.ico");
@@ -1926,14 +1928,13 @@ namespace UserControls
                     cltv.SetNodeForeColor(node, Color.Gray);
                     SetNodeImage(node, "Unactive.ico");
                 }
-
+                //
                 if (!item.Valid)
                 {
                     cltv.SetNodeForeColor(node, cltv.HighlightForeErrorColor);
                     node.Parent.Expand();
                 }
             }
-            //node.TreeView.Invalidate();
         }
         private void SetNodeImage(TreeNode node, string imageName)
         {

@@ -73,6 +73,8 @@ namespace PrePoMax
         [DescriptionAttribute("The square of the rotational speed omega.")]
         [Id(1, 5)]
         public double RotationalSpeed2 { get { return _cenLoad.RotationalSpeed2; } set { _cenLoad.RotationalSpeed2 = value; } }
+        //
+        public override System.Drawing.Color Color { get { return _cenLoad.Color; } set { _cenLoad.Color = value; } }
 
 
         // Constructors                                                                                                             

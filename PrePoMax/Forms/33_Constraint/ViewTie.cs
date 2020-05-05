@@ -77,6 +77,8 @@ namespace PrePoMax
         [DescriptionAttribute("Select the slave surface for the creation of the tie definition.")]
         [Id(3, 3)]
         public string SlaveSurfaceName { get { return _tie.SlaveRegionName; } set { _tie.SlaveRegionName = value; } }
+        //
+        public override System.Drawing.Color Color { get { return _tie.Color; } set { _tie.Color = value; } }
 
 
         // Constructors                                                                                                             

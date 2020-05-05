@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CaeMesh;
 using DynamicTypeDescriptor;
 using CaeGlobals;
+using System.Drawing;
 
 namespace CaeModel
 {
@@ -41,6 +42,8 @@ namespace CaeModel
         private Selection _slaveCreationData;
         private int[] _masterCreationIds;
         private Selection _masterCreationData;
+        //
+        protected Color _color;
 
 
         // Properties                                                                                                               
@@ -73,13 +76,24 @@ namespace CaeModel
         public RegionTypeEnum MasterRegionType { get { return _masterRegionType; } set { _masterRegionType = value; } }
         public string MasterRegionName { get { return _masterSurfaceName; } set { _masterSurfaceName = value; } }
         public RegionTypeEnum SlaveRegionType { get { return _slaveRegionType; } set { _slaveRegionType = value; } }
-        public string SlaveRegionName { get { return _slaveSurfaceName; } set { _slaveSurfaceName = value; } }        
-        
+        public string SlaveRegionName { get { return _slaveSurfaceName; } set { _slaveSurfaceName = value; } }                
         //
         public int[] SlaveCreationIds { get { return _slaveCreationIds; } set { _slaveCreationIds = value; } }
         public Selection SlaveCreationData { get { return _slaveCreationData; } set { _slaveCreationData = value; } }
         public int[] MasterCreationIds { get { return _masterCreationIds; } set { _masterCreationIds = value; } }
         public Selection MasterCreationData { get { return _masterCreationData; } set { _masterCreationData = value; } }
+        //
+        public Color Color
+        {
+            get
+            {
+                // Compatibility for version v0.6.0
+                if (_color == Color.Empty) _color = Color.Yellow;
+                //
+                return _color;
+            }
+            set { _color = value; }
+        }
 
 
         // Constructors                                                                                                             
@@ -112,6 +126,8 @@ namespace CaeModel
             _slaveCreationData = null;
             _masterCreationIds = null;
             _masterCreationData = null;
+            //
+            _color = Color.Yellow;
         }
 
 

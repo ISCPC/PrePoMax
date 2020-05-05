@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using CaeGlobals;
 using DynamicTypeDescriptor;
+using System.Drawing.Design;
 
 namespace PrePoMax
 {
@@ -121,6 +122,13 @@ namespace PrePoMax
         [DescriptionAttribute("Select the slave surface for the creation of the contact pair definition.")]
         [Id(3, 3)]
         public string SlaveSurfaceName { get { return _contactPair.SlaveRegionName; } set { _contactPair.SlaveRegionName = value; } }
+        //
+        [Category("Appearance")]
+        [DisplayName("Color")]
+        [Description("Select contact pair color.")]
+        [Editor(typeof(UserControls.ColorEditorEx), typeof(UITypeEditor))]
+        [Id(1, 10)]
+        public System.Drawing.Color Color { get { return _contactPair.Color; } set { _contactPair.Color = value; } }
 
 
         // Constructors                                                                                                             

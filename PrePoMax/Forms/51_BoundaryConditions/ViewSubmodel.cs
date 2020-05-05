@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using CaeGlobals;
 using DynamicTypeDescriptor;
+using System.Drawing;
 
 namespace PrePoMax
 {
@@ -63,6 +64,8 @@ namespace PrePoMax
         [DescriptionAttribute("Rotation around the third axis.")]
         [Id(6, 3)]
         public bool UR3 { get { return _submodel.UR3; } set { _submodel.UR3 = value; } }
+        //
+        public override Color Color { get { return _submodel.Color; } set { _submodel.Color = value; } }
 
 
         // Constructors                                                                                                             

@@ -64,6 +64,8 @@ namespace PrePoMax
                 _stLoad.F3 *= r;
             }
         }
+        //
+        public override System.Drawing.Color Color { get { return _stLoad.Color; } set { _stLoad.Color = value; } }
 
 
         // Constructors                                                                                                             

@@ -32,6 +32,8 @@ namespace PrePoMax
         [DescriptionAttribute("The magnitude of the pressure load.")]
         [Id(1, 3)]
         public double Magnitude { get { return _dLoad.Magnitude; } set { _dLoad.Magnitude = value; } }
+        //
+        public override System.Drawing.Color Color { get { return _dLoad.Color; } set { _dLoad.Color = value; } }
 
 
         // Constructors                                                                                                             

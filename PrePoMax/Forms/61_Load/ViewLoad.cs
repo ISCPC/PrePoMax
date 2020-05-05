@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CaeMesh;
 using System.ComponentModel;
 using CaeGlobals;
+using System.Drawing.Design;
 using DynamicTypeDescriptor;
 
 namespace PrePoMax
@@ -35,6 +36,13 @@ namespace PrePoMax
         [DescriptionAttribute("Hidden.")]
         [Id(2, 2)]
         public string SelectionHidden { get { return _selectionHidden; } set { _selectionHidden = value; } }
+        //
+        [Category("Appearance")]
+        [DisplayName("Color")]
+        [Description("Select load color.")]
+        [Editor(typeof(UserControls.ColorEditorEx), typeof(UITypeEditor))]
+        [Id(1, 10)]
+        public abstract System.Drawing.Color Color { get; set; }
 
 
         // Constructors                                                                                                             

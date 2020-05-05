@@ -419,6 +419,7 @@ namespace PrePoMax.Forms
         private void PopulateListOfLoads(string[] partNames, string[] nodeSetNames, string[] elementSetNames, 
                                          string[] referencePointNames, string[] surfaceNames, string[] elementBasedSurfaceNames)
         {
+            System.Drawing.Color color = _controller.Settings.Pre.LoadSymbolColor;
             // Populate list view                                                                               
             ListViewItem item;
             string name;
@@ -429,6 +430,7 @@ namespace PrePoMax.Forms
             item = new ListViewItem(name);
             ViewCLoad vcl = new ViewCLoad(new CLoad(loadName, "", RegionTypeEnum.Selection, 0, 0, 0));
             vcl.PopululateDropDownLists(nodeSetNames, referencePointNames);
+            vcl.Color = color;
             item.Tag = vcl;
             lvTypes.Items.Add(item);
             // Moment
@@ -437,6 +439,7 @@ namespace PrePoMax.Forms
             item = new ListViewItem(name);
             ViewMomentLoad vml = new ViewMomentLoad(new MomentLoad(loadName, "", RegionTypeEnum.Selection, 0, 0, 0));
             vml.PopululateDropDownLists(nodeSetNames, referencePointNames);
+            vml.Color = color;
             item.Tag = vml;
             lvTypes.Items.Add(item);
             // Pressure
@@ -445,6 +448,7 @@ namespace PrePoMax.Forms
             item = new ListViewItem(name);
             ViewDLoad vdl = new ViewDLoad(new DLoad(loadName, "", RegionTypeEnum.Selection, 0));
             vdl.PopululateDropDownLists(surfaceNames);
+            vdl.Color = color;
             item.Tag = vdl;
             lvTypes.Items.Add(item);
             // Surface traction
@@ -453,6 +457,7 @@ namespace PrePoMax.Forms
             item = new ListViewItem(name);
             ViewSTLoad vstl = new ViewSTLoad(new STLoad(loadName, "", RegionTypeEnum.Selection, 0, 0, 0));
             vstl.PopululateDropDownLists(surfaceNames);
+            vstl.Color = color;
             item.Tag = vstl;
             lvTypes.Items.Add(item);
             // Gravity load -  part, element sets
@@ -461,6 +466,7 @@ namespace PrePoMax.Forms
             item = new ListViewItem(name);
             ViewGravityLoad vgl = new ViewGravityLoad(new GravityLoad(loadName, "", RegionTypeEnum.Selection));
             vgl.PopululateDropDownLists(partNames, elementSetNames);
+            vgl.Color = color;
             item.Tag = vgl;
             lvTypes.Items.Add(item);
             // Centrifugal load -  part, element sets
@@ -469,6 +475,7 @@ namespace PrePoMax.Forms
             item = new ListViewItem(name);
             ViewCentrifLoad vcfl = new ViewCentrifLoad(new CentrifLoad(loadName, "", RegionTypeEnum.Selection));
             vcfl.PopululateDropDownLists(partNames, elementSetNames);
+            vcfl.Color = color;
             item.Tag = vcfl;
             lvTypes.Items.Add(item);
             // Pre-tension load
@@ -477,6 +484,7 @@ namespace PrePoMax.Forms
             item = new ListViewItem(name);
             ViewPreTensionLoad vptl = new ViewPreTensionLoad(new PreTensionLoad(loadName, "", RegionTypeEnum.Selection, 0));
             vptl.PopululateDropDownLists(elementBasedSurfaceNames);
+            vptl.Color = color;
             item.Tag = vptl;
             lvTypes.Items.Add(item);
         }
