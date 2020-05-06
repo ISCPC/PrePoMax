@@ -313,7 +313,8 @@ namespace PrePoMax.Forms
             ViewTie vt = new ViewTie(tie);
             vt.PopululateDropDownLists(surfaceNames);
             item.Tag = vt;
-            vt.Color = color;
+            vt.MasterColor = color;
+            vt.SlaveColor = color;
             lvTypes.Items.Add(item);
         }
         private string GetConstraintName(string namePrefix)

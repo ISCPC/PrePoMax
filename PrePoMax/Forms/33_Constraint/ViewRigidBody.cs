@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using CaeGlobals;
 using DynamicTypeDescriptor;
+using System.Drawing.Design;
+using System.Drawing;
 
 namespace PrePoMax
 {
@@ -50,7 +52,12 @@ namespace PrePoMax
         [Id(4, 3)]
         public string SurfaceName { get { return _rigidBody.RegionName; } set { _rigidBody.RegionName = value; } }
         //
-        public override System.Drawing.Color Color { get { return _rigidBody.Color; } set { _rigidBody.Color = value; } }
+        [Category("Appearance")]
+        [DisplayName("Color")]
+        [Description("Select constraint color.")]
+        [Editor(typeof(UserControls.ColorEditorEx), typeof(UITypeEditor))]
+        [Id(1, 10)]
+        public Color Color { get { return _rigidBody.MasterColor; } set { _rigidBody.MasterColor = value; } }
 
 
         // Constructors                                                                                                             

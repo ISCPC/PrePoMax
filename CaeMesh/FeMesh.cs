@@ -3965,7 +3965,7 @@ namespace CaeMesh
         }
 
         // Get node, element or face ids from geometry ids
-        public int[] GetIdsFromGeometryIds(int[] geometryIds, vtkSelectItem selectItem)
+        public int[] GetIdsFromGeometryIds(int[] geometryIds, vtkSelectItem selectItem, bool onlyVisibile = false)
         {
             // geometryId = itemId * 100000 + typeId * 10000 + partId;
             // 1 ... vertex, 2 ... edge, 3 ... surface
@@ -3973,17 +3973,20 @@ namespace CaeMesh
             HashSet<int> ids = new HashSet<int>();
             for (int i = 0; i < geometryIds.Length; i++)
             {
-                ids.UnionWith(GetIdsFromGeometryId(geometryIds[i], selectItem));
+                ids.UnionWith(GetIdsFromGeometryId(geometryIds[i], selectItem, onlyVisibile));
             }
             return ids.ToArray();
         }
-        private int[] GetIdsFromGeometryId(int geometryId, vtkSelectItem selectItem)
+        private int[] GetIdsFromGeometryId(int geometryId, vtkSelectItem selectItem, bool onlyVisibile)
         {
             // geometryId = itemId * 100000 + typeId * 10000 + partId;
             // 1 ... vertex, 2 ... edge, 3 ... surface
             int[] itemTypePart = GetItemTypePartIdsFromGeometryId(geometryId);
             int[] nodeIds;
-
+            //
+            BasePart part = GetPartById(itemTypePart[2]);
+            if (part == null || (onlyVisibile && !part.Visible)) return new int[0];
+            //
             if (selectItem == vtkSelectItem.Node)
             {
                 nodeIds = GetNodeIdsFromGeometryId(geometryId);

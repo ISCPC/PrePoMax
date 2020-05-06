@@ -43,7 +43,8 @@ namespace CaeModel
         private int[] _masterCreationIds;
         private Selection _masterCreationData;
         //
-        protected Color _color;
+        protected Color _masterColor;
+        protected Color _slaveColor;
 
 
         // Properties                                                                                                               
@@ -83,16 +84,27 @@ namespace CaeModel
         public int[] MasterCreationIds { get { return _masterCreationIds; } set { _masterCreationIds = value; } }
         public Selection MasterCreationData { get { return _masterCreationData; } set { _masterCreationData = value; } }
         //
-        public Color Color
+        public Color MasterColor
         {
             get
             {
                 // Compatibility for version v0.6.0
-                if (_color == Color.Empty) _color = Color.Yellow;
+                if (_masterColor == Color.Empty) _masterColor = Color.Yellow;
                 //
-                return _color;
+                return _masterColor;
             }
-            set { _color = value; }
+            set { _masterColor = value; }
+        }
+        public Color SlaveColor
+        {
+            get
+            {
+                // Compatibility for version v0.6.0
+                if (_slaveColor == Color.Empty) _slaveColor = Color.Yellow;
+                //
+                return _slaveColor;
+            }
+            set { _slaveColor = value; }
         }
 
 
@@ -127,7 +139,8 @@ namespace CaeModel
             _masterCreationIds = null;
             _masterCreationData = null;
             //
-            _color = Color.Yellow;
+            _masterColor = Color.Yellow;
+            _slaveColor = Color.Yellow;
         }
 
 

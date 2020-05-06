@@ -16,7 +16,7 @@ namespace PrePoMax
         private bool _openLastFile;
         private string _lastFileName;
         private bool _saveResultsInPmx;
-        private Stack<string> _recentFiles;
+        private LinkedList<string> _recentFiles;
 
         // Properties                                                                                                               
         public bool OpenLastFile { get { return _openLastFile; } set { _openLastFile = value; } }
@@ -49,16 +49,21 @@ namespace PrePoMax
         }
         public void AddRecentFile(string fileNameWithpPath)
         {
-            if (_recentFiles == null) _recentFiles = new Stack<string>(10);
+            if (_recentFiles == null) _recentFiles = new LinkedList<string>();
             //
-            if (_recentFiles.Count == 0) _recentFiles.Push(fileNameWithpPath);
+            if (_recentFiles.Count == 0) _recentFiles.AddFirst(fileNameWithpPath);
             else
             {
                 if (!_recentFiles.Contains(fileNameWithpPath))
                 {
                     int _maxRecentFiles = 15;
-                    while (_recentFiles.Count >= _maxRecentFiles) _recentFiles.Pop();
-                    _recentFiles.Push(fileNameWithpPath);
+                    while (_recentFiles.Count >= _maxRecentFiles) _recentFiles.RemoveLast();
+                    _recentFiles.AddFirst(fileNameWithpPath);
+                }
+                else
+                {
+                    _recentFiles.Remove(fileNameWithpPath);
+                    _recentFiles.AddFirst(fileNameWithpPath);
                 }
             }
         }

@@ -4142,7 +4142,7 @@ namespace PrePoMax
             InvokeIfRequired(() =>
             {
                 int selectedIndex = tscbSymbolsForStep.SelectedIndex;
-
+                //
                 int index = -1;
                 for (int i = 0; i < tscbSymbolsForStep.Items.Count; i++)
                 {
@@ -4156,6 +4156,25 @@ namespace PrePoMax
                 {
                     tscbSymbolsForStep.Items.RemoveAt(index);
                     if (index == selectedIndex) tscbSymbolsForStep.SelectedIndex = tscbSymbolsForStep.Items.Count - 1;
+                }
+            });
+        }
+        public void SelectOneStepInSymbolsForStepList(string stepName)
+        {
+            InvokeIfRequired(() =>
+            {
+                int index = -1;
+                for (int i = 0; i < tscbSymbolsForStep.Items.Count; i++)
+                {
+                    if (tscbSymbolsForStep.Items[i].ToString() == stepName)
+                    {
+                        index = i;
+                        break;
+                    }
+                }
+                if (index != -1)
+                {
+                    tscbSymbolsForStep.SelectedIndex = index;
                 }
             });
         }

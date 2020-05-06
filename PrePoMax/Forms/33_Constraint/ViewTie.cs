@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using CaeGlobals;
 using DynamicTypeDescriptor;
+using System.Drawing.Design;
+using System.Drawing;
 
 namespace PrePoMax
 {
@@ -78,7 +80,22 @@ namespace PrePoMax
         [Id(3, 3)]
         public string SlaveSurfaceName { get { return _tie.SlaveRegionName; } set { _tie.SlaveRegionName = value; } }
         //
-        public override System.Drawing.Color Color { get { return _tie.Color; } set { _tie.Color = value; } }
+        //
+        [Category("Appearance")]
+        [DisplayName("Master surface color")]
+        [Description("Select the master surface color.")]
+        [Editor(typeof(UserControls.ColorEditorEx), typeof(UITypeEditor))]
+        [Id(1, 10)]
+        public Color MasterColor { get { return _tie.MasterColor; } set { _tie.MasterColor = value; } }
+        //
+        [Category("Appearance")]
+        [DisplayName("Slave surface color")]
+        [Description("Select the slave surface color.")]
+        [Editor(typeof(UserControls.ColorEditorEx), typeof(UITypeEditor))]
+        [Id(2, 10)]
+        public Color SlaveColor { get { return _tie.SlaveColor; } set { _tie.SlaveColor = value; } }
+
+      
 
 
         // Constructors                                                                                                             

@@ -154,6 +154,16 @@ namespace CaeModel
             }
             return regionsCount;
         }
+        public Step GetBoundaryConditionStep(BoundaryCondition boundaryCondition)
+        {
+            BoundaryCondition existing;
+            foreach (var step in _steps)
+            {
+                if (step.BoundaryConditions.TryGetValue(boundaryCondition.Name, out existing) && existing == boundaryCondition)
+                    return step;
+            }
+            return null;
+        }
         // Load
         public string[] GetAllLoadNames()
         {
@@ -180,6 +190,16 @@ namespace CaeModel
                 }
             }
             return regionsCount;
+        }
+        public Step GetLoadStep(Load load)
+        {
+            Load existing;
+            foreach (var step in _steps)
+            {
+                if (step.Loads.TryGetValue(load.Name, out existing) && existing == load)
+                    return step;
+            }
+            return null;
         }
 
     }

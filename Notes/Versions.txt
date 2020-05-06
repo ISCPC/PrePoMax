@@ -161,9 +161,13 @@ More???
 Added support for Open Recent Files
 Added support for contact history and field output
 Added support for Contact Pairs creation
+Added support for Friction
 Added support for Surface Interaction creation
 Added support for set creation on the fly
 Simplified the creation of new sets
+Fixed the visibility of symbols if geometry hidden
+Added support for multi-part selection
+Saving a .pmx file in a temp file first
 
 
 Version 0.6.0 Master branch

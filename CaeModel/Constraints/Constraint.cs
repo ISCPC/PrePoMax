@@ -13,20 +13,32 @@ namespace CaeModel
     public abstract class Constraint : NamedClass
     {
         // Variables                                                                                                                
-        protected Color _color;
+        protected Color _masterColor;
+        protected Color _slaveColor;
 
 
         // Properties                                                                                                               
-        public Color Color
+        public Color MasterColor
         {
             get
             {
                 // Compatibility for version v0.6.0
-                if (_color == Color.Empty) _color = Color.Yellow;
+                if (_masterColor == Color.Empty) _masterColor = Color.Yellow;
                 //
-                return _color; 
+                return _masterColor;
             }
-            set { _color = value; }
+            set { _masterColor = value; }
+        }
+        public Color SlaveColor
+        {
+            get
+            {
+                // Compatibility for version v0.6.0
+                if (_slaveColor == Color.Empty) _slaveColor = Color.Yellow;
+                //
+                return _slaveColor;
+            }
+            set { _slaveColor = value; }
         }
 
 
@@ -34,7 +46,8 @@ namespace CaeModel
         public Constraint(string name)
             : base(name) 
         {
-            _color = Color.Yellow;
+            _masterColor = Color.Yellow;
+            _slaveColor = Color.Yellow;
         }
 
         // Methods                                                                                                                  

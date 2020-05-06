@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using CaeGlobals;
 using DynamicTypeDescriptor;
+using System.Drawing;
 using System.Drawing.Design;
 
 namespace PrePoMax
@@ -18,7 +19,7 @@ namespace PrePoMax
         private CaeModel.ContactPair _contactPair;
 
 
-        // Properties                                                                                                                      
+        // Properties                                                                                                               
         [CategoryAttribute("Data")]
         [OrderedDisplayName(0, 10, "Name")]
         [DescriptionAttribute("Name of the contact pair.")]
@@ -103,7 +104,11 @@ namespace PrePoMax
         [OrderedDisplayName(2, 10, "Master surface")]
         [DescriptionAttribute("Select the master surface for the creation of the contact pair definition.")]
         [Id(3, 2)]
-        public string MasterSurfaceName { get { return _contactPair.MasterRegionName; } set { _contactPair.MasterRegionName = value; } }
+        public string MasterSurfaceName
+        {
+            get { return _contactPair.MasterRegionName; }
+            set { _contactPair.MasterRegionName = value; }
+        }
         // SLAVE -------------------------------------------------------------------------------------------------------------------
         [CategoryAttribute("Slave Region")]
         [OrderedDisplayName(3, 10, "Slave region type")]
@@ -121,14 +126,25 @@ namespace PrePoMax
         [OrderedDisplayName(5, 10, "Slave surface")]
         [DescriptionAttribute("Select the slave surface for the creation of the contact pair definition.")]
         [Id(3, 3)]
-        public string SlaveSurfaceName { get { return _contactPair.SlaveRegionName; } set { _contactPair.SlaveRegionName = value; } }
+        public string SlaveSurfaceName
+        {
+            get { return _contactPair.SlaveRegionName; }
+            set { _contactPair.SlaveRegionName = value; }
+        }
         //
         [Category("Appearance")]
-        [DisplayName("Color")]
-        [Description("Select contact pair color.")]
+        [DisplayName("Master surface color")]
+        [Description("Select the master surface color.")]
         [Editor(typeof(UserControls.ColorEditorEx), typeof(UITypeEditor))]
         [Id(1, 10)]
-        public System.Drawing.Color Color { get { return _contactPair.Color; } set { _contactPair.Color = value; } }
+        public Color MasterColor { get { return _contactPair.MasterColor; } set { _contactPair.MasterColor = value; } }
+        //
+        [Category("Appearance")]
+        [DisplayName("Slave surface color")]
+        [Description("Select the slave surface color.")]
+        [Editor(typeof(UserControls.ColorEditorEx), typeof(UITypeEditor))]
+        [Id(2, 10)]
+        public Color SlaveColor { get { return _contactPair.SlaveColor; } set { _contactPair.SlaveColor = value; } }
 
 
         // Constructors                                                                                                             
