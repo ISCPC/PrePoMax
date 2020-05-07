@@ -80,6 +80,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AutoClosingMessageBox.cs" />
+    <Compile Include="DataGridView\DataGridViewCopyPaste.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Forms\ChildMouseWheelManagedForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -158,6 +161,9 @@
     <Compile Include="Views\Step\ViewStep.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="DataGridView\DataGridViewCopyPaste.resx">
+      <DependentUpon>DataGridViewCopyPaste.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmProperties.resx">
       <DependentUpon>FrmProperties.cs</DependentUpon>
     </EmbeddedResource>

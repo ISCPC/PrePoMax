@@ -44,10 +44,10 @@ namespace PrePoMax.Forms
                 tabPage.Paint += TabPage_Paint;
                 _pages[i++] = tabPage;
             }
-            tcProperties.TabPages.Clear();
-            tcProperties.TabPages.Add(_pages[0]);
             //
             lvAddedProperties.Sorting = SortOrder.Ascending;
+            //
+            ClearControls();
         }
 
 
@@ -66,11 +66,19 @@ namespace PrePoMax.Forms
             if (tvProperties.SelectedNode != null && tvProperties.SelectedNode.Tag != null)
             {
                 string propertyName = tvProperties.SelectedNode.Name;
-
+                //
                 if (lvAddedProperties.FindItemWithText(propertyName) == null)
                 {
                     ListViewItem item = new ListViewItem(propertyName);
-                    item.Tag = tvProperties.SelectedNode.Tag;
+                    if (tvProperties.SelectedNode.Tag is MaterialProperty mp)
+                    {
+                        if (mp is Density de) item.Tag = new ViewDensity(de.DeepClone());
+                        else if (mp is Elastic el) item.Tag = new ViewElastic(el.DeepClone());
+                        else if (mp is Plastic pl) item.Tag = new ViewPlastic(pl.DeepClone());
+                        else throw new NotSupportedException();
+                    }
+                    else throw new NotSupportedException();
+                    //
                     lvAddedProperties.Items.Add(item);                    
                     int id = lvAddedProperties.Items.IndexOf(item);
                     lvAddedProperties.Items[id].Selected = true;
@@ -85,7 +93,7 @@ namespace PrePoMax.Forms
             {
                 lvAddedProperties.SelectedItems[0].Remove();
                 if (lvAddedProperties.Items.Count > 0) lvAddedProperties.Items[0].Selected = true;
-                else propertyGrid.SelectedObject = null;
+                else ClearControls();
             }
             _propertyChanged = true;
         }
@@ -126,7 +134,7 @@ namespace PrePoMax.Forms
         }
         private void dgvData_DataError(object sender, DataGridViewDataErrorEventArgs e)
         {
-            MessageBox.Show("Property value is not valid.", "Error", MessageBoxButtons.OK);
+            MessageBox.Show("Entered value is not a valid/numeric value.", "Error", MessageBoxButtons.OK);
         }
         private void btnOK_Click(object sender, EventArgs e)
         {
@@ -168,7 +176,7 @@ namespace PrePoMax.Forms
                 Hide();
             }
         }
-
+    
 
         // Methods                                                                                                                  
         public bool PrepareForm(string stepName, string materialToEditName)
@@ -183,14 +191,14 @@ namespace PrePoMax.Forms
             _materialToEditName = null;
             _material = null;
             lvAddedProperties.Clear();
-            propertyGrid.SelectedObject = null;
+            ClearControls();
             //
             _materialNames = _controller.GetMaterialNames();
             _materialToEditName = materialToEditName;
             // Initialize material properties
-            tvProperties.Nodes.Find("Density", true)[0].Tag = new ViewDensity(new Density(0));
-            tvProperties.Nodes.Find("Elastic", true)[0].Tag = new ViewElastic(new Elastic(0, 0));
-            tvProperties.Nodes.Find("Plastic", true)[0].Tag = new ViewPlastic(new Plastic(new double[][] { new double[] { 0, 0 } }));
+            tvProperties.Nodes.Find("Density", true)[0].Tag = new Density(0);
+            tvProperties.Nodes.Find("Elastic", true)[0].Tag = new Elastic(0, 0);
+            tvProperties.Nodes.Find("Plastic", true)[0].Tag = new Plastic(new double[][] { new double[] { 0, 0 } });
             tvProperties.ExpandAll();
             //
             if (_materialToEditName == null)
@@ -225,6 +233,14 @@ namespace PrePoMax.Forms
             }
             //
             return true;
+        }
+        private void ClearControls()
+        {
+            propertyGrid.SelectedObject = null;
+            dgvData.DataSource = null;
+            //
+            tcProperties.TabPages.Clear();
+            tcProperties.TabPages.Add(_pages[0]);
         }
         public void Add()
         {
@@ -263,5 +279,6 @@ namespace PrePoMax.Forms
         {
             return NamedClass.GetNewValueName(_materialNames, "Material-");
         }
+       
     }
 }

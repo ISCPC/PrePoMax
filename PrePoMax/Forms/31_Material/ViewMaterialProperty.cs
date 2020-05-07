@@ -7,7 +7,7 @@ using System.ComponentModel;
 using DynamicTypeDescriptor;
 
 namespace PrePoMax
-{
+{    
     public abstract class ViewMaterialProperty
     {
         // Variables                                                                                                                

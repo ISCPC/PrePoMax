@@ -49,10 +49,11 @@ namespace PrePoMax.Forms
                 tabPage.Paint += TabPage_Paint;
                 _pages[i++] = tabPage;
             }
-            tcProperties.TabPages.Clear();
-            tcProperties.TabPages.Add(_pages[0]);
             //
             this.lvAddedProperties.ListViewItemSorter = new ListViewItemComparer(0);
+            //lvAddedProperties.Sorting = SortOrder.None;
+            //
+            ClearControls();
         }
 
 
@@ -75,8 +76,14 @@ namespace PrePoMax.Forms
                 if (lvAddedProperties.FindItemWithText(propertyName) == null)
                 {
                     ListViewItem item = new ListViewItem(propertyName);
-                    item.Tag = tvProperties.SelectedNode.Tag;
-                    lvAddedProperties.Sorting = SortOrder.None;
+                    if (tvProperties.SelectedNode.Tag is SurfaceInteractionProperty sip)
+                    {
+                        if (sip is SurfaceBehavior sb) item.Tag = new ViewSurfaceBehavior(sb.DeepClone());
+                        else if (sip is Friction fr) item.Tag = new ViewFriction(fr.DeepClone());
+                        else throw new NotSupportedException();
+                    }
+                    else throw new NotSupportedException();
+                    //
                     lvAddedProperties.Items.Add(item);
                     int id = lvAddedProperties.Items.IndexOf(item);
                     lvAddedProperties.Items[id].Selected = true;
@@ -91,7 +98,7 @@ namespace PrePoMax.Forms
             {
                 lvAddedProperties.SelectedItems[0].Remove();
                 if (lvAddedProperties.Items.Count > 0) lvAddedProperties.Items[0].Selected = true;
-                else propertyGrid.SelectedObject = null;
+                else ClearControls();
             }
             //
             _propertyChanged = true;
@@ -200,13 +207,13 @@ namespace PrePoMax.Forms
             _surfaceInteractionToEditName = null;
             _surfaceInteraction = null;
             lvAddedProperties.Clear();
-            propertyGrid.SelectedObject = null;
+            ClearControls();
             //
             _surfraceInteractionNames = _controller.GetSurfaceInteractionNames();
             _surfaceInteractionToEditName = surfaceInteractionToEditName;
             // Initialize surface interaction properties
-            tvProperties.Nodes.Find("Surface behavior", true)[0].Tag = new ViewSurfaceBehavior(new SurfaceBehavior());
-            tvProperties.Nodes.Find("Friction", true)[0].Tag = new ViewFriction(new Friction());
+            tvProperties.Nodes.Find("Surface behavior", true)[0].Tag = new SurfaceBehavior();
+            tvProperties.Nodes.Find("Friction", true)[0].Tag = new Friction();
             tvProperties.ExpandAll();
             //
             if (_surfaceInteractionToEditName == null)
@@ -240,6 +247,14 @@ namespace PrePoMax.Forms
             }
             //
             return true;
+        }
+        private void ClearControls()
+        {
+            propertyGrid.SelectedObject = null;
+            dgvData.DataSource = null;
+            //
+            tcProperties.TabPages.Clear();
+            tcProperties.TabPages.Add(_pages[0]);
         }
         public void Add()
         {

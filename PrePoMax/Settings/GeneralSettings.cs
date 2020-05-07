@@ -18,6 +18,7 @@ namespace PrePoMax
         private bool _saveResultsInPmx;
         private LinkedList<string> _recentFiles;
 
+
         // Properties                                                                                                               
         public bool OpenLastFile { get { return _openLastFile; } set { _openLastFile = value; } }
         public string LastFileName { get { return _lastFileName; } set { _lastFileName = value; } }
@@ -67,7 +68,6 @@ namespace PrePoMax
                 }
             }
         }
-
         public void ClearRecentFiles()
         {
             _recentFiles.Clear();

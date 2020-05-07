@@ -635,6 +635,9 @@
     <None Include="Icons\Material\Remove.png" />
     <None Include="Icons\Contact\ContactPair.ico" />
     <None Include="Icons\File\Open.png" />
+    <None Include="Icons\Common\Cut.png" />
+    <None Include="Icons\Common\Copy.png" />
+    <None Include="Icons\Common\Paste.png" />
     <Content Include="main.ico" />
   </ItemGroup>
   <ItemGroup>

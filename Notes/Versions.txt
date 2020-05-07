@@ -12,7 +12,6 @@ Material curve plotting
 Export / Import material library
 Ev. a small basic material library
 Export in VTK (Paraview)
-Independent colours for BCs and Loads (i.e.: Pressure 1 different to Pressure 2)
 Personalising spectrum colours (post-Processing)
 Personalising description format (post-Processing)
 Iso line (post-Processing)
@@ -167,7 +166,6 @@ Added support for set creation on the fly
 Simplified the creation of new sets
 Fixed the visibility of symbols if geometry hidden
 Added support for multi-part selection
-Saving a .pmx file in a temp file first
 
 
 Version 0.6.0 Master branch
