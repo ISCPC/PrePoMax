@@ -23,34 +23,32 @@ namespace PrePoMax
         public FrmHistoryResultsOutput(Controller controller)
         {
             InitializeComponent();
-
+            //
             _controller = controller;
+            dgvHistory.EnableCutMenu = false;
+            dgvHistory.EnablePasteMenu = false;
         }
 
 
         // Event handlers                                                                                                           
         private void FrmHistoryOutput_Load(object sender, EventArgs e)
         {
-            dgvHistory.PreviewKeyDown += DgvHistory_PreviewKeyDown;
         }
-
-        private void DgvHistory_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+        private void FrmHistoryOutput_VisibleChanged(object sender, EventArgs e)
         {
         }
-
         private void FrmHistoryOutput_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (e.CloseReason == CloseReason.UserClosing)
             {
                 e.Cancel = true;
+                dgvHistory.HidePlot();
                 Hide();
             }
         }
-        private void FrmHistoryOutput_VisibleChanged(object sender, EventArgs e)
-        {
-        }
         private void btnClose_Click(object sender, EventArgs e)
         {
+            dgvHistory.HidePlot();
             Hide();
         }
 
@@ -83,33 +81,8 @@ namespace PrePoMax
                 dgvHistory.Columns.Add(column);
             }
             foreach (var row in rowBasedData) dgvHistory.Rows.Add(row);
-
-
+            //
             return;
-            DataTable table = new DataTable();
-            
-
-            for (int i = 0; i < columnNames.Length; i++) table.Columns.Add(columnNames[i], typeof(double));
-
-            foreach (var row in rowBasedData) table.Rows.Add(row);
-                
-            dgvHistory.DataSource = table;
-        }
-
-        private void dgvHistory_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Control && (e.KeyCode == Keys.C | e.KeyCode == Keys.V | e.KeyCode == Keys.X))
-            {
-                e.SuppressKeyPress = true;
-            }
-
-            if (e.Control && e.KeyCode == Keys.C)
-            {
-                //Copy to clipboard
-                DataObject dataObj = dgvHistory.GetClipboardContent();
-                if (dataObj != null)
-                    Clipboard.SetDataObject(dataObj, true);
-            }
         }
     }
 }

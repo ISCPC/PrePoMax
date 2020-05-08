@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using CaeModel;
 using CaeGlobals;
 using PrePoMax.PropertyViews;
+using System.Runtime.CompilerServices;
 
 namespace PrePoMax.Forms
 {
@@ -118,6 +119,9 @@ namespace PrePoMax.Forms
                     dgvData.DataSource = binding; //bind datagridview to binding source - enables adding of new lines
                     binding.ListChanged += Binding_ListChanged;
                     //
+                    dgvData.XColIndex = 1;
+                    dgvData.StartPlotAtZero = true;
+                    //
                     propertyGrid.SelectedObject = lvAddedProperties.SelectedItems[0].Tag;
                 }
             }
@@ -166,6 +170,7 @@ namespace PrePoMax.Forms
         }
         private void btnCancel_Click(object sender, EventArgs e)
         {
+            dgvData.HidePlot();
             Hide();
         }
         private void FrmMaterial_FormClosing(object sender, FormClosingEventArgs e)
@@ -173,6 +178,7 @@ namespace PrePoMax.Forms
             if (e.CloseReason == CloseReason.UserClosing)
             {
                 e.Cancel = true;
+                dgvData.HidePlot();
                 Hide();
             }
         }
@@ -279,6 +285,7 @@ namespace PrePoMax.Forms
         {
             return NamedClass.GetNewValueName(_materialNames, "Material-");
         }
+        
        
     }
 }

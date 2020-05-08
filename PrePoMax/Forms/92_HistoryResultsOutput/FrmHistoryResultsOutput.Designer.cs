@@ -30,7 +30,7 @@
         {
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
-            this.dgvHistory = new System.Windows.Forms.DataGridView();
+            this.dgvHistory = new UserControls.DataGridViewCopyPaste();
             this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -75,7 +75,6 @@
             this.dgvHistory.RowHeadersVisible = false;
             this.dgvHistory.Size = new System.Drawing.Size(248, 480);
             this.dgvHistory.TabIndex = 0;
-            this.dgvHistory.KeyDown += new System.Windows.Forms.KeyEventHandler(this.dgvHistory_KeyDown);
             // 
             // Column1
             // 
@@ -135,7 +134,7 @@
 
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.Button btnClose;
-        private System.Windows.Forms.DataGridView dgvHistory;
+        private UserControls.DataGridViewCopyPaste dgvHistory;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column1;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column2;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column3;

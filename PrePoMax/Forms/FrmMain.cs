@@ -334,7 +334,7 @@ namespace PrePoMax
                 tsmiTest.Visible = false;
             }
         }
-
+        //
         private void FrmMain_Shown(object sender, EventArgs e)
         {
             // Set vtk control size
@@ -450,7 +450,7 @@ namespace PrePoMax
                 }
             }
         }
-
+        //
         private void itemForm_VisibleChanged(object sender, EventArgs e)
         {
             Form form = sender as Form;
@@ -488,7 +488,7 @@ namespace PrePoMax
             //else if (form.Top + form.Height > screenSize.Height) form.Top = screenSize.Height - form.Height;
             GetFormLoaction(form);
         }
-
+        //
         private void timerOutput_Tick(object sender, EventArgs e)
         {
             tbOutput.Lines = outputLines;

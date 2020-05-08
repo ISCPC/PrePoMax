@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using CaeMesh;
 using CaeGlobals;
+using System.Configuration;
 
 namespace CaeResults
 {
@@ -110,14 +111,16 @@ namespace CaeResults
                 dataSetNames.Add(nameInternalEnergy);
                 dataSetNames.Add(nameTotalInternalEnergy);
                 //
-                List<string[]> dataSetLinesList = SplitToDataSetLinesList(dataSetNames, lines.ToArray());
+                Dictionary<string, string> repairedSetNames = new Dictionary<string, string>();
+                //
+                List<string[]> dataSetLinesList = SplitToDataSetLinesList(dataSetNames, lines.ToArray(), repairedSetNames);
                 Repair(dataSetLinesList, dataSetNames);
                 //
                 DatDataSet dataSet;
                 List<DatDataSet> dataSets = new List<DatDataSet>();
                 foreach (string[] dataSetLines in dataSetLinesList)
                 {
-                    dataSet = GetDatDataSet(dataSetNames, dataSetLines);
+                    dataSet = GetDatDataSet(dataSetNames, dataSetLines, repairedSetNames);
                     if (dataSet.FieldName != nameError) dataSets.Add(dataSet);
                 }
                 //
@@ -128,7 +131,8 @@ namespace CaeResults
             //
             return null;
         }
-        static private List<string[]> SplitToDataSetLinesList(List<string> dataSetNames, string[] lines)
+        static private List<string[]> SplitToDataSetLinesList(List<string> dataSetNames, string[] lines,
+                                                              Dictionary<string, string> repairedSetNames)
         {
             // displacements (vx, vy, vz) for set DISP and time  0.1000000E+00
             //         5   5.080202E+00  0.000000E+00  0.000000E+00
@@ -167,7 +171,7 @@ namespace CaeResults
                     // At the end reduce the i for 1 since it will be increased next time in the loop
                     i--;
                     //
-                    List<string[]> repairedSets = RepairContactStatistics(dataSet.ToArray(), ref existingNames);
+                    List<string[]> repairedSets = RepairContactStatistics(dataSet.ToArray(), ref existingNames, repairedSetNames);
                     //
                     if (repairedSets != null) dataSets.AddRange(repairedSets);
                 }
@@ -192,7 +196,8 @@ namespace CaeResults
             //
             return dataSets;
         }
-        static private List<string[]> RepairContactStatistics(string[] lines, ref Dictionary<string, HashSet<string>> existingNames)
+        static private List<string[]> RepairContactStatistics(string[] lines, ref Dictionary<string, HashSet<string>> existingNames,
+                                                              Dictionary<string, string> repairedSetNames)
         {
             //statistics for slave set INTERNAL_SELECTION - 2_CONTACTPAIR - 1_SLAVE, master set INTERNAL_SELECTION - 1_CONTACTPAIR - 1_MASTER and time  0.5000000E+00
             //total surface force (fx, fy, fz) and moment about the origin (mx, my, mz)
@@ -209,8 +214,8 @@ namespace CaeResults
             //
             string[] tmp = lines[0].Split(new string[] { "slave set", "master set", "and time"}, 
                                           StringSplitOptions.RemoveEmptyEntries);
-            string slaveName = RepairSetName(tmp[1].Trim(new char[] { ' ', ','}));
-            string masterName = RepairSetName(tmp[2].Trim());
+            string slaveName = RepairSetName(tmp[1].Trim(new char[] { ' ', ','}), repairedSetNames);
+            string masterName = RepairSetName(tmp[2].Trim(), repairedSetNames);
             string time = tmp[3].Trim();
             //
             if (slaveName.EndsWith(CaeMesh.Globals.SlaveNameSuffix.ToUpper()))
@@ -403,32 +408,54 @@ namespace CaeResults
                 }
             }
         }
-        static private string RepairSetName(string setName)
+        static private string RepairSetName(string setName, Dictionary<string, string> repairedSetNames)
         {
             string[] tmp;
+            string newName = setName;
             if (setName.StartsWith(CaeMesh.Globals.InternalSelectionName.ToUpper()))
             {
-                tmp = setName.Split(underscoreSplitter, StringSplitOptions.None);
-                setName = "";
-                for (int i = 2; i < tmp.Length; i++)
+                if (!repairedSetNames.TryGetValue(setName, out newName))
                 {
-                    setName += tmp[i];
-                    if (i < tmp.Length - 1) setName += "_";
+                    tmp = setName.Split(underscoreSplitter, StringSplitOptions.None);
+                    newName = "";
+                    for (int i = 2; i < tmp.Length; i++)
+                    {
+                        newName += tmp[i];
+                        if (i < tmp.Length - 1) newName += "_";
+                    }
+                    // Check if an existing set was already renamed to an existing new name
+                    if (repairedSetNames.Values.Contains(newName))
+                    {
+                        newName = NamedClass.GetNameWithoutLastValue(newName);
+                        newName = NamedClass.GetNewValueName(repairedSetNames.Values, newName);
+                    }
+                    repairedSetNames.Add(setName, newName);
                 }
             }
             else if (setName.StartsWith(CaeMesh.Globals.InternalName.ToUpper()))
             {
-                tmp = setName.Split(underscoreSplitter, StringSplitOptions.None);
-                setName = "";
-                for (int i = 1; i < tmp.Length; i++)
+                if (!repairedSetNames.TryGetValue(setName, out newName))
                 {
-                    setName += tmp[i];
-                    if (i < tmp.Length - 1) setName += "_";
+                    tmp = setName.Split(underscoreSplitter, StringSplitOptions.None);
+                    newName = "";
+                    for (int i = 2; i < tmp.Length; i++)
+                    {
+                        newName += tmp[i];
+                        if (i < tmp.Length - 1) newName += "_";
+                    }
+                    // Check if an existing set was already renamed to an existing new name
+                    if (repairedSetNames.Values.Contains(newName))
+                    {
+                        newName = NamedClass.GetNameWithoutLastValue(newName);
+                        newName = NamedClass.GetNewValueName(repairedSetNames.Values, newName);
+                    }
+                    repairedSetNames.Add(setName, newName);
                 }
             }
-            return setName;
+            return newName;
         }
-        static private DatDataSet GetDatDataSet(List<string> dataSetNames, string[] dataSetLines)
+        static private DatDataSet GetDatDataSet(List<string> dataSetNames, string[] dataSetLines,
+                                                Dictionary<string, string> repairedSetNames)
         {
             try
             {
@@ -452,7 +479,7 @@ namespace CaeResults
                 componentNames = tmp2.ToList();
 
                 tmp2 = tmp[2].Split(dataSplitter, StringSplitOptions.RemoveEmptyEntries);
-                dataSet.SetName = RepairSetName(tmp2[0].Trim());
+                dataSet.SetName = RepairSetName(tmp2[0].Trim(), repairedSetNames);
                 dataSet.Time = double.Parse(tmp2[1]);
                 //
                 double[] values;

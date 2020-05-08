@@ -51,7 +51,6 @@ namespace PrePoMax.Forms
             }
             //
             this.lvAddedProperties.ListViewItemSorter = new ListViewItemComparer(0);
-            //lvAddedProperties.Sorting = SortOrder.None;
             //
             ClearControls();
         }

@@ -88,14 +88,14 @@ namespace CaeGlobals
 
 
         // Static methods
-        public static string GetNewValueName(ICollection<string> existingNames, string nameRoot)
+        public static string GetNewValueName(ICollection<string> existingNames, string nameRoot, char splitter = '-')
         {
             int max = 0;
             int tmp;
             string[] parts;
             foreach (var names in existingNames)
             {
-                parts = names.Split('-');
+                parts = names.Split(splitter);
                 if (parts.Length >= 2 && nameRoot.StartsWith(parts[0]))
                 {
                     if (int.TryParse(parts.Last(), out tmp))
@@ -105,15 +105,15 @@ namespace CaeGlobals
                 }
             }
             max++;
-
+            //
             return nameRoot + max.ToString();
         }
 
-        public static string GetNameWithoutLastValue(string name)
+        public static string GetNameWithoutLastValue(string name, char splitter = '-')
         {
             int tmp;
             string[] parts;
-            parts = name.Split('-');
+            parts = name.Split(splitter);
             int numOfParts = parts.Length;
             //
             if (int.TryParse(parts.Last(), out tmp)) numOfParts--;
@@ -121,7 +121,7 @@ namespace CaeGlobals
             string newName = "";
             for (int i = 0; i < numOfParts; i++)
             {
-                newName += parts[i] + "-";
+                newName += parts[i] + splitter;
             }
             return newName;
         }

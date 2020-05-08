@@ -77,11 +77,20 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="ZedGraph, Version=5.1.7.430, Culture=neutral, PublicKeyToken=02a83cbd123fcd60, processorArchitecture=MSIL">
+      <HintPath>..\packages\ZedGraph.5.1.7\lib\net35-Client\ZedGraph.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AutoClosingMessageBox.cs" />
     <Compile Include="DataGridView\DataGridViewCopyPaste.cs">
       <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="DiagramView\DiagramView.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DiagramView\DiagramView.Designer.cs">
+      <DependentUpon>DiagramView.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\ChildMouseWheelManagedForm.cs">
       <SubType>Form</SubType>
@@ -164,6 +173,9 @@
     <EmbeddedResource Include="DataGridView\DataGridViewCopyPaste.resx">
       <DependentUpon>DataGridViewCopyPaste.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="DiagramView\DiagramView.resx">
+      <DependentUpon>DiagramView.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmProperties.resx">
       <DependentUpon>FrmProperties.cs</DependentUpon>
     </EmbeddedResource>
@@ -211,6 +223,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="packages.config" />
     <None Include="Resources\Warning.ico" />
   </ItemGroup>
   <ItemGroup>
@@ -296,6 +309,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Show2.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="License-LGPL.txt" />
+    <None Include="Resources\Paste.png" />
+    <None Include="Resources\Copy.png" />
+    <None Include="Resources\Cut.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

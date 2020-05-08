@@ -395,8 +395,8 @@ namespace PrePoMax
             // Add and execute the clear command
             _commands.Clear();      // also calls _modelChanged = false;
             ClearCommand();         // also calls _modelChanged = false;
-
-            //OpenedFileName = null;
+            //
+            _form.UpdateRecentFilesThreadSafe(_settings.General.GetRecentFiles());
         }
         public void Open(string fileName)
         {
@@ -511,8 +511,12 @@ namespace PrePoMax
             }
             else
             {
+                // Set the view but do not draw
+                _currentView = ViewGeometryModelResults.Results;
+                _form.SetCurrentView(_currentView);
+                // Regenerate tree
                 _form.RegenerateTree(_model, _jobs, _results, _history);
-                //
+                // Set model changed
                 _modelChanged = true;
             }
         }
