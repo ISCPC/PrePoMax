@@ -202,7 +202,7 @@ namespace CaeModel
                 }
                 else throw new NotSupportedException();
                 //
-                SetItemValidity(section, valid, items);
+                SetItemValidity(null, section, valid, items);
                 if (!valid && section.Active) invalidItems.Add("Section: " + section.Name);
             }
             // Constraints
@@ -224,7 +224,7 @@ namespace CaeModel
                 }
                 else throw new NotSupportedException();
                 //
-                SetItemValidity(constraint, valid, items);
+                SetItemValidity(null, constraint, valid, items);
                 if (!valid && constraint.Active) invalidItems.Add("Constraint: " + constraint.Name);
             }
             // Contact pairs
@@ -237,7 +237,7 @@ namespace CaeModel
                         && _mesh.Surfaces.ContainsValidKey(contactPair.MasterRegionName)
                         && (contactPair.SlaveRegionName != contactPair.MasterRegionName);
                 //
-                SetItemValidity(contactPair, valid, items);
+                SetItemValidity(null, contactPair, valid, items);
                 if (!valid && contactPair.Active) invalidItems.Add("Contact pair: " + contactPair.Name);
             }
             // Steps
@@ -268,7 +268,7 @@ namespace CaeModel
                     }
                     else throw new NotSupportedException();
                     //
-                    SetItemValidity(historyOutput, valid, items);
+                    SetItemValidity(step.Name, historyOutput, valid, items);
                     if (!valid && historyOutput.Active) invalidItems.Add("History output: " + step.Name + ", " + historyOutput.Name);
                 }
                 // Boundary conditions
@@ -289,7 +289,7 @@ namespace CaeModel
                     }
                     else throw new NotSupportedException();
                     //
-                    SetItemValidity(bc, valid, items);
+                    SetItemValidity(step.Name, bc, valid, items);
                     if (!valid && bc.Active) invalidItems.Add("Boundary condition: " + step.Name + ", " + bc.Name);
                 }
                 // Loads
@@ -338,19 +338,19 @@ namespace CaeModel
                     }
                     else throw new NotSupportedException();
                     //
-                    SetItemValidity(load, valid, items);
+                    SetItemValidity(step.Name, load, valid, items);
                     if (!valid && load.Active) invalidItems.Add("Load: " + step.Name + ", " + load.Name);
                 }
             }
             //
             return invalidItems.ToArray();
         }
-        private void SetItemValidity(NamedClass item, bool validity, List<Tuple<NamedClass, string>> items)
+        private void SetItemValidity(string stepName, NamedClass item, bool validity, List<Tuple<NamedClass, string>> items)
         {
             if (item.Valid != validity)
             {
                 item.Valid = validity;
-                items.Add(new Tuple<NamedClass, string>(item, null));
+                items.Add(new Tuple<NamedClass, string>(item, stepName));
             }
         }
         //

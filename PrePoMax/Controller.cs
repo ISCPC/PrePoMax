@@ -1164,7 +1164,9 @@ namespace PrePoMax
 
         public void UndoHistory()
         {
+            string lastFileName = OpenedFileName;
             _commands.Undo();
+            OpenedFileName = lastFileName;
         }
         public void RedoHistory()
         {
@@ -1178,11 +1180,9 @@ namespace PrePoMax
         }
         public void RegenerateHistoryCommandsWithDialogs(bool showImportDialog, bool showMeshParametersDialog)
         {
-            //ViewGeometryMeshResults view = _currentView;
             string lastFileName = OpenedFileName;
             _commands.ExecuteAllCommands(showImportDialog, showMeshParametersDialog);
             OpenedFileName = lastFileName;
-            //CurrentView = view;
         }
 
         public List<FileInOut.Output.Calculix.CalculixKeyword> GetCalculixModelKeywords()

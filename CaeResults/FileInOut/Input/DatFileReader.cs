@@ -438,7 +438,7 @@ namespace CaeResults
                 {
                     tmp = setName.Split(underscoreSplitter, StringSplitOptions.None);
                     newName = "";
-                    for (int i = 2; i < tmp.Length; i++)
+                    for (int i = 1; i < tmp.Length; i++)
                     {
                         newName += tmp[i];
                         if (i < tmp.Length - 1) newName += "_";
