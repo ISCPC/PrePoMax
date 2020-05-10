@@ -1696,7 +1696,7 @@ namespace PrePoMax
             if (!File.Exists(fileName))
                 throw new FileNotFoundException("The file: '" + fileName + "' does not exist." + Environment.NewLine +
                                                 "The reason is a failed mesh generation procedure for part: " + part.Name);
-
+            //
             FeMesh mesh = FileInOut.Input.VolFileReader.Read(fileName, FileInOut.Input.ElementsToImport.All, false);
             double[][] nodeCoor = mesh.GetAllNodeCoor();
             DrawNodes("nodeMesh", nodeCoor, System.Drawing.Color.Black, vtkControl.vtkRendererLayer.Selection, 7, true);
@@ -1900,11 +1900,11 @@ namespace PrePoMax
                 foreach (var partName in cgp.SubPartNames) meshPartIds.Add(_model.Geometry.Parts[partName].PartId);
             }
             else meshPartIds.Add(part.PartId);
-            //
+            // For each mesh refinement
             foreach (var entry in meshRefinements)
             {
                 meshRefinement = entry.Value;
-                // Export refinement only if it is active
+                // Export mesh refinement only if it is active
                 if (meshRefinement.Active)
                 {
                     // Get part ids of the mesh refinement
@@ -1919,7 +1919,7 @@ namespace PrePoMax
                         h = meshRefinement.MeshSize;
                         double[][] points;
                         double[][][] lines;
-                        DisplayedMesh.GetVetexAndEdgeCoorFromGeometryIds(geometryIds, h, false, out points, out lines);
+                        _model.Geometry.GetVetexAndEdgeCoorFromGeometryIds(geometryIds, h, false, out points, out lines);
                         numPoints += points.Length;
                         numLines += lines.Length;
                         //
