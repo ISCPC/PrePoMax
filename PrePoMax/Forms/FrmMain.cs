@@ -42,6 +42,8 @@ namespace PrePoMax
         private Controller _controller;
         private string[] _args;
         private string[] outputLines;
+        private bool semaphore;
+        private object _myLock;
         private Dictionary<ViewGeometryModelResults, Action<object, EventArgs>> _edgeVisibilities; // save display style
 
         private Point _formLocation;
@@ -140,6 +142,7 @@ namespace PrePoMax
             _edgeVisibilities.Add(ViewGeometryModelResults.Geometry, tsmiShowModelEdges_Click);
             _edgeVisibilities.Add(ViewGeometryModelResults.Model, tsmiShowElementEdges_Click);
             _edgeVisibilities.Add(ViewGeometryModelResults.Results, tsmiShowElementEdges_Click);
+            _myLock = new object();
         }
 
 
@@ -4107,7 +4110,10 @@ namespace PrePoMax
 
         private void tscbSymbolsForStep_SelectedIndexChanged(object sender, System.EventArgs e)
         {
-            _controller.DrawSymbolsForStep = tscbSymbolsForStep.SelectedItem.ToString();
+            // If BC or load is selected it will reset the step - clear selection
+            _controller.ClearAllSelection();
+            //
+            _controller.DrawSymbolsForStep(tscbSymbolsForStep.SelectedItem.ToString(), false);  // no need to highlight after clear
         }
         public void UpadteSymbolsForStepList()
         {
@@ -4174,7 +4180,11 @@ namespace PrePoMax
                 }
                 if (index != -1)
                 {
+                    tscbSymbolsForStep.SelectedIndexChanged -= tscbSymbolsForStep_SelectedIndexChanged;
                     tscbSymbolsForStep.SelectedIndex = index;
+                    tscbSymbolsForStep.SelectedIndexChanged += tscbSymbolsForStep_SelectedIndexChanged;
+                    //
+                    _controller.DrawSymbolsForStep(tscbSymbolsForStep.SelectedItem.ToString(), false); // do not highlight!
                 }
             });
         }

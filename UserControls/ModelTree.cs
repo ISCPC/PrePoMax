@@ -540,11 +540,22 @@ namespace UserControls
                 if (ModifierKeys != Keys.Shift && ModifierKeys != Keys.Control && e.Clicks > 1) _doubleClick = true;
                 else _doubleClick = false;
                 //
-                if (tree.HitTest(e.Location).Node == null)
+                TreeNode node = tree.GetNodeAt(e.Location);
+                if (node == null)
                 {
                     tree.SelectedNodes.Clear();
                     ClearSelectionEvent();
                 }
+                //else
+                //{
+                //    if (e.Button == MouseButtons.Left)
+                //    {
+                //        if (!_doubleClick && tree.SelectedNode != null && node != null && tree.SelectedNode == node)
+                //        {
+                //            UpdateHighlight();
+                //        }
+                //    }
+                //}
             }
             catch
             { }
@@ -566,18 +577,6 @@ namespace UserControls
             }
             catch
             { }
-        }
-        private void cltv_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
-        {
-            if (e.Button == MouseButtons.Left)
-            {
-                CodersLabTreeView tree = (CodersLabTreeView)sender;
-
-                if (!_doubleClick && tree.SelectedNode != null && e.Node != null && tree.SelectedNode == e.Node)
-                {
-                    UpdateHighlight();
-                }
-            }
         }
         private void cltv_SelectionsChanged(object sender, EventArgs e)
         {

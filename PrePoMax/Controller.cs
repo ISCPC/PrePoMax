@@ -98,16 +98,12 @@ namespace PrePoMax
                 }
             }
         }
-        public string DrawSymbolsForStep
+        public void DrawSymbolsForStep(string stepName, bool updateHighlight)
         {
-            get { return _drawSymbolsForStep; }
-            set
+            if (stepName != _drawSymbolsForStep)
             {
-                if (value != _drawSymbolsForStep)
-                {
-                    _drawSymbolsForStep = value;
-                    RedrawSymbols();
-                }
+                _drawSymbolsForStep = stepName;
+                RedrawSymbols(updateHighlight);
             }
         }
         public bool IsSectionViewActive()
@@ -5880,7 +5876,7 @@ namespace PrePoMax
                 }
             }
         }
-        public void RedrawSymbols()
+        public void RedrawSymbols(bool updateHighlights = true)
         {
             try
             {
@@ -5907,7 +5903,7 @@ namespace PrePoMax
                         }
                         catch { }
                         //
-                        UpdateHighlight();
+                        if(updateHighlights) UpdateHighlight();
                         _form.AdjustCameraDistanceAndClipping();
                     }
                 }
