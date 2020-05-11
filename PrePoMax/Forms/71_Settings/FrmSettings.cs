@@ -20,7 +20,7 @@ namespace PrePoMax.Forms
         // Variables                                                                                                                
         private string _previousSettings;
         private Dictionary<string, ViewSettings> _viewSettings;
-        private double _labelRatio = 2.5;
+        private double _labelRatio = 2.3;
 
 
         // Properties                                                                                                               
@@ -41,11 +41,11 @@ namespace PrePoMax.Forms
                 _viewSettings = new Dictionary<string, ViewSettings>();
                 foreach (var entry in value)
                 {
-                    if (entry.Value is GeneralSettings) _viewSettings.Add(entry.Key, new ViewGeneralSettings((GeneralSettings)entry.Value.DeepClone()));
-                    else if (entry.Value is GraphicsSettings) _viewSettings.Add(entry.Key, new ViewGraphicsSettings((GraphicsSettings)entry.Value.DeepClone()));
-                    else if (entry.Value is PreSettings) _viewSettings.Add(entry.Key, new ViewPreSettings((PreSettings)entry.Value.DeepClone()));
-                    else if (entry.Value is CalculixSettings) _viewSettings.Add(entry.Key, (CalculixSettings)entry.Value.DeepClone());
-                    else if (entry.Value is PostSettings) _viewSettings.Add(entry.Key, new ViewPostSettings((PostSettings)entry.Value.DeepClone()));
+                    if (entry.Value is GeneralSettings ges) _viewSettings.Add(entry.Key, new ViewGeneralSettings(ges.DeepClone()));
+                    else if (entry.Value is GraphicsSettings grs) _viewSettings.Add(entry.Key, new ViewGraphicsSettings(grs.DeepClone()));
+                    else if (entry.Value is PreSettings prs) _viewSettings.Add(entry.Key, new ViewPreSettings(prs.DeepClone()));
+                    else if (entry.Value is CalculixSettings cas) _viewSettings.Add(entry.Key, new ViewCalculixSettings(cas.DeepClone()));
+                    else if (entry.Value is PostSettings pos) _viewSettings.Add(entry.Key, new ViewPostSettings(pos.DeepClone()));
                     else throw new NotSupportedException();
                 }
             } 

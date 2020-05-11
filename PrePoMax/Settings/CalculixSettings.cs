@@ -7,6 +7,7 @@ using System.ComponentModel;
 using CaeGlobals;
 using System.IO;
 using CaeJob;
+using DynamicTypeDescriptor;
 
 namespace PrePoMax
 {
@@ -15,16 +16,13 @@ namespace PrePoMax
     {
         // Variables                                                                                                                
         private string _workDirectory;
+        private bool _usePmxFolderAsWorkDirectory;
         private string _executable;
         private int _numCPUs;
         private List<EnvironmentVariable> _environmentVariables;
 
 
         // Properties                                                                                                               
-        [CategoryAttribute("Calculix")]
-        [OrderedDisplayName(0, 10, "Work directory")]
-        [DescriptionAttribute("Select the work directory.")]
-        [EditorAttribute(typeof(System.Windows.Forms.Design.FolderNameEditor), typeof(System.Drawing.Design.UITypeEditor))]
         public string WorkDirectory 
         { 
             get { return Tools.GetGlobalPath(_workDirectory); }
@@ -36,11 +34,11 @@ namespace PrePoMax
                 _workDirectory = Tools.GetLocalPath(path);
             } 
         }
-
-        [CategoryAttribute("Calculix")]
-        [OrderedDisplayName(1, 10, "Executable")]
-        [DescriptionAttribute("Select the calculix executable file (ccx.exe).")]
-        [EditorAttribute(typeof(System.Windows.Forms.Design.FileNameEditor), typeof(System.Drawing.Design.UITypeEditor))]
+        public bool UsePmxFolderAsWorkDirectory
+        {
+            get { return _usePmxFolderAsWorkDirectory; }
+            set { _usePmxFolderAsWorkDirectory = value; }
+        }
         public string CalculixExe 
         {
             get { return Tools.GetGlobalPath(_executable); }
@@ -54,10 +52,6 @@ namespace PrePoMax
                 _executable = Tools.GetLocalPath(path);
             }
         }
-
-        [CategoryAttribute("Parallelization")]
-        [OrderedDisplayName(0, 10, "Number of processors")]
-        [DescriptionAttribute("Set the number of processors for the executable to use (OMP_NUM_THREADS = n).")]
         public int NumCPUs
         {
             get { return _numCPUs; }
@@ -67,13 +61,7 @@ namespace PrePoMax
                 if (_numCPUs < 1) _numCPUs = 1;
             }
         }
-
-        [CategoryAttribute("Parallelization")]
-        [OrderedDisplayName(1, 10, "Environment variables")]
-        [DescriptionAttribute("Add additional environment variables needed for the executable to run.")]
-        [Editor(typeof(Forms.EnvVarsUIEditor), typeof(System.Drawing.Design.UITypeEditor))]
         public List<EnvironmentVariable> EnvironmentVariables { get { return _environmentVariables; } set { _environmentVariables = value; } }
-
 
 
         // Constructors                                                                                                             
@@ -94,6 +82,7 @@ namespace PrePoMax
         public void Reset()
         {
             _workDirectory = null;
+            _usePmxFolderAsWorkDirectory = false;
             _executable = null;
             _numCPUs = 1;
             _environmentVariables = null;

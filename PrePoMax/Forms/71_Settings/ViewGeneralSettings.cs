@@ -53,7 +53,7 @@ namespace PrePoMax.Settings
         }
         public void Reset()
         {
-            _generalSettings.OpenLastFile = true;
+            _generalSettings.Reset();
         }
     }
 

@@ -312,6 +312,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="License-LGPL.txt" />
+    <None Include="Resources\History_output.ico" />
     <None Include="Resources\Paste.png" />
     <None Include="Resources\Copy.png" />
     <None Include="Resources\Cut.png" />

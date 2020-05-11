@@ -369,7 +369,7 @@ namespace PrePoMax
                 else
                 {
                     // Check for open last file
-                    if (_controller.Settings.General.OpenLastFile) fileName = _controller.Settings.General.LastFileName;
+                    if (_controller.Settings.General.OpenLastFile) fileName = _controller.OpenedFileName;
                 }
                 //
                 if (File.Exists(fileName))
@@ -3544,25 +3544,25 @@ namespace PrePoMax
         }
         private void RunAnalysis(string jobName)
         {
-            string[] invalidItems = _controller.CheckAndUpdateValidity();
+            // Check validity
             if (CheckValiditiy())
             {
-                CalculixSettings settings = _controller.Settings.Calculix;
-
-                if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
+                string workDirectory = _controller.Settings.GetWorkDirectory();
+                //
+                if (workDirectory == null || !Directory.Exists(workDirectory))
                     throw new Exception("The work directory of the analysis does not exist.");
-
+                //
                 AnalysisJob job = _controller.GetJob(jobName);
                 if (job.JobStatus != JobStatus.Running)
                 {
-                    string inputFileName = Path.Combine(settings.WorkDirectory, jobName + ".inp");
+                    string inputFileName = Path.Combine(workDirectory, jobName + ".inp");
                     if (File.Exists(inputFileName))
                     {
                         if (MessageBox.Show("Overwrite existing analysis files?",
                                             "Warning",
                                             MessageBoxButtons.OKCancel) != DialogResult.OK) return;
                     }
-
+                    //
                     if (_controller.RunJob(inputFileName, job)) MonitorAnalysis(jobName);
                 }
                 else MessageBox.Show("The analysis is already running or in queue.", "Error", MessageBoxButtons.OK);

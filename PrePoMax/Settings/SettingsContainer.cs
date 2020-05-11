@@ -87,6 +87,17 @@ namespace PrePoMax
             FromDictionary(items);
            
         }
+        //
+        public string GetWorkDirectory()
+        {
+            string lastFileName = _general.LastFileName;
+            if (_calculix.UsePmxFolderAsWorkDirectory && lastFileName != null && File.Exists(lastFileName) &&
+                Path.GetExtension(lastFileName) == ".pmx")
+            {
+                return Path.GetDirectoryName(lastFileName);
+            }
+            else return _calculix.WorkDirectory;
+        }
       
     }
 }

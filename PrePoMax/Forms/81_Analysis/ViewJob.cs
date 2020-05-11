@@ -26,7 +26,7 @@ namespace PrePoMax.Forms
         [OrderedDisplayName(0, 10, "Name")]
         [DescriptionAttribute("Name of the analysis.")]
         public string Name { get { return _job.Name; } set { _job.Name = value; } }
-
+        //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(1, 10, "Executable")]
         [DescriptionAttribute("Calculix executable file (ccx.exe).")]
@@ -34,7 +34,7 @@ namespace PrePoMax.Forms
         {
             get { return _job.Executable; }
         }
-
+        //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(2, 10, "Executable arguments")]
         [DescriptionAttribute("Addtional Calculix arguments. Change this value only if you want to run the solver in a different way.")]
@@ -43,7 +43,7 @@ namespace PrePoMax.Forms
             get { return _job.Argument; }
             set { _job.Argument = value; }
         }
-
+        //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(3, 10, "Work directory")]
         [DescriptionAttribute("Work directory.")]

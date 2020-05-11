@@ -36,10 +36,10 @@ namespace PrePoMax.Forms
         public FrmAnalysis(Controller controller)
         {
             InitializeComponent();
-
+            //
             _controller = controller;
             _viewJob = null;
-
+            //
             propertyGrid.SetParent(this);   // for the Tab key to work
             propertyGrid.SetLabelColumnWidth(_labelRatio);
              
@@ -57,11 +57,11 @@ namespace PrePoMax.Forms
             try
             {
                 _viewJob = (ViewJob)propertyGrid.SelectedObject;
-
+                //
                 if ((_jobToEditName == null && _jobNames.Contains(_viewJob.Name)) ||                // named to existing name
                     (_viewJob.Name != _jobToEditName && _jobNames.Contains(_viewJob.Name)))         // renamed to existing name
                     throw new CaeGlobals.CaeException("The selected analysis name already exists.");
-
+                //
                 if (_jobToEditName == null)
                 {
                     // Create
@@ -99,29 +99,29 @@ namespace PrePoMax.Forms
         public bool PrepareForm(string stepName, string jobToEditName)
         {
             this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
-
+            //
             _propertyItemChanged = false;
             _jobNames = null;
             _jobToEditName = null;
             _viewJob = null;
             propertyGrid.SelectedObject = null;
-
+            //
             _jobNames = _controller.GetJobNames();
             _jobToEditName = jobToEditName;
-
+            //
             if (_jobToEditName == null)
             {
-                CalculixSettings settings = _controller.Settings.Calculix;
-                Job = new AnalysisJob(GetJobName(), settings.CalculixExe, GetJobName(), settings.WorkDirectory);
+                Job = new AnalysisJob(GetJobName(), _controller.Settings.Calculix.CalculixExe, GetJobName(),
+                                      _controller.Settings.GetWorkDirectory());
             }
             else
             {
                 Job = _controller.GetJob(_jobToEditName); // to clone
             }
-
+            //
             propertyGrid.SelectedObject = _viewJob;
             propertyGrid.Select();
-
+            //
             return true;
         }
         private string GetJobName()
@@ -138,7 +138,7 @@ namespace PrePoMax.Forms
                 }
             }
             max++;
-
+            //
             return "Analysis-" + max.ToString();
         }
 

@@ -103,6 +103,7 @@ namespace UserControls
             // 
             // tsmiPlot
             // 
+            this.tsmiPlot.Image = global::UserControls.Properties.Resources.History_output.ToBitmap();
             this.tsmiPlot.Name = "tsmiPlot";
             this.tsmiPlot.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.P)));
             this.tsmiPlot.Size = new System.Drawing.Size(144, 22);

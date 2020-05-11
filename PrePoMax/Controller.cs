@@ -198,6 +198,8 @@ namespace PrePoMax
                     if (_settings.General.LastFileName != null)
                         _form.SetTitle(Globals.ProgramName + "   " + _settings.General.LastFileName);
                     else _form.SetTitle(Globals.ProgramName);
+                    //
+                    ApplySettings();
                 }
             }
         }
@@ -743,20 +745,20 @@ namespace PrePoMax
         }
         public string[] CreateCompoundPart(string[] partNames)
         {
-            CalculixSettings settings = _settings.Calculix;
-            if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
+            string workDirectory = _settings.Calculix.WorkDirectory;
+            if (workDirectory == null || !Directory.Exists(workDirectory))
             {
                 MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
                 return null;
             }
             //
             string executable = Application.StartupPath + Globals.NetGenMesher;
-            string inFileName = GetFreeRandomFileName(settings.WorkDirectory);
+            string inFileName = GetFreeRandomFileName(workDirectory);
 
             string[] inFileNames = new string[partNames.Length];
             for (int i = 0; i < partNames.Length; i++) 
                 inFileNames[i] = inFileName + "_" + (i + 1) + ".brep";
-            string brepFileName = Path.Combine(settings.WorkDirectory, Globals.BrepFileName);
+            string brepFileName = Path.Combine(workDirectory, Globals.BrepFileName);
             //
             if (File.Exists(brepFileName)) File.Delete(brepFileName);
             // Write CAD
@@ -767,7 +769,7 @@ namespace PrePoMax
             for (int i = 0; i < inFileNames.Length; i++) argument += " \"" + inFileNames[i].ToUTF8() + "\"";
             argument += " \"" + brepFileName.ToUTF8() + "\"";
             //
-            _netgenJob = new NetgenJob("CompoundPart", executable, argument, settings.WorkDirectory);
+            _netgenJob = new NetgenJob("CompoundPart", executable, argument, workDirectory);
             _netgenJob.AppendOutput += netgenJob_AppendOutput;
             _netgenJob.Submit();
             //
@@ -4295,7 +4297,7 @@ namespace PrePoMax
                 CalculixSettings cs = _settings.Calculix;
                 foreach (var entry in _jobs)
                 {
-                    entry.Value.WorkDirectory = cs.WorkDirectory;
+                    entry.Value.WorkDirectory = Settings.GetWorkDirectory();
                     entry.Value.Executable = cs.CalculixExe;
                     entry.Value.NumCPUs = cs.NumCPUs;
                     entry.Value.EnvironmentVariables = cs.EnvironmentVariables;

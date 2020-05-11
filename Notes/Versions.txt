@@ -25,7 +25,6 @@ Support for viewing and editing materila data in material library
 
 By Martin:
 22.1.2020
-1) add access to the part context menu, in order to be able to hide parts on the selection
 2) let the eye icon in the model tree (or the place where it would be) toggle hide/show state (activated/deactivated)
 4) Refernece point on surface ceners and between two points and in the center of three points
 
@@ -33,23 +32,20 @@ By Martin:
 
 By Sergio:
 10. 7. 2020
-2) Add support for custom colors of supports and loads in the Edit menu - add a legend for colors
+2) Add a legend for colors of BC, Load symbols
 3) Use the .pmx folder for all calculations
 4) Units
-5) Show the "Select set" window at the start of the set editing
+
 
 
 By Martin:
 7. 7. 2019
-0) add all files from the video tutorials to the new version
 3) support for smart naming - ANSYS "rename based on definition".
-4) MINOR - support for the same names of node sets, element sets, surfaces, reference points ...
 5) support for moment loads on surfaces
 6) support for hydrostatic load
 7) support for de-featuring based on mesh???
 10) FORUM!
 11) highlight the parts for which the meshing parameters are changed while Regenerate for remeshing
-13) create node, element sets and surfaces when needed (load, support)
 16) step manager is missing (move up and down, duplicate ...)
 17) shape optimization, adaptive mesh refinement
 18) automatic contact pair detection
@@ -72,35 +68,30 @@ By Emanuele:
 
 By Ihor:
 30.5.2019
-- open older file -> error msg. Then open CAD file and the same error msg.
 - export for VTK
 
 Old
-- #5: For the project with saved results FE Model tab is empty when going back: 1. Open any project with results included; 2. On my computer in this case FE Model  tab is completely empty
 - add support for importing inp files
 
 
 By Sergio:
 
 24.8.2018
-- basic contacts support
 - tabular amplitude definitions
 - 2D plot utility 
-- exporting results to Paraview (Calmed does not export all values).
+
 30.7.2018
 - sorting of part names, set names :- this is not possible using current user keywords positioning system with indices
 - analysis should be run in a separate folder with the analysis name; 
 - option to use pmx file folder as working folder
 
 24.6.2018
-- stange part behaviour stl unv files with the same name - renaming and deleeting
 - renaming of parts on the treeview with the F2 shortcut
 5.6.2018
 - add mirror to results
 19.2.2018
 - show material and other properties in results view
 - user defined result fields using equations, so the user could add a new field and its equation
-- support for the Comands keyword in Step card
 - opening multiple results files
 - create .pmx file with each analysis run
 
@@ -157,6 +148,9 @@ Done
 
 Version 0.7.0 Master branch
 More???
+Added support for individual colors for RPs, Constraints, Contact pairs, BCs and Loads
+Added support for simple plotting of data grid values (material data, history outputs...)
+Added option for using .pmx file folder for work analysis directory
 Added support for Open Recent Files
 Added support for contact history and field output
 Added support for Contact Pairs creation

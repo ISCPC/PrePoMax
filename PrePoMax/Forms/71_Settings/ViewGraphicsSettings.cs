@@ -168,7 +168,7 @@ namespace PrePoMax.Settings
         public void Reset()
         {
             _graphicsSettings.Reset();
-
+            //
             BackgroundType = _graphicsSettings.BackgroundType;
         }
     }
