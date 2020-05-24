@@ -94,6 +94,24 @@ By Sergio:
 - user defined result fields using equations, so the user could add a new field and its equation
 - opening multiple results files
 - create .pmx file with each analysis run
+12.5.2020
+- main window size
+- Add advanced materials (hyperelastic and hyperfoam at least)?
+- Results simmetry/revolution?
+- Show bc widgets in results?  
+- Move the Open Recent items directly to the main menu branch as usual Windows programs
+- Operations on orhpan meshes??? (move, scale, rotate, simmetry, extrude, revolute...)?
+- In the CalculiX cards editor, move the Add Keyword to the vertical toolbar.
+- Add Activate/Deactivate to user keyword cards?
+- For preload, add the option to use a user selected reference point. By the moment the reference point is created in the center
+  of the faces, but if the bolt is in a simmetry plane then this is not correct.
+- In the Create Step window, with a Direct nlgeom step: Initial increment = Time period/Max increments!
+- X/Y plot utility for results?
+22.5.2020
+- add an option in the job creation window to automatically load the results in the model file and save the model file
+- an option to export the results in Paraview compatible format
+- a warning before launching the solver when plastic materias were defined, but PEEQ  was not present in the element result request
+- the same for contacts maybe
 
 
 By Martin:

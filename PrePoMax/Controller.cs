@@ -4337,8 +4337,7 @@ namespace PrePoMax
             ApplySettings();
             _form.AddTreeNode(ViewGeometryModelResults.Model, job, null);
         }
-
-
+        //
         public AnalysisJob GetJob(string jobName)
         {
             return _jobs[jobName];
@@ -4396,7 +4395,7 @@ namespace PrePoMax
             _form.UpdateAnalysisProgress();
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, jobName, _jobs[jobName], null, true);
         }
-
+        //
         public void KillJob(string jobName)
         {
             _jobs[jobName].Kill(Environment.NewLine + "Kill command sent by user." + Environment.NewLine);

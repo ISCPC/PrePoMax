@@ -28,7 +28,7 @@ namespace FileInOut.Output.Calculix
         }
         public override string GetDataString()
         {
-            return string.Format("Model: {0},     Date: {1}" + Environment.NewLine, _modelName, DateTime.Now.ToShortDateString());
+            return string.Format("Model: {0},     Date: {1}{2}", _modelName, DateTime.Now.ToShortDateString(), Environment.NewLine);
         }
     }
 }

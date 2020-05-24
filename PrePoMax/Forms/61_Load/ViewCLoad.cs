@@ -88,6 +88,11 @@ namespace PrePoMax
             base.SetBase(_cLoad, regionTypePropertyNamePairs);
             //
             base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
+            //
+            //SetDisplayUnit(nameof(F1), "N");
+            //SetDisplayUnit(nameof(F2), "N");
+            //SetDisplayUnit(nameof(F3), "N");
+            //SetDisplayUnit(nameof(Flength), "N");
         }
 
 
@@ -103,6 +108,12 @@ namespace PrePoMax
             regionTypeListItemsPairs.Add(RegionTypeEnum.NodeSetName, nodeSetNames);
             regionTypeListItemsPairs.Add(RegionTypeEnum.ReferencePointName, referencePointNames);
             base.PopululateDropDownLists(regionTypeListItemsPairs);
+        }
+
+        public void SetDisplayUnit(string propertyName, string unit)
+        {
+            base.DynamicCustomTypeDescriptor.GetProperty(propertyName).SetDisplayName( 
+                base.DynamicCustomTypeDescriptor.GetProperty(propertyName).DisplayName.Replace("?", unit));
         }
     }
 

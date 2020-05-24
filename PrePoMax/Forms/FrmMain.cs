@@ -889,6 +889,8 @@ namespace PrePoMax
         }
         private bool CheckBeforeOpen(string fileName)
         {
+            if (!File.Exists(fileName)) return false;
+            //
             if (_controller.ModelChanged)
             {
                 if (Path.GetExtension(fileName).ToLower() == ".pmx")
@@ -3996,16 +3998,19 @@ namespace PrePoMax
         }
         public void CloseAllForms()
         {
-            if (_allForms != null)
+            InvokeIfRequired(() =>
             {
-                // first hide the _frmSelectItemSet, since it's hiding enables the form it was called from (like _frmNodeSet...)
-                if (_frmSelectItemSet.Visible) _frmSelectItemSet.Hide(DialogResult.Cancel);
-                
-                foreach (var form in _allForms)
-                {
-                    if (form.Visible) form.Hide();
-                }
-            }
+               if (_allForms != null)
+               {
+                    // first hide the _frmSelectItemSet, since it's hiding enables the form it was called from (like _frmNodeSet...)
+                    if (_frmSelectItemSet.Visible) _frmSelectItemSet.Hide(DialogResult.Cancel);
+
+                   foreach (var form in _allForms)
+                   {
+                       if (form.Visible) form.Hide();
+                   }
+               }
+           });
         }
 
         // Toolbars                                                                                                                 
