@@ -46,9 +46,11 @@ namespace CaeModel
                 switch (entry.Name)
                 {
                     case "_youngsModulus":
+                    // Compatibility for version v.0.6.0
                     case "<YoungsModulus>k__BackingField":
                         _youngsModulus = (double)entry.Value; break;
                     case "_poissonsRatio":
+                    // Compatibility for version v.0.6.0
                     case "<PoissonsRatio>k__BackingField":
                         _poissonsRatio = (double)entry.Value; break;
                     default:
