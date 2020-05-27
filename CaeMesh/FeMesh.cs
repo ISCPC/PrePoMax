@@ -4757,10 +4757,10 @@ namespace CaeMesh
             //
             return addedPartNames.ToArray();
         }
-        public string[] AddPartsFromMesh(FeMesh mesh, string[] partNames, ICollection<string> reservedPartNames)
+        public string[] AddPartsFromMesh(FeMesh mesh, string[] partNames, ICollection<string> reservedPartNames, bool forceRenameParts = true)
         {
             FeMesh partialMesh = new FeMesh(mesh, partNames);
-            return AddMesh(partialMesh, reservedPartNames);
+            return AddMesh(partialMesh, reservedPartNames, forceRenameParts);
         }
         #endregion #################################################################################################################
 

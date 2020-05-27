@@ -173,6 +173,7 @@ namespace PrePoMax
                 _modelTree.SelectEvent += ModelTree_Select;
                 _modelTree.ClearSelectionEvent += Clear3DSelection;
                 _modelTree.CreateEvent += ModelTree_CreateEvent;
+                _modelTree.DuplicateEvent += ModelTree_DuplicateEvent;
                 _modelTree.EditEvent += ModelTree_Edit;
                 _modelTree.HideShowEvent += ModelTree_HideShowEvent;
                 _modelTree.SetTransparencyEvent += ModelTree_SetTransparencyEvent;
@@ -337,6 +338,8 @@ namespace PrePoMax
                 tsmiTest.Visible = false;
             }
         }
+
+        
         //
         private void FrmMain_Shown(object sender, EventArgs e)
         {
@@ -594,6 +597,22 @@ namespace PrePoMax
                 else if (namedClass is CaeResults.HistoryResultData hd) ShowHistoryOutput(hd);
             }
         }
+        private void ModelTree_DuplicateEvent(NamedClass[] items, string[] stepNames)
+        {
+            if (_controller.CurrentView == ViewGeometryModelResults.Geometry)
+            {
+            }
+            else if (_controller.CurrentView == ViewGeometryModelResults.Model)
+            {
+                ApplyActionOnItems<CaeModel.Material>(items, DuplicateMaterials);
+                ApplyActionOnItems<CaeModel.SurfaceInteraction>(items, DuplicateSurfaceInteractions);
+                //
+                ApplyActionOnItems<CaeModel.Step>(items, DuplicateSteps);
+            }
+            else if (_controller.CurrentView == ViewGeometryModelResults.Results)
+            {
+            }
+        }
         //
         private void ModelTree_HideShowEvent(NamedClass[] items, HideShowOperation operation, string[] stepNames)
         {
@@ -641,38 +660,38 @@ namespace PrePoMax
         {
             if (_controller.CurrentView == ViewGeometryModelResults.Geometry)
             {
-                DeleteItems<CaeMesh.FeMeshRefinement>(items, DeleteMeshRefinements);
+                ApplyActionOnItems<CaeMesh.FeMeshRefinement>(items, DeleteMeshRefinements);
                 // At last delete the parts
-                DeleteItems<CaeMesh.GeometryPart>(items, DeleteGeometryParts);
+                ApplyActionOnItems<CaeMesh.GeometryPart>(items, DeleteGeometryParts);
             }
             else if (_controller.CurrentView == ViewGeometryModelResults.Model)
             {
-                DeleteItems<CaeMesh.FeNodeSet>(items, DeleteNodeSets);
-                DeleteItems<CaeMesh.FeElementSet>(items, DeleteElementSets);
-                DeleteItems<CaeMesh.FeSurface>(items, DeleteSurfaces);
-                DeleteItems<CaeMesh.FeReferencePoint>(items, DeleteRP);
-                DeleteItems<CaeModel.Material>(items, DeleteMaterials);
-                DeleteItems<CaeModel.Section>(items, DeleteSections);
-                DeleteItems<CaeModel.Constraint>(items, DeleteConstraints);
-                DeleteItems<CaeModel.SurfaceInteraction>(items, DeleteSurfaceInteraction);
-                DeleteItems<CaeModel.ContactPair>(items, DeleteContactPairs);
+                ApplyActionOnItems<CaeMesh.FeNodeSet>(items, DeleteNodeSets);
+                ApplyActionOnItems<CaeMesh.FeElementSet>(items, DeleteElementSets);
+                ApplyActionOnItems<CaeMesh.FeSurface>(items, DeleteSurfaces);
+                ApplyActionOnItems<CaeMesh.FeReferencePoint>(items, DeleteRPs);
+                ApplyActionOnItems<CaeModel.Material>(items, DeleteMaterials);
+                ApplyActionOnItems<CaeModel.Section>(items, DeleteSections);
+                ApplyActionOnItems<CaeModel.Constraint>(items, DeleteConstraints);
+                ApplyActionOnItems<CaeModel.SurfaceInteraction>(items, DeleteSurfaceInteractions);
+                ApplyActionOnItems<CaeModel.ContactPair>(items, DeleteContactPairs);
                 //
                 DeleteStepItems<CaeModel.HistoryOutput>(items, stepNames, DeleteHistoryOutputs);
                 DeleteStepItems<CaeModel.FieldOutput>(items, stepNames, DeleteFieldOutputs);
                 DeleteStepItems<CaeModel.BoundaryCondition>(items, stepNames, DeleteBoundaryConditions);
                 DeleteStepItems<CaeModel.Load>(items, stepNames, DeleteLoads);
-                DeleteItems<CaeModel.Step>(items, DeleteSteps);
+                ApplyActionOnItems<CaeModel.Step>(items, DeleteSteps);
                 //
-                DeleteItems<CaeJob.AnalysisJob>(items, DeleteAnalyses);
+                ApplyActionOnItems<CaeJob.AnalysisJob>(items, DeleteAnalyses);
                 // At last delete the parts
-                DeleteItems<CaeMesh.MeshPart>(items, DeleteModelParts);
+                ApplyActionOnItems<CaeMesh.MeshPart>(items, DeleteModelParts);
             }
             else if (_controller.CurrentView == ViewGeometryModelResults.Results)
             {
-                DeleteItems<CaeMesh.ResultPart>(items, DeleteResultParts);
-                DeleteItems<CaeMesh.GeometryPart>(items, DeleteResultParts);
+                ApplyActionOnItems<CaeMesh.ResultPart>(items, DeleteResultParts);
+                ApplyActionOnItems<CaeMesh.GeometryPart>(items, DeleteResultParts);
             }
-
+            //
             ClearSelection();
         }
         private void ModelTree_ActivateDeactivateEvent(NamedClass[] items, bool activate, string[] stepNames)
@@ -729,7 +748,7 @@ namespace PrePoMax
                 }
             }
         }
-        private void DeleteItems<T>(NamedClass[] items, Action<string[]> Delete)
+        private void ApplyActionOnItems<T>(NamedClass[] items, Action<string[]> Delete)
         {
             List<string> names = new List<string>();
             for (int i = 0; i < items.Length; i++)
@@ -2558,7 +2577,7 @@ namespace PrePoMax
         {
             try
             {
-                SelectMultipleEntities("Reference points", _controller.GetAllReferencePoints(), DeleteRP);
+                SelectMultipleEntities("Reference points", _controller.GetAllReferencePoints(), DeleteRPs);
             }
             catch (Exception ex)
             {
@@ -2570,7 +2589,7 @@ namespace PrePoMax
         {
             ShowForm(_frmReferencePoint, "Edit Reference Point", referencePointName);
         }
-        private void DeleteRP(string[] referencePointNames)
+        private void DeleteRPs(string[] referencePointNames)
         {
             if (MessageBox.Show("OK to delete selected reference points?" + Environment.NewLine + referencePointNames.ToRows(),
                                 Globals.ProgramName,
@@ -2607,6 +2626,17 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
+        private void tsmiDuplicateMaterial_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Materials", _controller.GetAllMaterials(), DuplicateMaterials);
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
         private void tsmiDeleteMaterial_Click(object sender, EventArgs e)
         {
             try
@@ -2619,10 +2649,14 @@ namespace PrePoMax
             }
            
         }
-
+        //
         private void EditMaterial(string materialName)
         {
             ShowForm(_frmMaterial, "Edit Material", materialName);
+        }
+        private void DuplicateMaterials(string[] materialNames)
+        {
+            _controller.DuplicateMaterialsCommand(materialNames);
         }
         private void DeleteMaterials(string[] materialNames)
         {
@@ -2633,7 +2667,7 @@ namespace PrePoMax
                 _controller.RemoveMaterialsCommand(materialNames);
             }
         }
-
+        //
         private void tsmiMaterialLibrary_Click(object sender, EventArgs e)
         {
             try
@@ -2837,11 +2871,23 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
+        private void tsmiDuplicateSurfaceInteraction_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Surface interactions", _controller.GetAllSurfaceInteractions(),
+                                       DuplicateSurfaceInteractions);
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
         private void tsmiDeleteSurfaceInteraction_Click(object sender, EventArgs e)
         {
             try
             {
-                SelectMultipleEntities("Surface interactions", _controller.GetAllSurfaceInteractions(), DeleteSurfaceInteraction);
+                SelectMultipleEntities("Surface interactions", _controller.GetAllSurfaceInteractions(), DeleteSurfaceInteractions);
             }
             catch (Exception ex)
             {
@@ -2849,12 +2895,16 @@ namespace PrePoMax
             }
 
         }
-
+        //
         private void EditSurfaceInteraction(string surfaceInteractionName)
         {
             ShowForm(_frmSurfaceInteraction, "Edit surface interaction", surfaceInteractionName);
         }
-        private void DeleteSurfaceInteraction(string[] surfaceInteractionNames)
+        private void DuplicateSurfaceInteractions(string[] surfaceInteractionNames)
+        {
+            _controller.DuplicateSurfaceInteractionsCommand(surfaceInteractionNames);
+        }
+        private void DeleteSurfaceInteractions(string[] surfaceInteractionNames)
         {
             if (MessageBox.Show("OK to delete selected surface interactions?" + Environment.NewLine +
                                 surfaceInteractionNames.ToRows(),
@@ -2990,6 +3040,17 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
+        private void tsmiDuplicateStep_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Steps", _controller.GetAllSteps(), DuplicateSteps);
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
         private void tsmiDeleteStep_Click(object sender, EventArgs e)
         {
             try
@@ -3005,6 +3066,10 @@ namespace PrePoMax
         private void EditStep(string stepName)
         {
             ShowForm(_frmStep, "Edit Step", stepName);
+        }
+        private void DuplicateSteps(string[] stepNames)
+        {
+            _controller.DuplicateStepsCommnad(stepNames);
         }
         private void DeleteSteps(string[] stepNames)
         {
@@ -4607,7 +4672,7 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.ShowActors, actorNames, updateColorContours);
         }
-
+        // Settings
         public void InitializeWidgetPositions()
         {
             InvokeIfRequired(_vtk.InitializeWidgetPositions);
@@ -4640,6 +4705,23 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.SetChartNumberFormat, numberFormat);
         }
+        public void DrawLegendBackground(bool drawBackground)
+        {
+            InvokeIfRequired(_vtk.DrawLegendBackground, drawBackground);
+        }
+        public void DrawLegendBorder(bool drawBorder)
+        {
+            InvokeIfRequired(_vtk.DrawLegendBorder, drawBorder);
+        }
+        public void DrawStatusBlockBackground(bool drawBackground)
+        {
+            InvokeIfRequired(_vtk.DrawStatusBlockBackground, drawBackground);
+        }
+        public void DrawStatusBlockBorder(bool drawBorder)
+        {
+            InvokeIfRequired(_vtk.DrawStatusBlockBorder, drawBorder);
+        }
+        //
         public void SetStatusBlock(string name, DateTime dateTime, float analysisTime, float scaleFactor, 
                                    vtkControl.DataFieldType fieldType = vtkControl.DataFieldType.Static)
         {
@@ -5146,6 +5228,6 @@ namespace PrePoMax
             {}
         }
 
-       
+        
     }
 }

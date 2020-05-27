@@ -7,16 +7,10 @@ using System.ComponentModel;
 using CaeGlobals;
 using System.IO;
 using DynamicTypeDescriptor;
+using System.Drawing;
 
 namespace PrePoMax
 {
-    [Serializable]
-    public enum ChartNumberFormat
-    {
-        Scientific,
-        General
-    }
-
     [Serializable]
     public enum DeformationScaleFactorType
     {
@@ -38,13 +32,10 @@ namespace PrePoMax
     public class PostSettings : ISettings
     {
         // Variables                                                                                                                
-        private double _deformationScaleFactor;        
-        private ChartNumberFormat _chartNumberFormat;
-        private int _numberOfSignificantDigits;
-        private bool _drawUndeformedModel;
-        private System.Drawing.Color _undeformedModelColor;
         private DeformationScaleFactorType _dsfType;
-        private vtkControl.vtkMaxColorSpectrum _colorSpectrum;
+        private double _deformationScaleFactorValue;
+        private bool _drawUndeformedModel;
+        private Color _undeformedModelColor;
         private bool _showMinValueLocation;
         private bool _showMaxValueLocation;
 
@@ -59,24 +50,24 @@ namespace PrePoMax
                 {
                     _dsfType = value;
                     if (_dsfType == PrePoMax.DeformationScaleFactorType.Automatic)
-                        _deformationScaleFactor = -1;
+                        _deformationScaleFactorValue = -1;
                     else if (_dsfType == PrePoMax.DeformationScaleFactorType.TrueScale)
-                        _deformationScaleFactor = 1;
+                        _deformationScaleFactorValue = 1;
                     else if (_dsfType == PrePoMax.DeformationScaleFactorType.Off)
-                        _deformationScaleFactor = 0;
+                        _deformationScaleFactorValue = 0;
                     else if (_dsfType == PrePoMax.DeformationScaleFactorType.UserDefined)
-                        _deformationScaleFactor = 1;
+                        _deformationScaleFactorValue = 1;
                     else throw new NotSupportedException();
                 }
             }
         }
         public double DeformationScaleFactorValue 
         {
-            get { return _deformationScaleFactor; }
+            get { return _deformationScaleFactorValue; }
             set 
             {
-                _deformationScaleFactor = value;
-                if (_deformationScaleFactor < -1) _deformationScaleFactor = -1;
+                _deformationScaleFactorValue = value;
+                if (_deformationScaleFactorValue < -1) _deformationScaleFactorValue = -1;
             } 
         }
         public bool DrawUndeformedModel
@@ -84,25 +75,14 @@ namespace PrePoMax
             get { return _drawUndeformedModel; }
             set { _drawUndeformedModel = value; }
         }
-        public System.Drawing.Color UndeformedModelColor
+        public Color UndeformedModelColor
         {
             get { return _undeformedModelColor; }
             set { _undeformedModelColor = value; }
         }
-        public ChartNumberFormat ChartNumberFormat { get { return _chartNumberFormat; } set { _chartNumberFormat = value; } }
-        public int NumberOfSignificantDigits
-        {
-            get { return _numberOfSignificantDigits; }
-            set
-            {
-                _numberOfSignificantDigits = value;
-                if (_numberOfSignificantDigits < 2) _numberOfSignificantDigits = 2;
-                if (_numberOfSignificantDigits > 8) _numberOfSignificantDigits = 8;
-            }
-        }
-        public vtkControl.vtkMaxColorSpectrum ColorSpectrum { get { return _colorSpectrum; } set { _colorSpectrum = value; } }
         public bool ShowMinValueLocation { get { return _showMinValueLocation; } set { _showMinValueLocation = value; } }
         public bool ShowMaxValueLocation { get { return _showMaxValueLocation; } set { _showMaxValueLocation = value; } }
+
 
         // Constructors                                                                                                             
         public PostSettings()
@@ -117,30 +97,14 @@ namespace PrePoMax
         }
         public void Reset()
         {
-            _deformationScaleFactor = -1;
-            _chartNumberFormat = PrePoMax.ChartNumberFormat.Scientific;
-            _numberOfSignificantDigits = 4;
+            _dsfType = PrePoMax.DeformationScaleFactorType.Automatic;
+            _deformationScaleFactorValue = -1;
             _drawUndeformedModel = true;
             _undeformedModelColor = System.Drawing.Color.FromArgb(128, 128, 128, 128);
-            _dsfType = PrePoMax.DeformationScaleFactorType.Automatic;
-
-            _colorSpectrum = new vtkControl.vtkMaxColorSpectrum();
-
+            //
             _showMinValueLocation = false;
             _showMaxValueLocation = true;
         }
-        public string GetColorChartNumberFormat()
-        {
-            string numberformat = "";
-            if (_chartNumberFormat == PrePoMax.ChartNumberFormat.General)
-            {
-                numberformat = "G" + _numberOfSignificantDigits.ToString();
-            }
-            else
-            {
-                numberformat = "E" + (_numberOfSignificantDigits - 1).ToString();
-            }
-            return numberformat;
-        }
+        
     }
 }

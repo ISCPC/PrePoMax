@@ -25,11 +25,12 @@ namespace CaeModel
         }
 
         // Methods                                                                                                                         
-        public void AddStep(Step step)
+        public void AddStep(Step step, bool copyBCsAndLoads = true)
         {
-            if (_steps.Count >= 1)
+            if (copyBCsAndLoads && _steps.Count >= 1)
             {
                 Step lastStep = _steps.Last();
+                //
                 foreach (var entry in lastStep.BoundaryConditions)
                 {
                     step.AddBoundaryCondition(entry.Value.DeepClone());

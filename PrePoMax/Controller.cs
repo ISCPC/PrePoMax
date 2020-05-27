@@ -1433,7 +1433,7 @@ namespace PrePoMax
             GeometryPart geomPart = GetGeometryPart(oldPartName);
             geomPart.SetProperties(newPartProperties);
             _model.Geometry.Parts.Replace(oldPartName, geomPart.Name, geomPart);
-            // Rename sub parts
+            // Rename compound sub-part names array
             foreach (var entry in _model.Geometry.Parts)
             {
                 if (entry.Value is CompoundGeometryPart cgp)
@@ -1451,13 +1451,15 @@ namespace PrePoMax
             // Update
             if (!(geomPart is CompoundGeometryPart)) _form.UpdateActor(oldPartName, geomPart.Name, geomPart.Color);
             _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, oldPartName, geomPart, null);
-            // Rename the mesh part in pair with geometry part
+            //
+            // Rename the mesh part in pair with the geometry part
             if (oldPartName != geomPart.Name && _model.Mesh != null && _model.Mesh.Parts.ContainsKey(oldPartName))
             {
                 string newPartName = geomPart.Name;
                 MeshPart meshPart = GetModelPart(oldPartName);
                 meshPart.Name = newPartName;
                 _model.Mesh.Parts.Replace(oldPartName, meshPart.Name, meshPart);
+                // Update
                 _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldPartName, meshPart, null);
             }
         }
@@ -1476,7 +1478,7 @@ namespace PrePoMax
             //
             if (_results != null && _results.Mesh != null)
             {
-                string[] addedPartNames = _results.Mesh.AddPartsFromMesh(_model.Geometry, partNamesToCopy.ToArray(), null);
+                string[] addedPartNames = _results.Mesh.AddPartsFromMesh(_model.Geometry, partNamesToCopy.ToArray(), null, false);
                 if (addedPartNames.Length > 0)
                 {
                     _form.RegenerateTree(_model, _jobs, _results, _history);
@@ -2206,8 +2208,10 @@ namespace PrePoMax
             MeshPart meshPart = GetModelPart(oldPartName);
             meshPart.SetProperties(newPartProperties);
             _model.Mesh.Parts.Replace(oldPartName, meshPart.Name, meshPart);
+            // Update
             _form.UpdateActor(oldPartName, meshPart.Name, meshPart.Color);
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldPartName, meshPart, null);
+            //
             // Rename the geometric part in pair
             if (oldPartName != meshPart.Name && _model.Geometry != null && _model.Geometry.Parts.ContainsKey(oldPartName))
             {
@@ -2215,6 +2219,22 @@ namespace PrePoMax
                 GeometryPart geomPart = GetGeometryPart(oldPartName);
                 geomPart.Name = newPartName;
                 _model.Geometry.Parts.Replace(oldPartName, geomPart.Name, geomPart);
+                // Rename compound sub-part names array
+                foreach (var entry in _model.Geometry.Parts)
+                {
+                    if (entry.Value is CompoundGeometryPart cgp)
+                    {
+                        for (int i = 0; i < cgp.SubPartNames.Length; i++)
+                        {
+                            if (cgp.SubPartNames[i] == oldPartName)
+                            {
+                                cgp.SubPartNames[i] = newPartProperties.Name;
+                                break;
+                            }
+                        }
+                    }
+                }
+                // Update
                 _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, oldPartName, geomPart, null);
             }
             //
@@ -3116,6 +3136,11 @@ namespace PrePoMax
             Commands.CReplaceMaterial comm = new Commands.CReplaceMaterial(oldMaterialName, newMaterial);
             _commands.AddAndExecute(comm);
         }
+        public void DuplicateMaterialsCommand(string[] materialNames)
+        {
+            Commands.CDuplicateMaterial comm = new Commands.CDuplicateMaterial(materialNames);
+            _commands.AddAndExecute(comm);
+        }
         public void RemoveMaterialsCommand(string[] materialNames)
         {
             Commands.CRemoveMaterials comm = new Commands.CRemoveMaterials(materialNames);
@@ -3134,7 +3159,7 @@ namespace PrePoMax
             _form.AddTreeNode(ViewGeometryModelResults.Model, material, null);
             //
             CheckAndUpdateValidity();
-        }
+        }        
         public Material GetMaterial(string materialName)
         {
             return _model.Materials[materialName];
@@ -3150,6 +3175,17 @@ namespace PrePoMax
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldMaterialName, newMaterial, null);
             //
             CheckAndUpdateValidity();
+        }
+        public void DuplicateMaterials(string[] materialNames)
+        {
+            Material newMaterial;
+            foreach (var name in materialNames)
+            {
+                newMaterial = _model.Materials[name].DeepClone();
+                newMaterial.Name = NamedClass.GetNameWithoutLastValue(newMaterial.Name);
+                newMaterial.Name = NamedClass.GetNewValueName(_model.Materials.Keys, newMaterial.Name);
+                AddMaterial(newMaterial);
+            }
         }
         public void RemoveMaterials(string[] materialNames)
         {
@@ -3468,6 +3504,11 @@ namespace PrePoMax
                                                                                                newSurfaceInteraction);
             _commands.AddAndExecute(comm);
         }
+        public void DuplicateSurfaceInteractionsCommand(string[] surfaceInteractionNames)
+        {
+            Commands.CDuplicateSurfaceInteractions comm = new Commands.CDuplicateSurfaceInteractions(surfaceInteractionNames);
+            _commands.AddAndExecute(comm);
+        }
         public void RemoveSurfaceInteractionsCommand(string[] surfaceInteractionNames)
         {
             Commands.CRemoveSurfaceInteractions comm = new Commands.CRemoveSurfaceInteractions(surfaceInteractionNames);
@@ -3502,6 +3543,17 @@ namespace PrePoMax
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldSurfaceInteractionName, newSurfaceInteraction, null);
             //
             CheckAndUpdateValidity();
+        }
+        public void DuplicateSurfaceInteractions(string[] surfaceInteractionNames)
+        {
+            SurfaceInteraction newSurfaceInteraction;
+            foreach (var name in surfaceInteractionNames)
+            {
+                newSurfaceInteraction = _model.SurfaceInteractions[name].DeepClone();
+                newSurfaceInteraction.Name = NamedClass.GetNameWithoutLastValue(newSurfaceInteraction.Name);
+                newSurfaceInteraction.Name = NamedClass.GetNewValueName(_model.SurfaceInteractions.Keys, newSurfaceInteraction.Name);
+                AddSurfaceInteraction(newSurfaceInteraction);
+            }
         }
         public void RemoveSurfaceInteractions(string[] surfaceInteractionNames)
         {
@@ -3684,6 +3736,11 @@ namespace PrePoMax
             Commands.CReplaceStep comm = new Commands.CReplaceStep(oldStepName, newStep);
             _commands.AddAndExecute(comm);
         }
+        public void DuplicateStepsCommnad(string[] stepNames)
+        {
+            Commands.CDuplicateSteps comm = new Commands.CDuplicateSteps(stepNames);
+            _commands.AddAndExecute(comm);
+        }
         public void RemoveStepsCommnad(string[] stepNames)
         {
             Commands.CRemoveSteps comm = new Commands.CRemoveSteps(stepNames);
@@ -3696,9 +3753,9 @@ namespace PrePoMax
         {
             return _model.StepCollection.GetStepNames();
         }
-        public void AddStep(Step step)
+        public void AddStep(Step step, bool copyBCsAndLoads = true)
         {
-            _model.StepCollection.AddStep(step);
+            _model.StepCollection.AddStep(step, copyBCsAndLoads);
             _form.AddTreeNode(ViewGeometryModelResults.Model, step, null);
             //
             Update(UpdateType.Check | UpdateType.RedrawSymbols);
@@ -3717,6 +3774,17 @@ namespace PrePoMax
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldStepName, newStep, null);
             //
             Update(UpdateType.Check | UpdateType.RedrawSymbols);
+        }
+        public void DuplicateSteps(string[] stepNames)
+        {
+            Step newStep;
+            foreach (var stepName in stepNames)
+            {
+                newStep = GetStep(stepName).DeepClone();
+                newStep.Name = NamedClass.GetNameWithoutLastValue(newStep.Name);
+                newStep.Name = NamedClass.GetNewValueName(GetStepNames(), newStep.Name);
+                AddStep(newStep, false);
+            }
         }
         public void ActivateDeactivateStep(string stepName, bool active)
         {
@@ -4302,7 +4370,7 @@ namespace PrePoMax
                     entry.Value.NumCPUs = cs.NumCPUs;
                     entry.Value.EnvironmentVariables = cs.EnvironmentVariables;
                 }
-            }
+            }           
         }
         
         #endregion #################################################################################################################
@@ -7694,20 +7762,11 @@ namespace PrePoMax
             _form.Clear3D();
             //
             if (_results == null) return;
-            // Settings                                                              
-            // Must be here before drawing parts to correctly set the numer of colors
-            PostSettings postSettings = _settings.Post;
-            if (_viewResultsType != ViewResultsType.Undeformed)
-            {
-                _form.SetColorSpectrum(postSettings.ColorSpectrum);
-                _form.SetScalarBarText(_currentFieldData.Name + ": " + _currentFieldData.Component + Environment.NewLine
-                                       + postSettings.ColorSpectrum.MinMaxType.ToString());
-                _form.SetShowMinValueLocation(postSettings.ShowMinValueLocation);
-                _form.SetShowMaxValueLocation(postSettings.ShowMaxValueLocation);
-                _form.SetChartNumberFormat(postSettings.GetColorChartNumberFormat());
-            }
+            // Settings - must be here before drawing parts to correctly set the numer of colors
+            SetLegendAndLimits();
+            //
             float scale = GetScale();
-            DrawResult(_currentFieldData, scale, postSettings.DrawUndeformedModel, postSettings.UndeformedModelColor);
+            DrawResult(_currentFieldData, scale, _settings.Post.DrawUndeformedModel, _settings.Post.UndeformedModelColor);
             //
             Octree.Plane plane = _sectionViewPlanes[_currentView];
             if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
@@ -7720,24 +7779,24 @@ namespace PrePoMax
             vtkControl.vtkMaxActorData data;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
             List<string> hiddenActors = new List<string>();
-
+            //
             vtkControl.DataFieldType fieldType = ConvertStepType(fieldData);
             _form.SetStatusBlock(Path.GetFileName(_results.FileName), _results.DateTime, fieldData.Time, scale, fieldType);
             _form.InitializeWidgetPositions(); // reset the widget position after setting the status block content
-
+            //
             foreach (var entry in _results.Mesh.Parts)
             {
                 if (entry.Value is ResultPart resultPart)
                 {
                     if (_viewResultsType == ViewResultsType.Undeformed)
                     {
-                        // udeformed shape
+                        // Udeformed shape
                         DrawMeshPart(_results.Mesh, resultPart, layer);
                     }
                     else
                     {
                         if (drawUndeformedModel) DrawUndeformedPartCopy(resultPart, undeformedModelColor, layer);
-
+                        //
                         data = GetVtkMaxActorDataFromPart(resultPart, fieldData, scale);
                         ApplyLighting(data);
                         _form.AddScalarFieldOn3DCells(data);
@@ -7747,7 +7806,7 @@ namespace PrePoMax
                 {
                     DrawGeomPart(_results.Mesh, entry.Value, layer, false, true);
                 }
-
+                //
                 if (!entry.Value.Visible) hiddenActors.Add(entry.Key);
             }
             if (hiddenActors.Count > 0) _form.HideActors(hiddenActors.ToArray(), true);
@@ -7783,37 +7842,29 @@ namespace PrePoMax
         public bool DrawScaleFactorAnimation(int numFrames)
         {
             _form.Clear3D();
-
+            //
             if (_results == null) return false;
-
-            // Settings                                                              
-            // must be here before drawing parts to correctly set the numer of colors
-            PostSettings postSettings = _settings.Post;
-            _form.SetColorSpectrum(postSettings.ColorSpectrum);
-            _form.SetScalarBarText(_currentFieldData.Name + ": " + _currentFieldData.Component + Environment.NewLine 
-                                   + postSettings.ColorSpectrum.MinMaxType.ToString());
-            _form.SetShowMinValueLocation(postSettings.ShowMinValueLocation);
-            _form.SetShowMaxValueLocation(postSettings.ShowMaxValueLocation);
-            _form.SetChartNumberFormat(postSettings.GetColorChartNumberFormat());
-
+            // Settings - must be here before drawing parts to correctly set the numer of colors
+            SetLegendAndLimits();
+            //
             float scale = GetScale();
             vtkControl.vtkMaxActorData data;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
-
+            //
             vtkControl.DataFieldType fieldType = ConvertStepType(_currentFieldData);
             _form.SetStatusBlock(Path.GetFileName(_results.FileName), _results.DateTime, _currentFieldData.Time, scale, fieldType);
-
+            //
             bool result = true;
+            PostSettings postSettings = _settings.Post;
             List<string> hiddenActors = new List<string>();
             double[] allFramesScalarRange = new double[] { double.MaxValue, -double.MaxValue };
             foreach (var entry in _results.Mesh.Parts)
             {
                 if (entry.Value is CaeMesh.ResultPart resultPart)
                 {
-                    // udeformed shape
+                    // Udeformed shape
                     if (postSettings.DrawUndeformedModel) DrawUndeformedPartCopy(resultPart, postSettings.UndeformedModelColor, layer);
-
-                    // results
+                    // Results
                     data = GetScaleFactorAnimationDataFromPart(resultPart, _currentFieldData, scale, numFrames);
                     foreach (NodesExchangeData nData in data.Geometry.ExtremeNodesAnimation)
                     {
@@ -7835,8 +7886,7 @@ namespace PrePoMax
             //
             Octree.Plane plane = _sectionViewPlanes[_currentView];
             if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
-
-            // animation field data
+            // Animation field data
             float[] time = new float[numFrames];
             float[] animationScale = new float[numFrames];
             float ratio = 1f / (numFrames - 1);
@@ -7845,46 +7895,38 @@ namespace PrePoMax
                 time[i] = _currentFieldData.Time;
                 animationScale[i] = i * ratio;
             }
-
+            //
              _form.SetAnimationFrameData(time, animationScale, allFramesScalarRange);
-
+            //
             return result;
         }
         public bool DrawTimeIncrementAnimation(out int numFrames)
         {
             _form.Clear3D();
-
+            //
             numFrames = -1;
             if (_results == null) return false;
-
-            // Settings                                                              
-            // must be here before drawing parts to correctly set the numer of colors
-            PostSettings postSettings = _settings.Post;
-            _form.SetColorSpectrum(postSettings.ColorSpectrum);
-            _form.SetScalarBarText(_currentFieldData.Name + ": " + _currentFieldData.Component + Environment.NewLine 
-                                   + postSettings.ColorSpectrum.MinMaxType.ToString());
-            _form.SetShowMinValueLocation(postSettings.ShowMinValueLocation);
-            _form.SetShowMaxValueLocation(postSettings.ShowMaxValueLocation);
-            _form.SetChartNumberFormat(postSettings.GetColorChartNumberFormat());
-
+            // Settings - must be here before drawing parts to correctly set the numer of colors
+            SetLegendAndLimits();
+            //
             float scale = GetScaleForAllStepsAndIncrements();
             vtkControl.vtkMaxActorData data = null;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
-
+            //
             vtkControl.DataFieldType fieldType = ConvertStepType(_currentFieldData);
             _form.SetStatusBlock(Path.GetFileName(_results.FileName), _results.DateTime, _currentFieldData.Time, scale, fieldType);
-
+            //
             bool result = true;
+            PostSettings postSettings = _settings.Post;
             List<string> hiddenActors = new List<string>();
             double[] allFramesScalarRange = new double[] { double.MaxValue, -double.MaxValue };
             foreach (var entry in _results.Mesh.Parts)
             {
                 if (entry.Value is CaeMesh.ResultPart resultPart)
                 {
-                    // udeformed shape
+                    // Udeformed shape
                     if (postSettings.DrawUndeformedModel) DrawUndeformedPartCopy(resultPart, postSettings.UndeformedModelColor, layer);
-
-                    // results
+                    // Results
                     data = GetTimeIncrementAnimationDataFromPart(resultPart, _currentFieldData, scale);
                     foreach (NodesExchangeData nData in data.Geometry.ExtremeNodesAnimation)
                     {
@@ -7905,8 +7947,7 @@ namespace PrePoMax
             //
             Octree.Plane plane = _sectionViewPlanes[_currentView];
             if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
-
-            // animation field data
+            // Animation field data
             var existingIncrements = _results.GetExistingIncrementIds(_currentFieldData.Name, _currentFieldData.Component);
             List<float> time = new List<float>();
             List<float> animationScale = new List<float>();
@@ -7919,9 +7960,9 @@ namespace PrePoMax
                 }
             }
             _form.SetAnimationFrameData(time.ToArray(), animationScale.ToArray(), allFramesScalarRange);
-
+            //
             numFrames = data.Geometry.NodesAnimation.Length;
-
+            //
             return result;
         }        
         private vtkControl.vtkMaxActorData GetScaleFactorAnimationDataFromPart(ResultPart part, FieldData fieldData,
@@ -7982,6 +8023,28 @@ namespace PrePoMax
             return data;
         }
         // Common
+        private void SetLegendAndLimits()
+        {
+            if (_viewResultsType != ViewResultsType.Undeformed)
+            {
+                PostSettings postSettings = _settings.Post;
+                LegendSettings legendSettings = _settings.Legend;
+                StatusBlockSettings statusBlockSettings = _settings.StatusBlock;
+                // Legend settings
+                _form.SetColorSpectrum(legendSettings.ColorSpectrum);
+                _form.SetScalarBarText(_currentFieldData.Name + ": " + _currentFieldData.Component + Environment.NewLine
+                                       + legendSettings.ColorSpectrum.MinMaxType.ToString());
+                _form.SetChartNumberFormat(legendSettings.GetColorChartNumberFormat());
+                _form.DrawLegendBackground(legendSettings.BackgroundType == WidgetBackgroundType.White);
+                _form.DrawLegendBorder(legendSettings.DrawBorder);
+                // Status block
+                _form.DrawStatusBlockBackground(statusBlockSettings.BackgroundType == WidgetBackgroundType.White);
+                _form.DrawStatusBlockBorder(statusBlockSettings.DrawBorder);
+                // Limits
+                _form.SetShowMinValueLocation(postSettings.ShowMinValueLocation);
+                _form.SetShowMaxValueLocation(postSettings.ShowMaxValueLocation);
+            }
+        }
         private vtkControl.DataFieldType ConvertStepType(FieldData fieldData)
         {
             vtkControl.DataFieldType fieldType;
@@ -7996,7 +8059,7 @@ namespace PrePoMax
             if (_results == null) return;
             // Settings                                                              
             _form.SetScalarBarText(_currentFieldData.Name + ": " + _currentFieldData.Component + Environment.NewLine 
-                                   + _settings.Post.ColorSpectrum.MinMaxType.ToString());
+                                   + _settings.Legend.ColorSpectrum.MinMaxType.ToString());
             //
             Octree.Plane plane = _sectionViewPlanes[_currentView];
             if (plane != null) RemoveSectionView();

@@ -290,7 +290,7 @@ namespace PrePoMax.Forms
             InitializeVariables();   
             //
             gbColorSpectrumLimits.Enabled =
-                _controller.Settings.Post.ColorSpectrum.MinMaxType == vtkControl.vtkColorSpectrumMinMaxType.Automatic;
+                _controller.Settings.Legend.ColorSpectrum.MinMaxType == vtkControl.vtkColorSpectrumMinMaxType.Automatic;
             //
             if (!gbColorSpectrumLimits.Enabled)
             {

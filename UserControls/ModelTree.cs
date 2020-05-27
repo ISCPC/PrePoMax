@@ -25,6 +25,7 @@ namespace UserControls
     {
         public int Create;
         public int Edit;
+        public int Duplicate;
         public int Hide;
         public int Show;
         public int Transparency;
@@ -152,6 +153,7 @@ namespace UserControls
         public event Action ClearSelectionEvent;
 
         public event Action<string, string> CreateEvent;
+        public event Action<NamedClass[], string[]> DuplicateEvent;
         public event Action<NamedClass, string> EditEvent;
         public event Action<NamedClass[], HideShowOperation, string[]> HideShowEvent;
         public event Action<string[]> SetTransparencyEvent;
@@ -331,6 +333,10 @@ namespace UserControls
             visible = menuFields.Edit == n;
             tsmiEdit.Visible = visible;
             oneAboveVisible |= visible;
+            // Duplicate
+            visible = menuFields.Duplicate == n;
+            tsmiDuplicate.Visible = visible;
+            oneAboveVisible |= visible;
             //Geometry                                              
             visible = menuFields.CompoundPart == n && n > 1;
             tsmiSpaceCompoundPart.Visible = false;
@@ -459,6 +465,8 @@ namespace UserControls
             if (CanCreate(node)) menuFields.Create++;
             // Edit
             if (item != null && item.Visible && item.Active) menuFields.Edit++;
+            //Duplicate
+            if (item != null && CanDuplicate(node)) menuFields.Duplicate++;
             // Hide/Show
             if (item != null && CanHide(item))
             {
@@ -658,7 +666,7 @@ namespace UserControls
             foreach (TreeNode node in tree.Nodes) SetAllNodesStatusIcons(node);
             
         }
-        private void cltv_KeyUp(object sender, KeyEventArgs e)
+        private void cltv_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Delete)
             {
@@ -670,6 +678,7 @@ namespace UserControls
             }
             else if (e.KeyCode == Keys.Enter)
             {
+                e.SuppressKeyPress = true;
                 tsmiEdit_Click(null, null);
             }
         }
@@ -696,6 +705,37 @@ namespace UserControls
 
                         CreateEvent?.Invoke(selectedNode.Name, stepName);
                     }
+                }
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiDuplicate_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                List<NamedClass> items = new List<NamedClass>();
+                string stepName;
+                List<string> stepNames = new List<string>();
+                //
+                foreach (TreeNode selectedNode in GetActiveTree().SelectedNodes)
+                {
+                    if (selectedNode.Tag == null) continue;
+                    //
+                    items.Add((NamedClass)selectedNode.Tag);
+                    stepName = null;
+                    if (selectedNode.Parent != null && selectedNode.Parent.Parent != null && selectedNode.Parent.Parent.Tag is Step)
+                        stepName = selectedNode.Parent.Parent.Text;
+                    stepNames.Add(stepName);
+                }
+                //
+                if (items.Count > 0)
+                {
+                    RenderingOff?.Invoke();
+                    DuplicateEvent?.Invoke(items.ToArray(), stepNames.ToArray());
+                    RenderingOn?.Invoke();
                 }
             }
             catch (Exception ex)
@@ -1138,18 +1178,18 @@ namespace UserControls
                 List<NamedClass> items = new List<NamedClass>();
                 string stepName;
                 List<string> stepNames = new List<string>();
-
+                //
                 foreach (TreeNode selectedNode in GetActiveTree().SelectedNodes)
                 {
                     if (selectedNode.Tag == null) continue;
-
+                    //
                     items.Add((NamedClass)selectedNode.Tag);
                     stepName = null;
                     if (selectedNode.Parent != null && selectedNode.Parent.Parent != null && selectedNode.Parent.Parent.Tag is Step)
                         stepName = selectedNode.Parent.Parent.Text;
                     stepNames.Add(stepName);
                 }
-
+                //
                 if (items.Count > 0)
                 {
                     RenderingOff?.Invoke();
@@ -2095,7 +2135,14 @@ namespace UserControls
             else if (node.Name == _boundaryConditionsName) return true;
             else if (node.Name == _loadsName) return true;
             else if (node.Name == _analysesName) return true;
-            return false;
+            else return false;
+        }
+        private bool CanDuplicate(TreeNode node)
+        {
+            if (node.Tag is Material) return true;
+            else if (node.Tag is SurfaceInteraction) return true;
+            else if (node.Tag is Step) return true;
+            else return false;
         }
         private bool CanDeactivate(TreeNode node)
         {
@@ -2143,6 +2190,6 @@ namespace UserControls
             }
         }
 
-        
+       
     }
 }

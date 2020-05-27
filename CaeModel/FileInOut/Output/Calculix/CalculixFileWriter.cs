@@ -8,6 +8,7 @@ using CaeMesh;
 using System.IO;
 using FileInOut.Output.Calculix;
 using CaeGlobals;
+using Microsoft.SqlServer.Server;
 
 namespace FileInOut.Output
 {
@@ -395,9 +396,11 @@ namespace FileInOut.Output
         static private void AppendMaterials(FeModel model, CalculixKeyword parent) 
         {
             CalMaterial material;
+            HashSet<string> activeMaterialNames = MaterialNamesUsedInActiveSections(model);
+            //
             foreach (var entry in model.Materials)
             {
-                if (entry.Value.Active)
+                if (entry.Value.Active && activeMaterialNames.Contains(entry.Key))
                 {
                     material = new CalMaterial(entry.Value);
                     parent.AddKeyword(material);
@@ -428,6 +431,18 @@ namespace FileInOut.Output
                     else parent.AddKeyword(new CalDeactivated(entry.Value.Name));
                 }
             }
+        }
+        static private HashSet<string> MaterialNamesUsedInActiveSections(FeModel model)
+        {
+            HashSet<string> materialNames = new HashSet<string>();
+            if (model.Mesh != null)
+            {
+                foreach (var entry in model.Sections)
+                {
+                    if (entry.Value.Active) materialNames.Add(entry.Value.MaterialName);
+                }
+            }
+            return materialNames;
         }
         static private void AppendPreTensionSections(OrderedDictionary<string, List<PreTensionLoad>> preTensionLoads,
                                                      Dictionary<string, int[]> referencePointsNodeIds,

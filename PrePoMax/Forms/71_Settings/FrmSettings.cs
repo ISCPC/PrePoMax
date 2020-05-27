@@ -46,6 +46,8 @@ namespace PrePoMax.Forms
                     else if (entry.Value is PreSettings prs) _viewSettings.Add(entry.Key, new ViewPreSettings(prs.DeepClone()));
                     else if (entry.Value is CalculixSettings cas) _viewSettings.Add(entry.Key, new ViewCalculixSettings(cas.DeepClone()));
                     else if (entry.Value is PostSettings pos) _viewSettings.Add(entry.Key, new ViewPostSettings(pos.DeepClone()));
+                    else if (entry.Value is LegendSettings les) _viewSettings.Add(entry.Key, new ViewLegendSettings(les.DeepClone()));
+                    else if (entry.Value is StatusBlockSettings sbs) _viewSettings.Add(entry.Key, new ViewStatusBlockSettings(sbs.DeepClone()));
                     else throw new NotSupportedException();
                 }
             } 
@@ -62,7 +64,7 @@ namespace PrePoMax.Forms
             InitializeComponent();
             _previousSettings = null;
             _viewSettings = null;
-
+            //
             propertyGrid.SetParent(this);   // for the Tab key to work
             propertyGrid.SetLabelColumnWidth(_labelRatio);
         }
@@ -104,12 +106,12 @@ namespace PrePoMax.Forms
             if (_propertyItemChanged)
             {
                 Dictionary<string, ISettings> settings = Settings;
-
+                //
                 foreach (var entry in settings)
                 {
                     entry.Value.CheckValues();
                 }
-
+                //
                 UpdateSettings?.Invoke(settings);
                 _propertyItemChanged = false;
             }
@@ -119,7 +121,7 @@ namespace PrePoMax.Forms
             try
             {
                 btnApply_Click(null, null);
-
+                //
                 DialogResult = System.Windows.Forms.DialogResult.OK;
                 Hide();
             }

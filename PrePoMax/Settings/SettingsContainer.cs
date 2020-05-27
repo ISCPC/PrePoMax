@@ -20,6 +20,8 @@ namespace PrePoMax
         private PreSettings _pre;
         private CalculixSettings _calculix;
         private PostSettings _post;
+        private LegendSettings _legend;
+        private StatusBlockSettings _statusBlock;
 
 
         // Properties                                                                                                               
@@ -28,6 +30,8 @@ namespace PrePoMax
         public PreSettings Pre { get { return _pre; } set { _pre = value; } }
         public CalculixSettings Calculix { get { return _calculix; } set { _calculix = value; } }
         public PostSettings Post { get { return _post; } set { _post = value; } }
+        public LegendSettings Legend { get { return _legend; } set { _legend = value; } }
+        public StatusBlockSettings StatusBlock { get { return _statusBlock; } set { _statusBlock = value; } }
 
 
         // Constructors                                                                                                             
@@ -50,6 +54,8 @@ namespace PrePoMax
             _pre = new PreSettings();
             _calculix = new CalculixSettings();
             _post = new PostSettings();
+            _legend = new LegendSettings();
+            _statusBlock = new StatusBlockSettings();
         }
         public void Reset()
         {
@@ -58,6 +64,8 @@ namespace PrePoMax
             _pre.Reset();
             _calculix.Reset();
             _post.Reset();
+            _legend.Reset();
+            _statusBlock.Reset();
         }
         public Dictionary<string, ISettings> ToDictionary()
         {
@@ -67,15 +75,26 @@ namespace PrePoMax
             items.Add(Globals.PreSettingsName, _pre);
             items.Add(Globals.CalculixSettingsName, _calculix);
             items.Add(Globals.PostSettingsName, _post);
+            items.Add(Globals.LegendSettingsName, _legend);
+            items.Add(Globals.StatusBlockSettingsName, _statusBlock);
             return items;
         }
         public void FromDictionary(Dictionary<string, ISettings> items)
         {
-            _general = (GeneralSettings)items[Globals.GeneralSettingsName];
-            _graphics = (GraphicsSettings)items[Globals.GraphicsSettingsName];
-            _pre = (PreSettings)items[Globals.PreSettingsName];
-            _calculix = (CalculixSettings)items[Globals.CalculixSettingsName];
-            _post = (PostSettings)items[Globals.PostSettingsName];
+            try
+            {
+                _general = (GeneralSettings)items[Globals.GeneralSettingsName];
+                _graphics = (GraphicsSettings)items[Globals.GraphicsSettingsName];
+                _pre = (PreSettings)items[Globals.PreSettingsName];
+                _calculix = (CalculixSettings)items[Globals.CalculixSettingsName];
+                _post = (PostSettings)items[Globals.PostSettingsName];
+                _legend = (LegendSettings)items[Globals.LegendSettingsName];
+                _statusBlock = (StatusBlockSettings)items[Globals.StatusBlockSettingsName];
+            }
+            catch
+            {
+
+            }
         }
         public void SaveToFile(string fileName)
         {

@@ -14,6 +14,9 @@ namespace PrePoMax
     [Serializable]
     public enum BackgroundType
     {
+        [StandardValue("White", Description = "White color background.")]
+        White,
+
         [StandardValue("Solid", Description = "One color background.")]
         Solid,
 
@@ -38,7 +41,27 @@ namespace PrePoMax
 
 
         // Properties                                                                                                               
-        public BackgroundType BackgroundType { get { return _backgroundType; } set { _backgroundType = value; } }
+        public BackgroundType BackgroundType
+        {
+            get
+            {
+                return _backgroundType;
+            }
+            set
+            {
+                if (value != _backgroundType)
+                {
+                    _backgroundType = value;
+                    if (_backgroundType == BackgroundType.White) _bottomColor = Color.White;
+                    else if (_backgroundType == BackgroundType.Solid) _bottomColor = Color.WhiteSmoke;
+                    else if (_backgroundType == BackgroundType.Gradient)
+                    {
+                        _topColor = Color.Gainsboro;
+                        _bottomColor = Color.WhiteSmoke;
+                    }
+                }
+            }
+        }
         public Color TopColor { get { return _topColor; } set { _topColor = value; } }
         public Color BottomColor { get { return _bottomColor; } set { _bottomColor = value; } }
         public bool CoorSysVisibility { get { return _coorSysVisibility; } set { _coorSysVisibility = value; } }

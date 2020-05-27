@@ -47,12 +47,15 @@ namespace CaeModel
                 {
                     case "_youngsModulus":
                     // Compatibility for version v.0.6.0
+                    case "YoungsModulus":
                     case "<YoungsModulus>k__BackingField":
-                        _youngsModulus = (double)entry.Value; break;
+                        double.TryParse(entry.Value.ToString(), out _youngsModulus); break;
+                        //_youngsModulus = (double)entry.Value; break;
                     case "_poissonsRatio":
                     // Compatibility for version v.0.6.0
+                    case "PoissonsRatio":
                     case "<PoissonsRatio>k__BackingField":
-                        _poissonsRatio = (double)entry.Value; break;
+                        double.TryParse(entry.Value.ToString(), out _poissonsRatio); break;
                     default:
                         throw new NotSupportedException();
                 }

@@ -164,8 +164,14 @@ Dependency nglib - added following files for c++ redistriburable compatibility:
 
 Done
 
+Version 0.8.0 Master branch
+Added support for Duplicate of Materials, Surface Interactions and Steps
+Added support for legend background and border
+Added support for status block background and border
+Bug fixes
+
+
 Version 0.7.0 Master branch
-More???
 Added support for individual colors for RPs, Constraints, Contact pairs, BCs and Loads
 Added support for simple plotting of data grid values (material data, history outputs...)
 Added option for using .pmx file folder for work analysis directory

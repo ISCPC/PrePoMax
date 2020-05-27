@@ -126,7 +126,9 @@
     <Compile Include="Command\0050_Model\15_ReferencePoint\CRemoveReferencePoints.cs" />
     <Compile Include="Command\0050_Model\15_ReferencePoint\CReplaceReferencePoint.cs" />
     <Compile Include="Command\0050_Model\CCreateBoundaryLayer.cs" />
+    <Compile Include="Command\0061_Material\CDuplicateMaterial.cs" />
     <Compile Include="Command\0072_SurfaceInteraction\CAddSurfaceInteraction.cs" />
+    <Compile Include="Command\0072_SurfaceInteraction\CDuplicateSurfaceInteractions.cs" />
     <Compile Include="Command\0072_SurfaceInteraction\CRemoveSurfaceInteractions.cs" />
     <Compile Include="Command\0072_SurfaceInteraction\CReplaceSurfaceInteraction.cs" />
     <Compile Include="Command\0061_Material\CAddMaterial.cs" />
@@ -146,6 +148,7 @@
     <Compile Include="Command\0073_ContactPair\CReplaceContactPair.cs" />
     <Compile Include="Command\0073_ContactPair\CShowContactPairs.cs" />
     <Compile Include="Command\0081_Step\CAddStep.cs" />
+    <Compile Include="Command\0081_Step\CDuplicateSteps.cs" />
     <Compile Include="Command\0081_Step\CRemoveSteps.cs" />
     <Compile Include="Command\0081_Step\CReplaceStep.cs" />
     <Compile Include="Command\0082_HistoryOutput\CAddHistoryOutput.cs" />
@@ -239,6 +242,8 @@
     <Compile Include="Forms\42_HistoryOutput\ViewContactHistoryOutput.cs" />
     <Compile Include="Forms\43_FieldOutput\ViewContactFieldOutput.cs" />
     <Compile Include="Forms\71_Settings\ViewCalculixSettings.cs" />
+    <Compile Include="Forms\71_Settings\ViewStatusBlockSettings.cs" />
+    <Compile Include="Forms\71_Settings\ViewLegendSettings.cs" />
     <Compile Include="Forms\StringDefaultDoubleConverter.cs" />
     <Compile Include="Forms\34_SurfaceInteraction\ViewFriction.cs" />
     <Compile Include="Forms\34_SurfaceInteraction\ViewSurfaceInteractionProperty.cs" />
@@ -429,6 +434,8 @@
     <Compile Include="Settings\GeneralSettings.cs" />
     <Compile Include="Settings\GraphicsSettings.cs" />
     <Compile Include="Forms\71_Settings\IReset.cs" />
+    <Compile Include="Settings\StatusBlockSettings.cs" />
+    <Compile Include="Settings\LegendSettings.cs" />
     <Compile Include="Settings\SettingsContainer.cs" />
     <Compile Include="Settings\PreSettings.cs" />
     <Compile Include="Settings\PostSettings.cs" />
@@ -639,6 +646,7 @@
     <None Include="Icons\Common\Cut.png" />
     <None Include="Icons\Common\Copy.png" />
     <None Include="Icons\Common\Paste.png" />
+    <None Include="Icons\Contact\Contact.ico" />
     <Content Include="main.ico" />
   </ItemGroup>
   <ItemGroup>

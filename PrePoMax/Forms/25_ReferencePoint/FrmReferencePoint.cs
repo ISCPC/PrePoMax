@@ -214,6 +214,8 @@ namespace PrePoMax.Forms
                 //
                 _propertyItemChanged = true;
                 //
+                _controller.ClearSelectionHistory();    // must be here to reset the number of picked ids
+                //
                 HighlightReferencePoint();
             }
         }

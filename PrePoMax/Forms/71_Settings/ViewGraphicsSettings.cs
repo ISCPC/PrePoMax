@@ -27,8 +27,18 @@ namespace PrePoMax.Settings
             set
             {
                 _graphicsSettings.BackgroundType = value;
-
-                if (value == BackgroundType.Solid)
+                //
+                if (value == BackgroundType.White)
+                {
+                    CustomPropertyDescriptor cpd;
+                    cpd = _dctd.GetProperty("Color");
+                    cpd.SetIsBrowsable(false);
+                    cpd = _dctd.GetProperty("TopColor");
+                    cpd.SetIsBrowsable(false);
+                    cpd = _dctd.GetProperty("BottomColor");
+                    cpd.SetIsBrowsable(false);
+                }
+                else if (value == BackgroundType.Solid)
                 {
                     CustomPropertyDescriptor cpd;
                     cpd = _dctd.GetProperty("Color");

@@ -1643,6 +1643,9 @@ namespace vtkControl
             _scalarBarWidget.SetLabelFormat("E3");
             _scalarBarWidget.SetPadding(15);
             _scalarBarWidget.VisibilityOn();
+            _scalarBarWidget.BackgroundVisibilityOn();
+            _scalarBarWidget.BorderVisibilityOn();
+            _scalarBarWidget.SetBackgroundColor(1, 1, 1);
             //
             _scalarBarWidget.MouseDoubleClick += widget_ShowPostSettings;
         }
@@ -3443,12 +3446,11 @@ namespace vtkControl
                 if (!_sectionView)
                 {
                     _sectionView = true;
-
                     // Set section cut plane
                     _sectionViewPlane = vtkPlane.New();
                     _sectionViewPlane.SetOrigin(point[0], point[1], point[2]);
                     _sectionViewPlane.SetNormal(normal[0], normal[1], normal[2]);
-
+                    //
                     foreach (var entry in _actors)
                     {
                         if (entry.Value.SectionViewPossible)
@@ -3461,10 +3463,9 @@ namespace vtkControl
                                 entry.Value.Geometry.GetProperty().BackfaceCullingOff();
                         }
                     }
-
                     // Add new section cut actors
                     vtkMaxActor sectionViewActor;
-                    foreach (var actor in _actors.Values.ToArray())
+                    foreach (var actor in _actors.Values.ToArray())     // must be copied to array
                     {
                         if (actor.SectionViewPossible)
                         {
@@ -3476,9 +3477,9 @@ namespace vtkControl
                             }
                         }
                     }
-
+                    //
                     UpdateScalarFormatting();
-
+                    //
                     this.Invalidate();
                 }
             }
@@ -3990,7 +3991,7 @@ namespace vtkControl
         public void SetColorSpectrum(vtkMaxColorSpectrum colorSpectrum)
         {
             _colorSpectrum.DeepCopy(colorSpectrum);
-
+            //
             _scalarBarWidget.SetNumberOfColors(_colorSpectrum.NumberOfColors);  // for the scalar bar
             _scalarBarWidget.MinColor = colorSpectrum.MinColor;
             _scalarBarWidget.MaxColor = colorSpectrum.MaxColor;            
@@ -3998,6 +3999,28 @@ namespace vtkControl
         public void SetChartNumberFormat(string numberFormat)
         {
             _scalarBarWidget.SetLabelFormat(numberFormat);
+        }
+        public void DrawLegendBackground(bool drawBackground)
+        {
+            _scalarBarWidget.SetBackgroundColor(1, 1, 1);
+            if (drawBackground) _scalarBarWidget.BackgroundVisibilityOn();
+            else _scalarBarWidget.BackgroundVisibilityOff();
+        }
+        public void DrawLegendBorder(bool drawBorder)
+        {
+            if (drawBorder) _scalarBarWidget.BorderVisibilityOn();
+            else _scalarBarWidget.BorderVisibilityOff();
+        }
+        public void DrawStatusBlockBackground(bool drawBackground)
+        {
+            _statusBlockWidget.SetBackgroundColor(1, 1, 1);
+            if (drawBackground) _statusBlockWidget.BackgroundVisibilityOn();
+            else _statusBlockWidget.BackgroundVisibilityOff();
+        }
+        public void DrawStatusBlockBorder(bool drawBorder)
+        {
+            if (drawBorder) _statusBlockWidget.BorderVisibilityOn();
+            else _statusBlockWidget.BorderVisibilityOff();
         }
         public void SetStatusBlock(string name, DateTime dateTime, float analysisTimeOrFrequency, float scaleFactor, DataFieldType fieldType)
         {
@@ -4889,7 +4912,7 @@ namespace vtkControl
         public void Clear()
         {
             if (_sectionView) RemoveSectionView();
-
+            //
             foreach (var entry in _actors)
             {
                 _renderer.RemoveActor(entry.Value.Geometry);
@@ -4897,19 +4920,18 @@ namespace vtkControl
                 _renderer.RemoveActor(entry.Value.ModelEdges);
             }
             //_renderer.RemoveAllViewProps();  this removes all other actors for min/max values ...
-
             _actors.Clear();            
             _cellPicker.RemoveAllLocators();
             _propPicker.InitializePickList();
             _animationActors.Clear();
             _animationFrameData = new vtkMaxAnimationFrameData();
-
+            //
             if (_scalarBarWidget != null) _scalarBarWidget.VisibilityOff();
             if (_statusBlockWidget != null) _statusBlockWidget.VisibilityOff();
             if (_minValueWidget != null) _minValueWidget.VisibilityOff();
             if (_maxValueWidget != null) _maxValueWidget.VisibilityOff();
             if (_style != null) _style.Reset();
-
+            //
             ClearSelection();
             ClearOverlay();
             RemoveSectionView();

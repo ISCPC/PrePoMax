@@ -29,65 +29,66 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("Solid-Part-1");
-            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("Solid-Part-2");
-            System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("Solid-Part-4");
-            System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("Solid-Part-5");
-            System.Windows.Forms.TreeNode treeNode5 = new System.Windows.Forms.TreeNode("Comp1", new System.Windows.Forms.TreeNode[] {
-            treeNode3,
-            treeNode4});
-            System.Windows.Forms.TreeNode treeNode6 = new System.Windows.Forms.TreeNode("Solid-Part-6");
-            System.Windows.Forms.TreeNode treeNode7 = new System.Windows.Forms.TreeNode("Solid-Part-7");
-            System.Windows.Forms.TreeNode treeNode8 = new System.Windows.Forms.TreeNode("Comp2", new System.Windows.Forms.TreeNode[] {
-            treeNode6,
-            treeNode7});
-            System.Windows.Forms.TreeNode treeNode9 = new System.Windows.Forms.TreeNode("Solid-Part-10");
-            System.Windows.Forms.TreeNode treeNode10 = new System.Windows.Forms.TreeNode("Parts", new System.Windows.Forms.TreeNode[] {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ModelTree));
+            System.Windows.Forms.TreeNode treeNode32 = new System.Windows.Forms.TreeNode("Solid-Part-1");
+            System.Windows.Forms.TreeNode treeNode33 = new System.Windows.Forms.TreeNode("Solid-Part-2");
+            System.Windows.Forms.TreeNode treeNode34 = new System.Windows.Forms.TreeNode("Solid-Part-4");
+            System.Windows.Forms.TreeNode treeNode35 = new System.Windows.Forms.TreeNode("Solid-Part-5");
+            System.Windows.Forms.TreeNode treeNode36 = new System.Windows.Forms.TreeNode("Comp1", new System.Windows.Forms.TreeNode[] {
+            treeNode34,
+            treeNode35});
+            System.Windows.Forms.TreeNode treeNode37 = new System.Windows.Forms.TreeNode("Solid-Part-6");
+            System.Windows.Forms.TreeNode treeNode38 = new System.Windows.Forms.TreeNode("Solid-Part-7");
+            System.Windows.Forms.TreeNode treeNode39 = new System.Windows.Forms.TreeNode("Comp2", new System.Windows.Forms.TreeNode[] {
+            treeNode37,
+            treeNode38});
+            System.Windows.Forms.TreeNode treeNode40 = new System.Windows.Forms.TreeNode("Solid-Part-10");
+            System.Windows.Forms.TreeNode treeNode41 = new System.Windows.Forms.TreeNode("Parts", new System.Windows.Forms.TreeNode[] {
+            treeNode32,
+            treeNode33,
+            treeNode36,
+            treeNode39,
+            treeNode40});
+            System.Windows.Forms.TreeNode treeNode42 = new System.Windows.Forms.TreeNode("Mesh refinements");
+            System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("Parts");
+            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("Node sets");
+            System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("Element sets");
+            System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("Surfaces");
+            System.Windows.Forms.TreeNode treeNode5 = new System.Windows.Forms.TreeNode("Reference points");
+            System.Windows.Forms.TreeNode treeNode6 = new System.Windows.Forms.TreeNode("Mesh", new System.Windows.Forms.TreeNode[] {
             treeNode1,
             treeNode2,
-            treeNode5,
+            treeNode3,
+            treeNode4,
+            treeNode5});
+            System.Windows.Forms.TreeNode treeNode7 = new System.Windows.Forms.TreeNode("Materials");
+            System.Windows.Forms.TreeNode treeNode8 = new System.Windows.Forms.TreeNode("Sections");
+            System.Windows.Forms.TreeNode treeNode9 = new System.Windows.Forms.TreeNode("Constraints");
+            System.Windows.Forms.TreeNode treeNode10 = new System.Windows.Forms.TreeNode("Surface interactions");
+            System.Windows.Forms.TreeNode treeNode11 = new System.Windows.Forms.TreeNode("Contact pairs");
+            System.Windows.Forms.TreeNode treeNode43 = new System.Windows.Forms.TreeNode("Contact", new System.Windows.Forms.TreeNode[] {
+            treeNode10,
+            treeNode11});
+            System.Windows.Forms.TreeNode treeNode44 = new System.Windows.Forms.TreeNode("Steps");
+            System.Windows.Forms.TreeNode treeNode45 = new System.Windows.Forms.TreeNode("Model", new System.Windows.Forms.TreeNode[] {
+            treeNode6,
+            treeNode7,
             treeNode8,
-            treeNode9});
-            System.Windows.Forms.TreeNode treeNode11 = new System.Windows.Forms.TreeNode("Mesh refinements");
+            treeNode9,
+            treeNode43,
+            treeNode44});
+            System.Windows.Forms.TreeNode treeNode46 = new System.Windows.Forms.TreeNode("Analyses");
             System.Windows.Forms.TreeNode treeNode12 = new System.Windows.Forms.TreeNode("Parts");
-            System.Windows.Forms.TreeNode treeNode13 = new System.Windows.Forms.TreeNode("Node sets");
-            System.Windows.Forms.TreeNode treeNode14 = new System.Windows.Forms.TreeNode("Element sets");
-            System.Windows.Forms.TreeNode treeNode15 = new System.Windows.Forms.TreeNode("Surfaces");
-            System.Windows.Forms.TreeNode treeNode16 = new System.Windows.Forms.TreeNode("Reference points");
-            System.Windows.Forms.TreeNode treeNode17 = new System.Windows.Forms.TreeNode("Mesh", new System.Windows.Forms.TreeNode[] {
-            treeNode12,
-            treeNode13,
+            System.Windows.Forms.TreeNode treeNode13 = new System.Windows.Forms.TreeNode("Mesh", new System.Windows.Forms.TreeNode[] {
+            treeNode12});
+            System.Windows.Forms.TreeNode treeNode14 = new System.Windows.Forms.TreeNode("Field outputs");
+            System.Windows.Forms.TreeNode treeNode15 = new System.Windows.Forms.TreeNode("History outputs");
+            System.Windows.Forms.TreeNode treeNode16 = new System.Windows.Forms.TreeNode("Results", new System.Windows.Forms.TreeNode[] {
             treeNode14,
-            treeNode15,
-            treeNode16});
-            System.Windows.Forms.TreeNode treeNode18 = new System.Windows.Forms.TreeNode("Materials");
-            System.Windows.Forms.TreeNode treeNode19 = new System.Windows.Forms.TreeNode("Sections");
-            System.Windows.Forms.TreeNode treeNode20 = new System.Windows.Forms.TreeNode("Constraints");
-            System.Windows.Forms.TreeNode treeNode21 = new System.Windows.Forms.TreeNode("Surface interactions");
-            System.Windows.Forms.TreeNode treeNode22 = new System.Windows.Forms.TreeNode("Contact pairs");
-            System.Windows.Forms.TreeNode treeNode23 = new System.Windows.Forms.TreeNode("Contact", new System.Windows.Forms.TreeNode[] {
-            treeNode21,
-            treeNode22});
-            System.Windows.Forms.TreeNode treeNode24 = new System.Windows.Forms.TreeNode("Steps");
-            System.Windows.Forms.TreeNode treeNode25 = new System.Windows.Forms.TreeNode("Model", new System.Windows.Forms.TreeNode[] {
-            treeNode17,
-            treeNode18,
-            treeNode19,
-            treeNode20,
-            treeNode23,
-            treeNode24});
-            System.Windows.Forms.TreeNode treeNode26 = new System.Windows.Forms.TreeNode("Analyses");
-            System.Windows.Forms.TreeNode treeNode27 = new System.Windows.Forms.TreeNode("Parts");
-            System.Windows.Forms.TreeNode treeNode28 = new System.Windows.Forms.TreeNode("Mesh", new System.Windows.Forms.TreeNode[] {
-            treeNode27});
-            System.Windows.Forms.TreeNode treeNode29 = new System.Windows.Forms.TreeNode("Field outputs");
-            System.Windows.Forms.TreeNode treeNode30 = new System.Windows.Forms.TreeNode("History outputs");
-            System.Windows.Forms.TreeNode treeNode31 = new System.Windows.Forms.TreeNode("Results", new System.Windows.Forms.TreeNode[] {
-            treeNode29,
-            treeNode30});
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ModelTree));
+            treeNode15});
             this.cmsTree = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.tsmiCreate = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiDuplicate = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEdit = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSpaceCompoundPart = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiCompoundPart = new System.Windows.Forms.ToolStripMenuItem();
@@ -104,9 +105,15 @@
             this.tsmiSpaceConvertToPart = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiConvertToPart = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSpaceHideShow = new System.Windows.Forms.ToolStripSeparator();
+            this.tsmiHide = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiShow = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiShowOnly = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSetTransparency = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSpaceColorContours = new System.Windows.Forms.ToolStripSeparator();
+            this.tsmiColorContoursOff = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiColorContoursOn = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSpaceMaterialLibrary = new System.Windows.Forms.ToolStripSeparator();
+            this.tsmiMaterialLibrary = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSpaceAnalysis = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiRun = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiMonitor = new System.Windows.Forms.ToolStripMenuItem();
@@ -114,6 +121,7 @@
             this.tsmiKill = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSpaceActive = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiActivate = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiDeactivate = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSpaceExpandColapse = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiExpandAll = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiCollapseAll = new System.Windows.Forms.ToolStripMenuItem();
@@ -123,18 +131,11 @@
             this.ilStatusIcons = new System.Windows.Forms.ImageList(this.components);
             this.tcGeometryModelResults = new System.Windows.Forms.TabControl();
             this.tpGeometry = new System.Windows.Forms.TabPage();
-            this.tpModel = new System.Windows.Forms.TabPage();
-            this.tpResults = new System.Windows.Forms.TabPage();
             this.cltvGeometry = new UserControls.CodersLabTreeView();
+            this.tpModel = new System.Windows.Forms.TabPage();
             this.cltvModel = new UserControls.CodersLabTreeView();
+            this.tpResults = new System.Windows.Forms.TabPage();
             this.cltvResults = new UserControls.CodersLabTreeView();
-            this.tsmiHide = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiShow = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiShowOnly = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiColorContoursOff = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiColorContoursOn = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiMaterialLibrary = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiDeactivate = new System.Windows.Forms.ToolStripMenuItem();
             this.cmsTree.SuspendLayout();
             this.tcGeometryModelResults.SuspendLayout();
             this.tpGeometry.SuspendLayout();
@@ -147,6 +148,7 @@
             this.cmsTree.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmiCreate,
             this.tsmiEdit,
+            this.tsmiDuplicate,
             this.tsmiSpaceCompoundPart,
             this.tsmiCompoundPart,
             this.tsmiSpaceMesh,
@@ -185,203 +187,266 @@
             this.tsmiSpaceDelete,
             this.tsmiDelete});
             this.cmsTree.Name = "cmsTree";
-            this.cmsTree.Size = new System.Drawing.Size(208, 654);
+            this.cmsTree.Size = new System.Drawing.Size(212, 698);
             // 
             // tsmiCreate
             // 
             this.tsmiCreate.Name = "tsmiCreate";
-            this.tsmiCreate.Size = new System.Drawing.Size(207, 22);
+            this.tsmiCreate.Size = new System.Drawing.Size(211, 22);
             this.tsmiCreate.Text = "Create";
             this.tsmiCreate.Click += new System.EventHandler(this.tsmiCreate_Click);
+            // 
+            // tsmiDuplicate
+            // 
+            this.tsmiDuplicate.Name = "tsmiDuplicate";
+            this.tsmiDuplicate.Size = new System.Drawing.Size(211, 22);
+            this.tsmiDuplicate.Text = "Duplicate";
+            this.tsmiDuplicate.Click += new System.EventHandler(this.tsmiDuplicate_Click);
             // 
             // tsmiEdit
             // 
             this.tsmiEdit.Name = "tsmiEdit";
-            this.tsmiEdit.Size = new System.Drawing.Size(207, 22);
+            this.tsmiEdit.Size = new System.Drawing.Size(211, 22);
             this.tsmiEdit.Text = "Edit";
             this.tsmiEdit.Click += new System.EventHandler(this.tsmiEdit_Click);
             // 
             // tsmiSpaceCompoundPart
             // 
             this.tsmiSpaceCompoundPart.Name = "tsmiSpaceCompoundPart";
-            this.tsmiSpaceCompoundPart.Size = new System.Drawing.Size(204, 6);
+            this.tsmiSpaceCompoundPart.Size = new System.Drawing.Size(208, 6);
             // 
             // tsmiCompoundPart
             // 
             this.tsmiCompoundPart.Name = "tsmiCompoundPart";
-            this.tsmiCompoundPart.Size = new System.Drawing.Size(207, 22);
-            this.tsmiCompoundPart.Text = "Create compound part";
+            this.tsmiCompoundPart.Size = new System.Drawing.Size(211, 22);
+            this.tsmiCompoundPart.Text = "Create Compound Part";
             this.tsmiCompoundPart.Click += new System.EventHandler(this.tsmiCompoundPart_Click);
             // 
             // tsmiSpaceMesh
             // 
             this.tsmiSpaceMesh.Name = "tsmiSpaceMesh";
-            this.tsmiSpaceMesh.Size = new System.Drawing.Size(204, 6);
+            this.tsmiSpaceMesh.Size = new System.Drawing.Size(208, 6);
             // 
             // tsmiMeshingParameters
             // 
             this.tsmiMeshingParameters.Name = "tsmiMeshingParameters";
-            this.tsmiMeshingParameters.Size = new System.Drawing.Size(207, 22);
-            this.tsmiMeshingParameters.Text = "Meshing parameters";
+            this.tsmiMeshingParameters.Size = new System.Drawing.Size(211, 22);
+            this.tsmiMeshingParameters.Text = "Meshing Parameters";
             this.tsmiMeshingParameters.Click += new System.EventHandler(this.tsmiMeshingParameters_Click);
             // 
             // tsmiPreviewEdgeMesh
             // 
             this.tsmiPreviewEdgeMesh.Name = "tsmiPreviewEdgeMesh";
-            this.tsmiPreviewEdgeMesh.Size = new System.Drawing.Size(207, 22);
-            this.tsmiPreviewEdgeMesh.Text = "Preview edge mesh";
+            this.tsmiPreviewEdgeMesh.Size = new System.Drawing.Size(211, 22);
+            this.tsmiPreviewEdgeMesh.Text = "Preview Edge Mesh";
             this.tsmiPreviewEdgeMesh.Click += new System.EventHandler(this.tsmiPreviewEdgeMesh_Click);
             // 
             // tsmiCreateMesh
             // 
             this.tsmiCreateMesh.Name = "tsmiCreateMesh";
-            this.tsmiCreateMesh.Size = new System.Drawing.Size(207, 22);
-            this.tsmiCreateMesh.Text = "Create mesh";
+            this.tsmiCreateMesh.Size = new System.Drawing.Size(211, 22);
+            this.tsmiCreateMesh.Text = "Create Mesh";
             this.tsmiCreateMesh.Click += new System.EventHandler(this.tsmiCreateMesh_Click);
             // 
             // tsmiSpaceCopyPart
             // 
             this.tsmiSpaceCopyPart.Name = "tsmiSpaceCopyPart";
-            this.tsmiSpaceCopyPart.Size = new System.Drawing.Size(204, 6);
+            this.tsmiSpaceCopyPart.Size = new System.Drawing.Size(208, 6);
             // 
             // tsmiCopyGeometryToResults
             // 
             this.tsmiCopyGeometryToResults.Name = "tsmiCopyGeometryToResults";
-            this.tsmiCopyGeometryToResults.Size = new System.Drawing.Size(207, 22);
-            this.tsmiCopyGeometryToResults.Text = "Copy geometry to results";
+            this.tsmiCopyGeometryToResults.Size = new System.Drawing.Size(211, 22);
+            this.tsmiCopyGeometryToResults.Text = "Copy Geometry to Results";
             this.tsmiCopyGeometryToResults.Click += new System.EventHandler(this.tsmiCopyGeometryPartToResults_Click);
             // 
             // tsmiSpaceEditCalculiXKeywords
             // 
             this.tsmiSpaceEditCalculiXKeywords.Name = "tsmiSpaceEditCalculiXKeywords";
-            this.tsmiSpaceEditCalculiXKeywords.Size = new System.Drawing.Size(204, 6);
+            this.tsmiSpaceEditCalculiXKeywords.Size = new System.Drawing.Size(208, 6);
             // 
             // tsmiEditCalculiXKeywords
             // 
             this.tsmiEditCalculiXKeywords.Name = "tsmiEditCalculiXKeywords";
-            this.tsmiEditCalculiXKeywords.Size = new System.Drawing.Size(207, 22);
-            this.tsmiEditCalculiXKeywords.Text = "Edit CalculiX keywords";
+            this.tsmiEditCalculiXKeywords.Size = new System.Drawing.Size(211, 22);
+            this.tsmiEditCalculiXKeywords.Text = "Edit CalculiX Keywords";
             this.tsmiEditCalculiXKeywords.Click += new System.EventHandler(this.tsmiEditCalculiXKeywords_Click);
             // 
             // tsmiSpaceMergeParts
             // 
             this.tsmiSpaceMergeParts.Name = "tsmiSpaceMergeParts";
-            this.tsmiSpaceMergeParts.Size = new System.Drawing.Size(204, 6);
+            this.tsmiSpaceMergeParts.Size = new System.Drawing.Size(208, 6);
             // 
             // tsmiMergeParts
             // 
             this.tsmiMergeParts.Name = "tsmiMergeParts";
-            this.tsmiMergeParts.Size = new System.Drawing.Size(207, 22);
-            this.tsmiMergeParts.Text = "Merge parts";
+            this.tsmiMergeParts.Size = new System.Drawing.Size(211, 22);
+            this.tsmiMergeParts.Text = "Merge Parts";
             this.tsmiMergeParts.Click += new System.EventHandler(this.tsmiMergeParts_Click);
             // 
             // tsmiSpaceConvertToPart
             // 
             this.tsmiSpaceConvertToPart.Name = "tsmiSpaceConvertToPart";
-            this.tsmiSpaceConvertToPart.Size = new System.Drawing.Size(204, 6);
+            this.tsmiSpaceConvertToPart.Size = new System.Drawing.Size(208, 6);
             // 
             // tsmiConvertToPart
             // 
             this.tsmiConvertToPart.Name = "tsmiConvertToPart";
-            this.tsmiConvertToPart.Size = new System.Drawing.Size(207, 22);
-            this.tsmiConvertToPart.Text = "Convert to part";
+            this.tsmiConvertToPart.Size = new System.Drawing.Size(211, 22);
+            this.tsmiConvertToPart.Text = "Convert to Part";
             this.tsmiConvertToPart.Click += new System.EventHandler(this.tsmiConvertToPart_Click);
             // 
             // tsmiSpaceHideShow
             // 
             this.tsmiSpaceHideShow.Name = "tsmiSpaceHideShow";
-            this.tsmiSpaceHideShow.Size = new System.Drawing.Size(204, 6);
+            this.tsmiSpaceHideShow.Size = new System.Drawing.Size(208, 6);
+            // 
+            // tsmiHide
+            // 
+            this.tsmiHide.Image = ((System.Drawing.Image)(resources.GetObject("tsmiHide.Image")));
+            this.tsmiHide.Name = "tsmiHide";
+            this.tsmiHide.Size = new System.Drawing.Size(211, 22);
+            this.tsmiHide.Text = "Hide";
+            this.tsmiHide.Click += new System.EventHandler(this.tsmiHideShow_Click);
+            // 
+            // tsmiShow
+            // 
+            this.tsmiShow.Image = global::UserControls.Properties.Resources.Show;
+            this.tsmiShow.Name = "tsmiShow";
+            this.tsmiShow.Size = new System.Drawing.Size(211, 22);
+            this.tsmiShow.Text = "Show";
+            this.tsmiShow.Click += new System.EventHandler(this.tsmiHideShow_Click);
+            // 
+            // tsmiShowOnly
+            // 
+            this.tsmiShowOnly.Image = global::UserControls.Properties.Resources.Show;
+            this.tsmiShowOnly.Name = "tsmiShowOnly";
+            this.tsmiShowOnly.Size = new System.Drawing.Size(211, 22);
+            this.tsmiShowOnly.Text = "Show Only";
+            this.tsmiShowOnly.Click += new System.EventHandler(this.tsmiHideShow_Click);
             // 
             // tsmiSetTransparency
             // 
             this.tsmiSetTransparency.Name = "tsmiSetTransparency";
-            this.tsmiSetTransparency.Size = new System.Drawing.Size(207, 22);
-            this.tsmiSetTransparency.Text = "Set transparency";
+            this.tsmiSetTransparency.Size = new System.Drawing.Size(211, 22);
+            this.tsmiSetTransparency.Text = "Set Transparency";
             this.tsmiSetTransparency.Click += new System.EventHandler(this.tsmiSetTransparency_Click);
             // 
             // tsmiSpaceColorContours
             // 
             this.tsmiSpaceColorContours.Name = "tsmiSpaceColorContours";
-            this.tsmiSpaceColorContours.Size = new System.Drawing.Size(204, 6);
+            this.tsmiSpaceColorContours.Size = new System.Drawing.Size(208, 6);
+            // 
+            // tsmiColorContoursOff
+            // 
+            this.tsmiColorContoursOff.Image = global::UserControls.Properties.Resources.Deformed;
+            this.tsmiColorContoursOff.Name = "tsmiColorContoursOff";
+            this.tsmiColorContoursOff.Size = new System.Drawing.Size(211, 22);
+            this.tsmiColorContoursOff.Text = "Color Contours Off";
+            this.tsmiColorContoursOff.Click += new System.EventHandler(this.tsmiResultColorContoutsVisibility_Click);
+            // 
+            // tsmiColorContoursOn
+            // 
+            this.tsmiColorContoursOn.Image = global::UserControls.Properties.Resources.Color_contours;
+            this.tsmiColorContoursOn.Name = "tsmiColorContoursOn";
+            this.tsmiColorContoursOn.Size = new System.Drawing.Size(211, 22);
+            this.tsmiColorContoursOn.Text = "Color Contours On";
+            this.tsmiColorContoursOn.Click += new System.EventHandler(this.tsmiResultColorContoutsVisibility_Click);
             // 
             // tsmiSpaceMaterialLibrary
             // 
             this.tsmiSpaceMaterialLibrary.Name = "tsmiSpaceMaterialLibrary";
-            this.tsmiSpaceMaterialLibrary.Size = new System.Drawing.Size(204, 6);
+            this.tsmiSpaceMaterialLibrary.Size = new System.Drawing.Size(208, 6);
+            // 
+            // tsmiMaterialLibrary
+            // 
+            this.tsmiMaterialLibrary.Image = global::UserControls.Properties.Resources.Library;
+            this.tsmiMaterialLibrary.Name = "tsmiMaterialLibrary";
+            this.tsmiMaterialLibrary.Size = new System.Drawing.Size(211, 22);
+            this.tsmiMaterialLibrary.Text = "Material Library";
+            this.tsmiMaterialLibrary.Click += new System.EventHandler(this.tsmiMaterialLibrary_Click);
             // 
             // tsmiSpaceAnalysis
             // 
             this.tsmiSpaceAnalysis.Name = "tsmiSpaceAnalysis";
-            this.tsmiSpaceAnalysis.Size = new System.Drawing.Size(204, 6);
+            this.tsmiSpaceAnalysis.Size = new System.Drawing.Size(208, 6);
             // 
             // tsmiRun
             // 
             this.tsmiRun.Name = "tsmiRun";
-            this.tsmiRun.Size = new System.Drawing.Size(207, 22);
+            this.tsmiRun.Size = new System.Drawing.Size(211, 22);
             this.tsmiRun.Text = "Run";
             this.tsmiRun.Click += new System.EventHandler(this.tsmiRun_Click);
             // 
             // tsmiMonitor
             // 
             this.tsmiMonitor.Name = "tsmiMonitor";
-            this.tsmiMonitor.Size = new System.Drawing.Size(207, 22);
+            this.tsmiMonitor.Size = new System.Drawing.Size(211, 22);
             this.tsmiMonitor.Text = "Monitor";
             this.tsmiMonitor.Click += new System.EventHandler(this.tsmiMonitor_Click);
             // 
             // tsmiResults
             // 
             this.tsmiResults.Name = "tsmiResults";
-            this.tsmiResults.Size = new System.Drawing.Size(207, 22);
+            this.tsmiResults.Size = new System.Drawing.Size(211, 22);
             this.tsmiResults.Text = "Results";
             this.tsmiResults.Click += new System.EventHandler(this.tsmiResults_Click);
             // 
             // tsmiKill
             // 
             this.tsmiKill.Name = "tsmiKill";
-            this.tsmiKill.Size = new System.Drawing.Size(207, 22);
+            this.tsmiKill.Size = new System.Drawing.Size(211, 22);
             this.tsmiKill.Text = "Kill";
             this.tsmiKill.Click += new System.EventHandler(this.tsmiKill_Click);
             // 
             // tsmiSpaceActive
             // 
             this.tsmiSpaceActive.Name = "tsmiSpaceActive";
-            this.tsmiSpaceActive.Size = new System.Drawing.Size(204, 6);
+            this.tsmiSpaceActive.Size = new System.Drawing.Size(208, 6);
             // 
             // tsmiActivate
             // 
             this.tsmiActivate.Name = "tsmiActivate";
-            this.tsmiActivate.Size = new System.Drawing.Size(207, 22);
+            this.tsmiActivate.Size = new System.Drawing.Size(211, 22);
             this.tsmiActivate.Text = "Activate";
             this.tsmiActivate.Click += new System.EventHandler(this.ActivateDeactivate_Click);
+            // 
+            // tsmiDeactivate
+            // 
+            this.tsmiDeactivate.Image = ((System.Drawing.Image)(resources.GetObject("tsmiDeactivate.Image")));
+            this.tsmiDeactivate.Name = "tsmiDeactivate";
+            this.tsmiDeactivate.Size = new System.Drawing.Size(211, 22);
+            this.tsmiDeactivate.Text = "Deactivate";
+            this.tsmiDeactivate.Click += new System.EventHandler(this.ActivateDeactivate_Click);
             // 
             // tsmiSpaceExpandColapse
             // 
             this.tsmiSpaceExpandColapse.Name = "tsmiSpaceExpandColapse";
-            this.tsmiSpaceExpandColapse.Size = new System.Drawing.Size(204, 6);
+            this.tsmiSpaceExpandColapse.Size = new System.Drawing.Size(208, 6);
             // 
             // tsmiExpandAll
             // 
             this.tsmiExpandAll.Name = "tsmiExpandAll";
-            this.tsmiExpandAll.Size = new System.Drawing.Size(207, 22);
-            this.tsmiExpandAll.Text = "Expand all";
+            this.tsmiExpandAll.Size = new System.Drawing.Size(211, 22);
+            this.tsmiExpandAll.Text = "Expand All";
             this.tsmiExpandAll.Click += new System.EventHandler(this.tsmiExpandAll_Click);
             // 
             // tsmiCollapseAll
             // 
             this.tsmiCollapseAll.Name = "tsmiCollapseAll";
-            this.tsmiCollapseAll.Size = new System.Drawing.Size(207, 22);
-            this.tsmiCollapseAll.Text = "Colapse all";
+            this.tsmiCollapseAll.Size = new System.Drawing.Size(211, 22);
+            this.tsmiCollapseAll.Text = "Colapse All";
             this.tsmiCollapseAll.Click += new System.EventHandler(this.tsmiCollapseAll_Click);
             // 
             // tsmiSpaceDelete
             // 
             this.tsmiSpaceDelete.Name = "tsmiSpaceDelete";
-            this.tsmiSpaceDelete.Size = new System.Drawing.Size(204, 6);
+            this.tsmiSpaceDelete.Size = new System.Drawing.Size(208, 6);
             // 
             // tsmiDelete
             // 
             this.tsmiDelete.Name = "tsmiDelete";
-            this.tsmiDelete.Size = new System.Drawing.Size(207, 22);
+            this.tsmiDelete.Size = new System.Drawing.Size(211, 22);
             this.tsmiDelete.Text = "Delete";
             this.tsmiDelete.Click += new System.EventHandler(this.tsmiDelete_Click);
             // 
@@ -453,27 +518,6 @@
             this.tpGeometry.Text = "Geometry";
             this.tpGeometry.UseVisualStyleBackColor = true;
             // 
-            // tpModel
-            // 
-            this.tpModel.Controls.Add(this.cltvModel);
-            this.tpModel.Location = new System.Drawing.Point(4, 24);
-            this.tpModel.Name = "tpModel";
-            this.tpModel.Size = new System.Drawing.Size(231, 470);
-            this.tpModel.TabIndex = 0;
-            this.tpModel.Text = "FE Model";
-            this.tpModel.UseVisualStyleBackColor = true;
-            // 
-            // tpResults
-            // 
-            this.tpResults.Controls.Add(this.cltvResults);
-            this.tpResults.Location = new System.Drawing.Point(4, 24);
-            this.tpResults.Name = "tpResults";
-            this.tpResults.Padding = new System.Windows.Forms.Padding(3);
-            this.tpResults.Size = new System.Drawing.Size(231, 470);
-            this.tpResults.TabIndex = 1;
-            this.tpResults.Text = "Results";
-            this.tpResults.UseVisualStyleBackColor = true;
-            // 
             // cltvGeometry
             // 
             this.cltvGeometry.BorderStyle = System.Windows.Forms.BorderStyle.None;
@@ -486,55 +530,55 @@
             this.cltvGeometry.ImageList = this.ilIcons;
             this.cltvGeometry.Location = new System.Drawing.Point(0, 0);
             this.cltvGeometry.Name = "cltvGeometry";
-            treeNode1.ImageKey = "Dots.ico";
-            treeNode1.Name = "Node0";
-            treeNode1.SelectedImageKey = "Dots.ico";
-            treeNode1.Text = "Solid-Part-1";
-            treeNode2.ImageKey = "Dots.ico";
-            treeNode2.Name = "Node1";
-            treeNode2.SelectedImageKey = "Dots.ico";
-            treeNode2.Text = "Solid-Part-2";
-            treeNode3.ImageKey = "Dots.ico";
-            treeNode3.Name = "Node3";
-            treeNode3.SelectedImageKey = "Dots.ico";
-            treeNode3.Text = "Solid-Part-4";
-            treeNode4.ImageKey = "Dots.ico";
-            treeNode4.Name = "Node4";
-            treeNode4.SelectedImageKey = "Dots.ico";
-            treeNode4.Text = "Solid-Part-5";
-            treeNode5.ImageKey = "Dots_t.ico";
-            treeNode5.Name = "Node2";
-            treeNode5.SelectedImageKey = "Dots_t.ico";
-            treeNode5.Text = "Comp1";
-            treeNode6.ImageKey = "Dots.ico";
-            treeNode6.Name = "Node6";
-            treeNode6.SelectedImageKey = "Dots.ico";
-            treeNode6.Text = "Solid-Part-6";
-            treeNode7.ImageKey = "Dots.ico";
-            treeNode7.Name = "Node7";
-            treeNode7.SelectedImageKey = "Dots.ico";
-            treeNode7.Text = "Solid-Part-7";
-            treeNode8.ImageKey = "Dots_t.ico";
-            treeNode8.Name = "Node5";
-            treeNode8.SelectedImageKey = "Dots_t.ico";
-            treeNode8.Text = "Comp2";
-            treeNode9.ImageKey = "Dots.ico";
-            treeNode9.Name = "Node8";
-            treeNode9.SelectedImageKey = "Dots.ico";
-            treeNode9.Text = "Solid-Part-10";
-            treeNode10.ImageKey = "Geometry.ico";
-            treeNode10.Name = "Parts";
-            treeNode10.SelectedImageKey = "Geometry.ico";
-            treeNode10.Text = "Parts";
-            treeNode10.ToolTipText = "Parts";
-            treeNode11.ImageKey = "Mesh_refinement.ico";
-            treeNode11.Name = "Mesh refinements";
-            treeNode11.SelectedImageKey = "Mesh_refinement.ico";
-            treeNode11.Text = "Mesh refinements";
-            treeNode11.ToolTipText = "Mesh refinements";
+            treeNode32.ImageKey = "Dots.ico";
+            treeNode32.Name = "Node0";
+            treeNode32.SelectedImageKey = "Dots.ico";
+            treeNode32.Text = "Solid-Part-1";
+            treeNode33.ImageKey = "Dots.ico";
+            treeNode33.Name = "Node1";
+            treeNode33.SelectedImageKey = "Dots.ico";
+            treeNode33.Text = "Solid-Part-2";
+            treeNode34.ImageKey = "Dots.ico";
+            treeNode34.Name = "Node3";
+            treeNode34.SelectedImageKey = "Dots.ico";
+            treeNode34.Text = "Solid-Part-4";
+            treeNode35.ImageKey = "Dots.ico";
+            treeNode35.Name = "Node4";
+            treeNode35.SelectedImageKey = "Dots.ico";
+            treeNode35.Text = "Solid-Part-5";
+            treeNode36.ImageKey = "Dots_t.ico";
+            treeNode36.Name = "Node2";
+            treeNode36.SelectedImageKey = "Dots_t.ico";
+            treeNode36.Text = "Comp1";
+            treeNode37.ImageKey = "Dots.ico";
+            treeNode37.Name = "Node6";
+            treeNode37.SelectedImageKey = "Dots.ico";
+            treeNode37.Text = "Solid-Part-6";
+            treeNode38.ImageKey = "Dots.ico";
+            treeNode38.Name = "Node7";
+            treeNode38.SelectedImageKey = "Dots.ico";
+            treeNode38.Text = "Solid-Part-7";
+            treeNode39.ImageKey = "Dots_t.ico";
+            treeNode39.Name = "Node5";
+            treeNode39.SelectedImageKey = "Dots_t.ico";
+            treeNode39.Text = "Comp2";
+            treeNode40.ImageKey = "Dots.ico";
+            treeNode40.Name = "Node8";
+            treeNode40.SelectedImageKey = "Dots.ico";
+            treeNode40.Text = "Solid-Part-10";
+            treeNode41.ImageKey = "Geometry.ico";
+            treeNode41.Name = "Parts";
+            treeNode41.SelectedImageKey = "Geometry.ico";
+            treeNode41.Text = "Parts";
+            treeNode41.ToolTipText = "Parts";
+            treeNode42.ImageKey = "Mesh_refinement.ico";
+            treeNode42.Name = "Mesh refinements";
+            treeNode42.SelectedImageKey = "Mesh_refinement.ico";
+            treeNode42.Text = "Mesh refinements";
+            treeNode42.ToolTipText = "Mesh refinements";
             this.cltvGeometry.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
-            treeNode10,
-            treeNode11});
+            treeNode41,
+            treeNode42});
             this.cltvGeometry.SelectedImageIndex = 0;
             this.cltvGeometry.SelectionBackColor = System.Drawing.SystemColors.Highlight;
             this.cltvGeometry.SelectionMode = UserControls.TreeViewSelectionMode.MultiSelect;
@@ -545,10 +589,20 @@
             this.cltvGeometry.AfterCollapse += new System.Windows.Forms.TreeViewEventHandler(this.cltv_AfterCollapse);
             this.cltvGeometry.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.cltv_BeforeExpand);
             this.cltvGeometry.AfterExpand += new System.Windows.Forms.TreeViewEventHandler(this.cltv_AfterExpand);
-            this.cltvGeometry.KeyUp += new System.Windows.Forms.KeyEventHandler(this.cltv_KeyUp);
+            this.cltvGeometry.KeyDown += new System.Windows.Forms.KeyEventHandler(this.cltv_KeyDown);
             this.cltvGeometry.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseDoubleClick);
             this.cltvGeometry.MouseDown += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseDown);
             this.cltvGeometry.MouseUp += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseUp);
+            // 
+            // tpModel
+            // 
+            this.tpModel.Controls.Add(this.cltvModel);
+            this.tpModel.Location = new System.Drawing.Point(4, 24);
+            this.tpModel.Name = "tpModel";
+            this.tpModel.Size = new System.Drawing.Size(231, 470);
+            this.tpModel.TabIndex = 0;
+            this.tpModel.Text = "FE Model";
+            this.tpModel.UseVisualStyleBackColor = true;
             // 
             // cltvModel
             // 
@@ -564,82 +618,82 @@
             this.cltvModel.Location = new System.Drawing.Point(0, 0);
             this.cltvModel.Margin = new System.Windows.Forms.Padding(0);
             this.cltvModel.Name = "cltvModel";
-            treeNode12.ImageKey = "BasePart.ico";
-            treeNode12.Name = "Parts";
-            treeNode12.SelectedImageKey = "BasePart.ico";
-            treeNode12.Text = "Parts";
-            treeNode12.ToolTipText = "Parts";
-            treeNode13.ImageKey = "Node_set.ico";
-            treeNode13.Name = "Node sets";
-            treeNode13.SelectedImageKey = "Node_set.ico";
-            treeNode13.Text = "Node sets";
-            treeNode13.ToolTipText = "Node sets";
-            treeNode14.ImageKey = "Element_set.ico";
-            treeNode14.Name = "Element sets";
-            treeNode14.SelectedImageKey = "Element_set.ico";
-            treeNode14.Text = "Element sets";
-            treeNode14.ToolTipText = "Element sets";
-            treeNode15.ImageKey = "Surface.ico";
-            treeNode15.Name = "Surfaces";
-            treeNode15.SelectedImageKey = "Surface.ico";
-            treeNode15.Text = "Surfaces";
-            treeNode15.ToolTipText = "Surfaces";
-            treeNode16.ImageKey = "Reference_point.ico";
-            treeNode16.Name = "Reference points";
-            treeNode16.SelectedImageKey = "Reference_point.ico";
-            treeNode16.Text = "Reference points";
-            treeNode16.ToolTipText = "Reference points";
-            treeNode17.ImageKey = "Mesh.ico";
-            treeNode17.Name = "Mesh";
-            treeNode17.SelectedImageKey = "Mesh.ico";
-            treeNode17.Text = "Mesh";
-            treeNode17.ToolTipText = "Mesh";
-            treeNode18.ImageKey = "Material.ico";
-            treeNode18.Name = "Materials";
-            treeNode18.SelectedImageKey = "Material.ico";
-            treeNode18.Text = "Materials";
-            treeNode18.ToolTipText = "Materials";
-            treeNode19.ImageKey = "Section.ico";
-            treeNode19.Name = "Sections";
-            treeNode19.SelectedImageKey = "Section.ico";
-            treeNode19.Text = "Sections";
-            treeNode19.ToolTipText = "Sections";
-            treeNode20.ImageKey = "Constraints.ico";
-            treeNode20.Name = "Constraints";
-            treeNode20.SelectedImageKey = "Constraints.ico";
-            treeNode20.Text = "Constraints";
-            treeNode20.ToolTipText = "Constraints";
-            treeNode21.ImageKey = "SurfaceInteraction.ico";
-            treeNode21.Name = "Surface interactions";
-            treeNode21.SelectedImageKey = "SurfaceInteraction.ico";
-            treeNode21.Text = "Surface interactions";
-            treeNode21.ToolTipText = "Surface interactions";
-            treeNode22.ImageKey = "ContactPair.ico";
-            treeNode22.Name = "Contact pairs";
-            treeNode22.SelectedImageKey = "ContactPair.ico";
-            treeNode22.Text = "Contact pairs";
-            treeNode22.ToolTipText = "Contact pairs";
-            treeNode23.ImageKey = "Contact.ico";
-            treeNode23.Name = "Contact";
-            treeNode23.SelectedImageIndex = 16;
-            treeNode23.Text = "Contact";
-            treeNode23.ToolTipText = "Contact";
-            treeNode24.ImageKey = "Step.ico";
-            treeNode24.Name = "Steps";
-            treeNode24.SelectedImageKey = "Step.ico";
-            treeNode24.Text = "Steps";
-            treeNode24.ToolTipText = "Steps";
-            treeNode25.ImageKey = "Dots.ico";
-            treeNode25.Name = "Model";
-            treeNode25.Text = "Model";
-            treeNode25.ToolTipText = "Model";
-            treeNode26.ImageKey = "Analysis.ico";
-            treeNode26.Name = "Analyses";
-            treeNode26.SelectedImageKey = "Analysis.ico";
-            treeNode26.Text = "Analyses";
+            treeNode1.ImageKey = "BasePart.ico";
+            treeNode1.Name = "Parts";
+            treeNode1.SelectedImageKey = "BasePart.ico";
+            treeNode1.Text = "Parts";
+            treeNode1.ToolTipText = "Parts";
+            treeNode2.ImageKey = "Node_set.ico";
+            treeNode2.Name = "Node sets";
+            treeNode2.SelectedImageKey = "Node_set.ico";
+            treeNode2.Text = "Node sets";
+            treeNode2.ToolTipText = "Node sets";
+            treeNode3.ImageKey = "Element_set.ico";
+            treeNode3.Name = "Element sets";
+            treeNode3.SelectedImageKey = "Element_set.ico";
+            treeNode3.Text = "Element sets";
+            treeNode3.ToolTipText = "Element sets";
+            treeNode4.ImageKey = "Surface.ico";
+            treeNode4.Name = "Surfaces";
+            treeNode4.SelectedImageKey = "Surface.ico";
+            treeNode4.Text = "Surfaces";
+            treeNode4.ToolTipText = "Surfaces";
+            treeNode5.ImageKey = "Reference_point.ico";
+            treeNode5.Name = "Reference points";
+            treeNode5.SelectedImageKey = "Reference_point.ico";
+            treeNode5.Text = "Reference points";
+            treeNode5.ToolTipText = "Reference points";
+            treeNode6.ImageKey = "Mesh.ico";
+            treeNode6.Name = "Mesh";
+            treeNode6.SelectedImageKey = "Mesh.ico";
+            treeNode6.Text = "Mesh";
+            treeNode6.ToolTipText = "Mesh";
+            treeNode7.ImageKey = "Material.ico";
+            treeNode7.Name = "Materials";
+            treeNode7.SelectedImageKey = "Material.ico";
+            treeNode7.Text = "Materials";
+            treeNode7.ToolTipText = "Materials";
+            treeNode8.ImageKey = "Section.ico";
+            treeNode8.Name = "Sections";
+            treeNode8.SelectedImageKey = "Section.ico";
+            treeNode8.Text = "Sections";
+            treeNode8.ToolTipText = "Sections";
+            treeNode9.ImageKey = "Constraints.ico";
+            treeNode9.Name = "Constraints";
+            treeNode9.SelectedImageKey = "Constraints.ico";
+            treeNode9.Text = "Constraints";
+            treeNode9.ToolTipText = "Constraints";
+            treeNode10.ImageKey = "SurfaceInteraction.ico";
+            treeNode10.Name = "Surface interactions";
+            treeNode10.SelectedImageKey = "SurfaceInteraction.ico";
+            treeNode10.Text = "Surface interactions";
+            treeNode10.ToolTipText = "Surface interactions";
+            treeNode11.ImageKey = "ContactPair.ico";
+            treeNode11.Name = "Contact pairs";
+            treeNode11.SelectedImageKey = "ContactPair.ico";
+            treeNode11.Text = "Contact pairs";
+            treeNode11.ToolTipText = "Contact pairs";
+            treeNode43.ImageKey = "Contact.ico";
+            treeNode43.Name = "Contact";
+            treeNode43.SelectedImageIndex = 16;
+            treeNode43.Text = "Contact";
+            treeNode43.ToolTipText = "Contact";
+            treeNode44.ImageKey = "Step.ico";
+            treeNode44.Name = "Steps";
+            treeNode44.SelectedImageKey = "Step.ico";
+            treeNode44.Text = "Steps";
+            treeNode44.ToolTipText = "Steps";
+            treeNode45.ImageKey = "Dots.ico";
+            treeNode45.Name = "Model";
+            treeNode45.Text = "Model";
+            treeNode45.ToolTipText = "Model";
+            treeNode46.ImageKey = "Analysis.ico";
+            treeNode46.Name = "Analyses";
+            treeNode46.SelectedImageKey = "Analysis.ico";
+            treeNode46.Text = "Analyses";
             this.cltvModel.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
-            treeNode25,
-            treeNode26});
+            treeNode45,
+            treeNode46});
             this.cltvModel.SelectedImageIndex = 0;
             this.cltvModel.SelectionBackColor = System.Drawing.SystemColors.Highlight;
             this.cltvModel.SelectionMode = UserControls.TreeViewSelectionMode.MultiSelect;
@@ -650,10 +704,21 @@
             this.cltvModel.AfterCollapse += new System.Windows.Forms.TreeViewEventHandler(this.cltv_AfterCollapse);
             this.cltvModel.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.cltv_BeforeExpand);
             this.cltvModel.AfterExpand += new System.Windows.Forms.TreeViewEventHandler(this.cltv_AfterExpand);
-            this.cltvModel.KeyUp += new System.Windows.Forms.KeyEventHandler(this.cltv_KeyUp);
+            this.cltvModel.KeyDown += new System.Windows.Forms.KeyEventHandler(this.cltv_KeyDown);
             this.cltvModel.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseDoubleClick);
             this.cltvModel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseDown);
             this.cltvModel.MouseUp += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseUp);
+            // 
+            // tpResults
+            // 
+            this.tpResults.Controls.Add(this.cltvResults);
+            this.tpResults.Location = new System.Drawing.Point(4, 24);
+            this.tpResults.Name = "tpResults";
+            this.tpResults.Padding = new System.Windows.Forms.Padding(3);
+            this.tpResults.Size = new System.Drawing.Size(231, 470);
+            this.tpResults.TabIndex = 1;
+            this.tpResults.Text = "Results";
+            this.tpResults.UseVisualStyleBackColor = true;
             // 
             // cltvResults
             // 
@@ -668,35 +733,35 @@
             this.cltvResults.Location = new System.Drawing.Point(3, 3);
             this.cltvResults.Margin = new System.Windows.Forms.Padding(0);
             this.cltvResults.Name = "cltvResults";
-            treeNode27.ImageKey = "BasePart.ico";
-            treeNode27.Name = "Parts";
-            treeNode27.SelectedImageKey = "BasePart.ico";
-            treeNode27.Text = "Parts";
-            treeNode27.ToolTipText = "Parts";
-            treeNode28.ImageKey = "Mesh.ico";
-            treeNode28.Name = "Mesh";
-            treeNode28.SelectedImageKey = "Mesh.ico";
-            treeNode28.Text = "Mesh";
-            treeNode28.ToolTipText = "Mesh";
-            treeNode29.ImageKey = "Field_output.ico";
-            treeNode29.Name = "Field outputs";
-            treeNode29.SelectedImageKey = "Field_output.ico";
-            treeNode29.StateImageKey = "(none)";
-            treeNode29.Text = "Field outputs";
-            treeNode29.ToolTipText = "Field outputs";
-            treeNode30.ImageKey = "History_output.ico";
-            treeNode30.Name = "History outputs";
-            treeNode30.SelectedImageKey = "History_output.ico";
-            treeNode30.Text = "History outputs";
-            treeNode30.ToolTipText = "History outputs";
-            treeNode31.ImageKey = "Dots.ico";
-            treeNode31.Name = "Results";
-            treeNode31.SelectedImageKey = "Dots_t.ico";
-            treeNode31.Text = "Results";
-            treeNode31.ToolTipText = "Results";
+            treeNode12.ImageKey = "BasePart.ico";
+            treeNode12.Name = "Parts";
+            treeNode12.SelectedImageKey = "BasePart.ico";
+            treeNode12.Text = "Parts";
+            treeNode12.ToolTipText = "Parts";
+            treeNode13.ImageKey = "Mesh.ico";
+            treeNode13.Name = "Mesh";
+            treeNode13.SelectedImageKey = "Mesh.ico";
+            treeNode13.Text = "Mesh";
+            treeNode13.ToolTipText = "Mesh";
+            treeNode14.ImageKey = "Field_output.ico";
+            treeNode14.Name = "Field outputs";
+            treeNode14.SelectedImageKey = "Field_output.ico";
+            treeNode14.StateImageKey = "(none)";
+            treeNode14.Text = "Field outputs";
+            treeNode14.ToolTipText = "Field outputs";
+            treeNode15.ImageKey = "History_output.ico";
+            treeNode15.Name = "History outputs";
+            treeNode15.SelectedImageKey = "History_output.ico";
+            treeNode15.Text = "History outputs";
+            treeNode15.ToolTipText = "History outputs";
+            treeNode16.ImageKey = "Dots.ico";
+            treeNode16.Name = "Results";
+            treeNode16.SelectedImageKey = "Dots_t.ico";
+            treeNode16.Text = "Results";
+            treeNode16.ToolTipText = "Results";
             this.cltvResults.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
-            treeNode28,
-            treeNode31});
+            treeNode13,
+            treeNode16});
             this.cltvResults.SelectedImageIndex = 0;
             this.cltvResults.SelectionBackColor = System.Drawing.SystemColors.Highlight;
             this.cltvResults.SelectionMode = UserControls.TreeViewSelectionMode.MultiSelect;
@@ -707,66 +772,10 @@
             this.cltvResults.AfterCollapse += new System.Windows.Forms.TreeViewEventHandler(this.cltv_AfterCollapse);
             this.cltvResults.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.cltv_BeforeExpand);
             this.cltvResults.AfterExpand += new System.Windows.Forms.TreeViewEventHandler(this.cltv_AfterExpand);
-            this.cltvResults.KeyUp += new System.Windows.Forms.KeyEventHandler(this.cltv_KeyUp);
+            this.cltvResults.KeyDown += new System.Windows.Forms.KeyEventHandler(this.cltv_KeyDown);
             this.cltvResults.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseDoubleClick);
             this.cltvResults.MouseDown += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseDown);
             this.cltvResults.MouseUp += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseUp);
-            // 
-            // tsmiHide
-            // 
-            this.tsmiHide.Image = ((System.Drawing.Image)(resources.GetObject("tsmiHide.Image")));
-            this.tsmiHide.Name = "tsmiHide";
-            this.tsmiHide.Size = new System.Drawing.Size(207, 22);
-            this.tsmiHide.Text = "Hide";
-            this.tsmiHide.Click += new System.EventHandler(this.tsmiHideShow_Click);
-            // 
-            // tsmiShow
-            // 
-            this.tsmiShow.Image = global::UserControls.Properties.Resources.Show;
-            this.tsmiShow.Name = "tsmiShow";
-            this.tsmiShow.Size = new System.Drawing.Size(207, 22);
-            this.tsmiShow.Text = "Show";
-            this.tsmiShow.Click += new System.EventHandler(this.tsmiHideShow_Click);
-            // 
-            // tsmiShowOnly
-            // 
-            this.tsmiShowOnly.Image = global::UserControls.Properties.Resources.Show;
-            this.tsmiShowOnly.Name = "tsmiShowOnly";
-            this.tsmiShowOnly.Size = new System.Drawing.Size(207, 22);
-            this.tsmiShowOnly.Text = "Show only";
-            this.tsmiShowOnly.Click += new System.EventHandler(this.tsmiHideShow_Click);
-            // 
-            // tsmiColorContoursOff
-            // 
-            this.tsmiColorContoursOff.Image = global::UserControls.Properties.Resources.Deformed;
-            this.tsmiColorContoursOff.Name = "tsmiColorContoursOff";
-            this.tsmiColorContoursOff.Size = new System.Drawing.Size(207, 22);
-            this.tsmiColorContoursOff.Text = "Color contours off";
-            this.tsmiColorContoursOff.Click += new System.EventHandler(this.tsmiResultColorContoutsVisibility_Click);
-            // 
-            // tsmiColorContoursOn
-            // 
-            this.tsmiColorContoursOn.Image = global::UserControls.Properties.Resources.Color_contours;
-            this.tsmiColorContoursOn.Name = "tsmiColorContoursOn";
-            this.tsmiColorContoursOn.Size = new System.Drawing.Size(207, 22);
-            this.tsmiColorContoursOn.Text = "Color contours on";
-            this.tsmiColorContoursOn.Click += new System.EventHandler(this.tsmiResultColorContoutsVisibility_Click);
-            // 
-            // tsmiMaterialLibrary
-            // 
-            this.tsmiMaterialLibrary.Image = global::UserControls.Properties.Resources.Library;
-            this.tsmiMaterialLibrary.Name = "tsmiMaterialLibrary";
-            this.tsmiMaterialLibrary.Size = new System.Drawing.Size(207, 22);
-            this.tsmiMaterialLibrary.Text = "Material library";
-            this.tsmiMaterialLibrary.Click += new System.EventHandler(this.tsmiMaterialLibrary_Click);
-            // 
-            // tsmiDeactivate
-            // 
-            this.tsmiDeactivate.Image = ((System.Drawing.Image)(resources.GetObject("tsmiDeactivate.Image")));
-            this.tsmiDeactivate.Name = "tsmiDeactivate";
-            this.tsmiDeactivate.Size = new System.Drawing.Size(207, 22);
-            this.tsmiDeactivate.Text = "Deactivate";
-            this.tsmiDeactivate.Click += new System.EventHandler(this.ActivateDeactivate_Click);
             // 
             // ModelTree
             // 
@@ -782,6 +791,11 @@
             this.tpResults.ResumeLayout(false);
             this.ResumeLayout(false);
 
+        }
+
+        private void CltvModel_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
+        {
+            throw new System.NotImplementedException();
         }
 
         private void CltvGeometry_SelectionsChanged(object sender, System.EventArgs e)
@@ -840,5 +854,6 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiEditCalculiXKeywords;
         private System.Windows.Forms.ToolStripSeparator tsmiSpaceCompoundPart;
         private System.Windows.Forms.ToolStripMenuItem tsmiCompoundPart;
+        private System.Windows.Forms.ToolStripMenuItem tsmiDuplicate;
     }
 }
