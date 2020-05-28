@@ -43,7 +43,7 @@ namespace vtkControl
 
 
         // Events                                                                                                                   
-        public event Action MouseDoubleClick;
+        public event Action<object> MouseDoubleClick;
 
 
         // Constructors                                                                                                             
@@ -300,7 +300,7 @@ namespace vtkControl
                 if ((DateTime.Now - _lastClickTime).TotalMilliseconds < 300 && 
                     Math.Abs(x - _lastClickPos[0]) < 5 && Math.Abs(y - _lastClickPos[1]) < 5)
                 {
-                    MouseDoubleClick?.Invoke();
+                    MouseDoubleClick?.Invoke(this);
                     return true;
                 }
                 // Single click

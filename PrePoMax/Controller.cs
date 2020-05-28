@@ -44,6 +44,7 @@ namespace PrePoMax
         protected HistoryResults _history;
         // History
         protected Commands.CommandsCollection _commands;
+       
 
 
         // Properties                                                                                                               
@@ -330,7 +331,10 @@ namespace PrePoMax
             _sectionViewPlanes[ViewGeometryModelResults.Geometry] = null;
             _sectionViewPlanes[ViewGeometryModelResults.Model] = null;
             //
-            _model = new FeModel("Model-1");
+            UnitSystem unitSystem;
+            if (_model != null && _model.UnitSystem != null) unitSystem = _model.UnitSystem;
+            else unitSystem = new UnitSystem();
+            _model = new FeModel("Model-1", unitSystem);
             _drawSymbolsForStep = null;
             _jobs.Clear();
             ClearAllSelection();
@@ -550,7 +554,7 @@ namespace PrePoMax
                         tmp = (Controller)data[0];
                         model = tmp._model;
                         results = tmp._results;
-
+                        //
                         FeModel.ReadFromFile(model, br);
                         FeResults.ReadFromFile(results, br);
                     }

@@ -25,6 +25,7 @@ namespace CaeModel
         private StepCollection _stepCollection;                                                 //ISerializable
         private OrderedDictionary<int[], Calculix.CalculixUserKeyword> _calculixUserKeywords;   //ISerializable
         private ModelProperties _properties;                                                    //ISerializable
+        private UnitSystem _unitSystem;                                                         //ISerializable
 
 
         // Properties                                                                                                               
@@ -46,10 +47,11 @@ namespace CaeModel
             } 
         }
         public ModelProperties Properties  { get { return _properties; } set { _properties = value; } }
+        public UnitSystem UnitSystem { get { return _unitSystem; } set { _unitSystem = value; } }
 
 
         // Constructors                                                                                                             
-        public FeModel(string name)
+        public FeModel(string name, UnitSystem unitSystem)
         {
             Name = name;
             _materials = new OrderedDictionary<string, Material>();
@@ -58,6 +60,7 @@ namespace CaeModel
             _surfaceInteractions = new OrderedDictionary<string, SurfaceInteraction>();
             _contactPairs = new OrderedDictionary<string, ContactPair>();
             _stepCollection = new StepCollection();
+            _unitSystem = unitSystem;
         }
         
         // ISerialization
@@ -65,8 +68,9 @@ namespace CaeModel
         {
             // Compatibility for version v.0.6.0
             _surfaceInteractions = new OrderedDictionary<string, SurfaceInteraction>();
-            // Compatibility for version v.0.6.0
             _contactPairs = new OrderedDictionary<string, ContactPair>();
+            // Compatibility for version v.0.7.0
+            _unitSystem = new UnitSystem();
             //
             foreach (SerializationEntry entry in info)
             {
@@ -132,6 +136,8 @@ namespace CaeModel
                         break;
                     case "_properties":
                         _properties = (ModelProperties)entry.Value; break;
+                    case "_unitSystem":
+                        _unitSystem = (UnitSystem)entry.Value; break;
                     default:
                         throw new NotSupportedException();
                 }
@@ -195,8 +201,8 @@ namespace CaeModel
                 section = entry.Value;
                 if (section is SolidSection ss)
                 {
-                    valid = _materials.ContainsKey(section.MaterialName)
-                        && ((ss.RegionType == RegionTypeEnum.PartName && _mesh.Parts.ContainsKey(section.RegionName))
+                    valid = _materials.ContainsValidKey(section.MaterialName)
+                        && ((ss.RegionType == RegionTypeEnum.PartName && _mesh.Parts.ContainsValidKey(section.RegionName))
                         || (ss.RegionType == RegionTypeEnum.ElementSetName 
                             && _mesh.ElementSets.ContainsValidKey(section.RegionName)));
                 }
@@ -214,7 +220,7 @@ namespace CaeModel
                 {
                     valid = _mesh.ReferencePoints.ContainsValidKey(rb.ReferencePointName)
                             && ((rb.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(rb.RegionName))
-                            || (rb.RegionType == RegionTypeEnum.SurfaceName && _mesh.Surfaces.ContainsKey(rb.RegionName)));
+                            || (rb.RegionType == RegionTypeEnum.SurfaceName && _mesh.Surfaces.ContainsValidKey(rb.RegionName)));
                 }
                 else if (constraint is Tie t)
                 {
@@ -598,6 +604,7 @@ namespace CaeModel
             info.AddValue("_stepCollection", _stepCollection, typeof(StepCollection));
             info.AddValue("_calculixUserKeywords", _calculixUserKeywords, typeof(OrderedDictionary<int[], Calculix.CalculixUserKeyword>));
             info.AddValue("_properties", _properties, typeof(ModelProperties));
+            info.AddValue("_unitSystem", _unitSystem, typeof(UnitSystem));
         }
     }
 }

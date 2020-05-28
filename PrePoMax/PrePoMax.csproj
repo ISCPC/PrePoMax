@@ -647,6 +647,10 @@
     <None Include="Icons\Common\Copy.png" />
     <None Include="Icons\Common\Paste.png" />
     <None Include="Icons\Contact\Contact.ico" />
+    <None Include="Icons\Analysis\NoResult.ico" />
+    <None Include="Icons\Analysis\OK.ico" />
+    <None Include="Icons\Analysis\Running.ico" />
+    <None Include="Icons\Analysis\Warning.ico" />
     <Content Include="main.ico" />
   </ItemGroup>
   <ItemGroup>

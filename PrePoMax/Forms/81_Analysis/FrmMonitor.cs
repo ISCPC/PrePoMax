@@ -114,18 +114,17 @@ namespace PrePoMax.Forms
         // Methods                                                                                                                  
         public void PrepareForm(AnalysisJob job)
         {
-            
             this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
-
+            //
             _job = job;
             _job.DataOutput += UpdateOutput;
-
+            //
             UpdateProgress();
-
-            tbOutput.Text = _job.OutputData;
+            //
+            tbOutput.Text = _job.AllOutputData;
             tbOutput.Select(tbOutput.TextLength, 0);
             tbOutput.ScrollToCaret();
-
+            //
             tbStatus.Text = _job.StatusFileData;
             tbStatus.Select(tbOutput.TextLength, 0);
             tbStatus.ScrollToCaret();
@@ -144,6 +143,7 @@ namespace PrePoMax.Forms
                 {
                     //if (tbOutput.Text.Length != _job.OutputData.Length)
                     {
+                        //System.Diagnostics.Debug.WriteLine("FrmMonitor UpdateOutput");
                         // It's on the same thread, no need for Invoke
                         tbOutput.Text += _job.OutputData;
                         tbOutput.Select(tbOutput.TextLength, 0);
@@ -169,17 +169,26 @@ namespace PrePoMax.Forms
                 if (_job.JobStatus == JobStatus.Running)
                 {
                     pbAnalysisStatus.Style = ProgressBarStyle.Marquee;
-                    labAnalysisStatus.Text = _job.JobStatus.ToString();
+                    labAnalysisStatus.Text = "      " + _job.JobStatus.ToString();
+                    labAnalysisStatus.Image = global::PrePoMax.Properties.Resources.Running;
                 }
                 else if (_job.JobStatus == JobStatus.OK)
                 {
                     pbAnalysisStatus.Style = ProgressBarStyle.Blocks;
-                    labAnalysisStatus.Text = "Finished";
+                    labAnalysisStatus.Text = "      " + "Finished";
+                    labAnalysisStatus.Image = global::PrePoMax.Properties.Resources.OK;
+                }
+                else if (_job.JobStatus == JobStatus.FailedWithResults)
+                {
+                    pbAnalysisStatus.Style = ProgressBarStyle.Blocks;
+                    labAnalysisStatus.Text = "      " + "Failed with results";
+                    labAnalysisStatus.Image = global::PrePoMax.Properties.Resources.Warning;
                 }
                 else
                 {
                     pbAnalysisStatus.Style = ProgressBarStyle.Blocks;
-                    labAnalysisStatus.Text = _job.JobStatus.ToString();
+                    labAnalysisStatus.Text = "      " + _job.JobStatus.ToString();
+                    labAnalysisStatus.Image = global::PrePoMax.Properties.Resources.NoResult;
                 }
             }
         }

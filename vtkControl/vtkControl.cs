@@ -196,7 +196,8 @@ namespace vtkControl
         public Func<double[], int, int[], int[], vtkMaxActorData> Controller_GetGeometryActorData;
 
         public Action<MouseEventArgs, Keys, string[]> Controller_ActorsPicked;
-        public Action Controller_ShowPostSettings;
+        public Action Controller_ShowLegendSettings;
+        public Action Controller_ShowStatusBlockSettings;
 
 
         // Events                                                                                                                   
@@ -309,9 +310,10 @@ namespace vtkControl
             _renderWindow.SetCurrentCursor(0);  // Default
         }
 
-        private void widget_ShowPostSettings()
+        private void widget_ShowPostSettings(object sender)
         {
-            Controller_ShowPostSettings?.Invoke();
+            if (sender is vtkMaxScalarBarWidget) Controller_ShowLegendSettings?.Invoke();
+            else if (sender is vtkMaxStatusBlockWidget) Controller_ShowStatusBlockSettings?.Invoke();
         }
 
         // Mouse Events - Style                                                                                                     

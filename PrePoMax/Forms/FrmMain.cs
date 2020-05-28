@@ -213,7 +213,8 @@ namespace PrePoMax
                 _vtk.Controller_GetPartActorData = _controller.GetPartActorData;
                 _vtk.Controller_GetGeometryActorData = _controller.GetGeometryActorData;
                 _vtk.Controller_ActorsPicked = SelectBaseParts;
-                _vtk.Controller_ShowPostSettings = ShowPostSettings;
+                _vtk.Controller_ShowLegendSettings = ShowLegendSettings;
+                _vtk.Controller_ShowStatusBlockSettings = ShowStatusBlockSettings;
                 // Forms
                 _formLocation = new Point(100, 100);
                 _allForms = new List<Form>();
@@ -3489,9 +3490,14 @@ namespace PrePoMax
             }
            
         }
-        private void ShowPostSettings()
+        private void ShowLegendSettings()
         {
-            _frmSettings.SetSettingsToShow(Globals.PostSettingsName);
+            _frmSettings.SetSettingsToShow(Globals.LegendSettingsName);
+            tsmiSettings_Click(null, null);
+        }
+        private void ShowStatusBlockSettings()
+        {
+            _frmSettings.SetSettingsToShow(Globals.StatusBlockSettingsName);
             tsmiSettings_Click(null, null);
         }
 
@@ -3652,7 +3658,8 @@ namespace PrePoMax
         private async void ResultsAnalysis(string jobName)
         {
             CaeJob.AnalysisJob job = _controller.GetJob(jobName);
-            if (job.JobStatus == CaeJob.JobStatus.OK || job.JobStatus == CaeJob.JobStatus.Running)
+            if (job.JobStatus == CaeJob.JobStatus.OK || job.JobStatus == CaeJob.JobStatus.Running ||
+                job.JobStatus == CaeJob.JobStatus.FailedWithResults)
             {
                 //string resultsFile = Path.GetFileNameWithoutExtension(job.Name) + ".frd";
                 string resultsFile = job.Name + ".frd";

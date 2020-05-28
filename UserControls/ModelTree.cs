@@ -1937,7 +1937,8 @@ namespace UserControls
                         AnalysisJob job = node.Tag as AnalysisJob;
                         if (job.JobStatus == JobStatus.OK) SetNodeImage(node, "OK.ico");
                         else if (job.JobStatus == JobStatus.Running) SetNodeImage(node, "Running.ico");
-                        else SetNodeImage(node, "Warning.ico");
+                        else if (job.JobStatus == JobStatus.FailedWithResults) SetNodeImage(node, "Warning.ico");
+                        else SetNodeImage(node, "NoResult.ico");
                     }
                     else
                     {

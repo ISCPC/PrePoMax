@@ -191,6 +191,7 @@
             this.tsmiStep = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiCreateStep = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEditStep = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiDuplicateStep = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerStep2 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiDeleteStep = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerStep1 = new System.Windows.Forms.ToolStripSeparator();
@@ -306,7 +307,8 @@
             this.tscbSymbolsForStep = new System.Windows.Forms.ToolStripComboBox();
             this.timerTest = new System.Windows.Forms.Timer(this.components);
             this.timerOutput = new System.Windows.Forms.Timer(this.components);
-            this.tsmiDuplicateStep = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsslUnitSystem = new System.Windows.Forms.ToolStripStatusLabel();
+            this.tsslEmpty = new System.Windows.Forms.ToolStripStatusLabel();
             this.menuStripMain.SuspendLayout();
             this.statusStripMain.SuspendLayout();
             this.tsResults.SuspendLayout();
@@ -1413,7 +1415,7 @@
             this.tsmiDeleteConstraint});
             this.tsmiConstraint.Image = global::PrePoMax.Properties.Resources.Constraints;
             this.tsmiConstraint.Name = "tsmiConstraint";
-            this.tsmiConstraint.Size = new System.Drawing.Size(180, 22);
+            this.tsmiConstraint.Size = new System.Drawing.Size(129, 22);
             this.tsmiConstraint.Text = "Constraint";
             // 
             // tsmiCreateConstraint
@@ -1470,7 +1472,7 @@
             this.contactPairToolStripMenuItem});
             this.tsmiContact.Image = global::PrePoMax.Properties.Resources.Contact;
             this.tsmiContact.Name = "tsmiContact";
-            this.tsmiContact.Size = new System.Drawing.Size(180, 22);
+            this.tsmiContact.Size = new System.Drawing.Size(129, 22);
             this.tsmiContact.Text = "Contact";
             // 
             // tsmiSurfaceInteraction
@@ -1483,39 +1485,39 @@
             this.tsmiDeleteSurfaceInteraction});
             this.tsmiSurfaceInteraction.Image = global::PrePoMax.Properties.Resources.SurfaceInteraction;
             this.tsmiSurfaceInteraction.Name = "tsmiSurfaceInteraction";
-            this.tsmiSurfaceInteraction.Size = new System.Drawing.Size(180, 22);
+            this.tsmiSurfaceInteraction.Size = new System.Drawing.Size(173, 22);
             this.tsmiSurfaceInteraction.Text = "Surface Interaction";
             // 
             // tsmiCreateSurfaceInteraction
             // 
             this.tsmiCreateSurfaceInteraction.Name = "tsmiCreateSurfaceInteraction";
-            this.tsmiCreateSurfaceInteraction.Size = new System.Drawing.Size(180, 22);
+            this.tsmiCreateSurfaceInteraction.Size = new System.Drawing.Size(124, 22);
             this.tsmiCreateSurfaceInteraction.Text = "Create";
             this.tsmiCreateSurfaceInteraction.Click += new System.EventHandler(this.tsmiCreateSurfaceInteraction_Click);
             // 
             // tsmiEditSurfaceInteraction
             // 
             this.tsmiEditSurfaceInteraction.Name = "tsmiEditSurfaceInteraction";
-            this.tsmiEditSurfaceInteraction.Size = new System.Drawing.Size(180, 22);
+            this.tsmiEditSurfaceInteraction.Size = new System.Drawing.Size(124, 22);
             this.tsmiEditSurfaceInteraction.Text = "Edit";
             this.tsmiEditSurfaceInteraction.Click += new System.EventHandler(this.tsmiEditSurfaceInteraction_Click);
             // 
             // tsmiDuplicateSurfaceInteraction
             // 
             this.tsmiDuplicateSurfaceInteraction.Name = "tsmiDuplicateSurfaceInteraction";
-            this.tsmiDuplicateSurfaceInteraction.Size = new System.Drawing.Size(180, 22);
+            this.tsmiDuplicateSurfaceInteraction.Size = new System.Drawing.Size(124, 22);
             this.tsmiDuplicateSurfaceInteraction.Text = "Duplicate";
             this.tsmiDuplicateSurfaceInteraction.Click += new System.EventHandler(this.tsmiDuplicateSurfaceInteraction_Click);
             // 
             // tsmiDividerSurfaceInteraction1
             // 
             this.tsmiDividerSurfaceInteraction1.Name = "tsmiDividerSurfaceInteraction1";
-            this.tsmiDividerSurfaceInteraction1.Size = new System.Drawing.Size(177, 6);
+            this.tsmiDividerSurfaceInteraction1.Size = new System.Drawing.Size(121, 6);
             // 
             // tsmiDeleteSurfaceInteraction
             // 
             this.tsmiDeleteSurfaceInteraction.Name = "tsmiDeleteSurfaceInteraction";
-            this.tsmiDeleteSurfaceInteraction.Size = new System.Drawing.Size(180, 22);
+            this.tsmiDeleteSurfaceInteraction.Size = new System.Drawing.Size(124, 22);
             this.tsmiDeleteSurfaceInteraction.Text = "Delete";
             this.tsmiDeleteSurfaceInteraction.Click += new System.EventHandler(this.tsmiDeleteSurfaceInteraction_Click);
             // 
@@ -1531,7 +1533,7 @@
             this.tsmiDeleteContactPair});
             this.contactPairToolStripMenuItem.Image = global::PrePoMax.Properties.Resources.ContactPair;
             this.contactPairToolStripMenuItem.Name = "contactPairToolStripMenuItem";
-            this.contactPairToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.contactPairToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
             this.contactPairToolStripMenuItem.Text = "Contact Pair";
             // 
             // tsmiCreateContactPair
@@ -1602,39 +1604,46 @@
             this.tsmiDeleteStep});
             this.tsmiStep.Image = ((System.Drawing.Image)(resources.GetObject("tsmiStep.Image")));
             this.tsmiStep.Name = "tsmiStep";
-            this.tsmiStep.Size = new System.Drawing.Size(180, 22);
+            this.tsmiStep.Size = new System.Drawing.Size(153, 22);
             this.tsmiStep.Text = "Step";
             // 
             // tsmiCreateStep
             // 
             this.tsmiCreateStep.Name = "tsmiCreateStep";
-            this.tsmiCreateStep.Size = new System.Drawing.Size(180, 22);
+            this.tsmiCreateStep.Size = new System.Drawing.Size(124, 22);
             this.tsmiCreateStep.Text = "Create";
             this.tsmiCreateStep.Click += new System.EventHandler(this.tsmiCreateStep_Click);
             // 
             // tsmiEditStep
             // 
             this.tsmiEditStep.Name = "tsmiEditStep";
-            this.tsmiEditStep.Size = new System.Drawing.Size(180, 22);
+            this.tsmiEditStep.Size = new System.Drawing.Size(124, 22);
             this.tsmiEditStep.Text = "Edit";
             this.tsmiEditStep.Click += new System.EventHandler(this.tsmiEditStep_Click);
+            // 
+            // tsmiDuplicateStep
+            // 
+            this.tsmiDuplicateStep.Name = "tsmiDuplicateStep";
+            this.tsmiDuplicateStep.Size = new System.Drawing.Size(124, 22);
+            this.tsmiDuplicateStep.Text = "Duplicate";
+            this.tsmiDuplicateStep.Click += new System.EventHandler(this.tsmiDuplicateStep_Click);
             // 
             // tsmiDividerStep2
             // 
             this.tsmiDividerStep2.Name = "tsmiDividerStep2";
-            this.tsmiDividerStep2.Size = new System.Drawing.Size(177, 6);
+            this.tsmiDividerStep2.Size = new System.Drawing.Size(121, 6);
             // 
             // tsmiDeleteStep
             // 
             this.tsmiDeleteStep.Name = "tsmiDeleteStep";
-            this.tsmiDeleteStep.Size = new System.Drawing.Size(180, 22);
+            this.tsmiDeleteStep.Size = new System.Drawing.Size(124, 22);
             this.tsmiDeleteStep.Text = "Delete";
             this.tsmiDeleteStep.Click += new System.EventHandler(this.tsmiDeleteStep_Click);
             // 
             // tsmiDividerStep1
             // 
             this.tsmiDividerStep1.Name = "tsmiDividerStep1";
-            this.tsmiDividerStep1.Size = new System.Drawing.Size(177, 6);
+            this.tsmiDividerStep1.Size = new System.Drawing.Size(150, 6);
             // 
             // tsmiHistoryOutput
             // 
@@ -1645,7 +1654,7 @@
             this.tsmiDeleteHistoryOutput});
             this.tsmiHistoryOutput.Image = ((System.Drawing.Image)(resources.GetObject("tsmiHistoryOutput.Image")));
             this.tsmiHistoryOutput.Name = "tsmiHistoryOutput";
-            this.tsmiHistoryOutput.Size = new System.Drawing.Size(180, 22);
+            this.tsmiHistoryOutput.Size = new System.Drawing.Size(153, 22);
             this.tsmiHistoryOutput.Text = "History Output";
             // 
             // tsmiCreateHistoryOutput
@@ -1683,7 +1692,7 @@
             this.tsmiDeleteFieldOutput});
             this.tsmiFieldOutput.Image = ((System.Drawing.Image)(resources.GetObject("tsmiFieldOutput.Image")));
             this.tsmiFieldOutput.Name = "tsmiFieldOutput";
-            this.tsmiFieldOutput.Size = new System.Drawing.Size(180, 22);
+            this.tsmiFieldOutput.Size = new System.Drawing.Size(153, 22);
             this.tsmiFieldOutput.Text = "Field Output";
             // 
             // tsmiCreateFieldOutput
@@ -2080,7 +2089,9 @@
             this.statusStripMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tspbProgress,
             this.tsslState,
-            this.tsslCancel});
+            this.tsslCancel,
+            this.tsslEmpty,
+            this.tsslUnitSystem});
             this.statusStripMain.Location = new System.Drawing.Point(0, 863);
             this.statusStripMain.Name = "statusStripMain";
             this.statusStripMain.Size = new System.Drawing.Size(1451, 24);
@@ -2639,12 +2650,18 @@
             // 
             this.timerOutput.Tick += new System.EventHandler(this.timerOutput_Tick);
             // 
-            // tsmiDuplicateStep
+            // tsslUnitSystem
             // 
-            this.tsmiDuplicateStep.Name = "tsmiDuplicateStep";
-            this.tsmiDuplicateStep.Size = new System.Drawing.Size(180, 22);
-            this.tsmiDuplicateStep.Text = "Duplicate";
-            this.tsmiDuplicateStep.Click += new System.EventHandler(this.tsmiDuplicateStep_Click);
+            this.tsslUnitSystem.Name = "tsslUnitSystem";
+            this.tsslUnitSystem.Size = new System.Drawing.Size(132, 19);
+            this.tsslUnitSystem.Text = "Unit system: mm, ton, s";
+            // 
+            // tsslEmpty
+            // 
+            this.tsslEmpty.Name = "tsslEmpty";
+            this.tsslEmpty.Size = new System.Drawing.Size(1181, 19);
+            this.tsslEmpty.Spring = true;
+            this.tsslEmpty.Text = " ";
             // 
             // FrmMain
             // 
@@ -2975,6 +2992,8 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiContact;
         private System.Windows.Forms.ToolStripMenuItem tsmiDuplicateSurfaceInteraction;
         private System.Windows.Forms.ToolStripMenuItem tsmiDuplicateStep;
+        private System.Windows.Forms.ToolStripStatusLabel tsslEmpty;
+        private System.Windows.Forms.ToolStripStatusLabel tsslUnitSystem;
     }
 }
 

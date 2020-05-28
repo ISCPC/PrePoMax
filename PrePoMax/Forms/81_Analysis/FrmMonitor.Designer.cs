@@ -173,22 +173,26 @@
             // 
             this.pbAnalysisStatus.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.pbAnalysisStatus.Location = new System.Drawing.Point(105, 375);
+            this.pbAnalysisStatus.Location = new System.Drawing.Point(105, 373);
             this.pbAnalysisStatus.MarqueeAnimationSpeed = 40;
             this.pbAnalysisStatus.Name = "pbAnalysisStatus";
-            this.pbAnalysisStatus.Size = new System.Drawing.Size(195, 21);
+            this.pbAnalysisStatus.Size = new System.Drawing.Size(296, 25);
             this.pbAnalysisStatus.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
             this.pbAnalysisStatus.TabIndex = 6;
             // 
             // labAnalysisStatus
             // 
             this.labAnalysisStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.labAnalysisStatus.AutoSize = true;
-            this.labAnalysisStatus.Location = new System.Drawing.Point(306, 378);
+            this.labAnalysisStatus.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.labAnalysisStatus.Image = global::PrePoMax.Properties.Resources.Running;
+            this.labAnalysisStatus.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.labAnalysisStatus.Location = new System.Drawing.Point(407, 373);
             this.labAnalysisStatus.Name = "labAnalysisStatus";
-            this.labAnalysisStatus.Size = new System.Drawing.Size(23, 15);
+            this.labAnalysisStatus.Size = new System.Drawing.Size(129, 25);
             this.labAnalysisStatus.TabIndex = 7;
-            this.labAnalysisStatus.Text = "OK";
+            this.labAnalysisStatus.Text = "      Running";
+            this.labAnalysisStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.labAnalysisStatus.UseMnemonic = false;
             // 
             // FrmMonitor
             // 
@@ -219,7 +223,6 @@
             this.tpCovergence.ResumeLayout(false);
             this.tpCovergence.PerformLayout();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
