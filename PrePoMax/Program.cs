@@ -14,11 +14,15 @@ namespace PrePoMax
         [STAThread]
         static void Main(string[] args)
         {
-            System.Threading.Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;           // This thread
-            System.Globalization.CultureInfo.DefaultThreadCurrentCulture = System.Globalization.CultureInfo.InvariantCulture;   // All feature threads
+            System.Globalization.CultureInfo ci =
+                (System.Globalization.CultureInfo)System.Globalization.CultureInfo.InvariantCulture.Clone();
+            ci.NumberFormat.NumberGroupSeparator = "";
             //
-            System.Threading.Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.InvariantCulture;
-            System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = System.Globalization.CultureInfo.InvariantCulture;
+            System.Threading.Thread.CurrentThread.CurrentCulture = ci;           // This thread
+            System.Globalization.CultureInfo.DefaultThreadCurrentCulture = ci;   // All feature threads
+            //
+            System.Threading.Thread.CurrentThread.CurrentUICulture = ci;
+            System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = ci;
             // Set MessageBoxButtons to English defaults
             MessageBoxManager.OK = "OK";
             MessageBoxManager.Cancel = "Cancel";
@@ -35,3 +39,4 @@ namespace PrePoMax
         }
     }
 }
+

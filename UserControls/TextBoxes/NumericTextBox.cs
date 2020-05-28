@@ -16,6 +16,18 @@ namespace UserControls
         private const int WM_PASTE = 0x0302;
 
 
+        // Properties                                                                                                               
+        public double Value
+        {
+            get
+            {
+                double value = 0;
+                if (double.TryParse(this.Text, out value)) return value;
+                else return 0;
+            }
+        }
+
+
         // Constructors                                                                                                             
         public NumericTextBox()
         {
@@ -45,29 +57,15 @@ namespace UserControls
         }
         private void NumTextBox_KeyPress(object sender, KeyPressEventArgs e)
         {
-            
-
             if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && (e.KeyChar != '.'))
             {
                 e.Handled = true;
             }
-
-            // only allow one decimal point
+            // Only allow one decimal point
             if ((e.KeyChar == '.') && ((sender as TextBox).Text.IndexOf('.') > -1))
             {
                 e.Handled = true;
             }
         }
-
-        public double Value
-        {
-            get
-            {
-                double value = 0;
-                if (double.TryParse(this.Text, out value)) return value;
-                else return 0;
-            }
-        }
-
     }
 }

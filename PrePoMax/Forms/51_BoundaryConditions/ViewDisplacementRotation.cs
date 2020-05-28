@@ -47,21 +47,21 @@ namespace PrePoMax
         [CategoryAttribute("DOF")]
         [OrderedDisplayName(3, 10, "UR1")]
         [DescriptionAttribute("Rotation around the first axis.")]
-        [TypeConverter(typeof(StringDOFConverter))]
+        [TypeConverter(typeof(StringAngleDOFConverter))]
         [Id(4, 3)]
         public double UR1 { get { return _displacementRotation.UR1; } set { _displacementRotation.UR1 = value; } }
         //
         [CategoryAttribute("DOF")]
         [OrderedDisplayName(4, 10, "UR2")]
         [DescriptionAttribute("Rotation around the second axis.")]
-        [TypeConverter(typeof(StringDOFConverter))]
+        [TypeConverter(typeof(StringAngleDOFConverter))]
         [Id(5, 3)]
         public double UR2 { get { return _displacementRotation.UR2; } set { _displacementRotation.UR2 = value; } }
         //
         [CategoryAttribute("DOF")]
         [OrderedDisplayName(5, 10, "UR3")]
         [DescriptionAttribute("Rotation around the third axis.")]
-        [TypeConverter(typeof(StringDOFConverter))]
+        [TypeConverter(typeof(StringAngleDOFConverter))]
         [Id(6, 3)]
         public double UR3 { get { return _displacementRotation.UR3; } set { _displacementRotation.UR3 = value; } }
         //
@@ -69,7 +69,7 @@ namespace PrePoMax
 
 
         // Constructors                                                                                                             
-        public ViewDisplacementRotation(CaeModel.DisplacementRotation displacementRotation)
+        public ViewDisplacementRotation(CaeModel.DisplacementRotation displacementRotation, string lengthUnit, string angleUnit)
         {
             // The order is important
             _displacementRotation = displacementRotation;
@@ -82,6 +82,9 @@ namespace PrePoMax
             //
             base.SetBase(_displacementRotation, regionTypePropertyNamePairs);
             base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
+            //
+            StringDOFConverter.SetUnit = lengthUnit;
+            StringAngleDOFConverter.SetUnit = angleUnit;
         }
 
 

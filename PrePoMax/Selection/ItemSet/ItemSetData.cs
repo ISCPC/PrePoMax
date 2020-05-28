@@ -12,7 +12,8 @@ namespace PrePoMax
     public enum ItemSetDataToStringType
     {
         NumberOfItems,
-        SelectSinglePoint
+        SelectSinglePoint,
+        SelectTwoPoints
     }
 
     public class ItemSetData
@@ -65,6 +66,10 @@ namespace PrePoMax
             else if (_toStringType == ItemSetDataToStringType.SelectSinglePoint)
             {
                 return "Select a point";
+            }
+            else if (_toStringType == ItemSetDataToStringType.SelectTwoPoints)
+            {
+                return "Select two points";
             }
             else throw new NotSupportedException();
         }

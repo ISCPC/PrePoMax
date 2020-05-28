@@ -35,25 +35,29 @@ namespace PrePoMax
         [CategoryAttribute("Force components")]
         [OrderedDisplayName(0, 10, "F1")]
         [DescriptionAttribute("Force component per node in the direction of the first axis.")]
+        [TypeConverter(typeof(StringForceConverter))]
         [Id(1, 3)]
         public double F1 { get { return _cLoad.F1; } set { _cLoad.F1 = value; } }
         //
         [CategoryAttribute("Force components")]
         [OrderedDisplayName(1, 10, "F2")]
         [DescriptionAttribute("Force component per node in the direction of the second axis.")]
+        [TypeConverter(typeof(StringForceConverter))]
         [Id(2, 3)]
         public double F2 { get { return _cLoad.F2; } set { _cLoad.F2 = value; } }
         //
         [CategoryAttribute("Force components")]
         [OrderedDisplayName(2, 10, "F3")]
         [DescriptionAttribute("Force component per node in the direction of the third axis.")]
+        [TypeConverter(typeof(StringForceConverter))]
         [Id(3, 3)]
         public double F3 { get { return _cLoad.F3; } set { _cLoad.F3 = value; } }
         //
         [CategoryAttribute("Force magnitude")]
         [OrderedDisplayName(3, 10, "Magnitude")]
-        [DescriptionAttribute("The magnitude of the force load.")]
-        [Id(1, 4)]
+        [DescriptionAttribute("The magnitude of the force load per node.")]
+        [TypeConverter(typeof(StringForceConverter))]
+        [Id(1, 4)]        
         public double Flength
         {
             get { return Math.Sqrt(_cLoad.F1 * _cLoad.F1 + _cLoad.F2 * _cLoad.F2 + _cLoad.F3 * _cLoad.F3); }
@@ -76,7 +80,7 @@ namespace PrePoMax
 
 
         // Constructors                                                                                                             
-        public ViewCLoad(CaeModel.CLoad cLoad)
+        public ViewCLoad(CaeModel.CLoad cLoad, string forceUnit)
         {
             // The order is important
             _cLoad = cLoad;
@@ -89,10 +93,7 @@ namespace PrePoMax
             //
             base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
             //
-            //SetDisplayUnit(nameof(F1), "N");
-            //SetDisplayUnit(nameof(F2), "N");
-            //SetDisplayUnit(nameof(F3), "N");
-            //SetDisplayUnit(nameof(Flength), "N");
+            StringForceConverter.SetUnit = forceUnit;
         }
 
 
@@ -109,12 +110,7 @@ namespace PrePoMax
             regionTypeListItemsPairs.Add(RegionTypeEnum.ReferencePointName, referencePointNames);
             base.PopululateDropDownLists(regionTypeListItemsPairs);
         }
-
-        public void SetDisplayUnit(string propertyName, string unit)
-        {
-            base.DynamicCustomTypeDescriptor.GetProperty(propertyName).SetDisplayName( 
-                base.DynamicCustomTypeDescriptor.GetProperty(propertyName).DisplayName.Replace("?", unit));
-        }
+        
     }
 
 }

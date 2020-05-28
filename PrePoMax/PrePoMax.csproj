@@ -336,7 +336,6 @@
     <Compile Include="Forms\33_Constraint\ViewTie.cs" />
     <Compile Include="Forms\33_Constraint\ViewRigidBody.cs" />
     <Compile Include="Forms\33_Constraint\ViewConstraint.cs" />
-    <Compile Include="Forms\51_BoundaryConditions\StringDOFconverter.cs" />
     <Compile Include="Forms\51_BoundaryConditions\ViewBoundaryCondition.cs" />
     <Compile Include="Forms\51_BoundaryConditions\ViewDisplacementRotation.cs" />
     <Compile Include="Forms\43_FieldOutput\ViewFieldOutput.cs" />
@@ -647,6 +646,10 @@
     <None Include="Icons\Common\Copy.png" />
     <None Include="Icons\Common\Paste.png" />
     <None Include="Icons\Contact\Contact.ico" />
+    <None Include="Icons\Analysis\NoResult.ico" />
+    <None Include="Icons\Analysis\OK.ico" />
+    <None Include="Icons\Analysis\Running.ico" />
+    <None Include="Icons\Analysis\Warning.ico" />
     <Content Include="main.ico" />
   </ItemGroup>
   <ItemGroup>

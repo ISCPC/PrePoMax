@@ -30,6 +30,7 @@ namespace PrePoMax
         [CategoryAttribute("Pressure magnitude")]
         [OrderedDisplayName(0, 10, "Magnitude")]
         [DescriptionAttribute("The magnitude of the pressure load.")]
+        [TypeConverter(typeof(StringPressureConverter))]
         [Id(1, 3)]
         public double Magnitude { get { return _dLoad.Magnitude; } set { _dLoad.Magnitude = value; } }
         //
@@ -37,7 +38,7 @@ namespace PrePoMax
 
 
         // Constructors                                                                                                             
-        public ViewDLoad(DLoad dLoad)
+        public ViewDLoad(DLoad dLoad, string pressureUnit)
         {
             _dLoad = dLoad;
             //
@@ -47,6 +48,8 @@ namespace PrePoMax
             //
             base.SetBase(_dLoad, regionTypePropertyNamePairs);
             base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
+            //
+            StringPressureConverter.SetUnit = pressureUnit;
         }
 
 

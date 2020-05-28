@@ -21,7 +21,8 @@ namespace CaeJob
         OK,
         Killed,
         TimedOut,
-        Failed
+        Failed,
+        FailedWithResults,
     }
 
     [Serializable]
@@ -45,6 +46,7 @@ namespace CaeJob
         [NonSerialized] protected System.Diagnostics.Stopwatch _watch;
         [NonSerialized] private Process _exe;
         [NonSerialized] private StringBuilder _sbOutput;
+        [NonSerialized] private StringBuilder _sbAllOutput;
         [NonSerialized] private string _outputFileName;
         [NonSerialized] private string _errorFileName;
 
@@ -106,6 +108,21 @@ namespace CaeJob
                 }
             }
         }
+        public string AllOutputData
+        {
+            get
+            {
+                try
+                {
+                    if (_sbAllOutput != null) return _sbAllOutput.ToString();
+                    else return null;
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+        }
         public string StatusFileData { get { return _statusFileContents; } }
         public string ConvergenceFileData { get { return _convergenceFileContents; } }
 
@@ -132,12 +149,14 @@ namespace CaeJob
             _jobStatus = JobStatus.None;
             _watch = null;
             _sbOutput = null;
+            _sbAllOutput = null;
         }
 
 
         // Event handlers                                                                                                           
         void Timer_Tick(object sender, EventArgs e)
         {
+            //System.Diagnostics.Debug.WriteLine("AnalysisJob Timer_Tick");
             //File.WriteAllText(_outputFileName, OutputData);
             File.AppendAllText(_outputFileName, OutputData);
             //
@@ -146,6 +165,7 @@ namespace CaeJob
             //
             DataOutput?.Invoke();
             //
+            _sbAllOutput.Append(_sbOutput);
             _sbOutput.Clear();
         }
 
@@ -154,27 +174,29 @@ namespace CaeJob
         public void Submit()
         {
             if (_sbOutput == null) _sbOutput = new StringBuilder();
+            if (_sbAllOutput == null) _sbAllOutput = new StringBuilder();
             _sbOutput.Clear();
+            _sbAllOutput.Clear();
             //
             AppendDataToOutput(DateTime.Now + Environment.NewLine);
             AppendDataToOutput("Running command: " + _executable + " " + _argument);
-
+            //
             _statusFileLength = -1;
             _statusFileContents = "";
-
+            //
             _convergenceFileLength = -1;
             _convergenceFileContents = "";
-
+            //
             _timer = new System.Windows.Threading.DispatcherTimer();
             _timer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
             _timer.Tick += Timer_Tick;
-
+            //
             _watch = new Stopwatch();
-
+            //
             _jobStatus = CaeJob.JobStatus.Running;
-
+            //
             JobStatusChanged?.Invoke(_name, _jobStatus);
-
+            //
             using (BackgroundWorker bwStart = new BackgroundWorker())
             {
                 bwStart.DoWork += bwStart_DoWork;
@@ -205,12 +227,33 @@ namespace CaeJob
             _timer.Stop();
             //
             AppendDataToOutput("");
-            if (_jobStatus == JobStatus.OK && !File.Exists(Path.Combine(WorkDirectory, _name + ".frd")))
-                AppendDataToOutput(" Job failed.");
+            //
+            string frdFileName = Path.Combine(WorkDirectory, _name + ".frd");
+            bool resultsExist = File.Exists(frdFileName);
+            if (resultsExist)
+            {
+                long length = new System.IO.FileInfo(frdFileName).Length;
+                if (length < 15 * 20) resultsExist = false;
+            }
+            //
+            if (_jobStatus == JobStatus.OK)
+            {
+                if (!resultsExist)
+                {
+                    AppendDataToOutput(" Job failed - no results exist.");
+                    _jobStatus = JobStatus.Failed;
+                }
+                else if (_sbOutput.ToString().Contains("*ERROR")) _jobStatus = JobStatus.FailedWithResults;
+            }
             else if (_jobStatus == JobStatus.Killed)
+            {
                 AppendDataToOutput(" Job killed.");
+            }
             else if (_jobStatus == JobStatus.Failed)
+            {
                 AppendDataToOutput(" Job failed.");
+                if (resultsExist) _jobStatus = JobStatus.FailedWithResults;
+            }
             //
             AppendDataToOutput("");
             AppendDataToOutput(" Elapsed time [s]: " + _watch.Elapsed.TotalSeconds.ToString());
@@ -250,7 +293,7 @@ namespace CaeJob
             {
                 // Timed out.
                 Kill("Time out.");
-                Debug.WriteLine(DateTime.Now + "   Timeout proces: " + Name + " in: " + _workDirectory);
+                //Debug.WriteLine(DateTime.Now + "   Timeout proces: " + Name + " in: " + _workDirectory);
                 _jobStatus = CaeJob.JobStatus.TimedOut;
             }
             _exe.Close();
@@ -317,7 +360,7 @@ namespace CaeJob
                 {
                     // Timed out.
                     Kill("Time out.");
-                    Debug.WriteLine(DateTime.Now + "   Timeout proces: " + Name + " in: " + _workDirectory);
+                    //Debug.WriteLine(DateTime.Now + "   Timeout proces: " + Name + " in: " + _workDirectory);
                     _jobStatus = CaeJob.JobStatus.TimedOut;
                 }
                 _exe.Close();

@@ -35,50 +35,57 @@ namespace PrePoMax
         [CategoryAttribute("Axis point")]
         [OrderedDisplayName(0, 10, "X")]
         [DescriptionAttribute("X coordinate of the axis point.")]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(1, 3)]
         public double X { get { return _cenLoad.X; } set { _cenLoad.X = value; } }
         //
         [CategoryAttribute("Axis point")]
         [OrderedDisplayName(1, 10, "Y")]
         [DescriptionAttribute("X coordinate of the axis point.")]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(2, 3)]
         public double Y { get { return _cenLoad.Y; } set { _cenLoad.Y = value; } }
         //
         [CategoryAttribute("Axis point")]
         [OrderedDisplayName(2, 10, "Z")]
         [DescriptionAttribute("X coordinate of the axis point.")]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(3, 3)]
         public double Z { get { return _cenLoad.Z; } set { _cenLoad.Z = value; } }
         //
         [CategoryAttribute("Axis direction")]
         [OrderedDisplayName(0, 10, "N1")]
         [DescriptionAttribute("Axis component in the direction of the first axis.")]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(1, 4)]
         public double N1 { get { return _cenLoad.N1; } set { _cenLoad.N1 = value; } }
         //
         [CategoryAttribute("Axis direction")]
         [OrderedDisplayName(1, 10, "N2")]
         [DescriptionAttribute("Axis component in the direction of the second axis.")]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(2, 4)]
         public double N2 { get { return _cenLoad.N2; } set { _cenLoad.N2 = value; } }
         //
         [CategoryAttribute("Axis direction")]
         [OrderedDisplayName(2, 10, "N3")]
         [DescriptionAttribute("Axis component in the direction of the third axis.")]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(3, 4)]
         public double N3 { get { return _cenLoad.N3; } set { _cenLoad.N3 = value; } }
         //
         [CategoryAttribute("Magnitude")]
-        [OrderedDisplayName(0, 10, "Rot. speed square")]
-        [DescriptionAttribute("The square of the rotational speed omega.")]
+        [OrderedDisplayName(0, 10, "Rotational speed")]
+        [DescriptionAttribute("The rotational speed around the axis defined by the point and direction.")]
+        [TypeConverter(typeof(StringRotationalSpeedConverter))]
         [Id(1, 5)]
-        public double RotationalSpeed2 { get { return _cenLoad.RotationalSpeed2; } set { _cenLoad.RotationalSpeed2 = value; } }
+        public double RotationalSpeed { get { return _cenLoad.RotationalSpeed; } set { _cenLoad.RotationalSpeed = value; } }
         //
         public override System.Drawing.Color Color { get { return _cenLoad.Color; } set { _cenLoad.Color = value; } }
 
 
         // Constructors                                                                                                             
-        public ViewCentrifLoad(CaeModel.CentrifLoad cLoad)
+        public ViewCentrifLoad(CaeModel.CentrifLoad cLoad, string lengthUnit, string rotationalSpeedUnit)
         {
             // The order is important
             _cenLoad = cLoad;
@@ -90,6 +97,9 @@ namespace PrePoMax
             //
             base.SetBase(_cenLoad, regionTypePropertyNamePairs);
             base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
+            //
+            StringLengthConverter.SetUnit = lengthUnit;
+            StringRotationalSpeedConverter.SetUnit = rotationalSpeedUnit;
         }
 
 

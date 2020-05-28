@@ -28,16 +28,18 @@ namespace PrePoMax
         { 
             get { return _preTenLoad.Type; } 
             set 
-            { 
-                _preTenLoad.Type = value;
-                //
-                if (_preTenLoad.Type == CaeModel.PreTensionLoadType.Force && double.IsInfinity(_preTenLoad.Magnitude))
+            {
+                if (_preTenLoad.Type != value)
+                {
+                    _preTenLoad.Type = value;
+                    //
                     _preTenLoad.Magnitude = 0;
-                //
-                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(ForceMagnitude));
-                cpd.SetIsBrowsable(_preTenLoad.Type == CaeModel.PreTensionLoadType.Force);
-                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(DisplacementMagnitude));
-                cpd.SetIsBrowsable(_preTenLoad.Type == CaeModel.PreTensionLoadType.Displacement);
+                    //
+                    cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(ForceMagnitude));
+                    cpd.SetIsBrowsable(_preTenLoad.Type == CaeModel.PreTensionLoadType.Force);
+                    cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(DisplacementMagnitude));
+                    cpd.SetIsBrowsable(_preTenLoad.Type == CaeModel.PreTensionLoadType.Displacement);
+                }
             }
         }
         //
@@ -70,31 +72,35 @@ namespace PrePoMax
         [CategoryAttribute("Pre-tension direction")]
         [OrderedDisplayName(1, 10, "X")]
         [DescriptionAttribute("X component of the pre-tension direction.")]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(2, 3)]
         public double X { get { return _preTenLoad.X; } set { _preTenLoad.X = value; } }
         //
         [CategoryAttribute("Pre-tension direction")]
         [OrderedDisplayName(2, 10, "Y")]
         [DescriptionAttribute("Y component of the pre-tension direction.")]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(3, 3)]
         public double Y { get { return _preTenLoad.Y; } set { _preTenLoad.Y = value; } }
         //
         [CategoryAttribute("Pre-tension direction")]
         [OrderedDisplayName(3, 10, "Z")]
         [DescriptionAttribute("Z component of the pre-tension direction.")]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(4, 3)]
         public double Z { get { return _preTenLoad.Z; } set { _preTenLoad.Z = value; } }
         //
         [CategoryAttribute("Force magnitude")]
         [OrderedDisplayName(0, 10, "Magnitude")]
         [DescriptionAttribute("Force magnitude for the pre-tension load.")]
+        [TypeConverter(typeof(StringForceConverter))]
         [Id(1, 4)]
         public double ForceMagnitude { get { return _preTenLoad.Magnitude; } set { _preTenLoad.Magnitude = value; } }
         //
         [CategoryAttribute("Displacement magnitude")]
         [OrderedDisplayName(0, 10, "Magnitude")]
         [DescriptionAttribute("Displacement magnitude for the pre-tension load.")]
-        [TypeConverter(typeof(StringConstrainedDOFConverter))]
+        [TypeConverter(typeof(StringFixedDOFConverter))]
         [Id(1, 5)]
         public double DisplacementMagnitude { get { return _preTenLoad.Magnitude; } set { _preTenLoad.Magnitude = value; } }
         //
@@ -102,7 +108,7 @@ namespace PrePoMax
 
 
         // Constructors                                                                                                             
-        public ViewPreTensionLoad(CaeModel.PreTensionLoad preTenLoad)
+        public ViewPreTensionLoad(CaeModel.PreTensionLoad preTenLoad, string lengthUnit, string forceUnit)
         {
             // The order is important
             _preTenLoad = preTenLoad;
@@ -118,6 +124,10 @@ namespace PrePoMax
             // Set initial visibilities
             Type = _preTenLoad.Type;
             AutoComputeDirection = _preTenLoad.AutoComputeDirection;
+            //
+            StringLengthConverter.SetUnit = lengthUnit;
+            StringFixedDOFConverter.SetUnit = lengthUnit;
+            StringForceConverter.SetUnit = forceUnit;
         }
 
 

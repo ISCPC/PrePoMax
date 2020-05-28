@@ -48,18 +48,18 @@ namespace PrePoMax.Forms
             : base(2)
         {
             InitializeComponent();
-
+            //
             _controller = controller;
-            _rotateParameters = new RotateParameters();
-            propertyGrid.SelectedObject = _rotateParameters;
-
+            //
+            tsmiResetAll_Click(null, null);
+            //
             _coorNodesToDraw = new double[1][];
             _coorNodesToDraw[0] = new double[3];
-
+            //
             _coorLinesToDraw = new double[2][];
             _coorLinesToDraw[0] = new double[3];
             _coorLinesToDraw[1] = new double[3];
-
+            //
             btnOK.Visible = false;
             btnOkAddNew.Width = btnOK.Width;
             btnOkAddNew.Left = btnOK.Left;
@@ -109,49 +109,52 @@ namespace PrePoMax.Forms
         }
 
 
-        // Overrides                                                                                                                
+        // Event handlers                                                                                                           
         protected override void OnPropertyGridPropertyValueChanged()
         {
             HighlightNodes();
-
+            //
             base.OnPropertyGridPropertyValueChanged();
         }
         protected override void OnApply(bool onOkAddNew)
         {
             double angle = _rotateParameters.AngleDeg * Math.PI / 180;
             _controller.RotateModelPartsCommand(_partNames, RotateCenter, RotateAxis, angle, _rotateParameters.Copy);
-
+            //
             HighlightNodes();
         }
-
-
-        // Methods                                                                                                                  
-        public bool PrepareForm(string stepName, string partToEditName)
+        protected override bool OnPrepareForm(string stepName, string sectionToEditName)
         {
             _controller.ClearSelectionHistoryAndSelectionChanged();
             _rotateParameters.Clear();
-            
-
             // Get start point grid item
             GridItem gi = propertyGrid.EnumerateAllItems().First((item) =>
                               item.PropertyDescriptor != null &&
                               item.PropertyDescriptor.Name == "StartPointItemSet");
-
             // Select it
             gi.Select();
-
+            //
             propertyGrid.Refresh();
-
-            return OnPrepareForm(stepName, partToEditName);
+            //
+            return true;
         }
+        private void tsmiResetAll_Click(object sender, EventArgs e)
+        {
+            _rotateParameters = new RotateParameters(_controller.Model.UnitSystem.LengthUnitAbbreviation);
+            propertyGrid.SelectedObject = _rotateParameters;
+            _controller.ClearAllSelection();
+        }
+
+
+        // Methods                                                                                                                  
         public void PickedIds(int[] ids)
         {
             this.Enabled = true;
-
+            //
             _controller.SelectBy = vtkSelectBy.Off;
             _controller.Selection.SelectItem = vtkSelectItem.None;
             _controller.ClearSelectionHistoryAndSelectionChanged();
-
+            //
             if (ids != null && ids.Length == 1)
             {
                 FeNode node = _controller.Model.Mesh.Nodes[ids[0]];
@@ -168,9 +171,9 @@ namespace PrePoMax.Forms
                     _rotateParameters.Y2 = node.Y;
                     _rotateParameters.Z2 = node.Z;
                 }
-
+                //
                 propertyGrid.Refresh();
-
+                //
                 HighlightNodes();
             }
         }
@@ -178,25 +181,19 @@ namespace PrePoMax.Forms
         {
             Color color = Color.Red;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
-
+            //
             _coorNodesToDraw[0][0] = _rotateParameters.X2;
             _coorNodesToDraw[0][1] = _rotateParameters.Y2;
             _coorNodesToDraw[0][2] = _rotateParameters.Z2;
-
+            //
             _coorLinesToDraw[0][0] = _rotateParameters.X1;
             _coorLinesToDraw[0][1] = _rotateParameters.Y1;
             _coorLinesToDraw[0][2] = _rotateParameters.Z1;
             _coorLinesToDraw[1] = _coorNodesToDraw[0];
-
+            //
             _controller.DrawNodes("Rotate", _coorNodesToDraw, color, layer, 7);
             _controller.HighlightConnectedLines(_coorLinesToDraw);
         }
-
-        private void tsmiResetAll_Click(object sender, EventArgs e)
-        {
-            _rotateParameters = new RotateParameters();
-            propertyGrid.SelectedObject = _rotateParameters;
-            _controller.ClearAllSelection();
-        }
+        
     }
 }

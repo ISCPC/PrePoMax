@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -31,20 +32,26 @@ namespace PrePoMax
         private Point _btnUndoPosition;
         private Point _btnClearPosition;
         private bool _initialSetup;
-                
+      
 
         // Properties                                                                                                               
         public ItemSetData ItemSetData
         {
-            get { return _itemSetData; } 
+            get { return _itemSetData; }
             set { if (_itemSetData != value) _itemSetData = value; }
         }
-        
+
 
         // Constructors                                                                                                             
         public FrmSelectItemSet(Controller controller)
         {
             InitializeComponent();
+            //
+            StringAngleConverter.SetUnit = "deg";
+            tbGeometryEdgeAngle.UnitConverter = new StringAngleConverter();
+            tbGeometrySurfaceAngle.UnitConverter = new StringAngleConverter();
+            tbEdgeAngle.UnitConverter = new StringAngleConverter();
+            tbSurfaceAngle.UnitConverter = new StringAngleConverter();
             //
             _checkBoxEventRunning = false;
             _controller = controller;
@@ -114,9 +121,9 @@ namespace PrePoMax
         }
         //
         private void rbSelectBy_CheckedChanged(object sender, EventArgs e)
-        {            
+        {
             // Allow only one running function - disable check box event
-            if (_checkBoxEventRunning) return;  
+            if (_checkBoxEventRunning) return;
             else _checkBoxEventRunning = true;
             // Connect two group boxes of radio buttons
             if (sender != null) // radio button check was activated by user
@@ -160,7 +167,7 @@ namespace PrePoMax
             // Clear selection - if geometry selection type changed by the USER: 
             // sender != null                                                    
             // Visible = true - user action                                      
-            if (!_initialSetup && sender != null && Visible && selectionTypeChanged) 
+            if (!_initialSetup && sender != null && Visible && selectionTypeChanged)
                 _controller.ClearSelectionHistoryAndSelectionChanged();
             // Enable/disable Textboxes
             tbGeometryEdgeAngle.Enabled = rbGeometryEdgeAngle.Checked;
@@ -170,7 +177,7 @@ namespace PrePoMax
             tbId.Enabled = rbId.Checked;
             // Enable/disable buttons
             btnAddId.Enabled = rbId.Checked;
-            btnSubtractId.Enabled = rbId.Checked;
+            btnRemoveId.Enabled = rbId.Checked;
             // Check All and Invert buttons
             btnSelectAll.Enabled = currentSelectionType == SelectionType.Mesh;
             btnInvertSelection.Enabled = currentSelectionType == SelectionType.Mesh;
@@ -180,12 +187,12 @@ namespace PrePoMax
             else if (rbGeometryEdgeAngle.Checked)
             {
                 selectBy = vtkSelectBy.GeometryEdgeAngle;
-                tbGeometryEdgeAngle_TextChanged(null, null);
+                SetSelectionAngle(tbGeometryEdgeAngle);
             }
             else if (rbGeometrySurfaceAngle.Checked)
             {
                 selectBy = vtkSelectBy.GeometrySurfaceAngle;
-                tbGeometrySurfaceAngle_TextChanged(null, null);
+                SetSelectionAngle(tbGeometrySurfaceAngle);
             }
             else if (rbNode.Checked) selectBy = vtkSelectBy.Node;
             else if (rbElement.Checked) selectBy = vtkSelectBy.Element;
@@ -195,12 +202,12 @@ namespace PrePoMax
             else if (rbEdgeAngle.Checked)
             {
                 selectBy = vtkSelectBy.EdgeAngle;
-                tbEdgeAngle_TextChanged(null, null);
+                SetSelectionAngle(tbEdgeAngle);
             }
             else if (rbSurfaceAngle.Checked)
             {
                 selectBy = vtkSelectBy.SurfaceAngle;
-                tbSurfaceAngle_TextChanged(null, null);
+                SetSelectionAngle(tbSurfaceAngle);
             }
             else if (rbId.Checked) selectBy = vtkSelectBy.Id;
             else selectBy = vtkSelectBy.Off;
@@ -210,14 +217,6 @@ namespace PrePoMax
             _prevSelectionType = currentSelectionType;
             // Enable check box event
             _checkBoxEventRunning = false;
-        }
-        private void tbGeometryEdgeAngle_TextChanged(object sender, EventArgs e)
-        {
-            SetSelectionAngle(tbGeometryEdgeAngle);
-        }
-        private void tbGeometrySurfaceAngle_TextChanged(object sender, EventArgs e)
-        {
-            SetSelectionAngle(tbGeometrySurfaceAngle);
         }
         private void btnUndoSelection_Click(object sender, EventArgs e)
         {
@@ -246,7 +245,7 @@ namespace PrePoMax
             else
             {
                 btnMoreLess.Text = "More";
-                size = new Size(237, 300);
+                size = new Size(207, 300);
                 //
                 btnUndoSelection.Location = _btnUndoPosition;
                 btnClearSelection.Location = _btnClearPosition;
@@ -257,14 +256,6 @@ namespace PrePoMax
             this.Size = size;
         }
         //
-        private void tbEdgeAngle_TextChanged(object sender, EventArgs e)
-        {
-            SetSelectionAngle(tbEdgeAngle);
-        }
-        private void tbSurfaceAngle_TextChanged(object sender, EventArgs e)
-        {
-            SetSelectionAngle(tbSurfaceAngle);
-        }
         private void btnSelectAll_Click(object sender, EventArgs e)
         {
             _controller.AddSelectionNode(new SelectionNodeIds(vtkSelectOperation.None, true), true);
@@ -275,7 +266,7 @@ namespace PrePoMax
         }
         private void btnAddId_Click(object sender, EventArgs e)
         {
-            try 
+            try
             {
                 int id;
                 if (int.TryParse(tbId.Text, out id))
@@ -294,7 +285,7 @@ namespace PrePoMax
             }
 
         }
-        private void btnSubtractId_Click(object sender, EventArgs e)
+        private void btnRemoveId_Click(object sender, EventArgs e)
         {
             try
             {
@@ -329,6 +320,18 @@ namespace PrePoMax
             this.DialogResult = dialogResult;
             base.Hide();
         }
+        //
+        private void tbAngle_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (sender is UserControls.UnitAwareTextBox uatb) _controller.SetSelectAngle(uatb.Value);
+        }
+        private void tbId_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;  // no beep
+            }
+        }
 
         // Methods                                                                                                                  
         public void ShowIfHidden(IWin32Window owner)
@@ -341,7 +344,7 @@ namespace PrePoMax
         }
         public void ResetLocation()
         {
-            
+
             {
                 Point location = ItemSetDataEditor.ParentForm.Location.DeepClone();
                 location.X += ItemSetDataEditor.ParentForm.Width - 15 + 3;
@@ -379,11 +382,14 @@ namespace PrePoMax
             }
         }
         //
-        private void SetSelectionAngle(TextBox tbAngle)
+        private void SetSelectionAngle(UserControls.UnitAwareTextBox uatbAngle)
         {
-            double angle;
-            if (double.TryParse(tbAngle.Text, out angle)) _controller.SetSelectAngle(angle);
-            else MessageBox.Show("The selection angle is not a valid number.");
+            try
+            {
+                _controller.SetSelectAngle(uatbAngle.Value);
+            }
+            catch
+            { }
         }
         //
         // Disable close X button
@@ -398,7 +404,7 @@ namespace PrePoMax
             }
         }
 
-
+        
     }
 }
 

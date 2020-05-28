@@ -26,23 +26,37 @@ namespace CaeModel
         public double N2 { get; set; }
         public double N3 { get; set; }
         public double RotationalSpeed2 { get; set; }
+        public double RotationalSpeed
+        {
+            get
+            {
+                if (RotationalSpeed2 >= 0) return Math.Sqrt(RotationalSpeed2);
+                else throw new NotSupportedException();
+            } 
+            set
+            {
+                if (value < 0) throw new CaeException("The value of the rotationl speed must be non-negative.");
+                else RotationalSpeed2 = Math.Pow(value, 2);
+            }
+        }
 
 
         // Constructors                                                                                                             
-        public CentrifLoad(string name, string regionName, RegionTypeEnum regionType, double[] point, double[] normal, double rotationalSpeed2)
+        public CentrifLoad(string name, string regionName, RegionTypeEnum regionType, double[] point, double[] normal,
+                           double rotationalSpeed2)
             : base(name) 
         {
             _regionName = regionName;
             RegionType = regionType;
-
+            //
             X = point[0];
             Y = point[1];
             Z = point[2];
-
+            //
             N1 = normal[0];
             N2 = normal[1];
             N3 = normal[2];
-
+            //
             RotationalSpeed2 = rotationalSpeed2;
         }
         public CentrifLoad(string name, string regionName, RegionTypeEnum regionType)

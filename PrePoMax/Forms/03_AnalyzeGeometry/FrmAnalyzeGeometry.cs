@@ -41,6 +41,12 @@ namespace PrePoMax
             InitializeComponent();
             //
             _controller = controller;
+            //
+            StringLengthConverter.SetUnit = _controller.Model.UnitSystem.LengthUnitAbbreviation;
+            StringAreaConverter.SetUnit = _controller.Model.UnitSystem.AreaUnitAbbreviation;
+            tbMinEdgeLen.UnitConverter = new StringLengthConverter();
+            tbMinEdgesDistance.UnitConverter = new StringLengthConverter();
+            tbMinFaceSize.UnitConverter = new StringAreaConverter();
         }
 
 
@@ -71,17 +77,26 @@ namespace PrePoMax
                 }
                 catch {}
                 //
-                labShortestEdge.Text = "Model min: " + shortestEdge.ToString("G4");
+                float widthBefore = GetMaxLabelWidth();
+                //
+                labShortestEdge.Text = "Model min: " + shortestEdge.ToString("G4") + " " +
+                                       _controller.Model.UnitSystem.LengthUnitAbbreviation;
                 if (shortestEdge > 0) tbMinEdgeLen.Text = Math.Pow(10, Math.Ceiling(Math.Log10(shortestEdge))).ToString();
                 else tbMinEdgeLen.Text = "0.0";
                 //
-                labClosestEdges.Text = "Model min: " + closestEdges.ToString("G4");
+                labClosestEdges.Text = "Model min: " + closestEdges.ToString("G4") + " " +
+                                       _controller.Model.UnitSystem.LengthUnitAbbreviation;
                 if (closestEdges > 0) tbMinEdgesDistance.Text = Math.Pow(10, Math.Ceiling(Math.Log10(closestEdges))).ToString();
                 else tbMinEdgesDistance.Text = "0.0";
                 //
-                labSmallestFace.Text = "Model min: " + smallestFace.ToString("G4");                
+                labSmallestFace.Text = "Model min: " + smallestFace.ToString("G4") + " " +
+                                       _controller.Model.UnitSystem.AreaUnitAbbreviation;
                 if (smallestFace > 0) tbMinFaceSize.Text = Math.Pow(10, Math.Ceiling(Math.Log10(smallestFace))).ToString();
                 else tbMinFaceSize.Text = "0.0";
+                //
+                float widthAfter = GetMaxLabelWidth();
+                float delta = widthAfter - widthBefore;
+                Width += (int)delta;
             }
         }
         private void btnShow_Click(object sender, EventArgs e)
@@ -103,7 +118,17 @@ namespace PrePoMax
         {
             Hide();
         }
-
+        private float GetMaxLabelWidth()
+        {
+            SizeF size;
+            float maxWidth;
+            maxWidth = labShortestEdge.CreateGraphics().MeasureString(labShortestEdge.Text, labShortestEdge.Font).Width;
+            size = labClosestEdges.CreateGraphics().MeasureString(labClosestEdges.Text, labClosestEdges.Font);
+            if (size.Width > maxWidth) maxWidth = size.Width;
+            size = labSmallestFace.CreateGraphics().MeasureString(labSmallestFace.Text, labSmallestFace.Font);
+            if (size.Width > maxWidth) maxWidth = size.Width;
+            return maxWidth;
+        }
         
     }
 }
