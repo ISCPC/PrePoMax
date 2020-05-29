@@ -15,20 +15,6 @@ namespace PrePoMax
 {
     public partial class FrmSelectItemSet : Form
     {
-        private class AngleData
-        {
-            // Properties                                                                                                               
-            [TypeConverter(typeof(StringAngleConverter))]
-            public double Angle { get; set; }
-            
-
-            // Constructors                                                                                                             
-            public AngleData(double angle)
-            {
-                Angle = angle;
-            }
-        }
-
         // Enum
         private enum SelectionType
         {
@@ -46,11 +32,7 @@ namespace PrePoMax
         private Point _btnUndoPosition;
         private Point _btnClearPosition;
         private bool _initialSetup;
-        //
-        private AngleData _edgeAngle;
-        private AngleData _surfaceAngle;
-        private AngleData _geometryEdgeAngle;
-        private AngleData _geometrySurfaceAngle;
+      
 
         // Properties                                                                                                               
         public ItemSetData ItemSetData
@@ -77,15 +59,10 @@ namespace PrePoMax
             btnMoreLess_Click(null, null);
             //
             StringAngleConverter.SetUnit = "deg";
-            _edgeAngle = new AngleData(10);
-            _surfaceAngle = new AngleData(10);
-            _geometryEdgeAngle = new AngleData(10);
-            _geometrySurfaceAngle = new AngleData(10);
-            //
-            tbEdgeAngle.DataBindings.Add("Text", _edgeAngle, "Angle", true);
-            tbSurfaceAngle.DataBindings.Add("Text", _surfaceAngle, "Angle", true);
-            tbGeometryEdgeAngle.DataBindings.Add("Text", _geometryEdgeAngle, "Angle", true);
-            tbGeometrySurfaceAngle.DataBindings.Add("Text", _geometrySurfaceAngle, "Angle", true);
+            TryConvertAngle(tbGeometryEdgeAngle);
+            TryConvertAngle(tbGeometrySurfaceAngle);
+            TryConvertAngle(tbEdgeAngle);
+            TryConvertAngle(tbSurfaceAngle);
         }
         public FrmSelectItemSet(Controller controller, ItemSetData itemSetData)
             : this(controller)
@@ -350,18 +327,20 @@ namespace PrePoMax
             {
                 if (e.KeyCode == Keys.Enter)
                 {
+                    // Convert
+                    TryConvertAngle(tb);
+                    //
                     e.SuppressKeyPress = true;  // no beep
-                    this.ActiveControl = null;
-                    tb.Focus();
-                    tb.SelectionStart = tbGeometryEdgeAngle.Text.Length;
-                    tb.ScrollToCaret();
                 }
-
             }
         }
         private void tbAngle_KeyUp(object sender, KeyEventArgs e)
         {
             if (sender is TextBox tb) SetSelectionAngle(tb);
+        }
+        private void tbAngle_Leave(object sender, EventArgs e)
+        {
+            if (sender is TextBox tb) TryConvertAngle(tb);
         }
         private void tbId_KeyDown(object sender, KeyEventArgs e)
         {
@@ -437,6 +416,21 @@ namespace PrePoMax
             }
             
         }
+        private void TryConvertAngle(TextBox tb)
+        {
+            try
+            {
+                // Convert
+                var converter = new StringAngleConverter();
+                double angle = (double)converter.ConvertFromString(tb.Text);
+                tb.Text = converter.ConvertToString(angle);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Entered value: " + tb.Text + Environment.NewLine + Environment.NewLine + ex.Message, "Error");
+                tb.Focus();
+            }
+        }
         //
         // Disable close X button
         protected override CreateParams CreateParams
@@ -450,6 +444,7 @@ namespace PrePoMax
             }
         }
 
+        
     }
 }
 

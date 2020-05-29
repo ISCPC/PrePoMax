@@ -136,6 +136,7 @@
             this.tbEdgeAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.tbEdgeAngle.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbAngle_KeyDown);
             this.tbEdgeAngle.KeyUp += new System.Windows.Forms.KeyEventHandler(this.tbAngle_KeyUp);
+            this.tbEdgeAngle.Leave += new System.EventHandler(this.tbAngle_Leave);
             // 
             // rbEdgeAngle
             // 
@@ -191,6 +192,7 @@
             this.tbSurfaceAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.tbSurfaceAngle.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbAngle_KeyDown);
             this.tbSurfaceAngle.KeyUp += new System.Windows.Forms.KeyEventHandler(this.tbAngle_KeyUp);
+            this.tbSurfaceAngle.Leave += new System.EventHandler(this.tbAngle_Leave);
             // 
             // rbSurfaceAngle
             // 
@@ -306,6 +308,7 @@
             this.tbGeometrySurfaceAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.tbGeometrySurfaceAngle.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbAngle_KeyDown);
             this.tbGeometrySurfaceAngle.KeyUp += new System.Windows.Forms.KeyEventHandler(this.tbAngle_KeyUp);
+            this.tbGeometrySurfaceAngle.Leave += new System.EventHandler(this.tbAngle_Leave);
             // 
             // rbGeometrySurfaceAngle
             // 
@@ -329,6 +332,7 @@
             this.tbGeometryEdgeAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.tbGeometryEdgeAngle.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbAngle_KeyDown);
             this.tbGeometryEdgeAngle.KeyUp += new System.Windows.Forms.KeyEventHandler(this.tbAngle_KeyUp);
+            this.tbGeometryEdgeAngle.Leave += new System.EventHandler(this.tbAngle_Leave);
             // 
             // rbGeometryEdgeAngle
             // 
