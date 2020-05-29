@@ -17,12 +17,15 @@ namespace PrePoMax
     {
         private class AngleData
         {
+            // Properties                                                                                                               
             [TypeConverter(typeof(StringAngleConverter))]
-            public double Value { get; set; }
-            //
-            public AngleData(double value)
+            public double Angle { get; set; }
+            
+
+            // Constructors                                                                                                             
+            public AngleData(double angle)
             {
-                Value = value;
+                Angle = angle;
             }
         }
 
@@ -52,10 +55,10 @@ namespace PrePoMax
         // Properties                                                                                                               
         public ItemSetData ItemSetData
         {
-            get { return _itemSetData; } 
+            get { return _itemSetData; }
             set { if (_itemSetData != value) _itemSetData = value; }
         }
-        
+
 
         // Constructors                                                                                                             
         public FrmSelectItemSet(Controller controller)
@@ -79,10 +82,10 @@ namespace PrePoMax
             _geometryEdgeAngle = new AngleData(10);
             _geometrySurfaceAngle = new AngleData(10);
             //
-            tbEdgeAngle.DataBindings.Add("Text", _edgeAngle, "Value", true);
-            tbSurfaceAngle.DataBindings.Add("Text", _surfaceAngle, "Value", true);
-            tbGeometryEdgeAngle.DataBindings.Add("Text", _geometryEdgeAngle, "Value", true);
-            tbGeometrySurfaceAngle.DataBindings.Add("Text", _geometrySurfaceAngle, "Value", true);
+            tbEdgeAngle.DataBindings.Add("Text", _edgeAngle, "Angle", true);
+            tbSurfaceAngle.DataBindings.Add("Text", _surfaceAngle, "Angle", true);
+            tbGeometryEdgeAngle.DataBindings.Add("Text", _geometryEdgeAngle, "Angle", true);
+            tbGeometrySurfaceAngle.DataBindings.Add("Text", _geometrySurfaceAngle, "Angle", true);
         }
         public FrmSelectItemSet(Controller controller, ItemSetData itemSetData)
             : this(controller)
@@ -141,9 +144,9 @@ namespace PrePoMax
         }
         //
         private void rbSelectBy_CheckedChanged(object sender, EventArgs e)
-        {            
+        {
             // Allow only one running function - disable check box event
-            if (_checkBoxEventRunning) return;  
+            if (_checkBoxEventRunning) return;
             else _checkBoxEventRunning = true;
             // Connect two group boxes of radio buttons
             if (sender != null) // radio button check was activated by user
@@ -187,7 +190,7 @@ namespace PrePoMax
             // Clear selection - if geometry selection type changed by the USER: 
             // sender != null                                                    
             // Visible = true - user action                                      
-            if (!_initialSetup && sender != null && Visible && selectionTypeChanged) 
+            if (!_initialSetup && sender != null && Visible && selectionTypeChanged)
                 _controller.ClearSelectionHistoryAndSelectionChanged();
             // Enable/disable Textboxes
             tbGeometryEdgeAngle.Enabled = rbGeometryEdgeAngle.Checked;
@@ -207,12 +210,12 @@ namespace PrePoMax
             else if (rbGeometryEdgeAngle.Checked)
             {
                 selectBy = vtkSelectBy.GeometryEdgeAngle;
-                tbGeometryEdgeAngle_TextChanged(null, null);
+                SetSelectionAngle(tbGeometryEdgeAngle);
             }
             else if (rbGeometrySurfaceAngle.Checked)
             {
                 selectBy = vtkSelectBy.GeometrySurfaceAngle;
-                tbGeometrySurfaceAngle_TextChanged(null, null);
+                SetSelectionAngle(tbGeometrySurfaceAngle);
             }
             else if (rbNode.Checked) selectBy = vtkSelectBy.Node;
             else if (rbElement.Checked) selectBy = vtkSelectBy.Element;
@@ -222,12 +225,12 @@ namespace PrePoMax
             else if (rbEdgeAngle.Checked)
             {
                 selectBy = vtkSelectBy.EdgeAngle;
-                tbEdgeAngle_TextChanged(null, null);
+                SetSelectionAngle(tbEdgeAngle);
             }
             else if (rbSurfaceAngle.Checked)
             {
                 selectBy = vtkSelectBy.SurfaceAngle;
-                tbSurfaceAngle_TextChanged(null, null);
+                SetSelectionAngle(tbSurfaceAngle);
             }
             else if (rbId.Checked) selectBy = vtkSelectBy.Id;
             else selectBy = vtkSelectBy.Off;
@@ -237,14 +240,6 @@ namespace PrePoMax
             _prevSelectionType = currentSelectionType;
             // Enable check box event
             _checkBoxEventRunning = false;
-        }
-        private void tbGeometryEdgeAngle_TextChanged(object sender, EventArgs e)
-        {
-            _controller.SetSelectAngle(_geometryEdgeAngle.Value);
-        }
-        private void tbGeometrySurfaceAngle_TextChanged(object sender, EventArgs e)
-        {
-            _controller.SetSelectAngle(_geometrySurfaceAngle.Value);
         }
         private void btnUndoSelection_Click(object sender, EventArgs e)
         {
@@ -284,14 +279,6 @@ namespace PrePoMax
             this.Size = size;
         }
         //
-        private void tbEdgeAngle_TextChanged(object sender, EventArgs e)
-        {
-            _controller.SetSelectAngle(_edgeAngle.Value);
-        }
-        private void tbSurfaceAngle_TextChanged(object sender, EventArgs e)
-        {
-            _controller.SetSelectAngle(_surfaceAngle.Value);
-        }
         private void btnSelectAll_Click(object sender, EventArgs e)
         {
             _controller.AddSelectionNode(new SelectionNodeIds(vtkSelectOperation.None, true), true);
@@ -302,7 +289,7 @@ namespace PrePoMax
         }
         private void btnAddId_Click(object sender, EventArgs e)
         {
-            try 
+            try
             {
                 int id;
                 if (int.TryParse(tbId.Text, out id))
@@ -357,51 +344,30 @@ namespace PrePoMax
             base.Hide();
         }
         //
-        private void tbGeometryEdgeAngle_KeyDown(object sender, KeyEventArgs e)
+        private void tbAngle_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Enter)
+            if (sender is TextBox tb)
             {
-                e.SuppressKeyPress = true;
-                rbGeometryEdgeAngle.Focus();
-                tbGeometryEdgeAngle.Focus();
+                if (e.KeyCode == Keys.Enter)
+                {
+                    e.SuppressKeyPress = true;  // no beep
+                    this.ActiveControl = null;
+                    tb.Focus();
+                    tb.SelectionStart = tbGeometryEdgeAngle.Text.Length;
+                    tb.ScrollToCaret();
+                }
+
             }
         }
-
-        private void tbGeometrySurfaceAngle_KeyDown(object sender, KeyEventArgs e)
+        private void tbAngle_KeyUp(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Enter)
-            {
-                e.SuppressKeyPress = true;
-                rbGeometrySurfaceAngle.Focus();
-                tbGeometrySurfaceAngle.Focus();
-            }
+            if (sender is TextBox tb) SetSelectionAngle(tb);
         }
-
-        private void tbEdgeAngle_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.Enter)
-            {
-                e.SuppressKeyPress = true;
-                rbEdgeAngle.Focus();
-                tbEdgeAngle.Focus();
-            }
-        }
-
-        private void tbSurfaceAngle_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.Enter)
-            {
-                e.SuppressKeyPress = true;
-                rbSurfaceAngle.Focus();
-                tbSurfaceAngle.Focus();
-            }
-        }
-
         private void tbId_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
             {
-                e.SuppressKeyPress = true;
+                e.SuppressKeyPress = true;  // no beep
             }
         }
 
@@ -416,7 +382,7 @@ namespace PrePoMax
         }
         public void ResetLocation()
         {
-            
+
             {
                 Point location = ItemSetDataEditor.ParentForm.Location.DeepClone();
                 location.X += ItemSetDataEditor.ParentForm.Width - 15 + 3;
@@ -456,9 +422,20 @@ namespace PrePoMax
         //
         private void SetSelectionAngle(TextBox tbAngle)
         {
-            double angle;
-            if (double.TryParse(tbAngle.Text, out angle)) _controller.SetSelectAngle(angle);
-            else MessageBox.Show("The selection angle is not a valid number.");
+            try
+            {
+                double angle;
+                if (!double.TryParse(tbAngle.Text, out angle))
+                {
+                    var converter = new StringAngleConverter();
+                    angle = (double)converter.ConvertFromString(tbAngle.Text);
+                }
+                _controller.SetSelectAngle(angle);
+            }
+            catch
+            {
+            }
+            
         }
         //
         // Disable close X button
@@ -473,7 +450,6 @@ namespace PrePoMax
             }
         }
 
-        
     }
 }
 

@@ -11,18 +11,18 @@ using UnitsNet.Units;
 
 namespace PrePoMax
 {
-    public class StringAngleConverter : TypeConverter
+    public class StringAreaConverter : TypeConverter
     {
         // Variables                                                                                                                
-        private static AngleUnit _angleUnit = AngleUnit.Radian;
+        private static AreaUnit _AreaUnit = AreaUnit.SquareMeter;
 
 
         // Properties                                                                                                               
-        public static string SetUnit { set { _angleUnit = Angle.ParseUnit(value); } }
+        public static string SetUnit { set { _AreaUnit = Area.ParseUnit(value); } }
 
 
         // Constructors                                                                                                             
-        public StringAngleConverter()
+        public StringAreaConverter()
         {
         }
 
@@ -42,8 +42,8 @@ namespace PrePoMax
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    Angle Angle = Angle.Parse(valueString).ToUnit(_angleUnit);
-                    valueDouble = Angle.Value;
+                    Area Area = Area.Parse(valueString).ToUnit(_AreaUnit);
+                    valueDouble = Area.Value;
                 }
                 //
                 return valueDouble;
@@ -59,8 +59,8 @@ namespace PrePoMax
                 {
                     if (value is double valueDouble)
                     {
-                        Angle Angle = Angle.From(valueDouble, _angleUnit);
-                        return Angle.Value.ToString() + " " + Angle.GetAbbreviation(_angleUnit);
+                        Area Area = Area.From(valueDouble, _AreaUnit);
+                        return Area.Value.ToString() + " " + Area.GetAbbreviation(_AreaUnit);
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);
@@ -71,4 +71,5 @@ namespace PrePoMax
             }
         }
     }
+
 }

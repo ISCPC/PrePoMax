@@ -167,6 +167,7 @@
     <Compile Include="Steps\StepCollection.cs" />
     <Compile Include="UnitSystem\StringAngleDOFConverter.cs" />
     <Compile Include="UnitSystem\StringAngleFixedDOFConverter.cs" />
+    <Compile Include="UnitSystem\StringAreaConverter.cs" />
     <Compile Include="UnitSystem\StringFixedDOFConverter.cs" />
     <Compile Include="UnitSystem\StringDOFConverter.cs" />
     <Compile Include="UnitSystem\StringAngleConverter.cs" />

@@ -29,12 +29,12 @@ namespace PrePoMax.Forms
         public FrmSectionView(Controller controller)
         {
             InitializeComponent();
-
+            //
             _controller = controller;
-            _sectionViewParameters = new SectionViewParameters();
+            _sectionViewParameters = new SectionViewParameters(_controller.Model.UnitSystem.LengthUnitAbbreviation);
             propertyGrid.SelectedObject = _sectionViewParameters;
             _pause = false;
-
+            //
             propertyGrid.SetParent(this);   // for the Tab key to work
             propertyGrid.SetLabelColumnWidth(1.75);
         }
@@ -87,7 +87,7 @@ namespace PrePoMax.Forms
                         _sectionViewParameters.Normal = _plane.Normal.Coor.ToArray();    // keep plane data for Cancel
                         SetScrollBarPositionFromPoint();
                     }
-
+                    //
                     _controller.ApplySectionView(_sectionViewParameters.Point, _sectionViewParameters.Normal);
                 }
                 else
@@ -158,9 +158,9 @@ namespace PrePoMax.Forms
         private void hsbPosition_Scroll(object sender, ScrollEventArgs e)
         {
             if (e.Type == ScrollEventType.EndScroll) return;
-
+            //
             UpdateProjHalfSize();
-
+            //
             double ratio = (double)(hsbPosition.Value - hsbPosition.Minimum) / (hsbPosition.Maximum - hsbPosition.Minimum);
             ratio = 2 * ratio - 1;
             Vec3D point = GetBBCenter() + _projHalfSize * ratio;
@@ -168,7 +168,7 @@ namespace PrePoMax.Forms
             point.Y = CaeGlobals.Tools.RoundToSignificantDigits(point.Y, 6);
             point.Z = CaeGlobals.Tools.RoundToSignificantDigits(point.Z, 6);
             _sectionViewParameters.Point = point.Coor;
-
+            //
             timerUpdate.Start();    // use timer to speed things up
         }
         private void btnOK_Click(object sender, EventArgs e)
@@ -200,18 +200,15 @@ namespace PrePoMax.Forms
         {
             _controller.ClearSelectionHistoryAndSelectionChanged();
             _sectionViewParameters.Clear();
-
-
             // Get start point grid item
             GridItem gi = propertyGrid.EnumerateAllItems().First((item) =>
                           item.PropertyDescriptor != null &&
                           item.PropertyDescriptor.Name == "PointItemSet");
-
             // Select it
             gi.Select();
-
+            //
             propertyGrid.Refresh();
-
+            //
             return true;
         }
         
@@ -249,7 +246,7 @@ namespace PrePoMax.Forms
                     }
                 }
             }
-
+            //
             if (selectionFinished)
             {
                 this.Enabled = true;
@@ -271,19 +268,18 @@ namespace PrePoMax.Forms
         private void UpdateProjHalfSize()
         {
             double[] box = _controller.GetBoundingBox();
-
+            //
             Vec3D v = new Vec3D(); // half box diagonal
             v.X = (box[1] - box[0]) / 2;
             v.Y = (box[3] - box[2]) / 2;
             v.Z = (box[5] - box[4]) / 2;
-
+            //
             Vec3D n = new Vec3D(_sectionViewParameters.Normal);
             n.Abs();
             n.Normalize();
-
-            // project 1/2 diagonal on the positive normal
+            // Project 1/2 diagonal on the positive normal
             double l = Vec3D.DotProduct(v, n) * 1.05;
-
+            //
             _projHalfSize = new Vec3D(_sectionViewParameters.Normal);
             _projHalfSize.Normalize();
             _projHalfSize = l * _projHalfSize;
@@ -302,22 +298,22 @@ namespace PrePoMax.Forms
             try
             {
                 UpdateProjHalfSize();
-
+                //
                 Vec3D c = GetBBCenter();
                 Vec3D n = new Vec3D(_sectionViewParameters.Normal);
                 n.Normalize();
-
+                //
                 Vec3D p = new Vec3D(_sectionViewParameters.Point);
                 Vec3D v = p - c;
-
+                //
                 double l = Vec3D.DotProduct(v, n);
                 double ratio = l / _projHalfSize.Len;
-
+                //
                 if (ratio > 1) ratio = 1;
                 else if (ratio < -1) ratio = -1;
-
+                //
                 ratio = (ratio + 1) / 2;        // to iterval from 0 to 1;
-
+                //
                 hsbPosition.Value = (int)Math.Round((hsbPosition.Maximum - hsbPosition.Minimum) * ratio, 0);
             }
             catch
@@ -328,9 +324,9 @@ namespace PrePoMax.Forms
             try
             {
                 if (_pause) return;
-
+                //
                 propertyGrid.Refresh();     // must be here to update values
-
+                //
                 System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
                 watch.Start();
                 //

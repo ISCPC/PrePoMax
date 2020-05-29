@@ -134,8 +134,8 @@
             this.tbEdgeAngle.TabIndex = 10;
             this.tbEdgeAngle.Text = "10";
             this.tbEdgeAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.tbEdgeAngle.TextChanged += new System.EventHandler(this.tbEdgeAngle_TextChanged);
-            this.tbEdgeAngle.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbEdgeAngle_KeyDown);
+            this.tbEdgeAngle.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbAngle_KeyDown);
+            this.tbEdgeAngle.KeyUp += new System.Windows.Forms.KeyEventHandler(this.tbAngle_KeyUp);
             // 
             // rbEdgeAngle
             // 
@@ -189,8 +189,8 @@
             this.tbSurfaceAngle.TabIndex = 5;
             this.tbSurfaceAngle.Text = "10";
             this.tbSurfaceAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.tbSurfaceAngle.TextChanged += new System.EventHandler(this.tbSurfaceAngle_TextChanged);
-            this.tbSurfaceAngle.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbSurfaceAngle_KeyDown);
+            this.tbSurfaceAngle.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbAngle_KeyDown);
+            this.tbSurfaceAngle.KeyUp += new System.Windows.Forms.KeyEventHandler(this.tbAngle_KeyUp);
             // 
             // rbSurfaceAngle
             // 
@@ -304,8 +304,8 @@
             this.tbGeometrySurfaceAngle.TabIndex = 17;
             this.tbGeometrySurfaceAngle.Text = "10";
             this.tbGeometrySurfaceAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.tbGeometrySurfaceAngle.TextChanged += new System.EventHandler(this.tbGeometrySurfaceAngle_TextChanged);
-            this.tbGeometrySurfaceAngle.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbGeometrySurfaceAngle_KeyDown);
+            this.tbGeometrySurfaceAngle.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbAngle_KeyDown);
+            this.tbGeometrySurfaceAngle.KeyUp += new System.Windows.Forms.KeyEventHandler(this.tbAngle_KeyUp);
             // 
             // rbGeometrySurfaceAngle
             // 
@@ -327,8 +327,8 @@
             this.tbGeometryEdgeAngle.TabIndex = 15;
             this.tbGeometryEdgeAngle.Text = "10";
             this.tbGeometryEdgeAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.tbGeometryEdgeAngle.TextChanged += new System.EventHandler(this.tbGeometryEdgeAngle_TextChanged);
-            this.tbGeometryEdgeAngle.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbGeometryEdgeAngle_KeyDown);
+            this.tbGeometryEdgeAngle.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbAngle_KeyDown);
+            this.tbGeometryEdgeAngle.KeyUp += new System.Windows.Forms.KeyEventHandler(this.tbAngle_KeyUp);
             // 
             // rbGeometryEdgeAngle
             // 
