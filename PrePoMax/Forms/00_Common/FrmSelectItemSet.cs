@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -14,6 +15,17 @@ namespace PrePoMax
 {
     public partial class FrmSelectItemSet : Form
     {
+        private class AngleData
+        {
+            [TypeConverter(typeof(StringAngleConverter))]
+            public double Value { get; set; }
+            //
+            public AngleData(double value)
+            {
+                Value = value;
+            }
+        }
+
         // Enum
         private enum SelectionType
         {
@@ -31,7 +43,11 @@ namespace PrePoMax
         private Point _btnUndoPosition;
         private Point _btnClearPosition;
         private bool _initialSetup;
-                
+        //
+        private AngleData _edgeAngle;
+        private AngleData _surfaceAngle;
+        private AngleData _geometryEdgeAngle;
+        private AngleData _geometrySurfaceAngle;
 
         // Properties                                                                                                               
         public ItemSetData ItemSetData
@@ -56,6 +72,17 @@ namespace PrePoMax
             _initialSetup = false;
             //
             btnMoreLess_Click(null, null);
+            //
+            StringAngleConverter.SetUnit = "deg";
+            _edgeAngle = new AngleData(10);
+            _surfaceAngle = new AngleData(10);
+            _geometryEdgeAngle = new AngleData(10);
+            _geometrySurfaceAngle = new AngleData(10);
+            //
+            tbEdgeAngle.DataBindings.Add("Text", _edgeAngle, "Value", true);
+            tbSurfaceAngle.DataBindings.Add("Text", _surfaceAngle, "Value", true);
+            tbGeometryEdgeAngle.DataBindings.Add("Text", _geometryEdgeAngle, "Value", true);
+            tbGeometrySurfaceAngle.DataBindings.Add("Text", _geometrySurfaceAngle, "Value", true);
         }
         public FrmSelectItemSet(Controller controller, ItemSetData itemSetData)
             : this(controller)
@@ -170,7 +197,7 @@ namespace PrePoMax
             tbId.Enabled = rbId.Checked;
             // Enable/disable buttons
             btnAddId.Enabled = rbId.Checked;
-            btnSubtractId.Enabled = rbId.Checked;
+            btnRemoveId.Enabled = rbId.Checked;
             // Check All and Invert buttons
             btnSelectAll.Enabled = currentSelectionType == SelectionType.Mesh;
             btnInvertSelection.Enabled = currentSelectionType == SelectionType.Mesh;
@@ -213,11 +240,11 @@ namespace PrePoMax
         }
         private void tbGeometryEdgeAngle_TextChanged(object sender, EventArgs e)
         {
-            SetSelectionAngle(tbGeometryEdgeAngle);
+            _controller.SetSelectAngle(_geometryEdgeAngle.Value);
         }
         private void tbGeometrySurfaceAngle_TextChanged(object sender, EventArgs e)
         {
-            SetSelectionAngle(tbGeometrySurfaceAngle);
+            _controller.SetSelectAngle(_geometrySurfaceAngle.Value);
         }
         private void btnUndoSelection_Click(object sender, EventArgs e)
         {
@@ -246,7 +273,7 @@ namespace PrePoMax
             else
             {
                 btnMoreLess.Text = "More";
-                size = new Size(237, 300);
+                size = new Size(207, 300);
                 //
                 btnUndoSelection.Location = _btnUndoPosition;
                 btnClearSelection.Location = _btnClearPosition;
@@ -259,11 +286,11 @@ namespace PrePoMax
         //
         private void tbEdgeAngle_TextChanged(object sender, EventArgs e)
         {
-            SetSelectionAngle(tbEdgeAngle);
+            _controller.SetSelectAngle(_edgeAngle.Value);
         }
         private void tbSurfaceAngle_TextChanged(object sender, EventArgs e)
         {
-            SetSelectionAngle(tbSurfaceAngle);
+            _controller.SetSelectAngle(_surfaceAngle.Value);
         }
         private void btnSelectAll_Click(object sender, EventArgs e)
         {
@@ -294,7 +321,7 @@ namespace PrePoMax
             }
 
         }
-        private void btnSubtractId_Click(object sender, EventArgs e)
+        private void btnRemoveId_Click(object sender, EventArgs e)
         {
             try
             {
@@ -328,6 +355,54 @@ namespace PrePoMax
         {
             this.DialogResult = dialogResult;
             base.Hide();
+        }
+        //
+        private void tbGeometryEdgeAngle_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;
+                rbGeometryEdgeAngle.Focus();
+                tbGeometryEdgeAngle.Focus();
+            }
+        }
+
+        private void tbGeometrySurfaceAngle_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;
+                rbGeometrySurfaceAngle.Focus();
+                tbGeometrySurfaceAngle.Focus();
+            }
+        }
+
+        private void tbEdgeAngle_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;
+                rbEdgeAngle.Focus();
+                tbEdgeAngle.Focus();
+            }
+        }
+
+        private void tbSurfaceAngle_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;
+                rbSurfaceAngle.Focus();
+                tbSurfaceAngle.Focus();
+            }
+        }
+
+        private void tbId_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;
+            }
         }
 
         // Methods                                                                                                                  
@@ -398,7 +473,7 @@ namespace PrePoMax
             }
         }
 
-
+        
     }
 }
 

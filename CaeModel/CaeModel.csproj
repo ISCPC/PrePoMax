@@ -165,6 +165,15 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Steps\StepCollection.cs" />
+    <Compile Include="UnitSystem\StringAngleDOFConverter.cs" />
+    <Compile Include="UnitSystem\StringAngleFixedDOFConverter.cs" />
+    <Compile Include="UnitSystem\StringFixedDOFConverter.cs" />
+    <Compile Include="UnitSystem\StringDOFConverter.cs" />
+    <Compile Include="UnitSystem\StringAngleConverter.cs" />
+    <Compile Include="UnitSystem\StringLengthConverter.cs" />
+    <Compile Include="UnitSystem\StringRotationalSpeedConverter.cs" />
+    <Compile Include="UnitSystem\StringAccelerationConverter.cs" />
+    <Compile Include="UnitSystem\StringPressureConverter.cs" />
     <Compile Include="UnitSystem\StringMomentConverter.cs" />
     <Compile Include="UnitSystem\StringForceConverter.cs" />
     <Compile Include="UnitSystem\UnitSystem.cs" />

@@ -336,7 +336,6 @@
     <Compile Include="Forms\33_Constraint\ViewTie.cs" />
     <Compile Include="Forms\33_Constraint\ViewRigidBody.cs" />
     <Compile Include="Forms\33_Constraint\ViewConstraint.cs" />
-    <Compile Include="Forms\51_BoundaryConditions\StringDOFconverter.cs" />
     <Compile Include="Forms\51_BoundaryConditions\ViewBoundaryCondition.cs" />
     <Compile Include="Forms\51_BoundaryConditions\ViewDisplacementRotation.cs" />
     <Compile Include="Forms\43_FieldOutput\ViewFieldOutput.cs" />

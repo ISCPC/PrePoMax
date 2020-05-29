@@ -11,18 +11,18 @@ using UnitsNet.Units;
 
 namespace PrePoMax
 {
-    public class StringForceConverter : TypeConverter
+    public class StringAccelerationConverter : TypeConverter
     {
         // Variables                                                                                                                
-        private static ForceUnit _forceUnit = ForceUnit.Newton;
+        private static AccelerationUnit _accelerationUnit = AccelerationUnit.MeterPerSecondSquared;
 
 
         // Properties                                                                                                               
-        public static string SetUnit { set { _forceUnit = Force.ParseUnit(value); } }
+        public static string SetUnit { set { _accelerationUnit = Acceleration.ParseUnit(value); } }
 
 
         // Constructors                                                                                                             
-        public StringForceConverter()
+        public StringAccelerationConverter()
         {
         }
 
@@ -42,8 +42,8 @@ namespace PrePoMax
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    Force force = Force.Parse(valueString).ToUnit(_forceUnit);
-                    valueDouble = force.Value;
+                    Acceleration Acceleration = Acceleration.Parse(valueString).ToUnit(_accelerationUnit);
+                    valueDouble = Acceleration.Value;
                 }
                 //
                 return valueDouble;
@@ -59,8 +59,8 @@ namespace PrePoMax
                 {
                     if (value is double valueDouble)
                     {
-                        Force force = Force.From(valueDouble, _forceUnit);
-                        return force.Value.ToString() + " " + Force.GetAbbreviation(_forceUnit);
+                        Acceleration Acceleration = Acceleration.From(valueDouble, _accelerationUnit);
+                        return Acceleration.Value.ToString() + " " + Acceleration.GetAbbreviation(_accelerationUnit);
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);

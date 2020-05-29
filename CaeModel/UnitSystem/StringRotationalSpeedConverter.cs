@@ -11,18 +11,18 @@ using UnitsNet.Units;
 
 namespace PrePoMax
 {
-    public class StringForceConverter : TypeConverter
+    public class StringRotationalSpeedConverter : TypeConverter
     {
         // Variables                                                                                                                
-        private static ForceUnit _forceUnit = ForceUnit.Newton;
+        private static RotationalSpeedUnit _RotationalSpeedUnit = RotationalSpeedUnit.RadianPerSecond;
 
 
         // Properties                                                                                                               
-        public static string SetUnit { set { _forceUnit = Force.ParseUnit(value); } }
+        public static string SetUnit { set { _RotationalSpeedUnit = RotationalSpeed.ParseUnit(value); } }
 
 
         // Constructors                                                                                                             
-        public StringForceConverter()
+        public StringRotationalSpeedConverter()
         {
         }
 
@@ -42,8 +42,8 @@ namespace PrePoMax
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    Force force = Force.Parse(valueString).ToUnit(_forceUnit);
-                    valueDouble = force.Value;
+                    RotationalSpeed RotationalSpeed = RotationalSpeed.Parse(valueString).ToUnit(_RotationalSpeedUnit);
+                    valueDouble = RotationalSpeed.Value;
                 }
                 //
                 return valueDouble;
@@ -59,8 +59,8 @@ namespace PrePoMax
                 {
                     if (value is double valueDouble)
                     {
-                        Force force = Force.From(valueDouble, _forceUnit);
-                        return force.Value.ToString() + " " + Force.GetAbbreviation(_forceUnit);
+                        RotationalSpeed RotationalSpeed = RotationalSpeed.From(valueDouble, _RotationalSpeedUnit);
+                        return RotationalSpeed.Value.ToString() + " " + RotationalSpeed.GetAbbreviation(_RotationalSpeedUnit);
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);

@@ -35,6 +35,7 @@ namespace PrePoMax
         }
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
+            // Convert from string
             if (value is string valueString)
             {
                 double valueDouble;
@@ -51,6 +52,7 @@ namespace PrePoMax
         }
         public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
         {
+            // Convert to string
             try
             {
                 if (destinationType == typeof(string))

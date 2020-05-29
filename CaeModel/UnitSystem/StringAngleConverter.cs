@@ -11,18 +11,18 @@ using UnitsNet.Units;
 
 namespace PrePoMax
 {
-    public class StringForceConverter : TypeConverter
+    public class StringAngleConverter : TypeConverter
     {
         // Variables                                                                                                                
-        private static ForceUnit _forceUnit = ForceUnit.Newton;
+        private static AngleUnit _angleUnit = AngleUnit.Radian;
 
 
         // Properties                                                                                                               
-        public static string SetUnit { set { _forceUnit = Force.ParseUnit(value); } }
+        public static string SetUnit { set { _angleUnit = Angle.ParseUnit(value); } }
 
 
         // Constructors                                                                                                             
-        public StringForceConverter()
+        public StringAngleConverter()
         {
         }
 
@@ -42,8 +42,8 @@ namespace PrePoMax
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    Force force = Force.Parse(valueString).ToUnit(_forceUnit);
-                    valueDouble = force.Value;
+                    Angle Angle = Angle.Parse(valueString).ToUnit(_angleUnit);
+                    valueDouble = Angle.Value;
                 }
                 //
                 return valueDouble;
@@ -59,8 +59,8 @@ namespace PrePoMax
                 {
                     if (value is double valueDouble)
                     {
-                        Force force = Force.From(valueDouble, _forceUnit);
-                        return force.Value.ToString() + " " + Force.GetAbbreviation(_forceUnit);
+                        Angle Angle = Angle.From(valueDouble, _angleUnit);
+                        return Angle.Value.ToString() + " " + Angle.GetAbbreviation(_angleUnit);
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);

@@ -11,18 +11,18 @@ using UnitsNet.Units;
 
 namespace PrePoMax
 {
-    public class StringForceConverter : TypeConverter
+    public class StringLengthConverter : TypeConverter
     {
         // Variables                                                                                                                
-        private static ForceUnit _forceUnit = ForceUnit.Newton;
+        private static LengthUnit _lengthUnit = LengthUnit.Meter;
 
 
         // Properties                                                                                                               
-        public static string SetUnit { set { _forceUnit = Force.ParseUnit(value); } }
+        public static string SetUnit { set { _lengthUnit = Length.ParseUnit(value); } }
 
 
         // Constructors                                                                                                             
-        public StringForceConverter()
+        public StringLengthConverter()
         {
         }
 
@@ -42,8 +42,8 @@ namespace PrePoMax
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    Force force = Force.Parse(valueString).ToUnit(_forceUnit);
-                    valueDouble = force.Value;
+                    Length Length = Length.Parse(valueString).ToUnit(_lengthUnit);
+                    valueDouble = Length.Value;
                 }
                 //
                 return valueDouble;
@@ -59,8 +59,8 @@ namespace PrePoMax
                 {
                     if (value is double valueDouble)
                     {
-                        Force force = Force.From(valueDouble, _forceUnit);
-                        return force.Value.ToString() + " " + Force.GetAbbreviation(_forceUnit);
+                        Length Length = Length.From(valueDouble, _lengthUnit);
+                        return Length.Value.ToString() + " " + Length.GetAbbreviation(_lengthUnit);
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);

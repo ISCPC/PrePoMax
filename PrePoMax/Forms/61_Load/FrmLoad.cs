@@ -29,11 +29,13 @@ namespace PrePoMax.Forms
                 var clone = value.DeepClone();
                 if (clone is CLoad cl) _viewLoad = new ViewCLoad(cl, unitSystem.ForceUnitAbbreviation);
                 else if (clone is MomentLoad ml) _viewLoad = new ViewMomentLoad(ml, unitSystem.MomentUnitAbbreviation);
-                else if (clone is DLoad dl) _viewLoad = new ViewDLoad(dl);
+                else if (clone is DLoad dl) _viewLoad = new ViewDLoad(dl, unitSystem.PressureUnitAbbreviation);
                 else if (clone is STLoad stl) _viewLoad = new ViewSTLoad(stl, unitSystem.ForceUnitAbbreviation);
-                else if (clone is GravityLoad gl) _viewLoad = new ViewGravityLoad(gl);
-                else if (clone is CentrifLoad cfl) _viewLoad = new ViewCentrifLoad(cfl);
-                else if (clone is PreTensionLoad ptl) _viewLoad = new ViewPreTensionLoad(ptl);
+                else if (clone is GravityLoad gl) _viewLoad = new ViewGravityLoad(gl, unitSystem.AccelerationUnitAbbreviation);
+                else if (clone is CentrifLoad cfl) _viewLoad = new ViewCentrifLoad(cfl, unitSystem.LengthUnitAbbreviation,
+                                                                                   unitSystem.RotationalSpeedUnitAbbreviation);
+                else if (clone is PreTensionLoad ptl) _viewLoad = new ViewPreTensionLoad(ptl, unitSystem.LengthUnitAbbreviation,
+                                                                                         unitSystem.ForceUnitAbbreviation);
                 else throw new NotImplementedException();
             }
         }
@@ -49,7 +51,7 @@ namespace PrePoMax.Forms
             //
             _selectedPropertyGridItemChangedEventActive = true;
             //
-            this.Height = 637;
+            this.Height = 637 + 2 * 19;
         }
         private void InitializeComponent()
         {
@@ -68,28 +70,28 @@ namespace PrePoMax.Forms
             // gbProperties
             // 
             this.gbProperties.Location = new System.Drawing.Point(12, 179);
-            this.gbProperties.Size = new System.Drawing.Size(310, 334);
+            this.gbProperties.Size = new System.Drawing.Size(310, 379);
             // 
             // propertyGrid
             // 
-            this.propertyGrid.Size = new System.Drawing.Size(298, 306);
+            this.propertyGrid.Size = new System.Drawing.Size(298, 351);
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(160, 519);
+            this.btnOK.Location = new System.Drawing.Point(160, 564);
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(241, 519);
+            this.btnCancel.Location = new System.Drawing.Point(241, 564);
             // 
             // btnOkAddNew
             // 
-            this.btnOkAddNew.Location = new System.Drawing.Point(79, 519);
+            this.btnOkAddNew.Location = new System.Drawing.Point(79, 564);
             // 
             // FrmLoad
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.ClientSize = new System.Drawing.Size(334, 554);
+            this.ClientSize = new System.Drawing.Size(334, 599);
             this.Name = "FrmLoad";
             this.Text = "Edit Load";
             this.gbType.ResumeLayout(false);
@@ -217,7 +219,7 @@ namespace PrePoMax.Forms
                 if (cfl.N1 == 0 && cfl.N2 == 0 && cfl.N3 == 0)
                     throw new CaeException("At least one axis direction component must not be equal to 0.");
                 if (cfl.RotationalSpeed2 == 0)
-                    throw new CaeException("Rotational speed square must not be equal to 0.");
+                    throw new CaeException("Rotational speed must not be equal to 0.");
             }
             else if (FELoad is PreTensionLoad ptl)
             {
@@ -450,7 +452,7 @@ namespace PrePoMax.Forms
             name = "Pressure";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            ViewDLoad vdl = new ViewDLoad(new DLoad(loadName, "", RegionTypeEnum.Selection, 0));
+            ViewDLoad vdl = new ViewDLoad(new DLoad(loadName, "", RegionTypeEnum.Selection, 0), unitSystem.PressureUnitAbbreviation);
             vdl.PopululateDropDownLists(surfaceNames);
             vdl.Color = color;
             item.Tag = vdl;
@@ -469,7 +471,8 @@ namespace PrePoMax.Forms
             name = "Gravity";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            ViewGravityLoad vgl = new ViewGravityLoad(new GravityLoad(loadName, "", RegionTypeEnum.Selection));
+            ViewGravityLoad vgl = new ViewGravityLoad(new GravityLoad(loadName, "", RegionTypeEnum.Selection),
+                                                      unitSystem.AccelerationUnitAbbreviation);
             vgl.PopululateDropDownLists(partNames, elementSetNames);
             vgl.Color = color;
             item.Tag = vgl;
@@ -478,7 +481,9 @@ namespace PrePoMax.Forms
             name = "Centrifugal load";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            ViewCentrifLoad vcfl = new ViewCentrifLoad(new CentrifLoad(loadName, "", RegionTypeEnum.Selection));
+            ViewCentrifLoad vcfl = new ViewCentrifLoad(new CentrifLoad(loadName, "", RegionTypeEnum.Selection),
+                                                       unitSystem.LengthUnitAbbreviation,
+                                                       unitSystem.RotationalSpeedUnitAbbreviation);
             vcfl.PopululateDropDownLists(partNames, elementSetNames);
             vcfl.Color = color;
             item.Tag = vcfl;
@@ -487,7 +492,9 @@ namespace PrePoMax.Forms
             name = "Pre-tension";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            ViewPreTensionLoad vptl = new ViewPreTensionLoad(new PreTensionLoad(loadName, "", RegionTypeEnum.Selection, 0));
+            ViewPreTensionLoad vptl = new ViewPreTensionLoad(new PreTensionLoad(loadName, "", RegionTypeEnum.Selection, 0),
+                                                             unitSystem.LengthUnitAbbreviation,
+                                                             unitSystem.ForceUnitAbbreviation);
             vptl.PopululateDropDownLists(elementBasedSurfaceNames);
             vptl.Color = color;
             item.Tag = vptl;

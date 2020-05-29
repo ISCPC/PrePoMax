@@ -24,8 +24,11 @@ namespace PrePoMax.Forms
             get { return _viewBc != null ? _viewBc.GetBase() : null; }
             set
             {
-                if (value is DisplacementRotation) _viewBc = new ViewDisplacementRotation((DisplacementRotation)value.DeepClone());
-                else if (value is SubmodelBC) _viewBc = new ViewSubmodel((SubmodelBC)value.DeepClone());
+                var unitSystem = _controller.Model.UnitSystem;
+                if (value is DisplacementRotation dr) _viewBc = new ViewDisplacementRotation(dr.DeepClone(),
+                                                                                             unitSystem.LengthUnitAbbreviation,
+                                                                                             unitSystem.AngleUnitAbbreviation);
+                else if (value is SubmodelBC sm) _viewBc = new ViewSubmodel(sm.DeepClone());
                 else throw new NotImplementedException();
             }
         }
@@ -279,15 +282,18 @@ namespace PrePoMax.Forms
         }
 
 
+
         // Methods                                                                                                                  
         private void PopulateListOfBCs(string[] nodeSetNames, string[] surfaceNames, string[] referencePointNames)
         {
             System.Drawing.Color color = _controller.Settings.Pre.BoundaryConditionSymbolColor;
             ListViewItem item;
+            var unitSystem = _controller.Model.UnitSystem;
             // Displacement/Rotation"
             item = new ListViewItem("Displacement/Rotation");
             DisplacementRotation dr = new DisplacementRotation(GetBoundaryConditionName(), "", RegionTypeEnum.Selection);
-            ViewDisplacementRotation vdr = new ViewDisplacementRotation(dr);
+            ViewDisplacementRotation vdr = new ViewDisplacementRotation(dr, unitSystem.LengthUnitAbbreviation,
+                                                                        unitSystem.AngleUnitAbbreviation);
             vdr.PopululateDropDownLists(nodeSetNames, surfaceNames, referencePointNames);
             vdr.Color = color;
             item.Tag = vdr;

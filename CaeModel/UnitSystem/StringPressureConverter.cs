@@ -11,18 +11,18 @@ using UnitsNet.Units;
 
 namespace PrePoMax
 {
-    public class StringForceConverter : TypeConverter
+    public class StringPressureConverter : TypeConverter
     {
         // Variables                                                                                                                
-        private static ForceUnit _forceUnit = ForceUnit.Newton;
+        private static PressureUnit _pressureUnit = PressureUnit.Pascal;
 
 
         // Properties                                                                                                               
-        public static string SetUnit { set { _forceUnit = Force.ParseUnit(value); } }
+        public static string SetUnit { set { _pressureUnit = Pressure.ParseUnit(value); } }
 
 
         // Constructors                                                                                                             
-        public StringForceConverter()
+        public StringPressureConverter()
         {
         }
 
@@ -42,8 +42,8 @@ namespace PrePoMax
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    Force force = Force.Parse(valueString).ToUnit(_forceUnit);
-                    valueDouble = force.Value;
+                    Pressure Pressure = Pressure.Parse(valueString).ToUnit(_pressureUnit);
+                    valueDouble = Pressure.Value;
                 }
                 //
                 return valueDouble;
@@ -59,8 +59,8 @@ namespace PrePoMax
                 {
                     if (value is double valueDouble)
                     {
-                        Force force = Force.From(valueDouble, _forceUnit);
-                        return force.Value.ToString() + " " + Force.GetAbbreviation(_forceUnit);
+                        Pressure Pressure = Pressure.From(valueDouble, _pressureUnit);
+                        return Pressure.Value.ToString() + " " + Pressure.GetAbbreviation(_pressureUnit);
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);
