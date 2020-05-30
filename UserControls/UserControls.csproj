@@ -119,6 +119,12 @@
     <Compile Include="ListViewWithSelection.Designer.cs">
       <DependentUpon>ListViewWithSelection.cs</DependentUpon>
     </Compile>
+    <Compile Include="TextBoxes\UnitAwareTextBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="TextBoxes\UnitAwareTextBox.Designer.cs">
+      <DependentUpon>UnitAwareTextBox.cs</DependentUpon>
+    </Compile>
     <Compile Include="Trees\MultiSelectBufferedTreeView.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -137,10 +143,10 @@
     <Compile Include="ModelTree.Designer.cs">
       <DependentUpon>ModelTree.cs</DependentUpon>
     </Compile>
-    <Compile Include="NumericTextBox.cs">
+    <Compile Include="TextBoxes\NumericTextBox.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="NumericTextBox.Designer.cs">
+    <Compile Include="TextBoxes\NumericTextBox.Designer.cs">
       <DependentUpon>NumericTextBox.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -185,7 +191,10 @@
     <EmbeddedResource Include="ModelTree.resx">
       <DependentUpon>ModelTree.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="NumericTextBox.resx">
+    <EmbeddedResource Include="TextBoxes\UnitAwareTextBox.resx">
+      <DependentUpon>UnitAwareTextBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TextBoxes\NumericTextBox.resx">
       <DependentUpon>NumericTextBox.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">

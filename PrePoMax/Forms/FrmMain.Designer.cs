@@ -256,6 +256,8 @@
             this.tspbProgress = new System.Windows.Forms.ToolStripProgressBar();
             this.tsslState = new System.Windows.Forms.ToolStripStatusLabel();
             this.tsslCancel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.tsslEmpty = new System.Windows.Forms.ToolStripStatusLabel();
+            this.tsslUnitSystem = new System.Windows.Forms.ToolStripStatusLabel();
             this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.tsResults = new UserControls.ToolStripFocus();
@@ -307,8 +309,6 @@
             this.tscbSymbolsForStep = new System.Windows.Forms.ToolStripComboBox();
             this.timerTest = new System.Windows.Forms.Timer(this.components);
             this.timerOutput = new System.Windows.Forms.Timer(this.components);
-            this.tsslUnitSystem = new System.Windows.Forms.ToolStripStatusLabel();
-            this.tsslEmpty = new System.Windows.Forms.ToolStripStatusLabel();
             this.menuStripMain.SuspendLayout();
             this.statusStripMain.SuspendLayout();
             this.tsResults.SuspendLayout();
@@ -884,7 +884,7 @@
             // 
             this.tsmiCreateAndImportCompoundPart.Name = "tsmiCreateAndImportCompoundPart";
             this.tsmiCreateAndImportCompoundPart.Size = new System.Drawing.Size(196, 22);
-            this.tsmiCreateAndImportCompoundPart.Text = "Create Aompound Part";
+            this.tsmiCreateAndImportCompoundPart.Text = "Create Compound Part";
             this.tsmiCreateAndImportCompoundPart.Click += new System.EventHandler(this.tsmiCreateAndImportCompoundPart_Click);
             // 
             // tsmiMesh
@@ -2127,6 +2127,19 @@
             this.tsslCancel.MouseLeave += new System.EventHandler(this.tsslCancel_MouseLeave);
             this.tsslCancel.MouseUp += new System.Windows.Forms.MouseEventHandler(this.tsslCancel_MouseUp);
             // 
+            // tsslEmpty
+            // 
+            this.tsslEmpty.Name = "tsslEmpty";
+            this.tsslEmpty.Size = new System.Drawing.Size(1113, 19);
+            this.tsslEmpty.Spring = true;
+            this.tsslEmpty.Text = " ";
+            // 
+            // tsslUnitSystem
+            // 
+            this.tsslUnitSystem.Name = "tsslUnitSystem";
+            this.tsslUnitSystem.Size = new System.Drawing.Size(132, 19);
+            this.tsslUnitSystem.Text = "Unit system: mm, ton, s";
+            // 
             // openFileDialog
             // 
             this.openFileDialog.FileName = "openFileDialog";
@@ -2649,19 +2662,6 @@
             // timerOutput
             // 
             this.timerOutput.Tick += new System.EventHandler(this.timerOutput_Tick);
-            // 
-            // tsslUnitSystem
-            // 
-            this.tsslUnitSystem.Name = "tsslUnitSystem";
-            this.tsslUnitSystem.Size = new System.Drawing.Size(132, 19);
-            this.tsslUnitSystem.Text = "Unit system: mm, ton, s";
-            // 
-            // tsslEmpty
-            // 
-            this.tsslEmpty.Name = "tsslEmpty";
-            this.tsslEmpty.Size = new System.Drawing.Size(1181, 19);
-            this.tsslEmpty.Spring = true;
-            this.tsslEmpty.Text = " ";
             // 
             // FrmMain
             // 

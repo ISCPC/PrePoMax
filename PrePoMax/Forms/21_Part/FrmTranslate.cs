@@ -41,18 +41,18 @@ namespace PrePoMax.Forms
             : base(2)
         {
             InitializeComponent();
-
+            //
             _controller = controller;
-            _translateParameters = new TranslateParameters();
-            propertyGrid.SelectedObject = _translateParameters;
-
+            //
+            tsmiResetAll_Click(null, null);
+            //
             _coorNodesToDraw = new double[1][];
             _coorNodesToDraw[0] = new double[3];
-
+            //
             _coorLinesToDraw = new double[2][];
             _coorLinesToDraw[0] = new double[3];
             _coorLinesToDraw[1] = new double[3];
-
+            //
             btnOK.Visible = false;
             btnOkAddNew.Width = btnOK.Width;
             btnOkAddNew.Left = btnOK.Left;
@@ -102,43 +102,46 @@ namespace PrePoMax.Forms
         }
 
 
-        // Overrides                                                                                                                
+        // Event handlers                                                                                                           
         protected override void OnPropertyGridPropertyValueChanged()
         {
             HighlightNodes();
-
+            //
             base.OnPropertyGridPropertyValueChanged();
         }
         protected override void OnApply(bool onOkAddNew)
         {
             _translateParameters = (TranslateParameters)propertyGrid.SelectedObject;
-
+            //
             double[] translateVector = TranslateVector;
             _controller.TranlsateModelPartsCommand(_partNames, translateVector, _translateParameters.Copy);
-
+            //
             HighlightNodes();
         }
-
-
-        // Methods                                                                                                                  
-        public bool PrepareForm(string stepName, string partToEditName)
+        protected override bool OnPrepareForm(string stepName, string partToEditName)
         {
             _controller.ClearSelectionHistoryAndSelectionChanged();
             _translateParameters.Clear();
-            
-
             // Get start point grid item
             GridItem gi = propertyGrid.EnumerateAllItems().First((item) =>
                               item.PropertyDescriptor != null &&
                               item.PropertyDescriptor.Name == "StartPointItemSet");
-
             // Select it
             gi.Select();
-
+            //
             propertyGrid.Refresh();
-
-            return OnPrepareForm(stepName, partToEditName);
+            //
+            return true;
         }
+        private void tsmiResetAll_Click(object sender, EventArgs e)
+        {
+            _translateParameters = new TranslateParameters(_controller.Model.UnitSystem.LengthUnitAbbreviation);
+            propertyGrid.SelectedObject = _translateParameters;
+            _controller.ClearAllSelection();
+        }
+
+
+        // Methods                                                                                                                  
         public void PickedIds(int[] ids)
         {
             this.Enabled = true;
@@ -187,13 +190,6 @@ namespace PrePoMax.Forms
 
             _controller.DrawNodes("Translate", _coorNodesToDraw, color, layer, 7);
             _controller.HighlightConnectedLines(_coorLinesToDraw);
-        }
-
-        private void tsmiResetAll_Click(object sender, EventArgs e)
-        {
-            _translateParameters = new TranslateParameters();
-            propertyGrid.SelectedObject = _translateParameters;
-            _controller.ClearAllSelection();
         }
     }
 }

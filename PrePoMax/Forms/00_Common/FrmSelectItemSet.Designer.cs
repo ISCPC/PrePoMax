@@ -33,12 +33,12 @@
             this.gbFEMesh = new System.Windows.Forms.GroupBox();
             this.rbEdge = new System.Windows.Forms.RadioButton();
             this.rbSurface = new System.Windows.Forms.RadioButton();
-            this.tbEdgeAngle = new System.Windows.Forms.TextBox();
+            this.tbEdgeAngle = new UserControls.UnitAwareTextBox();
             this.rbEdgeAngle = new System.Windows.Forms.RadioButton();
             this.btnRemoveId = new System.Windows.Forms.Button();
             this.rbId = new System.Windows.Forms.RadioButton();
             this.tbId = new UserControls.NumericTextBox();
-            this.tbSurfaceAngle = new System.Windows.Forms.TextBox();
+            this.tbSurfaceAngle = new UserControls.UnitAwareTextBox();
             this.rbSurfaceAngle = new System.Windows.Forms.RadioButton();
             this.rbPart = new System.Windows.Forms.RadioButton();
             this.rbElement = new System.Windows.Forms.RadioButton();
@@ -48,9 +48,9 @@
             this.btnInvertSelection = new System.Windows.Forms.Button();
             this.btnSelectAll = new System.Windows.Forms.Button();
             this.gbGeometry = new System.Windows.Forms.GroupBox();
-            this.tbGeometrySurfaceAngle = new System.Windows.Forms.TextBox();
+            this.tbGeometrySurfaceAngle = new UserControls.UnitAwareTextBox();
             this.rbGeometrySurfaceAngle = new System.Windows.Forms.RadioButton();
-            this.tbGeometryEdgeAngle = new System.Windows.Forms.TextBox();
+            this.tbGeometryEdgeAngle = new UserControls.UnitAwareTextBox();
             this.rbGeometryEdgeAngle = new System.Windows.Forms.RadioButton();
             this.btnUndoSelection = new System.Windows.Forms.Button();
             this.btnOK = new System.Windows.Forms.Button();
@@ -134,9 +134,7 @@
             this.tbEdgeAngle.TabIndex = 10;
             this.tbEdgeAngle.Text = "10";
             this.tbEdgeAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.tbEdgeAngle.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbAngle_KeyDown);
             this.tbEdgeAngle.KeyUp += new System.Windows.Forms.KeyEventHandler(this.tbAngle_KeyUp);
-            this.tbEdgeAngle.Leave += new System.EventHandler(this.tbAngle_Leave);
             // 
             // rbEdgeAngle
             // 
@@ -190,9 +188,7 @@
             this.tbSurfaceAngle.TabIndex = 5;
             this.tbSurfaceAngle.Text = "10";
             this.tbSurfaceAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.tbSurfaceAngle.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbAngle_KeyDown);
             this.tbSurfaceAngle.KeyUp += new System.Windows.Forms.KeyEventHandler(this.tbAngle_KeyUp);
-            this.tbSurfaceAngle.Leave += new System.EventHandler(this.tbAngle_Leave);
             // 
             // rbSurfaceAngle
             // 
@@ -306,9 +302,7 @@
             this.tbGeometrySurfaceAngle.TabIndex = 17;
             this.tbGeometrySurfaceAngle.Text = "10";
             this.tbGeometrySurfaceAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.tbGeometrySurfaceAngle.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbAngle_KeyDown);
             this.tbGeometrySurfaceAngle.KeyUp += new System.Windows.Forms.KeyEventHandler(this.tbAngle_KeyUp);
-            this.tbGeometrySurfaceAngle.Leave += new System.EventHandler(this.tbAngle_Leave);
             // 
             // rbGeometrySurfaceAngle
             // 
@@ -330,9 +324,8 @@
             this.tbGeometryEdgeAngle.TabIndex = 15;
             this.tbGeometryEdgeAngle.Text = "10";
             this.tbGeometryEdgeAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.tbGeometryEdgeAngle.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbAngle_KeyDown);
+            this.tbGeometryEdgeAngle.UnitConverter = null;
             this.tbGeometryEdgeAngle.KeyUp += new System.Windows.Forms.KeyEventHandler(this.tbAngle_KeyUp);
-            this.tbGeometryEdgeAngle.Leave += new System.EventHandler(this.tbAngle_Leave);
             // 
             // rbGeometryEdgeAngle
             // 
@@ -415,7 +408,7 @@
         private System.Windows.Forms.Button btnAddId;
         private UserControls.NumericTextBox tbId;
         private System.Windows.Forms.GroupBox gbFEMesh;
-        private System.Windows.Forms.TextBox tbSurfaceAngle;
+        private UserControls.UnitAwareTextBox tbSurfaceAngle;
         private System.Windows.Forms.RadioButton rbSurfaceAngle;
         private System.Windows.Forms.RadioButton rbPart;
         private System.Windows.Forms.RadioButton rbElement;
@@ -427,15 +420,15 @@
         private System.Windows.Forms.Button btnOK;
         private System.Windows.Forms.RadioButton rbId;
         private System.Windows.Forms.Button btnRemoveId;
-        private System.Windows.Forms.TextBox tbEdgeAngle;
+        private UserControls.UnitAwareTextBox tbEdgeAngle;
         private System.Windows.Forms.RadioButton rbEdgeAngle;
         private System.Windows.Forms.RadioButton rbSurface;
         private System.Windows.Forms.RadioButton rbEdge;
         private System.Windows.Forms.RadioButton rbGeometry;
         private System.Windows.Forms.GroupBox gbGeometry;
-        private System.Windows.Forms.TextBox tbGeometrySurfaceAngle;
+        private UserControls.UnitAwareTextBox tbGeometrySurfaceAngle;
         private System.Windows.Forms.RadioButton rbGeometrySurfaceAngle;
-        private System.Windows.Forms.TextBox tbGeometryEdgeAngle;
+        private UserControls.UnitAwareTextBox tbGeometryEdgeAngle;
         private System.Windows.Forms.RadioButton rbGeometryEdgeAngle;
         private System.Windows.Forms.Button btnMoreLess;
     }

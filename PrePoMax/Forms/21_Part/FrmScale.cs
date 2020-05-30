@@ -45,14 +45,14 @@ namespace PrePoMax.Forms
             : base(2)
         {
             InitializeComponent();
-
+            //
             _controller = controller;
-            _scaleParameters = new ScaleParameters();
-            propertyGrid.SelectedObject = _scaleParameters;
-
+            //
+            tsmiResetAll_Click(null, null);
+            //
             _coorNodesToDraw = new double[1][];
             _coorNodesToDraw[0] = new double[3];
-
+            //
             btnOK.Visible = false;
             btnOkAddNew.Width = btnOK.Width;
             btnOkAddNew.Left = btnOK.Left;
@@ -102,11 +102,11 @@ namespace PrePoMax.Forms
         }
 
 
-        // Overrides                                                                                                                
+        // Event handlers                                                                                                           
         protected override void OnPropertyGridPropertyValueChanged()
         {
             HighlightNodes();
-
+            //
             base.OnPropertyGridPropertyValueChanged();
         }
         protected override void OnApply(bool onOkAddNew)
@@ -114,45 +114,48 @@ namespace PrePoMax.Forms
             _controller.ScaleModelPartsCommand(_partNames, ScaleCenter, ScaleFactors, _scaleParameters.Copy);
             HighlightNodes();
         }
-
-
-        // Methods                                                                                                                  
-        public bool PrepareForm(string stepName, string partToEditName)
+        protected override bool OnPrepareForm(string stepName, string sectionToEditName)
         {
             _controller.ClearSelectionHistoryAndSelectionChanged();
             _scaleParameters.Clear();
-            
-
             // Get center point grid item
             GridItem gi = propertyGrid.EnumerateAllItems().First((item) =>
                               item.PropertyDescriptor != null &&
                               item.PropertyDescriptor.Name == "ScaleCenterItemSet");
-
             // Select it
             gi.Select();
-
+            //
             propertyGrid.Refresh();
-
-            return OnPrepareForm(stepName, partToEditName);
+            //
+            return true;
         }
+        private void tsmiResetAll_Click(object sender, EventArgs e)
+        {
+            _scaleParameters = new ScaleParameters(_controller.Model.UnitSystem.LengthUnitAbbreviation);
+            propertyGrid.SelectedObject = _scaleParameters;
+            _controller.ClearAllSelection();
+        }
+
+
+        // Methods                                                                                                                  
         public void PickedIds(int[] ids)
         {
             this.Enabled = true;
-
+            //
             _controller.SelectBy = vtkSelectBy.Off;
             _controller.Selection.SelectItem = vtkSelectItem.None;
             _controller.ClearSelectionHistoryAndSelectionChanged();
-
+            //
             if (ids != null && ids.Length == 1)
             {
                 FeNode node = _controller.Model.Mesh.Nodes[ids[0]];
-                
+                //
                 _scaleParameters.CenterX = node.X;
                 _scaleParameters.CenterY = node.Y;
                 _scaleParameters.CenterZ = node.Z;
-
+                //
                 propertyGrid.Refresh();
-
+                //
                 HighlightNodes();
             }
         }
@@ -160,19 +163,14 @@ namespace PrePoMax.Forms
         {
             Color color = Color.Red;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
-
+            //
             _coorNodesToDraw[0][0] = _scaleParameters.CenterX;
             _coorNodesToDraw[0][1] = _scaleParameters.CenterY;
             _coorNodesToDraw[0][2] = _scaleParameters.CenterZ;
-
+            //
             _controller.DrawNodes("Scale", _coorNodesToDraw, color, layer, 7);
         }
 
-        private void tsmiResetAll_Click(object sender, EventArgs e)
-        {
-            _scaleParameters = new ScaleParameters();
-            propertyGrid.SelectedObject = _scaleParameters;
-            _controller.ClearAllSelection();
-        }
+        
     }
 }

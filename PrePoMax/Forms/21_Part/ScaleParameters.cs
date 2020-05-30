@@ -30,8 +30,7 @@ namespace PrePoMax.Forms
         [DescriptionAttribute("Select the move/copy operation.")]
         [Id(1, 1)]
         public bool Copy { get { return _copy; } set { _copy = value; } }
-
-
+        //
         [Category("Center point coordinates")]
         [OrderedDisplayName(0, 10, "Select the center point")]
         [DescriptionAttribute("Select the center point.")]
@@ -46,38 +45,40 @@ namespace PrePoMax.Forms
                     _scaleCenterItemSetData = value;
             }
         }
-
+        //
         [Category("Center point coordinates")]
         [OrderedDisplayName(1, 10, "X")]
         [Description("X coordinate of the center point.")]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(1, 2)]
         public double CenterX { get { return _scaleCenter[0]; } set { _scaleCenter[0] = value; } }
-
+        //
         [Category("Center point coordinates")]
         [OrderedDisplayName(2, 10, "Y")]
         [Description("Y coordinate of the center point.")]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(1, 2)]
         public double CenterY { get { return _scaleCenter[1]; } set { _scaleCenter[1] = value; } }
-
+        //
         [Category("Center point coordinates")]
         [OrderedDisplayName(3, 10, "Z")]
         [Description("Z coordinate of the center point.")]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(1, 2)]
         public double CenterZ { get { return _scaleCenter[2]; } set { _scaleCenter[2] = value; } }
-
-
+        //
         [Category("Scale factors")]
         [OrderedDisplayName(0, 10, "X")]
         [Description("Scale factor in the X direction.")]
         [Id(1, 3)]
         public double FactorX { get { return _scaleFactorX; } set { _scaleFactorX = value; } }
-
+        //
         [Category("Scale factors")]
         [OrderedDisplayName(0, 10, "Y")]
         [Description("Scale factor in the Y direction.")]
         [Id(1, 3)]
         public double FactorY { get { return _scaleFactorY; } set { _scaleFactorY = value; } }
-
+        //
         [Category("Scale factors")]
         [OrderedDisplayName(0, 10, "Z")]
         [Description("Scale factor in the Z direction.")]
@@ -86,19 +87,20 @@ namespace PrePoMax.Forms
 
 
         // Constructors                                                                                                             
-        public ScaleParameters()
+        public ScaleParameters(string lengthUnit)
         {
             Clear();
-
+            //
             _dctd = ProviderInstaller.Install(this);
             _dctd.CategorySortOrder = CustomSortOrder.AscendingById;
             _dctd.PropertySortOrder = CustomSortOrder.AscendingById;
-
+            //
             _scaleCenterItemSetData = new ItemSetData(); // needed to display ItemSetData.ToString()
             _scaleCenterItemSetData.ToStringType = ItemSetDataToStringType.SelectSinglePoint;
-
-            
-            RenameTrueFalseForBooleanProperty("Copy", "Copy and scale", "Scale");
+            //
+            _dctd.RenameBooleanProperty(nameof(Copy), "Copy and scale", "Scale");
+            //
+            StringLengthConverter.SetUnit = lengthUnit;
         }
 
 
@@ -106,24 +108,12 @@ namespace PrePoMax.Forms
         public void Clear()
         {
             _copy = false;
-
+            //
             _scaleCenter = new double[3];
-
+            //
             _scaleFactorX = 1;
             _scaleFactorY = 1;
             _scaleFactorZ = 1;
         }
-
-        protected void RenameTrueFalseForBooleanProperty(string propertyName, string trueName, string falseName)
-        {
-            CustomPropertyDescriptor cpd = _dctd.GetProperty(propertyName);
-
-            foreach (StandardValueAttribute sva in cpd.StatandardValues)
-            {
-                if ((bool)sva.Value == true) sva.DisplayName = trueName;
-                else sva.DisplayName = falseName;
-            }
-        }
-
     }
 }

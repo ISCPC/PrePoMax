@@ -26,6 +26,7 @@ namespace CaeModel
         // Variables                                                                                                                
         UnitSystemType _unitSystemType;             //ISerializable
         LengthUnit _lengthUnit;                     //ISerializable
+        AreaUnit _areaUnit;                         //ISerializable
         AngleUnit _angleUnit;                       //ISerializable
         MassUnit _massUnit;                         //ISerializable
         DurationUnit _timeUnit;                     //ISerializable
@@ -40,13 +41,14 @@ namespace CaeModel
 
         // Properties                                                                                                               
         public UnitSystemType UnitSystemType { get { return _unitSystemType; } }
-        //
+        // Base units
         public LengthUnit LengthUnit { get { return _lengthUnit; } }
         public AngleUnit AngleUnit { get { return _angleUnit; } }
         public MassUnit MassUnit { get { return _massUnit; } }
         public DurationUnit TimeUnit { get { return _timeUnit; } }
         public TemperatureUnit TemperatureUnit { get { return _temperatureUnit; } }
         // Derived units
+        public AreaUnit AreaUnit { get { return _areaUnit; } }
         public SpeedUnit SpeedUnit { get { return _speedUnit; } }
         public RotationalSpeedUnit RotationalSpeedUnit { get { return _rotationalSpeedUnit; } }
         public AccelerationUnit AccelerationUnit { get { return _accelerationUnit; } }
@@ -56,12 +58,14 @@ namespace CaeModel
         //
         // Abbreviations                                                                                
         //
+        // Base units
         public string LengthUnitAbbreviation { get { return Length.GetAbbreviation(_lengthUnit); } }
         public string AngleUnitAbbreviation { get { return Angle.GetAbbreviation(_angleUnit); } }
         public string MassUnitAbbreviation { get { return Mass.GetAbbreviation(_massUnit); } }
         public string TimeUnitAbbreviation { get { return Duration.GetAbbreviation(_timeUnit); } }
         public string TemperatureUnitAbbreviation { get { return Temperature.GetAbbreviation(_temperatureUnit); } }
         // Derived units
+        public string AreaUnitAbbreviation { get { return Area.GetAbbreviation(_areaUnit); } }
         public string SpeedUnitAbbreviation { get { return Speed.GetAbbreviation(_speedUnit); } }
         public string RotationalSpeedUnitAbbreviation { get { return RotationalSpeed.GetAbbreviation(_rotationalSpeedUnit); } }
         public string AccelerationUnitAbbreviation { get { return Acceleration.GetAbbreviation(_accelerationUnit); } }
@@ -88,6 +92,7 @@ namespace CaeModel
                     _timeUnit = DurationUnit.Second;
                     _temperatureUnit = TemperatureUnit.DegreeCelsius;
                     //
+                    _areaUnit = AreaUnit.SquareMeter;
                     _speedUnit = SpeedUnit.MeterPerSecond;
                     _rotationalSpeedUnit = RotationalSpeedUnit.RadianPerSecond;
                     _accelerationUnit = AccelerationUnit.MeterPerSecondSquared;
@@ -102,6 +107,7 @@ namespace CaeModel
                     _timeUnit = DurationUnit.Second;
                     _temperatureUnit = TemperatureUnit.DegreeCelsius;
                     //
+                    _areaUnit = AreaUnit.SquareMillimeter;
                     _speedUnit = SpeedUnit.MillimeterPerSecond;
                     _rotationalSpeedUnit = RotationalSpeedUnit.RadianPerSecond;
                     _accelerationUnit = AccelerationUnit.MillimeterPerSecondSquared;
@@ -121,6 +127,7 @@ namespace CaeModel
             {
                 switch (entry.Name)
                 {
+                    // Base units
                     case "_unitSystemType":
                         _unitSystemType = (UnitSystemType)entry.Value; break;
                     case "_lengthUnit":
@@ -133,6 +140,9 @@ namespace CaeModel
                         _timeUnit = (DurationUnit)entry.Value; break;
                     case "_temperatureUnit":
                         _temperatureUnit = (TemperatureUnit)entry.Value; break;
+                    // Derived units
+                    case "_areaUnit":
+                        _areaUnit = (AreaUnit)entry.Value; break;
                     case "_speedUnit":
                         _speedUnit = (SpeedUnit)entry.Value; break;
                     case "_rotationalSpeedUnit":
@@ -159,11 +169,14 @@ namespace CaeModel
         {
             // using typeof() works also for null fields
             info.AddValue("_unitSystemType", _unitSystemType, typeof(UnitSystemType));
+            // Base units
             info.AddValue("_lengthUnit", _lengthUnit, typeof(LengthUnit));
             info.AddValue("_angleUnit", _angleUnit, typeof(AngleUnit));
             info.AddValue("_massUnit", _massUnit, typeof(MassUnit));
             info.AddValue("_timeUnit", _timeUnit, typeof(DurationUnit));
             info.AddValue("_temperatureUnit", _temperatureUnit, typeof(TemperatureUnit));
+            // Derived units
+            info.AddValue("_areaUnit", _areaUnit, typeof(AreaUnit));
             info.AddValue("_speedUnit", _speedUnit, typeof(SpeedUnit));
             info.AddValue("_rotationalSpeedUnit", _rotationalSpeedUnit, typeof(RotationalSpeedUnit));
             info.AddValue("_accelerationUnit", _accelerationUnit, typeof(AccelerationUnit));

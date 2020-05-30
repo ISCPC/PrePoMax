@@ -41,6 +41,7 @@ namespace PrePoMax.Forms
         [CategoryAttribute("Data")]
         [OrderedDisplayName(0, 10, "Layer thickness")]
         [DescriptionAttribute("Thickness of the boundary layer.")]
+        [TypeConverter(typeof(StringLengthConverter))]
         public double Thickness { get { return _boundaryLayer.Thickness; } set { _boundaryLayer.Thickness = value; } }
 
         [Browsable(false)]
@@ -51,10 +52,12 @@ namespace PrePoMax.Forms
 
 
         // Constructors                                                                                                             
-        public ViewBoundaryLayer()
+        public ViewBoundaryLayer(string lengthUnit)
         {
             _boundaryLayer = new BoundaryLayer();
             _dctd = ProviderInstaller.Install(this);
+            //
+            StringLengthConverter.SetUnit = lengthUnit;
         }
 
 

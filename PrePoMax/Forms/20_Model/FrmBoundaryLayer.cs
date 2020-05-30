@@ -96,7 +96,7 @@ namespace PrePoMax.Forms
             //
             _controller.SetSelectItemToGeometry();
             //
-            _viewBoundaryLayer = new ViewBoundaryLayer();
+            _viewBoundaryLayer = new ViewBoundaryLayer(_controller.Model.UnitSystem.LengthUnitAbbreviation);
             _controller.Selection.Clear();
             //
             propertyGrid.SelectedObject = _viewBoundaryLayer;

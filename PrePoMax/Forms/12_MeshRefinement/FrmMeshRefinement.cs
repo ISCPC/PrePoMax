@@ -27,7 +27,11 @@ namespace PrePoMax.Forms
         public FeMeshRefinement MeshRefinement
         {
             get { return _viewFeMeshRefinement.GetBase(); }
-            set { _viewFeMeshRefinement = new ViewFeMeshRefinement(value.DeepClone()); }
+            set 
+            {
+                _viewFeMeshRefinement =
+                    new ViewFeMeshRefinement(value.DeepClone(), _controller.Model.UnitSystem.LengthUnitAbbreviation);
+            }
         }
 
 

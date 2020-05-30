@@ -47,6 +47,12 @@ namespace PrePoMax
         {
             InitializeComponent();
             //
+            StringAngleConverter.SetUnit = "deg";
+            tbGeometryEdgeAngle.UnitConverter = new StringAngleConverter();
+            tbGeometrySurfaceAngle.UnitConverter = new StringAngleConverter();
+            tbEdgeAngle.UnitConverter = new StringAngleConverter();
+            tbSurfaceAngle.UnitConverter = new StringAngleConverter();
+            //
             _checkBoxEventRunning = false;
             _controller = controller;
             _itemSetData = null;
@@ -57,12 +63,6 @@ namespace PrePoMax
             _initialSetup = false;
             //
             btnMoreLess_Click(null, null);
-            //
-            StringAngleConverter.SetUnit = "deg";
-            TryConvertAngle(tbGeometryEdgeAngle);
-            TryConvertAngle(tbGeometrySurfaceAngle);
-            TryConvertAngle(tbEdgeAngle);
-            TryConvertAngle(tbSurfaceAngle);
         }
         public FrmSelectItemSet(Controller controller, ItemSetData itemSetData)
             : this(controller)
@@ -321,26 +321,9 @@ namespace PrePoMax
             base.Hide();
         }
         //
-        private void tbAngle_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (sender is TextBox tb)
-            {
-                if (e.KeyCode == Keys.Enter)
-                {
-                    // Convert
-                    TryConvertAngle(tb);
-                    //
-                    e.SuppressKeyPress = true;  // no beep
-                }
-            }
-        }
         private void tbAngle_KeyUp(object sender, KeyEventArgs e)
         {
-            if (sender is TextBox tb) SetSelectionAngle(tb);
-        }
-        private void tbAngle_Leave(object sender, EventArgs e)
-        {
-            if (sender is TextBox tb) TryConvertAngle(tb);
+            if (sender is UserControls.UnitAwareTextBox uatb) _controller.SetSelectAngle(uatb.Value);
         }
         private void tbId_KeyDown(object sender, KeyEventArgs e)
         {
@@ -399,37 +382,14 @@ namespace PrePoMax
             }
         }
         //
-        private void SetSelectionAngle(TextBox tbAngle)
+        private void SetSelectionAngle(UserControls.UnitAwareTextBox uatbAngle)
         {
             try
             {
-                double angle;
-                if (!double.TryParse(tbAngle.Text, out angle))
-                {
-                    var converter = new StringAngleConverter();
-                    angle = (double)converter.ConvertFromString(tbAngle.Text);
-                }
-                _controller.SetSelectAngle(angle);
+                _controller.SetSelectAngle(uatbAngle.Value);
             }
             catch
-            {
-            }
-            
-        }
-        private void TryConvertAngle(TextBox tb)
-        {
-            try
-            {
-                // Convert
-                var converter = new StringAngleConverter();
-                double angle = (double)converter.ConvertFromString(tb.Text);
-                tb.Text = converter.ConvertToString(angle);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Entered value: " + tb.Text + Environment.NewLine + Environment.NewLine + ex.Message, "Error");
-                tb.Focus();
-            }
+            { }
         }
         //
         // Disable close X button
