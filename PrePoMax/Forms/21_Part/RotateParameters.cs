@@ -49,21 +49,21 @@ namespace PrePoMax.Forms
         [Category("Rotation axis")]
         [OrderedDisplayName(1, 10, "X")]
         [Description("X coordinate of the start point.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
         [Id(1, 2)]
         public double X1 { get { return _startPoint[0]; } set { _startPoint[0] = value; } }
         //
         [Category("Rotation axis")]
         [OrderedDisplayName(2, 10, "Y")]
         [Description("Y coordinate of the start point.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
         [Id(1, 2)]
         public double Y1 { get { return _startPoint[1]; } set { _startPoint[1] = value; } }
         //
         [Category("Rotation axis")]
         [OrderedDisplayName(3, 10, "Z")]
         [Description("Z coordinate of the start point.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
         [Id(1, 2)]
         public double Z1 { get { return _startPoint[2]; } set { _startPoint[2] = value; } }
         //
@@ -85,34 +85,34 @@ namespace PrePoMax.Forms
         [Category("Rotation axis")]
         [OrderedDisplayName(5, 10, "X")]
         [Description("X coordinate of the end point.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
         [Id(1, 2)]
         public double X2 { get { return _endPoint[0]; } set { _endPoint[0] = value; } }
         //
         [Category("Rotation axis")]
         [OrderedDisplayName(6, 10, "Y")]
         [Description("Y coordinate of the end point.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
         [Id(1, 2)]
         public double Y2 { get { return _endPoint[1]; } set { _endPoint[1] = value; } }
         //
         [Category("Rotation axis")]
         [OrderedDisplayName(7, 10, "Z")]
         [Description("Z coordinate of the end point.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
         [Id(1, 2)]
         public double Z2 { get { return _endPoint[2]; } set { _endPoint[2] = value; } }
         //
         [Category("Rotation angle")]
         [OrderedDisplayName(0, 10, "Angle")]
         [Description("Rotation angle around the axis.")]
-        [TypeConverter(typeof(StringAngleConverter))]
+        [TypeConverter(typeof(CaeModel.StringAngleDegConverter))]
         [Id(1, 3)]
         public double AngleDeg { get { return _angleDeg; } set { _angleDeg = value; } }
 
 
         // Constructors                                                                                                             
-        public RotateParameters(string lengthUnit)
+        public RotateParameters()
         {
             Clear();
             //
@@ -126,9 +126,6 @@ namespace PrePoMax.Forms
             _endPointItemSetData.ToStringType = ItemSetDataToStringType.SelectSinglePoint;
             //
             _dctd.RenameBooleanProperty(nameof(Copy), "Copy and rotate", "Rotate");
-            //
-            StringLengthConverter.SetUnit = lengthUnit;
-            StringAngleConverter.SetUnit = "deg";
         }
 
 

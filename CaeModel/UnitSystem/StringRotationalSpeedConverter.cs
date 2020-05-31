@@ -9,12 +9,12 @@ using System.Globalization;
 using UnitsNet;
 using UnitsNet.Units;
 
-namespace PrePoMax
+namespace CaeModel
 {
     public class StringRotationalSpeedConverter : TypeConverter
     {
         // Variables                                                                                                                
-        private static RotationalSpeedUnit _RotationalSpeedUnit = RotationalSpeedUnit.RadianPerSecond;
+        protected static RotationalSpeedUnit _RotationalSpeedUnit = RotationalSpeedUnit.RadianPerSecond;
 
 
         // Properties                                                                                                               
@@ -59,8 +59,7 @@ namespace PrePoMax
                 {
                     if (value is double valueDouble)
                     {
-                        RotationalSpeed RotationalSpeed = RotationalSpeed.From(valueDouble, _RotationalSpeedUnit);
-                        return RotationalSpeed.Value.ToString() + " " + RotationalSpeed.GetAbbreviation(_RotationalSpeedUnit);
+                        return value.ToString() + " " + RotationalSpeed.GetAbbreviation(_RotationalSpeedUnit);
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);

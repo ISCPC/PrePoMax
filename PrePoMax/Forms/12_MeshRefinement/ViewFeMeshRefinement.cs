@@ -27,17 +27,15 @@ namespace PrePoMax.Forms
         [CategoryAttribute("Data")]
         [OrderedDisplayName(1, 10, "Mesh size")]
         [DescriptionAttribute("Local size of the mesh.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
         public double MeshSize { get { return _meshRefinement.MeshSize; } set { _meshRefinement.MeshSize = value; } }
 
 
         // Constructors                                                                                                             
-        public ViewFeMeshRefinement(FeMeshRefinement meshRefinement, string lengthUnit)
+        public ViewFeMeshRefinement(FeMeshRefinement meshRefinement)
         {
             _meshRefinement = meshRefinement;                               // 1 command
             _dctd = ProviderInstaller.Install(this);                        // 2 command
-            //
-            StringLengthConverter.SetUnit = lengthUnit;
         }
 
 

@@ -9,12 +9,12 @@ using System.Globalization;
 using UnitsNet;
 using UnitsNet.Units;
 
-namespace PrePoMax
+namespace CaeModel
 {
     public class StringPressureConverter : TypeConverter
     {
         // Variables                                                                                                                
-        private static PressureUnit _pressureUnit = PressureUnit.Pascal;
+        protected static PressureUnit _pressureUnit = PressureUnit.Pascal;
 
 
         // Properties                                                                                                               
@@ -59,8 +59,7 @@ namespace PrePoMax
                 {
                     if (value is double valueDouble)
                     {
-                        Pressure Pressure = Pressure.From(valueDouble, _pressureUnit);
-                        return Pressure.Value.ToString() + " " + Pressure.GetAbbreviation(_pressureUnit);
+                        return value.ToString() + " " + Pressure.GetAbbreviation(_pressureUnit);
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);

@@ -48,21 +48,21 @@ namespace PrePoMax.Forms
         [Category("Start point coordinates")]
         [OrderedDisplayName(1, 10, "X")]
         [Description("X coordinate of the start point.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
         [Id(1, 2)]
         public double X1 { get { return _startPoint[0]; } set { _startPoint[0] = value; } }
         //
         [Category("Start point coordinates")]
         [OrderedDisplayName(2, 10, "Y")]
         [Description("Y coordinate of the start point.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
         [Id(1, 2)]
         public double Y1 { get { return _startPoint[1]; } set { _startPoint[1] = value; } }
         //
         [Category("Start point coordinates")]
         [OrderedDisplayName(3, 10, "Z")]
         [Description("Z coordinate of the start point.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
         [Id(1, 2)]
         public double Z1 { get { return _startPoint[2]; } set { _startPoint[2] = value; } }
         //
@@ -84,27 +84,27 @@ namespace PrePoMax.Forms
         [Category("End point coordinates")]
         [OrderedDisplayName(1, 10, "X")]
         [Description("X coordinate of the end point.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
         [Id(1, 3)]
         public double X2 { get { return _endPoint[0]; } set { _endPoint[0] = value; } }
         //
         [Category("End point coordinates")]
         [OrderedDisplayName(2, 10, "Y")]
         [Description("Y coordinate of the end point.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
         [Id(1, 3)]
         public double Y2 { get { return _endPoint[1]; } set { _endPoint[1] = value; } }
         //
         [Category("End point coordinates")]
         [OrderedDisplayName(3, 10, "Z")]
         [Description("Z coordinate of the end point.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
         [Id(1, 3)]
         public double Z2 { get { return _endPoint[2]; } set { _endPoint[2] = value; } }
 
 
         // Constructors                                                                                                             
-        public TranslateParameters(string lengthUnit)
+        public TranslateParameters()
         {
             Clear();
             //
@@ -118,8 +118,6 @@ namespace PrePoMax.Forms
             _endPointItemSetData.ToStringType = ItemSetDataToStringType.SelectSinglePoint;
             //
             _dctd.RenameBooleanProperty(nameof(Copy), "Copy and translate", "Translate");
-            //
-            StringLengthConverter.SetUnit = lengthUnit;
         }
 
 

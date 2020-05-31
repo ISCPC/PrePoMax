@@ -62,6 +62,13 @@ namespace PrePoMax.Forms
         {
             btnAdd_Click(null, null);
         }
+        private void tbName_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;  // no beep
+            }
+        }
         private void btnAdd_Click(object sender, EventArgs e)
         {
             if (tvProperties.SelectedNode != null && tvProperties.SelectedNode.Tag != null)
@@ -115,9 +122,15 @@ namespace PrePoMax.Forms
                     tcProperties.TabPages.Add(_pages[1]);
                     //
                     BindingSource binding = new BindingSource();
-                    binding.DataSource = (lvAddedProperties.SelectedItems[0].Tag as ViewPlastic).DataPoints;
+                    binding.DataSource = (lvAddedProperties.SelectedItems[0].Tag as ViewPlastic).DataPoints;                    
                     dgvData.DataSource = binding; //bind datagridview to binding source - enables adding of new lines
                     binding.ListChanged += Binding_ListChanged;
+                    //
+                    string unitStress = _controller.Model.UnitSystem.PressureUnitAbbreviation;
+                    if (dgvData.Columns["Stress"] != null) dgvData.Columns["Stress"].HeaderText += "\n[" + unitStress + "]";
+                    if (dgvData.Columns["Strain"] != null) dgvData.Columns["Strain"].HeaderText += "\n[/]";
+                    dgvData.Columns["Stress"].HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
+                    dgvData.Columns["Strain"].HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
                     //
                     dgvData.XColIndex = 1;
                     dgvData.StartPlotAtZero = true;
@@ -285,7 +298,7 @@ namespace PrePoMax.Forms
         {
             return NamedClass.GetNewValueName(_materialNames, "Material-");
         }
-        
-       
+
+     
     }
 }

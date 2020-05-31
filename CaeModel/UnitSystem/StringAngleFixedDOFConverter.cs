@@ -9,15 +9,15 @@ using System.Globalization;
 using UnitsNet.Units;
 using UnitsNet;
 
-namespace PrePoMax
+namespace CaeModel
 {
     public class StringAngleFixedDOFConverter : TypeConverter
     {
         // Variables                                                                                                                
-        private static AngleUnit _angleUnit = AngleUnit.Radian;
+        protected static AngleUnit _angleUnit = AngleUnit.Radian;
         //
-        private ArrayList values;
-        private string _fixed = "Fixed";
+        protected ArrayList values;
+        protected string _fixed = "Fixed";
 
 
         // Properties                                                                                                               
@@ -89,11 +89,10 @@ namespace PrePoMax
                 {
                     if (value is double valueDouble)
                     {
-                        if (double.IsPositiveInfinity((double)value)) return _fixed;
+                        if (double.IsPositiveInfinity(valueDouble)) return _fixed;
                         else
                         {
-                            Angle Angle = Angle.From(valueDouble, _angleUnit);
-                            return Angle.Value.ToString() + " " + Angle.GetAbbreviation(_angleUnit);
+                            return value.ToString() + " " + Angle.GetAbbreviation(_angleUnit);
                         }
                     }
                 }

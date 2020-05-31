@@ -41,21 +41,21 @@ namespace PrePoMax.Forms
         [Category("Point coordinates")]
         [OrderedDisplayName(1, 10, "X")]
         [Description("X coordinate of the point on plane.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
         [Id(1, 1)]
         public double X { get { return _point[0]; } set { _point[0] = value; } }
         //
         [Category("Point coordinates")]
         [OrderedDisplayName(2, 10, "Y")]
         [Description("Y coordinate of the point on plane.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
         [Id(1, 1)]
         public double Y { get { return _point[1]; } set { _point[1] = value; } }
         //
         [Category("Point coordinates")]
         [OrderedDisplayName(3, 10, "Z")]
         [Description("Z coordinate of the point on plane.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
         [Id(1, 1)]
         public double Z { get { return _point[2]; } set { _point[2] = value; } }
         //
@@ -78,21 +78,21 @@ namespace PrePoMax.Forms
         [Category("Normal direction")]
         [OrderedDisplayName(1, 10, "X")]
         [Description("X component of the normal direction.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
         [Id(1, 2)]
         public double Nx { get { return _normal[0]; } set { _normal[0] = value; } }
         //
         [Category("Normal direction")]
         [OrderedDisplayName(2, 10, "Y")]
         [Description("Y component of the normal direction.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
         [Id(1, 2)]
         public double Ny { get { return _normal[1]; } set { _normal[1] = value; } }
         //
         [Category("Normal direction")]
         [OrderedDisplayName(3, 10, "Z")]
         [Description("Z component of the normal direction.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
         [Id(1, 2)]
         public double Nz { get { return _normal[2]; } set { _normal[2] = value; } }
         //
@@ -104,7 +104,7 @@ namespace PrePoMax.Forms
 
 
         // Constructors                                                                                                             
-        public SectionViewParameters(string lengthUnit)
+        public SectionViewParameters()
         {
             Clear();
             //
@@ -117,8 +117,6 @@ namespace PrePoMax.Forms
             //
             _normalItemSetData = new ItemSetData(); // needed to display ItemSetData.ToString()
             _normalItemSetData.ToStringType = ItemSetDataToStringType.SelectTwoPoints;
-            //
-            StringLengthConverter.SetUnit = lengthUnit;
         }
 
 

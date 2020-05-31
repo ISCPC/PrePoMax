@@ -42,11 +42,9 @@ namespace PrePoMax
             //
             _controller = controller;
             //
-            StringLengthConverter.SetUnit = _controller.Model.UnitSystem.LengthUnitAbbreviation;
-            StringAreaConverter.SetUnit = _controller.Model.UnitSystem.AreaUnitAbbreviation;
-            tbMinEdgeLen.UnitConverter = new StringLengthConverter();
-            tbMinEdgesDistance.UnitConverter = new StringLengthConverter();
-            tbMinFaceSize.UnitConverter = new StringAreaConverter();
+            tbMinEdgeLen.UnitConverter = new CaeModel.StringLengthConverter();
+            tbMinEdgesDistance.UnitConverter = tbMinEdgeLen.UnitConverter;
+            tbMinFaceSize.UnitConverter = new CaeModel.StringAreaConverter();
         }
 
 
@@ -79,18 +77,17 @@ namespace PrePoMax
                 //
                 float widthBefore = GetMaxLabelWidth();
                 //
-                labShortestEdge.Text = "Model min: " + shortestEdge.ToString("G4") + " " +
-                                       _controller.Model.UnitSystem.LengthUnitAbbreviation;
+                string unitLength = " " + _controller.Model.UnitSystem.LengthUnitAbbreviation;
+                string unitArea = " " + _controller.Model.UnitSystem.AreaUnitAbbreviation;
+                labShortestEdge.Text = "Model min: " + shortestEdge.ToString("G4") + unitLength;
                 if (shortestEdge > 0) tbMinEdgeLen.Text = Math.Pow(10, Math.Ceiling(Math.Log10(shortestEdge))).ToString();
                 else tbMinEdgeLen.Text = "0.0";
                 //
-                labClosestEdges.Text = "Model min: " + closestEdges.ToString("G4") + " " +
-                                       _controller.Model.UnitSystem.LengthUnitAbbreviation;
+                labClosestEdges.Text = "Model min: " + closestEdges.ToString("G4") + unitLength;
                 if (closestEdges > 0) tbMinEdgesDistance.Text = Math.Pow(10, Math.Ceiling(Math.Log10(closestEdges))).ToString();
                 else tbMinEdgesDistance.Text = "0.0";
                 //
-                labSmallestFace.Text = "Model min: " + smallestFace.ToString("G4") + " " +
-                                       _controller.Model.UnitSystem.AreaUnitAbbreviation;
+                labSmallestFace.Text = "Model min: " + smallestFace.ToString("G4") + unitArea;
                 if (smallestFace > 0) tbMinFaceSize.Text = Math.Pow(10, Math.Ceiling(Math.Log10(smallestFace))).ToString();
                 else tbMinFaceSize.Text = "0.0";
                 //

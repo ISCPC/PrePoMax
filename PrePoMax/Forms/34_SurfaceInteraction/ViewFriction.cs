@@ -31,16 +31,8 @@ namespace PrePoMax.PropertyViews
         [CategoryAttribute("Data")]
         [OrderedDisplayName(1, 10, "Stik slope")]
         [DescriptionAttribute("The ratio between the shear stress and the relative tangential displacement in contact (lambda > 0).")]
-        [TypeConverter(typeof(StringDefaultDoubleConverter))]
-        public double StikSlope 
-        {
-            get 
-            {
-                StringDefaultDoubleConverter.InitialValue = 100000;
-                //
-                return _friction.StikSlope; 
-            } 
-            set { _friction.StikSlope = value; } }
+        [TypeConverter(typeof(CaeModel.StringForcePerVolumeDefaultConverter))]
+        public double StikSlope { get { return _friction.StikSlope; } set { _friction.StikSlope = value; } }
         //
         [Browsable(false)]
         public override CaeModel.SurfaceInteractionProperty Base
@@ -55,6 +47,8 @@ namespace PrePoMax.PropertyViews
             _friction = friction;
             //
             base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
+            //
+            CaeModel.StringForcePerVolumeDefaultConverter.SetInitialValue = "100000 N/mm^3";
         }
 
 

@@ -140,7 +140,7 @@ namespace PrePoMax.Forms
         }
         private void tsmiResetAll_Click(object sender, EventArgs e)
         {
-            _rotateParameters = new RotateParameters(_controller.Model.UnitSystem.LengthUnitAbbreviation);
+            _rotateParameters = new RotateParameters();
             propertyGrid.SelectedObject = _rotateParameters;
             _controller.ClearAllSelection();
         }

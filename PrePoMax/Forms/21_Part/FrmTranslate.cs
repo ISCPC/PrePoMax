@@ -135,7 +135,7 @@ namespace PrePoMax.Forms
         }
         private void tsmiResetAll_Click(object sender, EventArgs e)
         {
-            _translateParameters = new TranslateParameters(_controller.Model.UnitSystem.LengthUnitAbbreviation);
+            _translateParameters = new TranslateParameters();
             propertyGrid.SelectedObject = _translateParameters;
             _controller.ClearAllSelection();
         }

@@ -15,10 +15,11 @@ namespace PrePoMax
         // Variables                                                                                                                
         private double _strain;
         private double _stress;
-
+        
 
         // Properties                                                                                                               
         [DisplayName("Yield Stress")]
+        [TypeConverter(typeof(CaeModel.StringPressureFromConverter))]
         public double Stress { get { return _stress; } set { _stress = value; } }
 
         [DisplayName("Plastic strain")]
@@ -86,7 +87,7 @@ namespace PrePoMax
         {
             _points = new List<MaterialDataPoint>();
             for (int i = 0; i < plastic.StressStrain.GetLength(0); i++)
-            {
+            {                
                 _points.Add(new MaterialDataPoint(plastic.StressStrain[i][0], plastic.StressStrain[i][1]));
             }
             _hardening = plastic.Hardening;

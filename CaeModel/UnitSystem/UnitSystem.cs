@@ -25,19 +25,23 @@ namespace CaeModel
     {
         // Variables                                                                                                                
         UnitSystemType _unitSystemType;             //ISerializable
+        //
         LengthUnit _lengthUnit;                     //ISerializable
-        AreaUnit _areaUnit;                         //ISerializable
         AngleUnit _angleUnit;                       //ISerializable
         MassUnit _massUnit;                         //ISerializable
         DurationUnit _timeUnit;                     //ISerializable
         TemperatureUnit _temperatureUnit;           //ISerializable
+        //
+        AreaUnit _areaUnit;                         //ISerializable
+        VolumeUnit _volumeUnit;                     //ISerializable
         SpeedUnit _speedUnit;                       //ISerializable
         RotationalSpeedUnit _rotationalSpeedUnit;   //ISerializable
         AccelerationUnit _accelerationUnit;         //ISerializable
         ForceUnit _forceUnit;                       //ISerializable
         TorqueUnit _momentUnit;                     //ISerializable
         PressureUnit _pressureUnit;                 //ISerializable
-        
+        DensityUnit _densityUnit;                   //ISerializable
+
 
         // Properties                                                                                                               
         public UnitSystemType UnitSystemType { get { return _unitSystemType; } }
@@ -49,12 +53,14 @@ namespace CaeModel
         public TemperatureUnit TemperatureUnit { get { return _temperatureUnit; } }
         // Derived units
         public AreaUnit AreaUnit { get { return _areaUnit; } }
+        public VolumeUnit VolumeUnit { get { return _volumeUnit; } }
         public SpeedUnit SpeedUnit { get { return _speedUnit; } }
         public RotationalSpeedUnit RotationalSpeedUnit { get { return _rotationalSpeedUnit; } }
         public AccelerationUnit AccelerationUnit { get { return _accelerationUnit; } }
         public ForceUnit ForceUnit { get { return _forceUnit; } }
         public TorqueUnit MomentUnit { get { return _momentUnit; } }
         public PressureUnit PressureUnit { get { return _pressureUnit; } }
+        public DensityUnit DensityUnit { get { return _densityUnit; } }
         //
         // Abbreviations                                                                                
         //
@@ -66,12 +72,14 @@ namespace CaeModel
         public string TemperatureUnitAbbreviation { get { return Temperature.GetAbbreviation(_temperatureUnit); } }
         // Derived units
         public string AreaUnitAbbreviation { get { return Area.GetAbbreviation(_areaUnit); } }
+        public string VolumeUnitAbbreviation { get { return Volume.GetAbbreviation(_volumeUnit); } }
         public string SpeedUnitAbbreviation { get { return Speed.GetAbbreviation(_speedUnit); } }
         public string RotationalSpeedUnitAbbreviation { get { return RotationalSpeed.GetAbbreviation(_rotationalSpeedUnit); } }
         public string AccelerationUnitAbbreviation { get { return Acceleration.GetAbbreviation(_accelerationUnit); } }
         public string ForceUnitAbbreviation { get { return Force.GetAbbreviation(_forceUnit); } }
         public string MomentUnitAbbreviation { get { return Torque.GetAbbreviation(_momentUnit); } }
         public string PressureUnitAbbreviation { get { return Pressure.GetAbbreviation(_pressureUnit); } }
+        public string DensityUnitAbbreviation { get { return UnitsNet.Density.GetAbbreviation(_densityUnit); } }
 
 
         // Constructors                                                                                                             
@@ -93,12 +101,14 @@ namespace CaeModel
                     _temperatureUnit = TemperatureUnit.DegreeCelsius;
                     //
                     _areaUnit = AreaUnit.SquareMeter;
+                    _volumeUnit = VolumeUnit.CubicMeter;
                     _speedUnit = SpeedUnit.MeterPerSecond;
                     _rotationalSpeedUnit = RotationalSpeedUnit.RadianPerSecond;
                     _accelerationUnit = AccelerationUnit.MeterPerSecondSquared;
                     _forceUnit = ForceUnit.Newton;
                     _momentUnit = TorqueUnit.NewtonMeter;
                     _pressureUnit = PressureUnit.Pascal;
+                    _densityUnit = DensityUnit.KilogramPerCubicMeter;
                     break;
                 case UnitSystemType.MM_TON_S_C:
                     _lengthUnit = LengthUnit.Millimeter;
@@ -108,16 +118,20 @@ namespace CaeModel
                     _temperatureUnit = TemperatureUnit.DegreeCelsius;
                     //
                     _areaUnit = AreaUnit.SquareMillimeter;
+                    _volumeUnit = VolumeUnit.CubicMillimeter;
                     _speedUnit = SpeedUnit.MillimeterPerSecond;
                     _rotationalSpeedUnit = RotationalSpeedUnit.RadianPerSecond;
                     _accelerationUnit = AccelerationUnit.MillimeterPerSecondSquared;
                     _forceUnit = ForceUnit.Newton;
                     _momentUnit = TorqueUnit.NewtonMillimeter;
                     _pressureUnit = PressureUnit.Megapascal;
+                    _densityUnit = DensityUnit.TonnePerCubicMillimeter;
                     break;
                 default:
                     break;
             }
+            //
+            SetConverterUnits();
         }
         // ISerialization
         public UnitSystem(SerializationInfo info, StreamingContext context)
@@ -143,6 +157,8 @@ namespace CaeModel
                     // Derived units
                     case "_areaUnit":
                         _areaUnit = (AreaUnit)entry.Value; break;
+                    case "_volumeUnit":
+                        _volumeUnit = (VolumeUnit)entry.Value; break;
                     case "_speedUnit":
                         _speedUnit = (SpeedUnit)entry.Value; break;
                     case "_rotationalSpeedUnit":
@@ -155,15 +171,42 @@ namespace CaeModel
                         _momentUnit = (TorqueUnit)entry.Value; break;
                     case "_pressureUnit":
                         _pressureUnit = (PressureUnit)entry.Value; break;
+                    case "_densityUnit":
+                        _densityUnit = (DensityUnit)entry.Value; break;
                     default:
                         throw new NotSupportedException();
                 }
             }
+            //
+            SetConverterUnits();
         }
 
 
         // Methods                                                                                                                  
-
+        private void SetConverterUnits()
+        {
+            // Base units
+            StringLengthConverter.SetUnit = LengthUnitAbbreviation;
+            StringDOFConverter.SetUnit = LengthUnitAbbreviation;
+            StringFixedDOFConverter.SetUnit = LengthUnitAbbreviation;
+            StringLengthDefaultConverter.SetUnit = LengthUnitAbbreviation;
+            StringAngleConverter.SetUnit = AngleUnitAbbreviation;
+            StringAngleDOFConverter.SetUnit = AngleUnitAbbreviation;
+            StringAngleFixedDOFConverter.SetUnit = AngleUnitAbbreviation;
+            StringAngleDegConverter.SetUnit = "deg";
+            // Derived units
+            StringAreaConverter.SetUnit = AreaUnitAbbreviation;
+            StringRotationalSpeedConverter.SetUnit = RotationalSpeedUnitAbbreviation;
+            StringAccelerationConverter.SetUnit = AccelerationUnitAbbreviation;
+            StringForceConverter.SetUnit = ForceUnitAbbreviation;
+            StringMomentConverter.SetUnit = MomentUnitAbbreviation;
+            StringPressureConverter.SetUnit = PressureUnitAbbreviation;
+            StringPressureFromConverter.SetUnit = PressureUnitAbbreviation;     // not really necessary
+            StringDensityConverter.SetUnit = DensityUnitAbbreviation;
+            // Contact
+            StringForcePerVolumeDefaultConverter.SetForceUnit = ForceUnitAbbreviation;
+            StringForcePerVolumeDefaultConverter.SetVolumeUnit = VolumeUnitAbbreviation;
+        }
         // ISerialization
         public void GetObjectData(SerializationInfo info, StreamingContext context)
         {
@@ -177,12 +220,14 @@ namespace CaeModel
             info.AddValue("_temperatureUnit", _temperatureUnit, typeof(TemperatureUnit));
             // Derived units
             info.AddValue("_areaUnit", _areaUnit, typeof(AreaUnit));
+            info.AddValue("_volumeUnit", _volumeUnit, typeof(VolumeUnit));
             info.AddValue("_speedUnit", _speedUnit, typeof(SpeedUnit));
             info.AddValue("_rotationalSpeedUnit", _rotationalSpeedUnit, typeof(RotationalSpeedUnit));
             info.AddValue("_accelerationUnit", _accelerationUnit, typeof(AccelerationUnit));
             info.AddValue("_forceUnit", _forceUnit, typeof(ForceUnit));
             info.AddValue("_momentUnit", _momentUnit, typeof(TorqueUnit));
             info.AddValue("_pressureUnit", _pressureUnit, typeof(PressureUnit));
+            info.AddValue("_densityUnit", _densityUnit, typeof(DensityUnit));
         }
     }
 }

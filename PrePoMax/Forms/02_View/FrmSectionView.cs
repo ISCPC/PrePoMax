@@ -31,7 +31,7 @@ namespace PrePoMax.Forms
             InitializeComponent();
             //
             _controller = controller;
-            _sectionViewParameters = new SectionViewParameters(_controller.Model.UnitSystem.LengthUnitAbbreviation);
+            _sectionViewParameters = new SectionViewParameters();
             propertyGrid.SelectedObject = _sectionViewParameters;
             _pause = false;
             //

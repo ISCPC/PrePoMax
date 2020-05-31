@@ -23,14 +23,14 @@ namespace PrePoMax.Forms
         [CategoryAttribute("Mesh size")]
         [OrderedDisplayNameAttribute(1, 10, "Max element size")]
         [DescriptionAttribute("The value for the maximum element size.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
         [Id(1, 1)]
         public double MaxH { get { return _parameters.MaxH; } set { _parameters.MaxH = value; } }
         //
         [CategoryAttribute("Mesh size")]
         [OrderedDisplayNameAttribute(2, 10, "Min element size")]
         [DescriptionAttribute("The value for the minimum element size.")]
-        [TypeConverter(typeof(StringLengthConverter))]
+        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
         [Id(1, 1)]
         public double MinH { get { return _parameters.MinH; } set { _parameters.MinH = value; } }
         //
@@ -98,7 +98,7 @@ namespace PrePoMax.Forms
 
 
         // Constructors                                                                                                             
-        public ViewMeshingParameters(MeshingParameters parameters, string lengthUnit)
+        public ViewMeshingParameters(MeshingParameters parameters)
         {
             _parameters = parameters;
             _dctd = ProviderInstaller.Install(this);
@@ -111,8 +111,6 @@ namespace PrePoMax.Forms
             _dctd.RenameBooleanPropertyToYesNo("SecondOrder");
             _dctd.RenameBooleanPropertyToYesNo("MidsideNodesOnGeometry");
             _dctd.RenameBooleanPropertyToYesNo("SplitCompoundMesh");
-            //
-            StringLengthConverter.SetUnit = lengthUnit;
         }
 
 

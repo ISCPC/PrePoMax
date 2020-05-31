@@ -9,12 +9,12 @@ using System.Globalization;
 using UnitsNet;
 using UnitsNet.Units;
 
-namespace PrePoMax
+namespace CaeModel
 {
     public class StringAccelerationConverter : TypeConverter
     {
         // Variables                                                                                                                
-        private static AccelerationUnit _accelerationUnit = AccelerationUnit.MeterPerSecondSquared;
+        protected static AccelerationUnit _accelerationUnit = AccelerationUnit.MeterPerSecondSquared;
 
 
         // Properties                                                                                                               
@@ -59,8 +59,7 @@ namespace PrePoMax
                 {
                     if (value is double valueDouble)
                     {
-                        Acceleration Acceleration = Acceleration.From(valueDouble, _accelerationUnit);
-                        return Acceleration.Value.ToString() + " " + Acceleration.GetAbbreviation(_accelerationUnit);
+                        return value.ToString() + " " + Acceleration.GetAbbreviation(_accelerationUnit);
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);

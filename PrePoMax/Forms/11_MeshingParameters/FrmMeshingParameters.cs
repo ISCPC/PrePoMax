@@ -31,8 +31,7 @@ namespace PrePoMax.Forms
             get { return _viewMeshingParameters.GetBase(); }
             set
             {
-                _viewMeshingParameters =
-                    new ViewMeshingParameters(value.DeepClone(), _controller.Model.UnitSystem.LengthUnitAbbreviation);
+                _viewMeshingParameters = new ViewMeshingParameters(value.DeepClone());
                 propertyGrid.SelectedObject = _viewMeshingParameters;
                 propertyGrid.Select();
             }

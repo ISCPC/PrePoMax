@@ -131,7 +131,7 @@ namespace PrePoMax.Forms
         }
         private void tsmiResetAll_Click(object sender, EventArgs e)
         {
-            _scaleParameters = new ScaleParameters(_controller.Model.UnitSystem.LengthUnitAbbreviation);
+            _scaleParameters = new ScaleParameters();
             propertyGrid.SelectedObject = _scaleParameters;
             _controller.ClearAllSelection();
         }

@@ -25,17 +25,14 @@ namespace PrePoMax.Forms
             get { return _viewLoad != null ? _viewLoad.GetBase() : null; }
             set
             {
-                var unitSystem = _controller.Model.UnitSystem;
                 var clone = value.DeepClone();
-                if (clone is CLoad cl) _viewLoad = new ViewCLoad(cl, unitSystem.ForceUnitAbbreviation);
-                else if (clone is MomentLoad ml) _viewLoad = new ViewMomentLoad(ml, unitSystem.MomentUnitAbbreviation);
-                else if (clone is DLoad dl) _viewLoad = new ViewDLoad(dl, unitSystem.PressureUnitAbbreviation);
-                else if (clone is STLoad stl) _viewLoad = new ViewSTLoad(stl, unitSystem.ForceUnitAbbreviation);
-                else if (clone is GravityLoad gl) _viewLoad = new ViewGravityLoad(gl, unitSystem.AccelerationUnitAbbreviation);
-                else if (clone is CentrifLoad cfl) _viewLoad = new ViewCentrifLoad(cfl, unitSystem.LengthUnitAbbreviation,
-                                                                                   unitSystem.RotationalSpeedUnitAbbreviation);
-                else if (clone is PreTensionLoad ptl) _viewLoad = new ViewPreTensionLoad(ptl, unitSystem.LengthUnitAbbreviation,
-                                                                                         unitSystem.ForceUnitAbbreviation);
+                if (clone is CLoad cl) _viewLoad = new ViewCLoad(cl);
+                else if (clone is MomentLoad ml) _viewLoad = new ViewMomentLoad(ml);
+                else if (clone is DLoad dl) _viewLoad = new ViewDLoad(dl);
+                else if (clone is STLoad stl) _viewLoad = new ViewSTLoad(stl);
+                else if (clone is GravityLoad gl) _viewLoad = new ViewGravityLoad(gl);
+                else if (clone is CentrifLoad cfl) _viewLoad = new ViewCentrifLoad(cfl);
+                else if (clone is PreTensionLoad ptl) _viewLoad = new ViewPreTensionLoad(ptl);
                 else throw new NotImplementedException();
             }
         }
@@ -422,7 +419,6 @@ namespace PrePoMax.Forms
         private void PopulateListOfLoads(string[] partNames, string[] nodeSetNames, string[] elementSetNames, 
                                          string[] referencePointNames, string[] surfaceNames, string[] elementBasedSurfaceNames)
         {
-            var unitSystem = _controller.Model.UnitSystem;
             System.Drawing.Color color = _controller.Settings.Pre.LoadSymbolColor;
             // Populate list view                                                                               
             ListViewItem item;
@@ -432,8 +428,7 @@ namespace PrePoMax.Forms
             name = "Concentrated force";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            ViewCLoad vcl = new ViewCLoad(new CLoad(loadName, "", RegionTypeEnum.Selection, 0, 0, 0),
-                                          unitSystem.ForceUnitAbbreviation);
+            ViewCLoad vcl = new ViewCLoad(new CLoad(loadName, "", RegionTypeEnum.Selection, 0, 0, 0));
             vcl.PopululateDropDownLists(nodeSetNames, referencePointNames);
             vcl.Color = color;
             item.Tag = vcl;
@@ -442,8 +437,7 @@ namespace PrePoMax.Forms
             name = "Moment";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            ViewMomentLoad vml = new ViewMomentLoad(new MomentLoad(loadName, "", RegionTypeEnum.Selection, 0, 0, 0),
-                                                    unitSystem.MomentUnitAbbreviation);
+            ViewMomentLoad vml = new ViewMomentLoad(new MomentLoad(loadName, "", RegionTypeEnum.Selection, 0, 0, 0));
             vml.PopululateDropDownLists(nodeSetNames, referencePointNames);
             vml.Color = color;
             item.Tag = vml;
@@ -452,7 +446,7 @@ namespace PrePoMax.Forms
             name = "Pressure";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            ViewDLoad vdl = new ViewDLoad(new DLoad(loadName, "", RegionTypeEnum.Selection, 0), unitSystem.PressureUnitAbbreviation);
+            ViewDLoad vdl = new ViewDLoad(new DLoad(loadName, "", RegionTypeEnum.Selection, 0));
             vdl.PopululateDropDownLists(surfaceNames);
             vdl.Color = color;
             item.Tag = vdl;
@@ -461,8 +455,7 @@ namespace PrePoMax.Forms
             name = "Surface traction";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            ViewSTLoad vstl = new ViewSTLoad(new STLoad(loadName, "", RegionTypeEnum.Selection, 0, 0, 0),
-                                             unitSystem.ForceUnitAbbreviation);
+            ViewSTLoad vstl = new ViewSTLoad(new STLoad(loadName, "", RegionTypeEnum.Selection, 0, 0, 0));
             vstl.PopululateDropDownLists(surfaceNames);
             vstl.Color = color;
             item.Tag = vstl;
@@ -471,8 +464,7 @@ namespace PrePoMax.Forms
             name = "Gravity";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            ViewGravityLoad vgl = new ViewGravityLoad(new GravityLoad(loadName, "", RegionTypeEnum.Selection),
-                                                      unitSystem.AccelerationUnitAbbreviation);
+            ViewGravityLoad vgl = new ViewGravityLoad(new GravityLoad(loadName, "", RegionTypeEnum.Selection));
             vgl.PopululateDropDownLists(partNames, elementSetNames);
             vgl.Color = color;
             item.Tag = vgl;
@@ -481,9 +473,7 @@ namespace PrePoMax.Forms
             name = "Centrifugal load";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            ViewCentrifLoad vcfl = new ViewCentrifLoad(new CentrifLoad(loadName, "", RegionTypeEnum.Selection),
-                                                       unitSystem.LengthUnitAbbreviation,
-                                                       unitSystem.RotationalSpeedUnitAbbreviation);
+            ViewCentrifLoad vcfl = new ViewCentrifLoad(new CentrifLoad(loadName, "", RegionTypeEnum.Selection));
             vcfl.PopululateDropDownLists(partNames, elementSetNames);
             vcfl.Color = color;
             item.Tag = vcfl;
@@ -492,9 +482,7 @@ namespace PrePoMax.Forms
             name = "Pre-tension";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            ViewPreTensionLoad vptl = new ViewPreTensionLoad(new PreTensionLoad(loadName, "", RegionTypeEnum.Selection, 0),
-                                                             unitSystem.LengthUnitAbbreviation,
-                                                             unitSystem.ForceUnitAbbreviation);
+            ViewPreTensionLoad vptl = new ViewPreTensionLoad(new PreTensionLoad(loadName, "", RegionTypeEnum.Selection, 0));
             vptl.PopululateDropDownLists(elementBasedSurfaceNames);
             vptl.Color = color;
             item.Tag = vptl;

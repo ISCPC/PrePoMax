@@ -9,12 +9,12 @@ using System.Globalization;
 using UnitsNet;
 using UnitsNet.Units;
 
-namespace PrePoMax
+namespace CaeModel
 {
     public class StringAreaConverter : TypeConverter
     {
         // Variables                                                                                                                
-        private static AreaUnit _AreaUnit = AreaUnit.SquareMeter;
+        protected static AreaUnit _AreaUnit = AreaUnit.SquareMeter;
 
 
         // Properties                                                                                                               
@@ -59,8 +59,7 @@ namespace PrePoMax
                 {
                     if (value is double valueDouble)
                     {
-                        Area Area = Area.From(valueDouble, _AreaUnit);
-                        return Area.Value.ToString() + " " + Area.GetAbbreviation(_AreaUnit);
+                        return value.ToString() + " " + Area.GetAbbreviation(_AreaUnit);
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);

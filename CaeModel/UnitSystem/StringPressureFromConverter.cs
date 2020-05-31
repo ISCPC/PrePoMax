@@ -11,45 +11,21 @@ using UnitsNet.Units;
 
 namespace CaeModel
 {
-    public class StringForceConverter : TypeConverter
+    public class StringPressureFromConverter : StringPressureConverter
     {
         // Variables                                                                                                                
-        protected static ForceUnit _forceUnit = ForceUnit.Newton;
 
 
         // Properties                                                                                                               
-        public static string SetUnit { set { _forceUnit = Force.ParseUnit(value); } }
 
 
         // Constructors                                                                                                             
-        public StringForceConverter()
+        public StringPressureFromConverter()
         {
         }
 
 
         // Methods                                                                                                                  
-        public override bool CanConvertFrom(ITypeDescriptorContext context, System.Type sourceType)
-        {
-            if (sourceType == typeof(string)) return true;
-            else return base.CanConvertFrom(context, sourceType);
-        }
-        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
-        {
-            // Convert from string
-            if (value is string valueString)
-            {
-                double valueDouble;
-                //
-                if (!double.TryParse(valueString, out valueDouble))
-                {
-                    Force force = Force.Parse(valueString).ToUnit(_forceUnit);
-                    valueDouble = force.Value;
-                }
-                //
-                return valueDouble;
-            }
-            else return base.ConvertFrom(context, culture, value);
-        }
         public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
         {
             // Convert to string
@@ -57,10 +33,7 @@ namespace CaeModel
             {
                 if (destinationType == typeof(string))
                 {
-                    if (value is double valueDouble)
-                    {
-                        return value.ToString() + " " + Force.GetAbbreviation(_forceUnit);
-                    }
+                    if (value is double valueDouble) return value.ToString();
                 }
                 return base.ConvertTo(context, culture, value, destinationType);
             }

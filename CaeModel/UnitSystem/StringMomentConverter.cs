@@ -9,12 +9,12 @@ using System.Globalization;
 using UnitsNet;
 using UnitsNet.Units;
 
-namespace PrePoMax
+namespace CaeModel
 {
     public class StringMomentConverter : TypeConverter
     {
         // Variables                                                                                                                
-        private static TorqueUnit _momentUnit = TorqueUnit.NewtonMeter;
+        protected static TorqueUnit _momentUnit = TorqueUnit.NewtonMeter;
 
 
         // Properties                                                                                                               
@@ -59,8 +59,7 @@ namespace PrePoMax
                 {
                     if (value is double valueDouble)
                     {
-                        Torque moment = Torque.From(valueDouble, _momentUnit);
-                        return moment.Value.ToString() + " " + Torque.GetAbbreviation(_momentUnit);
+                        return value.ToString() + " " + Torque.GetAbbreviation(_momentUnit);
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);

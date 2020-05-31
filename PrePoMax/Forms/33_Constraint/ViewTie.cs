@@ -24,25 +24,17 @@ namespace PrePoMax
         //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(1, 10, "Position tolerance")]
-        [DescriptionAttribute("Enter the value of largest distance from the master surface for which the slave nodes will be " + 
+        [DescriptionAttribute("Enter the value of largest distance from the master surface for which the slave nodes will be " +
                               "included in the tie constraint. Default value equals 2.5 % of the typical element size.")]
-        [TypeConverter(typeof(StringDefaultDoubleConverter))]
+        [TypeConverter(typeof(CaeModel.StringLengthDefaultConverter))]
         [Id(2, 1)]
-        public double PositionTolerance 
-        {
-            get
-            {
-                StringDefaultDoubleConverter.InitialValue = 0.01;
-                return _tie.PositionTolerance; 
-            }
-            set { _tie.PositionTolerance = value; }
-        }
+        public double PositionTolerance { get { return _tie.PositionTolerance; } set { _tie.PositionTolerance = value; } }
         //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(2, 10, "Adjust")]
         [DescriptionAttribute("Set adjust to No to prevent the projection of the slave nodes on the master surface.")]
         [Id(3, 1)]
-        public bool Adjust { get { return _tie.Adjust; } set { _tie.Adjust = value; } }                
+        public bool Adjust { get { return _tie.Adjust; } set { _tie.Adjust = value; } }
         // MASTER ------------------------------------------------------------------------------------------------------------------
         [CategoryAttribute("Master Region")]
         [OrderedDisplayName(0, 10, "Master region type")]
@@ -95,8 +87,6 @@ namespace PrePoMax
         [Id(2, 10)]
         public Color SlaveColor { get { return _tie.SlaveColor; } set { _tie.SlaveColor = value; } }
 
-      
-
 
         // Constructors                                                                                                             
         public ViewTie(CaeModel.Tie tie)
@@ -114,7 +104,9 @@ namespace PrePoMax
             base.SetBase(tie, masterRegionTypePropertyNamePairs, slaveRegionTypePropertyNamePairs);
             base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
             //
-            ApplyAdjustYesNo();
+            DynamicCustomTypeDescriptor.RenameBooleanPropertyToYesNo(nameof(Adjust));
+            //
+            CaeModel.StringLengthDefaultConverter.SetInitialValue = "0.05 mm";
         }
 
 
@@ -122,10 +114,6 @@ namespace PrePoMax
         public override CaeModel.Constraint GetBase()
         {
             return _tie;
-        }
-        protected void ApplyAdjustYesNo()
-        {
-            DynamicCustomTypeDescriptor.RenameBooleanPropertyToYesNo(nameof(Adjust));
         }
         public void PopululateDropDownLists(string[] surfaceNames)
         {

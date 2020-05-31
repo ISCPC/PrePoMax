@@ -11,18 +11,18 @@ using UnitsNet.Units;
 
 namespace CaeModel
 {
-    public class StringForceConverter : TypeConverter
+    public class StringDensityConverter : TypeConverter
     {
         // Variables                                                                                                                
-        protected static ForceUnit _forceUnit = ForceUnit.Newton;
+        protected static DensityUnit _DensityUnit = DensityUnit.TonnePerCubicMillimeter;
 
 
         // Properties                                                                                                               
-        public static string SetUnit { set { _forceUnit = Force.ParseUnit(value); } }
+        public static string SetUnit { set { _DensityUnit = UnitsNet.Density.ParseUnit(value); } }
 
 
         // Constructors                                                                                                             
-        public StringForceConverter()
+        public StringDensityConverter()
         {
         }
 
@@ -42,8 +42,8 @@ namespace CaeModel
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    Force force = Force.Parse(valueString).ToUnit(_forceUnit);
-                    valueDouble = force.Value;
+                    UnitsNet.Density Density = UnitsNet.Density.Parse(valueString).ToUnit(_DensityUnit);
+                    valueDouble = Density.Value;
                 }
                 //
                 return valueDouble;
@@ -59,7 +59,7 @@ namespace CaeModel
                 {
                     if (value is double valueDouble)
                     {
-                        return value.ToString() + " " + Force.GetAbbreviation(_forceUnit);
+                        return value.ToString() + " " + UnitsNet.Density.GetAbbreviation(_DensityUnit);
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);

@@ -9,16 +9,16 @@ using System.Globalization;
 using UnitsNet.Units;
 using UnitsNet;
 
-namespace PrePoMax
+namespace CaeModel
 {
     public class StringDOFConverter : TypeConverter
     {
         // Variables                                                                                                                
-        private static LengthUnit _lengthUnit = LengthUnit.Meter;
+        protected static LengthUnit _lengthUnit = LengthUnit.Meter;
         //
-        private ArrayList values;
-        private string _free = "Unconstrained";
-        private string _fixed = "Fixed";
+        protected ArrayList values;
+        protected string _free = "Unconstrained";
+        protected string _fixed = "Fixed";
         
         
         // Properties                                                                                                               
@@ -34,9 +34,7 @@ namespace PrePoMax
 
 
         // Methods                                                                                                                  
-
-        // Indicates this converter provides a list of standard values.
-        public override bool GetStandardValuesSupported(System.ComponentModel.ITypeDescriptorContext context)
+        public override bool GetStandardValuesSupported(ITypeDescriptorContext context)
         {
             return true;
         }
@@ -82,7 +80,6 @@ namespace PrePoMax
             }
             else return base.ConvertFrom(context, culture, value);
         }
-
         public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
         {
             // Convert to string
@@ -92,12 +89,11 @@ namespace PrePoMax
                 {
                     if (value is double valueDouble)
                     {
-                        if (double.IsNaN((double)value)) return _free;
+                        if (double.IsNaN(valueDouble)) return _free;
                         else if (double.IsPositiveInfinity((double)value)) return _fixed;
                         else
                         {
-                            Length Length = Length.From(valueDouble, _lengthUnit);
-                            return Length.Value.ToString() + " " + Length.GetAbbreviation(_lengthUnit);
+                            return value.ToString() + " " + Length.GetAbbreviation(_lengthUnit);
                         }
                     }
                 }

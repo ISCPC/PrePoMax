@@ -9,12 +9,12 @@ using System.Globalization;
 using UnitsNet;
 using UnitsNet.Units;
 
-namespace PrePoMax
+namespace CaeModel
 {
     public class StringAngleConverter : TypeConverter
     {
         // Variables                                                                                                                
-        private static AngleUnit _angleUnit = AngleUnit.Radian;
+        protected static AngleUnit _angleUnit = AngleUnit.Radian;
 
 
         // Properties                                                                                                               
@@ -59,8 +59,7 @@ namespace PrePoMax
                 {
                     if (value is double valueDouble)
                     {
-                        Angle Angle = Angle.From(valueDouble, _angleUnit);
-                        return Angle.Value.ToString() + " " + Angle.GetAbbreviation(_angleUnit);
+                        return value.ToString() + " " + Angle.GetAbbreviation(_angleUnit);
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);

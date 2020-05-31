@@ -47,11 +47,11 @@ namespace PrePoMax
         {
             InitializeComponent();
             //
-            StringAngleConverter.SetUnit = "deg";
-            tbGeometryEdgeAngle.UnitConverter = new StringAngleConverter();
-            tbGeometrySurfaceAngle.UnitConverter = new StringAngleConverter();
-            tbEdgeAngle.UnitConverter = new StringAngleConverter();
-            tbSurfaceAngle.UnitConverter = new StringAngleConverter();
+            CaeModel.StringAngleDegConverter angleDegConverter = new CaeModel.StringAngleDegConverter();
+            tbGeometryEdgeAngle.UnitConverter = angleDegConverter;
+            tbGeometrySurfaceAngle.UnitConverter = angleDegConverter;
+            tbEdgeAngle.UnitConverter = angleDegConverter;
+            tbSurfaceAngle.UnitConverter = angleDegConverter;
             //
             _checkBoxEventRunning = false;
             _controller = controller;

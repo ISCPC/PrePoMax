@@ -9,12 +9,12 @@ using System.Globalization;
 using UnitsNet;
 using UnitsNet.Units;
 
-namespace PrePoMax
+namespace CaeModel
 {
     public class StringLengthConverter : TypeConverter
     {
         // Variables                                                                                                                
-        private static LengthUnit _lengthUnit = LengthUnit.Meter;
+        protected static LengthUnit _lengthUnit = LengthUnit.Meter;
 
 
         // Properties                                                                                                               
@@ -59,8 +59,7 @@ namespace PrePoMax
                 {
                     if (value is double valueDouble)
                     {
-                        Length Length = Length.From(valueDouble, _lengthUnit);
-                        return Length.Value.ToString() + " " + Length.GetAbbreviation(_lengthUnit);
+                        return value.ToString() + " " + Length.GetAbbreviation(_lengthUnit);
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);

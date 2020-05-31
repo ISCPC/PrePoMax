@@ -24,10 +24,7 @@ namespace PrePoMax.Forms
             get { return _viewBc != null ? _viewBc.GetBase() : null; }
             set
             {
-                var unitSystem = _controller.Model.UnitSystem;
-                if (value is DisplacementRotation dr) _viewBc = new ViewDisplacementRotation(dr.DeepClone(),
-                                                                                             unitSystem.LengthUnitAbbreviation,
-                                                                                             unitSystem.AngleUnitAbbreviation);
+                if (value is DisplacementRotation dr) _viewBc = new ViewDisplacementRotation(dr.DeepClone());
                 else if (value is SubmodelBC sm) _viewBc = new ViewSubmodel(sm.DeepClone());
                 else throw new NotImplementedException();
             }
@@ -288,12 +285,10 @@ namespace PrePoMax.Forms
         {
             System.Drawing.Color color = _controller.Settings.Pre.BoundaryConditionSymbolColor;
             ListViewItem item;
-            var unitSystem = _controller.Model.UnitSystem;
             // Displacement/Rotation"
             item = new ListViewItem("Displacement/Rotation");
             DisplacementRotation dr = new DisplacementRotation(GetBoundaryConditionName(), "", RegionTypeEnum.Selection);
-            ViewDisplacementRotation vdr = new ViewDisplacementRotation(dr, unitSystem.LengthUnitAbbreviation,
-                                                                        unitSystem.AngleUnitAbbreviation);
+            ViewDisplacementRotation vdr = new ViewDisplacementRotation(dr);
             vdr.PopululateDropDownLists(nodeSetNames, surfaceNames, referencePointNames);
             vdr.Color = color;
             item.Tag = vdr;

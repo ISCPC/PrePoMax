@@ -19,6 +19,7 @@ namespace PrePoMax.Forms
         private int _numOfNodeSets;
         private int _numOfSurfaces;
 
+
         // Properties                                                                                                               
         [Category("Data")]
         [DisplayName("Name")]
@@ -64,21 +65,24 @@ namespace PrePoMax.Forms
         [Category("Coordinates")]
         [DisplayName("X")]
         [Description("X coordinate of the reference point.")]
+        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
         [Id(2, 3)]
         public double X { get { return _referencePoint.X; } set { _referencePoint.X = value; } }
         //
         [Category("Coordinates")]
         [DisplayName("Y")]
         [Description("Y coordinate of the reference point.")]
+        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
         [Id(3, 3)]
         public double Y { get { return _referencePoint.Y; } set { _referencePoint.Y = value; } }
         //
         [Category("Coordinates")]
         [DisplayName("Z")]
         [Description("Z coordinate of the reference point.")]
+        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
         [Id(4, 3)]
         public double Z { get { return _referencePoint.Z; } set { _referencePoint.Z = value; } }
-        
+        //
         [Category("Appearance")]
         [DisplayName("Color")]
         [Description("Select reference point color.")]
