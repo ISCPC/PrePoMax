@@ -169,6 +169,7 @@
     <Compile Include="UnitSystem\StringAngleDOFConverter.cs" />
     <Compile Include="UnitSystem\StringAngleFixedDOFConverter.cs" />
     <Compile Include="UnitSystem\StringAreaConverter.cs" />
+    <Compile Include="UnitSystem\StringForcePerVolumeConverter.cs" />
     <Compile Include="UnitSystem\StringForcePerVolumeDefaultConverter.cs" />
     <Compile Include="UnitSystem\StringLengthDefaultConverter.cs" />
     <Compile Include="UnitSystem\StringFixedDOFConverter.cs" />

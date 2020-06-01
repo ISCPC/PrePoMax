@@ -80,6 +80,7 @@
             this.lvModelMaterials.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.lvModelMaterials.FullRowSelect = true;
             this.lvModelMaterials.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
+            this.lvModelMaterials.HideSelection = false;
             this.lvModelMaterials.Location = new System.Drawing.Point(7, 51);
             this.lvModelMaterials.MultiSelect = false;
             this.lvModelMaterials.Name = "lvModelMaterials";
@@ -111,6 +112,7 @@
             this.tbCategoryName.Name = "tbCategoryName";
             this.tbCategoryName.Size = new System.Drawing.Size(187, 23);
             this.tbCategoryName.TabIndex = 2;
+            this.tbCategoryName.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbCategoryName_KeyDown);
             this.tbCategoryName.KeyUp += new System.Windows.Forms.KeyEventHandler(this.tbCategoryName_KeyUp);
             // 
             // groupBox3

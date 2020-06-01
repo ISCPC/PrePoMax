@@ -28,8 +28,10 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("Surface behavior");
             System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("Friction");
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             this.tvProperties = new System.Windows.Forms.TreeView();
             this.propertyGrid = new UserControls.TabbedPropertyGrid();
             this.btnOK = new System.Windows.Forms.Button();
@@ -39,8 +41,8 @@
             this.lName = new System.Windows.Forms.Label();
             this.gbProperties = new System.Windows.Forms.GroupBox();
             this.tcProperties = new System.Windows.Forms.TabControl();
-            this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.tpProperties = new System.Windows.Forms.TabPage();
+            this.tpDataPoints = new System.Windows.Forms.TabPage();
             this.dgvData = new UserControls.DataGridViewCopyPaste();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
@@ -51,8 +53,8 @@
             this.gbData.SuspendLayout();
             this.gbProperties.SuspendLayout();
             this.tcProperties.SuspendLayout();
-            this.tabPage1.SuspendLayout();
-            this.tabPage2.SuspendLayout();
+            this.tpProperties.SuspendLayout();
+            this.tpDataPoints.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvData)).BeginInit();
             this.SuspendLayout();
             // 
@@ -131,6 +133,7 @@
             this.tbName.Name = "tbName";
             this.tbName.Size = new System.Drawing.Size(195, 23);
             this.tbName.TabIndex = 1;
+            this.tbName.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbName_KeyDown);
             // 
             // lName
             // 
@@ -165,8 +168,8 @@
             this.tcProperties.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.tcProperties.Controls.Add(this.tabPage1);
-            this.tcProperties.Controls.Add(this.tabPage2);
+            this.tcProperties.Controls.Add(this.tpProperties);
+            this.tcProperties.Controls.Add(this.tpDataPoints);
             this.tcProperties.Location = new System.Drawing.Point(6, 142);
             this.tcProperties.Margin = new System.Windows.Forms.Padding(0);
             this.tcProperties.Name = "tcProperties";
@@ -174,36 +177,48 @@
             this.tcProperties.Size = new System.Drawing.Size(303, 286);
             this.tcProperties.TabIndex = 11;
             // 
-            // tabPage1
+            // tpProperties
             // 
-            this.tabPage1.BackColor = System.Drawing.SystemColors.Control;
-            this.tabPage1.Controls.Add(this.propertyGrid);
-            this.tabPage1.Location = new System.Drawing.Point(4, 24);
-            this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(295, 258);
-            this.tabPage1.TabIndex = 0;
-            this.tabPage1.Text = "Properties";
+            this.tpProperties.BackColor = System.Drawing.SystemColors.Control;
+            this.tpProperties.Controls.Add(this.propertyGrid);
+            this.tpProperties.Location = new System.Drawing.Point(4, 24);
+            this.tpProperties.Name = "tpProperties";
+            this.tpProperties.Padding = new System.Windows.Forms.Padding(3);
+            this.tpProperties.Size = new System.Drawing.Size(295, 258);
+            this.tpProperties.TabIndex = 0;
+            this.tpProperties.Text = "Properties";
             // 
-            // tabPage2
+            // tpDataPoints
             // 
-            this.tabPage2.BackColor = System.Drawing.SystemColors.Control;
-            this.tabPage2.Controls.Add(this.dgvData);
-            this.tabPage2.Location = new System.Drawing.Point(4, 24);
-            this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(295, 258);
-            this.tabPage2.TabIndex = 1;
-            this.tabPage2.Text = "Data points";
+            this.tpDataPoints.BackColor = System.Drawing.SystemColors.Control;
+            this.tpDataPoints.Controls.Add(this.dgvData);
+            this.tpDataPoints.Location = new System.Drawing.Point(4, 24);
+            this.tpDataPoints.Name = "tpDataPoints";
+            this.tpDataPoints.Padding = new System.Windows.Forms.Padding(3);
+            this.tpDataPoints.Size = new System.Drawing.Size(295, 258);
+            this.tpDataPoints.TabIndex = 1;
+            this.tpDataPoints.Text = "Data points";
             // 
             // dgvData
             // 
             this.dgvData.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvData.DefaultCellStyle = dataGridViewCellStyle1;
             this.dgvData.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvData.EnableCutMenu = true;
+            this.dgvData.EnablePasteMenu = true;
             this.dgvData.Location = new System.Drawing.Point(3, 3);
             this.dgvData.Name = "dgvData";
             this.dgvData.Size = new System.Drawing.Size(289, 252);
+            this.dgvData.StartPlotAtZero = false;
             this.dgvData.TabIndex = 0;
+            this.dgvData.XColIndex = 0;
             this.dgvData.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dgvData_DataError);
             // 
             // label2
@@ -295,8 +310,8 @@
             this.gbProperties.ResumeLayout(false);
             this.gbProperties.PerformLayout();
             this.tcProperties.ResumeLayout(false);
-            this.tabPage1.ResumeLayout(false);
-            this.tabPage2.ResumeLayout(false);
+            this.tpProperties.ResumeLayout(false);
+            this.tpDataPoints.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dgvData)).EndInit();
             this.ResumeLayout(false);
 
@@ -318,8 +333,8 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TabControl tcProperties;
-        private System.Windows.Forms.TabPage tabPage1;
-        private System.Windows.Forms.TabPage tabPage2;
+        private System.Windows.Forms.TabPage tpProperties;
+        private System.Windows.Forms.TabPage tpDataPoints;
         private UserControls.DataGridViewCopyPaste dgvData;
         private System.Windows.Forms.Button btnOKAddNew;
     }

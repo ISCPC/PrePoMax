@@ -61,10 +61,23 @@ namespace PrePoMax.Forms
         {
             SolidBrush fillBrush = new SolidBrush(((TabPage)sender).BackColor);
             e.Graphics.FillRectangle(fillBrush, e.ClipRectangle);
+            // Enable copy/paste without first selecting the cell 0,0
+            if (sender == tpDataPoints)
+            {
+                ActiveControl = dgvData;
+                dgvData[0, 0].Selected = true;
+            }
         }
         private void tvProperties_DoubleClick(object sender, EventArgs e)
         {
             btnAdd_Click(null, null);
+        }
+        private void tbName_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;  // no beep
+            }
         }
         private void btnAdd_Click(object sender, EventArgs e)
         {
@@ -113,9 +126,28 @@ namespace PrePoMax.Forms
                     //
                     BindingSource binding = new BindingSource();
                     binding.DataSource = vsb.DataPoints;
-                    dgvData.DataSource = binding; //bind datagridview to binding source - enables adding of new lines
+                    dgvData.DataSource = binding; // bind datagridview to binding source - enables adding of new lines
                     binding.ListChanged += Binding_ListChanged;
-                    //
+
+                    if (false)
+                    {
+                        // Unit
+                        string unitPressure = _controller.Model.UnitSystem.PressureUnitAbbreviation;
+                        string unitLength = _controller.Model.UnitSystem.LengthUnitAbbreviation;
+                        // HeaderText
+                        string headerText;
+                        string pressureName = nameof(PressureOverclosureDataPoint.Pressure);
+                        string overclosureName = nameof(PressureOverclosureDataPoint.Overclosure);
+                        //
+                        headerText = dgvData.Columns[pressureName].HeaderText;
+                        if (headerText != null) dgvData.Columns[pressureName].HeaderText = headerText.Replace("?", unitPressure);
+                        headerText = dgvData.Columns[overclosureName].HeaderText;
+                        if (headerText != null) dgvData.Columns[overclosureName].HeaderText = headerText.Replace("?", unitLength);
+                        // Alignment
+                        dgvData.Columns[pressureName].HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
+                        dgvData.Columns[overclosureName].HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
+                        //
+                    }
                     propertyGrid.SelectedObject = vsb;
                     //
                     propertyGrid_PropertyValueChanged(null, null);
@@ -285,7 +317,9 @@ namespace PrePoMax.Forms
         {
             return NamedClass.GetNewValueName(_surfraceInteractionNames, "SurfaceInteraction-");
         }
+
+       
         //
-        
+
     }
 }

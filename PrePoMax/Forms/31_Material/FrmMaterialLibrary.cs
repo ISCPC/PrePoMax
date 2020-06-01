@@ -21,6 +21,7 @@ namespace PrePoMax.Forms
         private bool _libraryChanged;
         private bool _modelChanged;
 
+
         // Properties                                                                                                               
 
 
@@ -64,7 +65,7 @@ namespace PrePoMax.Forms
                 ExceptionTools.Show(this, ex);
             }
         }
-
+        //
         private void btvLibrary_AfterSelect(object sender, TreeViewEventArgs e)
         {
             if (btvLibrary.SelectedNode != null) tbCategoryName.Text = btvLibrary.SelectedNode.Text;
@@ -85,7 +86,7 @@ namespace PrePoMax.Forms
         {
 
         }
-
+        //
         private void lvModelMaterials_MouseDown(object sender, MouseEventArgs e)
         {
             try
@@ -114,12 +115,19 @@ namespace PrePoMax.Forms
                 lvModelMaterials.SelectedItems[0].ForeColor = Color.Black;
             }
         }
-
+        //
+        private void tbCategoryName_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;  // no beep
+            }
+        }
         private void tbCategoryName_KeyUp(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter) btnRename_Click(null, null);
         }
-
+        //
         private void btnAddCategory_Click(object sender, EventArgs e)
         {
             try
@@ -179,7 +187,7 @@ namespace PrePoMax.Forms
                 ExceptionTools.Show(this, ex);
             }
         }
-
+        //
         private void btnDeleteFromModel_Click(object sender, EventArgs e)
         {
             if (lvModelMaterials.SelectedItems.Count == 1)
@@ -188,7 +196,7 @@ namespace PrePoMax.Forms
                 _modelChanged = true;
             }
         }
-
+        //
         private void btnCopyToLibrary_Click(object sender, EventArgs e)
         {
             try
@@ -248,7 +256,7 @@ namespace PrePoMax.Forms
                 ExceptionTools.Show(this, ex);
             }
         }
-
+        //
         private void btnSave_Click(object sender, EventArgs e)
         {
             try
@@ -296,7 +304,7 @@ namespace PrePoMax.Forms
                 ExceptionTools.Show(this, ex);
             }
         }
-
+        //
         private void FrmMaterialLibrary_FormClosing(object sender, FormClosingEventArgs e)
         {
             try
@@ -340,7 +348,7 @@ namespace PrePoMax.Forms
                 TreeNodesToItemList(childNode, childItem);
             }
         }
-
+        //
         private void LoadLibraryFromFile()
         {
             string fileName = Path.Combine(Application.StartupPath, Globals.MaterialLibraryFileName);
@@ -370,7 +378,7 @@ namespace PrePoMax.Forms
 
             if (item.Expanded) node.Expand();
         }
-
+        //
         private void ApplyFormatingRecursive(TreeNode node)
         {
             if (node.Tag == null) node.ForeColor = SystemColors.Highlight;
@@ -381,7 +389,7 @@ namespace PrePoMax.Forms
                 ApplyFormatingRecursive(childNode);
             }
         }
-
+        //
         private void GetNodeContainingFirstMaterial(TreeNode node, out TreeNode firstNodeWithMaterial)
         {
             firstNodeWithMaterial = null;
@@ -399,8 +407,6 @@ namespace PrePoMax.Forms
             }
         }
 
-
-
-
+        
     }
 }

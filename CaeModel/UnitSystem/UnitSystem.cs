@@ -193,7 +193,6 @@ namespace CaeModel
             StringAngleConverter.SetUnit = AngleUnitAbbreviation;
             StringAngleDOFConverter.SetUnit = AngleUnitAbbreviation;
             StringAngleFixedDOFConverter.SetUnit = AngleUnitAbbreviation;
-            StringAngleDegConverter.SetUnit = "deg";
             // Derived units
             StringAreaConverter.SetUnit = AreaUnitAbbreviation;
             StringRotationalSpeedConverter.SetUnit = RotationalSpeedUnitAbbreviation;
@@ -204,6 +203,8 @@ namespace CaeModel
             StringPressureFromConverter.SetUnit = PressureUnitAbbreviation;     // not really necessary
             StringDensityConverter.SetUnit = DensityUnitAbbreviation;
             // Contact
+            StringForcePerVolumeConverter.SetForceUnit = ForceUnitAbbreviation;
+            StringForcePerVolumeConverter.SetVolumeUnit = VolumeUnitAbbreviation;
             StringForcePerVolumeDefaultConverter.SetForceUnit = ForceUnitAbbreviation;
             StringForcePerVolumeDefaultConverter.SetVolumeUnit = VolumeUnitAbbreviation;
         }

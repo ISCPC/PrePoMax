@@ -18,10 +18,12 @@ namespace PrePoMax
 
 
         // Properties                                                                                                               
-        [DisplayName("Pressure")]
+        [DisplayName("Pressure\n[?]")]
+        [TypeConverter(typeof(CaeModel.StringPressureConverter))]
         public double Pressure { get { return _pressure; } set { _pressure = value; } }
         //
-        [DisplayName("Overclosure")]
+        [DisplayName("Overclosure\n[?]")]
+        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
         public double Overclosure { get { return _overclosure; } set { _overclosure = value; } }
 
 
@@ -65,17 +67,19 @@ namespace PrePoMax
         [CategoryAttribute("Data")]
         [OrderedDisplayName(1, 10, "K")]
         [Description("Slope of the pressure-overclosure curve (usually 5 to 50 times the E modulus of the adjacent materials).")]
+        [TypeConverter(typeof(CaeModel.StringForcePerVolumeConverter))]
         public double K { get { return _surfaceBehavior.K; } set { _surfaceBehavior.K = value; } }
         //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(2, 10, "Sinf")]
         [Description("Tension value for large clearances (about 0.25 % of the maximum expected von Mises stress).")]
+        [TypeConverter(typeof(CaeModel.StringPressureConverter))]
         public double Sinf { get { return _surfaceBehavior.Sinf; } set { _surfaceBehavior.Sinf = value; } }
         //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(3, 10, "c0")]
         [DescriptionAttribute("The value from which the maximum clearance is calculated for which a spring contact " +
-                              "element is generated.")]
+                              "element is generated. The default for c0 is 0.001.")]
         [TypeConverter(typeof(StringDefaultDoubleConverter))]
         public double C0_lin
         {
@@ -91,11 +95,13 @@ namespace PrePoMax
         [CategoryAttribute("Data")]
         [OrderedDisplayName(4, 10, "p0")]
         [DescriptionAttribute("The contact pressure at zero clerance (p0 > 0).")]
+        [TypeConverter(typeof(CaeModel.StringPressureConverter))]
         public double P0 { get { return _surfaceBehavior.P0; } set { _surfaceBehavior.P0 = value; } }
         //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(5, 10, "c0")]
         [DescriptionAttribute("The clerance at which the contact pressure is decreased to 1 % of p0 (c0 > 0).")]
+        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
         public double C0_exp { get { return _surfaceBehavior.C0; } set { _surfaceBehavior.C0 = value; } }
         
         //

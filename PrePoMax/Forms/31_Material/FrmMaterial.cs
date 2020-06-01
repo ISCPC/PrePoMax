@@ -59,7 +59,7 @@ namespace PrePoMax.Forms
             SolidBrush fillBrush = new SolidBrush(((TabPage)sender).BackColor);
             e.Graphics.FillRectangle(fillBrush, e.ClipRectangle);
             // Enable copy/paste without first selecting the cell 0,0
-            if (sender == tabPage2)
+            if (sender == tpDataPoints)
             {
                 ActiveControl = dgvData;
                 dgvData[0, 0].Selected = true;
@@ -122,15 +122,15 @@ namespace PrePoMax.Forms
                     tcProperties.TabPages.Add(_pages[0]);
                     propertyGrid.SelectedObject = lvAddedProperties.SelectedItems[0].Tag;
                 }
-                else if (lvAddedProperties.SelectedItems[0].Tag is ViewPlastic)
+                else if (lvAddedProperties.SelectedItems[0].Tag is ViewPlastic vp)
                 {
                     tcProperties.TabPages.Clear();
                     tcProperties.TabPages.Add(_pages[0]);
                     tcProperties.TabPages.Add(_pages[1]);
                     //
                     BindingSource binding = new BindingSource();
-                    binding.DataSource = (lvAddedProperties.SelectedItems[0].Tag as ViewPlastic).DataPoints;                    
-                    dgvData.DataSource = binding; //bind datagridview to binding source - enables adding of new lines
+                    binding.DataSource = vp.DataPoints;
+                    dgvData.DataSource = binding; // bind datagridview to binding source - enables adding of new lines
                     binding.ListChanged += Binding_ListChanged;
                     // Unit
                     string unitStress = _controller.Model.UnitSystem.PressureUnitAbbreviation;
@@ -150,7 +150,7 @@ namespace PrePoMax.Forms
                     dgvData.XColIndex = 1;
                     dgvData.StartPlotAtZero = true;
                     //
-                    propertyGrid.SelectedObject = lvAddedProperties.SelectedItems[0].Tag;
+                    propertyGrid.SelectedObject = vp;
                 }
             }
             lvAddedProperties.Select();
