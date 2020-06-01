@@ -120,6 +120,18 @@
   <metadata name="cmsCopyPaste.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="tsmiPlot.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
+        wwAADsMBx2+oZAAAAUZJREFUOE+dkj1ywjAQhbflEHRchBmaFNSuuAXjO1DRUGRyAFdpGFKlcB26nIKC
+        xpXH/3rRW7GObWZIhuJ5tdLTp9VaAuAptW0rbr0OSRRFcM7dmf7SuwgkTVMQwDg1PJI7n3EhII5jBTBO
+        TQ+12QDLZUgIaJpG6rrWu92ZJ1LPfA6334cJArquk6Io5HI44MOXxvu527zBKY4JePXrjD2Ai3mea2Ps
+        JN5RT/INts0UkgRhK34BWtbphOsAQJU+p6wKBSwWuO526usBurBagc2Z9sHNZnDeWlWVZFn2ktyAIwAj
+        T8LxOALYyez4p1//8sq3W70y10eAN00RNvhIlWUpPHk4Ryiby7F+DPDtUzOagQ3k2P6GyRo7AgzFa9hG
+        imaKFfFvsarRb7QJ0mliZG4ihO+EL5bP3irqAc+Ie0dl/0dWQcghP3O9xIjgrAJIAAAAAElFTkSuQmCC
+</value>
+  </data>
   <metadata name="$this.TrayLargeIcon" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>False</value>
   </metadata>

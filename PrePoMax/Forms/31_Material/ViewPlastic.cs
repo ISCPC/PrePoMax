@@ -18,11 +18,11 @@ namespace PrePoMax
         
 
         // Properties                                                                                                               
-        [DisplayName("Yield Stress")]
+        [DisplayName("Yield Stress\n[?]")]
         [TypeConverter(typeof(CaeModel.StringPressureFromConverter))]
         public double Stress { get { return _stress; } set { _stress = value; } }
 
-        [DisplayName("Plastic strain")]
+        [DisplayName("Plastic strain\n[?]")]
         public double Strain { get { return _strain; } set { _strain = value; } }
 
 

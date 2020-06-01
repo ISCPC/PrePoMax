@@ -48,11 +48,42 @@ namespace UserControls
         {
             InitializeComponent();
             //
+            this.KeyDown += DataGridViewCopyPaste_KeyDown;
+            //
             frmDiagramView = new FrmDiagramView();
         }
+
+        private void DataGridViewCopyPaste_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Control)
+            {
+                if (e.KeyCode == Keys.C)
+                {
+                    tsmiCopy_Click(null, null);
+                }
+                else if (e.KeyCode == Keys.X)
+                {
+                    tsmiCut_Click(null, null);
+                }
+                else if (e.KeyCode == Keys.V)
+                {
+                    tsmiPaste_Click(null, null);
+                }
+                else if (e.KeyCode == Keys.P)
+                {
+                    tsmiPlot_Click(null, null);
+                }
+            }
+        }
+
+        private void DataGridViewCopyPaste_KeyPress(object sender, KeyPressEventArgs e)
+        {
+        }
+
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DataGridViewCopyPaste));
             this.cmsCopyPaste = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.tsmiCut = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiCopy = new System.Windows.Forms.ToolStripMenuItem();
@@ -72,7 +103,7 @@ namespace UserControls
             this.tssDivider1,
             this.tsmiPlot});
             this.cmsCopyPaste.Name = "cmsCopyPaste";
-            this.cmsCopyPaste.Size = new System.Drawing.Size(145, 70);
+            this.cmsCopyPaste.Size = new System.Drawing.Size(145, 98);
             // 
             // tsmiCut
             // 
@@ -101,20 +132,27 @@ namespace UserControls
             this.tsmiPaste.Text = "Paste";
             this.tsmiPaste.Click += new System.EventHandler(this.tsmiPaste_Click);
             // 
+            // tssDivider1
+            // 
+            this.tssDivider1.Name = "tssDivider1";
+            this.tssDivider1.Size = new System.Drawing.Size(141, 6);
+            // 
             // tsmiPlot
             // 
-            this.tsmiPlot.Image = global::UserControls.Properties.Resources.History_output.ToBitmap();
+            this.tsmiPlot.Image = ((System.Drawing.Image)(resources.GetObject("tsmiPlot.Image")));
             this.tsmiPlot.Name = "tsmiPlot";
             this.tsmiPlot.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.P)));
             this.tsmiPlot.Size = new System.Drawing.Size(144, 22);
             this.tsmiPlot.Text = "Plot";
             this.tsmiPlot.Click += new System.EventHandler(this.tsmiPlot_Click);
-            //
+            // 
+            // DataGridViewCopyPaste
+            // 
+            this.ContextMenuStrip = this.cmsCopyPaste;
             this.cmsCopyPaste.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this)).EndInit();
             this.ResumeLayout(false);
-            //            
-            this.CellMouseDown += dgvData_CellMouseDown;
+
         }
 
 
@@ -307,32 +345,39 @@ namespace UserControls
             // Get the starting Cell
             DataGridViewCell startCell = GetStartCell();
             // Get the clipboard value in a dictionary
-            Dictionary<int, Dictionary<int, string>> cbValue = ClipboardValues(Clipboard.GetText());
+            Dictionary<int, Dictionary<int, string>> cbValues = ClipboardValues(Clipboard.GetText());
             //
             double value;
             string valueString;
             int iRowIndex = startCell.RowIndex;
             // Add new rows
-            int numOfRows = cbValue.Keys.Count;
+            int numOfRows = cbValues.Keys.Count;
             int lastRow = iRowIndex + numOfRows;
             while (RowCount < lastRow + 1)
             {
                 ((BindingSource)DataSource).AddNew();
             }
             //
-            foreach (int rowKey in cbValue.Keys)
+            foreach (int rowKey in cbValues.Keys)
             {
                 int iColIndex = startCell.ColumnIndex;
-                foreach (int cellKey in cbValue[rowKey].Keys)
+                foreach (int cellKey in cbValues[rowKey].Keys)
                 {
                     // Check if the index is within the limit
                     if (iColIndex <= Columns.Count - 1 && iRowIndex <= Rows.Count - 1)
                     {
                         DataGridViewCell cell = this[iColIndex, iRowIndex];
                         //
-                        valueString = cbValue[rowKey][cellKey];
-                        if (double.TryParse(valueString, out value)) cell.Value = value;
-                        else cell.Value = 0;
+                        valueString = cbValues[rowKey][cellKey];
+                        //
+                        try
+                        {
+                            cell.Value = valueString;
+                        }
+                        catch
+                        {
+                            cell.Value = double.NaN;
+                        }
                         //
                         cell.Selected = true;
                     }

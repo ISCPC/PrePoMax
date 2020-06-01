@@ -11,6 +11,7 @@ using CaeModel;
 using CaeGlobals;
 using PrePoMax.PropertyViews;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 
 namespace PrePoMax.Forms
 {
@@ -57,6 +58,12 @@ namespace PrePoMax.Forms
         {
             SolidBrush fillBrush = new SolidBrush(((TabPage)sender).BackColor);
             e.Graphics.FillRectangle(fillBrush, e.ClipRectangle);
+            // Enable copy/paste without first selecting the cell 0,0
+            if (sender == tabPage2)
+            {
+                ActiveControl = dgvData;
+                dgvData[0, 0].Selected = true;
+            }
         }
         private void tvProperties_DoubleClick(object sender, EventArgs e)
         {
@@ -125,12 +132,20 @@ namespace PrePoMax.Forms
                     binding.DataSource = (lvAddedProperties.SelectedItems[0].Tag as ViewPlastic).DataPoints;                    
                     dgvData.DataSource = binding; //bind datagridview to binding source - enables adding of new lines
                     binding.ListChanged += Binding_ListChanged;
-                    //
+                    // Unit
                     string unitStress = _controller.Model.UnitSystem.PressureUnitAbbreviation;
-                    if (dgvData.Columns["Stress"] != null) dgvData.Columns["Stress"].HeaderText += "\n[" + unitStress + "]";
-                    if (dgvData.Columns["Strain"] != null) dgvData.Columns["Strain"].HeaderText += "\n[/]";
-                    dgvData.Columns["Stress"].HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
-                    dgvData.Columns["Strain"].HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
+                    // HeaderText
+                    string headerText;
+                    string stressName = nameof(MaterialDataPoint.Stress);
+                    string strainName = nameof(MaterialDataPoint.Strain);
+                    //
+                    headerText = dgvData.Columns[stressName].HeaderText;
+                    if (headerText != null) dgvData.Columns[stressName].HeaderText = headerText.Replace("?", unitStress);
+                    headerText = dgvData.Columns[strainName].HeaderText;
+                    if (headerText != null) dgvData.Columns[strainName].HeaderText = headerText.Replace("?", "/");
+                    // Alignment
+                    dgvData.Columns[stressName].HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
+                    dgvData.Columns[strainName].HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
                     //
                     dgvData.XColIndex = 1;
                     dgvData.StartPlotAtZero = true;
@@ -298,7 +313,32 @@ namespace PrePoMax.Forms
         {
             return NamedClass.GetNewValueName(_materialNames, "Material-");
         }
+        //
+        public string GetPropertyDisplayName<T>(string fieldName)
+        {
+            string result;
+            var propertyInfo = typeof(T).GetProperty(fieldName.ToString());
+            if (propertyInfo != null)
+            {
+                try
+                {
+                    object[] descriptionAttrs = propertyInfo.GetCustomAttributes(typeof(DisplayNameAttribute), false);
+                    DisplayNameAttribute attribute = (DisplayNameAttribute)descriptionAttrs[0];
+                    result = (attribute.DisplayName);
+                }
+                catch
+                {
+                    result = null;
+                }
+            }
+            else
+            {
+                result = null;
+            }
 
-     
+            return result;
+        }
+
+
     }
 }
