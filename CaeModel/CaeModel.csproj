@@ -171,6 +171,7 @@
     <Compile Include="UnitSystem\StringAreaConverter.cs" />
     <Compile Include="UnitSystem\StringForcePerVolumeConverter.cs" />
     <Compile Include="UnitSystem\StringForcePerVolumeDefaultConverter.cs" />
+    <Compile Include="UnitSystem\StringLengthFromConverter.cs" />
     <Compile Include="UnitSystem\StringLengthDefaultConverter.cs" />
     <Compile Include="UnitSystem\StringFixedDOFConverter.cs" />
     <Compile Include="UnitSystem\StringDOFConverter.cs" />

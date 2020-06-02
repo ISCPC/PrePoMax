@@ -123,13 +123,14 @@ namespace PrePoMax.Forms
                 {
                     tcProperties.TabPages.Clear();
                     tcProperties.TabPages.Add(_pages[0]);
+                    tcProperties.TabPages.Add(_pages[1]);
                     //
                     BindingSource binding = new BindingSource();
                     binding.DataSource = vsb.DataPoints;
                     dgvData.DataSource = binding; // bind datagridview to binding source - enables adding of new lines
                     binding.ListChanged += Binding_ListChanged;
 
-                    if (false)
+                    if (true)
                     {
                         // Unit
                         string unitPressure = _controller.Model.UnitSystem.PressureUnitAbbreviation;

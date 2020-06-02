@@ -1,7 +1,9 @@
 ﻿using CaeGlobals;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -353,11 +355,37 @@ namespace UserControls
             // Add new rows
             int numOfRows = cbValues.Keys.Count;
             int lastRow = iRowIndex + numOfRows;
-            while (RowCount < lastRow + 1)
-            {
-                ((BindingSource)DataSource).AddNew();
-            }
+            BindingSource bindingSource = (BindingSource)DataSource;
+            while (RowCount < lastRow + 1) bindingSource.AddNew();
             //
+
+
+            TypeConverter[] converters = null;
+            if (this.DataSource is BindingSource bs && bs.DataSource is System.Collections.ICollection ic)
+            {
+                //Get the type you are interested in.
+                Type myListElementType = ic.GetType().GetGenericArguments().Single();
+
+                //Get information about the property you are interested in on the type.
+                var properties = myListElementType.GetProperties();
+                //
+                converters = new TypeConverter[properties.Length];
+                for (int i = 0; i < properties.Length; i++)
+                {
+                    //Pull off the TypeConverterAttribute.
+                    var attr = properties[i].GetCustomAttribute<TypeConverterAttribute>();
+                    //The attribute only stores the name of the TypeConverter as a string.
+                    var converterTypeName = attr.ConverterTypeName;
+
+                    // Get the actual Type of the TypeConverter from the string.
+                    var converterType = Type.GetType(converterTypeName);
+
+                    //Create an instance of the TypeConverter.
+                    converters[i] = (TypeConverter)Activator.CreateInstance(converterType);
+                }
+            }
+
+
             foreach (int rowKey in cbValues.Keys)
             {
                 int iColIndex = startCell.ColumnIndex;
@@ -372,6 +400,8 @@ namespace UserControls
                         //
                         try
                         {
+                            //if (converters != null) cell.Value = converters[iColIndex].ConvertFrom(valueString);
+                            //else 
                             cell.Value = valueString;
                         }
                         catch
@@ -406,6 +436,7 @@ namespace UserControls
         {
             Dictionary<int, Dictionary<int, string>> copyValues = new Dictionary<int, Dictionary<int, string>>();
             //
+            clipboardValue = clipboardValue.Replace("\r\n", "\n");
             string[] lines = clipboardValue.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
             //
             for (int i = 0; i <= lines.Length - 1; i++)

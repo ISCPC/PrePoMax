@@ -24,13 +24,13 @@ namespace PrePoMax.PropertyViews
         }
         //
         [CategoryAttribute("Data")]
-        [OrderedDisplayName(0, 10, "Coefficient")]
-        [DescriptionAttribute("The friction coefficient (mu > 0).")]
+        [OrderedDisplayName(0, 10, "Friction coefficient")]
+        [DescriptionAttribute("The friction coefficient (µ > 0).")]
         public double Coefficient { get { return _friction.Coefficient; } set { _friction.Coefficient = value; } }
         //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(1, 10, "Stik slope")]
-        [DescriptionAttribute("The ratio between the shear stress and the relative tangential displacement in contact (lambda > 0).")]
+        [DescriptionAttribute("The ratio between the shear stress and the relative tangential displacement in contact (λ > 0).")]
         [TypeConverter(typeof(CaeModel.StringForcePerVolumeDefaultConverter))]
         public double StikSlope { get { return _friction.StikSlope; } set { _friction.StikSlope = value; } }
         //
