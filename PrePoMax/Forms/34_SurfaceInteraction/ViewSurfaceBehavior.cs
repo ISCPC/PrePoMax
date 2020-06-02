@@ -18,13 +18,13 @@ namespace PrePoMax
 
 
         // Properties                                                                                                               
-        [DisplayName("Pressure\n[?]")]
-        [TypeConverter(typeof(CaeModel.StringPressureFromConverter))]
-        public double Pressure { get { return _pressure; } set { _pressure = value; } }
-        //
         [DisplayName("Overclosure\n[?]")]
         [TypeConverter(typeof(CaeModel.StringLengthFromConverter))]
         public double Overclosure { get { return _overclosure; } set { _overclosure = value; } }
+        //
+        [DisplayName("Pressure\n[?]")]
+        [TypeConverter(typeof(CaeModel.StringPressureFromConverter))]
+        public double Pressure { get { return _pressure; } set { _pressure = value; } }
 
 
         // Constructors                                                                                                             
@@ -79,7 +79,7 @@ namespace PrePoMax
         [CategoryAttribute("Data")]
         [OrderedDisplayName(3, 10, "c₀")]
         [DescriptionAttribute("The value from which the maximum clearance is calculated for which a spring contact " +
-                              "element is generated. The default for c₀ is 0.001.")]
+                              "element is generated. The default for c₀ is 0.001. Not needed for surface-to-surface contact.")]
         [TypeConverter(typeof(StringDefaultDoubleConverter))]
         public double C0_lin
         {
@@ -103,7 +103,6 @@ namespace PrePoMax
         [DescriptionAttribute("The clerance at which the contact pressure is decreased to 1 % of p₀ (c₀ > 0).")]
         [TypeConverter(typeof(CaeModel.StringLengthConverter))]
         public double C0_exp { get { return _surfaceBehavior.C0; } set { _surfaceBehavior.C0 = value; } }
-        
         //
         [Browsable(false)]
         public List<PressureOverclosureDataPoint> DataPoints { get { return _points; } set { _points = value; } }

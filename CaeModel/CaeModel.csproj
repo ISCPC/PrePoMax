@@ -171,10 +171,12 @@
     <Compile Include="UnitSystem\StringAreaConverter.cs" />
     <Compile Include="UnitSystem\StringForcePerVolumeConverter.cs" />
     <Compile Include="UnitSystem\StringForcePerVolumeDefaultConverter.cs" />
+    <Compile Include="UnitSystem\StringPixelConverter.cs" />
+    <Compile Include="UnitSystem\StringTimeConverter.cs" />
     <Compile Include="UnitSystem\StringLengthFromConverter.cs" />
     <Compile Include="UnitSystem\StringLengthDefaultConverter.cs" />
-    <Compile Include="UnitSystem\StringFixedDOFConverter.cs" />
-    <Compile Include="UnitSystem\StringDOFConverter.cs" />
+    <Compile Include="UnitSystem\StringLengthFixedDOFConverter.cs" />
+    <Compile Include="UnitSystem\StringLengthDOFConverter.cs" />
     <Compile Include="UnitSystem\StringAngleConverter.cs" />
     <Compile Include="UnitSystem\StringDensityConverter.cs" />
     <Compile Include="UnitSystem\StringLengthConverter.cs" />

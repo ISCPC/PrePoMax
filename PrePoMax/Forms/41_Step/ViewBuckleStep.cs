@@ -45,9 +45,9 @@ namespace PrePoMax
         {
             _step = step;
             _dctd = ProviderInstaller.Install(this);
-
-            RenameTrueFalseForBooleanToOnOff("Perturbation");
-
+            //
+            _dctd.RenameBooleanPropertyToOnOff("Perturbation");
+            //
             UpdateFieldView();
         }
 

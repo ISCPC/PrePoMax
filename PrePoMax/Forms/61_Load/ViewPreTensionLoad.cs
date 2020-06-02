@@ -100,7 +100,7 @@ namespace PrePoMax
         [CategoryAttribute("Displacement magnitude")]
         [OrderedDisplayName(0, 10, "Magnitude")]
         [DescriptionAttribute("Displacement magnitude for the pre-tension load.")]
-        [TypeConverter(typeof(CaeModel.StringFixedDOFConverter))]
+        [TypeConverter(typeof(CaeModel.StringLengthFixedDOFConverter))]
         [Id(1, 5)]
         public double DisplacementMagnitude { get { return _preTenLoad.Magnitude; } set { _preTenLoad.Magnitude = value; } }
         //

@@ -76,6 +76,7 @@ namespace PrePoMax.Settings
         [CategoryAttribute("Symbols")]
         [OrderedDisplayName(3, 10, "Symbol size")]
         [DescriptionAttribute("Select the symbol size.")]
+        [TypeConverter(typeof(CaeModel.StringPixelConverter))]
         public int SymbolSize
         {
             get { return _preSettings.SymbolSize; }
@@ -85,6 +86,7 @@ namespace PrePoMax.Settings
         [CategoryAttribute("Symbols")]
         [OrderedDisplayName(4, 10, "Node symbol size")]
         [DescriptionAttribute("Select the node symbol size.")]
+        [TypeConverter(typeof(CaeModel.StringPixelConverter))]
         public int NodeSymbolSize
         {
             get { return _preSettings.NodeSymbolSize; }

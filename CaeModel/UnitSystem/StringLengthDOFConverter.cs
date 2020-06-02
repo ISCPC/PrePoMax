@@ -11,30 +11,29 @@ using UnitsNet;
 
 namespace CaeModel
 {
-    public class StringFixedDOFConverter : TypeConverter
+    public class StringLengthDOFConverter : TypeConverter
     {
         // Variables                                                                                                                
         protected static LengthUnit _lengthUnit = LengthUnit.Meter;
         //
         protected ArrayList values;
+        protected string _free = "Unconstrained";
         protected string _fixed = "Fixed";
-
-
+        
+        
         // Properties                                                                                                               
         public static string SetUnit { set { _lengthUnit = Length.ParseUnit(value); } }
 
 
         // Constructors                                                                                                             
-        public StringFixedDOFConverter()
+        public StringLengthDOFConverter()
         {
             // Initializes the standard values list with defaults.
-            values = new ArrayList(new double[] { double.PositiveInfinity, 0});
+            values = new ArrayList(new double[] { double.NaN, double.PositiveInfinity, 0 });
         }
 
 
         // Methods                                                                                                                  
-
-        // Indicates this converter provides a list of standard values.
         public override bool GetStandardValuesSupported(ITypeDescriptorContext context)
         {
             return true;
@@ -53,7 +52,7 @@ namespace CaeModel
         // GetStandardValues method requires a string to native type 
         // conversion because the items in the drop-down list are 
         // translated to string.)
-        public override bool CanConvertFrom(ITypeDescriptorContext context, System.Type sourceType)
+        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
         {
             if (sourceType == typeof(string)) return true;
             else return base.CanConvertFrom(context, sourceType);
@@ -70,7 +69,8 @@ namespace CaeModel
             if (value is string valueString)
             {
                 double valueDouble;
-                if (String.Equals(valueString, _fixed)) valueDouble = double.PositiveInfinity;
+                if (String.Equals(value, _free)) valueDouble = double.NaN;
+                else if (String.Equals(value, _fixed)) valueDouble = double.PositiveInfinity;
                 else if (!double.TryParse(valueString, out valueDouble))
                 {
                     Length Length = Length.Parse(valueString).ToUnit(_lengthUnit);
@@ -89,7 +89,8 @@ namespace CaeModel
                 {
                     if (value is double valueDouble)
                     {
-                        if (double.IsPositiveInfinity(valueDouble)) return _fixed;
+                        if (double.IsNaN(valueDouble)) return _free;
+                        else if (double.IsPositiveInfinity((double)value)) return _fixed;
                         else
                         {
                             return value.ToString() + " " + Length.GetAbbreviation(_lengthUnit);
@@ -104,5 +105,4 @@ namespace CaeModel
             }
         }
     }
-
 }

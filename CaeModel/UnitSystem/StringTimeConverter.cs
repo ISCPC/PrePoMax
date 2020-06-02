@@ -6,33 +6,29 @@ using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Globalization;
-using UnitsNet.Units;
 using UnitsNet;
+using UnitsNet.Units;
 
 namespace CaeModel
 {
-    public class StringForcePerVolumeConverter : TypeConverter
+    public class StringTimeConverter : TypeConverter
     {
         // Variables                                                                                                                
-        protected static ForceUnit _forceUnit = ForceUnit.Newton;
-        protected static VolumeUnit _volumeUnit = VolumeUnit.CubicMeter;
-        protected static string error = "Unable to parse quantity. Expected the form \"{value} {unit abbreviation}" +
-                                        "\", such as \"5.5 m\". The spacing is optional.";
+        protected static DurationUnit _timeUnit = DurationUnit.Second;
 
 
         // Properties                                                                                                               
-        public static string SetForceUnit { set { _forceUnit = Force.ParseUnit(value); } }
-        public static string SetVolumeUnit { set { _volumeUnit = Volume.ParseUnit(value); } }
+        public static string SetUnit { set { _timeUnit = Duration.ParseUnit(value); } }
 
 
         // Constructors                                                                                                             
-        public StringForcePerVolumeConverter()
+        public StringTimeConverter()
         {
         }
 
 
         // Methods                                                                                                                  
-        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+        public override bool CanConvertFrom(ITypeDescriptorContext context, System.Type sourceType)
         {
             if (sourceType == typeof(string)) return true;
             else return base.CanConvertFrom(context, sourceType);
@@ -43,23 +39,27 @@ namespace CaeModel
             if (value is string valueString)
             {
                 double valueDouble;
+                //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    valueDouble = ConvertForcePerVolume(valueString);
+                    Duration time = Duration.Parse(valueString).ToUnit(_timeUnit);
+                    valueDouble = time.Value;
                 }
+                //
                 return valueDouble;
             }
             else return base.ConvertFrom(context, culture, value);
         }
         public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
         {
+            // Convert to string
             try
             {
                 if (destinationType == typeof(string))
                 {
                     if (value is double valueDouble)
                     {
-                        return value + " " + Force.GetAbbreviation(_forceUnit) + "/" + Volume.GetAbbreviation(_volumeUnit);
+                        return value.ToString() + " " + Duration.GetAbbreviation(_timeUnit);
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);
@@ -69,21 +69,6 @@ namespace CaeModel
                 return base.ConvertTo(context, culture, value, destinationType);
             }
         }
-        //
-        private static double ConvertForcePerVolume(string valueWithUnitString)
-        {            
-            valueWithUnitString = valueWithUnitString.Trim().Replace(" ", "");
-            //
-            string[] tmp = valueWithUnitString.Split('/');
-            if (tmp.Length != 2) throw new FormatException(error);
-            Force force = Force.Parse(tmp[0]).ToUnit(_forceUnit);
-            //
-            VolumeUnit volumeUnit = Volume.ParseUnit(tmp[1]);
-            Volume volume = Volume.From(1, volumeUnit).ToUnit(_volumeUnit);
-            double value = force.Value / volume.Value;
-            return value;
-        }
     }
-
 
 }

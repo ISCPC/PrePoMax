@@ -187,12 +187,13 @@ namespace CaeModel
         {
             // Base units
             StringLengthConverter.SetUnit = LengthUnitAbbreviation;
-            StringDOFConverter.SetUnit = LengthUnitAbbreviation;
-            StringFixedDOFConverter.SetUnit = LengthUnitAbbreviation;
+            StringLengthDOFConverter.SetUnit = LengthUnitAbbreviation;
+            StringLengthFixedDOFConverter.SetUnit = LengthUnitAbbreviation;
             StringLengthDefaultConverter.SetUnit = LengthUnitAbbreviation;
             StringAngleConverter.SetUnit = AngleUnitAbbreviation;
             StringAngleDOFConverter.SetUnit = AngleUnitAbbreviation;
             StringAngleFixedDOFConverter.SetUnit = AngleUnitAbbreviation;
+            StringTimeConverter.SetUnit = TimeUnitAbbreviation;
             // Derived units
             StringAreaConverter.SetUnit = AreaUnitAbbreviation;
             StringRotationalSpeedConverter.SetUnit = RotationalSpeedUnitAbbreviation;

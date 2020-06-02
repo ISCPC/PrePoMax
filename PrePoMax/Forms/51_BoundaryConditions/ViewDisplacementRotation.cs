@@ -26,21 +26,21 @@ namespace PrePoMax
         [CategoryAttribute("DOF")]
         [OrderedDisplayName(0, 10, "U1")]
         [DescriptionAttribute("Displacement in the direction of the first axis.")]
-        [TypeConverter(typeof(CaeModel.StringDOFConverter))]
+        [TypeConverter(typeof(CaeModel.StringLengthDOFConverter))]
         [Id(1, 3)]
         public double U1 { get { return _displacementRotation.U1; } set { _displacementRotation.U1 = value; } }
         //
         [CategoryAttribute("DOF")]
         [OrderedDisplayName(1, 10, "U2")]        
         [DescriptionAttribute("Displacement in the direction of the second axis.")]
-        [TypeConverter(typeof(CaeModel.StringDOFConverter))]
+        [TypeConverter(typeof(CaeModel.StringLengthDOFConverter))]
         [Id(2, 3)]
         public double U2 { get { return _displacementRotation.U2; } set { _displacementRotation.U2 = value; } }
         //
         [CategoryAttribute("DOF")]
         [OrderedDisplayName(2, 10, "U3")]
         [DescriptionAttribute("Displacement in the direction of the third axis.")]
-        [TypeConverter(typeof(CaeModel.StringDOFConverter))]
+        [TypeConverter(typeof(CaeModel.StringLengthDOFConverter))]
         [Id(3, 3)]
         public double U3 { get { return _displacementRotation.U3; } set { _displacementRotation.U3 = value; } }
         //

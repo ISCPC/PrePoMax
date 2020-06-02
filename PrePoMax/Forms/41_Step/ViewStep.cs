@@ -31,24 +31,6 @@ namespace PrePoMax
 
 
         // Methods
-        protected void RenameTrueFalseForBooleanToOnOff(string propertyName)
-        {
-            RenameTrueFalseForBooleanProperty(propertyName, "On", "Off");
-        }
-        protected void RenameTrueFalseForBooleanToYesNo(string propertyName)
-        {
-            RenameTrueFalseForBooleanProperty(propertyName, "Yes", "No");
-        }
-        protected void RenameTrueFalseForBooleanProperty(string propertyName, string trueName, string falseName)
-        {
-            CustomPropertyDescriptor cpd = _dctd.GetProperty(propertyName);
-
-            foreach (StandardValueAttribute sva in cpd.StatandardValues)
-            {
-                if ((bool)sva.Value == true) sva.DisplayName = trueName;
-                else sva.DisplayName = falseName;
-            }
-        }
         public abstract void UpdateFieldView();
     
      

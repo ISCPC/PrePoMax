@@ -186,9 +186,9 @@ namespace PrePoMax.Forms
                 Vec3D baseV = new Vec3D(_controller.GetNode(nodeId).Coor);
                 //
                 Form_WriteDataToOutput("");
-                data = string.Format("Node                 id: {0,16}", nodeId);
+                data = string.Format("{0,16}{1,8}{2,16}{3,16}", "Node".PadRight(16), "[/]", "id:", nodeId);
                 Form_WriteDataToOutput(data);
-                data = string.Format("Base            x, y, z: {0,16:E}, {1,16:E}, {2,16:E}", baseV.X, baseV.Y, baseV.Z);
+                data = string.Format("{0,16}{1,8}{2,16}{3,16:E}, {4,16:E}, {5,16:E}", "Base".PadRight(16), "[mm]", "x, y, z:", baseV.X, baseV.Y, baseV.Z);
                 Form_WriteDataToOutput(data);
                 //
                 if (_controller.CurrentView == ViewGeometryModelResults.Results)
@@ -197,11 +197,11 @@ namespace PrePoMax.Forms
                     Vec3D trueScaledV = new Vec3D(_controller.GetScaledNode(1, nodeId).Coor);
                     Vec3D disp = trueScaledV - baseV;
                     //
-                    data = string.Format("Deformed        x, y, z: {0,16:E}, {1,16:E}, {2,16:E}", trueScaledV.X, trueScaledV.Y, trueScaledV.Z);
+                    data = string.Format("{0,16}{1,8}{2,16}{3,16:E}, {4,16:E}, {5,16:E}", "Deformed".PadRight(16), "[mm]", "x, y, z:", trueScaledV.X, trueScaledV.Y, trueScaledV.Z);
                     Form_WriteDataToOutput(data);
-                    data = string.Format("Displacement    x, y, z: {0,16:E}, {1,16:E}, {2,16:E}", disp.X, disp.Y, disp.Z);
+                    data = string.Format("{0,16}{1,8}{2,16}{3,16:E}, {4,16:E}, {5,16:E}", "Displacement".PadRight(16), "[mm]", "x, y, z:", disp.X, disp.Y, disp.Z);
                     Form_WriteDataToOutput(data);
-                    data = string.Format("Field value            : {0,16:E}", fieldValue);
+                    data = string.Format("{0,16}{1,8}{2,16}{3,16:E}", "Field value".PadRight(16), "[mm]", ":", fieldValue);
                     Form_WriteDataToOutput(data);
                     //
                     float scale = _controller.GetScale();
