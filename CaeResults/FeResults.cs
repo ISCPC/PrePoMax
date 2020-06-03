@@ -133,28 +133,42 @@ namespace CaeResults
         }
         public TypeConverter GetCurrentUnitConverter(string fieldDataName)
         {
-            TypeConverter _unitConverter;
+            GetCurrentUnitConverterAndAbbrevation(fieldDataName, out TypeConverter unitConverter, out string unitAbbreviation);
+            return unitConverter;
+        }
+        public string GetCurrentUnitAbbrevation(string fieldDataName)
+        {
+            GetCurrentUnitConverterAndAbbrevation(fieldDataName, out TypeConverter unitConverter, out string unitAbbreviation);
+            return unitAbbreviation;
+        }
+        public void GetCurrentUnitConverterAndAbbrevation(string fieldDataName, out TypeConverter unitConverter,
+                                                          out string unitAbbreviation)
+        {
             switch (fieldDataName)
             {
                 case "DISP":
-                    _unitConverter = new StringLengthConverter();
+                    unitConverter = new StringLengthConverter();
+                    unitAbbreviation = _unitSystem.LengthUnitAbbreviation;
                     break;
                 case "STRESS":
-                    _unitConverter = new StringPressureConverter();
+                    unitConverter = new StringPressureConverter();
+                    unitAbbreviation = _unitSystem.PressureUnitAbbreviation;
                     break;
                 case "TOSTRAIN":
-                    _unitConverter = new StringPressureConverter();
+                    unitConverter = new DoubleConverter();
+                    unitAbbreviation = "/";
                     break;
                 case "FORC":
-                    _unitConverter = new StringForceConverter();
+                    unitConverter = new StringForceConverter();
+                    unitAbbreviation = _unitSystem.ForceUnitAbbreviation;
                     break;
                 case "ERROR":
-                    _unitConverter = new StringForceConverter();
+                    unitConverter = new DoubleConverter();
+                    unitAbbreviation = "%";
                     break;
                 default:
                     throw new NotSupportedException();
             }
-            return _unitConverter;
         }
         //
         public void CopyPartsFromMesh(FeMesh mesh)

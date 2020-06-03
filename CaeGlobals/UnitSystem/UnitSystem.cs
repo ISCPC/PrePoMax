@@ -25,13 +25,13 @@ namespace CaeGlobals
     {
         // Variables                                                                                                                
         UnitSystemType _unitSystemType;             //ISerializable
-        //
+        // Base units
         LengthUnit _lengthUnit;                     //ISerializable
         AngleUnit _angleUnit;                       //ISerializable
         MassUnit _massUnit;                         //ISerializable
         DurationUnit _timeUnit;                     //ISerializable
         TemperatureUnit _temperatureUnit;           //ISerializable
-        //
+        // Derived units
         AreaUnit _areaUnit;                         //ISerializable
         VolumeUnit _volumeUnit;                     //ISerializable
         SpeedUnit _speedUnit;                       //ISerializable
@@ -41,6 +41,7 @@ namespace CaeGlobals
         TorqueUnit _momentUnit;                     //ISerializable
         PressureUnit _pressureUnit;                 //ISerializable
         DensityUnit _densityUnit;                   //ISerializable
+        FrequencyUnit _frequencyUnit;               //ISerializable
 
 
         // Properties                                                                                                               
@@ -61,6 +62,7 @@ namespace CaeGlobals
         public TorqueUnit MomentUnit { get { return _momentUnit; } }
         public PressureUnit PressureUnit { get { return _pressureUnit; } }
         public DensityUnit DensityUnit { get { return _densityUnit; } }
+        public FrequencyUnit FrequencyUnit { get { return _frequencyUnit; } }
         //
         // Abbreviations                                                                                
         //
@@ -80,6 +82,7 @@ namespace CaeGlobals
         public string MomentUnitAbbreviation { get { return Torque.GetAbbreviation(_momentUnit); } }
         public string PressureUnitAbbreviation { get { return Pressure.GetAbbreviation(_pressureUnit); } }
         public string DensityUnitAbbreviation { get { return UnitsNet.Density.GetAbbreviation(_densityUnit); } }
+        public string FrequencyUnitAbbreviation { get { return Frequency.GetAbbreviation(_frequencyUnit); } }
 
 
         // Constructors                                                                                                             
@@ -110,6 +113,7 @@ namespace CaeGlobals
                     _momentUnit = TorqueUnit.NewtonMeter;
                     _pressureUnit = PressureUnit.Pascal;
                     _densityUnit = DensityUnit.KilogramPerCubicMeter;
+                    _frequencyUnit = FrequencyUnit.Hertz;
                     break;
                 case UnitSystemType.MM_TON_S_C:
                     _lengthUnit = LengthUnit.Millimeter;
@@ -127,6 +131,7 @@ namespace CaeGlobals
                     _momentUnit = TorqueUnit.NewtonMillimeter;
                     _pressureUnit = PressureUnit.Megapascal;
                     _densityUnit = DensityUnit.TonnePerCubicMillimeter;
+                    _frequencyUnit = FrequencyUnit.Hertz;
                     break;
                 default:
                     break;
@@ -174,6 +179,8 @@ namespace CaeGlobals
                         _pressureUnit = (PressureUnit)entry.Value; break;
                     case "_densityUnit":
                         _densityUnit = (DensityUnit)entry.Value; break;
+                    case "_frequencyUnit":
+                        _frequencyUnit = (FrequencyUnit)entry.Value; break;
                     default:
                         throw new NotSupportedException();
                 }
@@ -231,6 +238,7 @@ namespace CaeGlobals
             info.AddValue("_momentUnit", _momentUnit, typeof(TorqueUnit));
             info.AddValue("_pressureUnit", _pressureUnit, typeof(PressureUnit));
             info.AddValue("_densityUnit", _densityUnit, typeof(DensityUnit));
+            info.AddValue("_frequencyUnit", _frequencyUnit, typeof(FrequencyUnit));
         }
     }
 }

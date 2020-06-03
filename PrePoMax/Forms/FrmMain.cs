@@ -4729,10 +4729,11 @@ namespace PrePoMax
             InvokeIfRequired(_vtk.DrawStatusBlockBorder, drawBorder);
         }
         //
-        public void SetStatusBlock(string name, DateTime dateTime, float analysisTime, float scaleFactor, 
-                                   vtkControl.DataFieldType fieldType = vtkControl.DataFieldType.Static)
+        public void SetStatusBlock(string name, DateTime dateTime, float analysisTime, string unit,
+                                   float scaleFactor, vtkControl.DataFieldType fieldType)
         {
-            InvokeIfRequired(_vtk.SetStatusBlock, name, dateTime, analysisTime, scaleFactor, fieldType);
+            InvokeIfRequired(_vtk.SetStatusBlock, name, dateTime, analysisTime, unit, scaleFactor,
+                             fieldType);
         }
         public void SetBackground(bool gradient, Color topColor, Color bottomColor, bool redraw)
         {

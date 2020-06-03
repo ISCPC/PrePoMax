@@ -16,6 +16,7 @@ namespace vtkControl
         private string _name;
         private DateTime _dateTime;
         private float _analysisTime;
+        private string _analysisTimeUnit;
         private float _animationScaleFactor;
         private float _deformationScaleFactor;
         private DataFieldType _fieldType;
@@ -25,6 +26,7 @@ namespace vtkControl
         public string Name { get { return _name; } set { _name = value; SetText(); } }
         public DateTime DateTime { get { return _dateTime; } set { _dateTime = value; SetText(); } }
         public float AnalysisTime { get { return _analysisTime; } set { _analysisTime = value; SetText(); } }
+        public string AnalysisTimeUnit { get { return _analysisTimeUnit; } set { _analysisTimeUnit = value; SetText(); } }
         public float DeformationScaleFactor { get { return _deformationScaleFactor; } set { _deformationScaleFactor = value; SetText(); } }
         public float AnimationScaleFactor { get { return _animationScaleFactor; } set { _animationScaleFactor = value; SetText(); } }
         public DataFieldType FieldType { get { return _fieldType; } set { _fieldType = value; SetText(); } }
@@ -36,17 +38,19 @@ namespace vtkControl
             _text = "text";
             _name = "name";
             _dateTime = DateTime.Now;
-            _deformationScaleFactor = 1;
+            _analysisTime = 0;
+            _analysisTimeUnit = "";
             _animationScaleFactor = -1;
-
+            _deformationScaleFactor = 1;
+            _fieldType = DataFieldType.Static;
             // Text property
-            vtkTextProperty textProperty = vtkTextProperty.New();
-            textProperty.SetFontFamilyToArial();
-            textProperty.SetFontSize(16);
-            textProperty.SetColor(0, 0, 0);
-            textProperty.SetLineOffset(-Math.Round(textProperty.GetFontSize() / 5.0));
-            textProperty.SetLineSpacing(1.2);
-            this.SetTextProperty(textProperty);
+            //vtkTextProperty textProperty = vtkTextProperty.New();
+            //textProperty.SetFontFamilyToArial();
+            //textProperty.SetFontSize(16);
+            //textProperty.SetColor(0, 0, 0);
+            //textProperty.SetLineOffset(-Math.Round(textProperty.GetFontSize() / 5.0));
+            //textProperty.SetLineSpacing(1.2);
+            //this.SetTextProperty(textProperty);
         }
 
 
@@ -54,23 +58,26 @@ namespace vtkControl
         private void SetText()
         {
             string sysUIFormat = System.Globalization.CultureInfo.CurrentUICulture.DateTimeFormat.ShortDatePattern;
-
+            //
             _text = "Name: " + _name + "   ";
             _text += "Date: " + _dateTime.ToString(sysUIFormat) + "   Time: " + _dateTime.ToString("HH:mm:ss") + Environment.NewLine;
-
-            if (_fieldType == DataFieldType.Static) _text += "Step: Static   Analysis time: " + _analysisTime.ToString();
-            else if (_fieldType == DataFieldType.Frequency) _text += "Step: Frequency   Eigenfrequency: " + _analysisTime.ToString();
-            else if (_fieldType == DataFieldType.Buckling) _text += "Step: Buckling   Buckling factor: " + _analysisTime.ToString();
-           
+            //
+            if (_fieldType == DataFieldType.Static)
+                _text += "Step: Static   Analysis time: " + _analysisTime.ToString() + " " + _analysisTimeUnit;
+            else if (_fieldType == DataFieldType.Frequency)
+                _text += "Step: Frequency   Eigenfrequency: " + _analysisTime.ToString() + " " + _analysisTimeUnit;
+            else if (_fieldType == DataFieldType.Buckling)
+                _text += "Step: Buckling   Buckling factor: " + _analysisTime.ToString();
+            //
             _text += Environment.NewLine;
             _text += "Deformation scale factor: " + _deformationScaleFactor.ToString();
-
+            //
             if (_animationScaleFactor >= 0)
             {
                 _text += Environment.NewLine;
                 _text += "Animation scale factor: " + _animationScaleFactor.ToString();
             }
-
+            //
             this.SetText(_text);
         }
 

@@ -4024,11 +4024,13 @@ namespace vtkControl
             if (drawBorder) _statusBlockWidget.BorderVisibilityOn();
             else _statusBlockWidget.BorderVisibilityOff();
         }
-        public void SetStatusBlock(string name, DateTime dateTime, float analysisTimeOrFrequency, float scaleFactor, DataFieldType fieldType)
+        public void SetStatusBlock(string name, DateTime dateTime, float analysisTimeOrFrequency, string unit,
+                                   float scaleFactor, DataFieldType fieldType)
         {
             if (_statusBlockWidget == null) return;
             _statusBlockWidget.Name = name;
             _statusBlockWidget.AnalysisTime = analysisTimeOrFrequency;
+            _statusBlockWidget.AnalysisTimeUnit = unit;
             _statusBlockWidget.DateTime = dateTime;
             _statusBlockWidget.DeformationScaleFactor = scaleFactor;
             _statusBlockWidget.FieldType = fieldType;

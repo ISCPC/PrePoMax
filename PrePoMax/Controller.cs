@@ -192,6 +192,10 @@ namespace PrePoMax
         {
             return _results.GetCurrentUnitConverter(CurrentFieldData.Name);
         }
+        public string GetCurrentResultsUnitAbbreviation()
+        {
+            return _results.GetCurrentUnitAbbrevation(CurrentFieldData.Name);
+        }
         // History
         public string GetHistoryFileName()
         {
@@ -7803,8 +7807,8 @@ namespace PrePoMax
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
             List<string> hiddenActors = new List<string>();
             //
-            vtkControl.DataFieldType fieldType = ConvertStepType(fieldData);
-            _form.SetStatusBlock(Path.GetFileName(_results.FileName), _results.DateTime, fieldData.Time, scale, fieldType);
+            SetStatusBlock();
+            //
             _form.InitializeWidgetPositions(); // reset the widget position after setting the status block content
             //
             foreach (var entry in _results.Mesh.Parts)
@@ -7869,13 +7873,11 @@ namespace PrePoMax
             if (_results == null) return false;
             // Settings - must be here before drawing parts to correctly set the numer of colors
             SetLegendAndLimits();
+            SetStatusBlock();
             //
             float scale = GetScale();
             vtkControl.vtkMaxActorData data;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
-            //
-            vtkControl.DataFieldType fieldType = ConvertStepType(_currentFieldData);
-            _form.SetStatusBlock(Path.GetFileName(_results.FileName), _results.DateTime, _currentFieldData.Time, scale, fieldType);
             //
             bool result = true;
             PostSettings postSettings = _settings.Post;
@@ -7931,13 +7933,11 @@ namespace PrePoMax
             if (_results == null) return false;
             // Settings - must be here before drawing parts to correctly set the numer of colors
             SetLegendAndLimits();
+            SetStatusBlock();
             //
             float scale = GetScaleForAllStepsAndIncrements();
             vtkControl.vtkMaxActorData data = null;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
-            //
-            vtkControl.DataFieldType fieldType = ConvertStepType(_currentFieldData);
-            _form.SetStatusBlock(Path.GetFileName(_results.FileName), _results.DateTime, _currentFieldData.Time, scale, fieldType);
             //
             bool result = true;
             PostSettings postSettings = _settings.Post;
@@ -8055,8 +8055,9 @@ namespace PrePoMax
                 StatusBlockSettings statusBlockSettings = _settings.StatusBlock;
                 // Legend settings
                 _form.SetColorSpectrum(legendSettings.ColorSpectrum);
-                _form.SetScalarBarText(_currentFieldData.Name + ": " + _currentFieldData.Component + Environment.NewLine
-                                       + legendSettings.ColorSpectrum.MinMaxType.ToString());
+                _form.SetScalarBarText(_currentFieldData.Name + ": " + _currentFieldData.Component + Environment.NewLine +
+                                       "Unit: " + GetCurrentResultsUnitAbbreviation() + Environment.NewLine +
+                                       legendSettings.ColorSpectrum.MinMaxType.ToString());
                 _form.SetChartNumberFormat(legendSettings.GetColorChartNumberFormat());
                 _form.DrawLegendBackground(legendSettings.BackgroundType == WidgetBackgroundType.White);
                 _form.DrawLegendBorder(legendSettings.DrawBorder);
@@ -8067,6 +8068,19 @@ namespace PrePoMax
                 _form.SetShowMinValueLocation(postSettings.ShowMinValueLocation);
                 _form.SetShowMaxValueLocation(postSettings.ShowMaxValueLocation);
             }
+        }
+        private void SetStatusBlock()
+        {
+            float scale = GetScaleForAllStepsAndIncrements();
+            vtkControl.DataFieldType fieldType = ConvertStepType(_currentFieldData);
+            string unit;
+            if (fieldType == vtkControl.DataFieldType.Static) unit = _results.UnitSystem.TimeUnitAbbreviation;
+            else if (fieldType == vtkControl.DataFieldType.Frequency) unit = _results.UnitSystem.FrequencyUnitAbbreviation;
+            else if (fieldType == vtkControl.DataFieldType.Buckling) unit = "";
+            else throw new NotSupportedException();
+            //
+            _form.SetStatusBlock(Path.GetFileName(_results.FileName), _results.DateTime, _currentFieldData.Time, unit,
+                                 scale, fieldType);
         }
         private vtkControl.DataFieldType ConvertStepType(FieldData fieldData)
         {
@@ -8081,8 +8095,9 @@ namespace PrePoMax
         {
             if (_results == null) return;
             // Settings                                                              
-            _form.SetScalarBarText(_currentFieldData.Name + ": " + _currentFieldData.Component + Environment.NewLine 
-                                   + _settings.Legend.ColorSpectrum.MinMaxType.ToString());
+            _form.SetScalarBarText(_currentFieldData.Name + ": " + _currentFieldData.Component + Environment.NewLine +
+                                   "Unit: " + GetCurrentResultsUnitAbbreviation() + Environment.NewLine +
+                                   _settings.Legend.ColorSpectrum.MinMaxType.ToString());
             //
             Octree.Plane plane = _sectionViewPlanes[_currentView];
             if (plane != null) RemoveSectionView();

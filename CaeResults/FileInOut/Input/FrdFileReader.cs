@@ -180,7 +180,7 @@ namespace CaeResults
                 if (lines[i].ToUpper().Contains("1UMODEL"))
                 {
                     tmp = lines[i].Split(new string[] { "Unit system:" }, StringSplitOptions.RemoveEmptyEntries);
-                    Enum.TryParse(tmp[1], out unitSystemType);
+                    if (tmp.Length == 2) Enum.TryParse(tmp[1], out unitSystemType);
                 }
             }
             //
