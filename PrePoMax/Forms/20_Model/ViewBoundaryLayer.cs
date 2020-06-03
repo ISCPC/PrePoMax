@@ -41,7 +41,7 @@ namespace PrePoMax.Forms
         [CategoryAttribute("Data")]
         [OrderedDisplayName(0, 10, "Layer thickness")]
         [DescriptionAttribute("Thickness of the boundary layer.")]
-        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
+        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
         public double Thickness { get { return _boundaryLayer.Thickness; } set { _boundaryLayer.Thickness = value; } }
 
         [Browsable(false)]

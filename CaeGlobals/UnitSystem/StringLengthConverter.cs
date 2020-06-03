@@ -9,19 +9,20 @@ using System.Globalization;
 using UnitsNet;
 using UnitsNet.Units;
 
-namespace CaeModel
+namespace CaeGlobals
 {
-    public class StringAngleDegConverter : TypeConverter
+    public class StringLengthConverter : TypeConverter
     {
         // Variables                                                                                                                
-        protected static AngleUnit _angleUnit = AngleUnit.Degree;
+        protected static LengthUnit _lengthUnit = LengthUnit.Meter;
 
 
         // Properties                                                                                                               
+        public static string SetUnit { set { _lengthUnit = Length.ParseUnit(value); } }
 
 
         // Constructors                                                                                                             
-        public StringAngleDegConverter()
+        public StringLengthConverter()
         {
         }
 
@@ -41,8 +42,8 @@ namespace CaeModel
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    Angle Angle = Angle.Parse(valueString).ToUnit(_angleUnit);
-                    valueDouble = Angle.Value;
+                    Length Length = Length.Parse(valueString).ToUnit(_lengthUnit);
+                    valueDouble = Length.Value;
                 }
                 //
                 return valueDouble;
@@ -58,7 +59,7 @@ namespace CaeModel
                 {
                     if (value is double valueDouble)
                     {
-                        return value.ToString() + " " + Angle.GetAbbreviation(_angleUnit);
+                        return value.ToString() + " " + Length.GetAbbreviation(_lengthUnit);
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);
@@ -69,4 +70,5 @@ namespace CaeModel
             }
         }
     }
+
 }

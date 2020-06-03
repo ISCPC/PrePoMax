@@ -9,39 +9,41 @@ using System.Globalization;
 using UnitsNet.Units;
 using UnitsNet;
 
-namespace CaeModel
+namespace CaeGlobals
 {
-    public class StringLengthFixedDOFConverter : TypeConverter
+    public class StringForcePerVolumeDefaultConverter : TypeConverter
     {
         // Variables                                                                                                                
-        protected static LengthUnit _lengthUnit = LengthUnit.Meter;
+        protected static ForceUnit _forceUnit = ForceUnit.Newton;
+        protected static VolumeUnit _volumeUnit = VolumeUnit.CubicMeter;
         //
         protected ArrayList values;
-        protected string _fixed = "Fixed";
+        protected string _default = "Default";
+        protected static double _initialValue = 0;
 
 
         // Properties                                                                                                               
-        public static string SetUnit { set { _lengthUnit = Length.ParseUnit(value); } }
+        public static string SetForceUnit { set { _forceUnit = Force.ParseUnit(value); } }
+        public static string SetVolumeUnit { set { _volumeUnit = Volume.ParseUnit(value); } }
+        public static string SetInitialValue { set { _initialValue = ConvertForcePerVolume(value); } }
 
 
         // Constructors                                                                                                             
-        public StringLengthFixedDOFConverter()
+        public StringForcePerVolumeDefaultConverter()
         {
             // Initializes the standard values list with defaults.
-            values = new ArrayList(new double[] { double.PositiveInfinity, 0});
+            values = new ArrayList(new double[] { double.NaN, _initialValue });
         }
 
 
         // Methods                                                                                                                  
-
-        // Indicates this converter provides a list of standard values.
         public override bool GetStandardValuesSupported(ITypeDescriptorContext context)
         {
             return true;
         }
 
         // Returns a StandardValuesCollection of standard value objects.
-        public override TypeConverter.StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
         {
             // Passes the local integer array.
             StandardValuesCollection svc = new StandardValuesCollection(values);
@@ -53,7 +55,7 @@ namespace CaeModel
         // GetStandardValues method requires a string to native type 
         // conversion because the items in the drop-down list are 
         // translated to string.)
-        public override bool CanConvertFrom(ITypeDescriptorContext context, System.Type sourceType)
+        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
         {
             if (sourceType == typeof(string)) return true;
             else return base.CanConvertFrom(context, sourceType);
@@ -70,11 +72,10 @@ namespace CaeModel
             if (value is string valueString)
             {
                 double valueDouble;
-                if (String.Equals(valueString, _fixed)) valueDouble = double.PositiveInfinity;
+                if (String.Equals(value, _default)) valueDouble = double.NaN;
                 else if (!double.TryParse(valueString, out valueDouble))
                 {
-                    Length Length = Length.Parse(valueString).ToUnit(_lengthUnit);
-                    valueDouble = Length.Value;
+                    valueDouble = ConvertForcePerVolume(valueString);
                 }
                 return valueDouble;
             }
@@ -82,17 +83,17 @@ namespace CaeModel
         }
         public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
         {
-            // Convert to string
             try
             {
                 if (destinationType == typeof(string))
                 {
                     if (value is double valueDouble)
                     {
-                        if (double.IsPositiveInfinity(valueDouble)) return _fixed;
+                        if (double.IsNaN(valueDouble)) return _default;
                         else
                         {
-                            return value.ToString() + " " + Length.GetAbbreviation(_lengthUnit);
+                            return value + " " + Force.GetAbbreviation(_forceUnit) +
+                                           "/" + Volume.GetAbbreviation(_volumeUnit);
                         }
                     }
                 }
@@ -103,6 +104,23 @@ namespace CaeModel
                 return base.ConvertTo(context, culture, value, destinationType);
             }
         }
+        //
+        private static double ConvertForcePerVolume(string valueWithUnitString)
+        {
+            string error = "Unable to parse quantity. Expected the form \"{value} {unit abbreviation}" +
+                           "\", such as \"5.5 m\". The spacing is optional.";
+            valueWithUnitString = valueWithUnitString.Trim().Replace(" ", "");
+            //
+            string[] tmp = valueWithUnitString.Split('/');
+            if (tmp.Length != 2) throw new FormatException(error);
+            Force force = Force.Parse(tmp[0]).ToUnit(_forceUnit);
+            //
+            VolumeUnit volumeUnit = Volume.ParseUnit(tmp[1]);
+            Volume volume = Volume.From(1, volumeUnit).ToUnit(_volumeUnit);
+            double value = force.Value / volume.Value;
+            return value;
+        }
     }
+
 
 }

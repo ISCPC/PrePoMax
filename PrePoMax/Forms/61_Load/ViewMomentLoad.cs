@@ -34,28 +34,28 @@ namespace PrePoMax
         [CategoryAttribute("Moment components")]
         [OrderedDisplayName(0, 10, "M1")]
         [DescriptionAttribute("Moment component per node in the direction of the first axis.")]
-        [TypeConverter(typeof(CaeModel.StringMomentConverter))]
+        [TypeConverter(typeof(CaeGlobals.StringMomentConverter))]
         [Id(1, 3)]
         public double M1 { get { return _momentLoad.M1; } set { _momentLoad.M1 = value; } }
         //
         [CategoryAttribute("Moment components")]
         [OrderedDisplayName(1, 10, "M2")]
         [DescriptionAttribute("Moment component per node in the direction of the second axis.")]
-        [TypeConverter(typeof(CaeModel.StringMomentConverter))]
+        [TypeConverter(typeof(CaeGlobals.StringMomentConverter))]
         [Id(2, 3)]
         public double M2 { get { return _momentLoad.M2; } set { _momentLoad.M2 = value; } }
         //
         [CategoryAttribute("Moment components")]
         [OrderedDisplayName(2, 10, "M3")]
         [DescriptionAttribute("Moment component per node in the direction of the third axis.")]
-        [TypeConverter(typeof(CaeModel.StringMomentConverter))]
+        [TypeConverter(typeof(CaeGlobals.StringMomentConverter))]
         [Id(3, 3)]
         public double M3 { get { return _momentLoad.M3; } set { _momentLoad.M3 = value; } }
         //
         [CategoryAttribute("Moment magnitude")]
         [OrderedDisplayName(3, 10, "Magnitude")]
         [DescriptionAttribute("The magnitude of the moment load.")]
-        [TypeConverter(typeof(CaeModel.StringMomentConverter))]
+        [TypeConverter(typeof(CaeGlobals.StringMomentConverter))]
         [Id(1, 4)]
         public double Mlength
         {

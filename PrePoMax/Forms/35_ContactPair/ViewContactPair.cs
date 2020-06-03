@@ -76,7 +76,7 @@ namespace PrePoMax
         [CategoryAttribute("Data")]
         [OrderedDisplayName(5, 10, "Adjustment size")]
         [DescriptionAttribute("Set a distance inside which the slave nodes are projected to the master surface.")]
-        [TypeConverter(typeof(CaeModel.StringLengthDefaultConverter))]
+        [TypeConverter(typeof(CaeGlobals.StringLengthDefaultConverter))]
         [Id(6, 1)]
         public double AdjustmentSize { get { return _contactPair.AdjustmentSize; } set { _contactPair.AdjustmentSize = value; } }
         // MASTER ------------------------------------------------------------------------------------------------------------------
@@ -159,7 +159,7 @@ namespace PrePoMax
             Adjust = _contactPair.Adjust;   // update visibility
             ApplyYesNo();
             //
-            CaeModel.StringLengthDefaultConverter.SetInitialValue = "0.01 mm";
+            CaeGlobals.StringLengthDefaultConverter.SetInitialValue = "0.01 mm";
         }
 
 

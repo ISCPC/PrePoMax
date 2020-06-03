@@ -30,7 +30,7 @@ namespace PrePoMax.PropertyViews
         [CategoryAttribute("Data"),
         DisplayName("Density"),
         DescriptionAttribute("The value of the density.")]
-        [TypeConverter(typeof(CaeModel.StringDensityConverter))]
+        [TypeConverter(typeof(CaeGlobals.StringDensityConverter))]
         public double Value { get { return _density.Value; } set { _density.Value = value; } }
 
         // Constructors                                                                                                             

@@ -181,6 +181,7 @@ namespace PrePoMax.Forms
             if (Form_WriteDataToOutput != null)
             {
                 string data;
+                string lenUnit = "[" + _controller.Model.UnitSystem.LengthUnitAbbreviation + "]";
                 _coorNodesToDraw = new double[_numNodesToSelect][];
                 //
                 Vec3D baseV = new Vec3D(_controller.GetNode(nodeId).Coor);
@@ -188,18 +189,21 @@ namespace PrePoMax.Forms
                 Form_WriteDataToOutput("");
                 data = string.Format("{0,16}{1,8}{2,16}{3,16}", "Node".PadRight(16), "[/]", "id:", nodeId);
                 Form_WriteDataToOutput(data);
-                data = string.Format("{0,16}{1,8}{2,16}{3,16:E}, {4,16:E}, {5,16:E}", "Base".PadRight(16), "[mm]", "x, y, z:", baseV.X, baseV.Y, baseV.Z);
+                data = string.Format("{0,16}{1,8}{2,16}{3,16:E}, {4,16:E}, {5,16:E}", "Base".PadRight(16), lenUnit, "x, y, z:", baseV.X, baseV.Y, baseV.Z);
                 Form_WriteDataToOutput(data);
                 //
                 if (_controller.CurrentView == ViewGeometryModelResults.Results)
                 {
                     float fieldValue = _controller.GetNodalValue(nodeId);
+                    TypeConverter unitConverter = _controller.GetCurrentResultsUnitConverter();
+                    string resultUnit = (string)unitConverter.ConvertTo(1.0, typeof(string));
+
                     Vec3D trueScaledV = new Vec3D(_controller.GetScaledNode(1, nodeId).Coor);
                     Vec3D disp = trueScaledV - baseV;
                     //
-                    data = string.Format("{0,16}{1,8}{2,16}{3,16:E}, {4,16:E}, {5,16:E}", "Deformed".PadRight(16), "[mm]", "x, y, z:", trueScaledV.X, trueScaledV.Y, trueScaledV.Z);
+                    data = string.Format("{0,16}{1,8}{2,16}{3,16:E}, {4,16:E}, {5,16:E}", "Deformed".PadRight(16), lenUnit, "x, y, z:", trueScaledV.X, trueScaledV.Y, trueScaledV.Z);
                     Form_WriteDataToOutput(data);
-                    data = string.Format("{0,16}{1,8}{2,16}{3,16:E}, {4,16:E}, {5,16:E}", "Displacement".PadRight(16), "[mm]", "x, y, z:", disp.X, disp.Y, disp.Z);
+                    data = string.Format("{0,16}{1,8}{2,16}{3,16:E}, {4,16:E}, {5,16:E}", "Displacement".PadRight(16), lenUnit, "x, y, z:", disp.X, disp.Y, disp.Z);
                     Form_WriteDataToOutput(data);
                     data = string.Format("{0,16}{1,8}{2,16}{3,16:E}", "Field value".PadRight(16), "[mm]", ":", fieldValue);
                     Form_WriteDataToOutput(data);

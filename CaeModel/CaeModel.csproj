@@ -60,9 +60,6 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="UnitsNet, Version=4.0.0.0, Culture=neutral, PublicKeyToken=f8601875a1f041da, processorArchitecture=MSIL">
-      <HintPath>..\packages\UnitsNet.4.61.0\lib\net40\UnitsNet.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Contact\ContactPair.cs" />
@@ -165,28 +162,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Steps\StepCollection.cs" />
-    <Compile Include="UnitSystem\StringAngleDegConverter.cs" />
-    <Compile Include="UnitSystem\StringAngleDOFConverter.cs" />
-    <Compile Include="UnitSystem\StringAngleFixedDOFConverter.cs" />
-    <Compile Include="UnitSystem\StringAreaConverter.cs" />
-    <Compile Include="UnitSystem\StringForcePerVolumeConverter.cs" />
-    <Compile Include="UnitSystem\StringForcePerVolumeDefaultConverter.cs" />
-    <Compile Include="UnitSystem\StringPixelConverter.cs" />
-    <Compile Include="UnitSystem\StringTimeConverter.cs" />
-    <Compile Include="UnitSystem\StringLengthFromConverter.cs" />
-    <Compile Include="UnitSystem\StringLengthDefaultConverter.cs" />
-    <Compile Include="UnitSystem\StringLengthFixedDOFConverter.cs" />
-    <Compile Include="UnitSystem\StringLengthDOFConverter.cs" />
-    <Compile Include="UnitSystem\StringAngleConverter.cs" />
-    <Compile Include="UnitSystem\StringDensityConverter.cs" />
-    <Compile Include="UnitSystem\StringLengthConverter.cs" />
-    <Compile Include="UnitSystem\StringPressureFromConverter.cs" />
-    <Compile Include="UnitSystem\StringRotationalSpeedConverter.cs" />
-    <Compile Include="UnitSystem\StringAccelerationConverter.cs" />
-    <Compile Include="UnitSystem\StringPressureConverter.cs" />
-    <Compile Include="UnitSystem\StringMomentConverter.cs" />
-    <Compile Include="UnitSystem\StringForceConverter.cs" />
-    <Compile Include="UnitSystem\UnitSystem.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CaeGlobals\CaeGlobals.csproj">

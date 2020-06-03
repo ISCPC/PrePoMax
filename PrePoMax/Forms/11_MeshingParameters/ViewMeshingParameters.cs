@@ -23,14 +23,14 @@ namespace PrePoMax.Forms
         [CategoryAttribute("Mesh size")]
         [OrderedDisplayNameAttribute(1, 10, "Max element size")]
         [DescriptionAttribute("The value for the maximum element size.")]
-        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
+        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
         [Id(1, 1)]
         public double MaxH { get { return _parameters.MaxH; } set { _parameters.MaxH = value; } }
         //
         [CategoryAttribute("Mesh size")]
         [OrderedDisplayNameAttribute(2, 10, "Min element size")]
         [DescriptionAttribute("The value for the minimum element size.")]
-        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
+        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
         [Id(1, 1)]
         public double MinH { get { return _parameters.MinH; } set { _parameters.MinH = value; } }
         //

@@ -32,7 +32,7 @@ namespace PrePoMax.Forms
         [CategoryAttribute("Data")]
         [OrderedDisplayName(2, 10, "Area")]
         [DescriptionAttribute("Area of the surface.")]
-        [TypeConverter(typeof(CaeModel.StringAreaConverter))]
+        [TypeConverter(typeof(CaeGlobals.StringAreaConverter))]
         public double Area { get { return _surface.Area; } }
         //
         [CategoryAttribute("Region")]

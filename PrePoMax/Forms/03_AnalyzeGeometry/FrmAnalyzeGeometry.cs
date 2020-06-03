@@ -42,9 +42,9 @@ namespace PrePoMax
             //
             _controller = controller;
             //
-            tbMinEdgeLen.UnitConverter = new CaeModel.StringLengthConverter();
+            tbMinEdgeLen.UnitConverter = new CaeGlobals.StringLengthConverter();
             tbMinEdgesDistance.UnitConverter = tbMinEdgeLen.UnitConverter;
-            tbMinFaceSize.UnitConverter = new CaeModel.StringAreaConverter();
+            tbMinFaceSize.UnitConverter = new CaeGlobals.StringAreaConverter();
         }
 
 

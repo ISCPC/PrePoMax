@@ -55,6 +55,9 @@
     <Reference Include="System.Design" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Drawing.Design" />
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
+    </Reference>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -62,6 +65,9 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Serialization" />
+    <Reference Include="UnitsNet, Version=4.0.0.0, Culture=neutral, PublicKeyToken=f8601875a1f041da, processorArchitecture=MSIL">
+      <HintPath>..\packages\UnitsNet.4.62.0\lib\net40\UnitsNet.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommonClasses\DataExchange\CellsExchangeData.cs" />
@@ -115,11 +121,36 @@
     <Compile Include="Comparers\CompareObjects.cs" />
     <Compile Include="CommonClasses\UniqueQueue.cs" />
     <Compile Include="CommonClasses\Vec3D.cs" />
+    <Compile Include="UnitSystem\StringAccelerationConverter.cs" />
+    <Compile Include="UnitSystem\StringAngleConverter.cs" />
+    <Compile Include="UnitSystem\StringAngleDegConverter.cs" />
+    <Compile Include="UnitSystem\StringAngleDOFConverter.cs" />
+    <Compile Include="UnitSystem\StringAngleFixedDOFConverter.cs" />
+    <Compile Include="UnitSystem\StringAreaConverter.cs" />
+    <Compile Include="UnitSystem\StringDensityConverter.cs" />
+    <Compile Include="UnitSystem\StringForceConverter.cs" />
+    <Compile Include="UnitSystem\StringForcePerVolumeConverter.cs" />
+    <Compile Include="UnitSystem\StringForcePerVolumeDefaultConverter.cs" />
+    <Compile Include="UnitSystem\StringLengthConverter.cs" />
+    <Compile Include="UnitSystem\StringLengthDefaultConverter.cs" />
+    <Compile Include="UnitSystem\StringLengthDOFConverter.cs" />
+    <Compile Include="UnitSystem\StringLengthFixedDOFConverter.cs" />
+    <Compile Include="UnitSystem\StringLengthFromConverter.cs" />
+    <Compile Include="UnitSystem\StringMomentConverter.cs" />
+    <Compile Include="UnitSystem\StringPixelConverter.cs" />
+    <Compile Include="UnitSystem\StringPressureConverter.cs" />
+    <Compile Include="UnitSystem\StringPressureFromConverter.cs" />
+    <Compile Include="UnitSystem\StringRotationalSpeedConverter.cs" />
+    <Compile Include="UnitSystem\StringTimeConverter.cs" />
+    <Compile Include="UnitSystem\UnitSystem.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="DynamicTypeDescriptor\StandardValueEditorUI.resx">
       <DependentUpon>StandardValueEditorUI.cs</DependentUpon>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -3,18 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CaeMesh;
 using CaeGlobals;
 using System.Drawing;
 using UnitsNet;
 using UnitsNet.Units;
 using System.Runtime.Serialization;
 
-namespace CaeModel
+namespace CaeGlobals
 {
     [Serializable]
     public enum UnitSystemType
     {
+        Undefined,
         M_KG_S_C,
         MM_TON_S_C
     }
@@ -93,6 +93,7 @@ namespace CaeModel
             //
             switch (_unitSystemType)
             {
+                case UnitSystemType.Undefined:
                 case UnitSystemType.M_KG_S_C:
                     _lengthUnit = LengthUnit.Meter;
                     _angleUnit = AngleUnit.Radian;
@@ -183,7 +184,7 @@ namespace CaeModel
 
 
         // Methods                                                                                                                  
-        private void SetConverterUnits()
+        public void SetConverterUnits()
         {
             // Base units
             StringLengthConverter.SetUnit = LengthUnitAbbreviation;

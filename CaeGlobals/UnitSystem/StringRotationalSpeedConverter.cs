@@ -9,7 +9,7 @@ using System.Globalization;
 using UnitsNet;
 using UnitsNet.Units;
 
-namespace CaeModel
+namespace CaeGlobals
 {
     public class StringRotationalSpeedConverter : TypeConverter
     {

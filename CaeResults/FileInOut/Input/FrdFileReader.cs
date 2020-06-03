@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using CaeMesh;
 using CaeGlobals;
+using System.ComponentModel;
 
 namespace CaeResults
 {
@@ -39,39 +40,41 @@ namespace CaeResults
             if (fileName != null && File.Exists(fileName))
             {
                 List<string> lines = new List<string>();
-
+                //
                 if (!CaeGlobals.Tools.WaitForFileToUnlock(fileName, 5000)) return null;
-
+                //
                 using (FileStream fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 using (StreamReader streamReader = new StreamReader(fileStream))
                 {
                     while (!streamReader.EndOfStream) lines.Add(streamReader.ReadLine()); // faster than streamReader.ReadToEnd().Split ...
-
+                    //
                     streamReader.Close();
                     fileStream.Close();
                 }
                 if (lines.Count < 5) return null;
-
+                //
                 List<string[]> dataSets = GetDataSets(lines.ToArray());
-
+                //
                 string setID;
                 Dictionary<int, FeNode> nodes = null;
                 Dictionary<int, int> nodeIdsLookUp = null;
                 Dictionary<int, FeElement> elements = null;
-
+                //
                 FeResults result = new FeResults(fileName);
                 Field field;
                 FieldData fieldData = null;
                 FieldData prevFieldData = null;
-
+                //
                 bool constantWidth = true;
-
+                //
                 foreach (string[] dataSet in dataSets)
                 {
                     setID = dataSet[0];
                     if (setID.StartsWith("    1C"))  // Data
                     {
                         result.DateTime = GetDateTime(dataSet);
+                        UnitSystemType unitSystemType = GetUnitSystemType(dataSet);
+                        result.UnitSystem = new UnitSystem(unitSystemType);
                     }
                     else if (setID.StartsWith("    2C")) // Nodes
                     {
@@ -90,14 +93,14 @@ namespace CaeResults
                         prevFieldData = fieldData.DeepClone();
                     }
                 }
-
+                //
                 FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Results);
                 mesh.ResetPartsColor();
                 result.SetMesh(mesh, nodeIdsLookUp);
-
+                //
                 return result;
             }
-
+            //
             return null;
         }
         static bool IsConstantWidth(string[] lines)
@@ -146,15 +149,13 @@ namespace CaeResults
             DateTime dateTime = new DateTime();
             DateTime time = new DateTime();
             string[] tmp;
-
-
+            //
             for (int i = 0; i < lines.Length; i++)
             {
                 if (lines[i].Contains("1UDATE"))
                 {
                     tmp = lines[i].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
                     dateTime = DateTime.Parse(tmp[1]);
-                    //dateTime = dateTime.AddHours(-12);
                 }
                 else if (lines[i].Contains("1UTIME"))
                 {
@@ -162,12 +163,28 @@ namespace CaeResults
                     time = DateTime.Parse(tmp[1]);
                 }
             }
-
+            //
             dateTime = dateTime.AddHours(time.Hour);
             dateTime = dateTime.AddMinutes(time.Minute);
             dateTime = dateTime.AddSeconds(time.Second);
-
+            //
             return dateTime;
+        }
+        static private UnitSystemType GetUnitSystemType(string[] lines)
+        {
+            string[] tmp;
+            UnitSystemType unitSystemType = UnitSystemType.Undefined;
+            //
+            for (int i = 0; i < lines.Length; i++)
+            {
+                if (lines[i].ToUpper().Contains("1UMODEL"))
+                {
+                    tmp = lines[i].Split(new string[] { "Unit system:" }, StringSplitOptions.RemoveEmptyEntries);
+                    Enum.TryParse(tmp[1], out unitSystemType);
+                }
+            }
+            //
+            return unitSystemType;
         }
         static private List<string[]> GetDataSets(string[] lines)
         {

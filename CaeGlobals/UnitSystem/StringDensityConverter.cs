@@ -9,21 +9,20 @@ using System.Globalization;
 using UnitsNet;
 using UnitsNet.Units;
 
-namespace CaeModel
+namespace CaeGlobals
 {
-    public class StringPixelConverter : TypeConverter
+    public class StringDensityConverter : TypeConverter
     {
         // Variables                                                                                                                
-        protected static string pixelAbbrevation = "px";
-        protected static string error = "Unable to parse quantity. Expected the form \"{value} {unit abbreviation}" +
-                                        "\", such as \"5.5 m\". The spacing is optional.";
+        protected static DensityUnit _DensityUnit = DensityUnit.TonnePerCubicMillimeter;
 
 
         // Properties                                                                                                               
+        public static string SetUnit { set { _DensityUnit = UnitsNet.Density.ParseUnit(value); } }
 
 
         // Constructors                                                                                                             
-        public StringPixelConverter()
+        public StringDensityConverter()
         {
         }
 
@@ -39,13 +38,15 @@ namespace CaeModel
             // Convert from string
             if (value is string valueString)
             {
-                valueString = valueString.Replace(pixelAbbrevation, "");
-                int valueInt;
+                double valueDouble;
                 //
-                if (!int.TryParse(valueString, out valueInt))
-                    throw new FormatException(error);
+                if (!double.TryParse(valueString, out valueDouble))
+                {
+                    UnitsNet.Density Density = UnitsNet.Density.Parse(valueString).ToUnit(_DensityUnit);
+                    valueDouble = Density.Value;
+                }
                 //
-                return valueInt;
+                return valueDouble;
             }
             else return base.ConvertFrom(context, culture, value);
         }
@@ -56,9 +57,9 @@ namespace CaeModel
             {
                 if (destinationType == typeof(string))
                 {
-                    if (value is int valueInt)
+                    if (value is double valueDouble)
                     {
-                        return valueInt.ToString() + " " + pixelAbbrevation;
+                        return value.ToString() + " " + UnitsNet.Density.GetAbbreviation(_DensityUnit);
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);

@@ -34,28 +34,28 @@ namespace PrePoMax
         [CategoryAttribute("Gravity components")]
         [OrderedDisplayName(0, 10, "F1")]
         [DescriptionAttribute("Gravity component in the direction of the first axis.")]
-        [TypeConverter(typeof(CaeModel.StringAccelerationConverter))]
+        [TypeConverter(typeof(CaeGlobals.StringAccelerationConverter))]
         [Id(1, 3)]
         public double F1 { get { return _gLoad.F1; } set { _gLoad.F1 = value; } }
         //
         [CategoryAttribute("Gravity components")]
         [OrderedDisplayName(1, 10, "F2")]
         [DescriptionAttribute("Gravity component in the direction of the second axis.")]
-        [TypeConverter(typeof(CaeModel.StringAccelerationConverter))]
+        [TypeConverter(typeof(CaeGlobals.StringAccelerationConverter))]
         [Id(2, 3)]
         public double F2 { get { return _gLoad.F2; } set { _gLoad.F2 = value; } }
         //
         [CategoryAttribute("Gravity components")]
         [OrderedDisplayName(2, 10, "F3")]
         [DescriptionAttribute("Gravity component in the direction of the third axis.")]
-        [TypeConverter(typeof(CaeModel.StringAccelerationConverter))]
+        [TypeConverter(typeof(CaeGlobals.StringAccelerationConverter))]
         [Id(3, 3)]
         public double F3 { get { return _gLoad.F3; } set { _gLoad.F3 = value; } }
         //
         [CategoryAttribute("Gravity magnitude")]
         [OrderedDisplayName(0, 10, "Magnitude")]
         [DescriptionAttribute("The magnitude of the gravity load.")]
-        [TypeConverter(typeof(CaeModel.StringAccelerationConverter))]
+        [TypeConverter(typeof(CaeGlobals.StringAccelerationConverter))]
         [Id(1, 4)]
         public double Flength
         {

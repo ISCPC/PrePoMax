@@ -9,20 +9,20 @@ using System.Globalization;
 using UnitsNet;
 using UnitsNet.Units;
 
-namespace CaeModel
+namespace CaeGlobals
 {
-    public class StringMomentConverter : TypeConverter
+    public class StringPressureConverter : TypeConverter
     {
         // Variables                                                                                                                
-        protected static TorqueUnit _momentUnit = TorqueUnit.NewtonMeter;
+        protected static PressureUnit _pressureUnit = PressureUnit.Pascal;
 
 
         // Properties                                                                                                               
-        public static string SetUnit { set { _momentUnit = Torque.ParseUnit(value); } }
+        public static string SetUnit { set { _pressureUnit = Pressure.ParseUnit(value); } }
 
 
         // Constructors                                                                                                             
-        public StringMomentConverter()
+        public StringPressureConverter()
         {
         }
 
@@ -42,8 +42,8 @@ namespace CaeModel
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    Torque moment = Torque.Parse(valueString).ToUnit(_momentUnit);
-                    valueDouble = moment.Value;
+                    Pressure Pressure = Pressure.Parse(valueString).ToUnit(_pressureUnit);
+                    valueDouble = Pressure.Value;
                 }
                 //
                 return valueDouble;
@@ -59,7 +59,7 @@ namespace CaeModel
                 {
                     if (value is double valueDouble)
                     {
-                        return value.ToString() + " " + Torque.GetAbbreviation(_momentUnit);
+                        return value.ToString() + " " + Pressure.GetAbbreviation(_pressureUnit);
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);

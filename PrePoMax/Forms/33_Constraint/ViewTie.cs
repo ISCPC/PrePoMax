@@ -26,7 +26,7 @@ namespace PrePoMax
         [OrderedDisplayName(1, 10, "Position tolerance")]
         [DescriptionAttribute("Enter the value of largest distance from the master surface for which the slave nodes will be " +
                               "included in the tie constraint. Default value equals 2.5 % of the typical element size.")]
-        [TypeConverter(typeof(CaeModel.StringLengthDefaultConverter))]
+        [TypeConverter(typeof(CaeGlobals.StringLengthDefaultConverter))]
         [Id(2, 1)]
         public double PositionTolerance { get { return _tie.PositionTolerance; } set { _tie.PositionTolerance = value; } }
         //
@@ -106,7 +106,7 @@ namespace PrePoMax
             //
             DynamicCustomTypeDescriptor.RenameBooleanPropertyToYesNo(nameof(Adjust));
             //
-            CaeModel.StringLengthDefaultConverter.SetInitialValue = "0.05 mm";
+            CaeGlobals.StringLengthDefaultConverter.SetInitialValue = "0.05 mm";
         }
 
 

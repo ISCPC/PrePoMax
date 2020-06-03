@@ -49,21 +49,21 @@ namespace PrePoMax.Forms
         [Category("Center point coordinates")]
         [OrderedDisplayName(1, 10, "X")]
         [Description("X coordinate of the center point.")]
-        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
+        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
         [Id(1, 2)]
         public double CenterX { get { return _scaleCenter[0]; } set { _scaleCenter[0] = value; } }
         //
         [Category("Center point coordinates")]
         [OrderedDisplayName(2, 10, "Y")]
         [Description("Y coordinate of the center point.")]
-        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
+        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
         [Id(1, 2)]
         public double CenterY { get { return _scaleCenter[1]; } set { _scaleCenter[1] = value; } }
         //
         [Category("Center point coordinates")]
         [OrderedDisplayName(3, 10, "Z")]
         [Description("Z coordinate of the center point.")]
-        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
+        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
         [Id(1, 2)]
         public double CenterZ { get { return _scaleCenter[2]; } set { _scaleCenter[2] = value; } }
         //

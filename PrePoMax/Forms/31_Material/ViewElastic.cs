@@ -32,7 +32,7 @@ namespace PrePoMax.PropertyViews
         [CategoryAttribute("Data")]
         [OrderedDisplayName(0, 2, "Young's modulus")]
         [DescriptionAttribute("The value of the Young's modulus.")]
-        [TypeConverter(typeof(CaeModel.StringPressureConverter))]
+        [TypeConverter(typeof(CaeGlobals.StringPressureConverter))]
         public double YoungsModulus { get { return _elastic.YoungsModulus; } set { _elastic.YoungsModulus = value; } }
 
         [CategoryAttribute("Data")]

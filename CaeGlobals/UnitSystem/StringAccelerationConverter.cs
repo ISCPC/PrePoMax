@@ -9,20 +9,20 @@ using System.Globalization;
 using UnitsNet;
 using UnitsNet.Units;
 
-namespace CaeModel
+namespace CaeGlobals
 {
-    public class StringForceConverter : TypeConverter
+    public class StringAccelerationConverter : TypeConverter
     {
         // Variables                                                                                                                
-        protected static ForceUnit _forceUnit = ForceUnit.Newton;
+        protected static AccelerationUnit _accelerationUnit = AccelerationUnit.MeterPerSecondSquared;
 
 
         // Properties                                                                                                               
-        public static string SetUnit { set { _forceUnit = Force.ParseUnit(value); } }
+        public static string SetUnit { set { _accelerationUnit = Acceleration.ParseUnit(value); } }
 
 
         // Constructors                                                                                                             
-        public StringForceConverter()
+        public StringAccelerationConverter()
         {
         }
 
@@ -42,8 +42,8 @@ namespace CaeModel
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    Force force = Force.Parse(valueString).ToUnit(_forceUnit);
-                    valueDouble = force.Value;
+                    Acceleration Acceleration = Acceleration.Parse(valueString).ToUnit(_accelerationUnit);
+                    valueDouble = Acceleration.Value;
                 }
                 //
                 return valueDouble;
@@ -59,7 +59,7 @@ namespace CaeModel
                 {
                     if (value is double valueDouble)
                     {
-                        return value.ToString() + " " + Force.GetAbbreviation(_forceUnit);
+                        return value.ToString() + " " + Acceleration.GetAbbreviation(_accelerationUnit);
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);

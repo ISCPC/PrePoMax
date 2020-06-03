@@ -9,7 +9,7 @@ using System.Globalization;
 using UnitsNet.Units;
 using UnitsNet;
 
-namespace CaeModel
+namespace CaeGlobals
 {
     public class StringLengthDOFConverter : TypeConverter
     {

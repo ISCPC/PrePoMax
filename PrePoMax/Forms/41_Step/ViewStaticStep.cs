@@ -44,7 +44,7 @@ namespace PrePoMax
         [ReadOnly(false)]
         [OrderedDisplayName(2, 10, "Time period")]
         [DescriptionAttribute("Time period of the step.")]
-        [TypeConverter(typeof(CaeModel.StringTimeConverter))]
+        [TypeConverter(typeof(CaeGlobals.StringTimeConverter))]
         public double TimePeriod { get { return _step.TimePeriod; } set { _step.TimePeriod = value; } }
 
         [CategoryAttribute("Data")]
@@ -57,21 +57,21 @@ namespace PrePoMax
         [ReadOnly(false)]
         [OrderedDisplayName(1, 10, "Initial time increment")]
         [DescriptionAttribute("Initial time increment of the step.")]
-        [TypeConverter(typeof(CaeModel.StringTimeConverter))]
+        [TypeConverter(typeof(CaeGlobals.StringTimeConverter))]
         public double InitialTimeIncrement { get { return _step.InitialTimeIncrement; } set { _step.InitialTimeIncrement = value; } }
 
         [CategoryAttribute("Incrementation")]
         [ReadOnly(false)]
         [OrderedDisplayName(2, 10, "Min time increment")]
         [DescriptionAttribute("Minimum time increment allowed.")]
-        [TypeConverter(typeof(CaeModel.StringTimeConverter))]
+        [TypeConverter(typeof(CaeGlobals.StringTimeConverter))]
         public double MinTimeIncrement { get { return _step.MinTimeIncrement; } set { _step.MinTimeIncrement = value; } }
 
         [CategoryAttribute("Incrementation")]
         [ReadOnly(false)]
         [OrderedDisplayName(3, 10, "Max time increment")]
         [DescriptionAttribute("Maximum time increment allowed.")]
-        [TypeConverter(typeof(CaeModel.StringTimeConverter))]
+        [TypeConverter(typeof(CaeGlobals.StringTimeConverter))]
         public double MaxTimeIncrement { get { return _step.MaxTimeIncrement; } set { _step.MaxTimeIncrement = value; } }
 
 

@@ -21,7 +21,7 @@ namespace PrePoMax
         [CategoryAttribute("Data")]
         [OrderedDisplayName(6, 10, "Thickness")]
         [DescriptionAttribute("Set the thickness in the case of 2D plain strain/stress state.")]
-        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
+        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
         public double Thickness { get { return _solidSection.Thickness; } set { _solidSection.Thickness = value; } }
         //
         [Browsable(false)]

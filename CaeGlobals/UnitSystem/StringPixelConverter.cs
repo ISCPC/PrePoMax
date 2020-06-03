@@ -9,20 +9,21 @@ using System.Globalization;
 using UnitsNet;
 using UnitsNet.Units;
 
-namespace CaeModel
+namespace CaeGlobals
 {
-    public class StringTimeConverter : TypeConverter
+    public class StringPixelConverter : TypeConverter
     {
         // Variables                                                                                                                
-        protected static DurationUnit _timeUnit = DurationUnit.Second;
+        protected static string pixelAbbrevation = "px";
+        protected static string error = "Unable to parse quantity. Expected the form \"{value} {unit abbreviation}" +
+                                        "\", such as \"5.5 m\". The spacing is optional.";
 
 
         // Properties                                                                                                               
-        public static string SetUnit { set { _timeUnit = Duration.ParseUnit(value); } }
 
 
         // Constructors                                                                                                             
-        public StringTimeConverter()
+        public StringPixelConverter()
         {
         }
 
@@ -38,15 +39,13 @@ namespace CaeModel
             // Convert from string
             if (value is string valueString)
             {
-                double valueDouble;
+                valueString = valueString.Replace(pixelAbbrevation, "");
+                int valueInt;
                 //
-                if (!double.TryParse(valueString, out valueDouble))
-                {
-                    Duration time = Duration.Parse(valueString).ToUnit(_timeUnit);
-                    valueDouble = time.Value;
-                }
+                if (!int.TryParse(valueString, out valueInt))
+                    throw new FormatException(error);
                 //
-                return valueDouble;
+                return valueInt;
             }
             else return base.ConvertFrom(context, culture, value);
         }
@@ -57,9 +56,9 @@ namespace CaeModel
             {
                 if (destinationType == typeof(string))
                 {
-                    if (value is double valueDouble)
+                    if (value is int valueInt)
                     {
-                        return value.ToString() + " " + Duration.GetAbbreviation(_timeUnit);
+                        return valueInt.ToString() + " " + pixelAbbrevation;
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);

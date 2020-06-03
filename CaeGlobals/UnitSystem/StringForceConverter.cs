@@ -9,20 +9,20 @@ using System.Globalization;
 using UnitsNet;
 using UnitsNet.Units;
 
-namespace CaeModel
+namespace CaeGlobals
 {
-    public class StringPressureConverter : TypeConverter
+    public class StringForceConverter : TypeConverter
     {
         // Variables                                                                                                                
-        protected static PressureUnit _pressureUnit = PressureUnit.Pascal;
+        protected static ForceUnit _forceUnit = ForceUnit.Newton;
 
 
         // Properties                                                                                                               
-        public static string SetUnit { set { _pressureUnit = Pressure.ParseUnit(value); } }
+        public static string SetUnit { set { _forceUnit = Force.ParseUnit(value); } }
 
 
         // Constructors                                                                                                             
-        public StringPressureConverter()
+        public StringForceConverter()
         {
         }
 
@@ -42,8 +42,8 @@ namespace CaeModel
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    Pressure Pressure = Pressure.Parse(valueString).ToUnit(_pressureUnit);
-                    valueDouble = Pressure.Value;
+                    Force force = Force.Parse(valueString).ToUnit(_forceUnit);
+                    valueDouble = force.Value;
                 }
                 //
                 return valueDouble;
@@ -59,7 +59,7 @@ namespace CaeModel
                 {
                     if (value is double valueDouble)
                     {
-                        return value.ToString() + " " + Pressure.GetAbbreviation(_pressureUnit);
+                        return value.ToString() + " " + Force.GetAbbreviation(_forceUnit);
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);

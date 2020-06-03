@@ -47,7 +47,7 @@ namespace PrePoMax
         {
             InitializeComponent();
             //
-            CaeModel.StringAngleDegConverter angleDegConverter = new CaeModel.StringAngleDegConverter();
+            CaeGlobals.StringAngleDegConverter angleDegConverter = new CaeGlobals.StringAngleDegConverter();
             tbGeometryEdgeAngle.UnitConverter = angleDegConverter;
             tbGeometrySurfaceAngle.UnitConverter = angleDegConverter;
             tbEdgeAngle.UnitConverter = angleDegConverter;

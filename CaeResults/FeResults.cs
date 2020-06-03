@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeMesh;
 using CaeGlobals;
+using System.ComponentModel;
 
 namespace CaeResults
 {
@@ -20,12 +21,14 @@ namespace CaeResults
         private Dictionary<FieldData, Field> _fields;
         private Dictionary<int, FieldData> _fieldLookUp;
         private DateTime _dateTime;
-
+        private UnitSystem _unitSystem;
+        
 
         // Properties                                                                                                               
         public string FileName { get { return _fileName; } set { _fileName = value; } }
         public FeMesh Mesh { get { return _mesh; } set { _mesh = value; } }
         public DateTime DateTime { get { return _dateTime; } set { _dateTime = value; } }
+        public UnitSystem UnitSystem { get { return _unitSystem; } set { _unitSystem = value; } }
 
 
         // Constructor                                                                                                              
@@ -36,6 +39,7 @@ namespace CaeResults
             _nodeIdsLookUp = null;
             _fields = new Dictionary<FieldData, Field>();
             _fieldLookUp = new Dictionary<int, FieldData>();
+            _unitSystem = new UnitSystem(UnitSystemType.Undefined);
         }
 
 
@@ -127,6 +131,31 @@ namespace CaeResults
 
             _nodeIdsLookUp = nodeIdsLookUp;
         }
+        public TypeConverter GetCurrentUnitConverter(string fieldDataName)
+        {
+            TypeConverter _unitConverter;
+            switch (fieldDataName)
+            {
+                case "DISP":
+                    _unitConverter = new StringLengthConverter();
+                    break;
+                case "STRESS":
+                    _unitConverter = new StringPressureConverter();
+                    break;
+                case "TOSTRAIN":
+                    _unitConverter = new StringPressureConverter();
+                    break;
+                case "FORC":
+                    _unitConverter = new StringForceConverter();
+                    break;
+                case "ERROR":
+                    _unitConverter = new StringForceConverter();
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+            return _unitConverter;
+        }
         //
         public void CopyPartsFromMesh(FeMesh mesh)
         {
@@ -206,14 +235,14 @@ namespace CaeResults
         }
         public FieldData GetFieldData(string name, string component, int stepId, int stepIncrementId)
         {
-            // zero step
+            // Zero step
             if (stepId == 1 && stepIncrementId == 0)
             {
                 FieldData fieldData = new FieldData(name, component, stepId, stepIncrementId);
                 fieldData.Type = StepType.Static;
                 return fieldData;
             }
-
+            //
             foreach (var entry in _fields)
             {
                 if (entry.Key.Name == name && entry.Key.StepId == stepId && entry.Key.StepIncrementId == stepIncrementId)
@@ -223,7 +252,7 @@ namespace CaeResults
                     return result;
                 }
             }
-            
+            //
             return null;
         }
         public FieldData GetFirstComponentOfTheFirstFieldAtLastIncrement()

@@ -9,20 +9,20 @@ using System.Globalization;
 using UnitsNet;
 using UnitsNet.Units;
 
-namespace CaeModel
+namespace CaeGlobals
 {
-    public class StringDensityConverter : TypeConverter
+    public class StringTimeConverter : TypeConverter
     {
         // Variables                                                                                                                
-        protected static DensityUnit _DensityUnit = DensityUnit.TonnePerCubicMillimeter;
+        protected static DurationUnit _timeUnit = DurationUnit.Second;
 
 
         // Properties                                                                                                               
-        public static string SetUnit { set { _DensityUnit = UnitsNet.Density.ParseUnit(value); } }
+        public static string SetUnit { set { _timeUnit = Duration.ParseUnit(value); } }
 
 
         // Constructors                                                                                                             
-        public StringDensityConverter()
+        public StringTimeConverter()
         {
         }
 
@@ -42,8 +42,8 @@ namespace CaeModel
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    UnitsNet.Density Density = UnitsNet.Density.Parse(valueString).ToUnit(_DensityUnit);
-                    valueDouble = Density.Value;
+                    Duration time = Duration.Parse(valueString).ToUnit(_timeUnit);
+                    valueDouble = time.Value;
                 }
                 //
                 return valueDouble;
@@ -59,7 +59,7 @@ namespace CaeModel
                 {
                     if (value is double valueDouble)
                     {
-                        return value.ToString() + " " + UnitsNet.Density.GetAbbreviation(_DensityUnit);
+                        return value.ToString() + " " + Duration.GetAbbreviation(_timeUnit);
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);

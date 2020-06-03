@@ -9,13 +9,12 @@ using System.Globalization;
 using UnitsNet.Units;
 using UnitsNet;
 
-namespace CaeModel
+namespace CaeGlobals
 {
-    public class StringForcePerVolumeDefaultConverter : TypeConverter
+    public class StringLengthDefaultConverter : TypeConverter
     {
         // Variables                                                                                                                
-        protected static ForceUnit _forceUnit = ForceUnit.Newton;
-        protected static VolumeUnit _volumeUnit = VolumeUnit.CubicMeter;
+        protected static LengthUnit _lengthUnit = LengthUnit.Meter;
         //
         protected ArrayList values;
         protected string _default = "Default";
@@ -23,13 +22,12 @@ namespace CaeModel
 
 
         // Properties                                                                                                               
-        public static string SetForceUnit { set { _forceUnit = Force.ParseUnit(value); } }
-        public static string SetVolumeUnit { set { _volumeUnit = Volume.ParseUnit(value); } }
-        public static string SetInitialValue { set { _initialValue = ConvertForcePerVolume(value); } }
+        public static string SetUnit { set { _lengthUnit = Length.ParseUnit(value); } }
+        public static string SetInitialValue { set { _initialValue = Length.Parse(value).ToUnit(_lengthUnit).Value; } }
 
 
         // Constructors                                                                                                             
-        public StringForcePerVolumeDefaultConverter()
+        public StringLengthDefaultConverter()
         {
             // Initializes the standard values list with defaults.
             values = new ArrayList(new double[] { double.NaN, _initialValue });
@@ -75,7 +73,8 @@ namespace CaeModel
                 if (String.Equals(value, _default)) valueDouble = double.NaN;
                 else if (!double.TryParse(valueString, out valueDouble))
                 {
-                    valueDouble = ConvertForcePerVolume(valueString);
+                    Length Length = Length.Parse(valueString).ToUnit(_lengthUnit);
+                    valueDouble = Length.Value;
                 }
                 return valueDouble;
             }
@@ -92,8 +91,7 @@ namespace CaeModel
                         if (double.IsNaN(valueDouble)) return _default;
                         else
                         {
-                            return value + " " + Force.GetAbbreviation(_forceUnit) +
-                                           "/" + Volume.GetAbbreviation(_volumeUnit);
+                            return value.ToString() + " " + Length.GetAbbreviation(_lengthUnit);
                         }
                     }
                 }
@@ -104,23 +102,7 @@ namespace CaeModel
                 return base.ConvertTo(context, culture, value, destinationType);
             }
         }
-        //
-        private static double ConvertForcePerVolume(string valueWithUnitString)
-        {
-            string error = "Unable to parse quantity. Expected the form \"{value} {unit abbreviation}" +
-                           "\", such as \"5.5 m\". The spacing is optional.";
-            valueWithUnitString = valueWithUnitString.Trim().Replace(" ", "");
-            //
-            string[] tmp = valueWithUnitString.Split('/');
-            if (tmp.Length != 2) throw new FormatException(error);
-            Force force = Force.Parse(tmp[0]).ToUnit(_forceUnit);
-            //
-            VolumeUnit volumeUnit = Volume.ParseUnit(tmp[1]);
-            Volume volume = Volume.From(1, volumeUnit).ToUnit(_volumeUnit);
-            double value = force.Value / volume.Value;
-            return value;
-        }
     }
-
+    
 
 }

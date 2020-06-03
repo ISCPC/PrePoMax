@@ -34,7 +34,7 @@ namespace PrePoMax.Forms
         [CategoryAttribute("Center of gravity")]
         [DisplayName("X")]
         [DescriptionAttribute("X center of gravity.")]
-        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
+        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
         [Id(0, 1)]
         public double XCenterOfGravity
         {
@@ -48,7 +48,7 @@ namespace PrePoMax.Forms
         [CategoryAttribute("Center of gravity")]
         [DisplayName("Y")]
         [DescriptionAttribute("Y center of gravity.")]
-        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
+        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
         [Id(1, 1)]
         public double YCenterOfGravity
         {
@@ -62,7 +62,7 @@ namespace PrePoMax.Forms
         [CategoryAttribute("Center of gravity")]
         [DisplayName("Z")]
         [DescriptionAttribute("Z center of gravity.")]
-        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
+        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
         [Id(2, 1)]
         public double ZCenterOfGravity
         {
@@ -76,7 +76,7 @@ namespace PrePoMax.Forms
         [CategoryAttribute("Bounding box center")]
         [DisplayName("X")]
         [DescriptionAttribute("Bounding box X center of gravity.")]
-        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
+        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
         [Id(0, 2)]
         public double XBoundingBoxCG
         {
@@ -90,7 +90,7 @@ namespace PrePoMax.Forms
         [CategoryAttribute("Bounding box center")]
         [DisplayName("Y")]
         [DescriptionAttribute("Bounding box Y center of gravity.")]
-        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
+        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
         [Id(1, 2)]
         public double YBoundingBoxCG
         {
@@ -104,7 +104,7 @@ namespace PrePoMax.Forms
         [CategoryAttribute("Bounding box center")]
         [DisplayName("Z")]
         [DescriptionAttribute("Bounding box Z center of gravity.")]
-        [TypeConverter(typeof(CaeModel.StringLengthConverter))]
+        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
         [Id(2, 2)]
         public double ZBoundingBoxCG
         {

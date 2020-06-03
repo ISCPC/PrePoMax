@@ -35,28 +35,28 @@ namespace PrePoMax
         [CategoryAttribute("Force components")]
         [OrderedDisplayName(0, 10, "F1")]
         [DescriptionAttribute("Force component per node in the direction of the first axis.")]
-        [TypeConverter(typeof(CaeModel.StringForceConverter))]
+        [TypeConverter(typeof(CaeGlobals.StringForceConverter))]
         [Id(1, 3)]
         public double F1 { get { return _cLoad.F1; } set { _cLoad.F1 = value; } }
         //
         [CategoryAttribute("Force components")]
         [OrderedDisplayName(1, 10, "F2")]
         [DescriptionAttribute("Force component per node in the direction of the second axis.")]
-        [TypeConverter(typeof(CaeModel.StringForceConverter))]
+        [TypeConverter(typeof(CaeGlobals.StringForceConverter))]
         [Id(2, 3)]
         public double F2 { get { return _cLoad.F2; } set { _cLoad.F2 = value; } }
         //
         [CategoryAttribute("Force components")]
         [OrderedDisplayName(2, 10, "F3")]
         [DescriptionAttribute("Force component per node in the direction of the third axis.")]
-        [TypeConverter(typeof(CaeModel.StringForceConverter))]
+        [TypeConverter(typeof(CaeGlobals.StringForceConverter))]
         [Id(3, 3)]
         public double F3 { get { return _cLoad.F3; } set { _cLoad.F3 = value; } }
         //
         [CategoryAttribute("Force magnitude")]
         [OrderedDisplayName(3, 10, "Magnitude")]
         [DescriptionAttribute("The magnitude of the force load per node.")]
-        [TypeConverter(typeof(CaeModel.StringForceConverter))]
+        [TypeConverter(typeof(CaeGlobals.StringForceConverter))]
         [Id(1, 4)]        
         public double Flength
         {

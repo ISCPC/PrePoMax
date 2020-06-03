@@ -13,6 +13,7 @@ using CaeGlobals;
 using System.IO.Compression;
 using System.Drawing.Imaging;
 using System.Drawing;
+using System.ComponentModel;
 
 namespace PrePoMax
 {
@@ -92,9 +93,22 @@ namespace PrePoMax
                     _currentView = value;
                     ClearSelectionHistoryAndSelectionChanged(); // the selection nodes are only valid on default mesh
                     _form.SetCurrentView(_currentView);
-                    if (_currentView == ViewGeometryModelResults.Geometry) DrawGeometry(false);
-                    else if (_currentView == ViewGeometryModelResults.Model) DrawMesh(false);
-                    else if (_currentView == ViewGeometryModelResults.Results) DrawResults(false);
+                    //
+                    if (_currentView == ViewGeometryModelResults.Geometry)
+                    {
+                        DrawGeometry(false);
+                        _model.UnitSystem.SetConverterUnits();
+                    }
+                    else if (_currentView == ViewGeometryModelResults.Model)
+                    {
+                        DrawMesh(false);
+                        _model.UnitSystem.SetConverterUnits();
+                    }
+                    else if (_currentView == ViewGeometryModelResults.Results)
+                    {
+                        DrawResults(false);
+                        _results.UnitSystem.SetConverterUnits();
+                    }
                     else throw new NotSupportedException();
                 }
             }
@@ -173,6 +187,10 @@ namespace PrePoMax
                 _currentFieldData = value;
                 _currentFieldData.Time = _results.GetIncrementTime(_currentFieldData.Name, _currentFieldData.StepId, _currentFieldData.StepIncrementId);
             }
+        }
+        public TypeConverter GetCurrentResultsUnitConverter()
+        {
+            return _results.GetCurrentUnitConverter(CurrentFieldData.Name);
         }
         // History
         public string GetHistoryFileName()

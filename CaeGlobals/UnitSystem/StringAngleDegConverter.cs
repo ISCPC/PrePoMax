@@ -9,20 +9,19 @@ using System.Globalization;
 using UnitsNet;
 using UnitsNet.Units;
 
-namespace CaeModel
+namespace CaeGlobals
 {
-    public class StringAreaConverter : TypeConverter
+    public class StringAngleDegConverter : TypeConverter
     {
         // Variables                                                                                                                
-        protected static AreaUnit _AreaUnit = AreaUnit.SquareMeter;
+        protected static AngleUnit _angleUnit = AngleUnit.Degree;
 
 
         // Properties                                                                                                               
-        public static string SetUnit { set { _AreaUnit = Area.ParseUnit(value); } }
 
 
         // Constructors                                                                                                             
-        public StringAreaConverter()
+        public StringAngleDegConverter()
         {
         }
 
@@ -42,8 +41,8 @@ namespace CaeModel
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    Area Area = Area.Parse(valueString).ToUnit(_AreaUnit);
-                    valueDouble = Area.Value;
+                    Angle Angle = Angle.Parse(valueString).ToUnit(_angleUnit);
+                    valueDouble = Angle.Value;
                 }
                 //
                 return valueDouble;
@@ -59,7 +58,7 @@ namespace CaeModel
                 {
                     if (value is double valueDouble)
                     {
-                        return value.ToString() + " " + Area.GetAbbreviation(_AreaUnit);
+                        return value.ToString() + " " + Angle.GetAbbreviation(_angleUnit);
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);
@@ -70,5 +69,4 @@ namespace CaeModel
             }
         }
     }
-
 }

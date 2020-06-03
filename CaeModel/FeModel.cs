@@ -137,7 +137,10 @@ namespace CaeModel
                     case "_properties":
                         _properties = (ModelProperties)entry.Value; break;
                     case "_unitSystem":
-                        _unitSystem = (UnitSystem)entry.Value; break;
+                        //if (entry.Value is CaeGlobals.UnitSystem us) _unitSystem = us;
+                        //else _unitSystem = new UnitSystem(UnitSystemType.MM_TON_S_C);
+                        //break;
+                        _unitSystem = (CaeGlobals.UnitSystem)entry.Value; break;
                     default:
                         throw new NotSupportedException();
                 }
