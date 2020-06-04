@@ -133,15 +133,23 @@ namespace PrePoMax.Forms
                 _geometryAndModelOrResults = geometryAndModelOrResults;
             else throw new ArgumentException();
             // Add list view items
+            UnitSystemType unitSystemType;
             ListViewItem item;
             lvTypes.Items.Clear();
             //
-            item = new ListViewItem("Unit system: m, kg, s, °C");
-            item.Tag = new ViewUnitSystem(new UnitSystem(UnitSystemType.M_KG_S_C));
+            unitSystemType = UnitSystemType.M_KG_S_C;
+            item = new ListViewItem("Unit system: " + unitSystemType.GetDescription());
+            item.Tag = new ViewUnitSystem(new UnitSystem(unitSystemType));
             lvTypes.Items.Add(item);
             //
-            item = new ListViewItem("Unit system: mm, ton, s, °C");
-            item.Tag = new ViewUnitSystem(new UnitSystem(UnitSystemType.MM_TON_S_C));
+            unitSystemType = UnitSystemType.MM_TON_S_C;
+            item = new ListViewItem("Unit system: " + unitSystemType.GetDescription());
+            item.Tag = new ViewUnitSystem(new UnitSystem(unitSystemType));
+            lvTypes.Items.Add(item);
+            //
+            unitSystemType = UnitSystemType.IN_LB_S_C;
+            item = new ListViewItem("Unit system: " + unitSystemType.GetDescription());
+            item.Tag = new ViewUnitSystem(new UnitSystem(unitSystemType));
             lvTypes.Items.Add(item);
             // Select the first item
             lvTypes.Items[1].Selected = true;

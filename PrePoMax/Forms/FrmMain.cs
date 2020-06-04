@@ -342,8 +342,6 @@ namespace PrePoMax
                 tsmiTest.Visible = false;
             }
         }
-
-        
         //
         private void FrmMain_Shown(object sender, EventArgs e)
         {
@@ -880,7 +878,8 @@ namespace PrePoMax
                     return;
                 }
                 _controller.New();
-                SetModelUnitSystem();
+                //
+                SelectModelUnitSystem();
             }
             catch (Exception ex)
             {
@@ -974,7 +973,7 @@ namespace PrePoMax
             {
                 // Set the representation which also calls Draw
                 _controller.ViewResultsType = ViewResultsType.ColorContours;  // Draw
-                   
+                //
                 if (resetCamera) tsmiFrontView_Click(null, null);
             }
             else throw new NotSupportedException();
@@ -2117,11 +2116,7 @@ namespace PrePoMax
             ItemSetDataEditor.ParentForm = _frmBoundaryLayer;
             _frmSelectItemSet.SetOnlyGeometrySelection(true);
             ShowForm(_frmBoundaryLayer, "Create Boundary Layer", null);
-        }
-        private void SetModelUnitSystem()
-        {
-            ShowForm(_frmUnitSystem, "Edit Unit System", "Geometry & Model");
-        }
+        }       
 
         #endregion  ################################################################################################################
 
@@ -3508,10 +3503,39 @@ namespace PrePoMax
             _frmSettings.SetSettingsToShow(Globals.StatusBlockSettingsName);
             tsmiSettings_Click(null, null);
         }
-
+        //
         private void UpdateSettings(Dictionary<string, ISettings> items)
         {
             _controller.Settings = new SettingsContainer(items);
+        }
+        //
+        public void SelectModelUnitSystem()
+        {
+            try
+            {
+                InvokeIfRequired(ShowForm, _frmUnitSystem, "Select Unit System", "Geometry & Model");
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
+        public void SelectResultsUnitSystem()
+        {
+            try
+            {
+                InvokeIfRequired(ShowForm, _frmUnitSystem, "Select Unit System", "Results");
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
+        public void UpdateUnitSystem(UnitSystem unitSystem)
+        {
+            tsslUnitSystem.Text = "Unit system: " + unitSystem.UnitSystemType.GetDescription();
+            //
+            SetScaleWidgetUnit(unitSystem);
         }
         #endregion  ################################################################################################################
 
@@ -4700,8 +4724,11 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.SetScaleWidgetVisibility, visibility);
         }
-        public void SetScaleWidgetUnit(string unit)
+        private void SetScaleWidgetUnit(UnitSystem unitSystem)
         {
+            string unit = "";
+            if (unitSystem.UnitSystemType != UnitSystemType.Undefined) unit = unitSystem.LengthUnitAbbreviation;
+            //
             InvokeIfRequired(_vtk.SetScaleWidgetUnit, unit);
         }
         public void SetColorSpectrum(vtkControl.vtkMaxColorSpectrum colorSpectrum)

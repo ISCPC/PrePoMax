@@ -39,7 +39,7 @@ namespace CaeResults
             _nodeIdsLookUp = null;
             _fields = new Dictionary<FieldData, Field>();
             _fieldLookUp = new Dictionary<int, FieldData>();
-            _unitSystem = new UnitSystem(UnitSystemType.Undefined);
+            _unitSystem = new UnitSystem();
         }
 
 

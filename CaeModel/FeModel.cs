@@ -51,7 +51,7 @@ namespace CaeModel
 
 
         // Constructors                                                                                                             
-        public FeModel(string name, UnitSystem unitSystem)
+        public FeModel(string name)
         {
             Name = name;
             _materials = new OrderedDictionary<string, Material>();
@@ -60,7 +60,7 @@ namespace CaeModel
             _surfaceInteractions = new OrderedDictionary<string, SurfaceInteraction>();
             _contactPairs = new OrderedDictionary<string, ContactPair>();
             _stepCollection = new StepCollection();
-            _unitSystem = unitSystem;
+            _unitSystem = new UnitSystem();
         }
         
         // ISerialization

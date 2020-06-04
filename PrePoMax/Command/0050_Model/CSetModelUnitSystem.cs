@@ -35,7 +35,7 @@ namespace PrePoMax.Commands
 
         public override string GetCommandString()
         {
-            return base.GetCommandString() + _unitSystemType.ToString();
+            return base.GetCommandString() + _unitSystemType.GetDescription();
         }
     }
 }

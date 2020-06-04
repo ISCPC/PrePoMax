@@ -16,14 +16,17 @@ namespace CaeGlobals
     [Serializable]
     public enum UnitSystemType
     {
-        [StandardValue("Undefined", DisplayName = "Undefined")]
+        [Description("Undefined")]
         Undefined = 0,
         //
-        [StandardValue("M_KG_S_C", DisplayName = "m, kg, s, °C")]
+        [Description("m, kg, s, °C")]
         M_KG_S_C = 1,
         //
-        [StandardValue("MM_TON_S_C", DisplayName = "mm, ton, s, °C")]
-        MM_TON_S_C = 2
+        [Description("mm, ton, s, °C")]
+        MM_TON_S_C = 2,
+        //
+        [Description("in, lb, s, °C")]
+        IN_LB_S_C = 20
     }
 
 
@@ -94,7 +97,7 @@ namespace CaeGlobals
 
         // Constructors                                                                                                             
         public UnitSystem()
-            : this(UnitSystemType.MM_TON_S_C)
+            : this(UnitSystemType.Undefined)
         {
         }
         public UnitSystem(UnitSystemType unitSystemType)
@@ -138,6 +141,24 @@ namespace CaeGlobals
                     _momentUnit = TorqueUnit.NewtonMillimeter;
                     _pressureUnit = PressureUnit.Megapascal;
                     _densityUnit = DensityUnit.TonnePerCubicMillimeter;
+                    _frequencyUnit = FrequencyUnit.Hertz;
+                    break;
+                case UnitSystemType.IN_LB_S_C:
+                    _lengthUnit = LengthUnit.Inch;
+                    _angleUnit = AngleUnit.Radian;
+                    _massUnit = MassUnit.Pound;
+                    _timeUnit = DurationUnit.Second;
+                    _temperatureUnit = TemperatureUnit.DegreeCelsius;
+                    //
+                    _areaUnit = AreaUnit.SquareInch;
+                    _volumeUnit = VolumeUnit.CubicInch;
+                    _speedUnit = SpeedUnit.InchPerSecond;
+                    _rotationalSpeedUnit = RotationalSpeedUnit.RadianPerSecond;
+                    _accelerationUnit = AccelerationUnit.InchPerSecondSquared;
+                    _forceUnit = ForceUnit.PoundForce;
+                    _momentUnit = TorqueUnit.PoundForceInch;
+                    _pressureUnit = PressureUnit.PoundForcePerSquareInch;
+                    _densityUnit = DensityUnit.PoundPerCubicInch;
                     _frequencyUnit = FrequencyUnit.Hertz;
                     break;
                 default:

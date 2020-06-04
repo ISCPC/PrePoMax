@@ -94,27 +94,9 @@ namespace PrePoMax
                     ClearSelectionHistoryAndSelectionChanged(); // the selection nodes are only valid on default mesh
                     _form.SetCurrentView(_currentView);
                     //
-                    if (_currentView == ViewGeometryModelResults.Geometry)
-                    {
-                        DrawGeometry(false);
-                        _model.UnitSystem.SetConverterUnits();
-                        _form.SetScaleWidgetUnit(_model.UnitSystem.LengthUnitAbbreviation);
-                    }
-                    else if (_currentView == ViewGeometryModelResults.Model)
-                    {
-                        DrawMesh(false);
-                        _model.UnitSystem.SetConverterUnits();
-                        _form.SetScaleWidgetUnit(_model.UnitSystem.LengthUnitAbbreviation);
-                    }
-                    else if (_currentView == ViewGeometryModelResults.Results)
-                    {
-                        DrawResults(false); // Also calls Clear
-                        if (_results != null)
-                        {
-                            _results.UnitSystem.SetConverterUnits();
-                            _form.SetScaleWidgetUnit(_results.UnitSystem.LengthUnitAbbreviation);
-                        }
-                    }
+                    if (_currentView == ViewGeometryModelResults.Geometry) DrawGeometry(false);
+                    else if (_currentView == ViewGeometryModelResults.Model) DrawMesh(false);
+                    else if (_currentView == ViewGeometryModelResults.Results) DrawResults(false); // Also calls Clear
                     else throw new NotSupportedException();
                 }
             }
@@ -166,22 +148,18 @@ namespace PrePoMax
             get { return _viewResultsType; }
             set
             {
-                //if (_currentView == ViewGeometryModelResults.Results)
+                _viewResultsType = value;
+                // This is used by the model tree to show hide the Deformed and Color contour context menu lines
+                ResultPart.Undeformed = _viewResultsType == ViewResultsType.Undeformed;
+                //
+                if (_results != null && _results.Mesh != null)
                 {
-                    _viewResultsType = value;
-
-                    // this is used by the model tree to show hide the Deformed and Color contour context menu lines
-                    ResultPart.Undeformed = _viewResultsType == ViewResultsType.Undeformed;
-
-                    if (_results != null && _results.Mesh != null)
+                    foreach (var entry in _results.Mesh.Parts)
                     {
-                        foreach (var entry in _results.Mesh.Parts)
-                        {
-                            if (entry.Value is ResultPart resultPart) resultPart.ColorContours = _viewResultsType == ViewResultsType.ColorContours;
-                        }
-
-                        DrawResults(false);
+                        if (entry.Value is ResultPart resultPart) resultPart.ColorContours = _viewResultsType == ViewResultsType.ColorContours;
                     }
+                    //
+                    DrawResults(false);
                 }
             }
         }
@@ -350,7 +328,7 @@ namespace PrePoMax
             }
             //
             ClearModel();
-            ClearResults();
+            ClearResults();            
             //
             SetSelectionToDefault();
             //
@@ -361,10 +339,9 @@ namespace PrePoMax
             _sectionViewPlanes[ViewGeometryModelResults.Geometry] = null;
             _sectionViewPlanes[ViewGeometryModelResults.Model] = null;
             //
-            UnitSystem unitSystem;
-            if (_model != null && _model.UnitSystem != null) unitSystem = _model.UnitSystem;
-            else unitSystem = new UnitSystem();
-            _model = new FeModel("Model-1", unitSystem);
+            _model = new FeModel("Model-1");
+            SetModelUnitSystem(_model.UnitSystem.UnitSystemType);   // update widgets
+            //
             _drawSymbolsForStep = null;
             _jobs.Clear();
             ClearAllSelection();
@@ -429,6 +406,8 @@ namespace PrePoMax
             ClearCommand();         // also calls _modelChanged = false;
             //
             _form.UpdateRecentFilesThreadSafe(_settings.General.GetRecentFiles());
+            //
+            SetModelUnitSystem(UnitSystemType.Undefined);
         }
         public void Open(string fileName)
         {
@@ -2098,12 +2077,7 @@ namespace PrePoMax
         {
             Commands.CReplaceModelProperties comm = new Commands.CReplaceModelProperties(newModelName, newModelProperties);
             _commands.AddAndExecute(comm);
-        }
-        public void SetModelUnitSystemCommand(UnitSystemType unitSystemType)
-        {
-            Commands.CSetModelUnitSystem comm = new Commands.CSetModelUnitSystem(unitSystemType);
-            _commands.AddAndExecute(comm);
-        }
+        }        
 
         //******************************************************************************************
 
@@ -2111,13 +2085,7 @@ namespace PrePoMax
         {
             _model.Name = newModelName;
             _model.Properties = newModelProperties;
-        }
-        public void SetModelUnitSystem(UnitSystemType unitSystemType)
-        {
-            _model.UnitSystem = new UnitSystem(unitSystemType);
-            //
-            _form.SetScaleWidgetUnit(_model.UnitSystem.LengthUnitAbbreviation);
-        }
+        }        
 
         #endregion #################################################################################################################
 
@@ -4389,7 +4357,45 @@ namespace PrePoMax
         #endregion #################################################################################################################
 
         #region Settings menu   ####################################################################################################
+        // COMMANDS ********************************************************************************
+        public void SetModelUnitSystemCommand(UnitSystemType unitSystemType)
+        {
+            Commands.CSetModelUnitSystem comm = new Commands.CSetModelUnitSystem(unitSystemType);
+            _commands.AddAndExecute(comm);
+        }
+        //******************************************************************************************
 
+        public void SetModelUnitSystem(UnitSystemType unitSystemType)
+        {
+            _model.UnitSystem = new UnitSystem(unitSystemType);
+            //
+            _form.UpdateUnitSystem(_model.UnitSystem);
+        }
+        public void SetResultsUnitSystem(UnitSystemType unitSystemType)
+        {
+            _results.UnitSystem = new UnitSystem(unitSystemType);
+            //
+            _form.UpdateUnitSystem(_results.UnitSystem);
+            //
+            SetLegendAndLimits();
+        }
+        private void CheckModelUnitSystem()
+        {
+            if (_model.UnitSystem == null) _model.UnitSystem = new UnitSystem();
+            if (_model.UnitSystem.UnitSystemType == UnitSystemType.Undefined) _form.SelectModelUnitSystem();
+            //
+            _model.UnitSystem.SetConverterUnits();          // model and results units systems can be different
+            _form.UpdateUnitSystem(_model.UnitSystem);      // model and results units systems can be different
+        }
+        private void CheckResultsUnitSystem()
+        {
+            if (_results.UnitSystem == null) _results.UnitSystem = new UnitSystem();
+            if (_results.UnitSystem.UnitSystemType == UnitSystemType.Undefined) _form.SelectResultsUnitSystem();
+            //
+            _results.UnitSystem.SetConverterUnits();        // model and results units systems can be different
+            _form.UpdateUnitSystem(_results.UnitSystem);    // model and results units systems can be different
+        }
+        //
         public void ApplySettings()
         {
             // Graphics settings
@@ -4415,9 +4421,10 @@ namespace PrePoMax
                     entry.Value.NumCPUs = cs.NumCPUs;
                     entry.Value.EnvironmentVariables = cs.EnvironmentVariables;
                 }
-            }           
+            }
         }
-        
+        //
+
         #endregion #################################################################################################################
 
         #region Analysis menu   ####################################################################################################
@@ -4685,12 +4692,7 @@ namespace PrePoMax
             }
 
 
-        }
-        //
-        public void SetResultsUnitSystem(UnitSystemType unitSystemType)
-        {
-            _results.UnitSystem = new UnitSystem(unitSystemType);
-        }
+        }        
         #endregion #################################################################################################################
 
         #region Activate Deactivate  ###############################################################################################
@@ -5818,9 +5820,11 @@ namespace PrePoMax
                 _form.Clear3D();
                 //
                 if (_model != null)
-                {                    
+                {
                     if (_model.Geometry != null && _model.Geometry.Parts.Count > 0)
                     {
+                        CheckModelUnitSystem();
+                        //
                         CurrentView = ViewGeometryModelResults.Geometry;
                         //
                         DrawAllGeomParts();
@@ -5829,8 +5833,6 @@ namespace PrePoMax
                         if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
                     }
                     UpdateHighlight();
-                    //
-                    _form.SetScaleWidgetUnit(_model.UnitSystem.LengthUnitAbbreviation);
                 }
                 //
                 if (resetCamera) _form.SetFrontBackView(false, true);
@@ -5903,9 +5905,11 @@ namespace PrePoMax
                 _form.Clear3D();    // Removes section cut
                 //
                 if (_model != null)
-                {
+                {                   
                     if (_model.Mesh != null && _model.Mesh.Parts.Count > 0)
                     {
+                        CheckModelUnitSystem();
+                        //
                         try // must be inside to continue screen update
                         {
                             CurrentView = ViewGeometryModelResults.Model;
@@ -5919,8 +5923,6 @@ namespace PrePoMax
                         catch { }
                     }
                     UpdateHighlight();
-                    //
-                    _form.SetScaleWidgetUnit(_model.UnitSystem.LengthUnitAbbreviation);
                 }
                 //
                 if (resetCamera) _form.SetFrontBackView(false, true);
@@ -7818,6 +7820,8 @@ namespace PrePoMax
             _form.Clear3D();
             //
             if (_results == null) return;
+            //
+            CheckResultsUnitSystem();
             // Settings - must be here before drawing parts to correctly set the numer of colors
             SetLegendAndLimits();
             //
@@ -7900,6 +7904,8 @@ namespace PrePoMax
             _form.Clear3D();
             //
             if (_results == null) return false;
+            //
+            CheckResultsUnitSystem();
             // Settings - must be here before drawing parts to correctly set the numer of colors
             SetLegendAndLimits();
             SetStatusBlock();
@@ -7960,6 +7966,8 @@ namespace PrePoMax
             //
             numFrames = -1;
             if (_results == null) return false;
+            //
+            CheckResultsUnitSystem();
             // Settings - must be here before drawing parts to correctly set the numer of colors
             SetLegendAndLimits();
             SetStatusBlock();
