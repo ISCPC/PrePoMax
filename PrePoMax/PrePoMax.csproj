@@ -125,6 +125,7 @@
     <Compile Include="Command\0050_Model\15_ReferencePoint\CAddReferencePoint.cs" />
     <Compile Include="Command\0050_Model\15_ReferencePoint\CRemoveReferencePoints.cs" />
     <Compile Include="Command\0050_Model\15_ReferencePoint\CReplaceReferencePoint.cs" />
+    <Compile Include="Command\0050_Model\CSetModelUnitSystem.cs" />
     <Compile Include="Command\0050_Model\CCreateBoundaryLayer.cs" />
     <Compile Include="Command\0061_Material\CDuplicateMaterial.cs" />
     <Compile Include="Command\0072_SurfaceInteraction\CAddSurfaceInteraction.cs" />
@@ -184,6 +185,10 @@
     <Compile Include="Controller.cs" />
     <Compile Include="Enums\ViewGeometryModelResults.cs" />
     <Compile Include="Enums\ViewResultsType.cs" />
+    <Compile Include="Forms\00_Common\FrmUnitSystem.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\00_Common\ViewUnitSystem.cs" />
     <Compile Include="Forms\02_View\FrmSectionView.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -242,6 +247,7 @@
     <Compile Include="Forms\42_HistoryOutput\ViewContactHistoryOutput.cs" />
     <Compile Include="Forms\43_FieldOutput\ViewContactFieldOutput.cs" />
     <Compile Include="Forms\71_Settings\ViewCalculixSettings.cs" />
+    <Compile Include="Forms\71_Settings\ViewUnitSystemlSettings.cs" />
     <Compile Include="Forms\71_Settings\ViewStatusBlockSettings.cs" />
     <Compile Include="Forms\71_Settings\ViewLegendSettings.cs" />
     <Compile Include="Forms\StringDefaultDoubleConverter.cs" />
@@ -430,6 +436,7 @@
       <DependentUpon>FrmSelectItemSet.cs</DependentUpon>
     </Compile>
     <Compile Include="Selection\ItemSet\ItemSetDataEditor.cs" />
+    <Compile Include="Settings\UnitSystemSettings.cs" />
     <Compile Include="Settings\GeneralSettings.cs" />
     <Compile Include="Settings\GraphicsSettings.cs" />
     <Compile Include="Forms\71_Settings\IReset.cs" />
@@ -442,6 +449,9 @@
     <Compile Include="Settings\CalculixSettings.cs" />
     <Compile Include="Tools.cs" />
     <Compile Include="UpdateModelType.cs" />
+    <EmbeddedResource Include="Forms\00_Common\FrmUnitSystem.resx">
+      <DependentUpon>FrmUnitSystem.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\02_View\FrmSectionView.resx">
       <DependentUpon>FrmSectionView.cs</DependentUpon>
     </EmbeddedResource>

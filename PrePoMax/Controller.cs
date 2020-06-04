@@ -98,16 +98,22 @@ namespace PrePoMax
                     {
                         DrawGeometry(false);
                         _model.UnitSystem.SetConverterUnits();
+                        _form.SetScaleWidgetUnit(_model.UnitSystem.LengthUnitAbbreviation);
                     }
                     else if (_currentView == ViewGeometryModelResults.Model)
                     {
                         DrawMesh(false);
                         _model.UnitSystem.SetConverterUnits();
+                        _form.SetScaleWidgetUnit(_model.UnitSystem.LengthUnitAbbreviation);
                     }
                     else if (_currentView == ViewGeometryModelResults.Results)
                     {
-                        DrawResults(false);
-                        _results.UnitSystem.SetConverterUnits();
+                        DrawResults(false); // Also calls Clear
+                        if (_results != null)
+                        {
+                            _results.UnitSystem.SetConverterUnits();
+                            _form.SetScaleWidgetUnit(_results.UnitSystem.LengthUnitAbbreviation);
+                        }
                     }
                     else throw new NotSupportedException();
                 }
@@ -185,7 +191,8 @@ namespace PrePoMax
             set
             {
                 _currentFieldData = value;
-                _currentFieldData.Time = _results.GetIncrementTime(_currentFieldData.Name, _currentFieldData.StepId, _currentFieldData.StepIncrementId);
+                _currentFieldData.Time = _results.GetIncrementTime(_currentFieldData.Name, _currentFieldData.StepId,
+                                                                   _currentFieldData.StepIncrementId);
             }
         }
         public TypeConverter GetCurrentResultsUnitConverter()
@@ -273,7 +280,7 @@ namespace PrePoMax
             System.Diagnostics.Debug.WriteLine("Angle: " + angle);
             SelectAngle = angle;
         }
-
+        
 
         // Constructors                                                                                                             
         public Controller(FrmMain form)
@@ -2092,6 +2099,11 @@ namespace PrePoMax
             Commands.CReplaceModelProperties comm = new Commands.CReplaceModelProperties(newModelName, newModelProperties);
             _commands.AddAndExecute(comm);
         }
+        public void SetModelUnitSystemCommand(UnitSystemType unitSystemType)
+        {
+            Commands.CSetModelUnitSystem comm = new Commands.CSetModelUnitSystem(unitSystemType);
+            _commands.AddAndExecute(comm);
+        }
 
         //******************************************************************************************
 
@@ -2099,6 +2111,12 @@ namespace PrePoMax
         {
             _model.Name = newModelName;
             _model.Properties = newModelProperties;
+        }
+        public void SetModelUnitSystem(UnitSystemType unitSystemType)
+        {
+            _model.UnitSystem = new UnitSystem(unitSystemType);
+            //
+            _form.SetScaleWidgetUnit(_model.UnitSystem.LengthUnitAbbreviation);
         }
 
         #endregion #################################################################################################################
@@ -4626,7 +4644,7 @@ namespace PrePoMax
         {
             return _results.GetExistingIncrementIds(name, component);
         }
-
+        //
         public void GetHistoryOutputData(HistoryResultData historyData, out string[] columnNames, out object[][] rowBasedData)
         {
             HistoryResultSet set = _history.Sets[historyData.SetName];
@@ -4667,6 +4685,11 @@ namespace PrePoMax
             }
 
 
+        }
+        //
+        public void SetResultsUnitSystem(UnitSystemType unitSystemType)
+        {
+            _results.UnitSystem = new UnitSystem(unitSystemType);
         }
         #endregion #################################################################################################################
 
@@ -5795,7 +5818,7 @@ namespace PrePoMax
                 _form.Clear3D();
                 //
                 if (_model != null)
-                {
+                {                    
                     if (_model.Geometry != null && _model.Geometry.Parts.Count > 0)
                     {
                         CurrentView = ViewGeometryModelResults.Geometry;
@@ -5806,13 +5829,16 @@ namespace PrePoMax
                         if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
                     }
                     UpdateHighlight();
+                    //
+                    _form.SetScaleWidgetUnit(_model.UnitSystem.LengthUnitAbbreviation);
                 }
+                //
                 if (resetCamera) _form.SetFrontBackView(false, true);
                 _form.AdjustCameraDistanceAndClipping();
             }
             catch
             {
-                // do not throw an error - it might cancel a procedure
+                // Do not throw an error - it might cancel a procedure
             }
         }
         public void DrawAllGeomParts()
@@ -5875,6 +5901,7 @@ namespace PrePoMax
             try
             {
                 _form.Clear3D();    // Removes section cut
+                //
                 if (_model != null)
                 {
                     if (_model.Mesh != null && _model.Mesh.Parts.Count > 0)
@@ -5892,14 +5919,16 @@ namespace PrePoMax
                         catch { }
                     }
                     UpdateHighlight();
+                    //
+                    _form.SetScaleWidgetUnit(_model.UnitSystem.LengthUnitAbbreviation);
                 }
-
+                //
                 if (resetCamera) _form.SetFrontBackView(false, true);
                 _form.AdjustCameraDistanceAndClipping();
             }
             catch
             {
-                // do not throw an error - it might cancel a procedure
+                // Do not throw an error - it might cancel a procedure
             }
         }
         public void DrawAllMeshParts()
@@ -7793,7 +7822,7 @@ namespace PrePoMax
             SetLegendAndLimits();
             //
             float scale = GetScale();
-            DrawResult(_currentFieldData, scale, _settings.Post.DrawUndeformedModel, _settings.Post.UndeformedModelColor);
+            DrawResult(_currentFieldData, scale, _settings.Post.DrawUndeformedModel, _settings.Post.UndeformedModelColor);            
             //
             Octree.Plane plane = _sectionViewPlanes[_currentView];
             if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);

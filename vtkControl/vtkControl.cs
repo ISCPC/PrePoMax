@@ -3990,6 +3990,12 @@ namespace vtkControl
             if (visibility) _scaleWidget.VisibilityOn();
             else _scaleWidget.VisibilityOff();
         }
+        public void SetScaleWidgetUnit(string unit)
+        {
+            _scaleWidget.SetUnit(unit);
+            //
+            Invalidate();
+        }
         public void SetColorSpectrum(vtkMaxColorSpectrum colorSpectrum)
         {
             _colorSpectrum.DeepCopy(colorSpectrum);

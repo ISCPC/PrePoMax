@@ -28,7 +28,7 @@ namespace PrePoMax
         public static string MaterialLibraryFileName = "materials.lib";
         //
         public static string HistoryFileName = "history";
-        //
+        // Settings
         public static string GeneralSettingsName = "General";
         public static string GraphicsSettingsName = "Graphics";
         public static string PreSettingsName = "Pre-processing";
@@ -36,6 +36,7 @@ namespace PrePoMax
         public static string PostSettingsName = "Post-processing";
         public static string LegendSettingsName = "Legend";
         public static string StatusBlockSettingsName = "StatusBlock";
+        public static string UnitSystemSettingsName = "UnitSystem";
         //
         public static string NetGenMesher = @"\NetGen\NetGenMesher.exe";
         public static string VisFileName = "geometry.vis";

@@ -42,7 +42,6 @@ namespace PrePoMax
         private Controller _controller;
         private string[] _args;
         private string[] outputLines;
-        private bool semaphore;
         private object _myLock;
         private Dictionary<ViewGeometryModelResults, Action<object, EventArgs>> _edgeVisibilities; // save display style
 
@@ -51,6 +50,7 @@ namespace PrePoMax
         private FrmSectionView _frmSectionView;        
         private FrmSelectEntity _frmSelectEntity;
         private FrmSelectItemSet _frmSelectItemSet;
+        private FrmUnitSystem _frmUnitSystem;
         private FrmAnalyzeGeometry _frmAnalyzeGeometry;
         private FrmMeshingParameters _frmMeshingParameters;
         private FrmMeshRefinement _frmMeshRefinement;
@@ -227,6 +227,9 @@ namespace PrePoMax
                 //
                 _frmSectionView = new FrmSectionView(_controller);
                 AddFormToAllForms(_frmSectionView);
+                //
+                _frmUnitSystem = new FrmUnitSystem(_controller);
+                AddFormToAllForms(_frmUnitSystem);
                 //
                 _frmAnalyzeGeometry = new FrmAnalyzeGeometry(_controller);
                 AddFormToAllForms(_frmAnalyzeGeometry);
@@ -877,6 +880,7 @@ namespace PrePoMax
                     return;
                 }
                 _controller.New();
+                SetModelUnitSystem();
             }
             catch (Exception ex)
             {
@@ -2113,6 +2117,10 @@ namespace PrePoMax
             ItemSetDataEditor.ParentForm = _frmBoundaryLayer;
             _frmSelectItemSet.SetOnlyGeometrySelection(true);
             ShowForm(_frmBoundaryLayer, "Create Boundary Layer", null);
+        }
+        private void SetModelUnitSystem()
+        {
+            ShowForm(_frmUnitSystem, "Edit Unit System", "Geometry & Model");
         }
 
         #endregion  ################################################################################################################
@@ -4691,6 +4699,10 @@ namespace PrePoMax
         public void SetScaleWidgetVisibility(bool visibility)
         {
             InvokeIfRequired(_vtk.SetScaleWidgetVisibility, visibility);
+        }
+        public void SetScaleWidgetUnit(string unit)
+        {
+            InvokeIfRequired(_vtk.SetScaleWidgetUnit, unit);
         }
         public void SetColorSpectrum(vtkControl.vtkMaxColorSpectrum colorSpectrum)
         {

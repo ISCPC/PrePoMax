@@ -78,31 +78,28 @@ namespace PrePoMax.Forms
             // Replace
             if (_propertyItemChanged)
             {
-                _controller.ReplaceModelProperties(_viewModelProperties.Name, _viewModelProperties.GetBase());
+                _controller.ReplaceModelPropertiesCommand(_viewModelProperties.Name, _viewModelProperties.GetBase());
             }
         }
         protected override bool OnPrepareForm(string stepName, string modelToEditName)
         {
             this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
-
+            //
             _propertyItemChanged = false;
             _viewModelProperties = null;
-
+            //
             _viewModelProperties = new ViewModelProperties(_controller.Model.Properties);
             _viewModelProperties.Name = _controller.Model.Name;
-
+            //
             propertyGrid.SelectedObject = _viewModelProperties;
             propertyGrid.Select();
-
+            //
             return true;
         }
 
 
         // Methods                                                                                                                  
-        public bool PrepareForm(string stepName, string modelToEditName)
-        {
-            return OnPrepareForm(stepName, modelToEditName);
-        }
+        
 
         
     }

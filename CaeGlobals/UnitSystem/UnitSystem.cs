@@ -8,15 +8,22 @@ using System.Drawing;
 using UnitsNet;
 using UnitsNet.Units;
 using System.Runtime.Serialization;
+using DynamicTypeDescriptor;
+using System.ComponentModel;
 
 namespace CaeGlobals
 {
     [Serializable]
     public enum UnitSystemType
     {
-        Undefined,
-        M_KG_S_C,
-        MM_TON_S_C
+        [StandardValue("Undefined", DisplayName = "Undefined")]
+        Undefined = 0,
+        //
+        [StandardValue("M_KG_S_C", DisplayName = "m, kg, s, °C")]
+        M_KG_S_C = 1,
+        //
+        [StandardValue("MM_TON_S_C", DisplayName = "mm, ton, s, °C")]
+        MM_TON_S_C = 2
     }
 
 

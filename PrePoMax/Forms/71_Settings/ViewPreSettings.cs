@@ -101,6 +101,7 @@ namespace PrePoMax.Settings
             get { return _preSettings.DrawSymbolEdges; }
             set { _preSettings.DrawSymbolEdges = value; }
         }
+        
 
 
         // Constructors                                                                                                             
