@@ -127,7 +127,7 @@ namespace PrePoMax.Commands
             _history.Clear();
             List<string> errors = new List<string>();
             //
-            foreach (Command command in _commands)
+            foreach (Command command in _commands) // use a copy
             {
                 if (count++ <= _currPositionIndex)
                 {

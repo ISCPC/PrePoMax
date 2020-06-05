@@ -582,8 +582,7 @@ namespace FileInOut.Output
                     else title.AddKeyword(new CalDeactivated(bcEntry.Value.Name));
                 }
                 // Loads
-                if (step.Active && step.Loads.Count > 0)
-                    title = new CalTitle("Loads", "*Dload, op=New" + Environment.NewLine + "*Cload, op=New");
+                if (step.Active) title = new CalTitle("Loads", "*Dload, op=New" + Environment.NewLine + "*Cload, op=New");
                 else title = new CalTitle("Loads", "");
                 calStep.AddKeyword(title);
                 //

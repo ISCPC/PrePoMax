@@ -3513,7 +3513,9 @@ namespace PrePoMax
         {
             try
             {
-                InvokeIfRequired(ShowForm, _frmUnitSystem, "Select Unit System", "Geometry & Model");
+                // Disable unit system selection during regenerate - check that the state is ready
+                if (tsslState.Text == Globals.ReadyText)
+                    InvokeIfRequired(ShowForm, _frmUnitSystem, "Select Unit System", "Geometry & Model");
             }
             catch (Exception ex)
             {
@@ -3524,7 +3526,9 @@ namespace PrePoMax
         {
             try
             {
-                InvokeIfRequired(ShowForm, _frmUnitSystem, "Select Unit System", "Results");
+                // Disable unit system selection during regenerate - check that the state is ready
+                if (tsslState.Text == Globals.ReadyText)
+                    InvokeIfRequired(ShowForm, _frmUnitSystem, "Select Unit System", "Results");
             }
             catch (Exception ex)
             {
