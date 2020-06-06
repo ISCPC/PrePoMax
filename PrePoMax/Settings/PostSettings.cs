@@ -38,6 +38,7 @@ namespace PrePoMax
         private Color _undeformedModelColor;
         private bool _showMinValueLocation;
         private bool _showMaxValueLocation;
+        private int _maxHistoryEntriesToShow;
 
 
         // Properties                                                                                                               
@@ -82,6 +83,7 @@ namespace PrePoMax
         }
         public bool ShowMinValueLocation { get { return _showMinValueLocation; } set { _showMinValueLocation = value; } }
         public bool ShowMaxValueLocation { get { return _showMaxValueLocation; } set { _showMaxValueLocation = value; } }
+        public int MaxHistoryEntriesToShow { get { return _maxHistoryEntriesToShow; } set { _maxHistoryEntriesToShow = value; } }
 
 
         // Constructors                                                                                                             
@@ -104,6 +106,8 @@ namespace PrePoMax
             //
             _showMinValueLocation = false;
             _showMaxValueLocation = true;
+            //
+            _maxHistoryEntriesToShow = 100;
         }
         
     }

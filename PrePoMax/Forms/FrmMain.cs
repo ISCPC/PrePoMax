@@ -149,11 +149,18 @@ namespace PrePoMax
         // Event handling                                                                                                           
         private void FrmMain_Load(object sender, EventArgs e)
         {
+            //StringEnergyConverter.SetUnit = "in·lb";
+            ////
+            //StringEnergyPerVolumeConverter converter = new StringEnergyPerVolumeConverter();
+            //StringEnergyPerVolumeConverter.SetEnergyUnit = "in·lb";
+            //StringEnergyPerVolumeConverter.SetVolumeUnit = "in³";
+            //double v1 = (double)converter.ConvertFromString("8.5 in·lb/in³");
+            ////
             Text = Globals.ProgramName;
             this.TopMost = true;
             splash = new FrmSplash { TopMost = true };
             var task = Task.Run(() => splash.ShowDialog());
-
+            //
             try
             {
                 //
@@ -3508,13 +3515,27 @@ namespace PrePoMax
         {
             _controller.Settings = new SettingsContainer(items);
         }
-        //
+        // Unit system
+        private void tsslUnitSystem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (GetCurrentView() == ViewGeometryModelResults.Geometry ||
+                    GetCurrentView() == ViewGeometryModelResults.Model) SelectModelUnitSystem();
+                else SelectResultsUnitSystem();
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
+      
         public void SelectModelUnitSystem()
         {
             try
             {
                 // Disable unit system selection during regenerate - check that the state is ready
-                if (tsslState.Text == Globals.ReadyText)
+                if (tsslState.Text != Globals.RegeneratingText)
                     InvokeIfRequired(ShowForm, _frmUnitSystem, "Select Unit System", "Geometry & Model");
             }
             catch (Exception ex)
@@ -3527,7 +3548,7 @@ namespace PrePoMax
             try
             {
                 // Disable unit system selection during regenerate - check that the state is ready
-                if (tsslState.Text == Globals.ReadyText)
+                if (tsslState.Text != Globals.RegeneratingText)
                     InvokeIfRequired(ShowForm, _frmUnitSystem, "Select Unit System", "Results");
             }
             catch (Exception ex)
@@ -3909,11 +3930,11 @@ namespace PrePoMax
                 {
                     CloseAllForms();
                     SetFormLoaction((Form)_frmHistoryResultsOutput);
-
+                    //
                     string[] columnNames;
                     object[][] rowBasedData;
                     _controller.GetHistoryOutputData(historyData, out columnNames, out rowBasedData);
-
+                    //
                     _frmHistoryResultsOutput.SetData(columnNames, rowBasedData);
                     _frmHistoryResultsOutput.Show();
                 }
@@ -5279,6 +5300,6 @@ namespace PrePoMax
             {}
         }
 
-        
+       
     }
 }

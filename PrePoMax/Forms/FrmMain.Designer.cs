@@ -2130,15 +2130,16 @@
             // tsslEmpty
             // 
             this.tsslEmpty.Name = "tsslEmpty";
-            this.tsslEmpty.Size = new System.Drawing.Size(1113, 19);
+            this.tsslEmpty.Size = new System.Drawing.Size(1037, 19);
             this.tsslEmpty.Spring = true;
             this.tsslEmpty.Text = " ";
             // 
             // tsslUnitSystem
             // 
             this.tsslUnitSystem.Name = "tsslUnitSystem";
-            this.tsslUnitSystem.Size = new System.Drawing.Size(132, 19);
-            this.tsslUnitSystem.Text = "Unit system: mm, ton, s";
+            this.tsslUnitSystem.Size = new System.Drawing.Size(130, 19);
+            this.tsslUnitSystem.Text = "Unit system: Undefined";
+            this.tsslUnitSystem.Click += new System.EventHandler(this.tsslUnitSystem_Click);
             // 
             // openFileDialog
             // 

@@ -51,28 +51,30 @@ namespace CaeGlobals
         TorqueUnit _momentUnit;                     //ISerializable
         PressureUnit _pressureUnit;                 //ISerializable
         DensityUnit _densityUnit;                   //ISerializable
+        EnergyUnit _energyUnit;                     //ISerializable
         FrequencyUnit _frequencyUnit;               //ISerializable
 
 
         // Properties                                                                                                               
         public UnitSystemType UnitSystemType { get { return _unitSystemType; } }
-        // Base units
-        public LengthUnit LengthUnit { get { return _lengthUnit; } }
-        public AngleUnit AngleUnit { get { return _angleUnit; } }
-        public MassUnit MassUnit { get { return _massUnit; } }
-        public DurationUnit TimeUnit { get { return _timeUnit; } }
-        public TemperatureUnit TemperatureUnit { get { return _temperatureUnit; } }
-        // Derived units
-        public AreaUnit AreaUnit { get { return _areaUnit; } }
-        public VolumeUnit VolumeUnit { get { return _volumeUnit; } }
-        public SpeedUnit SpeedUnit { get { return _speedUnit; } }
-        public RotationalSpeedUnit RotationalSpeedUnit { get { return _rotationalSpeedUnit; } }
-        public AccelerationUnit AccelerationUnit { get { return _accelerationUnit; } }
-        public ForceUnit ForceUnit { get { return _forceUnit; } }
-        public TorqueUnit MomentUnit { get { return _momentUnit; } }
-        public PressureUnit PressureUnit { get { return _pressureUnit; } }
-        public DensityUnit DensityUnit { get { return _densityUnit; } }
-        public FrequencyUnit FrequencyUnit { get { return _frequencyUnit; } }
+        //// Base units
+        //public LengthUnit LengthUnit { get { return _lengthUnit; } }
+        //public AngleUnit AngleUnit { get { return _angleUnit; } }
+        //public MassUnit MassUnit { get { return _massUnit; } }
+        //public DurationUnit TimeUnit { get { return _timeUnit; } }
+        //public TemperatureUnit TemperatureUnit { get { return _temperatureUnit; } }
+        //// Derived units
+        //public AreaUnit AreaUnit { get { return _areaUnit; } }
+        //public VolumeUnit VolumeUnit { get { return _volumeUnit; } }
+        //public SpeedUnit SpeedUnit { get { return _speedUnit; } }
+        //public RotationalSpeedUnit RotationalSpeedUnit { get { return _rotationalSpeedUnit; } }
+        //public AccelerationUnit AccelerationUnit { get { return _accelerationUnit; } }
+        //public ForceUnit ForceUnit { get { return _forceUnit; } }
+        //public TorqueUnit MomentUnit { get { return _momentUnit; } }
+        //public PressureUnit PressureUnit { get { return _pressureUnit; } }
+        //public DensityUnit DensityUnit { get { return _densityUnit; } }
+        //public EnergyUnit EnergyUnit { get { return _energyUnit; } }
+        //public FrequencyUnit FrequencyUnit { get { return _frequencyUnit; } }
         //
         // Abbreviations                                                                                
         //
@@ -92,6 +94,21 @@ namespace CaeGlobals
         public string MomentUnitAbbreviation { get { return Torque.GetAbbreviation(_momentUnit); } }
         public string PressureUnitAbbreviation { get { return Pressure.GetAbbreviation(_pressureUnit); } }
         public string DensityUnitAbbreviation { get { return UnitsNet.Density.GetAbbreviation(_densityUnit); } }
+        public string EnergyUnitAbbreviation
+        {
+            get            
+            {
+                if (_energyUnit == (EnergyUnit)100) return "in·lb";
+                else return Energy.GetAbbreviation(_energyUnit);
+            }
+        }
+        public string EnergyPerVolumeUnitAbbreviation
+        {
+            get
+            {
+                return StringEnergyPerVolumeConverter.GetUnitAbbreviation();
+            }
+        }
         public string FrequencyUnitAbbreviation { get { return Frequency.GetAbbreviation(_frequencyUnit); } }
 
 
@@ -123,6 +140,7 @@ namespace CaeGlobals
                     _momentUnit = TorqueUnit.NewtonMeter;
                     _pressureUnit = PressureUnit.Pascal;
                     _densityUnit = DensityUnit.KilogramPerCubicMeter;
+                    _energyUnit = EnergyUnit.Joule;
                     _frequencyUnit = FrequencyUnit.Hertz;
                     break;
                 case UnitSystemType.MM_TON_S_C:
@@ -141,6 +159,7 @@ namespace CaeGlobals
                     _momentUnit = TorqueUnit.NewtonMillimeter;
                     _pressureUnit = PressureUnit.Megapascal;
                     _densityUnit = DensityUnit.TonnePerCubicMillimeter;
+                    _energyUnit = EnergyUnit.Millijoule;
                     _frequencyUnit = FrequencyUnit.Hertz;
                     break;
                 case UnitSystemType.IN_LB_S_C:
@@ -159,6 +178,7 @@ namespace CaeGlobals
                     _momentUnit = TorqueUnit.PoundForceInch;
                     _pressureUnit = PressureUnit.PoundForcePerSquareInch;
                     _densityUnit = DensityUnit.PoundPerCubicInch;
+                    _energyUnit = (EnergyUnit)100; // EnergyUnit.InchPound;
                     _frequencyUnit = FrequencyUnit.Hertz;
                     break;
                 default:
@@ -207,6 +227,8 @@ namespace CaeGlobals
                         _pressureUnit = (PressureUnit)entry.Value; break;
                     case "_densityUnit":
                         _densityUnit = (DensityUnit)entry.Value; break;
+                    case "_energyUnit":
+                        _energyUnit = (EnergyUnit)entry.Value; break;
                     case "_frequencyUnit":
                         _frequencyUnit = (FrequencyUnit)entry.Value; break;
                     default:
@@ -232,6 +254,7 @@ namespace CaeGlobals
             StringTimeConverter.SetUnit = TimeUnitAbbreviation;
             // Derived units
             StringAreaConverter.SetUnit = AreaUnitAbbreviation;
+            StringVolumeConverter.SetUnit = VolumeUnitAbbreviation;
             StringRotationalSpeedConverter.SetUnit = RotationalSpeedUnitAbbreviation;
             StringAccelerationConverter.SetUnit = AccelerationUnitAbbreviation;
             StringForceConverter.SetUnit = ForceUnitAbbreviation;
@@ -239,11 +262,24 @@ namespace CaeGlobals
             StringPressureConverter.SetUnit = PressureUnitAbbreviation;
             StringPressureFromConverter.SetUnit = PressureUnitAbbreviation;     // not really necessary
             StringDensityConverter.SetUnit = DensityUnitAbbreviation;
+            StringEnergyConverter.SetUnit = EnergyUnitAbbreviation;
+            StringEnergyPerVolumeConverter.SetEnergyUnit = EnergyUnitAbbreviation;
+            StringEnergyPerVolumeConverter.SetVolumeUnit = VolumeUnitAbbreviation;
             // Contact
             StringForcePerVolumeConverter.SetForceUnit = ForceUnitAbbreviation;
             StringForcePerVolumeConverter.SetVolumeUnit = VolumeUnitAbbreviation;
             StringForcePerVolumeDefaultConverter.SetForceUnit = ForceUnitAbbreviation;
             StringForcePerVolumeDefaultConverter.SetVolumeUnit = VolumeUnitAbbreviation;
+        }
+        public double Convert(double value, TypeConverter converter, UnitSystem toSystem)
+        {
+            // Use this method to allow for added units like: Energy: in.lb
+            SetConverterUnits();
+            string valueWithUnit = converter.ConvertToString(value);
+            toSystem.SetConverterUnits();
+            double result = (double)converter.ConvertFrom(valueWithUnit);
+            SetConverterUnits();
+            return result;
         }
         // ISerialization
         public void GetObjectData(SerializationInfo info, StreamingContext context)
@@ -266,6 +302,7 @@ namespace CaeGlobals
             info.AddValue("_momentUnit", _momentUnit, typeof(TorqueUnit));
             info.AddValue("_pressureUnit", _pressureUnit, typeof(PressureUnit));
             info.AddValue("_densityUnit", _densityUnit, typeof(DensityUnit));
+            info.AddValue("_energyUnit", _energyUnit, typeof(EnergyUnit));
             info.AddValue("_frequencyUnit", _frequencyUnit, typeof(FrequencyUnit));
         }
     }

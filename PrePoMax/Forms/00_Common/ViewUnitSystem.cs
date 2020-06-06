@@ -97,9 +97,15 @@ namespace PrePoMax
         public string DensityUnitAbbreviation { get { return _unitSystem.DensityUnitAbbreviation; } }
         //
         [CategoryAttribute("Derived units")]
-        [OrderedDisplayName(9, 20, "Frequency")]
-        [DescriptionAttribute("Default frequency unit.")]
+        [OrderedDisplayName(9, 20, "Energy unit")]
+        [DescriptionAttribute("Default energy unit.")]
         [Id(10, 1)]
+        public string EnergyUnitAbbreviation { get { return _unitSystem.EnergyUnitAbbreviation; } }
+        //
+        [CategoryAttribute("Derived units")]
+        [OrderedDisplayName(10, 20, "Frequency")]
+        [DescriptionAttribute("Default frequency unit.")]
+        [Id(11, 1)]
         public string FrequencyUnitAbbreviation { get { return _unitSystem.FrequencyUnitAbbreviation; } }
 
 

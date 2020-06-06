@@ -15,24 +15,27 @@ namespace PrePoMax
     [Flags]
     public enum ViewElementFieldVariable
     {
-        // must start at 1 for the UI to work
-        [StandardValue("E", Description = "Strains.")]
-        E = 1,
-
-        [StandardValue("PEEQ", Description = "Equivalent plastic strain.")]
-        PEEQ = 2,
-
+        // Must start at 1 for the UI to work
         [StandardValue("S", Description = "Stresses.")]
-        S = 4,
-
+        S = 1,
+        //
+        [StandardValue("E", Description = "Total strains.")]
+        E = 2,
+        //
+        [StandardValue("ME", Description = "Mechanical strains.")]
+        ME = 4,
+        //
+        [StandardValue("PEEQ", Description = "Equivalent plastic strain.")]
+        PEEQ = 8,
+        //
         [StandardValue("ENER", Description = "Energy density.")]
-        ENER = 8,
-
+        ENER = 16,
+        //
         [StandardValue("ERR", Description = "Extrapolation error estimator for stress calculations. ZZS and ERR are mutually exclusive.")]
-        ERR = 16,
-
+        ERR = 32,
+        //
         [StandardValue("ZZS", Description = "Zienkiewicz-Zhu improved stress. ZZS and ERR are mutually exclusive.")]
-        ZZS = 32
+        ZZS = 64
     }
 
     [Serializable]

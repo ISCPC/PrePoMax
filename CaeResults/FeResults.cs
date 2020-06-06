@@ -131,43 +131,174 @@ namespace CaeResults
 
             _nodeIdsLookUp = nodeIdsLookUp;
         }
-        public TypeConverter GetCurrentUnitConverter(string fieldDataName)
+        //
+        public TypeConverter GetFieldUnitConverter(string fieldDataName, string componentName)
         {
-            GetCurrentUnitConverterAndAbbrevation(fieldDataName, out TypeConverter unitConverter, out string unitAbbreviation);
+            GetFieldUnitConverterAndAbbrevation(fieldDataName, componentName, out TypeConverter unitConverter,
+                                                  out string unitAbbreviation);
             return unitConverter;
         }
-        public string GetCurrentUnitAbbrevation(string fieldDataName)
+        public string GetFieldUnitAbbrevation(string fieldDataName, string componentName)
         {
-            GetCurrentUnitConverterAndAbbrevation(fieldDataName, out TypeConverter unitConverter, out string unitAbbreviation);
+            GetFieldUnitConverterAndAbbrevation(fieldDataName, componentName, out TypeConverter unitConverter,
+                                                  out string unitAbbreviation);
             return unitAbbreviation;
         }
-        public void GetCurrentUnitConverterAndAbbrevation(string fieldDataName, out TypeConverter unitConverter,
+        public void GetFieldUnitConverterAndAbbrevation(string fieldDataName, string componentName, out TypeConverter unitConverter,
+                                                        out string unitAbbreviation)
+        {
+            unitConverter = new DoubleConverter();
+            unitAbbreviation = "?";
+            try
+            {
+                switch (fieldDataName.ToUpper())
+                {
+                    case "DISP":
+                        unitConverter = new StringLengthConverter();
+                        unitAbbreviation = _unitSystem.LengthUnitAbbreviation;
+                        break;
+                    case "STRESS":
+                    case "ZZSTR":
+                        unitConverter = new StringPressureConverter();
+                        unitAbbreviation = _unitSystem.PressureUnitAbbreviation;
+                        break;
+                    case "TOSTRAIN": 
+                    case "MESTRAIN":
+                    case "PE":
+                        unitConverter = new DoubleConverter();
+                        unitAbbreviation = "/";
+                        break;
+                    case "FORC":
+                        unitConverter = new StringForceConverter();
+                        unitAbbreviation = _unitSystem.ForceUnitAbbreviation;
+                        break;
+                    case "ENER":
+                        unitConverter = new StringEnergyPerVolumeConverter();
+                        unitAbbreviation = _unitSystem.EnergyPerVolumeUnitAbbreviation;
+                        break;
+                    case "ERROR":
+                        unitConverter = new DoubleConverter();
+                        unitAbbreviation = "%";
+                        break;
+                    case "CONTACT":
+                        {
+                            switch (componentName.ToUpper())
+                            {
+                                case "COPEN":
+                                case "CSLIP1":
+                                case "CSLIP2":
+                                    unitConverter = new StringLengthConverter();
+                                    unitAbbreviation = _unitSystem.LengthUnitAbbreviation;
+                                    break;
+                                case "CPRESS":
+                                case "CSHEAR1":
+                                case "CSHEAR2":
+                                    unitConverter = new StringPressureConverter();
+                                    unitAbbreviation = _unitSystem.PressureUnitAbbreviation;
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                        break;
+                    default:
+                        throw new NotSupportedException();
+                }
+            }
+            catch
+            {
+            }
+        }
+        //
+        public TypeConverter GetHistoryUnitConverter(string fieldName, string componentName)
+        {
+            GetHistoryUnitConverterAndAbbrevation(fieldName, componentName, out TypeConverter unitConverter,
+                                                  out string unitAbbreviation);
+            return unitConverter;
+        }
+        public string GetHistoryUnitAbbrevation(string fieldName, string componentName)
+        {
+            GetHistoryUnitConverterAndAbbrevation(fieldName, componentName, out TypeConverter unitConverter,
+                                                  out string unitAbbreviation);
+            return unitAbbreviation;
+        }
+        public void GetHistoryUnitConverterAndAbbrevation(string fieldName, string componentName, out TypeConverter unitConverter,
                                                           out string unitAbbreviation)
         {
-            switch (fieldDataName)
+            unitConverter = new DoubleConverter();
+            unitAbbreviation = "?";
+            try
             {
-                case "DISP":
-                    unitConverter = new StringLengthConverter();
-                    unitAbbreviation = _unitSystem.LengthUnitAbbreviation;
-                    break;
-                case "STRESS":
-                    unitConverter = new StringPressureConverter();
-                    unitAbbreviation = _unitSystem.PressureUnitAbbreviation;
-                    break;
-                case "TOSTRAIN":
-                    unitConverter = new DoubleConverter();
-                    unitAbbreviation = "/";
-                    break;
-                case "FORC":
-                    unitConverter = new StringForceConverter();
-                    unitAbbreviation = _unitSystem.ForceUnitAbbreviation;
-                    break;
-                case "ERROR":
-                    unitConverter = new DoubleConverter();
-                    unitAbbreviation = "%";
-                    break;
-                default:
-                    throw new NotSupportedException();
+                switch (fieldName.ToUpper())
+                {
+                    case "TIME":
+                        unitConverter = new StringTimeConverter();
+                        unitAbbreviation = _unitSystem.TimeUnitAbbreviation;
+                        break;
+                    case "DISPLACEMENTS":
+                    case "RELATIVE CONTACT DISPLACEMENT":
+                    case "CENTER OF GRAVITY CG":
+                    case "MEAN SURFACE NORMAL":
+                        unitConverter = new StringLengthConverter();
+                        unitAbbreviation = _unitSystem.LengthUnitAbbreviation;
+                        break;
+                    case "SURFACE AREA":
+                        unitConverter = new StringAreaConverter();
+                        unitAbbreviation = _unitSystem.AreaUnitAbbreviation;
+                        break;
+                    case "VOLUME":
+                    case "TOTAL VOLUME":
+                        unitConverter = new StringVolumeConverter();
+                        unitAbbreviation = _unitSystem.VolumeUnitAbbreviation;
+                        break;
+                    case "FORCES":
+                    case "TOTAL FORCE":
+                    case "NORMAL SURFACE FORCE":
+                    case "SHEAR SURFACE FORCE":
+                    case "TOTAL SURFACE FORCE":
+                        unitConverter = new StringForceConverter();
+                        unitAbbreviation = _unitSystem.ForceUnitAbbreviation;
+                        break;
+                    case "STRESSES":
+                    case "CONTACT STRESS":
+                        unitConverter = new StringPressureConverter();
+                        unitAbbreviation = _unitSystem.PressureUnitAbbreviation;
+                        break;
+                    case "STRAINS":
+                    case "MECHANICAL STRAINS":
+                    case "EQUIVALENT PLASTIC STRAIN":
+                        unitConverter = new DoubleConverter();
+                        unitAbbreviation = "/";
+                        break;
+                    case "INTERNAL ENERGY":
+                    case "TOTAL INTERNAL ENERGY":
+                    case "CONTACT PRINT ENERGY":
+                        unitConverter = new StringEnergyConverter();
+                        unitAbbreviation = _unitSystem.EnergyUnitAbbreviation;
+                        break;
+                    case "INTERNAL ENERGY DENSITY":
+                        unitConverter = new StringEnergyPerVolumeConverter();
+                        unitAbbreviation = _unitSystem.EnergyPerVolumeUnitAbbreviation;
+                        break;
+                    case "TOTAL NUMBER OF CONTACT ELEMENTS":
+                        unitConverter = new DoubleConverter();
+                        unitAbbreviation = "/";
+                        break;
+                    case "MOMENT ABOUT ORIGIN":
+                    case "MOMENT ABOUT CG":
+                        unitConverter = new StringMomentConverter();
+                        unitAbbreviation = _unitSystem.MomentUnitAbbreviation;
+                        break;
+                    case "ERROR":
+                        unitConverter = new DoubleConverter();
+                        unitAbbreviation = "?";
+                        break;
+                    default:
+                        break;
+                }
+            }
+            catch
+            {
             }
         }
         //

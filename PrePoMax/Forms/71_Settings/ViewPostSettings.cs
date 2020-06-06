@@ -22,6 +22,7 @@ namespace PrePoMax.Settings
         [CategoryAttribute("Deformation")]
         [OrderedDisplayName(0, 10, "Deformation scale factor")]
         [DescriptionAttribute("Select the deformation scale factor type.")]
+        [Id(1, 1)]
         public DeformationScaleFactorType DeformationScaleFactorType
         {
             get { return _postSettings.DeformationScaleFactorType; }
@@ -60,6 +61,7 @@ namespace PrePoMax.Settings
         [CategoryAttribute("Deformation")]
         [OrderedDisplayName(1, 10, "Value")]
         [DescriptionAttribute("Select the deformation scale factor value.")]
+        [Id(2, 1)]
         public double DeformationScaleFactorValue 
         { 
             get { return _postSettings.DeformationScaleFactorValue; } 
@@ -73,6 +75,7 @@ namespace PrePoMax.Settings
         [CategoryAttribute("Deformation")]
         [OrderedDisplayName(2, 10, "Draw undeformed model")]
         [DescriptionAttribute("Draw undeformed model.")]
+        [Id(3, 1)]
         public bool DrawUndeformedModel
         {
             get { return _postSettings.DrawUndeformedModel; }
@@ -90,6 +93,7 @@ namespace PrePoMax.Settings
         [OrderedDisplayName(3, 10, "Undeformed model color")]
         [DescriptionAttribute("Set the color of the undeformed model.")]
         [Editor(typeof(UserControls.ColorEditorEx), typeof(UITypeEditor))]
+        [Id(4, 1)]
         public System.Drawing.Color UndeformedModelColor
         {
             get { return _postSettings.UndeformedModelColor; } 
@@ -99,6 +103,7 @@ namespace PrePoMax.Settings
         [CategoryAttribute("Limit values")]
         [OrderedDisplayName(0, 10, "Show max value location")]
         [DescriptionAttribute("Show max value location.")]
+        [Id(1, 2)]
         public bool ShowMaxValueLocation
         {
             get { return _postSettings.ShowMaxValueLocation; }
@@ -108,10 +113,21 @@ namespace PrePoMax.Settings
         [CategoryAttribute("Limit values")]
         [OrderedDisplayName(1, 10, "Show min value location")]
         [DescriptionAttribute("Show min value location.")]
+        [Id(2, 2)]
         public bool ShowMinValueLocation
         {
             get { return _postSettings.ShowMinValueLocation; }
             set { _postSettings.ShowMinValueLocation = value; }
+        }
+        // History output
+        [CategoryAttribute("History output")]
+        [OrderedDisplayName(0, 10, "Max history output entries")]
+        [DescriptionAttribute("Enter the maximum number of the history outputs entries to show.")]
+        [Id(1, 3)]
+        public int MaxHistoryEntriesToShow
+        {
+            get { return _postSettings.MaxHistoryEntriesToShow; }
+            set { _postSettings.MaxHistoryEntriesToShow = value; }
         }
 
 

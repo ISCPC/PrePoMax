@@ -31,12 +31,6 @@ namespace PrePoMax
 
 
         // Event handlers                                                                                                           
-        private void FrmHistoryOutput_Load(object sender, EventArgs e)
-        {
-        }
-        private void FrmHistoryOutput_VisibleChanged(object sender, EventArgs e)
-        {
-        }
         private void FrmHistoryOutput_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (e.CloseReason == CloseReason.UserClosing)
@@ -57,26 +51,27 @@ namespace PrePoMax
         public void SetData(string[] columnNames, object[][] rowBasedData)
         {
             if (rowBasedData.Length <= 0) return;
-
+            //
             dgvHistory.Rows.Clear();
             dgvHistory.Columns.Clear();
-
+            //
             DataGridViewTextBoxCell cell;
             cell = new DataGridViewTextBoxCell();
             DataGridViewColumn column;
-            int maxNumCol = 100;
-
+            int maxNumCol = _controller.Settings.Post.MaxHistoryEntriesToShow;
+            //
             if (columnNames.Length > maxNumCol)
             {
                 MessageBox.Show("Only first " + maxNumCol + " columns of " + columnNames.Length
                                 + " will be displayed.", "Warning", MessageBoxButtons.OK);
             }
-
+            //
             for (int i = 0; i < Math.Min(columnNames.Length, maxNumCol); i++)
             {
                 column = new DataGridViewColumn(cell);
                 column.HeaderText = columnNames[i];
                 column.FillWeight = 1;
+                column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
                 //column.CellType = typeof(double);
                 dgvHistory.Columns.Add(column);
             }

@@ -378,7 +378,7 @@ namespace CaeResults
                                 // relative contact displacement (slave element+face,normal,tang1,tang2) for all contact elements and time 0.1000000E+01
                                 //     84102          4 -1.111983E-07 -2.300226E-07  1.142343E-07
                                 lines[0] = lines[0].Replace("(slave element+face,normal,tang1,tang2)",
-                                                            "(Id,Int.Pnt.,Normal,Tang1,Tang2)");
+                                                            "(Id,Int.Pnt.,NORMAL,TANG1,TANG2)");
                                 lines[0] = lines[0].Replace("for all contact elements", "for set ALL_CONTACT_ELEMENTS");
                             }
                             else if (name == nameContactStress)
@@ -386,21 +386,21 @@ namespace CaeResults
                                 // contact stress (slave element+face,press,tang1,tang2) for all contact elements and time 0.5000000E+00
                                 //     97837          4  9.511105E-01 -2.082501E-01 -2.605988E-02
                                 lines[0] = lines[0].Replace("(slave element+face,press,tang1,tang2)",
-                                                            "(Id,Int.Pnt.,Press,Tang1,Tang2)");
+                                                            "(Id,Int.Pnt.,PRESS,TANG1,TANG2)");
                                 lines[0] = lines[0].Replace("for all contact elements", "for set ALL_CONTACT_ELEMENTS");
                             }
                             else if (name == nameContactPrintEnergy)
                             {
                                 // contact print energy (slave element+face,energy)for all contact elements and time 0.5000000E+00
                                 //     98823          4  6.898953E-06
-                                lines[0] = lines[0].Replace("(slave element+face,energy)for", "(Id,Int.Pnt.,Energy) for");
+                                lines[0] = lines[0].Replace("(slave element+face,energy)for", "(Id,Int.Pnt.,ENERGY) for");
                                 lines[0] = lines[0].Replace("for all contact elements", "for set ALL_CONTACT_ELEMENTS");
                             }
                             else if (name == nameTotalNumberOfContactElements)
                             {
                                 // total number of contact elements for time  0.5000000E+00
                                 // 560
-                                lines[0] = lines[0].Replace("elements for time", "elements (Num) for set ALL_CONTACT_ELEMENTS and time");
+                                lines[0] = lines[0].Replace("elements for time", "elements (NUM) for set ALL_CONTACT_ELEMENTS and time");
                             }
                         }
                     }

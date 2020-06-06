@@ -28,7 +28,9 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.dgvHistory = new UserControls.DataGridViewCopyPaste();
             this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -69,12 +71,24 @@
             this.Column1,
             this.Column2,
             this.Column3});
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvHistory.DefaultCellStyle = dataGridViewCellStyle2;
+            this.dgvHistory.EnableCutMenu = true;
+            this.dgvHistory.EnablePasteMenu = true;
             this.dgvHistory.Location = new System.Drawing.Point(6, 22);
             this.dgvHistory.Name = "dgvHistory";
             this.dgvHistory.ReadOnly = true;
             this.dgvHistory.RowHeadersVisible = false;
             this.dgvHistory.Size = new System.Drawing.Size(248, 480);
+            this.dgvHistory.StartPlotAtZero = false;
             this.dgvHistory.TabIndex = 0;
+            this.dgvHistory.XColIndex = 0;
             // 
             // Column1
             // 
@@ -122,8 +136,6 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "History output";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmHistoryOutput_FormClosing);
-            this.Load += new System.EventHandler(this.FrmHistoryOutput_Load);
-            this.VisibleChanged += new System.EventHandler(this.FrmHistoryOutput_VisibleChanged);
             this.groupBox3.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dgvHistory)).EndInit();
             this.ResumeLayout(false);

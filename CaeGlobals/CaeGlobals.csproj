@@ -129,8 +129,11 @@
     <Compile Include="UnitSystem\StringAreaConverter.cs" />
     <Compile Include="UnitSystem\StringDensityConverter.cs" />
     <Compile Include="UnitSystem\StringForceConverter.cs" />
+    <Compile Include="UnitSystem\StringEnergyPerVolumeConverter.cs" />
     <Compile Include="UnitSystem\StringForcePerVolumeConverter.cs" />
     <Compile Include="UnitSystem\StringForcePerVolumeDefaultConverter.cs" />
+    <Compile Include="UnitSystem\StringEnergyConverter.cs" />
+    <Compile Include="UnitSystem\StringVolumeConverter.cs" />
     <Compile Include="UnitSystem\StringLengthConverter.cs" />
     <Compile Include="UnitSystem\StringLengthDefaultConverter.cs" />
     <Compile Include="UnitSystem\StringLengthDOFConverter.cs" />

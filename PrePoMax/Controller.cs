@@ -175,11 +175,11 @@ namespace PrePoMax
         }
         public TypeConverter GetCurrentResultsUnitConverter()
         {
-            return _results.GetCurrentUnitConverter(CurrentFieldData.Name);
+            return _results.GetFieldUnitConverter(CurrentFieldData.Name, CurrentFieldData.Component);
         }
         public string GetCurrentResultsUnitAbbreviation()
         {
-            return _results.GetCurrentUnitAbbrevation(CurrentFieldData.Name);
+            return _results.GetFieldUnitAbbrevation(CurrentFieldData.Name, CurrentFieldData.Component);
         }
         // History
         public string GetHistoryFileName()
@@ -4657,41 +4657,51 @@ namespace PrePoMax
             HistoryResultSet set = _history.Sets[historyData.SetName];
             HistoryResultField field = set.Fields[historyData.FieldName];
             HistoryResultComponent component = field.Components[historyData.ComponentName];
-
-            int numCol = component.Entries.Count + 1; // +1 for the time column
-            int numRow = component.Entries.First().Value.Time.Count;
-            columnNames = new string[numCol];
-            rowBasedData = new object[numRow][];
-
-            // Create rows
-            for (int i = 0; i < numRow; i++) rowBasedData[i] = new object[numCol];
-
-            // Add time column
-            int col = 0;
-            int row = 0;
-            columnNames[col] = "Time";
-            foreach (var time in component.Entries.First().Value.Time)
-            {
-                rowBasedData[row][0] = time;
-                row++;
-            }
-
-            // Add data column
-            col = 1;
+            string unit = "\n[" + _results.GetHistoryUnitAbbrevation(field.Name, component.Name) + "]";
+            string timeUnit = "\n[" + _results.GetHistoryUnitAbbrevation("Time", null) + "]";
+            // Collect all time points
+            HashSet<double> timePointsHash = new HashSet<double>();
             foreach (var entry in component.Entries)
             {
-                columnNames[col] = entry.Key;
-
+                foreach (var time in entry.Value.Time) timePointsHash.Add(time);
+            }
+            // Sort time points
+            double[] sortedTime = timePointsHash.ToArray();
+            Array.Sort(sortedTime);
+            // Create a map of time point vs column id
+            Dictionary<double, int> timeRowId = new Dictionary<double, int>();
+            for (int i = 0; i < sortedTime.Length; i++) timeRowId.Add(sortedTime[i], i);
+            // Create the data array
+            int numRow = sortedTime.Length;
+            int numCol = component.Entries.Count + 1; // +1 for the time column
+            columnNames = new string[numCol];
+            rowBasedData = new object[numRow][];
+            // Create rows
+            for (int i = 0; i < numRow; i++) rowBasedData[i] = new object[numCol];
+            // Add time column name
+            columnNames[0] = "Time" + timeUnit;            
+            // Fill the data array
+            for (int i = 0; i < sortedTime.Length; i++) rowBasedData[i][0] = sortedTime[i];
+            // Add data column
+            //
+            int col = 1;
+            int row;
+            double[] timePoints;
+            double[] values;
+            foreach (var entry in component.Entries)
+            {
+                columnNames[col] = entry.Key + unit;
+                //
                 row = 0;
-                foreach (var value in entry.Value.Values)
+                timePoints = entry.Value.Time.ToArray();
+                values = entry.Value.Values.ToArray();
+                for (int i = 0; i < timePoints.Length; i++)
                 {
-                    rowBasedData[row][col] = value;
-                    row++;
+                    row = timeRowId[timePoints[i]];
+                    rowBasedData[row][col] = values[i];
                 }
                 col++;
             }
-
-
         }        
         #endregion #################################################################################################################
 

@@ -43,14 +43,6 @@ namespace vtkControl
             _animationScaleFactor = -1;
             _deformationScaleFactor = 1;
             _fieldType = DataFieldType.Static;
-            // Text property
-            //vtkTextProperty textProperty = vtkTextProperty.New();
-            //textProperty.SetFontFamilyToArial();
-            //textProperty.SetFontSize(16);
-            //textProperty.SetColor(0, 0, 0);
-            //textProperty.SetLineOffset(-Math.Round(textProperty.GetFontSize() / 5.0));
-            //textProperty.SetLineSpacing(1.2);
-            //this.SetTextProperty(textProperty);
         }
 
 

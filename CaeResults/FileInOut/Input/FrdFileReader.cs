@@ -26,6 +26,13 @@ namespace CaeResults
             { "SYZ", "S23"},
             { "SZX", "S13"},
             //
+            { "MEXX", "ME11"},
+            { "MEYY", "ME22"},
+            { "MEZZ", "ME33"},
+            { "MEXY", "ME12"},
+            { "MEYZ", "ME23"},
+            { "MEZX", "ME13"},
+            //
             //
             { "EXX", "E11"},
             { "EYY", "E22"},

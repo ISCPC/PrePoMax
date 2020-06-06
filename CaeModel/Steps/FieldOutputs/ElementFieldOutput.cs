@@ -12,12 +12,13 @@ namespace CaeModel
     public enum ElementFieldVariable
     {
         // Must start at 1 for the UI to work
-        E = 1,
-        PEEQ = 2,
-        S = 4,
-        ENER = 8,
-        ERR = 16,
-        ZZS = 32
+        S = 1,
+        E = 2,
+        ME = 4,
+        PEEQ = 8,
+        ENER = 16,
+        ERR = 32,
+        ZZS = 64
     }
 
     [Serializable]
