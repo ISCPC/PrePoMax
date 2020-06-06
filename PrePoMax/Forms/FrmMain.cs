@@ -3520,9 +3520,12 @@ namespace PrePoMax
         {
             try
             {
-                if (GetCurrentView() == ViewGeometryModelResults.Geometry ||
+                if (System.Diagnostics.Debugger.IsAttached)
+                {
+                    if (GetCurrentView() == ViewGeometryModelResults.Geometry ||
                     GetCurrentView() == ViewGeometryModelResults.Model) SelectModelUnitSystem();
-                else SelectResultsUnitSystem();
+                    else SelectResultsUnitSystem();
+                }
             }
             catch (Exception ex)
             {
