@@ -60,12 +60,20 @@ namespace PrePoMax
         public int SymbolSize
         {
             get { return _symbolSize; }
-            set { _symbolSize = value; }
+            set 
+            {
+                _symbolSize = value;
+                if (_symbolSize < 1) _symbolSize = 1;
+            }
         }
         public int NodeSymbolSize
         {
             get { return _nodeSymbolSize; }
-            set { _nodeSymbolSize = value; }
+            set
+            {
+                _nodeSymbolSize = value;
+                if (_nodeSymbolSize < 1) _nodeSymbolSize = 1;
+            }
         }
         public bool DrawSymbolEdges
         {

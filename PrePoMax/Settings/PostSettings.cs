@@ -83,7 +83,15 @@ namespace PrePoMax
         }
         public bool ShowMinValueLocation { get { return _showMinValueLocation; } set { _showMinValueLocation = value; } }
         public bool ShowMaxValueLocation { get { return _showMaxValueLocation; } set { _showMaxValueLocation = value; } }
-        public int MaxHistoryEntriesToShow { get { return _maxHistoryEntriesToShow; } set { _maxHistoryEntriesToShow = value; } }
+        public int MaxHistoryEntriesToShow
+        {
+            get { return _maxHistoryEntriesToShow; }
+            set
+            {
+                _maxHistoryEntriesToShow = value;
+                if (_maxHistoryEntriesToShow < 1) _maxHistoryEntriesToShow = 1;
+            } 
+        }
 
 
         // Constructors                                                                                                             

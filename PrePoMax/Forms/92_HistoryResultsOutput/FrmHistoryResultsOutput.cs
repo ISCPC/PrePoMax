@@ -59,14 +59,17 @@ namespace PrePoMax
             cell = new DataGridViewTextBoxCell();
             DataGridViewColumn column;
             int maxNumCol = _controller.Settings.Post.MaxHistoryEntriesToShow;
+            if (maxNumCol < 1)
+                throw new NotSupportedException("The maximum number of history output entries to show is too small." +
+                                                " Use Tools -> Settings to increase it.");
             //
-            if (columnNames.Length > maxNumCol)
+            if (columnNames.Length > maxNumCol + 1)
             {
                 MessageBox.Show("Only first " + maxNumCol + " columns of " + columnNames.Length
                                 + " will be displayed.", "Warning", MessageBoxButtons.OK);
             }
             //
-            for (int i = 0; i < Math.Min(columnNames.Length, maxNumCol); i++)
+            for (int i = 0; i < Math.Min(columnNames.Length, maxNumCol + 1); i++)
             {
                 column = new DataGridViewColumn(cell);
                 column.HeaderText = columnNames[i];
