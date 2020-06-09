@@ -29,15 +29,6 @@ By Martin:
 4) Refernece point on surface ceners and between two points and in the center of three points
 
 
-
-By Sergio:
-10. 7. 2020
-2) Add a legend for colors of BC, Load symbols
-3) Use the .pmx folder for all calculations
-4) Units
-
-
-
 By Martin:
 7. 7. 2019
 3) support for smart naming - ANSYS "rename based on definition".
@@ -75,6 +66,19 @@ Old
 
 
 By Sergio:
+8. 6. 2020
+- in the material definition, support for themal expansion coefficient and conductivity
+- in options, a way to setup the default unit sistem
+- can be added an option to sort alphabetically the material library
+- can be added more buttons to the main toolbar for the queries (node, element, measure...)
+- on posprocessing, a new option to select a node and plot the displayed result along the time for no lineal cases
+- for displacement history output, the label of the column and plot, should be Ux Node XXXX and not only the node number
+
+
+10. 7. 2020
+- add a legend for colors of BC, Load symbols
+
+
 
 24.8.2018
 - tabular amplitude definitions
@@ -83,7 +87,6 @@ By Sergio:
 30.7.2018
 - sorting of part names, set names :- this is not possible using current user keywords positioning system with indices
 - analysis should be run in a separate folder with the analysis name; 
-- option to use pmx file folder as working folder
 
 24.6.2018
 - renaming of parts on the treeview with the F2 shortcut
@@ -165,6 +168,7 @@ Dependency nglib - added following files for c++ redistriburable compatibility:
 Done
 
 Version 0.8.0 Master branch
+Added support for units/unit system
 Added support for Duplicate of Materials, Surface Interactions and Steps
 Added support for legend background and border
 Added support for status block background and border
