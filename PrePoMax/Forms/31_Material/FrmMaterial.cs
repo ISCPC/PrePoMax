@@ -279,7 +279,7 @@ namespace PrePoMax.Forms
         public void Add()
         {
             if ((_materialToEditName == null && _materialNames.Contains(tbName.Text)) ||            // create
-                    (tbName.Text != _materialToEditName && _materialNames.Contains(tbName.Text)))       // edit
+                    (tbName.Text != _materialToEditName && _materialNames.Contains(tbName.Text)))   // edit
                 throw new CaeGlobals.CaeException("The selected material name already exists.");
             //
             _material = new CaeModel.Material(tbName.Text);

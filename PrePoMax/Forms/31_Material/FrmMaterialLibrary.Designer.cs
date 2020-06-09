@@ -64,6 +64,7 @@
             // 
             // btnDeleteFromModel
             // 
+            this.btnDeleteFromModel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnDeleteFromModel.Location = new System.Drawing.Point(91, 22);
             this.btnDeleteFromModel.Name = "btnDeleteFromModel";
             this.btnDeleteFromModel.Size = new System.Drawing.Size(75, 23);
@@ -143,7 +144,6 @@
             // 
             // btnAddCategory
             // 
-            this.btnAddCategory.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnAddCategory.Location = new System.Drawing.Point(6, 22);
             this.btnAddCategory.Name = "btnAddCategory";
             this.btnAddCategory.Size = new System.Drawing.Size(87, 23);
@@ -202,7 +202,7 @@
             // 
             // btnSave
             // 
-            this.btnSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnSave.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.btnSave.Location = new System.Drawing.Point(20, 326);
             this.btnSave.Name = "btnSave";
