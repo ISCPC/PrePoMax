@@ -251,6 +251,7 @@
             this.tsmiHomePage = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiAbout = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiTest = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiAdvisor = new System.Windows.Forms.ToolStripMenuItem();
             this.panelControl = new System.Windows.Forms.Panel();
             this.statusStripMain = new System.Windows.Forms.StatusStrip();
             this.tspbProgress = new System.Windows.Forms.ToolStripProgressBar();
@@ -347,7 +348,7 @@
             this.tsmiHelp});
             this.menuStripMain.Location = new System.Drawing.Point(0, 0);
             this.menuStripMain.Name = "menuStripMain";
-            this.menuStripMain.Size = new System.Drawing.Size(1451, 24);
+            this.menuStripMain.Size = new System.Drawing.Size(1502, 24);
             this.menuStripMain.TabIndex = 0;
             this.menuStripMain.Text = "menuStripMain";
             // 
@@ -2049,7 +2050,8 @@
             this.tsmiHelp.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmiHomePage,
             this.tsmiAbout,
-            this.tsmiTest});
+            this.tsmiTest,
+            this.tsmiAdvisor});
             this.tsmiHelp.Name = "tsmiHelp";
             this.tsmiHelp.Size = new System.Drawing.Size(44, 20);
             this.tsmiHelp.Text = "Help";
@@ -2057,23 +2059,30 @@
             // tsmiHomePage
             // 
             this.tsmiHomePage.Name = "tsmiHomePage";
-            this.tsmiHomePage.Size = new System.Drawing.Size(136, 22);
+            this.tsmiHomePage.Size = new System.Drawing.Size(180, 22);
             this.tsmiHomePage.Text = "Home Page";
             this.tsmiHomePage.Click += new System.EventHandler(this.tsmiHomePage_Click);
             // 
             // tsmiAbout
             // 
             this.tsmiAbout.Name = "tsmiAbout";
-            this.tsmiAbout.Size = new System.Drawing.Size(136, 22);
+            this.tsmiAbout.Size = new System.Drawing.Size(180, 22);
             this.tsmiAbout.Text = "About";
             this.tsmiAbout.Click += new System.EventHandler(this.tsmiAbout_Click);
             // 
             // tsmiTest
             // 
             this.tsmiTest.Name = "tsmiTest";
-            this.tsmiTest.Size = new System.Drawing.Size(136, 22);
+            this.tsmiTest.Size = new System.Drawing.Size(180, 22);
             this.tsmiTest.Text = "Test";
             this.tsmiTest.Click += new System.EventHandler(this.tsmiTest_Click);
+            // 
+            // tsmiWizard
+            // 
+            this.tsmiAdvisor.Name = "tsmiAdvisor";
+            this.tsmiAdvisor.Size = new System.Drawing.Size(180, 22);
+            this.tsmiAdvisor.Text = "Advisor";
+            this.tsmiAdvisor.Click += new System.EventHandler(this.tsmiAdvisor_Click);
             // 
             // panelControl
             // 
@@ -2081,7 +2090,7 @@
             this.panelControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelControl.Location = new System.Drawing.Point(0, 0);
             this.panelControl.Name = "panelControl";
-            this.panelControl.Size = new System.Drawing.Size(1191, 677);
+            this.panelControl.Size = new System.Drawing.Size(1242, 662);
             this.panelControl.TabIndex = 1;
             // 
             // statusStripMain
@@ -2092,9 +2101,9 @@
             this.tsslCancel,
             this.tsslEmpty,
             this.tsslUnitSystem});
-            this.statusStripMain.Location = new System.Drawing.Point(0, 863);
+            this.statusStripMain.Location = new System.Drawing.Point(0, 821);
             this.statusStripMain.Name = "statusStripMain";
-            this.statusStripMain.Size = new System.Drawing.Size(1451, 24);
+            this.statusStripMain.Size = new System.Drawing.Size(1502, 24);
             this.statusStripMain.TabIndex = 2;
             this.statusStripMain.Text = "statusStrip1";
             // 
@@ -2130,7 +2139,7 @@
             // tsslEmpty
             // 
             this.tsslEmpty.Name = "tsslEmpty";
-            this.tsslEmpty.Size = new System.Drawing.Size(1115, 19);
+            this.tsslEmpty.Size = new System.Drawing.Size(1166, 19);
             this.tsslEmpty.Spring = true;
             this.tsslEmpty.Text = " ";
             // 
@@ -2276,13 +2285,13 @@
             // toolStripContainer1.ContentPanel
             // 
             this.toolStripContainer1.ContentPanel.Controls.Add(this.splitContainer1);
-            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(1451, 789);
+            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(1502, 747);
             this.toolStripContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.toolStripContainer1.LeftToolStripPanelVisible = false;
             this.toolStripContainer1.Location = new System.Drawing.Point(0, 24);
             this.toolStripContainer1.Name = "toolStripContainer1";
             this.toolStripContainer1.RightToolStripPanelVisible = false;
-            this.toolStripContainer1.Size = new System.Drawing.Size(1451, 839);
+            this.toolStripContainer1.Size = new System.Drawing.Size(1502, 797);
             this.toolStripContainer1.TabIndex = 4;
             this.toolStripContainer1.Text = "toolStripContainer";
             // 
@@ -2304,7 +2313,7 @@
             // 
             this.splitContainer1.Panel2.Controls.Add(this.splitContainer2);
             this.splitContainer1.Panel2MinSize = 250;
-            this.splitContainer1.Size = new System.Drawing.Size(1451, 789);
+            this.splitContainer1.Size = new System.Drawing.Size(1502, 747);
             this.splitContainer1.SplitterDistance = 256;
             this.splitContainer1.TabIndex = 2;
             // 
@@ -2323,8 +2332,8 @@
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.Controls.Add(this.tbOutput);
-            this.splitContainer2.Size = new System.Drawing.Size(1191, 789);
-            this.splitContainer2.SplitterDistance = 677;
+            this.splitContainer2.Size = new System.Drawing.Size(1242, 747);
+            this.splitContainer2.SplitterDistance = 662;
             this.splitContainer2.TabIndex = 2;
             // 
             // tbOutput
@@ -2337,7 +2346,7 @@
             this.tbOutput.Name = "tbOutput";
             this.tbOutput.ReadOnly = true;
             this.tbOutput.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.tbOutput.Size = new System.Drawing.Size(1191, 108);
+            this.tbOutput.Size = new System.Drawing.Size(1242, 81);
             this.tbOutput.TabIndex = 0;
             this.tbOutput.Text = "Output text box";
             // 
@@ -2667,14 +2676,14 @@
             // FrmMain
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
-            this.ClientSize = new System.Drawing.Size(1451, 887);
+            this.ClientSize = new System.Drawing.Size(1502, 845);
             this.Controls.Add(this.toolStripContainer1);
             this.Controls.Add(this.statusStripMain);
             this.Controls.Add(this.menuStripMain);
             this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStripMain;
-            this.MinimumSize = new System.Drawing.Size(900, 600);
+            this.MinimumSize = new System.Drawing.Size(600, 400);
             this.Name = "FrmMain";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "PrePoMax";
@@ -2995,6 +3004,7 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiDuplicateStep;
         private System.Windows.Forms.ToolStripStatusLabel tsslEmpty;
         private System.Windows.Forms.ToolStripStatusLabel tsslUnitSystem;
+        private System.Windows.Forms.ToolStripMenuItem tsmiAdvisor;
     }
 }
 

@@ -11,7 +11,7 @@ using System.Drawing;
 namespace PrePoMax
 {
     [Serializable]
-    public class ViewSubmodel : ViewBoundaryCondition
+    public class ViewSubmodelBC : ViewBoundaryCondition
     {
         // Variables                                                                                                                
         private CaeModel.SubmodelBC _submodel;
@@ -69,7 +69,7 @@ namespace PrePoMax
 
 
         // Constructors                                                                                                             
-        public ViewSubmodel(CaeModel.SubmodelBC submodel)
+        public ViewSubmodelBC(CaeModel.SubmodelBC submodel)
         {
             // the order is important
             _submodel = submodel;

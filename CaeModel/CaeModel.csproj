@@ -73,6 +73,7 @@
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\SurfaceInteraction\CalFriction.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\SurfaceInteraction\CalSurfaceBehavior.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\SurfaceInteraction\CalSurfaceInteraction.cs" />
+    <Compile Include="FileInOut\Output\Calculix\Keywords\Step\BC\CalFixedBC.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\BC\CalSubmodelBC.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\FieldOutput\CalContactFile.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\HistoryOutput\CalContactPrint.cs" />
@@ -80,6 +81,7 @@
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\HistoryOutput\CalNodePrint.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalSubmodel.cs" />
     <Compile Include="ModelProperties.cs" />
+    <Compile Include="Steps\BoundaryConditions\FixedBC.cs" />
     <Compile Include="Steps\BoundaryConditions\SubmodelBC.cs" />
     <Compile Include="Steps\BoundaryConditions\DisplacementRotation.cs" />
     <Compile Include="Steps\BoundaryConditions\BoundaryCondition.cs" />

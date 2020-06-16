@@ -15,6 +15,7 @@ namespace UserControls
     {
         // Variables                                                                                                                
         protected bool _lvTypesSelectedIndexChangedEventActive;
+        protected int _preselectIndex;
 
 
         // Constructors                                                                                                             
@@ -30,8 +31,9 @@ namespace UserControls
             :base(labelRatio)
         {
             InitializeComponent();
-
+            //
             _lvTypesSelectedIndexChangedEventActive = true;
+            _preselectIndex = -1;
         }
 
 
@@ -59,14 +61,32 @@ namespace UserControls
         {
             propertyGrid.Select();
         }
-        
-        
+
+
         // Methods                                                                                                                  
+        public override bool PrepareForm(string stepName, string itemToEditName)
+        {
+            bool result = OnPrepareForm(stepName, itemToEditName);
+            //
+            if (_preselectIndex >= 0 && _preselectIndex < lvTypes.Items.Count)
+            {
+                lvTypes.Items[_preselectIndex].Selected = true;
+                lvTypes.Enabled = false;
+                _preselectIndex = -1;
+            }
+            else lvTypes.Enabled = true;
+            //
+            return result;
+        }
         protected virtual void OnListViewTypeSelectedIndexChanged()
         {
 
         }
-
+        public void PreselectListViewItem(int index)
+        {
+            _preselectIndex = index;
+        }
+       
         
     }
 }

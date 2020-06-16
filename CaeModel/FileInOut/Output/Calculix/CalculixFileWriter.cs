@@ -625,7 +625,15 @@ namespace FileInOut.Output
         {
             if (model.Mesh != null)
             {
-                if (boundaryCondition is DisplacementRotation dispRot)
+                if (boundaryCondition is FixedBC fix)
+                {
+                    string nodeSetNameOfSurface = null;
+                    if (fix.RegionType == CaeGlobals.RegionTypeEnum.SurfaceName)
+                        nodeSetNameOfSurface = model.Mesh.Surfaces[fix.RegionName].NodeSetName;
+                    CalFixedBC calFixedBC = new CalFixedBC(fix, referencePointsNodeIds, nodeSetNameOfSurface);
+                    parent.AddKeyword(calFixedBC);
+                }
+                else if (boundaryCondition is DisplacementRotation dispRot)
                 {
                     string nodeSetNameOfSurface = null;
                     if (dispRot.RegionType == CaeGlobals.RegionTypeEnum.SurfaceName)

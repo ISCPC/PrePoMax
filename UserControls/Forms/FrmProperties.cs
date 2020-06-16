@@ -141,9 +141,9 @@ namespace UserControls
 
 
         // Methods                                                                                                                  
-        public bool PrepareForm(string stepName, string sectionToEditName)
+        public virtual bool PrepareForm(string stepName, string itemToEditName)
         {
-            return OnPrepareForm(stepName, sectionToEditName);
+            return OnPrepareForm(stepName, itemToEditName);
         }
         //
         protected virtual void OnHideOrClose()

@@ -157,7 +157,7 @@ namespace CaeGlobals
             if (name == null) throw new CaeGlobals.CaeException("The name can not be null.");
             if (name == "") throw new CaeGlobals.CaeException("The name can not be an empty string.");
             if (name.Contains(' ')) throw new CaeGlobals.CaeException("The name can not contain space characters: '" + name + "'.");
-            if (Char.IsDigit(name[0])) throw new CaeGlobals.CaeException("The name can not start with a digit: '" + name + "'.");
+            //if (Char.IsDigit(name[0])) throw new CaeGlobals.CaeException("The name can not start with a digit: '" + name + "'.");
             if (name == "Missing") throw new CaeGlobals.CaeException("The name 'Missing' is a reserved name.");
 
             char c;

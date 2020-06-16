@@ -284,7 +284,14 @@ namespace CaeModel
                 foreach (var bcEntry in step.BoundaryConditions)
                 {
                     bc = bcEntry.Value;
-                    if (bc is DisplacementRotation dr)
+                    if (bc is FixedBC fix)
+                    {
+                        valid = (fix.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(fix.RegionName))
+                                || (fix.RegionType == RegionTypeEnum.SurfaceName && (_mesh.Surfaces.ContainsValidKey(fix.RegionName)))
+                                || (fix.RegionType == RegionTypeEnum.ReferencePointName
+                                && (_mesh.ReferencePoints.ContainsValidKey(fix.RegionName)));
+                    }
+                    else if (bc is DisplacementRotation dr)
                     {
                         valid = (dr.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(dr.RegionName))
                                 || (dr.RegionType == RegionTypeEnum.SurfaceName && (_mesh.Surfaces.ContainsValidKey(dr.RegionName)))

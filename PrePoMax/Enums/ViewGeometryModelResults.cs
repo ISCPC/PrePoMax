@@ -9,6 +9,4 @@ namespace PrePoMax
         Model,
         Results
     }
-
-   
 }

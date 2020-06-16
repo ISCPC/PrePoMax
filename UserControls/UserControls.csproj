@@ -128,7 +128,7 @@
     <Compile Include="Trees\MultiSelectBufferedTreeView.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Trees\BufferedTreeView.cs">
+    <Compile Include="Trees\DoubleBufferedTreeView.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="MenuStripFocus.cs">
@@ -174,6 +174,19 @@
     <Compile Include="Views\Sections\ViewSolidSection.cs" />
     <Compile Include="Views\Step\ViewStaticStep.cs" />
     <Compile Include="Views\Step\ViewStep.cs" />
+    <Compile Include="AdvisorControl\DoubleBufferedPanel.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="AdvisorControl\AdvisorItemLinkLabel.cs" />
+    <Compile Include="AdvisorControl\AdvisorItemLabel.cs" />
+    <Compile Include="AdvisorControl\AdvisorItem.cs" />
+    <Compile Include="AdvisorControl\AdvisorPage.cs" />
+    <Compile Include="AdvisorControl\AdvisorControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AdvisorControl\AdvisorControl.Designer.cs">
+      <DependentUpon>AdvisorControl.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="DataGridView\DataGridViewCopyPaste.resx">
@@ -207,6 +220,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Trees\CodersLabTreeView.resx">
       <DependentUpon>CodersLabTreeView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdvisorControl\AdvisorControl.resx">
+      <DependentUpon>AdvisorControl.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
@@ -321,6 +337,10 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="License-LGPL.txt" />
+    <None Include="Resources\Close_White.ico" />
+    <None Include="Resources\Close_Red1.ico" />
+    <None Include="Resources\Close_Red.ico" />
+    <None Include="Resources\Close.ico" />
     <None Include="Resources\History_output.ico" />
     <None Include="Resources\Paste.png" />
     <None Include="Resources\Copy.png" />

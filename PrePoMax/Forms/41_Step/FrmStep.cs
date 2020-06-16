@@ -82,7 +82,9 @@ namespace PrePoMax.Forms
         // Overrides                                                                                                                
         protected override void OnListViewTypeSelectedIndexChanged()
         {
-            if (lvTypes.Enabled && lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)
+            //if (lvTypes.Enabled && lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)
+            // Advisor 
+            if (lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)
             {
                 propertyGrid.SelectedObject = lvTypes.SelectedItems[0].Tag;
                 propertyGrid.Select();
@@ -119,36 +121,36 @@ namespace PrePoMax.Forms
         }
         protected override bool OnPrepareForm(string stepName, string stepToEditName)
         {
-            this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
+            // To prevent the call to frmMain.itemForm_VisibleChanged when minimized
+            this.DialogResult = DialogResult.None;      
             this.btnOkAddNew.Visible = stepToEditName == null;
-
+            //
             _propertyItemChanged = true;
             _stepNames = null;
             _stepToEditName = null;
             _viewStep = null;
             lvTypes.Items.Clear();
             propertyGrid.SelectedObject = null;
-
+            //
             _stepNames = _controller.GetStepNames();
             _stepToEditName = stepToEditName;
-
+            //
             if (_stepNames == null)
                 throw new CaeGlobals.CaeException("The step names must be defined first.");
-
+            //
             PopulateListOfSteps();
-
+            //
             if (_stepToEditName == null)
             {
                 lvTypes.Enabled = true;
                 _viewStep = null;
-
+                //
                 if (lvTypes.Items.Count == 1) lvTypes.Items[0].Selected = true;
             }
             else
             {
                 Step = _controller.GetStep(_stepToEditName);    // to clone and set _viewStep
-
-                // select the appropriate load in the list view
+                // Select the appropriate load in the list view
                 foreach (ListViewItem item in lvTypes.Items)
                 {
                     if (item.Tag != null && item.Tag.GetType() == _viewStep.GetType())
@@ -157,22 +159,18 @@ namespace PrePoMax.Forms
                         break;
                     }
                 }
-
+                //
                 lvTypes.Enabled = false;
-
+                //
                 propertyGrid.SelectedObject = _viewStep;
                 propertyGrid.Select();
             }
-
+            //
             return true;
         }
 
 
-        // Methods                                                                                                                  
-        public bool PrepareForm(string stepName, string stepToEditName)
-        {
-            return OnPrepareForm(stepName, stepToEditName);
-        }
+        // Methods                                                                                                                          
         private void PopulateListOfSteps()
         {
             Step newStep = null;

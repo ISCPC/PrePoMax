@@ -189,6 +189,7 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\00_Common\ViewUnitSystem.cs" />
+    <Compile Include="Forms\00_Wizard\AdvisorCreator.cs" />
     <Compile Include="Forms\02_View\FrmSectionView.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -246,6 +247,7 @@
     <Compile Include="Forms\35_ContactPair\ViewContactPair.cs" />
     <Compile Include="Forms\42_HistoryOutput\ViewContactHistoryOutput.cs" />
     <Compile Include="Forms\43_FieldOutput\ViewContactFieldOutput.cs" />
+    <Compile Include="Forms\51_BoundaryConditions\ViewFixedBC.cs" />
     <Compile Include="Forms\71_Settings\ViewCalculixSettings.cs" />
     <Compile Include="Forms\71_Settings\ViewUnitSystemlSettings.cs" />
     <Compile Include="Forms\71_Settings\ViewStatusBlockSettings.cs" />
@@ -262,7 +264,7 @@
     <Compile Include="Forms\42_HistoryOutput\ViewHistoryOutput.cs" />
     <Compile Include="Forms\42_HistoryOutput\ViewElementHistoryOutput.cs" />
     <Compile Include="Forms\42_HistoryOutput\ViewNodalHistoryOutput.cs" />
-    <Compile Include="Forms\51_BoundaryConditions\ViewSubmodel.cs" />
+    <Compile Include="Forms\51_BoundaryConditions\ViewSubmodelBC.cs" />
     <Compile Include="Forms\61_Load\ViewCentrifLoad.cs" />
     <Compile Include="Forms\61_Load\ViewGravityLoad.cs" />
     <Compile Include="Forms\61_Load\ViewPreTensionLoad.cs" />
@@ -448,7 +450,7 @@
     <Compile Include="Settings\ISettings.cs" />
     <Compile Include="Settings\CalculixSettings.cs" />
     <Compile Include="Tools.cs" />
-    <Compile Include="UpdateModelType.cs" />
+    <Compile Include="Enums\UpdateModelType.cs" />
     <EmbeddedResource Include="Forms\00_Common\FrmUnitSystem.resx">
       <DependentUpon>FrmUnitSystem.cs</DependentUpon>
     </EmbeddedResource>

@@ -13,7 +13,7 @@ using CaeGlobals;
 using UserControls;
 using CaeJob;
 using System.Reflection;
-
+using CaeModel;
 
 namespace PrePoMax
 {
@@ -353,13 +353,7 @@ namespace PrePoMax
         private void FrmMain_Shown(object sender, EventArgs e)
         {
             // Set vtk control size
-            _vtk.Location = panelControl.Location;
-            _vtk.Top += 1;
-            _vtk.Left += 1;
-            //
-            _vtk.Size = panelControl.Size;
-            _vtk.Width -= 2;
-            _vtk.Height -= 2;
+            UpdateVtkControlSize();
             //
             _vtk.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
             // Set pass through control for the mouse wheel event
@@ -464,6 +458,17 @@ namespace PrePoMax
                     //form.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
                 }
             }
+        }
+        private void UpdateVtkControlSize()
+        {
+            // Update vtk control size
+            _vtk.Location = panelControl.Location;
+            _vtk.Top += 1;
+            _vtk.Left += 1;
+            //
+            _vtk.Size = panelControl.Size;
+            _vtk.Width -= 2;
+            _vtk.Height -= 2;
         }
         //
         private void itemForm_VisibleChanged(object sender, EventArgs e)
@@ -873,7 +878,7 @@ namespace PrePoMax
 
         #region File menu ##########################################################################################################
 
-        private void tsmiNew_Click(object sender, EventArgs e)
+        internal void tsmiNew_Click(object sender, EventArgs e)
         {
             try
             {
@@ -985,7 +990,7 @@ namespace PrePoMax
             }
             else throw new NotSupportedException();
         }
-        private async void tsmiImportFile_Click(object sender, EventArgs e)
+        internal async void tsmiImportFile_Click(object sender, EventArgs e)
         {
             try
             {
@@ -1600,7 +1605,7 @@ namespace PrePoMax
         #region Geometry ###########################################################################################################
         
         //Geometry part
-        private void tsmiEditGeometryPart_Click(object sender, EventArgs e)
+        internal void tsmiEditGeometryPart_Click(object sender, EventArgs e)
         {
             try
             {
@@ -1814,7 +1819,7 @@ namespace PrePoMax
         #endregion  ################################################################################################################
 
         #region Mesh ###############################################################################################################
-        private void tsmiMeshingParameters_Click(object sender, EventArgs e)
+        internal void tsmiMeshingParameters_Click(object sender, EventArgs e)
         {
             try
             {
@@ -1874,7 +1879,7 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiCreateMesh_Click(object sender, EventArgs e)
+        internal void tsmiCreateMesh_Click(object sender, EventArgs e)
         {
             try
             {
@@ -2614,7 +2619,7 @@ namespace PrePoMax
 
         #region Material menu  #####################################################################################################
 
-        private void tsmiCreateMaterial_Click(object sender, EventArgs e)
+        internal void tsmiCreateMaterial_Click(object sender, EventArgs e)
         {
             try
             {
@@ -2679,7 +2684,7 @@ namespace PrePoMax
             }
         }
         //
-        private void tsmiMaterialLibrary_Click(object sender, EventArgs e)
+        internal void tsmiMaterialLibrary_Click(object sender, EventArgs e)
         {
             try
             {
@@ -2701,7 +2706,7 @@ namespace PrePoMax
         #endregion  ################################################################################################################
 
         #region Section menu  ######################################################################################################
-        private void tsmiCreateSection_Click(object sender, EventArgs e)
+        internal void tsmiCreateSection_Click(object sender, EventArgs e)
         {
             try
             {
@@ -3028,11 +3033,16 @@ namespace PrePoMax
 
         #region Step menu  #########################################################################################################
 
-        private void tsmiCreateStep_Click(object sender, EventArgs e)
+        internal void tsmiCreateStep_Click(object sender, EventArgs e)
         {
             try
             {
                 if (_controller.Model.Mesh == null) return;
+                //
+                int selectedIndex = -1;
+                if (e is EventArgs<int> ea) selectedIndex = ea.Value;
+                _frmStep.PreselectListViewItem(selectedIndex);
+                //
                 ShowForm(_frmStep, "Create Step", null);
             }
             catch (Exception ex)
@@ -3235,10 +3245,14 @@ namespace PrePoMax
         #endregion  ################################################################################################################
 
         #region Boundary conditions menu  ##########################################################################################
-        private void tsmiCreateBC_Click(object sender, EventArgs e)
+        internal void tsmiCreateBC_Click(object sender, EventArgs e)
         {
             try
             {
+                int selectedIndex = -1;
+                if (e is EventArgs<int> ea) selectedIndex = ea.Value;
+                _frmBoundaryCondition.PreselectListViewItem(selectedIndex);
+                //
                 SelectOneEntity("Steps", _controller.GetAllSteps(), CreateBoundaryCondition);
             }
             catch (Exception ex)
@@ -3290,7 +3304,7 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-
+        //
         private void SelectAndEditBoundaryCondition(string stepName)
         {
             SelectOneEntityInStep("Boundary conditions", _controller.GetStepBoundaryConditions(stepName), stepName,
@@ -3311,7 +3325,7 @@ namespace PrePoMax
             SelectMultipleEntitiesInStep("Boundary conditions", _controller.GetStepBoundaryConditions(stepName),
                                          stepName, DeleteBoundaryConditions);
         }
-
+        //
         private void CreateBoundaryCondition(string stepName)
         {
             if (_controller.Model.Mesh == null) return;
@@ -3360,10 +3374,14 @@ namespace PrePoMax
 
         #region Load menu  #########################################################################################################
 
-        private void tsmiCreateLoad_Click(object sender, EventArgs e)
+        internal void tsmiCreateLoad_Click(object sender, EventArgs e)
         {
             try
             {
+                int selectedIndex = -1;
+                if (e is EventArgs<int> ea) selectedIndex = ea.Value;
+                _frmLoad.PreselectListViewItem(selectedIndex);
+                //
                 SelectOneEntity("Steps", _controller.GetAllSteps(), CreateLoad);
             }
             catch (Exception ex)
@@ -3967,48 +3985,81 @@ namespace PrePoMax
         private void SelectOneEntity(string title, NamedClass[] entities, Action<string> OperateOnEntity)
         {
             if (entities == null || entities.Length == 0) return;
-            //
-            string[] preSelectedEntityNames = _modelTree.IntersectSelectionWithList(entities);
-            //
-            _frmSelectEntity.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
-            _frmSelectEntity.PrepareForm(title, false, entities, preSelectedEntityNames, null);
-            _frmSelectEntity.OneEntitySelected = OperateOnEntity;
-            _frmSelectEntity.Show();
+            // Only one entity exists
+            if (entities.Length == 1)
+            {
+                OperateOnEntity(entities[0].Name);
+            }
+            // Multiple entities exists
+            else
+            {
+                //
+                string[] preSelectedEntityNames = _modelTree.IntersectSelectionWithList(entities);
+                //
+                _frmSelectEntity.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
+                _frmSelectEntity.PrepareForm(title, false, entities, preSelectedEntityNames, null);
+                _frmSelectEntity.OneEntitySelected = OperateOnEntity;
+                _frmSelectEntity.Show();
+            }
         }
         private void SelectOneEntityInStep(string title, NamedClass[] entities, string stepName,
                                            Action<string, string> OperateOnEntityInStep)
         {
             if (entities == null || entities.Length == 0) return;
-            //
-            string[] preSelectedEntityNames = _modelTree.IntersectSelectionWithList(entities);
-            //
-            _frmSelectEntity.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
-            _frmSelectEntity.PrepareForm(title, false, entities, preSelectedEntityNames, stepName);
-            _frmSelectEntity.OneEntitySelectedInStep = OperateOnEntityInStep;
-            _frmSelectEntity.Show();
+            // Only one entity exists
+            if (entities.Length == 1)
+            {
+                OperateOnEntityInStep(stepName, entities[0].Name);
+            }
+            // Multiple entities exists
+            else
+            {
+                string[] preSelectedEntityNames = _modelTree.IntersectSelectionWithList(entities);
+                //
+                _frmSelectEntity.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
+                _frmSelectEntity.PrepareForm(title, false, entities, preSelectedEntityNames, stepName);
+                _frmSelectEntity.OneEntitySelectedInStep = OperateOnEntityInStep;
+                _frmSelectEntity.Show();
+            }
         }
         private void SelectMultipleEntities(string title, NamedClass[] entities, Action<string[]> OperateOnMultpleEntities)
         {
             if (entities == null || entities.Length == 0) return;
-            //
-            string[] preSelectedEntityNames = _modelTree.IntersectSelectionWithList(entities);
-            //
-            _frmSelectEntity.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
-            _frmSelectEntity.PrepareForm(title, true, entities, preSelectedEntityNames, null);
-            _frmSelectEntity.MultipleEntitiesSelected = OperateOnMultpleEntities;
-            _frmSelectEntity.Show();
+            // Only one entity exists
+            if (entities.Length == 1)
+            {
+                OperateOnMultpleEntities(entities.GetNames());
+            }
+            // Multiple entities exists
+            else
+            {
+                string[] preSelectedEntityNames = _modelTree.IntersectSelectionWithList(entities);
+                //
+                _frmSelectEntity.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
+                _frmSelectEntity.PrepareForm(title, true, entities, preSelectedEntityNames, null);
+                _frmSelectEntity.MultipleEntitiesSelected = OperateOnMultpleEntities;
+                _frmSelectEntity.Show();
+            }
         }
         private void SelectMultipleEntitiesInStep(string title, NamedClass[] entities, string stepName,
                                                   Action<string, string[]> OperateOnMultpleEntitiesInStep)
         {
             if (entities == null || entities.Length == 0) return;
-            //
-            string[] preSelectedEntityNames = _modelTree.IntersectSelectionWithList(entities);
-            //
-            _frmSelectEntity.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
-            _frmSelectEntity.PrepareForm(title, true, entities, preSelectedEntityNames, stepName);
-            _frmSelectEntity.MultipleEntitiesSelectedInStep = OperateOnMultpleEntitiesInStep;
-            _frmSelectEntity.Show();
+            // Only one entity exists
+            if (entities.Length == 1)
+            {
+                OperateOnMultpleEntitiesInStep(stepName, entities.GetNames());
+            }
+            // Multiple entities exists
+            else
+            {
+                string[] preSelectedEntityNames = _modelTree.IntersectSelectionWithList(entities);
+                //
+                _frmSelectEntity.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
+                _frmSelectEntity.PrepareForm(title, true, entities, preSelectedEntityNames, stepName);
+                _frmSelectEntity.MultipleEntitiesSelectedInStep = OperateOnMultpleEntitiesInStep;
+                _frmSelectEntity.Show();
+            }
         }
 
         #endregion  ################################################################################################################
@@ -5303,6 +5354,57 @@ namespace PrePoMax
             {}
         }
 
-       
+        internal void tsmiAdvisor_Click(object sender, EventArgs e)
+        {
+            // Change the wizzard check state
+            tsmiAdvisor.Checked = !tsmiAdvisor.Checked;
+            // Add wizard panel
+            if (tsmiAdvisor.Checked == true)
+            {
+                Control parent = panelControl.Parent;
+                if (parent == splitContainer2.Panel1)
+                {
+                    // First remove the vtk comtrol and panel border
+                    parent.Controls.Remove(_vtk);
+                    parent.Controls.Remove(panelControl);
+                    // Split container
+                    SplitContainer splitContainer = new SplitContainer();
+                    splitContainer.FixedPanel = FixedPanel.Panel2;
+                    splitContainer.Dock = DockStyle.Fill;
+                    parent.Controls.Add(splitContainer);
+                    // Panel 1 - LEFT
+                    splitContainer.Panel1.Controls.Add(panelControl);
+                    splitContainer.Panel1.Controls.Add(_vtk);
+                    panelControl.SendToBack();
+                    // Panel 2 - RIGHT
+                    AdvisorControl advisorControl = AdvisorCreator.CreateControl(this);
+                    splitContainer.Panel2.Controls.Add(advisorControl);
+                    advisorControl.Dock = DockStyle.Fill;
+                    // Update vtk control size
+                    UpdateVtkControlSize();
+                    // Set the Panel 2 size - min 100 max 300
+                    splitContainer.SplitterDistance = Math.Max(100, Math.Max(parent.Width - 300, (int)(parent.Width * 0.8)));
+                }
+            }
+            // Remove wizard panel
+            else
+            {
+                Control parent = panelControl.Parent;
+                if (parent is SplitterPanel && parent != splitContainer2.Panel1)
+                {
+                    // First remove the vtk comtrol and panel border
+                    parent.Controls.Remove(_vtk);
+                    parent.Controls.Remove(panelControl);
+                    // Remove added split container
+                    splitContainer2.Panel1.Controls.Clear();
+                    // Add controls back
+                    splitContainer2.Panel1.Controls.Add(panelControl);
+                    splitContainer2.Panel1.Controls.Add(_vtk);
+                    panelControl.SendToBack();
+                    // Update vtk control size
+                    UpdateVtkControlSize();
+                }
+            }
+        }
     }
 }

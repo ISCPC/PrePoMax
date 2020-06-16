@@ -10,6 +10,7 @@ using System.Xml;
 using System.Windows.Forms;
 using System.Reflection;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace CaeGlobals
 {
@@ -234,6 +235,16 @@ namespace CaeGlobals
             }
             //If we have no description attribute, just return the ToString of the enum
             return enumerationValue.ToString();
+        }
+
+        // NamedClass[]
+        public static string[] GetNames(this NamedClass[] namedClasses)
+        {
+            if (namedClasses == null) return new string[0];
+            //
+            List<string> names = new List<string>();
+            foreach (var namedClass in namedClasses) names.Add(namedClass.Name);
+            return names.ToArray();
         }
     }
 }

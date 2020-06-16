@@ -44,6 +44,7 @@
             this.btnSave = new System.Windows.Forms.Button();
             this.btnCopyToLibrary = new System.Windows.Forms.Button();
             this.btnCopyToModel = new System.Windows.Forms.Button();
+            this.label1 = new System.Windows.Forms.Label();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.SuspendLayout();
@@ -57,10 +58,10 @@
             this.groupBox2.Controls.Add(this.lvModelMaterials);
             this.groupBox2.Location = new System.Drawing.Point(333, 14);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(172, 306);
+            this.groupBox2.Size = new System.Drawing.Size(172, 142);
             this.groupBox2.TabIndex = 0;
             this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Model materials";
+            this.groupBox2.Text = "FE Model materials";
             // 
             // btnDeleteFromModel
             // 
@@ -86,7 +87,7 @@
             this.lvModelMaterials.MultiSelect = false;
             this.lvModelMaterials.Name = "lvModelMaterials";
             this.lvModelMaterials.ShowGroups = false;
-            this.lvModelMaterials.Size = new System.Drawing.Size(159, 249);
+            this.lvModelMaterials.Size = new System.Drawing.Size(159, 85);
             this.lvModelMaterials.TabIndex = 1;
             this.lvModelMaterials.UseCompatibleStateImageBehavior = false;
             this.lvModelMaterials.View = System.Windows.Forms.View.List;
@@ -97,7 +98,7 @@
             // btnRename
             // 
             this.btnRename.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnRename.Location = new System.Drawing.Point(199, 278);
+            this.btnRename.Location = new System.Drawing.Point(199, 428);
             this.btnRename.Name = "btnRename";
             this.btnRename.Size = new System.Drawing.Size(75, 23);
             this.btnRename.TabIndex = 0;
@@ -109,7 +110,7 @@
             // 
             this.tbCategoryName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbCategoryName.Location = new System.Drawing.Point(6, 278);
+            this.tbCategoryName.Location = new System.Drawing.Point(6, 428);
             this.tbCategoryName.Name = "tbCategoryName";
             this.tbCategoryName.Size = new System.Drawing.Size(187, 23);
             this.tbCategoryName.TabIndex = 2;
@@ -127,7 +128,7 @@
             this.groupBox3.Controls.Add(this.btnRename);
             this.groupBox3.Location = new System.Drawing.Point(14, 14);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(280, 306);
+            this.groupBox3.Size = new System.Drawing.Size(280, 456);
             this.groupBox3.TabIndex = 3;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Library materials";
@@ -169,7 +170,7 @@
             treeNode1.Text = "Materials";
             this.btvLibrary.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
             treeNode1});
-            this.btvLibrary.Size = new System.Drawing.Size(268, 220);
+            this.btvLibrary.Size = new System.Drawing.Size(268, 370);
             this.btvLibrary.TabIndex = 4;
             this.btvLibrary.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.btvLibrary_AfterSelect);
             this.btvLibrary.MouseDown += new System.Windows.Forms.MouseEventHandler(this.btvLibrary_MouseDown);
@@ -180,7 +181,7 @@
             this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.btnOK.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.btnOK.Location = new System.Drawing.Point(343, 326);
+            this.btnOK.Location = new System.Drawing.Point(343, 476);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 12;
@@ -193,7 +194,7 @@
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnCancel.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.btnCancel.Location = new System.Drawing.Point(424, 326);
+            this.btnCancel.Location = new System.Drawing.Point(424, 476);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 11;
@@ -204,7 +205,7 @@
             // 
             this.btnSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnSave.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.btnSave.Location = new System.Drawing.Point(20, 326);
+            this.btnSave.Location = new System.Drawing.Point(20, 476);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(75, 23);
             this.btnSave.TabIndex = 13;
@@ -232,11 +233,25 @@
             this.btnCopyToModel.UseVisualStyleBackColor = true;
             this.btnCopyToModel.Click += new System.EventHandler(this.btnCopyToModel_Click);
             // 
+            // label1
+            // 
+            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(337, 176);
+            this.label1.MaximumSize = new System.Drawing.Size(165, 0);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(165, 120);
+            this.label1.TabIndex = 14;
+            this.label1.Text = "Right arrow: copies the selected material model from the library to the FE model\r" +
+    "\n\r\nLeft arrow: copies the selected material model from the FE model to the selec" +
+    "ted library category\r\n";
+            // 
             // FrmMaterialLibrary
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(524, 361);
+            this.ClientSize = new System.Drawing.Size(524, 511);
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.btnSave);
             this.Controls.Add(this.btnOK);
             this.Controls.Add(this.btnCancel);
@@ -247,8 +262,9 @@
             this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
+            this.MaximumSize = new System.Drawing.Size(540, 2160);
             this.MinimizeBox = false;
-            this.MinimumSize = new System.Drawing.Size(540, 400);
+            this.MinimumSize = new System.Drawing.Size(540, 550);
             this.Name = "FrmMaterialLibrary";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
@@ -259,6 +275,7 @@
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -278,5 +295,6 @@
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.Button btnSave;
         private System.Windows.Forms.Button btnDeleteFromModel;
+        private System.Windows.Forms.Label label1;
     }
 }

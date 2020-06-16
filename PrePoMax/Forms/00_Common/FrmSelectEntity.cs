@@ -127,7 +127,10 @@ namespace PrePoMax.Forms
         }
         private void FrmSelectEntity_VisibleChanged(object sender, EventArgs e)
         {
-            if (Visible) SetEntityNamesToSelect();
+            if (Visible)
+            {
+                SetEntityNamesToSelect();
+            }
         }
         private void cbHighlight_CheckedChanged(object sender, EventArgs e)
         {
@@ -186,7 +189,7 @@ namespace PrePoMax.Forms
                 rowId = dgvNames.Rows.Add(new object[] { entity.Name });
                 dgvNames.Rows[rowId].Cells[dgvNames.Columns[0].Name].Tag = entity;
             }
-
+            //
             dgvNames.ClearSelection();
             foreach (DataGridViewRow row in dgvNames.Rows)
             {

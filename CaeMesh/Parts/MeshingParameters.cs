@@ -125,8 +125,8 @@ namespace CaeMesh
             _elementspercurve = 2;
             _optimizeSteps2D = 3;
             _optimizeSteps3D = 3;
-            _secondOrder = false;
-            _midsideNodesOnGeometry = true;
+            _secondOrder = true;
+            _midsideNodesOnGeometry = false;
             _splitCompoundMesh = false;
         }
 

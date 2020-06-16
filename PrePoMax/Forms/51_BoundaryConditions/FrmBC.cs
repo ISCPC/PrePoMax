@@ -24,8 +24,9 @@ namespace PrePoMax.Forms
             get { return _viewBc != null ? _viewBc.GetBase() : null; }
             set
             {
-                if (value is DisplacementRotation dr) _viewBc = new ViewDisplacementRotation(dr.DeepClone());
-                else if (value is SubmodelBC sm) _viewBc = new ViewSubmodel(sm.DeepClone());
+                if (value is FixedBC fix) _viewBc = new ViewFixedBC(fix.DeepClone());
+                else if (value is DisplacementRotation dr) _viewBc = new ViewDisplacementRotation(dr.DeepClone());
+                else if (value is SubmodelBC sm) _viewBc = new ViewSubmodelBC(sm.DeepClone());
                 else throw new NotImplementedException();
             }
         }
@@ -47,30 +48,39 @@ namespace PrePoMax.Forms
             this.gbProperties.SuspendLayout();
             this.SuspendLayout();
             // 
+            // gbType
+            // 
+            this.gbType.Size = new System.Drawing.Size(310, 100);
+            // 
+            // lvTypes
+            // 
+            this.lvTypes.Size = new System.Drawing.Size(298, 72);
+            // 
             // gbProperties
             // 
-            this.gbProperties.Size = new System.Drawing.Size(310, 380);
+            this.gbProperties.Location = new System.Drawing.Point(12, 118);
+            this.gbProperties.Size = new System.Drawing.Size(310, 402);
             // 
             // propertyGrid
             // 
-            this.propertyGrid.Size = new System.Drawing.Size(298, 352);
+            this.propertyGrid.Size = new System.Drawing.Size(298, 374);
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(160, 494);
+            this.btnOK.Location = new System.Drawing.Point(160, 526);
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(241, 494);
+            this.btnCancel.Location = new System.Drawing.Point(241, 526);
             // 
             // btnOkAddNew
             // 
-            this.btnOkAddNew.Location = new System.Drawing.Point(79, 494);
+            this.btnOkAddNew.Location = new System.Drawing.Point(79, 526);
             // 
             // FrmBC
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.ClientSize = new System.Drawing.Size(334, 529);
+            this.ClientSize = new System.Drawing.Size(334, 561);
             this.Name = "FrmBC";
             this.Text = "Edit Boundary Condition";
             this.gbType.ResumeLayout(false);
@@ -83,12 +93,15 @@ namespace PrePoMax.Forms
         // Overrides                                                                                                                
         protected override void OnListViewTypeSelectedIndexChanged()
         {
-            if (lvTypes.Enabled && lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)
+            //if (lvTypes.Enabled && lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)
+            // Advisor 
+            if (lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)
             {
                 object itemTag = lvTypes.SelectedItems[0].Tag;
                 if (itemTag is ViewError) _viewBc = null;
+                else if (itemTag is ViewFixedBC fix) _viewBc = fix;
                 else if (itemTag is ViewDisplacementRotation vdr) _viewBc = vdr;
-                else if (itemTag is ViewSubmodel vsm) _viewBc = vsm;
+                else if (itemTag is ViewSubmodelBC vsm) _viewBc = vsm;
                 else throw new NotImplementedException();
                 //
                 SetSelectItem();
@@ -111,6 +124,13 @@ namespace PrePoMax.Forms
                 //
                 HighlightBoundaryCondition();
             }
+            else if (_viewBc is ViewFixedBC fix &&
+                     (property == nameof(fix.NodeSetName) ||
+                      property == nameof(fix.ReferencePointName) ||
+                      property == nameof(fix.SurfaceName)))
+            {
+                HighlightBoundaryCondition();
+            }
             else if (_viewBc is ViewDisplacementRotation vdr &&
                      (property == nameof(vdr.NodeSetName) ||
                       property == nameof(vdr.ReferencePointName) ||
@@ -118,7 +138,7 @@ namespace PrePoMax.Forms
             {
                 HighlightBoundaryCondition();
             }
-            else if (_viewBc is ViewSubmodel vsm && 
+            else if (_viewBc is ViewSubmodelBC vsm && 
                     (property == nameof(vsm.NodeSetName) ||
                      property == nameof(vsm.SurfaceName)))
             {
@@ -229,14 +249,29 @@ namespace PrePoMax.Forms
                 if (BoundaryCondition.CreationData != null) BoundaryCondition.RegionType = RegionTypeEnum.Selection;
                 // Select the appropriate boundary condition in the list view - disable event SelectedIndexChanged
                 _lvTypesSelectedIndexChangedEventActive = false;
-                if (_viewBc is ViewDisplacementRotation) lvTypes.Items[0].Selected = true;
-                else if (_viewBc is ViewSubmodel) lvTypes.Items[1].Selected = true;
+                if (_viewBc is ViewFixedBC) lvTypes.Items[0].Selected = true;
+                else if (_viewBc is ViewDisplacementRotation) lvTypes.Items[1].Selected = true;
+                else if (_viewBc is ViewSubmodelBC) lvTypes.Items[2].Selected = true;
                 else throw new NotSupportedException();
                 //
                 lvTypes.Enabled = false;
                 _lvTypesSelectedIndexChangedEventActive = true;
                 //
-                if (_viewBc is ViewDisplacementRotation vdr)
+                if (_viewBc is ViewFixedBC fix)
+                {
+                    // Check for deleted entities
+                    if (fix.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
+                    else if (fix.RegionType == RegionTypeEnum.NodeSetName.ToFriendlyString())
+                        CheckMissingValueRef(ref nodeSetNames, fix.NodeSetName, s => { fix.NodeSetName = s; });
+                    else if (fix.RegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
+                        CheckMissingValueRef(ref surfaceNames, fix.SurfaceName, s => { fix.SurfaceName = s; });
+                    else if (fix.RegionType == RegionTypeEnum.ReferencePointName.ToFriendlyString())
+                        CheckMissingValueRef(ref referencePointNames, fix.ReferencePointName, s => { fix.ReferencePointName = s; });
+                    else throw new NotSupportedException();
+                    //
+                    fix.PopululateDropDownLists(nodeSetNames, surfaceNames, referencePointNames);
+                }
+                else if (_viewBc is ViewDisplacementRotation vdr)
                 {
                     // Check for deleted entities
                     if (vdr.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
@@ -250,7 +285,7 @@ namespace PrePoMax.Forms
                     //
                     vdr.PopululateDropDownLists(nodeSetNames, surfaceNames, referencePointNames);
                 }
-                else if (_viewBc is ViewSubmodel vsm)
+                else if (_viewBc is ViewSubmodelBC vsm)
                 {
                     // Check for deleted entities
                     if (vsm.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
@@ -279,15 +314,22 @@ namespace PrePoMax.Forms
         }
 
 
-
         // Methods                                                                                                                  
         private void PopulateListOfBCs(string[] nodeSetNames, string[] surfaceNames, string[] referencePointNames)
         {
             System.Drawing.Color color = _controller.Settings.Pre.BoundaryConditionSymbolColor;
             ListViewItem item;
-            // Displacement/Rotation"
+            // Fixed
+            item = new ListViewItem("Fixed");
+            FixedBC fix = new FixedBC(GetBoundaryConditionName("Fixed"), "", RegionTypeEnum.Selection);
+            ViewFixedBC vfix = new ViewFixedBC(fix);
+            vfix.PopululateDropDownLists(nodeSetNames, surfaceNames, referencePointNames);
+            vfix.Color = color;
+            item.Tag = vfix;
+            lvTypes.Items.Add(item);
+            // Displacement/Rotation
             item = new ListViewItem("Displacement/Rotation");
-            DisplacementRotation dr = new DisplacementRotation(GetBoundaryConditionName(), "", RegionTypeEnum.Selection);
+            DisplacementRotation dr = new DisplacementRotation(GetBoundaryConditionName("Disp_rot"), "", RegionTypeEnum.Selection);
             ViewDisplacementRotation vdr = new ViewDisplacementRotation(dr);
             vdr.PopululateDropDownLists(nodeSetNames, surfaceNames, referencePointNames);
             vdr.Color = color;
@@ -295,23 +337,24 @@ namespace PrePoMax.Forms
             lvTypes.Items.Add(item);
             // Submodel
             item = new ListViewItem("Submodel");
-            SubmodelBC sm = new SubmodelBC(GetBoundaryConditionName(), "", RegionTypeEnum.Selection);
-            ViewSubmodel vsm = new ViewSubmodel(sm);
+            SubmodelBC sm = new SubmodelBC(GetBoundaryConditionName("Submodel"), "", RegionTypeEnum.Selection);
+            ViewSubmodelBC vsm = new ViewSubmodelBC(sm);
             vsm.PopululateDropDownLists(nodeSetNames, surfaceNames);
             vsm.Color = color;
             item.Tag = vsm;
             lvTypes.Items.Add(item);
         }
-        private string GetBoundaryConditionName()
+        private string GetBoundaryConditionName(string baseName)
         {
-            return NamedClass.GetNewValueName(_boundaryConditionNames, "BC-");
+            return NamedClass.GetNewValueName(_boundaryConditionNames, baseName + "-");
         }
         private void HighlightBoundaryCondition()
         {
             try
             {
                 if (_viewBc == null) { }
-                else if (BoundaryCondition is DisplacementRotation || BoundaryCondition is SubmodelBC)
+                else if (BoundaryCondition is FixedBC || BoundaryCondition is DisplacementRotation ||
+                         BoundaryCondition is SubmodelBC)
                 {
                     if (BoundaryCondition.RegionType == RegionTypeEnum.NodeSetName ||
                         BoundaryCondition.RegionType == RegionTypeEnum.ReferencePointName ||
@@ -345,8 +388,10 @@ namespace PrePoMax.Forms
         private void SetSelectItem()
         {
             if (BoundaryCondition is null) { }
+            else if (BoundaryCondition is FixedBC) _controller.SetSelectItemToGeometry();
             else if (BoundaryCondition is DisplacementRotation) _controller.SetSelectItemToGeometry();
             else if (BoundaryCondition is SubmodelBC) _controller.SetSelectItemToGeometry();
+            else throw new NotSupportedException();
         }
         private void BoundaryConditionInternal(bool toInternal)
         {
@@ -362,7 +407,8 @@ namespace PrePoMax.Forms
         {
             if (BoundaryCondition != null && BoundaryCondition.RegionType == RegionTypeEnum.Selection)
             {
-                if (BoundaryCondition is DisplacementRotation || BoundaryCondition is SubmodelBC)
+                if (BoundaryCondition is FixedBC || BoundaryCondition is DisplacementRotation ||
+                    BoundaryCondition is SubmodelBC)
                 {
                     BoundaryCondition.CreationIds = ids;
                     BoundaryCondition.CreationData = _controller.Selection.DeepClone();
