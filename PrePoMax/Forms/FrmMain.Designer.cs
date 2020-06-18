@@ -2059,28 +2059,28 @@
             // tsmiHomePage
             // 
             this.tsmiHomePage.Name = "tsmiHomePage";
-            this.tsmiHomePage.Size = new System.Drawing.Size(180, 22);
+            this.tsmiHomePage.Size = new System.Drawing.Size(136, 22);
             this.tsmiHomePage.Text = "Home Page";
             this.tsmiHomePage.Click += new System.EventHandler(this.tsmiHomePage_Click);
             // 
             // tsmiAbout
             // 
             this.tsmiAbout.Name = "tsmiAbout";
-            this.tsmiAbout.Size = new System.Drawing.Size(180, 22);
+            this.tsmiAbout.Size = new System.Drawing.Size(136, 22);
             this.tsmiAbout.Text = "About";
             this.tsmiAbout.Click += new System.EventHandler(this.tsmiAbout_Click);
             // 
             // tsmiTest
             // 
             this.tsmiTest.Name = "tsmiTest";
-            this.tsmiTest.Size = new System.Drawing.Size(180, 22);
+            this.tsmiTest.Size = new System.Drawing.Size(136, 22);
             this.tsmiTest.Text = "Test";
             this.tsmiTest.Click += new System.EventHandler(this.tsmiTest_Click);
             // 
-            // tsmiWizard
+            // tsmiAdvisor
             // 
             this.tsmiAdvisor.Name = "tsmiAdvisor";
-            this.tsmiAdvisor.Size = new System.Drawing.Size(180, 22);
+            this.tsmiAdvisor.Size = new System.Drawing.Size(136, 22);
             this.tsmiAdvisor.Text = "Advisor";
             this.tsmiAdvisor.Click += new System.EventHandler(this.tsmiAdvisor_Click);
             // 

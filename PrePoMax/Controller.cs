@@ -280,21 +280,9 @@ namespace PrePoMax
             _sectionViewPlanes.Add(ViewGeometryModelResults.Results, null);
             //
             Clear();
-            //
+            // Settings
             _settings = new SettingsContainer();
-            try
-            {
-                string fileName = Path.Combine(System.Windows.Forms.Application.StartupPath, Globals.SettingsFileName);
-                if (File.Exists(fileName))
-                {
-                    var t = Task.Run(() => _settings.LoadFromFile(fileName));
-                    t.Wait();
-                }
-            }
-            catch
-            {
-            }
-            //
+            _settings.LoadFromFile();
             ApplySettings();
             //
             ViewResultsType = ViewResultsType.ColorContours;
@@ -3768,6 +3756,13 @@ namespace PrePoMax
         }
         public void AddStep(Step step, bool copyBCsAndLoads = true)
         {
+            // Create the default anaysis the first time a step is added
+            if (_model.StepCollection.StepsList.Count == 0 && _jobs.Count == 0)
+            {
+                AnalysisJob job = _form.GetDefaultJob();
+                if (job != null) AddJob(job);
+            }
+            //
             _model.StepCollection.AddStep(step, copyBCsAndLoads);
             _form.AddTreeNode(ViewGeometryModelResults.Model, step, null);
             //

@@ -94,7 +94,6 @@ namespace PrePoMax.Forms
             this.gbType.ResumeLayout(false);
             this.gbProperties.ResumeLayout(false);
             this.ResumeLayout(false);
-
         }
 
 

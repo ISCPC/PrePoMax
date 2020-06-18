@@ -27,25 +27,27 @@ namespace PrePoMax
         // Methods                                                                                                                  
         public static AdvisorControl CreateControl(FrmMain frmMain)
         {
-            AdvisorControl advisorControl = new AdvisorControl();
-            //advisorControl.AddPage(Introduction(frmMain));
-            //advisorControl.AddPage(ImportGeometry(frmMain));
-            //advisorControl.AddPage(PrepareFeMesh(frmMain));
-            //advisorControl.AddPage(AssignMaterialProperties(frmMain));
-            //advisorControl.AddPage(SelectTheAnalysisType(frmMain));
-            //advisorControl.AddPage(CreateTheBoundaryConditions(frmMain));
+            AdvisorControl advisorControl = new AdvisorControl(frmMain.tsmiAdvisor_Click, frmMain.ModelTree_ViewEvent);
+            advisorControl.AddPage(Introduction(frmMain));
+            advisorControl.AddPage(ImportGeometry(frmMain));
+            advisorControl.AddPage(PrepareFeMesh(frmMain));
+            advisorControl.AddPage(AssignMaterialProperties(frmMain));
+            advisorControl.AddPage(SelectTheAnalysisType(frmMain));
+            advisorControl.AddPage(CreateTheBoundaryConditions(frmMain));
             advisorControl.AddPage(DefineTheLoads(frmMain));
+            advisorControl.AddPage(RunTheAnalysis(frmMain));
+            advisorControl.AddPage(Results(frmMain));
             //
-            advisorControl.CloseButtonPressed += frmMain.tsmiAdvisor_Click;
+            advisorControl.PrepareControls();
             //
             return advisorControl;
         }
-
+        //
         private static AdvisorPage Introduction(FrmMain frmMain)
         {
             AdvisorPage advisorPage = new AdvisorPage();
             advisorPage.Title = "Introduction";
-            advisorPage.AssociatedView = UserControls.ViewGeometryModelResults.Geometry;
+            advisorPage.AssociatedView = ViewType.Geometry;
             //
             AdvisorItemLabel advisorLabel1 = new AdvisorItemLabel();
             advisorLabel1.Text = "This advisor helps you to build a simple finite element (FE) model. It limits the FE model to a single component and a linear elastic material model.";
@@ -58,9 +60,9 @@ namespace PrePoMax
             advisorPage.Items.Add(advisorLabel1);
             //
             AdvisorItemLinkLabel advisorLinkLabel1 = new AdvisorItemLinkLabel();
-            advisorLinkLabel1.Text = "1 Create new FE model";
+            advisorLinkLabel1.Text = "1  Create new FE model";
             advisorLinkLabel1.AddAction(frmMain.tsmiNew_Click);
-            advisorLinkLabel1.IndentLevel = 1;
+            advisorLinkLabel1.IndentLevel = 0;
             advisorPage.Items.Add(advisorLinkLabel1);
             //
             AdvisorItemLabel advisorLabel2 = new AdvisorItemLabel();
@@ -73,7 +75,7 @@ namespace PrePoMax
         {
             AdvisorPage advisorPage = new AdvisorPage();
             advisorPage.Title = "Import Geometry";
-            advisorPage.AssociatedView = UserControls.ViewGeometryModelResults.Geometry;
+            advisorPage.AssociatedView = ViewType.Geometry;
             //
             AdvisorItemLabel advisorLabel1 = new AdvisorItemLabel();
             advisorLabel1.Text = "The geometry can be imported into PrePoMax from other CAD programs using .stp/.step or .stl file formats.";
@@ -84,13 +86,13 @@ namespace PrePoMax
             AdvisorItemLinkLabel advisorLinkLabel1 = new AdvisorItemLinkLabel();
             advisorLinkLabel1.Text = "1 Import geometry";
             advisorLinkLabel1.AddAction(frmMain.tsmiImportFile_Click);
-            advisorLinkLabel1.IndentLevel = 1;
+            advisorLinkLabel1.IndentLevel = 0;
             advisorPage.Items.Add(advisorLinkLabel1);
             //
             AdvisorItemLinkLabel advisorLinkLabel2 = new AdvisorItemLinkLabel();
             advisorLinkLabel2.Text = "2 Rename geometry part";
             advisorLinkLabel2.AddAction(frmMain.tsmiEditGeometryPart_Click);
-            advisorLinkLabel2.IndentLevel = 1;
+            advisorLinkLabel2.IndentLevel = 0;
             advisorPage.Items.Add(advisorLinkLabel2);
             //
             AdvisorItemLabel advisorLabel2 = new AdvisorItemLabel();
@@ -103,7 +105,7 @@ namespace PrePoMax
         {
             AdvisorPage advisorPage = new AdvisorPage();
             advisorPage.Title = "Prepare the FE Maesh";
-            advisorPage.AssociatedView = UserControls.ViewGeometryModelResults.Geometry;
+            advisorPage.AssociatedView = ViewType.Geometry;
             //
             AdvisorItemLabel advisorLabel1 = new AdvisorItemLabel();
             advisorLabel1.Text = "The geometry must be discretized into finite elements, to perform any type of analysis in the PrePoMax. Smaller finite elements result in better accuracy but require longer computational time.";
@@ -114,13 +116,13 @@ namespace PrePoMax
             AdvisorItemLinkLabel advisorLinkLabel1 = new AdvisorItemLinkLabel();
             advisorLinkLabel1.Text = "1 Meshing parameters";
             advisorLinkLabel1.AddAction(frmMain.tsmiMeshingParameters_Click);
-            advisorLinkLabel1.IndentLevel = 1;
+            advisorLinkLabel1.IndentLevel = 0;
             advisorPage.Items.Add(advisorLinkLabel1);
             //
             AdvisorItemLinkLabel advisorLinkLabel2 = new AdvisorItemLinkLabel();
             advisorLinkLabel2.Text = "2 Create mesh";
             advisorLinkLabel2.AddAction(frmMain.tsmiCreateMesh_Click);
-            advisorLinkLabel2.IndentLevel = 1;
+            advisorLinkLabel2.IndentLevel = 0;
             advisorPage.Items.Add(advisorLinkLabel2);
             //
             AdvisorItemLabel advisorLabel2 = new AdvisorItemLabel();
@@ -135,7 +137,7 @@ namespace PrePoMax
         {
             AdvisorPage advisorPage = new AdvisorPage();
             advisorPage.Title = "Assign Material Properties";
-            advisorPage.AssociatedView = UserControls.ViewGeometryModelResults.Geometry;
+            advisorPage.AssociatedView = ViewType.Model;
             //
             AdvisorItemLabel advisorLabel1 = new AdvisorItemLabel();
             advisorLabel1.Text = "Material properties are defined using a material model. A new material model can be created using the option 1. Material models can also be stored or retrieved from the material library using the option 2.";
@@ -146,19 +148,19 @@ namespace PrePoMax
             AdvisorItemLinkLabel advisorLinkLabel1 = new AdvisorItemLinkLabel();
             advisorLinkLabel1.Text = "1 Create material model";
             advisorLinkLabel1.AddAction(frmMain.tsmiCreateMaterial_Click);
-            advisorLinkLabel1.IndentLevel = 1;
+            advisorLinkLabel1.IndentLevel = 0;
             advisorPage.Items.Add(advisorLinkLabel1);
             //
             AdvisorItemLinkLabel advisorLinkLabel2 = new AdvisorItemLinkLabel();
             advisorLinkLabel2.Text = "2 Use material library";
             advisorLinkLabel2.AddAction(frmMain.tsmiMaterialLibrary_Click);
-            advisorLinkLabel2.IndentLevel = 1;
+            advisorLinkLabel2.IndentLevel = 0;
             advisorPage.Items.Add(advisorLinkLabel2);
             //
             AdvisorItemLinkLabel advisorLinkLabel3 = new AdvisorItemLinkLabel();
             advisorLinkLabel3.Text = "3 Apply material model";
             advisorLinkLabel3.AddAction(frmMain.tsmiCreateSection_Click);
-            advisorLinkLabel3.IndentLevel = 1;
+            advisorLinkLabel3.IndentLevel = 0;
             advisorPage.Items.Add(advisorLinkLabel3);
             //
             AdvisorItemLabel advisorLabel2 = new AdvisorItemLabel();
@@ -171,7 +173,7 @@ namespace PrePoMax
         {
             AdvisorPage advisorPage = new AdvisorPage();
             advisorPage.Title = "Select the Analysis Type";
-            advisorPage.AssociatedView = UserControls.ViewGeometryModelResults.Geometry;
+            advisorPage.AssociatedView = ViewType.Model;
             //
             AdvisorItemLabel advisorLabel1 = new AdvisorItemLabel();
             advisorLabel1.Text = "Different analysis types can be performed using this advisor. For most cases, the default analysis settings can be used.";
@@ -186,19 +188,19 @@ namespace PrePoMax
             AdvisorItemLinkLabel advisorLinkLabel1 = new AdvisorItemLinkLabel();
             advisorLinkLabel1.Text = "1 Static linear analysis";
             advisorLinkLabel1.AddAction(frmMain.tsmiCreateStep_Click, null, new EventArgs<int>(0));
-            advisorLinkLabel1.IndentLevel = 1;
+            advisorLinkLabel1.IndentLevel = 0;
             advisorPage.Items.Add(advisorLinkLabel1);
             //
             AdvisorItemLinkLabel advisorLinkLabel2 = new AdvisorItemLinkLabel();
             advisorLinkLabel2.Text = "2 Frequency analysis";
             advisorLinkLabel2.AddAction(frmMain.tsmiCreateStep_Click, null, new EventArgs<int>(1));
-            advisorLinkLabel2.IndentLevel = 1;
+            advisorLinkLabel2.IndentLevel = 0;
             advisorPage.Items.Add(advisorLinkLabel2);
             //
             AdvisorItemLinkLabel advisorLinkLabel3 = new AdvisorItemLinkLabel();
             advisorLinkLabel3.Text = "3 Buckling analysis";
             advisorLinkLabel3.AddAction(frmMain.tsmiCreateStep_Click, null, new EventArgs<int>(2));
-            advisorLinkLabel3.IndentLevel = 1;
+            advisorLinkLabel3.IndentLevel = 0;
             advisorPage.Items.Add(advisorLinkLabel3);
             //
             AdvisorItemLabel advisorLabel2 = new AdvisorItemLabel();
@@ -211,7 +213,7 @@ namespace PrePoMax
         {
             AdvisorPage advisorPage = new AdvisorPage();
             advisorPage.Title = "Create the Boundary Conditions";
-            advisorPage.AssociatedView = UserControls.ViewGeometryModelResults.Geometry;
+            advisorPage.AssociatedView = ViewType.Model;
             //
             AdvisorItemLabel advisorLabel1 = new AdvisorItemLabel();
             advisorLabel1.Text = "For a static and buckling analysis, the movement of the FE model must be prevented using a boundary condition. For a frequency analysis, the boundary condition is optional.";
@@ -224,13 +226,13 @@ namespace PrePoMax
             AdvisorItemLinkLabel advisorLinkLabel1 = new AdvisorItemLinkLabel();
             advisorLinkLabel1.Text = "1 Fixed ";
             advisorLinkLabel1.AddAction(frmMain.tsmiCreateBC_Click, null, new EventArgs<int>(0));
-            advisorLinkLabel1.IndentLevel = 1;
+            advisorLinkLabel1.IndentLevel = 0;
             advisorPage.Items.Add(advisorLinkLabel1);
             //
             AdvisorItemLinkLabel advisorLinkLabel2 = new AdvisorItemLinkLabel();
             advisorLinkLabel2.Text = "2 Displacement/Rotation";
             advisorLinkLabel2.AddAction(frmMain.tsmiCreateBC_Click, null, new EventArgs<int>(1));
-            advisorLinkLabel2.IndentLevel = 1;
+            advisorLinkLabel2.IndentLevel = 0;
             advisorPage.Items.Add(advisorLinkLabel2);
             //
             AdvisorItemLabel advisorLabel2 = new AdvisorItemLabel();
@@ -243,7 +245,7 @@ namespace PrePoMax
         {
             AdvisorPage advisorPage = new AdvisorPage();
             advisorPage.Title = "Define the Loads";
-            advisorPage.AssociatedView = UserControls.ViewGeometryModelResults.Geometry;
+            advisorPage.AssociatedView = ViewType.Model;
             //
             AdvisorItemLabel advisorLabel1 = new AdvisorItemLabel();
             advisorLabel1.Text = "For a static and buckling analysis the loads must be defined. For a frequency analysis, no loads are allowed.";
@@ -256,26 +258,74 @@ namespace PrePoMax
             advisorPage.Items.Add(advisorLabel1);
             //
             AdvisorItemLinkLabel advisorLinkLabel1 = new AdvisorItemLinkLabel();
-            advisorLinkLabel1.Text = "1 Surface traction ";
+            advisorLinkLabel1.Text = "1 Surface traction";
             advisorLinkLabel1.AddAction(frmMain.tsmiCreateLoad_Click, null, new EventArgs<int>(3));
-            advisorLinkLabel1.IndentLevel = 1;
+            advisorLinkLabel1.IndentLevel = 0;
             advisorPage.Items.Add(advisorLinkLabel1);
             //
             AdvisorItemLinkLabel advisorLinkLabel2 = new AdvisorItemLinkLabel();
             advisorLinkLabel2.Text = "2 Pressure";
             advisorLinkLabel2.AddAction(frmMain.tsmiCreateLoad_Click, null, new EventArgs<int>(2));
-            advisorLinkLabel2.IndentLevel = 1;
+            advisorLinkLabel2.IndentLevel = 0;
             advisorPage.Items.Add(advisorLinkLabel2);
             //
             AdvisorItemLinkLabel advisorLinkLabel3 = new AdvisorItemLinkLabel();
             advisorLinkLabel3.Text = "3 Gravity load";
             advisorLinkLabel3.AddAction(frmMain.tsmiCreateLoad_Click, null, new EventArgs<int>(4));
-            advisorLinkLabel3.IndentLevel = 1;
+            advisorLinkLabel3.IndentLevel = 0;
             advisorPage.Items.Add(advisorLinkLabel3);
             //
             AdvisorItemLabel advisorLabel2 = new AdvisorItemLabel();
             advisorLabel2.Text = "Select Next to continue.";
             advisorPage.Items.Add(advisorLabel2);
+            //
+            return advisorPage;
+        }
+        private static AdvisorPage RunTheAnalysis(FrmMain frmMain)
+        {
+            AdvisorPage advisorPage = new AdvisorPage();
+            advisorPage.Title = "Run the Analysis";
+            advisorPage.AssociatedView = ViewType.Model;
+            //
+            AdvisorItemLabel advisorLabel1 = new AdvisorItemLabel();
+            advisorLabel1.Text = "To run the analysis, select the option 1. A Monitor window will open where you can follow the analysis process. After the analysis completes, close the Monitor window.";
+            advisorLabel1.Text += "\n\n";
+            advisorLabel1.Text += "After the analysis completes, the results can be loaded by using the option 2.";
+            advisorPage.Items.Add(advisorLabel1);
+            //
+            AdvisorItemLinkLabel advisorLinkLabel1 = new AdvisorItemLinkLabel();
+            advisorLinkLabel1.Text = "1 Run";
+            advisorLinkLabel1.AddAction(frmMain.tsmiRunAnalysis_Click);
+            advisorLinkLabel1.IndentLevel = 0;
+            advisorPage.Items.Add(advisorLinkLabel1);
+            //
+            AdvisorItemLinkLabel advisorLinkLabel2 = new AdvisorItemLinkLabel();
+            advisorLinkLabel2.Text = "2 Results";
+            advisorLinkLabel2.AddAction(frmMain.tsmiResultsAnalysis_Click);
+            advisorLinkLabel2.IndentLevel = 0;
+            advisorPage.Items.Add(advisorLinkLabel2);
+            //
+            AdvisorItemLabel advisorLabel2 = new AdvisorItemLabel();
+            advisorLabel2.Text = "Select Next to continue.";
+            advisorPage.Items.Add(advisorLabel2);
+            //
+            return advisorPage;
+        }
+        private static AdvisorPage Results(FrmMain frmMain)
+        {
+            AdvisorPage advisorPage = new AdvisorPage();
+            advisorPage.Title = "Results";
+            advisorPage.AssociatedView = ViewType.Results;
+            //
+            AdvisorItemLabel advisorLabel1 = new AdvisorItemLabel();
+            advisorLabel1.Text = "Depending on the analysis type, different results are of interest.";
+            advisorLabel1.Text += "\n\n";
+            advisorLabel1.Text += "For static linear analysis, displacements (DISP) and stresses (STRESS) are usually inspected. Their components can be displayed by selecting them in the results tree.";
+            advisorLabel1.Text += "\n\n";
+            advisorLabel1.Text += "Eigenfrequency and eigenshape are important for frequency analysis. The eigenshape is displayed as the deformation of the FE Model while the eigenfrequency is reported in the status block. By default, 10 eigenfrequencies are computed. The displayed eigenfrequency can be changed by using the Step, Increment drop-down menu in the results toolbar.";
+            advisorLabel1.Text += "\n\n";
+            advisorLabel1.Text += "The buckling analysis reports the buckling factor in the status bar. Using the buckling factor, the limit load can be computed by multiplying it with the load defined on the FE Model. The limit load represents the load at which the FE Model buckles.";
+            advisorPage.Items.Add(advisorLabel1);
             //
             return advisorPage;
         }

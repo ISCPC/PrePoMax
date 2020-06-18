@@ -34,12 +34,11 @@ namespace PrePoMax
                     _preTenLoad.Type = value;
                     //
                     _preTenLoad.Magnitude = 0;
-                    //
-                    cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(ForceMagnitude));
-                    cpd.SetIsBrowsable(_preTenLoad.Type == CaeModel.PreTensionLoadType.Force);
-                    cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(DisplacementMagnitude));
-                    cpd.SetIsBrowsable(_preTenLoad.Type == CaeModel.PreTensionLoadType.Displacement);
                 }
+                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(ForceMagnitude));
+                cpd.SetIsBrowsable(_preTenLoad.Type == CaeModel.PreTensionLoadType.Force);
+                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(DisplacementMagnitude));
+                cpd.SetIsBrowsable(_preTenLoad.Type == CaeModel.PreTensionLoadType.Displacement);
             }
         }
         //
@@ -132,7 +131,6 @@ namespace PrePoMax
         {
             return _preTenLoad;
         }
-
         public void PopululateDropDownLists(string[] surfaceNames)
         {
             Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();

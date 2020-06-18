@@ -39,7 +39,13 @@
             this.label2 = new System.Windows.Forms.Label();
             this.btnClose = new System.Windows.Forms.Button();
             this.panLine = new System.Windows.Forms.Panel();
+            this.label3 = new System.Windows.Forms.Label();
+            this.panContents = new DoubleBufferedPanel();
+            this.linkLabel4 = new System.Windows.Forms.LinkLabel();
+            this.linkLabel5 = new System.Windows.Forms.LinkLabel();
+            this.linkLabel6 = new System.Windows.Forms.LinkLabel();
             this.panPage.SuspendLayout();
+            this.panContents.SuspendLayout();
             this.SuspendLayout();
             // 
             // linkLabel1
@@ -96,11 +102,11 @@
             this.labTitle.BackColor = System.Drawing.SystemColors.Control;
             this.labTitle.Font = new System.Drawing.Font("Segoe UI Semibold", 9F);
             this.labTitle.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.labTitle.Location = new System.Drawing.Point(5, 6);
+            this.labTitle.Location = new System.Drawing.Point(4, 125);
             this.labTitle.Name = "labTitle";
-            this.labTitle.Size = new System.Drawing.Size(197, 25);
+            this.labTitle.Size = new System.Drawing.Size(222, 25);
             this.labTitle.TabIndex = 5;
-            this.labTitle.Text = "TITLE";
+            this.labTitle.Text = "Title";
             this.labTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.labTitle.UseCompatibleTextRendering = true;
             // 
@@ -108,7 +114,8 @@
             // 
             this.lnklabPrevious.AutoSize = true;
             this.lnklabPrevious.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.lnklabPrevious.Location = new System.Drawing.Point(9, 351);
+            this.lnklabPrevious.LinkBehavior = System.Windows.Forms.LinkBehavior.NeverUnderline;
+            this.lnklabPrevious.Location = new System.Drawing.Point(9, 430);
             this.lnklabPrevious.Name = "lnklabPrevious";
             this.lnklabPrevious.Size = new System.Drawing.Size(52, 15);
             this.lnklabPrevious.TabIndex = 15;
@@ -121,7 +128,8 @@
             this.lnklabNext.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lnklabNext.AutoSize = true;
             this.lnklabNext.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.lnklabNext.Location = new System.Drawing.Point(187, 351);
+            this.lnklabNext.LinkBehavior = System.Windows.Forms.LinkBehavior.NeverUnderline;
+            this.lnklabNext.Location = new System.Drawing.Point(187, 430);
             this.lnklabNext.Name = "lnklabNext";
             this.lnklabNext.Size = new System.Drawing.Size(32, 15);
             this.lnklabNext.TabIndex = 16;
@@ -139,9 +147,9 @@
             this.panPage.Controls.Add(this.linkLabel1);
             this.panPage.Controls.Add(this.linkLabel2);
             this.panPage.Controls.Add(this.linkLabel3);
-            this.panPage.Location = new System.Drawing.Point(6, 37);
+            this.panPage.Location = new System.Drawing.Point(6, 153);
             this.panPage.Name = "panPage";
-            this.panPage.Size = new System.Drawing.Size(220, 248);
+            this.panPage.Size = new System.Drawing.Size(220, 224);
             this.panPage.TabIndex = 17;
             // 
             // label2
@@ -179,10 +187,68 @@
             // 
             this.panLine.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.panLine.BackColor = System.Drawing.SystemColors.Control;
-            this.panLine.Location = new System.Drawing.Point(6, 323);
+            this.panLine.Location = new System.Drawing.Point(6, 390);
             this.panLine.Name = "panLine";
             this.panLine.Size = new System.Drawing.Size(220, 25);
             this.panLine.TabIndex = 18;
+            // 
+            // label3
+            // 
+            this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label3.BackColor = System.Drawing.SystemColors.Control;
+            this.label3.Font = new System.Drawing.Font("Segoe UI Semibold", 9F);
+            this.label3.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.label3.Location = new System.Drawing.Point(4, 6);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(222, 25);
+            this.label3.TabIndex = 19;
+            this.label3.Text = "Contents";
+            this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.label3.UseCompatibleTextRendering = true;
+            // 
+            // panContents
+            // 
+            this.panContents.Controls.Add(this.linkLabel6);
+            this.panContents.Controls.Add(this.linkLabel5);
+            this.panContents.Controls.Add(this.linkLabel4);
+            this.panContents.Location = new System.Drawing.Point(5, 34);
+            this.panContents.Name = "panContents";
+            this.panContents.Size = new System.Drawing.Size(221, 88);
+            this.panContents.TabIndex = 18;
+            // 
+            // linkLabel4
+            // 
+            this.linkLabel4.AutoSize = true;
+            this.linkLabel4.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.linkLabel4.Location = new System.Drawing.Point(4, 9);
+            this.linkLabel4.Name = "linkLabel4";
+            this.linkLabel4.Size = new System.Drawing.Size(60, 15);
+            this.linkLabel4.TabIndex = 2;
+            this.linkLabel4.TabStop = true;
+            this.linkLabel4.Text = "linkLabel4";
+            // 
+            // linkLabel5
+            // 
+            this.linkLabel5.AutoSize = true;
+            this.linkLabel5.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.linkLabel5.Location = new System.Drawing.Point(4, 35);
+            this.linkLabel5.Name = "linkLabel5";
+            this.linkLabel5.Size = new System.Drawing.Size(60, 15);
+            this.linkLabel5.TabIndex = 3;
+            this.linkLabel5.TabStop = true;
+            this.linkLabel5.Text = "linkLabel5";
+            // 
+            // linkLabel6
+            // 
+            this.linkLabel6.AutoSize = true;
+            this.linkLabel6.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.linkLabel6.Location = new System.Drawing.Point(4, 64);
+            this.linkLabel6.Name = "linkLabel6";
+            this.linkLabel6.Size = new System.Drawing.Size(60, 15);
+            this.linkLabel6.TabIndex = 4;
+            this.linkLabel6.TabStop = true;
+            this.linkLabel6.Text = "linkLabel6";
             // 
             // AdvisorControl
             // 
@@ -190,18 +256,22 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.Controls.Add(this.panContents);
             this.Controls.Add(this.panLine);
             this.Controls.Add(this.panPage);
             this.Controls.Add(this.btnClose);
             this.Controls.Add(this.lnklabNext);
             this.Controls.Add(this.labTitle);
             this.Controls.Add(this.lnklabPrevious);
+            this.Controls.Add(this.label3);
             this.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.Name = "AdvisorControl";
-            this.Size = new System.Drawing.Size(233, 462);
+            this.Size = new System.Drawing.Size(233, 554);
             this.Resize += new System.EventHandler(this.WizardControl_Resize);
             this.panPage.ResumeLayout(false);
             this.panPage.PerformLayout();
+            this.panContents.ResumeLayout(false);
+            this.panContents.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -219,5 +289,10 @@
         private DoubleBufferedPanel panPage;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Panel panLine;
+        private System.Windows.Forms.Label label3;
+        private DoubleBufferedPanel panContents;
+        private System.Windows.Forms.LinkLabel linkLabel6;
+        private System.Windows.Forms.LinkLabel linkLabel5;
+        private System.Windows.Forms.LinkLabel linkLabel4;
     }
 }

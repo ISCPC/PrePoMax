@@ -55,6 +55,7 @@
             this.btnUndoSelection = new System.Windows.Forms.Button();
             this.btnOK = new System.Windows.Forms.Button();
             this.btnMoreLess = new System.Windows.Forms.Button();
+            this.label1 = new System.Windows.Forms.Label();
             this.gbFEMesh.SuspendLayout();
             this.gbGeometry.SuspendLayout();
             this.SuspendLayout();
@@ -134,6 +135,7 @@
             this.tbEdgeAngle.TabIndex = 10;
             this.tbEdgeAngle.Text = "10";
             this.tbEdgeAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.tbEdgeAngle.UnitConverter = null;
             this.tbEdgeAngle.KeyUp += new System.Windows.Forms.KeyEventHandler(this.tbAngle_KeyUp);
             // 
             // rbEdgeAngle
@@ -188,6 +190,7 @@
             this.tbSurfaceAngle.TabIndex = 5;
             this.tbSurfaceAngle.Text = "10";
             this.tbSurfaceAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.tbSurfaceAngle.UnitConverter = null;
             this.tbSurfaceAngle.KeyUp += new System.Windows.Forms.KeyEventHandler(this.tbAngle_KeyUp);
             // 
             // rbSurfaceAngle
@@ -249,7 +252,7 @@
             // 
             // btnClearSelection
             // 
-            this.btnClearSelection.Location = new System.Drawing.Point(119, 142);
+            this.btnClearSelection.Location = new System.Drawing.Point(119, 197);
             this.btnClearSelection.Name = "btnClearSelection";
             this.btnClearSelection.Size = new System.Drawing.Size(60, 23);
             this.btnClearSelection.TabIndex = 9;
@@ -302,6 +305,7 @@
             this.tbGeometrySurfaceAngle.TabIndex = 17;
             this.tbGeometrySurfaceAngle.Text = "10";
             this.tbGeometrySurfaceAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.tbGeometrySurfaceAngle.UnitConverter = null;
             this.tbGeometrySurfaceAngle.KeyUp += new System.Windows.Forms.KeyEventHandler(this.tbAngle_KeyUp);
             // 
             // rbGeometrySurfaceAngle
@@ -340,7 +344,7 @@
             // 
             // btnUndoSelection
             // 
-            this.btnUndoSelection.Location = new System.Drawing.Point(119, 113);
+            this.btnUndoSelection.Location = new System.Drawing.Point(119, 168);
             this.btnUndoSelection.Name = "btnUndoSelection";
             this.btnUndoSelection.Size = new System.Drawing.Size(60, 23);
             this.btnUndoSelection.TabIndex = 12;
@@ -369,6 +373,16 @@
             this.btnMoreLess.UseVisualStyleBackColor = true;
             this.btnMoreLess.Click += new System.EventHandler(this.btnMoreLess_Click);
             // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.label1.Location = new System.Drawing.Point(12, 110);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(117, 30);
+            this.label1.TabIndex = 15;
+            this.label1.Text = "SHIFT - add items\r\nCTRL - remove items\r\n";
+            // 
             // FrmSelectItemSet
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -383,6 +397,7 @@
             this.Controls.Add(this.btnOK);
             this.Controls.Add(this.gbFEMesh);
             this.Controls.Add(this.btnCancel);
+            this.Controls.Add(this.label1);
             this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
@@ -399,6 +414,7 @@
             this.gbGeometry.ResumeLayout(false);
             this.gbGeometry.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -431,5 +447,6 @@
         private UserControls.UnitAwareTextBox tbGeometryEdgeAngle;
         private System.Windows.Forms.RadioButton rbGeometryEdgeAngle;
         private System.Windows.Forms.Button btnMoreLess;
+        private System.Windows.Forms.Label label1;
     }
 }

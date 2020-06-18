@@ -100,7 +100,16 @@ namespace PrePoMax
         {
             ToDictionary().DumpToFile(fileName);
         }
-        public void LoadFromFile(string fileName)
+        public void LoadFromFile()
+        {
+            string fileName = Path.Combine(System.Windows.Forms.Application.StartupPath, Globals.SettingsFileName);
+            if (File.Exists(fileName))
+            {
+                var t = Task.Run(() => LoadFromFile(fileName));
+                t.Wait();
+            }
+        }
+        private void LoadFromFile(string fileName)
         {
             Dictionary<string, ISettings> items = CaeGlobals.Tools.LoadDumpFromFile<Dictionary<string, ISettings>>(fileName);
             FromDictionary(items);

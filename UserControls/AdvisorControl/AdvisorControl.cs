@@ -21,23 +21,29 @@ namespace UserControls
         
 
         // Events                                                                                                                   
-        public event Action<object, EventArgs> CloseButtonPressed;
+        public event Action<object, EventArgs> CloseButtonPressedEvent;
+        public event Action<ViewType> SetViewEvent;
 
 
         // Constructor                                                                                                              
-        public AdvisorControl()
+        public AdvisorControl(Action<object, EventArgs> CloseButtonPressed, Action<ViewType> SetView)
         {
+            DoubleBuffered = true;
+            //
             InitializeComponent();
             //
             _currentPageNode = null;
             _pages = new LinkedList<AdvisorPage>();
+            //
+            CloseButtonPressedEvent = CloseButtonPressed;
+            SetViewEvent = SetView;
         }
 
 
         // Event handlers                                                                                                           
         private void WizardControl_Resize(object sender, EventArgs e)
         {
-            UpdateCurentPagePositions();
+            UpdateCurentPageControlPositions();
         }
         //
         private void btnClose_MouseEnter(object sender, EventArgs e)
@@ -62,7 +68,7 @@ namespace UserControls
         {
             try
             {
-                CloseButtonPressed?.Invoke(sender, e);
+                CloseButtonPressedEvent?.Invoke(sender, e);
             }
             catch (Exception ex)
             {
@@ -88,33 +94,80 @@ namespace UserControls
             //
             ShowCurrentPage();
         }
+        private void lnklabContents_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            _currentPageNode = (LinkedListNode<AdvisorPage>)((LinkLabel)sender).Tag;
+            //
+            ShowCurrentPage();
+        }
+       
 
         // Methods                                                                                                                  
-        public void AddPage(AdvisorPage wizardPage)
+        public void AddPage(AdvisorPage advisorPage)
         {
-            var page = _pages.AddLast(wizardPage);
+            advisorPage.SetViewEvent += SetViewEvent;
+            //
+            var page = _pages.AddLast(advisorPage);
             //
             if (_currentPageNode == null) _currentPageNode = page;
-            //
-            ShowCurrentPage();  // must be here
         }
-        public void ShowCurrentPage()
+        public void PrepareControls()
+        {
+            int verticalOffset = 2;
+            int horozontalOffset = 0;
+            int y = 4;
+            int count = 1;
+            panContents.Controls.Clear();
+            //
+            for (LinkedListNode<AdvisorPage> page = _pages.First; page != null; page = page.Next)
+            {
+                y += verticalOffset;
+                //
+                LinkLabel linkLabel = new LinkLabel();
+                linkLabel.AutoSize = true;
+                linkLabel.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+                linkLabel.LinkBehavior = LinkBehavior.NeverUnderline;
+                linkLabel.Top = y;
+                linkLabel.Left = horozontalOffset;
+                linkLabel.Text = count + "  " + page.Value.Title;
+                linkLabel.Tag = page;
+                linkLabel.LinkClicked += lnklabContents_LinkClicked;
+                //
+                panContents.Controls.Add(linkLabel);
+                //
+                count++;
+                y += linkLabel.Height;
+            }
+            //
+            panContents.Height = y;
+            labTitle.Top = panContents.Bottom + 10;
+            panPage.Top = labTitle.Bottom;
+            //
+            ShowCurrentPage();
+        }
+        public void Update()
+        {
+            UpdateCurentPageControlPositions();
+        }
+        //
+        private void ShowCurrentPage()
         {
             if (_currentPageNode != null)
             {
+                SetViewEvent?.Invoke(_currentPageNode.Value.AssociatedView);
                 // Title
                 labTitle.Text = _currentPageNode.Value.Title;
                 // Add controls
                 panPage.Controls.Clear();
                 panPage.Controls.AddRange(_currentPageNode.Value.GetControls());
                 // Update positions
-                UpdateCurentPagePositions();
+                UpdateCurentPageControlPositions();
                 // Previous/Next
                 lnklabPrevious.Visible = _currentPageNode.Previous != null;
                 lnklabNext.Visible = _currentPageNode.Next != null;
             }
         }
-        public void ShowPageByIndex(int pageIndex)
+        private void ShowPageByIndex(int pageIndex)
         {
             if (pageIndex < 0) pageIndex = 0;
             if (pageIndex >= _pages.Count) pageIndex = _pages.Count - 1;
@@ -127,7 +180,7 @@ namespace UserControls
             //
             ShowCurrentPage();
         }
-        private void UpdateCurentPagePositions()
+        private void UpdateCurentPageControlPositions()
         {
             if (_currentPageNode != null)
             {

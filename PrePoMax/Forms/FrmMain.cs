@@ -120,20 +120,17 @@ namespace PrePoMax
         // Constructors                                                                                                             
         public FrmMain(string[] args)
         {
-            //System.Threading.Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.CreateSpecificCulture("en-us");
-
-            // Default culture settings
-            // This thread
-            //System.Threading.Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;           
-            // All feature threads
-            //System.Globalization.CultureInfo.DefaultThreadCurrentCulture = System.Globalization.CultureInfo.InvariantCulture;   
-            //
-            //System.Threading.Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.InvariantCulture;
-            //System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = System.Globalization.CultureInfo.InvariantCulture;
-
-            InitializeComponent();
-
             // Initialize               
+            InitializeComponent();
+            //SettingsContainer settings = new SettingsContainer();
+            //settings.LoadFromFile();
+            //if (settings.General.Maximized)
+            //{
+            //    Rectangle resolution = Screen.FromControl(this).Bounds;
+            //    this.Location = new Point(0, 0);
+            //    this.Size = new Size(resolution.Width, resolution.Height);
+            //    this.WindowState = FormWindowState.Maximized;
+            //}
             _vtk = null;
             _controller = null;
             _modelTree = null;
@@ -142,7 +139,7 @@ namespace PrePoMax
             _edgeVisibilities.Add(ViewGeometryModelResults.Geometry, tsmiShowModelEdges_Click);
             _edgeVisibilities.Add(ViewGeometryModelResults.Model, tsmiShowElementEdges_Click);
             _edgeVisibilities.Add(ViewGeometryModelResults.Results, tsmiShowElementEdges_Click);
-            _myLock = new object();
+            _myLock = new object();            
         }
 
 
@@ -155,11 +152,11 @@ namespace PrePoMax
             //StringEnergyPerVolumeConverter.SetEnergyUnit = "in·lb";
             //StringEnergyPerVolumeConverter.SetVolumeUnit = "in³";
             //double v1 = (double)converter.ConvertFromString("8.5 in·lb/in³");
-            ////
+
             Text = Globals.ProgramName;
             this.TopMost = true;
             splash = new FrmSplash { TopMost = true };
-            var task = Task.Run(() => splash.ShowDialog());
+            var task = Task.Run(() => splash.ShowDialog());            
             //
             try
             {
@@ -364,6 +361,8 @@ namespace PrePoMax
             timer.Tick += new EventHandler(async (object s, EventArgs ea) =>
             {
                 timer.Stop();
+                // Set form size
+                _controller.Settings.General.ApplyFormSize(this);
                 //
                 _vtk.Show();
                 _vtk.Enabled = true;
@@ -402,7 +401,7 @@ namespace PrePoMax
                     }
                     finally
                     {
-                        SetStateReady(Globals.OpeningText);
+                        SetStateReady(Globals.OpeningText);                        
                     }
                 }
                 else
@@ -415,14 +414,20 @@ namespace PrePoMax
         }
         private void FrmMain_Resize(object sender, EventArgs e)
         {
-            if (this.WindowState == FormWindowState.Minimized && _frmAnimation.Visible) _frmAnimation.UpdateAnimation();
+            if (this.WindowState == FormWindowState.Minimized && _frmAnimation.Visible) _frmAnimation.UpdateAnimation();            
         }
         private async void FrmMain_FormClosing(object sender, FormClosingEventArgs e)
         {
             try
             {
                 DialogResult response = DialogResult.None;
-                
+                // Save form size and location
+                if (_controller != null)
+                {
+                    _controller.Settings.General.SaveFormSize(this);
+                    _controller.Settings = _controller.Settings;    // to save the settings
+                }
+                //
                 if (tsslState.Text != Globals.ReadyText)
                 {
                     response = MessageBox.Show("There is a task running. Close anyway?", "Warning", MessageBoxButtons.YesNo);
@@ -519,7 +524,7 @@ namespace PrePoMax
 
         #region ModelTree Events ###################################################################################################
         //
-        private void ModelTree_ViewEvent(ViewType viewType)
+        internal void ModelTree_ViewEvent(ViewType viewType)
         {
             try
             {
@@ -3633,7 +3638,7 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiRunAnalysis_Click(object sender, EventArgs e)
+        internal void tsmiRunAnalysis_Click(object sender, EventArgs e)
         {
             try
             {
@@ -3655,7 +3660,7 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiResultsAnalysis_Click(object sender, EventArgs e)
+        internal void tsmiResultsAnalysis_Click(object sender, EventArgs e)
         {
             try
             {
@@ -3688,7 +3693,7 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-
+        //
         private void EditAnalysis(string jobName)
         {
             ShowForm(_frmAnalysis, "Edit Analysis", jobName);
@@ -3735,9 +3740,9 @@ namespace PrePoMax
         }
         private async void ResultsAnalysis(string jobName)
         {
-            CaeJob.AnalysisJob job = _controller.GetJob(jobName);
-            if (job.JobStatus == CaeJob.JobStatus.OK || job.JobStatus == CaeJob.JobStatus.Running ||
-                job.JobStatus == CaeJob.JobStatus.FailedWithResults)
+            AnalysisJob job = _controller.GetJob(jobName);
+            if (job.JobStatus == JobStatus.OK || job.JobStatus == JobStatus.Running ||
+                job.JobStatus == JobStatus.FailedWithResults)
             {
                 //string resultsFile = Path.GetFileNameWithoutExtension(job.Name) + ".frd";
                 string resultsFile = job.Name + ".frd";
@@ -3781,6 +3786,20 @@ namespace PrePoMax
         public void UpdateAnalysisProgress()
         {
             _frmMonitor.UpdateProgress();
+        }
+        //
+        public AnalysisJob GetDefaultJob()
+        {
+            try
+            {
+                _frmAnalysis.PrepareForm(null, null);
+                return _frmAnalysis.Job;
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+                return null;
+            }
         }
 
         #endregion  ################################################################################################################
@@ -5042,7 +5061,7 @@ namespace PrePoMax
             else throw new NotSupportedException();
             //
             InvokeIfRequired(_modelTree.AddTreeNode, viewType, item, stepName);
-            if (item is CaeModel.Step) UpadteSymbolsForStepList();
+            if (item is Step) UpadteSymbolsForStepList();
         }
         public void UpdateTreeNode(ViewGeometryModelResults view, string oldItemName, NamedClass item, string stepName,
                                    bool updateSelection = true)
@@ -5372,18 +5391,19 @@ namespace PrePoMax
                     splitContainer.FixedPanel = FixedPanel.Panel2;
                     splitContainer.Dock = DockStyle.Fill;
                     parent.Controls.Add(splitContainer);
+                    // Set the Panel 2 size - min 100 max 300
+                    splitContainer.SplitterDistance = Math.Max(100, Math.Max(parent.Width - 300, (int)(parent.Width * 0.8)));
                     // Panel 1 - LEFT
-                    splitContainer.Panel1.Controls.Add(panelControl);
                     splitContainer.Panel1.Controls.Add(_vtk);
+                    splitContainer.Panel1.Controls.Add(panelControl);
                     panelControl.SendToBack();
+                    // Update vtk control size
+                    UpdateVtkControlSize();
                     // Panel 2 - RIGHT
                     AdvisorControl advisorControl = AdvisorCreator.CreateControl(this);
                     splitContainer.Panel2.Controls.Add(advisorControl);
                     advisorControl.Dock = DockStyle.Fill;
-                    // Update vtk control size
-                    UpdateVtkControlSize();
-                    // Set the Panel 2 size - min 100 max 300
-                    splitContainer.SplitterDistance = Math.Max(100, Math.Max(parent.Width - 300, (int)(parent.Width * 0.8)));
+                    advisorControl.Update();
                 }
             }
             // Remove wizard panel
@@ -5406,5 +5426,7 @@ namespace PrePoMax
                 }
             }
         }
+
+        
     }
 }

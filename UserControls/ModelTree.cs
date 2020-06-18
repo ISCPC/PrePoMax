@@ -1532,11 +1532,11 @@ namespace UserControls
         {
             if (!_screenUpdating) return;
             if (item.Internal) return;
-
+            //
             TreeNode node;
             TreeNode parent;
             TreeNode[] tmp;
-
+            //
             if (item is FeMeshRefinement)
             {
                 node = _meshRefinements.Nodes.Add(item.Name);
@@ -1630,10 +1630,10 @@ namespace UserControls
             {
                 tmp = _steps.Nodes.Find(stepName, true);
                 if (tmp.Length > 1) throw new Exception("Adding operation failed. More than one step named: " + stepName);
-
+                //
                 tmp = tmp[0].Nodes.Find(_historyOutputsName, true);
                 if (tmp.Length > 1) throw new Exception("Adding operation failed. There is no history output node to add to.");
-
+                //
                 node = tmp[0].Nodes.Add(item.Name);
                 node.Name = node.Text;
                 node.Tag = item;
@@ -1643,10 +1643,10 @@ namespace UserControls
             {
                 tmp = _steps.Nodes.Find(stepName, true);
                 if (tmp.Length > 1) throw new Exception("Adding operation failed. More than one step named: " + stepName);
-
+                //
                 tmp = tmp[0].Nodes.Find(_fieldOutputsName, true);
                 if (tmp.Length > 1) throw new Exception("Adding operation failed. There is no field output node to add to.");
-
+                //
                 node = tmp[0].Nodes.Add(item.Name);
                 node.Name = node.Text;
                 node.Tag = item;
@@ -1656,10 +1656,10 @@ namespace UserControls
             {
                 tmp = _steps.Nodes.Find(stepName, true);
                 if (tmp.Length > 1) throw new Exception("Adding operation failed. More than one step named: " + stepName);
-
+                //
                 tmp = tmp[0].Nodes.Find(_boundaryConditionsName, true);
                 if (tmp.Length > 1) throw new Exception("Adding operation failed. There is no bounday condition node to add to.");
-
+                //
                 node = tmp[0].Nodes.Add(item.Name);
                 node.Name = node.Text;
                 node.Tag = item;
@@ -1669,10 +1669,10 @@ namespace UserControls
             {
                 tmp = _steps.Nodes.Find(stepName, true);
                 if (tmp.Length > 1) throw new Exception("Adding operation failed. More than one step named: " + stepName);
-
+                //
                 tmp = tmp[0].Nodes.Find(_loadsName, true);
                 if (tmp.Length > 1) throw new Exception("Adding operation failed. There is no load node to add to.");
-
+                //
                 node = tmp[0].Nodes.Add(item.Name);
                 node.Name = node.Text;
                 node.Tag = item;
@@ -1686,13 +1686,13 @@ namespace UserControls
                 parent = _analyses;
             }           
             else throw new NotImplementedException();
-
+            //
             parent.Text = parent.Name;
             parent.Expand();
             if (parent.Nodes.Count > 0) parent.Text += " (" + parent.Nodes.Count + ")";
-
+            //
             SetNodeStatus(node);
-
+            //
             GetActiveTree().SelectedNode = node;
         }
         public void UpdateTreeNode(ViewType view, string oldItemName, NamedClass item, string stepName, bool updateSelection)
@@ -1765,7 +1765,7 @@ namespace UserControls
             //
             TreeNode baseNode = null;
             if (typeof(T) == typeof(AnalysisJob)) baseNode = _analyses;
-            if (typeof(T) == typeof(FeMeshRefinement)) baseNode = _meshRefinements;
+            else if (typeof(T) == typeof(FeMeshRefinement)) baseNode = _meshRefinements;
             else baseNode = tree.Nodes[0];
             //
             TreeNode[] tmp;
