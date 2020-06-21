@@ -141,7 +141,7 @@ namespace CaeResults
         public string GetFieldUnitAbbrevation(string fieldDataName, string componentName)
         {
             GetFieldUnitConverterAndAbbrevation(fieldDataName, componentName, out TypeConverter unitConverter,
-                                                  out string unitAbbreviation);
+                                                out string unitAbbreviation);
             return unitAbbreviation;
         }
         public void GetFieldUnitConverterAndAbbrevation(string fieldDataName, string componentName, out TypeConverter unitConverter,

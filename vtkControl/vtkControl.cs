@@ -109,7 +109,6 @@ namespace vtkControl
                 }
             }
         }
-        public string ScalarBarText { get { return _scalarBarWidget.GetText(); } set { _scalarBarWidget.SetText(value); } }
         public bool ShowMinValueLocation
         { 
             get { return _minValueWidget.GetVisibility() == 1; } 
@@ -516,7 +515,8 @@ namespace vtkControl
                 if (data.Geometry.Nodes.Values != null)
                 {
                     // Probe widget
-                    _probeWidget.SetText(_probeWidget.GetText() + Environment.NewLine + "Value: " + data.Geometry.Nodes.Values[0].ToString(format));
+                    _probeWidget.SetText(_probeWidget.GetText() + Environment.NewLine +
+                                         "Value: " + data.Geometry.Nodes.Values[0].ToString(format) + GetUnitAbbreviation());
                 }
 
                 if (_probeWidget.GetVisibility() == 0) _probeWidget.VisibilityOn();
@@ -4004,9 +4004,22 @@ namespace vtkControl
             _scalarBarWidget.MinColor = colorSpectrum.MinColor;
             _scalarBarWidget.MaxColor = colorSpectrum.MaxColor;            
         }       
-        public void SetChartNumberFormat(string numberFormat)
+        public void SetScalarBarNumberFormat(string numberFormat)
         {
             _scalarBarWidget.SetLabelFormat(numberFormat);
+        }
+        public void SetScalarBarText(string fieldName, string componentName, string unitAbbreviation, string minMaxType)
+        {
+            _scalarBarWidget.SetText(fieldName, componentName, unitAbbreviation, minMaxType);
+        }
+        private string GetUnitAbbreviation()
+        {
+            if (_scalarBarWidget.GetVisibility() == 0) return "";
+            //
+            string unitAbbreviation = _scalarBarWidget.UnitAbbreviation;
+            if (unitAbbreviation == "/") unitAbbreviation = "";
+            else unitAbbreviation = " " + unitAbbreviation;
+            return unitAbbreviation;
         }
         public void DrawLegendBackground(bool drawBackground)
         {
@@ -4378,13 +4391,15 @@ namespace vtkControl
            
             // Min Max widgets
             string format = _scalarBarWidget.GetLabelFormat();
-
+           
+            //
             double[] coor;
             if (minVisible)
             {
                 _minValueWidget.VisibilityOn();
                 coor = minNode.Coor;
-                _minValueWidget.SetText("Min: " + minNode.Value.ToString(format) + Environment.NewLine + "Node id: " + minNode.Id);
+                _minValueWidget.SetText("Min: " + minNode.Value.ToString(format) + GetUnitAbbreviation() + Environment.NewLine +
+                                        "Node id: " + minNode.Id);
                 _minValueWidget.SetAnchorPoint(coor[0], coor[1], coor[2]);
             }
 
@@ -4392,7 +4407,8 @@ namespace vtkControl
             {
                 _maxValueWidget.VisibilityOn();
                 coor = maxNode.Coor;
-                _maxValueWidget.SetText("Max: " + maxNode.Value.ToString(format) + Environment.NewLine + "Node id: " + maxNode.Id);
+                _maxValueWidget.SetText("Max: " + maxNode.Value.ToString(format) + GetUnitAbbreviation() + Environment.NewLine +
+                                        "Node id: " + maxNode.Id);
                 _maxValueWidget.SetAnchorPoint(coor[0], coor[1], coor[2]);
             }
         }

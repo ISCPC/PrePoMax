@@ -29,16 +29,16 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("Density");
-            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("General", new System.Windows.Forms.TreeNode[] {
-            treeNode1});
-            System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("Elastic");
-            System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("Elasticity", new System.Windows.Forms.TreeNode[] {
-            treeNode3});
-            System.Windows.Forms.TreeNode treeNode5 = new System.Windows.Forms.TreeNode("Plastic");
-            System.Windows.Forms.TreeNode treeNode6 = new System.Windows.Forms.TreeNode("Plasticity", new System.Windows.Forms.TreeNode[] {
-            treeNode5});
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.TreeNode treeNode19 = new System.Windows.Forms.TreeNode("Density");
+            System.Windows.Forms.TreeNode treeNode20 = new System.Windows.Forms.TreeNode("General", new System.Windows.Forms.TreeNode[] {
+            treeNode19});
+            System.Windows.Forms.TreeNode treeNode21 = new System.Windows.Forms.TreeNode("Elastic");
+            System.Windows.Forms.TreeNode treeNode22 = new System.Windows.Forms.TreeNode("Elasticity", new System.Windows.Forms.TreeNode[] {
+            treeNode21});
+            System.Windows.Forms.TreeNode treeNode23 = new System.Windows.Forms.TreeNode("Plastic");
+            System.Windows.Forms.TreeNode treeNode24 = new System.Windows.Forms.TreeNode("Plasticity", new System.Windows.Forms.TreeNode[] {
+            treeNode23});
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.tvProperties = new System.Windows.Forms.TreeView();
             this.propertyGrid = new UserControls.TabbedPropertyGrid();
             this.btnOK = new System.Windows.Forms.Button();
@@ -51,8 +51,8 @@
             this.tpProperties = new System.Windows.Forms.TabPage();
             this.tpDataPoints = new System.Windows.Forms.TabPage();
             this.dgvData = new UserControls.DataGridViewCopyPaste();
-            this.label2 = new System.Windows.Forms.Label();
-            this.label1 = new System.Windows.Forms.Label();
+            this.labSelected = new System.Windows.Forms.Label();
+            this.labAvailable = new System.Windows.Forms.Label();
             this.lvAddedProperties = new System.Windows.Forms.ListView();
             this.btnAdd = new System.Windows.Forms.Button();
             this.btnRemove = new System.Windows.Forms.Button();
@@ -70,27 +70,27 @@
             this.tvProperties.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.tvProperties.Location = new System.Drawing.Point(6, 38);
             this.tvProperties.Name = "tvProperties";
-            treeNode1.Name = "Density";
-            treeNode1.Text = "Density";
-            treeNode1.ToolTipText = "Density";
-            treeNode2.Name = "General";
-            treeNode2.Text = "General";
-            treeNode3.Name = "Elastic";
-            treeNode3.Text = "Elastic";
-            treeNode3.ToolTipText = "Elastic";
-            treeNode4.Name = "Elasticity";
-            treeNode4.Text = "Elasticity";
-            treeNode4.ToolTipText = "Elasticity";
-            treeNode5.Name = "Plastic";
-            treeNode5.Text = "Plastic";
-            treeNode5.ToolTipText = "Plastic";
-            treeNode6.Name = "Plasticity";
-            treeNode6.Text = "Plasticity";
-            treeNode6.ToolTipText = "Plasticity";
+            treeNode19.Name = "Density";
+            treeNode19.Text = "Density";
+            treeNode19.ToolTipText = "Density";
+            treeNode20.Name = "General";
+            treeNode20.Text = "General";
+            treeNode21.Name = "Elastic";
+            treeNode21.Text = "Elastic";
+            treeNode21.ToolTipText = "Elastic";
+            treeNode22.Name = "Elasticity";
+            treeNode22.Text = "Elasticity";
+            treeNode22.ToolTipText = "Elasticity";
+            treeNode23.Name = "Plastic";
+            treeNode23.Text = "Plastic";
+            treeNode23.ToolTipText = "Plastic";
+            treeNode24.Name = "Plasticity";
+            treeNode24.Text = "Plasticity";
+            treeNode24.ToolTipText = "Plasticity";
             this.tvProperties.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
-            treeNode2,
-            treeNode4,
-            treeNode6});
+            treeNode20,
+            treeNode22,
+            treeNode24});
             this.tvProperties.Size = new System.Drawing.Size(137, 122);
             this.tvProperties.TabIndex = 2;
             this.tvProperties.DoubleClick += new System.EventHandler(this.tvProperties_DoubleClick);
@@ -150,7 +150,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tbName.Location = new System.Drawing.Point(95, 19);
             this.tbName.Name = "tbName";
-            this.tbName.Size = new System.Drawing.Size(209, 23);
+            this.tbName.Size = new System.Drawing.Size(210, 23);
             this.tbName.TabIndex = 1;
             this.tbName.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbName_KeyDown);
             // 
@@ -169,8 +169,8 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.gbProperties.Controls.Add(this.tcProperties);
-            this.gbProperties.Controls.Add(this.label2);
-            this.gbProperties.Controls.Add(this.label1);
+            this.gbProperties.Controls.Add(this.labSelected);
+            this.gbProperties.Controls.Add(this.labAvailable);
             this.gbProperties.Controls.Add(this.lvAddedProperties);
             this.gbProperties.Controls.Add(this.btnAdd);
             this.gbProperties.Controls.Add(this.btnRemove);
@@ -221,14 +221,14 @@
             // dgvData
             // 
             this.dgvData.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgvData.DefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvData.DefaultCellStyle = dataGridViewCellStyle2;
             this.dgvData.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgvData.EnableCutMenu = true;
             this.dgvData.EnablePasteMenu = true;
@@ -240,23 +240,23 @@
             this.dgvData.XColIndex = 0;
             this.dgvData.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dgvData_DataError);
             // 
-            // label2
+            // labSelected
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(177, 19);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(51, 15);
-            this.label2.TabIndex = 8;
-            this.label2.Text = "Selected";
+            this.labSelected.AutoSize = true;
+            this.labSelected.Location = new System.Drawing.Point(177, 19);
+            this.labSelected.Name = "labSelected";
+            this.labSelected.Size = new System.Drawing.Size(51, 15);
+            this.labSelected.TabIndex = 8;
+            this.labSelected.Text = "Selected";
             // 
-            // label1
+            // labAvailable
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(6, 19);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(55, 15);
-            this.label1.TabIndex = 7;
-            this.label1.Text = "Available";
+            this.labAvailable.AutoSize = true;
+            this.labAvailable.Location = new System.Drawing.Point(6, 19);
+            this.labAvailable.Name = "labAvailable";
+            this.labAvailable.Size = new System.Drawing.Size(55, 15);
+            this.labAvailable.TabIndex = 7;
+            this.labAvailable.Text = "Available";
             // 
             // lvAddedProperties
             // 
@@ -318,7 +318,7 @@
             this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.MinimumSize = new System.Drawing.Size(350, 530);
+            this.MinimumSize = new System.Drawing.Size(350, 420);
             this.Name = "FrmMaterial";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
@@ -349,8 +349,8 @@
         private System.Windows.Forms.Button btnAdd;
         private System.Windows.Forms.Button btnRemove;
         private System.Windows.Forms.ListView lvAddedProperties;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label labSelected;
+        private System.Windows.Forms.Label labAvailable;
         private System.Windows.Forms.TabControl tcProperties;
         private System.Windows.Forms.TabPage tpProperties;
         private System.Windows.Forms.TabPage tpDataPoints;

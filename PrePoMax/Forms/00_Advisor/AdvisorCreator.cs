@@ -38,7 +38,13 @@ namespace PrePoMax
             advisorControl.AddPage(RunTheAnalysis(frmMain));
             advisorControl.AddPage(Results(frmMain));
             //
-            advisorControl.PrepareControls();
+            ViewType viewType;
+            if (frmMain.GetCurrentView() == ViewGeometryModelResults.Geometry) viewType = ViewType.Geometry;
+            else if (frmMain.GetCurrentView() == ViewGeometryModelResults.Model) viewType = ViewType.Model;
+            else if (frmMain.GetCurrentView() == ViewGeometryModelResults.Results) viewType = ViewType.Results;
+            else throw new NotSupportedException();
+            //
+            advisorControl.PrepareControls(viewType);
             //
             return advisorControl;
         }
@@ -147,7 +153,7 @@ namespace PrePoMax
             //
             AdvisorItemLinkLabel advisorLinkLabel1 = new AdvisorItemLinkLabel();
             advisorLinkLabel1.Text = "1 Create material model";
-            advisorLinkLabel1.AddAction(frmMain.tsmiCreateMaterial_Click);
+            advisorLinkLabel1.AddAction(frmMain.CreateSimpleMaterial);
             advisorLinkLabel1.IndentLevel = 0;
             advisorPage.Items.Add(advisorLinkLabel1);
             //
@@ -158,7 +164,7 @@ namespace PrePoMax
             advisorPage.Items.Add(advisorLinkLabel2);
             //
             AdvisorItemLinkLabel advisorLinkLabel3 = new AdvisorItemLinkLabel();
-            advisorLinkLabel3.Text = "3 Apply material model";
+            advisorLinkLabel3.Text = "3 Assign material model";
             advisorLinkLabel3.AddAction(frmMain.tsmiCreateSection_Click);
             advisorLinkLabel3.IndentLevel = 0;
             advisorPage.Items.Add(advisorLinkLabel3);

@@ -211,7 +211,7 @@ namespace CaeGlobals
             }
             return rows;
         }
-        //
+        // Enum
         public static string GetDescription<T>(this T enumerationValue) where T : struct
         {
             Type type = enumerationValue.GetType();
@@ -235,8 +235,7 @@ namespace CaeGlobals
             }
             //If we have no description attribute, just return the ToString of the enum
             return enumerationValue.ToString();
-        }
-
+        }        
         // NamedClass[]
         public static string[] GetNames(this NamedClass[] namedClasses)
         {

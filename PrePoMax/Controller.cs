@@ -8176,10 +8176,11 @@ namespace PrePoMax
                 StatusBlockSettings statusBlockSettings = _settings.StatusBlock;
                 // Legend settings
                 _form.SetColorSpectrum(legendSettings.ColorSpectrum);
-                _form.SetScalarBarText(_currentFieldData.Name + ": " + _currentFieldData.Component + Environment.NewLine +
-                                       "Unit: " + GetCurrentResultsUnitAbbreviation() + Environment.NewLine +
+                _form.SetScalarBarText(_currentFieldData.Name, _currentFieldData.Component,
+                                       GetCurrentResultsUnitAbbreviation(),
                                        legendSettings.ColorSpectrum.MinMaxType.ToString());
-                _form.SetChartNumberFormat(legendSettings.GetColorChartNumberFormat());
+                //
+                _form.SetScalarBarNumberFormat(legendSettings.GetColorChartNumberFormat());
                 _form.DrawLegendBackground(legendSettings.BackgroundType == WidgetBackgroundType.White);
                 _form.DrawLegendBorder(legendSettings.DrawBorder);
                 // Status block
@@ -8216,8 +8217,8 @@ namespace PrePoMax
         {
             if (_results == null) return;
             // Settings                                                              
-            _form.SetScalarBarText(_currentFieldData.Name + ": " + _currentFieldData.Component + Environment.NewLine +
-                                   "Unit: " + GetCurrentResultsUnitAbbreviation() + Environment.NewLine +
+            _form.SetScalarBarText(_currentFieldData.Name, _currentFieldData.Component,
+                                   GetCurrentResultsUnitAbbreviation(),
                                    _settings.Legend.ColorSpectrum.MinMaxType.ToString());
             //
             Octree.Plane plane = _sectionViewPlanes[_currentView];

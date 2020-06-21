@@ -15,6 +15,7 @@ namespace CaeModel
         //
         private double _value;
 
+
         // Properties                                                                                                               
         public double Value 
         {
@@ -22,11 +23,13 @@ namespace CaeModel
             set { if (value > 0) _value = value; else throw new CaeException(_positive); } 
         }
 
+
         // Constructors                                                                                                             
         public Density(double density)
         {
             _value = density;
         }
+
 
         // Methods                                                                                                                  
     }

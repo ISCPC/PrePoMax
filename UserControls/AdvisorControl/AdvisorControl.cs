@@ -41,7 +41,7 @@ namespace UserControls
 
 
         // Event handlers                                                                                                           
-        private void WizardControl_Resize(object sender, EventArgs e)
+        private void AdvisorControl_Resize(object sender, EventArgs e)
         {
             UpdateCurentPageControlPositions();
         }
@@ -93,6 +93,8 @@ namespace UserControls
             }
             //
             ShowCurrentPage();
+            //
+            ShowCurrentPage();
         }
         private void lnklabContents_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
@@ -111,8 +113,8 @@ namespace UserControls
             //
             if (_currentPageNode == null) _currentPageNode = page;
         }
-        public void PrepareControls()
-        {
+        public void PrepareControls(ViewType viewType)
+        {            
             int verticalOffset = 2;
             int horozontalOffset = 0;
             int y = 4;
@@ -143,20 +145,52 @@ namespace UserControls
             labTitle.Top = panContents.Bottom + 10;
             panPage.Top = labTitle.Bottom;
             //
+            if (_currentPageNode.Value.AssociatedView != viewType)
+            {
+                for (LinkedListNode<AdvisorPage> page = _pages.First; page != null; page = page.Next)
+                {
+                    if (page.Value.AssociatedView == viewType)
+                    {
+                        _currentPageNode = page;
+                        break;
+                    }
+                }
+            }
+            //
             ShowCurrentPage();
         }
-        public void Update()
+        public void UpdateDesign()
         {
             UpdateCurentPageControlPositions();
         }
         //
         private void ShowCurrentPage()
         {
+            bool prevCScroll = VScroll;
+            ShowCurrentPageOnce();
+            //
+            if (prevCScroll != VScroll) ShowCurrentPageOnce();
+        }
+        private void ShowCurrentPageOnce()
+        {
             if (_currentPageNode != null)
             {
+                string title = "";
+                foreach (var control in panContents.Controls)
+                {
+                    if (control is LinkLabel ll)
+                    {
+                        if (ll.Tag == _currentPageNode)
+                        {
+                            ll.Font = new Font(ll.Font, FontStyle.Bold);
+                            title = ll.Text;
+                        }
+                        else if (ll.Font.Bold) ll.Font = new Font(ll.Font, FontStyle.Regular);
+                    }
+                }
                 SetViewEvent?.Invoke(_currentPageNode.Value.AssociatedView);
                 // Title
-                labTitle.Text = _currentPageNode.Value.Title;
+                labTitle.Text = title == "" ? _currentPageNode.Value.Title : title;
                 // Add controls
                 panPage.Controls.Clear();
                 panPage.Controls.AddRange(_currentPageNode.Value.GetControls());
@@ -182,6 +216,12 @@ namespace UserControls
         }
         private void UpdateCurentPageControlPositions()
         {
+            UpdateCurentPageControlPositionsOnce();
+            //
+            UpdateCurentPageControlPositionsOnce();
+        }
+        private void UpdateCurentPageControlPositionsOnce()
+        {
             if (_currentPageNode != null)
             {
                 _currentPageNode.Value.UpdateControlPositions(panPage);
@@ -189,9 +229,11 @@ namespace UserControls
                 panLine.Top = panPage.Bottom;
                 lnklabPrevious.Top = panLine.Bottom + 10;
                 lnklabNext.Top = panLine.Bottom + 10;
+                //
+                panBackground.Height = lnklabPrevious.Bottom + 10;
             }
         }
 
-        
+
     }
 }

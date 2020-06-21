@@ -33,6 +33,7 @@ namespace PrePoMax.PropertyViews
         [TypeConverter(typeof(CaeGlobals.StringDensityConverter))]
         public double Value { get { return _density.Value; } set { _density.Value = value; } }
 
+
         // Constructors                                                                                                             
         public ViewDensity(CaeModel.Density density)
         {

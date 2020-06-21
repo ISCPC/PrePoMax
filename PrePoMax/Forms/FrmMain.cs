@@ -42,9 +42,9 @@ namespace PrePoMax
         private Controller _controller;
         private string[] _args;
         private string[] outputLines;
-        private object _myLock;
         private Dictionary<ViewGeometryModelResults, Action<object, EventArgs>> _edgeVisibilities; // save display style
-
+        private AdvisorControl _advisorControl;
+        //
         private Point _formLocation;
         private List<Form> _allForms;
         private FrmSectionView _frmSectionView;        
@@ -94,7 +94,7 @@ namespace PrePoMax
         }
         public void SetCurrentView(ViewGeometryModelResults view)
         {
-            // this gets called from: _controller.CurrentView =
+            // This gets called from: _controller.CurrentView
             InvokeIfRequired(() =>
             {
                 if (view == ViewGeometryModelResults.Geometry) _modelTree.SetGeometryTab();
@@ -102,9 +102,20 @@ namespace PrePoMax
                 else if (view == ViewGeometryModelResults.Results)
                 {
                     _modelTree.SetResultsTab();
-                    InitializeWidgetPositions();
+                    InitializeWidgetPositions();                    
                 }
                 else throw new NotSupportedException();
+                //
+                if (_advisorControl != null)
+                {
+                    ViewType viewType;
+                    if (view == ViewGeometryModelResults.Geometry) viewType = ViewType.Geometry;
+                    else if (view == ViewGeometryModelResults.Model) viewType = ViewType.Model;
+                    else if (view == ViewGeometryModelResults.Results) viewType = ViewType.Results;
+                    else throw new NotSupportedException();
+                    //
+                    _advisorControl.PrepareControls(viewType);
+                }
                 //
                 SetMenuAndToolStripVisibility();
                 //
@@ -139,7 +150,6 @@ namespace PrePoMax
             _edgeVisibilities.Add(ViewGeometryModelResults.Geometry, tsmiShowModelEdges_Click);
             _edgeVisibilities.Add(ViewGeometryModelResults.Model, tsmiShowElementEdges_Click);
             _edgeVisibilities.Add(ViewGeometryModelResults.Results, tsmiShowElementEdges_Click);
-            _myLock = new object();            
         }
 
 
@@ -528,13 +538,19 @@ namespace PrePoMax
         {
             try
             {
+                if ((viewType == ViewType.Geometry && GetCurrentView() == ViewGeometryModelResults.Geometry) ||
+                    (viewType == ViewType.Model && GetCurrentView() == ViewGeometryModelResults.Model) ||
+                    (viewType == ViewType.Results && GetCurrentView() == ViewGeometryModelResults.Results)) return;
+                //
                 CloseAllForms();
                 _controller.SelectBy = vtkSelectBy.Off;
                 //
-                if (viewType == ViewType.Geometry) _controller.CurrentView = ViewGeometryModelResults.Geometry;
+                if (viewType == ViewType.Geometry)_controller.CurrentView = ViewGeometryModelResults.Geometry;
                 else if (viewType == ViewType.Model) _controller.CurrentView = ViewGeometryModelResults.Model;
                 else if (viewType == ViewType.Results) _controller.CurrentView = ViewGeometryModelResults.Results;
-                else throw new NotSupportedException();               
+                else throw new NotSupportedException();
+                //
+                if (_advisorControl != null) _advisorControl.PrepareControls(viewType);
             }
             catch (Exception ex)
             {
@@ -887,16 +903,14 @@ namespace PrePoMax
         {
             try
             {
-                if (_controller.ModelChanged &&
-                    MessageBox.Show("OK to close current model?",
-                                    Globals.ProgramName,
-                                    MessageBoxButtons.OKCancel) != System.Windows.Forms.DialogResult.OK)
-                {
-                    return;
-                }
+                if (_controller.ModelChanged && MessageBox.Show("OK to close current model?", Globals.ProgramName,
+                    MessageBoxButtons.OKCancel) != DialogResult.OK) return;
+                //
                 _controller.New();
                 //
                 SelectModelUnitSystem();
+                // No need for ModelChanged
+                _controller.ModelChanged = false;
             }
             catch (Exception ex)
             {
@@ -2629,12 +2643,18 @@ namespace PrePoMax
             try
             {
                 if (_controller.Model.Mesh == null) return;
+                //
                 ShowForm(_frmMaterial, "Create Material", null);
             }
             catch (Exception ex)
             {
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
+        }
+        internal void CreateSimpleMaterial(object sender, EventArgs e)
+        {
+            _frmMaterial.SimpleEditor = true;
+            tsmiCreateMaterial_Click(sender, e);
         }
         private void tsmiEditMaterial_Click(object sender, EventArgs e)
         {
@@ -3555,14 +3575,23 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-      
         public void SelectModelUnitSystem()
         {
             try
             {
                 // Disable unit system selection during regenerate - check that the state is ready
                 if (tsslState.Text != Globals.RegeneratingText)
-                    InvokeIfRequired(ShowForm, _frmUnitSystem, "Select Unit System", "Geometry & Model");
+                {
+                    UnitSystemType unitSystemType = _controller.Settings.General.UnitSystemType;
+                    if (unitSystemType == UnitSystemType.Undefined)
+                    {
+                        InvokeIfRequired(ShowForm, _frmUnitSystem, "Select Unit System", "Geometry & Model");
+                    }
+                    else
+                    {
+                        _controller.SetModelUnitSystemCommand(unitSystemType);
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -4833,9 +4862,13 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.SetColorSpectrum, colorSpectrum);
         }
-        public void SetScalarBarText(string text)
+        public void SetScalarBarNumberFormat(string numberFormat)
         {
-            InvokeIfRequired(() => _vtk.ScalarBarText = text);
+            InvokeIfRequired(_vtk.SetScalarBarNumberFormat, numberFormat);
+        }
+        public void SetScalarBarText(string fieldName, string componentName, string unitAbbreviation, string minMaxType)
+        {
+            InvokeIfRequired(_vtk.SetScalarBarText, fieldName, componentName, unitAbbreviation, minMaxType);
         }
         public void SetShowMinValueLocation(bool show)
         {
@@ -4845,10 +4878,7 @@ namespace PrePoMax
         {
             InvokeIfRequired(() => _vtk.ShowMaxValueLocation = show);
         }
-        public void SetChartNumberFormat(string numberFormat)
-        {
-            InvokeIfRequired(_vtk.SetChartNumberFormat, numberFormat);
-        }
+        
         public void DrawLegendBackground(bool drawBackground)
         {
             InvokeIfRequired(_vtk.DrawLegendBackground, drawBackground);
@@ -5400,10 +5430,11 @@ namespace PrePoMax
                     // Update vtk control size
                     UpdateVtkControlSize();
                     // Panel 2 - RIGHT
-                    AdvisorControl advisorControl = AdvisorCreator.CreateControl(this);
-                    splitContainer.Panel2.Controls.Add(advisorControl);
-                    advisorControl.Dock = DockStyle.Fill;
-                    advisorControl.Update();
+                    _advisorControl = AdvisorCreator.CreateControl(this);
+                    splitContainer.Panel2.Controls.Add(_advisorControl);
+                    _advisorControl.Dock = DockStyle.Fill;
+                    _advisorControl.UpdateDesign();
+                    _advisorControl.AutoScroll = true;
                 }
             }
             // Remove wizard panel
@@ -5417,6 +5448,8 @@ namespace PrePoMax
                     parent.Controls.Remove(panelControl);
                     // Remove added split container
                     splitContainer2.Panel1.Controls.Clear();
+                    splitContainer2.Panel2.Controls.Clear();
+                    _advisorControl = null;
                     // Add controls back
                     splitContainer2.Panel1.Controls.Add(panelControl);
                     splitContainer2.Panel1.Controls.Add(_vtk);

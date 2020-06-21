@@ -19,7 +19,9 @@ namespace PrePoMax
         private string _lastFileName;
         private bool _saveResultsInPmx;
         private LinkedList<string> _recentFiles;
-        //
+        private UnitSystemType _unitSystemType;
+
+        // Form size and position
         private FormWindowState _formWindowState;
         private Size _formSize;
         private double _formRelativeXLocation;
@@ -29,10 +31,7 @@ namespace PrePoMax
         public bool OpenLastFile { get { return _openLastFile; } set { _openLastFile = value; } }
         public string LastFileName { get { return _lastFileName; } set { _lastFileName = value; } }
         public bool SaveResultsInPmx { get { return _saveResultsInPmx; } set { _saveResultsInPmx = value; } }
-        //
-        //public Size FormSize { get { return _formSize; } set { _formSize = value; } }
-        //public double FormRelativeXLocation { get { return _formRelativeXLocation; } set { _formRelativeXLocation = value; } }
-        //public double FormRelativeYLocation { get { return _formRelativeYLocation; } set { _formRelativeYLocation = value; } }
+        public UnitSystemType UnitSystemType { get { return _unitSystemType; } set { _unitSystemType = value; } }
 
 
         // Constructors                                                                                                             
@@ -52,6 +51,8 @@ namespace PrePoMax
             _lastFileName = null;
             _saveResultsInPmx = true;
             _recentFiles = null;
+            _unitSystemType = UnitSystemType.Undefined;
+            //
             ResetFormSize();
         }
         private void ResetFormSize()

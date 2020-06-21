@@ -24,9 +24,11 @@ namespace PrePoMax.Forms
         private Material _material;
         private Controller _controller;
         private TabPage[] _pages;
+        private bool _simpleEditor;
         
         // Properties                                                                                                               
         public Material Material { get { return _material; } set { _material = value.DeepClone(); } }
+        public bool SimpleEditor { get { return _simpleEditor; } set { _simpleEditor = value.DeepClone(); } }
 
 
         // Constructors                                                                                                             
@@ -50,6 +52,8 @@ namespace PrePoMax.Forms
             lvAddedProperties.Sorting = SortOrder.Ascending;
             //
             ClearControls();
+            //
+            _simpleEditor = false;
         }
 
 
@@ -116,7 +120,8 @@ namespace PrePoMax.Forms
         {
             if (lvAddedProperties.SelectedItems.Count == 1)
             {
-                if (lvAddedProperties.SelectedItems[0].Tag is ViewDensity || lvAddedProperties.SelectedItems[0].Tag is ViewElastic)
+                if (lvAddedProperties.SelectedItems[0].Tag is ViewDensity || lvAddedProperties.SelectedItems[0].Tag is ViewElastic ||
+                    lvAddedProperties.SelectedItems[0].Tag is ViewElasticWithDensity)
                 {
                     tcProperties.TabPages.Clear();
                     tcProperties.TabPages.Add(_pages[0]);
@@ -152,6 +157,7 @@ namespace PrePoMax.Forms
                     //
                     propertyGrid.SelectedObject = vp;
                 }
+                else throw new NotSupportedException();
             }
             lvAddedProperties.Select();
         }
@@ -173,7 +179,7 @@ namespace PrePoMax.Forms
             try
             {
                 Add();
-
+                //
                 this.DialogResult = DialogResult.OK;       // use this value to update the model tree selected item highlight
                 Hide();
             }
@@ -188,7 +194,7 @@ namespace PrePoMax.Forms
             try
             {
                 Add();
-
+                //
                 PrepareForm(null, null);
             }
             catch (Exception ex)
@@ -253,6 +259,11 @@ namespace PrePoMax.Forms
                     {
                         if (property is Density den) view = new ViewDensity(den);
                         else if (property is Elastic el) view = new ViewElastic(el);
+                        else if (property is ElasticWithDensity ewd)
+                        {
+                            view = new ViewElasticWithDensity(ewd);
+                            _simpleEditor = true;
+                        }
                         else if (property is Plastic pl) view = new ViewPlastic(pl);
                         else throw new NotSupportedException();
                         //
@@ -265,6 +276,32 @@ namespace PrePoMax.Forms
                     lvAddedProperties.Select();
                 }
             }
+            // Simple material editor
+            int delta;
+            if (_simpleEditor)
+            {
+                if (_materialToEditName == null)
+                {
+                    ViewMaterialProperty view = new ViewElasticWithDensity(new ElasticWithDensity(0, 0, 0));
+                    ListViewItem item = new ListViewItem(view.Name);
+                    item.Tag = view;
+                    lvAddedProperties.Items.Add(item);
+                    lvAddedProperties.Items[0].Selected = true;
+                    lvAddedProperties.Select();
+                }
+                delta = tcProperties.Top - labAvailable.Top;
+                tcProperties.Top = labAvailable.Top;
+                tcProperties.Height += delta;
+                this.Height -= delta;
+            }
+            else
+            {
+                delta = (tvProperties.Bottom + 5) - tcProperties.Top;
+                tcProperties.Top = tvProperties.Bottom + 5;
+                tcProperties.Height -= delta;
+                this.Height += delta;
+            }
+            _simpleEditor = false;
             //
             return true;
         }
@@ -289,8 +326,13 @@ namespace PrePoMax.Forms
                 property = (ViewMaterialProperty)item.Tag;
                 if (property is ViewDensity vd && vd.Value <= 0)
                     throw new CaeGlobals.CaeException("The density must be larger than 0.");
-                if (property is ViewElastic ve && ve.YoungsModulus <= 0)
+                else if (property is ViewElastic ve && ve.YoungsModulus <= 0)
                     throw new CaeGlobals.CaeException("The Young's modulus must be larger than 0.");
+                else if (property is ViewElasticWithDensity ewd)
+                {
+                    if (ewd.YoungsModulus <= 0) throw new CaeGlobals.CaeException("The Young's modulus must be larger than 0.");
+                    if (ewd.Density <= 0) throw new CaeGlobals.CaeException("The density must be larger than 0.");
+                }
                 //
                 _material.AddProperty(property.Base);
             }
@@ -338,7 +380,5 @@ namespace PrePoMax.Forms
 
             return result;
         }
-
-
     }
 }

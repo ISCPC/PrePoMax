@@ -19,21 +19,49 @@ namespace PrePoMax.Settings
 
 
         // Properties                                                                                                               
-        [CategoryAttribute("General")]
+        [Category("General")]
         [OrderedDisplayName(0, 10, "Open last file")]
-        [DescriptionAttribute("When the program starts open the last file Saved/Opened.")]
+        [Description("When the program starts open the last file Saved/Opened.")]
         public bool OpenLastFile { get { return _generalSettings.OpenLastFile; } set { _generalSettings.OpenLastFile = value; } }
-
-        [CategoryAttribute("General")]
+        //
+        [Category("General")]
         [OrderedDisplayName(1, 10, "Last file name")]
-        [DescriptionAttribute("The name of the last file Saved/Opened.")]
+        [Description("The name of the last file Saved/Opened.")]
         [ReadOnly(true)]
         public string LastFileName { get { return _generalSettings.LastFileName; } set { _generalSettings.LastFileName = value; } }
-
-        [CategoryAttribute("General")]
+        //
+        [Category("General")]
         [OrderedDisplayName(2, 10, "Save results in .pmx files")]
-        [DescriptionAttribute("Save the results in the PrePoMax .pmx file.")]
-        public bool SaveResultsInPmx { get { return _generalSettings.SaveResultsInPmx; } set { _generalSettings.SaveResultsInPmx = value; } }
+        [Description("Save the results in the PrePoMax .pmx file.")]
+        public bool SaveResultsInPmx
+        {
+            get { return _generalSettings.SaveResultsInPmx; }
+            set { _generalSettings.SaveResultsInPmx = value; }
+        }
+        //
+        [Category("General")]
+        [OrderedDisplayName(3, 10, "Default unit system")]
+        [Description("Select the default unit system for new models. Using the option Undefined will open " + 
+                     "the unit system selection window at each new model creation.")]
+        public string UnitSystemType
+        {
+            get
+            {
+                return _generalSettings.UnitSystemType.GetDescription();
+            }
+            set
+            {
+                foreach (UnitSystemType unitSystemType in Enum.GetValues(typeof(UnitSystemType)))
+                {
+                    if (unitSystemType.GetDescription() == value)
+                    {
+                        _generalSettings.UnitSystemType = unitSystemType;
+                        return;
+                    }
+                }
+                throw new NotSupportedException();
+            }
+        }
 
 
         // Constructors                                                                                                             
@@ -44,7 +72,13 @@ namespace PrePoMax.Settings
             // Now lets display Yes/No instead of True/False
             _dctd.RenameBooleanPropertyToYesNo(nameof(OpenLastFile));
             _dctd.RenameBooleanPropertyToYesNo(nameof(SaveResultsInPmx));
+            // Add unit system types as description strings
+            List<string> descriptions = new List<string>();
+            foreach (UnitSystemType unitSystemType in Enum.GetValues(typeof(UnitSystemType)))
+                descriptions.Add(unitSystemType.GetDescription());
+            _dctd.PopulateProperty(nameof(UnitSystemType), descriptions.ToArray());
         }
+
 
         // Methods                                                                                                                  
         public override ISettings GetBase()

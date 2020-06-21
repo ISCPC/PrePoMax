@@ -34,31 +34,36 @@ namespace vtkControl
         private double _maxUserValue;
         private System.Drawing.Color _minColor;
         private System.Drawing.Color _maxColor;
+        private string _unitAbbreviation;
 
 
         // Properties                                                                                                               
         public System.Drawing.Color MinColor { get { return _minColor; } set { _minColor = value; } }
         public System.Drawing.Color MaxColor { get { return _maxColor; } set { _maxColor = value; } }
+        public string UnitAbbreviation { get { return _unitAbbreviation; } }
+
 
         // Constructors                                                                                                             
         public vtkMaxScalarBarWidget()
         {
             _backgroundVisibility = false;
             _borderVisibility = false;
-
+            //
             SetBorderColor(0, 0, 0);
-
+            //
             InitializeFooter();
             InitializeLabels();
             InitializeBar();
-
+            //
             _numberOfColors = 12;
             _labelFormat = "G3";
             _lookupTable = vtkLookupTable.New();
             _lookupTable.SetTableRange(-5.5, 11);
-
+            //
             _addMinColor = false;
             _addMaxColor = false;
+            //
+            _unitAbbreviation = "";
         }
 
 
@@ -129,7 +134,7 @@ namespace vtkControl
             _scalarBarColorsActor.GetPositionCoordinate().SetCoordinateSystemToDisplay();
             _scalarBarColorsActor.GetPositionCoordinate().SetReferenceCoordinate(_positionCoordinate);
         }
-
+        //
         private void GenerateGeometry()
         {
             // Geometry
@@ -266,7 +271,7 @@ namespace vtkControl
 
             return new double[] { offsetX + size[0], offsetY + size[1] };
         }
-
+        //
         private string GetString(double value)
         {
             string result = value.ToString(_labelFormat);
@@ -406,8 +411,14 @@ namespace vtkControl
                 if (_scalarBarColorsActor != null) _renderer.RemoveActor(_scalarBarColorsActor);
             }
         }
-        public override void SetText(string text)
+        public void SetText(string fieldName, string componentName, string unitAbbreviation, string minMaxType)
         {
+            _unitAbbreviation = unitAbbreviation;
+            //
+            string text = fieldName + ": " + componentName + Environment.NewLine +
+                          "Unit: " + _unitAbbreviation + Environment.NewLine +
+                          minMaxType;
+            //
             base.SetText(text);
             OnSizeChanged();
         }
@@ -439,7 +450,7 @@ namespace vtkControl
                 OnSizeChanged();
             }
         }
-
+        //
         public void CreateLookupTable(vtkColorTransferFunction ctf, double scalarRangeMin, double scalarRangeMax)
         {
             CreateLookupTable(ctf, scalarRangeMin, scalarRangeMax, double.NaN, double.NaN);
@@ -591,6 +602,6 @@ namespace vtkControl
         public string GetLabelFormat()
         {
             return _labelFormat;
-        }
+        }        
     }
 }

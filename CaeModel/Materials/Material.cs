@@ -51,6 +51,12 @@ namespace CaeModel
                         el.YoungsModulus = fromSystem.Convert(el.YoungsModulus, spc, toSystem);
                         //el.PoissonsRatio = currentSystem.Convert(el.PoissonsRatio, new DoubleConverter(), toSystem);
                     }
+                    else if (property is ElasticWithDensity ewd)
+                    {
+                        ewd.YoungsModulus = fromSystem.Convert(ewd.YoungsModulus, spc, toSystem);
+                        //ewd.PoissonsRatio = currentSystem.Convert(ewd.PoissonsRatio, new DoubleConverter(), toSystem);
+                        ewd.Density = fromSystem.Convert(ewd.Density, sdc, toSystem);
+                    }
                     else if (property is Plastic pl)
                     {
                         for (int i = 0; i < pl.StressStrain.Length; i++)

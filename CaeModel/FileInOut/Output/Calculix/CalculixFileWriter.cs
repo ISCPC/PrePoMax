@@ -409,6 +409,11 @@ namespace FileInOut.Output
                     {
                         if (property is Density) material.AddKeyword(new CalDensity(property as Density));
                         else if (property is Elastic) material.AddKeyword(new CalElastic(property as Elastic));
+                        else if (property is ElasticWithDensity ewd)
+                        {
+                            material.AddKeyword(new CalDensity(new Density(ewd.Density)));
+                            material.AddKeyword(new CalElastic(new Elastic(ewd.YoungsModulus, ewd.PoissonsRatio)));
+                        }
                         else if (property is Plastic) material.AddKeyword(new CalPlastic(property as Plastic));
                         else throw new NotImplementedException();
                     }
