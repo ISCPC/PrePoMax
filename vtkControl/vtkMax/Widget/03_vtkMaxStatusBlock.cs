@@ -20,6 +20,7 @@ namespace vtkControl
         private float _animationScaleFactor;
         private float _deformationScaleFactor;
         private DataFieldType _fieldType;
+        private int _incrementNumber;
 
 
         // Properties                                                                                                               
@@ -30,6 +31,7 @@ namespace vtkControl
         public float DeformationScaleFactor { get { return _deformationScaleFactor; } set { _deformationScaleFactor = value; SetText(); } }
         public float AnimationScaleFactor { get { return _animationScaleFactor; } set { _animationScaleFactor = value; SetText(); } }
         public DataFieldType FieldType { get { return _fieldType; } set { _fieldType = value; SetText(); } }
+        public int IncrementNumber { get { return _incrementNumber; } set { _incrementNumber = value; SetText(); } }
 
 
         // Constructors                                                                                                             
@@ -55,9 +57,15 @@ namespace vtkControl
             _text += "Date: " + _dateTime.ToString(sysUIFormat) + "   Time: " + _dateTime.ToString("HH:mm:ss") + Environment.NewLine;
             //
             if (_fieldType == DataFieldType.Static)
-                _text += "Step: Static   Analysis time: " + _analysisTime.ToString() + " " + _analysisTimeUnit;
+            {
+                _text += "Step: Static   Increment: #" + _incrementNumber + "   Analysis time: " + _analysisTime.ToString() +
+                         " " + _analysisTimeUnit;
+            }
             else if (_fieldType == DataFieldType.Frequency)
-                _text += "Step: Frequency   Eigenfrequency: " + _analysisTime.ToString() + " " + _analysisTimeUnit;
+            {
+                _text += "Step: Frequency   Mode: #" + _incrementNumber + "  Frequency: " + _analysisTime.ToString() +
+                         " " + _analysisTimeUnit;
+            }
             else if (_fieldType == DataFieldType.Buckling)
                 _text += "Step: Buckling   Buckling factor: " + _analysisTime.ToString();
             //

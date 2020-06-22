@@ -406,7 +406,7 @@ namespace PrePoMax
             else if (extension == ".dat") OpenDat(fileName);
             else throw new NotSupportedException();
             // Get first component of the first field for the last increment in the last step
-            if (_results != null) _currentFieldData = _results.GetFirstComponentOfTheFirstFieldAtLastIncrement();
+            if (_results != null) _currentFieldData = _results.GetFirstComponentOfTheFirstFieldAtDefaultIncrement();
             // Settings
             AddFileNameToRecent(fileName);
         }
@@ -8193,16 +8193,20 @@ namespace PrePoMax
         }
         private void SetStatusBlock()
         {
-            float scale = GetScaleForAllStepsAndIncrements();
-            vtkControl.DataFieldType fieldType = ConvertStepType(_currentFieldData);
             string unit;
-            if (fieldType == vtkControl.DataFieldType.Static) unit = _results.UnitSystem.TimeUnitAbbreviation;
-            else if (fieldType == vtkControl.DataFieldType.Frequency) unit = _results.UnitSystem.FrequencyUnitAbbreviation;
-            else if (fieldType == vtkControl.DataFieldType.Buckling) unit = "";
+            if (_currentFieldData.Type == StepType.Static) unit = _results.UnitSystem.TimeUnitAbbreviation;
+            else if (_currentFieldData.Type == StepType.Frequency) unit = _results.UnitSystem.FrequencyUnitAbbreviation;
+            else if (_currentFieldData.Type == StepType.Buckling) unit = "";
             else throw new NotSupportedException();
             //
+            vtkControl.DataFieldType fieldType = ConvertStepType(_currentFieldData);
+            //
+            float scale = GetScaleForAllStepsAndIncrements();
+            //
+            int incrementNumber = _currentFieldData.StepIncrementId;
+            //
             _form.SetStatusBlock(Path.GetFileName(_results.FileName), _results.DateTime, _currentFieldData.Time, unit,
-                                 scale, fieldType);
+                                 scale, fieldType, incrementNumber);
         }
         private vtkControl.DataFieldType ConvertStepType(FieldData fieldData)
         {

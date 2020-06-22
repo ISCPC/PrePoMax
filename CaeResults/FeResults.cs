@@ -406,8 +406,23 @@ namespace CaeResults
             string component = GetComponentNames(name)[0];
             int stepId = GetAllStepIds().Last();
             int stepIncrementId = GetIncrementIds(stepId).Last();
-
+            //
             return GetFieldData(name, component, stepId, stepIncrementId);
+        }
+        public FieldData GetFirstComponentOfTheFirstFieldAtDefaultIncrement()
+        {
+            string name = GetAllFieldNames()[0];
+            string component = GetComponentNames(name)[0];
+            int stepId = GetAllStepIds().Last();
+            int stepIncrementId = GetIncrementIds(stepId).Last();
+            //
+            FieldData fieldData = GetFieldData(name, component, stepId, stepIncrementId);
+            if (fieldData.Type == StepType.Frequency)
+            {
+                stepIncrementId = GetIncrementIds(stepId).First();
+                fieldData = GetFieldData(name, component, stepId, stepIncrementId);
+            }
+            return fieldData;
         }
         public string[] GetAllFieldNames()
         {

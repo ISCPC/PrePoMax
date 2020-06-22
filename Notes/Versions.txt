@@ -168,6 +168,8 @@ Dependency nglib - added following files for c++ redistriburable compatibility:
 Done
 
 Version 0.8.0 Master branch
+For Frequency analysis added the mode number in the status block
+Added the Adviser
 Added support for units/unit system
 Added support for Duplicate of Materials, Surface Interactions and Steps
 Added support for legend background and border

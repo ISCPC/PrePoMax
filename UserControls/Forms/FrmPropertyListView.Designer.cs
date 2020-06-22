@@ -39,7 +39,7 @@
             System.Windows.Forms.ListViewItem listViewItem9 = new System.Windows.Forms.ListViewItem("9");
             System.Windows.Forms.ListViewItem listViewItem10 = new System.Windows.Forms.ListViewItem("10");
             this.gbType = new System.Windows.Forms.GroupBox();
-            this.lvTypes = new System.Windows.Forms.ListView();
+            this.lvTypes = new MyListView();
             this.gbProperties.SuspendLayout();
             this.gbType.SuspendLayout();
             this.SuspendLayout();
@@ -131,6 +131,6 @@
         #endregion
 
         protected System.Windows.Forms.GroupBox gbType;
-        protected System.Windows.Forms.ListView lvTypes;
+        protected MyListView lvTypes;
     }
 }

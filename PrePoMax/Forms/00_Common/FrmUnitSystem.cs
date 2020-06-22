@@ -40,13 +40,14 @@ namespace PrePoMax.Forms
             _controller = controller;
             _viewUnitSystem = null;
             //
-            _selectedPropertyGridItemChangedEventActive = true;
+            _selectedPropertyGridItemChangedEventActive = false;
             //
             this.Height = 311 + 17 * 19;
             //
             btnOkAddNew.Visible = false;
             btnCancel.Visible = false;
             btnOK.Location = btnCancel.Location;
+            //
         }
         private void InitializeComponent()
         {
@@ -110,8 +111,13 @@ namespace PrePoMax.Forms
                 else throw new NotImplementedException();
                 //
                 propertyGrid.SelectedObject = itemTag;
-                propertyGrid.Select();
+                //
+                lvTypes.Select();
             }
+        }
+        protected override void OnListViewTypeMouseUp()
+        {
+            //base.OnListViewTypeMouseUp();
         }
         protected override void OnApply(bool onOkAddNew)
         {
@@ -156,8 +162,6 @@ namespace PrePoMax.Forms
             //
             return true;
         }
-
-        
 
 
         // Methods                                                                                                                  

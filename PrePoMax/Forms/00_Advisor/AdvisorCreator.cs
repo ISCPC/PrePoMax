@@ -116,23 +116,25 @@ namespace PrePoMax
             AdvisorItemLabel advisorLabel1 = new AdvisorItemLabel();
             advisorLabel1.Text = "The geometry must be discretized into finite elements, to perform any type of analysis in the PrePoMax. Smaller finite elements result in better accuracy but require longer computational time.";
             advisorLabel1.Text += "\n\n";
-            advisorLabel1.Text += "To use the default finite element size, select the option 2 to create the FE mesh. To change the size of the largest allowable finite element in the mesh first, choose the option 1 and change the Max element size field. Then create the mesh using the option 2.";
+            advisorLabel1.Text += "Select the option 1 to use the default finite element size and create the FE mesh.";
+            advisorLabel1.Text += "\n\n";
+            advisorLabel1.Text += "To change the size of the largest allowable finite element in the mesh, choose the option 2 and change the Max element size field.";
             advisorPage.Items.Add(advisorLabel1);
             //
             AdvisorItemLinkLabel advisorLinkLabel1 = new AdvisorItemLinkLabel();
-            advisorLinkLabel1.Text = "1 Meshing parameters";
-            advisorLinkLabel1.AddAction(frmMain.tsmiMeshingParameters_Click);
+            advisorLinkLabel1.Text = "1 Create default mesh";
+            advisorLinkLabel1.AddAction(frmMain.CreateDefaultMesh);
             advisorLinkLabel1.IndentLevel = 0;
             advisorPage.Items.Add(advisorLinkLabel1);
             //
             AdvisorItemLinkLabel advisorLinkLabel2 = new AdvisorItemLinkLabel();
-            advisorLinkLabel2.Text = "2 Create mesh";
-            advisorLinkLabel2.AddAction(frmMain.tsmiCreateMesh_Click);
+            advisorLinkLabel2.Text = "2 Create user defined mesh";
+            advisorLinkLabel2.AddAction(frmMain.CreateUserDefinedMesh);
             advisorLinkLabel2.IndentLevel = 0;
             advisorPage.Items.Add(advisorLinkLabel2);
             //
             AdvisorItemLabel advisorLabel2 = new AdvisorItemLabel();
-            advisorLabel2.Text = "After the mesh is generated the size of the finite elements can be changed by repeating steps 1 and 2.";
+            advisorLabel2.Text = "After the mesh is generated the size of the finite elements can be adjusted by repeating the step 2.";
             advisorLabel2.Text += "\n\n";
             advisorLabel2.Text += "Select Next to continue.";
             advisorPage.Items.Add(advisorLabel2);
@@ -224,9 +226,9 @@ namespace PrePoMax
             AdvisorItemLabel advisorLabel1 = new AdvisorItemLabel();
             advisorLabel1.Text = "For a static and buckling analysis, the movement of the FE model must be prevented using a boundary condition. For a frequency analysis, the boundary condition is optional.";
             advisorLabel1.Text += "\n\n";
-            advisorLabel1.Text += "To add a boundary condition that prevents the movement in all directions, choose the option 1 (Fixed).";
+            advisorLabel1.Text += "To add a boundary condition that prevents the movement in all directions, choose the option 1 and then select the region to constrain.";
             advisorLabel1.Text += "\n\n";
-            advisorLabel1.Text += "To individually specify the directions in which the movement is prescribed select the option 2 (Displacement/Rotation).";
+            advisorLabel1.Text += "To individually specify the directions in which the movement is prescribed, select the option 2 and then select the region to constrain.";
             advisorPage.Items.Add(advisorLabel1);
             //
             AdvisorItemLinkLabel advisorLinkLabel1 = new AdvisorItemLinkLabel();
@@ -256,11 +258,11 @@ namespace PrePoMax
             AdvisorItemLabel advisorLabel1 = new AdvisorItemLabel();
             advisorLabel1.Text = "For a static and buckling analysis the loads must be defined. For a frequency analysis, no loads are allowed.";
             advisorLabel1.Text += "\n\n";
-            advisorLabel1.Text += "To add a load defined by a force magnitude and direction, select the option 1 (Surface traction).";
+            advisorLabel1.Text += "To add a load defined by a force magnitude and direction, select the option 1 (Surface traction) and then choose the region to load.";
             advisorLabel1.Text += "\n\n";
-            advisorLabel1.Text += "If the FE model is loaded by a pressure, select the option 2 (Pressure).";
+            advisorLabel1.Text += "If the FE model is loaded by a pressure, select the option 2 (Pressure) and then choose the region to load.";
             advisorLabel1.Text += "\n\n";
-            advisorLabel1.Text += "When the FE model is large and bulky, the gravity must be taken into account. To assign a gravity load, select the option 3 (Gravity load).";
+            advisorLabel1.Text += "When the FE model is large and bulky, the gravity must be taken into account. To assign a gravity load, select the option 3 (Gravity load) and then choose the region to load.";
             advisorPage.Items.Add(advisorLabel1);
             //
             AdvisorItemLinkLabel advisorLinkLabel1 = new AdvisorItemLinkLabel();

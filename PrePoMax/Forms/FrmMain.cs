@@ -993,7 +993,7 @@ namespace PrePoMax
                 // Reset the previous step and increment
                 SetAllStepAndIncrementIds();
                 // Set last increment
-                SetLastStepAndIncrementIds();
+                SetDefaultStepAndIncrementIds();
                 // Show the selection in the results tree
                 InvokeIfRequired(_modelTree.SelectFirstComponentOfFirstFieldOutput);
             }
@@ -1909,8 +1909,8 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }            
         }
-
-
+        
+        //
         private void GetSetMeshingParameters(string[] partNames)
         {
             try
@@ -2022,8 +2022,7 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-
-
+        //
         private void EditMeshRefinement(string meshRefinementName)
         {
             // Data editor
@@ -2071,12 +2070,51 @@ namespace PrePoMax
                 SetStateReady(Globals.MeshingText);
             }
         }
-        
+        // Advisor
+        internal void CreateDefaultMesh(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Parts", _controller.GetGeometryPartsWithoutSubParts(), CreateDefaultMeshes);
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
+        internal void CreateUserDefinedMesh(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Parts", _controller.GetGeometryPartsWithoutSubParts(), CreateUserDefinedMeshes);
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
+        private void CreateDefaultMeshes(string[] partNames)
+        {
+            foreach (var partName in partNames) SetDefaultMeshingParameters(partName);
+            CreateMeshes(partNames);
+        }
+        private async void CreateUserDefinedMeshes(string[] partNames)
+        {
+            await Task.Run(() =>
+            {
+                GetSetMeshingParameters(partNames);
+                while (_frmMeshingParameters.Visible)
+                {
+                    System.Threading.Thread.Sleep(100);
+                }
+            });
+            if (_frmMeshingParameters.DialogResult == DialogResult.OK) CreateMeshes(partNames);
+        }
 
         #endregion  ################################################################################################################
 
         #region Model edit  ########################################################################################################
-        
+
         private void tsmiEditModel_Click(object sender, EventArgs e)
         {
             try
@@ -2653,7 +2691,7 @@ namespace PrePoMax
         }
         internal void CreateSimpleMaterial(object sender, EventArgs e)
         {
-            _frmMaterial.SimpleEditor = true;
+            _frmMaterial.UseSimpleEditor = true;
             tsmiCreateMaterial_Click(sender, e);
         }
         private void tsmiEditMaterial_Click(object sender, EventArgs e)
@@ -4897,10 +4935,10 @@ namespace PrePoMax
         }
         //
         public void SetStatusBlock(string name, DateTime dateTime, float analysisTime, string unit,
-                                   float scaleFactor, vtkControl.DataFieldType fieldType)
+                                   float scaleFactor, vtkControl.DataFieldType fieldType, int modeNumber)
         {
             InvokeIfRequired(_vtk.SetStatusBlock, name, dateTime, analysisTime, unit, scaleFactor,
-                             fieldType);
+                             fieldType, modeNumber);
         }
         public void SetBackground(bool gradient, Color topColor, Color bottomColor, bool redraw)
         {
@@ -5007,7 +5045,7 @@ namespace PrePoMax
                     int incrementId = int.Parse(prevStepIncrementIds[1]);
                     SetStepAndIncrementIds(stepId, incrementId);
                 }
-                else SetLastStepAndIncrementIds();
+                else SetDefaultStepAndIncrementIds();
             });
         }
         
@@ -5028,14 +5066,26 @@ namespace PrePoMax
                     _controller.CurrentFieldData = data;   // to correctly update the increment time
                     tscbStepAndIncrement.SelectedIndexChanged += FieldOutput_SelectionChanged;
                 }
-                else SetLastStepAndIncrementIds();
+                else SetDefaultStepAndIncrementIds();
             });
         }
-        public void SetLastStepAndIncrementIds()
+        public void SetDefaultStepAndIncrementIds()
         {
-            string lastStepIncrement = (string)tscbStepAndIncrement.Items[tscbStepAndIncrement.Items.Count - 1];
-            string[] tmp = lastStepIncrement.Split(new string[] { ",", " " }, StringSplitOptions.RemoveEmptyEntries);
-            SetStepAndIncrementIds(int.Parse(tmp[0]), int.Parse(tmp[1]));
+            string[] tmp;
+            CaeResults.FieldData fieldData = _controller.CurrentFieldData;
+            SetStepAndIncrementIds(fieldData.StepId, fieldData.StepIncrementId);
+            return;
+
+            if (_controller.CurrentFieldData.Type == CaeResults.StepType.Frequency)
+            {
+                string firstStepIncrement = (string)tscbStepAndIncrement.Items[tscbStepAndIncrement.Items.Count - 1];
+            }
+            else
+            {
+                string lastStepIncrement = (string)tscbStepAndIncrement.Items[tscbStepAndIncrement.Items.Count - 1];
+                tmp = lastStepIncrement.Split(new string[] { ",", " " }, StringSplitOptions.RemoveEmptyEntries);
+                
+            }
         }
         public int GetCurrentFieldOutputStepId()
         {
@@ -5448,7 +5498,6 @@ namespace PrePoMax
                     parent.Controls.Remove(panelControl);
                     // Remove added split container
                     splitContainer2.Panel1.Controls.Clear();
-                    splitContainer2.Panel2.Controls.Clear();
                     _advisorControl = null;
                     // Add controls back
                     splitContainer2.Panel1.Controls.Add(panelControl);

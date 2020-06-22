@@ -4044,7 +4044,7 @@ namespace vtkControl
             else _statusBlockWidget.BorderVisibilityOff();
         }
         public void SetStatusBlock(string name, DateTime dateTime, float analysisTimeOrFrequency, string unit,
-                                   float scaleFactor, DataFieldType fieldType)
+                                   float scaleFactor, DataFieldType fieldType, int incrementNumber)
         {
             if (_statusBlockWidget == null) return;
             _statusBlockWidget.Name = name;
@@ -4054,6 +4054,7 @@ namespace vtkControl
             _statusBlockWidget.DeformationScaleFactor = scaleFactor;
             _statusBlockWidget.FieldType = fieldType;
             _statusBlockWidget.AnimationScaleFactor = -1;
+            _statusBlockWidget.IncrementNumber = incrementNumber;
             _statusBlockWidget.VisibilityOn();
         }
         public void SetBackground(bool gradient, Color topColor, Color bottomColor, bool redraw)

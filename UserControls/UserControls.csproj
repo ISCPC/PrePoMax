@@ -119,6 +119,9 @@
     <Compile Include="ListViewWithSelection.Designer.cs">
       <DependentUpon>ListViewWithSelection.cs</DependentUpon>
     </Compile>
+    <Compile Include="ListView\MyListView.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="TextBoxes\UnitAwareTextBox.cs">
       <SubType>Component</SubType>
     </Compile>

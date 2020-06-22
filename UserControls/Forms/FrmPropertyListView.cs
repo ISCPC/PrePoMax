@@ -15,6 +15,7 @@ namespace UserControls
     {
         // Variables                                                                                                                
         protected bool _lvTypesSelectedIndexChangedEventActive;
+        protected bool _selectPropertyGrid;
         protected int _preselectIndex;
 
 
@@ -49,7 +50,7 @@ namespace UserControls
                 //    if (item.Selected) item.BackColor = Color.LightSteelBlue;
                 //    else item.BackColor = Color.White;
                 //}
-                //
+                ////
                 //lvTypes.Invalidate();
             }
             catch (Exception ex)
@@ -59,7 +60,7 @@ namespace UserControls
         }
         private void lvTypes_MouseUp(object sender, MouseEventArgs e)
         {
-            propertyGrid.Select();
+            OnListViewTypeMouseUp();
         }
 
 
@@ -82,11 +83,13 @@ namespace UserControls
         {
 
         }
+        protected virtual void OnListViewTypeMouseUp()
+        {
+            propertyGrid.Select();
+        }
         public void PreselectListViewItem(int index)
         {
             _preselectIndex = index;
         }
-       
-        
     }
 }

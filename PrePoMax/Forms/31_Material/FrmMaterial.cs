@@ -24,11 +24,11 @@ namespace PrePoMax.Forms
         private Material _material;
         private Controller _controller;
         private TabPage[] _pages;
-        private bool _simpleEditor;
+        private bool _useSimpleEditor;
         
         // Properties                                                                                                               
         public Material Material { get { return _material; } set { _material = value.DeepClone(); } }
-        public bool SimpleEditor { get { return _simpleEditor; } set { _simpleEditor = value.DeepClone(); } }
+        public bool UseSimpleEditor { get { return _useSimpleEditor; } set { _useSimpleEditor = value.DeepClone(); } }
 
 
         // Constructors                                                                                                             
@@ -53,7 +53,7 @@ namespace PrePoMax.Forms
             //
             ClearControls();
             //
-            _simpleEditor = false;
+            _useSimpleEditor = false;
         }
 
 
@@ -195,6 +195,7 @@ namespace PrePoMax.Forms
             {
                 Add();
                 //
+                
                 PrepareForm(null, null);
             }
             catch (Exception ex)
@@ -204,6 +205,7 @@ namespace PrePoMax.Forms
         }
         private void btnCancel_Click(object sender, EventArgs e)
         {
+            _useSimpleEditor = false;
             dgvData.HidePlot();
             Hide();
         }
@@ -212,6 +214,8 @@ namespace PrePoMax.Forms
             if (e.CloseReason == CloseReason.UserClosing)
             {
                 e.Cancel = true;
+                //
+                _useSimpleEditor = false;
                 dgvData.HidePlot();
                 Hide();
             }
@@ -262,7 +266,7 @@ namespace PrePoMax.Forms
                         else if (property is ElasticWithDensity ewd)
                         {
                             view = new ViewElasticWithDensity(ewd);
-                            _simpleEditor = true;
+                            _useSimpleEditor = true;
                         }
                         else if (property is Plastic pl) view = new ViewPlastic(pl);
                         else throw new NotSupportedException();
@@ -278,7 +282,7 @@ namespace PrePoMax.Forms
             }
             // Simple material editor
             int delta;
-            if (_simpleEditor)
+            if (_useSimpleEditor)
             {
                 if (_materialToEditName == null)
                 {
@@ -301,7 +305,6 @@ namespace PrePoMax.Forms
                 tcProperties.Height -= delta;
                 this.Height += delta;
             }
-            _simpleEditor = false;
             //
             return true;
         }
@@ -380,5 +383,7 @@ namespace PrePoMax.Forms
 
             return result;
         }
+
+       
     }
 }
