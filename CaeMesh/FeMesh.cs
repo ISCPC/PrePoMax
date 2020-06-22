@@ -3470,8 +3470,8 @@ namespace CaeMesh
         {
             if (precision <= 0) throw new NotSupportedException();
             // geometryId = itemId * 100000 + typeId * 10000 + partId       
-            int itemId = -1;    // 1 ... vertex, 2 ... edge, 3 ... surface  
-            int typeId = -1;
+            int itemId = -1;    
+            int typeId = -1;    // 1 ... vertex, 2 ... edge, 3 ... surface  
             int partId = -1;
             int geometryId;
             //
@@ -3511,6 +3511,35 @@ namespace CaeMesh
             //
             geometryId = itemId * 100000 + typeId * 10000 + partId;
             return geometryId;
+        }
+        public int[] GetGeometryIds(int[] nodeIds, int[] elementIds)
+        {
+            // geometryId = itemId * 100000 + typeId * 10000 + partId       
+            int itemId = -1;
+            int typeId = -1;    // 1 ... vertex, 2 ... edge, 3 ... surface  
+            int partId = -1;
+            List<int> geometryIds = new List<int>();
+            VisualizationData visualization;
+            HashSet<int> selectedElements = new HashSet<int>(elementIds);
+            Dictionary<int, HashSet<int>> elementIdsBySurfaces;
+            //
+            foreach (var entry in _parts)
+            {
+                partId = entry.Value.PartId;
+                visualization = entry.Value.Visualization;
+                // Surfaces
+                typeId = 3;
+                elementIdsBySurfaces = visualization.GetElementIdsBySurfaces();
+                foreach (var elementIdsEntry in elementIdsBySurfaces)
+                {
+                    if (selectedElements.Intersect(elementIdsEntry.Value).Count() > 0)
+                    {
+                        itemId = elementIdsEntry.Key;
+                        geometryIds.Add(itemId * 100000 + typeId * 10000 + partId);
+                    }
+                }
+            }
+            return geometryIds.ToArray();
         }
         private double PointToClosestFaceEdgeDistance(double[] point, VisualizationData visualization, int faceId, out int closestEdgeId)
         {

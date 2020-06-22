@@ -223,7 +223,8 @@ namespace PrePoMax
                 _vtk.Controller_GetCellActorData = _controller.GetCellActorData;
                 _vtk.Controller_GetCellFaceActorData = _controller.GetCellFaceActorData;
                 _vtk.Controller_GetEdgeActorData = _controller.GetEdgeActorData;
-                _vtk.Controller_GetSurfaceEdgesActorData = _controller.GetSurfaceEdgeActorData;
+                _vtk.Controller_GetSurfaceEdgesActorDataFromElementId = _controller.GetSurfaceEdgeActorDataFromElementId;
+                _vtk.Controller_GetSurfaceEdgesActorDataFromNodeAndElementIds = _controller.GetSurfaceEdgeActorDataFromNodeAndElementIds;
                 _vtk.Controller_GetPartActorData = _controller.GetPartActorData;
                 _vtk.Controller_GetGeometryActorData = _controller.GetGeometryActorData;
                 _vtk.Controller_ActorsPicked = SelectBaseParts;
@@ -1033,7 +1034,7 @@ namespace PrePoMax
                 SetStateReady(Globals.ImportingText);
             }
         }
-        private async void tsmiSave_Click(object sender, EventArgs e)
+        internal async void tsmiSave_Click(object sender, EventArgs e)
         {
             try
             {
@@ -2054,7 +2055,7 @@ namespace PrePoMax
                     CaeMesh.GeometryPart part = _controller.GetGeometryPart(partName);
                     if (part.MeshingParameters == null) SetDefaultMeshingParameters(partName);
                     //
-                     await Task.Run(() => _controller.CreateMeshCommand(partName));
+                    await Task.Run(() => _controller.CreateMeshCommand(partName));
                     //
                     _modelTree.SelectBasePart(e, modifierKeys, part);
                 }
@@ -5204,7 +5205,8 @@ namespace PrePoMax
             // This is called from _vtk on part selection
             //if (!_modelTree.DisableMouse)
             {
-                if (partNames != null && partNames.Length > 0 && partNames[0] == null)
+                if ((partNames != null && partNames.Length == 0) || 
+                    (partNames != null && partNames.Length > 0 && partNames[0] == null))
                 {
                     if (modifierKeys != Keys.Shift && modifierKeys != Keys.Control) _controller.ClearAllSelection();
                 }

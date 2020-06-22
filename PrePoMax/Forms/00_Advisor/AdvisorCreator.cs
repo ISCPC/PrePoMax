@@ -333,7 +333,15 @@ namespace PrePoMax
             advisorLabel1.Text += "Eigenfrequency and eigenshape are important for frequency analysis. The eigenshape is displayed as the deformation of the FE Model while the eigenfrequency is reported in the status block. By default, 10 eigenfrequencies are computed. The displayed eigenfrequency can be changed by using the Step, Increment drop-down menu in the results toolbar.";
             advisorLabel1.Text += "\n\n";
             advisorLabel1.Text += "The buckling analysis reports the buckling factor in the status bar. Using the buckling factor, the limit load can be computed by multiplying it with the load defined on the FE Model. The limit load represents the load at which the FE Model buckles.";
+            advisorLabel1.Text += "\n\n";
+            advisorLabel1.Text += "At the end of you work, don't forget to save the model by using the option 1.";
             advisorPage.Items.Add(advisorLabel1);
+            //
+            AdvisorItemLinkLabel advisorLinkLabel1 = new AdvisorItemLinkLabel();
+            advisorLinkLabel1.Text = "1 Save";
+            advisorLinkLabel1.AddAction(frmMain.tsmiSave_Click);
+            advisorLinkLabel1.IndentLevel = 0;
+            advisorPage.Items.Add(advisorLinkLabel1);
             //
             return advisorPage;
         }

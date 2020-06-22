@@ -149,18 +149,35 @@ namespace vtkControl
                     //
                     switch (_selectBy)
                     {
+                        // General
                         case vtkSelectBy.Off:
+                        // Mesh based
                         case vtkSelectBy.Node:
                         case vtkSelectBy.Element:
                         case vtkSelectBy.Part:
+                        // Geometry
+                        case vtkSelectBy.Geometry:
                             _style.RubberBandEnabled = true;
                             break;
+                        // Mesh based
                         case vtkSelectBy.Id:
+                        case vtkSelectBy.Edge:
                         case vtkSelectBy.Surface:
+                        case vtkSelectBy.EdgeAngle:
                         case vtkSelectBy.SurfaceAngle:
-                        default:
+                        // Geometry
+                        case vtkSelectBy.GeometryEdgeAngle:
+                        case vtkSelectBy.GeometrySurfaceAngle:
+                        // Querry
+                        case vtkSelectBy.QueryNode:
+                        case vtkSelectBy.QueryElement:
+                        case vtkSelectBy.QueryEdge:
+                        case vtkSelectBy.QuerySurface:
+                        case vtkSelectBy.QueryPart:
                             _style.RubberBandEnabled = false;
                             break;
+                        default:
+                            throw new NotSupportedException();
                     }
                     ClearCurrentMouseSelection();
                 }
@@ -190,7 +207,8 @@ namespace vtkControl
         public Func<int[], int[], vtkMaxActorData> Controller_GetCellActorData;
         public Func<int, int[], vtkMaxActorData> Controller_GetCellFaceActorData;
         public Func<int, int[], vtkMaxActorData> Controller_GetEdgeActorData;
-        public Func<int, int[], vtkMaxActorData> Controller_GetSurfaceEdgesActorData;
+        public Func<int, int[], vtkMaxActorData> Controller_GetSurfaceEdgesActorDataFromElementId;
+        public Func<int[], int[], vtkMaxActorData> Controller_GetSurfaceEdgesActorDataFromNodeAndElementIds;
         public Func<int[], vtkMaxActorData> Controller_GetPartActorData;
         public Func<double[], int, int[], int[], vtkMaxActorData> Controller_GetGeometryActorData;
 
@@ -320,9 +338,23 @@ namespace vtkControl
         {
             try
             {
-                if (_probeWidget == null || _selectBy == vtkSelectBy.Off) return;
+                if (_probeWidget == null) return;
+                // Default selection of parts
+                else if (_selectBy == vtkSelectBy.Off)
+                {
+                    // Area selection
+                    if (rubberBandSelection)
+                    {
+                        string[] pickedActorNames = null;
+                        PickByArea(x1, y1, x2, y2, false, out pickedActorNames);
+                        //
+                        MouseEventArgs e = new MouseEventArgs(MouseButtons.Left, 1, x1, y1, 0);
+                        //
+                        Controller_ActorsPicked?.Invoke(e, ModifierKeys, pickedActorNames.ToArray());
+                    }
+                }
                 //
-                if (rubberBandSelection)
+                else if (rubberBandSelection)
                 {
                     ClearCurrentMouseSelection();
                     PickByArea(x1, y1, x2, y2, true, out string[] pickedActorNAmes);
@@ -828,38 +860,37 @@ namespace vtkControl
                 if (_probeWidget.GetVisibility() == 1) _probeWidget.VisibilityOff();
                 return;
             }
-
+            //
             vtkCellLocator cellLocator;
             vtkCell cell;
             int globalCellId = GetGlobalCellIdClosestTo3DPoint(ref pickedPoint, out cell, out cellLocator);
             int[] globalCellFaceNodeIds = GetCellFaceNodeIds(cell, cellLocator);
-
-            vtkMaxActorData actorData = Controller_GetSurfaceEdgesActorData(globalCellId, globalCellFaceNodeIds);
+            //
+            vtkMaxActorData actorData = Controller_GetSurfaceEdgesActorDataFromElementId(globalCellId, globalCellFaceNodeIds);
             actorData.CanHaveElementEdges = true;
-
+            //
             vtkMaxActor actor = new vtkMaxActor(actorData);
             _mouseSelectionActorCurrent = actor;
-
+            //
             AddActorGeometry(_mouseSelectionActorCurrent, vtkRendererLayer.Selection);
             _mouseSelectionActorCurrent.Geometry.SetProperty(Globals.CurrentMouseSelectionProperty);
-
+            //
             if (showLabel)
             {
                 string surfaceId = actorData.Name;
-
                 // Probe widget
                 string format = _scalarBarWidget.GetLabelFormat();
-
+                //
                 _renderer.SetWorldPoint(pickedPoint[0], pickedPoint[1], pickedPoint[2], 1.0);
                 _renderer.WorldToDisplay();
                 double[] display = _renderer.GetDisplayPoint();
-
+                //
                 double w = x + 20d;
                 double h = y + 10d;
-
+                //
                 _probeWidget.SetPosition(w, h);
                 _probeWidget.SetText("Surface id: " + surfaceId);
-
+                //
                 if (_probeWidget.GetVisibility() == 0) _probeWidget.VisibilityOn();
             }
         }
@@ -936,12 +967,12 @@ namespace vtkControl
             //
             if (actorData.Geometry.Nodes.Coor.Length == 1)
             {
-                // nodal actor data
+                // Nodal actor data
                 _mouseSelectionActorCurrent = new vtkMaxActor(actorData, false, true);
             }
             else
             {
-                // edge or surface actor data
+                // Edge or surface actor data
                 actorData.CanHaveElementEdges = true;
                 _mouseSelectionActorCurrent = new vtkMaxActor(actorData);
             }
@@ -1101,6 +1132,17 @@ namespace vtkControl
                     _mouseSelectionActorCurrent = GetCopyOfModelEdgesActor(pickedActorNames);
                     //
                     if (_mouseSelectionActorCurrent == null) return;
+                }
+                else if (_selectBy == vtkSelectBy.Geometry)
+                {
+                    int[] cellIds = new int[selectedCellGlobalIds.Count];
+                    selectedCellGlobalIds.CopyTo(cellIds);
+                    //
+                    vtkMaxActorData actorData = Controller_GetSurfaceEdgesActorDataFromNodeAndElementIds(pointIds, cellIds);
+                    actorData.CanHaveElementEdges = true;
+                    //
+                    vtkMaxActor actor = new vtkMaxActor(actorData);
+                    _mouseSelectionActorCurrent = actor;
                 }
                 else throw new NotSupportedException();
                 //

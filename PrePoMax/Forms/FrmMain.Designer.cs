@@ -310,6 +310,7 @@
             this.tscbSymbolsForStep = new System.Windows.Forms.ToolStripComboBox();
             this.timerTest = new System.Windows.Forms.Timer(this.components);
             this.timerOutput = new System.Windows.Forms.Timer(this.components);
+            this.tsmiAdvisorHelp1 = new System.Windows.Forms.ToolStripSeparator();
             this.menuStripMain.SuspendLayout();
             this.statusStripMain.SuspendLayout();
             this.tsResults.SuspendLayout();
@@ -1863,59 +1864,59 @@
             // tsmiCreateAnalysis
             // 
             this.tsmiCreateAnalysis.Name = "tsmiCreateAnalysis";
-            this.tsmiCreateAnalysis.Size = new System.Drawing.Size(117, 22);
+            this.tsmiCreateAnalysis.Size = new System.Drawing.Size(180, 22);
             this.tsmiCreateAnalysis.Text = "Create";
             this.tsmiCreateAnalysis.Click += new System.EventHandler(this.tsmiCreateAnalysis_Click);
             // 
             // tsmiEditAnalysis
             // 
             this.tsmiEditAnalysis.Name = "tsmiEditAnalysis";
-            this.tsmiEditAnalysis.Size = new System.Drawing.Size(117, 22);
+            this.tsmiEditAnalysis.Size = new System.Drawing.Size(180, 22);
             this.tsmiEditAnalysis.Text = "Edit";
             this.tsmiEditAnalysis.Click += new System.EventHandler(this.tsmiEditAnalysis_Click);
             // 
             // tsmiDividerAnalysis1
             // 
             this.tsmiDividerAnalysis1.Name = "tsmiDividerAnalysis1";
-            this.tsmiDividerAnalysis1.Size = new System.Drawing.Size(114, 6);
+            this.tsmiDividerAnalysis1.Size = new System.Drawing.Size(177, 6);
             // 
             // tsmiRunAnalysis
             // 
             this.tsmiRunAnalysis.Name = "tsmiRunAnalysis";
-            this.tsmiRunAnalysis.Size = new System.Drawing.Size(117, 22);
+            this.tsmiRunAnalysis.Size = new System.Drawing.Size(180, 22);
             this.tsmiRunAnalysis.Text = "Run";
             this.tsmiRunAnalysis.Click += new System.EventHandler(this.tsmiRunAnalysis_Click);
             // 
             // tsmiMonitorAnalysis
             // 
             this.tsmiMonitorAnalysis.Name = "tsmiMonitorAnalysis";
-            this.tsmiMonitorAnalysis.Size = new System.Drawing.Size(117, 22);
+            this.tsmiMonitorAnalysis.Size = new System.Drawing.Size(180, 22);
             this.tsmiMonitorAnalysis.Text = "Monitor";
             this.tsmiMonitorAnalysis.Click += new System.EventHandler(this.tsmiMonitorAnalysis_Click);
             // 
             // tsmiResultsAnalysis
             // 
             this.tsmiResultsAnalysis.Name = "tsmiResultsAnalysis";
-            this.tsmiResultsAnalysis.Size = new System.Drawing.Size(117, 22);
+            this.tsmiResultsAnalysis.Size = new System.Drawing.Size(180, 22);
             this.tsmiResultsAnalysis.Text = "Results";
             this.tsmiResultsAnalysis.Click += new System.EventHandler(this.tsmiResultsAnalysis_Click);
             // 
             // tsmiKillAnalysis
             // 
             this.tsmiKillAnalysis.Name = "tsmiKillAnalysis";
-            this.tsmiKillAnalysis.Size = new System.Drawing.Size(117, 22);
+            this.tsmiKillAnalysis.Size = new System.Drawing.Size(180, 22);
             this.tsmiKillAnalysis.Text = "Kill";
             this.tsmiKillAnalysis.Click += new System.EventHandler(this.tsmiKillAnalysis_Click);
             // 
             // tsmiDividerAnalysis2
             // 
             this.tsmiDividerAnalysis2.Name = "tsmiDividerAnalysis2";
-            this.tsmiDividerAnalysis2.Size = new System.Drawing.Size(114, 6);
+            this.tsmiDividerAnalysis2.Size = new System.Drawing.Size(177, 6);
             // 
             // tsmiDeleteAnalysis
             // 
             this.tsmiDeleteAnalysis.Name = "tsmiDeleteAnalysis";
-            this.tsmiDeleteAnalysis.Size = new System.Drawing.Size(117, 22);
+            this.tsmiDeleteAnalysis.Size = new System.Drawing.Size(180, 22);
             this.tsmiDeleteAnalysis.Text = "Delete";
             this.tsmiDeleteAnalysis.Click += new System.EventHandler(this.tsmiDeleteAnalysis_Click);
             // 
@@ -1943,7 +1944,7 @@
             this.tsmiDeleteResultParts});
             this.tsmiResultPart.Image = ((System.Drawing.Image)(resources.GetObject("tsmiResultPart.Image")));
             this.tsmiResultPart.Name = "tsmiResultPart";
-            this.tsmiResultPart.Size = new System.Drawing.Size(95, 22);
+            this.tsmiResultPart.Size = new System.Drawing.Size(180, 22);
             this.tsmiResultPart.Text = "Part";
             // 
             // tsmiEditResultPart
@@ -2034,24 +2035,25 @@
             // tsmiSettings
             // 
             this.tsmiSettings.Name = "tsmiSettings";
-            this.tsmiSettings.Size = new System.Drawing.Size(116, 22);
+            this.tsmiSettings.Size = new System.Drawing.Size(180, 22);
             this.tsmiSettings.Text = "Settings";
             this.tsmiSettings.Click += new System.EventHandler(this.tsmiSettings_Click);
             // 
             // tsmiQuery
             // 
             this.tsmiQuery.Name = "tsmiQuery";
-            this.tsmiQuery.Size = new System.Drawing.Size(116, 22);
+            this.tsmiQuery.Size = new System.Drawing.Size(180, 22);
             this.tsmiQuery.Text = "Query";
             this.tsmiQuery.Click += new System.EventHandler(this.tsmiQuery_Click);
             // 
             // tsmiHelp
             // 
             this.tsmiHelp.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsmiAdvisor,
             this.tsmiHomePage,
+            this.tsmiAdvisorHelp1,
             this.tsmiAbout,
-            this.tsmiTest,
-            this.tsmiAdvisor});
+            this.tsmiTest});
             this.tsmiHelp.Name = "tsmiHelp";
             this.tsmiHelp.Size = new System.Drawing.Size(44, 20);
             this.tsmiHelp.Text = "Help";
@@ -2059,28 +2061,28 @@
             // tsmiHomePage
             // 
             this.tsmiHomePage.Name = "tsmiHomePage";
-            this.tsmiHomePage.Size = new System.Drawing.Size(136, 22);
+            this.tsmiHomePage.Size = new System.Drawing.Size(180, 22);
             this.tsmiHomePage.Text = "Home Page";
             this.tsmiHomePage.Click += new System.EventHandler(this.tsmiHomePage_Click);
             // 
             // tsmiAbout
             // 
             this.tsmiAbout.Name = "tsmiAbout";
-            this.tsmiAbout.Size = new System.Drawing.Size(136, 22);
+            this.tsmiAbout.Size = new System.Drawing.Size(180, 22);
             this.tsmiAbout.Text = "About";
             this.tsmiAbout.Click += new System.EventHandler(this.tsmiAbout_Click);
             // 
             // tsmiTest
             // 
             this.tsmiTest.Name = "tsmiTest";
-            this.tsmiTest.Size = new System.Drawing.Size(136, 22);
+            this.tsmiTest.Size = new System.Drawing.Size(180, 22);
             this.tsmiTest.Text = "Test";
             this.tsmiTest.Click += new System.EventHandler(this.tsmiTest_Click);
             // 
             // tsmiAdvisor
             // 
             this.tsmiAdvisor.Name = "tsmiAdvisor";
-            this.tsmiAdvisor.Size = new System.Drawing.Size(136, 22);
+            this.tsmiAdvisor.Size = new System.Drawing.Size(180, 22);
             this.tsmiAdvisor.Text = "Advisor";
             this.tsmiAdvisor.Click += new System.EventHandler(this.tsmiAdvisor_Click);
             // 
@@ -2673,6 +2675,11 @@
             // 
             this.timerOutput.Tick += new System.EventHandler(this.timerOutput_Tick);
             // 
+            // tsmiAdvisorHelp1
+            // 
+            this.tsmiAdvisorHelp1.Name = "tsmiAdvisorHelp1";
+            this.tsmiAdvisorHelp1.Size = new System.Drawing.Size(177, 6);
+            // 
             // FrmMain
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -3005,6 +3012,7 @@
         private System.Windows.Forms.ToolStripStatusLabel tsslEmpty;
         private System.Windows.Forms.ToolStripStatusLabel tsslUnitSystem;
         private System.Windows.Forms.ToolStripMenuItem tsmiAdvisor;
+        private System.Windows.Forms.ToolStripSeparator tsmiAdvisorHelp1;
     }
 }
 
