@@ -12,8 +12,9 @@ namespace CaeResults
         public string FieldName;
         public string SetName;
         public string[] ComponentNames;
+        public bool[] Locals;
         /// <summary>
-        /// ComponentNames [0 ... num. of values][0...num. of components] -> value
+        /// ComponentNames [0 ... num. of ids/values][0...num. of components] -> value
         /// </summary>
         public double[][] Values;
     }

@@ -924,11 +924,20 @@ namespace PrePoMax
             {                
                 using (System.Windows.Forms.OpenFileDialog openFileDialog = new System.Windows.Forms.OpenFileDialog())
                 {
-                    openFileDialog.Filter = "All files|*.pmx;*.frd;*.dat" +
-                                            "|PrePoMax files|*.pmx" + 
-                                            "|Calculix result files|*.frd" +
-                                            "|Calculix dat files|*.dat";
-
+                    if (!System.Diagnostics.Debugger.IsAttached)
+                    {
+                        openFileDialog.Filter = "All files|*.pmx;*.frd;*.dat" +
+                                                "|PrePoMax files|*.pmx" +
+                                                "|Calculix result files|*.frd" +
+                                                "|Calculix dat files|*.dat";
+                    }
+                    else
+                    {
+                        openFileDialog.Filter = "All files|*.pmx;*.frd;*.dat" +
+                                                "|PrePoMax files|*.pmx" +
+                                                "|Calculix result files|*.frd";
+                    }
+                    //
                     openFileDialog.FileName = "";
                     if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                     {

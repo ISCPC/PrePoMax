@@ -110,7 +110,7 @@ namespace PrePoMax
         private static AdvisorPage PrepareFeMesh(FrmMain frmMain)
         {
             AdvisorPage advisorPage = new AdvisorPage();
-            advisorPage.Title = "Prepare the FE Maesh";
+            advisorPage.Title = "Prepare the FE Mesh";
             advisorPage.AssociatedView = ViewType.Geometry;
             //
             AdvisorItemLabel advisorLabel1 = new AdvisorItemLabel();

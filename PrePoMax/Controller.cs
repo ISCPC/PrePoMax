@@ -4687,6 +4687,7 @@ namespace PrePoMax
             foreach (var entry in component.Entries)
             {
                 columnNames[col] = entry.Key + unit;
+                if (entry.Value.Local) columnNames[col] += "\nLocal";
                 //
                 row = 0;
                 timePoints = entry.Value.Time.ToArray();

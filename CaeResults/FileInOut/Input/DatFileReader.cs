@@ -48,6 +48,7 @@ namespace CaeResults
         private static readonly string[] parenthesesSplitter = new string[] { "(", ")" };
         private static readonly string[] componentsSplitter = new string[] { " ", "," };
         private static readonly string[] dataSplitter = new string[] { " ", "for set", "and time" };
+        private static readonly string[] signSplitter = new string[] { "-", "+" };
         //
         private static readonly Dictionary<string, string> compMapRP = new Dictionary<string, string>()
         {
@@ -462,7 +463,7 @@ namespace CaeResults
                 // displacements (vx, vy, vz) for set DISP and time  0.1000000E+00
                 List<string> componentNames = new List<string>();
                 DatDataSet dataSet = new DatDataSet();
-
+                //
                 string firstLine = dataSetLines[0];
                 foreach (var name in dataSetNames)
                 {
@@ -472,31 +473,64 @@ namespace CaeResults
                         break;
                     }
                 }
-
+                //
                 string[] tmp = firstLine.Split(parenthesesSplitter, StringSplitOptions.RemoveEmptyEntries);
-
+                //
                 string[] tmp2 = tmp[1].Split(componentsSplitter, StringSplitOptions.RemoveEmptyEntries);
                 componentNames = tmp2.ToList();
-
+                //
                 tmp2 = tmp[2].Split(dataSplitter, StringSplitOptions.RemoveEmptyEntries);
                 dataSet.SetName = RepairSetName(tmp2[0].Trim(), repairedSetNames);
                 dataSet.Time = double.Parse(tmp2[1]);
                 //
+                string tmp3;
+                int length;
+                int count;
                 double[] values;
+                List<bool> locals = new List<bool>();
                 List<double[]> allValues = new List<double[]>();
                 for (int i = 1; i < dataSetLines.Length; i++)
                 {
                     tmp = dataSetLines[i].Split(spaceSplitter, StringSplitOptions.RemoveEmptyEntries);
-                    values = new double[tmp.Length];
-
-                    for (int j = 0; j < tmp.Length; j++) values[j] = double.Parse(tmp[j]);
-
+                    // Local result
+                    if (tmp[tmp.Length - 1].ToUpper() == "L")
+                    {
+                        locals.Add(true);
+                        length = tmp.Length - 1;
+                    }
+                    else
+                    {
+                        locals.Add(false);
+                        length = tmp.Length;
+                    }
+                    //
+                    values = new double[length];
+                    //
+                    for (int j = 0; j < length; j++)
+                    {
+                        if (!double.TryParse(tmp[j], out values[j]))
+                        {
+                            // Try to repair values as:
+                            // 1.090361-282  8.468565-284 -8.171595-285
+                            tmp3 = tmp[j];
+                            tmp2 = tmp3.Split(signSplitter, StringSplitOptions.RemoveEmptyEntries);
+                            if (tmp2.Length == 2)
+                            {
+                                count = tmp3.Length - (tmp2[1].Length + 1);
+                                tmp[j] = tmp3.Substring(0, count) + "E" + tmp3.Substring(count, tmp2[1].Length + 1);
+                                //
+                                if (!double.TryParse(tmp[j], out values[j])) values[j] = double.NaN;
+                            }
+                            else values[j] = double.NaN;
+                        }
+                    }
+                    //
                     allValues.Add(values);
                 }
+                dataSet.Locals = locals.ToArray();
                 dataSet.Values = allValues.ToArray();
-
                 dataSet.ComponentNames = componentNames.ToArray();
-
+                //
                 return dataSet;
             }
             catch
@@ -584,10 +618,10 @@ namespace CaeResults
                         // Get or create historyValues as component entries
                         if (!component.Entries.TryGetValue(id, out entries))
                         {
-                            entries = new HistoryResultEntries(id);
+                            entries = new HistoryResultEntries(id, repairedDataSet.Locals[i]);
                             component.Entries.Add(entries.Name, entries);
                         }
-                        // Sum - If the same Id exista for the same time sum them together
+                        // Sum - If the same Id exists for the same time: sum them together
                         if ((field.Name == nameRelativeContactDisplacement ||
                              field.Name == nameContactStress ||
                              field.Name == nameContactPrintEnergy) && entries.Time.Contains(time))
@@ -602,11 +636,12 @@ namespace CaeResults
                         {
                             entries.Time.Add(time);
                             entries.Values.Add(values[j + offset]);
+                            
                         }
                     }
                 }
             }
-
+            //
             return historyOutput;
         }
         static private DatDataSet RepairReferencePointDataSet(DatDataSet dataSet)
@@ -723,27 +758,27 @@ namespace CaeResults
                                 if (double.IsNaN(prinMinArray[i])) prinMinArray[i] = 0;
                             }
                             //
-                            hrEntries = new HistoryResultEntries(entryName);
+                            hrEntries = new HistoryResultEntries(entryName, false);
                             hrEntries.Time = fieldEntry.Value.Components["S11"].Entries[entryName].Time;
                             hrEntries.Values = vmArray.ToList();
                             vonMisesCom.Entries.Add(entryName, hrEntries);
                             //
-                            hrEntries = new HistoryResultEntries(entryName);
+                            hrEntries = new HistoryResultEntries(entryName, false);
                             hrEntries.Time = fieldEntry.Value.Components["S11"].Entries[entryName].Time;
                             hrEntries.Values = sgnMaxAbsPrinArray.ToList();
                             sgnMaxAbsPrinCom.Entries.Add(entryName, hrEntries);
                             //
-                            hrEntries = new HistoryResultEntries(entryName);
+                            hrEntries = new HistoryResultEntries(entryName, false);
                             hrEntries.Time = fieldEntry.Value.Components["S11"].Entries[entryName].Time;
                             hrEntries.Values = prinMaxArray.ToList();
                             prinMaxCom.Entries.Add(entryName, hrEntries);
                             //
-                            hrEntries = new HistoryResultEntries(entryName);
+                            hrEntries = new HistoryResultEntries(entryName, false);
                             hrEntries.Time = fieldEntry.Value.Components["S11"].Entries[entryName].Time;
                             hrEntries.Values = prinMidArray.ToList();
                             prinMidCom.Entries.Add(entryName, hrEntries);
                             //
-                            hrEntries = new HistoryResultEntries(entryName);
+                            hrEntries = new HistoryResultEntries(entryName, false);
                             hrEntries.Time = fieldEntry.Value.Components["S11"].Entries[entryName].Time;
                             hrEntries.Values = prinMinArray.ToList();
                             prinMinCom.Entries.Add(entryName, hrEntries);

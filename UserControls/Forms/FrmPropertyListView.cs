@@ -44,14 +44,6 @@ namespace UserControls
             try
             {
                 if (_lvTypesSelectedIndexChangedEventActive) OnListViewTypeSelectedIndexChanged();
-                //
-                //foreach (ListViewItem item in lvTypes.Items)
-                //{
-                //    if (item.Selected) item.BackColor = Color.LightSteelBlue;
-                //    else item.BackColor = Color.White;
-                //}
-                ////
-                //lvTypes.Invalidate();
             }
             catch (Exception ex)
             {
@@ -67,6 +59,8 @@ namespace UserControls
         // Methods                                                                                                                  
         public override bool PrepareForm(string stepName, string itemToEditName)
         {
+            lvTypes.Enabled = true;
+            //
             bool result = OnPrepareForm(stepName, itemToEditName);
             //
             if (_preselectIndex >= 0 && _preselectIndex < lvTypes.Items.Count)
@@ -75,7 +69,6 @@ namespace UserControls
                 lvTypes.Enabled = false;
                 _preselectIndex = -1;
             }
-            else lvTypes.Enabled = true;
             //
             return result;
         }

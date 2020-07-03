@@ -49,16 +49,15 @@ namespace CaeResults
                 List<string> lines = new List<string>();
                 //
                 if (!CaeGlobals.Tools.WaitForFileToUnlock(fileName, 5000)) return null;
-                //
+
                 using (FileStream fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                using (StreamReader streamReader = new StreamReader(fileStream))
+                using (StreamReader streamReader = new StreamReader(fileStream, Encoding.UTF8, true, 4096))
                 {
                     while (!streamReader.EndOfStream) lines.Add(streamReader.ReadLine()); // faster than streamReader.ReadToEnd().Split ...
                     //
                     streamReader.Close();
                     fileStream.Close();
                 }
-                if (lines.Count < 5) return null;
                 //
                 List<string[]> dataSets = GetDataSets(lines.ToArray());
                 //
@@ -496,11 +495,11 @@ namespace CaeResults
             fieldData.StepId = stepId;
             fieldData.StepIncrementId = stepIncrementId;
         }
-        static private float[][] GetFieldValuesData(string[] lines, ref int lineNum, bool constantWidth, int numOfVal, out List<string> components)
+        static private float[][] GetFieldValuesData(string[] lines, ref int lineNum, bool constantWidth, int numOfVal,
+                                                    out List<string> components)
         {
             string[] record;
             string[] splitter = new string[] { " " };
-
             // -5  D1          1    2    1    0                                          
             // -5  D2          1    2    2    0                                          
             // -5  D3          1    2    3    0                                          
@@ -514,32 +513,33 @@ namespace CaeResults
                 if (record[0] == "-5") componentName = record[1];
                 else break;
                 //
-                if (componentRenamer.TryGetValue(componentName, out componentRename))
-                    componentName = componentRename;
+                if (componentRenamer.TryGetValue(componentName, out componentRename)) componentName = componentRename;
+                //
                 components.Add(componentName);
             }
             lineNum--;
-
-            // check if the line number equals the numebr of lines
+            // Check if the line number equals the numebr of lines
             if (lines.Length - lineNum != numOfVal) numOfVal = lines.Length - lineNum;
-
+            //
             float[][] values = new float[components.Count][];
-            for (int i = 0; i < values.GetLength(0); i++) values[i] = new float[numOfVal];
-
+            for (int i = 0; i < values.Length; i++) values[i] = new float[numOfVal];
+            //
             int start;
             int width;
-
+            string line;
+            //
             if (constantWidth)
             {
                 width = 12;
                 for (int i = 0; i < numOfVal; i++)
                 {
                     start = 13;
+                    line = lines[i + lineNum];
                     for (int j = 0; j < components.Count; j++)
                     {
-                        if (start + width > lines[i + lineNum].Length) continue;
-
-                        values[j][i] = float.Parse(lines[i + lineNum].Substring(start, width));
+                        if (start + width > line.Length) continue;
+                        //
+                        values[j][i] = float.Parse(line.Substring(start, width));
                         start += width;
                     }
                 }
@@ -558,12 +558,12 @@ namespace CaeResults
                     for (int j = 0; j < components.Count; j++)
                     {
                         if (start >= lines[i + lineNum].Length) continue;
-
+                        //
                         if (lines[i + lineNum][start] == '-') width = 13;
                         else width = 12;
-
+                        //
                         if (start + width > lines[i + lineNum].Length) continue;
-
+                        //
                         values[j][i] = float.Parse(lines[i + lineNum].Substring(start, width));
                         start += width;
                     }
@@ -571,6 +571,7 @@ namespace CaeResults
             }
             return values;
         }
+
         static private Field CreateVectorField(string name, List<string> components, float[][] values)
         {
             Field field = new Field(name);
