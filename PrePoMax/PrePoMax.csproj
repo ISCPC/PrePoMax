@@ -669,6 +669,7 @@
   <ItemGroup>
     <Folder Include="Command\0020_View\" />
     <Folder Include="Command\0110_Tools\" />
+    <Folder Include="Forms\93_Transformations\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

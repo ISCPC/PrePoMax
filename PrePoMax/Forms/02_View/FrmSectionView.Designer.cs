@@ -124,7 +124,7 @@
             this.toolStripMenuItem2,
             this.reverseDirectionToolStripMenuItem});
             this.cmsNormal.Name = "cmsNormal";
-            this.cmsNormal.Size = new System.Drawing.Size(206, 148);
+            this.cmsNormal.Size = new System.Drawing.Size(206, 126);
             // 
             // resetToolStripMenuItem
             // 

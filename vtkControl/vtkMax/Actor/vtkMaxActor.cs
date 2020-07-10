@@ -21,6 +21,9 @@ namespace vtkControl
         private vtkCellLocator _cellLocator;          // for surface picking
         private vtkCellLocator _frustumCellLocator;   // for volume picking
         private vtkPointData _frustumPointData;
+        private vtkMaxActor _sectionViewActor;
+        private List<vtkMaxActor> _copies;
+        //
         public vtkMaxActorRepresentation _actorRepresentation;
         private bool _visible;
         private bool _backfaceCulling;
@@ -31,6 +34,7 @@ namespace vtkControl
         private bool _sectionViewPossible;
         private bool _drawOnGeometry;
         private bool _useSecondaryHighightColor;
+        
 
 
         // Properties                                                                                                               
@@ -44,10 +48,12 @@ namespace vtkControl
         public vtkCellLocator CellLocator { get { return _cellLocator; } set { _cellLocator = value; } }
         public vtkCellLocator FrustumCellLocator { get { return _frustumCellLocator; } set { _frustumCellLocator = value; } }
         public vtkPointData FrustumPointData { get { return _frustumPointData; } }
-        public vtkMaxActorRepresentation ActorRepresentation 
-        { 
-            get { return _actorRepresentation; } 
-            set { _actorRepresentation = value; } 
+        public vtkMaxActor SectionViewActor { get { return _sectionViewActor; } set { _sectionViewActor = value; } }
+        public List<vtkMaxActor> Copies { get { return _copies; } }
+        public vtkMaxActorRepresentation ActorRepresentation
+        {
+            get { return _actorRepresentation; }
+            set { _actorRepresentation = value; }
         }
         public bool VtkMaxActorVisible
         {
@@ -94,6 +100,7 @@ namespace vtkControl
             get { return _useSecondaryHighightColor; } 
             set { _useSecondaryHighightColor = value; } 
         }
+        
 
 
         // Constructors                                                                                                             
@@ -107,6 +114,8 @@ namespace vtkControl
             _modelEdges = null;
             _cellLocator = null;
             _frustumCellLocator = null;
+            _sectionViewActor = null;
+            _copies = new List<vtkMaxActor>();
             _actorRepresentation = vtkMaxActorRepresentation.Unknown;
             _visible = true;
             _backfaceCulling = true;
@@ -245,7 +254,6 @@ namespace vtkControl
                 _frustumCellLocator.SetDataSet(grid);
                 _frustumCellLocator.LazyEvaluationOn();
             }
-            //
             // Element edges                                                    
             if (sourceActor.ElementEdges != null)
             {
@@ -262,7 +270,6 @@ namespace vtkControl
                 _elementEdges.SetVisibility(sourceActor.ElementEdges.GetVisibility());
                 _elementEdges.SetPickable(sourceActor.ElementEdges.GetPickable());
             }
-            //
             // Model edges                                                      
             if (sourceActor.ModelEdges != null)
             {
@@ -279,6 +286,10 @@ namespace vtkControl
                 _modelEdges.SetVisibility(sourceActor.ModelEdges.GetVisibility());
                 _modelEdges.SetPickable(sourceActor.ModelEdges.GetPickable());
             }
+            // Section view
+            _sectionViewActor = sourceActor.SectionViewActor;
+            // transformed copies
+            _copies = new List<vtkMaxActor>(sourceActor.Copies);
             //
             this._actorRepresentation = sourceActor.ActorRepresentation;
             this.VtkMaxActorVisible = sourceActor.VtkMaxActorVisible;
@@ -1274,6 +1285,22 @@ namespace vtkControl
                 // locator values
                 if (animationData.LocatorValues != null) _frustumCellLocator.GetDataSet().GetPointData().SetScalars(animationData.LocatorValues);
             }
+        }
+
+        // Section cut                                                                                                              
+        public void AddClippingPlane(vtkPlane sectionViewPlane)
+        {
+            Geometry.GetMapper().AddClippingPlane(sectionViewPlane);
+            if (ElementEdges != null) ElementEdges.GetMapper().AddClippingPlane(sectionViewPlane);
+            if (ModelEdges != null) ModelEdges.GetMapper().AddClippingPlane(sectionViewPlane);
+            //
+            if (ActorRepresentation == vtkMaxActorRepresentation.SolidAsShell) Geometry.GetProperty().BackfaceCullingOff();
+        }
+        public void RemoveAllClippingPlanes()
+        {
+            Geometry.GetMapper().RemoveAllClippingPlanes();
+            if (ElementEdges != null) ElementEdges.GetMapper().RemoveAllClippingPlanes();
+            if (ModelEdges != null) ModelEdges.GetMapper().RemoveAllClippingPlanes();
         }
     }
 }

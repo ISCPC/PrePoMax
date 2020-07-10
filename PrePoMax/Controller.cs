@@ -4449,6 +4449,9 @@ namespace PrePoMax
         }
         public void AddJob(AnalysisJob job)
         {
+            // Compatibility for version v0.7.0
+            if (_jobs.ContainsKey(job.Name)) return;
+            //
             _jobs.Add(job.Name, job);
             ApplySettings();
             _form.AddTreeNode(ViewGeometryModelResults.Model, job, null);
@@ -8004,7 +8007,10 @@ namespace PrePoMax
             SetLegendAndLimits();
             //
             float scale = GetScale();
-            DrawResult(_currentFieldData, scale, _settings.Post.DrawUndeformedModel, _settings.Post.UndeformedModelColor);            
+            DrawResult(_currentFieldData, scale, _settings.Post.DrawUndeformedModel, _settings.Post.UndeformedModelColor);
+            // Transformation
+            _form.ApplyMirrorY();
+            _form.ApplyMirrorZ();
             //
             Octree.Plane plane = _sectionViewPlanes[_currentView];
             if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
@@ -8012,7 +8018,7 @@ namespace PrePoMax
             if (resetCamera) _form.SetFrontBackView(true, true); // animation:true is here to correctly draw max/min widgets 
             _form.AdjustCameraDistanceAndClipping();
         }
-        private void DrawResult(FieldData fieldData, float scale, bool drawUndeformedModel, System.Drawing.Color undeformedModelColor)
+        private void DrawResult(FieldData fieldData, float scale, bool drawUndeformedModel, Color undeformedModelColor)
         {
             vtkControl.vtkMaxActorData data;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
@@ -8040,6 +8046,7 @@ namespace PrePoMax
                         _form.AddScalarFieldOn3DCells(data);
                     }
                 }
+                // Draw geometry parts copied to the results
                 else if (entry.Value is GeometryPart)
                 {
                     DrawGeomPart(_results.Mesh, entry.Value, layer, false, true);
@@ -8109,7 +8116,7 @@ namespace PrePoMax
                         if (nData.Values[0] < allFramesScalarRange[0]) allFramesScalarRange[0] = nData.Values[0];
                         if (nData.Values[1] > allFramesScalarRange[1]) allFramesScalarRange[1] = nData.Values[1];
                     }
-                    //data = GetVtkMaxActorDataFromPart(resultPart, _currentFieldData, scale);
+                    //
                     ApplyLighting(data);
                     result = _form.AddAnimatedScalarFieldOn3DCells(data);                    
                     if (result == false) {_form.Clear3D(); return false;}
@@ -8121,7 +8128,10 @@ namespace PrePoMax
                 if (!entry.Value.Visible) hiddenActors.Add(entry.Key);
             }
             if (hiddenActors.Count > 0) _form.HideActors(hiddenActors.ToArray(), true);
-            //
+            // Transformation
+            _form.ApplyMirrorY();
+            _form.ApplyMirrorZ();
+            // Section view
             Octree.Plane plane = _sectionViewPlanes[_currentView];
             if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
             // Animation field data
@@ -8182,7 +8192,10 @@ namespace PrePoMax
                 if (!entry.Value.Visible) hiddenActors.Add(entry.Key);
             }
             if (hiddenActors.Count > 0) _form.HideActors(hiddenActors.ToArray(), true);
-            //
+            // Transformation
+            _form.ApplyMirrorY();
+            _form.ApplyMirrorZ();
+            // Section view
             Octree.Plane plane = _sectionViewPlanes[_currentView];
             if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
             // Animation field data

@@ -73,6 +73,10 @@
     <Compile Include="FileInOut\Input\FrdFileReader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="FieldOutput\Field.cs" />
+    <Compile Include="Transformations\CylindricalPattern.cs" />
+    <Compile Include="Transformations\RectangularPattern.cs" />
+    <Compile Include="Transformations\Symetry.cs" />
+    <Compile Include="Transformations\Transformation.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CaeGlobals\CaeGlobals.csproj">

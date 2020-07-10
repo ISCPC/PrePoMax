@@ -11,11 +11,15 @@ namespace vtkControl
     internal static class Globals
     {
         // Variables                                                                                                                
+        public static char NameSeparator = ':';
         public static string ScalarArrayName = "scalars";
         public static string QuadraticArrayName = "quadratic";
+        public static string SectionViewSuffix = "sectionView";
+        public static string TransformationSuffix = "transformed";
+        //
         public static Color CurrentMouseHighlightColor = Color.FromArgb(255, 175, 0);
         private static vtkProperty _currentMouseSelectionProperty;
-        public static string NameSeparator = ":";
+        
 
         // Properties                                                                                                               
         public static vtkProperty CurrentMouseSelectionProperty 

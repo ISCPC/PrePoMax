@@ -220,7 +220,11 @@ namespace PrePoMax.Forms
                 string propertyName = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
                 if (propertyName == "PointItemSet")
                 {
-                    if (ids.Length == 1)
+                    if (ids.Length == 0)
+                    {
+                        selectionFinished = true;
+                    }
+                    else if (ids.Length == 1)
                     {
                         FeNode node = _controller.DisplayedMesh.Nodes[ids[0]];
                         //
@@ -237,7 +241,7 @@ namespace PrePoMax.Forms
                     {
                         FeNode start = _controller.DisplayedMesh.Nodes[ids[0]];
                         FeNode end = _controller.DisplayedMesh.Nodes[ids[1]];
-
+                        //
                         _sectionViewParameters.Nx = CaeGlobals.Tools.RoundToSignificantDigits(end.X - start.X, 6);
                         _sectionViewParameters.Ny = CaeGlobals.Tools.RoundToSignificantDigits(end.Y - start.Y, 6);
                         _sectionViewParameters.Nz = CaeGlobals.Tools.RoundToSignificantDigits(end.Z - start.Z, 6);
@@ -343,7 +347,6 @@ namespace PrePoMax.Forms
             catch
             { }
         }
-
-        
+       
     }
 }

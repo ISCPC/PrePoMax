@@ -4805,7 +4805,7 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.AdjustCameraDistanceAndClipping);
         }
-
+        // Section view
         public void ApplySectionView(double[] point, double[] normal)
         {
             InvokeIfRequired(_vtk.ApplySectionView, point, normal);
@@ -4818,7 +4818,15 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.RemoveSectionView);
         }
-
+        //
+        public void ApplyMirrorY()
+        {
+            InvokeIfRequired(_vtk.ApplyMirrorY);
+        }
+        public void ApplyMirrorZ()
+        {
+            InvokeIfRequired(_vtk.ApplyMirrorZ);
+        }
         public void Add3DNodes(vtkControl.vtkMaxActorData actorData)
         {
             InvokeIfRequired(_vtk.AddPoints, actorData);
@@ -4842,7 +4850,7 @@ namespace PrePoMax
         }
         public void UpdateActorColorContoursVisibility(string[] actorNames, bool colorContour)
         {
-            InvokeIfRequired(_vtk.UpdateActorColorContoursVisibility, actorNames, colorContour);
+            InvokeIfRequired(_vtk.UpdateActorsColorContoursVisibility, actorNames, colorContour);
         }
         public void AddSphereActor(vtkControl.vtkMaxActorData actorData, double symbolSize)
         {

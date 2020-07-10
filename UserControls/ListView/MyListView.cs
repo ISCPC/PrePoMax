@@ -3,15 +3,27 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 public class MyListView : ListView
-{
+{   //https://stackoverflow.com/questions/2691726/how-can-i-remove-the-selection-border-on-a-listviewitem
+
+    // Variables                                                                                                                    
     private bool _firstTime;
-    //https://stackoverflow.com/questions/2691726/how-can-i-remove-the-selection-border-on-a-listviewitem
+
+
+    // Constructors                                                                                                                 
     public MyListView()
     {
         // Use first time to disable OnSelectedIndexChanged when the control is Shown for the first time
         _firstTime = true;
     }
 
+
+    // Overrides                                                                                                                    
+    protected override void OnMouseDown(MouseEventArgs e)
+    {
+        if (_firstTime) _firstTime = false;
+        //
+        base.OnMouseDown(e);
+    }
     protected override void OnSelectedIndexChanged(EventArgs e)
     {
         if (_firstTime) _firstTime = false;
@@ -22,7 +34,6 @@ public class MyListView : ListView
             this.WndProc(ref m);
         }
     }
-
     protected override void OnEnter(EventArgs e)
     {
         base.OnEnter(e);
@@ -30,4 +41,5 @@ public class MyListView : ListView
         this.WndProc(ref m);
     }
 
+    
 }

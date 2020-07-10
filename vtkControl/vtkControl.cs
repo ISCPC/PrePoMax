@@ -49,7 +49,6 @@ namespace vtkControl
         private vtkMaxTextWidget _probeWidget;
 
         private Dictionary<string, vtkMaxActor> _actors;
-        private Dictionary<string, vtkMaxActor> _sectionViewActors;
         private List<vtkMaxActor> _selectedActors;
         private Dictionary<string, vtkActor> _overlayActors;
         private Dictionary<string, vtkMaxActor[]> _animationActors;
@@ -237,7 +236,6 @@ namespace vtkControl
             _colorSpectrum = new vtkMaxColorSpectrum();
             //
             _actors = new Dictionary<string, vtkMaxActor>();
-            _sectionViewActors = new Dictionary<string, vtkMaxActor>();
             _selectedActors = new List<vtkMaxActor>();
             _overlayActors = new Dictionary<string, vtkActor>();
             _animationActors = new Dictionary<string, vtkMaxActor[]>();
@@ -3227,7 +3225,7 @@ namespace vtkControl
         }
         private void AddActorGeometry(vtkMaxActor actor, vtkRendererLayer layer)
         {
-            // add actor
+            // Add actor
             if (layer == vtkRendererLayer.Base)
             {
                 if (actor.Name == null) actor.Name = (_actors.Count + 1).ToString();
@@ -3239,22 +3237,6 @@ namespace vtkControl
                     if (actor.CellLocator != null) _cellPicker.AddLocator(actor.CellLocator);
                     _propPicker.AddPickList(actor.Geometry);
                 }
-                //_overlayActors.Add(actor.Name, actor.Geometry);
-                //_overlayRenderer.AddActor(actor.Geometry);
-
-                //{
-                //    vtkReflectionFilter reflectionFilter = vtkReflectionFilter.New();
-                //    reflectionFilter.SetInputConnection(actor.GetMapper().GetOutputPort());
-                //    reflectionFilter.CopyInputOff();
-                //    reflectionFilter.Update();
-
-                //    vtkDataSetMapper reflectionMapper = vtkDataSetMapper.New();
-                //    reflectionMapper.SetInputConnection(reflectionFilter.GetOutputPort());
-                //    vtkActor reflectionActor = vtkActor.New();
-                //    reflectionActor.SetMapper(reflectionMapper);
-                //    vtkMaxActor ma = new vtkMaxActor();
-                //    _renderer.AddActor(reflectionActor);
-                //}
             }
             else if (layer == vtkRendererLayer.Overlay)
             {
@@ -3434,11 +3416,9 @@ namespace vtkControl
         }
         private void HideShowActors(string[] actorNames, bool updateColorContours, bool visible)
         {
-            vtkMaxActor maxActor;
-            HashSet<string> actorNamesHash = new HashSet<string>(actorNames);
-            string sectionViewActorName;
             string[] tmp;
             string[] splitter = new string[] { "_animation-frame-" };
+            HashSet<string> actorNamesHash = new HashSet<string>(actorNames);
             foreach (var entry in _actors)
             {
                 // Check for animated actors
@@ -3456,15 +3436,7 @@ namespace vtkControl
                 // Non animated actors
                 else
                 {
-                    if (actorNamesHash.Contains(entry.Key))
-                    {
-                        // Use vtkMaxActor Visibility setting
-                        entry.Value.VtkMaxActorVisible = visible;
-                        // Section view
-                        sectionViewActorName = GetSectionViewActorName(entry.Key);
-                        if (_sectionView && _actors.TryGetValue(sectionViewActorName, out maxActor))
-                            maxActor.VtkMaxActorVisible = visible;
-                    }
+                    if (actorNamesHash.Contains(entry.Key)) HideShowActor(entry.Value, visible);
                 }
             }
             // Overlay actors
@@ -3478,6 +3450,15 @@ namespace vtkControl
             //
             ApplyEdgesVisibilityAndBackfaceCulling();
             _style.AdjustCameraDistanceAndClipping();
+        }
+        private void HideShowActor(vtkMaxActor actor, bool visible)
+        {
+            // Use vtkMaxActor Visibility setting
+            actor.VtkMaxActorVisible = visible;
+            // Section view
+            if (_sectionView && actor.SectionViewActor != null) actor.SectionViewActor.VtkMaxActorVisible = visible;
+            // Transformed copies
+            foreach (var copy in actor.Copies) HideShowActor(copy, visible);
         }
 
         #endregion  ################################################################################################################
@@ -3497,15 +3478,7 @@ namespace vtkControl
                     //
                     foreach (var entry in _actors)
                     {
-                        if (entry.Value.SectionViewPossible)
-                        {
-                            entry.Value.Geometry.GetMapper().AddClippingPlane(_sectionViewPlane);
-                            if (entry.Value.ElementEdges != null) entry.Value.ElementEdges.GetMapper().AddClippingPlane(_sectionViewPlane);
-                            if (entry.Value.ModelEdges != null) entry.Value.ModelEdges.GetMapper().AddClippingPlane(_sectionViewPlane);
-                            //
-                            if (entry.Value.ActorRepresentation == vtkMaxActorRepresentation.SolidAsShell)
-                                entry.Value.Geometry.GetProperty().BackfaceCullingOff();
-                        }
+                        if (entry.Value.SectionViewPossible) entry.Value.AddClippingPlane(_sectionViewPlane);
                     }
                     // Add new section cut actors
                     vtkMaxActor sectionViewActor;
@@ -3517,7 +3490,7 @@ namespace vtkControl
                             if (sectionViewActor != null)
                             {
                                 AddActor(sectionViewActor, vtkRendererLayer.Base, true);
-                                _sectionViewActors.Add(sectionViewActor.Name, sectionViewActor);
+                                actor.SectionViewActor = sectionViewActor;
                             }
                         }
                     }
@@ -3535,20 +3508,10 @@ namespace vtkControl
                 if (_sectionView)
                 {
                     // Remove previous section cut actors
-                    foreach (var entry in _sectionViewActors)
-                    {
-                        _renderer.RemoveActor(entry.Value.Geometry);
-                        if (entry.Value.ElementEdges != null) _renderer.RemoveActor(entry.Value.ElementEdges);
-                        if (entry.Value.ModelEdges != null) _renderer.RemoveActor(entry.Value.ModelEdges);
-                        //
-                        _actors.Remove(entry.Key);
-                    }
-                    _sectionViewActors.Clear();
-
+                    ClearSectionViewActors();
                     // Modify section cut plane
                     _sectionViewPlane.SetOrigin(point[0], point[1], point[2]);
                     _sectionViewPlane.SetNormal(normal[0], normal[1], normal[2]);
-
                     // Add new section cut actors
                     vtkMaxActor sectionViewActor;
                     foreach (var actor in _actors.Values.ToArray())
@@ -3559,13 +3522,13 @@ namespace vtkControl
                             if (sectionViewActor != null)
                             {
                                 AddActor(sectionViewActor, vtkRendererLayer.Base, true);
-                                _sectionViewActors.Add(sectionViewActor.Name, sectionViewActor);
+                                actor.SectionViewActor = sectionViewActor;
                             }
                         }
                     }
-
+                    //
                     UpdateScalarFormatting();
-
+                    //
                     this.Invalidate();
                 }
             }
@@ -3576,30 +3539,33 @@ namespace vtkControl
             {
                 if (_sectionView)
                 {
-                    foreach (var entry in _actors)
-                    {
-                        entry.Value.Geometry.GetMapper().RemoveAllClippingPlanes();
-                        if (entry.Value.ElementEdges != null) entry.Value.ElementEdges.GetMapper().RemoveAllClippingPlanes();
-                        if (entry.Value.ModelEdges != null) entry.Value.ModelEdges.GetMapper().RemoveAllClippingPlanes();
-                    }
-
+                    foreach (var entry in _actors) entry.Value.RemoveAllClippingPlanes();
                     // Remove previous section cut actors
-                    foreach (var entry in _sectionViewActors)
-                    {
-                        _renderer.RemoveActor(entry.Value.Geometry);
-                        if (entry.Value.ElementEdges != null) _renderer.RemoveActor(entry.Value.ElementEdges);
-                        if (entry.Value.ModelEdges != null) _renderer.RemoveActor(entry.Value.ModelEdges);
-                        //
-                        _actors.Remove(entry.Key);
-                    }
-                    _sectionViewActors.Clear();
-
+                    ClearSectionViewActors();
+                    //
                     _sectionView = false;
                     _sectionViewPlane = null;
-
+                    //
                     UpdateScalarFormatting();
-
+                    //
                     this.Invalidate();
+                }
+            }
+        }
+        //
+        private void ClearSectionViewActors()
+        {
+            vtkMaxActor sectionVewActor;
+            foreach (var entry in _actors.ToArray())
+            {
+                sectionVewActor = entry.Value.SectionViewActor;
+                if (sectionVewActor != null)
+                {
+                    _renderer.RemoveActor(sectionVewActor.Geometry);
+                    if (sectionVewActor.ElementEdges != null) _renderer.RemoveActor(sectionVewActor.ElementEdges);
+                    if (sectionVewActor.ModelEdges != null) _renderer.RemoveActor(sectionVewActor.ModelEdges);
+                    //
+                    _actors.Remove(sectionVewActor.Name);
                 }
             }
         }
@@ -4003,14 +3969,101 @@ namespace vtkControl
 
             return sectionViewActor;
         }
-
+        //
         private string GetSectionViewActorName(string actorName)
         {
-            return actorName + Globals.NameSeparator + "sectionView";
+            string name = actorName + Globals.NameSeparator + Globals.SectionViewSuffix + Globals.NameSeparator;
+            name = NamedClass.GetNewValueName(_actors.Keys, name, Globals.NameSeparator);
+            return name;
         }
 
         #endregion  ################################################################################################################
+        public void ApplyMirrorY()
+        {
+            if (!System.Diagnostics.Debugger.IsAttached) return;
+            //
+            vtkTransform transform = vtkTransform.New();
+            transform.Scale(1.0, -1.0, 1.0);
+            //
+            TransformAllMaxActors(transform);
+            //
+            UpdateScalarFormatting();
+            //
+            this.Invalidate();
+        }
+        public void ApplyMirrorZ()
+        {
+            if (!System.Diagnostics.Debugger.IsAttached) return;
+            //
+            vtkTransform transform = vtkTransform.New();
+            transform.Scale(1.0, 1.0, -1.0);
+            //
+            TransformAllMaxActors(transform);
+            //
+            UpdateScalarFormatting();
+            //
+            this.Invalidate();
+        }
+        public void TransformAllMaxActors(vtkTransform transform)
+        {
+            vtkMaxActor transformedActor;
+            foreach (var actor in _actors.Values.ToArray())
+            {
+                transformedActor = new vtkMaxActor(actor);
+                transformedActor.Name = GetTransformedActorName(transformedActor.Name);
+                //
+                actor.Copies.Add(transformedActor);
+                //
+                TransformMaxActor(transformedActor, transform);
+                //
+                AddActor(transformedActor, vtkRendererLayer.Base, true);
+            }
+        }
+        private void TransformMaxActor(vtkMaxActor vtkMaxActor, vtkTransform transform)
+        {
+            TransformActor(vtkMaxActor.Geometry, transform);
+            if (vtkMaxActor.ElementEdges != null) TransformActor(vtkMaxActor.ElementEdges, transform);
+            if (vtkMaxActor.ModelEdges != null) TransformActor(vtkMaxActor.ModelEdges, transform);
+            // Transofrm locator to enable section view
+            if (vtkMaxActor.FrustumCellLocator != null)
+            {
+                vtkTransformFilter transformFilter = vtkTransformFilter.New();
+                transformFilter.SetInput(vtkMaxActor.FrustumCellLocator.GetDataSet());
+                transformFilter.SetTransform(transform);
+                transformFilter.Update();
+                //
+                vtkMaxActor.FrustumCellLocator.SetDataSet(transformFilter.GetOutput());
+            }
+        }
+        private void TransformActor(vtkActor actor, vtkTransform transform)
+        {
+            vtkPolyData polyData = (vtkPolyData)actor.GetMapper().GetInput();
+            //
+            vtkTransformPolyDataFilter transformFilter = vtkTransformPolyDataFilter.New();
+            transformFilter.SetInput(polyData);
+            transformFilter.SetTransform(transform);
+            transformFilter.Update();
+            //
+            vtkReverseSense reverseSense = vtkReverseSense.New();
+            reverseSense.SetInputConnection(transformFilter.GetOutputPort());
+            reverseSense.ReverseNormalsOff();
+            reverseSense.ReverseCellsOn();
+            reverseSense.Update();
+            //
+            actor.GetMapper().SetInputConnection(reverseSense.GetOutputPort());
+            actor.PickableOff();
+        }
+        //
+        private string GetTransformedActorName(string actorName)
+        {
+            string name = actorName + Globals.NameSeparator + Globals.TransformationSuffix + Globals.NameSeparator;
+            name = NamedClass.GetNewValueName(_actors.Keys, name, Globals.NameSeparator);
+            return name;
+        }
 
+        #region Mirror  ############################################################################################################
+
+        #endregion  ################################################################################################################
         #region Settings ###########################################################################################################
         public void SetCoorSysVisibility(bool visibility)
         {
@@ -4216,7 +4269,7 @@ namespace vtkControl
             _style.AdjustCameraDistanceAndClipping();
             this.Invalidate();
         }
-
+        //
         public bool AddAnimatedScalarFieldOnCells(vtkMaxActorData data)
         {
             if (_animationAcceleration) return AddAnimatedScalarFieldOnCellsAllActors(data);
@@ -4330,7 +4383,7 @@ namespace vtkControl
 
             return true;
         }
-
+        //
         private void UpdateScalarFormatting()
         {
             vtkMaxActor actor;
@@ -4455,112 +4508,6 @@ namespace vtkControl
                 _maxValueWidget.SetAnchorPoint(coor[0], coor[1], coor[2]);
             }
         }
-        private void UpdateAnimationScalarFormatting()
-        {
-            // Legend
-            _scalarBarWidget.VisibilityOff();
-
-            bool minVisible = _minValueWidget.GetVisibility() == 1;
-            bool maxVisible = _maxValueWidget.GetVisibility() == 1;
-            _minValueWidget.VisibilityOff();
-            _maxValueWidget.VisibilityOff();
-
-            vtkMaxExtreemeNode minNode = null;
-            vtkMaxExtreemeNode maxNode = null;
-
-            // Find min and max value on actors
-            foreach (var entry in _actors)
-            {
-                // if the part does not have scalar data
-                if (entry.Value.MinNode == null || entry.Value.MaxNode == null) continue;
-
-                if (entry.Value.ColorContours)
-                {
-                    if (entry.Value.Geometry.GetMapper().GetInput().GetPointData().GetAttribute(0).GetName() != Globals.ScalarArrayName)
-                        entry.Value.Geometry.GetMapper().GetInput().GetPointData().SetActiveScalars(Globals.ScalarArrayName);
-                    if (entry.Value.Geometry.GetMapper().GetInterpolateScalarsBeforeMapping() != 1)
-                        entry.Value.Geometry.GetMapper().SetInterpolateScalarsBeforeMapping(1); // discrete colors
-                }
-                else
-                {
-                    if (entry.Value.Geometry.GetMapper().GetInput().GetPointData().GetAttribute(0) != null &&
-                        entry.Value.Geometry.GetMapper().GetInput().GetPointData().GetAttribute(0).GetName() != "none")
-                        entry.Value.Geometry.GetMapper().GetInput().GetPointData().SetActiveScalars("none");
-                    entry.Value.Geometry.GetProperty().SetColor(entry.Value.Color.R / 255d, entry.Value.Color.G / 255d, entry.Value.Color.B / 255d);
-                    if (entry.Value.Geometry.GetMapper().GetInterpolateScalarsBeforeMapping() != 0)
-                        entry.Value.Geometry.GetMapper().SetInterpolateScalarsBeforeMapping(0); // discrete colors must be turned off
-                }
-
-                if (entry.Value.Geometry.GetVisibility() == 0 || !entry.Value.ColorContours) continue;
-
-                if (minNode == null || maxNode == null)     // the first time through
-                {
-                    minNode = entry.Value.MinNode;
-                    maxNode = entry.Value.MaxNode;
-                }
-                else
-                {
-                    if (entry.Value.MinNode != null && entry.Value.MinNode.Value < minNode.Value) minNode = entry.Value.MinNode;
-                    if (entry.Value.MaxNode != null && entry.Value.MaxNode.Value > maxNode.Value) maxNode = entry.Value.MaxNode;
-                }
-            }
-            if (minNode == null || maxNode == null) return;
-
-            // Scalar bar and min/max values of actor scalar range
-            if (_colorSpectrum.MinMaxType == vtkColorSpectrumMinMaxType.Automatic)
-            {
-                if (_animationFrameData != null && _animationFrameData.UseAllFrameData)   // animation from all frames
-                {
-                    double[] animRange = _animationFrameData.AllFramesScalarRange;
-                    _scalarBarWidget.CreateLookupTable(GetColorTransferFunction(), animRange[0], animRange[1]);
-                    PrepareActorLookupTable(animRange[0], animRange[1]);
-                }
-                else // min max from current frame
-                {
-                    _scalarBarWidget.CreateLookupTable(GetColorTransferFunction(), minNode.Value, maxNode.Value);
-                    PrepareActorLookupTable(minNode.Value, maxNode.Value);
-                }
-            }
-            else  // Manual and min max from current frame
-            {
-                _scalarBarWidget.CreateLookupTable(GetColorTransferFunction(), minNode.Value, maxNode.Value, _colorSpectrum.MinUserValue, _colorSpectrum.MaxUserValue);
-                PrepareActorLookupTable(minNode.Value, maxNode.Value);
-            }
-
-            // Edit actors mapper
-            double[] actorRange = _lookupTable.GetTableRange();
-            foreach (var entry in _actors)
-            {
-                if (entry.Value.ColorContours && entry.Value.Geometry.GetMapper().GetInput().GetPointData().GetScalars() != null)
-                {
-                    entry.Value.Geometry.GetMapper().SetScalarRange(actorRange[0], actorRange[1]);
-                    entry.Value.Geometry.GetMapper().SetLookupTable(_lookupTable);
-                }
-            }
-
-            // Scalar bar
-            _scalarBarWidget.VisibilityOn();
-
-            // Min Max widgets
-            string format = _scalarBarWidget.GetLabelFormat();
-
-            double[] coor;
-            if (minVisible)
-            {
-                _minValueWidget.VisibilityOn();
-                coor = minNode.Coor;
-                _minValueWidget.SetText("Min: " + minNode.Value.ToString(format) + Environment.NewLine + "Node id: " + minNode.Id);
-                _minValueWidget.SetAnchorPoint(coor[0], coor[1], coor[2]);
-            }
-
-            if (maxVisible)
-            {
-                _maxValueWidget.VisibilityOn();
-                coor = maxNode.Coor;
-                _maxValueWidget.SetText("Max: " + maxNode.Value.ToString(format) + Environment.NewLine + "Node id: " + maxNode.Id);
-                _maxValueWidget.SetAnchorPoint(coor[0], coor[1], coor[2]);
-            }
-        }
         public void UpdateActorScalarField(string actorName, float[] values, CaeGlobals.NodesExchangeData extremeNodes,
                                            float[] frustumCellLocatorValues)
         {
@@ -4601,7 +4548,7 @@ namespace vtkControl
             }
         }
         private void Test(string actorName, float[] values, CaeGlobals.NodesExchangeData extremeNodes,
-                                           float[] frustumCellLocatorValues)
+                                            float[] frustumCellLocatorValues)
         {
             // Add scalars
             if (values != null)
@@ -4726,23 +4673,22 @@ namespace vtkControl
                 if (countError % 1000 == 0) System.Diagnostics.Debug.WriteLine("Count: " + countError);
             }
         }
-        public void UpdateActorColorContoursVisibility(string[] actorNames, bool colorContours)
+        public void UpdateActorsColorContoursVisibility(string[] actorNames, bool colorContours)
         {
-            string sectionViewPartName;
-            vtkMaxActor sectionViewActor;
-            //
-            foreach (var name in actorNames)
-            {
-                _actors[name].ColorContours = colorContours;
-                //
-                sectionViewPartName = GetSectionViewActorName(name);
-                if (_sectionViewActors.TryGetValue(sectionViewPartName, out sectionViewActor))
-                    sectionViewActor.ColorContours = colorContours;
-            }
+            foreach (var name in actorNames) UpdateActorColorContoursVisibility(name, colorContours);
             //
             UpdateScalarFormatting();
             //
             this.Invalidate();
+        }
+        private void UpdateActorColorContoursVisibility(string actorName, bool colorContours)
+        {
+            vtkMaxActor actor = _actors[actorName];
+            actor.ColorContours = colorContours;
+            // Transformed copies
+            foreach (var copy in actor.Copies) UpdateActorColorContoursVisibility(copy.Name, colorContours);
+            // Section view
+            if (actor.SectionViewActor != null) actor.SectionViewActor.ColorContours = colorContours;
         }
 
 
@@ -4833,9 +4779,9 @@ namespace vtkControl
                 _statusBlockWidget.AnimationScaleFactor = _animationFrameData.ScaleFactor[frameNumber];
             }
             //
-            List<string> visibleActors = new List<string>();
-            string sectionViewActorName;
+            bool visible;
             vtkMaxActor maxActor;
+            List<string> visibleActors = new List<string>();
             string[] tmp;
             string[] splitter = new string[] { "_animation-frame-" };
             foreach (var listEntry in _animationFrameData.AnimatedActorNames)
@@ -4847,21 +4793,10 @@ namespace vtkControl
                     {
                         if (_actors.TryGetValue(entry.Value, out maxActor))
                         {
-                            sectionViewActorName = GetSectionViewActorName(entry.Value);
-                            {
-                                if (entry.Key == frameNumber)
-                                {
-                                    maxActor.VtkMaxActorVisible = true;
-                                    if (_sectionView && _actors.TryGetValue(sectionViewActorName, out maxActor)) maxActor.VtkMaxActorVisible = true;
-                                    //
-                                    visibleActors.Add(entry.Value);
-                                }
-                                else
-                                {
-                                    maxActor.VtkMaxActorVisible = false;
-                                    if (_sectionView && _actors.TryGetValue(sectionViewActorName, out maxActor)) maxActor.VtkMaxActorVisible = false;
-                                }
-                            }
+                            visible = entry.Key == frameNumber;
+                            //
+                            HideShowActor(maxActor, visible);
+                            if (visible) visibleActors.Add(entry.Value);
                         }
                     }
                 }
@@ -5119,31 +5054,24 @@ namespace vtkControl
             if (!_actors.ContainsKey(oldName)) return;
             //
             vtkMaxActor actor = _actors[oldName];
-            actor.Color = newColor;
             actor.Name = newName;
+            //
+            UpdateActorColor(actor, newColor);
             //
             _actors.Remove(oldName);
             _actors.Add(newName, actor);
             //
-            if (_sectionView)
-            {
-                string oldsectionViewActorName = GetSectionViewActorName(oldName);
-                string newsectionViewActorName = oldsectionViewActorName;
-                //
-                actor = _actors[oldsectionViewActorName];
-                actor.Color = newColor;
-                actor.Name = newsectionViewActorName;
-                //
-                _actors.Remove(oldsectionViewActorName);
-                _sectionViewActors.Remove(oldsectionViewActorName);
-                //
-                _actors.Add(newsectionViewActorName, actor);
-                _sectionViewActors.Add(newsectionViewActorName, actor);
-            }
-            //
             ApplyEdgesVisibilityAndBackfaceCulling();
             //
             if (_renderingOn) this.Invalidate();
+        }
+        public void UpdateActorColor(vtkMaxActor actor, Color newColor)
+        {
+            actor.Color = newColor;
+            // Transformed copies
+            foreach (var copy in actor.Copies) UpdateActorColor(copy, newColor);
+            // Section view
+            if (_sectionView && actor.SectionViewActor != null) actor.SectionViewActor.Color = newColor;
         }
         public double[] GetBoundingBox()
         {

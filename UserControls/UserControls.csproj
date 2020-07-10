@@ -204,6 +204,9 @@
     <EmbeddedResource Include="Forms\FrmPropertyListView.resx">
       <DependentUpon>FrmPropertyListView.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="ListView\MyListView.resx">
+      <DependentUpon>MyListView.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="ModelTree.resx">
       <DependentUpon>ModelTree.cs</DependentUpon>
     </EmbeddedResource>
