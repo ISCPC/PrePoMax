@@ -48,7 +48,6 @@ namespace PrePoMax
 
 
         // Properties                                                                                                               
-        [Browsable(false)]
         public override string Name
         {
             get { return "Plastic"; }

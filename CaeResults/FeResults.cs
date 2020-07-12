@@ -13,22 +13,23 @@ namespace CaeResults
     public class FeResults
     {
         // Variables                                                                                                                
-        private string _fileName;
-        private FeMesh _mesh;
         [NonSerialized]
         private Dictionary<int, int> _nodeIdsLookUp;            // [globalId][resultsId]
         [NonSerialized]
         private Dictionary<FieldData, Field> _fields;
+
+        private string _fileName;
+        private FeMesh _mesh;
         private Dictionary<int, FieldData> _fieldLookUp;
         private DateTime _dateTime;
-        private UnitSystem _unitSystem;
-        
+        private UnitSystem _unitSystem;        
+
 
         // Properties                                                                                                               
         public string FileName { get { return _fileName; } set { _fileName = value; } }
         public FeMesh Mesh { get { return _mesh; } set { _mesh = value; } }
         public DateTime DateTime { get { return _dateTime; } set { _dateTime = value; } }
-        public UnitSystem UnitSystem { get { return _unitSystem; } set { _unitSystem = value; } }
+        public UnitSystem UnitSystem { get { return _unitSystem; } set { _unitSystem = value; } }        
 
 
         // Constructor                                                                                                              

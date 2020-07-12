@@ -42,7 +42,7 @@ namespace PrePoMax.Forms
 
         // Constructors                                                                                                             
         public FrmScale(Controller controller) 
-            : base(2)
+            : base(1.7)
         {
             InitializeComponent();
             //

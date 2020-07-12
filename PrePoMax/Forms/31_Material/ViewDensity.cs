@@ -15,7 +15,6 @@ namespace PrePoMax.PropertyViews
         private CaeModel.Density _density;
 
         // Properties                                                                                                               
-        [Browsable(false)]
         public override string Name
         {
             get { return "Density"; }

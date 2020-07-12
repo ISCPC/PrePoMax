@@ -41,13 +41,13 @@ namespace vtkControl
         private vtkInteractorStyleControl _style;
         private bool _drawCoorSys;
         private vtkEdgesVisibility _edgesVisibility;
-
+        //
         private vtkMaxColorSpectrum _colorSpectrum;
-
+        //
         private vtkMaxTextWithArrowWidget _minValueWidget;
         private vtkMaxTextWithArrowWidget _maxValueWidget;
         private vtkMaxTextWidget _probeWidget;
-
+        //
         private Dictionary<string, vtkMaxActor> _actors;
         private List<vtkMaxActor> _selectedActors;
         private Dictionary<string, vtkActor> _overlayActors;
@@ -58,13 +58,14 @@ namespace vtkControl
         private Color _secundaryHighlightColor;
         private double _maxSymbolSize;
         private bool _drawSymbolEdges;
-
+        //
         private bool _animating;
         private bool _mouseIn;
-
+        //
+        List<vtkTransform> _transforms;
+        //
         private bool _sectionView;
         private vtkPlane _sectionViewPlane;
-        
         // Selection
         private vtkSelectItem _selectItem;
         private vtkSelectBy _selectBy;
@@ -245,6 +246,8 @@ namespace vtkControl
             _drawSymbolEdges = true;
             //
             _animating = false;
+            //
+            _transforms = new List<vtkTransform>();
             //
             _sectionView = false;
             _sectionViewPlane = null;
@@ -3978,27 +3981,25 @@ namespace vtkControl
         }
 
         #endregion  ################################################################################################################
-        public void ApplyMirrorY()
+
+        #region Transformations  ###################################################################################################
+        public void AddSymetry(int symetryPlane, double[] symetryPoint)
         {
             if (!System.Diagnostics.Debugger.IsAttached) return;
             //
             vtkTransform transform = vtkTransform.New();
-            transform.Scale(1.0, -1.0, 1.0);
+            transform.Translate(symetryPoint[0], symetryPoint[1], symetryPoint[2]);
+            if (symetryPlane == 0) transform.Scale(-1.0, 1.0, 1.0);
+            else if (symetryPlane == 1) transform.Scale(1.0, -1.0, 1.0);
+            else if (symetryPlane == 2) transform.Scale(1.0, 1.0, -1.0);
+            else throw new NotSupportedException();
+            transform.Translate(-symetryPoint[0], -symetryPoint[1], -symetryPoint[2]);
             //
-            TransformAllMaxActors(transform);
-            //
-            UpdateScalarFormatting();
-            //
-            this.Invalidate();
+            _transforms.Add(transform);
         }
-        public void ApplyMirrorZ()
+        public void ApplyTransforms()
         {
-            if (!System.Diagnostics.Debugger.IsAttached) return;
-            //
-            vtkTransform transform = vtkTransform.New();
-            transform.Scale(1.0, 1.0, -1.0);
-            //
-            TransformAllMaxActors(transform);
+            foreach (var transform in _transforms) TransformAllMaxActors(transform);
             //
             UpdateScalarFormatting();
             //
@@ -4061,9 +4062,10 @@ namespace vtkControl
             return name;
         }
 
-        #region Mirror  ############################################################################################################
+        
 
         #endregion  ################################################################################################################
+
         #region Settings ###########################################################################################################
         public void SetCoorSysVisibility(bool visibility)
         {
@@ -4735,13 +4737,10 @@ namespace vtkControl
                 // Find actor
                 if (_actors.TryGetValue(entry.Key, out actor))
                 {
-                    actor = _actors[entry.Key];
                     visible = actor.VtkMaxActorVisible;
                     // Remove actor
-                    _actors.Remove(entry.Key);
-                    _renderer.RemoveActor(actor.Geometry);
-                    _renderer.RemoveActor(actor.ElementEdges);
-                    _renderer.RemoveActor(actor.ModelEdges);
+                    RemoveActorWithCopies(actor);
+                    _actors.Remove(entry.Key);  // must be here to remove the actor - it has a different key than name
                     //
                     if (visible)
                     {
@@ -4757,6 +4756,9 @@ namespace vtkControl
                     }
                 }
             }
+            //
+            ApplyTransforms();
+            //
             if (applySectionView) ApplySectionView(point, normal);
             //
             UpdateScalarFormatting();
@@ -4768,6 +4770,19 @@ namespace vtkControl
             //
             //countError++;
             //if (countError % 10 == 0) System.Diagnostics.Debug.WriteLine("Count: " + countError);
+        }
+        private void RemoveActorWithCopies(vtkMaxActor actor)
+        {
+            // Transformed copies
+            foreach (var copy in actor.Copies) RemoveActorWithCopies(copy);
+            //
+            actor.Copies.Clear();
+            //
+            _actors.Remove(actor.Name);
+            //
+            _renderer.RemoveActor(actor.Geometry);
+            _renderer.RemoveActor(actor.ElementEdges);
+            _renderer.RemoveActor(actor.ModelEdges);
         }
         private void SetAnimationFrameAllActors(int frameNumber, bool scalarRangeFromAllFrames)
         {
@@ -4916,6 +4931,7 @@ namespace vtkControl
         public void Clear()
         {
             if (_sectionView) RemoveSectionView();
+            _transforms.Clear();
             //
             foreach (var entry in _actors)
             {

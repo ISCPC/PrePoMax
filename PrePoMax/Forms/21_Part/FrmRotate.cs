@@ -45,7 +45,7 @@ namespace PrePoMax.Forms
 
         // Constructors                                                                                                             
         public FrmRotate(Controller controller) 
-            : base(2)
+            : base(1.7)
         {
             InitializeComponent();
             //

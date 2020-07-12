@@ -71,19 +71,43 @@ namespace PrePoMax.Forms
         [OrderedDisplayName(0, 10, "X")]
         [Description("Scale factor in the X direction.")]
         [Id(1, 3)]
-        public double FactorX { get { return _scaleFactorX; } set { _scaleFactorX = value; } }
+        public double FactorX
+        {
+            get { return _scaleFactorX; }
+            set
+            {
+                _scaleFactorX = value;
+                if (_scaleFactorX <= 0) _scaleFactorX = 1;
+            }
+        }
         //
         [Category("Scale factors")]
         [OrderedDisplayName(0, 10, "Y")]
         [Description("Scale factor in the Y direction.")]
         [Id(1, 3)]
-        public double FactorY { get { return _scaleFactorY; } set { _scaleFactorY = value; } }
+        public double FactorY
+        {
+            get { return _scaleFactorY; }
+            set 
+            {
+                _scaleFactorY = value;
+                if (_scaleFactorY <= 0) _scaleFactorY = 1;
+            }
+        }
         //
         [Category("Scale factors")]
         [OrderedDisplayName(0, 10, "Z")]
         [Description("Scale factor in the Z direction.")]
         [Id(1, 3)]
-        public double FactorZ { get { return _scaleFactorZ; } set { _scaleFactorZ = value; } }
+        public double FactorZ
+        {
+            get { return _scaleFactorZ; }
+            set
+            {
+                _scaleFactorZ = value;
+                if (_scaleFactorZ <= 0) _scaleFactorZ = 1;
+            }
+        }
 
 
         // Constructors                                                                                                             

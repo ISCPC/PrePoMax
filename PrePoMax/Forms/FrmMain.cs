@@ -81,6 +81,7 @@ namespace PrePoMax
         private FrmMonitor _frmMonitor;
         private FrmAnimation _frmAnimation;
         private FrmHistoryResultsOutput _frmHistoryResultsOutput;
+        private FrmTransformation _frmTransformation;
 
 
 
@@ -338,6 +339,9 @@ namespace PrePoMax
                 //
                 _frmHistoryResultsOutput = new FrmHistoryResultsOutput(_controller);
                 AddFormToAllForms(_frmHistoryResultsOutput);
+                //
+                _frmTransformation = new FrmTransformation(_controller);
+                AddFormToAllForms(_frmTransformation);
                 //
                 _vtk.Hide();
                 _vtk.Enabled = false;
@@ -2352,27 +2356,27 @@ namespace PrePoMax
         {
             SinglePointDataEditor.ParentForm = _frmTranslate;
             SinglePointDataEditor.Controller = _controller;
-
-            _frmTranslate.PartNames = partNames;    // set all part names for translation
-            
+            // Set all part names for translation
+            _frmTranslate.PartNames = partNames;    
+            //
             ShowForm(_frmTranslate, "Translate parts: " + partNames.ToShortString(), null);
         }
         private void ScaleParts(string[] partNames)
         {
             SinglePointDataEditor.ParentForm = _frmScale;
             SinglePointDataEditor.Controller = _controller;
-
-            _frmScale.PartNames = partNames;    // set all part names for scaling
-
+            // Set all part names for scaling
+            _frmScale.PartNames = partNames;    
+            //
             ShowForm(_frmScale, "Scale parts: " + partNames.ToShortString(), null);
         }
         private void RotateParts(string[] partNames)
         {
             SinglePointDataEditor.ParentForm = _frmRotate;
             SinglePointDataEditor.Controller = _controller;
-
-            _frmRotate.PartNames = partNames;    // set all part names for rotation
-
+            // Set all part names for rotation
+            _frmRotate.PartNames = partNames;    
+            //
             ShowForm(_frmRotate, "Rotate parts: " + partNames.ToShortString(), null);
         }
         private void MergeModelParts(string[] partNames)
@@ -3975,7 +3979,22 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-
+        //
+        private void tsmiTransformation_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SinglePointDataEditor.ParentForm = _frmTransformation;
+                SinglePointDataEditor.Controller = _controller;
+                //
+                ShowForm(_frmTransformation, "Create Transformation", null);
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
+        //
         private void EditResultPart(string partName)
         {
             _frmPartProperties.View = ViewGeometryModelResults.Results;
@@ -4039,6 +4058,7 @@ namespace PrePoMax
         #endregion  ################################################################################################################
 
         #region Result  ############################################################################################################
+
         public void ShowHistoryOutput(CaeResults.HistoryResultData historyData)
         {
             try
@@ -4061,6 +4081,7 @@ namespace PrePoMax
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
+       
         #endregion  ################################################################################################################
 
         #region Help menu  #########################################################################################################
@@ -4174,6 +4195,7 @@ namespace PrePoMax
             else if (_frmRotate.Visible) _frmRotate.PickedIds(ids);
             else if (_frmReferencePoint.Visible) _frmReferencePoint.PickedIds(ids);
             else if (_frmQuery.Visible) _frmQuery.PickedIds(ids);
+            else if (_frmTransformation.Visible) _frmTransformation.PickedIds(ids);
             //
             SelectionChanged(ids);
         }
@@ -4818,15 +4840,17 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.RemoveSectionView);
         }
+        // Transforms
+        
+        public void AddSymetry(int symetryPlane, double[] symetryPoint)
+        {
+            InvokeIfRequired(_vtk.AddSymetry, symetryPlane, symetryPoint);
+        }
+        public void ApplyTransforms()
+        {
+            InvokeIfRequired(_vtk.ApplyTransforms);
+        }
         //
-        public void ApplyMirrorY()
-        {
-            InvokeIfRequired(_vtk.ApplyMirrorY);
-        }
-        public void ApplyMirrorZ()
-        {
-            InvokeIfRequired(_vtk.ApplyMirrorZ);
-        }
         public void Add3DNodes(vtkControl.vtkMaxActorData actorData)
         {
             InvokeIfRequired(_vtk.AddPoints, actorData);

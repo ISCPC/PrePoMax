@@ -27,7 +27,7 @@ namespace CaeResults
 
         // Properties                                                                                                               
         public double[] PointCoor { get { return _pointCoor; } set { _pointCoor = value; } }
-        public SymetryPlaneEnum RotationPlane { get { return _symetryPlane; } set { _symetryPlane = value; } }
+        public SymetryPlaneEnum SymetryPlane { get { return _symetryPlane; } set { _symetryPlane = value; } }
 
 
         // Constructor                                                                                                              

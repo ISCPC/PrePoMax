@@ -358,32 +358,10 @@ namespace PrePoMax.Forms
         {
             return NamedClass.GetNewValueName(_materialNames, "Material-");
         }
-        //
-        public string GetPropertyDisplayName<T>(string fieldName)
-        {
-            string result;
-            var propertyInfo = typeof(T).GetProperty(fieldName.ToString());
-            if (propertyInfo != null)
-            {
-                try
-                {
-                    object[] descriptionAttrs = propertyInfo.GetCustomAttributes(typeof(DisplayNameAttribute), false);
-                    DisplayNameAttribute attribute = (DisplayNameAttribute)descriptionAttrs[0];
-                    result = (attribute.DisplayName);
-                }
-                catch
-                {
-                    result = null;
-                }
-            }
-            else
-            {
-                result = null;
-            }
 
-            return result;
-        }
 
-       
+
+
+
     }
 }

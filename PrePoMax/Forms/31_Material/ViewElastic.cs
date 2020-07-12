@@ -17,7 +17,6 @@ namespace PrePoMax.PropertyViews
 
 
         // Properties                                                                                                               
-        [Browsable(false)]
         public override string Name
         {
             get { return "Elastic"; }

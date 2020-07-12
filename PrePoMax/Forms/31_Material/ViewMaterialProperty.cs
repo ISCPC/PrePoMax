@@ -15,9 +15,12 @@ namespace PrePoMax
 
 
         // Properties                                                                                                               
+        [Browsable(false)]
         public abstract string Name { get; }
+        //
         [Browsable(false)]
         public DynamicCustomTypeDescriptor DynamicCustomTypeDescriptor { get { return _dctd; } set { _dctd = value; } }
+        //
         public abstract CaeModel.MaterialProperty Base { get; }
     }
 }

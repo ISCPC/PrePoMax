@@ -38,6 +38,7 @@ namespace PrePoMax
         // Results
         [NonSerialized] protected ViewResultsType _viewResultsType;
         [NonSerialized] protected FieldData _currentFieldData;
+        [NonSerialized] protected List<Transformation> _transformations;
         //
         protected FeModel _model;
         protected NetgenJob _netgenJob;
@@ -4703,6 +4704,17 @@ namespace PrePoMax
                 col++;
             }
         }        
+        //
+        public List<Transformation> GetTransformations()
+        {
+            return _transformations;
+        }
+        public void SetTransformations(List<Transformation> transformations)
+        {
+            _transformations = transformations;
+            //
+            if (_currentView == ViewGeometryModelResults.Results) DrawResults(false);
+        }
         #endregion #################################################################################################################
 
         #region Activate Deactivate  ###############################################################################################
@@ -8009,8 +8021,7 @@ namespace PrePoMax
             float scale = GetScale();
             DrawResult(_currentFieldData, scale, _settings.Post.DrawUndeformedModel, _settings.Post.UndeformedModelColor);
             // Transformation
-            _form.ApplyMirrorY();
-            _form.ApplyMirrorZ();
+            ApplyTransformation();
             //
             Octree.Plane plane = _sectionViewPlanes[_currentView];
             if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
@@ -8129,8 +8140,7 @@ namespace PrePoMax
             }
             if (hiddenActors.Count > 0) _form.HideActors(hiddenActors.ToArray(), true);
             // Transformation
-            _form.ApplyMirrorY();
-            _form.ApplyMirrorZ();
+            ApplyTransformation();
             // Section view
             Octree.Plane plane = _sectionViewPlanes[_currentView];
             if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
@@ -8193,8 +8203,7 @@ namespace PrePoMax
             }
             if (hiddenActors.Count > 0) _form.HideActors(hiddenActors.ToArray(), true);
             // Transformation
-            _form.ApplyMirrorY();
-            _form.ApplyMirrorZ();
+            ApplyTransformation();
             // Section view
             Octree.Plane plane = _sectionViewPlanes[_currentView];
             if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
@@ -8364,6 +8373,21 @@ namespace PrePoMax
             _results.GetUndeformedNodesAndCells(part, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
             ApplyLighting(data);
             _form.Add3DCells(data);
+        }        
+        private void ApplyTransformation()
+        {
+            if (_transformations != null && _transformations.Count >= 1)
+            {
+                foreach (var transformation in _transformations)
+                {
+                    if (transformation is Symetry sym)
+                    {
+                        _form.AddSymetry((int)sym.SymetryPlane, sym.PointCoor);
+                    }
+                    else throw new NotSupportedException();
+                }
+                _form.ApplyTransforms();
+            }
         }
         //
         private vtkControl.vtkMaxActorData GetVtkData(PartExchangeData actorData, PartExchangeData modelEdgesData,

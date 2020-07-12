@@ -253,6 +253,14 @@
     <Compile Include="Forms\71_Settings\ViewUnitSystemlSettings.cs" />
     <Compile Include="Forms\71_Settings\ViewStatusBlockSettings.cs" />
     <Compile Include="Forms\71_Settings\ViewLegendSettings.cs" />
+    <Compile Include="Forms\93_Transformation\FrmTransformation.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\93_Transformation\FrmTransformation.Designer.cs">
+      <DependentUpon>FrmTransformation.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\93_Transformation\ViewTransformation.cs" />
+    <Compile Include="Forms\93_Transformation\ViewSymetry.cs" />
     <Compile Include="Forms\StringDefaultDoubleConverter.cs" />
     <Compile Include="Forms\34_SurfaceInteraction\ViewFriction.cs" />
     <Compile Include="Forms\34_SurfaceInteraction\ViewSurfaceInteractionProperty.cs" />
@@ -561,6 +569,9 @@
     <EmbeddedResource Include="Forms\92_HistoryResultsOutput\FrmHistoryResultsOutput.resx">
       <DependentUpon>FrmHistoryResultsOutput.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Forms\93_Transformation\FrmTransformation.resx">
+      <DependentUpon>FrmTransformation.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmMain.resx">
       <DependentUpon>FrmMain.cs</DependentUpon>
       <SubType>Designer</SubType>
@@ -669,7 +680,6 @@
   <ItemGroup>
     <Folder Include="Command\0020_View\" />
     <Folder Include="Command\0110_Tools\" />
-    <Folder Include="Forms\93_Transformations\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

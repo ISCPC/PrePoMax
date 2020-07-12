@@ -248,10 +248,11 @@
             this.tsmiSettings = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiQuery = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiHelp = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiAdvisor = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiHomePage = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiAdvisorHelp1 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiAbout = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiTest = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiAdvisor = new System.Windows.Forms.ToolStripMenuItem();
             this.panelControl = new System.Windows.Forms.Panel();
             this.statusStripMain = new System.Windows.Forms.StatusStrip();
             this.tspbProgress = new System.Windows.Forms.ToolStripProgressBar();
@@ -310,7 +311,8 @@
             this.tscbSymbolsForStep = new System.Windows.Forms.ToolStripComboBox();
             this.timerTest = new System.Windows.Forms.Timer(this.components);
             this.timerOutput = new System.Windows.Forms.Timer(this.components);
-            this.tsmiAdvisorHelp1 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsmiDividerResults1 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsmiTransformation = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStripMain.SuspendLayout();
             this.statusStripMain.SuspendLayout();
             this.tsResults.SuspendLayout();
@@ -1923,7 +1925,9 @@
             // tsmiResults
             // 
             this.tsmiResults.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsmiResultPart});
+            this.tsmiResultPart,
+            this.tsmiDividerResults1,
+            this.tsmiTransformation});
             this.tsmiResults.Name = "tsmiResults";
             this.tsmiResults.Size = new System.Drawing.Size(56, 20);
             this.tsmiResults.Text = "Results";
@@ -1950,20 +1954,20 @@
             // tsmiEditResultPart
             // 
             this.tsmiEditResultPart.Name = "tsmiEditResultPart";
-            this.tsmiEditResultPart.Size = new System.Drawing.Size(175, 22);
+            this.tsmiEditResultPart.Size = new System.Drawing.Size(180, 22);
             this.tsmiEditResultPart.Text = "Edit";
             this.tsmiEditResultPart.Click += new System.EventHandler(this.tsmiEditResultParts_Click);
             // 
             // tsmiDividerResultPart1
             // 
             this.tsmiDividerResultPart1.Name = "tsmiDividerResultPart1";
-            this.tsmiDividerResultPart1.Size = new System.Drawing.Size(172, 6);
+            this.tsmiDividerResultPart1.Size = new System.Drawing.Size(177, 6);
             // 
             // tsmiHideResultParts
             // 
             this.tsmiHideResultParts.Image = global::PrePoMax.Properties.Resources.Hide;
             this.tsmiHideResultParts.Name = "tsmiHideResultParts";
-            this.tsmiHideResultParts.Size = new System.Drawing.Size(175, 22);
+            this.tsmiHideResultParts.Size = new System.Drawing.Size(180, 22);
             this.tsmiHideResultParts.Text = "Hide";
             this.tsmiHideResultParts.Click += new System.EventHandler(this.tsmiHideResultParts_Click);
             // 
@@ -1971,7 +1975,7 @@
             // 
             this.tsmiShowResultParts.Image = global::PrePoMax.Properties.Resources.Show;
             this.tsmiShowResultParts.Name = "tsmiShowResultParts";
-            this.tsmiShowResultParts.Size = new System.Drawing.Size(175, 22);
+            this.tsmiShowResultParts.Size = new System.Drawing.Size(180, 22);
             this.tsmiShowResultParts.Text = "Show";
             this.tsmiShowResultParts.Click += new System.EventHandler(this.tsmiShowResultParts_Click);
             // 
@@ -1979,27 +1983,27 @@
             // 
             this.tsmiShowOnlyResultParts.Image = global::PrePoMax.Properties.Resources.Show;
             this.tsmiShowOnlyResultParts.Name = "tsmiShowOnlyResultParts";
-            this.tsmiShowOnlyResultParts.Size = new System.Drawing.Size(175, 22);
+            this.tsmiShowOnlyResultParts.Size = new System.Drawing.Size(180, 22);
             this.tsmiShowOnlyResultParts.Text = "Show Only";
             this.tsmiShowOnlyResultParts.Click += new System.EventHandler(this.tsmiShowOnlyResultParts_Click);
             // 
             // tsmiSetTransparencyForResultParts
             // 
             this.tsmiSetTransparencyForResultParts.Name = "tsmiSetTransparencyForResultParts";
-            this.tsmiSetTransparencyForResultParts.Size = new System.Drawing.Size(175, 22);
+            this.tsmiSetTransparencyForResultParts.Size = new System.Drawing.Size(180, 22);
             this.tsmiSetTransparencyForResultParts.Text = "Set Transparency";
             this.tsmiSetTransparencyForResultParts.Click += new System.EventHandler(this.tsmiSetTransparencyForResultParts_Click);
             // 
             // tsmiDividerResultPart2
             // 
             this.tsmiDividerResultPart2.Name = "tsmiDividerResultPart2";
-            this.tsmiDividerResultPart2.Size = new System.Drawing.Size(172, 6);
+            this.tsmiDividerResultPart2.Size = new System.Drawing.Size(177, 6);
             // 
             // tsmiColorContoursOff
             // 
             this.tsmiColorContoursOff.Image = global::PrePoMax.Properties.Resources.Deformed;
             this.tsmiColorContoursOff.Name = "tsmiColorContoursOff";
-            this.tsmiColorContoursOff.Size = new System.Drawing.Size(175, 22);
+            this.tsmiColorContoursOff.Size = new System.Drawing.Size(180, 22);
             this.tsmiColorContoursOff.Text = "Color Contours Off";
             this.tsmiColorContoursOff.Click += new System.EventHandler(this.tsmiColorContoursOff_Click);
             // 
@@ -2007,19 +2011,19 @@
             // 
             this.tsmiColorContoursOn.Image = global::PrePoMax.Properties.Resources.Color_contours;
             this.tsmiColorContoursOn.Name = "tsmiColorContoursOn";
-            this.tsmiColorContoursOn.Size = new System.Drawing.Size(175, 22);
+            this.tsmiColorContoursOn.Size = new System.Drawing.Size(180, 22);
             this.tsmiColorContoursOn.Text = "Color Contours On";
             this.tsmiColorContoursOn.Click += new System.EventHandler(this.tsmiColorContoursOn_Click);
             // 
             // tsmiDividerResultPart3
             // 
             this.tsmiDividerResultPart3.Name = "tsmiDividerResultPart3";
-            this.tsmiDividerResultPart3.Size = new System.Drawing.Size(172, 6);
+            this.tsmiDividerResultPart3.Size = new System.Drawing.Size(177, 6);
             // 
             // tsmiDeleteResultParts
             // 
             this.tsmiDeleteResultParts.Name = "tsmiDeleteResultParts";
-            this.tsmiDeleteResultParts.Size = new System.Drawing.Size(175, 22);
+            this.tsmiDeleteResultParts.Size = new System.Drawing.Size(180, 22);
             this.tsmiDeleteResultParts.Text = "Delete";
             this.tsmiDeleteResultParts.Click += new System.EventHandler(this.tsmiDeleteResultParts_Click);
             // 
@@ -2058,33 +2062,38 @@
             this.tsmiHelp.Size = new System.Drawing.Size(44, 20);
             this.tsmiHelp.Text = "Help";
             // 
+            // tsmiAdvisor
+            // 
+            this.tsmiAdvisor.Name = "tsmiAdvisor";
+            this.tsmiAdvisor.Size = new System.Drawing.Size(136, 22);
+            this.tsmiAdvisor.Text = "Advisor";
+            this.tsmiAdvisor.Click += new System.EventHandler(this.tsmiAdvisor_Click);
+            // 
             // tsmiHomePage
             // 
             this.tsmiHomePage.Name = "tsmiHomePage";
-            this.tsmiHomePage.Size = new System.Drawing.Size(180, 22);
+            this.tsmiHomePage.Size = new System.Drawing.Size(136, 22);
             this.tsmiHomePage.Text = "Home Page";
             this.tsmiHomePage.Click += new System.EventHandler(this.tsmiHomePage_Click);
+            // 
+            // tsmiAdvisorHelp1
+            // 
+            this.tsmiAdvisorHelp1.Name = "tsmiAdvisorHelp1";
+            this.tsmiAdvisorHelp1.Size = new System.Drawing.Size(133, 6);
             // 
             // tsmiAbout
             // 
             this.tsmiAbout.Name = "tsmiAbout";
-            this.tsmiAbout.Size = new System.Drawing.Size(180, 22);
+            this.tsmiAbout.Size = new System.Drawing.Size(136, 22);
             this.tsmiAbout.Text = "About";
             this.tsmiAbout.Click += new System.EventHandler(this.tsmiAbout_Click);
             // 
             // tsmiTest
             // 
             this.tsmiTest.Name = "tsmiTest";
-            this.tsmiTest.Size = new System.Drawing.Size(180, 22);
+            this.tsmiTest.Size = new System.Drawing.Size(136, 22);
             this.tsmiTest.Text = "Test";
             this.tsmiTest.Click += new System.EventHandler(this.tsmiTest_Click);
-            // 
-            // tsmiAdvisor
-            // 
-            this.tsmiAdvisor.Name = "tsmiAdvisor";
-            this.tsmiAdvisor.Size = new System.Drawing.Size(180, 22);
-            this.tsmiAdvisor.Text = "Advisor";
-            this.tsmiAdvisor.Click += new System.EventHandler(this.tsmiAdvisor_Click);
             // 
             // panelControl
             // 
@@ -2675,10 +2684,17 @@
             // 
             this.timerOutput.Tick += new System.EventHandler(this.timerOutput_Tick);
             // 
-            // tsmiAdvisorHelp1
+            // tsmiDividerResults1
             // 
-            this.tsmiAdvisorHelp1.Name = "tsmiAdvisorHelp1";
-            this.tsmiAdvisorHelp1.Size = new System.Drawing.Size(177, 6);
+            this.tsmiDividerResults1.Name = "tsmiDividerResults1";
+            this.tsmiDividerResults1.Size = new System.Drawing.Size(177, 6);
+            // 
+            // tsmiTransformation
+            // 
+            this.tsmiTransformation.Name = "tsmiTransformation";
+            this.tsmiTransformation.Size = new System.Drawing.Size(180, 22);
+            this.tsmiTransformation.Text = "Transformation";
+            this.tsmiTransformation.Click += new System.EventHandler(this.tsmiTransformation_Click);
             // 
             // FrmMain
             // 
@@ -3013,6 +3029,8 @@
         private System.Windows.Forms.ToolStripStatusLabel tsslUnitSystem;
         private System.Windows.Forms.ToolStripMenuItem tsmiAdvisor;
         private System.Windows.Forms.ToolStripSeparator tsmiAdvisorHelp1;
+        private System.Windows.Forms.ToolStripSeparator tsmiDividerResults1;
+        private System.Windows.Forms.ToolStripMenuItem tsmiTransformation;
     }
 }
 
