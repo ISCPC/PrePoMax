@@ -591,7 +591,7 @@ namespace vtkControl
         }
         private void CreatePolyFromData(vtkMaxActorData data)
         {
-            // Unstructured grid
+            // Poly data actor
             vtkPolyData polyActor;
             vtkPolyData polyEdges;
             //

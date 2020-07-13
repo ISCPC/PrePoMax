@@ -20,15 +20,12 @@ namespace PrePoMax.Forms
 
 
         // Properties                                                                                                               
-        public override string Name
-        {
-            get { return "Symetry"; }
-        }
-        //
+        public override string Name { get { return _symetry.Name; } set { _symetry.Name = value; } }
+        [Browsable(false)]
         [Category("Data")]
-        [OrderedDisplayName(0, 10, "Symetry plane")]
+        [OrderedDisplayName(1, 10, "Symetry plane")]
         [DescriptionAttribute("Select the symetry plane.")]
-        [Id(1, 1)]
+        [Id(2, 1)]
         public SymetryPlaneEnum SymetryPlane { get { return _symetry.SymetryPlane; } set { _symetry.SymetryPlane = value; } }
         //
         [Category("Symetry point coordinates")]
@@ -44,23 +41,23 @@ namespace PrePoMax.Forms
         //
         [Category("Symetry point coordinates")]
         [OrderedDisplayName(1, 10, "X")]
-        [Description("X coordinate of the point.")]
-        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
-        [Id(1, 2)]
+        [Description("X coordinate of the symetry point.")]
+        [TypeConverter(typeof(StringLengthConverter))]
+        [Id(2, 2)]
         public double SymetryPointX { get { return _symetry.PointCoor[0]; } set { _symetry.PointCoor[0] = value; } }
         //
         [Category("Symetry point coordinates")]
         [OrderedDisplayName(2, 10, "Y")]
-        [Description("Y coordinate of the point.")]
-        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
-        [Id(1, 2)]
+        [Description("Y coordinate of the symetry point.")]
+        [TypeConverter(typeof(StringLengthConverter))]
+        [Id(3, 2)]
         public double SymetryPointY { get { return _symetry.PointCoor[1]; } set { _symetry.PointCoor[1] = value; } }
         //
         [Category("Symetry point coordinates")]
         [OrderedDisplayName(3, 10, "Z")]
-        [Description("Z coordinate of the point.")]
-        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
-        [Id(1, 2)]
+        [Description("Z coordinate of the symetry point.")]
+        [TypeConverter(typeof(StringLengthConverter))]
+        [Id(4, 2)]
         public double SymetryPointZ { get { return _symetry.PointCoor[2]; } set { _symetry.PointCoor[2] = value; } }
         
 
@@ -76,8 +73,6 @@ namespace PrePoMax.Forms
             //
             _startPointItemSetData = new ItemSetData(); // needed to display ItemSetData.ToString()
             _startPointItemSetData.ToStringType = ItemSetDataToStringType.SelectSinglePoint;
-            //
-            //_dctd.RenameBooleanProperty(nameof(Copy), "Copy and scale", "Scale");
         }
 
 

@@ -259,6 +259,8 @@
     <Compile Include="Forms\93_Transformation\FrmTransformation.Designer.cs">
       <DependentUpon>FrmTransformation.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\93_Transformation\ViewCircularPattern.cs" />
+    <Compile Include="Forms\93_Transformation\ViewLinearPattern.cs" />
     <Compile Include="Forms\93_Transformation\ViewTransformation.cs" />
     <Compile Include="Forms\93_Transformation\ViewSymetry.cs" />
     <Compile Include="Forms\StringDefaultDoubleConverter.cs" />

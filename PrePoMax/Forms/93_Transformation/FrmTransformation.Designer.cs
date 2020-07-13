@@ -28,20 +28,23 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("Symetry");
-            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("Rectangular pattern");
-            System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("Cylindrical pattern");
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("X");
+            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("Y");
+            System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("Z");
+            System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("Symetry", new System.Windows.Forms.TreeNode[] {
+            treeNode1,
+            treeNode2,
+            treeNode3});
+            System.Windows.Forms.TreeNode treeNode5 = new System.Windows.Forms.TreeNode("Linear");
+            System.Windows.Forms.TreeNode treeNode6 = new System.Windows.Forms.TreeNode("Circular");
+            System.Windows.Forms.TreeNode treeNode7 = new System.Windows.Forms.TreeNode("Pattern", new System.Windows.Forms.TreeNode[] {
+            treeNode5,
+            treeNode6});
             this.tvTransformations = new System.Windows.Forms.TreeView();
             this.propertyGrid = new UserControls.TabbedPropertyGrid();
             this.btnOK = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
-            this.gbProperties = new System.Windows.Forms.GroupBox();
-            this.tcProperties = new System.Windows.Forms.TabControl();
-            this.tpProperties = new System.Windows.Forms.TabPage();
-            this.tpDataPoints = new System.Windows.Forms.TabPage();
-            this.dgvData = new UserControls.DataGridViewCopyPaste();
+            this.gbTypes = new System.Windows.Forms.GroupBox();
             this.labSelected = new System.Windows.Forms.Label();
             this.labAvailable = new System.Windows.Forms.Label();
             this.lvActiveTransformations = new System.Windows.Forms.ListView();
@@ -49,29 +52,34 @@
             this.btnRemove = new System.Windows.Forms.Button();
             this.btnClear = new System.Windows.Forms.Button();
             this.bntApply = new System.Windows.Forms.Button();
+            this.gbProperties = new System.Windows.Forms.GroupBox();
+            this.gbTypes.SuspendLayout();
             this.gbProperties.SuspendLayout();
-            this.tcProperties.SuspendLayout();
-            this.tpProperties.SuspendLayout();
-            this.tpDataPoints.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvData)).BeginInit();
             this.SuspendLayout();
             // 
             // tvTransformations
             // 
             this.tvTransformations.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.tvTransformations.Location = new System.Drawing.Point(6, 38);
+            this.tvTransformations.Location = new System.Drawing.Point(5, 38);
             this.tvTransformations.Name = "tvTransformations";
-            treeNode1.Name = "Symetry";
-            treeNode1.Text = "Symetry";
-            treeNode2.Name = "Rectangular pattern";
-            treeNode2.Text = "Rectangular pattern";
-            treeNode3.Name = "Cylindrical pattern";
-            treeNode3.Text = "Cylindrical pattern";
+            treeNode1.Name = "X";
+            treeNode1.Text = "X";
+            treeNode2.Name = "Y";
+            treeNode2.Text = "Y";
+            treeNode3.Name = "Z";
+            treeNode3.Text = "Z";
+            treeNode4.Name = "Symetry";
+            treeNode4.Text = "Symetry";
+            treeNode5.Name = "Linear";
+            treeNode5.Text = "Linear";
+            treeNode6.Name = "Circular";
+            treeNode6.Text = "Circular";
+            treeNode7.Name = "Pattern";
+            treeNode7.Text = "Pattern";
             this.tvTransformations.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
-            treeNode1,
-            treeNode2,
-            treeNode3});
-            this.tvTransformations.Size = new System.Drawing.Size(137, 122);
+            treeNode4,
+            treeNode7});
+            this.tvTransformations.Size = new System.Drawing.Size(137, 133);
             this.tvTransformations.TabIndex = 2;
             this.tvTransformations.DoubleClick += new System.EventHandler(this.tvTransformations_DoubleClick);
             // 
@@ -81,9 +89,9 @@
             this.propertyGrid.Dock = System.Windows.Forms.DockStyle.Fill;
             this.propertyGrid.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.propertyGrid.LineColor = System.Drawing.SystemColors.Control;
-            this.propertyGrid.Location = new System.Drawing.Point(3, 3);
+            this.propertyGrid.Location = new System.Drawing.Point(3, 19);
             this.propertyGrid.Name = "propertyGrid";
-            this.propertyGrid.Size = new System.Drawing.Size(297, 248);
+            this.propertyGrid.Size = new System.Drawing.Size(312, 334);
             this.propertyGrid.TabIndex = 6;
             this.propertyGrid.ToolbarVisible = false;
             this.propertyGrid.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.propertyGrid_PropertyValueChanged);
@@ -91,7 +99,7 @@
             // btnOK
             // 
             this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOK.Location = new System.Drawing.Point(12, 456);
+            this.btnOK.Location = new System.Drawing.Point(12, 556);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 8;
@@ -103,7 +111,7 @@
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(255, 456);
+            this.btnCancel.Location = new System.Drawing.Point(255, 556);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 7;
@@ -111,81 +119,23 @@
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
-            // gbProperties
+            // gbTypes
             // 
-            this.gbProperties.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.gbTypes.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.gbProperties.Controls.Add(this.tcProperties);
-            this.gbProperties.Controls.Add(this.labSelected);
-            this.gbProperties.Controls.Add(this.labAvailable);
-            this.gbProperties.Controls.Add(this.lvActiveTransformations);
-            this.gbProperties.Controls.Add(this.btnAdd);
-            this.gbProperties.Controls.Add(this.btnRemove);
-            this.gbProperties.Controls.Add(this.tvTransformations);
-            this.gbProperties.Location = new System.Drawing.Point(12, 2);
-            this.gbProperties.Name = "gbProperties";
-            this.gbProperties.Size = new System.Drawing.Size(318, 448);
-            this.gbProperties.TabIndex = 0;
-            this.gbProperties.TabStop = false;
-            // 
-            // tcProperties
-            // 
-            this.tcProperties.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.tcProperties.Controls.Add(this.tpProperties);
-            this.tcProperties.Controls.Add(this.tpDataPoints);
-            this.tcProperties.Location = new System.Drawing.Point(6, 163);
-            this.tcProperties.Margin = new System.Windows.Forms.Padding(0);
-            this.tcProperties.Name = "tcProperties";
-            this.tcProperties.SelectedIndex = 0;
-            this.tcProperties.Size = new System.Drawing.Size(311, 282);
-            this.tcProperties.TabIndex = 11;
-            // 
-            // tpProperties
-            // 
-            this.tpProperties.BackColor = System.Drawing.SystemColors.Control;
-            this.tpProperties.Controls.Add(this.propertyGrid);
-            this.tpProperties.Location = new System.Drawing.Point(4, 24);
-            this.tpProperties.Name = "tpProperties";
-            this.tpProperties.Padding = new System.Windows.Forms.Padding(3);
-            this.tpProperties.Size = new System.Drawing.Size(303, 254);
-            this.tpProperties.TabIndex = 0;
-            this.tpProperties.Text = "Properties";
-            // 
-            // tpDataPoints
-            // 
-            this.tpDataPoints.BackColor = System.Drawing.SystemColors.Control;
-            this.tpDataPoints.Controls.Add(this.dgvData);
-            this.tpDataPoints.Location = new System.Drawing.Point(4, 24);
-            this.tpDataPoints.Name = "tpDataPoints";
-            this.tpDataPoints.Padding = new System.Windows.Forms.Padding(3);
-            this.tpDataPoints.Size = new System.Drawing.Size(303, 254);
-            this.tpDataPoints.TabIndex = 1;
-            this.tpDataPoints.Text = "Data points";
-            // 
-            // dgvData
-            // 
-            this.dgvData.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgvData.DefaultCellStyle = dataGridViewCellStyle1;
-            this.dgvData.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dgvData.EnableCutMenu = true;
-            this.dgvData.EnablePasteMenu = true;
-            this.dgvData.Location = new System.Drawing.Point(3, 3);
-            this.dgvData.Name = "dgvData";
-            this.dgvData.Size = new System.Drawing.Size(297, 248);
-            this.dgvData.StartPlotAtZero = false;
-            this.dgvData.TabIndex = 0;
-            this.dgvData.XColIndex = 0;
-            this.dgvData.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dgvData_DataError);
+            this.gbTypes.Controls.Add(this.labSelected);
+            this.gbTypes.Controls.Add(this.labAvailable);
+            this.gbTypes.Controls.Add(this.lvActiveTransformations);
+            this.gbTypes.Controls.Add(this.btnAdd);
+            this.gbTypes.Controls.Add(this.btnRemove);
+            this.gbTypes.Controls.Add(this.tvTransformations);
+            this.gbTypes.Location = new System.Drawing.Point(12, 12);
+            this.gbTypes.Name = "gbTypes";
+            this.gbTypes.Size = new System.Drawing.Size(318, 276);
+            this.gbTypes.TabIndex = 0;
+            this.gbTypes.TabStop = false;
+            this.gbTypes.Text = "Transformation types";
             // 
             // labSelected
             // 
@@ -212,10 +162,10 @@
             this.lvActiveTransformations.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.lvActiveTransformations.FullRowSelect = true;
             this.lvActiveTransformations.HideSelection = false;
-            this.lvActiveTransformations.Location = new System.Drawing.Point(177, 38);
+            this.lvActiveTransformations.Location = new System.Drawing.Point(176, 38);
             this.lvActiveTransformations.MultiSelect = false;
             this.lvActiveTransformations.Name = "lvActiveTransformations";
-            this.lvActiveTransformations.Size = new System.Drawing.Size(136, 122);
+            this.lvActiveTransformations.Size = new System.Drawing.Size(137, 133);
             this.lvActiveTransformations.TabIndex = 5;
             this.lvActiveTransformations.UseCompatibleStateImageBehavior = false;
             this.lvActiveTransformations.View = System.Windows.Forms.View.List;
@@ -224,7 +174,7 @@
             // btnAdd
             // 
             this.btnAdd.Image = global::PrePoMax.Properties.Resources.Right_arrow;
-            this.btnAdd.Location = new System.Drawing.Point(149, 38);
+            this.btnAdd.Location = new System.Drawing.Point(148, 38);
             this.btnAdd.Name = "btnAdd";
             this.btnAdd.Size = new System.Drawing.Size(22, 22);
             this.btnAdd.TabIndex = 3;
@@ -234,7 +184,7 @@
             // btnRemove
             // 
             this.btnRemove.Image = global::PrePoMax.Properties.Resources.Remove;
-            this.btnRemove.Location = new System.Drawing.Point(149, 66);
+            this.btnRemove.Location = new System.Drawing.Point(148, 66);
             this.btnRemove.Name = "btnRemove";
             this.btnRemove.Size = new System.Drawing.Size(22, 22);
             this.btnRemove.TabIndex = 4;
@@ -244,7 +194,7 @@
             // btnClear
             // 
             this.btnClear.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnClear.Location = new System.Drawing.Point(174, 456);
+            this.btnClear.Location = new System.Drawing.Point(174, 556);
             this.btnClear.Name = "btnClear";
             this.btnClear.Size = new System.Drawing.Size(75, 23);
             this.btnClear.TabIndex = 17;
@@ -255,7 +205,7 @@
             // bntApply
             // 
             this.bntApply.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.bntApply.Location = new System.Drawing.Point(93, 456);
+            this.bntApply.Location = new System.Drawing.Point(93, 556);
             this.bntApply.Name = "bntApply";
             this.bntApply.Size = new System.Drawing.Size(75, 23);
             this.bntApply.TabIndex = 18;
@@ -263,14 +213,28 @@
             this.bntApply.UseVisualStyleBackColor = true;
             this.bntApply.Click += new System.EventHandler(this.bntApply_Click);
             // 
+            // gbProperties
+            // 
+            this.gbProperties.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.gbProperties.Controls.Add(this.propertyGrid);
+            this.gbProperties.Location = new System.Drawing.Point(12, 194);
+            this.gbProperties.Name = "gbProperties";
+            this.gbProperties.Size = new System.Drawing.Size(318, 356);
+            this.gbProperties.TabIndex = 19;
+            this.gbProperties.TabStop = false;
+            this.gbProperties.Text = "Properties";
+            // 
             // FrmTransformation
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(342, 491);
+            this.ClientSize = new System.Drawing.Size(342, 591);
+            this.Controls.Add(this.gbProperties);
             this.Controls.Add(this.bntApply);
             this.Controls.Add(this.btnClear);
-            this.Controls.Add(this.gbProperties);
+            this.Controls.Add(this.gbTypes);
             this.Controls.Add(this.btnOK);
             this.Controls.Add(this.btnCancel);
             this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
@@ -282,12 +246,9 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Create Transformation";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmTrasformations_FormClosing);
+            this.gbTypes.ResumeLayout(false);
+            this.gbTypes.PerformLayout();
             this.gbProperties.ResumeLayout(false);
-            this.gbProperties.PerformLayout();
-            this.tcProperties.ResumeLayout(false);
-            this.tpProperties.ResumeLayout(false);
-            this.tpDataPoints.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.dgvData)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -298,17 +259,14 @@
         private UserControls.TabbedPropertyGrid propertyGrid;
         private System.Windows.Forms.Button btnOK;
         private System.Windows.Forms.Button btnCancel;
-        private System.Windows.Forms.GroupBox gbProperties;
+        private System.Windows.Forms.GroupBox gbTypes;
         private System.Windows.Forms.Button btnAdd;
         private System.Windows.Forms.Button btnRemove;
         private System.Windows.Forms.ListView lvActiveTransformations;
         private System.Windows.Forms.Label labSelected;
         private System.Windows.Forms.Label labAvailable;
-        private System.Windows.Forms.TabControl tcProperties;
-        private System.Windows.Forms.TabPage tpProperties;
-        private System.Windows.Forms.TabPage tpDataPoints;
-        private UserControls.DataGridViewCopyPaste dgvData;
         private System.Windows.Forms.Button btnClear;
         private System.Windows.Forms.Button bntApply;
+        private System.Windows.Forms.GroupBox gbProperties;
     }
 }

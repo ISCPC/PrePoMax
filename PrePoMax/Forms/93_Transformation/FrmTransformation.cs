@@ -21,8 +21,8 @@ namespace PrePoMax.Forms
         // Variables                                                                                                                
         //private List<Transformation> _transformations;
         private Controller _controller;
-        private TabPage[] _pages;
         private double[][] _coorNodesToDraw;
+        private double[][] _coorLinesToDraw;
 
 
         // Properties                                                                                                               
@@ -36,32 +36,11 @@ namespace PrePoMax.Forms
             _controller = controller;
             //
             propertyGrid.SetParent(this);   // for the Tab key to work
-            propertyGrid.SetLabelColumnWidth(1.7);
-            //
-            int i = 0;
-            _pages = new TabPage[tcProperties.TabPages.Count];
-            foreach (TabPage tabPage in tcProperties.TabPages)
-            {
-                tabPage.Paint += TabPage_Paint;
-                _pages[i++] = tabPage;
-            }
-            //
-            ClearControls();
+            propertyGrid.SetLabelColumnWidth(1.85);
         }
 
 
         // Event handling
-        private void TabPage_Paint(object sender, PaintEventArgs e)
-        {
-            SolidBrush fillBrush = new SolidBrush(((TabPage)sender).BackColor);
-            e.Graphics.FillRectangle(fillBrush, e.ClipRectangle);
-            // Enable copy/paste without first selecting the cell 0,0
-            if (sender == tpDataPoints)
-            {
-                ActiveControl = dgvData;
-                dgvData[0, 0].Selected = true;
-            }
-        }
         private void tvTransformations_DoubleClick(object sender, EventArgs e)
         {
             btnAdd_Click(null, null);
@@ -76,7 +55,11 @@ namespace PrePoMax.Forms
                 if (tvTransformations.SelectedNode.Tag is Transformation tr)
                 {
                     if (tr is Symetry sym) item.Tag = new ViewSymetry(sym.DeepClone());
+                    else if (tr is LinearPattern lp) item.Tag = new ViewLinearPattern(lp.DeepClone());
+                    else if (tr is CircularPattern cp) item.Tag = new ViewCircularPattern(cp.DeepClone());
                     else throw new NotSupportedException();
+                    //
+                    item.Text = tr.Name;
                 }
                 else throw new NotSupportedException();
                 //
@@ -94,7 +77,7 @@ namespace PrePoMax.Forms
             {
                 lvActiveTransformations.SelectedItems[0].Remove();
                 if (lvActiveTransformations.Items.Count > 0) lvActiveTransformations.Items[0].Selected = true;
-                else ClearControls();
+                else propertyGrid.SelectedObject = null;
             }
             _propertyItemChanged = true;
         }
@@ -102,28 +85,27 @@ namespace PrePoMax.Forms
         {
             if (lvActiveTransformations.SelectedItems.Count == 1)
             {
-                if (lvActiveTransformations.SelectedItems[0].Tag is ViewSymetry)
+                if (lvActiveTransformations.SelectedItems[0].Tag is ViewTransformation)
                 {
-                    tcProperties.TabPages.Clear();
-                    tcProperties.TabPages.Add(_pages[0]);
                     propertyGrid.SelectedObject = lvActiveTransformations.SelectedItems[0].Tag;
                 }
                 else throw new NotSupportedException();
+                //
+                HighlightNodes();
             }
             lvActiveTransformations.Select();
         }
-        private void Binding_ListChanged(object sender, ListChangedEventArgs e)
-        {
-            _propertyItemChanged = true;
-        }
         private void propertyGrid_PropertyValueChanged(object s, PropertyValueChangedEventArgs e)
         {
+            if (lvActiveTransformations.SelectedItems.Count == 1 && propertyGrid.SelectedObject is ViewTransformation vt)
+            {
+                lvActiveTransformations.SelectedItems[0].Text = vt.Name;
+            }
             propertyGrid.Refresh();
+            //
+            HighlightNodes();
+            //
             _propertyItemChanged = true;
-        }
-        private void dgvData_DataError(object sender, DataGridViewDataErrorEventArgs e)
-        {
-            MessageBox.Show("Entered value is not a valid/numeric value.", "Error", MessageBoxButtons.OK);
         }
         private void btnOK_Click(object sender, EventArgs e)
         {
@@ -143,7 +125,11 @@ namespace PrePoMax.Forms
         {
             try
             {
+                _propertyItemChanged = true;
+                //
                 ApplyTransformation();
+                //
+                HighlightNodes();
             }
             catch (Exception ex)
             {
@@ -154,14 +140,9 @@ namespace PrePoMax.Forms
         {
             try
             {
+                _propertyItemChanged = false;   // disable transformation on OK
+                //
                 _controller.SetTransformations(null);
-
-                //lvActiveTransformations.Items.Clear();
-                //propertyGrid.SelectedObject = null;
-                ////
-                //_propertyItemChanged = true;
-                ////
-                //ApplyTransformation();
             }
             catch (Exception ex)
             {
@@ -170,7 +151,6 @@ namespace PrePoMax.Forms
         }
         private void btnCancel_Click(object sender, EventArgs e)
         {
-            dgvData.HidePlot();
             Hide();
         }
         private void FrmTrasformations_FormClosing(object sender, FormClosingEventArgs e)
@@ -179,7 +159,6 @@ namespace PrePoMax.Forms
             {
                 e.Cancel = true;
                 //
-                dgvData.HidePlot();
                 Hide();
             }
         }
@@ -191,16 +170,21 @@ namespace PrePoMax.Forms
             // To prevent the call to frmMain.itemForm_VisibleChanged when minimized
             this.DialogResult = DialogResult.None;
             //
-            _propertyItemChanged = false;
-            _propertyItemChanged = false;
+            _propertyItemChanged = false;            
             lvActiveTransformations.Clear();
-            ClearControls();
+            propertyGrid.SelectedObject = null;
             //
             List<Transformation> transformations;
             if (_controller.GetTransformations() != null) transformations = _controller.GetTransformations().DeepClone();
             else transformations = new List<Transformation>();
-            // Initialize material properties
-            tvTransformations.Nodes.Find("Symetry", true)[0].Tag = new Symetry("Symetry", new double[3], SymetryPlaneEnum.X);
+            // Initialize transformations
+            tvTransformations.Nodes.Find("X", true)[0].Tag = new Symetry("Symetry-X", new double[3], SymetryPlaneEnum.X);
+            tvTransformations.Nodes.Find("Y", true)[0].Tag = new Symetry("Symetry-Y", new double[3], SymetryPlaneEnum.Y);
+            tvTransformations.Nodes.Find("Z", true)[0].Tag = new Symetry("Symetry-Z", new double[3], SymetryPlaneEnum.Z);
+            tvTransformations.Nodes.Find("Linear", true)[0].Tag = new LinearPattern("Linear", new double[3],
+                                                                                    new double[] { 1, 0, 0 }, 2);
+            tvTransformations.Nodes.Find("Circular", true)[0].Tag = new CircularPattern("Circular", new double[3],
+                                                                                        new double[] { 0, 0, 1 }, 90, 2);
             tvTransformations.ExpandAll();
             //
             if (transformations.Count > 0)
@@ -211,6 +195,8 @@ namespace PrePoMax.Forms
                 foreach (var transformation in transformations)
                 {
                     if (transformation is Symetry sym) view = new ViewSymetry(sym);
+                    else if (transformation is LinearPattern lp) view = new ViewLinearPattern(lp);
+                    else if (transformation is CircularPattern cp) view = new ViewCircularPattern(cp);
                     else throw new NotSupportedException();
                     //
                     item = new ListViewItem(view.Name);
@@ -224,14 +210,6 @@ namespace PrePoMax.Forms
             //
             return true;
         }
-        private void ClearControls()
-        {
-            propertyGrid.SelectedObject = null;
-            dgvData.DataSource = null;
-            //
-            tcProperties.TabPages.Clear();
-            tcProperties.TabPages.Add(_pages[0]);
-        }
         public void ApplyTransformation()
         {
             if (_propertyItemChanged)
@@ -241,12 +219,30 @@ namespace PrePoMax.Forms
                 {
                     transformations = new List<Transformation>();
                     ViewTransformation viewTransformation;
+                    Transformation transformation;
                     foreach (ListViewItem item in lvActiveTransformations.Items)
                     {
                         viewTransformation = (ViewTransformation)item.Tag;
-                        transformations.Add(viewTransformation.Base);
+                        transformation = viewTransformation.Base;
+                        //
+                        if (transformation is Symetry sym)
+                        { }
+                        else if (transformation is LinearPattern lp)
+                        {
+                            if (lp.DisplacementLength == 0)
+                                throw new CaeException("The pattern displacement must be larger than 0.");
+                        }
+                        else if (transformation is CircularPattern cp)
+                        {
+                            if (cp.Angle == 0)
+                                throw new CaeException("The pattern angle must be different from 0.");
+                            if (cp.AxisNormalLength == 0)
+                                throw new CaeException("The pattern axis points coincide.");
+                        }
+                        else throw new NotSupportedException();
+                        //
+                        transformations.Add(transformation);
                     }
-                    
                 }
                 //
                 _controller.SetTransformations(transformations);
@@ -274,26 +270,91 @@ namespace PrePoMax.Forms
                     vs.SymetryPointY = deformed.Y;
                     vs.SymetryPointZ = deformed.Z;
                 }
+                else if (propertyGrid.SelectedObject is ViewLinearPattern vlp)
+                {
+                    string propertyName = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
+                    //
+                    if (propertyName == nameof(vlp.StartPointItemSet))
+                    {
+                        vlp.StartPointX = deformed.X;
+                        vlp.StartPointY = deformed.Y;
+                        vlp.StartPointZ = deformed.Z;
+                    }
+                    else if (propertyName == nameof(vlp.EndPointItemSet))
+                    {
+                        vlp.EndPointX = deformed.X;
+                        vlp.EndPointY = deformed.Y;
+                        vlp.EndPointZ = deformed.Z;
+                    }
+                }
+                else if (propertyGrid.SelectedObject is ViewCircularPattern vcp)
+                {
+                    string propertyName = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
+                    //
+                    if (propertyName == nameof(vcp.FirstPointItemSet))
+                    {
+                        vcp.FirstPointX = deformed.X;
+                        vcp.FirstPointY = deformed.Y;
+                        vcp.FirstPointZ = deformed.Z;
+                    }
+                    else if (propertyName == nameof(vcp.SecondPointItemSet))
+                    {
+                        vcp.SecondPointX = deformed.X;
+                        vcp.SecondPointY = deformed.Y;
+                        vcp.SecondPointZ = deformed.Z;
+                    }
+                }
                 else throw new NotSupportedException();
                 //
                 propertyGrid.Refresh();
-                //
-                HighlightNodes();
             }
+            //
+            HighlightNodes();
         }
         private void HighlightNodes()
         {
             Color color = Color.Red;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
             //
+            _controller.ClearAllSelection();
+            //
+            _coorNodesToDraw = new double[1][];
+            _coorNodesToDraw[0] = new double[3];
+            //
+            _coorLinesToDraw = new double[2][];
+            _coorLinesToDraw[0] = new double[3];
+            //
             if (propertyGrid.SelectedObject is ViewSymetry vs)
             {
-                _coorNodesToDraw = new double[1][];
-                _coorNodesToDraw[0] = new double[3];
-                //
                 _coorNodesToDraw[0][0] = vs.SymetryPointX;
                 _coorNodesToDraw[0][1] = vs.SymetryPointY;
                 _coorNodesToDraw[0][2] = vs.SymetryPointZ;
+            }
+            else if (propertyGrid.SelectedObject is ViewLinearPattern vlp)
+            {
+                _coorNodesToDraw[0][0] = vlp.EndPointX;
+                _coorNodesToDraw[0][1] = vlp.EndPointY;
+                _coorNodesToDraw[0][2] = vlp.EndPointZ;
+                //
+                _coorLinesToDraw[0][0] = vlp.StartPointX;
+                _coorLinesToDraw[0][1] = vlp.StartPointY;
+                _coorLinesToDraw[0][2] = vlp.StartPointZ;
+                _coorLinesToDraw[1] = _coorNodesToDraw[0];
+                //
+                _controller.HighlightConnectedLines(_coorLinesToDraw);
+            }
+            else if (propertyGrid.SelectedObject is ViewCircularPattern vcp)
+            {
+                _coorNodesToDraw[0][0] = vcp.SecondPointX;
+                _coorNodesToDraw[0][1] = vcp.SecondPointY;
+                _coorNodesToDraw[0][2] = vcp.SecondPointZ;
+                //
+                _coorLinesToDraw[0][0] = vcp.FirstPointX;
+                _coorLinesToDraw[0][1] = vcp.FirstPointY;
+                _coorLinesToDraw[0][2] = vcp.FirstPointZ;
+                _coorLinesToDraw[1] = _coorNodesToDraw[0];
+                //
+                _controller.HighlightConnectedLines(_coorLinesToDraw);
             }
             else throw new NotSupportedException();
             //

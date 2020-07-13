@@ -62,7 +62,7 @@ namespace vtkControl
         private bool _animating;
         private bool _mouseIn;
         //
-        List<vtkTransform> _transforms;
+        OrderedDictionary<vtkTransform, int> _transforms;
         //
         private bool _sectionView;
         private vtkPlane _sectionViewPlane;
@@ -247,7 +247,7 @@ namespace vtkControl
             //
             _animating = false;
             //
-            _transforms = new List<vtkTransform>();
+            _transforms = new OrderedDictionary<vtkTransform, int>();
             //
             _sectionView = false;
             _sectionViewPlane = null;
@@ -3985,8 +3985,6 @@ namespace vtkControl
         #region Transformations  ###################################################################################################
         public void AddSymetry(int symetryPlane, double[] symetryPoint)
         {
-            if (!System.Diagnostics.Debugger.IsAttached) return;
-            //
             vtkTransform transform = vtkTransform.New();
             transform.Translate(symetryPoint[0], symetryPoint[1], symetryPoint[2]);
             if (symetryPlane == 0) transform.Scale(-1.0, 1.0, 1.0);
@@ -3995,29 +3993,84 @@ namespace vtkControl
             else throw new NotSupportedException();
             transform.Translate(-symetryPoint[0], -symetryPoint[1], -symetryPoint[2]);
             //
-            _transforms.Add(transform);
+            _transforms.Add(transform, 2);  // must be 2 for 1 loop
+        }
+        public void AddLinearPattern(double[] displacement, int numOfItems)
+        {
+            vtkTransform transform = vtkTransform.New();
+            transform.Translate(displacement[0], displacement[1], displacement[2]);
+            _transforms.Add(transform, numOfItems);
+        }
+        public void AddCircularPattern(double[] axisPoint, double[] axisNormal, double angle, int numOfItems)
+        {
+            vtkTransform transform = vtkTransform.New();
+            transform.Translate(axisPoint[0], axisPoint[1], axisPoint[2]);
+            transform.RotateWXYZ(angle, axisNormal[0], axisNormal[1], axisNormal[2]);
+            transform.Translate(-axisPoint[0], -axisPoint[1], -axisPoint[2]);
+            //
+            _transforms.Add(transform, numOfItems);
         }
         public void ApplyTransforms()
         {
-            foreach (var transform in _transforms) TransformAllMaxActors(transform);
+            foreach (var transform in _transforms) TransformAllMaxActors(transform.Key, transform.Value);
             //
             UpdateScalarFormatting();
             //
             this.Invalidate();
         }
-        public void TransformAllMaxActors(vtkTransform transform)
+        public void RemoveTransformedActors()
         {
+            bool copyExists = true;
+            while (copyExists)
+            {
+                copyExists = false;
+                foreach (vtkMaxActor actor in _actors.Values.ToArray())
+                {
+                    if (actor.Copies != null && actor.Copies.Count > 0)
+                    {
+                        foreach (var copy in actor.Copies) RemoveActorWithCopies(copy);
+                        actor.Copies.Clear();
+                        //
+                        copyExists = true;
+                    }
+                }
+            }
+        }
+        private void RemoveActorWithCopies(vtkMaxActor actor)
+        {
+            // Transformed copies
+            foreach (var copy in actor.Copies) RemoveActorWithCopies(copy);
+            //
+            actor.Copies.Clear();
+            //
+            _actors.Remove(actor.Name);
+            //
+            _renderer.RemoveActor(actor.Geometry);
+            _renderer.RemoveActor(actor.ElementEdges);
+            _renderer.RemoveActor(actor.ModelEdges);
+        }
+        //
+        public void TransformAllMaxActors(vtkTransform transform, int numOfItems)
+        {
+            vtkMaxActor baseActor;
             vtkMaxActor transformedActor;
             foreach (var actor in _actors.Values.ToArray())
             {
-                transformedActor = new vtkMaxActor(actor);
-                transformedActor.Name = GetTransformedActorName(transformedActor.Name);
+                baseActor = actor;
                 //
-                actor.Copies.Add(transformedActor);
-                //
-                TransformMaxActor(transformedActor, transform);
-                //
-                AddActor(transformedActor, vtkRendererLayer.Base, true);
+                for (int i = 0; i < numOfItems - 1; i++)
+                {
+                    transformedActor = new vtkMaxActor(baseActor);
+                    transformedActor.Name = GetTransformedActorName(transformedActor.Name);
+                    //
+                    baseActor.Copies.Add(transformedActor);
+                    //
+                    TransformMaxActor(transformedActor, transform);
+                    //
+                    AddActor(transformedActor, vtkRendererLayer.Base, true);
+                    //
+                    baseActor = transformedActor;
+                }
             }
         }
         private void TransformMaxActor(vtkMaxActor vtkMaxActor, vtkTransform transform)
@@ -4045,13 +4098,22 @@ namespace vtkControl
             transformFilter.SetTransform(transform);
             transformFilter.Update();
             //
-            vtkReverseSense reverseSense = vtkReverseSense.New();
-            reverseSense.SetInputConnection(transformFilter.GetOutputPort());
-            reverseSense.ReverseNormalsOff();
-            reverseSense.ReverseCellsOn();
-            reverseSense.Update();
+            double[] scale = transform.GetScale();
+            if (scale[0] < 0 || scale[1] < 0 || scale[2] < 0)
+            {
+                vtkReverseSense reverseSense = vtkReverseSense.New();
+                reverseSense.SetInputConnection(transformFilter.GetOutputPort());
+                reverseSense.ReverseNormalsOff();
+                reverseSense.ReverseCellsOn();
+                reverseSense.Update();
+                //
+                actor.GetMapper().SetInputConnection(reverseSense.GetOutputPort());
+            }
+            else
+            {
+                actor.GetMapper().SetInputConnection(transformFilter.GetOutputPort());
+            }
             //
-            actor.GetMapper().SetInputConnection(reverseSense.GetOutputPort());
             actor.PickableOff();
         }
         //
@@ -4731,6 +4793,9 @@ namespace vtkControl
                 applySectionView = true;
                 RemoveSectionView();
             }
+            //
+            RemoveTransformedActors();
+            //
             bool visible;
             foreach (var entry in _animationActors)
             {
@@ -4771,19 +4836,7 @@ namespace vtkControl
             //countError++;
             //if (countError % 10 == 0) System.Diagnostics.Debug.WriteLine("Count: " + countError);
         }
-        private void RemoveActorWithCopies(vtkMaxActor actor)
-        {
-            // Transformed copies
-            foreach (var copy in actor.Copies) RemoveActorWithCopies(copy);
-            //
-            actor.Copies.Clear();
-            //
-            _actors.Remove(actor.Name);
-            //
-            _renderer.RemoveActor(actor.Geometry);
-            _renderer.RemoveActor(actor.ElementEdges);
-            _renderer.RemoveActor(actor.ModelEdges);
-        }
+        
         private void SetAnimationFrameAllActors(int frameNumber, bool scalarRangeFromAllFrames)
         {
             _animationFrameData.UseAllFrameData = scalarRangeFromAllFrames;

@@ -4846,6 +4846,14 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.AddSymetry, symetryPlane, symetryPoint);
         }
+        public void AddLinearPattern(double[] displacement, int numOfItems)
+        {
+            InvokeIfRequired(_vtk.AddLinearPattern, displacement, numOfItems);
+        }
+        public void AddCircularPattern(double[] axisPoint, double[] axisNormal, double angle, int numOfItems)
+        {
+            InvokeIfRequired(_vtk.AddCircularPattern, axisPoint, axisNormal, angle, numOfItems);
+        }
         public void ApplyTransforms()
         {
             InvokeIfRequired(_vtk.ApplyTransforms);

@@ -265,55 +265,26 @@ namespace vtkControl
         }
         void vtkInteractorStyleControl_MiddleButtonReleaseEvt(vtkObject sender, vtkObjectEventArgs e)
         {
-            //switch (this.GetState())
-            //{
-            //    case VTKIS_DOLLY:
-            //        this.EndDolly();
-            //        break;
-
-            //    case VTKIS_PAN:
-            //        this.EndPan();
-            //        break;
-
-            //    case VTKIS_SPIN:
-            //        this.EndSpin();
-            //        break;
-
-            //    case VTKIS_ROTATE:
-            //        this.EndRotate();
-            //        break;
-            //}
-
-            //if (this.GetInteractor() == null)
-            //{
-            //    this.ReleaseFocus();
-            //}
-            
-            
             vtkRenderer renderer = this.GetCurrentRenderer();
             if (renderer == null) return;
-
-            // remove first in order not to affect the bounds of the model
+            // Remove first in order not to affect the bounds of the model
             RemoveAnnotationForCenter(renderer);
-
-            //int layer = renderer.GetLayer();
-            //double[] b = renderer.ComputeVisiblePropBounds();
-
+            //
             vtkRenderWindowInteractor rwi = this.GetInteractor();
             int[] currClickPos = rwi.GetEventPosition();
-
+            //
             if (_clickPos != null && Math.Abs(_clickPos[0] - currClickPos[0]) + Math.Abs(_clickPos[0] - currClickPos[0]) < 2)
             {
-                // only click happened
+                // Only click happened
                 vtkPropPicker picker = vtkPropPicker.New();
                 renderer.Render(); // to redraw the first - BASE - layer of geometry again
                 picker.Pick(currClickPos[0], currClickPos[1], 0, renderer);
                 _rotationCenterWorld = picker.GetPickPosition();
-
+                //
                 if (picker.GetActor() == null)
                 {
-                    // the click was not a hit
-                    // use the center of the bounding box
+                    // The click was not a hit
+                    // Use the center of the bounding box
                     double[] bounds = renderer.ComputeVisiblePropBounds();
                     _rotationCenterWorld[0] = (bounds[1] + bounds[0]) / 2;
                     _rotationCenterWorld[1] = (bounds[3] + bounds[2]) / 2;
@@ -321,29 +292,26 @@ namespace vtkControl
                 }
                 else
                 {
-                    // the click was a hit
+                    // The click was a hit
                     vtkCamera camera = renderer.GetActiveCamera();
                     double[] center = camera.GetFocalPoint();
                     PanCamera(camera, center, _rotationCenterWorld);
                     AdjustCameraDistance(renderer, camera);
                 }
             }
-
-            // adjust the clipping range and lights
+            // Adjust the clipping range and lights
             if (this.GetAutoAdjustCameraClippingRange() == 1) ResetClippingRange();
             if (rwi.GetLightFollowCamera() == 1) renderer.UpdateLightsGeometryToFollowCamera();
-
             // Widgets - middle released
             foreach (vtkMaxBorderWidget widget in _widgets)
             {
                 widget.MiddleButtonRelease(currClickPos[0], currClickPos[1]);
             }
-
-            //rwi.Render();
+            //
             rwi.Modified();
-
+            //
             _clickPos = null;
-
+            //
             base.OnLeftButtonUp();  // left button is rotation by default
         }
         
@@ -352,20 +320,18 @@ namespace vtkControl
             vtkRenderWindowInteractor rwi = this.GetInteractor();
             int x = rwi.GetEventPosition()[0];
             int y = rwi.GetEventPosition()[1];
-
+            //
             this.FindPokedRenderer(x, y);
-
+            //
             vtkRenderer renderer = this.GetCurrentRenderer();
             if (renderer == null) return;
-
+            //
             int[] clickPos = rwi.GetEventPosition();
-
             // Widgets - right pressed
             foreach (vtkMaxBorderWidget widget in _widgets)
             {
                 if (widget.RightButtonPress(x, y)) return;
             }
-
             RightButtonPressEvent?.Invoke(clickPos[0], clickPos[1]);
         }
         void vtkInteractorStyleControl_RightButtonReleaseEvt(vtkObject sender, vtkObjectEventArgs e)
@@ -668,45 +634,39 @@ namespace vtkControl
         {
             vtkRenderer renderer = this.GetCurrentRenderer();
             if (renderer == null) return;
-
+            //
             vtkCamera camera = renderer.GetActiveCamera();
             vtkRenderWindowInteractor rwi = this.GetInteractor();
-
+            //
             camera.Azimuth(azimuthAngle);
             camera.Elevation(ElevationAngle);
             camera.OrthogonalizeViewUp();
-
-            // move the cameras focal point back to the display position of the first click . the opposite direction!
+            // Move the cameras focal point back to the display position of the first click - the opposite direction!
             double[] wpa = DisplayToWorld(renderer, _rotationCenterDisplay);
             double[] n = camera.GetViewPlaneNormal();
-
-            // compute a plane through rotationWorldCenter and project the rotationDisplayCenter on it
-            double[] v = new double[3];                                 // vector from rotationWorldCenter to DisplayToWorld point
+            // Compute a plane through rotationWorldCenter and project the rotationDisplayCenter on it
+            double[] v = new double[3];                         // vector from rotationWorldCenter to DisplayToWorld point
             v[0] = wpa[0] - _rotationCenterWorld[0];
             v[1] = wpa[1] - _rotationCenterWorld[1];
             v[2] = wpa[2] - _rotationCenterWorld[2];
-            double d = n[0] * v[0] + n[1] * v[1] + n[2] * v[2];        // distance of DisplayToWorld point from plane
+            double d = n[0] * v[0] + n[1] * v[1] + n[2] * v[2]; // distance of DisplayToWorld point from plane
             wpa[0] -= n[0] * d;
             wpa[1] -= n[1] * d;
             wpa[2] -= n[2] * d;
-
+            //
             PanCamera(camera, wpa, _rotationCenterWorld);
             AdjustCameraDistance(renderer, camera);
-
-            // adjust the clipping range and lights
+            // Adjust the clipping range and lights
             if (this.GetAutoAdjustCameraClippingRange() == 1) ResetClippingRange();
             if (rwi.GetLightFollowCamera() == 1) renderer.UpdateLightsGeometryToFollowCamera();
-
             // Widgets - Rotate
             foreach (vtkMaxBorderWidget widget in _widgets)
             {
                 widget.MouseRotate(azimuthAngle, ElevationAngle);
             }
-
             rwi.Modified();
             rwi.Render();
         }
-
 
         private void Select(int x, int y)
         {

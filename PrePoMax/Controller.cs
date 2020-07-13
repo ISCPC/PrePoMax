@@ -5976,11 +5976,11 @@ namespace PrePoMax
         }
         private void DrawGeomPart(FeMesh mesh, BasePart part, vtkControl.vtkRendererLayer layer, bool canHaveElementEdges, bool pickable)
         {
-            System.Drawing.Color color = part.Color;
+            Color color = part.Color;
             //
             foreach (var elType in part.ElementTypes)
             {
-                if (elType == typeof(LinearBeamElement) || elType == typeof(ParabolicBeamElement)) color = System.Drawing.Color.Black;
+                if (elType == typeof(LinearBeamElement) || elType == typeof(ParabolicBeamElement)) color = Color.Black;
             }
             //
             vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
@@ -5991,17 +5991,17 @@ namespace PrePoMax
             data.Pickable = pickable;
             data.SmoothShaded = part.SmoothShaded;
             data.ActorRepresentation = GetRepresentation(part);
-            // get all nodes and elements - renumbered
+            // Get all nodes and elements - renumbered
             if (pickable)
             {
                 data.CellLocator = new PartExchangeData();
                 mesh.GetAllNodesAndCells(part, out data.CellLocator.Nodes.Ids, out data.CellLocator.Nodes.Coor, out data.CellLocator.Cells.Ids,
                                          out data.CellLocator.Cells.CellNodeIds, out data.CellLocator.Cells.Types);
             }
-            // get only needed nodes and elements - renumbered
+            // Get only needed nodes and elements - renumbered
             mesh.GetVisualizationNodesAndCells(part, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.Ids,
                                         out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
-            // model edges
+            // Model edges
             if ((part.PartType == PartType.Solid || part.PartType == PartType.SolidAsShell || part.PartType == PartType.Shell)
                 && part.Visualization.EdgeCells != null)
             {
@@ -8019,7 +8019,7 @@ namespace PrePoMax
             SetLegendAndLimits();
             //
             float scale = GetScale();
-            DrawResult(_currentFieldData, scale, _settings.Post.DrawUndeformedModel, _settings.Post.UndeformedModelColor);
+            DrawAllResultParts(_currentFieldData, scale, _settings.Post.DrawUndeformedModel, _settings.Post.UndeformedModelColor);
             // Transformation
             ApplyTransformation();
             //
@@ -8029,9 +8029,8 @@ namespace PrePoMax
             if (resetCamera) _form.SetFrontBackView(true, true); // animation:true is here to correctly draw max/min widgets 
             _form.AdjustCameraDistanceAndClipping();
         }
-        private void DrawResult(FieldData fieldData, float scale, bool drawUndeformedModel, Color undeformedModelColor)
+        private void DrawAllResultParts(FieldData fieldData, float scale, bool drawUndeformedModel, Color undeformedModelColor)
         {
-            vtkControl.vtkMaxActorData data;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
             List<string> hiddenActors = new List<string>();
             //
@@ -8052,37 +8051,33 @@ namespace PrePoMax
                     {
                         if (drawUndeformedModel) DrawUndeformedPartCopy(resultPart, undeformedModelColor, layer);
                         //
-                        data = GetVtkMaxActorDataFromPart(resultPart, fieldData, scale);
-                        ApplyLighting(data);
-                        _form.AddScalarFieldOn3DCells(data);
+                        DrawResultPart(resultPart, fieldData, scale);
                     }
                 }
                 // Draw geometry parts copied to the results
                 else if (entry.Value is GeometryPart)
                 {
-                    DrawGeomPart(_results.Mesh, entry.Value, layer, false, true);
+                    DrawGeomPart(_results.Mesh, entry.Value, layer, false, true);   // pickable for the Section view to work
                 }
                 //
                 if (!entry.Value.Visible) hiddenActors.Add(entry.Key);
             }
             if (hiddenActors.Count > 0) _form.HideActors(hiddenActors.ToArray(), true);
         }
-        private vtkControl.vtkMaxActorData GetVtkMaxActorDataFromPart(ResultPart part, FieldData fieldData, float scale)
+        private void DrawResultPart(ResultPart part, FieldData fieldData, float scale)
         {
-            // get visualization nodes and renumbered elements           
+            // Get visualization nodes and renumbered elements           
             PartExchangeData actorResultData = _results.GetScaledVisualizationNodesCellsAndValues(part, fieldData, scale);
-
-            // model edges
+            // Model edges
             PartExchangeData modelEdgesResultData = null;
             if (_results.Mesh.Elements[part.Labels[0]] is FeElement3D && part.Visualization.EdgeCells != null)
             {
                 modelEdgesResultData = _results.GetScaledEdgesNodesAndCells(part, fieldData, scale);
             }
-
-            // get all needed nodes and elements - renumbered            
+            // Get all needed nodes and elements - renumbered            
             PartExchangeData locatorResultData = null;
             locatorResultData = _results.GetScaledAllNodesCellsAndValues(part, fieldData, scale);
-
+            //
             vtkControl.vtkMaxActorData data = GetVtkData(actorResultData, modelEdgesResultData, locatorResultData);
             data.Name = part.Name;
             data.Color = part.Color;
@@ -8091,8 +8086,9 @@ namespace PrePoMax
             data.Pickable = true;
             data.SmoothShaded = part.SmoothShaded;
             data.ActorRepresentation = GetRepresentation(part);
-
-            return data;
+            //
+            ApplyLighting(data);
+            _form.AddScalarFieldOn3DCells(data);
         }
         // Animation
         public bool DrawScaleFactorAnimation(int numFrames)
@@ -8134,7 +8130,7 @@ namespace PrePoMax
                 }
                 else if (entry.Value is CaeMesh.GeometryPart)
                 {
-                    DrawGeomPart(_results.Mesh, entry.Value, layer, false, false);
+                    DrawGeomPart(_results.Mesh, entry.Value, layer, false, true);   // pickable for the Section view to work
                 }
                 if (!entry.Value.Visible) hiddenActors.Add(entry.Key);
             }
@@ -8197,7 +8193,7 @@ namespace PrePoMax
                 }
                 else if (entry.Value is CaeMesh.GeometryPart)
                 {
-                    DrawGeomPart(_results.Mesh, entry.Value, layer, false, false);
+                    DrawGeomPart(_results.Mesh, entry.Value, layer, false, true);  // pickable for the Section view to work
                 }
                 if (!entry.Value.Visible) hiddenActors.Add(entry.Key);
             }
@@ -8383,6 +8379,14 @@ namespace PrePoMax
                     if (transformation is Symetry sym)
                     {
                         _form.AddSymetry((int)sym.SymetryPlane, sym.PointCoor);
+                    }
+                    else if (transformation is LinearPattern lp)
+                    {
+                        _form.AddLinearPattern(lp.Displacement, lp.NumberOfItems);
+                    }
+                    else if (transformation is CircularPattern cp)
+                    {
+                        _form.AddCircularPattern(cp.AxisFirstPoint, cp.AxisNormal, cp.Angle, cp.NumberOfItems);
                     }
                     else throw new NotSupportedException();
                 }

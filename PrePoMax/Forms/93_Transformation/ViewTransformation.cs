@@ -22,8 +22,12 @@ namespace PrePoMax.Forms
 
 
         // Properties                                                                                                               
-        [Browsable(false)]
-        public abstract string Name { get; }
+        //[Browsable(false)]
+        [Category("Data")]
+        [OrderedDisplayName(0, 10, "Name")]
+        [DescriptionAttribute("Enter the transformation name.")]
+        [Id(1, 1)]
+        public virtual string Name { get; set; }
 
 
         // Constructors                                                                                                             

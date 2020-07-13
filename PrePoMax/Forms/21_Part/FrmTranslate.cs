@@ -176,18 +176,18 @@ namespace PrePoMax.Forms
         {
             Color color = Color.Red;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
-
+            //
             _controller.ClearAllSelection();
-
+            //
             _coorNodesToDraw[0][0] = _translateParameters.X2;
             _coorNodesToDraw[0][1] = _translateParameters.Y2;
             _coorNodesToDraw[0][2] = _translateParameters.Z2;
-
+            //
             _coorLinesToDraw[0][0] = _translateParameters.X1;
             _coorLinesToDraw[0][1] = _translateParameters.Y1;
             _coorLinesToDraw[0][2] = _translateParameters.Z1;
             _coorLinesToDraw[1] = _coorNodesToDraw[0];
-
+            //
             _controller.DrawNodes("Translate", _coorNodesToDraw, color, layer, 7);
             _controller.HighlightConnectedLines(_coorLinesToDraw);
         }
