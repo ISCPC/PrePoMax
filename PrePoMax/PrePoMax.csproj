@@ -677,6 +677,7 @@
     <None Include="Icons\Analysis\OK.ico" />
     <None Include="Icons\Analysis\Running.ico" />
     <None Include="Icons\Analysis\Warning.ico" />
+    <None Include="Icons\Results\Transformations.ico" />
     <Content Include="main.ico" />
   </ItemGroup>
   <ItemGroup>
