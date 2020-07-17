@@ -17,7 +17,7 @@ namespace UserControls
         protected bool _lvTypesSelectedIndexChangedEventActive;
         protected bool _selectPropertyGrid;
         protected int _preselectIndex;
-
+        protected bool _firstTime;
 
         // Constructors                                                                                                             
         public FrmPropertyListView()
@@ -35,10 +35,19 @@ namespace UserControls
             //
             _lvTypesSelectedIndexChangedEventActive = true;
             _preselectIndex = -1;
+            _firstTime = true;
         }
 
 
         // Event handlers                                                                                                           
+        private void FrmPropertyListView_VisibleChanged(object sender, EventArgs e)
+        {
+            if (Visible && _firstTime)
+            {
+                _firstTime = false;
+                OnListViewTypeSelectedIndexChanged();
+            }
+        }
         private void lvTypes_SelectedIndexChanged(object sender, EventArgs e)
         {
             try
@@ -84,5 +93,7 @@ namespace UserControls
         {
             _preselectIndex = index;
         }
+
+        
     }
 }

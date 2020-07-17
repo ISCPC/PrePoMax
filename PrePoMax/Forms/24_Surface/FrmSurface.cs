@@ -212,7 +212,7 @@ namespace PrePoMax.Forms
                         {
                             int[] ids = _controller.GetNodeSet(Surface.CreatedFromNodeSetName).Labels;
                             SelectionNodeIds selectionNode = new SelectionNodeIds(vtkSelectOperation.None, false, ids);
-                            _controller.AddSelectionNode(selectionNode, true);
+                            _controller.AddSelectionNode(selectionNode, true, false);
                         }
                     }
                     _controller.HighlightSelection();

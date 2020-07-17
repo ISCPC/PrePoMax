@@ -4572,7 +4572,7 @@ namespace vtkControl
                 _maxValueWidget.SetAnchorPoint(coor[0], coor[1], coor[2]);
             }
         }
-        public void UpdateActorScalarField(string actorName, float[] values, CaeGlobals.NodesExchangeData extremeNodes,
+        public void UpdateActorScalarField(string actorName, float[] values, NodesExchangeData extremeNodes,
                                            float[] frustumCellLocatorValues)
         {
             if (System.Diagnostics.Debugger.IsAttached && false)
@@ -4587,29 +4587,33 @@ namespace vtkControl
                 vtkFloatArray scalars = vtkFloatArray.New();
                 scalars.SetName(Globals.ScalarArrayName);
                 scalars.SetNumberOfValues(values.Length);
-                for (int i = 0; i < values.Length; i++)
-                {
-                    scalars.SetValue(i, values[i]);
-                }
+                for (int i = 0; i < values.Length; i++) scalars.SetValue(i, values[i]);
                 //
                 vtkFloatArray frustumScalars = vtkFloatArray.New();
                 frustumScalars.SetName(Globals.ScalarArrayName);
                 frustumScalars.SetNumberOfValues(frustumCellLocatorValues.Length);
-                for (int i = 0; i < frustumCellLocatorValues.Length; i++)
-                {
-                    frustumScalars.SetValue(i, frustumCellLocatorValues[i]);
-                }
-                // Set scalars
-                _actors[actorName].Geometry.GetMapper().GetInput().GetPointData().SetScalars(scalars);
-                _actors[actorName].MinNode = new vtkMaxExtreemeNode(extremeNodes.Ids[0], extremeNodes.Coor[0], extremeNodes.Values[0]);
-                _actors[actorName].MaxNode = new vtkMaxExtreemeNode(extremeNodes.Ids[1], extremeNodes.Coor[1], extremeNodes.Values[1]);
-                // Set frustum scalars
-                _actors[actorName].FrustumCellLocator.GetDataSet().GetPointData().SetScalars(frustumScalars);
+                for (int i = 0; i < frustumCellLocatorValues.Length; i++) frustumScalars.SetValue(i, frustumCellLocatorValues[i]);
+                //
+                UpdateActorScalarField(actorName, scalars, frustumScalars, extremeNodes);
                 //
                 UpdateScalarFormatting();
                 //
                 this.Invalidate();
             }
+        }
+        private void UpdateActorScalarField(string actorName, vtkFloatArray scalars, vtkFloatArray frustumScalars,
+                                            NodesExchangeData extremeNodes)
+        {
+            vtkMaxActor actor = _actors[actorName];
+            // Transformed copies
+            foreach (var copy in actor.Copies) UpdateActorScalarField(copy.Name, scalars, frustumScalars, extremeNodes);
+            //
+            // Set scalars
+            actor.Geometry.GetMapper().GetInput().GetPointData().SetScalars(scalars);
+            actor.MinNode = new vtkMaxExtreemeNode(extremeNodes.Ids[0], extremeNodes.Coor[0], extremeNodes.Values[0]);
+            actor.MaxNode = new vtkMaxExtreemeNode(extremeNodes.Ids[1], extremeNodes.Coor[1], extremeNodes.Values[1]);
+            // Set frustum scalars
+            actor.FrustumCellLocator.GetDataSet().GetPointData().SetScalars(frustumScalars);
         }
         private void Test(string actorName, float[] values, CaeGlobals.NodesExchangeData extremeNodes,
                                             float[] frustumCellLocatorValues)

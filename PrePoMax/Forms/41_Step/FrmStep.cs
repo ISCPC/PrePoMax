@@ -82,8 +82,6 @@ namespace PrePoMax.Forms
         // Overrides                                                                                                                
         protected override void OnListViewTypeSelectedIndexChanged()
         {
-            //if (lvTypes.Enabled && lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)
-            // Advisor 
             if (lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)
             {
                 propertyGrid.SelectedObject = lvTypes.SelectedItems[0].Tag;

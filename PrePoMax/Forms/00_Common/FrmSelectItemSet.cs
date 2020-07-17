@@ -258,11 +258,11 @@ namespace PrePoMax
         //
         private void btnSelectAll_Click(object sender, EventArgs e)
         {
-            _controller.AddSelectionNode(new SelectionNodeIds(vtkSelectOperation.None, true), true);
+            _controller.AddSelectionNode(new SelectionNodeIds(vtkSelectOperation.None, true), true, true);
         }
         private void btnInvertSelection_Click(object sender, EventArgs e)
         {
-            _controller.AddSelectionNode(new SelectionNodeInvert(), true);
+            _controller.AddSelectionNode(new SelectionNodeInvert(), true, true);
         }
         private void btnAddId_Click(object sender, EventArgs e)
         {
@@ -272,7 +272,7 @@ namespace PrePoMax
                 if (int.TryParse(tbId.Text, out id))
                 {
                     SelectionNodeIds selectionNodeIds = new SelectionNodeIds(vtkSelectOperation.Add, false, new int[] { id });
-                    _controller.AddSelectionNode(selectionNodeIds, true);
+                    _controller.AddSelectionNode(selectionNodeIds, true, true);
                 }
                 else
                 {
@@ -292,7 +292,7 @@ namespace PrePoMax
                 if (int.TryParse(tbId.Text, out int id))
                 {
                     SelectionNodeIds selectionNodeIds = new SelectionNodeIds(vtkSelectOperation.Subtract, false, new int[] { id });
-                    _controller.AddSelectionNode(selectionNodeIds, true);
+                    _controller.AddSelectionNode(selectionNodeIds, true, true);
                 }
                 else
                 {

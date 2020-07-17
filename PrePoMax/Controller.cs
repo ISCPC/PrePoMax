@@ -2550,9 +2550,9 @@ namespace PrePoMax
             foreach (var entry in _model.Mesh.NodeSets)
             {
                 nodeSet = entry.Value;
-                if (nodeSet.Internal && nodeSet.CreationData == null) continue;
-                //
-                if (nodeSet.CreationData.IsGeometryBased())
+                if (nodeSet.Internal && nodeSet.CreationData == null) continue; // a surface node set - no need to update
+                                                                                // skip last two lines
+                if (nodeSet.CreationData != null && nodeSet.CreationData.IsGeometryBased())
                 {
                     // Only mouse and geometry ids
                     geometryIds.Clear();
@@ -2567,7 +2567,7 @@ namespace PrePoMax
                         selectionNodeIds = new SelectionNodeIds(vtkSelectOperation.None, false, geometryIds.ToArray());
                         selectionNodeIds.GeometryIds = true;
                     }
-                    else continue;
+                    else continue;  // skip last two lines
                 }
                 else
                 {
@@ -2576,8 +2576,9 @@ namespace PrePoMax
                     if (nodeIds.Intersect(nodeSet.Labels).Count() > 0)
                     {
                         selectionNodeIds = new SelectionNodeIds(vtkSelectOperation.None, false, nodeSet.Labels);
+                        if (nodeSet.CreationData == null) nodeSet.CreationData = new Selection();
                     }
-                    else continue;
+                    else continue;  // skip last two lines
                 }
                 //
                 nodeSet.CreationData.Clear();
@@ -2756,9 +2757,9 @@ namespace PrePoMax
             foreach (var entry in _model.Mesh.ElementSets)
             {
                 elementSet = entry.Value;
-                if (elementSet.Internal || elementSet.CreationData == null) continue;
+                if (elementSet.Internal || elementSet.CreationData == null) continue;   // skip last two lines
                 //
-                if (elementSet.CreationData.IsGeometryBased())
+                if (elementSet.CreationData != null && elementSet.CreationData.IsGeometryBased())
                 {
                     // Only mouse and geometry ids
                     geometryIds.Clear();
@@ -2773,7 +2774,7 @@ namespace PrePoMax
                         selectionNodeIds = new SelectionNodeIds(vtkSelectOperation.None, false, geometryIds.ToArray());
                         selectionNodeIds.GeometryIds = true;
                     }
-                    else continue;
+                    else continue;  // skip last two lines
                 }
                 else
                 {
@@ -2782,8 +2783,9 @@ namespace PrePoMax
                     if (elementIds.Intersect(elementSet.Labels).Count() > 0)
                     {
                         selectionNodeIds = new SelectionNodeIds(vtkSelectOperation.None, false, elementSet.Labels);
+                        if (elementSet.CreationData == null) elementSet.CreationData = new Selection();
                     }
-                    else continue;
+                    else continue;  // skip last two lines
                 }
                 //
                 elementSet.CreationData.Clear();
@@ -3019,6 +3021,7 @@ namespace PrePoMax
                     if (nodeIds.Intersect(_model.Mesh.NodeSets[surface.NodeSetName].Labels).Count() > 0)
                     {
                         selectionNodeIds = new SelectionNodeIds(vtkSelectOperation.None, false, surface.FaceIds);
+                        if (surface.CreationData == null) surface.CreationData = new Selection();
                     }
                     else continue;
                 }
@@ -4800,7 +4803,7 @@ namespace PrePoMax
         {
             ClearSelectionHistoryAndSelectionChanged();
             SetSelectionView(selectionView);
-            AddSelectionNode(selectionNode, true);
+            AddSelectionNode(selectionNode, highlight, false);
         }
         //
         // the function called from vtk_control
@@ -4830,14 +4833,14 @@ namespace PrePoMax
                     SelectionNode selectionNode = new SelectionNodeMouse(pickedPoint, planeParameters,
                                                                          selectOperation,
                                                                          _selectBy, _selectAngle);
-                    AddSelectionNode(selectionNode, true);
+                    AddSelectionNode(selectionNode, true, false);
                 }
             }
             catch
             {
             }
         }
-        public void AddSelectionNode(SelectionNode node, bool highlight)
+        public void AddSelectionNode(SelectionNode node, bool highlight, bool callSelectionChenged)
         {
             // Ger selected ids
             int[] ids = GetIdsFromSelectionNode(node, new HashSet<int>());
@@ -4898,6 +4901,9 @@ namespace PrePoMax
             else add = true;
             //
             if (add) _selection.Add(node, ids);
+            //
+            if (callSelectionChenged) _form.SelectionChanged();
+            //
             if (highlight) HighlightSelection();
         }
         public void RemoveLastSelectionNode(bool highlight)
