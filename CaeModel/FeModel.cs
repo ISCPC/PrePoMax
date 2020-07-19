@@ -478,10 +478,12 @@ namespace CaeModel
         public void ImportGeneratedMeshFromVolFile(string fileName, GeometryPart part, bool convertToSecondorder,
                                                    bool splitCompoundMesh)
         {
+            FileInOut.Input.ElementsToImport elementsToImport;
+            if (part.PartType == PartType.SolidAsShell) elementsToImport = FileInOut.Input.ElementsToImport.Solid;
+            else if (part.PartType == PartType.Shell) elementsToImport = FileInOut.Input.ElementsToImport.Shell;
+            else throw new NotSupportedException();
             // Called after meshing in PrePoMax - the parts are sorted by id
-            FeMesh mesh = FileInOut.Input.VolFileReader.Read(fileName, 
-                                                             FileInOut.Input.ElementsToImport.Solid,
-                                                             convertToSecondorder);
+            FeMesh mesh = FileInOut.Input.VolFileReader.Read(fileName, elementsToImport, convertToSecondorder);
             // Split compound mesh
             if (splitCompoundMesh) mesh.SplitCompoundMesh();
             // Get part names

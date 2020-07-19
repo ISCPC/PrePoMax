@@ -20,44 +20,59 @@ namespace FileInOut.Input
             if (File.Exists(fileName))
             {
                 string data = File.ReadAllText(fileName);
+                //
+                Dictionary<int, HashSet<int>> surfaceIdNodeIds = new Dictionary<int, HashSet<int>>();
+                Dictionary<int, HashSet<int>> edgeIdNodeIds = new Dictionary<int, HashSet<int>>();
+                Dictionary<int, FeNode> nodes = new Dictionary<int, FeNode>();
+                Dictionary<int, FeElement> elements = new Dictionary<int, FeElement>();
+                //
+                BoundingBox bBox = new BoundingBox();
+                double epsilon = 1E-9;
+                int offsetNodeId = 0;
+                int offsetElementId = 0;
+                //
+                string textToFind = null;
+                ImportOptions importOptions = ImportOptions.None;
                 // Import solid geometry
                 if (data.Contains("Solid number: "))
                 {
-                    string[] solidData = data.Split(new string[] { "Solid number: " }, StringSplitOptions.RemoveEmptyEntries);
-
-                    if (solidData.Length > 2) throw new Exception("The file: " + fileName + " contains more than one solid.");
-
-                    string[] faceData = solidData[1].Split(new string[] { "Face number: " }, StringSplitOptions.RemoveEmptyEntries);
-
-                    Dictionary<int, HashSet<int>> surfaceIdNodeIds = new Dictionary<int, HashSet<int>>();
-                    Dictionary<int, HashSet<int>> edgeIdNodeIds = new Dictionary<int, HashSet<int>>();
-                    Dictionary<int, FeNode> nodes = new Dictionary<int, FeNode>();
-                    Dictionary<int, FeElement> elements = new Dictionary<int, FeElement>();
-
-                    BoundingBox bBox = new BoundingBox();
-                    int offsetNodeId = 0;
-                    int offsetElementId = 0;
-
+                    textToFind = "Solid number: ";
+                    importOptions = ImportOptions.ImportOneSolidPart;
+                }
+                // Import shell geometry
+                else if (data.Contains("Shell number: "))
+                {
+                    textToFind = "Shell number: ";
+                    importOptions = ImportOptions.ImportOneShellPart;
+                }
+                //
+                if (textToFind != null)
+                {
+                    string[] partData = data.Split(new string[] { textToFind }, StringSplitOptions.RemoveEmptyEntries);
+                    //
+                    if (partData.Length > 2) throw new Exception("The file: " + fileName + " contains more than one part.");
+                    //
+                    string[] faceData = partData[1].Split(new string[] { "Face number: " }, StringSplitOptions.RemoveEmptyEntries);
+                    //
                     for (int i = 1; i < faceData.Length; i++)   // start with 1 to skip first line: ********
                     {
                         ReadFace(faceData[i], ref offsetNodeId, nodes, ref offsetElementId, elements,
                                  surfaceIdNodeIds, edgeIdNodeIds, ref bBox);
                     }
-
-                    double epsilon = 1E-9;
+                    //
                     double max = bBox.GetDiagonal();
                     MergeNodes(nodes, elements, surfaceIdNodeIds, edgeIdNodeIds, epsilon * max);
-
-                    FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Geometry, ImportOptions.ImportOneSolidPart);
-
+                    //
+                    FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Geometry, importOptions);
+                    //
                     mesh.ConvertLineFeElementsToEdges();
-
+                    //
                     mesh.RenumberVisualizationSurfaces(surfaceIdNodeIds);
                     mesh.RenumberVisualizationEdges(edgeIdNodeIds);
-
+                    //
                     mesh.RemoveElementsByType<FeElement1D>();
                     mesh.RemoveElementsByType<FeElement3D>();
-
+                    //
                     return mesh;
                 }
             }
