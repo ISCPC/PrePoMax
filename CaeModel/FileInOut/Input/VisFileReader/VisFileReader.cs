@@ -23,6 +23,7 @@ namespace FileInOut.Input
                 //
                 Dictionary<int, HashSet<int>> surfaceIdNodeIds = new Dictionary<int, HashSet<int>>();
                 Dictionary<int, HashSet<int>> edgeIdNodeIds = new Dictionary<int, HashSet<int>>();
+                HashSet<int> vertexNodeIds = new HashSet<int>();
                 Dictionary<int, FeNode> nodes = new Dictionary<int, FeNode>();
                 Dictionary<int, FeElement> elements = new Dictionary<int, FeElement>();
                 //
@@ -57,7 +58,7 @@ namespace FileInOut.Input
                     for (int i = 1; i < faceData.Length; i++)   // start with 1 to skip first line: ********
                     {
                         ReadFace(faceData[i], ref offsetNodeId, nodes, ref offsetElementId, elements,
-                                 surfaceIdNodeIds, edgeIdNodeIds, ref bBox);
+                                 surfaceIdNodeIds, edgeIdNodeIds, vertexNodeIds, ref bBox);
                     }
                     //
                     double max = bBox.GetDiagonal();
@@ -65,7 +66,7 @@ namespace FileInOut.Input
                     //
                     FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Geometry, importOptions);
                     //
-                    mesh.ConvertLineFeElementsToEdges();
+                    mesh.ConvertLineFeElementsToEdges(vertexNodeIds);
                     //
                     mesh.RenumberVisualizationSurfaces(surfaceIdNodeIds);
                     mesh.RenumberVisualizationEdges(edgeIdNodeIds);
@@ -85,6 +86,7 @@ namespace FileInOut.Input
                                      ref int offsetElementId, Dictionary<int, FeElement> elements,
                                      Dictionary<int, HashSet<int>> surfaceIdNodeIds,
                                      Dictionary<int, HashSet<int>> edgeIdNodeIds,
+                                     HashSet<int> vertexNodeIds,
                                      ref BoundingBox bBox)
         {
             int numOfNodes = 0;
@@ -112,7 +114,7 @@ namespace FileInOut.Input
                 }
                 else if (data[i].StartsWith("edges"))
                 {
-                    numOfElements = ReadEdges(data[i], offsetNodeId, offsetElementId, elements, edgeIdNodeIds);
+                    numOfElements = ReadEdges(data[i], offsetNodeId, offsetElementId, elements, edgeIdNodeIds, vertexNodeIds);
                     offsetElementId += numOfElements;
                 }
             }
@@ -182,7 +184,8 @@ namespace FileInOut.Input
             return data.Length - 1; // return number of read elements
         }
         private static int ReadEdges(string elementData, int offsetNodeId, int offsetElementId,
-                                     Dictionary<int, FeElement> elements, Dictionary<int, HashSet<int>> edgeIdNodeIds)
+                                     Dictionary<int, FeElement> elements, Dictionary<int, HashSet<int>> edgeIdNodeIds,
+                                     HashSet<int> vertexNodeIds)
         {
             string[] data = elementData.Split(lineSplitter, StringSplitOptions.RemoveEmptyEntries);
             string[] allIds;
@@ -207,22 +210,22 @@ namespace FileInOut.Input
                     nodeIds = new int[2];
                     nodeIds[0] = int.Parse(allIds[j]) + offsetNodeId;
                     nodeIds[1] = int.Parse(allIds[j + 1]) + offsetNodeId;
-
+                    //
                     edgeNodeIds.Add(nodeIds[0]);
                     edgeNodeIds.Add(nodeIds[1]);
-
+                    //
                     element = new LinearBeamElement(id, nodeIds);
                     elements.Add(element.Id, element);
-
+                    // Add the first and the last node id to the vertex list
+                    if (j == 1) vertexNodeIds.Add(nodeIds[0]);
+                    if (j == allIds.Length - 2) vertexNodeIds.Add(nodeIds[1]);
                     internalId++;
                 }
                 //
-                if (edgeId == 1)
-                    edgeId = 1;
                 if (edgeIdNodeIds.TryGetValue(edgeId, out edgeNodeIdsOut)) edgeNodeIdsOut.UnionWith(edgeNodeIds);
                 else edgeIdNodeIds.Add(edgeId, new HashSet<int>(edgeNodeIds));      // create a copy!!!
             }
-
+            //
             return internalId - 1; // return number of read edges
         }
 

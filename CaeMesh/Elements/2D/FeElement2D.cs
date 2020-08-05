@@ -17,10 +17,13 @@ namespace CaeMesh
             : base(id, nodeIds)
         {
         }
-
         public FeElement2D(int id, int partId, int[] nodeIds)
             : base(id, partId, nodeIds)
         {
         }
+
+
+        // Methods                                                                                                                  
+        abstract public int[][] GetAllVtkCells();
     }
 }

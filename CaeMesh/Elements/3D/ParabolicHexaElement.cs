@@ -65,7 +65,6 @@ namespace CaeMesh
             // S4 = 2-6-7-3-18-14-19-10 . 1-5-6-2-17-13-18-9
             // S5 = 3-7-8-4-19-15-20-11 . 2-6-7-3-18-14-19-10
             // S6 = 4-8-5-1-20-16-17-12 . 3-7-4-0-19-15-16-11
-
             switch (faceName)
             {
                 case FeFaceName.S1:
@@ -93,7 +92,6 @@ namespace CaeMesh
             // S4 = 2-6-7-3-18-14-19-10 . 1-5-6-2-17-13-18-9  . 1-2-6-5-9-18-13-17
             // S5 = 3-7-8-4-19-15-20-11 . 2-6-7-3-18-14-19-10 . 2-3-7-6-10-19-14-18
             // S6 = 4-8-5-1-20-16-17-12 . 3-7-4-0-19-15-16-11 . 3-0-4-7-11-16-15-19
-
             switch (faceName)
             {
                 case FeFaceName.S1:
@@ -128,10 +126,10 @@ namespace CaeMesh
         }
         public override Dictionary<FeFaceName, double> GetFaceNamesAndAreasFromNodeSet(HashSet<int> nodeSet, Dictionary<int, FeNode> nodes)
         {
-            // check only first 8 nodes (as in linear element)
+            // Check only first 8 nodes (as in linear element)
             int significantNodes = 8;
             bool[] faceNodeIds = new bool[significantNodes];
-
+            //
             int count = 0;
             for (int i = 0; i < significantNodes; i++)
             {
@@ -142,7 +140,6 @@ namespace CaeMesh
                 }
                 if (i >= 4 && count <= i - 4) break;
             }
-
             // S1 = 1-2-3-4 . 0-1-2-3
             // S2 = 5-8-7-6 . 4-7-6-5
             // S3 = 1-5-6-2 . 0-4-5-1
@@ -150,14 +147,14 @@ namespace CaeMesh
             // S5 = 3-7-8-4 . 2-6-7-3
             // S6 = 4-8-5-1 . 3-7-4-0
             Dictionary<FeFaceName, double> faces = new Dictionary<FeFaceName, double>();
-
+            //
             if (faceNodeIds[0] && faceNodeIds[1] && faceNodeIds[2] && faceNodeIds[3]) faces.Add(FeFaceName.S1, GetArea(FeFaceName.S1, nodes));
             if (faceNodeIds[4] && faceNodeIds[7] && faceNodeIds[6] && faceNodeIds[5]) faces.Add(FeFaceName.S2, GetArea(FeFaceName.S2, nodes));
             if (faceNodeIds[0] && faceNodeIds[4] && faceNodeIds[5] && faceNodeIds[1]) faces.Add(FeFaceName.S3, GetArea(FeFaceName.S3, nodes));
             if (faceNodeIds[1] && faceNodeIds[5] && faceNodeIds[6] && faceNodeIds[2]) faces.Add(FeFaceName.S4, GetArea(FeFaceName.S4, nodes));
             if (faceNodeIds[2] && faceNodeIds[6] && faceNodeIds[7] && faceNodeIds[3]) faces.Add(FeFaceName.S5, GetArea(FeFaceName.S5, nodes));
             if (faceNodeIds[3] && faceNodeIds[7] && faceNodeIds[4] && faceNodeIds[0]) faces.Add(FeFaceName.S6, GetArea(FeFaceName.S6, nodes));
-
+            //
             return faces;
         }
         public override double[] GetEquivalentForcesFromFaceName(FeFaceName faceName)

@@ -274,33 +274,36 @@ namespace FileInOut.Output
             {
                 Dictionary<string, List<FeElement>> elementTypes = new Dictionary<string, List<FeElement>>();
                 List<FeElement> elements;
-
+                //
                 string type;
                 FeElement element;
                 MeshPart part;
                 CalElement elementKeyword;
-
+                //
                 foreach (var entry in model.Mesh.Parts)
                 {
                     elementTypes.Clear();
                     part = (MeshPart)entry.Value;
-
+                    //
                     foreach (int elementId in part.Labels)
                     {
                         element = model.Mesh.Elements[elementId];
-                        if (part.LinearTetraType != FeElementTypeLinearTetra.None && element is LinearTetraElement) type = part.LinearTetraType.ToString();
+                        if (part.LinearTriaType != FeElementTypeLinearTria.None && element is LinearTriangleElement) type = part.LinearTriaType.ToString();
+                        else if (part.LinearQuadType != FeElementTypeLinearQuad.None && element is LinearQuadrilateralElement) type = part.LinearQuadType.ToString();
+                        else if (part.LinearTetraType != FeElementTypeLinearTetra.None && element is LinearTetraElement) type = part.LinearTetraType.ToString();
                         else if (part.LinearWedgeType != FeElementTypeLinearWedge.None && element is LinearWedgeElement) type = part.LinearWedgeType.ToString();
                         else if (part.LinearHexaType != FeElementTypeLinearHexa.None && element is LinearHexaElement) type = part.LinearHexaType.ToString();
+                        else if (part.ParabolicTriaType != FeElementTypeParabolicTria.None && element is ParabolicTriangleElement) type = part.ParabolicTriaType.ToString();
+                        else if (part.ParabolicQuadType != FeElementTypeParabolicQuad.None && element is ParabolicQuadrilateralElement) type = part.ParabolicQuadType.ToString();
                         else if (part.ParabolicTetraType != FeElementTypeParabolicTetra.None && element is ParabolicTetraElement) type = part.ParabolicTetraType.ToString();
                         else if (part.ParabolicWedgeType != FeElementTypeParabolicWedge.None && element is ParabolicWedgeElement) type = part.ParabolicWedgeType.ToString();
                         else if (part.ParabolicHexaType != FeElementTypeParabolicHexa.None && element is ParabolicHexaElement) type = part.ParabolicHexaType.ToString();
                         else throw new NotImplementedException();
-
-                        // add element to the coresponding type
+                        // Add element to the coresponding type
                         if (elementTypes.TryGetValue(type, out elements)) elements.Add(element);
                         else elementTypes.Add(type, new List<FeElement>() { element });
                     }
-
+                    //
                     foreach (var typeEntry in elementTypes)
                     {
                         elementKeyword = new CalElement(typeEntry.Key, part.Name, typeEntry.Value, part);

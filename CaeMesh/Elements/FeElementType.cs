@@ -8,6 +8,40 @@ using System.Threading.Tasks;
 namespace CaeMesh
 {
     [Serializable]
+    public enum FeElementTypeLinearTria
+    {
+        [StandardValue("None", Visible = false)]
+        None,
+        S3
+    }
+
+    [Serializable]
+    public enum FeElementTypeParabolicTria
+    {
+        [StandardValue("None", Visible = false)]
+        None,
+        S6
+    }
+
+    [Serializable]
+    public enum FeElementTypeLinearQuad
+    {
+        [StandardValue("None", Visible = false)]
+        None,
+        S4,
+        S4R
+    }
+    
+    [Serializable]
+    public enum FeElementTypeParabolicQuad
+    {
+        [StandardValue("None", Visible = false)]
+        None,
+        S8,
+        S8R
+    }
+
+    [Serializable]
     public enum FeElementTypeLinearTetra
     {
         [StandardValue("None", Visible = false)]

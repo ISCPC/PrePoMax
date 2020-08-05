@@ -16,6 +16,12 @@ namespace CaeMesh
         public bool ColorContours;
         public int NumberOfElements;
         public int NumberOfNodes;
+        //
+        public FeElementTypeLinearTria LinearTriaType;
+        public FeElementTypeParabolicTria ParabolicTriaType;
+        public FeElementTypeLinearQuad LinearQuadType;
+        public FeElementTypeParabolicQuad ParabolicQuadType;
+        //
         public FeElementTypeLinearTetra LinearTetraType;
         public FeElementTypeParabolicTetra ParabolicTetraType;
         public FeElementTypeLinearWedge LinearWedgeType;

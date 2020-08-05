@@ -30,7 +30,7 @@ namespace FileInOut.Input
                 // Geometry: itemId, allNodeIds
                 Dictionary<int, HashSet<int>> surfaceIdNodeIds = new Dictionary<int, HashSet<int>>();
                 Dictionary<int, HashSet<int>> edgeIdNodeIds = new Dictionary<int, HashSet<int>>();
-                Dictionary<int, HashSet<int>> vertices = new Dictionary<int, HashSet<int>>();
+                HashSet<int> vertexNodeIds = new HashSet<int>();
                 //
                 foreach (List<string> dataSet in dataSets)
                 {
@@ -49,13 +49,14 @@ namespace FileInOut.Input
                     }
                     else if (dataSet[0] == VolKeywords.edgesegmentsgi2.ToString()) // 1D Elements
                     {
-                        AddLineElements(dataSet.ToArray(), elements, ref elementStartId, edgeIdNodeIds);
+                        AddLineElements(dataSet.ToArray(), elements, ref elementStartId, edgeIdNodeIds, vertexNodeIds);
                     }
                 }
+                //
                 FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Mesh, null, null, convertToSecondOrder,
                                          ImportOptions.None);
                 //
-                mesh.ConvertLineFeElementsToEdges();
+                mesh.ConvertLineFeElementsToEdges(vertexNodeIds);
                 //
                 mesh.RenumberVisualizationSurfaces(surfaceIdNodeIds);
                 mesh.RenumberVisualizationEdges(edgeIdNodeIds);
@@ -101,7 +102,6 @@ namespace FileInOut.Input
 
             return dataSets;
         }
-        
         static private Dictionary<int, FeNode> GetNodes(string[] lines)
         {
             Dictionary<int, FeNode> nodes = new Dictionary<int, FeNode>();
@@ -207,7 +207,7 @@ namespace FileInOut.Input
             }
         }
         static private void AddLineElements(string[] lines, Dictionary<int, FeElement> elements, ref int startId,
-                                            Dictionary<int, HashSet<int>> edges)
+                                            Dictionary<int, HashSet<int>> edges, HashSet<int> vertexNodeIds)
         {
             //# surfid  0   p1   p2   trignum1    trignum2   domin/surfnr1    domout/surfnr2   ednr1   dist1   ednr2   dist2  
             //edgesegmentsgi2                                                                                                 
@@ -215,36 +215,64 @@ namespace FileInOut.Input
             //       1       0       1       9       -1       -1        0        0        1         -100        1        -49.9
             //       1       0       9       2       -1       -1        0        0        2        -49.9        1           -0
             //       1       0      10       3      -1        -1        0        0        3         50.1        2           -0
-
-            int numNodes;
             int N = int.Parse(lines[1]);
             int edgeId;
+            int prevSurfaceId = -1;
+            int surfceId;
             string[] record;
             string[] splitter = new string[] { " " };
             HashSet<int> edge;
-
             FeElement1D element = null;
-
-            // line 0 is the line with the Keyword
+            Dictionary<int, int> nodeIdCount;
+            Dictionary<int, Dictionary<int, int>> edgeIdNodeIdCount = new Dictionary<int, Dictionary<int, int>>();
+            // Line 0 is the line with the Keyword
             for (int i = 2; i < N + 2; i++)
             {
                 record = lines[i].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
-                numNodes = 2;
-                switch (numNodes)
-                {
-                    case 2:
-                        element = GetLinearBeamElement(startId, record);
-                        break;
-                    default:
-                        throw new NotSupportedException();
-                }
-                elements.Add(startId, element);
-
+                // Surface id
+                surfceId = int.Parse(record[0]);
+                // Edge id
                 edgeId = int.Parse(record[10]);
+                // If this is a new surface
+                if (surfceId != prevSurfaceId)
+                {
+                    foreach (var edgeEntry in edgeIdNodeIdCount)
+                    {
+                        foreach (var nodeEntry in edgeEntry.Value)
+                        {
+                            if (nodeEntry.Value == 1) vertexNodeIds.Add(nodeEntry.Key);
+                        }
+                    }
+                    edgeIdNodeIdCount.Clear();
+                    prevSurfaceId = surfceId;
+                }
+                // Element
+                element = GetLinearBeamElement(startId, record);
+                elements.Add(startId, element);
+                // Count all nodes of a singe surface
+                if (!edgeIdNodeIdCount.TryGetValue(edgeId, out nodeIdCount))
+                {
+                    nodeIdCount = new Dictionary<int, int>();
+                    edgeIdNodeIdCount.Add(edgeId, nodeIdCount);
+                }
+                for (int j = 0; j < 2; j++)
+                {
+                    if (nodeIdCount.ContainsKey(element.NodeIds[j])) nodeIdCount[element.NodeIds[j]]++;
+                    else nodeIdCount.Add(element.NodeIds[j], 1);
+                }
+                // Add nodes to an edge
                 if (edges.TryGetValue(edgeId, out edge)) edge.UnionWith(element.NodeIds);
                 else edges.Add(edgeId, new HashSet<int>(element.NodeIds)); // create a copy!!!
-
+                //
                 startId++;
+            }
+            //
+            foreach (var edgeEntry in edgeIdNodeIdCount)
+            {
+                foreach (var nodeEntry in edgeEntry.Value)
+                {
+                    if (nodeEntry.Value == 1) vertexNodeIds.Add(nodeEntry.Key);
+                }
             }
         }
       

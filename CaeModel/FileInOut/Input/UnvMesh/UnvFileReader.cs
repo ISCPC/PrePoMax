@@ -23,23 +23,15 @@ namespace FileInOut.Input
             if (fileName != null && File.Exists(fileName))
             {
                 string[] lines = File.ReadAllLines(fileName);
-
-                //string[] lines;
-                //using (var reader = File.OpenText(fileName))
-                //{
-                //    var text = await reader.ReadToEndAsync();
-                //    lines = text.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
-                //}
-                
+                //
                 List<List<string>> dataSets = GetDataSets(lines);
-
+                //
                 int setID;
                 Dictionary<int, FeNode> nodes = null;
                 Dictionary<int, FeElement> elements = null;
-
                 Dictionary<int, FeNodeSet> nodeGroups = new Dictionary<int, FeNodeSet>();
                 Dictionary<int, FeElementSet> elementGroups = new Dictionary<int, FeElementSet>();
-
+                //
                 string line;
                 foreach (List<string> dataSet in dataSets)
                 {
@@ -61,33 +53,26 @@ namespace FileInOut.Input
                     }
                 }
                 FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Mesh);
-                //FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Mesh, null, Path.GetFileNameWithoutExtension(fileName));
-
-                foreach (var entry in nodeGroups)
-                {
-                    mesh.AddNodeSet(entry.Value);
-                }
-
+                //
+                foreach (var entry in nodeGroups) mesh.AddNodeSet(entry.Value);
+                //
                 foreach (var entry in elementGroups)
                 {
                     mesh.AddElementSet(entry.Value);
                     mesh.AddNodeSetFromElementSet(entry.Value.Name);
                 }
-                
+                //
                 if (elementsToImport != ElementsToImport.All)
                 {
                     if (elementsToImport != ElementsToImport.Beam) mesh.RemoveElementsByType<FeElement1D>();
                     if (elementsToImport != ElementsToImport.Shell) mesh.RemoveElementsByType<FeElement2D>();
                     if (elementsToImport != ElementsToImport.Solid) mesh.RemoveElementsByType<FeElement3D>();
                 }
-                //return mesh.ExtractMeshType(MeshType.Solid);
-                //mesh.CreatePrismaticBoundaryLayer(new int[] { 120003 }, 1);
                 return mesh;
             }
-
+            //
             return null;
         }
-
         static private List<List<string>> GetDataSets(string[] lines)
         {
             int count = 0;
@@ -112,7 +97,6 @@ namespace FileInOut.Input
 
             return dataSets;
         }
-
         static private Dictionary<int, FeNode> GetNodes(string[] lines)
         {
             // Gmsh output
@@ -147,7 +131,6 @@ namespace FileInOut.Input
 
             return nodes;
         }
-
         static private Dictionary<int, FeElement> GetElements(string[] lines)
         {
             Dictionary<int, FeElement> elements = new Dictionary<int, FeElement>();
@@ -282,8 +265,8 @@ namespace FileInOut.Input
 
             return elements;
         }
-
-        static private void GetGroups(string[] lines, ref Dictionary<int, FeNodeSet> nodeGroups, ref Dictionary<int, FeElementSet> elementGroups)
+        static private void GetGroups(string[] lines, ref Dictionary<int, FeNodeSet> nodeGroups,
+                                      ref Dictionary<int, FeElementSet> elementGroups)
         {
             int id;
             int n;
@@ -294,17 +277,16 @@ namespace FileInOut.Input
             bool isNodeGroup = true;
             List<int> labels;
             int row;
-
-            // line 0 is the line with the SetID
+            // Line 0 is the line with the SetID
             for (int i = 1; i < lines.Length; i++)
             {
                 record1 = lines[i].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
                 record2 = lines[i + 1].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
-                
+                //
                 id = int.Parse(record1[0]);
-                n = int.Parse(record1[7]);  // number of elements not recors
+                n = int.Parse(record1[7]);  // number of elements in record
                 name = record2[0];
-
+                //
                 labels = new List<int>();
                 i += 2;
                 row = 0;
@@ -316,23 +298,19 @@ namespace FileInOut.Input
                         if (int.Parse(recordN[0]) == 7) isNodeGroup = true;
                         else isNodeGroup = false;
                     }
-
+                    //
                     labels.Add(int.Parse(recordN[1]));
-                    if (recordN.Length > 4)
-                        labels.Add(int.Parse(recordN[5]));
-
+                    if (recordN.Length > 4) labels.Add(int.Parse(recordN[5]));
+                    //
                     row++;
                 }
-
-                if (isNodeGroup)
-                    nodeGroups.Add(id, new FeNodeSet(name, labels.ToArray(), null));
-                else
-                    elementGroups.Add(id, new FeElementSet(name, labels.ToArray()));
-
+                //
+                if (isNodeGroup) nodeGroups.Add(id, new FeNodeSet(name, labels.ToArray(), null));
+                else elementGroups.Add(id, new FeElementSet(name, labels.ToArray()));
+                //
                 i += row - 1;
             }
         }
-
         private static bool HasThreeRecords(UnvFeDescriptorId feDescriptorId)
         {
             switch (feDescriptorId)
@@ -352,7 +330,6 @@ namespace FileInOut.Input
             }
             return false;
         }
-
         private static bool HasFourRecords(UnvFeDescriptorId feDescriptorId)
         {
             if (feDescriptorId == UnvFeDescriptorId.SolidParabolicBrick) return true;
@@ -371,7 +348,6 @@ namespace FileInOut.Input
             }
             return new LinearBeamElement(id, nodes);
         }
-
         static private LinearTriangleElement GetLinearTriangleElement(int id, string[] record1, string[] record2)
         {
             int n = int.Parse(record1[5]);
@@ -382,7 +358,6 @@ namespace FileInOut.Input
             }
             return new LinearTriangleElement(id, nodes);
         }
-
         static private LinearQuadrilateralElement GetLinearQuadrilateralElement(int id, string[] record1, string[] record2)
         {
             int n = int.Parse(record1[5]);
@@ -393,7 +368,6 @@ namespace FileInOut.Input
             }
             return new LinearQuadrilateralElement(id, nodes);
         }
-
         static private LinearTetraElement GetLinearTetraElement(int id, string[] record1, string[] record2)
         {
             int n = int.Parse(record1[5]);
@@ -404,7 +378,6 @@ namespace FileInOut.Input
             }
             return new LinearTetraElement(id, nodes);
         }
-
         static private LinearWedgeElement GetLinearWedgeElement(int id, string[] record1, string[] record2)
         {
             int n = int.Parse(record1[5]);
@@ -415,7 +388,6 @@ namespace FileInOut.Input
             }
             return new LinearWedgeElement(id, nodes);
         }
-
         static private LinearHexaElement GetLinearHexaElement(int id, string[] record1, string[] record2)
         {
             int n = int.Parse(record1[5]);
@@ -429,7 +401,6 @@ namespace FileInOut.Input
 
 
         //  PARABOLIC ELEMENTS                                                                                    
-
         static private ParabolicBeamElement GetParabolicBeamElement(int id, string[] record1, string[] record2, string[] record3)
         {
             int n = int.Parse(record1[5]);
@@ -442,7 +413,6 @@ namespace FileInOut.Input
 
             return new ParabolicBeamElement(id, nodes);
         }
-
         static private ParabolicTriangleElement GetParabolicTriangleElement(int id, string[] record1, string[] record2)
         {
             int n = int.Parse(record1[5]);
@@ -458,7 +428,6 @@ namespace FileInOut.Input
 
             return new ParabolicTriangleElement(id, nodes);
         }
-
         static private ParabolicQuadrilateralElement GetParabolicQuadrilateralElement(int id, string[] record1, string[] record2)
         {
             int n = int.Parse(record1[5]);
@@ -476,7 +445,6 @@ namespace FileInOut.Input
 
             return new ParabolicQuadrilateralElement(id, nodes);
         }
-
         static private ParabolicTetraElement GetParabolicTetraElement(int id, string[] record1, string[] record2, string[] record3)
         {
             int n = int.Parse(record1[5]);
@@ -496,7 +464,6 @@ namespace FileInOut.Input
 
             return new ParabolicTetraElement(id, nodes);
         }
-
         static private ParabolicWedgeElement GetParabolicWedgeElement(int id, string[] record1, string[] record2, string[] record3)
         {
             int n = int.Parse(record1[5]);
@@ -521,7 +488,6 @@ namespace FileInOut.Input
 
             return new ParabolicWedgeElement(id, nodes);
         }
-
         static private ParabolicHexaElement GetParabolicHexaElement(int id, string[] record1, string[] record2, string[] record3, string[] record4)
         {
             int n = int.Parse(record1[5]);
@@ -551,7 +517,5 @@ namespace FileInOut.Input
 
             return new ParabolicHexaElement(id, nodes);
         }
-
-
     }
 }

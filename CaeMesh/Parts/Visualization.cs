@@ -187,7 +187,7 @@ namespace CaeMesh
 
 
         // Methods
-        public void ExtractVisualizationCells(Dictionary<int, FeElement> elements, int[] elementIds)
+        public void ExtractVisualizationCellsFromElements3D(Dictionary<int, FeElement> elements, int[] elementIds)
         {
             if (_cellNeighboursOverCell == null) ExtractCellNeighboursOverCell(elements, elementIds);
             //
@@ -203,7 +203,23 @@ namespace CaeMesh
             }
             // Save
             _cells = visualizationCells.ToArray();
-            _cellIds = visualizationCellsIds.ToArray(); ;
+            _cellIds = visualizationCellsIds.ToArray();
+        }
+        public void ExtractVisualizationCellsFromElements2D(Dictionary<int, FeElement> elements, int[] elementIds)
+        {
+            int count;
+            int[][] visualizationCells = new int[elementIds.Length][];
+            int[] visualizationCellsIds = new int[elementIds.Length];
+            //
+            count = 0;
+            foreach (var id in elementIds)
+            {
+                visualizationCellsIds[count] = id;
+                visualizationCells[count++] = elements[id].GetVtkNodeIds();
+            }
+            // Save
+            _cells = visualizationCells.ToArray();
+            _cellIds = visualizationCellsIds.ToArray();
         }
         private void ExtractCellNeighboursOverCell(Dictionary<int, FeElement> elements, int[] elementIds)
         {

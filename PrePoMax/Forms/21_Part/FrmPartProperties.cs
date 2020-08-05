@@ -145,10 +145,7 @@ namespace PrePoMax.Forms
 
 
         // Methods                                                                                                                  
-        public bool PrepareForm(string stepName, string partToEditName)
-        {
-            return OnPrepareForm(stepName, partToEditName);
-        }
+       
 
         
     }

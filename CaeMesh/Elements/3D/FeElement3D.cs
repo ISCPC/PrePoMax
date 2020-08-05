@@ -22,7 +22,6 @@ namespace CaeMesh
             : base(id, nodeIds)
         {
         }
-
         public FeElement3D(int id, int partId, int[] nodeIds)
             : base(id, partId, nodeIds)
         {

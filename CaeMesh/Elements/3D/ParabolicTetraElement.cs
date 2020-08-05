@@ -71,7 +71,6 @@ namespace CaeMesh
             // S2 = 1-4-2-8-9-5  . 0-1-3-4-8-7
             // S3 = 2-4-3-9-10-6 . 1-2-3-5-9-8
             // S4 = 3-4-1-10-8-7 . 2-0-3-6-7-9
-
             switch (faceName)
             {
                 case FeFaceName.S1:
@@ -98,13 +97,14 @@ namespace CaeMesh
 
             return cells;
         }
-        public override Dictionary<FeFaceName, double> GetFaceNamesAndAreasFromNodeSet(HashSet<int> nodeSet, Dictionary<int, FeNode> nodes)
+        public override Dictionary<FeFaceName, double> GetFaceNamesAndAreasFromNodeSet(HashSet<int> nodeSet,
+                                                                                       Dictionary<int, FeNode> nodes)
         {
-            // check only first 4 nodes (as in linear element)
+            // Check only first 4 nodes (as in linear element)
             int significantNodes = 4;
-
+            //
             bool[] faceNodeIds = new bool[significantNodes];
-            
+            //
             int count = 0;
             for (int i = 0; i < significantNodes; i++)
             {
@@ -115,13 +115,12 @@ namespace CaeMesh
                 }
                 if (i >= 1 && count <= i - 1) break;
             }
-
             // S1 = 1-2-3 . 0-1-2
             // S2 = 1-4-2 . 0-3-1
             // S3 = 2-4-3 . 1-3-2
             // S4 = 3-4-1 . 2-3-0
             Dictionary<FeFaceName, double> faces = new Dictionary<FeFaceName, double>();
-
+            //
             if (count >= 3)
             {
                 if (faceNodeIds[0] && faceNodeIds[1] && faceNodeIds[2]) faces.Add(FeFaceName.S1, GetArea(FeFaceName.S1, nodes));
@@ -129,7 +128,7 @@ namespace CaeMesh
                 if (faceNodeIds[1] && faceNodeIds[3] && faceNodeIds[2]) faces.Add(FeFaceName.S3, GetArea(FeFaceName.S3, nodes));
                 if (faceNodeIds[2] && faceNodeIds[3] && faceNodeIds[0]) faces.Add(FeFaceName.S4, GetArea(FeFaceName.S4, nodes));
             }
-
+            //
             return faces;
         }
         public override double[] GetEquivalentForcesFromFaceName(FeFaceName faceName)

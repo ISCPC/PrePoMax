@@ -66,12 +66,11 @@ namespace CaeMesh
         }
         public override int[] GetVtkCellFromFaceName(FeFaceName faceName)
         {
-            // invert the surface normal . switch the second and third index
+            // Invert the surface normal . switch the second and third index
             // S1 = 1-2-3 . 0-1-2 . 0-2-1
             // S2 = 1-4-2 . 0-3-1 . 0-1-3
             // S3 = 2-4-3 . 1-3-2 . 1-2-3
             // S4 = 3-4-1 . 2-3-0 . 2-0-3
-
             switch (faceName)
             {
                 case FeFaceName.S1:
@@ -90,12 +89,12 @@ namespace CaeMesh
         {
             // use Method: GetVtkCellFromFaceName(FeFaceName faceName)
             int[][] cells = new int[4][];
-
+            //
             cells[0] = new int[] { NodeIds[0], NodeIds[2], NodeIds[1] };
             cells[1] = new int[] { NodeIds[0], NodeIds[1], NodeIds[3] };
             cells[2] = new int[] { NodeIds[1], NodeIds[2], NodeIds[3] };
             cells[3] = new int[] { NodeIds[2], NodeIds[0], NodeIds[3] };
-
+            //
             return cells;
         }
         public override Dictionary<FeFaceName, double> GetFaceNamesAndAreasFromNodeSet(HashSet<int> nodeSet, Dictionary<int, FeNode> nodes)

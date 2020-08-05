@@ -6015,6 +6015,9 @@ namespace PrePoMax
                 mesh.GetNodesAndCellsForModelEdges(part, out data.ModelEdges.Nodes.Ids, out data.ModelEdges.Nodes.Coor,
                                                    out data.ModelEdges.Cells.CellNodeIds, out data.ModelEdges.Cells.Types);
             }
+            // Back face
+            if (part.PartType == PartType.Shell) data.BackfaceCulling = false;
+            //
             ApplyLighting(data);
             _form.Add3DCells(data);
         }
@@ -6105,6 +6108,8 @@ namespace PrePoMax
                 mesh.GetNodesAndCellsForModelEdges(part, out data.ModelEdges.Nodes.Ids, out data.ModelEdges.Nodes.Coor,
                                                    out data.ModelEdges.Cells.CellNodeIds, out data.ModelEdges.Cells.Types);
             }
+            // Back face
+            if (part.PartType == PartType.Shell) data.BackfaceCulling = false;
             //
             ApplyLighting(data);
             _form.Add3DCells(data);

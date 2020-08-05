@@ -161,7 +161,7 @@ namespace CaeMesh
             sb.AppendLine("int      second_order		        ... Generate second-order surface and volume elements.");
             sb.AppendLine(Convert.ToInt32(_secondOrder && _midsideNodesOnGeometry).ToString());
             sb.AppendLine("int      quad_dominated		        ... Creates a Quad-dominated mesh.");
-            sb.AppendLine("0");
+            sb.AppendLine("1");
             sb.AppendLine("char*    meshsize_filename           ... Optional external mesh size file.");
             sb.AppendLine("");
             sb.AppendLine("int      optsurfmeshenable	        ... Enable / Disable automatic surface mesh optimization.");
