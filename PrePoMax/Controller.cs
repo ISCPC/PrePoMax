@@ -1635,7 +1635,7 @@ namespace PrePoMax
             //
             FileInOut.Output.StlFileWriter.Write(stlFileName, _model.Geometry, part.Name);
             CreateMeshRefinementFile(part, meshRefinementFileName, newMeshRefinement);
-            parameters.WriteToFile(meshParametersFileName);
+            parameters.WriteToFile(meshParametersFileName, part.PartType);
             _model.Geometry.WriteEdgeNodesToFile(part, edgeNodesFileName);
             //
             string argument = "STL_EDGE_MESH " +
@@ -1678,7 +1678,7 @@ namespace PrePoMax
             //
             File.WriteAllText(brepFileName, part.CADFileData);
             CreateMeshRefinementFile(part, meshRefinementFileName, newMeshRefinement);
-            parameters.WriteToFile(meshParametersFileName);
+            parameters.WriteToFile(meshParametersFileName, part.PartType);
             //
             string argument = "BREP_EDGE_MESH " +
                               "\"" + brepFileName.ToUTF8() + "\" " +
@@ -1814,7 +1814,7 @@ namespace PrePoMax
             //
             FileInOut.Output.StlFileWriter.Write(stlFileName, _model.Geometry, part.Name);
             CreateMeshRefinementFile(part, meshRefinementFileName, null);
-            part.MeshingParameters.WriteToFile(meshParametersFileName);
+            part.MeshingParameters.WriteToFile(meshParametersFileName, part.PartType);
             _model.Geometry.WriteEdgeNodesToFile(part, edgeNodesFileName);
             //
             string argument = "STL_MESH " +
@@ -1857,7 +1857,7 @@ namespace PrePoMax
             //
             File.WriteAllText(brepFileName, part.CADFileData);
             CreateMeshRefinementFile(part, meshRefinementFileName, null);
-            part.MeshingParameters.WriteToFile(meshParametersFileName);
+            part.MeshingParameters.WriteToFile(meshParametersFileName, part.PartType);
             //
             string argument = "BREP_MESH " +
                               "\"" + brepFileName.ToUTF8() + "\" " +
@@ -3276,7 +3276,7 @@ namespace PrePoMax
             {
                 string name;
                 // Element set output
-                if (section is SolidSection)
+                if (section is SolidSection || section is ShellSection)
                 {
                     name = FeMesh.GetNextFreeSelectionName(_model.Mesh.ElementSets) + section.Name;
                     FeElementSet elementSet = new FeElementSet(name, section.CreationIds, true);
@@ -3302,7 +3302,7 @@ namespace PrePoMax
             Section section = GetSection(oldSectionName);
             if (section.CreationData != null && section.RegionName != null)
             {
-                if (section is SolidSection) RemoveElementSets(new string[] { section.RegionName });
+                if (section is SolidSection || section is ShellSection) RemoveElementSets(new string[] { section.RegionName });
                 else throw new NotSupportedException();
             }
         }

@@ -71,9 +71,26 @@ namespace PrePoMax.Forms
             this.cmsPropertyGrid.SuspendLayout();
             this.SuspendLayout();
             // 
+            // gbProperties
+            // 
+            this.gbProperties.Size = new System.Drawing.Size(310, 384);
+            // 
             // propertyGrid
             // 
             this.propertyGrid.ContextMenuStrip = this.cmsPropertyGrid;
+            this.propertyGrid.Size = new System.Drawing.Size(298, 356);
+            // 
+            // btnOK
+            // 
+            this.btnOK.Location = new System.Drawing.Point(160, 396);
+            // 
+            // btnCancel
+            // 
+            this.btnCancel.Location = new System.Drawing.Point(241, 396);
+            // 
+            // btnOkAddNew
+            // 
+            this.btnOkAddNew.Location = new System.Drawing.Point(79, 396);
             // 
             // cmsPropertyGrid
             // 
@@ -92,7 +109,7 @@ namespace PrePoMax.Forms
             // btnPreview
             // 
             this.btnPreview.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnPreview.Location = new System.Drawing.Point(79, 376);
+            this.btnPreview.Location = new System.Drawing.Point(79, 396);
             this.btnPreview.Name = "btnPreview";
             this.btnPreview.Size = new System.Drawing.Size(75, 23);
             this.btnPreview.TabIndex = 16;
@@ -102,8 +119,9 @@ namespace PrePoMax.Forms
             // 
             // FrmMeshingParameters
             // 
-            this.ClientSize = new System.Drawing.Size(334, 411);
+            this.ClientSize = new System.Drawing.Size(334, 431);
             this.Controls.Add(this.btnPreview);
+            this.MinimumSize = new System.Drawing.Size(350, 470);
             this.Name = "FrmMeshingParameters";
             this.Text = "Edit Meshing Parameters";
             this.VisibleChanged += new System.EventHandler(this.FrmMeshingParameters_VisibleChanged);

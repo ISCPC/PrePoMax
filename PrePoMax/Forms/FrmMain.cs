@@ -1946,11 +1946,11 @@ namespace PrePoMax
             foreach (var partName in partNames)
             {
                 part = _controller.GetGeometryPart(partName);
-                // default parameters
+                // Default parameters
                 defaultMeshingParameters = GetDefaultMeshingParameters(partName);
-                // first time set the meshing parameters
+                // First time set the meshing parameters
                 if (partName == partNames[0]) meshingParameters = part.MeshingParameters;
-                // meshing parameters exist only when all parts have the same meshing parameters
+                // Meshing parameters exist only when all parts have the same meshing parameters
                 if (!CaeMesh.MeshingParameters.Equals(meshingParameters, part.MeshingParameters))
                     meshingParameters = null;
                 //
@@ -1959,21 +1959,26 @@ namespace PrePoMax
             }
             defaultMeshingParameters.MaxH = CaeGlobals.Tools.RoundToSignificantDigits(sumMax / partNames.Length, 2);
             defaultMeshingParameters.MinH = CaeGlobals.Tools.RoundToSignificantDigits(sumMin / partNames.Length, 2);
-            // use meshingParameters as default if meshing parameters are not equal
+            // Use meshingParameters as default if meshing parameters are not equal
             if (meshingParameters == null) meshingParameters = defaultMeshingParameters;
             //
             CaeMesh.MeshingParameters parameters = null;
-            if (this.InvokeRequired)
-            {
-                this.Invoke((MethodInvoker)delegate () 
-                {
-                    parameters = GetMeshingParametersForm(partNames, defaultMeshingParameters, meshingParameters, formModal); 
-                });
-            }
-            else
+
+            InvokeIfRequired(() =>
             {
                 parameters = GetMeshingParametersForm(partNames, defaultMeshingParameters, meshingParameters, formModal);
-            }
+            });
+            //if (this.InvokeRequired)
+            //{
+            //    this.Invoke((MethodInvoker)delegate () 
+            //    {
+            //        parameters = GetMeshingParametersForm(partNames, defaultMeshingParameters, meshingParameters, formModal); 
+            //    });
+            //}
+            //else
+            //{
+            //    parameters = GetMeshingParametersForm(partNames, defaultMeshingParameters, meshingParameters, formModal);
+            //}
             return parameters;
         }
         public CaeMesh.MeshingParameters GetDefaultMeshingParameters(string partName)

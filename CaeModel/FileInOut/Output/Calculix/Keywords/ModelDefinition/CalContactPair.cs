@@ -36,9 +36,12 @@ namespace FileInOut.Output.Calculix
             //
             if (_contactPair.Method == ContactPairMethod.NodeToSurface && _contactPair.SmallSliding) sb.Append(", Small sliding");
             //
-            if (_contactPair.Adjust) sb.AppendFormat(", Adjust=");
-            if (double.IsNaN(_contactPair.AdjustmentSize)) sb.Append("0");
-            else sb.AppendFormat("{0}", _contactPair.AdjustmentSize);
+            if (_contactPair.Adjust)
+            {
+                sb.AppendFormat(", Adjust=");
+                if (double.IsNaN(_contactPair.AdjustmentSize)) sb.Append("0");
+                else sb.AppendFormat("{0}", _contactPair.AdjustmentSize);
+            }
             //
             sb.AppendLine();
             return sb.ToString();

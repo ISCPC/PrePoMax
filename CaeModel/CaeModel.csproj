@@ -70,6 +70,7 @@
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalPreTensionSection.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalDeactivated.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalContactPair.cs" />
+    <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalShellSection.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\SurfaceInteraction\CalFriction.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\SurfaceInteraction\CalSurfaceBehavior.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\SurfaceInteraction\CalSurfaceInteraction.cs" />
@@ -82,6 +83,7 @@
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalSubmodel.cs" />
     <Compile Include="Materials\ElasticWithDensity.cs" />
     <Compile Include="ModelProperties.cs" />
+    <Compile Include="Sections\ShellSection.cs" />
     <Compile Include="Steps\BoundaryConditions\FixedBC.cs" />
     <Compile Include="Steps\BoundaryConditions\SubmodelBC.cs" />
     <Compile Include="Steps\BoundaryConditions\DisplacementRotation.cs" />

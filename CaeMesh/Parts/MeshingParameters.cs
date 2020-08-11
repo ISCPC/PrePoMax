@@ -22,6 +22,7 @@ namespace CaeMesh
         private double _elementsperedge;
         private double _elementspercurve;
         private bool _secondOrder;
+        private bool _quadDominated;
         private bool _midsideNodesOnGeometry;
         private int _optimizeSteps2D;
         private int _optimizeSteps3D;
@@ -89,6 +90,7 @@ namespace CaeMesh
         }
         //
         public bool SecondOrder { get { return _secondOrder; } set { _secondOrder = value; } }
+        public bool QuadDominated { get { return _quadDominated; } set { _quadDominated = value; } }
         public bool MidsideNodesOnGeometry { get { return _midsideNodesOnGeometry; } set { _midsideNodesOnGeometry = value; } }
         //
         public int OptimizeSteps2D 
@@ -126,13 +128,14 @@ namespace CaeMesh
             _optimizeSteps2D = 3;
             _optimizeSteps3D = 3;
             _secondOrder = true;
+            _quadDominated = true;
             _midsideNodesOnGeometry = false;
             _splitCompoundMesh = false;
         }
 
 
         // Methods                                                                                                                  
-        public void WriteToFile(string fileName)
+        public void WriteToFile(string fileName, PartType partType)
         {
             StringBuilder sb = new StringBuilder();
             //
@@ -161,7 +164,7 @@ namespace CaeMesh
             sb.AppendLine("int      second_order		        ... Generate second-order surface and volume elements.");
             sb.AppendLine(Convert.ToInt32(_secondOrder && _midsideNodesOnGeometry).ToString());
             sb.AppendLine("int      quad_dominated		        ... Creates a Quad-dominated mesh.");
-            sb.AppendLine("1");
+            sb.AppendLine(Convert.ToInt32(_quadDominated && partType == PartType.Shell).ToString());
             sb.AppendLine("char*    meshsize_filename           ... Optional external mesh size file.");
             sb.AppendLine("");
             sb.AppendLine("int      optsurfmeshenable	        ... Enable / Disable automatic surface mesh optimization.");
@@ -199,6 +202,7 @@ namespace CaeMesh
             if (meshingParameters1._optimizeSteps2D != meshingParameters2._optimizeSteps2D) return false;
             if (meshingParameters1._optimizeSteps3D != meshingParameters2._optimizeSteps3D) return false;
             if (meshingParameters1._secondOrder != meshingParameters2._secondOrder) return false;
+            if (meshingParameters1._quadDominated != meshingParameters2._quadDominated) return false;
             if (meshingParameters1._midsideNodesOnGeometry != meshingParameters2._midsideNodesOnGeometry) return false;
             if (meshingParameters1._splitCompoundMesh != meshingParameters2._splitCompoundMesh) return false;
             return true;

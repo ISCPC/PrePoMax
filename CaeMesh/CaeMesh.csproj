@@ -62,7 +62,6 @@
     <Compile Include="BoundingBox.cs" />
     <Compile Include="Elements\0D\FeElement0D.cs" />
     <Compile Include="Elements\VtkCellType.cs" />
-    <Compile Include="FeMeshRefinement.cs" />
     <Compile Include="FeReferencePoint.cs" />
     <Compile Include="Elements\3D\FeElement3D.cs" />
     <Compile Include="Elements\2D\FeElement2D.cs" />
@@ -84,6 +83,7 @@
     <Compile Include="Geometry\GeomVertex.cs" />
     <Compile Include="Geometry\GeomSurface.cs" />
     <Compile Include="Geometry\GeometryItem.cs" />
+    <Compile Include="MeshRefinement\FeMeshRefinement.cs" />
     <Compile Include="Parts\CellNeighbour.cs" />
     <Compile Include="InpElementSet.cs" />
     <Compile Include="Nodes\CompareFeNodeByX.cs" />
@@ -114,9 +114,7 @@
       <Name>CaeGlobals</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="MeshRefinement\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
