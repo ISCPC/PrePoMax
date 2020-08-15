@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CaeModel;
 using CaeGlobals;
 using System.Windows.Forms;
+using CaeMesh;
 
 namespace PrePoMax.Forms
 {
@@ -104,18 +105,24 @@ namespace PrePoMax.Forms
         }
         protected override void OnApply(bool onOkAddNew)
         {
-            if (propertyGrid.SelectedObject is ViewError ve) throw new CaeGlobals.CaeException(ve.Message);
+            if (propertyGrid.SelectedObject is ViewError ve) throw new CaeException(ve.Message);
             //
             _viewSection = (ViewSection)propertyGrid.SelectedObject;
             //
-            if (_viewSection == null) throw new CaeGlobals.CaeException("No section was selected.");
+            if (_viewSection == null) throw new CaeException("No section was selected.");
             //
             if (Section.RegionType == RegionTypeEnum.Selection && (Section.CreationIds == null || Section.CreationIds.Length == 0))
                 throw new CaeException("The section must contain at least one item.");
             //
-            if ((_sectionToEditName == null && _sectionNames.Contains(_viewSection.Name)) ||                // create
-                (_viewSection.Name != _sectionToEditName && _sectionNames.Contains(_viewSection.Name)))     // edit
-                throw new CaeGlobals.CaeException("The selected section name already exists.");
+            if (!CheckSectionElementTypes())
+                throw new CaeException("The section type and the section region are not compatible.");
+            //
+            if (Section is ShellSection ss && ss.Thickness <= 0)
+                throw new CaeException("The section thickness must be larger than 0.");
+            //
+            if ((_sectionToEditName == null && _sectionNames.Contains(Section.Name)) ||                 // create
+                (Section.Name != _sectionToEditName && _sectionNames.Contains(Section.Name)))           // edit
+                throw new CaeException("The selected section name already exists.");
             // Create
             if (_sectionToEditName == null)
             {
@@ -154,8 +161,8 @@ namespace PrePoMax.Forms
             _sectionNames = _controller.GetSectionNames();
             _sectionToEditName = sectionToEditName;
             string[] materialNames = _controller.GetMaterialNames();
-            string[] partNames = _controller.GetModelPartNames<CaeMesh.FeElement3D>();
-            string[] elementSetNames = _controller.GetUserElementSetNames<CaeMesh.FeElement3D>();
+            string[] partNames = _controller.GetModelPartNames();
+            string[] elementSetNames = _controller.GetUserElementSetNames();
             //
             if (_sectionNames == null)
                 throw new CaeGlobals.CaeException("The section names must be defined first.");
@@ -207,7 +214,7 @@ namespace PrePoMax.Forms
                     //
                     _controller.SetSelectItemToPart();
                 }
-                if (_viewSection is ViewShellSection vshs)
+                else if (_viewSection is ViewShellSection vshs)
                 {
                     // Check for deleted entities
                     CheckMissingValueRef(ref materialNames, vshs.MaterialName, s => { vshs.MaterialName = s; });
@@ -247,7 +254,7 @@ namespace PrePoMax.Forms
             item = new ListViewItem("Solid section");
             if (materialNames.Length > 0)
             {
-                SolidSection ss = new SolidSection(GetSectionName(), materialNames[0], "", RegionTypeEnum.Selection);
+                SolidSection ss = new SolidSection(GetSectionName("Solid"), materialNames[0], "", RegionTypeEnum.Selection);
                 ViewSolidSection vss = new ViewSolidSection(ss);
                 vss.PopululateDropDownLists(materialNames, partNames, elementSetNames);
                 item.Tag = vss;
@@ -258,7 +265,7 @@ namespace PrePoMax.Forms
             item = new ListViewItem("Shell section");
             if (materialNames.Length > 0)
             {
-                ShellSection ss = new ShellSection(GetSectionName(), materialNames[0], "", RegionTypeEnum.Selection, 1);
+                ShellSection ss = new ShellSection(GetSectionName("Shell"), materialNames[0], "", RegionTypeEnum.Selection, 1);
                 ViewShellSection vss = new ViewShellSection(ss);
                 vss.PopululateDropDownLists(materialNames, partNames, elementSetNames);
                 item.Tag = vss;
@@ -266,9 +273,56 @@ namespace PrePoMax.Forms
             else item.Tag = new ViewError("There is no material defined for the shell section definition.");
             lvTypes.Items.Add(item);
         }
-        private string GetSectionName()
+        private string GetSectionName(string name)
         {
-            return NamedClass.GetNewValueName(_sectionNames, "Section-");
+            return NamedClass.GetNewValueName(_sectionNames, name + "_section-");
+        }
+        private bool CheckSectionElementTypes()
+        {
+            try
+            {
+                if (Section == null) { }
+                else if (Section is SolidSection || Section is ShellSection)
+                {
+                    if (Section.RegionType == RegionTypeEnum.PartName)
+                    {
+                        PartType partType = _controller.Model.Mesh.Parts[Section.RegionName].PartType;
+                        if (Section is SolidSection && partType == PartType.Solid) return true;
+                        else if (Section is ShellSection && partType == PartType.Shell) return true;
+                        else return false;
+                    }
+                    else if (Section.RegionType == RegionTypeEnum.ElementSetName)
+                    {
+                        FeElementSet elementSet = _controller.Model.Mesh.ElementSets[Section.RegionName];
+                        if (Section is SolidSection && _controller.AreElementsAllSolidElements3D(elementSet.Labels)) return true;
+                        else if (Section is ShellSection && _controller.AreElementsAllShellElements(elementSet.Labels)) return true;
+                        else return false;
+                    }
+                    else if (Section.RegionType == RegionTypeEnum.Selection)
+                    {
+                        if (Section.CreationIds != null)
+                        {
+                            BasePart part;
+                            int[] partIds = Section.CreationIds;
+                            foreach (int partId in partIds)
+                            {
+                                part = _controller.Model.Mesh.GetPartById(partId);
+                                if (Section is SolidSection && part.PartType == PartType.Solid) return true;
+                                else if (Section is ShellSection && part.PartType == PartType.Shell) return true;
+                                else return false;
+                            }
+                        }
+                    }
+                    else throw new NotSupportedException();
+                }
+                else throw new NotSupportedException();
+                //
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
         }
         private void HighlightSection()
         {

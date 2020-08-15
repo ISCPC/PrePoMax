@@ -145,7 +145,7 @@ namespace PrePoMax.Forms
         // Methods                                                                                                                  
         private string GetElementSetName()
         {
-            return NamedClass.GetNewValueName(_allExistingNames, "Element_Set-");
+            return NamedClass.GetNewValueName(_allExistingNames, "Element_set-");
         }
         private void HighlightElementSet()
         {

@@ -11,6 +11,7 @@ namespace CaeMesh
     {
         // Variables                                                                                                                
         private static int vtkCellTypeInt = (int)vtkCellType.VTK_QUAD;
+        private static double b = 0.25;
 
 
         // Properties                                                                                                               
@@ -99,7 +100,7 @@ namespace CaeMesh
         }
         public override double[] GetEquivalentForcesFromFaceName(FeFaceName faceName)
         {
-            throw new NotImplementedException();
+            return new double[] { b, b, b, b };
         }
         public override double GetArea(FeFaceName faceName, Dictionary<int, FeNode> nodes)
         {
@@ -108,7 +109,9 @@ namespace CaeMesh
         }
         public override double[] GetCG(FeFaceName faceName, Dictionary<int, FeNode> nodes, out double area)
         {
-            throw new NotImplementedException();
+            int[] cell = GetVtkCellFromFaceName(faceName);
+            double[] cg = GeometryTools.RectangleCG(nodes[cell[0]], nodes[cell[1]], nodes[cell[2]], nodes[cell[3]], out area);
+            return cg;
         }
         public override FeElement DeepCopy()
         {

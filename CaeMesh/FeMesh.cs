@@ -818,9 +818,9 @@ namespace CaeMesh
                 if (namePrefix != null && namePrefix != "") name = namePrefix + "-";
                 else name = "";
                 // Get new name
-                if (element is FeElement1D) name += "Wire_Part-";
-                else if (element is FeElement2D) name += "Shell_Part-";
-                else if (element is FeElement3D) name += "Solid_Part-";
+                if (element is FeElement1D) name += "Wire_part-";
+                else if (element is FeElement2D) name += "Shell_part-";
+                else if (element is FeElement3D) name += "Solid_part-";
                 else throw new NotSupportedException();
                 name = NamedClass.GetNewValueName(_parts.Keys, name);
                 // Sort node ids
@@ -5300,7 +5300,8 @@ namespace CaeMesh
             FeElement element = _elements[elementId];
             int[] nodeIds = element.GetNodeIdsFromFaceName(faceName);
             faceCenter = null;
-            if (element is LinearTetraElement || element is ParabolicTetraElement)
+            if (element is LinearTetraElement || element is ParabolicTetraElement ||
+                element is LinearTriangleElement || element is ParabolicTriangleElement)
             {
                 nodes = new FeNode[3];
                 faceCenter = new double[nodes.Length];
@@ -5332,7 +5333,8 @@ namespace CaeMesh
                 faceCenter[1] /= nodes.Length;
                 faceCenter[2] /= nodes.Length;
             }
-            else if (element is LinearHexaElement || element is ParabolicHexaElement)
+            else if (element is LinearHexaElement || element is ParabolicHexaElement ||
+                     element is LinearQuadrilateralElement || element is ParabolicQuadrilateralElement)
             {
                 nodes = new FeNode[4];
                 faceCenter = new double[nodes.Length];
@@ -5359,32 +5361,43 @@ namespace CaeMesh
             FeNode[] nodes;
             int[] nodeIds = element.GetNodeIdsFromFaceName(faceName);
             faceNormal = null;
-            if (element is LinearTetraElement || element is ParabolicTetraElement)
+            if (element is LinearTriangleElement || element is ParabolicTriangleElement)
             {
                 nodes = new FeNode[3];
                 for (int i = 0; i < nodes.Length; i++) nodes[i] = _nodes[nodeIds[i]];
-
-                // element normal to inside
+                // Element normal to outside
+                faceNormal = ComputeNormalFromCellIndices(nodes[0], nodes[2], nodes[1]).Coor;
+            }
+            else if (element is LinearTetraElement || element is ParabolicTetraElement)
+            {
+                nodes = new FeNode[3];
+                for (int i = 0; i < nodes.Length; i++) nodes[i] = _nodes[nodeIds[i]];
+                // Element normal to inside
                 faceNormal = ComputeNormalFromCellIndices(nodes[0], nodes[1], nodes[2]).Coor;
             }
             else if (element is LinearWedgeElement || element is ParabolicWedgeElement)
             {
                 if (faceName == FeFaceName.S1 || faceName == FeFaceName.S2) nodes = new FeNode[3];
                 else nodes = new FeNode[4];
-
+                //
                 for (int i = 0; i < nodes.Length; i++) nodes[i] = _nodes[nodeIds[i]];
-
-                // element normal to inside
+                // Element normal to inside
                 if (faceName == FeFaceName.S1) faceNormal = ComputeNormalFromCellIndices(nodes[0], nodes[1], nodes[2]).Coor;
-                // element normal to outside
+                // Element normal to outside
                 else faceNormal = ComputeNormalFromCellIndices(nodes[0], nodes[2], nodes[1]).Coor;
+            }
+            else if (element is LinearQuadrilateralElement || element is ParabolicQuadrilateralElement)
+            {
+                nodes = new FeNode[4];
+                for (int i = 0; i < nodes.Length; i++) nodes[i] = _nodes[nodeIds[i]];
+                // Element normal to outside
+                faceNormal = ComputeNormalFromCellIndices(nodes[0], nodes[2], nodes[1]).Coor;
             }
             else if (element is LinearHexaElement || element is ParabolicHexaElement)
             {
                 nodes = new FeNode[4];
                 for (int i = 0; i < nodes.Length; i++) nodes[i] = _nodes[nodeIds[i]];
-
-                // element normal to inside
+                // Element normal to inside
                 faceNormal = ComputeNormalFromCellIndices(nodes[0], nodes[1], nodes[2]).Coor;
             }
             else throw new NotSupportedException();
@@ -5397,7 +5410,7 @@ namespace CaeMesh
             int[] nodeIds = element.GetNodeIdsFromFaceName(faceName);
             faceCenter = null;
             faceNormal = null;
-            if (element is LinearTetraElement || element is ParabolicTetraElement)
+            if (element is LinearTriangleElement || element is ParabolicTriangleElement)
             {
                 nodes = new FeNode[3];
                 faceCenter = new double[nodes.Length];
@@ -5411,8 +5424,24 @@ namespace CaeMesh
                 faceCenter[0] /= nodes.Length;
                 faceCenter[1] /= nodes.Length;
                 faceCenter[2] /= nodes.Length;
-
-                // element normal to inside
+                // Element normal to outside
+                faceNormal = ComputeNormalFromCellIndices(nodes[0], nodes[2], nodes[1]).Coor;
+            }
+            else if(element is LinearTetraElement || element is ParabolicTetraElement)
+            {
+                nodes = new FeNode[3];
+                faceCenter = new double[nodes.Length];
+                for (int i = 0; i < nodes.Length; i++)
+                {
+                    nodes[i] = _nodes[nodeIds[i]];
+                    faceCenter[0] += nodes[i].X;
+                    faceCenter[1] += nodes[i].Y;
+                    faceCenter[2] += nodes[i].Z;
+                }
+                faceCenter[0] /= nodes.Length;
+                faceCenter[1] /= nodes.Length;
+                faceCenter[2] /= nodes.Length;
+                // Element normal to inside
                 faceNormal = ComputeNormalFromCellIndices(nodes[0], nodes[1], nodes[2]).Coor;
             }
             else if (element is LinearWedgeElement || element is ParabolicWedgeElement)
@@ -5431,11 +5460,27 @@ namespace CaeMesh
                 faceCenter[0] /= nodes.Length;
                 faceCenter[1] /= nodes.Length;
                 faceCenter[2] /= nodes.Length;
-
-                // element normal to inside
+                // Element normal to inside
                 if (faceName == FeFaceName.S1) faceNormal = ComputeNormalFromCellIndices(nodes[0], nodes[1], nodes[2]).Coor;
-                // element normal to outside
+                // Element normal to outside
                 else faceNormal = ComputeNormalFromCellIndices(nodes[0], nodes[2], nodes[1]).Coor;
+            }
+            else if (element is LinearQuadrilateralElement || element is ParabolicQuadrilateralElement)
+            {
+                nodes = new FeNode[4];
+                faceCenter = new double[nodes.Length];
+                for (int i = 0; i < nodes.Length; i++)
+                {
+                    nodes[i] = _nodes[nodeIds[i]];
+                    faceCenter[0] += nodes[i].X;
+                    faceCenter[1] += nodes[i].Y;
+                    faceCenter[2] += nodes[i].Z;
+                }
+                faceCenter[0] /= nodes.Length;
+                faceCenter[1] /= nodes.Length;
+                faceCenter[2] /= nodes.Length;
+                // Element normal to outside
+                faceNormal = ComputeNormalFromCellIndices(nodes[0], nodes[2], nodes[1]).Coor;
             }
             else if (element is LinearHexaElement || element is ParabolicHexaElement)
             {
@@ -5451,8 +5496,7 @@ namespace CaeMesh
                 faceCenter[0] /= nodes.Length;
                 faceCenter[1] /= nodes.Length;
                 faceCenter[2] /= nodes.Length;
-
-                // element normal to inside
+                // Element normal to inside
                 faceNormal = ComputeNormalFromCellIndices(nodes[0], nodes[1], nodes[2]).Coor;
             }
             else throw new NotSupportedException();

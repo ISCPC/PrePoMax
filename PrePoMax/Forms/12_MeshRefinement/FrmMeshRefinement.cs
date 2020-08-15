@@ -223,7 +223,7 @@ namespace PrePoMax.Forms
         // Methods                                                                                                                  
         private string GetMeshRefinementName()
         {
-            return NamedClass.GetNewValueName(_meshRefinementNames, "Mesh_Refinement-");
+            return NamedClass.GetNewValueName(_meshRefinementNames, "Mesh_refinement-");
         }
         private void HighlightMeshRefinement()
         {

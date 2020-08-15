@@ -2057,6 +2057,25 @@ namespace PrePoMax
             else if (_currentView == ViewGeometryModelResults.Results) return _results.Mesh.GetVisibleElementIds();
             else throw new NotSupportedException();
         }
+        //
+        public bool AreElementsAllSolidElements3D(int[] elementIds)
+        {
+            foreach (int elementId in elementIds)
+            {
+                if (!(_model.Mesh.Elements[elementId] is FeElement3D)) return false;
+            }
+            //
+            return true;
+        }
+        public bool AreElementsAllShellElements(int[] elementIds)
+        {
+            foreach (int elementId in elementIds)
+            {
+                if (!(_model.Mesh.Elements[elementId] is FeElement2D)) return false;
+            }
+            //
+            return true;
+        }
 
         #endregion #################################################################################################################
 
@@ -2154,6 +2173,8 @@ namespace PrePoMax
         }
         public string[] GetModelPartNames<T>()
         {
+            throw new NotSupportedException("All elements must be checked.");
+            //
             List<string> names = new List<string>();
             foreach (var entry in _model.Mesh.Parts)
             {
@@ -2632,6 +2653,8 @@ namespace PrePoMax
         }
         public string[] GetUserElementSetNames<T>()
         {
+            throw new NotSupportedException("All elements must be checked.");
+            //
             List<string> userElementSetNames = new List<string>();
             foreach (var entry in _model.Mesh.ElementSets)
             {

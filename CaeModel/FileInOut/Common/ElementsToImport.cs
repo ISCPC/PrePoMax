@@ -10,9 +10,10 @@ namespace FileInOut.Input
     [Flags]
     public enum ElementsToImport
     {
-        Beam = 0,
-        Shell = 1,
-        Solid = 2,
+        // Must start from 1 othervise the 0 value has no effect
+        Beam = 1,
+        Shell = 2,
+        Solid = 4,
         All = Beam | Shell | Solid
     }
 }

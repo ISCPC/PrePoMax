@@ -478,7 +478,8 @@ namespace CaeModel
         }
         public void ImportMeshFromVolFile(string fileName)
         {
-            FeMesh mesh = FileInOut.Input.VolFileReader.Read(fileName, FileInOut.Input.ElementsToImport.Solid);
+            FeMesh mesh = FileInOut.Input.VolFileReader.Read(fileName, FileInOut.Input.ElementsToImport.Shell |
+                                                                       FileInOut.Input.ElementsToImport.Solid);
             //
             ImportMesh(mesh, GetReservedPartNames());
         }
