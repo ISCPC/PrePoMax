@@ -7,6 +7,7 @@ using System.IO;
 using CaeMesh;
 using CaeGlobals;
 using CaeModel;
+using FileInOut.Output.Calculix;
 
 namespace FileInOut.Input
 {
@@ -25,7 +26,7 @@ namespace FileInOut.Input
 
 
         // Properties                                                                                                               
-        static public List<string> Errors { get { return _errors; }  } 
+        static public List<string> Errors { get { return _errors; } }
 
 
         // Methods                                                                                                                  
@@ -37,7 +38,7 @@ namespace FileInOut.Input
             if (fileName != null && File.Exists(fileName))
             {
                 string[] lines = File.ReadAllLines(fileName);
-                string[] splitter = new string[] {","};
+                string[] splitter = new string[] { "," };
 
                 string[] dataSet;
                 string[][] dataSets = GetDataSets(lines);
@@ -84,26 +85,40 @@ namespace FileInOut.Input
 
                 // node and element sets, surfaces, reference points
                 lineNumber = 0;
-                
+
                 Dictionary<string, Constraint> constraints = new Dictionary<string, Constraint>();
                 Dictionary<string, FeReferencePoint> referencePoints = new Dictionary<string, FeReferencePoint>();
                 Dictionary<string, Material> materials = new Dictionary<string, Material>();
+
+
+                // JAW 21 July 2020
+                // Create object for Sections within the input file
+                var sections = new Dictionary<string, SolidSection>();
+                var secCounter = 0; // section counter for Section name
+                // Create object for Steps within the input file
+                var steps = new Dictionary<string, StaticStep>();
+                // section counter for Section names
+                var stepCounter = 0;
+                // Boundary condition counter for Section names
+                var bCCounter = 0;
+                // End of JAW Mods
+
                 for (int i = 0; i < dataSets.Length; i++)
                 {
                     dataSet = dataSets[i];
-                    keyword = dataSet[0].Split(splitter, StringSplitOptions.RemoveEmptyEntries)[0].Trim().ToUpper();                    
+                    keyword = dataSet[0].Split(splitter, StringSplitOptions.RemoveEmptyEntries)[0].Trim().ToUpper();
 
                     if (keyword == "*NSET")
                     {
                         WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
-                        GetNodeOrElementSet("NSET", dataSet, out name, out ids);
+                        GetNodeOrElementSet("NSET", dataSet, mesh, out name, out ids);
                         if (NamedClass.CheckNameError(name) != null) AddError(NamedClass.CheckNameError(name));
                         else if (ids != null) mesh.AddNodeSet(new FeNodeSet(name, ids));
                     }
                     else if (keyword == "*ELSET")
                     {
                         WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
-                        GetNodeOrElementSet("ELSET", dataSet, out name, out ids);
+                        GetNodeOrElementSet("ELSET", dataSet, mesh, out name, out ids);
                         if (NamedClass.CheckNameError(name) != null) AddError(NamedClass.CheckNameError(name));
                         else if (ids != null) mesh.AddElementSet(new FeElementSet(name, ids));
                     }
@@ -124,12 +139,52 @@ namespace FileInOut.Input
                         Material material = GetMaterial(dataSets, i, lineNumber);
                         if (material != null) materials.Add(material.Name, material);
                     }
+                    else if (keyword == "*SOLID SECTION") // JAW 21 July 2020 - Capture solid sections
+                    {
+                        WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
+                        SolidSection section = GetSection(dataSets, i, lineNumber);
+                        if (section != null)
+                        {
+                            secCounter++;
+                            section.Name += secCounter;
+                            sections.Add(section.Name, section);
+                        }
+                    } // End of JAW Mods
+                    else if (keyword == "*STEP")
+                    {
+                        WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
+                        StaticStep step = GetStep(dataSets, i, lineNumber);
+                        if (step != null)
+                        {
+                            stepCounter++;
+                            step.Name += stepCounter;
+                            // Create object to store list of steps in *.inp files
+                            var stepColl = new StepCollection();
 
+                            stepColl.AddStep(step);
+                            foreach (var entryStep in stepColl.StepsList) model.StepCollection.AddStep(entryStep);
+                            //foreach (var entryStep in stepColl.StepsList) model.StepCollection.AddStep(entryStep);
+                            //stepColl.ReplaceStep(step,step);
+                            // step.Name += String.Join("", stepCounter);
+                            //stepColl.RemoveStep();
+                            // If there is more than 1 step, incrementally adjust the names of the boundary
+                            // conditions for the additional steps
+                            /*if (stepCounter > 1)
+                            {
+                                for (var bc = 1; bc < step.BoundaryConditions.Count(); bc++)
+                                    step.
+                            }
+
+                            stepColl.AddStep(step);
+                            var bCCounterStor = bCCounter; // Counter from previous step
+                            */
+                        }
+                    }
                     lineNumber += dataSet.Length;
                 }
 
                 //try to output errors as TextReader ...
-                
+
 
                 foreach (var entry in referencePoints) mesh.ReferencePoints.Add(entry.Key, entry.Value);
 
@@ -142,9 +197,12 @@ namespace FileInOut.Input
 
                 model.ImportMesh(mesh, null);
 
+
                 // add model items
                 foreach (var entry in constraints) model.Constraints.Add(entry.Key, entry.Value);
                 foreach (var entry in materials) model.Materials.Add(entry.Key, entry.Value);
+                foreach (var entry in sections) model.Sections.Add(entry.Key, entry.Value);
+                //foreach (var entryStep in stepColl.StepsList) model.StepCollection.AddStep(entryStep);
             }
         }
 
@@ -182,7 +240,7 @@ namespace FileInOut.Input
             string[] splitter = new string[] { " ", ",", "\t" };
 
             // line 0 is the line with the keyword
-            for (int i = 1; i < lines.Length; i ++)
+            for (int i = 1; i < lines.Length; i++)
             {
                 if (lines[i].StartsWith("*")) continue;
 
@@ -309,20 +367,19 @@ namespace FileInOut.Input
                 AddError(ex.Message);
             }
         }
-        static private void GetNodeOrElementSet(string keywordName, string[] lines, out string name, out int[] ids)
+        static private void GetNodeOrElementSet(string keywordName, string[] lines, FeMesh mesh, out string name, out int[] ids)
         {
             name = null;
             ids = null;
-
+            //
             try
             {
                 bool generate = false;
                 string[] record1;
                 string[] record2;
-
                 // *NSET,NSET=SET1,GENERATE
                 record1 = lines[0].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
-
+                //
                 foreach (var rec in record1)
                 {
                     record2 = rec.Split(splitterEqual, StringSplitOptions.RemoveEmptyEntries);
@@ -336,15 +393,15 @@ namespace FileInOut.Input
                     }
                 }
                 if (name == null) WriteDataToOutputStatic("There is a set name missing in the line: " + lines[0]);
-
-                List<int> nodeIds = new List<int>();
+                //
+                List<int> setIds = new List<int>();
                 if (generate)   // can be written in more than one line
                 {
-                    // line 0 is the line with the keyword
+                    // Line 0 is the line with the keyword
                     for (int i = 1; i < lines.Length; i++)
                     {
                         record1 = lines[i].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
-
+                        //
                         if (record1.Length <= 3)
                         {
                             int start = int.Parse(record1[0]);
@@ -352,23 +409,46 @@ namespace FileInOut.Input
                             int step = 1;
                             if (record1.Length == 3) step = int.Parse(record1[2]);
 
-                            for (int j = start; j <= end; j += step) nodeIds.Add(j);
+                            for (int j = start; j <= end; j += step) setIds.Add(j);
                         }
                         else throw new CaeGlobals.CaeException("When node set is defined using GENERATE parameter at most three node ids are expected.");
                     }
-                    ids = nodeIds.ToArray();
+                    ids = setIds.ToArray();
                 }
                 else
                 {
+                    int intId;
+                    string setName;
+                    FeNodeSet nodeSet;
+                    FeElementSet elementSet;
+                    BasePart part;
+                    //
                     for (int i = 1; i < lines.Length; i++)
                     {
                         record1 = lines[i].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
-                        foreach (string nodeId in record1)
+                        foreach (string id in record1)
                         {
-                            nodeIds.Add(int.Parse(nodeId));
+                            if (int.TryParse(id, out intId)) setIds.Add(intId);
+                            else
+                            {
+                                setName = id;
+                                if (keywordName == "NSET" && mesh.NodeSets.TryGetValue(setName, out nodeSet))
+                                {
+                                    setIds.AddRange(nodeSet.Labels);
+                                }
+                                else if (keywordName == "ELSET" && mesh.ElementSets.TryGetValue(setName, out elementSet))
+                                {
+                                    setIds.AddRange(elementSet.Labels);
+                                }
+                                else if (keywordName == "ELSET" && mesh.Parts.TryGetValue(setName, out part))
+                                {
+                                    setIds.AddRange(part.Labels);
+                                }
+                                else WriteDataToOutputStatic("The set named '" + setName + "' was not found.");
+                            }
                         }
                     }
-                    ids = nodeIds.ToArray();
+                    ids = setIds.ToArray();
                     Array.Sort(ids);
                 }
             }
@@ -550,13 +630,13 @@ namespace FileInOut.Input
         static private Material GetMaterial(string[][] dataSets, int dataSetId, int firstLineNumber)
         {
             // *Material, Name=S235
-           
+
 
             Material material = null;
             string name = null;
             string[] record1;
             string[] record2;
-            
+
             try
             {
                 string[] dataSet = dataSets[dataSetId];
@@ -581,7 +661,7 @@ namespace FileInOut.Input
                 {
                     string keyword;
                     material = new Material(name);
-                    
+
                     for (int i = dataSetId; i < dataSets.Length; i++)
                     {
                         dataSet = dataSets[i];    // next keyword
@@ -626,9 +706,17 @@ namespace FileInOut.Input
         {
             // *Density
             // 7.85E-09
+            // JAW 17 Jul 2020
+            // Sometimes the density value keyword has a comma at the end (7.85e-09,)
+            // so we read the line expecting a comma at the end of the density value
+
+            string[] record1;
+
             try
             {
-                double rho = double.Parse(lines[1]);
+                record1 = lines[1].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                double rho = double.Parse(record1[0]);
+                // End of JAW Mods
                 Density density = new Density(rho);
                 return density;
             }
@@ -701,7 +789,332 @@ namespace FileInOut.Input
                 return null;
             }
         }
+        // JAW 20 July 2020
+        // Get section is fashioned after GetMaterial
+        static private SolidSection GetSection(string[][] dataSets, int dataSetId, int firstLineNumber)
+        {
+            // Solid section can exist in two (2) formats as shown below:
 
+            // *Solid Section, ELSET=STEEL_A, MATERIAL=STEEL_A
+
+            // *Solid Section, MATERIAL=STEEL_A, ELSET=STEEL_A
+
+            string regionName = null;
+            string materialName = null;
+
+            try
+            {
+                string[] dataSet = dataSets[dataSetId];
+                string[] record1 = dataSet[0].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
+
+                foreach (var rec in record1)
+                {
+                    string[] record2 = rec.Split(splitterEqual, StringSplitOptions.RemoveEmptyEntries);
+                    if (record2.Length != 2) continue;
+                    if (record2[0].Trim().ToUpper() == "ELSET") regionName = record2[1].Trim();
+                    else if (record2[0].Trim().ToUpper() == "MATERIAL") materialName = record2[1].Trim();
+                }
+
+                var section = new SolidSection("Section-", materialName, regionName, RegionTypeEnum.ElementSetName);
+
+                return section;
+            }
+            catch
+            {
+                _errors.Add("Line " + firstLineNumber + ": Failed to import section");
+                return null;
+            }
+        }
+
+        // JAW 20 July 2020
+        // Get Step
+        static private StaticStep GetStep(string[][] dataSets, int dataSetId, int firstLineNumber)
+        {
+            // *STEP, NAME=STEP-1, NLGEOM=NO, PERTURBATION -- ABAQUS
+
+            // *STEP,NLGEOM,INC = 1000 -- CALCULIX
+
+            var step = new StaticStep("Step-");
+            var bCCounter = 0;
+            try
+            {
+                string[] dataSet = dataSets[dataSetId];
+                string[] record1 = dataSet[0].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                // Capture the options  on the step line
+                foreach (var rec in record1)
+                {
+                    string[] record2 = rec.Split(splitterEqual, StringSplitOptions.RemoveEmptyEntries);
+                    if (record2.Length == 2) // Look for ABAQUS Style "NLGEOM = YES"
+                    {
+                        if (record2[0].Trim().ToUpper() == "NLGEOM")
+                        {
+                            if (record2[1].Trim() == "YES") step.Nlgeom = true;
+                        }
+
+                        else if (record2[0].Trim().ToUpper() == "INC")
+                        {
+                            step.MaxIncrements = int.Parse(record2[1].Trim());
+                        }
+                    }
+                    else if (record2.Length == 1) // Look for Calculix stye "NLGEOM"
+                    {
+                        if (record2[0] == "NLGEOM") step.Nlgeom = true;
+
+                    }
+                }
+
+                // Determine other Keywords in Step
+                firstLineNumber += dataSet.Length;
+                dataSetId++;
+
+                for (var i = dataSetId; i < dataSets.Length; i++)
+                {
+                    dataSet = dataSets[i]; // next keyword
+                    var keyword = dataSet[0].Split(splitter, StringSplitOptions.RemoveEmptyEntries)[0].Trim()
+                        .ToUpper();
+
+                    if ((keyword == "*STATIC") && (step.Nlgeom == true))
+                    {
+                        // Read NLGEOM incremental data
+                        string[] record3 = dataSet[1].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
+
+                        step.InitialTimeIncrement = double.Parse(record3[0]);
+                        step.TimePeriod = double.Parse(record3[1]);
+                        step.MinTimeIncrement = double.Parse(record3[2]);
+                        step.MaxTimeIncrement = double.Parse(record3[3]);
+                    }
+
+                    if (keyword == "*BOUNDARY")
+
+                    {
+                        AddStepBoundaryCondition(step, dataSet, firstLineNumber);
+                    }
+
+                    if (keyword == "*CLOAD")
+                    {
+                        AddStepCLoad(step, dataSet, firstLineNumber);
+                    }
+
+                    if (keyword == "*DLOAD")
+                    {
+                        AddStepDLoad(step, dataSet, firstLineNumber);
+                    }
+
+                    if (keyword == "*END") break; // *END STEP
+
+                    firstLineNumber += dataSet.Length;
+                }
+                return step;
+            }
+            catch
+            {
+                _errors.Add("Line " + firstLineNumber + ": Failed to import step");
+                return null;
+            }
+
+        }
+
+        static private StaticStep AddStepBoundaryCondition(StaticStep step, string[] lines, int firstLineNumber)
+        {
+            // *Boundary
+            // Set_1, 2, 2
+            // Set_1, 3, 3, 0.001
+
+            try
+            {
+                var name = "BC-";
+                for (var bci = 1; bci < lines.Length; bci++)
+                {
+                    string[] recordBC = lines[bci].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
+
+                    // Create DisplacementRotation BC
+
+                    // To avoid duplicate boundary condition names of additional steps,
+                    // a random letter is included in the numbering count.
+                    // This option is used until a better solution is implemented
+
+                    Random rand = new Random(Guid.NewGuid().GetHashCode());
+                    var num = rand.Next(0, 26); // Zero to 25
+                    char let = (char)('A' + num);
+                    // Get regionName
+                    var regionName = recordBC[0].Trim();
+                    var bCond = new DisplacementRotation(name + let, regionName, RegionTypeEnum.NodeSetName);
+                    bCond.Name += (step.BoundaryConditions.Count + 1);
+                    // Get the prescribed displacement
+                    double dofValue = 0;
+                    if (recordBC.Length == 4) dofValue = double.Parse(recordBC[3]);
+                    // Assign DOF prescribed displacement
+                    for (var dofi = 1; dofi < 3; dofi++)
+                    {
+                        var dValue = int.Parse(recordBC[dofi]);
+
+                        switch (dValue)
+                        {
+                            case 1:
+                                bCond.U1 = dofValue;
+                                break;
+                            case 2:
+                                bCond.U2 = dofValue;
+                                break;
+                            case 3:
+                                bCond.U3 = dofValue;
+                                break;
+                            case 4:
+                                bCond.UR1 = dofValue;
+                                break;
+                            case 5:
+                                bCond.UR2 = dofValue;
+                                break;
+                            case 6:
+                                bCond.UR3 = dofValue;
+                                break;
+                        }
+                    }
+                    step.AddBoundaryCondition(bCond);
+                }
+                return step;
+            }
+            catch
+            {
+                _errors.Add("Line " + firstLineNumber + ": Failed to import boundary condition");
+                return null;
+            }
+        }
+
+
+        static private StaticStep AddStepCLoad(StaticStep step, string[] lines, int firstLineNumber)
+        {
+            // *CLoad
+            // LD_BRTIP, 2, 10000 - Concentrated Force (f1,f2,f3)
+            // LD_BRTIP, 6, 10000 - Moment (m1,m2,m3)
+
+            try
+            {
+                // CLoad can either be a concentrated force or moment
+                var nameCF = "CF-";
+                var nameMom = "MF-";
+
+                for (var bci = 1; bci < lines.Length; bci++)
+                {
+                    string[] recordCL = lines[bci].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
+
+                    // To avoid duplicate loading condition names for additional steps,
+                    // a random letter is included in the numbering count.
+                    // This option is used until a better solution is implemented
+
+                    Random rand = new Random(Guid.NewGuid().GetHashCode());
+                    var num = rand.Next(0, 26); // Zero to 25
+                    char let = (char)('A' + num);
+
+                    // Get regionName
+                    var regionName = recordCL[0].Trim();
+                    // Get degree of freedom and value
+                    var dof = int.Parse(recordCL[1]); ;
+                    var dofValue = double.Parse(recordCL[2]);
+                    var cfLoad = new CLoad(nameCF + let, regionName, RegionTypeEnum.NodeSetName, 0.0, 0.0, 0.0);
+                    var mLoad = new MomentLoad(nameMom + let, regionName, RegionTypeEnum.NodeSetName, 0.0, 0.0, 0.0);
+                    switch (dof)
+                    {
+                        case 1:
+                            cfLoad.F1 = dofValue;
+                            cfLoad.Name += (step.Loads.Count + 1);
+                            step.AddLoad(cfLoad);
+                            break;
+                        case 2:
+                            cfLoad.F2 = dofValue;
+                            cfLoad.Name += (step.Loads.Count + 1);
+                            step.AddLoad(cfLoad);
+                            break;
+                        case 3:
+                            cfLoad.F3 = dofValue;
+                            cfLoad.Name += (step.Loads.Count + 1);
+                            step.AddLoad(cfLoad);
+                            break;
+                        case 4:
+                            mLoad.M1 = dofValue;
+                            mLoad.Name += (step.Loads.Count + 1);
+                            step.AddLoad(mLoad);
+                            break;
+                        case 5:
+                            mLoad.M2 = dofValue;
+                            mLoad.Name += (step.Loads.Count + 1);
+                            step.AddLoad(mLoad);
+                            break;
+                        case 6:
+                            mLoad.M3 = dofValue;
+                            mLoad.Name += (step.Loads.Count + 1);
+                            step.AddLoad(mLoad);
+                            break;
+                    }
+                }
+                return step;
+            }
+            catch
+            {
+                _errors.Add("Line " + firstLineNumber + ": Failed to import loading condition");
+                return null;
+            }
+        }
+
+        static private StaticStep AddStepDLoad(StaticStep step, string[] lines, int firstLineNumber)
+        {
+            // *DLoad
+            // Eall, GRAV, 9.81, 0, 0, -1
+
+            try
+            {
+                // DLoad as gravity force is the only force covered at this point
+                var nameGrav = "Grav-";
+
+                for (var bci = 1; bci < lines.Length; bci++)
+                {
+                    string[] recordDL = lines[bci].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
+
+                    // Create Concentrated Force Object
+
+                    // To avoid duplicate loading condition names for additional steps,
+                    // a random letter is included in the numbering count.
+                    // This option is used until a better solution is implemented
+
+                    Random rand = new Random(Guid.NewGuid().GetHashCode());
+                    var num = rand.Next(0, 26); // Zero to 25
+                    char let = (char)('A' + num);
+
+                    // Get regionName
+                    var regionName = recordDL[0].Trim();
+                    // Get loading type
+                    var loadingType = recordDL[1].Trim();
+                    // Get Gravity value
+                    var gValue = double.Parse(recordDL[2]); ;
+                    var gLoad = new GravityLoad(nameGrav, regionName, RegionTypeEnum.ElementSetName, 0.0, 0.0, 0.0);
+
+                    if (int.Parse(recordDL[3]) != 0)
+                    {
+                        gLoad.F1 = double.Parse(recordDL[3]) * gValue;
+                        gLoad.Name += (step.Loads.Count + 1);
+                        step.AddLoad(gLoad);
+                    }
+
+                    if (int.Parse(recordDL[4]) != 0)
+                    {
+                        gLoad.F2 = double.Parse(recordDL[4]) * gValue;
+                        step.AddLoad(gLoad);
+                    }
+
+                    if (int.Parse(recordDL[5]) != 0)
+                    {
+                        gLoad.F3 = double.Parse(recordDL[5]) * gValue;
+                        step.AddLoad(gLoad);
+                    }
+                }
+                return step;
+            }
+            catch
+            {
+                _errors.Add("Line " + firstLineNumber + ": Failed to import gravity loading");
+                return null;
+            }
+        }
 
         //  LINEAR ELEMENTS                                                                                        
         static private LinearTetraElement GetLinearTetraElement(string[] record)
@@ -751,7 +1164,7 @@ namespace FileInOut.Input
             string[] record = lines[lineId].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
 
             int id = int.Parse(record[0]);
-            
+
             int count = 0;
             for (int i = 1; i < record.Length; i++)
             {
@@ -763,7 +1176,7 @@ namespace FileInOut.Input
             {
                 lineId++;
                 record = lines[lineId].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
-                
+
                 for (int i = 0; i < record.Length; i++)
                 {
                     nodes[count++] = int.Parse(record[i]);

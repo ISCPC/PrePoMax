@@ -194,6 +194,9 @@ namespace FileInOut.Input
                     case 6:
                         element = GetParabolicTriangleElement(startId, record);
                         break;
+                    case 8:
+                        element = GetParabolicQuadrilateralElement(startId, record);
+                        break;
                     default:
                         throw new NotSupportedException();
                 }
@@ -358,6 +361,23 @@ namespace FileInOut.Input
             nodes[5] = int.Parse(record[9]);
             //
             return new ParabolicTriangleElement(id, -1, nodes);
+        }
+        static private ParabolicQuadrilateralElement GetParabolicQuadrilateralElement(int id, string[] record)
+        {
+            int n = 8;
+            int partId = int.Parse(record[1]);
+            int[] nodes = new int[n];
+            //
+            nodes[0] = int.Parse(record[5]);
+            nodes[1] = int.Parse(record[6]);
+            nodes[2] = int.Parse(record[7]);
+            nodes[3] = int.Parse(record[8]);
+            nodes[4] = int.Parse(record[9]);
+            nodes[5] = int.Parse(record[12]);
+            nodes[6] = int.Parse(record[10]);
+            nodes[7] = int.Parse(record[11]);
+            //
+            return new ParabolicQuadrilateralElement(id, -1, nodes);
         }
         static private ParabolicTetraElement GetParabolicTetraElement(int id, string[] record)
         {

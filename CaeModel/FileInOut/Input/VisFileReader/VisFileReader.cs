@@ -51,14 +51,17 @@ namespace FileInOut.Input
                 {
                     string[] partData = data.Split(new string[] { textToFind }, StringSplitOptions.RemoveEmptyEntries);
                     //
-                    if (partData.Length > 2) throw new Exception("The file: " + fileName + " contains more than one part.");
+                    //if (partData.Length > 2) throw new Exception("The file: " + fileName + " contains more than one part.");
                     //
-                    string[] faceData = partData[1].Split(new string[] { "Face number: " }, StringSplitOptions.RemoveEmptyEntries);
-                    //
-                    for (int i = 1; i < faceData.Length; i++)   // start with 1 to skip first line: ********
+                    for (int k = 1; k < partData.Length; k++)
                     {
-                        ReadFace(faceData[i], ref offsetNodeId, nodes, ref offsetElementId, elements,
-                                 surfaceIdNodeIds, edgeIdNodeIds, vertexNodeIds, ref bBox);
+                        string[] faceData = partData[k].Split(new string[] { "Face number: " }, StringSplitOptions.RemoveEmptyEntries);
+                        //
+                        for (int i = 1; i < faceData.Length; i++)   // start with 1 to skip first line: ********
+                        {
+                            ReadFace(faceData[i], ref offsetNodeId, nodes, ref offsetElementId, elements,
+                                     surfaceIdNodeIds, edgeIdNodeIds, vertexNodeIds, ref bBox);
+                        }
                     }
                     //
                     double max = bBox.GetDiagonal();

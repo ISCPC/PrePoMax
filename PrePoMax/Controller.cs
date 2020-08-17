@@ -1635,7 +1635,7 @@ namespace PrePoMax
             //
             FileInOut.Output.StlFileWriter.Write(stlFileName, _model.Geometry, part.Name);
             CreateMeshRefinementFile(part, meshRefinementFileName, newMeshRefinement);
-            parameters.WriteToFile(meshParametersFileName, part.PartType);
+            parameters.WriteToFile(meshParametersFileName);
             _model.Geometry.WriteEdgeNodesToFile(part, edgeNodesFileName);
             //
             string argument = "STL_EDGE_MESH " +
@@ -1678,7 +1678,7 @@ namespace PrePoMax
             //
             File.WriteAllText(brepFileName, part.CADFileData);
             CreateMeshRefinementFile(part, meshRefinementFileName, newMeshRefinement);
-            parameters.WriteToFile(meshParametersFileName, part.PartType);
+            parameters.WriteToFile(meshParametersFileName);
             //
             string argument = "BREP_EDGE_MESH " +
                               "\"" + brepFileName.ToUTF8() + "\" " +
@@ -1814,7 +1814,7 @@ namespace PrePoMax
             //
             FileInOut.Output.StlFileWriter.Write(stlFileName, _model.Geometry, part.Name);
             CreateMeshRefinementFile(part, meshRefinementFileName, null);
-            part.MeshingParameters.WriteToFile(meshParametersFileName, part.PartType);
+            part.MeshingParameters.WriteToFile(meshParametersFileName);
             _model.Geometry.WriteEdgeNodesToFile(part, edgeNodesFileName);
             //
             string argument = "STL_MESH " +
@@ -1857,7 +1857,7 @@ namespace PrePoMax
             //
             File.WriteAllText(brepFileName, part.CADFileData);
             CreateMeshRefinementFile(part, meshRefinementFileName, null);
-            part.MeshingParameters.WriteToFile(meshParametersFileName, part.PartType);
+            part.MeshingParameters.WriteToFile(meshParametersFileName);
             //
             string argument = "BREP_MESH " +
                               "\"" + brepFileName.ToUTF8() + "\" " +

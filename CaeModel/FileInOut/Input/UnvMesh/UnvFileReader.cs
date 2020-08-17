@@ -64,10 +64,11 @@ namespace FileInOut.Input
                 //
                 if (elementsToImport != ElementsToImport.All)
                 {
-                    if (elementsToImport != ElementsToImport.Beam) mesh.RemoveElementsByType<FeElement1D>();
-                    if (elementsToImport != ElementsToImport.Shell) mesh.RemoveElementsByType<FeElement2D>();
-                    if (elementsToImport != ElementsToImport.Solid) mesh.RemoveElementsByType<FeElement3D>();
+                    if (!elementsToImport.HasFlag(ElementsToImport.Beam)) mesh.RemoveElementsByType<FeElement1D>();
+                    if (!elementsToImport.HasFlag(ElementsToImport.Shell)) mesh.RemoveElementsByType<FeElement2D>();
+                    if (!elementsToImport.HasFlag(ElementsToImport.Solid)) mesh.RemoveElementsByType<FeElement3D>();
                 }
+                //
                 return mesh;
             }
             //

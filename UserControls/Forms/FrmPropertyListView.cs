@@ -18,6 +18,8 @@ namespace UserControls
         protected bool _selectPropertyGrid;
         protected int _preselectIndex;
         protected bool _firstTime;
+        protected bool _callSelectedIndexChangedOnFirstRun;
+
 
         // Constructors                                                                                                             
         public FrmPropertyListView()
@@ -36,6 +38,7 @@ namespace UserControls
             _lvTypesSelectedIndexChangedEventActive = true;
             _preselectIndex = -1;
             _firstTime = true;
+            _callSelectedIndexChangedOnFirstRun = false;
         }
 
 
@@ -45,7 +48,7 @@ namespace UserControls
             if (Visible && _firstTime)
             {
                 _firstTime = false;
-                OnListViewTypeSelectedIndexChanged();
+                if (_callSelectedIndexChangedOnFirstRun) OnListViewTypeSelectedIndexChanged();
             }
         }
         private void lvTypes_SelectedIndexChanged(object sender, EventArgs e)
@@ -77,6 +80,7 @@ namespace UserControls
                 lvTypes.Items[_preselectIndex].Selected = true;
                 lvTypes.Enabled = false;
                 _preselectIndex = -1;
+                _callSelectedIndexChangedOnFirstRun = true;
             }
             //
             return result;

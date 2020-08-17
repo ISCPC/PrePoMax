@@ -472,7 +472,8 @@ namespace CaeModel
         }
         public void ImportMeshFromUnvFile(string fileName)
         {
-            FeMesh mesh = FileInOut.Input.UnvFileReader.Read(fileName, FileInOut.Input.ElementsToImport.Solid);
+            FeMesh mesh = FileInOut.Input.UnvFileReader.Read(fileName, FileInOut.Input.ElementsToImport.Shell |
+                                                                       FileInOut.Input.ElementsToImport.Solid);
             //
             ImportMesh(mesh, GetReservedPartNames());
         }
@@ -487,8 +488,16 @@ namespace CaeModel
                                                    bool splitCompoundMesh)
         {
             FileInOut.Input.ElementsToImport elementsToImport;
+            GeometryPart subPart;
             if (part.PartType == PartType.SolidAsShell) elementsToImport = FileInOut.Input.ElementsToImport.Solid;
             else if (part.PartType == PartType.Shell) elementsToImport = FileInOut.Input.ElementsToImport.Shell;
+            else if (part.PartType == PartType.Compound)
+            {
+                subPart = _geometry.Parts[(part as CompoundGeometryPart).SubPartNames[0]] as GeometryPart;
+                if (subPart.PartType == PartType.SolidAsShell) elementsToImport = FileInOut.Input.ElementsToImport.Solid;
+                else if (subPart.PartType == PartType.Shell) elementsToImport = FileInOut.Input.ElementsToImport.Shell;
+                else throw new NotSupportedException();
+            }
             else throw new NotSupportedException();
             // Called after meshing in PrePoMax - the parts are sorted by id
             FeMesh mesh = FileInOut.Input.VolFileReader.Read(fileName, elementsToImport, convertToSecondorder);

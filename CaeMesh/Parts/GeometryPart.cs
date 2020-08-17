@@ -18,7 +18,15 @@ namespace CaeMesh
 
 
         // Properties                                                                                                               
-        public MeshingParameters MeshingParameters { get { return _meshingParameters; } set { _meshingParameters = value; } }
+        public MeshingParameters MeshingParameters
+        {
+            get { return _meshingParameters; }
+            set
+            {
+                _meshingParameters = value;
+                if (PartType == PartType.Solid) _meshingParameters.QuadDominated = false;
+            }
+        }
         public int[] ErrorElementIds { get { return _errorElementIds; } set { _errorElementIds = value; } }
         public int[] ErrorNodeIds { get { return _errorNodeIds; } set { _errorNodeIds = value; } }
         public string CADFileData

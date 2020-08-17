@@ -135,7 +135,7 @@ namespace CaeMesh
 
 
         // Methods                                                                                                                  
-        public void WriteToFile(string fileName, PartType partType)
+        public void WriteToFile(string fileName)
         {
             StringBuilder sb = new StringBuilder();
             //
@@ -164,7 +164,7 @@ namespace CaeMesh
             sb.AppendLine("int      second_order		        ... Generate second-order surface and volume elements.");
             sb.AppendLine(Convert.ToInt32(_secondOrder && _midsideNodesOnGeometry).ToString());
             sb.AppendLine("int      quad_dominated		        ... Creates a Quad-dominated mesh.");
-            sb.AppendLine(Convert.ToInt32(_quadDominated && partType == PartType.Shell).ToString());
+            sb.AppendLine(Convert.ToInt32(_quadDominated).ToString());
             sb.AppendLine("char*    meshsize_filename           ... Optional external mesh size file.");
             sb.AppendLine("");
             sb.AppendLine("int      optsurfmeshenable	        ... Enable / Disable automatic surface mesh optimization.");
