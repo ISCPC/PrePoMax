@@ -148,6 +148,7 @@ namespace CaeMesh
                     case "S3":
                         _linearTriaType = FeElementTypeLinearTria.S3;
                         break;
+                    case "S6":
                     case "STRI65":
                         _parabolicTriaType = FeElementTypeParabolicTria.S6;
                         break;
@@ -158,6 +159,7 @@ namespace CaeMesh
                     case "S4R":
                         _linearQuadType = FeElementTypeLinearQuad.S4R;
                         break;
+                    case "S8":
                     case "S8R":
                         _parabolicQuadType = FeElementTypeParabolicQuad.S8R;
                         break;

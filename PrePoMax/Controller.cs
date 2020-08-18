@@ -788,14 +788,23 @@ namespace PrePoMax
         }
         private string[] ImportCompoundPart(string brepFileName)
         {
+            string compoundPartName = NamedClass.GetNewValueName(_model.Geometry.Parts.Keys, "Compound-");
             string[] importedPartNames = ImportCADAssemblyFile(brepFileName, "BREP_ASSEMBLY_SPLIT_TO_PARTS");
             //
-            string compoundPartName = NamedClass.GetNewValueName(_model.Geometry.Parts.Keys, "Compound-");
-            CompoundGeometryPart compPart = new CompoundGeometryPart(compoundPartName, importedPartNames);
-            for (int i = 0; i < importedPartNames.Length; i++)
-                compPart.BoundingBox.CheckBox(_model.Geometry.Parts[importedPartNames[i]].BoundingBox);
-            compPart.CADFileDataFromFile(brepFileName);
-            _model.Geometry.Parts.Add(compoundPartName, compPart);
+            if (importedPartNames.Length == 1)  // only one part was imported
+            {
+                PartProperties properties = _model.Geometry.Parts[importedPartNames[0]].GetProperties();
+                properties.Name = compoundPartName;
+                ReplaceGeometryPartProperties(importedPartNames[0], properties);
+            }
+            else
+            {
+                CompoundGeometryPart compPart = new CompoundGeometryPart(compoundPartName, importedPartNames);
+                for (int i = 0; i < importedPartNames.Length; i++)
+                    compPart.BoundingBox.CheckBox(_model.Geometry.Parts[importedPartNames[i]].BoundingBox);
+                compPart.CADFileDataFromFile(brepFileName);
+                _model.Geometry.Parts.Add(compoundPartName, compPart);
+            }
             //
             UpdateAfterImport(".brep");
             //

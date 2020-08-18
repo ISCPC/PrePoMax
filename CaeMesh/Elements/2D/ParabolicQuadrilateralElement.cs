@@ -33,7 +33,11 @@ namespace CaeMesh
         public override int[] GetVtkNodeIds()
         {
             // return a copy -> ToArray
-            return NodeIds.ToArray();
+            //return NodeIds.ToArray();
+            //
+            // Return S1
+            return new int[] { NodeIds[0], NodeIds[3], NodeIds[2], NodeIds[1],
+                               NodeIds[7], NodeIds[6], NodeIds[5], NodeIds[4] };
         }
         public override int GetVtkCellType()
         {

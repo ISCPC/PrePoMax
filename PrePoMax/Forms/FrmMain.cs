@@ -4679,8 +4679,8 @@ namespace PrePoMax
             {
                 string text = "The model contains active invlaid items:" + Environment.NewLine;
                 foreach (var item in invalidItems) text += Environment.NewLine + item;
-                MessageBox.Show(text, "Error", MessageBoxButtons.OK);
-                return false;
+                text += Environment.NewLine + Environment.NewLine + "Continue?";
+                return MessageBox.Show(text, "Warning", MessageBoxButtons.YesNo) == DialogResult.Yes;
             }
             return true;
         }

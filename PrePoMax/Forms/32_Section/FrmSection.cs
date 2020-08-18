@@ -307,10 +307,11 @@ namespace PrePoMax.Forms
                             foreach (int partId in partIds)
                             {
                                 part = _controller.Model.Mesh.GetPartById(partId);
-                                if (Section is SolidSection && part.PartType == PartType.Solid) return true;
-                                else if (Section is ShellSection && part.PartType == PartType.Shell) return true;
-                                else return false;
+                                if (part == null) { }
+                                else if (Section is SolidSection && part.PartType != PartType.Solid) return false;
+                                else if (Section is ShellSection && part.PartType != PartType.Shell) return false;
                             }
+                            return true;
                         }
                     }
                     else throw new NotSupportedException();
