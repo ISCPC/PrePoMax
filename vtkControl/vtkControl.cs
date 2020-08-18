@@ -1204,8 +1204,8 @@ namespace vtkControl
 
         private double[] GetPickPoint(out vtkActor pickedActor, int x, int y)
         {
-            double[] p;
-            int cellId;
+            double[] p = null;
+            int cellId = -1;
             vtkCell cell;
             vtkCellLocator locator;
             // Make all actors visible
@@ -1224,6 +1224,57 @@ namespace vtkControl
             _renderer.Render();
             _propPicker.Pick(x, y, 0, _renderer);
             pickedActor = _propPicker.GetActor();
+            // First pick
+            if (pickedActor != null)
+            {
+                p = _propPicker.GetPickPosition();      // this function sometimes gives strange values
+                cellId = GetGlobalCellIdClosestTo3DPoint(ref p, out cell, out locator);                
+            }
+            // Try some more picks
+            if (cellId == -1)
+            {
+                int numOfLoops = 0;
+                int stepSize = 2;
+                //
+                for (int i = 1; i <= numOfLoops; i++)   // try in a cross shape
+                {
+                    _propPicker.Pick(x + i * stepSize, y, 0, _renderer);
+                    pickedActor = _propPicker.GetActor();
+                    if (pickedActor != null)
+                    {
+                        p = _propPicker.GetPickPosition();  // this function sometimes gives strange values
+                        cellId = GetGlobalCellIdClosestTo3DPoint(ref p, out cell, out locator);
+                        if (cellId != -1) break;
+                    }
+                    //
+                    _propPicker.Pick(x - i * stepSize, y, 0, _renderer);
+                    pickedActor = _propPicker.GetActor();
+                    if (pickedActor != null)
+                    {
+                        p = _propPicker.GetPickPosition();  // this function sometimes gives strange values
+                        cellId = GetGlobalCellIdClosestTo3DPoint(ref p, out cell, out locator);
+                        if (cellId != -1) break;
+                    }
+                    //
+                    _propPicker.Pick(x, y + i * stepSize, 0, _renderer);
+                    pickedActor = _propPicker.GetActor();
+                    if (pickedActor != null)
+                    {
+                        p = _propPicker.GetPickPosition();  // this function sometimes gives strange values
+                        cellId = GetGlobalCellIdClosestTo3DPoint(ref p, out cell, out locator);
+                        if (cellId != -1) break;
+                    }
+                    //
+                    _propPicker.Pick(x, y - i * stepSize, 0, _renderer);
+                    pickedActor = _propPicker.GetActor();
+                    if (pickedActor != null)
+                    {
+                        p = _propPicker.GetPickPosition();  // this function sometimes gives strange values
+                        cellId = GetGlobalCellIdClosestTo3DPoint(ref p, out cell, out locator);
+                        if (cellId != -1) break;
+                    }
+                }
+            }
             // Reset the actor visibility
             foreach (var entry in _actors)
             {
@@ -1231,62 +1282,11 @@ namespace vtkControl
                 ApplyEdgeVisibilityAndBackfaceCullingToActor(entry.Value.Geometry, vtkRendererLayer.Base);
             }
             //
-            int size = 5;
-            int step = 2;
-            //
-            if (pickedActor != null)
+            if (cellId == -1)
             {
-                p = _propPicker.GetPickPosition();      // this function sometimes gives strange values
-                cellId = GetGlobalCellIdClosestTo3DPoint(ref p, out cell, out locator);
-                if (cellId != -1)
-                    return p;
+                p = null;
+                pickedActor = null;
             }
-                //
-            for (int i = 1; i <= size; i+=step)   // try in a cross shape of the size 21 x 21 pixels
-            {
-                _propPicker.Pick(x + i, y, 0, _renderer);
-                pickedActor = _propPicker.GetActor();
-                if (pickedActor != null)
-                {
-                    p = _propPicker.GetPickPosition();  // this function sometimes gives strange values
-                    cellId = GetGlobalCellIdClosestTo3DPoint(ref p, out cell, out locator);
-                    if (cellId != -1)
-                        return p;
-                }
-                //
-                _propPicker.Pick(x - i, y, 0, _renderer);
-                pickedActor = _propPicker.GetActor();
-                if (pickedActor != null)
-                {
-                    p = _propPicker.GetPickPosition();  // this function sometimes gives strange values
-                    cellId = GetGlobalCellIdClosestTo3DPoint(ref p, out cell, out locator);
-                    if (cellId != -1)
-                        return p;
-                }
-                //
-                _propPicker.Pick(x, y + i, 0, _renderer);
-                pickedActor = _propPicker.GetActor();
-                if (pickedActor != null)
-                {
-                    p = _propPicker.GetPickPosition();  // this function sometimes gives strange values
-                    cellId = GetGlobalCellIdClosestTo3DPoint(ref p, out cell, out locator);
-                    if (cellId != -1)
-                        return p;
-                }
-                //
-                _propPicker.Pick(x, y - i, 0, _renderer);
-                pickedActor = _propPicker.GetActor();
-                if (pickedActor != null)
-                {
-                    p = _propPicker.GetPickPosition();
-                    cellId = GetGlobalCellIdClosestTo3DPoint(ref p, out cell, out locator);
-                    if (cellId != -1)
-                        return p;
-                }
-            }
-            //
-            p = null;
-            pickedActor = null;
             //
             return p;
         }

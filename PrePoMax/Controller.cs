@@ -7059,18 +7059,21 @@ namespace PrePoMax
             //
             int id;
             double[] faceNormal;
+            bool shellElement = false;
             List<double[]> distributedCoor = new List<double[]>();
             List<double[]> distributedLoadNormals = new List<double[]>();
             for (int i = 0; i < distributedElementIds.Length; i++)
             {
                 id = distributedElementIds[i];
-                _model.Mesh.GetElementFaceCenterAndNormal(allElementIds[id], allElementFaceNames[id], out faceCenter, out faceNormal);
+                _model.Mesh.GetElementFaceCenterAndNormal(allElementIds[id], allElementFaceNames[id], out faceCenter, 
+                                                          out faceNormal, out shellElement);
                 if (dLoad.Magnitude < 0)
                 {
                     faceNormal[0] *= -1;
                     faceNormal[1] *= -1;
                     faceNormal[2] *= -1;
                 }
+                
                 distributedCoor.Add(faceCenter);
                 distributedLoadNormals.Add(faceNormal);
             }
@@ -7085,7 +7088,9 @@ namespace PrePoMax
                 data.Geometry.Nodes.Normals = distributedLoadNormals.ToArray();
                 data.SectionViewPossible = false;
                 ApplyLighting(data);
-                _form.AddOrientedArrowsActor(data, symbolSize, dLoad.Magnitude > 0);
+                bool translate = dLoad.Magnitude > 0;
+                if (shellElement) translate = !translate;
+                _form.AddOrientedArrowsActor(data, symbolSize, translate);
             }
         }
         public void DrawGravityLoadSymbol(string prefixName, GravityLoad gLoad, double[] symbolCoor, Color color, 

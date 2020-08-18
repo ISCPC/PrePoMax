@@ -444,7 +444,7 @@ namespace FileInOut.Output
                     if (entry.Value.Active)
                     {
                         if (entry.Value is SolidSection ss) parent.AddKeyword(new CalSolidSection(ss));
-                        if (entry.Value is ShellSection shs) parent.AddKeyword(new CalShellSection(shs));
+                        else if (entry.Value is ShellSection shs) parent.AddKeyword(new CalShellSection(shs));
                         else throw new NotImplementedException();
                     }
                     else parent.AddKeyword(new CalDeactivated(entry.Value.Name));

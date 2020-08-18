@@ -5403,7 +5403,7 @@ namespace CaeMesh
             else throw new NotSupportedException();
         }
         public void GetElementFaceCenterAndNormal(int elementId, FeFaceName faceName, out double[] faceCenter,
-                                                  out double[] faceNormal)
+                                                  out double[] faceNormal, out bool shellElement)
         {
             FeNode[] nodes;
             FeElement element = _elements[elementId];
@@ -5424,8 +5424,10 @@ namespace CaeMesh
                 faceCenter[0] /= nodes.Length;
                 faceCenter[1] /= nodes.Length;
                 faceCenter[2] /= nodes.Length;
-                // Element normal to outside
-                faceNormal = ComputeNormalFromCellIndices(nodes[0], nodes[2], nodes[1]).Coor;
+                // Element normal to NEG S1
+                faceNormal = ComputeNormalFromCellIndices(nodes[0], nodes[1], nodes[2]).Coor;
+                //
+                shellElement = true;
             }
             else if(element is LinearTetraElement || element is ParabolicTetraElement)
             {
@@ -5443,6 +5445,8 @@ namespace CaeMesh
                 faceCenter[2] /= nodes.Length;
                 // Element normal to inside
                 faceNormal = ComputeNormalFromCellIndices(nodes[0], nodes[1], nodes[2]).Coor;
+                //
+                shellElement = false;
             }
             else if (element is LinearWedgeElement || element is ParabolicWedgeElement)
             {
@@ -5464,6 +5468,8 @@ namespace CaeMesh
                 if (faceName == FeFaceName.S1) faceNormal = ComputeNormalFromCellIndices(nodes[0], nodes[1], nodes[2]).Coor;
                 // Element normal to outside
                 else faceNormal = ComputeNormalFromCellIndices(nodes[0], nodes[2], nodes[1]).Coor;
+                //
+                shellElement = false;
             }
             else if (element is LinearQuadrilateralElement || element is ParabolicQuadrilateralElement)
             {
@@ -5479,8 +5485,10 @@ namespace CaeMesh
                 faceCenter[0] /= nodes.Length;
                 faceCenter[1] /= nodes.Length;
                 faceCenter[2] /= nodes.Length;
-                // Element normal to outside
-                faceNormal = ComputeNormalFromCellIndices(nodes[0], nodes[2], nodes[1]).Coor;
+                // Element normal to NEG S1
+                faceNormal = ComputeNormalFromCellIndices(nodes[0], nodes[1], nodes[2]).Coor;
+                //
+                shellElement = true;
             }
             else if (element is LinearHexaElement || element is ParabolicHexaElement)
             {
@@ -5498,6 +5506,8 @@ namespace CaeMesh
                 faceCenter[2] /= nodes.Length;
                 // Element normal to inside
                 faceNormal = ComputeNormalFromCellIndices(nodes[0], nodes[1], nodes[2]).Coor;
+                //
+                shellElement = false;
             }
             else throw new NotSupportedException();
         }

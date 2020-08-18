@@ -32,10 +32,10 @@ namespace CaeMesh
         public override int[] GetVtkNodeIds()
         {
             // return a copy -> ToArray
-            //return NodeIds.ToArray();
+            return NodeIds.ToArray();
             //
             // Return S1
-            return new int[] { NodeIds[0], NodeIds[3], NodeIds[2], NodeIds[1] };
+            //return new int[] { NodeIds[0], NodeIds[3], NodeIds[2], NodeIds[1] };
         }
         public override int GetVtkCellType()
         {
@@ -93,11 +93,11 @@ namespace CaeMesh
                 }
                 if (i >= 4 && count <= i - 4) break;
             }
-            // NEG S1 = 1-4-3-2 . 0-3-2-1
+            // POS S2 = 1-2-3-4 . 0-1-2-3
             Dictionary<FeFaceName, double> faces = new Dictionary<FeFaceName, double>();
             //
-            if (faceNodeIds[0] && faceNodeIds[3] && faceNodeIds[2] && faceNodeIds[1])
-                faces.Add(FeFaceName.S1, GetArea(FeFaceName.S1, nodes));
+            if (faceNodeIds[0] && faceNodeIds[1] && faceNodeIds[2] && faceNodeIds[3])
+                faces.Add(FeFaceName.S2, GetArea(FeFaceName.S2, nodes));
             //
             return faces;
         }
