@@ -29,7 +29,7 @@ namespace CaeMesh
     public enum ImportOptions
     {
         None,
-        ImportOneShellPart,
+        ImportShellParts,
         ImportOneSolidPart
     }
 
@@ -868,16 +868,15 @@ namespace CaeMesh
                     {
                         geometryPart = part as GeometryPart;
                         //
-                        if (importOptions == ImportOptions.ImportOneShellPart)
+                        if (importOptions == ImportOptions.ImportShellParts)
                         {
-                            geometryPart.ErrorElementIds = null;
-                            geometryPart.ErrorNodeIds = null;
+                            //geometryPart.ErrorElementIds = null;
+                            //geometryPart.ErrorNodeIds = null;
                         }
                         else
                         {
                             // Collect closed shell part names
-                            if ((geometryPart.ErrorNodeIds == null && geometryPart.ErrorElementIds == null) ||
-                                (importOptions == ImportOptions.ImportOneSolidPart))
+                            if ((!geometryPart.HasErrors) || (importOptions == ImportOptions.ImportOneSolidPart))
                                 partsToRename.Add(geometryPart.Name);
                         }
                     }
@@ -989,22 +988,24 @@ namespace CaeMesh
         // Visualization
         private void ExtractSolidPartVisualization(BasePart part)
         {
-            System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
-            watch.Start();
+            //System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
+            //watch.Start();
             //
             part.Visualization.ExtractVisualizationCellsFromElements3D(_elements, part.Labels);
-            System.Diagnostics.Debug.WriteLine("ExtractVisualizationCells time: " + watch.ElapsedMilliseconds);
-            watch.Restart();
+            //System.Diagnostics.Debug.WriteLine("ExtractVisualizationCells time: " + watch.ElapsedMilliseconds);
+            //watch.Restart();
             //
             ExtractEdgesFromShellByAngle(part, 30);
-            System.Diagnostics.Debug.WriteLine("ExtractEdgesFromShellByAngle time: " + watch.ElapsedMilliseconds);
-            watch.Restart();
+            //System.Diagnostics.Debug.WriteLine("ExtractEdgesFromShellByAngle time: " + watch.ElapsedMilliseconds);
+            //watch.Restart();
             //
             SplitVisualizationEdgesAndFaces(part);
-            System.Diagnostics.Debug.WriteLine("SplitVisualizationEdgesAndFaces time: " + watch.ElapsedMilliseconds);
-            watch.Restart();
+            //System.Diagnostics.Debug.WriteLine("SplitVisualizationEdgesAndFaces time: " + watch.ElapsedMilliseconds);
+            //watch.Restart();
             //
-            watch.Stop();
+            //watch.Stop();
+            //
+            CheckForBadElements(part);
         }
         private void ExtractShellPartVisualization(BasePart part)
         {
@@ -1013,6 +1014,8 @@ namespace CaeMesh
             ExtractEdgesFromShellByAngle(part, 30);
             //
             SplitVisualizationEdgesAndFaces(part);
+            //
+            CheckForBadElements(part);
         }
         private void ExtractWirePartVisualization(BasePart part)
         {
@@ -1139,30 +1142,90 @@ namespace CaeMesh
                     }
                 }
             }
-            //
-            List<int> badElementIds = new List<int>();
-            List<int> badNodeIds = new List<int>();
+            // Collect cell neighbours in an array
             int[][] cellNeighboursArray = new int[cellNeighbours.Length][];
-            int numNeighbours;
             for (int i = 0; i < cellNeighbours.Length; i++)
             {
-                if (cells[i].Length == 3 || cells[i].Length == 6) numNeighbours = 3;
-                else numNeighbours = 4;
-                //
                 if (cellNeighbours[i] != null) cellNeighboursArray[i] = cellNeighbours[i].ToArray();
-                // Check for bad elements
-                if (cellNeighbours[i] == null || cellNeighbours[i].Count != numNeighbours)
-                {
-                    badElementIds.Add(part.Visualization.CellIds[i]);
-                    badNodeIds.AddRange(_elements[part.Visualization.CellIds[i]].NodeIds);
-                }
             }
             part.Visualization.CellNeighboursOverCellEdge = cellNeighboursArray;
-            //
+        }
+        void CheckForBadElements(BasePart part)
+        {
+            VisualizationData vis = part.Visualization;
+            // Check for bad element and nodes
+            List<int> badElementIds = new List<int>();
+            List<int> badEdgeElementIds = new List<int>();
+            List<int> badNodeIds = new List<int>();
             if (part is GeometryPart gp)
             {
+                gp.ErrorElementIds = null;
+                gp.ErrorEdgeElementIds = null;
+                gp.ErrorNodeIds = null;
+                //
+                if (gp.PartType == PartType.SolidAsShell)
+                {
+                    for (int i = 0; i < vis.CellNeighboursOverCellEdge.Length; i++)
+                    {
+                        for (int j = 0; j < vis.CellNeighboursOverCellEdge[i].Length; j++)
+                        {
+                            if (vis.CellNeighboursOverCellEdge[i][j] == -1) // one visualization cell has void neighbour
+                            {
+                                badElementIds.Add(vis.CellIds[i]);
+                                badNodeIds.AddRange(_elements[vis.CellIds[i]].NodeIds);
+                                break;
+                            }
+                        }
+                    }
+                }
+                else if (gp.PartType == PartType.Shell)
+                {
+                    int edgeId;
+                    int[] edgeCells;
+                    List<int> vertexEdgeIds;
+                    Dictionary<int, List<int>>[] faceVertexEdgeIds = new Dictionary<int, List<int>>[vis.FaceEdgeIds.Length];
+                    for (int i = 0; i < vis.FaceEdgeIds.Length; i++)
+                    {
+                        faceVertexEdgeIds[i] = new Dictionary<int, List<int>>();
+                        for (int j = 0; j < vis.FaceEdgeIds[i].Length; j++)
+                        {
+                            edgeId = vis.FaceEdgeIds[i][j];
+                            for (int k = 0; k < vis.EdgeCellIdsByEdge[edgeId].Length; k++)
+                            {
+                                edgeCells = vis.EdgeCells[vis.EdgeCellIdsByEdge[edgeId][k]];
+                                for (int l = 0; l < edgeCells.Length; l++)
+                                {
+                                    if (faceVertexEdgeIds[i].TryGetValue(edgeCells[l], out vertexEdgeIds))
+                                        vertexEdgeIds.Add(edgeId);
+                                    else faceVertexEdgeIds[i].Add(edgeCells[l], new List<int>() { edgeId });
+                                }
+                            }
+                        }
+                    }
+                    //
+                    int nodeId;
+                    for (int i = 0; i < faceVertexEdgeIds.Length; i++)
+                    {
+                        foreach (var entry in faceVertexEdgeIds[i])
+                        {
+                            if (entry.Value.Count == 1)
+                            {
+                                nodeId = entry.Key;
+                                edgeId = entry.Value[0];
+                                //
+                                badNodeIds.Add(nodeId);
+                                badEdgeElementIds.AddRange(vis.EdgeCellIdsByEdge[edgeId]);
+                            }
+                        }
+                    }
+                }
+                //
                 if (badElementIds.Count > 0) gp.ErrorElementIds = badElementIds.ToArray();
+                else gp.ErrorElementIds = null;
+                if (badEdgeElementIds.Count > 0) gp.ErrorEdgeElementIds = badEdgeElementIds.ToArray();
+                else gp.ErrorEdgeElementIds = null;
                 if (badNodeIds.Count > 0) gp.ErrorNodeIds = badNodeIds.ToArray();
+                else gp.ErrorNodeIds = null;
             }
         }
         private void SplitVisualizationEdgesAndFaces(BasePart part, HashSet<int> vertexNodeIds = null)
@@ -2074,6 +2137,7 @@ namespace CaeMesh
             int[] key;
             int[][] cells;
             int[][] cellEdges;
+            BasePart part;
             List<int> cellIds;
             List<int[]> edgeCells = new List<int[]>();
             CompareIntArray comparer = new CompareIntArray();
@@ -2082,12 +2146,14 @@ namespace CaeMesh
             // For each part
             foreach (var entry in _parts)
             {
-                if (entry.Value.PartType == PartType.Solid
-                    || entry.Value.PartType == PartType.SolidAsShell
-                    || entry.Value.PartType == PartType.Shell)
-                {
+                part = entry.Value;
+                //
+                if (part.PartType == PartType.Solid
+                    || part.PartType == PartType.SolidAsShell
+                    || part.PartType == PartType.Shell)
+                {                    
                     // Build a map of cellIds connected to each node
-                    cells = entry.Value.Visualization.Cells;
+                    cells = part.Visualization.Cells;
                     nodeCellIds.Clear();
                     for (int i = 0; i < cells.Length; i++)
                     {
@@ -2135,9 +2201,11 @@ namespace CaeMesh
                         }
                     }
                     //
-                    entry.Value.Visualization.EdgeCells = edgeCells.ToArray();
+                    part.Visualization.EdgeCells = edgeCells.ToArray();
                     //
-                    SplitVisualizationEdgesAndFaces(entry.Value, vertexNodeIds);
+                    SplitVisualizationEdgesAndFaces(part, vertexNodeIds);
+                    //
+                    CheckForBadElements(part);
                 }
             }
         }
@@ -5749,11 +5817,10 @@ namespace CaeMesh
         {
             CompareIntArray comparer = new CompareIntArray();
             HashSet<int[]> freeEdges = new HashSet<int[]>(comparer);
-
+            //
             int[] key;
             int[][] cellEdges;
-
-            // get free edges
+            // Get free edges
             for (int i = 0; i < cells.Length; i++)
             {
                 cellEdges = GetVisualizationEdgeCells(cells[i]);
@@ -5764,7 +5831,7 @@ namespace CaeMesh
                     if (!freeEdges.Add(key)) freeEdges.Remove(key);
                 }
             }
-
+            //
             return freeEdges.ToArray();
         }
         public static int[][] GetVisualizationEdgeCells(int[] cell)

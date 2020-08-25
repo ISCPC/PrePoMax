@@ -109,6 +109,10 @@ namespace PrePoMax.Forms
             _currFrme = tbarFrameSelector.Value;
             UpdateFrame();
         }
+        private void btnClose_Click(object sender, EventArgs e)
+        {
+            Hide();
+        }
         private void FrmAnimation_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (e.CloseReason == CloseReason.UserClosing)
@@ -509,6 +513,6 @@ namespace PrePoMax.Forms
             }
         }
 
-       
+        
     }
 }

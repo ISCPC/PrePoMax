@@ -1956,7 +1956,7 @@ namespace UserControls
                             if (node.Nodes.Count == 0 || !node.IsExpanded) SetNodeImage(node, "Dots.ico");
                             else SetNodeImage(node, "Dots_t.ico");
                             //
-                            if (item is GeometryPart && ((GeometryPart)item).ErrorElementIds != null)
+                            if (item is GeometryPart gp && gp.HasErrors)
                             {
                                 SetNodeImage(node, "Warning.ico");
                             }

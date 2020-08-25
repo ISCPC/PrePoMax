@@ -1985,7 +1985,7 @@ namespace PrePoMax
         {
             CaeMesh.GeometryPart part = _controller.GetGeometryPart(partName);
 
-            if (part.CADFileData == null && part.ErrorElementIds != null)
+            if (part.CADFileData == null && part.HasErrors)
                 throw new Exception("The part '" + partName + "' contains errors and can not be meshed.");
             if (!_controller.MeshJobIdle) throw new Exception("The meshing is already in progress.");
 
@@ -2779,10 +2779,13 @@ namespace PrePoMax
         }
         private void ShowMaterialLibrary()
         {
-            FrmMaterialLibrary fml = new FrmMaterialLibrary(_controller);
-            CloseAllForms();
-            SetFormLoaction((Form)fml);
-            fml.ShowDialog();
+            if (_controller.Model.Mesh != null)
+            {
+                FrmMaterialLibrary fml = new FrmMaterialLibrary(_controller);
+                CloseAllForms();
+                SetFormLoaction((Form)fml);
+                fml.ShowDialog();
+            }
         }
 
         #endregion  ################################################################################################################
@@ -3684,7 +3687,7 @@ namespace PrePoMax
                 if (!_frmQuery.Visible)
                 {
                     ClearSelection();
-
+                    //
                     CloseAllForms();
                     SetFormLoaction(_frmQuery);
                     _frmQuery.PrepareForm(_controller);

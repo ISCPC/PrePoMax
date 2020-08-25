@@ -31,6 +31,7 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmDiagramView));
             this.zedGraph = new ZedGraph.ZedGraphControl();
+            this.btnClose = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // zedGraph
@@ -49,11 +50,25 @@
             this.zedGraph.TabIndex = 0;
             this.zedGraph.UseExtendedPrintDialog = true;
             // 
+            // btnClose
+            // 
+            this.btnClose.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.btnClose.Font = new System.Drawing.Font("Segoe UI", 8F);
+            this.btnClose.Location = new System.Drawing.Point(-100, -100);
+            this.btnClose.Name = "btnClose";
+            this.btnClose.Size = new System.Drawing.Size(52, 24);
+            this.btnClose.TabIndex = 19;
+            this.btnClose.Text = "CloseH";
+            this.btnClose.UseVisualStyleBackColor = true;
+            this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
+            // 
             // FrmDiagramView
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.CancelButton = this.btnClose;
             this.ClientSize = new System.Drawing.Size(584, 461);
+            this.Controls.Add(this.btnClose);
             this.Controls.Add(this.zedGraph);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
@@ -72,5 +87,6 @@
         #endregion
 
         private ZedGraph.ZedGraphControl zedGraph;
+        private System.Windows.Forms.Button btnClose;
     }
 }

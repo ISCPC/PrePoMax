@@ -5847,13 +5847,13 @@ namespace PrePoMax
         public vtkControl.vtkMaxActorData GetPartActorData(int[] elementIds)
         {
             FeMesh mesh = DisplayedMesh;
-
+            //
             HashSet<int> partIds = new HashSet<int>();
             for (int i = 0; i < elementIds.Length; i++)
             {
                 partIds.Add(mesh.Elements[elementIds[i]].PartId);
             }
-
+            //
             List<int> allElementIds = new List<int>();
             foreach (var entry in mesh.Parts)
             {
@@ -5862,9 +5862,9 @@ namespace PrePoMax
                     allElementIds.AddRange(entry.Value.Labels);
                 }
             }
-
+            //
             FeGroup elementSet = new FeGroup("tmp", allElementIds.ToArray());
-
+            //
             return GetCellActorData(elementSet);
         }
         public vtkControl.vtkMaxActorData GetGeometryActorData(double[] point, int elementId,
@@ -7355,7 +7355,7 @@ namespace PrePoMax
             return 0;
         }
 
-        public void DrawSurface(string prefixName, int[][] cells, System.Drawing.Color color,
+        public void DrawSurface(string prefixName, int[][] cells, Color color,
                                 vtkControl.vtkRendererLayer layer, bool backfaceCulling = true,
                                 bool useSecondaryHighlightColor = false, bool drawEdges = false)
         {
@@ -7410,7 +7410,7 @@ namespace PrePoMax
             ApplyLighting(data);
             _form.Add3DCells(data);
         }
-        public void DrawSurfaceEdge(string prefixName, string surfaceName, System.Drawing.Color color,
+        public void DrawSurfaceEdge(string prefixName, string surfaceName, Color color,
                                     vtkControl.vtkRendererLayer layer, bool backfaceCulling = true,
                                     bool useSecondaryHighlightColor = false, bool onlyVisible = false)
         {
@@ -7645,18 +7645,58 @@ namespace PrePoMax
             System.Drawing.Color color = System.Drawing.Color.Red;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
             //
+            bool error;
             foreach (var part in parts)
             {
-                //if (part.Visible && partsToSelect.Contains(part.Name) && _form.ContainsActor(part.Name))
                 if (partNamesToSelect.Contains(part.Name) && _form.ContainsActor(part.Name))
                 {
+                    error = false;
                     if (part.ErrorElementIds != null)
                     {
                         FeElementSet errorElemetSet = new FeElementSet("Error_elements", part.ErrorElementIds);
                         HighlightElementSet(errorElemetSet, _model.Geometry);
-                        DrawNodes(part.Name, part.ErrorNodeIds, color, layer);
+                        error = true;
                     }
-                    else
+                    if (part.ErrorEdgeElementIds != null)
+                    {
+                        List<int[]> edgeCells = new List<int[]>();
+                        for (int i = 0; i < part.ErrorEdgeElementIds.Length; i++)
+                        {
+                            edgeCells.Add(part.Visualization.EdgeCells[part.ErrorEdgeElementIds[i]]);
+                        }
+
+                        vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
+                        DisplayedMesh.GetNodesAndCellsForEdges(edgeCells.ToArray(), out data.Geometry.Nodes.Ids,
+                                                               out data.Geometry.Nodes.Coor,
+                                                               out data.Geometry.Cells.CellNodeIds,
+                                                               out data.Geometry.Cells.Types);
+                        // Name for the probe widget
+                        data.Name = part.Name + "_badEdgeElements";
+                        // Scale nodes
+                        if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
+                        {
+                            float scale = GetScale();
+                            Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId,
+                                                         data.Geometry.Nodes.Ids, ref data.Geometry.Nodes.Coor);
+                        }
+                        //
+                        data.Color = color;
+                        data.Layer = layer;
+                        data.CanHaveElementEdges = true;
+                        data.BackfaceCulling = true;
+                        data.UseSecondaryHighightColor = false;
+                        //
+                        ApplyLighting(data);
+                        _form.Add3DCells(data);
+                        //
+                        error = true;
+                    }
+                    if (part.ErrorNodeIds != null)
+                    {
+                        DrawNodes(part.Name, part.ErrorNodeIds, color, layer);
+                        error = true;
+                    }
+                    if (!error)
                     {
                         _form.HighlightActor(part.Name);
                     }
@@ -7788,10 +7828,10 @@ namespace PrePoMax
             FeMesh mesh = DisplayedMesh;
             System.Drawing.Color color = System.Drawing.Color.Red;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
-            // copy
+            // Copy
             int[][] cellsCopy = new int[cells.Length][];
             for (int i = 0; i < cells.Length; i++) cellsCopy[i] = cells[i].ToArray();
-            // faces
+            // Faces
             vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
             data.Name = "highlight_surface_by_cells";
             data.Color = color;
@@ -7812,7 +7852,7 @@ namespace PrePoMax
             //
             ApplyLighting(data);
             _form.Add3DCells(data);
-            //edges
+            // Edges
             cells = mesh.GetFreeEdgesFromVisualizationCells(cellsCopy);
             //
             data = new vtkControl.vtkMaxActorData();

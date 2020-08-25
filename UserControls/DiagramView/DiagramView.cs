@@ -47,6 +47,10 @@ namespace UserControls
             _initialHeight = Height;
             UpdateData();
         }
+        private void btnClose_Click(object sender, EventArgs e)
+        {
+            Hide();
+        }
         private void DiagramView_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (e.CloseReason == CloseReason.UserClosing)
@@ -149,6 +153,6 @@ namespace UserControls
             zedGraph.ZoomOut(zedGraph.GraphPane);
         }
 
-
+        
     }
 }

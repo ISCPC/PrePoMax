@@ -62,6 +62,7 @@
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.groupBox6 = new System.Windows.Forms.GroupBox();
+            this.btnClose = new System.Windows.Forms.Button();
             this.cbSaveAsImages = new System.Windows.Forms.CheckBox();
             this.cbEncoderOptions = new System.Windows.Forms.CheckBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
@@ -149,7 +150,7 @@
             this.rbTimeIncrements.AutoSize = true;
             this.rbTimeIncrements.Location = new System.Drawing.Point(6, 47);
             this.rbTimeIncrements.Name = "rbTimeIncrements";
-            this.rbTimeIncrements.Size = new System.Drawing.Size(114, 19);
+            this.rbTimeIncrements.Size = new System.Drawing.Size(113, 19);
             this.rbTimeIncrements.TabIndex = 1;
             this.rbTimeIncrements.TabStop = true;
             this.rbTimeIncrements.Text = "Time increments";
@@ -512,6 +513,7 @@
             // 
             // groupBox6
             // 
+            this.groupBox6.Controls.Add(this.btnClose);
             this.groupBox6.Controls.Add(this.cbSaveAsImages);
             this.groupBox6.Controls.Add(this.cbEncoderOptions);
             this.groupBox6.Location = new System.Drawing.Point(11, 383);
@@ -520,6 +522,18 @@
             this.groupBox6.TabIndex = 21;
             this.groupBox6.TabStop = false;
             this.groupBox6.Text = "Movie options";
+            // 
+            // btnClose
+            // 
+            this.btnClose.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.btnClose.Font = new System.Drawing.Font("Segoe UI", 8F);
+            this.btnClose.Location = new System.Drawing.Point(-100, -100);
+            this.btnClose.Name = "btnClose";
+            this.btnClose.Size = new System.Drawing.Size(52, 24);
+            this.btnClose.TabIndex = 18;
+            this.btnClose.Text = "CloseH";
+            this.btnClose.UseVisualStyleBackColor = true;
+            this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
             // 
             // cbSaveAsImages
             // 
@@ -570,6 +584,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.CancelButton = this.btnClose;
             this.ClientSize = new System.Drawing.Size(304, 466);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox6);
@@ -651,5 +666,6 @@
         private System.Windows.Forms.CheckBox cbSaveAsImages;
         private System.Windows.Forms.GroupBox groupBox4;
         private System.Windows.Forms.CheckBox cbGraphicsRam;
+        private System.Windows.Forms.Button btnClose;
     }
 }

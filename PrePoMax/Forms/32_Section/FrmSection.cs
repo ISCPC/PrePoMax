@@ -63,6 +63,8 @@ namespace PrePoMax.Forms
         // Overrides                                                                                                                
         protected override void OnListViewTypeSelectedIndexChanged()
         {
+            _controller.ClearAllSelection();    // clears all selected items
+            //
             if (lvTypes.Enabled && lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)
             {
                 object itemTag = lvTypes.SelectedItems[0].Tag;

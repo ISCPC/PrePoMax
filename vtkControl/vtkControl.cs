@@ -1233,8 +1233,8 @@ namespace vtkControl
             // Try some more picks
             if (cellId == -1)
             {
-                int numOfLoops = 0;
-                int stepSize = 2;
+                int numOfLoops = 1;
+                int stepSize = 5;
                 //
                 for (int i = 1; i <= numOfLoops; i++)   // try in a cross shape
                 {
@@ -3100,7 +3100,8 @@ namespace vtkControl
             // Transform
             vtkTransform transform = vtkTransform.New();
             transform.Identity();
-            if (invert) transform.Translate(-1, 0, 0);
+            if (invert) transform.Translate(-1.05, 0, 0);
+            else transform.Translate(0.05, 0, 0);
             // Transform filter
             vtkTransformFilter transformFilter = vtkTransformFilter.New();
             transformFilter.SetInput(arrow.GetOutput());

@@ -436,7 +436,7 @@ namespace CaeModel
             bool noErrors = true;
             foreach (var entry in mesh.Parts)
             {
-                if (entry.Value is GeometryPart gp && gp.ErrorElementIds != null)
+                if (entry.Value is GeometryPart gp && gp.HasErrors)
                 {
                     noErrors = false;
                     break;

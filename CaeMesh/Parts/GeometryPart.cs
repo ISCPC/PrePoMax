@@ -13,6 +13,7 @@ namespace CaeMesh
         // Variables                                                                                                                
         private MeshingParameters _meshingParameters;
         private int[] _errorElementIds;
+        private int[] _errorEdgeElementIds;
         private int[] _errorNodeIds;
         private string _cadFileData;
 
@@ -29,7 +30,18 @@ namespace CaeMesh
             }
         }
         public int[] ErrorElementIds { get { return _errorElementIds; } set { _errorElementIds = value; } }
+        public int[] ErrorEdgeElementIds { get { return _errorEdgeElementIds; } set { _errorEdgeElementIds = value; } }
         public int[] ErrorNodeIds { get { return _errorNodeIds; } set { _errorNodeIds = value; } }
+        public bool HasErrors
+        {
+            get
+            {
+                if (_errorEdgeElementIds != null) return true;
+                else if (_errorEdgeElementIds != null) return true;
+                else if (_errorNodeIds != null) return true;
+                else return false;
+            }
+        }
         public string CADFileData
         {
             get
@@ -51,6 +63,7 @@ namespace CaeMesh
         {
             _meshingParameters = null;
             _errorElementIds = null;
+            _errorEdgeElementIds = null;
             _errorNodeIds = null;
             _cadFileData = null;
         }
@@ -59,6 +72,7 @@ namespace CaeMesh
         {
             _meshingParameters = null;
             _errorElementIds = null;
+            _errorEdgeElementIds = null;
             _errorNodeIds = null;
             _cadFileData = null;
         }
@@ -67,6 +81,7 @@ namespace CaeMesh
         {
             _meshingParameters = part.MeshingParameters != null ? part.MeshingParameters.DeepClone() : null;
             _errorElementIds = part.ErrorElementIds != null ? part.ErrorElementIds.ToArray() : null;
+            _errorEdgeElementIds = part.ErrorEdgeElementIds != null ? part.ErrorEdgeElementIds.ToArray() : null;
             _errorNodeIds = part.ErrorNodeIds != null ? part.ErrorNodeIds.ToArray() : null;
             _cadFileData = part._cadFileData != null ? _cadFileData : null;
         }

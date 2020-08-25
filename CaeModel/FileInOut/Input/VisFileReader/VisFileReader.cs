@@ -44,7 +44,12 @@ namespace FileInOut.Input
                 else if (data.Contains("Shell number: "))
                 {
                     textToFind = "Shell number: ";
-                    importOptions = ImportOptions.ImportOneShellPart;
+                    importOptions = ImportOptions.ImportShellParts;
+                }
+                else if (data.Contains("Free face number: "))
+                {
+                    textToFind = "Free face number: ";
+                    importOptions = ImportOptions.ImportShellParts;
                 }
                 //
                 if (textToFind != null)

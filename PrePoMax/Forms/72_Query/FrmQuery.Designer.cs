@@ -114,6 +114,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.CancelButton = this.btnClose;
             this.ClientSize = new System.Drawing.Size(194, 305);
             this.Controls.Add(this.gbQueries);
             this.Controls.Add(this.btnClose);
