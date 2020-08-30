@@ -1616,7 +1616,14 @@ namespace PrePoMax
             }
             catch { }
         }
-
+        //
+        private void tsmiShellOrientation_Click(object sender, EventArgs e)
+        {
+            tsmiShellOrientation.Checked = !tsmiShellOrientation.Checked;
+            //
+            _controller.DrawShellOrientations = tsmiShellOrientation.Checked;
+        }
+        //
         private void tsmiResultsUndeformed_Click(object sender, EventArgs e)
         {
             if (_frmAnimation.Visible) _frmAnimation.Hide();

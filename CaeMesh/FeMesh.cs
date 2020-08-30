@@ -1155,8 +1155,10 @@ namespace CaeMesh
             VisualizationData vis = part.Visualization;
             // Check for bad element and nodes
             List<int> badElementIds = new List<int>();
+            HashSet<int> badEdgeIds = new HashSet<int>();
             List<int> badEdgeElementIds = new List<int>();
             List<int> badNodeIds = new List<int>();
+            //
             if (part is GeometryPart gp)
             {
                 gp.ErrorElementIds = null;
@@ -1181,23 +1183,31 @@ namespace CaeMesh
                 else if (gp.PartType == PartType.Shell)
                 {
                     int edgeId;
-                    int[] edgeCells;
+                    int[] edgeCell;
                     List<int> vertexEdgeIds;
+                    HashSet<int> vertexNodeIds = new HashSet<int>(vis.VertexNodeIds);
                     Dictionary<int, List<int>>[] faceVertexEdgeIds = new Dictionary<int, List<int>>[vis.FaceEdgeIds.Length];
-                    for (int i = 0; i < vis.FaceEdgeIds.Length; i++)
+                    // For each surface
+                    for (int i = 0; i < vis.FaceEdgeIds.Length; i++)    
                     {
                         faceVertexEdgeIds[i] = new Dictionary<int, List<int>>();
-                        for (int j = 0; j < vis.FaceEdgeIds[i].Length; j++)
+                        // For each surface edge
+                        for (int j = 0; j < vis.FaceEdgeIds[i].Length; j++) 
                         {
                             edgeId = vis.FaceEdgeIds[i][j];
-                            for (int k = 0; k < vis.EdgeCellIdsByEdge[edgeId].Length; k++)
+                            // For each edge cell
+                            for (int k = 0; k < vis.EdgeCellIdsByEdge[edgeId].Length; k++)  
                             {
-                                edgeCells = vis.EdgeCells[vis.EdgeCellIdsByEdge[edgeId][k]];
-                                for (int l = 0; l < edgeCells.Length; l++)
+                                edgeCell = vis.EdgeCells[vis.EdgeCellIdsByEdge[edgeId][k]];
+                                // For each node in edge cell
+                                for (int l = 0; l < edgeCell.Length; l++)   
                                 {
-                                    if (faceVertexEdgeIds[i].TryGetValue(edgeCells[l], out vertexEdgeIds))
-                                        vertexEdgeIds.Add(edgeId);
-                                    else faceVertexEdgeIds[i].Add(edgeCells[l], new List<int>() { edgeId });
+                                    if (vertexNodeIds.Contains(edgeCell[l]))
+                                    {
+                                        if (faceVertexEdgeIds[i].TryGetValue(edgeCell[l], out vertexEdgeIds))
+                                            vertexEdgeIds.Add(edgeId);
+                                        else faceVertexEdgeIds[i].Add(edgeCell[l], new List<int>() { edgeId });
+                                    }
                                 }
                             }
                         }
@@ -1211,13 +1221,17 @@ namespace CaeMesh
                             if (entry.Value.Count == 1)
                             {
                                 nodeId = entry.Key;
-                                edgeId = entry.Value[0];
-                                //
                                 badNodeIds.Add(nodeId);
-                                badEdgeElementIds.AddRange(vis.EdgeCellIdsByEdge[edgeId]);
+                                //
+                                GetEdgeIdsOnEdgeLoop(nodeId, faceVertexEdgeIds[i], ref badEdgeIds);
                             }
                         }
                     }
+                }
+                // Collect bad edge cell ids
+                foreach (var edgeId in badEdgeIds)
+                {
+                    badEdgeElementIds.AddRange(vis.EdgeCellIdsByEdge[edgeId]);
                 }
                 //
                 if (badElementIds.Count > 0) gp.ErrorElementIds = badElementIds.ToArray();
@@ -1226,6 +1240,28 @@ namespace CaeMesh
                 else gp.ErrorEdgeElementIds = null;
                 if (badNodeIds.Count > 0) gp.ErrorNodeIds = badNodeIds.ToArray();
                 else gp.ErrorNodeIds = null;
+            }
+        }
+        private void GetEdgeIdsOnEdgeLoop(int nodeId, Dictionary<int, List<int>> nodeEdgeIds, ref HashSet<int> edgeIds)
+        {
+            List<int> oneNodeEdgeIds = nodeEdgeIds[nodeId];
+            // Only continue for start/end and inside/normal vertices
+            // 3 edges might mean the connection to the outer/another edge loop
+            if (oneNodeEdgeIds.Count > 2) return;      
+            //
+            foreach (var edgeId in oneNodeEdgeIds)
+            {
+                if (edgeIds.Add(edgeId))    // is it a new edge?
+                {
+                    foreach (var entry in nodeEdgeIds)
+                    {
+                        if (entry.Value.Contains(edgeId))
+                        {
+                            GetEdgeIdsOnEdgeLoop(entry.Key, nodeEdgeIds, ref edgeIds);
+                            break;
+                        }
+                    }
+                }
             }
         }
         private void SplitVisualizationEdgesAndFaces(BasePart part, HashSet<int> vertexNodeIds = null)

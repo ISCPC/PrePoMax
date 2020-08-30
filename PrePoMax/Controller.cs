@@ -31,6 +31,7 @@ namespace PrePoMax
         [NonSerialized] protected ViewGeometryModelResults _currentView;
         [NonSerialized] protected string _drawSymbolsForStep;
         [NonSerialized] protected Dictionary<ViewGeometryModelResults, Octree.Plane> _sectionViewPlanes;
+        [NonSerialized] protected bool _drawShellOrientations;
         // Selection
         [NonSerialized] protected vtkSelectBy _selectBy;
         [NonSerialized] protected double _selectAngle;
@@ -113,6 +114,19 @@ namespace PrePoMax
         public bool IsSectionViewActive()
         {
             return _sectionViewPlanes[_currentView] != null;
+        }
+        public bool DrawShellOrientations
+        {
+            get { return _drawShellOrientations; } 
+            set
+            {
+                _drawShellOrientations = value;
+                //
+                if (_currentView == ViewGeometryModelResults.Geometry) DrawGeometry(false);
+                else if (_currentView == ViewGeometryModelResults.Model) DrawMesh(false);
+                else if (_currentView == ViewGeometryModelResults.Results) DrawResults(false); // Also calls Clear
+                else throw new NotSupportedException();
+            }
         }
         // Selection
         public vtkSelectItem SelectItem
@@ -6048,7 +6062,16 @@ namespace PrePoMax
                                                    out data.ModelEdges.Cells.CellNodeIds, out data.ModelEdges.Cells.Types);
             }
             // Back face
-            if (part.PartType == PartType.Shell) data.BackfaceCulling = false;
+            if (part.PartType == PartType.Shell)
+            {
+                data.BackfaceCulling = false;
+                if (_drawShellOrientations)
+                {
+                    PreSettings preSettings = (PreSettings)_settings.Pre;
+                    data.Color = preSettings.PrimaryHighlightColor;
+                    data.BackfaceColor = preSettings.SecundaryHighlightColor;
+                }
+            }
             //
             ApplyLighting(data);
             _form.Add3DCells(data);
@@ -6141,7 +6164,16 @@ namespace PrePoMax
                                                    out data.ModelEdges.Cells.CellNodeIds, out data.ModelEdges.Cells.Types);
             }
             // Back face
-            if (part.PartType == PartType.Shell) data.BackfaceCulling = false;
+            if (part.PartType == PartType.Shell)
+            {
+                data.BackfaceCulling = false;
+                if (_drawShellOrientations)
+                {
+                    PreSettings preSettings = (PreSettings)_settings.Pre;
+                    data.Color = preSettings.PrimaryHighlightColor;
+                    data.BackfaceColor = preSettings.SecundaryHighlightColor;
+                }
+            }
             //
             ApplyLighting(data);
             _form.Add3DCells(data);
@@ -7260,7 +7292,7 @@ namespace PrePoMax
             return minId;
         }
         // Geometry
-        public int DrawNodes(string prefixName, int[] nodeIds, System.Drawing.Color color, vtkControl.vtkRendererLayer layer,
+        public int DrawNodes(string prefixName, int[] nodeIds, Color color, vtkControl.vtkRendererLayer layer,
                              int nodeSize = 5, bool onlyVisible = false)
         {
             double[][] nodeCoor = DisplayedMesh.GetNodeSetCoor(nodeIds, onlyVisible);
@@ -7281,7 +7313,7 @@ namespace PrePoMax
             ApplyLighting(data);
             _form.Add3DNodes(data);
         }
-        public int DrawNodeSet(string prefixName, string nodeSetName, System.Drawing.Color color, 
+        public int DrawNodeSet(string prefixName, string nodeSetName, Color color, 
                                vtkControl.vtkRendererLayer layer, int nodeSize = 5,
                                bool useSecondaryHighlightColor = false, bool onlyVisible = false)
         {
@@ -7311,7 +7343,7 @@ namespace PrePoMax
             }
             return 0;
         }
-        public int DrawSurfaceWithEdge(string prefixName, string surfaceName, System.Drawing.Color color,
+        public int DrawSurfaceWithEdge(string prefixName, string surfaceName, Color color,
                                        vtkControl.vtkRendererLayer layer, bool backfaceCulling = true,
                                        bool useSecondaryHighlightColor = false, bool onlyVisible = false)
         {
@@ -7320,7 +7352,7 @@ namespace PrePoMax
                 DrawSurfaceEdge(prefixName, surfaceName, color, layer, backfaceCulling, useSecondaryHighlightColor, onlyVisible);
             return count;
         }
-        public int DrawSurface(string prefixName, string surfaceName, System.Drawing.Color color,
+        public int DrawSurface(string prefixName, string surfaceName, Color color,
                                vtkControl.vtkRendererLayer layer, bool backfaceCulling = true,
                                bool useSecondaryHighlightColor = false, bool onlyVisible = false)
         {

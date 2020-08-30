@@ -28,6 +28,7 @@ namespace vtkControl
         private bool _visible;
         private bool _backfaceCulling;
         private System.Drawing.Color _color;
+        private System.Drawing.Color _backfaceColor;
         private double _ambient;
         private double _diffuse;
         private bool _colorContours;
@@ -71,6 +72,15 @@ namespace vtkControl
             set
             {
                 _color = value;
+                UpdateColor();
+            }
+        }
+        public System.Drawing.Color BackfaceColor
+        {
+            get { return _backfaceColor; }
+            set
+            {
+                _backfaceColor = value;
                 UpdateColor();
             }
         }
@@ -119,7 +129,8 @@ namespace vtkControl
             _actorRepresentation = vtkMaxActorRepresentation.Unknown;
             _visible = true;
             _backfaceCulling = true;
-            _color = System.Drawing.Color.Yellow;
+            _color = System.Drawing.Color.Empty;
+            _backfaceColor = System.Drawing.Color.Empty;
             _ambient = 0.5;
             _diffuse = 0.5;
             _colorContours = false;
@@ -165,6 +176,7 @@ namespace vtkControl
             this._actorRepresentation = data.ActorRepresentation;
             this._backfaceCulling = data.BackfaceCulling;
             this._color = data.Color;
+            this._backfaceColor = data.BackfaceColor;
             this._ambient = data.Ambient;
             this._diffuse = data.Diffuse;
             this._colorContours = data.ColorContours;
@@ -206,6 +218,7 @@ namespace vtkControl
             this._actorRepresentation = data.ActorRepresentation;
             this._backfaceCulling = data.BackfaceCulling;
             this._color = data.Color;
+            this._backfaceColor = data.BackfaceColor;
             this._ambient = data.Ambient;
             this._diffuse = data.Diffuse;
             this._colorContours = data.ColorContours;
@@ -1213,6 +1226,28 @@ namespace vtkControl
                 property.SetLighting(false);
                 property.SetLineWidth(0.5f);
                 property.SetOpacity(opacity * 0.4);
+            }
+            // Backface property
+            if (!_backfaceColor.IsEmpty && !_backfaceCulling)
+            {
+                property = vtkProperty.New();
+                //
+                opacity = _backfaceColor.A / 255d;
+
+                property.SetAmbient(_ambient);
+                property.SetDiffuse(_diffuse);
+                property.SetAmbientColor(1, 1, 1);  // also reset part color highlight
+                                                    //
+                property.SetOpacity(opacity);
+                //
+                if (!ColorContours)
+                {
+                    property.SetColor(_backfaceColor.R / 255d, _backfaceColor.G / 255d, _backfaceColor.B / 255d);
+                    property.SetSpecular(0.6);
+                    property.SetSpecularColor(1, 1, 1);
+                    property.SetSpecularPower(100);
+                }
+                _geometry.SetBackfaceProperty(property);
             }
         }
         public void UpdateVisibility()

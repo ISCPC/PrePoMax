@@ -24,6 +24,7 @@ namespace vtkControl
         public float NodeSize;
         public float LineWidth;
         public Color Color;
+        public Color BackfaceColor;
         public double Ambient;
         public double Diffuse;
         public vtkRendererLayer Layer;
@@ -48,7 +49,8 @@ namespace vtkControl
             Name = null;
             NodeSize = 1;
             LineWidth = 1;
-            Color = Color.Black;
+            Color = Color.Empty;
+            BackfaceColor = Color.Empty;
             Ambient = 0.1;
             Diffuse = 0.1;
             Layer = vtkRendererLayer.Base;
