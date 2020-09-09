@@ -284,7 +284,7 @@ namespace PrePoMax.Forms
             Form_WriteDataToOutput(data);
             data = string.Format("{0,16}{1,8}{2,16}{3,16}", "Surface".PadRight(16), "[/]", "id:", faceId);
             Form_WriteDataToOutput(data);
-            data = string.Format("{0,16}{1,8}{2,16}{3,16:E}", "Base".PadRight(16), areaUnit, "L:", area1);
+            data = string.Format("{0,16}{1,8}{2,16}{3,16:E}", "Base".PadRight(16), areaUnit, "A:", area1);
             Form_WriteDataToOutput(data);
             //
             if (_controller.CurrentView == ViewGeometryModelResults.Results)
@@ -296,9 +296,9 @@ namespace PrePoMax.Forms
                 for (int i = 0; i < nodes.Length; i++) nodesDic.Add(nodes[i].Id, nodes[i]);
                 double area2 = _controller.DisplayedMesh.ComputeFaceArea(part.Visualization, faceId, nodesDic);
                 //
-                data = string.Format("{0,16}{1,8}{2,16}{3,16:E}", "Deformed".PadRight(16), areaUnit, "L:", area2);
+                data = string.Format("{0,16}{1,8}{2,16}{3,16:E}", "Deformed".PadRight(16), areaUnit, "A:", area2);
                 Form_WriteDataToOutput(data);
-                data = string.Format("{0,16}{1,8}{2,16}{3,16:E}", "Delta".PadRight(16), areaUnit, "L:", area2 - area1);
+                data = string.Format("{0,16}{1,8}{2,16}{3,16:E}", "Delta".PadRight(16), areaUnit, "A:", area2 - area1);
                 Form_WriteDataToOutput(data);
             }
             Form_WriteDataToOutput("");

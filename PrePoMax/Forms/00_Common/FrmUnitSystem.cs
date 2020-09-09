@@ -123,6 +123,7 @@ namespace PrePoMax.Forms
         {
             _viewUnitSystem = (ViewUnitSystem)propertyGrid.SelectedObject;
             //
+            if (_viewUnitSystem == null) throw new CaeException("No unit system selected.");
             UnitSystem = _viewUnitSystem.GetBase();
             // Replace
             if (_geometryAndModelOrResults == "Geometry & Model")
@@ -134,6 +135,7 @@ namespace PrePoMax.Forms
         protected override bool OnPrepareForm(string stepName, string geometryAndModelOrResults)
         {
             this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
+            propertyGrid.SelectedObject = null;
             //
             if (geometryAndModelOrResults == "Geometry & Model" || geometryAndModelOrResults == "Results")
                 _geometryAndModelOrResults = geometryAndModelOrResults;
@@ -157,8 +159,8 @@ namespace PrePoMax.Forms
             item = new ListViewItem("Unit system: " + unitSystemType.GetDescription());
             item.Tag = new ViewUnitSystem(new UnitSystem(unitSystemType));
             lvTypes.Items.Add(item);
-            // Select the first item
-            lvTypes.Items[1].Selected = true;
+            // Select the second item
+            //lvTypes.Items[1].Selected = true;
             //
             return true;
         }

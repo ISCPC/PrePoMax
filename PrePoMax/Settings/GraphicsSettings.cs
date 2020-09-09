@@ -95,7 +95,7 @@ namespace PrePoMax
         }
         public void Reset()
         {
-            _backgroundType = PrePoMax.BackgroundType.Gradient;
+            _backgroundType = BackgroundType.Gradient;
             _topColor = Color.Gainsboro;
             _bottomColor = Color.WhiteSmoke;
             _coorSysVisibility = true;

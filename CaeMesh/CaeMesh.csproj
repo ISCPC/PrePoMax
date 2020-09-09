@@ -79,6 +79,7 @@
     <Compile Include="Elements\FeElementType.cs" />
     <Compile Include="FeGroup.cs" />
     <Compile Include="FeMesh.cs" />
+    <Compile Include="Geometry\GeometrySelection.cs" />
     <Compile Include="Geometry\GeomEdge.cs" />
     <Compile Include="Geometry\GeomVertex.cs" />
     <Compile Include="Geometry\GeomSurface.cs" />

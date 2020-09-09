@@ -54,7 +54,7 @@
             this.dgvNames.Name = "dgvNames";
             this.dgvNames.RowHeadersVisible = false;
             this.dgvNames.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvNames.Size = new System.Drawing.Size(344, 265);
+            this.dgvNames.Size = new System.Drawing.Size(344, 269);
             this.dgvNames.TabIndex = 0;
             this.dgvNames.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvNames_CellDoubleClick);
             this.dgvNames.SelectionChanged += new System.EventHandler(this.dgvNames_SelectionChanged);
@@ -71,9 +71,9 @@
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnCancel.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.btnCancel.Location = new System.Drawing.Point(275, 353);
+            this.btnCancel.Location = new System.Drawing.Point(287, 357);
             this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(87, 27);
+            this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 1;
             this.btnCancel.Text = "Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
@@ -83,9 +83,9 @@
             // 
             this.btnContinue.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnContinue.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.btnContinue.Location = new System.Drawing.Point(182, 353);
+            this.btnContinue.Location = new System.Drawing.Point(206, 357);
             this.btnContinue.Name = "btnContinue";
-            this.btnContinue.Size = new System.Drawing.Size(87, 27);
+            this.btnContinue.Size = new System.Drawing.Size(75, 23);
             this.btnContinue.TabIndex = 2;
             this.btnContinue.Text = "Continue";
             this.btnContinue.UseVisualStyleBackColor = true;
@@ -102,7 +102,7 @@
             this.groupBox1.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.groupBox1.Location = new System.Drawing.Point(12, 12);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(358, 335);
+            this.groupBox1.Size = new System.Drawing.Size(358, 339);
             this.groupBox1.TabIndex = 3;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Available entities";
@@ -123,7 +123,7 @@
             this.cbHighlight.Checked = true;
             this.cbHighlight.CheckState = System.Windows.Forms.CheckState.Checked;
             this.cbHighlight.Enabled = false;
-            this.cbHighlight.Location = new System.Drawing.Point(6, 308);
+            this.cbHighlight.Location = new System.Drawing.Point(6, 312);
             this.cbHighlight.Name = "cbHighlight";
             this.cbHighlight.Size = new System.Drawing.Size(188, 19);
             this.cbHighlight.TabIndex = 1;

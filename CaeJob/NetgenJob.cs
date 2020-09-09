@@ -88,7 +88,7 @@ namespace CaeJob
         }
 
         // Methods                                                                                                                  
-        public void Submit()
+        public void Submit(int timeout = 1000 * 3600 * 24 * 7 * 3)
         {
             _watch = new Stopwatch();
             _timerWatch = new Stopwatch();
@@ -97,20 +97,21 @@ namespace CaeJob
 
             if (JobStarted != null) JobStarted(this);
 
-            Run();
+            Run(timeout);
             RunCompleted();
         }
 
-        private void Run()
+        private void Run(int timeout)
         {
             if (!File.Exists(_executable)) throw new Exception("The file '" + _executable + "' does not exist.");
+            if (!Tools.WaitForFileToUnlock(_executable, 5000)) throw new Exception("The netgen mesher is busy.");
+            //
             _timerWatch.Start();
             _watch.Start();
-
+            //
             _output = "";
             AddDataToOutput("Running command: " + _executable + " " + _argument);
-
-            //string tmpName = Path.GetFileName(_executable) + "_" + _argument.Substring(0, Math.Min(_argument.Length, 15));
+            //
             string tmpName = Path.GetFileName(Name);
             _outputFileName = Path.Combine(_workDirectory, "_output_" + tmpName + ".txt");
             _errorFileName = Path.Combine(_workDirectory, "_error_" + tmpName + ".txt");
@@ -167,8 +168,8 @@ namespace CaeJob
 
                 _exe.BeginOutputReadLine();
                 _exe.BeginErrorReadLine();
-                int ms = 1000 * 3600 * 24 * 7 * 3; // 3 weeks
-                if (_exe.WaitForExit(ms) && outputWaitHandle.WaitOne(ms) && errorWaitHandle.WaitOne(ms))
+                //
+                if (_exe.WaitForExit(timeout) && outputWaitHandle.WaitOne(timeout) && errorWaitHandle.WaitOne(timeout))
                 {
                     // Process completed. Check process.ExitCode here.
 

@@ -15,6 +15,7 @@ namespace CaeModel
     public class FeModel : ISerializable
     {
         // Variables                                                                                                                
+        private string _hashName;                                                               //ISerializable
         private FeMesh _geometry;                                                               //ISerializable
         private FeMesh _mesh;                                                                   //ISerializable
         private OrderedDictionary<string, Material> _materials;                                 //ISerializable
@@ -30,6 +31,7 @@ namespace CaeModel
 
         // Properties                                                                                                               
         public string Name { get; set; }
+        public string HashName { get { return _hashName; } }
         public FeMesh Geometry { get { return _geometry; } }
         public FeMesh Mesh { get { return _mesh; } }
         public OrderedDictionary<string, Material> Materials { get { return _materials; } }
@@ -54,6 +56,7 @@ namespace CaeModel
         public FeModel(string name)
         {
             Name = name;
+            _hashName = Tools.GetRandomString(8);
             _materials = new OrderedDictionary<string, Material>();
             _sections = new OrderedDictionary<string, Section>();
             _constraints = new OrderedDictionary<string, Constraint>();
@@ -71,6 +74,8 @@ namespace CaeModel
             _contactPairs = new OrderedDictionary<string, ContactPair>();
             // Compatibility for version v.0.7.0
             _unitSystem = new UnitSystem();
+            // Compatibility for version v.0.8.0
+            _hashName = Tools.GetRandomString(8);
             //
             foreach (SerializationEntry entry in info)
             {
@@ -141,6 +146,8 @@ namespace CaeModel
                         //else _unitSystem = new UnitSystem(UnitSystemType.MM_TON_S_C);
                         //break;
                         _unitSystem = (CaeGlobals.UnitSystem)entry.Value; break;
+                    case "_hashName":
+                        _hashName = (string)entry.Value; break;
                     default:
                         throw new NotSupportedException();
                 }
@@ -635,6 +642,7 @@ namespace CaeModel
             info.AddValue("_calculixUserKeywords", _calculixUserKeywords, typeof(OrderedDictionary<int[], Calculix.CalculixUserKeyword>));
             info.AddValue("_properties", _properties, typeof(ModelProperties));
             info.AddValue("_unitSystem", _unitSystem, typeof(UnitSystem));
+            info.AddValue("_hashName", _hashName, typeof(string));
         }
     }
 }

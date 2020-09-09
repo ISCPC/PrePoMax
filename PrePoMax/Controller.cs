@@ -31,7 +31,7 @@ namespace PrePoMax
         [NonSerialized] protected ViewGeometryModelResults _currentView;
         [NonSerialized] protected string _drawSymbolsForStep;
         [NonSerialized] protected Dictionary<ViewGeometryModelResults, Octree.Plane> _sectionViewPlanes;
-        [NonSerialized] protected bool _drawShellOrientations;
+        [NonSerialized] protected bool _showFaceOrientation;
         // Selection
         [NonSerialized] protected vtkSelectBy _selectBy;
         [NonSerialized] protected double _selectAngle;
@@ -115,12 +115,12 @@ namespace PrePoMax
         {
             return _sectionViewPlanes[_currentView] != null;
         }
-        public bool DrawShellOrientations
+        public bool ShowFaceOrientation
         {
-            get { return _drawShellOrientations; } 
+            get { return _showFaceOrientation; } 
             set
             {
-                _drawShellOrientations = value;
+                _showFaceOrientation = value;
                 //
                 if (_currentView == ViewGeometryModelResults.Geometry) DrawGeometry(false);
                 else if (_currentView == ViewGeometryModelResults.Model) DrawMesh(false);
@@ -486,7 +486,7 @@ namespace PrePoMax
             {
                 _form.Clear3D();
                 // Check if the meshes are the same and rename the parts
-                if (_model.Mesh != null && _results.Mesh != null)
+                if (_model.Mesh != null && _results.Mesh != null && _model.HashName == _results.HashName)
                 {
                     double similarity = _model.Mesh.IsEqual(_results.Mesh);
                     if (similarity > 0)
@@ -498,7 +498,11 @@ namespace PrePoMax
                                                 "Apply model mesh properties (part names, geomery...) to the result mesh?", "Warning",
                                                 MessageBoxButtons.YesNo) == DialogResult.Yes) similarity = 1;
                         }
-                        if (similarity == 1) _results.CopyPartsFromMesh(_model.Mesh);
+                        else if (similarity == 1) _results.CopyPartsFromMesh(_model.Mesh);
+                        else if (similarity == 2)
+                        {
+                            _results.Mesh.MergePartsBasedOnMesh(_model.Mesh, typeof(ResultPart));
+                        }
                     }
                 }
                 // Set the view but do not draw
@@ -825,7 +829,7 @@ namespace PrePoMax
             return importedPartNames;
         }
         //
-        public string[] ImportBrepPartFile(string brepFileName)
+        public string[] ImportBrepPartFile(string brepFileName, int timeOut = 1000 * 3600, bool showError = true)
         {
             CalculixSettings calculixSettings = _settings.Calculix;
             //
@@ -847,21 +851,21 @@ namespace PrePoMax
             //
             _netgenJob = new NetgenJob("Brep", executable, argument, calculixSettings.WorkDirectory);
             _netgenJob.AppendOutput += netgenJob_AppendOutput;
-            _netgenJob.Submit();
+            _netgenJob.Submit(timeOut);
             //
             if (_netgenJob.JobStatus == JobStatus.OK)
             {
                 string[] addedPartNames = _model.ImportGeometryFromBrepFile(visFileName, brepFileName, true);
                 if (addedPartNames.Length == 0)
                 {
-                    MessageBox.Show("No geometry to import.", "Error", MessageBoxButtons.OK);
+                    if (showError) MessageBox.Show("No geometry to import.", "Error", MessageBoxButtons.OK);
                     return null;
                 }
                 return addedPartNames;
             }
             else
             {
-                MessageBox.Show("Importing brep file failed.", "Error", MessageBoxButtons.OK);
+                if (showError) MessageBox.Show("Importing brep file failed.", "Error", MessageBoxButtons.OK);
                 return null;
             }
         }
@@ -873,7 +877,7 @@ namespace PrePoMax
             //
             do
             {
-                hash = GetRandomString(8);
+                hash = CaeGlobals.Tools.GetRandomString(8);
                 //
                 repeate = false;
                 foreach (var fileName in allFiles)
@@ -888,17 +892,6 @@ namespace PrePoMax
             while (repeate);
             //
             return Path.Combine(path, Path.ChangeExtension(hash, extension));
-        }
-        private string GetRandomString(int len)
-        {
-            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-            var stringChars = new char[len];
-            var random = new Random();
-            for (int i = 0; i < stringChars.Length; i++)
-            {
-                stringChars[i] = chars[random.Next(chars.Length)];
-            }
-            return new String(stringChars);
         }
         void netgenJob_AppendOutput(string data)
         {
@@ -923,14 +916,18 @@ namespace PrePoMax
             // Import, convert and split mesh
             _model.ImportGeneratedMeshFromVolFile(fileName, part, convertToSecondOrder, splitCompoundMesh);
             // Calculate the number of new nodes and elements
+            BasePart basePart;
             if (convertToSecondOrder)
             {
                 int numPoints = 0;
                 int numElements = 0;
                 foreach (var partName in partNames)
                 {
-                    numPoints += _model.Mesh.Parts[partName].NodeLabels.Length;
-                    numElements += _model.Mesh.Parts[partName].Labels.Length;
+                    if (_model.Mesh.Parts.TryGetValue(partName, out basePart))
+                    {
+                        numPoints += basePart.NodeLabels.Length;
+                        numElements += basePart.Labels.Length;
+                    }
                 }
                 _form.WriteDataToOutput("Nodes: " + numPoints);
                 _form.WriteDataToOutput("Elements: " + numElements);
@@ -956,7 +953,10 @@ namespace PrePoMax
             // Shading
             if (fromBrep)
             {
-                foreach (var partName in partNames) _model.Mesh.Parts[partName].SmoothShaded = true;
+                foreach (var partName in partNames)
+                {
+                    if (_model.Mesh.Parts.TryGetValue(partName, out basePart)) basePart.SmoothShaded = true;
+                }
             }
             // Regenerate tree
             _form.RegenerateTree(_model, _jobs, _results, _history);
@@ -1291,6 +1291,12 @@ namespace PrePoMax
             Commands.CRemoveGeometryParts comm = new Commands.CRemoveGeometryParts(partNames);
             _commands.AddAndExecute(comm);
         }
+        //
+        public void FlipFaceOrientationsCommand(GeometrySelection geometrySelection)
+        {
+            Commands.CFlipFaceOrientations comm = new Commands.CFlipFaceOrientations(geometrySelection);
+            _commands.AddAndExecute(comm);
+        }
 
         //******************************************************************************************
 
@@ -1572,7 +1578,112 @@ namespace PrePoMax
             int[][] cells = mesh.GetSmallestFaces(minFaceArea, partNames);
             HighlightSurface(cells, false);
         }
-        
+
+        // Flip face orientation ******************************************************************
+
+        public void FlipFaceOrientations(GeometrySelection geometrySelection)
+        {
+            if (geometrySelection.CreationData != null)
+            {
+                // In order for the Regenerate history to work perform the selection
+                _selection = geometrySelection.CreationData.DeepClone();
+                geometrySelection.GeometryIds = GetSelectionIds();
+                _selection.Clear();
+            }
+            else throw new NotSupportedException("The geometry selection does not contain any selection data.");
+            //
+            FlipAllFaceOrientations(geometrySelection);
+        }
+        private void FlipAllFaceOrientations(GeometrySelection geometrySelection)
+        {
+            int[] itemTypePartIds;
+            HashSet<int> faceIds;
+            Dictionary<int, HashSet<int>> partIdFaceIds = new Dictionary<int, HashSet<int>>();
+            //
+            foreach (int id in geometrySelection.GeometryIds)
+            {
+                itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(id);
+                //
+                if (itemTypePartIds[1] != 3) continue; // 3 for surface
+                //
+                if (partIdFaceIds.TryGetValue(itemTypePartIds[2], out faceIds)) faceIds.Add(itemTypePartIds[0]);
+                else partIdFaceIds.Add(itemTypePartIds[2], new HashSet<int>() { itemTypePartIds[0] });
+            }
+            //
+            BasePart part;
+            foreach (var entry in partIdFaceIds)
+            {
+                part = _model.Geometry.GetPartById(entry.Key);
+                if (part != null && part is GeometryPart gp) FlipPartFaceOrientations(gp, entry.Value.ToArray());
+            }
+        }
+        private bool FlipPartFaceOrientations(GeometryPart part, int[] faceIds)
+        {
+            int timeOut = 1000 * 10;
+            //
+            CalculixSettings settings = _settings.Calculix;
+            if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
+            {
+                MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
+                return false;
+            }
+            //
+            string executable = Application.StartupPath + Globals.NetGenMesher;
+            string inputBrepFileName = Path.Combine(settings.WorkDirectory, Globals.BrepFileName);
+            string outputBrepFileName = Path.Combine(settings.WorkDirectory, Globals.BrepFileName);
+            string faceIdsArgument = "";
+            foreach (var id in faceIds) faceIdsArgument += (id + 1) + " ";  // add 1 for the geometry counting
+            //
+            if (File.Exists(inputBrepFileName)) File.Delete(inputBrepFileName);
+            if (File.Exists(outputBrepFileName)) File.Delete(outputBrepFileName);
+            //
+            File.WriteAllText(inputBrepFileName, part.CADFileData);
+            //
+            string argument = "BREP_REVERSE_FACES " +
+                              "\"" + inputBrepFileName.ToUTF8() + "\" " +
+                              "\"" + outputBrepFileName.ToUTF8() + "\" " +
+                              faceIdsArgument;
+            //
+            _netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
+            _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
+            _netgenJob.Submit(timeOut);
+            // Job completed
+            if (_netgenJob.JobStatus == JobStatus.OK)
+            {
+                int count = 0;
+                
+                string[] importedFileNames = null;
+                //
+                while (importedFileNames == null && count < 5)  // Check for timeout
+                {
+                    importedFileNames = ImportBrepPartFile(outputBrepFileName, timeOut, false);
+                    count++;
+                }
+                if (importedFileNames == null)
+                {
+                    throw new CaeException("Importing brep file after face normal flip failed.");
+                }
+                else if (importedFileNames.Length == 1)
+                {
+                    // Delete old geometry part
+                    RemoveGeometryParts(new string[] { part.Name });
+                    // Rename new geometry part
+                    GeometryPart newPart = (GeometryPart)_model.Geometry.Parts[importedFileNames[0]];
+                    newPart.Name = part.Name;
+                    newPart.Color = part.Color;
+                    newPart.MeshingParameters = part.MeshingParameters;
+                    _model.Geometry.Parts.Replace(importedFileNames[0], newPart.Name, newPart);
+                    //
+                    UpdateMeshRefinements();
+                    //
+                    UpdateAfterImport(".brep");
+                }
+                else throw new NotSupportedException();
+                //
+                return true;
+            }
+            else return false;
+        }
 
         #endregion #################################################################################################################
 
@@ -1804,6 +1915,18 @@ namespace PrePoMax
         {
             if (Model.Geometry != null) return Model.Geometry.GetPartNamesFromGeometryIds(meshRefinement.GeometryIds);
             else return null;
+        }
+        private void UpdateMeshRefinements()
+        {
+            // Use list not to throw collection moddified exception
+            if (_model != null && _model.Geometry != null)
+            {
+                foreach (FeMeshRefinement meshRefinement in _model.Geometry.MeshRefinements.Values.ToArray())
+                {
+                    meshRefinement.Valid = true;
+                    ReplaceMeshRefinement(meshRefinement.Name, meshRefinement);
+                }
+            }
         }
         //
         public bool CreateMesh(string partName)
@@ -6065,11 +6188,11 @@ namespace PrePoMax
             if (part.PartType == PartType.Shell)
             {
                 data.BackfaceCulling = false;
-                if (_drawShellOrientations)
+                if (_showFaceOrientation)
                 {
                     PreSettings preSettings = (PreSettings)_settings.Pre;
-                    data.Color = preSettings.PrimaryHighlightColor;
-                    data.BackfaceColor = preSettings.SecundaryHighlightColor;
+                    data.Color = preSettings.FrontFaceColor;
+                    data.BackfaceColor = preSettings.BackFaceColor;
                 }
             }
             //
@@ -6134,10 +6257,10 @@ namespace PrePoMax
             if (part is CompoundGeometryPart) return;
             //
             vtkControl.vtkMaxActorData data;
-            System.Drawing.Color color = part.Color;
+            Color color = part.Color;
             foreach (var elType in part.ElementTypes)
             {
-                if (elType == typeof(LinearBeamElement) || elType == typeof(ParabolicBeamElement)) color = System.Drawing.Color.Black;
+                if (elType == typeof(LinearBeamElement) || elType == typeof(ParabolicBeamElement)) color = Color.Black;
             }
             //
             data = new vtkControl.vtkMaxActorData();
@@ -6167,11 +6290,11 @@ namespace PrePoMax
             if (part.PartType == PartType.Shell)
             {
                 data.BackfaceCulling = false;
-                if (_drawShellOrientations)
+                if (_showFaceOrientation)
                 {
                     PreSettings preSettings = (PreSettings)_settings.Pre;
-                    data.Color = preSettings.PrimaryHighlightColor;
-                    data.BackfaceColor = preSettings.SecundaryHighlightColor;
+                    data.Color = preSettings.FrontFaceColor;
+                    data.BackfaceColor = preSettings.BackFaceColor;
                 }
             }
             //

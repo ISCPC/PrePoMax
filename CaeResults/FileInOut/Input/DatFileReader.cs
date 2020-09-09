@@ -71,7 +71,7 @@ namespace CaeResults
             {
                 List<string> lines = new List<string>();
                 //
-                if (!CaeGlobals.Tools.WaitForFileToUnlock(fileName, 5000)) return null;
+                if (!Tools.WaitForFileToUnlock(fileName, 5000)) return null;
                 //
                 using (FileStream fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 using (StreamReader streamReader = new StreamReader(fileStream))

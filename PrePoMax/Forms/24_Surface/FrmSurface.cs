@@ -267,7 +267,7 @@ namespace PrePoMax.Forms
             // Prepare ItemSetDataEditor - prepare Geometry or Mesh based selection
             if (_surfaceToEditName == null) return true;
             //
-            FeSurface surface = _controller.GetSurface(_surfaceToEditName);     // Surface was modified for speed up
+            FeSurface surface = _controller.GetSurface(_surfaceToEditName);     // surface was modified for speed up
             if (surface == null || surface.CreationData == null) return true;   // node based surface
             return surface.CreationData.IsGeometryBased();
         }

@@ -78,9 +78,9 @@ namespace CaeResults
                     setID = dataSet[0];
                     if (setID.StartsWith("    1C"))  // Data
                     {
+                        result.HashName = GetHashName(dataSet);
                         result.DateTime = GetDateTime(dataSet);
-                        UnitSystemType unitSystemType = GetUnitSystemType(dataSet);
-                        result.UnitSystem = new UnitSystem(unitSystemType);
+                        result.UnitSystem = GetUnitSystem(dataSet);
                     }
                     else if (setID.StartsWith("    2C")) // Nodes
                     {
@@ -176,21 +176,44 @@ namespace CaeResults
             //
             return dateTime;
         }
-        static private UnitSystemType GetUnitSystemType(string[] lines)
+        static private string GetHashName(string[] lines)
+        {
+            string[] tmp;
+            //
+            for (int i = 0; i < lines.Length; i++)
+            {
+                if (lines[i].ToUpper().Contains("HASH"))
+                {
+                    tmp = lines[i].Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+                    foreach (var part in tmp)
+                    {
+                        if (part.ToUpper().Contains("HASH"))
+                        {
+                            tmp = part.Split(new string[] { ":" }, StringSplitOptions.RemoveEmptyEntries);
+                            return tmp[1].Trim();
+                        }
+                    }
+                
+                }
+            }
+            //
+            return Tools.GetRandomString(8);
+        }
+        static private UnitSystem GetUnitSystem(string[] lines)
         {
             string[] tmp;
             UnitSystemType unitSystemType = UnitSystemType.Undefined;
             //
             for (int i = 0; i < lines.Length; i++)
             {
-                if (lines[i].ToUpper().Contains("1UMODEL"))
+                if (lines[i].ToUpper().Contains("UNIT SYSTEM"))
                 {
                     tmp = lines[i].Split(new string[] { "Unit system:" }, StringSplitOptions.RemoveEmptyEntries);
                     if (tmp.Length == 2) Enum.TryParse(tmp[1], out unitSystemType);
                 }
             }
             //
-            return unitSystemType;
+            return new UnitSystem(unitSystemType);
         }
         static private List<string[]> GetDataSets(string[] lines)
         {

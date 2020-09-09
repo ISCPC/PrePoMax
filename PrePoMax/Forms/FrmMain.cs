@@ -49,6 +49,7 @@ namespace PrePoMax
         private List<Form> _allForms;
         private FrmSectionView _frmSectionView;        
         private FrmSelectEntity _frmSelectEntity;
+        private FrmSelectGeometry _frmSelectGeometry;
         private FrmSelectItemSet _frmSelectItemSet;
         private FrmUnitSystem _frmUnitSystem;
         private FrmAnalyzeGeometry _frmAnalyzeGeometry;
@@ -238,6 +239,9 @@ namespace PrePoMax
                 _frmSelectEntity = new FrmSelectEntity(_controller);
                 AddFormToAllForms(_frmSelectEntity);
                 //
+                _frmSelectGeometry = new FrmSelectGeometry(_controller);
+                AddFormToAllForms(_frmSelectGeometry);
+                //
                 _frmSelectItemSet = new FrmSelectItemSet(_controller);
                 AddFormToAllForms(_frmSelectItemSet);
                 //
@@ -411,7 +415,7 @@ namespace PrePoMax
                     }
                     catch (Exception ex)
                     {                        
-                        CaeGlobals.ExceptionTools.Show(this, ex);
+                        ExceptionTools.Show(this, ex);
                         _controller.New();
                     }
                     finally
@@ -559,7 +563,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void ModelTree_Select(NamedClass[] items)
@@ -919,7 +923,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiOpen_Click(object sender, EventArgs e)
@@ -951,7 +955,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
                 _controller.New();
             }
         }
@@ -991,7 +995,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
             finally
             {
@@ -1040,7 +1044,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
             finally
             {
@@ -1056,7 +1060,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
             finally
             {
@@ -1072,7 +1076,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
             finally
             {
@@ -1102,7 +1106,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
             finally
             {
@@ -1131,7 +1135,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
             finally
             {
@@ -1150,7 +1154,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiExportToBrep_Click(object sender, EventArgs e)
@@ -1165,7 +1169,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }        
         private async void SaveCADPartsAsStep(string[] partNames)
@@ -1189,7 +1193,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
             finally
             {
@@ -1217,7 +1221,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
             finally
             {
@@ -1270,7 +1274,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiRecentFile_Click(object sender, EventArgs e)
@@ -1282,7 +1286,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiClearRecentFiles_Click(object sender, EventArgs e)
@@ -1293,7 +1297,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
 
@@ -1312,7 +1316,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
             finally
             {
@@ -1329,7 +1333,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiViewHistory_Click(object sender, EventArgs e)
@@ -1349,7 +1353,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
             finally
             {
@@ -1379,7 +1383,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
             finally
             {
@@ -1617,11 +1621,11 @@ namespace PrePoMax
             catch { }
         }
         //
-        private void tsmiShellOrientation_Click(object sender, EventArgs e)
+        private void tsmiShowFaceOrientation_Click(object sender, EventArgs e)
         {
-            tsmiShellOrientation.Checked = !tsmiShellOrientation.Checked;
+            tsmiShowFaceOrientation.Checked = !tsmiShowFaceOrientation.Checked;
             //
-            _controller.DrawShellOrientations = tsmiShellOrientation.Checked;
+            _controller.ShowFaceOrientation = tsmiShowFaceOrientation.Checked;
         }
         //
         private void tsmiResultsUndeformed_Click(object sender, EventArgs e)
@@ -1653,7 +1657,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiHideGeometryParts_Click(object sender, EventArgs e)
@@ -1665,7 +1669,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiShowGeometryParts_Click(object sender, EventArgs e)
@@ -1676,7 +1680,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiShowOnlyGeometryParts_Click(object sender, EventArgs e)
@@ -1687,7 +1691,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiSetTransparencyForGeometryParts_Click(object sender, EventArgs e)
@@ -1699,7 +1703,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiCopyGeometryPartsToResults_Click(object sender, EventArgs e)
@@ -1710,7 +1714,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiDeleteGeometryParts_Click(object sender, EventArgs e)
@@ -1721,7 +1725,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         //
@@ -1793,29 +1797,6 @@ namespace PrePoMax
                 _controller.RemoveGeometryPartsCommand(partNames);
             }
         }
-        // 
-        private void tsmiGeometryAnalyze_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                SelectMultipleEntities("Parts", _controller.GetGeometryParts(), AnalyzeGeometry);
-            }
-            catch (Exception ex)
-            {
-                CaeGlobals.ExceptionTools.Show(this, ex);
-            }
-
-        }
-        private void AnalyzeGeometry(string[] partNames)
-        {
-            if (!_frmAnalyzeGeometry.Visible)
-            {
-                CloseAllForms();
-                SetFormLoaction((Form)_frmAnalyzeGeometry);
-                _frmAnalyzeGeometry.PartNamesToAnalyze = partNames;
-                _frmAnalyzeGeometry.Show();
-            }
-        }
         //
         private void tsmiCreateAndImportCompoundPart_Click(object sender, EventArgs e)
         {
@@ -1827,7 +1808,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private async void CreateAndImportCompoundPart(string[] partNames)
@@ -1848,14 +1829,48 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
             finally
             {
                 SetStateReady(Globals.CreatingCompound);
             }
         }
+        // 
+        private void tsmiGeometryAnalyze_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Parts", _controller.GetGeometryParts(), AnalyzeGeometry);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
 
+        }
+        private void AnalyzeGeometry(string[] partNames)
+        {
+            if (!_frmAnalyzeGeometry.Visible)
+            {
+                CloseAllForms();
+                SetFormLoaction((Form)_frmAnalyzeGeometry);
+                _frmAnalyzeGeometry.PartNamesToAnalyze = partNames;
+                _frmAnalyzeGeometry.Show();
+            }
+        }
+        //
+        private void tsmiFlipFaceNormal_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                ShowForm(_frmSelectGeometry, "Select surfaces", null);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
         #endregion  ################################################################################################################
 
         #region Mesh ###############################################################################################################
@@ -1867,7 +1882,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiPreviewEdgeMesh_Click(object sender, EventArgs e)
@@ -1878,7 +1893,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiCreateMeshRefinement_Click(object sender, EventArgs e)
@@ -1894,7 +1909,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiEditMeshRefinement_Click(object sender, EventArgs e)
@@ -1905,7 +1920,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiDeleteMeshRefinement_Click(object sender, EventArgs e)
@@ -1916,7 +1931,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         internal void tsmiCreateMesh_Click(object sender, EventArgs e)
@@ -1927,7 +1942,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }            
         }
         
@@ -1940,7 +1955,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         public CaeMesh.MeshingParameters GetMeshingParameters(string[] partNames, bool formModal)
@@ -2045,7 +2060,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         //
@@ -2087,7 +2102,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
                 WriteDataToOutput("");
                 WriteDataToOutput("Mesh generation failed. Check the geometry and adjust the meshing parameters.");
             }
@@ -2105,7 +2120,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         internal void CreateUserDefinedMesh(object sender, EventArgs e)
@@ -2116,7 +2131,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void CreateDefaultMeshes(string[] partNames)
@@ -2149,7 +2164,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiEditCalculiXKeywords_Click(object sender, EventArgs e)
@@ -2160,7 +2175,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiCreateBoundaryLayer_Click(object sender, EventArgs e)
@@ -2171,7 +2186,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void EditModel()
@@ -2201,7 +2216,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void CreateBoundaryLayer()
@@ -2238,7 +2253,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
 
@@ -2253,7 +2268,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiTranslateParts_Click(object sender, EventArgs e)
@@ -2264,7 +2279,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiScaleParts_Click(object sender, EventArgs e)
@@ -2275,7 +2290,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiRotateParts_Click(object sender, EventArgs e)
@@ -2286,7 +2301,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiMergeParts_Click(object sender, EventArgs e)
@@ -2298,7 +2313,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiHideParts_Click(object sender, EventArgs e)
@@ -2310,7 +2325,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiShowParts_Click(object sender, EventArgs e)
@@ -2321,7 +2336,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiShowOnlyParts_Click(object sender, EventArgs e)
@@ -2332,7 +2347,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiSetTransparencyForParts_Click(object sender, EventArgs e)
@@ -2344,7 +2359,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiDeleteParts_Click(object sender, EventArgs e)
@@ -2355,7 +2370,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         //
@@ -2464,7 +2479,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiEditNodeSet_Click(object sender, EventArgs e)
@@ -2475,7 +2490,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiDeleteNodeSet_Click(object sender, EventArgs e)
@@ -2486,7 +2501,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
 
@@ -2525,7 +2540,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiEditElementSet_Click(object sender, EventArgs e)
@@ -2536,7 +2551,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiConvertElementSetsToMeshParts_Click(object sender, EventArgs e)
@@ -2547,7 +2562,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiDeleteElementSet_Click(object sender, EventArgs e)
@@ -2558,7 +2573,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
 
@@ -2601,7 +2616,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiEditSurface_Click(object sender, EventArgs e)
@@ -2612,7 +2627,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiDeleteSurface_Click(object sender, EventArgs e)
@@ -2623,7 +2638,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void EditSurface(string surfaceName)
@@ -2658,7 +2673,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiEditRP_Click(object sender, EventArgs e)
@@ -2669,7 +2684,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiDeleteRP_Click(object sender, EventArgs e)
@@ -2680,7 +2695,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
 
@@ -2712,7 +2727,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         internal void CreateSimpleMaterial(object sender, EventArgs e)
@@ -2728,7 +2743,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiDuplicateMaterial_Click(object sender, EventArgs e)
@@ -2739,7 +2754,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiDeleteMaterial_Click(object sender, EventArgs e)
@@ -2750,7 +2765,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
            
         }
@@ -2781,7 +2796,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void ShowMaterialLibrary()
@@ -2822,7 +2837,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiDelete_Click(object sender, EventArgs e)
@@ -2833,7 +2848,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         //
@@ -2882,7 +2897,7 @@ namespace PrePoMax
              }
              catch (Exception ex)
              {
-                 CaeGlobals.ExceptionTools.Show(this, ex);
+                 ExceptionTools.Show(this, ex);
              }
         }
         private void tsmiHideConstraint_Click(object sender, EventArgs e)
@@ -2893,7 +2908,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiShowConstraint_Click(object sender, EventArgs e)
@@ -2904,7 +2919,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiDeleteConstraint_Click(object sender, EventArgs e)
@@ -2915,7 +2930,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
 
@@ -2965,7 +2980,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiEditSurfaceInteraction_Click(object sender, EventArgs e)
@@ -2976,7 +2991,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiDuplicateSurfaceInteraction_Click(object sender, EventArgs e)
@@ -2988,7 +3003,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiDeleteSurfaceInteraction_Click(object sender, EventArgs e)
@@ -2999,7 +3014,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
 
         }
@@ -3052,7 +3067,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiHideContactPair_Click(object sender, EventArgs e)
@@ -3063,7 +3078,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiShowContactPair_Click(object sender, EventArgs e)
@@ -3074,7 +3089,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiDeleteContactPair_Click(object sender, EventArgs e)
@@ -3085,7 +3100,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         //
@@ -3150,7 +3165,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiDuplicateStep_Click(object sender, EventArgs e)
@@ -3161,7 +3176,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiDeleteStep_Click(object sender, EventArgs e)
@@ -3172,7 +3187,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
 
@@ -3205,7 +3220,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiEditHistoryOutput_Click(object sender, EventArgs e)
@@ -3216,7 +3231,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiDeleteHistoryOutput_Click(object sender, EventArgs e)
@@ -3227,7 +3242,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         //
@@ -3279,7 +3294,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiEditFieldOutput_Click(object sender, EventArgs e)
@@ -3290,7 +3305,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiDeleteFieldOutput_Click(object sender, EventArgs e)
@@ -3301,7 +3316,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
 
@@ -3349,7 +3364,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiEditBC_Click(object sender, EventArgs e)
@@ -3360,7 +3375,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiHideBC_Click(object sender, EventArgs e)
@@ -3371,7 +3386,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiShowBC_Click(object sender, EventArgs e)
@@ -3382,7 +3397,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiDeleteBC_Click(object sender, EventArgs e)
@@ -3393,7 +3408,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         //
@@ -3478,7 +3493,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiEditLoad_Click(object sender, EventArgs e)
@@ -3489,7 +3504,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiHideLoad_Click(object sender, EventArgs e)
@@ -3500,7 +3515,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiShowLoad_Click(object sender, EventArgs e)
@@ -3511,7 +3526,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiDeleteLoad_Click(object sender, EventArgs e)
@@ -3522,7 +3537,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
 
@@ -3606,7 +3621,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
            
         }
@@ -3639,7 +3654,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         public void SelectModelUnitSystem()
@@ -3662,7 +3677,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         public void SelectResultsUnitSystem()
@@ -3675,7 +3690,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         public void UpdateUnitSystem(UnitSystem unitSystem)
@@ -3703,7 +3718,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
 
@@ -3720,7 +3735,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiEditAnalysis_Click(object sender, EventArgs e)
@@ -3731,7 +3746,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         internal void tsmiRunAnalysis_Click(object sender, EventArgs e)
@@ -3742,7 +3757,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiMonitorAnalysis_Click(object sender, EventArgs e)
@@ -3753,7 +3768,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         internal void tsmiResultsAnalysis_Click(object sender, EventArgs e)
@@ -3764,7 +3779,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiKillAnalysis_Click(object sender, EventArgs e)
@@ -3775,7 +3790,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiDeleteAnalysis_Click(object sender, EventArgs e)
@@ -3786,7 +3801,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         //
@@ -3831,7 +3846,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private async void ResultsAnalysis(string jobName)
@@ -3893,7 +3908,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
                 return null;
             }
         }
@@ -3910,7 +3925,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiHideResultParts_Click(object sender, EventArgs e)
@@ -3922,7 +3937,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiShowResultParts_Click(object sender, EventArgs e)
@@ -3933,7 +3948,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiShowOnlyResultParts_Click(object sender, EventArgs e)
@@ -3944,7 +3959,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiSetTransparencyForResultParts_Click(object sender, EventArgs e)
@@ -3956,7 +3971,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiColorContoursOff_Click(object sender, EventArgs e)
@@ -3967,7 +3982,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiColorContoursOn_Click(object sender, EventArgs e)
@@ -3978,7 +3993,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
 
             
@@ -3991,7 +4006,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         //
@@ -4006,7 +4021,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         //
@@ -4093,7 +4108,7 @@ namespace PrePoMax
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
        
@@ -4125,7 +4140,6 @@ namespace PrePoMax
             // Multiple entities exists
             else
             {
-                //
                 string[] preSelectedEntityNames = _modelTree.IntersectSelectionWithList(entities);
                 //
                 _frmSelectEntity.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
@@ -4202,23 +4216,23 @@ namespace PrePoMax
         {
             _controller.SelectPointOrArea(pickedPoint, planeParameters, selectOperation);
             //
-            int[] ids = _controller.GetSelectionIds();
-            //
-            if (_frmSectionView.Visible) _frmSectionView.PickedIds(ids);
-            else if (_frmTranslate.Visible) _frmTranslate.PickedIds(ids);
-            else if (_frmScale.Visible) _frmScale.PickedIds(ids);
-            else if (_frmRotate.Visible) _frmRotate.PickedIds(ids);
-            else if (_frmReferencePoint.Visible) _frmReferencePoint.PickedIds(ids);
-            else if (_frmQuery.Visible) _frmQuery.PickedIds(ids);
-            else if (_frmTransformation.Visible) _frmTransformation.PickedIds(ids);
-            //
-            SelectionChanged(ids);
+            SelectionChanged();
         }
         public void SelectionChanged(int[] ids = null)
         {
             if (ids == null) ids = _controller.GetSelectionIds();
             //
+            if (_frmSectionView != null && _frmSectionView.Visible) _frmSectionView.PickedIds(ids);
+            if (_frmTranslate != null && _frmTranslate.Visible) _frmTranslate.PickedIds(ids);
+            if (_frmScale != null && _frmScale.Visible) _frmScale.PickedIds(ids);
+            if (_frmRotate != null && _frmRotate.Visible) _frmRotate.PickedIds(ids);
+            if (_frmReferencePoint != null && _frmReferencePoint.Visible) _frmReferencePoint.PickedIds(ids);
+            if (_frmQuery != null && _frmQuery.Visible) _frmQuery.PickedIds(ids);
+            if (_frmTransformation != null && _frmTransformation.Visible) _frmTransformation.PickedIds(ids);
+            //
             if (_frmMeshRefinement != null && _frmMeshRefinement.Visible) _frmMeshRefinement.SelectionChanged(ids);
+            if (_frmSelectGeometry != null && _frmSelectGeometry.Visible) _frmSelectGeometry.SelectionChanged(ids);
+            //
             if (_frmBoundaryLayer != null && _frmBoundaryLayer.Visible) _frmBoundaryLayer.SelectionChanged(ids);
             if (_frmNodeSet != null && _frmNodeSet.Visible) _frmNodeSet.SelectionChanged(ids);
             if (_frmElementSet != null && _frmElementSet.Visible) _frmElementSet.SelectionChanged(ids);
@@ -5579,6 +5593,6 @@ namespace PrePoMax
             }
         }
 
-       
+        
     }
 }

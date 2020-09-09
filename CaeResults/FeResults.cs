@@ -18,14 +18,16 @@ namespace CaeResults
         [NonSerialized]
         private Dictionary<FieldData, Field> _fields;
 
+        private string _hashName;
         private string _fileName;
         private FeMesh _mesh;
         private Dictionary<int, FieldData> _fieldLookUp;
         private DateTime _dateTime;
-        private UnitSystem _unitSystem;        
+        private UnitSystem _unitSystem;
 
 
         // Properties                                                                                                               
+        public string HashName { get { return _hashName; } set { _hashName = value; } }
         public string FileName { get { return _fileName; } set { _fileName = value; } }
         public FeMesh Mesh { get { return _mesh; } set { _mesh = value; } }
         public DateTime DateTime { get { return _dateTime; } set { _dateTime = value; } }
@@ -36,6 +38,7 @@ namespace CaeResults
         public FeResults(string fileName)
         {
             _fileName = fileName;
+            _hashName = Tools.GetRandomString(8);
             _mesh = null;
             _nodeIdsLookUp = null;
             _fields = new Dictionary<FieldData, Field>();

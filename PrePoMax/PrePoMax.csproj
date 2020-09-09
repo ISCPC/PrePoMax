@@ -101,6 +101,7 @@
     <Compile Include="Command\0030_Geometry\01_Part\CRemoveGeometryParts.cs" />
     <Compile Include="Command\0030_Geometry\01_Part\CReplaceGeometryPartProperties.cs" />
     <Compile Include="Command\0030_Geometry\01_Part\CShowGeometryParts.cs" />
+    <Compile Include="Command\0030_Geometry\CFlipFaceOrientations.cs" />
     <Compile Include="Command\0040_Mesh\CAddMeshRefinement.cs" />
     <Compile Include="Command\0040_Mesh\CCreateMesh.cs" />
     <Compile Include="Command\0040_Mesh\CRemoveMeshRefinements.cs" />
@@ -185,6 +186,12 @@
     <Compile Include="Controller.cs" />
     <Compile Include="Enums\ViewGeometryModelResults.cs" />
     <Compile Include="Enums\ViewResultsType.cs" />
+    <Compile Include="Forms\00_Common\FrmSelectGeometry.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\00_Common\FrmSelectGeometry.Designer.cs">
+      <DependentUpon>FrmSelectGeometry.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\00_Common\FrmUnitSystem.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -464,6 +471,9 @@
     <Compile Include="Settings\CalculixSettings.cs" />
     <Compile Include="Tools.cs" />
     <Compile Include="Enums\UpdateModelType.cs" />
+    <EmbeddedResource Include="Forms\00_Common\FrmSelectGeometry.resx">
+      <DependentUpon>FrmSelectGeometry.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\00_Common\FrmUnitSystem.resx">
       <DependentUpon>FrmUnitSystem.cs</DependentUpon>
     </EmbeddedResource>

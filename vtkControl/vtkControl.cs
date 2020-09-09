@@ -4171,6 +4171,8 @@ namespace vtkControl
         public void SetScalarBarText(string fieldName, string componentName, string unitAbbreviation, string minMaxType)
         {
             _scalarBarWidget.SetText(fieldName, componentName, unitAbbreviation, minMaxType);
+            //
+            UpdateScalarFormatting();
         }
         private string GetUnitAbbreviation()
         {

@@ -14,6 +14,8 @@ namespace PrePoMax.Forms
     public partial class FrmSelectEntity : UserControls.PrePoMaxChildForm
     {
         // Variables                                                                                                                
+        private string _selectOneOrMultipleText = "Select one or multiple items";
+        private string _selectOneText = "Select one item";
         private string _entitiyNames;
         private string _stepName;
         private NamedClass[] _entitiesToSelect;
@@ -32,10 +34,23 @@ namespace PrePoMax.Forms
                 _entitiyNames = value;
                 Text = _entitiyNames + " selection";
                 groupBox1.Text = "Available " + _entitiyNames.ToLower();
-                label1.Text = "Select one or multiple " +_entitiyNames.ToLower();
+                MultiSelect = MultiSelect; // sets the lebel text
             }
         }
-        public bool MultiSelect { get { return dgvNames.MultiSelect; } set { dgvNames.MultiSelect = value; } }
+        public bool MultiSelect
+        {
+            get
+            {
+                return dgvNames.MultiSelect;
+            }
+            set
+            {
+                dgvNames.MultiSelect = value;
+                //
+                if (dgvNames.MultiSelect) label1.Text = _selectOneOrMultipleText; // + _entitiyNames.ToLower();
+                else label1.Text = _selectOneText; // + _entitiyNames.ToLower();
+            }
+        }
         public Action<string> OneEntitySelected { get; set; }
         public Action<string, string> OneEntitySelectedInStep { get; set; }
         public Action<string[]> MultipleEntitiesSelected { get; set; }
@@ -159,6 +174,7 @@ namespace PrePoMax.Forms
                 btnContinue_Click(null, null);
             }
         }
+       
 
         // Methods                                                                                                                  
         public void PrepareForm(string title, bool multiselect, NamedClass[] entitiesToSelect, string[] preSelectedEntities,
@@ -216,6 +232,6 @@ namespace PrePoMax.Forms
             return names.ToArray();
         }
 
-        
+       
     }
 }

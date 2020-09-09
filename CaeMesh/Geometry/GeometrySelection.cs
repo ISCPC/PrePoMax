@@ -9,55 +9,43 @@ using DynamicTypeDescriptor;
 namespace CaeMesh
 {
     [Serializable]
-    public class FeMeshRefinement : NamedClass
+    public class GeometrySelection : NamedClass
     {
         // Variables                                                                                                                
         private int[] _geometryIds;
         private Selection _creationData;
-        private double _meshSize;
         
 
         // Properties                                                                                                               
         public int[] GeometryIds { get { return _geometryIds; } set { _geometryIds = value; } }
         public Selection CreationData { get { return _creationData; } set { _creationData = value; } }
-        public double MeshSize 
-        {
-            get { return _meshSize; } 
-            set
-            {
-                _meshSize = value;
-                if (_meshSize < 1E-10) _meshSize = 1E-10;
-            } 
-        }
 
 
         // Constructors                                                                                                             
-        public FeMeshRefinement(string name)
+        public GeometrySelection(string name)
             :base(name)
         {
             Clear();
         }
-        public FeMeshRefinement(string name, int[] geometryIds, Selection creationDataClone)
+        public GeometrySelection(string name, int[] geometryIds, Selection creationDataClone)
            : this(name)
         {
             _geometryIds = geometryIds;
             _creationData = creationDataClone;
         }
-        public FeMeshRefinement(FeMeshRefinement meshRefinement)
-           : this(meshRefinement.Name)
+        public GeometrySelection(GeometrySelection geometrySelection)
+           : this(geometrySelection.Name)
         {
-            _geometryIds = meshRefinement.GeometryIds != null ? meshRefinement.GeometryIds.ToArray() : null;
-            _creationData = meshRefinement.CreationData != null ? meshRefinement.CreationData.DeepClone() : null;
-            _meshSize = meshRefinement.MeshSize;
+            _geometryIds = geometrySelection.GeometryIds != null ? geometrySelection.GeometryIds.ToArray() : null;
+            _creationData = geometrySelection.CreationData != null ? geometrySelection.CreationData.DeepClone() : null;
         }
 
 
         // Methods                                                                                                                  
-        private void Clear()
+        public void Clear()
         {
             _geometryIds = null;
             _creationData = null;
-            _meshSize = 1;
         }
     }
 }

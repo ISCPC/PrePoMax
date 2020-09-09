@@ -66,7 +66,7 @@ namespace PrePoMax.Forms
         // Constructors                                                                                                             
         public ViewModelProperties(ModelProperties modelProperties)
         {
-            _name = "Model-1";
+            _name = "Empty";
             _modelProperties = modelProperties;
             _dctd = ProviderInstaller.Install(this);
             _dctd.CategorySortOrder = CustomSortOrder.AscendingById;

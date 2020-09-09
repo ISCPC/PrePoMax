@@ -113,10 +113,10 @@
     <Compile Include="Forms\PrePoMaxChildForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ListViewWithSelection.cs">
+    <Compile Include="ListView\ListViewWithSelection.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="ListViewWithSelection.Designer.cs">
+    <Compile Include="ListView\ListViewWithSelection.Designer.cs">
       <DependentUpon>ListViewWithSelection.cs</DependentUpon>
     </Compile>
     <Compile Include="ListView\MyListView.cs">

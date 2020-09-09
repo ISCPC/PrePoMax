@@ -13,12 +13,14 @@ namespace FileInOut.Output.Calculix
     {
         // Variables                                                                                                                
         string _modelName;
+        string _hashName;
         UnitSystemType _unitSystemType;
 
         // Constructor                                                                                                              
-        public CalHeading(string modelName, UnitSystemType unitSystemType)
+        public CalHeading(string modelName, string hashName, UnitSystemType unitSystemType)
         {
             _modelName = modelName;
+            _hashName = hashName;
             _unitSystemType = unitSystemType;
         }
 
@@ -30,8 +32,10 @@ namespace FileInOut.Output.Calculix
         }
         public override string GetDataString()
         {
-            return string.Format("Model: {0},     Date: {1},     Unit system: {2}{3}", _modelName, 
-                                 DateTime.Now.ToShortDateString(), _unitSystemType, Environment.NewLine);
+            return string.Format("Hash: {0}, Date: {1}, Unit system: {2}{3}",
+                                 _hashName,
+                                 DateTime.Now.ToShortDateString(), _unitSystemType,
+                                 Environment.NewLine);
         }
     }
 }

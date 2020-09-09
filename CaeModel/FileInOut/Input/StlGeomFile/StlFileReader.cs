@@ -15,28 +15,28 @@ namespace FileInOut.Input
             if (File.Exists(fileName))
             {
                 QuantumConcepts.Formats.StereoLithography.STLDocument stlFile = null;
-
+                //
                 System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
-
+                //
                 using (Stream stream = File.OpenRead(fileName))
                 {
                     watch.Start();
                     stlFile = QuantumConcepts.Formats.StereoLithography.STLDocument.Read(stream, true);
                     watch.Stop();
                 }
-
+                //
                 FeNode node;
                 int[] nodeIds;
                 LinearTriangleElement element;
                 Dictionary<int, FeNode> nodes = new Dictionary<int, FeNode>();
                 Dictionary<int, FeElement> elements = new Dictionary<int, FeElement>();
-
+                //
                 CompareFeNodeCoods comparer = new CompareFeNodeCoods();
                 Dictionary<FeNode, int> nodeMap = new Dictionary<FeNode, int>(stlFile.Facets.Count, comparer);
                 BoundingBox box = new BoundingBox(); 
                 int nodeId;
                 int localCount;
-
+                //
                 foreach (var facet in stlFile.Facets)
                 {
                     localCount = 0;
@@ -45,7 +45,7 @@ namespace FileInOut.Input
                     {
                         node = new FeNode(nodes.Count + 1, v.X, v.Y, v.Z);
                         box.CheckNode(node);
-
+                        //
                         if (nodeMap.TryGetValue(node, out nodeId))
                         {
                             node.Id = nodeId;
@@ -60,16 +60,16 @@ namespace FileInOut.Input
                     element = new LinearTriangleElement(elements.Count + 1, nodeIds);
                     elements.Add(element.Id, element);
                 }
-
+                //
                 double epsilon = 1E-6;
                 double max = box.GetDiagonal();
                 MergeNodes(nodes, elements, epsilon * max);
-
+                //
                 FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Geometry);
-
+                //
                 //string namePrefix = Path.GetFileNameWithoutExtension(fileName).Replace(' ', '_');
                 //FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Geometry, namePrefix);
-
+                //
                 //if (mesh.Parts.Count == 1)
                 //{
                 //    GeometryPart part = mesh.Parts.Values.First() as GeometryPart;
@@ -77,10 +77,9 @@ namespace FileInOut.Input
                 //    part.Name = namePrefix;
                 //    mesh.Parts.Add(part.Name, part);
                 //}
-
                 return mesh;
             }
-
+            //
             return null;
         }
 

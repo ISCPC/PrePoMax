@@ -191,6 +191,19 @@ namespace CaeGlobals
             return true;
         }
 
+        // String
+        public static string GetRandomString(int len)
+        {
+            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            var stringChars = new char[len];
+            var random = new Random();
+            for (int i = 0; i < stringChars.Length; i++)
+            {
+                stringChars[i] = chars[random.Next(chars.Length)];
+            }
+            return new String(stringChars);
+        }
+
         // Sort
         public static void Sort3_descending(ref float arr0, ref float arr1, ref float arr2)
         {
