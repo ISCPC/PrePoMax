@@ -29,15 +29,15 @@
         private void InitializeComponent()
         {
             this.btnClose = new System.Windows.Forms.Button();
-            this.tbOutput = new System.Windows.Forms.TextBox();
+            this.tbOutput = new UserControls.AutoScrollTextBox();
             this.btnKill = new System.Windows.Forms.Button();
             this.btnResults = new System.Windows.Forms.Button();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tpOutput = new System.Windows.Forms.TabPage();
             this.tpStatus = new System.Windows.Forms.TabPage();
-            this.tbStatus = new System.Windows.Forms.TextBox();
+            this.tbStatus = new UserControls.AutoScrollTextBox();
             this.tpCovergence = new System.Windows.Forms.TabPage();
-            this.tbConvergence = new System.Windows.Forms.TextBox();
+            this.tbConvergence = new UserControls.AutoScrollTextBox();
             this.pbAnalysisStatus = new System.Windows.Forms.ProgressBar();
             this.labAnalysisStatus = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
@@ -229,16 +229,16 @@
         #endregion
 
         private System.Windows.Forms.Button btnClose;
-        private System.Windows.Forms.TextBox tbOutput;
+        private UserControls.AutoScrollTextBox tbOutput;
         private System.Windows.Forms.Button btnKill;
         private System.Windows.Forms.Button btnResults;
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage tpOutput;
         private System.Windows.Forms.TabPage tpStatus;
-        private System.Windows.Forms.TextBox tbStatus;
+        private UserControls.AutoScrollTextBox tbStatus;
         private System.Windows.Forms.ProgressBar pbAnalysisStatus;
         private System.Windows.Forms.Label labAnalysisStatus;
         private System.Windows.Forms.TabPage tpCovergence;
-        private System.Windows.Forms.TextBox tbConvergence;
+        private UserControls.AutoScrollTextBox tbConvergence;
     }
 }

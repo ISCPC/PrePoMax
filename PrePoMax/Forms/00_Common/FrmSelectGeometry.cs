@@ -49,6 +49,7 @@ namespace PrePoMax.Forms
                     _controller.FlipFaceOrientationsCommand(GeometrySelection);
                 }
                 // Clear items
+                _controller.ClearAllSelection();
                 _geometrySelection.Clear();
                 lvItems.Items.Clear();
             }
@@ -79,7 +80,11 @@ namespace PrePoMax.Forms
         }
         private void FrmSelectEntity_VisibleChanged(object sender, EventArgs e)
         {
-            if (Visible) lvItems.ResizeColumnHeaders();
+            if (Visible)
+            {
+                _controller.ClearAllSelection();
+                lvItems.ResizeColumnHeaders();
+            }
         }
 
 

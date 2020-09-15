@@ -14,7 +14,11 @@ namespace CaeResults
         SolidLinearTetrahedron = 3,
         SolidParabolicHexahedron = 4,
         SolidParabolicWedge = 5,
-        SolidParabolicTetrahedron = 6
+        SolidParabolicTetrahedron = 6,
+        ShellLinearTriangle = 7,
+        ShellParabolicTriangle = 8,
+        ShellLinearQuadrilateral = 9,
+        ShellParabolicQuadrilateral = 10
     }
 
 

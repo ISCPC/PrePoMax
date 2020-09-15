@@ -524,7 +524,8 @@ namespace CaeMesh
             }
             else
             {
-                return 2;
+                if (_maxElementId == mesh.MaxElementId) return 2;
+                else return 0;
             }
             return similarity;
         }

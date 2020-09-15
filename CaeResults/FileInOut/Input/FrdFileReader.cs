@@ -324,21 +324,32 @@ namespace CaeResults
                 switch (feDescriptorId)
                 {
                     // LINEAR ELEMENTS                                                                                              
-
+                    case FrdFeDescriptorId.ShellLinearTriangle:
+                        // Triangle element
+                        record1 = lines[++i].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
+                        element = GetLinearTriangleElement(id, record1);
+                        elements.Add(id, element);
+                        break;
+                    case FrdFeDescriptorId.ShellLinearQuadrilateral:
+                        // Quadrilateral element
+                        record1 = lines[++i].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
+                        element = GetLinearQuadrilateralElement(id, record1);
+                        elements.Add(id, element);
+                        break;
                     case FrdFeDescriptorId.SolidLinearTetrahedron:
-                        // linear tetrahedron element
+                        // Tetrahedron element
                         record1 = lines[++i].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
                         element = GetLinearTetraElement(id, record1);
                         elements.Add(id, element);
                         break;
                     case FrdFeDescriptorId.SolidLinearWedge:
-                        // linear wedge element
+                        // Wedge element
                         record1 = lines[++i].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
                         element = GetLinearWedgeElement(id, record1);
                         elements.Add(id, element);
                         break;
                     case FrdFeDescriptorId.SolidLinearHexahedron:
-                        // linear hexahedron element
+                        // Hexahedron element
                         record1 = lines[++i].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
                         element = GetLinearHexaElement(id, record1);
                         elements.Add(id, element);
@@ -346,21 +357,33 @@ namespace CaeResults
 
                     // PARABOLIC ELEMENTS                                                                                           
 
+                    case FrdFeDescriptorId.ShellParabolicTriangle:
+                        // Triangle element
+                        record1 = lines[++i].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
+                        element = GetParabolicTriangleElement(id, record1);
+                        elements.Add(id, element);
+                        break;
+                    case FrdFeDescriptorId.ShellParabolicQuadrilateral:
+                        // Quadrilateral element
+                        record1 = lines[++i].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
+                        element = GetParabolicQuadrilateralElement(id, record1);
+                        elements.Add(id, element);
+                        break;
                     case FrdFeDescriptorId.SolidParabolicTetrahedron:
-                        // parabolic tetrahedron element
+                        // Tetrahedron element
                         record1 = lines[++i].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
                         element = GetParabolicTetraElement(id, record1);
                         elements.Add(id, element);
                         break;
                     case FrdFeDescriptorId.SolidParabolicWedge:
-                        // parabolic wedge element
+                        // Wedge element
                         record1 = lines[++i].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
                         record2 = lines[++i].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
                         element = GetParabolicWedgeElement(id, record1, record2);
                         elements.Add(id, element);
                         break;
                     case FrdFeDescriptorId.SolidParabolicHexahedron:
-                        // parabolic hexahedron element
+                        // Hexahedron element
                         record1 = lines[++i].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
                         record2 = lines[++i].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
                         element = GetParabolicHexaElement(id, record1, record2);
@@ -708,6 +731,24 @@ namespace CaeResults
 
 
         // LINEAR ELEMENTS                                                                                              
+        static private LinearTriangleElement GetLinearTriangleElement(int id, string[] record)
+        {
+            int[] nodes = new int[3];
+            for (int i = 0; i < nodes.Length; i++)
+            {
+                nodes[i] = int.Parse(record[i + 1]);
+            }
+            return new LinearTriangleElement(id, nodes);
+        }
+        static private LinearQuadrilateralElement GetLinearQuadrilateralElement(int id, string[] record)
+        {
+            int[] nodes = new int[4];
+            for (int i = 0; i < nodes.Length; i++)
+            {
+                nodes[i] = int.Parse(record[i + 1]);
+            }
+            return new LinearQuadrilateralElement(id, nodes);
+        }
         static private LinearTetraElement GetLinearTetraElement(int id, string[] record)
         {
             int[] nodes = new int[4];
@@ -744,6 +785,24 @@ namespace CaeResults
 
 
         // PARABOLIC ELEMENTS                                                                                           
+        static private ParabolicTriangleElement GetParabolicTriangleElement(int id, string[] record)
+        {
+            int[] nodes = new int[6];
+            for (int i = 0; i < nodes.Length; i++)
+            {
+                nodes[i] = int.Parse(record[i + 1]);
+            }
+            return new ParabolicTriangleElement(id, nodes);
+        }
+        static private ParabolicQuadrilateralElement GetParabolicQuadrilateralElement(int id, string[] record)
+        {
+            int[] nodes = new int[8];
+            for (int i = 0; i < nodes.Length; i++)
+            {
+                nodes[i] = int.Parse(record[i + 1]);
+            }
+            return new ParabolicQuadrilateralElement(id, nodes);
+        }
         static private ParabolicTetraElement GetParabolicTetraElement(int id, string[] record)
         {
             int[] nodes = new int[10];

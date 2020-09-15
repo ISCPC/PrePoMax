@@ -2,6 +2,17 @@
 
 Selection - UNDO after empty click
 
+By Massimiliano
+10. 9. 2020
+1) add support for cylindrical coordinate system for modeling
+2) add support for cylindrical coordinate system for ploting of the results
+3) change the legend limits on the 3D view
+4) add "Auto scroll" function the display of the results
+5) remote load moment using nodal forces
+6) add support for spring elements
+7) add support for the restart of the analysis 
+
+
 By Devis
 1.5.2020
 Dynamic analysis (Harmonic response, Random vibration, Response spectrum, Time history)
@@ -166,6 +177,19 @@ Dependency nglib - added following files for c++ redistriburable compatibility:
 
 
 Done
+
+Version 0.9.0 Master branch
+Added support for import of shell CAD geometry
+Added support for merging of shell faces into a compound
+Added support for visualizing shell face orientations
+Added support for flipping the shell face orientations
+Added support for meshing of shell geometries using triangle and quadrilateral elements
+Added support for creating shell sections
+Added support for visualizing the results on shell faces (option 2D)
+Added support for auto-scroll in the monitor window
+
+
+
 
 Version 0.8.0 Master branch
 For Frequency analysis added the mode number in the status block

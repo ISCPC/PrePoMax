@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ModelTree));
             System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("Solid-Part-1");
             System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("Solid-Part-2");
@@ -85,7 +86,7 @@
             System.Windows.Forms.TreeNode treeNode31 = new System.Windows.Forms.TreeNode("Results", new System.Windows.Forms.TreeNode[] {
             treeNode29,
             treeNode30});
-            this.cmsTree = new System.Windows.Forms.ContextMenuStrip();
+            this.cmsTree = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.tsmiCreate = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEdit = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDuplicate = new System.Windows.Forms.ToolStripMenuItem();
@@ -126,8 +127,8 @@
             this.tsmiCollapseAll = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSpaceDelete = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiDelete = new System.Windows.Forms.ToolStripMenuItem();
-            this.ilIcons = new System.Windows.Forms.ImageList();
-            this.ilStatusIcons = new System.Windows.Forms.ImageList();
+            this.ilIcons = new System.Windows.Forms.ImageList(this.components);
+            this.ilStatusIcons = new System.Windows.Forms.ImageList(this.components);
             this.tcGeometryModelResults = new System.Windows.Forms.TabControl();
             this.tpGeometry = new System.Windows.Forms.TabPage();
             this.cltvGeometry = new UserControls.CodersLabTreeView();
@@ -186,7 +187,7 @@
             this.tsmiSpaceDelete,
             this.tsmiDelete});
             this.cmsTree.Name = "cmsTree";
-            this.cmsTree.Size = new System.Drawing.Size(212, 676);
+            this.cmsTree.Size = new System.Drawing.Size(212, 698);
             // 
             // tsmiCreate
             // 
@@ -434,7 +435,7 @@
             // 
             this.tsmiCollapseAll.Name = "tsmiCollapseAll";
             this.tsmiCollapseAll.Size = new System.Drawing.Size(211, 22);
-            this.tsmiCollapseAll.Text = "Colapse All";
+            this.tsmiCollapseAll.Text = "Collapse All";
             this.tsmiCollapseAll.Click += new System.EventHandler(this.tsmiCollapseAll_Click);
             // 
             // tsmiSpaceDelete

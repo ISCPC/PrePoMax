@@ -122,6 +122,12 @@
     <Compile Include="ListView\MyListView.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="TextBoxes\AutoScrollTextBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="TextBoxes\AutoScrollTextBox.Designer.cs">
+      <DependentUpon>AutoScrollTextBox.cs</DependentUpon>
+    </Compile>
     <Compile Include="TextBoxes\UnitAwareTextBox.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -209,6 +215,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="ModelTree.resx">
       <DependentUpon>ModelTree.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TextBoxes\AutoScrollTextBox.resx">
+      <DependentUpon>AutoScrollTextBox.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="TextBoxes\UnitAwareTextBox.resx">
       <DependentUpon>UnitAwareTextBox.cs</DependentUpon>

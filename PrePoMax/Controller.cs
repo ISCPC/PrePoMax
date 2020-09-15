@@ -851,7 +851,7 @@ namespace PrePoMax
             //
             _netgenJob = new NetgenJob("Brep", executable, argument, calculixSettings.WorkDirectory);
             _netgenJob.AppendOutput += netgenJob_AppendOutput;
-            _netgenJob.Submit(timeOut);
+            _netgenJob.Submit();
             //
             if (_netgenJob.JobStatus == JobStatus.OK)
             {
@@ -1611,21 +1611,32 @@ namespace PrePoMax
             }
             //
             BasePart part;
+            string brepFileName;
+            bool onlyShells = true;
             foreach (var entry in partIdFaceIds)
             {
                 part = _model.Geometry.GetPartById(entry.Key);
-                if (part != null && part is GeometryPart gp) FlipPartFaceOrientations(gp, entry.Value.ToArray());
+                if (part != null && part is GeometryPart gp )
+                {
+                    if (part.PartType == PartType.Shell) 
+                    {
+                        brepFileName = FlipPartFaceOrientations(gp, entry.Value.ToArray());
+                        //
+                        if (brepFileName != null) ReplacePartGeometryFromFile(gp, brepFileName);
+                        else ClearAllSelection();
+                    }
+                    else onlyShells = false;
+                }
             }
+            if (!onlyShells) MessageBox.Show("Only face orientations on shell parts were fliped.", "Warning", MessageBoxButtons.OK);
         }
-        private bool FlipPartFaceOrientations(GeometryPart part, int[] faceIds)
+        private string FlipPartFaceOrientations(GeometryPart part, int[] faceIds)
         {
-            int timeOut = 1000 * 10;
-            //
             CalculixSettings settings = _settings.Calculix;
             if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
             {
                 MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
-                return false;
+                return null;
             }
             //
             string executable = Application.StartupPath + Globals.NetGenMesher;
@@ -1646,45 +1657,53 @@ namespace PrePoMax
             //
             _netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
             _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
-            _netgenJob.Submit(timeOut);
+            _netgenJob.Submit();
             // Job completed
-            if (_netgenJob.JobStatus == JobStatus.OK)
-            {
-                int count = 0;
-                
-                string[] importedFileNames = null;
-                //
-                while (importedFileNames == null && count < 5)  // Check for timeout
-                {
-                    importedFileNames = ImportBrepPartFile(outputBrepFileName, timeOut, false);
-                    count++;
-                }
-                if (importedFileNames == null)
-                {
-                    throw new CaeException("Importing brep file after face normal flip failed.");
-                }
-                else if (importedFileNames.Length == 1)
-                {
-                    // Delete old geometry part
-                    RemoveGeometryParts(new string[] { part.Name });
-                    // Rename new geometry part
-                    GeometryPart newPart = (GeometryPart)_model.Geometry.Parts[importedFileNames[0]];
-                    newPart.Name = part.Name;
-                    newPart.Color = part.Color;
-                    newPart.MeshingParameters = part.MeshingParameters;
-                    _model.Geometry.Parts.Replace(importedFileNames[0], newPart.Name, newPart);
-                    //
-                    UpdateMeshRefinements();
-                    //
-                    UpdateAfterImport(".brep");
-                }
-                else throw new NotSupportedException();
-                //
-                return true;
-            }
-            else return false;
+            if (_netgenJob.JobStatus == JobStatus.OK) return outputBrepFileName;
+            else return null;
         }
-
+        private bool ReplacePartGeometryFromFile(GeometryPart part, string fileName)
+        {
+            int count = 0;
+            int timeOut = 1000 * 10;
+            string[] importedFileNames = null;
+            //
+            while (importedFileNames == null && count < 5)  // Check for timeout
+            {
+                importedFileNames = ImportBrepPartFile(fileName, timeOut, false);
+                count++;
+            }
+            if (importedFileNames == null)
+            {
+                throw new CaeException("Importing brep file after face normal flip failed.");
+            }
+            else if (importedFileNames.Length == 1)
+            {
+                // Add the imported part to the model tree
+                UpdateAfterImport(".brep");
+                // Copy old part properties to the new part
+                GeometryPart newPart = (GeometryPart)_model.Geometry.Parts[importedFileNames[0]];
+                newPart.Name = part.Name;
+                newPart.Color = part.Color;
+                newPart.MeshingParameters = part.MeshingParameters;
+                // Switch old and new part in the dictionary
+                _model.Geometry.Parts.Replace(part.Name, newPart.Name, newPart);
+                part.Name = importedFileNames[0];
+                _model.Geometry.Parts.Replace(importedFileNames[0], part.Name, part);
+                // Remove old part
+                RemoveGeometryParts(new string[] { part.Name });
+                //
+                UpdateMeshRefinements();
+                //
+                UpdateAfterImport(".brep");
+            }
+            else
+            {
+                ClearAllSelection();
+                throw new NotSupportedException();
+            }
+            return true;
+        }
         #endregion #################################################################################################################
 
         #region Mesh   #############################################################################################################
@@ -8312,12 +8331,14 @@ namespace PrePoMax
             // Get visualization nodes and renumbered elements           
             PartExchangeData actorResultData = _results.GetScaledVisualizationNodesCellsAndValues(part, fieldData, scale);
             // Model edges
-            PartExchangeData modelEdgesResultData = null;
-            if (_results.Mesh.Elements[part.Labels[0]] is FeElement3D && part.Visualization.EdgeCells != null)
+            PartExchangeData modelEdgesResultData = null;            
+            if ((part.PartType == PartType.Solid || part.PartType == PartType.SolidAsShell || part.PartType == PartType.Shell)
+                && part.Visualization.EdgeCells != null)
+            //if (_results.Mesh.Elements[part.Labels[0]] is FeElement3D && part.Visualization.EdgeCells != null)
             {
                 modelEdgesResultData = _results.GetScaledEdgesNodesAndCells(part, fieldData, scale);
             }
-            // Get all needed nodes and elements - renumbered            
+            // Get all needed nodes and elements - renumbered               
             PartExchangeData locatorResultData = null;
             locatorResultData = _results.GetScaledAllNodesCellsAndValues(part, fieldData, scale);
             //
@@ -8329,6 +8350,17 @@ namespace PrePoMax
             data.Pickable = true;
             data.SmoothShaded = part.SmoothShaded;
             data.ActorRepresentation = GetRepresentation(part);
+            // Back face                                                    
+            if (part.PartType == PartType.Shell)
+            {
+                data.BackfaceCulling = false;
+                if (_showFaceOrientation)
+                {
+                    PreSettings preSettings = (PreSettings)_settings.Pre;
+                    data.Color = preSettings.FrontFaceColor;
+                    data.BackfaceColor = preSettings.BackFaceColor;
+                }
+            }
             //
             ApplyLighting(data);
             _form.AddScalarFieldOn3DCells(data);
@@ -8355,7 +8387,7 @@ namespace PrePoMax
             double[] allFramesScalarRange = new double[] { double.MaxValue, -double.MaxValue };
             foreach (var entry in _results.Mesh.Parts)
             {
-                if (entry.Value is CaeMesh.ResultPart resultPart)
+                if (entry.Value is ResultPart resultPart)
                 {
                     // Udeformed shape
                     if (postSettings.DrawUndeformedModel) DrawUndeformedPartCopy(resultPart, postSettings.UndeformedModelColor, layer);
@@ -8366,12 +8398,23 @@ namespace PrePoMax
                         if (nData.Values[0] < allFramesScalarRange[0]) allFramesScalarRange[0] = nData.Values[0];
                         if (nData.Values[1] > allFramesScalarRange[1]) allFramesScalarRange[1] = nData.Values[1];
                     }
+                    // Back face                                                    
+                    if (resultPart.PartType == PartType.Shell)
+                    {
+                        data.BackfaceCulling = false;
+                        if (_showFaceOrientation)
+                        {
+                            PreSettings preSettings = (PreSettings)_settings.Pre;
+                            data.Color = preSettings.FrontFaceColor;
+                            data.BackfaceColor = preSettings.BackFaceColor;
+                        }
+                    }
                     //
                     ApplyLighting(data);
                     result = _form.AddAnimatedScalarFieldOn3DCells(data);                    
                     if (result == false) {_form.Clear3D(); return false;}
                 }
-                else if (entry.Value is CaeMesh.GeometryPart)
+                else if (entry.Value is GeometryPart)
                 {
                     DrawGeomPart(_results.Mesh, entry.Value, layer, false, true);   // pickable for the Section view to work
                 }
@@ -8419,7 +8462,7 @@ namespace PrePoMax
             double[] allFramesScalarRange = new double[] { double.MaxValue, -double.MaxValue };
             foreach (var entry in _results.Mesh.Parts)
             {
-                if (entry.Value is CaeMesh.ResultPart resultPart)
+                if (entry.Value is ResultPart resultPart)
                 {
                     // Udeformed shape
                     if (postSettings.DrawUndeformedModel) DrawUndeformedPartCopy(resultPart, postSettings.UndeformedModelColor, layer);
@@ -8430,11 +8473,23 @@ namespace PrePoMax
                         if (nData.Values[0] < allFramesScalarRange[0]) allFramesScalarRange[0] = nData.Values[0];
                         if (nData.Values[1] > allFramesScalarRange[1]) allFramesScalarRange[1] = nData.Values[1];
                     }
+                    // Back face                                                    
+                    if (resultPart.PartType == PartType.Shell)
+                    {
+                        data.BackfaceCulling = false;
+                        if (_showFaceOrientation)
+                        {
+                            PreSettings preSettings = (PreSettings)_settings.Pre;
+                            data.Color = preSettings.FrontFaceColor;
+                            data.BackfaceColor = preSettings.BackFaceColor;
+                        }
+                    }
+                    //
                     ApplyLighting(data);
                     result = _form.AddAnimatedScalarFieldOn3DCells(data);
                     if (result == false) { _form.Clear3D(); return false; }
                 }
-                else if (entry.Value is CaeMesh.GeometryPart)
+                else if (entry.Value is GeometryPart)
                 {
                     DrawGeomPart(_results.Mesh, entry.Value, layer, false, true);  // pickable for the Section view to work
                 }
@@ -8474,7 +8529,8 @@ namespace PrePoMax
                                                                                                                     numFrames);
             // Model edges
             PartExchangeData modelEdgesResultData = null;
-            if (_results.Mesh.Elements[part.Labels[0]] is FeElement3D && part.Visualization.EdgeCells != null)
+            if ((part.PartType == PartType.Solid || part.PartType == PartType.SolidAsShell || part.PartType == PartType.Shell)
+                && part.Visualization.EdgeCells != null)
             {
                 modelEdgesResultData = _results.GetScaleFactorAnimationDataEdgesNodesAndCells(part, fieldData, scale, numFrames);
             }
@@ -8489,9 +8545,7 @@ namespace PrePoMax
             data.CanHaveElementEdges = true;
             data.Pickable = false;
             data.SmoothShaded = part.SmoothShaded;
-            if (_results.Mesh.Elements[part.Labels[0]] is FeElement3D)
-                data.ActorRepresentation = vtkControl.vtkMaxActorRepresentation.Solid;
-            else throw new NotSupportedException();
+            data.ActorRepresentation = GetRepresentation(part);
             return data;
         }
         private vtkControl.vtkMaxActorData GetTimeIncrementAnimationDataFromPart(ResultPart part, FieldData fieldData, float scale)
@@ -8501,7 +8555,8 @@ namespace PrePoMax
 
             // model edges
             PartExchangeData modelEdgesResultData = null;
-            if (_results.Mesh.Elements[part.Labels[0]] is FeElement3D && part.Visualization.EdgeCells != null)
+            if ((part.PartType == PartType.Solid || part.PartType == PartType.SolidAsShell || part.PartType == PartType.Shell)
+                && part.Visualization.EdgeCells != null)
             {
                 modelEdgesResultData = _results.GetTimeIncrementAnimationDataVisualizationEdgesNodesAndCells(part, fieldData, scale);
             }
@@ -8517,8 +8572,7 @@ namespace PrePoMax
             data.CanHaveElementEdges = true;
             data.Pickable = false;
             data.SmoothShaded = part.SmoothShaded;
-            if (_results.Mesh.Elements[part.Labels[0]] is FeElement3D) data.ActorRepresentation = vtkControl.vtkMaxActorRepresentation.Solid;
-            else throw new NotSupportedException();
+            data.ActorRepresentation = GetRepresentation(part);
             return data;
         }
         // Common

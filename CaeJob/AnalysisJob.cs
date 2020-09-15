@@ -30,7 +30,6 @@ namespace CaeJob
     {
         // Variables                                                                                                                        
         protected string _workDirectory;
-
         protected string _executable;
         protected string _argument;
         protected JobStatus _jobStatus;
@@ -40,10 +39,9 @@ namespace CaeJob
         protected string _statusFileContents;
         protected long _convergenceFileLength;
         protected string _convergenceFileContents;
-
-
+        //
         [NonSerialized] private System.Windows.Threading.DispatcherTimer _timer;
-        [NonSerialized] protected System.Diagnostics.Stopwatch _watch;
+        [NonSerialized] protected Stopwatch _watch;
         [NonSerialized] private Process _exe;
         [NonSerialized] private StringBuilder _sbOutput;
         [NonSerialized] private StringBuilder _sbAllOutput;
@@ -156,8 +154,6 @@ namespace CaeJob
         // Event handlers                                                                                                           
         void Timer_Tick(object sender, EventArgs e)
         {
-            //System.Diagnostics.Debug.WriteLine("AnalysisJob Timer_Tick");
-            //File.WriteAllText(_outputFileName, OutputData);
             File.AppendAllText(_outputFileName, OutputData);
             //
             GetStatusFileContents();
@@ -193,7 +189,7 @@ namespace CaeJob
             //
             _watch = new Stopwatch();
             //
-            _jobStatus = CaeJob.JobStatus.Running;
+            _jobStatus = JobStatus.Running;
             //
             JobStatusChanged?.Invoke(_name, _jobStatus);
             //
@@ -232,7 +228,7 @@ namespace CaeJob
             bool resultsExist = File.Exists(frdFileName);
             if (resultsExist)
             {
-                long length = new System.IO.FileInfo(frdFileName).Length;
+                long length = new FileInfo(frdFileName).Length;
                 if (length < 15 * 20) resultsExist = false;
             }
             //

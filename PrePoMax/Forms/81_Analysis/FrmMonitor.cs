@@ -141,22 +141,12 @@ namespace PrePoMax.Forms
                 }
                 else
                 {
-                    //if (tbOutput.Text.Length != _job.OutputData.Length)
-                    {
-                        //System.Diagnostics.Debug.WriteLine("FrmMonitor UpdateOutput");
-                        // It's on the same thread, no need for Invoke
-                        tbOutput.Text += _job.OutputData;
-                        tbOutput.Select(tbOutput.TextLength, 0);
-                        tbOutput.ScrollToCaret();
-                        //
-                        tbStatus.Text = _job.StatusFileData;
-                        tbStatus.Select(tbOutput.TextLength, 0);
-                        tbStatus.ScrollToCaret();
-                        //
-                        tbConvergence.Text = _job.ConvergenceFileData;
-                        tbConvergence.Select(tbOutput.TextLength, 0);
-                        tbConvergence.ScrollToCaret();
-                    }
+                    // It's on the same thread, no need for Invoke
+                    tbOutput.AutoScrollAppendText(_job.OutputData);
+                    //
+                    tbStatus.AutoScrollSetText(_job.StatusFileData);
+                    //
+                    tbConvergence.AutoScrollSetText(_job.ConvergenceFileData);
                 }
             }
             catch
