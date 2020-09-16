@@ -1171,7 +1171,22 @@ namespace PrePoMax
             {
                 ExceptionTools.Show(this, ex);
             }
-        }        
+        }
+        private void tsmiExportToMmgMesh_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (_controller.Model.Geometry != null && _controller.Model.Geometry.Parts != null)
+                {
+                    SelectMultipleEntities("Parts", _controller.GetGeometryParts(), SavePartsAsMmgMesh);
+                }
+                else throw new CaeException("No geometry to export.");
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
         private async void SaveCADPartsAsStep(string[] partNames)
         {
             try
@@ -1216,6 +1231,34 @@ namespace PrePoMax
                         SetStateWorking(Globals.ExportingText);
                         //
                         await Task.Run(() => _controller.ExportCADGeometryPartsAsBrep(partNames, saveFileDialog.FileName));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+            finally
+            {
+                SetStateReady(Globals.ExportingText);
+            }
+        }
+        private async void SavePartsAsMmgMesh(string[] partNames)
+        {
+            try
+            {
+                using (SaveFileDialog saveFileDialog = new SaveFileDialog())
+                {
+                    saveFileDialog.Filter = "Mmg files | *.mesh";
+                    if (_controller.OpenedFileName != null)
+                        saveFileDialog.FileName = Path.GetFileNameWithoutExtension(_controller.OpenedFileName) + ".mesh";
+                    //
+                    if (saveFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                    {
+                        // The filter adds the extension to the file name
+                        SetStateWorking(Globals.ExportingText);
+                        //
+                        await Task.Run(() => _controller.ExportGeometryPartsAsMmgMesh(partNames, saveFileDialog.FileName));
                     }
                 }
             }
@@ -4216,12 +4259,8 @@ namespace PrePoMax
         {
             _controller.SelectPointOrArea(pickedPoint, planeParameters, selectOperation);
             //
-            SelectionChanged();
-        }
-        public void SelectionChanged(int[] ids = null)
-        {
-            if (ids == null) ids = _controller.GetSelectionIds();
-            //
+            int[] ids = _controller.GetSelectionIds();
+            // Must be here since it calls Clear which calls SelectionChanged
             if (_frmSectionView != null && _frmSectionView.Visible) _frmSectionView.PickedIds(ids);
             if (_frmTranslate != null && _frmTranslate.Visible) _frmTranslate.PickedIds(ids);
             if (_frmScale != null && _frmScale.Visible) _frmScale.PickedIds(ids);
@@ -4229,6 +4268,12 @@ namespace PrePoMax
             if (_frmReferencePoint != null && _frmReferencePoint.Visible) _frmReferencePoint.PickedIds(ids);
             if (_frmQuery != null && _frmQuery.Visible) _frmQuery.PickedIds(ids);
             if (_frmTransformation != null && _frmTransformation.Visible) _frmTransformation.PickedIds(ids);
+            //
+            SelectionChanged(ids);
+        }
+        public void SelectionChanged(int[] ids = null)
+        {
+            if (ids == null) ids = _controller.GetSelectionIds();
             //
             if (_frmMeshRefinement != null && _frmMeshRefinement.Visible) _frmMeshRefinement.SelectionChanged(ids);
             if (_frmSelectGeometry != null && _frmSelectGeometry.Visible) _frmSelectGeometry.SelectionChanged(ids);
@@ -4773,14 +4818,15 @@ namespace PrePoMax
         }
         private string GetFileImportFilter()
         {
-            string filter = "All supported files|*.stp;*.step;*.igs;*.iges;*.brep;*.stl;*.unv;*.vol;*.inp"
+            string filter = "All supported files|*.stp;*.step;*.igs;*.iges;*.brep;*.stl;*.unv;*.vol;*.inp;*.mesh"
                             + "|Step files|*.stp;*.step"
                             + "|Iges files|*.igs;*.iges"
                             + "|Brep files|*.brep"
                             + "|Stereolitography files|*.stl"
                             + "|Universal files|*.unv"
                             + "|Netgen files|*.vol"
-                            + "|Abaqus/Calculix inp files|*.inp";
+                            + "|Abaqus/Calculix inp files|*.inp"
+                            + "|Mmg mesh files|*.mesh";
             return filter;
         }
 
@@ -5594,5 +5640,7 @@ namespace PrePoMax
         }
 
         
+
+       
     }
 }

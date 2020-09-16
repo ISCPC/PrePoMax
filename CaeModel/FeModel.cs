@@ -454,6 +454,24 @@ namespace CaeModel
             //
             return noErrors;
         }
+        public bool ImportGeometryFromMmgMeshFile(string fileName)
+        {
+            FeMesh mesh = FileInOut.Input.MmgFileReader.Read(fileName);
+            //
+            bool noErrors = true;
+            foreach (var entry in mesh.Parts)
+            {
+                if (entry.Value is GeometryPart gp && gp.HasErrors)
+                {
+                    noErrors = false;
+                    break;
+                }
+            }
+            //
+            ImportMesh(mesh, GetReservedPartNames());
+            //
+            return noErrors;
+        }
         public string[] ImportGeometryFromBrepFile(string visFileName, string brepFileName, bool mergeParts)
         {
             FeMesh mesh = FileInOut.Input.VisFileReader.Read(visFileName);

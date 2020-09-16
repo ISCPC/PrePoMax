@@ -880,8 +880,9 @@ namespace CaeMesh
                         }
                         else
                         {
-                            // Collect closed shell part names
-                            if ((!gp.HasErrors) || (importOptions == ImportOptions.ImportOneSolidPart))
+                            // Collect shell parts to be converted to solids
+                            // Only closed shell parts without errors are considered
+                            if (importOptions == ImportOptions.ImportOneSolidPart || (!gp.HasFreeEdges && !gp.HasErrors))
                                 partsToRename.Add(gp.Name);
                         }
                     }
@@ -1010,7 +1011,7 @@ namespace CaeMesh
             //
             //watch.Stop();
             //
-            CheckForBadElements(part);
+            CheckForFeeAndErrorElements(part);
         }
         private void ExtractShellPartVisualization(BasePart part)
         {
@@ -1020,7 +1021,7 @@ namespace CaeMesh
             //
             SplitVisualizationEdgesAndFaces(part);
             //
-            CheckForBadElements(part);
+            CheckForFeeAndErrorElements(part);
         }
         private void ExtractWirePartVisualization(BasePart part)
         {
@@ -1155,45 +1156,109 @@ namespace CaeMesh
             }
             part.Visualization.CellNeighboursOverCellEdge = cellNeighboursArray;
         }
-        void CheckForBadElements(BasePart part)
+        void CheckForFeeAndErrorElements(BasePart part)
         {
             VisualizationData vis = part.Visualization;
             // Check for bad element and nodes
-            List<int> badElementIds = new List<int>();
-            HashSet<int> badEdgeIds = new HashSet<int>();
-            List<int> badEdgeElementIds = new List<int>();
-            List<int> badNodeIds = new List<int>();
+            List<int> freeEdgeIds = new List<int>();
+            List<int> freeEdgeElementIds = new List<int>();            
+            HashSet<int> freeNodeIds = new HashSet<int>();
+            HashSet<int> openLoopFreeEdgeIds = new HashSet<int>();
+            HashSet<int> closeLoopFreeEdgeIds = new HashSet<int>();
+            //
+            List<int> errorEdgeElementIds = new List<int>();
+            List<int> errorNodeIds = new List<int>();
+            HashSet<int> errorEdgeIds = new HashSet<int>();
+            //
+            int edgeId;
+            int[] edgeIdsCounter = new int[vis.EdgeCellIdsByEdge.Length];
             //
             if (part is GeometryPart gp)
             {
-                gp.ErrorElementIds = null;
+                /////////////  FREE EDGES   /////////////////////////////////////////////////////////////
+                gp.FreeEdgeElementIds = null;
                 gp.ErrorEdgeElementIds = null;
+                gp.FreeNodeIds = null;
                 gp.ErrorNodeIds = null;
-                //
-                if (gp.PartType == PartType.SolidAsShell)
+                // Create a map of how many times an edge is used on all part surfaces
+                // For each surface
+                for (int i = 0; i < vis.FaceEdgeIds.Length; i++)
                 {
-                    for (int i = 0; i < vis.CellNeighboursOverCellEdge.Length; i++)
+                    // For each surface edge
+                    for (int j = 0; j < vis.FaceEdgeIds[i].Length; j++)
                     {
-                        for (int j = 0; j < vis.CellNeighboursOverCellEdge[i].Length; j++)
+                        edgeId = vis.FaceEdgeIds[i][j];
+                        edgeIdsCounter[edgeId]++;
+                    }
+                }
+                // From the map extract all free edges - contained in open and closed loops
+                for (int i = 0; i < edgeIdsCounter.Length; i++)
+                {
+                    edgeId = i;
+                    if (edgeIdsCounter[edgeId] == 1)
+                    {
+                        freeEdgeIds.Add(edgeId);
+                    }
+                }
+                // Build a map of free edges connected to a vertex
+                int[] edgeCell;
+                List<int> vertexEdgeIds;
+                Dictionary<int, List<int>> vertexFreeEdgeIds = new Dictionary<int, List<int>>();
+                HashSet<int> vertexNodeIds = new HashSet<int>(vis.VertexNodeIds);
+                // For each surface edge
+                foreach(var freeEdgeId in freeEdgeIds)
+                {
+                    edgeId = freeEdgeId;
+                    // For each edge cell
+                    for (int i = 0; i < vis.EdgeCellIdsByEdge[edgeId].Length; i++)
+                    {
+                        edgeCell = vis.EdgeCells[vis.EdgeCellIdsByEdge[edgeId][i]];
+                        // For each node in edge cell
+                        for (int j = 0; j < edgeCell.Length; j++)
                         {
-                            if (vis.CellNeighboursOverCellEdge[i][j] == -1) // one visualization cell has void neighbour
+                            if (vertexNodeIds.Contains(edgeCell[j]))    // is this node a vertex
                             {
-                                badElementIds.Add(vis.CellIds[i]);
-                                badNodeIds.AddRange(_elements[vis.CellIds[i]].NodeIds);
-                                break;
+                                if (vertexFreeEdgeIds.TryGetValue(edgeCell[j], out vertexEdgeIds))
+                                    vertexEdgeIds.Add(edgeId);
+                                else vertexFreeEdgeIds.Add(edgeCell[j], new List<int>() { edgeId });
                             }
                         }
                     }
                 }
-                else if (gp.PartType == PartType.Shell)
+                // Find free endges that form open loops (such loops occur when a surface is curved and connected to itself on one edge
+                // Example: a cylindrical surface with one edge in the axis direction
+                int nodeId;
+                foreach (var entry in vertexFreeEdgeIds)
                 {
-                    int edgeId;
-                    int[] edgeCell;
-                    List<int> vertexEdgeIds;
-                    HashSet<int> vertexNodeIds = new HashSet<int>(vis.VertexNodeIds);
+                    if (entry.Value.Count == 1)
+                    {
+                        nodeId = entry.Key;
+                        GetEdgeIdsOnEdgeLoop(nodeId, vertexFreeEdgeIds, ref openLoopFreeEdgeIds);
+                    }
+                }
+                // Get close loop free edges
+                closeLoopFreeEdgeIds = new HashSet<int>(freeEdgeIds.Except(openLoopFreeEdgeIds));
+                // Collect close loop free edges cell ids and node ids
+                int edgeCelld;
+                int[] edgeCellIds;
+                foreach (var closeLoopFreeEdgeId in closeLoopFreeEdgeIds)
+                {
+                    edgeCellIds = vis.EdgeCellIdsByEdge[closeLoopFreeEdgeId];
+                    freeEdgeElementIds.AddRange(edgeCellIds);
+                    //
+                    for (int i = 0; i < edgeCellIds.Length; i++)
+                    {
+                        edgeCelld = edgeCellIds[i];
+                        freeNodeIds.UnionWith(vis.EdgeCells[edgeCelld]);
+                    }
+                }
+                /////////////  ERROR EDGES   /////////////////////////////////////////////////////////////
+                if (gp.PartType == PartType.Shell)
+                {                    
                     Dictionary<int, List<int>>[] faceVertexEdgeIds = new Dictionary<int, List<int>>[vis.FaceEdgeIds.Length];
+                    // Build a map of all edges connected to a vertex
                     // For each surface
-                    for (int i = 0; i < vis.FaceEdgeIds.Length; i++)    
+                    for (int i = 0; i < vis.FaceEdgeIds.Length; i++)
                     {
                         faceVertexEdgeIds[i] = new Dictionary<int, List<int>>();
                         // For each surface edge
@@ -1207,7 +1272,7 @@ namespace CaeMesh
                                 // For each node in edge cell
                                 for (int l = 0; l < edgeCell.Length; l++)   
                                 {
-                                    if (vertexNodeIds.Contains(edgeCell[l]))
+                                    if (vertexNodeIds.Contains(edgeCell[l]))    // is this node a vertex
                                     {
                                         if (faceVertexEdgeIds[i].TryGetValue(edgeCell[l], out vertexEdgeIds))
                                             vertexEdgeIds.Add(edgeId);
@@ -1217,8 +1282,7 @@ namespace CaeMesh
                             }
                         }
                     }
-                    //
-                    int nodeId;
+                    // From the map extract all end/start vertices and their open edge loops
                     for (int i = 0; i < faceVertexEdgeIds.Length; i++)
                     {
                         foreach (var entry in faceVertexEdgeIds[i])
@@ -1226,24 +1290,27 @@ namespace CaeMesh
                             if (entry.Value.Count == 1)
                             {
                                 nodeId = entry.Key;
-                                badNodeIds.Add(nodeId);
+                                errorNodeIds.Add(nodeId);
                                 //
-                                GetEdgeIdsOnEdgeLoop(nodeId, faceVertexEdgeIds[i], ref badEdgeIds);
+                                GetEdgeIdsOnEdgeLoop(nodeId, faceVertexEdgeIds[i], ref errorEdgeIds);
                             }
                         }
                     }
                 }
-                // Collect bad edge cell ids
-                foreach (var edgeId in badEdgeIds)
+                // Collect error edge cell ids
+                foreach (var errorEdgeId in errorEdgeIds)
                 {
-                    badEdgeElementIds.AddRange(vis.EdgeCellIdsByEdge[edgeId]);
+                    errorEdgeElementIds.AddRange(vis.EdgeCellIdsByEdge[errorEdgeId]);
                 }
+                /////////////  SAVE   ////////////////////////////////////////////////////////////////
+                if (freeEdgeElementIds.Count > 0) gp.FreeEdgeElementIds = freeEdgeElementIds.ToArray();
+                else gp.FreeEdgeElementIds = null;
+                if (freeNodeIds.Count > 0) gp.FreeNodeIds = freeNodeIds.ToArray();
+                else gp.ErrorNodeIds = null;
                 //
-                if (badElementIds.Count > 0) gp.ErrorElementIds = badElementIds.ToArray();
-                else gp.ErrorElementIds = null;
-                if (badEdgeElementIds.Count > 0) gp.ErrorEdgeElementIds = badEdgeElementIds.ToArray();
+                if (errorEdgeElementIds.Count > 0) gp.ErrorEdgeElementIds = errorEdgeElementIds.ToArray();
                 else gp.ErrorEdgeElementIds = null;
-                if (badNodeIds.Count > 0) gp.ErrorNodeIds = badNodeIds.ToArray();
+                if (errorNodeIds.Count > 0) gp.ErrorNodeIds = errorNodeIds.ToArray();
                 else gp.ErrorNodeIds = null;
             }
         }
@@ -2305,7 +2372,7 @@ namespace CaeMesh
                     //
                     SplitVisualizationEdgesAndFaces(part, vertexNodeIds);
                     //
-                    CheckForBadElements(part);
+                    CheckForFeeAndErrorElements(part);
                 }
             }
         }

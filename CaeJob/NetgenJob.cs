@@ -33,8 +33,8 @@ namespace CaeJob
         protected string _argument;
         protected JobStatus _jobStatus;
         //
-        [NonSerialized] private System.Windows.Threading.DispatcherTimer _timer;
         [NonSerialized] protected Stopwatch _watch;
+        [NonSerialized] protected Stopwatch _updateWatch;   // timer does not tick - use update watch
         [NonSerialized] private Process _exe;
         [NonSerialized] private StringBuilder _sbOutput;
         [NonSerialized] private string _outputFileName;
@@ -99,16 +99,11 @@ namespace CaeJob
             _exe = null;
             _jobStatus = JobStatus.None;
             _watch = null;
+            _updateWatch = null;
         }
 
         // Event handlers                                                                                                           
-        void Timer_Tick(object sender, EventArgs e)
-        {
-            AppendOutput(OutputData);
-            File.AppendAllText(_outputFileName, OutputData);
-            //
-            _sbOutput.Clear();
-        }
+       
 
         // Methods                                                                                                                  
         public void Submit()
@@ -118,18 +113,23 @@ namespace CaeJob
             //
             AddDataToOutput("Running command: " + _executable + " " + _argument);
             //
-            _timer = new System.Windows.Threading.DispatcherTimer();
-            _timer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
-            _timer.Tick += Timer_Tick;
-            //
             _watch = new Stopwatch();
+            _updateWatch = new Stopwatch();
             //
             _jobStatus = JobStatus.Running;
             //
-            _timer.Start();
             _watch.Start();
+            _updateWatch.Start();
             //
             Run();
+            RunCompleted();
+        }
+        void bwStart_DoWork(object sender, DoWorkEventArgs e)
+        {
+            Run();
+        }
+        void bwStart_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
             RunCompleted();
         }
 
@@ -214,12 +214,12 @@ namespace CaeJob
         void RunCompleted()
         {
             _watch.Stop();
-            _timer.Stop();
+            _updateWatch.Stop();
             //
             AddDataToOutput("");
             AddDataToOutput("Elapsed time [s]: " + _watch.Elapsed.TotalSeconds.ToString());
             //
-            Timer_Tick(null, null);
+            UpdateOutput();
             // Dereference the link to otheh objects
             AppendOutput = null;
         }
@@ -233,6 +233,7 @@ namespace CaeJob
                     AddDataToOutput(message);
                     //
                     _watch.Stop();
+                    _updateWatch.Stop();
                     //
                     _jobStatus = JobStatus.Killed;  // this has to be here before _exe.Kill, to return the correct status
                     //
@@ -282,6 +283,18 @@ namespace CaeJob
         private void AddDataToOutput(string data)
         {
             _sbOutput.AppendLine(data);
+            if (_updateWatch != null && _updateWatch.ElapsedMilliseconds > 1000)
+            {
+                UpdateOutput();
+                _updateWatch.Restart();
+            }
+        }
+        void UpdateOutput()
+        {
+            AppendOutput(OutputData);
+            File.AppendAllText(_outputFileName, OutputData);
+            //
+            _sbOutput.Clear();
         }
     }
 }

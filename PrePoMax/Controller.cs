@@ -11,7 +11,6 @@ using CaeResults;
 using System.IO;
 using CaeGlobals;
 using System.IO.Compression;
-using System.Drawing.Imaging;
 using System.Drawing;
 using System.ComponentModel;
 
@@ -639,6 +638,8 @@ namespace PrePoMax
                     UserControls.AutoClosingMessageBox.Show(message, "Error", 3000);
                 }
             }
+            else if (extension == ".mesh")
+                _model.ImportGeometryFromMmgMeshFile(fileName);
             else if (extension == ".stp" || extension == ".step")
                 ImportCADAssemblyFile(fileName, "STEP_ASSEMBLY_SPLIT_TO_COMPOUNDS");
             else if (extension == ".igs" || extension == ".iges")
@@ -676,7 +677,7 @@ namespace PrePoMax
                 _form.SetCurrentView(_currentView);
                 DrawGeometry(false);
             }
-            else if (extension == ".unv" || extension == ".vol" || extension == ".inp")
+            else if (extension == ".unv" || extension == ".vol" || extension == ".inp" || extension == ".mesh")
             {
                 _currentView = ViewGeometryModelResults.Model;
                 _form.SetCurrentView(_currentView);
@@ -1134,6 +1135,14 @@ namespace PrePoMax
             }
             else return;
         }
+        public void ExportGeometryPartsAsMmgMesh(string[] partNames, string fileName)
+        {
+            FileInOut.Output.MmgFileWriter.Write(fileName, _model.Geometry, partNames);
+            foreach (var partName in partNames)
+            {
+                _form.WriteDataToOutput("Part " + partName + " exported to file: " + fileName);
+            }
+        }
         //
         private static byte[] Compress(Stream input)
         {
@@ -1454,7 +1463,7 @@ namespace PrePoMax
             foreach (var name in partNamesToSet)
             {
                 part = _model.Geometry.Parts[name];                
-                part.Color = System.Drawing.Color.FromArgb(alpha, part.Color);
+                part.Color = Color.FromArgb(alpha, part.Color);
                 _form.UpdateActor(name, name, part.Color);
             }
         }
@@ -1610,25 +1619,34 @@ namespace PrePoMax
                 else partIdFaceIds.Add(itemTypePartIds[2], new HashSet<int>() { itemTypePartIds[0] });
             }
             //
-            BasePart part;
-            string brepFileName;
-            bool onlyShells = true;
-            foreach (var entry in partIdFaceIds)
+            if (partIdFaceIds.Keys.Count > 0)
             {
-                part = _model.Geometry.GetPartById(entry.Key);
-                if (part != null && part is GeometryPart gp )
+                BasePart part;
+                string brepFileName;
+                int numOfShellParts = 0;
+                foreach (var entry in partIdFaceIds)
                 {
-                    if (part.PartType == PartType.Shell) 
+                    part = _model.Geometry.GetPartById(entry.Key);
+                    if (part != null && part is GeometryPart gp )
                     {
-                        brepFileName = FlipPartFaceOrientations(gp, entry.Value.ToArray());
-                        //
-                        if (brepFileName != null) ReplacePartGeometryFromFile(gp, brepFileName);
-                        else ClearAllSelection();
+                        if (part.PartType == PartType.Shell) 
+                        {
+                            brepFileName = FlipPartFaceOrientations(gp, entry.Value.ToArray());
+                            //
+                            if (brepFileName != null) ReplacePartGeometryFromFile(gp, brepFileName);
+                            else ClearAllSelection();
+                            //
+                            numOfShellParts++;
+                        }
                     }
-                    else onlyShells = false;
                 }
+                //
+                if (numOfShellParts <= 0)
+                    MessageBox.Show("Face orientations on solid parts cannot be fliped.", "Warning", MessageBoxButtons.OK);
+                else if (numOfShellParts < partIdFaceIds.Keys.Count)
+                    MessageBox.Show("Face orientations on solid parts cannot be fliped." + Environment.NewLine + 
+                                    "Only face orientations on shell parts were fliped.", "Warning", MessageBoxButtons.OK);
             }
-            if (!onlyShells) MessageBox.Show("Only face orientations on shell parts were fliped.", "Warning", MessageBoxButtons.OK);
         }
         private string FlipPartFaceOrientations(GeometryPart part, int[] faceIds)
         {
@@ -1858,7 +1876,7 @@ namespace PrePoMax
             //
             FeMesh mesh = FileInOut.Input.VolFileReader.Read(fileName, FileInOut.Input.ElementsToImport.All, false);
             double[][] nodeCoor = mesh.GetAllNodeCoor();
-            DrawNodes("nodeMesh", nodeCoor, System.Drawing.Color.Black, vtkControl.vtkRendererLayer.Selection, 7, true);
+            DrawNodes("nodeMesh", nodeCoor, Color.Black, vtkControl.vtkRendererLayer.Selection, 7, true);
         }
         //
         public string[] GetMeshRefinementNames()
@@ -2386,7 +2404,7 @@ namespace PrePoMax
             foreach (var name in partNames)
             {
                 part = _model.Mesh.Parts[name];
-                part.Color = System.Drawing.Color.FromArgb(alpha, part.Color);
+                part.Color = Color.FromArgb(alpha, part.Color);
                 _form.UpdateActor(name, name, part.Color);
             }
         }
@@ -4785,7 +4803,7 @@ namespace PrePoMax
             foreach (var name in partNames)
             {
                 part = _results.Mesh.Parts[name];
-                part.Color = System.Drawing.Color.FromArgb(alpha, part.Color);
+                part.Color = Color.FromArgb(alpha, part.Color);
                 _form.UpdateActor(name, name, part.Color);
             }
         }
@@ -6382,7 +6400,7 @@ namespace PrePoMax
                 DrawReferencePoint(entry.Value, entry.Value.Color, layer);
             }
         }
-        public void DrawReferencePoint(FeReferencePoint referencePoint, System.Drawing.Color color, vtkControl.vtkRendererLayer layer,
+        public void DrawReferencePoint(FeReferencePoint referencePoint, Color color, vtkControl.vtkRendererLayer layer,
                                        int nodeSize = 10)
         {
             try
@@ -6567,7 +6585,7 @@ namespace PrePoMax
                 }
             }
         }
-        public void DrawBoundaryCondition(string stepName, BoundaryCondition boundaryCondition, System.Drawing.Color color, 
+        public void DrawBoundaryCondition(string stepName, BoundaryCondition boundaryCondition, Color color, 
                                           int symbolSize, int nodeSymbolSize, vtkControl.vtkRendererLayer layer, bool onlyVisible)
         {
             try
@@ -7613,7 +7631,7 @@ namespace PrePoMax
             }
         }
         // Draw geometry ids
-        public void DrawEdgesByGeometryEdgeIds(string prefixName, int[] ids, System.Drawing.Color color,
+        public void DrawEdgesByGeometryEdgeIds(string prefixName, int[] ids, Color color,
                                                vtkControl.vtkRendererLayer layer, int nodeSize = 5,
                                                bool useSecondaryHighlightColor = false)
         {
@@ -7629,7 +7647,7 @@ namespace PrePoMax
             ApplyLighting(data);
             _form.Add3DCells(data);
         }
-        public void DrawItemsBySurfaceIds(string prefixName, int[] ids, System.Drawing.Color color,
+        public void DrawItemsBySurfaceIds(string prefixName, int[] ids, Color color,
                                           vtkControl.vtkRendererLayer layer, bool backfaceCulling = true,
                                           bool useSecondaryHighlightColor = false, bool drawSurfaceEdges = false)
         {
@@ -7640,7 +7658,7 @@ namespace PrePoMax
             //
             DrawSurface(prefixName, cells, color, layer, backfaceCulling, useSecondaryHighlightColor, drawSurfaceEdges);
         }
-        private int DrawItemsByGeometryIds(int[] ids, string prefixName, string itemName, System.Drawing.Color color,
+        private int DrawItemsByGeometryIds(int[] ids, string prefixName, string itemName, Color color,
                                            vtkControl.vtkRendererLayer layer, int nodeSize = 5, bool backfaceCulling = true,
                                            bool useSecondaryHighlightColor = false, bool onlyVisible = false)
         {
@@ -7672,7 +7690,7 @@ namespace PrePoMax
             if (nodeIds.Length > 0)
             {
                 // Black background
-                if (!selection) DrawNodes(name + "black", nodeIds, System.Drawing.Color.Black, layer, nodeSize + 2);
+                if (!selection) DrawNodes(name + "black", nodeIds, Color.Black, layer, nodeSize + 2);
                 //
                 DrawNodes(name, nodeIds, color, layer, nodeSize, onlyVisible);
             }
@@ -7816,29 +7834,30 @@ namespace PrePoMax
             }
             //
             GeometryPart[] parts = GetGeometryParts();
-            System.Drawing.Color color = System.Drawing.Color.Red;
+            Color color = Color.Red;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
             //
             bool error;
+            bool drawFreeEdges;
+            HashSet<int> edgeElementIds = new HashSet<int>();
+            HashSet<int> nodeIds = new HashSet<int>();
+            List<int[]> edgeCells = new List<int[]>();
             foreach (var part in parts)
             {
                 if (partNamesToSelect.Contains(part.Name) && _form.ContainsActor(part.Name))
                 {
                     error = false;
-                    if (part.ErrorElementIds != null)
+                    drawFreeEdges = (part.PartType == PartType.Solid || part.PartType == PartType.SolidAsShell) && part.FreeEdgeElementIds != null;
+                    //
+                    if (part.ErrorEdgeElementIds != null || drawFreeEdges)
                     {
-                        FeElementSet errorElemetSet = new FeElementSet("Error_elements", part.ErrorElementIds);
-                        HighlightElementSet(errorElemetSet, _model.Geometry);
-                        error = true;
-                    }
-                    if (part.ErrorEdgeElementIds != null)
-                    {
-                        List<int[]> edgeCells = new List<int[]>();
-                        for (int i = 0; i < part.ErrorEdgeElementIds.Length; i++)
-                        {
-                            edgeCells.Add(part.Visualization.EdgeCells[part.ErrorEdgeElementIds[i]]);
-                        }
-
+                        edgeElementIds.Clear();
+                        if (part.ErrorEdgeElementIds != null) edgeElementIds.UnionWith(part.ErrorEdgeElementIds);
+                        if (drawFreeEdges) edgeElementIds.UnionWith(part.FreeEdgeElementIds);
+                        //
+                        edgeCells.Clear();
+                        foreach (var elementId in edgeElementIds) edgeCells.Add(part.Visualization.EdgeCells[elementId]);
+                        //
                         vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
                         DisplayedMesh.GetNodesAndCellsForEdges(edgeCells.ToArray(), out data.Geometry.Nodes.Ids,
                                                                out data.Geometry.Nodes.Coor,
@@ -7865,9 +7884,13 @@ namespace PrePoMax
                         //
                         error = true;
                     }
-                    if (part.ErrorNodeIds != null)
+                    if (part.ErrorNodeIds != null || drawFreeEdges)
                     {
-                        DrawNodes(part.Name, part.ErrorNodeIds, color, layer);
+                        nodeIds.Clear();
+                        if (part.ErrorNodeIds != null) nodeIds.UnionWith(part.ErrorNodeIds);
+                        if (drawFreeEdges) nodeIds.UnionWith(part.FreeNodeIds);
+                        //
+                        DrawNodes(part.Name, nodeIds.ToArray(), color, layer);
                         error = true;
                     }
                     if (!error)
@@ -7891,7 +7914,7 @@ namespace PrePoMax
                     //
                     double[][] points;
                     DisplayedMesh.GetVetexAndEdgeCoorFromGeometryIds(ids, meshRefinement.MeshSize, true, out points);
-                    DrawNodes(meshRefinement.Name, points, System.Drawing.Color.Red, vtkControl.vtkRendererLayer.Selection);
+                    DrawNodes(meshRefinement.Name, points, Color.Red, vtkControl.vtkRendererLayer.Selection);
                     HighlightItemsByGeometryIds(ids, false);
                 }
             }
@@ -7899,7 +7922,7 @@ namespace PrePoMax
         public int HighlightModelParts(string[] partsToSelect)
         {
             MeshPart[] parts = GetModelParts();
-            System.Drawing.Color color = System.Drawing.Color.Red;
+            Color color = Color.Red;
             //
             int count = 0;
             foreach (var part in parts)
@@ -7918,7 +7941,7 @@ namespace PrePoMax
         public void HighlightResultParts(string[] partsToSelect)
         {
             BasePart[] parts = GetResultParts();
-            System.Drawing.Color color = System.Drawing.Color.Red;
+            Color color = Color.Red;
 
             foreach (var part in parts)
             {
@@ -7932,7 +7955,7 @@ namespace PrePoMax
         public void HighlightNodeSets(string[] nodeSetsToSelect, bool useSecondaryHighlightColor = false)
         {
             IDictionary<string, FeNodeSet> nodeSets = _model.Mesh.NodeSets;
-            System.Drawing.Color color = System.Drawing.Color.Red;
+            Color color = Color.Red;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
             int nodeSize = 1; // size <= 1 gets overwritten in vtkControl for the highlights in selection layer
             foreach (var nodeSetName in nodeSetsToSelect)
@@ -7952,7 +7975,7 @@ namespace PrePoMax
             int[] cellIds;
             int[][] cells;
             int[] cellTypes;
-            System.Drawing.Color color = System.Drawing.Color.Red;
+            Color color = Color.Red;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
             bool canHaveEdges = true;
             vtkControl.vtkMaxActorData data;
@@ -8000,7 +8023,7 @@ namespace PrePoMax
         public void HighlightSurface(int[][] cells, bool useSecondaryHighlightColor)
         {
             FeMesh mesh = DisplayedMesh;
-            System.Drawing.Color color = System.Drawing.Color.Red;
+            Color color = Color.Red;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
             // Copy
             int[][] cellsCopy = new int[cells.Length][];
@@ -8052,7 +8075,7 @@ namespace PrePoMax
         }
         public void HighlightSurfaces(string[] surfacesToSelect, bool useSecondaryHighlightColor = false)
         {
-            System.Drawing.Color color = System.Drawing.Color.Red;
+            Color color = Color.Red;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
             //
             foreach (var surfaceName in surfacesToSelect)
@@ -8063,7 +8086,7 @@ namespace PrePoMax
         }
         public void HighlightReferencePoints(string[] referencePointsToSelect)
         {
-            System.Drawing.Color color = System.Drawing.Color.Red;
+            Color color = Color.Red;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
             vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
             //
@@ -8121,7 +8144,7 @@ namespace PrePoMax
         public void HighlightConnectedLines(double[][] lineNodeCoor)
         {
             // create wire elements
-            System.Drawing.Color color = System.Drawing.Color.Red;
+            Color color = Color.Red;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
 
             LinearBeamElement element = new LinearBeamElement(0, new int[] { 0, 1 });
@@ -8201,7 +8224,7 @@ namespace PrePoMax
                 nodeCoor.Add(lineNodeCoor[i][0]);
                 nodeCoor.Add(lineNodeCoor[i][lineNodeCoor[i].Length - 1]);
             }
-            DrawNodes("short_edges", nodeCoor.ToArray(), System.Drawing.Color.Empty, layer, nodeSize);
+            DrawNodes("short_edges", nodeCoor.ToArray(), Color.Empty, layer, nodeSize);
         }
         //
         public void HighlightSelection(bool clear = true, bool useSecondaryHighlightColor = false)
@@ -8654,7 +8677,7 @@ namespace PrePoMax
             //
             if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
         }
-        public void DrawUndeformedPartCopy(BasePart part, System.Drawing.Color color, vtkControl.vtkRendererLayer layer)
+        public void DrawUndeformedPartCopy(BasePart part, Color color, vtkControl.vtkRendererLayer layer)
         {
             vtkControl.vtkMaxActorData data;
             data = new vtkControl.vtkMaxActorData();

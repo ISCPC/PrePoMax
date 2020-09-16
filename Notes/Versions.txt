@@ -7,7 +7,6 @@ By Massimiliano
 1) add support for cylindrical coordinate system for modeling
 2) add support for cylindrical coordinate system for ploting of the results
 3) change the legend limits on the 3D view
-4) add "Auto scroll" function the display of the results
 5) remote load moment using nodal forces
 6) add support for spring elements
 7) add support for the restart of the analysis 
@@ -20,8 +19,6 @@ Fatigue analysis
 Thermal analysis
 Plastic (copy / paste) parameters from data/file
 Material curve plotting
-Export / Import material library
-Ev. a small basic material library
 Export in VTK (Paraview)
 Personalising spectrum colours (post-Processing)
 Personalising description format (post-Processing)
