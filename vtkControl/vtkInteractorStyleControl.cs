@@ -104,6 +104,7 @@ namespace vtkControl
         private int _y;
 
         protected bool _leftMouseButtonPressed;
+        protected bool _rubberBandCanceledByEsc;
         protected bool _rubberBandSelection;
         protected bool _selectionCanceled;
         protected vtkRenderer _selectionRenderer;
@@ -119,6 +120,7 @@ namespace vtkControl
         public new const string MRFullTypeName = "Kitware.VTK.vtkInteractorStyleControl";
         public bool Selection { get { return _selection; } set { _selection = value; } }
         public bool RubberBandEnabled { get { return _rubberBandEnabled; } set { _rubberBandEnabled = value; } }
+        public bool RubberBandCanceledByEsc { get { return _rubberBandCanceledByEsc; } set { _rubberBandCanceledByEsc = value; } }
         public bool Animating { get { return _animating; } set { _animating = value; } }
 
 
@@ -127,7 +129,7 @@ namespace vtkControl
         public event Action<int, int, bool, int, int> PointPickedOnLeftUpEvt;
         public event Action ClearCurrentMouseSelection;
         public event Action<int, int> LeftButtonPressEvent;
-        public event Action<int, int> RightButtonPressEvent;
+        public event Action<int, int> RightButtonPressEvent;        
 
 
         // Constructors                                                                                                             
@@ -446,41 +448,44 @@ namespace vtkControl
         {
             vtkRenderer renderer = this.GetCurrentRenderer();
             if (renderer == null) return;
-
+            //
             vtkRenderWindowInteractor rwi = this.GetInteractor();
             sbyte key = rwi.GetKeyCode();
-
+            //
+            _rubberBandCanceledByEsc = false;
+            //
             if (key >= 37 && key <= 40)
             {
                 UpdateRotationCenterDisplay();
-
-                double delta = 5;
-
                 rwi.Modified();
-
+                //
+                double delta = 5;
                 if (key == 37) Rotate(+delta, 0);       // left
                 else if (key == 39) Rotate(-delta, 0);  // right
                 else if (key == 38) Rotate(0, -delta);  // up
                 else if (key == 40) Rotate(0, +delta);  // down
-
+                //
                 rwi.Modified();
-                rwi.Render();
+                rwi.Render();                
             }
             else if (key == 27) // Escape
             {
                 // When making area selection, Esc key cancels it
-
-                _selectionCanceled = true;
-                _clickPos = null;
-                //_leftMouseButtonPressed = false;
-                _rubberBandSelection = false;
-
-                _selectionBackgroundActor.VisibilityOff();
-                _selectionBorderActor.VisibilityOff();
-
-                ClearCurrentMouseSelection?.Invoke();
-
-                rwi.Render();
+                if (_rubberBandSelection)
+                {
+                    _selectionCanceled = true;
+                    _clickPos = null;
+                    _rubberBandSelection = false;
+                    //
+                    _selectionBackgroundActor.VisibilityOff();
+                    _selectionBorderActor.VisibilityOff();
+                    //
+                    ClearCurrentMouseSelection?.Invoke();
+                    //
+                    rwi.Render();
+                    //
+                    _rubberBandCanceledByEsc = true;
+                }
             }
         }
 

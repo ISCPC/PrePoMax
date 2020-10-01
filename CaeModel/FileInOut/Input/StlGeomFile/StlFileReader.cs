@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using CaeMesh;
+using CaeGlobals;
 
 namespace FileInOut.Input
 {
@@ -63,6 +64,7 @@ namespace FileInOut.Input
                 //
                 double epsilon = 1E-6;
                 double max = box.GetDiagonal();
+                //
                 MergeNodes(nodes, elements, epsilon * max);
                 //
                 FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Geometry);
@@ -82,7 +84,6 @@ namespace FileInOut.Input
             //
             return null;
         }
-
         private static void MergeNodes(Dictionary<int, FeNode> nodes, Dictionary<int, FeElement> elements, double epsilon)
         {            
             int count = 0;

@@ -1306,6 +1306,11 @@ namespace PrePoMax
             Commands.CFlipFaceOrientations comm = new Commands.CFlipFaceOrientations(geometrySelection);
             _commands.AddAndExecute(comm);
         }
+        public void SplitAFaceUsingTwoPointsCommand(GeometrySelection surfaceSelection, GeometrySelection verticesSelection)
+        {
+            Commands.CSplitAFaceUsingTwoPoints comm = new Commands.CSplitAFaceUsingTwoPoints(surfaceSelection, verticesSelection);
+            _commands.AddAndExecute(comm);
+        }
 
         //******************************************************************************************
 
@@ -1557,7 +1562,6 @@ namespace PrePoMax
         }
 
         // Analyze geometry ***********************************************************************
-
         public double GetShortestEdgeLen(string[] partNames)
         {
             return DisplayedMesh.GetShortestEdgeLen(partNames);
@@ -1589,7 +1593,6 @@ namespace PrePoMax
         }
 
         // Flip face orientation ******************************************************************
-
         public void FlipFaceOrientations(GeometrySelection geometrySelection)
         {
             if (geometrySelection.CreationData != null)
@@ -1600,11 +1603,7 @@ namespace PrePoMax
                 _selection.Clear();
             }
             else throw new NotSupportedException("The geometry selection does not contain any selection data.");
-            //
-            FlipAllFaceOrientations(geometrySelection);
-        }
-        private void FlipAllFaceOrientations(GeometrySelection geometrySelection)
-        {
+            // Flip
             int[] itemTypePartIds;
             HashSet<int> faceIds;
             Dictionary<int, HashSet<int>> partIdFaceIds = new Dictionary<int, HashSet<int>>();
@@ -1627,9 +1626,9 @@ namespace PrePoMax
                 foreach (var entry in partIdFaceIds)
                 {
                     part = _model.Geometry.GetPartById(entry.Key);
-                    if (part != null && part is GeometryPart gp )
+                    if (part != null && part is GeometryPart gp)
                     {
-                        if (part.PartType == PartType.Shell) 
+                        if (part.PartType == PartType.Shell)
                         {
                             brepFileName = FlipPartFaceOrientations(gp, entry.Value.ToArray());
                             //
@@ -1644,7 +1643,7 @@ namespace PrePoMax
                 if (numOfShellParts <= 0)
                     MessageBox.Show("Face orientations on solid parts cannot be fliped.", "Warning", MessageBoxButtons.OK);
                 else if (numOfShellParts < partIdFaceIds.Keys.Count)
-                    MessageBox.Show("Face orientations on solid parts cannot be fliped." + Environment.NewLine + 
+                    MessageBox.Show("Face orientations on solid parts cannot be fliped." + Environment.NewLine +
                                     "Only face orientations on shell parts were fliped.", "Warning", MessageBoxButtons.OK);
             }
         }
@@ -1693,10 +1692,11 @@ namespace PrePoMax
             }
             if (importedFileNames == null)
             {
-                throw new CaeException("Importing brep file after face normal flip failed.");
+                throw new CaeException("Importing brep file during the replace of the geometry part failed.");
             }
             else if (importedFileNames.Length == 1)
             {
+                //_form.ScreenUpdating = false;
                 // Add the imported part to the model tree
                 UpdateAfterImport(".brep");
                 // Copy old part properties to the new part
@@ -1714,6 +1714,7 @@ namespace PrePoMax
                 UpdateMeshRefinements();
                 //
                 UpdateAfterImport(".brep");
+                //_form.ScreenUpdating = true;
             }
             else
             {
@@ -1721,6 +1722,83 @@ namespace PrePoMax
                 throw new NotSupportedException();
             }
             return true;
+        }
+        // Split a face using two points **********************************************************
+        public void SplitAFaceUsingTwoPoints(GeometrySelection surfaceSelection, GeometrySelection verticesSelection)
+        {
+            if (surfaceSelection.CreationData != null && verticesSelection.CreationData != null)
+            {
+                // In order for the Regenerate history to work perform the selection
+                _selection = surfaceSelection.CreationData.DeepClone();
+                surfaceSelection.GeometryIds = GetSelectionIds();
+                _selection.Clear();
+                //
+                _selection = verticesSelection.CreationData.DeepClone();
+                verticesSelection.GeometryIds = GetSelectionIds();
+                _selection.Clear();
+            }
+            else throw new NotSupportedException("The geometry selection does not contain any selection data.");
+            //
+            if (surfaceSelection.GeometryIds.Length != 1 || verticesSelection.GeometryIds.Length != 2)
+                throw new CaeException("The selection does not contain 1 face and 2 vertices.");
+            // Split
+            int faceId;
+            int node1Id;
+            int node2Id;
+            FeNode node1;
+            FeNode node2;
+            BasePart part;
+            int[] itemTypePartIds;
+            itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(surfaceSelection.GeometryIds[0]);
+            faceId = itemTypePartIds[0];
+            part = _model.Geometry.GetPartById(itemTypePartIds[2]);
+            //
+            itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(verticesSelection.GeometryIds[0]);
+            node1Id = part.Visualization.VertexNodeIds[itemTypePartIds[0]];
+            itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(verticesSelection.GeometryIds[1]);
+            node2Id = part.Visualization.VertexNodeIds[itemTypePartIds[0]];
+            node1 = _model.Geometry.Nodes[node1Id];
+            node2 = _model.Geometry.Nodes[node2Id];
+            //
+            if (part != null && part is GeometryPart gp)
+            {
+                string brepFileName = SplitAFaceUsingTwoPoints(gp, faceId, node1, node2);
+                //
+                if (brepFileName != null) ReplacePartGeometryFromFile(gp, brepFileName);
+                else ClearAllSelection();
+            }
+        }
+        private string SplitAFaceUsingTwoPoints(GeometryPart part, int faceId, FeNode node1, FeNode node2)
+        {
+            CalculixSettings settings = _settings.Calculix;
+            if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
+            {
+                MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
+                return null;
+            }
+            //
+            string executable = Application.StartupPath + Globals.NetGenMesher;
+            string inputBrepFileName = Path.Combine(settings.WorkDirectory, Globals.BrepFileName);
+            string outputBrepFileName = Path.Combine(settings.WorkDirectory, Globals.BrepFileName);
+            //
+            if (File.Exists(inputBrepFileName)) File.Delete(inputBrepFileName);
+            if (File.Exists(outputBrepFileName)) File.Delete(outputBrepFileName);
+            //
+            File.WriteAllText(inputBrepFileName, part.CADFileData);
+            //
+            string argument = "BREP_SPLIT_A_FACE_USING_TWO_POINTS " +
+                              "\"" + inputBrepFileName.ToUTF8() + "\" " +
+                              "\"" + outputBrepFileName.ToUTF8() + "\" " +
+                              (faceId + 1) + " " +
+                              node1.X + " " + node1.Y + " " + node1.Z + " " +
+                              node2.X + " " + node2.Y + " " + node2.Z;
+            //
+            _netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
+            _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
+            _netgenJob.Submit();
+            // Job completed
+            if (_netgenJob.JobStatus == JobStatus.OK) return outputBrepFileName;
+            else return null;
         }
         #endregion #################################################################################################################
 
@@ -5106,7 +5184,18 @@ namespace PrePoMax
             }
             else add = true;
             //
-            if (add) _selection.Add(node, ids);
+            if (add)
+            {
+                if (_selection.MaxNumberOfIds == 1) _selection.Clear();
+                // Add
+                _selection.Add(node, ids);
+                // Remove the node if the maximum number of items is exceeded
+                if (_selection.MaxNumberOfIds > 1)
+                {
+                    ids = GetSelectionIds();
+                    if (ids.Length > _selection.MaxNumberOfIds) _selection.RemoveLast();
+                }
+            }
             //
             if (callSelectionChenged) _form.SelectionChanged();
             //
@@ -5485,17 +5574,23 @@ namespace PrePoMax
             double precision = selectionNodeMouse.Precision;
             //
             int[] ids;
-            if (selectBy == vtkSelectBy.QueryEdge)
+            if (selectBy == vtkSelectBy.Geometry)
+            {
+                ids = new int[] { GetGeometryId(pickedPoint, selectionOnPartId, precision) };
+            }
+            else if (selectBy == vtkSelectBy.GeometryVertex)
+            {
+                int id = GetGeometryVertexId(pickedPoint, selectionOnPartId, precision);
+                if (id > 0) ids = new int[] { id };
+                else ids = new int[0];
+            }
+            else if (selectBy == vtkSelectBy.GeometryEdge || selectBy == vtkSelectBy.QueryEdge)
             {
                 ids = GetGeometryEdgeIdsByAngle(pickedPoint, -1, selectionOnPartId);
             }
-            else if (selectBy == vtkSelectBy.QuerySurface)
+            else if (selectBy == vtkSelectBy.GeometrySurface || selectBy == vtkSelectBy.QuerySurface)
             {
                 ids = GetGeometrySurfaceIdsByAngle(pickedPoint, -1, selectionOnPartId);
-            }
-            else if (selectBy == vtkSelectBy.Geometry)
-            {
-                ids = new int[] { GetGeometryId(pickedPoint, selectionOnPartId, precision) };
             }
             else if (selectBy == vtkSelectBy.GeometryEdgeAngle)
             {
@@ -5649,6 +5744,20 @@ namespace PrePoMax
             //
             _form.GetGeometryPickProperties(point, out elementId, out edgeNodeIds, out cellFaceNodeIds, partNames);
             return DisplayedMesh.GetGeometryIdByPrecision(point, elementId, cellFaceNodeIds, precision);
+        }
+        private int GetGeometryVertexId(double[] point, int selectionOnPartId, double precision)
+        {
+            int elementId;
+            int[] edgeNodeIds;
+            int[] cellFaceNodeIds;
+            //
+            string[] partNames;
+            BasePart part = DisplayedMesh.GetPartById(selectionOnPartId);
+            if (part != null) partNames = new string[] { part.Name };
+            else partNames = null;
+            //
+            _form.GetGeometryPickProperties(point, out elementId, out edgeNodeIds, out cellFaceNodeIds, partNames);
+            return DisplayedMesh.GetGeometryVertexIdByPrecision(point, elementId, cellFaceNodeIds, precision);
         }
         private int[] GetGeometryEdgeIdsByAngle(double[] point, double angle, int selectionOnPartId)
         {
@@ -6058,11 +6167,30 @@ namespace PrePoMax
             else if (typeId == 3) return GetSurfaceEdgeActorDataFromElementId(elementId, cellFaceNodeIds);
             else throw new NotSupportedException();
         }
-
-        public vtkControl.vtkMaxActorData GetGeometryActorData(double[] frustum)
+        public vtkControl.vtkMaxActorData GetGeometryVertexActorData(double[] point, int elementId,
+                                                                     int[] edgeNodeIds, int[] cellFaceNodeIds)
         {
-            return null;
+            double precision = _form.GetSelectionPrecision();
+            int geomId = DisplayedMesh.GetGeometryVertexIdByPrecision(point, elementId, cellFaceNodeIds, precision);
+            // If no vertex is selected
+            if (geomId < 0) return null;
+            else
+            {
+                //
+                int typeId = (geomId / 10000) % 10;
+                int itemId = geomId / 100000;
+                //
+                if (typeId == 1)
+                {
+                    int[] nodeIds = DisplayedMesh.GetNodeIdsFromGeometryId(geomId);
+                    return GetNodeActorData(nodeIds);
+                }
+                else if (typeId == 2) return GetGeometryEdgeActorData(new int[] { geomId });
+                else if (typeId == 3) return GetSurfaceEdgeActorDataFromElementId(elementId, cellFaceNodeIds);
+                else throw new NotSupportedException();
+            }
         }
+
         #endregion #################################################################################################################
 
 

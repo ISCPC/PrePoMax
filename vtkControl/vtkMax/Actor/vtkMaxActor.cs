@@ -630,6 +630,40 @@ namespace vtkControl
             }
             // Actor                                                                                                                
 
+            if (false)
+            {
+                vtkTransform transformCylinder = vtkTransform.New();
+                transformCylinder.Identity();
+                //transformCylinder.Translate(-.4, .4, 0);
+                //transformCylinder.RotateZ(30);
+                //transformCylinder.RotateY(60);
+                transformCylinder.RotateX(90);
+                //transformCylinder.Inverse();
+
+                vtkCylinder cylinder = vtkCylinder.New();
+                cylinder.SetTransform(transformCylinder);
+                cylinder.SetRadius(9.9);
+
+                vtkClipPolyData clipper = vtkClipPolyData.New();
+                clipper.SetInput(polyActor);
+                clipper.SetClipFunction(cylinder);
+                clipper.GenerateClippedOutputOn();
+                clipper.GenerateClipScalarsOn();
+                clipper.SetValue(0);
+
+                vtkDecimatePro decimate =vtkDecimatePro.New();
+                decimate.SetInput(clipper.GetClippedOutput());
+                decimate.SetTargetReduction(0.9);
+                decimate.PreserveTopologyOn();
+                decimate.Update();
+
+                vtkSTLWriter stlWriter = vtkSTLWriter.New();
+                stlWriter.SetFileName(@"C:\Temp\MmgPlatform\Cylindrical\out.stl");
+                stlWriter.SetInput(decimate.GetOutput());
+                stlWriter.Write();
+            }
+
+
             // Polydata
             vtkPolyData polydata = polyActor;
             polydata.GetPointData().CopyScalarsOn();

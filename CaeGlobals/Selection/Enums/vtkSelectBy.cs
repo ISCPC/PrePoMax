@@ -21,6 +21,9 @@ namespace CaeGlobals
         Part,
         // Geometry
         Geometry,
+        GeometryVertex,
+        GeometryEdge,
+        GeometrySurface,
         GeometryEdgeAngle,
         GeometrySurfaceAngle,
         // Querry

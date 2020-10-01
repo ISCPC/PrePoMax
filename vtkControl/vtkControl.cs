@@ -166,6 +166,9 @@ namespace vtkControl
                         case vtkSelectBy.EdgeAngle:
                         case vtkSelectBy.SurfaceAngle:
                         // Geometry
+                        case vtkSelectBy.GeometryVertex:
+                        case vtkSelectBy.GeometryEdge:
+                        case vtkSelectBy.GeometrySurface:
                         case vtkSelectBy.GeometryEdgeAngle:
                         case vtkSelectBy.GeometrySurfaceAngle:
                         // Querry
@@ -211,6 +214,7 @@ namespace vtkControl
         public Func<int[], int[], vtkMaxActorData> Controller_GetSurfaceEdgesActorDataFromNodeAndElementIds;
         public Func<int[], vtkMaxActorData> Controller_GetPartActorData;
         public Func<double[], int, int[], int[], vtkMaxActorData> Controller_GetGeometryActorData;
+        public Func<double[], int, int[], int[], vtkMaxActorData> Controller_GetGeometryVertexActorData;
 
         public Action<MouseEventArgs, Keys, string[]> Controller_ActorsPicked;
         public Action Controller_ShowLegendSettings;
@@ -219,7 +223,7 @@ namespace vtkControl
 
         // Events                                                                                                                   
         public event Action<double[], double[][], vtkSelectOperation> OnMouseLeftButtonUpSelection;
-        
+        public event Action<sbyte> KeyPressEvent;
 
         // Constructors                                                                                                             
         public vtkControl()
@@ -394,6 +398,15 @@ namespace vtkControl
                             break;
                         case vtkSelectBy.Geometry:
                             PickByGeometry(out pickedActor, x1, y1);
+                            break;
+                        case vtkSelectBy.GeometryVertex:
+                            PickByGeometryVertex(out pickedActor, x1, y1);
+                            break;
+                        case vtkSelectBy.GeometryEdge:
+                            PickByEdge(out pickedActor, x1, y1, false);
+                            break;
+                        case vtkSelectBy.GeometrySurface:
+                            PickBySurface(out pickedActor, x1, y1, false);
                             break;
                         case vtkSelectBy.GeometryEdgeAngle:
                             PickByGeometryEdgeAngle(out pickedActor, x1, y1);
@@ -980,6 +993,35 @@ namespace vtkControl
             //
             AddActorGeometry(_mouseSelectionActorCurrent, vtkRendererLayer.Selection);
             _mouseSelectionActorCurrent.Geometry.SetProperty(Globals.CurrentMouseSelectionProperty);
+        }
+        private void PickByGeometryVertex(out vtkActor pickedActor, int x, int y)
+        {
+            double[] pickedPoint = GetPickPoint(out pickedActor, x, y);
+            //
+            if (pickedPoint == null)
+            {
+                if (_probeWidget.GetVisibility() == 1) _probeWidget.VisibilityOff();
+                return;
+            }
+            //
+            vtkCellLocator cellLocator;
+            vtkCell cell;
+            int globalCellId = GetGlobalCellIdClosestTo3DPoint(ref pickedPoint, out cell, out cellLocator);
+            int[] globalCellEdgeNodeIds = GetEdgeNodeIds(pickedPoint, globalCellId, cell, cellLocator);
+            int[] globalCellFaceNodeIds = GetCellFaceNodeIds(cell, cellLocator);
+            //double dist = vtkInteractorStyleControl.DisplayToWorldScale(_renderer, 7);
+            //
+            vtkMaxActorData actorData = Controller_GetGeometryVertexActorData(pickedPoint,
+                                                                              globalCellId,
+                                                                              globalCellEdgeNodeIds,
+                                                                              globalCellFaceNodeIds);
+            if (actorData != null)
+            {
+                _mouseSelectionActorCurrent = new vtkMaxActor(actorData, false, true);
+                //
+                AddActorGeometry(_mouseSelectionActorCurrent, vtkRendererLayer.Selection);
+                _mouseSelectionActorCurrent.Geometry.SetProperty(Globals.CurrentMouseSelectionProperty);
+            }
         }
         private void PickByGeometryEdgeAngle(out vtkActor pickedActor, int x, int y)
         {
@@ -1709,6 +1751,9 @@ namespace vtkControl
         private void _style_KeyPressEvt(vtkObject sender, vtkObjectEventArgs e)
         {
             if (_scalarBarWidget.GetVisibility() == 1) _scalarBarWidget.OnRenderWindowModified();
+            //
+            sbyte key = _renderWindowInteractor.GetKeyCode();
+            if (!_style.RubberBandCanceledByEsc) KeyPressEvent?.Invoke(key);
         }
 
         private vtkTextProperty CreateNewTextProperty()

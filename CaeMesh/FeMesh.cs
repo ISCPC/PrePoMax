@@ -1022,6 +1022,8 @@ namespace CaeMesh
             SplitVisualizationEdgesAndFaces(part);
             //
             CheckForFeeAndErrorElements(part);
+            //
+            //TmpMakeCylinder(part, 10);
         }
         private void ExtractWirePartVisualization(BasePart part)
         {
@@ -1287,7 +1289,7 @@ namespace CaeMesh
                     {
                         foreach (var entry in faceVertexEdgeIds[i])
                         {
-                            if (entry.Value.Count == 1)
+                            if (entry.Value.Count != 2)
                             {
                                 nodeId = entry.Key;
                                 errorNodeIds.Add(nodeId);
@@ -3769,6 +3771,45 @@ namespace CaeMesh
                 {
                     typeId = 3;
                     itemId = faceId;
+                }
+            }
+            //
+            geometryId = itemId * 100000 + typeId * 10000 + partId;
+            return geometryId;
+        }
+        public int GetGeometryVertexIdByPrecision(double[] point, int elementId, int[] cellFaceNodeIds, double precision)
+        {
+            //int id = GetGeometryIdByPrecision(point, elementId, cellFaceNodeIds, precision);
+            //int[] itemTypePart = FeMesh.GetItemTypePartIdsFromGeometryId(id);
+            //if (itemTypePart[1] == 1) return id;
+            //else return -1;
+
+            if (precision <= 0) throw new NotSupportedException();
+            // geometryId = itemId * 100000 + typeId * 10000 + partId       
+            int itemId = -1;
+            int typeId = -1;    // 1 ... vertex, 2 ... edge, 3 ... surface  
+            int partId = -1;
+            int geometryId;
+            //
+            BasePart part;
+            int faceId;
+            if (GetFaceId(elementId, cellFaceNodeIds, out part, out faceId))
+            {
+                partId = part.PartId;
+                VisualizationData visualization = part.Visualization;
+                int vertexId;
+                int edgeId;
+                double vertexDist;
+                double edgeDist;
+                // Get closest edge distance
+                edgeDist = PointToClosestFaceEdgeDistance(point, visualization, faceId, out edgeId);
+                vertexDist = PointToClosestEdgeVertexDistance(point, visualization, edgeId, out vertexId);
+                //
+                //
+                if (vertexDist < 2 * precision)
+                {
+                    typeId = 1;
+                    itemId = vertexId;
                 }
             }
             //

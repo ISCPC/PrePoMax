@@ -14,7 +14,8 @@ namespace CaeGlobals
         private List<SelectionNode> _nodes;                 //ISerializable
         private vtkSelectItem _selectItem;                  //ISerializable
         private int _currentView;                           //ISerializable
-        
+        private int _maxNumberOfIds;                        //ISerializable
+
         // Temporary storage for speed optimization: keep current ids; do not copy
         [NonSerialized] private Dictionary<SelectionNode, int[]> _nodeIds;
         [NonSerialized] private bool _limitSelectionToFirstPart;
@@ -33,6 +34,7 @@ namespace CaeGlobals
             get { return _currentView; } 
             set { _currentView = value; } 
         }
+        public int MaxNumberOfIds { get { return _maxNumberOfIds; } set { _maxNumberOfIds = value; } }
 
 
         // Constructors                                                                                                             
@@ -43,10 +45,12 @@ namespace CaeGlobals
             _selectItem = vtkSelectItem.None;
             _limitSelectionToFirstPart = false;
             _currentView = -1;
+            _maxNumberOfIds = -1;
         }
         public Selection(SerializationInfo info, StreamingContext context)
         {
-            _currentView = -1;  // Compatibility for version v0.5.2
+            _currentView = -1;              // Compatibility for version v0.5.2
+            _maxNumberOfIds = -1;           // Compatibility for version v0.8.0
             foreach (SerializationEntry entry in info)
             {
                 switch (entry.Name)
@@ -58,6 +62,8 @@ namespace CaeGlobals
                         _selectItem = (vtkSelectItem)entry.Value; break;
                     case "_currentView":
                         _currentView = (int)entry.Value; break;
+                    case "_maxNumberOfIds":
+                        _maxNumberOfIds = (int)entry.Value; break;
                     default:
                         break;
                 }
@@ -89,9 +95,18 @@ namespace CaeGlobals
             ids = null;
             return _nodeIds == null ? false : _nodeIds.TryGetValue(node, out ids);
         }
+        public void RemoveFirst()
+        {
+            if (_nodes.Count > 0)
+            {
+                SelectionNode node = _nodes.First();
+                if (_nodeIds != null) _nodeIds.Remove(node);
+                _nodes.Remove(node);
+            }
+        }
         public void RemoveLast()
         {
-            if (_nodes != null && _nodes.Count > 0)
+            if (_nodes.Count > 0)
             {
                 SelectionNode node = _nodes.Last();
                 if (_nodeIds != null) _nodeIds.Remove(node);
@@ -115,7 +130,6 @@ namespace CaeGlobals
             }
             return true;
         }
-
         // ISerialization
         public void GetObjectData(SerializationInfo info, StreamingContext context)
         {
@@ -123,6 +137,7 @@ namespace CaeGlobals
             info.AddValue("_nodes", _nodes, typeof(List<SelectionNode>));
             info.AddValue("_selectItem", _selectItem, typeof(vtkSelectItem));
             info.AddValue("_currentView", _currentView, typeof(int));
+            info.AddValue("_maxNumberOfIds", _maxNumberOfIds, typeof(int));
         }
 
     }

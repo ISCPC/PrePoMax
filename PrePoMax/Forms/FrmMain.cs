@@ -14,6 +14,7 @@ using UserControls;
 using CaeJob;
 using System.Reflection;
 using CaeModel;
+using CaeMesh;
 
 namespace PrePoMax
 {
@@ -126,6 +127,7 @@ namespace PrePoMax
                 this.ActiveControl = null;
             });
         }
+        public bool ScreenUpdating { get { return _modelTree.ScreenUpdating; } set { _modelTree.ScreenUpdating = value; } }
 
         #endregion  ################################################################################################################
 
@@ -221,6 +223,7 @@ namespace PrePoMax
                 _controller = new PrePoMax.Controller(this);
                 // Vtk
                 _vtk.OnMouseLeftButtonUpSelection += SelectPointOrArea;
+                _vtk.KeyPressEvent += Vtk_KeyPressEvent;
                 _vtk.Controller_GetNodeActorData = _controller.GetNodeActorData;
                 _vtk.Controller_GetCellActorData = _controller.GetCellActorData;
                 _vtk.Controller_GetCellFaceActorData = _controller.GetCellFaceActorData;
@@ -229,6 +232,7 @@ namespace PrePoMax
                 _vtk.Controller_GetSurfaceEdgesActorDataFromNodeAndElementIds = _controller.GetSurfaceEdgeActorDataFromNodeAndElementIds;
                 _vtk.Controller_GetPartActorData = _controller.GetPartActorData;
                 _vtk.Controller_GetGeometryActorData = _controller.GetGeometryActorData;
+                _vtk.Controller_GetGeometryVertexActorData = _controller.GetGeometryVertexActorData;
                 _vtk.Controller_ActorsPicked = SelectBaseParts;
                 _vtk.Controller_ShowLegendSettings = ShowLegendSettings;
                 _vtk.Controller_ShowStatusBlockSettings = ShowStatusBlockSettings;
@@ -533,6 +537,11 @@ namespace PrePoMax
             GetFormLoaction(form);
         }
         //
+        private void Vtk_KeyPressEvent(sbyte key)
+        {
+            if (key == 27) CloseAllForms(); // = Esc
+        }
+        //
         private void timerOutput_Tick(object sender, EventArgs e)
         {
             tbOutput.Lines = outputLines;
@@ -750,7 +759,7 @@ namespace PrePoMax
             }
             catch { }
         }
-        //                                                                              
+        //                                                                                                                          
         private void HideShowItems<T>(NamedClass[] items, HideShowOperation operation, Action<string[]> Hide, 
                                       Action<string[]> Show, Action<string[]> ShowOnly)
         {
@@ -820,7 +829,8 @@ namespace PrePoMax
                 }
             }
         }
-
+        //                                                                                                                          
+        
         #endregion #################################################################################################################
 
 
@@ -1903,11 +1913,67 @@ namespace PrePoMax
             }
         }
         //
-        private void tsmiFlipFaceNormal_Click(object sender, EventArgs e)
+        private async void tsmiFlipFaceNormal_Click(object sender, EventArgs e)
         {
             try
             {
-                ShowForm(_frmSelectGeometry, "Select surfaces", null);
+                await Task.Run(() =>
+                {
+                    _frmSelectGeometry.HideFormOnOK = false;
+                    _frmSelectGeometry.SelectionFilter = SelectGeometryEnum.Surface;
+                    _frmSelectGeometry.OnOKCallback = _controller.FlipFaceOrientationsCommand;
+                    //
+                    bool _prevShowFaceOrientation = _controller.ShowFaceOrientation;
+                    _controller.ShowFaceOrientation = true;
+                    //
+                    InvokeIfRequired(() => { ShowForm(_frmSelectGeometry, "Select surfaces to flip", null); });
+                    while (_frmSelectGeometry.Visible) System.Threading.Thread.Sleep(100);
+                    //
+                    _controller.ShowFaceOrientation = _prevShowFaceOrientation;
+                });
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private async void tsmiSplitAFaceUsingTwoPoints_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                await Task.Run(() =>
+                {
+                    GeometrySelection surfaceSelection;
+                    GeometrySelection verticesSelection;
+                    while (true)
+                    {
+                        // Get a surface to split
+                        _frmSelectGeometry.MaxNumberOfSelectedItems = 1;
+                        _frmSelectGeometry.SelectionFilter = SelectGeometryEnum.Surface;
+                        //
+                        InvokeIfRequired(() => { ShowForm(_frmSelectGeometry, "Select a surface to split", null); });
+                        while (_frmSelectGeometry.Visible) System.Threading.Thread.Sleep(100);
+                        //
+                        if (_frmSelectGeometry.DialogResult == DialogResult.OK)
+                        {
+                            surfaceSelection = _frmSelectGeometry.GeometrySelection.DeepClone();
+                            // Get two vertices to split the surface
+                            _frmSelectGeometry.MaxNumberOfSelectedItems = 2;
+                            _frmSelectGeometry.SelectionFilter = SelectGeometryEnum.Vertex;
+                            //
+                            InvokeIfRequired(() => { ShowForm(_frmSelectGeometry, "Select splitting vertices", null); });
+                            while (_frmSelectGeometry.Visible) System.Threading.Thread.Sleep(100);
+                            //
+                            if (_frmSelectGeometry.DialogResult == DialogResult.OK)
+                            {
+                                verticesSelection = _frmSelectGeometry.GeometrySelection.DeepClone();
+                                _controller.SplitAFaceUsingTwoPointsCommand(surfaceSelection, verticesSelection);
+                            }
+                            else break;
+                        }
+                        else break;
+                    }
+                });
             }
             catch (Exception ex)
             {
@@ -5640,7 +5706,5 @@ namespace PrePoMax
         }
 
         
-
-       
     }
 }
