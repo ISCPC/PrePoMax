@@ -128,7 +128,7 @@ namespace CaeMesh
             _optimizeSteps2D = 3;
             _optimizeSteps3D = 3;
             _secondOrder = true;
-            _quadDominated = true;
+            _quadDominated = false;
             _midsideNodesOnGeometry = false;
             _splitCompoundMesh = false;
         }
