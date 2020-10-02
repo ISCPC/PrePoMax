@@ -26,7 +26,7 @@ namespace CaeMesh
             set
             {
                 _meshingParameters = value;
-                if (PartType == PartType.Solid || PartType == PartType.SolidAsShell)
+                if (_meshingParameters != null && (PartType == PartType.Solid || PartType == PartType.SolidAsShell))
                     _meshingParameters.QuadDominated = false;
             }
         }

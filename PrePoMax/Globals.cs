@@ -23,6 +23,8 @@ namespace PrePoMax
         public static string UndoingText = "Undoing...";
         public static string CreatingCompound = "Creating compound...";
         public static string RegeneratingText = "Regenerating history...";
+        public static string FlippingNormals = "Flipping normals...";
+        public static string SplittingFaces = "Splitting faces...";
         //
         public static string SettingsFileName = "settings.bin";
         public static string MaterialLibraryFileName = "materials.lib";

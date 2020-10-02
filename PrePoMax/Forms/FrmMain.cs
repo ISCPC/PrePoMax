@@ -1840,6 +1840,7 @@ namespace PrePoMax
         }
         private void CopyGeometryPartsToResults(string[] partNames)
         {
+            CloseAllForms();
             _controller.CopyGeometryPartsToResults(partNames);
         }
         private void DeleteGeometryParts(string[] partNames)
@@ -1917,25 +1918,36 @@ namespace PrePoMax
         {
             try
             {
+                // Must be outside the await part otherwise couses screen flickering
+                bool _prevShowFaceOrientation = _controller.ShowFaceOrientation;
+                _controller.ShowFaceOrientation = true;
+                //
                 await Task.Run(() =>
                 {
                     _frmSelectGeometry.HideFormOnOK = false;
                     _frmSelectGeometry.SelectionFilter = SelectGeometryEnum.Surface;
-                    _frmSelectGeometry.OnOKCallback = _controller.FlipFaceOrientationsCommand;
+                    _frmSelectGeometry.OnOKCallback = FlipFaces;
                     //
-                    bool _prevShowFaceOrientation = _controller.ShowFaceOrientation;
-                    _controller.ShowFaceOrientation = true;
-                    //
-                    InvokeIfRequired(() => { ShowForm(_frmSelectGeometry, "Select surfaces to flip", null); });
+                    InvokeIfRequired(() => { ShowForm(_frmSelectGeometry, "Select faces to flip", null); });
                     while (_frmSelectGeometry.Visible) System.Threading.Thread.Sleep(100);
-                    //
-                    _controller.ShowFaceOrientation = _prevShowFaceOrientation;
                 });
+                //
+                _controller.ShowFaceOrientation = _prevShowFaceOrientation;
             }
             catch (Exception ex)
             {
                 ExceptionTools.Show(this, ex);
             }
+            finally
+            {
+                SetStateReady(Globals.FlippingNormals);
+            }
+        }
+        private void FlipFaces(GeometrySelection geometrySelection)
+        {
+            SetStateWorking(Globals.FlippingNormals);
+            _controller.FlipFaceOrientationsCommand(geometrySelection);
+            SetStateReady(Globals.FlippingNormals);
         }
         private async void tsmiSplitAFaceUsingTwoPoints_Click(object sender, EventArgs e)
         {
@@ -1951,7 +1963,7 @@ namespace PrePoMax
                         _frmSelectGeometry.MaxNumberOfSelectedItems = 1;
                         _frmSelectGeometry.SelectionFilter = SelectGeometryEnum.Surface;
                         //
-                        InvokeIfRequired(() => { ShowForm(_frmSelectGeometry, "Select a surface to split", null); });
+                        InvokeIfRequired(() => { ShowForm(_frmSelectGeometry, "Select a face to split", null); });
                         while (_frmSelectGeometry.Visible) System.Threading.Thread.Sleep(100);
                         //
                         if (_frmSelectGeometry.DialogResult == DialogResult.OK)
@@ -1967,7 +1979,10 @@ namespace PrePoMax
                             if (_frmSelectGeometry.DialogResult == DialogResult.OK)
                             {
                                 verticesSelection = _frmSelectGeometry.GeometrySelection.DeepClone();
+                                //
+                                SetStateWorking(Globals.SplittingFaces);
                                 _controller.SplitAFaceUsingTwoPointsCommand(surfaceSelection, verticesSelection);
+                                SetStateReady(Globals.SplittingFaces);
                             }
                             else break;
                         }
@@ -1978,6 +1993,10 @@ namespace PrePoMax
             catch (Exception ex)
             {
                 ExceptionTools.Show(this, ex);
+            }
+            finally
+            {
+                SetStateReady(Globals.SplittingFaces);
             }
         }
         #endregion  ################################################################################################################
@@ -2204,6 +2223,7 @@ namespace PrePoMax
                     CaeMesh.GeometryPart part = _controller.GetGeometryPart(partName);
                     if (part.MeshingParameters == null) SetDefaultMeshingParameters(partName);
                     //
+                    CloseAllForms();
                     await Task.Run(() => _controller.CreateMeshCommand(partName));
                     //
                     _modelTree.SelectBasePart(e, modifierKeys, part);

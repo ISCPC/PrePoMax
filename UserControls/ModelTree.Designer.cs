@@ -342,7 +342,7 @@
             this.tsmiColorContoursOff.Image = global::UserControls.Properties.Resources.Deformed;
             this.tsmiColorContoursOff.Name = "tsmiColorContoursOff";
             this.tsmiColorContoursOff.Size = new System.Drawing.Size(211, 22);
-            this.tsmiColorContoursOff.Text = "Color Contours Off";
+            this.tsmiColorContoursOff.Text = "Color Contours off";
             this.tsmiColorContoursOff.Click += new System.EventHandler(this.tsmiResultColorContoutsVisibility_Click);
             // 
             // tsmiColorContoursOn
@@ -350,7 +350,7 @@
             this.tsmiColorContoursOn.Image = global::UserControls.Properties.Resources.Color_contours;
             this.tsmiColorContoursOn.Name = "tsmiColorContoursOn";
             this.tsmiColorContoursOn.Size = new System.Drawing.Size(211, 22);
-            this.tsmiColorContoursOn.Text = "Color Contours On";
+            this.tsmiColorContoursOn.Text = "Color Contours on";
             this.tsmiColorContoursOn.Click += new System.EventHandler(this.tsmiResultColorContoutsVisibility_Click);
             // 
             // tsmiSpaceMaterialLibrary
