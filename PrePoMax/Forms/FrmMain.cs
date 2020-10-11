@@ -367,6 +367,7 @@ namespace PrePoMax
             if (!System.Diagnostics.Debugger.IsAttached)
             {
                 tsmiTest.Visible = false;
+                tsmiCropWithCylinder.Visible = false;
             }
         }
         //
@@ -1997,6 +1998,17 @@ namespace PrePoMax
             finally
             {
                 SetStateReady(Globals.SplittingFaces);
+            }
+        }
+        private void tsmiCropWithCylinder_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectOneEntity("Parts", _controller.GetGeometryParts(), _controller.CropGeometryPartWithCylinder);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
             }
         }
         #endregion  ################################################################################################################
@@ -3732,7 +3744,7 @@ namespace PrePoMax
 
         #endregion  ################################################################################################################
 
-        #region Settings ###########################################################################################################
+        #region Tools ##############################################################################################################
         private void tsmiSettings_Click(object sender, EventArgs e)
         {
             try
@@ -3754,6 +3766,26 @@ namespace PrePoMax
             }
            
         }
+        private void tsmiQuery_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (!_frmQuery.Visible)
+                {
+                    ClearSelection();
+                    //
+                    CloseAllForms();
+                    SetFormLoaction(_frmQuery);
+                    _frmQuery.PrepareForm(_controller);
+                    _frmQuery.Show();
+                }
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        //
         private void ShowLegendSettings()
         {
             _frmSettings.SetSettingsToShow(Globals.LegendSettingsName);
@@ -3769,6 +3801,7 @@ namespace PrePoMax
         {
             _controller.Settings = new SettingsContainer(items);
         }
+
         // Unit system
         private void tsslUnitSystem_Click(object sender, EventArgs e)
         {
@@ -3828,29 +3861,6 @@ namespace PrePoMax
             //
             SetScaleWidgetUnit(unitSystem);
         }
-        #endregion  ################################################################################################################
-
-        #region Query ##############################################################################################################
-        private void tsmiQuery_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                if (!_frmQuery.Visible)
-                {
-                    ClearSelection();
-                    //
-                    CloseAllForms();
-                    SetFormLoaction(_frmQuery);
-                    _frmQuery.PrepareForm(_controller);
-                    _frmQuery.Show();
-                }
-            }
-            catch (Exception ex)
-            {
-                ExceptionTools.Show(this, ex);
-            }
-        }
-
         #endregion  ################################################################################################################
 
         #region Analysis menu  #####################################################################################################
@@ -5179,6 +5189,13 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.SetDrawSymbolEdges, drawSilhouettes);
         }
+
+        //
+        public void CropPartWithCylinder(string partName, double r, string fileName)
+        {
+            InvokeIfRequired(_vtk.CropPartWithCylinder, partName, r, fileName);
+        }
+
         #endregion  ################################################################################################################
 
         #region Results  ###########################################################################################################

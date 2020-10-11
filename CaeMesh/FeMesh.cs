@@ -1158,7 +1158,7 @@ namespace CaeMesh
             }
             part.Visualization.CellNeighboursOverCellEdge = cellNeighboursArray;
         }
-        void CheckForFeeAndErrorElements(BasePart part)
+        private void CheckForFeeAndErrorElements(BasePart part)
         {
             VisualizationData vis = part.Visualization;
             // Check for bad element and nodes
@@ -1166,22 +1166,17 @@ namespace CaeMesh
             List<int> freeEdgeElementIds = new List<int>();            
             HashSet<int> freeNodeIds = new HashSet<int>();
             HashSet<int> openLoopFreeEdgeIds = new HashSet<int>();
-            HashSet<int> closeLoopFreeEdgeIds = new HashSet<int>();
-            //
-            List<int> errorEdgeElementIds = new List<int>();
-            List<int> errorNodeIds = new List<int>();
-            HashSet<int> errorEdgeIds = new HashSet<int>();
+            HashSet<int> closeLoopFreeEdgeIds;
             //
             int edgeId;
             int[] edgeIdsCounter = new int[vis.EdgeCellIdsByEdge.Length];
             //
             if (part is GeometryPart gp)
             {
-                /////////////  FREE EDGES   /////////////////////////////////////////////////////////////
+                // Find free edges
+                // Clear
                 gp.FreeEdgeElementIds = null;
-                gp.ErrorEdgeElementIds = null;
                 gp.FreeNodeIds = null;
-                gp.ErrorNodeIds = null;
                 // Create a map of how many times an edge is used on all part surfaces
                 // For each surface
                 for (int i = 0; i < vis.FaceEdgeIds.Length; i++)
@@ -1254,67 +1249,84 @@ namespace CaeMesh
                         freeNodeIds.UnionWith(vis.EdgeCells[edgeCelld]);
                     }
                 }
-                /////////////  ERROR EDGES   /////////////////////////////////////////////////////////////
-                if (gp.PartType == PartType.Shell)
-                {                    
-                    Dictionary<int, List<int>>[] faceVertexEdgeIds = new Dictionary<int, List<int>>[vis.FaceEdgeIds.Length];
-                    // Build a map of all edges connected to a vertex
-                    // For each surface
-                    for (int i = 0; i < vis.FaceEdgeIds.Length; i++)
-                    {
-                        faceVertexEdgeIds[i] = new Dictionary<int, List<int>>();
-                        // For each surface edge
-                        for (int j = 0; j < vis.FaceEdgeIds[i].Length; j++) 
-                        {
-                            edgeId = vis.FaceEdgeIds[i][j];
-                            // For each edge cell
-                            for (int k = 0; k < vis.EdgeCellIdsByEdge[edgeId].Length; k++)  
-                            {
-                                edgeCell = vis.EdgeCells[vis.EdgeCellIdsByEdge[edgeId][k]];
-                                // For each node in edge cell
-                                for (int l = 0; l < edgeCell.Length; l++)   
-                                {
-                                    if (vertexNodeIds.Contains(edgeCell[l]))    // is this node a vertex
-                                    {
-                                        if (faceVertexEdgeIds[i].TryGetValue(edgeCell[l], out vertexEdgeIds))
-                                            vertexEdgeIds.Add(edgeId);
-                                        else faceVertexEdgeIds[i].Add(edgeCell[l], new List<int>() { edgeId });
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    // From the map extract all end/start vertices and their open edge loops
-                    for (int i = 0; i < faceVertexEdgeIds.Length; i++)
-                    {
-                        foreach (var entry in faceVertexEdgeIds[i])
-                        {
-                            if (entry.Value.Count != 2)
-                            {
-                                nodeId = entry.Key;
-                                errorNodeIds.Add(nodeId);
-                                //
-                                GetEdgeIdsOnEdgeLoop(nodeId, faceVertexEdgeIds[i], ref errorEdgeIds);
-                            }
-                        }
-                    }
-                }
-                // Collect error edge cell ids
-                foreach (var errorEdgeId in errorEdgeIds)
-                {
-                    errorEdgeElementIds.AddRange(vis.EdgeCellIdsByEdge[errorEdgeId]);
-                }
-                /////////////  SAVE   ////////////////////////////////////////////////////////////////
+                // Save
                 if (freeEdgeElementIds.Count > 0) gp.FreeEdgeElementIds = freeEdgeElementIds.ToArray();
                 else gp.FreeEdgeElementIds = null;
                 if (freeNodeIds.Count > 0) gp.FreeNodeIds = freeNodeIds.ToArray();
                 else gp.ErrorNodeIds = null;
-                //
-                if (errorEdgeElementIds.Count > 0) gp.ErrorEdgeElementIds = errorEdgeElementIds.ToArray();
-                else gp.ErrorEdgeElementIds = null;
-                if (errorNodeIds.Count > 0) gp.ErrorNodeIds = errorNodeIds.ToArray();
-                else gp.ErrorNodeIds = null;
+                // Error
+                CheckForErrorElements(gp);
             }
+        }
+        private void CheckForErrorElements(GeometryPart gp)
+        {
+            int nodeId;
+            int edgeId;
+            int[] edgeCell;
+            List<int> vertexEdgeIds;
+            List<int> errorEdgeElementIds = new List<int>();
+            List<int> errorNodeIds = new List<int>();
+            HashSet<int> errorEdgeIds = new HashSet<int>();
+            VisualizationData vis = gp.Visualization;
+            HashSet<int> vertexNodeIds = new HashSet<int>(vis.VertexNodeIds);
+            // Clear
+            gp.ErrorEdgeElementIds = null;
+            gp.ErrorNodeIds = null;
+            // Shell parts
+            if (gp.PartType == PartType.Shell)
+            {
+                Dictionary<int, List<int>>[] faceVertexEdgeIds = new Dictionary<int, List<int>>[vis.FaceEdgeIds.Length];
+                // Build a map of all edges connected to a vertex
+                // For each surface
+                for (int i = 0; i < vis.FaceEdgeIds.Length; i++)
+                {
+                    faceVertexEdgeIds[i] = new Dictionary<int, List<int>>();
+                    // For each surface edge
+                    for (int j = 0; j < vis.FaceEdgeIds[i].Length; j++)
+                    {
+                        edgeId = vis.FaceEdgeIds[i][j];
+                        // For each edge cell
+                        for (int k = 0; k < vis.EdgeCellIdsByEdge[edgeId].Length; k++)
+                        {
+                            edgeCell = vis.EdgeCells[vis.EdgeCellIdsByEdge[edgeId][k]];
+                            // For each node in edge cell
+                            for (int l = 0; l < edgeCell.Length; l++)
+                            {
+                                if (vertexNodeIds.Contains(edgeCell[l]))    // is this node a vertex
+                                {
+                                    if (faceVertexEdgeIds[i].TryGetValue(edgeCell[l], out vertexEdgeIds))
+                                        vertexEdgeIds.Add(edgeId);
+                                    else faceVertexEdgeIds[i].Add(edgeCell[l], new List<int>() { edgeId });
+                                }
+                            }
+                        }
+                    }
+                }
+                // From the map extract all end/start vertices and their open edge loops
+                for (int i = 0; i < faceVertexEdgeIds.Length; i++)
+                {
+                    foreach (var entry in faceVertexEdgeIds[i])
+                    {
+                        if (entry.Value.Count != 2)
+                        {
+                            nodeId = entry.Key;
+                            errorNodeIds.Add(nodeId);
+                            //
+                            GetEdgeIdsOnEdgeLoop(nodeId, faceVertexEdgeIds[i], ref errorEdgeIds);
+                        }
+                    }
+                }
+            }
+            // Collect error edge cell ids
+            foreach (var errorEdgeId in errorEdgeIds)
+            {
+                errorEdgeElementIds.AddRange(vis.EdgeCellIdsByEdge[errorEdgeId]);
+            }
+            // Save
+            if (errorEdgeElementIds.Count > 0) gp.ErrorEdgeElementIds = errorEdgeElementIds.ToArray();
+            else gp.ErrorEdgeElementIds = null;
+            if (errorNodeIds.Count > 0) gp.ErrorNodeIds = errorNodeIds.ToArray();
+            else gp.ErrorNodeIds = null;
         }
         private void GetEdgeIdsOnEdgeLoop(int nodeId, Dictionary<int, List<int>> nodeEdgeIds, ref HashSet<int> edgeIds)
         {

@@ -631,7 +631,7 @@ namespace PrePoMax
             // Import
             if (extension == ".stl")
             {
-                if (!_model.ImportGeometryFromStlFile(fileName) || _model.Geometry.ManifoldGeometry)
+                if (_model.ImportGeometryFromStlFile(fileName) == null || _model.Geometry.ManifoldGeometry)
                 {
                     string message = "There are errors in the imported geometry.";
                     if (_model.Geometry.ManifoldGeometry) message += Environment.NewLine + "The geometry is manifold.";
@@ -915,7 +915,7 @@ namespace PrePoMax
                 _form.WriteDataToOutput("Converting mesh to second order...");
             bool splitCompoundMesh = part.MeshingParameters.SplitCompoundMesh;
             // Import, convert and split mesh
-            _model.ImportGeneratedMeshFromVolFile(fileName, part, convertToSecondOrder, splitCompoundMesh);
+            _model.ImportGeneratedMeshFromMeshFile(fileName, part, convertToSecondOrder, splitCompoundMesh);
             // Calculate the number of new nodes and elements
             BasePart basePart;
             if (convertToSecondOrder)
@@ -1684,10 +1684,13 @@ namespace PrePoMax
             int count = 0;
             int timeOut = 1000 * 10;
             string[] importedFileNames = null;
+            string extension = Path.GetExtension(fileName);
             //
             while (importedFileNames == null && count < 5)  // Check for timeout
             {
-                importedFileNames = ImportBrepPartFile(fileName, timeOut, false);
+                if (extension == ".brep") importedFileNames = ImportBrepPartFile(fileName, timeOut, false);
+                else if (extension == ".stl") importedFileNames = _model.ImportGeometryFromStlFile(fileName);
+                else throw new NotSupportedException();
                 count++;
             }
             if (importedFileNames == null)
@@ -1698,7 +1701,7 @@ namespace PrePoMax
             {
                 //_form.ScreenUpdating = false;
                 // Add the imported part to the model tree
-                UpdateAfterImport(".brep");
+                UpdateAfterImport(extension);
                 // Copy old part properties to the new part
                 GeometryPart newPart = (GeometryPart)_model.Geometry.Parts[importedFileNames[0]];
                 newPart.Name = part.Name;
@@ -1713,16 +1716,17 @@ namespace PrePoMax
                 //
                 UpdateMeshRefinements();
                 //
-                UpdateAfterImport(".brep");
+                UpdateAfterImport(extension);
                 //_form.ScreenUpdating = true;
             }
             else
             {
+                UpdateAfterImport(extension);
                 ClearAllSelection();
-                throw new NotSupportedException();
             }
             return true;
         }
+        
         // Split a face using two points **********************************************************
         public void SplitAFaceUsingTwoPoints(GeometrySelection surfaceSelection, GeometrySelection verticesSelection)
         {
@@ -1800,6 +1804,21 @@ namespace PrePoMax
             if (_netgenJob.JobStatus == JobStatus.OK) return outputBrepFileName;
             else return null;
         }
+        
+        // Crop geometry using cylinder
+        public void CropGeometryPartWithCylinder(string partName)
+        {
+            GeometryPart part = (GeometryPart)_model.Geometry.Parts[partName];
+            if (part != null)
+            {
+                CalculixSettings settings = _settings.Calculix;
+                string fileName = Path.Combine(settings.WorkDirectory, Globals.StlFileName);
+                //
+                _form.CropPartWithCylinder(partName, 10, fileName);
+                //
+                ReplacePartGeometryFromFile(part, fileName);
+            }
+        }
         #endregion #################################################################################################################
 
         #region Mesh   #############################################################################################################
@@ -1862,6 +1881,8 @@ namespace PrePoMax
         }
         public bool PreviewEdgeMeshFromStl(GeometryPart part, MeshingParameters parameters, FeMeshRefinement newMeshRefinement)
         {
+            if (part.PartType == PartType.Shell) return false;  // not supported
+            //
             CalculixSettings settings = _settings.Calculix;
             if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
             {
@@ -2053,6 +2074,12 @@ namespace PrePoMax
         }
         private bool CreateMeshFromStl(GeometryPart part)
         {
+            if (part.PartType == PartType.Solid || part.PartType == PartType.SolidAsShell) return CreateMeshFromSolidStl(part);
+            else if (part.PartType == PartType.Shell) return CreateMeshFromShellStl(part);
+            else throw new NotSupportedException();
+        }
+        private bool CreateMeshFromSolidStl(GeometryPart part)
+        {
             CalculixSettings settings = _settings.Calculix;
             if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
             {
@@ -2090,8 +2117,47 @@ namespace PrePoMax
             _netgenJob.Submit();
             // Job completed
             if (_netgenJob.JobStatus == JobStatus.OK)
-            {                
+            {
                 ImportGeneratedMesh(volFileName, part, false, false);
+                return true;
+            }
+            else return false;
+        }
+        private bool CreateMeshFromShellStl(GeometryPart part)
+        {
+            CalculixSettings settings = _settings.Calculix;
+            if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
+            {
+                MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
+                return false;
+            }
+            //
+            string executable = Application.StartupPath + Globals.MmgMesher;
+            string mmgInMesh = Path.Combine(settings.WorkDirectory, Globals.MmgMeshFileName);
+            string mmgOutMesh = Path.Combine(settings.WorkDirectory, Path.GetFileNameWithoutExtension(Globals.MmgMeshFileName) + 
+                                                                     ".o" + Path.GetExtension(Globals.MmgMeshFileName));
+            string mmgSolFile = Path.Combine(settings.WorkDirectory, Path.GetFileNameWithoutExtension(Globals.MmgMeshFileName) + ".sol");
+            //
+            if (File.Exists(mmgInMesh)) File.Delete(mmgInMesh);
+            if (File.Exists(mmgOutMesh)) File.Delete(mmgOutMesh);
+            if (File.Exists(mmgSolFile)) File.Delete(mmgSolFile);
+            //
+            FileInOut.Output.MmgFileWriter.Write(mmgInMesh, _model.Geometry, new string[] { part.Name });
+            //
+            string argument = "-m 5000 " +
+                              "-hmax " + part.MeshingParameters.MaxH + " " +
+                              "-hmin " + part.MeshingParameters.MinH + " " +
+                              "-hausd " + 0.01 * part.BoundingBox.GetDiagonal() + " " +
+                              "-in \"" + mmgInMesh + "\" " +
+                              "-out \"" + mmgOutMesh + "\" ";
+            //
+            _netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
+            _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
+            _netgenJob.Submit();
+            // Job completed
+            if (_netgenJob.JobStatus == JobStatus.OK)
+            {
+                ImportGeneratedMesh(mmgOutMesh, part, false, false);
                 return true;
             }
             else return false;
@@ -3706,13 +3772,14 @@ namespace PrePoMax
                 // Surface
                 if (rb.RegionType == RegionTypeEnum.Selection)
                 {
-                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.Surfaces) + constraint.Name;
-                    FeSurface surface = new FeSurface(name, rb.CreationIds, rb.CreationData.DeepClone());
-                    surface.Internal = true;
-                    AddSurface(surface);
+                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.NodeSets) + constraint.Name;
+                    FeNodeSet nodeSet = new FeNodeSet(name, rb.CreationIds);
+                    nodeSet.CreationData = rb.CreationData.DeepClone();
+                    nodeSet.Internal = true;
+                    AddNodeSet(nodeSet);
                     //
                     rb.RegionName = name;
-                    rb.RegionType = RegionTypeEnum.SurfaceName;
+                    rb.RegionType = RegionTypeEnum.NodeSetName;
                 }
                 // Clear the creation data if not used
                 else
@@ -3767,7 +3834,7 @@ namespace PrePoMax
             Constraint constraint = GetConstraint(oldConstraintName);
             if (constraint is RigidBody rb && rb.CreationData != null && rb.RegionName != null)
             {
-                RemoveSurfaces(new string[] { rb.RegionName }, false);
+                RemoveNodeSets(new string[] { rb.RegionName });
             }
             else if (constraint is Tie tie)
             {
@@ -6594,13 +6661,13 @@ namespace PrePoMax
                 else if (constraint is Tie t)
                 {
                     // Master
-                    count += DrawSurface(prefixName, t.MasterRegionName, masterColor, layer, false, false, onlyVisible);
+                    count += DrawSurface(prefixName, t.MasterRegionName, masterColor, layer, true, false, onlyVisible);
                     if (layer == vtkControl.vtkRendererLayer.Selection)
-                        DrawSurfaceEdge(prefixName, t.MasterRegionName, masterColor, layer, false, false, onlyVisible);
+                        DrawSurfaceEdge(prefixName, t.MasterRegionName, masterColor, layer, true, false, onlyVisible);
                     // Slave
-                    count += DrawSurface(prefixName, t.SlaveRegionName, slaveColor, layer, false, true, onlyVisible);
+                    count += DrawSurface(prefixName, t.SlaveRegionName, slaveColor, layer, true, true, onlyVisible);
                     if (layer == vtkControl.vtkRendererLayer.Selection)
-                        DrawSurfaceEdge(prefixName, t.SlaveRegionName, slaveColor, layer, false, true, onlyVisible);
+                        DrawSurfaceEdge(prefixName, t.SlaveRegionName, slaveColor, layer, true, true, onlyVisible);
                 }
                 else throw new NotSupportedException();
             }
@@ -6687,9 +6754,9 @@ namespace PrePoMax
                 //
                 string prefixName = "CONTACT_PAIR" + Globals.NameSeparator + contactPair.Name;
                 // Master
-                DrawSurfaceWithEdge(prefixName, contactPair.MasterRegionName, masterColor, layer, false, false, onlyVisible);
+                DrawSurfaceWithEdge(prefixName, contactPair.MasterRegionName, masterColor, layer, true, false, onlyVisible);
                 // Slave
-                DrawSurfaceWithEdge(prefixName, contactPair.SlaveRegionName, slaveColor, layer, false, true, onlyVisible);
+                DrawSurfaceWithEdge(prefixName, contactPair.SlaveRegionName, slaveColor, layer, true, true, onlyVisible);
             }
             catch { } // do not show the exception to the user
         }

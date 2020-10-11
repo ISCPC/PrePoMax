@@ -414,7 +414,10 @@ namespace PrePoMax.Forms
         }
         private void SetSelectItem()
         {
-            _controller.SetSelectItemToSurface();
+            if (Constraint == null) { }
+            else if (Constraint is RigidBody) _controller.SetSelectItemToGeometry();
+            else if (Constraint is Tie) _controller.SetSelectItemToSurface();
+            else throw new NotSupportedException();
         }
         private void ConstraintInternal(bool toInternal)
         {

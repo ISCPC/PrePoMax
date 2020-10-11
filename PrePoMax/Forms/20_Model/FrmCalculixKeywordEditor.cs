@@ -359,45 +359,50 @@ namespace PrePoMax.Forms
         }
         private void UpdateKeywordTextBox()
         {
-            // De-reference text changed event
-            rtbKeyword.TextChanged -= rtbKeyword_TextChanged;
-
-            // rtbKeyword.Tag is set by clicking on the tree node
-            if (!rtbKeyword.ReadOnly && rtbKeyword.Tag != null && btvKeywordsTree.SelectedNode != null)
+            try
             {
-                CalculixUserKeyword userKeyword = rtbKeyword.Tag as CalculixUserKeyword;
+                // De-reference text changed event
+                rtbKeyword.TextChanged -= rtbKeyword_TextChanged;
 
-                if (userKeyword != null)
+                // rtbKeyword.Tag is set by clicking on the tree node
+                if (!rtbKeyword.ReadOnly && rtbKeyword.Tag != null && btvKeywordsTree.SelectedNode != null)
                 {
-                    userKeyword.Data = "";
-                    int count = 0;
-                    // get only lines that contain data
-                    foreach (var line in rtbKeyword.Lines)
+                    CalculixUserKeyword userKeyword = rtbKeyword.Tag as CalculixUserKeyword;
+
+                    if (userKeyword != null)
                     {
-                        if (line.Length > 0)
+                        userKeyword.Data = "";
+                        int count = 0;
+                        // get only lines that contain data
+                        foreach (var line in rtbKeyword.Lines)
                         {
-                            if (count > 0) userKeyword.Data += Environment.NewLine;
-                            userKeyword.Data += line;
-                            count++;
+                            if (line.Length > 0)
+                            {
+                                if (count > 0) userKeyword.Data += Environment.NewLine;
+                                userKeyword.Data += line;
+                                count++;
+                            }
                         }
+
+                        // Change the name of the Selected tree node
+                        LockWindowUpdate(btvKeywordsTree.Handle);
+                        if (rtbKeyword.Lines.Length > 0 && rtbKeyword.Lines[0].Length > 0) btvKeywordsTree.SelectedNode.Text = rtbKeyword.Lines[0];
+                        else btvKeywordsTree.SelectedNode.Text = "User data";
+                        LockWindowUpdate(IntPtr.Zero);
+
+                        FormatInp(rtbKeyword);
                     }
-
-                    // Change the name of the Selected tree node
-                    LockWindowUpdate(btvKeywordsTree.Handle);
-                    if (rtbKeyword.Lines.Length > 0 && rtbKeyword.Lines[0].Length > 0) btvKeywordsTree.SelectedNode.Text = rtbKeyword.Lines[0];
-                    else btvKeywordsTree.SelectedNode.Text = "User data";
-                    LockWindowUpdate(IntPtr.Zero);
-
-                    FormatInp(rtbKeyword);
                 }
+
+                WriteTreeToTextBox();
+
+                SelectKeywordLinesAndScrollToSelection();
+
+                // Re-reference text changed event
+                rtbKeyword.TextChanged += rtbKeyword_TextChanged;
             }
-
-            WriteTreeToTextBox();
-
-            SelectKeywordLinesAndScrollToSelection();
-
-            // Re-reference text changed event
-            rtbKeyword.TextChanged += rtbKeyword_TextChanged;
+            catch
+            { }
         }
         private void SelectKeywordLinesAndScrollToSelection()
         {

@@ -7,7 +7,7 @@ using CaeMesh;
 using CaeGlobals;
 using System.Runtime.Serialization;
 using Calculix = FileInOut.Output.Calculix;
-
+using System.IO;
 
 namespace CaeModel
 {
@@ -436,7 +436,7 @@ namespace CaeModel
             return true;
         }
         // Input
-        public bool ImportGeometryFromStlFile(string fileName)
+        public string[] ImportGeometryFromStlFile(string fileName)
         {
             FeMesh mesh = FileInOut.Input.StlFileReader.Read(fileName);
             //
@@ -450,9 +450,9 @@ namespace CaeModel
                 }
             }
             //
-            ImportGeometry(mesh, GetReservedPartNames());
+            string[] addedPartNames = ImportGeometry(mesh, GetReservedPartNames());
             //
-            return noErrors;
+            return addedPartNames;
         }
         public bool ImportGeometryFromMmgMeshFile(string fileName)
         {
@@ -509,7 +509,7 @@ namespace CaeModel
             //
             ImportMesh(mesh, GetReservedPartNames());
         }
-        public void ImportGeneratedMeshFromVolFile(string fileName, GeometryPart part, bool convertToSecondorder,
+        public void ImportGeneratedMeshFromMeshFile(string fileName, GeometryPart part, bool convertToSecondorder,
                                                    bool splitCompoundMesh)
         {
             FileInOut.Input.ElementsToImport elementsToImport;
@@ -525,7 +525,12 @@ namespace CaeModel
             }
             else throw new NotSupportedException();
             // Called after meshing in PrePoMax - the parts are sorted by id
-            FeMesh mesh = FileInOut.Input.VolFileReader.Read(fileName, elementsToImport, convertToSecondorder);
+            FeMesh mesh;
+            if (Path.GetExtension(fileName) == ".vol")
+                mesh = FileInOut.Input.VolFileReader.Read(fileName, elementsToImport, convertToSecondorder);
+            else if (Path.GetExtension(fileName) == ".mesh")
+                mesh = FileInOut.Input.MmgFileReader.Read(fileName);
+            else throw new NotSupportedException();
             // Split compound mesh
             if (splitCompoundMesh) mesh.SplitCompoundMesh();
             // Get part names

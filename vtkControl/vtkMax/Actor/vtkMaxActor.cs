@@ -320,6 +320,37 @@ namespace vtkControl
 
 
         // Methods                                                                                                                  
+        public void CropWithCylinder(double r, string fileName)
+        {
+            vtkTransform transformCylinder = vtkTransform.New();
+            transformCylinder.Identity();
+            //transformCylinder.Translate(-.4, .4, 0);
+            //transformCylinder.RotateZ(30);
+            //transformCylinder.RotateY(60);
+            transformCylinder.RotateX(90);
+            //transformCylinder.Inverse();
+            vtkCylinder cylinder = vtkCylinder.New();
+            cylinder.SetTransform(transformCylinder);
+            cylinder.SetRadius(r);
+            //
+            vtkClipPolyData clipper = vtkClipPolyData.New();
+            clipper.SetInput(_geometry.GetMapper().GetInput());
+            clipper.SetClipFunction(cylinder);
+            clipper.GenerateClippedOutputOn();
+            clipper.GenerateClipScalarsOn();
+            clipper.SetValue(0);
+            //
+            vtkDecimatePro decimate = vtkDecimatePro.New();
+            decimate.SetInput(clipper.GetClippedOutput());
+            decimate.SetTargetReduction(0.05);
+            decimate.PreserveTopologyOn();
+            decimate.Update();
+            //
+            vtkSTLWriter stlWriter = vtkSTLWriter.New();
+            stlWriter.SetFileName(fileName);
+            stlWriter.SetInput(decimate.GetOutput());
+            stlWriter.Write();
+        }
         private void AddCellDataToGrid(vtkUnstructuredGrid source, vtkUnstructuredGrid uGridActor, vtkUnstructuredGrid uGridEdges)
         {
             List<int> actorCellIds = new List<int>();
@@ -629,43 +660,17 @@ namespace vtkControl
                 }
             }
             // Actor                                                                                                                
-
-            if (false)
-            {
-                vtkTransform transformCylinder = vtkTransform.New();
-                transformCylinder.Identity();
-                //transformCylinder.Translate(-.4, .4, 0);
-                //transformCylinder.RotateZ(30);
-                //transformCylinder.RotateY(60);
-                transformCylinder.RotateX(90);
-                //transformCylinder.Inverse();
-
-                vtkCylinder cylinder = vtkCylinder.New();
-                cylinder.SetTransform(transformCylinder);
-                cylinder.SetRadius(9.9);
-
-                vtkClipPolyData clipper = vtkClipPolyData.New();
-                clipper.SetInput(polyActor);
-                clipper.SetClipFunction(cylinder);
-                clipper.GenerateClippedOutputOn();
-                clipper.GenerateClipScalarsOn();
-                clipper.SetValue(0);
-
-                vtkDecimatePro decimate =vtkDecimatePro.New();
-                decimate.SetInput(clipper.GetClippedOutput());
-                decimate.SetTargetReduction(0.9);
-                decimate.PreserveTopologyOn();
-                decimate.Update();
-
-                vtkSTLWriter stlWriter = vtkSTLWriter.New();
-                stlWriter.SetFileName(@"C:\Temp\MmgPlatform\Cylindrical\out.stl");
-                stlWriter.SetInput(decimate.GetOutput());
-                stlWriter.Write();
-            }
-
-
             // Polydata
             vtkPolyData polydata = polyActor;
+            
+            //vtkLoopSubdivisionFilter subdivisionFilter = vtkLoopSubdivisionFilter.New();
+            //subdivisionFilter.SetInput(polydata);
+            //subdivisionFilter.SetNumberOfSubdivisions(2);
+            //subdivisionFilter.Update();
+            //polydata = subdivisionFilter.GetOutput();
+
+
+
             polydata.GetPointData().CopyScalarsOn();
             // Normals
             if (data.SmoothShaded) polydata.GetPointData().SetNormals(ComputeNormals(polydata));
@@ -805,7 +810,7 @@ namespace vtkControl
             uGridEdges.Update();                        
         }
 
-        private void AddNodeAndCellDataToPoly(PartExchangeData data, out vtkPolyData polyActor, out vtkPolyData polyEdges,
+        private static void AddNodeAndCellDataToPoly(PartExchangeData data, out vtkPolyData polyActor, out vtkPolyData polyEdges,
                                               bool extractEdges)
         {
             polyActor = vtkPolyData.New();
@@ -971,8 +976,8 @@ namespace vtkControl
 
             if (data.Cells.Ids != null) data.Cells.Ids = actorCellIds.ToArray();
         }
-        private void AddCellDataToPoly(PartExchangeData data, ref vtkPolyData polyActor, ref vtkPolyData polyEdges,
-                                       bool extractEdges)
+        private static void AddCellDataToPoly(PartExchangeData data, ref vtkPolyData polyActor, ref vtkPolyData polyEdges,
+                                              bool extractEdges)
         {
             double d1;
             double d2;

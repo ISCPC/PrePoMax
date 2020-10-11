@@ -291,10 +291,14 @@ namespace CaeJob
         }
         void UpdateOutput()
         {
-            AppendOutput(OutputData);
-            File.AppendAllText(_outputFileName, OutputData);
-            //
-            _sbOutput.Clear();
+            try
+            {
+                AppendOutput(OutputData);
+                File.AppendAllText(_outputFileName, OutputData);
+                //
+                _sbOutput.Clear();
+            }
+            catch { }
         }
     }
 }

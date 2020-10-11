@@ -225,6 +225,7 @@ namespace vtkControl
         public event Action<double[], double[][], vtkSelectOperation> OnMouseLeftButtonUpSelection;
         public event Action<sbyte> KeyPressEvent;
 
+
         // Constructors                                                                                                             
         public vtkControl()
         {
@@ -275,12 +276,6 @@ namespace vtkControl
             _mouseSelectionAllIds = new HashSet<int>();
             //
             _selectableActorsFilter = null;
-        }
-
-        protected override void OnEnabledChanged(EventArgs e)
-        {
-            base.OnEnabledChanged(e);
-            bool test = this.CanFocus;
         }
 
 
@@ -519,7 +514,6 @@ namespace vtkControl
                 }
             }
         }
-
 
         #region Selection  #########################################################################################################
 
@@ -5214,7 +5208,11 @@ namespace vtkControl
 
 
 
-
+        public void CropPartWithCylinder(string partName, double r, string fileName)
+        {
+            vtkMaxActor actor = _actors[partName];
+            actor.CropWithCylinder(r, fileName);
+        }
 
 
 
