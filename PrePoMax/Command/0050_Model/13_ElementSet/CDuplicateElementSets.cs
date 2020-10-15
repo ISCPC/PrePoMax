@@ -12,30 +12,30 @@ using CaeGlobals;
 namespace PrePoMax.Commands
 {
     [Serializable]
-    class CAddElementSet : Command
+    class CDuplicateElementSets : Command
     {
         // Variables                                                                                                                
-        private FeElementSet _elementSet;
+        private string[] _elementSetNames;
 
 
         // Constructor                                                                                                              
-        public CAddElementSet(FeElementSet elementSet)
-            : base("Add element set")
+        public CDuplicateElementSets(string[] elementSetNames)
+            : base("Duplicate element set")
         {
-            _elementSet = elementSet.DeepClone();
+            _elementSetNames = elementSetNames;
         }
 
 
         // Methods                                                                                                                  
         public override bool Execute(Controller receiver)
         {
-            receiver.AddElementSet(_elementSet.DeepClone());
+            receiver.DuplicateElementSets(_elementSetNames);
             return true;
         }
 
         public override string GetCommandString()
         {
-            return base.GetCommandString() + _elementSet.ToString();
+            return base.GetCommandString() + GetArrayAsString(_elementSetNames);
         }
     }
 }

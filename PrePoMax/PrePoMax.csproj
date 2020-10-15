@@ -118,10 +118,12 @@
     <Compile Include="Command\0050_Model\11_Part\CShowModelParts.cs" />
     <Compile Include="Command\0050_Model\11_Part\CHideModelParts.cs" />
     <Compile Include="Command\0050_Model\12_NodeSet\CAddNodeSet.cs" />
+    <Compile Include="Command\0050_Model\12_NodeSet\CDuplicateNodeSets.cs" />
     <Compile Include="Command\0050_Model\12_NodeSet\CRemoveNodeSets.cs" />
     <Compile Include="Command\0050_Model\12_NodeSet\CReplaceNodeSet.cs" />
     <Compile Include="Command\0050_Model\13_ElementSet\CAddElementSet.cs" />
     <Compile Include="Command\0050_Model\13_ElementSet\CConvertElementSetsToMeshParts.cs" />
+    <Compile Include="Command\0050_Model\13_ElementSet\CDuplicateElementSets.cs" />
     <Compile Include="Command\0050_Model\13_ElementSet\CRemoveElementSets.cs" />
     <Compile Include="Command\0050_Model\13_ElementSet\CReplaceElementSet.cs" />
     <Compile Include="Command\0050_Model\15_ReferencePoint\CAddReferencePoint.cs" />

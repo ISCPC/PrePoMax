@@ -617,37 +617,37 @@ namespace PrePoMax
             // Geometry
             if (_controller.CurrentView == ViewGeometryModelResults.Geometry)
             {
-                if (namedClass is CaeMesh.GeometryPart) EditGeometryPart(namedClass.Name);
-                else if (namedClass is CaeMesh.FeMeshRefinement) EditMeshRefinement(namedClass.Name);
+                if (namedClass is GeometryPart) EditGeometryPart(namedClass.Name);
+                else if (namedClass is FeMeshRefinement) EditMeshRefinement(namedClass.Name);
             }
             // Model
             else if (_controller.CurrentView == ViewGeometryModelResults.Model)
             {
                 if (namedClass is EmptyNamedClass) // empty named class is used to trasfer the name only
                 {
-                    if (namedClass.Name == typeof(CaeModel.FeModel).ToString()) tsmiEditModel_Click(null, null);
+                    if (namedClass.Name == typeof(FeModel).ToString()) tsmiEditModel_Click(null, null);
                 }
-                else if (namedClass is CaeMesh.MeshPart) EditModelPart(namedClass.Name);
-                else if (namedClass is CaeMesh.FeNodeSet) EditNodeSet(namedClass.Name);
-                else if (namedClass is CaeMesh.FeElementSet) EditElementSet(namedClass.Name);
-                else if (namedClass is CaeMesh.FeSurface) EditSurface(namedClass.Name);
-                else if (namedClass is CaeMesh.FeReferencePoint) EditRP(namedClass.Name);
-                else if (namedClass is CaeModel.Material) EditMaterial(namedClass.Name);
-                else if (namedClass is CaeModel.Section) EditSection(namedClass.Name);
+                else if (namedClass is MeshPart) EditModelPart(namedClass.Name);
+                else if (namedClass is FeNodeSet) EditNodeSet(namedClass.Name);
+                else if (namedClass is FeElementSet) EditElementSet(namedClass.Name);
+                else if (namedClass is FeSurface) EditSurface(namedClass.Name);
+                else if (namedClass is FeReferencePoint) EditRP(namedClass.Name);
+                else if (namedClass is Material) EditMaterial(namedClass.Name);
+                else if (namedClass is Section) EditSection(namedClass.Name);
                 else if (namedClass is CaeModel.Constraint) EditConstraint(namedClass.Name);
-                else if (namedClass is CaeModel.SurfaceInteraction) EditSurfaceInteraction(namedClass.Name);
-                else if (namedClass is CaeModel.ContactPair) EditContactPair(namedClass.Name);
-                else if (namedClass is CaeModel.Step) EditStep(namedClass.Name);
-                else if (namedClass is CaeModel.HistoryOutput) EditHistoryOutput(stepName, namedClass.Name);
-                else if (namedClass is CaeModel.FieldOutput) EditFieldOutput(stepName, namedClass.Name);
-                else if (namedClass is CaeModel.BoundaryCondition) EditBoundaryCondition(stepName, namedClass.Name);
-                else if (namedClass is CaeModel.Load) EditLoad(stepName, namedClass.Name);
-                else if (namedClass is CaeJob.AnalysisJob) EditAnalysis(namedClass.Name);
+                else if (namedClass is SurfaceInteraction) EditSurfaceInteraction(namedClass.Name);
+                else if (namedClass is ContactPair) EditContactPair(namedClass.Name);
+                else if (namedClass is Step) EditStep(namedClass.Name);
+                else if (namedClass is HistoryOutput) EditHistoryOutput(stepName, namedClass.Name);
+                else if (namedClass is FieldOutput) EditFieldOutput(stepName, namedClass.Name);
+                else if (namedClass is BoundaryCondition) EditBoundaryCondition(stepName, namedClass.Name);
+                else if (namedClass is Load) EditLoad(stepName, namedClass.Name);
+                else if (namedClass is AnalysisJob) EditAnalysis(namedClass.Name);
             }
             // Results
             else if (_controller.CurrentView == ViewGeometryModelResults.Results)
             {
-                if (namedClass is CaeMesh.ResultPart || namedClass is CaeMesh.GeometryPart) EditResultPart(namedClass.Name);
+                if (namedClass is ResultPart || namedClass is GeometryPart) EditResultPart(namedClass.Name);
                 else if (namedClass is CaeResults.HistoryResultData hd) ShowHistoryOutput(hd);
             }
         }
@@ -658,10 +658,12 @@ namespace PrePoMax
             }
             else if (_controller.CurrentView == ViewGeometryModelResults.Model)
             {
-                ApplyActionOnItems<CaeModel.Material>(items, DuplicateMaterials);
-                ApplyActionOnItems<CaeModel.SurfaceInteraction>(items, DuplicateSurfaceInteractions);
+                ApplyActionOnItems<FeNodeSet>(items, DuplicateNodeSets);
+                ApplyActionOnItems<FeElementSet>(items, DuplicateElementSets);
+                ApplyActionOnItems<Material>(items, DuplicateMaterials);
+                ApplyActionOnItems<SurfaceInteraction>(items, DuplicateSurfaceInteractions);
                 //
-                ApplyActionOnItems<CaeModel.Step>(items, DuplicateSteps);
+                ApplyActionOnItems<Step>(items, DuplicateSteps);
             }
             else if (_controller.CurrentView == ViewGeometryModelResults.Results)
             {
@@ -672,21 +674,21 @@ namespace PrePoMax
         {
             if (_controller.CurrentView == ViewGeometryModelResults.Geometry)
             {
-                HideShowItems<CaeMesh.GeometryPart>(items, operation, HideGeometryParts, ShowGeometryParts, ShowOnlyGeometryParts);
+                HideShowItems<GeometryPart>(items, operation, HideGeometryParts, ShowGeometryParts, ShowOnlyGeometryParts);
             }
             else if (_controller.CurrentView == ViewGeometryModelResults.Model)
             {
-                HideShowItems<CaeMesh.MeshPart>(items, operation, HideModelParts, ShowModelParts, ShowOnlyModelParts);
+                HideShowItems<MeshPart>(items, operation, HideModelParts, ShowModelParts, ShowOnlyModelParts);
                 HideShowItems<CaeModel.Constraint>(items, operation, HideConstraints, ShowConstraints, ShowOnlyConstraints);
-                HideShowItems<CaeModel.ContactPair>(items, operation, HideContactPairs, ShowContactPairs, ShowOnlyContactPairs);
-                HideShowStepItems<CaeModel.BoundaryCondition>(items, operation, stepNames, HideBoundaryConditions, 
+                HideShowItems<ContactPair>(items, operation, HideContactPairs, ShowContactPairs, ShowOnlyContactPairs);
+                HideShowStepItems<BoundaryCondition>(items, operation, stepNames, HideBoundaryConditions, 
                                                               ShowBoundaryConditions, ShowOnlyBoundaryConditions);
-                HideShowStepItems<CaeModel.Load>(items, operation, stepNames, HideLoads, ShowLoads, ShowOnlyLoads);
+                HideShowStepItems<Load>(items, operation, stepNames, HideLoads, ShowLoads, ShowOnlyLoads);
             }
             else if (_controller.CurrentView == ViewGeometryModelResults.Results)
             {
-                HideShowItems<CaeMesh.ResultPart>(items, operation, HideResultParts, ShowResultParts, ShowOnlyResultParts);
-                HideShowItems<CaeMesh.GeometryPart>(items, operation, HideResultParts, ShowResultParts, ShowOnlyResultParts);
+                HideShowItems<ResultPart>(items, operation, HideResultParts, ShowResultParts, ShowOnlyResultParts);
+                HideShowItems<GeometryPart>(items, operation, HideResultParts, ShowResultParts, ShowOnlyResultParts);
             }
         }
         private void ModelTree_SetTransparencyEvent(string[] partNames)
@@ -714,36 +716,36 @@ namespace PrePoMax
         {
             if (_controller.CurrentView == ViewGeometryModelResults.Geometry)
             {
-                ApplyActionOnItems<CaeMesh.FeMeshRefinement>(items, DeleteMeshRefinements);
+                ApplyActionOnItems<FeMeshRefinement>(items, DeleteMeshRefinements);
                 // At last delete the parts
-                ApplyActionOnItems<CaeMesh.GeometryPart>(items, DeleteGeometryParts);
+                ApplyActionOnItems<GeometryPart>(items, DeleteGeometryParts);
             }
             else if (_controller.CurrentView == ViewGeometryModelResults.Model)
             {
-                ApplyActionOnItems<CaeMesh.FeNodeSet>(items, DeleteNodeSets);
-                ApplyActionOnItems<CaeMesh.FeElementSet>(items, DeleteElementSets);
-                ApplyActionOnItems<CaeMesh.FeSurface>(items, DeleteSurfaces);
-                ApplyActionOnItems<CaeMesh.FeReferencePoint>(items, DeleteRPs);
-                ApplyActionOnItems<CaeModel.Material>(items, DeleteMaterials);
-                ApplyActionOnItems<CaeModel.Section>(items, DeleteSections);
+                ApplyActionOnItems<FeNodeSet>(items, DeleteNodeSets);
+                ApplyActionOnItems<FeElementSet>(items, DeleteElementSets);
+                ApplyActionOnItems<FeSurface>(items, DeleteSurfaces);
+                ApplyActionOnItems<FeReferencePoint>(items, DeleteRPs);
+                ApplyActionOnItems<Material>(items, DeleteMaterials);
+                ApplyActionOnItems<Section>(items, DeleteSections);
                 ApplyActionOnItems<CaeModel.Constraint>(items, DeleteConstraints);
-                ApplyActionOnItems<CaeModel.SurfaceInteraction>(items, DeleteSurfaceInteractions);
-                ApplyActionOnItems<CaeModel.ContactPair>(items, DeleteContactPairs);
+                ApplyActionOnItems<SurfaceInteraction>(items, DeleteSurfaceInteractions);
+                ApplyActionOnItems<ContactPair>(items, DeleteContactPairs);
                 //
-                DeleteStepItems<CaeModel.HistoryOutput>(items, stepNames, DeleteHistoryOutputs);
-                DeleteStepItems<CaeModel.FieldOutput>(items, stepNames, DeleteFieldOutputs);
-                DeleteStepItems<CaeModel.BoundaryCondition>(items, stepNames, DeleteBoundaryConditions);
-                DeleteStepItems<CaeModel.Load>(items, stepNames, DeleteLoads);
-                ApplyActionOnItems<CaeModel.Step>(items, DeleteSteps);
+                DeleteStepItems<HistoryOutput>(items, stepNames, DeleteHistoryOutputs);
+                DeleteStepItems<FieldOutput>(items, stepNames, DeleteFieldOutputs);
+                DeleteStepItems<BoundaryCondition>(items, stepNames, DeleteBoundaryConditions);
+                DeleteStepItems<Load>(items, stepNames, DeleteLoads);
+                ApplyActionOnItems<Step>(items, DeleteSteps);
                 //
-                ApplyActionOnItems<CaeJob.AnalysisJob>(items, DeleteAnalyses);
+                ApplyActionOnItems<AnalysisJob>(items, DeleteAnalyses);
                 // At last delete the parts
-                ApplyActionOnItems<CaeMesh.MeshPart>(items, DeleteModelParts);
+                ApplyActionOnItems<MeshPart>(items, DeleteModelParts);
             }
             else if (_controller.CurrentView == ViewGeometryModelResults.Results)
             {
-                ApplyActionOnItems<CaeMesh.ResultPart>(items, DeleteResultParts);
-                ApplyActionOnItems<CaeMesh.GeometryPart>(items, DeleteResultParts);
+                ApplyActionOnItems<ResultPart>(items, DeleteResultParts);
+                ApplyActionOnItems<GeometryPart>(items, DeleteResultParts);
             }
             //
             ClearSelection();
@@ -1198,6 +1200,21 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
+        private void tsmiExportToStereolitography_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (_controller.Model.Geometry != null && _controller.Model.Geometry.Parts != null)
+                {
+                    SelectMultipleEntities("Parts", _controller.GetGeometryParts(), SavePartsAsStl);
+                }
+                else throw new CaeException("No geometry to export.");
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
         private async void SaveCADPartsAsStep(string[] partNames)
         {
             try
@@ -1270,6 +1287,34 @@ namespace PrePoMax
                         SetStateWorking(Globals.ExportingText);
                         //
                         await Task.Run(() => _controller.ExportGeometryPartsAsMmgMesh(partNames, saveFileDialog.FileName));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+            finally
+            {
+                SetStateReady(Globals.ExportingText);
+            }
+        }
+        private async void SavePartsAsStl(string[] partNames)
+        {
+            try
+            {
+                using (SaveFileDialog saveFileDialog = new SaveFileDialog())
+                {
+                    saveFileDialog.Filter = "Stereolitography files | *.stl";
+                    if (_controller.OpenedFileName != null)
+                        saveFileDialog.FileName = Path.GetFileNameWithoutExtension(_controller.OpenedFileName) + ".stl";
+                    //
+                    if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        // The filter adds the extension to the file name
+                        SetStateWorking(Globals.ExportingText);
+                        //
+                        await Task.Run(() => _controller.ExportGeometryPartsAsStl(partNames, saveFileDialog.FileName));
                     }
                 }
             }
@@ -2147,8 +2192,8 @@ namespace PrePoMax
         {
             CaeMesh.GeometryPart part = _controller.GetGeometryPart(partName);
 
-            if (part.CADFileData == null && part.HasErrors)
-                throw new Exception("The part '" + partName + "' contains errors and can not be meshed.");
+            //if (part.CADFileData == null && part.HasErrors)
+            //    throw new Exception("The part '" + partName + "' contains errors and can not be meshed.");
             if (!_controller.MeshJobIdle) throw new Exception("The meshing is already in progress.");
 
             CaeMesh.MeshingParameters defaultMeshingParameters = new CaeMesh.MeshingParameters();
@@ -2634,6 +2679,17 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
+        private void tsmiDuplicateNodeSet_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Node Sets", _controller.GetUserNodeSets(), DuplicateNodeSets);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
         private void tsmiDeleteNodeSet_Click(object sender, EventArgs e)
         {
             try
@@ -2645,7 +2701,7 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
-
+        //
         private void EditNodeSet(string nodeSetName)
         {
             // Data editor
@@ -2653,6 +2709,10 @@ namespace PrePoMax
             ItemSetDataEditor.ParentForm = _frmNodeSet;
             _frmSelectItemSet.SetOnlyGeometrySelection(false);
             ShowForm(_frmNodeSet, "Edit Node Set", nodeSetName);
+        }
+        private void DuplicateNodeSets(string[] nodeSetNames)
+        {
+            _controller.DuplicateNodeSetsCommand(nodeSetNames);
         }
         private void DeleteNodeSets(string[] nodeSetNames)
         {
@@ -2695,6 +2755,17 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
+        private void tsmiDuplicateElementSet_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Element Sets", _controller.GetUserElementSets(), DuplicateElementSets);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
         private void tsmiConvertElementSetsToMeshParts_Click(object sender, EventArgs e)
         {
             try
@@ -2717,7 +2788,7 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
-
+        //
         private void EditElementSet(string elementSetName)
         {
             // Data editor
@@ -2725,6 +2796,10 @@ namespace PrePoMax
             ItemSetDataEditor.ParentForm = _frmElementSet;
             _frmSelectItemSet.SetOnlyGeometrySelection(false);
             ShowForm(_frmElementSet, "Edit Element Set", elementSetName);
+        }
+        private void DuplicateElementSets(string[] elementSetNames)
+        {
+            _controller.DuplicateElementSetsCommand(elementSetNames);
         }
         private void ConvertElementSetsToMeshParts(string[] elementSetNames)
         {

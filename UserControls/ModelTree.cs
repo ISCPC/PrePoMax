@@ -2143,7 +2143,9 @@ namespace UserControls
         }
         private bool CanDuplicate(TreeNode node)
         {
-            if (node.Tag is Material) return true;
+            if (node.Tag is FeNodeSet) return true;
+            else if (node.Tag is FeElementSet) return true;
+            else if (node.Tag is Material) return true;
             else if (node.Tag is SurfaceInteraction) return true;
             else if (node.Tag is Step) return true;
             else return false;

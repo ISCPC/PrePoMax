@@ -180,7 +180,9 @@ Added support for import of shell CAD geometry
 Added support for merging of shell faces into a compound
 Added support for visualizing shell face orientations
 Added support for flipping the shell face orientations
+Added support for splitting shell faces using two poits
 Added support for meshing of shell geometries using triangle and quadrilateral elements
+Added support for meshing the .stl shell geometries
 Added support for creating shell sections
 Added support for visualizing the results on shell faces (option 2D)
 Added support for auto-scroll in the monitor window

@@ -1138,6 +1138,16 @@ namespace PrePoMax
         public void ExportGeometryPartsAsMmgMesh(string[] partNames, string fileName)
         {
             FileInOut.Output.MmgFileWriter.Write(fileName, _model.Geometry, partNames);
+            //
+            foreach (var partName in partNames)
+            {
+                _form.WriteDataToOutput("Part " + partName + " exported to file: " + fileName);
+            }
+        }
+        public void ExportGeometryPartsAsStl(string[] partNames, string fileName)
+        {
+            FileInOut.Output.StlFileWriter.Write(fileName, _model.Geometry, partNames);
+            //
             foreach (var partName in partNames)
             {
                 _form.WriteDataToOutput("Part " + partName + " exported to file: " + fileName);
@@ -1903,7 +1913,7 @@ namespace PrePoMax
             if (File.Exists(meshRefinementFileName)) File.Delete(meshRefinementFileName);
             if (File.Exists(edgeNodesFileName)) File.Delete(edgeNodesFileName);
             //
-            FileInOut.Output.StlFileWriter.Write(stlFileName, _model.Geometry, part.Name);
+            FileInOut.Output.StlFileWriter.Write(stlFileName, _model.Geometry, new string[] { part.Name });
             CreateMeshRefinementFile(part, meshRefinementFileName, newMeshRefinement);
             parameters.WriteToFile(meshParametersFileName);
             _model.Geometry.WriteEdgeNodesToFile(part, edgeNodesFileName);
@@ -2100,7 +2110,7 @@ namespace PrePoMax
             if (File.Exists(meshRefinementFileName)) File.Delete(meshRefinementFileName);
             if (File.Exists(edgeNodesFileName)) File.Delete(edgeNodesFileName);
             //
-            FileInOut.Output.StlFileWriter.Write(stlFileName, _model.Geometry, part.Name);
+            FileInOut.Output.StlFileWriter.Write(stlFileName, _model.Geometry, new string[] { part.Name });
             CreateMeshRefinementFile(part, meshRefinementFileName, null);
             part.MeshingParameters.WriteToFile(meshParametersFileName);
             _model.Geometry.WriteEdgeNodesToFile(part, edgeNodesFileName);
@@ -2730,6 +2740,11 @@ namespace PrePoMax
             Commands.CReplaceNodeSet comm = new Commands.CReplaceNodeSet(oldNodeSetName, newNodeSet);
             _commands.AddAndExecute(comm);
         }
+        public void DuplicateNodeSetsCommand(string[] nodeSetNames)
+        {
+            Commands.CDuplicateNodeSets comm = new Commands.CDuplicateNodeSets(nodeSetNames);
+            _commands.AddAndExecute(comm);
+        }
         public void RemoveNodeSetsCommand(string[] nodeSetNames)
         {
             Commands.CRemoveNodeSets comm = new Commands.CRemoveNodeSets(nodeSetNames);
@@ -2779,7 +2794,6 @@ namespace PrePoMax
                 //
                 _selection.Clear();
             }
-            else throw new NotSupportedException("The node set does not contain any selection data.");
             //
             _model.Mesh.UpdateNodeSetCenterOfGravity(nodeSet);
             //
@@ -2846,6 +2860,17 @@ namespace PrePoMax
             UpdateReferencePointsDependentOnNodeSet(nodeSet.Name);
             //
             if (update) Update(UpdateType.Check | UpdateType.RedrawSymbols);
+        }
+        public void DuplicateNodeSets(string[] nodeSetNames)
+        {
+            FeNodeSet newNodeSet;
+            foreach (var name in nodeSetNames)
+            {
+                newNodeSet = _model.Mesh.NodeSets[name].DeepClone();
+                newNodeSet.Name = NamedClass.GetNameWithoutLastValue(newNodeSet.Name);
+                newNodeSet.Name = NamedClass.GetNewValueName(_model.Mesh.NodeSets.Keys, newNodeSet.Name);
+                AddNodeSet(newNodeSet);
+            }
         }
         public void RemoveNodeSets(string[] nodeSetNames)
         {
@@ -2948,6 +2973,11 @@ namespace PrePoMax
             Commands.CReplaceElementSet comm = new Commands.CReplaceElementSet(oldElementSetName, newElementSet);
             _commands.AddAndExecute(comm);
         }
+        public void DuplicateElementSetsCommand(string[] elementSetNames)
+        {
+            Commands.CDuplicateElementSets comm = new Commands.CDuplicateElementSets(elementSetNames);
+            _commands.AddAndExecute(comm);
+        }
         public void ConvertElementSetsToMeshPartsCommand(string[] elementSetNames)
         {
             Commands.CConvertElementSetsToMeshParts comm = new Commands.CConvertElementSetsToMeshParts(elementSetNames);
@@ -2990,7 +3020,7 @@ namespace PrePoMax
             }
             return userElementSetNames.ToArray();
         }
-        public void AddelementSet(FeElementSet elementSet)
+        public void AddElementSet(FeElementSet elementSet)
         {
             if (elementSet.CreationData != null)
             {
@@ -2999,7 +3029,6 @@ namespace PrePoMax
                 elementSet.Labels = GetSelectionIds();
                 _selection.Clear();
             }
-            else throw new NotSupportedException("The element set does not contain any selection data.");
             //
             _model.Mesh.ElementSets.Add(elementSet.Name, elementSet);
             //
@@ -3041,6 +3070,17 @@ namespace PrePoMax
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldElementSetName, elementSet, null);
             //
             if (update) Update(UpdateType.Check | UpdateType.RedrawSymbols);
+        }
+        public void DuplicateElementSets(string[] elementSetNames)
+        {
+            FeElementSet newElementSet;
+            foreach (var name in elementSetNames)
+            {
+                newElementSet = _model.Mesh.ElementSets[name].DeepClone();
+                newElementSet.Name = NamedClass.GetNameWithoutLastValue(newElementSet.Name);
+                newElementSet.Name = NamedClass.GetNewValueName(_model.Mesh.ElementSets.Keys, newElementSet.Name);
+                AddElementSet(newElementSet);
+            }
         }
         public void ConvertElementSetsToMeshParts(string[] elementSetNames)
         {
@@ -3632,7 +3672,7 @@ namespace PrePoMax
                     FeElementSet elementSet = new FeElementSet(name, section.CreationIds, true);
                     elementSet.CreationData = section.CreationData.DeepClone();
                     elementSet.Internal = true;
-                    AddelementSet(elementSet);
+                    AddElementSet(elementSet);
                     //
                     section.RegionName = name;
                     section.RegionType = RegionTypeEnum.ElementSetName;
@@ -4279,7 +4319,7 @@ namespace PrePoMax
                     FeElementSet elementSet = new FeElementSet(name, historyOutput.CreationIds);
                     elementSet.CreationData = historyOutput.CreationData.DeepClone();
                     elementSet.Internal = true;
-                    AddelementSet(elementSet);
+                    AddElementSet(elementSet);
                     //
                     historyOutput.RegionName = name;
                     historyOutput.RegionType = RegionTypeEnum.ElementSetName;
@@ -4662,7 +4702,7 @@ namespace PrePoMax
                     FeElementSet elementSet = new FeElementSet(name, load.CreationIds, true);
                     elementSet.CreationData = load.CreationData.DeepClone();
                     elementSet.Internal = true;
-                    AddelementSet(elementSet);
+                    AddElementSet(elementSet);
                     //
                     load.RegionName = name;
                     load.RegionType = RegionTypeEnum.ElementSetName;
@@ -5400,7 +5440,7 @@ namespace PrePoMax
                 }
                 else throw new NotSupportedException();
             }
-
+            //
             return ids;
         }
         private int[] GetIdsFromSelectionNodeMouse(SelectionNodeMouse selectionNodeMouse)

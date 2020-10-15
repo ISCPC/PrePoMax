@@ -11,35 +11,38 @@ namespace FileInOut.Output
 {
     static public class StlFileWriter
     {
-        public static void Write(string fileName, FeMesh mesh, string partName)
+        public static void Write(string fileName, FeMesh mesh, string[] partNames)
         {
             List<Facet> facets = new List<Facet>();
             Normal normal;
             FeElement element;
             int[] nodeIds;
             double[] coor;
-
-            foreach (int elementId in mesh.Parts[partName].Labels)
+            //
+            foreach (var partName in partNames)
             {
-                element = mesh.Elements[elementId];
-                if (element is LinearTriangleElement)
+                foreach (int elementId in mesh.Parts[partName].Labels)
                 {
-                    Vertex[] vertices = new Vertex[3];
-                    nodeIds = element.NodeIds;
-                    for (int i = 0; i < nodeIds.Length; i++)
+                    element = mesh.Elements[elementId];
+                    if (element is LinearTriangleElement)
                     {
-                        coor = mesh.Nodes[nodeIds[i]].Coor;
-                        vertices[i] = new Vertex((float)coor[0], (float)coor[1], (float)coor[2]);
+                        Vertex[] vertices = new Vertex[3];
+                        nodeIds = element.NodeIds;
+                        for (int i = 0; i < nodeIds.Length; i++)
+                        {
+                            coor = mesh.Nodes[nodeIds[i]].Coor;
+                            vertices[i] = new Vertex((float)coor[0], (float)coor[1], (float)coor[2]);
+                        }
+                        normal = ComputeNormal(vertices);
+                        facets.Add(new Facet(normal, vertices, 0));
+                        Facet f = new Facet();
                     }
-                    normal = ComputeNormal(vertices);
-                    facets.Add(new Facet(normal, vertices, 0));
-                    Facet f = new Facet();
                 }
             }
-
+            //
             STLDocument stlFile = new STLDocument("part", facets);
             stlFile.SaveAsText(fileName);
-
+            //
             //using (Stream stream = File.OpenWrite(fileName))
             //{
             //   stlFile.WriteBinary(stream);

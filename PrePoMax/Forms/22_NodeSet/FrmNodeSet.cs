@@ -122,8 +122,15 @@ namespace PrePoMax.Forms
             else
             {
                 NodeSet = _controller.GetNodeSet(_nodeSetToEditName);   // to clone
+                int[] ids = NodeSet.Labels;
+                if (NodeSet.CreationData == null && ids != null)
+                {
+                    // Add creation data                    
+                    NodeSet.CreationData = new Selection();
+                    NodeSet.CreationData.SelectItem = vtkSelectItem.Node;
+                    NodeSet.CreationData.Add(new SelectionNodeIds(vtkSelectOperation.Add, false, ids));
+                }
                 // Change node selection history to ids to speed up
-                int[] ids = NodeSet.Labels;                             
                 _selectionNodeIds = new SelectionNodeIds(vtkSelectOperation.None, false, ids);
                 _prevSelectionNodes = NodeSet.CreationData.Nodes;
                 _controller.CreateNewSelection(NodeSet.CreationData.CurrentView, _selectionNodeIds, true);
@@ -182,7 +189,10 @@ namespace PrePoMax.Forms
         {
             // Prepare ItemSetDataEditor - prepare Geometry or Mesh based selection
             if (_nodeSetToEditName == null) return true;
-            return _controller.GetNodeSet(_nodeSetToEditName).CreationData.IsGeometryBased(); // NodeSet was modified for speed up
+            //
+            FeNodeSet nodeSet = _controller.GetNodeSet(_nodeSetToEditName);
+            if (nodeSet.CreationData == null) return false;
+            else return nodeSet.CreationData.IsGeometryBased(); // NodeSet was modified for speed up
         }
 
     }

@@ -158,11 +158,14 @@ namespace FileInOut.Input
                         {
                             stepCounter++;
                             step.Name += stepCounter;
-                            // Create object to store list of steps in *.inp files
-                            var stepColl = new StepCollection();
+                            //
+                            model.StepCollection.AddStep(step, false);
 
-                            stepColl.AddStep(step);
-                            foreach (var entryStep in stepColl.StepsList) model.StepCollection.AddStep(entryStep);
+                            //// Create object to store list of steps in *.inp files
+                            //var stepColl = new StepCollection();
+
+                            //stepColl.AddStep(step);
+                            //foreach (var entryStep in stepColl.StepsList) model.StepCollection.AddStep(entryStep);
                             //foreach (var entryStep in stepColl.StepsList) model.StepCollection.AddStep(entryStep);
                             //stepColl.ReplaceStep(step,step);
                             // step.Name += String.Join("", stepCounter);
@@ -874,8 +877,7 @@ namespace FileInOut.Input
                 for (var i = dataSetId; i < dataSets.Length; i++)
                 {
                     dataSet = dataSets[i]; // next keyword
-                    var keyword = dataSet[0].Split(splitter, StringSplitOptions.RemoveEmptyEntries)[0].Trim()
-                        .ToUpper();
+                    var keyword = dataSet[0].Split(splitter, StringSplitOptions.RemoveEmptyEntries)[0].Trim().ToUpper();
 
                     if ((keyword == "*STATIC") && (step.Nlgeom == true))
                     {
@@ -887,25 +889,25 @@ namespace FileInOut.Input
                         step.MinTimeIncrement = double.Parse(record3[2]);
                         step.MaxTimeIncrement = double.Parse(record3[3]);
                     }
-
+                    //
                     if (keyword == "*BOUNDARY")
-
                     {
                         AddStepBoundaryCondition(step, dataSet, firstLineNumber);
                     }
-
-                    if (keyword == "*CLOAD")
+                    else if (keyword == "*CLOAD")
                     {
                         AddStepCLoad(step, dataSet, firstLineNumber);
                     }
-
-                    if (keyword == "*DLOAD")
+                    else if (keyword == "*DLOAD")
                     {
                         AddStepDLoad(step, dataSet, firstLineNumber);
                     }
-
-                    if (keyword == "*END") break; // *END STEP
-
+                    else if (keyword == "*NODE")
+                    {
+                        if (dataSet[0].ToUpper().StartsWith("*NODE PRINT")) AddStepNodalHistoryOutput(step, dataSet, firstLineNumber);
+                    }
+                    else if (keyword == "*END") break; // *END STEP
+                    //
                     firstLineNumber += dataSet.Length;
                 }
                 return step;
@@ -926,24 +928,17 @@ namespace FileInOut.Input
 
             try
             {
-                var name = "BC-";
+                string name;
+                //
                 for (var bci = 1; bci < lines.Length; bci++)
                 {
                     string[] recordBC = lines[bci].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
-
                     // Create DisplacementRotation BC
-
-                    // To avoid duplicate boundary condition names of additional steps,
-                    // a random letter is included in the numbering count.
-                    // This option is used until a better solution is implemented
-
-                    Random rand = new Random(Guid.NewGuid().GetHashCode());
-                    var num = rand.Next(0, 26); // Zero to 25
-                    char let = (char)('A' + num);
                     // Get regionName
                     var regionName = recordBC[0].Trim();
-                    var bCond = new DisplacementRotation(name + let, regionName, RegionTypeEnum.NodeSetName);
-                    bCond.Name += (step.BoundaryConditions.Count + 1);
+                    //var bCond = new DisplacementRotation(name + let, regionName, RegionTypeEnum.NodeSetName); // Changed by Matej
+                    name = NamedClass.GetNewValueName(step.BoundaryConditions.Keys, "Disp_rot-");
+                    var bCond = new DisplacementRotation(name, regionName, RegionTypeEnum.NodeSetName);
                     // Get the prescribed displacement
                     double dofValue = 0;
                     if (recordBC.Length == 4) dofValue = double.Parse(recordBC[3]);
@@ -984,8 +979,6 @@ namespace FileInOut.Input
                 return null;
             }
         }
-
-
         static private StaticStep AddStepCLoad(StaticStep step, string[] lines, int firstLineNumber)
         {
             // *CLoad
@@ -1059,7 +1052,6 @@ namespace FileInOut.Input
                 return null;
             }
         }
-
         static private StaticStep AddStepDLoad(StaticStep step, string[] lines, int firstLineNumber)
         {
             // *DLoad
@@ -1117,6 +1109,57 @@ namespace FileInOut.Input
             {
                 _errors.Add("Line " + firstLineNumber + ": Failed to import gravity loading");
                 return null;
+            }
+        }
+        static private void AddStepNodalHistoryOutput(Step step, string[] lines, int firstLineNumber)
+        {
+            //*Node print, Nset=Internal_Selection-7_Fz, Totals=Only
+            //U, RF
+            try
+            {
+                string name = NamedClass.GetNewValueName(step.HistoryOutputs.Keys, "NH-Output-");
+                NodalHistoryVariable variables;
+                string regionName = null;
+                RegionTypeEnum regionType = RegionTypeEnum.None;
+                TotalsTypeEnum totalsType = TotalsTypeEnum.No;
+                string[] record1;
+                string[] record2;
+                // Line 1
+                record1 = lines[0].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var rec in record1)
+                {
+                    record2 = rec.Trim(). Split(splitterEqual, StringSplitOptions.RemoveEmptyEntries);
+                    if (record2[0].ToUpper().StartsWith("NSET"))
+                    {
+                        regionName = record2[1];
+                        regionType = RegionTypeEnum.NodeSetName;
+                    }
+                    else if (record2[0].ToUpper().StartsWith("TOTALS"))
+                    {
+                        totalsType = (TotalsTypeEnum)Enum.Parse(typeof(TotalsTypeEnum), record2[1]);
+                    }
+                }
+                // Line 2
+                record1 = lines[1].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                if (record1.Length > 0)
+                {
+                    variables = (NodalHistoryVariable)Enum.Parse(typeof(NodalHistoryVariable), record1[0]);
+                    for (int i = 1; i < record1.Length; i++)
+                    {
+                        variables |= (NodalHistoryVariable)Enum.Parse(typeof(NodalHistoryVariable), record1[i]);
+                    }
+                    if (regionName != null)
+                    {
+                        NodalHistoryOutput nodalHistoryOutput = new NodalHistoryOutput(name, variables, regionName, regionType);
+                        if (totalsType != TotalsTypeEnum.No) nodalHistoryOutput.TotalsType = totalsType;
+                        // Add to step
+                        step.HistoryOutputs.Add(name, nodalHistoryOutput);
+                    }
+                }
+            }
+            catch
+            {
+                _errors.Add("Line " + firstLineNumber + ": Failed to import nodal history output.");
             }
         }
 

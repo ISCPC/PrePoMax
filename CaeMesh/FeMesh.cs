@@ -132,8 +132,29 @@ namespace CaeMesh
         {
             if (convertToSecondOrder) LinearToParabolic(ref nodes, ref elements);
             //
-            _nodes = nodes;
-            _elements = elements;
+            int id;
+            int[] ids;
+            _nodes = new Dictionary<int, FeNode>(nodes.Count);
+            _elements = new Dictionary<int, FeElement>(elements.Count);
+            // Sort nodes is here becouse of the sort elements
+            ids = nodes.Keys.ToArray();
+            Array.Sort(ids);
+            for (int i = 0; i < ids.Length; i++)
+            {
+                id = ids[i];
+                _nodes.Add(id, nodes[id]);
+            }
+            // Sort elements - the extract part starts at the first element; if this is not the element with
+            // the lowest id then the elements may get renombered if the part with the lowest element id is
+            // not hte first part
+            ids = elements.Keys.ToArray();
+            Array.Sort(ids);
+            for (int i = 0; i < ids.Length; i++)
+            {
+                id = ids[i];
+                _elements.Add(id, elements[id]);
+            }
+            //
             _meshRepresentation = representation;
             _manifoldGeometry = false;
             //
@@ -2627,13 +2648,27 @@ namespace CaeMesh
                 }
             }
             // Renumber node sets
-            FeGroup newSet;
-            foreach (FeGroup nodeSet in _nodeSets.Values)
+            FeNodeSet nodeSet;
+            foreach (var entry in _nodeSets)
             {
-                newSet = nodeSet;
-                for (int i = 0; i < newSet.Labels.Length; i++)
+                nodeSet = entry.Value;
+                for (int i = 0; i < nodeSet.Labels.Length; i++)
                 {
-                    newSet.Labels[i] = newIds[newSet.Labels[i]];
+                    nodeSet.Labels[i] = newIds[nodeSet.Labels[i]];
+                }
+                // Renumber selection
+                if (nodeSet.CreationData != null)
+                {
+                    foreach (var node in nodeSet.CreationData.Nodes)
+                    {
+                        if (node is SelectionNodeIds snids)
+                        {
+                            for (int i = 0; i < snids.ItemIds.Length; i++)
+                            {
+                                snids.ItemIds[i] = newIds[snids.ItemIds[i]];
+                            }
+                        }
+                    }
                 }
             }
             // Renumber 3D part's nodes, visualization cells and edges
@@ -2672,13 +2707,27 @@ namespace CaeMesh
             _elements = renumberedElements;
             _maxElementId = newId - 1;
             // Renumber element sets
-            FeGroup newSet;
+            FeElementSet elementSet;
             foreach (var entry in _elementSets)
             {
-                newSet = entry.Value;
-                for (int i = 0; i < newSet.Labels.Length; i++)
+                elementSet = entry.Value;
+                for (int i = 0; i < elementSet.Labels.Length; i++)
                 {
-                    newSet.Labels[i] = newIds[newSet.Labels[i]];
+                    elementSet.Labels[i] = newIds[elementSet.Labels[i]];
+                }
+                // Renumber selection
+                if (elementSet.CreationData != null)
+                {
+                    foreach (var node in elementSet.CreationData.Nodes)
+                    {
+                        if (node is SelectionNodeIds snids)
+                        {
+                            for (int i = 0; i < snids.ItemIds.Length; i++)
+                            {
+                                snids.ItemIds[i] = newIds[snids.ItemIds[i]];
+                            }
+                        }
+                    }
                 }
             }
             BasePart part;
@@ -4827,29 +4876,30 @@ namespace CaeMesh
         public void AddNodeSet(FeNodeSet nodeSet)
         {
             FeNodeSet existingNodeSet;
-
-            // sort labels
+            // Sort labels
             Array.Sort(nodeSet.Labels);
-
-            if (_nodeSets.TryGetValue(nodeSet.Name, out existingNodeSet))        // in Calculix the sets with the same name are merged
+            //
+            if (_nodeSets.TryGetValue(nodeSet.Name, out existingNodeSet))   // in Calculix the sets with the same name are merged
             {
                 existingNodeSet.Labels = existingNodeSet.Labels.Concat(nodeSet.Labels).Distinct().ToArray();
             }
             else
             {
                 List<int> nodeIds = new List<int>();
-
-                // add only node ids of existing elements
+                // Add only node ids of existing elements
                 foreach (int nodeId in nodeSet.Labels)
                 {
                     if (_nodes.ContainsKey(nodeId)) nodeIds.Add(nodeId);
                 }
-
+                //
                 if (nodeIds.Count > 0)
                 {
                     FeNodeSet newNodeSet = new FeNodeSet(nodeSet.Name, nodeIds.ToArray());
+                    //
                     UpdateNodeSetCenterOfGravity(newNodeSet);
+                    //
                     if (nodeSet.Labels.Length != newNodeSet.Labels.Length) newNodeSet.Valid = false;
+                    //
                     _nodeSets.Add(newNodeSet.Name, newNodeSet);
                 }
             }
@@ -4906,15 +4956,15 @@ namespace CaeMesh
             // Sort labels
             Array.Sort(elementSet.Labels);
             //
-            if (_elementSets.TryGetValue(elementSet.Name, out existingElementSet))     // in Calculix the sets with the same name are merged
+            if (_elementSets.TryGetValue(elementSet.Name, out existingElementSet))  // in Calculix the sets with the same name are merged
             {
                 existingElementSet.Labels = existingElementSet.Labels.Concat(elementSet.Labels).Distinct().ToArray();
                 return;
             }
-            else if (_parts.TryGetValue(elementSet.Name, out part))                    // does a part exists
+            else if (_parts.TryGetValue(elementSet.Name, out part))             // does a part exists
             {
                 CompareIntArray comparer = new CompareIntArray();
-                if (comparer.Equals(part.Labels, elementSet.Labels)) return;           // skip element sets with the same name and ids as parts
+                if (comparer.Equals(part.Labels, elementSet.Labels)) return;    // skip element sets with the same name and ids as parts
                 else
                 {
                     // Rename part;
@@ -4936,7 +4986,9 @@ namespace CaeMesh
             if (elementIds.Count > 0)
             {
                 FeElementSet newElementSet = new FeElementSet(elementSet.Name, elementIds.ToArray());
+                //
                 if (elementSet.Labels.Length != newElementSet.Labels.Length) newElementSet.Valid = false;
+                //
                 _elementSets.Add(newElementSet.Name, newElementSet);
             }
         }
