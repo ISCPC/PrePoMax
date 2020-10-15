@@ -1181,24 +1181,27 @@ namespace CaeMesh
         }
         private void CheckForFeeAndErrorElements(BasePart part)
         {
-            VisualizationData vis = part.Visualization;
-            // Check for bad element and nodes
-            List<int> freeEdgeIds = new List<int>();
-            List<int> freeEdgeElementIds = new List<int>();            
-            HashSet<int> freeNodeIds = new HashSet<int>();
-            HashSet<int> openLoopFreeEdgeIds = new HashSet<int>();
-            HashSet<int> closeLoopFreeEdgeIds;
-            //
-            int edgeId;
-            int[] edgeIdsCounter = new int[vis.EdgeCellIdsByEdge.Length];
-            //
-            if (part is GeometryPart gp)
+            if (part.PartType == PartType.Wire) return;
+            else if (part is GeometryPart gp)
             {
-                // Find free edges
                 // Clear
                 gp.FreeEdgeElementIds = null;
                 gp.FreeNodeIds = null;
-                // Create a map of how many times an edge is used on all part surfaces
+                //
+                gp.ErrorEdgeElementIds = null;
+                gp.ErrorNodeIds = null;
+                //
+                VisualizationData vis = gp.Visualization;
+                List<int> freeEdgeIds = new List<int>();
+                List<int> freeEdgeElementIds = new List<int>();
+                HashSet<int> freeNodeIds = new HashSet<int>();
+                HashSet<int> openLoopFreeEdgeIds = new HashSet<int>();
+                HashSet<int> closeLoopFreeEdgeIds;
+                //
+                int edgeId;
+                int[] edgeIdsCounter = new int[vis.EdgeCellIdsByEdge.Length];
+                // Find free edges                                                      
+                // Create a map of how many times an edge is used on all part surfaces  
                 // For each surface
                 for (int i = 0; i < vis.FaceEdgeIds.Length; i++)
                 {
@@ -1290,9 +1293,7 @@ namespace CaeMesh
             HashSet<int> errorEdgeIds = new HashSet<int>();
             VisualizationData vis = gp.Visualization;
             HashSet<int> vertexNodeIds = new HashSet<int>(vis.VertexNodeIds);
-            // Clear
-            gp.ErrorEdgeElementIds = null;
-            gp.ErrorNodeIds = null;
+           
             // Shell parts
             if (gp.PartType == PartType.Shell)
             {
@@ -1324,11 +1325,18 @@ namespace CaeMesh
                     }
                 }
                 // From the map extract all end/start vertices and their open edge loops
+                FaceType faceType;
+                // For eaach face
                 for (int i = 0; i < faceVertexEdgeIds.Length; i++)
                 {
+                    if (vis.FaceTypes != null) faceType = vis.FaceTypes[i];
+                    else faceType = FaceType.Unknown;
+                    // for each vertex
                     foreach (var entry in faceVertexEdgeIds[i])
                     {
-                        if (entry.Value.Count != 2)
+                        // Cylindera and toutuses have a single edge along their axis which creates 3 edge vertices
+                        if (entry.Value.Count == 3 && (faceType == FaceType.Cylinder || faceType == FaceType.Torus)) continue;
+                        else if (entry.Value.Count != 2)
                         {
                             nodeId = entry.Key;
                             errorNodeIds.Add(nodeId);
@@ -1812,21 +1820,25 @@ namespace CaeMesh
             surfaceEdgeIds = surfaceEdgeIdsHash.ToArray();
         }
         //
-        public void RenumberVisualizationSurfaces(Dictionary<int, HashSet<int>> surfaceIdNodeIds)
+        public void RenumberVisualizationSurfaces(Dictionary<int, HashSet<int>> surfaceIdNodeIds,
+                                                  SortedDictionary<int, FaceType> faceTypes = null)
         {
             // For each part
             foreach (var entry in _parts)
             {
-                RenumberVisualizationSurfaces(entry.Value, surfaceIdNodeIds);
+                RenumberVisualizationSurfaces(entry.Value, surfaceIdNodeIds, faceTypes);
+                if (faceTypes != null) CheckForFeeAndErrorElements(entry.Value);
             }
         }
-        public void RenumberVisualizationSurfaces(BasePart part, Dictionary<int, HashSet<int>> surfaceIdNodeIds)
+        public void RenumberVisualizationSurfaces(BasePart part, Dictionary<int, HashSet<int>> surfaceIdNodeIds,
+                                                  SortedDictionary<int, FaceType> faceTypes = null)
         {
             int[] cellIdsByFace;
             VisualizationData vis;
             HashSet<int> partFaceNodeIds = new HashSet<int>();
             int[] newSurfaceIds;
             int[] oldSurfaceIds;
+            FaceType[] partFaceTypes;
             int surfaceCount;
             int oneSurfCount;
             //
@@ -1837,6 +1849,7 @@ namespace CaeMesh
             surfaceCount = 0;
             newSurfaceIds = new int[vis.CellIdsByFace.Length];
             oldSurfaceIds = new int[vis.CellIdsByFace.Length];
+            partFaceTypes = new FaceType[vis.CellIdsByFace.Length];
             // For each part surface
             for (int i = 0; i < vis.CellIdsByFace.Length; i++)
             {
@@ -1854,6 +1867,7 @@ namespace CaeMesh
                     {
                         newSurfaceIds[surfaceCount] = surfaceNodeIdsEntry.Key;
                         oldSurfaceIds[surfaceCount] = surfaceCount;
+                        
                         surfaceCount++;
                         oneSurfCount++;
                         break;
@@ -1867,7 +1881,20 @@ namespace CaeMesh
 
             }
             Array.Sort(newSurfaceIds, oldSurfaceIds);
+            //
             part.RenumberVisualizationSurfaces(oldSurfaceIds);
+            //
+            int faceId;
+            if (faceTypes != null)
+            {
+                for (int i = 0; i < newSurfaceIds.Length; i++)
+                {
+                    faceId = newSurfaceIds[i];
+                    if (faceTypes.ContainsKey(faceId)) partFaceTypes[i] = faceTypes[faceId];
+                    else partFaceTypes[i] = FaceType.Unknown;
+                }
+                part.Visualization.FaceTypes = partFaceTypes;
+            }
         }
         public void RenumberVisualizationEdges(Dictionary<int, HashSet<int>> edgeIdNodeIds)
         {

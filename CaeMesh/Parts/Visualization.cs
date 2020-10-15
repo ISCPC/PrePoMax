@@ -8,6 +8,23 @@ using System.Threading.Tasks;
 namespace CaeMesh
 {
     [Serializable]
+    public enum FaceType
+    {
+            Plane,
+			Cylinder,
+			Cone,
+			Sphere,
+			Torus,
+			BezierSurface,
+			BSplineSurface,
+			SurfaceOfRevolution,
+			SurfaceOfExtrusion,
+			OffsetSurface,
+			OtherSurface,
+			Unknown
+    }
+
+    [Serializable]
     public class VisualizationData
     {
         // vertex
@@ -20,6 +37,7 @@ namespace CaeMesh
         protected int[] _cellIds;
         protected int[][] _cellIdsByFace;        // coud be hashset<> but serialization coud be bad
         protected double[] _faceAreas;
+        protected FaceType[] _faceTypes;
         protected int[][] _faceEdgeIds;
         protected int[][] _cellNeighboursOverCellEdge;
         protected int[][] _edgeCells;
@@ -67,6 +85,16 @@ namespace CaeMesh
         {
             get { return _faceAreas; }
             set { _faceAreas = value; }
+        }
+        
+        /// <summary>
+        /// FaceTypes
+        /// [0...num. of faces]
+        /// </summary>
+        public FaceType[] FaceTypes
+        {
+            get { return _faceTypes; }
+            set { _faceTypes = value; }
         }
 
         /// <summary>
@@ -138,23 +166,25 @@ namespace CaeMesh
             }
 
             _cellIds = visualization.CellIds != null ? visualization.CellIds.ToArray() : null;
-            
+            //
             if (visualization.CellIdsByFace != null)
             {
                 _cellIdsByFace = new int[visualization.CellIdsByFace.Length][];
                 for (int i = 0; i < _cellIdsByFace.Length; i++)
                     _cellIdsByFace[i] = visualization.CellIdsByFace[i].ToArray();
             }
-
+            //
             _faceAreas = visualization.FaceAreas != null ? visualization.FaceAreas.ToArray() : null;
-
+            //
+            _faceTypes = visualization.FaceTypes != null ? visualization.FaceTypes.ToArray() : null;
+            //
             if (visualization.FaceEdgeIds != null)
             {
                 _faceEdgeIds = new int[visualization.FaceEdgeIds.Length][];
                 for (int i = 0; i < _faceEdgeIds.Length; i++)
                     _faceEdgeIds[i] = visualization.FaceEdgeIds[i].ToArray();
             }
-
+            //
             if (visualization.CellNeighboursOverCellEdge != null)
             {
                 _cellNeighboursOverCellEdge = new int[visualization.CellNeighboursOverCellEdge.Length][];
@@ -164,23 +194,22 @@ namespace CaeMesh
                         _cellNeighboursOverCellEdge[i] = visualization.CellNeighboursOverCellEdge[i].ToArray();
                 }
             }
-
+            //
             if (visualization.EdgeCells != null)
             {
                 _edgeCells = new int[visualization.EdgeCells.Length][];
                 for (int i = 0; i < _edgeCells.Length; i++) _edgeCells[i] = visualization.EdgeCells[i].ToArray();
             }
-
+            //
             if (visualization.EdgeCellIdsByEdge != null)
             {
                 _edgeCellIdsByEdge = new int[visualization.EdgeCellIdsByEdge.Length][];
                 for (int i = 0; i < _edgeCellIdsByEdge.Length; i++) _edgeCellIdsByEdge[i] = visualization.EdgeCellIdsByEdge[i].ToArray();
             }
-
+            //
             _edgeLengths = visualization.EdgeLengths != null ? visualization.EdgeLengths.ToArray() : null;
-
+            //
             _vertexNodeIds = visualization.VertexNodeIds != null ? visualization.VertexNodeIds.ToArray() : null;
-
             // Reference exchange - for speed and memory - might be a problem
             _cellNeighboursOverCell = visualization._cellNeighboursOverCell != null ? visualization._cellNeighboursOverCell : null;
         }
@@ -297,7 +326,6 @@ namespace CaeMesh
                 newCellIdsByFace[i] = _cellIdsByFace[orderedSurfaceIds[i]];
             }
             _cellIdsByFace = newCellIdsByFace;
-
             // Areas
             double[] newFaceAreas = new double[_faceAreas.Length];
             for (int i = 0; i < orderedSurfaceIds.Length; i++)
@@ -305,7 +333,16 @@ namespace CaeMesh
                 newFaceAreas[i] = _faceAreas[orderedSurfaceIds[i]];
             }
             _faceAreas = newFaceAreas;
-
+            // Types
+            if (_faceTypes != null)
+            {
+                FaceType[] newFaceTypes = new FaceType[_faceTypes.Length];
+                for (int i = 0; i < orderedSurfaceIds.Length; i++)
+                {
+                    newFaceTypes[i] = _faceTypes[orderedSurfaceIds[i]];
+                }
+                _faceTypes = newFaceTypes;
+            }
             // Edges
             int[][] newFaceEdgeIds = new int[_faceEdgeIds.Length][];
             for (int i = 0; i < orderedSurfaceIds.Length; i++)
@@ -316,7 +353,7 @@ namespace CaeMesh
         }
         public void RenumberEdges(int[] orderedEdgeIds)
         {
-            // inverse map
+            // Inverse map
             int[] map = new int[orderedEdgeIds.Length];
             for (int i = 0; i < orderedEdgeIds.Length; i++)
             {
@@ -333,7 +370,6 @@ namespace CaeMesh
                 }
             }
             _faceEdgeIds = newFaceEdgeIds;
-
             // Edge cells
             int[][] newEdgeCellIdsByEdge = new int[_edgeCellIdsByEdge.Length][];
             for (int i = 0; i < orderedEdgeIds.Length; i++)
@@ -341,7 +377,6 @@ namespace CaeMesh
                 newEdgeCellIdsByEdge[i] = _edgeCellIdsByEdge[orderedEdgeIds[i]];
             }
             _edgeCellIdsByEdge = newEdgeCellIdsByEdge;
-
             // Lengths
             double[] newEdgeLengths = new double[_edgeLengths.Length];
             for (int i = 0; i < orderedEdgeIds.Length; i++)

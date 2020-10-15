@@ -26,6 +26,7 @@ namespace FileInOut.Input
                 HashSet<int> vertexNodeIds = new HashSet<int>();
                 Dictionary<int, FeNode> nodes = new Dictionary<int, FeNode>();
                 Dictionary<int, FeElement> elements = new Dictionary<int, FeElement>();
+                SortedDictionary<int, FaceType> faceTypes = new SortedDictionary<int, FaceType>();
                 //
                 BoundingBox bBox = new BoundingBox();
                 double epsilon = 1E-9;
@@ -65,7 +66,7 @@ namespace FileInOut.Input
                         for (int i = 1; i < faceData.Length; i++)   // start with 1 to skip first line: ********
                         {
                             ReadFace(faceData[i], ref offsetNodeId, nodes, ref offsetElementId, elements,
-                                     surfaceIdNodeIds, edgeIdNodeIds, vertexNodeIds, ref bBox);
+                                     surfaceIdNodeIds, faceTypes, edgeIdNodeIds, vertexNodeIds, ref bBox);
                         }
                     }
                     //
@@ -76,7 +77,7 @@ namespace FileInOut.Input
                     //
                     mesh.ConvertLineFeElementsToEdges(vertexNodeIds);
                     //
-                    mesh.RenumberVisualizationSurfaces(surfaceIdNodeIds);
+                    mesh.RenumberVisualizationSurfaces(surfaceIdNodeIds, faceTypes);
                     mesh.RenumberVisualizationEdges(edgeIdNodeIds);
                     //
                     mesh.RemoveElementsByType<FeElement1D>();
@@ -93,6 +94,7 @@ namespace FileInOut.Input
                                      ref int offsetNodeId, Dictionary<int, FeNode> nodes,
                                      ref int offsetElementId, Dictionary<int, FeElement> elements,
                                      Dictionary<int, HashSet<int>> surfaceIdNodeIds,
+                                     SortedDictionary<int, FaceType> faceTypes,
                                      Dictionary<int, HashSet<int>> edgeIdNodeIds,
                                      HashSet<int> vertexNodeIds,
                                      ref BoundingBox bBox)
@@ -100,14 +102,16 @@ namespace FileInOut.Input
             int numOfNodes = 0;
             int numOfElements = 0;
             string[] data = faceData.Split(new string[] { "*", "Number of " }, StringSplitOptions.RemoveEmptyEntries);
-
+            //
             string[] tmp = data[0].Split(allSplitter, StringSplitOptions.RemoveEmptyEntries);
-            int surfId = int.Parse(tmp[0]);
+            int surfaceId = int.Parse(tmp[0]);
             int orientation = int.Parse(tmp[3]);
+            FaceType faceType = (FaceType)Enum.Parse(typeof(FaceType), tmp[6]);
             bool reverse = orientation == 1;
-
+            //
+            if (!faceTypes.ContainsKey(surfaceId)) faceTypes.Add(surfaceId, faceType);
+            //
             Dictionary<int, FeNode> surfaceNodes = new Dictionary<int, FeNode>();
-
             for (int i = 1; i < data.Length; i++)
             {
                 if (data[i].StartsWith("nodes"))
@@ -127,13 +131,12 @@ namespace FileInOut.Input
                 }
             }
             offsetNodeId += numOfNodes;
-
             // Add surface if it contains more than 1 node
             if (surfaceNodes.Count > 0)
             {
                 HashSet<int> surface;
-                if (surfaceIdNodeIds.TryGetValue(surfId, out surface)) surface.UnionWith(surfaceNodes.Keys);
-                else surfaceIdNodeIds.Add(surfId, new HashSet<int>(surfaceNodes.Keys)); // create a copy!!!
+                if (surfaceIdNodeIds.TryGetValue(surfaceId, out surface)) surface.UnionWith(surfaceNodes.Keys);
+                else surfaceIdNodeIds.Add(surfaceId, new HashSet<int>(surfaceNodes.Keys)); // create a copy!!!
             }
         }
 

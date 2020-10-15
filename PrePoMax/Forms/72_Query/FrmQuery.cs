@@ -281,6 +281,10 @@ namespace PrePoMax.Forms
             //
             Form_WriteDataToOutput("");
             string data = string.Format("Surface on part: {0}", part.Name);
+            if (part.Visualization.FaceTypes != null)
+            {
+                data += string.Format("   Surface type: {0}", part.Visualization.FaceTypes[faceId]);
+            }
             Form_WriteDataToOutput(data);
             data = string.Format("{0,16}{1,8}{2,16}{3,16}", "Surface".PadRight(16), "[/]", "id:", faceId);
             Form_WriteDataToOutput(data);
