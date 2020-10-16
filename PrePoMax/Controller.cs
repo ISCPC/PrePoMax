@@ -3026,7 +3026,22 @@ namespace PrePoMax
             {
                 // In order for the Regenerate history to work perform the selection
                 _selection = elementSet.CreationData.DeepClone();
-                elementSet.Labels = GetSelectionIds();
+                //
+                if (_selection.SelectItem == vtkSelectItem.Element || _selection.SelectItem == vtkSelectItem.Part)
+                {
+                    elementSet.Labels = GetSelectionIds();
+                }
+                else if (_selection.SelectItem == vtkSelectItem.Geometry)
+                {
+                    if (_selection.CurrentView == (int)ViewGeometryModelResults.Model)
+                    {
+                        elementSet.CreationIds = GetSelectionIds();
+                        elementSet.Labels = _model.Mesh.GetIdsFromGeometryIds(elementSet.CreationIds, vtkSelectItem.Element);
+                    }
+                    else throw new NotSupportedException();
+                }
+                else throw new NotSupportedException();
+                //
                 _selection.Clear();
             }
             //
@@ -3669,7 +3684,8 @@ namespace PrePoMax
                 if (section is SolidSection || section is ShellSection)
                 {
                     name = FeMesh.GetNextFreeSelectionName(_model.Mesh.ElementSets) + section.Name;
-                    FeElementSet elementSet = new FeElementSet(name, section.CreationIds, true);
+                    bool createdByPart = section.CreationData != null && section.CreationData.SelectItem == vtkSelectItem.Part;
+                    FeElementSet elementSet = new FeElementSet(name, section.CreationIds, createdByPart);
                     elementSet.CreationData = section.CreationData.DeepClone();
                     elementSet.Internal = true;
                     AddElementSet(elementSet);
@@ -7311,7 +7327,7 @@ namespace PrePoMax
                         {
                             if (!_model.Mesh.ElementSets.ContainsKey(gLoad.RegionName)) return;
                             elementSet = _model.Mesh.ElementSets[gLoad.RegionName];
-                            count += HighlightElementSet(elementSet, _model.Mesh);
+                            count += HighlightElementSets(new string[] { elementSet.Name });
                         }
                         else throw new NotSupportedException();
                     }
@@ -7343,7 +7359,7 @@ namespace PrePoMax
                         {
                             if (!_model.Mesh.ElementSets.ContainsKey(cfLoad.RegionName)) return;
                             elementSet = _model.Mesh.ElementSets[cfLoad.RegionName];
-                            count += HighlightElementSet(elementSet, _model.Mesh);
+                            count += HighlightElementSets(new string[] { elementSet.Name });
                         }
                         else throw new NotSupportedException();
                     }
@@ -7737,6 +7753,63 @@ namespace PrePoMax
                 }
             }
             return 0;
+        }
+        private int DrawElements(string prefixName, int[] elementIds, Color color,
+                                 vtkControl.vtkRendererLayer layer)
+        {
+            int[] nodeIds;
+            double[][] nodeCoor;
+            int[] cellIds;
+            int[][] cells;
+            int[] cellTypes;
+            bool canHaveEdges = true;            
+            vtkControl.vtkMaxActorData data;
+            //
+            FeMesh mesh = DisplayedMesh;
+            BasePart part = mesh.CreateBasePartFromElementIds(elementIds);
+            mesh.GetVisualizationNodesAndCells(part, out nodeIds, out nodeCoor, out cellIds, out cells, out cellTypes);
+            //
+            data = new vtkControl.vtkMaxActorData();
+            data.Name = prefixName + Globals.NameSeparator + "elements";
+            data.Color = color;
+            data.Layer = layer;
+            data.CanHaveElementEdges = canHaveEdges;
+            data.Geometry.Nodes.Ids = null;
+            data.Geometry.Nodes.Coor = nodeCoor;
+            data.Geometry.Cells.CellNodeIds = cells;
+            data.Geometry.Cells.Types = cellTypes;
+            // Scale nodes
+            if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
+            {
+                float scale = GetScale();
+                Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId, nodeIds,
+                                             ref data.Geometry.Nodes.Coor);
+            }
+            //
+            ApplyLighting(data);
+            _form.Add3DCells(data);
+            //
+            return cellIds.Length;
+        }
+        private int DrawElementSet(string prefixName, FeElementSet elementSet, Color color,
+                                   vtkControl.vtkRendererLayer layer)
+        {
+            int count = 0;
+            if (elementSet.CreatedFromParts) count += HighlightModelParts(_model.Mesh.GetPartNamesByIds(elementSet.Labels));
+            else if (elementSet.CreationData != null && elementSet.CreationData.SelectItem == vtkSelectItem.Geometry)
+            {
+                // In order for the Regenerate history to work perform the selection
+                int[] ids = elementSet.CreationIds;
+                //
+                if (ids == null || ids.Length == 0) return 0;
+                //
+                bool useSecondaryHighlightColor = false;
+                bool onlyVisible = false;
+                count += DrawItemsByGeometryIds(ids, prefixName, elementSet.Name, color, layer, 5, true,
+                                                useSecondaryHighlightColor, onlyVisible);
+            }
+            else count += DrawElements(prefixName, elementSet.Labels, color, layer);
+            return count;
         }
         public int DrawSurfaceWithEdge(string prefixName, string surfaceName, Color color,
                                        vtkControl.vtkRendererLayer layer, bool backfaceCulling = true,
@@ -8201,60 +8274,22 @@ namespace PrePoMax
         //
         public void HighlightElement(int elementId)
         {
-            HighlightElements(new int[] { elementId }, DisplayedMesh);
-        }
-        private int HighlightElements(int[] elementIds, FeMesh mesh)
+            DrawElements("Highlight", new int[] { elementId }, Color.Red, vtkControl.vtkRendererLayer.Selection);
+        }        
+        public int HighlightElementSets(string[] elementSetsToSelect)
         {
-            int[] nodeIds;
-            double[][] nodeCoor;
-            int[] cellIds;
-            int[][] cells;
-            int[] cellTypes;
-            Color color = Color.Red;
-            vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
-            bool canHaveEdges = true;
-            vtkControl.vtkMaxActorData data;
-            // get only needed nodes and renumbered elements
-            // mesh.GetAllNodesAndCells(elementSet, out nodeIds, out nodeCoor, out cellIds, out cells, out cellTypes);
-            BasePart part = mesh.CreateBasePartFromElementIds(elementIds);
-            mesh.GetVisualizationNodesAndCells(part, out nodeIds, out nodeCoor, out cellIds, out cells, out cellTypes);
-            //
-            data = new vtkControl.vtkMaxActorData();
-            data.Color = color;
-            data.Layer = layer;
-            data.CanHaveElementEdges = canHaveEdges;
-            data.Geometry.Nodes.Ids = null;
-            data.Geometry.Nodes.Coor = nodeCoor;
-            data.Geometry.Cells.CellNodeIds = cells;
-            data.Geometry.Cells.Types = cellTypes;
-            // Scale nodes
-            if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
-            {
-                float scale = GetScale();
-                Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId, nodeIds,
-                                             ref data.Geometry.Nodes.Coor);
-            }
-            //
-            ApplyLighting(data);
-            _form.Add3DCells(data);
-            //
-            return cellIds.Length;
-        }
-        public void HighlightElementSets(string[] elementSetsToSelect)
-        {
+            int count = 0;
             foreach (var elementSetName in elementSetsToSelect)
             {
                 if (_model.Mesh.ElementSets.ContainsKey(elementSetName))
-                    HighlightElementSet(_model.Mesh.ElementSets[elementSetName], _model.Mesh);
+                {
+                    count += DrawElementSet("Highlight", _model.Mesh.ElementSets[elementSetName], Color.Red,
+                                            vtkControl.vtkRendererLayer.Selection);
+                }
             }
-        }
-        private int HighlightElementSet(FeElementSet elementSet, FeMesh mesh)
-        {
-            int count = 0;
-            if (elementSet.CreatedFromParts) count += HighlightModelParts(_model.Mesh.GetPartNamesByIds(elementSet.Labels));
-            else count += HighlightElements(elementSet.Labels, mesh);
             return count;
         }
+        
         public void HighlightSurface(int[][] cells, bool useSecondaryHighlightColor)
         {
             FeMesh mesh = DisplayedMesh;
@@ -8472,7 +8507,7 @@ namespace PrePoMax
             if (_selection.SelectItem == vtkSelectItem.Node)
                 HighlightItemsByNodeIds(ids, useSecondaryHighlightColor);
             else if (_selection.SelectItem == vtkSelectItem.Element)
-                HighlightElements(ids, DisplayedMesh);
+                HighlightItemsByElementIds(ids);
             else if (_selection.SelectItem == vtkSelectItem.Edge)   // QueryEdge
                 HighlightItemsByGeometryEdgeIds(ids, useSecondaryHighlightColor);
             else if (_selection.SelectItem == vtkSelectItem.Surface)
@@ -8496,6 +8531,10 @@ namespace PrePoMax
             data.UseSecondaryHighightColor = useSecondaryHighlightColor;
             ApplyLighting(data);
             _form.Add3DNodes(data);
+        }
+        private void HighlightItemsByElementIds(int[] ids)
+        {
+            DrawElements("Highlight", ids, Color.Red, vtkControl.vtkRendererLayer.Selection);
         }
         public void HighlightItemsByGeometryEdgeIds(int[] ids, bool useSecondaryHighlightColor)   
         {

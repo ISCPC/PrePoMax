@@ -12,11 +12,13 @@ namespace CaeMesh
     {
         // Variables                                                                                                                
         private Selection _creationData;
+        private int[] _creationIds;
         private bool _createdFromParts;
 
 
         // Properties                                                                                                               
         public Selection CreationData { get { return _creationData; } set { _creationData = value; } }
+        public int[] CreationIds { get { return _creationIds; } set { _creationIds = value; } }
         public bool CreatedFromParts
         {
             get { return _createdFromParts; }
@@ -29,6 +31,7 @@ namespace CaeMesh
             : base(name, labels)
         {
             _creationData = null;
+            _creationIds = null;
             _createdFromParts = false;
             _createdFromParts = createdFromParts;
         }
@@ -36,6 +39,7 @@ namespace CaeMesh
            : base(elementSet)
         {
             _creationData = elementSet.CreationData.DeepClone();
+            _creationIds = elementSet.CreationIds.ToArray();
             _createdFromParts = elementSet._createdFromParts;
         }
 

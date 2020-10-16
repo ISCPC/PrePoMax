@@ -365,7 +365,7 @@ namespace PrePoMax.Forms
         {
             if (Section is null) { }
             else if (Section is SolidSection) _controller.SetSelectItemToPart();
-            else if (Section is ShellSection) _controller.SetSelectItemToPart();
+            else if (Section is ShellSection) _controller.SetSelectItemToGeometry();
             else throw new NotSupportedException();
         }
         //

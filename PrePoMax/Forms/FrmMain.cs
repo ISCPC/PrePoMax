@@ -3037,7 +3037,7 @@ namespace PrePoMax
                 // Data editor
                 ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
                 ItemSetDataEditor.ParentForm = _frmSection;
-                _frmSelectItemSet.SetOnlyGeometrySelection(false);
+                _frmSelectItemSet.SetOnlyGeometrySelection(true);
                 ShowForm(_frmSection, "Create Section", null);
             }
             catch (Exception ex)
@@ -3073,7 +3073,7 @@ namespace PrePoMax
             // Data editor
             ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
             ItemSetDataEditor.ParentForm = _frmSection;
-            _frmSelectItemSet.SetOnlyGeometrySelection(false);
+            _frmSelectItemSet.SetOnlyGeometrySelection(true);
             ShowForm(_frmSection, "Edit Section", sectionName);
         }
         private void DeleteSections(string[] sectionNames)
