@@ -21,8 +21,30 @@ namespace CaeGlobals
 
 
         // Properties                                                                                                               
-        public static string SetForceUnit { set { _forceUnit = Force.ParseUnit(value); } }
-        public static string SetVolumeUnit { set { _volumeUnit = Volume.ParseUnit(value); } }
+        public static string SetForceUnit 
+        {
+            set
+            {
+                if (value == "")
+                {
+                    _forceUnit = (ForceUnit)MyUnit.NoUnit;
+                    _volumeUnit = (VolumeUnit)MyUnit.NoUnit;
+                }
+                else _forceUnit = Force.ParseUnit(value); 
+            }
+        }
+        public static string SetVolumeUnit 
+        { 
+            set 
+            {
+                if (value == "")
+                {
+                    _forceUnit = (ForceUnit)MyUnit.NoUnit;
+                    _volumeUnit = (VolumeUnit)MyUnit.NoUnit;
+                }
+                else _volumeUnit = Volume.ParseUnit(value);
+            }
+        }
 
 
         // Constructors                                                                                                             
@@ -59,7 +81,11 @@ namespace CaeGlobals
                 {
                     if (value is double valueDouble)
                     {
-                        return value + " " + Force.GetAbbreviation(_forceUnit) + "/" + Volume.GetAbbreviation(_volumeUnit);
+                        string valueString = valueDouble.ToString();
+                        // NoUnit
+                        if ((int)_forceUnit != MyUnit.NoUnit && (int)_volumeUnit != MyUnit.NoUnit)
+                            valueString += " " + Force.GetAbbreviation(_forceUnit) + "/" + Volume.GetAbbreviation(_volumeUnit);
+                        return valueString;
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);
@@ -76,7 +102,10 @@ namespace CaeGlobals
             //
             string[] tmp = valueWithUnitString.Split('/');
             if (tmp.Length != 2) throw new FormatException(error);
-            Force force = Force.Parse(tmp[0]).ToUnit(_forceUnit);
+            Force force = Force.Parse(tmp[0]);
+            // NoUnit
+            if ((int)_forceUnit == MyUnit.NoUnit || (int)_volumeUnit == MyUnit.NoUnit) return force.Value;
+            else force = force.ToUnit(_forceUnit);
             //
             VolumeUnit volumeUnit = Volume.ParseUnit(tmp[1]);
             Volume volume = Volume.From(1, volumeUnit).ToUnit(_volumeUnit);

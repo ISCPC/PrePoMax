@@ -18,7 +18,14 @@ namespace CaeGlobals
 
 
         // Properties                                                                                                               
-        public static string SetUnit { set { _angleUnit = Angle.ParseUnit(value); } }
+        public static string SetUnit
+        {
+            set
+            {
+                if (value == "") _angleUnit = (AngleUnit)MyUnit.NoUnit;
+                else _angleUnit = Angle.ParseUnit(value);
+            }
+        }
 
 
         // Constructors                                                                                                             
@@ -28,7 +35,7 @@ namespace CaeGlobals
 
 
         // Methods                                                                                                                  
-        public override bool CanConvertFrom(ITypeDescriptorContext context, System.Type sourceType)
+        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
         {
             if (sourceType == typeof(string)) return true;
             else return base.CanConvertFrom(context, sourceType);
@@ -42,8 +49,9 @@ namespace CaeGlobals
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    Angle Angle = Angle.Parse(valueString).ToUnit(_angleUnit);
-                    valueDouble = Angle.Value;
+                    Angle angle = Angle.Parse(valueString);
+                    if ((int)_angleUnit != MyUnit.NoUnit) angle = angle.ToUnit(_angleUnit);
+                    valueDouble = angle.Value;
                 }
                 //
                 return valueDouble;
@@ -59,7 +67,9 @@ namespace CaeGlobals
                 {
                     if (value is double valueDouble)
                     {
-                        return value.ToString() + " " + Angle.GetAbbreviation(_angleUnit);
+                        string valueString = valueDouble.ToString();
+                        if ((int)_angleUnit != MyUnit.NoUnit) valueString += " " + Angle.GetAbbreviation(_angleUnit);
+                        return valueString;
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);

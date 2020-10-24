@@ -18,8 +18,15 @@ namespace CaeGlobals
 
 
         // Properties                                                                                                               
-        public static string SetUnit { set { _pressureUnit = Pressure.ParseUnit(value); } }
-
+        public static string SetUnit
+        {
+            set
+            {
+                if (value == "") _pressureUnit = (PressureUnit)MyUnit.NoUnit;
+                else _pressureUnit = Pressure.ParseUnit(value);
+            }
+        }
+        
 
         // Constructors                                                                                                             
         public StringPressureConverter()
@@ -42,8 +49,9 @@ namespace CaeGlobals
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    Pressure Pressure = Pressure.Parse(valueString).ToUnit(_pressureUnit);
-                    valueDouble = Pressure.Value;
+                    Pressure pressure = Pressure.Parse(valueString);
+                    if ((int)_pressureUnit != MyUnit.NoUnit) pressure = pressure.ToUnit(_pressureUnit);
+                    valueDouble = pressure.Value;
                 }
                 //
                 return valueDouble;
@@ -59,7 +67,9 @@ namespace CaeGlobals
                 {
                     if (value is double valueDouble)
                     {
-                        return value.ToString() + " " + Pressure.GetAbbreviation(_pressureUnit);
+                        string valueString = valueDouble.ToString();
+                        if ((int)_pressureUnit != MyUnit.NoUnit) valueString += " " + Pressure.GetAbbreviation(_pressureUnit);
+                        return valueString;
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);

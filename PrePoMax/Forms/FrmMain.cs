@@ -100,12 +100,21 @@ namespace PrePoMax
             // This gets called from: _controller.CurrentView
             InvokeIfRequired(() =>
             {
-                if (view == ViewGeometryModelResults.Geometry) _modelTree.SetGeometryTab();
-                else if (view == ViewGeometryModelResults.Model) _modelTree.SetModelTab();
+                if (view == ViewGeometryModelResults.Geometry)
+                {
+                    _modelTree.SetGeometryTab();
+                    if (_controller.Model != null) UpdateUnitSystem(_controller.Model.UnitSystem);
+                }
+                else if (view == ViewGeometryModelResults.Model)
+                {
+                    _modelTree.SetModelTab();
+                    if (_controller.Model != null) UpdateUnitSystem(_controller.Model.UnitSystem);
+                }
                 else if (view == ViewGeometryModelResults.Results)
                 {
                     _modelTree.SetResultsTab();
-                    InitializeWidgetPositions();                    
+                    InitializeWidgetPositions();
+                    if (_controller.Results != null) UpdateUnitSystem(_controller.Results.UnitSystem);
                 }
                 else throw new NotSupportedException();
                 //
@@ -4113,18 +4122,25 @@ namespace PrePoMax
             _frmMonitor.UpdateProgress();
         }
         //
+        
         public AnalysisJob GetDefaultJob()
         {
             try
             {
-                _frmAnalysis.PrepareForm(null, null);
-                return _frmAnalysis.Job;
+                List<AnalysisJob> analysisJob = new List<AnalysisJob>();
+                InvokeIfRequired(GetDefaultJob, analysisJob);
+                return analysisJob[0];
             }
             catch (Exception ex)
             {
                 ExceptionTools.Show(this, ex);
                 return null;
             }
+        }
+        private void GetDefaultJob(List<AnalysisJob> defaultJob)
+        {
+            _frmAnalysis.PrepareForm(null, null);
+            defaultJob.Add(_frmAnalysis.Job);
         }
 
         #endregion  ################################################################################################################
@@ -5337,19 +5353,23 @@ namespace PrePoMax
                 tscbStepAndIncrement.Items.Clear();
                 Dictionary<int, int[]> allIds = _controller.GetResultExistingIncrementIds(_controller.CurrentFieldData.Name,
                                                                                           _controller.CurrentFieldData.Component);
+                int lastStepId = 1;
+                int lastIncrementId = 0;
                 foreach (var entry in allIds)
                 {
                     foreach (int incrementId in entry.Value)
                     {
                         tscbStepAndIncrement.Items.Add(entry.Key.ToString() + ", " + incrementId);
+                        lastIncrementId = incrementId;
                     }
+                    lastStepId = entry.Key;
                 }
                 tscbStepAndIncrement.SelectedIndexChanged += FieldOutput_SelectionChanged;  // reattach event
                 // Reselect previous step and increment
                 if (prevStepIncrementIds != null)
                 {
-                    int stepId = int.Parse(prevStepIncrementIds[0]);
-                    int incrementId = int.Parse(prevStepIncrementIds[1]);
+                    int stepId = Math.Min(int.Parse(prevStepIncrementIds[0]), lastStepId);
+                    int incrementId = Math.Min(int.Parse(prevStepIncrementIds[1]), lastIncrementId);
                     SetStepAndIncrementIds(stepId, incrementId);
                 }
                 else SetDefaultStepAndIncrementIds();

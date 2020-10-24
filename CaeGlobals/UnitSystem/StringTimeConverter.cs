@@ -18,7 +18,14 @@ namespace CaeGlobals
 
 
         // Properties                                                                                                               
-        public static string SetUnit { set { _timeUnit = Duration.ParseUnit(value); } }
+        public static string SetUnit
+        {
+            set
+            {
+                if (value == "") _timeUnit = (DurationUnit)MyUnit.NoUnit;
+                else _timeUnit = Duration.ParseUnit(value);
+            }
+        }
 
 
         // Constructors                                                                                                             
@@ -42,7 +49,8 @@ namespace CaeGlobals
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    Duration time = Duration.Parse(valueString).ToUnit(_timeUnit);
+                    Duration time = Duration.Parse(valueString);
+                    if ((int)_timeUnit != MyUnit.NoUnit) time = time.ToUnit(_timeUnit);
                     valueDouble = time.Value;
                 }
                 //
@@ -59,7 +67,9 @@ namespace CaeGlobals
                 {
                     if (value is double valueDouble)
                     {
-                        return value.ToString() + " " + Duration.GetAbbreviation(_timeUnit);
+                        string valueString = valueDouble.ToString();
+                        if ((int)_timeUnit != MyUnit.NoUnit) valueString += " " + Duration.GetAbbreviation(_timeUnit);
+                        return valueString;
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);

@@ -122,6 +122,7 @@
     <Compile Include="Comparers\CompareObjects.cs" />
     <Compile Include="CommonClasses\UniqueQueue.cs" />
     <Compile Include="CommonClasses\Vec3D.cs" />
+    <Compile Include="UnitSystem\MyUnit.cs" />
     <Compile Include="UnitSystem\StringAccelerationConverter.cs" />
     <Compile Include="UnitSystem\StringAngleConverter.cs" />
     <Compile Include="UnitSystem\StringAngleDegConverter.cs" />
@@ -141,7 +142,7 @@
     <Compile Include="UnitSystem\StringLengthFixedDOFConverter.cs" />
     <Compile Include="UnitSystem\StringLengthFromConverter.cs" />
     <Compile Include="UnitSystem\StringMomentConverter.cs" />
-    <Compile Include="UnitSystem\StringPixelConverter.cs" />
+    <Compile Include="UnitSystem\StringLengthPixelConverter.cs" />
     <Compile Include="UnitSystem\StringPressureConverter.cs" />
     <Compile Include="UnitSystem\StringPressureFromConverter.cs" />
     <Compile Include="UnitSystem\StringRotationalSpeedConverter.cs" />

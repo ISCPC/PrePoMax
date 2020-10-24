@@ -34,44 +34,44 @@ namespace FileInOut.Input
         {
             WriteDataToOutputStatic = WriteDataToOutput;
             _errors = new List<string>();
-
+            //
             if (fileName != null && File.Exists(fileName))
             {
                 string[] lines = File.ReadAllLines(fileName);
-                string[] splitter = new string[] { "," };
-
+                lines = ReadIncludes(lines, 0, Path.GetDirectoryName(fileName));
+                //
                 string[] dataSet;
                 string[][] dataSets = GetDataSets(lines);
-
+                //
                 Dictionary<int, FeNode> nodes = null;
                 Dictionary<int, FeElement> elements = new Dictionary<int, FeElement>();
-
+                //
                 string name;
                 int[] ids;
                 List<InpElementSet> inpElementTypeSets = new List<InpElementSet>();
-
+                //
                 string keyword;
                 int lineNumber;
-                // nodes and elements
+                // Nodes and elements
                 for (int i = 0; i < dataSets.Length; i++)
                 {
                     dataSet = dataSets[i];
-                    keyword = dataSet[0].Split(splitter, StringSplitOptions.RemoveEmptyEntries)[0].Trim().ToUpper();
-
-                    if (keyword == "*NODE") // Nodes
+                    keyword = dataSet[0].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries)[0].Trim().ToUpper();
+                    //
+                    if (keyword == "*NODE") // nodes
                     {
                         WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
                         nodes = GetNodes(dataSet);
                     }
-                    else if (keyword == "*ELEMENT") // Elements
+                    else if (keyword == "*ELEMENT") // elements
                     {
                         WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
                         AddElements(dataSet, ref elements, ref inpElementTypeSets);
                     }
                 }
-                FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Mesh, inpElementTypeSets); // element sets are used to separate elements into parts
-
-                // element sets from element keywords
+                // Element sets are used to separate elements into parts
+                FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Mesh, inpElementTypeSets);
+                // Element sets from element keywords
                 int[] labels;
                 foreach (var inpElementTypeSet in inpElementTypeSets)
                 {
@@ -82,32 +82,23 @@ namespace FileInOut.Input
                         //mesh.AddNodeSetFromElementSet(inpElementTypeSet.Name);
                     }
                 }
-
-                // node and element sets, surfaces, reference points
+                // Node and element sets, surfaces, reference points
                 lineNumber = 0;
-
+                //
                 Dictionary<string, Constraint> constraints = new Dictionary<string, Constraint>();
                 Dictionary<string, FeReferencePoint> referencePoints = new Dictionary<string, FeReferencePoint>();
                 Dictionary<string, Material> materials = new Dictionary<string, Material>();
-
-
+                Dictionary<string, Step> steps = new Dictionary<string, Step>();
                 // JAW 21 July 2020
                 // Create object for Sections within the input file
                 var sections = new Dictionary<string, SolidSection>();
                 var secCounter = 0; // section counter for Section name
-                // Create object for Steps within the input file
-                var steps = new Dictionary<string, StaticStep>();
-                // section counter for Section names
-                var stepCounter = 0;
-                // Boundary condition counter for Section names
-                var bCCounter = 0;
                 // End of JAW Mods
-
                 for (int i = 0; i < dataSets.Length; i++)
                 {
                     dataSet = dataSets[i];
-                    keyword = dataSet[0].Split(splitter, StringSplitOptions.RemoveEmptyEntries)[0].Trim().ToUpper();
-
+                    keyword = dataSet[0].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries)[0].Trim().ToUpper();
+                    //
                     if (keyword == "*NSET")
                     {
                         WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
@@ -153,84 +144,97 @@ namespace FileInOut.Input
                     else if (keyword == "*STEP")
                     {
                         WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
-                        StaticStep step = GetStep(dataSets, i, lineNumber);
+                        StaticStep step = GetStep(dataSets, i, lineNumber, mesh);
                         if (step != null)
                         {
-                            stepCounter++;
-                            step.Name += stepCounter;
-                            //
-                            model.StepCollection.AddStep(step, false);
-
-                            //// Create object to store list of steps in *.inp files
-                            //var stepColl = new StepCollection();
-
-                            //stepColl.AddStep(step);
-                            //foreach (var entryStep in stepColl.StepsList) model.StepCollection.AddStep(entryStep);
-                            //foreach (var entryStep in stepColl.StepsList) model.StepCollection.AddStep(entryStep);
-                            //stepColl.ReplaceStep(step,step);
-                            // step.Name += String.Join("", stepCounter);
-                            //stepColl.RemoveStep();
-                            // If there is more than 1 step, incrementally adjust the names of the boundary
-                            // conditions for the additional steps
-                            /*if (stepCounter > 1)
-                            {
-                                for (var bc = 1; bc < step.BoundaryConditions.Count(); bc++)
-                                    step.
-                            }
-
-                            stepColl.AddStep(step);
-                            var bCCounterStor = bCCounter; // Counter from previous step
-                            */
+                            step.Name = NamedClass.GetNewValueName(steps.Keys, "Step-");
+                            steps.Add(step.Name, step);
                         }
                     }
                     lineNumber += dataSet.Length;
                 }
-
-                //try to output errors as TextReader ...
-
-
+                //
                 foreach (var entry in referencePoints) mesh.ReferencePoints.Add(entry.Key, entry.Value);
-
+                //
                 if (elementsToImport != ElementsToImport.All)
                 {
                     if (!elementsToImport.HasFlag(ElementsToImport.Beam)) mesh.RemoveElementsByType<FeElement1D>();
                     if (!elementsToImport.HasFlag(ElementsToImport.Shell)) mesh.RemoveElementsByType<FeElement2D>();
                     if (!elementsToImport.HasFlag(ElementsToImport.Solid)) mesh.RemoveElementsByType<FeElement3D>();
                 }
-
+                //
                 model.ImportMesh(mesh, null);
-
-
-                // add model items
+                // Add model items
                 foreach (var entry in constraints) model.Constraints.Add(entry.Key, entry.Value);
                 foreach (var entry in materials) model.Materials.Add(entry.Key, entry.Value);
                 foreach (var entry in sections) model.Sections.Add(entry.Key, entry.Value);
-                //foreach (var entryStep in stepColl.StepsList) model.StepCollection.AddStep(entryStep);
+                foreach (var entry in steps) model.StepCollection.AddStep(entry.Value, false);
             }
         }
-
+        static private string[] ReadIncludes(string[] lines, int firstLine, string workDirectoryName)
+        {
+            int includeRowNumber = -1;
+            string[] includeLines = null;
+            //
+            for (int i = firstLine; i < lines.Length; i++)
+            {
+                if (lines[i].Length > 1 && lines[i][0] == '*' && lines[i][1] != '*')            // keyword line
+                {
+                    if (lines[i].ToUpper().StartsWith("*INCLUDE"))
+                    {
+                        string[] record1 = lines[i].Split(splitterEqual, StringSplitOptions.RemoveEmptyEntries);
+                        if (record1.Length == 2)
+                        {
+                            string fileName = record1[1].Trim();
+                            if (!File.Exists(fileName)) fileName = Path.Combine(workDirectoryName, fileName);
+                            if (File.Exists(fileName))
+                            {
+                                includeRowNumber = i;
+                                includeLines = File.ReadAllLines(fileName);
+                                break;
+                            }
+                            else _errors.Add("Line " + i + ": The include file does not exist.");
+                        }
+                        else _errors.Add("Line " + i + ": Unsupported line formatting for the include keyword");
+                    }
+                }
+            }
+            //
+            if (includeRowNumber != -1)
+            {
+                int count = 0;
+                string[] allLines;
+                allLines = new string[lines.Length - 1 + includeLines.Length];
+                for (int i = 0; i < includeRowNumber; i++) allLines[count++] = lines[i];
+                for (int i = 0; i < includeLines.Length; i++) allLines[count++] = includeLines[i];
+                for (int i = includeRowNumber + 1; i < lines.Length; i++) allLines[count++] = lines[i];
+                lines = allLines;
+                //
+                ReadIncludes(lines, includeRowNumber + 1, workDirectoryName);
+            }
+            return lines;
+        }
         static private string[][] GetDataSets(string[] lines)
         {
             List<string> dataSet = null;
             List<string[]> dataSets = new List<string[]>();
-
+            //
             for (int i = 0; i < lines.Length; i++)
             {
-                if (lines[i].Length < 2) continue;
-                if (lines[i][0] == '*' && lines[i][1] == '*') continue;
-
-                if (lines[i][0] == '*' && lines[i][1] != '*')
+                if (lines[i].Length == 0) continue;                                             // empty line
+                if (lines[i].Length > 1 && lines[i][0] == '*' && lines[i][1] == '*') continue;  // comment line
+                //
+                if (lines[i].Length > 1 && lines[i][0] == '*' && lines[i][1] != '*')            // keyword line
                 {
-                    // first keyword
+                    // First keyword
                     if (dataSet != null) dataSets.Add(dataSet.ToArray());
                     dataSet = new List<string>();
                 }
-                if (dataSet != null) dataSet.Add(lines[i]);
+                if (dataSet != null) dataSet.Add(lines[i]);                                     // other lines
             }
-
-            // add last data set
+            // Add last data set
             if (dataSet != null) dataSets.Add(dataSet.ToArray());
-
+            //
             return dataSets.ToArray();
         }
 
@@ -835,12 +839,12 @@ namespace FileInOut.Input
 
         // JAW 20 July 2020
         // Get Step
-        static private StaticStep GetStep(string[][] dataSets, int dataSetId, int firstLineNumber)
+        static private StaticStep GetStep(string[][] dataSets, int dataSetId, int firstLineNumber, FeMesh mesh)
         {
             // *STEP, NAME=STEP-1, NLGEOM=NO, PERTURBATION -- ABAQUS
 
             // *STEP,NLGEOM,INC = 1000 -- CALCULIX
-
+            
             var step = new StaticStep("Step-");
             var bCCounter = 0;
             try
@@ -896,7 +900,7 @@ namespace FileInOut.Input
                     }
                     else if (keyword == "*CLOAD")
                     {
-                        AddStepCLoad(step, dataSet, firstLineNumber);
+                        AddStepCLoad(step, mesh, dataSet, firstLineNumber);
                     }
                     else if (keyword == "*DLOAD")
                     {
@@ -979,68 +983,67 @@ namespace FileInOut.Input
                 return null;
             }
         }
-        static private StaticStep AddStepCLoad(StaticStep step, string[] lines, int firstLineNumber)
+        static private StaticStep AddStepCLoad(StaticStep step, FeMesh mesh, string[] lines, int firstLineNumber)
         {
             // *CLoad
             // LD_BRTIP, 2, 10000 - Concentrated Force (f1,f2,f3)
+            // 6623, 1, 22.99137  - Concentrated Force (f1,f2,f3)
             // LD_BRTIP, 6, 10000 - Moment (m1,m2,m3)
-
             try
             {
                 // CLoad can either be a concentrated force or moment
-                var nameCF = "CF-";
-                var nameMom = "MF-";
-
-                for (var bci = 1; bci < lines.Length; bci++)
+                string nameCF;
+                string nameMom;
+                int nodeId;
+                FeNodeSet nodeSet;
+                //
+                for (var i = 1; i < lines.Length; i++)
                 {
-                    string[] recordCL = lines[bci].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
-
-                    // To avoid duplicate loading condition names for additional steps,
-                    // a random letter is included in the numbering count.
-                    // This option is used until a better solution is implemented
-
-                    Random rand = new Random(Guid.NewGuid().GetHashCode());
-                    var num = rand.Next(0, 26); // Zero to 25
-                    char let = (char)('A' + num);
-
-                    // Get regionName
-                    var regionName = recordCL[0].Trim();
+                    nameCF = NamedClass.GetNewValueName(step.Loads.Keys, "Concentrated_force-");
+                    nameMom = NamedClass.GetNewValueName(step.Loads.Keys, "Moment-1");
+                    //
+                    string[] recordCL = lines[i].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                    // Get regionName name or nodeId
+                    nodeId = -1;
+                    string regionName = recordCL[0].Trim();
+                    if (!mesh.NodeSets.ContainsKey(regionName)) int.TryParse(regionName, out nodeId);
+                    if (nodeId != -1)
+                    {
+                        regionName = NamedClass.GetNewValueName(mesh.NodeSets.Keys, "Auto_created-");
+                        nodeSet = new FeNodeSet(regionName, new int[] { nodeId });
+                        mesh.NodeSets.Add(regionName, nodeSet);
+                    }
                     // Get degree of freedom and value
-                    var dof = int.Parse(recordCL[1]); ;
-                    var dofValue = double.Parse(recordCL[2]);
-                    var cfLoad = new CLoad(nameCF + let, regionName, RegionTypeEnum.NodeSetName, 0.0, 0.0, 0.0);
-                    var mLoad = new MomentLoad(nameMom + let, regionName, RegionTypeEnum.NodeSetName, 0.0, 0.0, 0.0);
+                    int dof = int.Parse(recordCL[1]); ;
+                    double dofValue = double.Parse(recordCL[2]);
+                    CLoad cfLoad = new CLoad(nameCF, regionName, RegionTypeEnum.NodeSetName, 0.0, 0.0, 0.0);
+                    MomentLoad momentLoad = new MomentLoad(nameMom, regionName, RegionTypeEnum.NodeSetName, 0.0, 0.0, 0.0);
+                    //
                     switch (dof)
                     {
                         case 1:
                             cfLoad.F1 = dofValue;
-                            cfLoad.Name += (step.Loads.Count + 1);
                             step.AddLoad(cfLoad);
                             break;
                         case 2:
                             cfLoad.F2 = dofValue;
-                            cfLoad.Name += (step.Loads.Count + 1);
                             step.AddLoad(cfLoad);
                             break;
                         case 3:
                             cfLoad.F3 = dofValue;
-                            cfLoad.Name += (step.Loads.Count + 1);
                             step.AddLoad(cfLoad);
                             break;
                         case 4:
-                            mLoad.M1 = dofValue;
-                            mLoad.Name += (step.Loads.Count + 1);
-                            step.AddLoad(mLoad);
+                            momentLoad.M1 = dofValue;
+                            step.AddLoad(momentLoad);
                             break;
                         case 5:
-                            mLoad.M2 = dofValue;
-                            mLoad.Name += (step.Loads.Count + 1);
-                            step.AddLoad(mLoad);
+                            momentLoad.M2 = dofValue;
+                            step.AddLoad(momentLoad);
                             break;
                         case 6:
-                            mLoad.M3 = dofValue;
-                            mLoad.Name += (step.Loads.Count + 1);
-                            step.AddLoad(mLoad);
+                            momentLoad.M3 = dofValue;
+                            step.AddLoad(momentLoad);
                             break;
                     }
                 }

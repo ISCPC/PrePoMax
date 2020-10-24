@@ -22,7 +22,14 @@ namespace CaeGlobals
 
 
         // Properties                                                                                                               
-        public static string SetUnit { set { _lengthUnit = Length.ParseUnit(value); } }
+        public static string SetUnit
+        {
+            set
+            {
+                if (value == "") _lengthUnit = (LengthUnit)MyUnit.NoUnit;
+                else _lengthUnit = Length.ParseUnit(value);
+            }
+        }
         public static string SetInitialValue { set { _initialValue = Length.Parse(value).ToUnit(_lengthUnit).Value; } }
 
 
@@ -73,8 +80,9 @@ namespace CaeGlobals
                 if (String.Equals(value, _default)) valueDouble = double.NaN;
                 else if (!double.TryParse(valueString, out valueDouble))
                 {
-                    Length Length = Length.Parse(valueString).ToUnit(_lengthUnit);
-                    valueDouble = Length.Value;
+                    Length length = Length.Parse(valueString);
+                    if ((int)_lengthUnit != MyUnit.NoUnit) length = length.ToUnit(_lengthUnit);
+                    valueDouble = length.Value;
                 }
                 return valueDouble;
             }
@@ -91,7 +99,9 @@ namespace CaeGlobals
                         if (double.IsNaN(valueDouble)) return _default;
                         else
                         {
-                            return value.ToString() + " " + Length.GetAbbreviation(_lengthUnit);
+                            string valueString = valueDouble.ToString();
+                            if ((int)_lengthUnit != MyUnit.NoUnit) valueString += " " + Length.GetAbbreviation(_lengthUnit);
+                            return valueString;
                         }
                     }
                 }

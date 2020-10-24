@@ -18,7 +18,14 @@ namespace CaeGlobals
 
 
         // Properties                                                                                                               
-        public static string SetUnit { set { _lengthUnit = Length.ParseUnit(value); } }
+        public static string SetUnit 
+        {
+            set
+            {
+                if (value == "") _lengthUnit = (LengthUnit)MyUnit.NoUnit;
+                else _lengthUnit = Length.ParseUnit(value);
+            }
+        }
 
 
         // Constructors                                                                                                             
@@ -42,12 +49,13 @@ namespace CaeGlobals
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    Length Length = Length.Parse(valueString).ToUnit(_lengthUnit);
-                    valueDouble = Length.Value;
+                    Length length = Length.Parse(valueString);
+                    if ((int)_lengthUnit != MyUnit.NoUnit) length = length.ToUnit(_lengthUnit);
+                    valueDouble = length.Value;
                 }
                 //
                 return valueDouble;
-            }
+            }            
             else return base.ConvertFrom(context, culture, value);
         }
         public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
@@ -59,7 +67,9 @@ namespace CaeGlobals
                 {
                     if (value is double valueDouble)
                     {
-                        return value.ToString() + " " + Length.GetAbbreviation(_lengthUnit);
+                        string valueString = valueDouble.ToString();
+                        if ((int)_lengthUnit != MyUnit.NoUnit) valueString += " " + Length.GetAbbreviation(_lengthUnit);
+                        return valueString;
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);

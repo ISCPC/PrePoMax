@@ -19,10 +19,17 @@ namespace CaeGlobals
         protected ArrayList values;
         protected string _free = "Unconstrained";
         protected string _fixed = "Fixed";
-        
-        
+
+
         // Properties                                                                                                               
-        public static string SetUnit { set { _lengthUnit = Length.ParseUnit(value); } }
+        public static string SetUnit
+        {
+            set
+            {
+                if (value == "") _lengthUnit = (LengthUnit)MyUnit.NoUnit;
+                else _lengthUnit = Length.ParseUnit(value);
+            }
+        }
 
 
         // Constructors                                                                                                             
@@ -73,8 +80,9 @@ namespace CaeGlobals
                 else if (String.Equals(value, _fixed)) valueDouble = double.PositiveInfinity;
                 else if (!double.TryParse(valueString, out valueDouble))
                 {
-                    Length Length = Length.Parse(valueString).ToUnit(_lengthUnit);
-                    valueDouble = Length.Value;
+                    Length length = Length.Parse(valueString);
+                    if ((int)_lengthUnit != MyUnit.NoUnit) length = length.ToUnit(_lengthUnit);
+                    valueDouble = length.Value;
                 }
                 return valueDouble;
             }
@@ -93,7 +101,9 @@ namespace CaeGlobals
                         else if (double.IsPositiveInfinity((double)value)) return _fixed;
                         else
                         {
-                            return value.ToString() + " " + Length.GetAbbreviation(_lengthUnit);
+                            string valueString = valueDouble.ToString();
+                            if ((int)_lengthUnit != MyUnit.NoUnit) valueString += " " + Length.GetAbbreviation(_lengthUnit);
+                            return valueString;
                         }
                     }
                 }

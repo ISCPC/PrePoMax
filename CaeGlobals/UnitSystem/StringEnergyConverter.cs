@@ -23,7 +23,8 @@ namespace CaeGlobals
         {
             set
             {
-                if (value == _inlb) _energyUnit = (EnergyUnit)100;
+                if (value == "") _energyUnit = (EnergyUnit)MyUnit.NoUnit;
+                else if (value == _inlb) _energyUnit = MyUnit.InchPound;
                 else { _energyUnit = Energy.ParseUnit(value); }
             }
         }
@@ -59,15 +60,20 @@ namespace CaeGlobals
                         scale = 1.0 / 12.0;
                     }
                     // Check if it must be converted to unsupported units
-                    if ((int)_energyUnit == 100)
+                    if ((int)_energyUnit == MyUnit.NoUnit)
                     {
-                        Energy Energy = Energy.Parse(valueString).ToUnit(EnergyUnit.FootPound);
-                        valueDouble = scale * Energy.Value * 12.0;
+                        Energy energy = Energy.Parse(valueString);
+                        valueDouble = energy.Value;
+                    }
+                    else if (_energyUnit == MyUnit.InchPound)
+                    {
+                        Energy energy = Energy.Parse(valueString).ToUnit(EnergyUnit.FootPound);
+                        valueDouble = scale * energy.Value * 12.0;
                     }
                     else
                     {
-                        Energy Energy = Energy.Parse(valueString).ToUnit(_energyUnit);
-                        valueDouble = scale * Energy.Value;
+                        Energy energy = Energy.Parse(valueString).ToUnit(_energyUnit);
+                        valueDouble = scale * energy.Value;
                     }
                 }
                 //
@@ -84,8 +90,10 @@ namespace CaeGlobals
                 {
                     if (value is double valueDouble)
                     {
-                        if ((int)_energyUnit == 100) return value.ToString() + " " + _inlb;
-                        else return value.ToString() + " " + Energy.GetAbbreviation(_energyUnit);
+                        string valueString = valueDouble.ToString();
+                        if (_energyUnit == MyUnit.InchPound) return valueString + " " + _inlb;
+                        else if ((int)_energyUnit != MyUnit.NoUnit) valueString += " " + Energy.GetAbbreviation(_energyUnit);
+                        return valueString;
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);

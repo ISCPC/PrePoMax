@@ -14,11 +14,18 @@ namespace CaeGlobals
     public class StringRotationalSpeedConverter : TypeConverter
     {
         // Variables                                                                                                                
-        protected static RotationalSpeedUnit _RotationalSpeedUnit = RotationalSpeedUnit.RadianPerSecond;
+        protected static RotationalSpeedUnit _rotationalSpeedUnit = RotationalSpeedUnit.RadianPerSecond;
 
 
         // Properties                                                                                                               
-        public static string SetUnit { set { _RotationalSpeedUnit = RotationalSpeed.ParseUnit(value); } }
+        public static string SetUnit
+        {
+            set
+            {
+                if (value == "") _rotationalSpeedUnit = (RotationalSpeedUnit)MyUnit.NoUnit;
+                else _rotationalSpeedUnit = RotationalSpeed.ParseUnit(value);
+            }
+        }
 
 
         // Constructors                                                                                                             
@@ -42,8 +49,9 @@ namespace CaeGlobals
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    RotationalSpeed RotationalSpeed = RotationalSpeed.Parse(valueString).ToUnit(_RotationalSpeedUnit);
-                    valueDouble = RotationalSpeed.Value;
+                    RotationalSpeed rotationalSpeed = RotationalSpeed.Parse(valueString);
+                    if ((int)_rotationalSpeedUnit != MyUnit.NoUnit) rotationalSpeed = rotationalSpeed.ToUnit(_rotationalSpeedUnit);
+                    valueDouble = rotationalSpeed.Value;
                 }
                 //
                 return valueDouble;
@@ -59,7 +67,10 @@ namespace CaeGlobals
                 {
                     if (value is double valueDouble)
                     {
-                        return value.ToString() + " " + RotationalSpeed.GetAbbreviation(_RotationalSpeedUnit);
+                        string valueString = valueDouble.ToString();
+                        if ((int)_rotationalSpeedUnit != MyUnit.NoUnit)
+                            valueString += " " + RotationalSpeed.GetAbbreviation(_rotationalSpeedUnit);
+                        return valueString;
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);

@@ -18,7 +18,14 @@ namespace CaeGlobals
 
 
         // Properties                                                                                                               
-        public static string SetUnit { set { _volumeUnit = Volume.ParseUnit(value); } }
+        public static string SetUnit
+        {
+            set
+            {
+                if (value == "") _volumeUnit = (VolumeUnit)MyUnit.NoUnit;
+                else _volumeUnit = Volume.ParseUnit(value);
+            }
+        }
 
 
         // Constructors                                                                                                             
@@ -42,8 +49,9 @@ namespace CaeGlobals
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    Volume Volume = Volume.Parse(valueString).ToUnit(_volumeUnit);
-                    valueDouble = Volume.Value;
+                    Volume volume = Volume.Parse(valueString);
+                    if ((int)_volumeUnit != MyUnit.NoUnit) volume = volume.ToUnit(_volumeUnit);
+                    valueDouble = volume.Value;
                 }
                 //
                 return valueDouble;
@@ -59,7 +67,9 @@ namespace CaeGlobals
                 {
                     if (value is double valueDouble)
                     {
-                        return value.ToString() + " " + Volume.GetAbbreviation(_volumeUnit);
+                        string valueString = valueDouble.ToString();
+                        if ((int)_volumeUnit != MyUnit.NoUnit) valueString += " " + Volume.GetAbbreviation(_volumeUnit);
+                        return valueString;
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);

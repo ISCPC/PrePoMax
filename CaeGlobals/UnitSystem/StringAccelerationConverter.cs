@@ -18,7 +18,14 @@ namespace CaeGlobals
 
 
         // Properties                                                                                                               
-        public static string SetUnit { set { _accelerationUnit = Acceleration.ParseUnit(value); } }
+        public static string SetUnit
+        {
+            set
+            {
+                if (value == "") _accelerationUnit = (AccelerationUnit)MyUnit.NoUnit;
+                else _accelerationUnit = Acceleration.ParseUnit(value);
+            }
+        }
 
 
         // Constructors                                                                                                             
@@ -42,8 +49,9 @@ namespace CaeGlobals
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    Acceleration Acceleration = Acceleration.Parse(valueString).ToUnit(_accelerationUnit);
-                    valueDouble = Acceleration.Value;
+                    Acceleration acceleration = Acceleration.Parse(valueString);
+                    if ((int)_accelerationUnit != MyUnit.NoUnit) acceleration = acceleration.ToUnit(_accelerationUnit);
+                    valueDouble = acceleration.Value;
                 }
                 //
                 return valueDouble;
@@ -59,7 +67,10 @@ namespace CaeGlobals
                 {
                     if (value is double valueDouble)
                     {
-                        return value.ToString() + " " + Acceleration.GetAbbreviation(_accelerationUnit);
+                        string valueString = valueDouble.ToString();
+                        if ((int)_accelerationUnit != MyUnit.NoUnit)
+                            valueString += " " + Acceleration.GetAbbreviation(_accelerationUnit);
+                        return valueString;
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);

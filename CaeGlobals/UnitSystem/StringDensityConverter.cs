@@ -14,11 +14,18 @@ namespace CaeGlobals
     public class StringDensityConverter : TypeConverter
     {
         // Variables                                                                                                                
-        protected static DensityUnit _DensityUnit = DensityUnit.TonnePerCubicMillimeter;
+        protected static DensityUnit _densityUnit = DensityUnit.TonnePerCubicMillimeter;
 
 
         // Properties                                                                                                               
-        public static string SetUnit { set { _DensityUnit = UnitsNet.Density.ParseUnit(value); } }
+        public static string SetUnit
+        {
+            set
+            {
+                if (value == "") _densityUnit = (DensityUnit)MyUnit.NoUnit;
+                else _densityUnit = Density.ParseUnit(value);
+            }
+        }
 
 
         // Constructors                                                                                                             
@@ -28,7 +35,7 @@ namespace CaeGlobals
 
 
         // Methods                                                                                                                  
-        public override bool CanConvertFrom(ITypeDescriptorContext context, System.Type sourceType)
+        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
         {
             if (sourceType == typeof(string)) return true;
             else return base.CanConvertFrom(context, sourceType);
@@ -42,8 +49,9 @@ namespace CaeGlobals
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    UnitsNet.Density Density = UnitsNet.Density.Parse(valueString).ToUnit(_DensityUnit);
-                    valueDouble = Density.Value;
+                    UnitsNet.Density density = UnitsNet.Density.Parse(valueString);
+                    if ((int)_densityUnit != MyUnit.NoUnit) density = density.ToUnit(_densityUnit);
+                    valueDouble = density.Value;
                 }
                 //
                 return valueDouble;
@@ -59,7 +67,9 @@ namespace CaeGlobals
                 {
                     if (value is double valueDouble)
                     {
-                        return value.ToString() + " " + UnitsNet.Density.GetAbbreviation(_DensityUnit);
+                        string valueString = valueDouble.ToString();
+                        if ((int)_densityUnit != MyUnit.NoUnit) valueString += " " + UnitsNet.Density.GetAbbreviation(_densityUnit);
+                        return valueString;
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);

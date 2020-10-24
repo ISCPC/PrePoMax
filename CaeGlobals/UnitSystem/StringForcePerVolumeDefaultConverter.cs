@@ -16,6 +16,8 @@ namespace CaeGlobals
         // Variables                                                                                                                
         protected static ForceUnit _forceUnit = ForceUnit.Newton;
         protected static VolumeUnit _volumeUnit = VolumeUnit.CubicMeter;
+        protected static string error = "Unable to parse quantity. Expected the form \"{value} {unit abbreviation}" +
+                                        "\", such as \"5.5 m\". The spacing is optional.";
         //
         protected ArrayList values;
         protected string _default = "Default";
@@ -23,8 +25,30 @@ namespace CaeGlobals
 
 
         // Properties                                                                                                               
-        public static string SetForceUnit { set { _forceUnit = Force.ParseUnit(value); } }
-        public static string SetVolumeUnit { set { _volumeUnit = Volume.ParseUnit(value); } }
+        public static string SetForceUnit
+        {
+            set
+            {
+                if (value == "")
+                {
+                    _forceUnit = (ForceUnit)MyUnit.NoUnit;
+                    _volumeUnit = (VolumeUnit)MyUnit.NoUnit;
+                }
+                else _forceUnit = Force.ParseUnit(value);
+            }
+        }
+        public static string SetVolumeUnit
+        {
+            set
+            {
+                if (value == "")
+                {
+                    _forceUnit = (ForceUnit)MyUnit.NoUnit;
+                    _volumeUnit = (VolumeUnit)MyUnit.NoUnit;
+                }
+                else _volumeUnit = Volume.ParseUnit(value);
+            }
+        }
         public static string SetInitialValue { set { _initialValue = ConvertForcePerVolume(value); } }
 
 
@@ -92,8 +116,11 @@ namespace CaeGlobals
                         if (double.IsNaN(valueDouble)) return _default;
                         else
                         {
-                            return value + " " + Force.GetAbbreviation(_forceUnit) +
-                                           "/" + Volume.GetAbbreviation(_volumeUnit);
+                            string valueString = valueDouble.ToString();
+                            // NoUnit
+                            if ((int)_forceUnit != MyUnit.NoUnit && (int)_volumeUnit != MyUnit.NoUnit)
+                                valueString += " " + Force.GetAbbreviation(_forceUnit) + "/" + Volume.GetAbbreviation(_volumeUnit);
+                            return valueString;
                         }
                     }
                 }
@@ -107,13 +134,14 @@ namespace CaeGlobals
         //
         private static double ConvertForcePerVolume(string valueWithUnitString)
         {
-            string error = "Unable to parse quantity. Expected the form \"{value} {unit abbreviation}" +
-                           "\", such as \"5.5 m\". The spacing is optional.";
             valueWithUnitString = valueWithUnitString.Trim().Replace(" ", "");
             //
             string[] tmp = valueWithUnitString.Split('/');
             if (tmp.Length != 2) throw new FormatException(error);
-            Force force = Force.Parse(tmp[0]).ToUnit(_forceUnit);
+            Force force = Force.Parse(tmp[0]);
+            // NoUnit
+            if ((int)_forceUnit == MyUnit.NoUnit || (int)_volumeUnit == MyUnit.NoUnit) return force.Value;
+            else force = force.ToUnit(_forceUnit);
             //
             VolumeUnit volumeUnit = Volume.ParseUnit(tmp[1]);
             Volume volume = Volume.From(1, volumeUnit).ToUnit(_volumeUnit);

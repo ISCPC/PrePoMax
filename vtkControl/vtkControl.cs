@@ -2839,8 +2839,11 @@ namespace vtkControl
             vtkMaxActor actor = new vtkMaxActor(data, false, true);
             AddActorGeometry(actor, data.Layer);
             //
-            _style.AdjustCameraDistanceAndClipping();
-            this.Invalidate();
+            if (this.RenderingOn)
+            {
+                _style.AdjustCameraDistanceAndClipping();
+                this.Invalidate();
+            }
         }
         public void AddCells(vtkMaxActorData data)
         {

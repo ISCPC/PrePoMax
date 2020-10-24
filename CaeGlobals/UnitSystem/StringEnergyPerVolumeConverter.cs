@@ -26,11 +26,27 @@ namespace CaeGlobals
         {
             set
             {
-                if (value == _inlb) _energyUnit = (EnergyUnit)100;
+                if (value == "")
+                {
+                    _energyUnit = (EnergyUnit)MyUnit.NoUnit;
+                    _volumeUnit = (VolumeUnit)MyUnit.NoUnit;
+                }
+                else if (value == _inlb) _energyUnit = MyUnit.InchPound;
                 else { _energyUnit = Energy.ParseUnit(value); }
             }
         }
-        public static string SetVolumeUnit { set { _volumeUnit = Volume.ParseUnit(value); } }
+        public static string SetVolumeUnit
+        {
+            set
+            {
+                if (value == "")
+                {
+                    _energyUnit = (EnergyUnit)MyUnit.NoUnit;
+                    _volumeUnit = (VolumeUnit)MyUnit.NoUnit;                    
+                }
+                else _volumeUnit = Volume.ParseUnit(value);
+            } 
+        }
         public static string GetUnitAbbreviation()
         {
             return Energy.GetAbbreviation(_energyUnit) + "/" + Volume.GetAbbreviation(_volumeUnit);
@@ -57,17 +73,7 @@ namespace CaeGlobals
                 double valueDouble;
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    valueString = valueString.Trim().Replace(" ", "");
-                    //
-                    string[] tmp = valueString.Split('/');
-                    if (tmp.Length != 2) throw new FormatException(error);
-                    //
-                    StringEnergyConverter converter = new StringEnergyConverter();
-                    double energy = (double)converter.ConvertFromString(tmp[0]);
-                    //
-                    VolumeUnit volumeUnit = Volume.ParseUnit(tmp[1]);
-                    Volume volume = Volume.From(1, volumeUnit).ToUnit(_volumeUnit);
-                    valueDouble = energy / volume.Value;
+                    valueDouble = ConvertEnergyPerVolume(valueString);
                 }
                 return valueDouble;
             }
@@ -81,7 +87,10 @@ namespace CaeGlobals
                 {
                     if (value is double valueDouble)
                     {
-                        return value + " " + GetUnitAbbreviation();
+                        string valueString = valueDouble.ToString();
+                        if ((int)_energyUnit != MyUnit.NoUnit && (int)_volumeUnit != MyUnit.NoUnit)
+                            valueString += " " + GetUnitAbbreviation();
+                        return valueString;
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);
@@ -92,6 +101,24 @@ namespace CaeGlobals
             }
         }
         //
+        private static double ConvertEnergyPerVolume(string valueWithUnitString)
+        {
+            valueWithUnitString = valueWithUnitString.Trim().Replace(" ", "");
+            //
+            string[] tmp = valueWithUnitString.Split('/');
+            if (tmp.Length != 2) throw new FormatException(error);
+            //
+            StringEnergyConverter converter = new StringEnergyConverter();  // this includes conversion to NoUnit
+            double energy = (double)converter.ConvertFromString(tmp[0]);
+            // NoUnit
+            if ((int)_energyUnit == MyUnit.NoUnit || (int)_volumeUnit == MyUnit.NoUnit) return energy;
+            //
+            VolumeUnit volumeUnit = Volume.ParseUnit(tmp[1]);
+            Volume volume = Volume.From(1, volumeUnit).ToUnit(_volumeUnit);
+            double value = energy / volume.Value;
+            //
+            return value;
+        }
     }
 
 

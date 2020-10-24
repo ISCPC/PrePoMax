@@ -18,7 +18,14 @@ namespace CaeGlobals
 
 
         // Properties                                                                                                               
-        public static string SetUnit { set { _momentUnit = Torque.ParseUnit(value); } }
+        public static string SetUnit
+        {
+            set
+            {
+                if (value == "") _momentUnit = (TorqueUnit)MyUnit.NoUnit;
+                else _momentUnit = Torque.ParseUnit(value);
+            }
+        }
 
 
         // Constructors                                                                                                             
@@ -42,7 +49,8 @@ namespace CaeGlobals
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    Torque moment = Torque.Parse(valueString).ToUnit(_momentUnit);
+                    Torque moment = Torque.Parse(valueString);
+                    if ((int)_momentUnit != MyUnit.NoUnit) moment = moment.ToUnit(_momentUnit);
                     valueDouble = moment.Value;
                 }
                 //
@@ -59,7 +67,9 @@ namespace CaeGlobals
                 {
                     if (value is double valueDouble)
                     {
-                        return value.ToString() + " " + Torque.GetAbbreviation(_momentUnit);
+                        string valueString = valueDouble.ToString();
+                        if ((int)_momentUnit != MyUnit.NoUnit) valueString += " " + Torque.GetAbbreviation(_momentUnit);
+                        return valueString;
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);

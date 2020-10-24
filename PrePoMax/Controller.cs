@@ -404,6 +404,7 @@ namespace PrePoMax
         public void New()
         {
             // Add and execute the clear command
+            _currentView = ViewGeometryModelResults.Geometry;
             _commands.Clear();      // also calls _modelChanged = false;
             ClearCommand();         // also calls _modelChanged = false;
             //
@@ -661,11 +662,12 @@ namespace PrePoMax
                     _form.WriteDataToOutput(message);
                     UserControls.AutoClosingMessageBox.Show(message, "Error", 3000);
                 }
-                CheckAndUpdateValidity();
             }
             else throw new NotSupportedException();
-            //            
+            //
             UpdateAfterImport(extension);
+            //
+            if (extension == ".inp") CheckAndUpdateValidity();  // must be here after UpdateAfterImport
         }
         private void UpdateAfterImport(string extension)
         {
@@ -4903,11 +4905,12 @@ namespace PrePoMax
                 {
                     throw new CaeGlobals.CaeException(ex.Message);
                 }
-
-                int numOfUnspecifiedElementIds = _model.CheckSectionAssignments();
-                if (numOfUnspecifiedElementIds != 0)
+                //
+                int[] unspecifiedElementIds = _model.CheckSectionAssignments();
+                if (unspecifiedElementIds.Length != 0)
                 {
-                    string msg = numOfUnspecifiedElementIds + " finite elements have a missing section assignment. Continue?";
+                    DrawElements("MissingSection", unspecifiedElementIds, Color.Red, vtkControl.vtkRendererLayer.Selection);
+                    string msg = unspecifiedElementIds.Length + " finite elements have a missing section assignment. Continue?";
                     if (MessageBox.Show(msg, "Warning", MessageBoxButtons.OKCancel) == DialogResult.Cancel) return false;
                 }
                 ExportToCalculix(inputFileName);

@@ -176,6 +176,12 @@ Dependency nglib - added following files for c++ redistriburable compatibility:
 Done
 
 Version 0.9.0 Master branch
+Added support for .inp files using *Include keyword
+Added support for Unit-less unit system
+Bug fixes
+
+
+Version 0.9.0 Master branch
 Added support for import of shell CAD geometry
 Added support for merging of shell faces into a compound
 Added support for visualizing shell face orientations
@@ -186,7 +192,7 @@ Added support for meshing the .stl shell geometries
 Added support for creating shell sections
 Added support for visualizing the results on shell faces (option 2D)
 Added support for auto-scroll in the monitor window
-
+Bug fixes
 
 
 

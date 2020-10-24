@@ -18,8 +18,14 @@ namespace CaeGlobals
 
 
         // Properties                                                                                                               
-        public static string SetUnit { set { _forceUnit = Force.ParseUnit(value); } }
-
+        public static string SetUnit
+        {
+            set
+            {
+                if (value == "") _forceUnit = (ForceUnit)MyUnit.NoUnit;
+                else _forceUnit = Force.ParseUnit(value);
+            }
+        }
 
         // Constructors                                                                                                             
         public StringForceConverter()
@@ -42,7 +48,8 @@ namespace CaeGlobals
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    Force force = Force.Parse(valueString).ToUnit(_forceUnit);
+                    Force force = Force.Parse(valueString);
+                    if ((int)_forceUnit != MyUnit.NoUnit) force = force.ToUnit(_forceUnit);
                     valueDouble = force.Value;
                 }
                 //
@@ -59,7 +66,9 @@ namespace CaeGlobals
                 {
                     if (value is double valueDouble)
                     {
-                        return value.ToString() + " " + Force.GetAbbreviation(_forceUnit);
+                        string valueString = valueDouble.ToString();
+                        if ((int)_forceUnit != MyUnit.NoUnit) valueString += " " + Force.GetAbbreviation(_forceUnit);
+                        return valueString;
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);

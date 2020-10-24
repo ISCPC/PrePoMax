@@ -19,10 +19,17 @@ namespace CaeGlobals
         protected ArrayList values;
         protected string _free = "Unconstrained";
         protected string _fixed = "Fixed";
-        
-        
+
+
         // Properties                                                                                                               
-        public static string SetUnit { set { _angleUnit = Angle.ParseUnit(value); } }
+        public static string SetUnit
+        {
+            set
+            {
+                if (value == "") _angleUnit = (AngleUnit)MyUnit.NoUnit;
+                else _angleUnit = Angle.ParseUnit(value);
+            }
+        }
 
 
         // Constructors                                                                                                             
@@ -75,8 +82,9 @@ namespace CaeGlobals
                 else if (String.Equals(value, _fixed)) valueDouble = double.PositiveInfinity;
                 else if (!double.TryParse(valueString, out valueDouble))
                 {
-                    Angle Angle = Angle.Parse(valueString).ToUnit(_angleUnit);
-                    valueDouble = Angle.Value;
+                    Angle angle = Angle.Parse(valueString);
+                    if ((int)_angleUnit != MyUnit.NoUnit) angle = angle.ToUnit(_angleUnit);
+                    valueDouble = angle.Value;
                 }
                 return valueDouble;
             }
@@ -95,7 +103,9 @@ namespace CaeGlobals
                         else if (double.IsPositiveInfinity(valueDouble)) return _fixed;
                         else
                         {
-                            return value.ToString() + " " + Angle.GetAbbreviation(_angleUnit);
+                            string valueString = valueDouble.ToString();
+                            if ((int)_angleUnit != MyUnit.NoUnit) valueString += " " + Angle.GetAbbreviation(_angleUnit);
+                            return valueString;
                         }
                     }
                 }

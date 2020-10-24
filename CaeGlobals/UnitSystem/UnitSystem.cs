@@ -11,6 +11,7 @@ using System.Runtime.Serialization;
 using DynamicTypeDescriptor;
 using System.ComponentModel;
 
+
 namespace CaeGlobals
 {
     [Serializable]
@@ -25,8 +26,14 @@ namespace CaeGlobals
         [Description("mm, ton, s, °C")]
         MM_TON_S_C = 2,
         //
+        [Description("m, ton, s, °C")]
+        M_TON_S_C = 3,
+        //
         [Description("in, lb, s, °C")]
-        IN_LB_S_C = 20
+        IN_LB_S_C = 20,
+        //
+        [Description("Unitless")]
+        UNIT_LESS = 40
     }
 
 
@@ -79,26 +86,126 @@ namespace CaeGlobals
         // Abbreviations                                                                                
         //
         // Base units
-        public string LengthUnitAbbreviation { get { return Length.GetAbbreviation(_lengthUnit); } }
-        public string AngleUnitAbbreviation { get { return Angle.GetAbbreviation(_angleUnit); } }
-        public string MassUnitAbbreviation { get { return Mass.GetAbbreviation(_massUnit); } }
-        public string TimeUnitAbbreviation { get { return Duration.GetAbbreviation(_timeUnit); } }
-        public string TemperatureUnitAbbreviation { get { return Temperature.GetAbbreviation(_temperatureUnit); } }
+        public string LengthUnitAbbreviation
+        {
+            get
+            {
+                if ((int)_lengthUnit == MyUnit.NoUnit) return "";
+                else return Length.GetAbbreviation(_lengthUnit);
+            }
+        }
+        public string AngleUnitAbbreviation
+        {
+            get
+            {
+                if ((int)_angleUnit == MyUnit.NoUnit) return "";
+                else return Angle.GetAbbreviation(_angleUnit);
+            }
+        }
+        public string MassUnitAbbreviation
+        {
+            get
+            {
+                if ((int)_massUnit == MyUnit.NoUnit) return "";
+                else return Mass.GetAbbreviation(_massUnit);
+            }
+        }
+        public string TimeUnitAbbreviation
+        {
+            get
+            {
+                if ((int)_timeUnit == MyUnit.NoUnit) return "";
+                else return Duration.GetAbbreviation(_timeUnit);
+            }
+        }
+        public string TemperatureUnitAbbreviation
+        {
+            get
+            {
+                if ((int)_temperatureUnit == MyUnit.NoUnit) return "";
+                else return Temperature.GetAbbreviation(_temperatureUnit);
+            }
+        }
         // Derived units
-        public string AreaUnitAbbreviation { get { return Area.GetAbbreviation(_areaUnit); } }
-        public string VolumeUnitAbbreviation { get { return Volume.GetAbbreviation(_volumeUnit); } }
-        public string SpeedUnitAbbreviation { get { return Speed.GetAbbreviation(_speedUnit); } }
-        public string RotationalSpeedUnitAbbreviation { get { return RotationalSpeed.GetAbbreviation(_rotationalSpeedUnit); } }
-        public string AccelerationUnitAbbreviation { get { return Acceleration.GetAbbreviation(_accelerationUnit); } }
-        public string ForceUnitAbbreviation { get { return Force.GetAbbreviation(_forceUnit); } }
-        public string MomentUnitAbbreviation { get { return Torque.GetAbbreviation(_momentUnit); } }
-        public string PressureUnitAbbreviation { get { return Pressure.GetAbbreviation(_pressureUnit); } }
-        public string DensityUnitAbbreviation { get { return UnitsNet.Density.GetAbbreviation(_densityUnit); } }
+        public string AreaUnitAbbreviation
+        {
+            get
+            {
+                if ((int)_areaUnit == MyUnit.NoUnit) return "";
+                else return Area.GetAbbreviation(_areaUnit);
+
+            }
+        }
+        public string VolumeUnitAbbreviation
+        {
+            get
+            {
+                if ((int)_volumeUnit == MyUnit.NoUnit) return "";
+                else return Volume.GetAbbreviation(_volumeUnit);
+            }
+        }
+        public string SpeedUnitAbbreviation
+        {
+            get
+            {
+                if ((int)_speedUnit == MyUnit.NoUnit) return "";
+                else return Speed.GetAbbreviation(_speedUnit);
+            }
+        }
+        public string RotationalSpeedUnitAbbreviation
+        {
+            get
+            {
+                if ((int)_rotationalSpeedUnit == MyUnit.NoUnit) return "";
+                else return RotationalSpeed.GetAbbreviation(_rotationalSpeedUnit);
+            }
+        }
+        public string AccelerationUnitAbbreviation
+        {
+            get
+            {
+                if ((int)_accelerationUnit == MyUnit.NoUnit) return "";
+                else return Acceleration.GetAbbreviation(_accelerationUnit);
+            }
+        }
+        public string ForceUnitAbbreviation
+        {
+            get
+            {
+                if ((int)_forceUnit == MyUnit.NoUnit) return "";
+                else return Force.GetAbbreviation(_forceUnit);
+            }
+        }
+        public string MomentUnitAbbreviation
+        {
+            get
+            {
+                if ((int)_momentUnit == MyUnit.NoUnit) return "";
+                else return Torque.GetAbbreviation(_momentUnit);
+            }
+        }
+        public string PressureUnitAbbreviation
+        {
+            get
+            {
+                if ((int)_pressureUnit == MyUnit.NoUnit) return "";
+                else return Pressure.GetAbbreviation(_pressureUnit);
+            }
+        }
+        public string DensityUnitAbbreviation
+        {
+            get
+            {
+                if ((int)_densityUnit == MyUnit.NoUnit) return "";
+                else return UnitsNet.Density.GetAbbreviation(_densityUnit);
+            }
+        }
         public string EnergyUnitAbbreviation
         {
-            get            
+            get
             {
-                if (_energyUnit == (EnergyUnit)100) return "in·lb";
+                if ((int)_energyUnit == MyUnit.NoUnit) return "";
+                else if (_energyUnit == MyUnit.InchPound) return "in·lb";
                 else return Energy.GetAbbreviation(_energyUnit);
             }
         }
@@ -106,10 +213,18 @@ namespace CaeGlobals
         {
             get
             {
-                return StringEnergyPerVolumeConverter.GetUnitAbbreviation();
+                if ((int)_energyUnit == MyUnit.NoUnit || (int)_volumeUnit == MyUnit.NoUnit) return "";
+                else return StringEnergyPerVolumeConverter.GetUnitAbbreviation();
             }
         }
-        public string FrequencyUnitAbbreviation { get { return Frequency.GetAbbreviation(_frequencyUnit); } }
+        public string FrequencyUnitAbbreviation 
+        { 
+            get 
+            {
+                if ((int)_frequencyUnit == MyUnit.NoUnit) return "";
+                else return Frequency.GetAbbreviation(_frequencyUnit); 
+            } 
+        }
 
 
         // Constructors                                                                                                             
@@ -123,6 +238,25 @@ namespace CaeGlobals
             //
             switch (_unitSystemType)
             {
+                case UnitSystemType.UNIT_LESS:
+                    _lengthUnit = (LengthUnit)MyUnit.NoUnit;
+                    _angleUnit = (AngleUnit)MyUnit.NoUnit;
+                    _massUnit = (MassUnit)MyUnit.NoUnit;
+                    _timeUnit = (DurationUnit)MyUnit.NoUnit;
+                    _temperatureUnit = (TemperatureUnit)MyUnit.NoUnit;
+                    //
+                    _areaUnit = (AreaUnit)MyUnit.NoUnit;
+                    _volumeUnit = (VolumeUnit)MyUnit.NoUnit;
+                    _speedUnit = (SpeedUnit)MyUnit.NoUnit;
+                    _rotationalSpeedUnit = (RotationalSpeedUnit)MyUnit.NoUnit;
+                    _accelerationUnit = (AccelerationUnit)MyUnit.NoUnit;
+                    _forceUnit = (ForceUnit)MyUnit.NoUnit;
+                    _momentUnit = (TorqueUnit)MyUnit.NoUnit;
+                    _pressureUnit = (PressureUnit)MyUnit.NoUnit;
+                    _densityUnit = (DensityUnit)MyUnit.NoUnit;
+                    _energyUnit = (EnergyUnit)MyUnit.NoUnit;
+                    _frequencyUnit = (FrequencyUnit)MyUnit.NoUnit;
+                    break;
                 case UnitSystemType.Undefined:
                 case UnitSystemType.M_KG_S_C:
                     _lengthUnit = LengthUnit.Meter;
@@ -162,6 +296,25 @@ namespace CaeGlobals
                     _energyUnit = EnergyUnit.Millijoule;
                     _frequencyUnit = FrequencyUnit.Hertz;
                     break;
+                case UnitSystemType.M_TON_S_C:
+                    _lengthUnit = LengthUnit.Meter;
+                    _angleUnit = AngleUnit.Radian;
+                    _massUnit = MassUnit.Tonne;
+                    _timeUnit = DurationUnit.Second;
+                    _temperatureUnit = TemperatureUnit.DegreeCelsius;
+                    //
+                    _areaUnit = AreaUnit.SquareMeter;
+                    _volumeUnit = VolumeUnit.CubicMeter;
+                    _speedUnit = SpeedUnit.MeterPerSecond;
+                    _rotationalSpeedUnit = RotationalSpeedUnit.RadianPerSecond;
+                    _accelerationUnit = AccelerationUnit.MeterPerSecondSquared;
+                    _forceUnit = ForceUnit.Kilonewton;
+                    _momentUnit = TorqueUnit.KilonewtonMeter;
+                    _pressureUnit = PressureUnit.Kilopascal;
+                    _densityUnit = DensityUnit.TonnePerCubicMeter;
+                    _energyUnit = EnergyUnit.Kilojoule;
+                    _frequencyUnit = FrequencyUnit.Hertz;
+                    break;
                 case UnitSystemType.IN_LB_S_C:
                     _lengthUnit = LengthUnit.Inch;
                     _angleUnit = AngleUnit.Radian;
@@ -178,7 +331,7 @@ namespace CaeGlobals
                     _momentUnit = TorqueUnit.PoundForceInch;
                     _pressureUnit = PressureUnit.PoundForcePerSquareInch;
                     _densityUnit = DensityUnit.PoundPerCubicInch;
-                    _energyUnit = (EnergyUnit)100; // EnergyUnit.InchPound;
+                    _energyUnit = MyUnit.InchPound; // EnergyUnit.InchPound;
                     _frequencyUnit = FrequencyUnit.Hertz;
                     break;
                 default:

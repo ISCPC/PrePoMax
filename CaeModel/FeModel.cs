@@ -384,7 +384,7 @@ namespace CaeModel
             }
         }
         //
-        public int CheckSectionAssignments()
+        public int[] CheckSectionAssignments()
         {
             HashSet<int> elementIds = new HashSet<int>();
             foreach (var entry in _sections)
@@ -412,7 +412,7 @@ namespace CaeModel
             //
             var notSpecifiedIds = _mesh.Elements.Keys.Except(elementIds);
             //
-            return notSpecifiedIds.Count();
+            return notSpecifiedIds.ToArray();
         }
         //
         public void RemoveLostUserKeywords(Action<int> SetNumberOfUserKeywords)

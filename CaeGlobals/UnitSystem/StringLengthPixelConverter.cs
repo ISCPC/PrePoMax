@@ -11,7 +11,7 @@ using UnitsNet.Units;
 
 namespace CaeGlobals
 {
-    public class StringPixelConverter : TypeConverter
+    public class StringLengthPixelConverter : TypeConverter
     {
         // Variables                                                                                                                
         protected static string pixelAbbrevation = "px";
@@ -23,7 +23,7 @@ namespace CaeGlobals
 
 
         // Constructors                                                                                                             
-        public StringPixelConverter()
+        public StringLengthPixelConverter()
         {
         }
 

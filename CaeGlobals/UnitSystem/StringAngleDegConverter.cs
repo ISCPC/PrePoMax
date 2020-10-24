@@ -34,15 +34,15 @@ namespace CaeGlobals
         }
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
-            // Convert from string
+            // Convert from string 
             if (value is string valueString)
             {
                 double valueDouble;
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    Angle Angle = Angle.Parse(valueString).ToUnit(_angleUnit);
-                    valueDouble = Angle.Value;
+                    Angle angle = Angle.Parse(valueString).ToUnit(_angleUnit);
+                    valueDouble = angle.Value;
                 }
                 //
                 return valueDouble;
@@ -58,7 +58,7 @@ namespace CaeGlobals
                 {
                     if (value is double valueDouble)
                     {
-                        return value.ToString() + " " + Angle.GetAbbreviation(_angleUnit);
+                        return valueDouble.ToString() + " " + Angle.GetAbbreviation(_angleUnit);
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);

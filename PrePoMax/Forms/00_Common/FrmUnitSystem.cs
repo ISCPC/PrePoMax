@@ -42,7 +42,7 @@ namespace PrePoMax.Forms
             //
             _selectedPropertyGridItemChangedEventActive = false;
             //
-            this.Height = 311 + 17 * 19;
+            this.Height = 330 + 17 * 19;
             //
             btnOkAddNew.Visible = false;
             btnCancel.Visible = false;
@@ -57,37 +57,38 @@ namespace PrePoMax.Forms
             // 
             // gbType
             // 
-            this.gbType.Size = new System.Drawing.Size(310, 101);
+            this.gbType.Size = new System.Drawing.Size(310, 129);
             // 
             // lvTypes
             // 
-            this.lvTypes.Size = new System.Drawing.Size(298, 73);
+            this.lvTypes.Size = new System.Drawing.Size(298, 101);
+            this.lvTypes.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.lvTypes_MouseDoubleClick);
             // 
             // gbProperties
             // 
-            this.gbProperties.Location = new System.Drawing.Point(12, 119);
-            this.gbProperties.Size = new System.Drawing.Size(310, 344);
+            this.gbProperties.Location = new System.Drawing.Point(12, 147);
+            this.gbProperties.Size = new System.Drawing.Size(310, 421);
             // 
             // propertyGrid
             // 
-            this.propertyGrid.Size = new System.Drawing.Size(298, 316);
+            this.propertyGrid.Size = new System.Drawing.Size(298, 393);
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(160, 469);
+            this.btnOK.Location = new System.Drawing.Point(160, 574);
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(241, 469);
+            this.btnCancel.Location = new System.Drawing.Point(241, 574);
             // 
             // btnOkAddNew
             // 
-            this.btnOkAddNew.Location = new System.Drawing.Point(79, 469);
+            this.btnOkAddNew.Location = new System.Drawing.Point(79, 574);
             // 
             // FrmUnitSystem
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.ClientSize = new System.Drawing.Size(334, 504);
+            this.ClientSize = new System.Drawing.Size(334, 609);
             this.Name = "FrmUnitSystem";
             this.Text = "Edit Unit System";
             this.gbType.ResumeLayout(false);
@@ -145,12 +146,21 @@ namespace PrePoMax.Forms
             ListViewItem item;
             lvTypes.Items.Clear();
             //
+            unitSystemType = UnitSystemType.UNIT_LESS;
+            item = new ListViewItem("Unit system: " + unitSystemType.GetDescription());
+            item.Tag = new ViewUnitSystem(new UnitSystem(unitSystemType));
+            lvTypes.Items.Add(item);//
             unitSystemType = UnitSystemType.M_KG_S_C;
             item = new ListViewItem("Unit system: " + unitSystemType.GetDescription());
             item.Tag = new ViewUnitSystem(new UnitSystem(unitSystemType));
             lvTypes.Items.Add(item);
             //
             unitSystemType = UnitSystemType.MM_TON_S_C;
+            item = new ListViewItem("Unit system: " + unitSystemType.GetDescription());
+            item.Tag = new ViewUnitSystem(new UnitSystem(unitSystemType));
+            lvTypes.Items.Add(item);
+            //
+            unitSystemType = UnitSystemType.M_TON_S_C;
             item = new ListViewItem("Unit system: " + unitSystemType.GetDescription());
             item.Tag = new ViewUnitSystem(new UnitSystem(unitSystemType));
             lvTypes.Items.Add(item);
@@ -165,6 +175,13 @@ namespace PrePoMax.Forms
             return true;
         }
 
+
+        // Event handlers
+        private void lvTypes_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            OnApply(false);
+            Hide();
+        }
 
         // Methods                                                                                                                  
 

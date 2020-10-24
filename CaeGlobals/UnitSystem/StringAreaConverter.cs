@@ -14,11 +14,18 @@ namespace CaeGlobals
     public class StringAreaConverter : TypeConverter
     {
         // Variables                                                                                                                
-        protected static AreaUnit _AreaUnit = AreaUnit.SquareMeter;
+        protected static AreaUnit _areaUnit = AreaUnit.SquareMeter;
 
 
         // Properties                                                                                                               
-        public static string SetUnit { set { _AreaUnit = Area.ParseUnit(value); } }
+        public static string SetUnit
+        {
+            set
+            {
+                if (value == "") _areaUnit = (AreaUnit)MyUnit.NoUnit;
+                else _areaUnit = Area.ParseUnit(value);
+            }
+        }
 
 
         // Constructors                                                                                                             
@@ -28,7 +35,7 @@ namespace CaeGlobals
 
 
         // Methods                                                                                                                  
-        public override bool CanConvertFrom(ITypeDescriptorContext context, System.Type sourceType)
+        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
         {
             if (sourceType == typeof(string)) return true;
             else return base.CanConvertFrom(context, sourceType);
@@ -42,8 +49,9 @@ namespace CaeGlobals
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    Area Area = Area.Parse(valueString).ToUnit(_AreaUnit);
-                    valueDouble = Area.Value;
+                    Area area = Area.Parse(valueString);
+                    if ((int)_areaUnit != MyUnit.NoUnit) area = area.ToUnit(_areaUnit);
+                    valueDouble = area.Value;
                 }
                 //
                 return valueDouble;
@@ -59,7 +67,9 @@ namespace CaeGlobals
                 {
                     if (value is double valueDouble)
                     {
-                        return value.ToString() + " " + Area.GetAbbreviation(_AreaUnit);
+                        string valueString = valueDouble.ToString();
+                        if ((int)_areaUnit != MyUnit.NoUnit) valueString += " " + Area.GetAbbreviation(_areaUnit);
+                        return valueString;
                     }
                 }
                 return base.ConvertTo(context, culture, value, destinationType);
