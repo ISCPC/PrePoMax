@@ -26,6 +26,9 @@ namespace PrePoMax
         private int _symbolSize;
         private int _nodeSymbolSize;
         private bool _drawSymbolEdges;
+        //
+        private WidgetBackgroundType _colorBarBackgroundType;
+        private bool _colorBarDrawBorder;
 
 
         // Properties                                                                                                               
@@ -92,6 +95,20 @@ namespace PrePoMax
             get { return _drawSymbolEdges; }
             set { _drawSymbolEdges = value; }
         }
+        //
+        public WidgetBackgroundType ColorBarBackgroundType
+        {
+            get { return _colorBarBackgroundType; }
+            set
+            {
+                if (value != _colorBarBackgroundType)
+                {
+                    _colorBarBackgroundType = value;
+                    if (_colorBarBackgroundType == WidgetBackgroundType.White) _colorBarDrawBorder = true;
+                }
+            }
+        }
+        public bool ColorBarDrawBorder { get { return _colorBarDrawBorder; } set { _colorBarDrawBorder = value; } }
 
 
         // Constructors                                                                                                             
@@ -118,6 +135,9 @@ namespace PrePoMax
             _symbolSize = 50;
             _nodeSymbolSize = 3;
             _drawSymbolEdges = true;
+            //
+            _colorBarBackgroundType = WidgetBackgroundType.None;
+            _colorBarDrawBorder = true;
         }
       
     }

@@ -46,7 +46,7 @@ namespace PrePoMax.Settings
             set { _preSettings.MouseHighlightColor = value; }
         }
         //
-        [CategoryAttribute("General")]
+        [CategoryAttribute("Face orientation")]
         [OrderedDisplayName(0, 10, "Front face color")]
         [DescriptionAttribute("Select the front shell face color.")]
         public Color FrontFaceColor
@@ -55,7 +55,7 @@ namespace PrePoMax.Settings
             set { _preSettings.FrontFaceColor = value; }
         }
         //
-        [CategoryAttribute("General")]
+        [CategoryAttribute("Face orientation")]
         [OrderedDisplayName(1, 10, "Back face color")]
         [DescriptionAttribute("Select the back shell face color.")]
         public Color BackFaceColor
@@ -119,7 +119,24 @@ namespace PrePoMax.Settings
             get { return _preSettings.DrawSymbolEdges; }
             set { _preSettings.DrawSymbolEdges = value; }
         }
-        
+        //
+        [CategoryAttribute("Color bar")]
+        [OrderedDisplayName(0, 10, "Background type")]
+        [DescriptionAttribute("Select the background type.")]
+        public WidgetBackgroundType ColorBarBackgroundType
+        {
+            get { return _preSettings.ColorBarBackgroundType; }
+            set { _preSettings.ColorBarBackgroundType = value; }
+        }
+        //
+        [CategoryAttribute("Color bar")]
+        [OrderedDisplayName(1, 10, "Draw a border rectangle")]
+        [DescriptionAttribute("Draw a border rectangle around the legend.")]
+        public bool ColorBarDrawBorder
+        {
+            get { return _preSettings.ColorBarDrawBorder; }
+            set { _preSettings.ColorBarDrawBorder = value; }
+        }
 
 
         // Constructors                                                                                                             
