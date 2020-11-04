@@ -56,7 +56,7 @@ namespace PrePoMax.Forms
         // Overrides                                                                                                                
         protected override void OnPropertyGridSelectedGridItemChanged()
         {
-            if (propertyGrid.SelectedGridItem.PropertyDescriptor == null) return;
+            //if (propertyGrid.SelectedGridItem.PropertyDescriptor == null) return;
             //
             ShowHideSelectionForm();
             //
@@ -187,8 +187,6 @@ namespace PrePoMax.Forms
             }
             _selectedPropertyGridItemChangedEventActive = true;
             //
-            SetSelectItem();
-            //
             ShowHideSelectionForm();
             //
             HighlightContactPair(); // must be here if called from the menu
@@ -264,10 +262,24 @@ namespace PrePoMax.Forms
                 else ItemSetDataEditor.SelectionForm.Hide();
             }
             else ItemSetDataEditor.SelectionForm.Hide();
+            //
+            SetSelectItem();
         }
         private void SetSelectItem()
         {
-            _controller.SetSelectItemToSurface();
+            if (propertyGrid.SelectedGridItem == null || propertyGrid.SelectedGridItem.PropertyDescriptor == null) return;
+            //
+            string property = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
+            //
+            if (ContactPair == null) { }
+            else if (ContactPair is ContactPair cp)
+            {
+                if ((cp.MasterRegionType == RegionTypeEnum.Selection && property == nameof(ViewTie.MasterRegionType)) ||
+                    (cp.SlaveRegionType == RegionTypeEnum.Selection && property == nameof(ViewTie.SlaveRegionType)))
+                    _controller.SetSelectItemToSurface();
+                else
+                    _controller.SetSelectByToOff();
+            }
         }
         private void ContactPairInternal(bool toInternal)
         {

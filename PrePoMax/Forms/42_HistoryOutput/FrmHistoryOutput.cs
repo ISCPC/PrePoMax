@@ -86,8 +86,6 @@ namespace PrePoMax.Forms
                 else if (itemTag is ViewContactHistoryOutput vcho) _viewHistoryOutput = vcho;
                 else throw new NotImplementedException();
                 //
-                SetSelectItem();
-                //
                 ShowHideSelectionForm();
                 //
                 propertyGrid.SelectedObject = itemTag;
@@ -253,8 +251,6 @@ namespace PrePoMax.Forms
             }
             _selectedPropertyGridItemChangedEventActive = true;
             //
-            SetSelectItem();
-            //
             ShowHideSelectionForm();
             //
             HighlightHistoryOutput(); // must be here if called from the menu
@@ -309,6 +305,8 @@ namespace PrePoMax.Forms
         {
             try
             {
+                _controller.ClearSelectionHistory();
+                //
                 if (_viewHistoryOutput == null) { }
                 else if (HistoryOutput is NodalHistoryOutput || HistoryOutput is ElementHistoryOutput)
                 {
@@ -328,14 +326,11 @@ namespace PrePoMax.Forms
                             _controller.Selection = HistoryOutput.CreationData.DeepClone();
                             _controller.HighlightSelection();
                         }
-                        // If contact output is selected first and then node or element output, clear the selection
-                        else _controller.ClearAllSelection(); 
                     }
                     else throw new NotImplementedException();
                 }
                 else if (HistoryOutput is ContactHistoryOutput)
                 {
-                    _controller.ClearAllSelection();
                     _controller.HighlightContactPairs(new string[] { HistoryOutput.RegionName });
                 }
                 else throw new NotSupportedException();
@@ -348,13 +343,19 @@ namespace PrePoMax.Forms
                 ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
             else
                 ItemSetDataEditor.SelectionForm.Hide();
+            //
+            SetSelectItem();
         }
         private void SetSelectItem()
         {
-            if (HistoryOutput is null) { }
-            else if (HistoryOutput is NodalHistoryOutput) _controller.SetSelectItemToNode();
-            else if (HistoryOutput is ElementHistoryOutput) _controller.SetSelectItemToElement();
-            else if (HistoryOutput is ContactHistoryOutput) _controller.SelectItem = vtkSelectItem.None;
+            if (HistoryOutput != null && HistoryOutput.RegionType == RegionTypeEnum.Selection)
+            {
+                if (HistoryOutput is null) { }
+                else if (HistoryOutput is NodalHistoryOutput) _controller.SetSelectItemToNode();
+                else if (HistoryOutput is ElementHistoryOutput) _controller.SetSelectItemToElement();
+                else if (HistoryOutput is ContactHistoryOutput) _controller.SelectItem = vtkSelectItem.None;
+            }
+            else _controller.SetSelectByToOff();
         }
         //
         public void SelectionChanged(int[] ids)

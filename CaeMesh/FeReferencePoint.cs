@@ -13,11 +13,11 @@ namespace CaeMesh
     [Serializable]
     public enum FeReferencePointCreatedFrom
     {
-        [StandardValue("Selection", DisplayName = "Selection/Coordinates")]
+        [StandardValue("Selection", Description = "Selection/Coordinates", DisplayName = "Selection/Coordinates")]
         Selection,
-        [StandardValue("CenterOfGravity", DisplayName = "Center of gravity")]
+        [StandardValue("CenterOfGravity", Description = "Center of gravity", DisplayName = "Center of gravity")]
         CenterOfGravity,
-        [StandardValue("BoundingBoxCenter", DisplayName = "Bounding box center")]
+        [StandardValue("BoundingBoxCenter", Description = "Bounding box center", DisplayName = "Bounding box center")]
         BoundingBoxCenter
     }
 

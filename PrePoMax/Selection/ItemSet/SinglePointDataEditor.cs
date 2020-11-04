@@ -52,7 +52,7 @@ namespace PrePoMax
 
                 _controller.SelectBy = CaeGlobals.vtkSelectBy.QueryNode;
                 _controller.Selection.SelectItem = CaeGlobals.vtkSelectItem.Node;
-                _controller.ClearSelectionHistoryAndSelectionChanged();
+                _controller.ClearSelectionHistoryAndCallSelectionChanged();
             }
           
             return value;

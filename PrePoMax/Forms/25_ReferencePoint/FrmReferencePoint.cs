@@ -67,6 +67,7 @@ namespace PrePoMax.Forms
             if (property == nameof(_viewReferencePoint.CreatedFrom))
             {
                 SetSelectItemAndSelection();
+                //
                 _controller.UpdateReferencePoint(ReferencePoint);
             }
             else if (property == nameof(_viewReferencePoint.RegionType) || property == nameof(_viewReferencePoint.NodeSetName) ||
@@ -105,7 +106,7 @@ namespace PrePoMax.Forms
         protected override void OnApply(bool onOkAddNew)
         {
             _viewReferencePoint = (ViewFeReferencePoint)propertyGrid.SelectedObject;
-
+            //
             if ((_referencePointToEditName == null && _allExistingNames.Contains(_viewReferencePoint.Name)) ||                       // named to existing name
                 (_viewReferencePoint.Name != _referencePointToEditName && _allExistingNames.Contains(_viewReferencePoint.Name)))     // renamed to existing name
                 throw new CaeGlobals.CaeException("The selected name already exists.");
@@ -236,7 +237,7 @@ namespace PrePoMax.Forms
         }
         private void TurnOffSelection()
         {
-            _controller.SelectBy = vtkSelectBy.Off;
+            _controller.SetSelectByToOff();
             _controller.Selection.SelectItem = vtkSelectItem.None;
         }
         private void SetSelectItemAndSelection()
@@ -245,13 +246,13 @@ namespace PrePoMax.Forms
             else if (ReferencePoint.CreatedFrom == FeReferencePointCreatedFrom.Selection)
             {
                 _controller.SelectBy = vtkSelectBy.QueryNode;
-                _controller.Selection.SelectItem = vtkSelectItem.Node;
+                _controller.SetSelectItemToNode();
             }
             else
             {
                 TurnOffSelection();
             }
-            _controller.ClearSelectionHistoryAndSelectionChanged();
+            _controller.ClearSelectionHistoryAndCallSelectionChanged();
         }
         private void ReferencePointInternal(bool toInternal)
         {

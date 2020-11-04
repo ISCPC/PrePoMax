@@ -236,7 +236,8 @@ namespace PrePoMax.Forms
         // Methods                                                                                                                  
         public void PrepareForm()
         {
-            this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
+            // To prevent the call to frmMain.itemForm_VisibleChanged when minimized
+            this.DialogResult = DialogResult.None;
             //
             TreeNode node = new TreeNode();
             node.Text = "CalculiX inp file";

@@ -144,13 +144,16 @@ namespace vtkControl
                 {
                     _selectBy = value;
                     //
-                    if (_selectBy == vtkSelectBy.Off) _style.Selection = false;
+                    if (_selectBy == vtkSelectBy.Off || _selectBy == vtkSelectBy.Default) _style.Selection = false;
                     else _style.Selection = true;
                     //
                     switch (_selectBy)
                     {
                         // General
                         case vtkSelectBy.Off:
+                            _style.RubberBandEnabled = false;
+                            break;
+                        case vtkSelectBy.Default:
                         // Mesh based
                         case vtkSelectBy.Node:
                         case vtkSelectBy.Element:
@@ -257,7 +260,7 @@ namespace vtkControl
             _sectionView = false;
             _sectionViewPlane = null;
             //
-            SelectBy = vtkSelectBy.Off;
+            //SelectBy = vtkSelectBy.Default;
             _selectItem = vtkSelectItem.None;
             //
             _propPicker = vtkPropPicker.New();
@@ -338,9 +341,10 @@ namespace vtkControl
         {
             try
             {
-                if (_probeWidget == null) return;
+                // Off
+                if (_probeWidget == null || _selectBy == vtkSelectBy.Off) return;
                 // Default selection of parts
-                else if (_selectBy == vtkSelectBy.Off)
+                else if (_selectBy == vtkSelectBy.Default)
                 {
                     // Area selection
                     if (rubberBandSelection)
@@ -367,7 +371,7 @@ namespace vtkControl
                     //
                     switch (_selectBy)
                     {
-                        case vtkSelectBy.Off:
+                        //case vtkSelectBy.Default:
                         case vtkSelectBy.Id:
                             break;
                         case vtkSelectBy.Node:
@@ -435,8 +439,10 @@ namespace vtkControl
         }
         private void _style_PointPickedOnLeftUpEvt(int x1, int y1, bool rubberBandSelection, int x2, int y2)
         {
+            // Off
+            if (_selectBy == vtkSelectBy.Off) return;
             // Default selection of parts
-            if (_selectBy == vtkSelectBy.Off)
+            if (_selectBy == vtkSelectBy.Default)
             {
                 string[] pickedActorNames = null;
                 // Point selection

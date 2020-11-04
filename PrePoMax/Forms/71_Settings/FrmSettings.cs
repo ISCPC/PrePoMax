@@ -12,6 +12,7 @@ using System.Reflection;
 using System.IO;
 using CaeGlobals;
 using PrePoMax.Settings;
+using System.Runtime.InteropServices;
 
 namespace PrePoMax.Forms
 {
@@ -187,6 +188,8 @@ namespace PrePoMax.Forms
             {
                 if (lvSettings.Items.Count > 0) lvSettings.Items[0].Selected = true;
             }
+            //
+            controller.SetSelectByToOff();
         }
         public void SetSettingsToShow(string name)
         {

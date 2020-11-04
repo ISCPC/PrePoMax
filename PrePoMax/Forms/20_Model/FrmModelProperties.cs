@@ -83,7 +83,10 @@ namespace PrePoMax.Forms
         }
         protected override bool OnPrepareForm(string stepName, string modelToEditName)
         {
-            this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
+            // To prevent the call to frmMain.itemForm_VisibleChanged when minimized
+            this.DialogResult = DialogResult.None;
+            // Disable selection
+            _controller.SetSelectByToOff();
             //
             _propertyItemChanged = false;
             _viewModelProperties = null;

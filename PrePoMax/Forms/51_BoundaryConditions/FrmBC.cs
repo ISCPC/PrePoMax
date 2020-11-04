@@ -102,8 +102,6 @@ namespace PrePoMax.Forms
                 else if (itemTag is ViewSubmodelBC vsm) _viewBc = vsm;
                 else throw new NotImplementedException();
                 //
-                SetSelectItem();
-                //
                 ShowHideSelectionForm();
                 //
                 propertyGrid.SelectedObject = itemTag;
@@ -302,8 +300,6 @@ namespace PrePoMax.Forms
             }
             _selectedPropertyGridItemChangedEventActive = true;
             //
-            SetSelectItem();
-            //
             ShowHideSelectionForm();
             //
             HighlightBoundaryCondition(); // must be here if called from the menu
@@ -350,6 +346,8 @@ namespace PrePoMax.Forms
         {
             try
             {
+                _controller.ClearSelectionHistory();
+                //
                 if (_viewBc == null) { }
                 else if (BoundaryCondition is FixedBC || BoundaryCondition is DisplacementRotation ||
                          BoundaryCondition is SubmodelBC)
@@ -382,14 +380,20 @@ namespace PrePoMax.Forms
                 ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
             else
                 ItemSetDataEditor.SelectionForm.Hide();
+            //
+            SetSelectItem();
         }
         private void SetSelectItem()
         {
-            if (BoundaryCondition is null) { }
-            else if (BoundaryCondition is FixedBC) _controller.SetSelectItemToGeometry();
-            else if (BoundaryCondition is DisplacementRotation) _controller.SetSelectItemToGeometry();
-            else if (BoundaryCondition is SubmodelBC) _controller.SetSelectItemToGeometry();
-            else throw new NotSupportedException();
+            if (BoundaryCondition != null && BoundaryCondition.RegionType == RegionTypeEnum.Selection)
+            {
+                if (BoundaryCondition is null) { }
+                else if (BoundaryCondition is FixedBC) _controller.SetSelectItemToGeometry();
+                else if (BoundaryCondition is DisplacementRotation) _controller.SetSelectItemToGeometry();
+                else if (BoundaryCondition is SubmodelBC) _controller.SetSelectItemToGeometry();
+                else throw new NotSupportedException();
+            }
+            else _controller.SetSelectByToOff();
         }
         private void BoundaryConditionInternal(bool toInternal)
         {

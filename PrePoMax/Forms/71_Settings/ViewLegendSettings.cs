@@ -36,14 +36,14 @@ namespace PrePoMax.Settings
         { 
             get 
             {
-                if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.CoolWarm) return PrePoMax.Settings.ColorSpectrum.CoolWarm;
-                else if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.Rainbow) return PrePoMax.Settings.ColorSpectrum.Rainbow;
+                if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.CoolWarm) return ColorSpectrum.CoolWarm;
+                else if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.Rainbow) return ColorSpectrum.Rainbow;
                 else throw new NotSupportedException();
             }
             set
             {
-                if (value == PrePoMax.Settings.ColorSpectrum.CoolWarm) _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.CoolWarm;
-                else if (value == PrePoMax.Settings.ColorSpectrum.Rainbow) _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.Rainbow;
+                if (value == ColorSpectrum.CoolWarm) _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.CoolWarm;
+                else if (value == ColorSpectrum.Rainbow) _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.Rainbow;
                 else throw new NotSupportedException();
             } 
         }

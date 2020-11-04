@@ -31,14 +31,14 @@ namespace PrePoMax.Forms
         [OrderedDisplayName(1, 10, "Create by/from")]
         [Description("Select the method for the creation of the reference point.")]
         [Id(1, 2)]
-        public string CreatedFrom
+        public FeReferencePointCreatedFrom CreatedFrom
         {
-            get { return _referencePoint.CreatedFrom.ToString(); }
+            get { return _referencePoint.CreatedFrom; }
             set
             {
-                if (Enum.TryParse(value, out FeReferencePointCreatedFrom createdFrom))
+                if (value != _referencePoint.CreatedFrom)
                 {
-                    _referencePoint.CreatedFrom = createdFrom;
+                    _referencePoint.CreatedFrom = value;
                     SetPropertiesVisibility();
                 }
             }
@@ -111,7 +111,6 @@ namespace PrePoMax.Forms
         {
             return _referencePoint;
         }
-
         public void PopululateDropDownLists(string[] nodeSetNames, string[] surfaceNames)
         {
             Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
@@ -122,25 +121,13 @@ namespace PrePoMax.Forms
             _numOfNodeSets = nodeSetNames.Length;
             _numOfSurfaces = surfaceNames.Length;
             //
-            CustomPropertyDescriptor cpd;
-            // CreatedFrom
-            cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(CreatedFrom));
-            cpd.StatandardValues.Clear();
-            cpd.StatandardValues.Add(new StandardValueAttribute(FeReferencePointCreatedFrom.Selection.ToString()));
-            if (_numOfNodeSets + _numOfSurfaces > 0)
-            {
-                cpd.StatandardValues.Add(new StandardValueAttribute(FeReferencePointCreatedFrom.BoundingBoxCenter.ToString()));
-                cpd.StatandardValues.Add(new StandardValueAttribute(FeReferencePointCreatedFrom.CenterOfGravity.ToString()));
-            }
-            //
             SetPropertiesVisibility();
         }
-       
         private void SetPropertiesVisibility()
         {
             DynamicCustomTypeDescriptor dctd = base.DynamicCustomTypeDescriptor;
             //
-            if (CreatedFrom == FeReferencePointCreatedFrom.Selection.ToString())
+            if (CreatedFrom == FeReferencePointCreatedFrom.Selection)
             {
                 dctd.GetProperty(nameof(RegionType)).SetIsBrowsable(false);
                 dctd.GetProperty(nameof(NodeSetName)).SetIsBrowsable(false);

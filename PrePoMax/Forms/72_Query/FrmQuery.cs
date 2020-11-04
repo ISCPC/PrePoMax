@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -73,13 +74,13 @@ namespace PrePoMax.Forms
                         _numNodesToSelect = -1;
                         break;
                     case ("Assembly"):
-                        _controller.SelectBy = vtkSelectBy.Off;
+                        _controller.SelectBy = vtkSelectBy.Default;
                         _controller.Selection.SelectItem = vtkSelectItem.None;
                         OutputAssemblyData();
                         _numNodesToSelect = -1;
                         break;
                     case ("Bounding box size"):
-                        _controller.SelectBy = vtkSelectBy.Off;
+                        _controller.SelectBy = vtkSelectBy.Default;
                         _controller.Selection.SelectItem = vtkSelectItem.None;
                         OutputBoundingBox();
                         _numNodesToSelect = -1;
@@ -102,7 +103,7 @@ namespace PrePoMax.Forms
                     default:
                         break;
                 }
-                _controller.ClearSelectionHistoryAndSelectionChanged();
+                _controller.ClearSelectionHistoryAndCallSelectionChanged();
             }
         }
         private void btnClose_Click(object sender, EventArgs e)
@@ -121,11 +122,15 @@ namespace PrePoMax.Forms
         {
             // This is called if some other form is shown to close all other forms
             // This is called after the form visibility changes
-            // The form was hidden 
-            if (!this.Visible)
+            if (this.Visible)
             {
-                _controller.SelectBy = vtkSelectBy.Off;
-                _controller.ClearSelectionHistoryAndSelectionChanged();
+                lvQueries.Items[0].Selected = true;
+            }
+            // The form was hidden 
+            else
+            {
+                _controller.SelectBy = vtkSelectBy.Default;
+                _controller.ClearSelectionHistory();
             }                
         }
 
@@ -139,6 +144,8 @@ namespace PrePoMax.Forms
             _controller = controller;
             lvQueries.HideSelection = false;
             lvQueries.SelectedIndices.Clear();
+            //
+            _controller.SetSelectByToOff();
         }
         //
         public void PickedIds(int[] ids)
@@ -168,7 +175,7 @@ namespace PrePoMax.Forms
                     // Three nodes
                     else if (ids.Length == 3) ThreeNodesPicked(ids[0], ids[1], ids[2]);
                     //
-                    _controller.ClearSelectionHistoryAndSelectionChanged();
+                    _controller.ClearSelectionHistoryAndCallSelectionChanged();
                     HighlightNodes();
                 }
             }
@@ -227,7 +234,7 @@ namespace PrePoMax.Forms
             Form_WriteDataToOutput(data);
             Form_WriteDataToOutput("");
             //
-            _controller.ClearSelectionHistoryAndSelectionChanged();
+            _controller.ClearSelectionHistoryAndCallSelectionChanged();
             //
             _controller.HighlightElement(id);
         }
@@ -267,7 +274,7 @@ namespace PrePoMax.Forms
             }
             Form_WriteDataToOutput("");
             //
-            _controller.ClearSelectionHistoryAndSelectionChanged();
+            _controller.ClearSelectionHistoryAndCallSelectionChanged();
             //
             _controller.HighlightItemsByGeometryEdgeIds(new int[] { geometryId }, false);
         }
@@ -307,7 +314,7 @@ namespace PrePoMax.Forms
             }
             Form_WriteDataToOutput("");
             //
-            _controller.ClearSelectionHistoryAndSelectionChanged();    // in order to prevent SHIFT ADD
+            _controller.ClearSelectionHistoryAndCallSelectionChanged();    // in order to prevent SHIFT ADD
             //
             _controller.HighlightItemsBySurfaceIds(new int[] { geometryId }, false);
         }
@@ -336,7 +343,7 @@ namespace PrePoMax.Forms
             Form_WriteDataToOutput(data);
             Form_WriteDataToOutput("");
             //
-            _controller.ClearSelectionHistoryAndSelectionChanged();
+            _controller.ClearSelectionHistoryAndCallSelectionChanged();
             //
             _controller.Highlight3DObjects(new object[] { part });
         }

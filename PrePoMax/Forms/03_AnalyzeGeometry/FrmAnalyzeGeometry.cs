@@ -61,6 +61,9 @@ namespace PrePoMax
         {
             if (this.Visible)
             {
+                // Disable selection
+                _controller.SetSelectByToOff();
+                //
                 if (_partNamesToAnalyze == null || _partNamesToAnalyze.Length == 0)
                     throw new CaeGlobals.CaeException("No parts were selected for analysis.");
                 //
@@ -94,6 +97,8 @@ namespace PrePoMax
                 float widthAfter = GetMaxLabelWidth();
                 float delta = widthAfter - widthBefore;
                 Width += (int)delta;
+                //
+                btnShow_Click(null, null);
             }
         }
         private void btnShow_Click(object sender, EventArgs e)

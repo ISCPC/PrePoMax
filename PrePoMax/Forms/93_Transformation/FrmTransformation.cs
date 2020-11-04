@@ -208,6 +208,10 @@ namespace PrePoMax.Forms
                 lvActiveTransformations.Select();
             }
             //
+            _controller.SetSelectByToOff();
+            //
+            _controller.ClearSelectionHistory();
+            //
             return true;
         }
         public void ApplyTransformation()
@@ -253,9 +257,8 @@ namespace PrePoMax.Forms
         {
             this.Enabled = true;
             //
-            _controller.SelectBy = vtkSelectBy.Off;
-            _controller.Selection.SelectItem = vtkSelectItem.None;
-            _controller.ClearSelectionHistoryAndSelectionChanged();
+            _controller.SetSelectByToOff();
+            _controller.ClearSelectionHistory();
             //
             if (ids != null && ids.Length == 1)
             {

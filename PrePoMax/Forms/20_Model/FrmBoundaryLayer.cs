@@ -74,7 +74,7 @@ namespace PrePoMax.Forms
             // Create
             _controller.CreateBoundaryLayerCommand(_viewBoundaryLayer.GeometryIds, _viewBoundaryLayer.Thickness);
             //
-            _controller.ClearSelectionHistoryAndSelectionChanged();
+            _controller.ClearSelectionHistoryAndCallSelectionChanged();
             // If all is successful close the ItemSetSelectionForm - except for OKAddNew
             if (!onOkAddNew) ItemSetDataEditor.SelectionForm.Hide();
         }
@@ -94,15 +94,15 @@ namespace PrePoMax.Forms
             _viewBoundaryLayer = null;
             propertyGrid.SelectedObject = null;
             //
-            _controller.SetSelectItemToGeometry();
-            //
             _viewBoundaryLayer = new ViewBoundaryLayer();
             _controller.Selection.Clear();
             //
             propertyGrid.SelectedObject = _viewBoundaryLayer;
             propertyGrid.Select();
             //
-            ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
+            SetSelectItem();
+            //
+            ShowHideSelectionForm();
             //
             return true;
         }
@@ -125,6 +125,14 @@ namespace PrePoMax.Forms
                 }
             }
             catch { }
+        }
+        private void ShowHideSelectionForm()
+        {
+            ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
+        }
+        private void SetSelectItem()
+        {
+            _controller.SetSelectItemToGeometry();
         }
         public void SelectionChanged(int[] ids)
         {

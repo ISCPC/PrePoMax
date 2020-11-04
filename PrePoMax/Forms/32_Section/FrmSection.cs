@@ -78,8 +78,6 @@ namespace PrePoMax.Forms
                 }
                 else throw new NotImplementedException();
                 //
-                SetSelectItem();
-                //
                 ShowHideSelectionForm();
                 //
                 propertyGrid.SelectedObject = itemTag;
@@ -95,13 +93,9 @@ namespace PrePoMax.Forms
             if (property == nameof(_viewSection.RegionType))
             {
                 ShowHideSelectionForm();
-                //
-                HighlightSection();
             }
-            else if (property == nameof(_viewSection.PartName) || property == nameof(_viewSection.ElementSetName))
-            {
-                HighlightSection();
-            }
+            //
+            HighlightSection();
             //
             base.OnPropertyGridPropertyValueChanged();
         }
@@ -238,8 +232,6 @@ namespace PrePoMax.Forms
             }
             _selectedPropertyGridItemChangedEventActive = true;
             //
-            SetSelectItem();
-            //
             ShowHideSelectionForm();
             //
             HighlightSection(); // must be here if called from the menu
@@ -331,6 +323,8 @@ namespace PrePoMax.Forms
         {
             try
             {
+                _controller.ClearSelectionHistory();
+                //
                 if (_viewSection == null) { }
                 else if (_viewSection is ViewSolidSection || _viewSection is ViewShellSection)
                 {
@@ -360,13 +354,19 @@ namespace PrePoMax.Forms
                 ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
             else
                 ItemSetDataEditor.SelectionForm.Hide();
+            //
+            SetSelectItem();
         }
         private void SetSelectItem()
         {
-            if (Section is null) { }
-            else if (Section is SolidSection) _controller.SetSelectItemToPart();
-            else if (Section is ShellSection) _controller.SetSelectItemToGeometry();
-            else throw new NotSupportedException();
+            if (Section != null && Section.RegionType == RegionTypeEnum.Selection)
+            {
+                if (Section is null) { }
+                else if (Section is SolidSection) _controller.SetSelectItemToPart();
+                else if (Section is ShellSection) _controller.SetSelectItemToGeometry();
+                else throw new NotSupportedException();
+            }
+            else _controller.SetSelectByToOff();
         }
         //
         public void SelectionChanged(int[] ids)

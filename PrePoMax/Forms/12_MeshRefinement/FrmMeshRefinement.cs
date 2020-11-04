@@ -160,7 +160,8 @@ namespace PrePoMax.Forms
         protected override bool OnPrepareForm(string stepName, string meshRefinementToEditName)
         {
             // To prevent the call to frmMain.itemForm_VisibleChanged when minimized
-            this.DialogResult = DialogResult.None;      
+            this.DialogResult = DialogResult.None;
+            //
             if (meshRefinementToEditName == null)
             {
                 btnOkAddNew.Visible = true;
@@ -178,9 +179,7 @@ namespace PrePoMax.Forms
             _viewFeMeshRefinement = null;
             propertyGrid.SelectedObject = null;
             _prevSelectionNodes = null;
-            _selectionNodeIds = null;
-            //
-            _controller.SetSelectItemToGeometry();
+            _selectionNodeIds = null;            
             //
             _meshRefinementNames.UnionWith(_controller.GetMeshRefinementNames());
             _meshRefinementToEditName = meshRefinementToEditName;
@@ -213,6 +212,8 @@ namespace PrePoMax.Forms
             // Show ItemSetDataForm
             ItemSetDataEditor.SelectionForm.ItemSetData = new ItemSetData(MeshRefinement.GeometryIds);
             ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
+            //
+            SetSelectItem();
             //
             HighlightMeshRefinement();
             //
@@ -269,6 +270,10 @@ namespace PrePoMax.Forms
             {
                 btnPreview.Enabled = true;
             }
+        }
+        private void SetSelectItem()
+        {
+            _controller.SetSelectItemToGeometry();
         }
         //
         public void SelectionChanged(int[] ids)

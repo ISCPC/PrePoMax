@@ -145,7 +145,6 @@ namespace PrePoMax.Forms
         }
         private void OnHide()
         {
-            _controller.SetSelectionToDefault();
             // Reset the number of selection nodes
             _controller.Selection.MaxNumberOfIds = -1;
             // Reset the hide on OK

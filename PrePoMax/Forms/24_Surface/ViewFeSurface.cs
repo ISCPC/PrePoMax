@@ -89,6 +89,8 @@ namespace PrePoMax.Forms
                 // Add node set names
                 _dctd.PopulateProperty(nameof(NodeSetName), nodeSetNames);
             }
+            //
+            SetPropertiesVisibility();
         }
         private void SetPropertiesVisibility()
         {

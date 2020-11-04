@@ -105,7 +105,7 @@ namespace PrePoMax
                         ItemSetDataEditor.ParentForm.DialogResult = this.DialogResult;
                     }
                     //
-                    _controller.SetSelectionToDefault();
+                    _controller.SetSelectByToDefault();
                 }
             }
             catch { }
@@ -168,7 +168,7 @@ namespace PrePoMax
             // sender != null                                                    
             // Visible = true - user action                                      
             if (!_initialSetup && sender != null && Visible && selectionTypeChanged)
-                _controller.ClearSelectionHistoryAndSelectionChanged();
+                _controller.ClearSelectionHistoryAndCallSelectionChanged();
             // Enable/disable Textboxes
             tbGeometryEdgeAngle.Enabled = rbGeometryEdgeAngle.Checked;
             tbGeometrySurfaceAngle.Enabled = rbGeometrySurfaceAngle.Checked;
@@ -210,7 +210,7 @@ namespace PrePoMax
                 SetSelectionAngle(tbSurfaceAngle);
             }
             else if (rbId.Checked) selectBy = vtkSelectBy.Id;
-            else selectBy = vtkSelectBy.Off;
+            else selectBy = vtkSelectBy.Default;
             // Set selection
             _controller.SelectBy = selectBy;
             // Set previous selection type
@@ -224,7 +224,7 @@ namespace PrePoMax
         }
         private void btnClearSelection_Click(object sender, EventArgs e)
         {
-            _controller.ClearSelectionHistoryAndSelectionChanged();
+            _controller.ClearSelectionHistoryAndCallSelectionChanged();
         }
         private void btnMoreLess_Click(object sender, EventArgs e)
         {

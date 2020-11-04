@@ -150,6 +150,8 @@ namespace PrePoMax.Forms
                 propertyGrid.Select();
             }
             //
+            _controller.SetSelectByToOff();
+            //
             return true;
         }
 

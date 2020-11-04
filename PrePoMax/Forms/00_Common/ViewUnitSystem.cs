@@ -23,23 +23,28 @@ namespace PrePoMax
         [DescriptionAttribute("Default length unit.")]
         [Id(1, 1)]
         public string LengthUnitAbbreviation { get { return _unitSystem.LengthUnitAbbreviation; } }
+        [CategoryAttribute("Base units")]
+        [OrderedDisplayName(1, 10, "Angle unit")]
+        [DescriptionAttribute("Default angle unit.")]
+        [Id(2, 1)]
+        public string AngleUnitAbbreviation { get { return _unitSystem.AngleUnitAbbreviation; } }
         //
         [CategoryAttribute("Base units")]
-        [OrderedDisplayName(1, 10, "Mass unit")]
+        [OrderedDisplayName(2, 10, "Mass unit")]
         [DescriptionAttribute("Default mass unit.")]
-        [Id(2, 1)]
+        [Id(3, 1)]
         public string MassUnitAbbreviation { get { return _unitSystem.MassUnitAbbreviation; } }
         //
         [CategoryAttribute("Base units")]
-        [OrderedDisplayName(2, 10, "Time unit")]
+        [OrderedDisplayName(3, 10, "Time unit")]
         [DescriptionAttribute("Default time unit.")]
-        [Id(3, 1)]
+        [Id(4, 1)]
         public string TimeUnitAbbreviation { get { return _unitSystem.TimeUnitAbbreviation; } }
         //
         [CategoryAttribute("Base units")]
-        [OrderedDisplayName(3, 10, "Temperature unit")]
+        [OrderedDisplayName(4, 10, "Temperature unit")]
         [DescriptionAttribute("Default temperature unit.")]
-        [Id(4, 1)]
+        [Id(5, 1)]
         public string TemperatureUnitAbbreviation { get { return _unitSystem.TemperatureUnitAbbreviation; } }
         // Derived units
         [CategoryAttribute("Derived units")]

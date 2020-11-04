@@ -301,6 +301,8 @@ namespace PrePoMax.Forms
                 rbLimitsCurrentFrame.Checked = false;
                 rbLimitsAllFrames.Checked = false;
             }
+            //
+            _controller.SetSelectByToOff();
         }
         private void OnHide()
         {

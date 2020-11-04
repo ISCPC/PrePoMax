@@ -125,16 +125,21 @@ namespace PrePoMax.Forms
         }
         protected override bool OnPrepareForm(string stepName, string sectionToEditName)
         {
-            _controller.ClearSelectionHistoryAndSelectionChanged();
+            // Clear
+            _controller.ClearSelectionHistoryAndCallSelectionChanged();
             _rotateParameters.Clear();
+            // Disable selection
+            _controller.SetSelectByToOff();
             // Get start point grid item
             GridItem gi = propertyGrid.EnumerateAllItems().First((item) =>
-                              item.PropertyDescriptor != null &&
-                              item.PropertyDescriptor.Name == "StartPointItemSet");
+                          item.PropertyDescriptor != null &&
+                          item.PropertyDescriptor.Name == "StartPointItemSet");
             // Select it
             gi.Select();
             //
             propertyGrid.Refresh();
+            //
+            HighlightNodes();
             //
             return true;
         }
@@ -150,10 +155,10 @@ namespace PrePoMax.Forms
         public void PickedIds(int[] ids)
         {
             this.Enabled = true;
-            //
-            _controller.SelectBy = vtkSelectBy.Off;
+            // Disable selection
+            _controller.SetSelectByToOff();
             _controller.Selection.SelectItem = vtkSelectItem.None;
-            _controller.ClearSelectionHistoryAndSelectionChanged();
+            _controller.ClearSelectionHistoryAndCallSelectionChanged();
             //
             if (ids != null && ids.Length == 1)
             {

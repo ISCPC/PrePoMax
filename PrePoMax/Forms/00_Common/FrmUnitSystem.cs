@@ -42,7 +42,7 @@ namespace PrePoMax.Forms
             //
             _selectedPropertyGridItemChangedEventActive = false;
             //
-            this.Height = 330 + 17 * 19;
+            this.Height = 330 + 18 * 19;
             //
             btnOkAddNew.Visible = false;
             btnCancel.Visible = false;
@@ -67,28 +67,28 @@ namespace PrePoMax.Forms
             // gbProperties
             // 
             this.gbProperties.Location = new System.Drawing.Point(12, 147);
-            this.gbProperties.Size = new System.Drawing.Size(310, 421);
+            this.gbProperties.Size = new System.Drawing.Size(310, 438);
             // 
             // propertyGrid
             // 
-            this.propertyGrid.Size = new System.Drawing.Size(298, 393);
+            this.propertyGrid.Size = new System.Drawing.Size(298, 410);
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(160, 574);
+            this.btnOK.Location = new System.Drawing.Point(160, 591);
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(241, 574);
+            this.btnCancel.Location = new System.Drawing.Point(241, 591);
             // 
             // btnOkAddNew
             // 
-            this.btnOkAddNew.Location = new System.Drawing.Point(79, 574);
+            this.btnOkAddNew.Location = new System.Drawing.Point(79, 591);
             // 
             // FrmUnitSystem
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.ClientSize = new System.Drawing.Size(334, 609);
+            this.ClientSize = new System.Drawing.Size(334, 626);
             this.Name = "FrmUnitSystem";
             this.Text = "Edit Unit System";
             this.gbType.ResumeLayout(false);
