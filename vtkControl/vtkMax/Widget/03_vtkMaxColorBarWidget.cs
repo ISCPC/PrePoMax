@@ -127,18 +127,17 @@ namespace vtkControl
             double boxHeight = sizeOfOne[1] + lineSpacing;
             double boxWidth = boxHeight / boxAspectRatio;
             double spacing = boxHeight * 0.5;
-            double verticalLineLength = boxWidth + spacing;
             double lineOffset = _textMapperLabel.GetTextProperty().GetLineOffset();
             // Footer
             double[] size1 = GenerateFooter(_padding, _padding);
             size1[1] += spacing;
             // Labels
-            double[] size2 = GenerateLabels(_padding + verticalLineLength + spacing, size1[1]);
+            double[] size2 = GenerateLabels(_padding + boxWidth + spacing, size1[1]);
             size2[1] += spacing;
             // Bar lines
             double offsetY = lineOffset - 0.3 / 7 * sizeOfOne[1];
-            GenerateBarBorders(_padding, offsetY + size1[1], boxWidth, boxHeight, verticalLineLength);
-            GenerateBarColors(_padding, offsetY + size1[1], boxWidth, boxHeight, verticalLineLength);
+            GenerateBarBorders(_padding, offsetY + size1[1], boxWidth, boxHeight);
+            GenerateBarColors(_padding, offsetY + size1[1], boxWidth, boxHeight);
             // Text
             double[] size3 = GenerateText(_padding, size2[1]);
             //
@@ -172,7 +171,7 @@ namespace vtkControl
             return new double[] { offsetX + size[0], offsetY + size[1] };
         }
         //
-        private void GenerateBarBorders(double offsetX, double offsetY, double boxWidth, double boxHeight, double verticalLineLength)
+        private void _GenerateBarBorders(double offsetX, double offsetY, double boxWidth, double boxHeight, double verticalLineLength)
         {
             vtkPoints colorBarPoints = vtkPoints.New();
             vtkCellArray colorBarLines = vtkCellArray.New();
@@ -212,7 +211,52 @@ namespace vtkControl
             //
             _colorBarBorderActor.GetPositionCoordinate().SetValue(offsetX, offsetY);
         }
-        private void GenerateBarColors(double offsetX, double offsetY, double boxWidth, double boxHeight, double verticalLineLength)
+        private void GenerateBarBorders(double offsetX, double offsetY, double boxWidth, double boxHeight)
+        {
+            vtkPoints colorBarPoints = vtkPoints.New();
+            vtkCellArray colorBarLines = vtkCellArray.New();
+            //
+            int numOfTableColors = _colors.Length;
+            //
+            colorBarPoints.SetNumberOfPoints(4 * numOfTableColors);
+            colorBarLines.SetNumberOfCells(4 * numOfTableColors);
+            //
+            double h;
+            //
+            for (int i = 0; i < numOfTableColors; i++)
+            {
+                h = i * boxHeight;
+                colorBarPoints.SetPoint(4 * i, 0, h + 2, 0);
+                colorBarPoints.SetPoint(4 * i + 1, boxWidth, h + 2, 0);
+                //
+                h += boxHeight;
+                colorBarPoints.SetPoint(4 * i + 2, 0, h - 2, 0);
+                colorBarPoints.SetPoint(4 * i + 3, boxWidth, h - 2, 0);
+                //
+                colorBarLines.InsertNextCell(2);
+                colorBarLines.InsertCellPoint(4 * i);
+                colorBarLines.InsertCellPoint(4 * i + 1);
+                //
+                colorBarLines.InsertNextCell(2);
+                colorBarLines.InsertCellPoint(4 * i + 2);
+                colorBarLines.InsertCellPoint(4 * i + 3);
+                //
+                colorBarLines.InsertNextCell(2);
+                colorBarLines.InsertCellPoint(4 * i);
+                colorBarLines.InsertCellPoint(4 * i + 2);
+                //
+                colorBarLines.InsertNextCell(2);
+                colorBarLines.InsertCellPoint(4 * i + 1);
+                colorBarLines.InsertCellPoint(4 * i + 3);
+            }
+            //
+            vtkPolyData colorBarPoly = _colorBarBorderMapper.GetInput();
+            colorBarPoly.SetPoints(colorBarPoints);
+            colorBarPoly.SetLines(colorBarLines);
+            //
+            _colorBarBorderActor.GetPositionCoordinate().SetValue(offsetX, offsetY);
+        }
+        private void GenerateBarColors(double offsetX, double offsetY, double boxWidth, double boxHeight)
         {
             vtkPoints colorBarPoints = vtkPoints.New();
             vtkCellArray colorBarPolygons = vtkCellArray.New();
@@ -229,12 +273,12 @@ namespace vtkControl
             for (int i = 0; i < numOfTableColors; i++)
             {
                 h = i * boxHeight;
-                colorBarPoints.SetPoint(4 * i + 0, 0, h, 0);
-                colorBarPoints.SetPoint(4 * i + 1, boxWidth, h, 0);
+                colorBarPoints.SetPoint(4 * i + 0, 0, h + 2, 0);
+                colorBarPoints.SetPoint(4 * i + 1, boxWidth, h + 2, 0);
                 //
                 h += boxHeight;
-                colorBarPoints.SetPoint(4 * i + 2, boxWidth, h, 0);
-                colorBarPoints.SetPoint(4 * i + 3, 0, h, 0);
+                colorBarPoints.SetPoint(4 * i + 2, boxWidth, h - 2, 0);
+                colorBarPoints.SetPoint(4 * i + 3, 0, h - 2, 0);
                 //
                 colorBarPolygons.InsertNextCell(4);
                 colorBarPolygons.InsertCellPoint(4 * i + 0);
