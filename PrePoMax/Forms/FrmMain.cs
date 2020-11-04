@@ -113,7 +113,7 @@ namespace PrePoMax
                 else if (view == ViewGeometryModelResults.Results)
                 {
                     _modelTree.SetResultsTab();
-                    InitializeWidgetPositions();
+                    InitializeResultWidgetPositions();
                     if (_controller.Results != null) UpdateUnitSystem(_controller.Results.UnitSystem);
                 }
                 else throw new NotSupportedException();
@@ -5196,15 +5196,12 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.ShowActors, actorNames, updateColorContours);
         }
-        // Settings
-        public void InitializeWidgetPositions()
-        {
-            InvokeIfRequired(_vtk.InitializeWidgetPositions);
-        }
+        // Settings                                             
         public void SetCoorSysVisibility(bool visibility)
         {
             InvokeIfRequired(_vtk.SetCoorSysVisibility, visibility);
         }
+        // Scale bar
         public void SetScaleWidgetVisibility(bool visibility)
         {
             InvokeIfRequired(_vtk.SetScaleWidgetVisibility, visibility);
@@ -5216,9 +5213,14 @@ namespace PrePoMax
             //
             InvokeIfRequired(_vtk.SetScaleWidgetUnit, unit);
         }
-        public void SetColorSpectrum(vtkControl.vtkMaxColorSpectrum colorSpectrum)
+        // Scalar bar
+        public void InitializeResultWidgetPositions()
         {
-            InvokeIfRequired(_vtk.SetColorSpectrum, colorSpectrum);
+            InvokeIfRequired(_vtk.InitializeResultWidgetPositions);
+        }
+        public void SetScalarBarColorSpectrum(vtkControl.vtkMaxColorSpectrum colorSpectrum)
+        {
+            InvokeIfRequired(_vtk.SetScalarBarColorSpectrum, colorSpectrum);
         }
         public void SetScalarBarNumberFormat(string numberFormat)
         {
@@ -5228,23 +5230,33 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.SetScalarBarText, fieldName, componentName, unitAbbreviation, minMaxType);
         }
-        public void SetShowMinValueLocation(bool show)
-        {
-            InvokeIfRequired(() => _vtk.ShowMinValueLocation = show);
-        }
-        public void SetShowMaxValueLocation(bool show)
-        {
-            InvokeIfRequired(() => _vtk.ShowMaxValueLocation = show);
-        }
-        
         public void DrawLegendBackground(bool drawBackground)
         {
-            InvokeIfRequired(_vtk.DrawLegendBackground, drawBackground);
+            InvokeIfRequired(_vtk.DrawScalarBarBackground, drawBackground);
         }
         public void DrawLegendBorder(bool drawBorder)
         {
-            InvokeIfRequired(_vtk.DrawLegendBorder, drawBorder);
+            InvokeIfRequired(_vtk.DrawScalarBarBorder, drawBorder);
         }
+        // Color bar
+        public void InitializeColorBarWidgetPosition()
+        {
+            InvokeIfRequired(_vtk.InitializeColorBarWidgetPosition);
+        }
+        public void SetColorBarColorsAndLabels(Color[] colors, string[] labels)
+        {
+            InvokeIfRequired(_vtk.SetColorBarColorsAndLabels, colors, labels);
+            
+        }
+        public void DrawColorBarBackground(bool drawBackground)
+        {
+            InvokeIfRequired(_vtk.DrawColorBarBackground, drawBackground);
+        }
+        public void DrawColorBarBorder(bool drawBorder)
+        {
+            InvokeIfRequired(_vtk.DrawColorBarBorder, drawBorder);
+        }
+        // Status bar
         public void DrawStatusBlockBackground(bool drawBackground)
         {
             InvokeIfRequired(_vtk.DrawStatusBlockBackground, drawBackground);
@@ -5253,13 +5265,13 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.DrawStatusBlockBorder, drawBorder);
         }
-        //
         public void SetStatusBlock(string name, DateTime dateTime, float analysisTime, string unit,
                                    float scaleFactor, vtkControl.DataFieldType fieldType, int modeNumber)
         {
             InvokeIfRequired(_vtk.SetStatusBlock, name, dateTime, analysisTime, unit, scaleFactor,
                              fieldType, modeNumber);
         }
+        // General
         public void SetBackground(bool gradient, Color topColor, Color bottomColor, bool redraw)
         {
             InvokeIfRequired(_vtk.SetBackground, gradient, topColor, bottomColor, redraw);
@@ -5272,6 +5284,7 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.SetSmoothing, pointSmoothing, lineSmoothing, redraw);
         }
+        // Highlight
         public void SetHighlightColor(Color primaryHighlightColor, Color secundaryHighlightColor)
         {
             InvokeIfRequired(_vtk.SetHighlightColor, primaryHighlightColor, secundaryHighlightColor);
@@ -5280,11 +5293,20 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.SetMouseHighlightColor, mousehighlightColor);
         }
+        // Symbols
         public void SetDrawSymbolEdges(bool drawSilhouettes)
         {
             InvokeIfRequired(_vtk.SetDrawSymbolEdges, drawSilhouettes);
         }
-
+        // Min / Max
+        public void SetShowMinValueLocation(bool show)
+        {
+            InvokeIfRequired(() => _vtk.ShowMinValueLocation = show);
+        }
+        public void SetShowMaxValueLocation(bool show)
+        {
+            InvokeIfRequired(() => _vtk.ShowMaxValueLocation = show);
+        }
         //
         public void CropPartWithCylinder(string partName, double r, string fileName)
         {

@@ -121,6 +121,8 @@ namespace PrePoMax
             {
                 _showFaceOrientation = value;
                 //
+                if (_showFaceOrientation) _form.InitializeColorBarWidgetPosition();
+                //
                 if (_currentView == ViewGeometryModelResults.Geometry) DrawGeometry(false);
                 else if (_currentView == ViewGeometryModelResults.Model) DrawMesh(false);
                 else if (_currentView == ViewGeometryModelResults.Results) DrawResults(false); // Also calls Clear
@@ -4801,6 +4803,9 @@ namespace PrePoMax
             _form.SetHighlightColor(ps.PrimaryHighlightColor, ps.SecundaryHighlightColor);
             _form.SetMouseHighlightColor(ps.MouseHighlightColor);
             _form.SetDrawSymbolEdges(ps.DrawSymbolEdges);
+            //
+            _form.DrawColorBarBackground(ps.ColorBarBackgroundType == WidgetBackgroundType.White);
+            _form.DrawColorBarBorder(ps.ColorBarDrawBorder);
             // Job settings
             if (_jobs != null)
             {
@@ -6391,6 +6396,7 @@ namespace PrePoMax
                         CurrentView = ViewGeometryModelResults.Geometry;
                         //
                         DrawAllGeomParts();
+                        ShowFaceOrientationLegend();
                         //
                         Octree.Plane plane = _sectionViewPlanes[_currentView];
                         if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
@@ -6491,6 +6497,7 @@ namespace PrePoMax
                             //
                             DrawAllMeshParts();
                             DrawSymbols();
+                            ShowFaceOrientationLegend();
                             //
                             Octree.Plane plane = _sectionViewPlanes[_currentView];
                             if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
@@ -6625,6 +6632,16 @@ namespace PrePoMax
             {
                 // do not throw an error - it might cancel a procedure
             }
+        }
+        //
+        private void ShowFaceOrientationLegend()
+        {
+            // Face orientation legend
+            PreSettings preSettings = (PreSettings)_settings.Pre;
+            if (_showFaceOrientation) _form.SetColorBarColorsAndLabels(new Color[] { preSettings.FrontFaceColor,
+                                                                                   preSettings.BackFaceColor},
+                                                                       new string[] { "Front face", "Back face" });
+            //
         }
         // Reference points
         public void DrawAllReferencePoints()
@@ -8580,7 +8597,7 @@ namespace PrePoMax
             //
             SetStatusBlock();
             //
-            _form.InitializeWidgetPositions(); // reset the widget position after setting the status block content
+            _form.InitializeResultWidgetPositions(); // reset the widget position after setting the status block content
             //
             foreach (var entry in _results.Mesh.Parts)
             {
@@ -8866,7 +8883,7 @@ namespace PrePoMax
                 LegendSettings legendSettings = _settings.Legend;
                 StatusBlockSettings statusBlockSettings = _settings.StatusBlock;
                 // Legend settings
-                _form.SetColorSpectrum(legendSettings.ColorSpectrum);
+                _form.SetScalarBarColorSpectrum(legendSettings.ColorSpectrum);
                 _form.SetScalarBarText(_currentFieldData.Name, _currentFieldData.Component,
                                        GetCurrentResultsUnitAbbreviation(),
                                        legendSettings.ColorSpectrum.MinMaxType.ToString());

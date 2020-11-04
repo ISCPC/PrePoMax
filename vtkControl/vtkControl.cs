@@ -37,6 +37,7 @@ namespace vtkControl
         private vtkMaxScaleWidget _scaleWidget;
         private vtkLookupTable _lookupTable;
         private vtkMaxScalarBarWidget _scalarBarWidget;
+        private vtkMaxColorBarWidget _colorBarWidget;
         private vtkMaxStatusBlockWidget _statusBlockWidget;
         private vtkInteractorStyleControl _style;
         private bool _drawCoorSys;
@@ -1665,6 +1666,16 @@ namespace vtkControl
             // Scalar bar
             InitializeScalarBar();
 
+            // Color bar
+            _colorBarWidget = new vtkMaxColorBarWidget();
+            _colorBarWidget.SetInteractor(_renderer, _renderWindowInteractor);
+            _colorBarWidget.SetTextProperty(CreateNewTextProperty());
+            _colorBarWidget.SetPadding(15);
+            _colorBarWidget.VisibilityOn();
+            _colorBarWidget.BackgroundVisibilityOn();
+            _colorBarWidget.BorderVisibilityOn();
+            _colorBarWidget.SetBackgroundColor(1, 1, 1);
+
 
             // Status block
             _statusBlockWidget = new vtkMaxStatusBlockWidget();
@@ -1737,11 +1748,6 @@ namespace vtkControl
             _scalarBarWidget.MouseDoubleClick += widget_ShowPostSettings;
         }
 
-        public void InitializeWidgetPositions()
-        {
-            _scalarBarWidget.SetTopLeftPosition(20, 20);
-            _statusBlockWidget.SetTopLeftPosition(Width - _statusBlockWidget.GetWidth() - 20, 20);
-        }
         private void Timer_Tick(object sender, EventArgs e)
         {
             ((Timer)sender).Enabled = false;
@@ -4193,6 +4199,7 @@ namespace vtkControl
                 else _coorSys.SetEnabled(0);
             }
         }
+        // Scale bar
         public void SetScaleWidgetVisibility(bool visibility)
         {
             if (visibility) _scaleWidget.VisibilityOn();
@@ -4204,7 +4211,13 @@ namespace vtkControl
             //
             Invalidate();
         }
-        public void SetColorSpectrum(vtkMaxColorSpectrum colorSpectrum)
+        // Scalar bar
+        public void InitializeResultWidgetPositions()
+        {
+            _scalarBarWidget.SetTopLeftPosition(20, 20);
+            _statusBlockWidget.SetTopLeftPosition(Width - _statusBlockWidget.GetWidth() - 20, 20);
+        }
+        public void SetScalarBarColorSpectrum(vtkMaxColorSpectrum colorSpectrum)
         {
             _colorSpectrum.DeepCopy(colorSpectrum);
             //
@@ -4222,6 +4235,17 @@ namespace vtkControl
             //
             UpdateScalarFormatting();
         }
+        public void DrawScalarBarBackground(bool drawBackground)
+        {
+            _scalarBarWidget.SetBackgroundColor(1, 1, 1);
+            if (drawBackground) _scalarBarWidget.BackgroundVisibilityOn();
+            else _scalarBarWidget.BackgroundVisibilityOff();
+        }
+        public void DrawScalarBarBorder(bool drawBorder)
+        {
+            if (drawBorder) _scalarBarWidget.BorderVisibilityOn();
+            else _scalarBarWidget.BorderVisibilityOff();
+        }
         private string GetUnitAbbreviation()
         {
             if (_scalarBarWidget.GetVisibility() == 0) return "";
@@ -4231,17 +4255,32 @@ namespace vtkControl
             else unitAbbreviation = " " + unitAbbreviation;
             return unitAbbreviation;
         }
-        public void DrawLegendBackground(bool drawBackground)
+        // Color bar
+        public void InitializeColorBarWidgetPosition()
         {
-            _scalarBarWidget.SetBackgroundColor(1, 1, 1);
-            if (drawBackground) _scalarBarWidget.BackgroundVisibilityOn();
-            else _scalarBarWidget.BackgroundVisibilityOff();
+            _colorBarWidget.SetTopLeftPosition(20, 20);
         }
-        public void DrawLegendBorder(bool drawBorder)
+        public void SetColorBarColorsAndLabels(Color[] colors, string[] labels)
         {
-            if (drawBorder) _scalarBarWidget.BorderVisibilityOn();
-            else _scalarBarWidget.BorderVisibilityOff();
+            _colorBarWidget.SetColorsAndLabels(colors, labels);
+            _colorBarWidget.VisibilityOn();
         }
+        public void DrawColorBarBackground(bool drawBackground)
+        {
+            _colorBarWidget.SetBackgroundColor(1, 1, 1);
+            if (drawBackground) _colorBarWidget.BackgroundVisibilityOn();
+            else _colorBarWidget.BackgroundVisibilityOff();
+        }
+        public void DrawColorBarBorder(bool drawBorder)
+        {
+            if (drawBorder) _colorBarWidget.BorderVisibilityOn();
+            else _colorBarWidget.BorderVisibilityOff();
+        }
+        public void HideColorBar()
+        {
+            _colorBarWidget.VisibilityOff();
+        }
+        // Status bar
         public void DrawStatusBlockBackground(bool drawBackground)
         {
             _statusBlockWidget.SetBackgroundColor(1, 1, 1);
@@ -4267,6 +4306,7 @@ namespace vtkControl
             _statusBlockWidget.IncrementNumber = incrementNumber;
             _statusBlockWidget.VisibilityOn();
         }
+        // General
         public void SetBackground(bool gradient, Color topColor, Color bottomColor, bool redraw)
         {
             if (_renderer != null)
@@ -4333,6 +4373,7 @@ namespace vtkControl
             
             if (redraw) this.Invalidate();
         }
+        // Highlight
         public void SetHighlightColor(Color primaryHighlightColor, Color secundaryHighlightColor)
         {
             _primaryHighlightColor = primaryHighlightColor;
@@ -4355,6 +4396,7 @@ namespace vtkControl
             Globals.CurrentMouseHighlightColor = mousehighlightColor;
             Globals.Initialize();
         }
+        // Symbols
         public void SetDrawSymbolEdges(bool drawSymbolEdges)
         {
             _drawSymbolEdges = drawSymbolEdges;
@@ -5055,6 +5097,7 @@ namespace vtkControl
             _animationFrameData = new vtkMaxAnimationFrameData();
             //
             if (_scalarBarWidget != null) _scalarBarWidget.VisibilityOff();
+            if (_colorBarWidget != null) _colorBarWidget.VisibilityOff();
             if (_statusBlockWidget != null) _statusBlockWidget.VisibilityOff();
             if (_minValueWidget != null) _minValueWidget.VisibilityOff();
             if (_maxValueWidget != null) _maxValueWidget.VisibilityOff();

@@ -50,7 +50,7 @@
             this.gbProperties.Controls.Add(this.propertyGrid);
             this.gbProperties.Location = new System.Drawing.Point(12, 12);
             this.gbProperties.Name = "gbProperties";
-            this.gbProperties.Size = new System.Drawing.Size(710, 408);
+            this.gbProperties.Size = new System.Drawing.Size(710, 433);
             this.gbProperties.TabIndex = 0;
             this.gbProperties.TabStop = false;
             this.gbProperties.Text = "Data";
@@ -67,7 +67,7 @@
             this.lvSettings.MultiSelect = false;
             this.lvSettings.Name = "lvSettings";
             this.lvSettings.ShowGroups = false;
-            this.lvSettings.Size = new System.Drawing.Size(175, 380);
+            this.lvSettings.Size = new System.Drawing.Size(175, 405);
             this.lvSettings.TabIndex = 4;
             this.lvSettings.UseCompatibleStateImageBehavior = false;
             this.lvSettings.View = System.Windows.Forms.View.List;
@@ -84,7 +84,7 @@
             this.propertyGrid.LineColor = System.Drawing.SystemColors.Control;
             this.propertyGrid.Location = new System.Drawing.Point(187, 22);
             this.propertyGrid.Name = "propertyGrid";
-            this.propertyGrid.Size = new System.Drawing.Size(517, 380);
+            this.propertyGrid.Size = new System.Drawing.Size(517, 405);
             this.propertyGrid.TabIndex = 3;
             this.propertyGrid.ToolbarVisible = false;
             this.propertyGrid.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.propertyGrid_PropertyValueChanged);
@@ -107,7 +107,7 @@
             // btnOK
             // 
             this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOK.Location = new System.Drawing.Point(485, 426);
+            this.btnOK.Location = new System.Drawing.Point(485, 451);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 14;
@@ -119,7 +119,7 @@
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(647, 426);
+            this.btnCancel.Location = new System.Drawing.Point(647, 451);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 12;
@@ -130,7 +130,7 @@
             // btnApply
             // 
             this.btnApply.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnApply.Location = new System.Drawing.Point(566, 426);
+            this.btnApply.Location = new System.Drawing.Point(566, 451);
             this.btnApply.Name = "btnApply";
             this.btnApply.Size = new System.Drawing.Size(75, 23);
             this.btnApply.TabIndex = 13;
@@ -142,7 +142,7 @@
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(734, 461);
+            this.ClientSize = new System.Drawing.Size(734, 486);
             this.Controls.Add(this.btnApply);
             this.Controls.Add(this.btnOK);
             this.Controls.Add(this.btnCancel);
@@ -150,7 +150,7 @@
             this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.MinimumSize = new System.Drawing.Size(750, 500);
+            this.MinimumSize = new System.Drawing.Size(750, 525);
             this.Name = "FrmSettings";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
