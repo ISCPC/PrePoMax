@@ -143,6 +143,8 @@ namespace PrePoMax.Forms
             UpdateHighlightFromTree?.Invoke();
             // Hide preview button during regeneartion 
             btnPreview.Visible = Visible && !Modal;
+            // Disable selection
+            if (Visible) _controller.SetSelectByToOff();
         }
 
 
@@ -159,11 +161,7 @@ namespace PrePoMax.Forms
         }
 
 
-        // Methods                                                                                                                  
-        public bool PrepareForm(string stepName, string partToEditName)
-        {
-            return OnPrepareForm(stepName, partToEditName);
-        }
+        // Methods                                                                                                                         
         private void tsmiResetAll_Click(object sender, EventArgs e)
         {
             MeshingParameters = _defaultMeshingParameters;

@@ -198,7 +198,11 @@ namespace PrePoMax.Forms
         // IFormBase
         public bool PrepareForm(string stepName, string partToEditName)
         {
-            _controller.ClearSelectionHistoryAndSelectionChanged();
+            // Clear selection
+            _controller.ClearSelectionHistoryAndCallSelectionChanged();
+            // Disable selection
+            _controller.SetSelectByToOff();
+            //
             _sectionViewParameters.Clear();
             // Get start point grid item
             GridItem gi = propertyGrid.EnumerateAllItems().First((item) =>
@@ -254,9 +258,9 @@ namespace PrePoMax.Forms
             if (selectionFinished)
             {
                 this.Enabled = true;
-                _controller.SelectBy = vtkSelectBy.Off;
+                _controller.ClearSelectionHistoryAndCallSelectionChanged();
+                _controller.SetSelectByToOff();
                 _controller.Selection.SelectItem = vtkSelectItem.None;
-                _controller.ClearSelectionHistoryAndSelectionChanged();
                 //
                 PointOrNormalChanged();
                 //

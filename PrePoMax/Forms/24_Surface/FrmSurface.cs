@@ -58,19 +58,22 @@ namespace PrePoMax.Forms
         // Overrides                                                                                                                
         protected override void OnPropertyGridPropertyValueChanged()
         {
-            string value = (string)propertyGrid.SelectedGridItem.Value.ToString();
+            string property = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
             //
-            if (value == FeSurfaceCreatedFrom.Selection.ToString())
+            if (property == nameof(_viewSurface.CreateSurfaceFrom))
             {
-                ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
+                ShowHideSelectionForm();
+                //
                 HighlightSurface();
             }
-            else if (value == FeSurfaceCreatedFrom.NodeSet.ToString())
+            else if (property == nameof(_viewSurface.NodeSetName))
             {
-                ItemSetDataEditor.SelectionForm.Hide();
                 HighlightSurface();
             }
-            else if (value == _viewSurface.NodeSetName) HighlightSurface();
+            else if (property == nameof(_viewSurface.SurfaceType))
+            {
+                UpdateSurfaceArea();
+            }
             //
             base.OnPropertyGridPropertyValueChanged();
         }
@@ -135,8 +138,6 @@ namespace PrePoMax.Forms
             _prevSelectionNodes = null;
             _selectionNodeIds = null;
             //
-            _controller.SetSelectItemToSurface();
-            //
             _allExistingNames.UnionWith(_controller.GetAllMeshEntityNames());
             _surfaceToEditName = surfaceToEditName;
             //
@@ -179,6 +180,8 @@ namespace PrePoMax.Forms
                 ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
             }
             //
+            SetSelectItem();
+            //
             HighlightSurface();
             //
             return true;
@@ -196,33 +199,26 @@ namespace PrePoMax.Forms
             {
                 UpdateSurfaceArea();
                 //
-                if (_controller != null)
+                if (Surface.CreatedFrom == FeSurfaceCreatedFrom.NodeSet && Surface.CreatedFromNodeSetName != null &&
+                    _controller.GetAllNodeSetNames().Contains(Surface.CreatedFromNodeSetName))
                 {
-                    if (Surface.CreatedFrom == FeSurfaceCreatedFrom.Selection)
-                    {
-                        // Surface.CreationData is set to null when the CreatedFrom is changed
-                        if (Surface.CreationData != null)
-                            _controller.Selection = Surface.CreationData.DeepClone(); // deep copy to not clear
-                    }
-                    else if (Surface.CreatedFrom == FeSurfaceCreatedFrom.NodeSet && Surface.CreatedFromNodeSetName != null)
-                    {
-                        _controller.SetSelectItemToNode();
-                        //
-                        if (_controller.GetUserNodeSetNames().Contains(Surface.CreatedFromNodeSetName))
-                        {
-                            int[] ids = _controller.GetNodeSet(Surface.CreatedFromNodeSetName).Labels;
-                            SelectionNodeIds selectionNode = new SelectionNodeIds(vtkSelectOperation.None, false, ids);
-                            _controller.AddSelectionNode(selectionNode, true, false);
-                        }
-                    }
-                    _controller.HighlightSelection();
+                    _controller.Highlight3DObjects(new object[] { Surface.CreatedFromNodeSetName });
                 }
+                else if (Surface.CreatedFrom == FeSurfaceCreatedFrom.Selection)
+                {
+                    SetSelectItem();
+                    //
+                    if (Surface.CreationData != null)
+                    {
+                        _controller.Selection = Surface.CreationData.DeepClone(); // deep copy to not clear
+                        _controller.HighlightSelection();
+                    }
+                    // Clear possible highlight from part/element set
+                    else _controller.ClearSelectionHistory();
+                }
+                else throw new NotSupportedException();
             }
             catch { }
-            finally 
-            {
-                _controller.SetSelectItemToSurface();
-            }
         }
         private void UpdateSurfaceArea()
         {
@@ -241,6 +237,22 @@ namespace PrePoMax.Forms
             catch { }
         }
         //
+        private void ShowHideSelectionForm()
+        {
+            if (Surface != null && Surface.CreatedFrom == FeSurfaceCreatedFrom.Selection)
+                ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
+            else
+                ItemSetDataEditor.SelectionForm.Hide();
+            //
+            SetSelectItem();
+        }
+        private void SetSelectItem()
+        {
+            if (Surface.CreatedFrom == FeSurfaceCreatedFrom.Selection)
+                _controller.SetSelectItemToSurface();
+            else
+                _controller.SetSelectByToOff();
+        }
         public void SelectionChanged(int[] ids)
         {
             if (Surface.CreatedFrom == FeSurfaceCreatedFrom.Selection)

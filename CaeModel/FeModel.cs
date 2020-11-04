@@ -395,7 +395,7 @@ namespace CaeModel
                 }
                 else if (entry.Value.RegionType == RegionTypeEnum.ElementSetName)
                 {
-                    if (entry.Value is SolidSection || entry.Value is ShellSection)
+                    if (entry.Value is SolidSection)
                     {
                         FeElementSet elementSet = _mesh.ElementSets[entry.Value.RegionName];
                         if (elementSet.CreatedFromParts)
@@ -404,6 +404,16 @@ namespace CaeModel
                             foreach (var partName in partNames) elementIds.UnionWith(_mesh.Parts[partName].Labels);
                         }
                         else  elementIds.UnionWith(elementSet.Labels);
+                    }
+                    else if (entry.Value is ShellSection)
+                    {
+                        FeElementSet elementSet = _mesh.ElementSets[entry.Value.RegionName];
+                        //if (elementSet.CreationData.SelectItem == vtkSelectItem.Geometry)
+                        //{
+                        //    elementIds.UnionWith(_mesh.GetIdsFromGeometryIds(elementSet.CreationIds, vtkSelectItem.Element));
+                        //}
+                        //else
+                        elementIds.UnionWith(elementSet.Labels);
                     }
                     else throw new NotSupportedException();
                 }

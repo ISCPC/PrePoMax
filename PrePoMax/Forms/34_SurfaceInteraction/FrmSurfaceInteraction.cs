@@ -278,6 +278,8 @@ namespace PrePoMax.Forms
                 }
             }
             //
+            _controller.SetSelectByToOff();
+            //
             return true;
         }
         private void ClearControls()

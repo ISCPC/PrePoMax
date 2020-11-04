@@ -56,9 +56,26 @@ namespace PrePoMax.Forms
             this.cmsPropertyGrid.SuspendLayout();
             this.SuspendLayout();
             // 
+            // gbProperties
+            // 
+            this.gbProperties.Size = new System.Drawing.Size(310, 362);
+            // 
             // propertyGrid
             // 
             this.propertyGrid.ContextMenuStrip = this.cmsPropertyGrid;
+            this.propertyGrid.Size = new System.Drawing.Size(298, 334);
+            // 
+            // btnOK
+            // 
+            this.btnOK.Location = new System.Drawing.Point(160, 476);
+            // 
+            // btnCancel
+            // 
+            this.btnCancel.Location = new System.Drawing.Point(241, 476);
+            // 
+            // btnOkAddNew
+            // 
+            this.btnOkAddNew.Location = new System.Drawing.Point(79, 476);
             // 
             // cmsPropertyGrid
             // 
@@ -77,7 +94,7 @@ namespace PrePoMax.Forms
             // FrmConstraint
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.ClientSize = new System.Drawing.Size(334, 461);
+            this.ClientSize = new System.Drawing.Size(334, 511);
             this.Name = "FrmConstraint";
             this.Text = "Edit Constraint";
             this.Controls.SetChildIndex(this.gbProperties, 0);
@@ -107,27 +124,18 @@ namespace PrePoMax.Forms
                 propertyGrid.SelectedObject = itemTag;
                 propertyGrid.Select();
                 //
-                SetSelectItem();
-                //
                 ShowHideSelectionForm();
                 //
                 HighlightConstraint();
                 // Context menu
                 if (propertyGrid.SelectedObject is ViewRigidBody vrb) propertyGrid.ContextMenuStrip = null;
+                // Swap Master/Slave
                 else if (propertyGrid.SelectedObject is ViewTie vt) propertyGrid.ContextMenuStrip = cmsPropertyGrid;
             }
         }
         protected override void OnPropertyGridSelectedGridItemChanged()
         {
-            if (propertyGrid.SelectedGridItem.PropertyDescriptor == null) return;
-            //
-            string property = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
-            //
-            if (_viewConstraint is ViewRigidBody vrb && property == nameof(vrb.SlaveRegionType)) ShowHideSelectionForm();
-            else if (_viewConstraint is ViewTie vtie)
-            {
-                ShowHideSelectionForm();
-            }
+            ShowHideSelectionForm();
             //
             HighlightConstraint();
             //
@@ -279,8 +287,6 @@ namespace PrePoMax.Forms
             }
             _selectedPropertyGridItemChangedEventActive = true;
             //
-            SetSelectItem();
-            //
             ShowHideSelectionForm();
             //
             HighlightConstraint(); // must be here if called from the menu
@@ -351,22 +357,26 @@ namespace PrePoMax.Forms
                     // Master
                     _controller.Highlight3DObjects(new object[] { rb.ReferencePointName });
                     // Slave
-                    HighlightRegion(rb.SlaveRegionType, rb.SlaveRegionName, rb.CreationData, false, true);                  // slave
+                    HighlightRegion(rb.SlaveRegionType, rb.SlaveRegionName, rb.CreationData, false, true);
                 }
                 else if (Constraint is Tie tie)
                 {
                     if (property == nameof(ViewTie.MasterRegionType))
                     {
-                        HighlightRegion(tie.MasterRegionType, tie.MasterRegionName, tie.MasterCreationData, true, false);   // master
+                        // Master
+                        HighlightRegion(tie.MasterRegionType, tie.MasterRegionName, tie.MasterCreationData, true, false);
                     }
                     else if(property == nameof(ViewTie.SlaveRegionType))
                     {
-                        HighlightRegion(tie.SlaveRegionType, tie.SlaveRegionName, tie.SlaveCreationData, true, true);       // slave
+                        // Slave
+                        HighlightRegion(tie.SlaveRegionType, tie.SlaveRegionName, tie.SlaveCreationData, true, true);
                     }
                     else
                     {
-                        HighlightRegion(tie.MasterRegionType, tie.MasterRegionName, tie.MasterCreationData, true, false);   // master
-                        HighlightRegion(tie.SlaveRegionType, tie.SlaveRegionName, tie.SlaveCreationData, false, true);      // slave
+                        // Master
+                        HighlightRegion(tie.MasterRegionType, tie.MasterRegionName, tie.MasterCreationData, true, false);
+                        // Slave
+                        HighlightRegion(tie.SlaveRegionType, tie.SlaveRegionName, tie.SlaveCreationData, false, true);
                     }
                 }
                 else throw new NotSupportedException();
@@ -391,7 +401,6 @@ namespace PrePoMax.Forms
         }
         private void ShowHideSelectionForm()
         {
-            //
             if (propertyGrid.SelectedGridItem == null || propertyGrid.SelectedGridItem.PropertyDescriptor == null) return;
             //
             string property = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
@@ -411,12 +420,31 @@ namespace PrePoMax.Forms
                 else ItemSetDataEditor.SelectionForm.Hide();
             }
             else ItemSetDataEditor.SelectionForm.Hide();
+            //
+            SetSelectItem();
         }
         private void SetSelectItem()
         {
+            if (propertyGrid.SelectedGridItem == null || propertyGrid.SelectedGridItem.PropertyDescriptor == null) return;
+            //
+            string property = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
+            //
             if (Constraint == null) { }
-            else if (Constraint is RigidBody) _controller.SetSelectItemToGeometry();
-            else if (Constraint is Tie) _controller.SetSelectItemToSurface();
+            else if (Constraint is RigidBody rb)
+            {
+                if (rb.RegionType == RegionTypeEnum.Selection)
+                    _controller.SetSelectItemToGeometry();
+                else
+                    _controller.SetSelectByToOff();
+            }
+            else if (Constraint is Tie tie)
+            {
+                if ((tie.MasterRegionType == RegionTypeEnum.Selection && property == nameof(ViewTie.MasterRegionType)) ||
+                    (tie.SlaveRegionType == RegionTypeEnum.Selection  && property == nameof(ViewTie.SlaveRegionType)))
+                    _controller.SetSelectItemToSurface();
+                else
+                    _controller.SetSelectByToOff();
+            }
             else throw new NotSupportedException();
         }
         private void ConstraintInternal(bool toInternal)

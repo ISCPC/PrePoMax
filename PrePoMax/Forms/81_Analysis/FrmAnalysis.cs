@@ -42,7 +42,6 @@ namespace PrePoMax.Forms
             //
             propertyGrid.SetParent(this);   // for the Tab key to work
             propertyGrid.SetLabelColumnWidth(_labelRatio);
-             
         }
 
 
@@ -121,6 +120,8 @@ namespace PrePoMax.Forms
             //
             propertyGrid.SelectedObject = _viewJob;
             propertyGrid.Select();
+            //
+            _controller.SetSelectByToOff();
             //
             return true;
         }

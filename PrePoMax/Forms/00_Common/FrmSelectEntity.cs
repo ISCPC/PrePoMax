@@ -180,7 +180,10 @@ namespace PrePoMax.Forms
         public void PrepareForm(string title, bool multiselect, NamedClass[] entitiesToSelect, string[] preSelectedEntities,
                                 string stepName = null)
         {
-            this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
+            // Prevent the call to frmMain.itemForm_VisibleChanged when minimized
+            this.DialogResult = DialogResult.None;
+            // Disable selection
+            _controller.SetSelectByToOff();
             //
             EntitiesName = title;
             MultiSelect = multiselect;

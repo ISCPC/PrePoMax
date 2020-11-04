@@ -92,7 +92,7 @@ namespace PrePoMax
                 if (_currentView != value)
                 {
                     _currentView = value;
-                    ClearSelectionHistoryAndSelectionChanged(); // the selection nodes are only valid on default mesh
+                    ClearSelectionHistoryAndCallSelectionChanged(); // the selection nodes are only valid on default mesh
                     _form.SetCurrentView(_currentView);
                     //
                     if (_currentView == ViewGeometryModelResults.Geometry) DrawGeometry(false);
@@ -240,9 +240,22 @@ namespace PrePoMax
 
 
         // Setters                                                                                                                  
-        public void SetSelectionToDefault()
+        public void SetSelectByToOff()
         {
             SelectBy = vtkSelectBy.Off;
+        }
+        public void SetSelectByToDefault()
+        {
+            SelectBy = vtkSelectBy.Default;
+        }
+        public void SetSelectBy(vtkSelectBy selectBy)
+        {
+            SelectBy = selectBy;
+        }
+        public void SetSelectAngle(double angle)
+        {
+            System.Diagnostics.Debug.WriteLine("Angle: " + angle);
+            SelectAngle = angle;
         }
         public void SetSelectItemToNode()
         {
@@ -265,16 +278,6 @@ namespace PrePoMax
             SelectItem = vtkSelectItem.Geometry;
         }
 
-        public void SetSelectBy(vtkSelectBy selectBy)
-        {
-            SelectBy = selectBy;
-        }
-        public void SetSelectAngle(double angle)
-        {
-            System.Diagnostics.Debug.WriteLine("Angle: " + angle);
-            SelectAngle = angle;
-        }
-        
 
         // Constructors                                                                                                             
         public Controller(FrmMain form)
@@ -334,7 +337,7 @@ namespace PrePoMax
             ClearModel();
             ClearResults();            
             //
-            SetSelectionToDefault();
+            SetSelectByToDefault();
             //
             _modelChanged = false;  // must be here since ClearResults can set it to true
         }
@@ -371,10 +374,10 @@ namespace PrePoMax
         }
         public void ClearAllSelection()
         {
-            ClearSelectionHistoryAndSelectionChanged();
+            ClearSelectionHistoryAndCallSelectionChanged();
             _form.ClearActiveTreeSelection();
         }
-        public void ClearSelectionHistoryAndSelectionChanged()
+        public void ClearSelectionHistoryAndCallSelectionChanged()
         {
             ClearSelectionHistory();
             //
@@ -2776,28 +2779,8 @@ namespace PrePoMax
         }
         public void AddNodeSet(FeNodeSet nodeSet)
         {
-            if (nodeSet.CreationData != null)
-            {
-                // In order for the Regenerate history to work perform the selection
-                _selection = nodeSet.CreationData.DeepClone();
-                //
-                if (_selection.SelectItem == vtkSelectItem.Node)
-                {
-                    nodeSet.Labels = GetSelectionIds();
-                }
-                else if (_selection.SelectItem == vtkSelectItem.Geometry)
-                {
-                    if (_selection.CurrentView == (int)ViewGeometryModelResults.Model)
-                    {
-                        nodeSet.CreationIds = GetSelectionIds();
-                        nodeSet.Labels = _model.Mesh.GetIdsFromGeometryIds(nodeSet.CreationIds, vtkSelectItem.Node);
-                    }
-                    else throw new NotSupportedException();
-                }
-                else throw new NotSupportedException();
-                //
-                _selection.Clear();
-            }
+            // In order for the Regenerate history to work perform the selection
+            if (nodeSet.CreationData != null) ReselectNodeSet(nodeSet);
             //
             _model.Mesh.UpdateNodeSetCenterOfGravity(nodeSet);
             //
@@ -2830,28 +2813,8 @@ namespace PrePoMax
         }
         public void ReplaceNodeSet(string oldNodeSetName, FeNodeSet nodeSet, bool update)
         {
-            if (nodeSet.CreationData != null)
-            {
-                // In order for the Regenerate history to work perform the selection
-                _selection = nodeSet.CreationData.DeepClone();
-                //
-                if (_selection.SelectItem == vtkSelectItem.Node)
-                {
-                    nodeSet.Labels = GetSelectionIds();
-                }
-                else if (_selection.SelectItem == vtkSelectItem.Geometry)
-                {
-                    if (_selection.CurrentView == (int)ViewGeometryModelResults.Model)
-                    {
-                        nodeSet.CreationIds = GetSelectionIds();
-                        nodeSet.Labels = _model.Mesh.GetIdsFromGeometryIds(nodeSet.CreationIds, vtkSelectItem.Node);
-                    }
-                    else throw new NotSupportedException();
-                }
-                else throw new NotSupportedException();
-                //
-                _selection.Clear();
-            }
+            // In order for the Regenerate history to work perform the selection
+            if (nodeSet.CreationData != null) ReselectNodeSet(nodeSet);
             else throw new NotSupportedException("The node set does not contain any selection data.");
             //
             _model.Mesh.UpdateNodeSetCenterOfGravity(nodeSet);
@@ -2894,6 +2857,28 @@ namespace PrePoMax
         public void GetNodesCenterOfGravity(FeNodeSet nodeSet)
         {
             _model.Mesh.UpdateNodeSetCenterOfGravity(nodeSet);
+        }
+        //
+        private void ReselectNodeSet(FeNodeSet nodeSet)
+        {
+            _selection = nodeSet.CreationData.DeepClone();
+            //
+            if (_selection.SelectItem == vtkSelectItem.Node)
+            {
+                nodeSet.Labels = GetSelectionIds();
+            }
+            else if (_selection.SelectItem == vtkSelectItem.Geometry)
+            {
+                if (_selection.CurrentView == (int)ViewGeometryModelResults.Model)
+                {
+                    nodeSet.CreationIds = GetSelectionIds();
+                    nodeSet.Labels = _model.Mesh.GetIdsFromGeometryIds(nodeSet.CreationIds, vtkSelectItem.Node);
+                }
+                else throw new NotSupportedException();
+            }
+            else throw new NotSupportedException();
+            //
+            _selection.Clear();
         }
         private void UpdateNodeSetsBasedOnGeometry(bool update)
         {
@@ -3026,28 +3011,8 @@ namespace PrePoMax
         }
         public void AddElementSet(FeElementSet elementSet)
         {
-            if (elementSet.CreationData != null)
-            {
-                // In order for the Regenerate history to work perform the selection
-                _selection = elementSet.CreationData.DeepClone();
-                //
-                if (_selection.SelectItem == vtkSelectItem.Element || _selection.SelectItem == vtkSelectItem.Part)
-                {
-                    elementSet.Labels = GetSelectionIds();
-                }
-                else if (_selection.SelectItem == vtkSelectItem.Geometry)
-                {
-                    if (_selection.CurrentView == (int)ViewGeometryModelResults.Model)
-                    {
-                        elementSet.CreationIds = GetSelectionIds();
-                        elementSet.Labels = _model.Mesh.GetIdsFromGeometryIds(elementSet.CreationIds, vtkSelectItem.Element);
-                    }
-                    else throw new NotSupportedException();
-                }
-                else throw new NotSupportedException();
-                //
-                _selection.Clear();
-            }
+            // In order for the Regenerate history to work perform the selection again
+            if (elementSet.CreationData != null) ReselectElementSet(elementSet);
             //
             _model.Mesh.ElementSets.Add(elementSet.Name, elementSet);
             //
@@ -3075,13 +3040,8 @@ namespace PrePoMax
         }
         public void ReplaceElementSet(string oldElementSetName, FeElementSet elementSet, bool update)
         {
-            if (elementSet.CreationData != null)
-            {
-                // In order for the Regenerate history to work perform the selection
-                _selection = elementSet.CreationData.DeepClone();
-                elementSet.Labels = GetSelectionIds();
-                _selection.Clear();
-            }
+            // In order for the Regenerate history to work perform the selection again
+            if (elementSet.CreationData != null) ReselectElementSet(elementSet);
             else throw new NotSupportedException("The element set does not contain any selection data.");
             //
             _model.Mesh.ElementSets.Replace(oldElementSetName, elementSet.Name, elementSet);
@@ -3134,9 +3094,31 @@ namespace PrePoMax
             //
             Update(UpdateType.Check | UpdateType.RedrawSymbols);
         }
+        //
+        private void ReselectElementSet(FeElementSet elementSet)
+        {
+            _selection = elementSet.CreationData.DeepClone();
+            //
+            if (_selection.SelectItem == vtkSelectItem.Element || _selection.SelectItem == vtkSelectItem.Part)
+            {
+                elementSet.Labels = GetSelectionIds();
+            }
+            else if (_selection.SelectItem == vtkSelectItem.Geometry)
+            {
+                if (_selection.CurrentView == (int)ViewGeometryModelResults.Model)
+                {
+                    elementSet.CreationIds = GetSelectionIds();
+                    elementSet.Labels = _model.Mesh.GetIdsFromGeometryIds(elementSet.CreationIds, vtkSelectItem.Element);
+                }
+                else throw new NotSupportedException();
+            }
+            else throw new NotSupportedException();
+            //
+            _selection.Clear();
+        }
         private void UpdateElementSetsBasedOnGeometry(bool update)
         {
-            // use list not to throw collection moddified exception
+            // Use list not to throw collection moddified exception
             List<CaeMesh.FeElementSet> geomElementSets = new List<FeElementSet>();
             if (_model != null && _model.Mesh != null)
             {
@@ -4915,7 +4897,7 @@ namespace PrePoMax
                 if (unspecifiedElementIds.Length != 0)
                 {
                     DrawElements("MissingSection", unspecifiedElementIds, Color.Red, vtkControl.vtkRendererLayer.Selection);
-                    string msg = unspecifiedElementIds.Length + " finite elements have a missing section assignment. Continue?";
+                    string msg = unspecifiedElementIds.Length + " finite elements are missing a section assignment. Continue?";
                     if (MessageBox.Show(msg, "Warning", MessageBoxButtons.OKCancel) == DialogResult.Cancel) return false;
                 }
                 ExportToCalculix(inputFileName);
@@ -5216,7 +5198,7 @@ namespace PrePoMax
         }
         public void CreateNewSelection(int selectionView, SelectionNode selectionNode, bool highlight)
         {
-            ClearSelectionHistoryAndSelectionChanged();
+            ClearSelectionHistoryAndCallSelectionChanged();
             SetSelectionView(selectionView);
             AddSelectionNode(selectionNode, highlight, false);
         }
@@ -5230,7 +5212,7 @@ namespace PrePoMax
                 // Set the current view for the selection;
                 if (_selection.Nodes.Count == 0) SetSelectionView(_currentView);
                 //
-                if (pickedPoint == null && planeParameters == null) ClearSelectionHistoryAndSelectionChanged();   // empty pick - clear
+                if (pickedPoint == null && planeParameters == null) ClearSelectionHistoryAndCallSelectionChanged();   // empty pick - clear
                 else
                 {
                     vtkSelectBy selectBy = _selectBy;
@@ -5243,7 +5225,7 @@ namespace PrePoMax
                     else
                     {
                         // New pick - Clear history
-                        if (selectOperation == vtkSelectOperation.None) ClearSelectionHistoryAndSelectionChanged();
+                        if (selectOperation == vtkSelectOperation.None) ClearSelectionHistoryAndCallSelectionChanged();
                     }
                     SelectionNode selectionNode = new SelectionNodeMouse(pickedPoint, planeParameters,
                                                                          selectOperation,
@@ -5303,7 +5285,7 @@ namespace PrePoMax
                     }
                     else throw new NotSupportedException();
                 }
-                else ClearSelectionHistoryAndSelectionChanged();   // Before adding all clear selection
+                else ClearSelectionHistoryAndCallSelectionChanged();   // Before adding all clear selection
             }
             //
             bool add = false;
@@ -7724,10 +7706,10 @@ namespace PrePoMax
         }
         // Geometry
         public int DrawNodes(string prefixName, int[] nodeIds, Color color, vtkControl.vtkRendererLayer layer,
-                             int nodeSize = 5, bool onlyVisible = false)
+                             int nodeSize = 5, bool onlyVisible = false, bool useSecondaryHighlightColor = false)
         {
             double[][] nodeCoor = DisplayedMesh.GetNodeSetCoor(nodeIds, onlyVisible);
-            DrawNodes(prefixName, nodeCoor, color, layer, nodeSize);
+            DrawNodes(prefixName, nodeCoor, color, layer, nodeSize, false, useSecondaryHighlightColor);
             return nodeCoor.Length;
         }
         public void DrawNodes(string prefixName, double[][] nodeCoor, Color color, vtkControl.vtkRendererLayer layer,
@@ -8017,10 +7999,10 @@ namespace PrePoMax
             bool drawSurfaceEdges = selection;
             if (nodeIds.Length > 0)
             {
-                // Black background
+                // Black border
                 if (!selection) DrawNodes(name + "black", nodeIds, Color.Black, layer, nodeSize + 2);
                 //
-                DrawNodes(name, nodeIds, color, layer, nodeSize, onlyVisible);
+                DrawNodes(name, nodeIds, color, layer, nodeSize, onlyVisible, useSecondaryHighlightColor);
             }
             if (edgeIds.Length > 0) DrawEdgesByGeometryEdgeIds(name, edgeIds, color, layer, nodeSize, useSecondaryHighlightColor);
             if (surfaceFaceIds.Length > 0) DrawItemsBySurfaceIds(name, surfaceFaceIds, color, layer, backfaceCulling,

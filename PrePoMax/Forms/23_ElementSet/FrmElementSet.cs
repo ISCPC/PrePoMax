@@ -98,10 +98,10 @@ namespace PrePoMax.Forms
         }
         protected override bool OnPrepareForm(string stepName, string elementSetToEditName)
         {
-            this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
-            this.btnOkAddNew.Visible = elementSetToEditName == null;
+            // To prevent the call to frmMain.itemForm_VisibleChanged when minimized
+            this.DialogResult = DialogResult.None;
             //
-            _controller.SetSelectItemToElement();
+            this.btnOkAddNew.Visible = elementSetToEditName == null;
             //
             _propertyItemChanged = false;
             _allExistingNames.Clear();
@@ -143,6 +143,8 @@ namespace PrePoMax.Forms
             ItemSetDataEditor.SelectionForm.ItemSetData = new ItemSetData(ElementSet.Labels);
             ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
             //
+            SetSelectItem();
+            //
             _controller.HighlightSelection();
             //
             return true;
@@ -167,6 +169,10 @@ namespace PrePoMax.Forms
             catch { }
         }
         //
+        private void SetSelectItem()
+        {
+            _controller.SetSelectItemToElement();
+        }
         public void SelectionChanged(int[] ids)
         {
             ElementSet.Labels = ids;

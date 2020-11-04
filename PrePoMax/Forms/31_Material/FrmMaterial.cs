@@ -229,6 +229,8 @@ namespace PrePoMax.Forms
             this.DialogResult = DialogResult.None;      
             this.btnOKAddNew.Visible = materialToEditName == null;
             //
+
+            //
             _propertyChanged = false;
             _propertyItemChanged = false;
             _materialNames = null;
@@ -305,6 +307,8 @@ namespace PrePoMax.Forms
                 tcProperties.Height -= delta;
                 this.Height += delta;
             }
+            //
+            _controller.SetSelectByToOff();
             //
             return true;
         }

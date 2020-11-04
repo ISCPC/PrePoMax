@@ -72,12 +72,10 @@ namespace PrePoMax.Forms
         {
             _valueChanged = true;
         }
-
         private void dgvEnvironmentVariables_ColumnAdded(object sender, DataGridViewColumnEventArgs e)
         {
             _valueChanged = true;
         }
-
         private void dgvEnvironmentVariables_ColumnRemoved(object sender, DataGridViewColumnEventArgs e)
         {
             _valueChanged = true;
@@ -85,7 +83,6 @@ namespace PrePoMax.Forms
 
 
         // Methods                                                                                                                  
-
         private void CheckForMissingData()
         {
             int  rowId = 1;

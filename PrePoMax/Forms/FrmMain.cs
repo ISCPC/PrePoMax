@@ -517,7 +517,9 @@ namespace PrePoMax
             foreach (var aForm in _allForms)
             {
                 // Do not count the Query form
-                if (aForm.Visible && !(aForm is FrmQuery)) count++;
+                if (aForm.Visible 
+                    //&& !(aForm is FrmQuery)
+                    ) count++;
             }
             // Disable model tree mouse and keyboard actions for the form
             bool unactive;
@@ -532,9 +534,11 @@ namespace PrePoMax
             {
                 UpdateHighlightFromTree();
                 GetFormLoaction(form);
+                //
+                _controller.SetSelectByToDefault();
+                //
+                this.Focus();
             }
-            //
-            if (form.Visible == false) this.Focus();
         }
         private void itemForm_Move(object sender, EventArgs e)
         {
@@ -571,7 +575,7 @@ namespace PrePoMax
                     (viewType == ViewType.Results && GetCurrentView() == ViewGeometryModelResults.Results)) return;
                 //
                 CloseAllForms();
-                _controller.SelectBy = vtkSelectBy.Off;
+                _controller.SelectBy = vtkSelectBy.Default;
                 //
                 if (viewType == ViewType.Geometry)_controller.CurrentView = ViewGeometryModelResults.Geometry;
                 else if (viewType == ViewType.Model) _controller.CurrentView = ViewGeometryModelResults.Model;
@@ -5055,7 +5059,7 @@ namespace PrePoMax
         }
         public void ClearSelection()
         {
-            _controller.ClearSelectionHistoryAndSelectionChanged();
+            _controller.ClearSelectionHistoryAndCallSelectionChanged();
         }
         public void Clear3DSelection()
         {

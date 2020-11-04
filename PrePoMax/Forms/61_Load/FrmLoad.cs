@@ -113,8 +113,6 @@ namespace PrePoMax.Forms
                 else if (itemTag is ViewPreTensionLoad vprl) _viewLoad = vprl;
                 else throw new NotImplementedException();
                 //
-                SetSelectItem();
-                //
                 ShowHideSelectionForm();
                 //
                 propertyGrid.SelectedObject = itemTag;
@@ -404,8 +402,6 @@ namespace PrePoMax.Forms
             }
             _selectedPropertyGridItemChangedEventActive = true;
             //
-            SetSelectItem();
-            //
             ShowHideSelectionForm();
             //
             HighlightLoad(); // must be here if called from the menu
@@ -510,6 +506,8 @@ namespace PrePoMax.Forms
         {
             try
             {
+                _controller.ClearSelectionHistory();
+                //
                 if (_viewLoad == null) { }
                 else if (FELoad is CLoad || FELoad is MomentLoad || FELoad is DLoad || FELoad is STLoad 
                          || FELoad is GravityLoad || FELoad is CentrifLoad || FELoad is PreTensionLoad)
@@ -544,17 +542,24 @@ namespace PrePoMax.Forms
                 ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
             else
                 ItemSetDataEditor.SelectionForm.Hide();
+            //
+            SetSelectItem();
         }
         private void SetSelectItem()
         {
-            if (FELoad is null) { }
-            else if (FELoad is CLoad) _controller.SetSelectItemToNode();
-            else if (FELoad is MomentLoad) _controller.SetSelectItemToNode();
-            else if (FELoad is DLoad) _controller.SetSelectItemToSurface();
-            else if (FELoad is STLoad) _controller.SetSelectItemToSurface();
-            else if (FELoad is GravityLoad) _controller.SetSelectItemToPart();
-            else if (FELoad is CentrifLoad) _controller.SetSelectItemToPart();
-            else if (FELoad is PreTensionLoad) _controller.SetSelectItemToSurface();
+            if (FELoad != null && FELoad.RegionType == RegionTypeEnum.Selection)
+            {
+                if (FELoad is null) { }
+                else if (FELoad is CLoad) _controller.SetSelectItemToNode();
+                else if (FELoad is MomentLoad) _controller.SetSelectItemToNode();
+                else if (FELoad is DLoad) _controller.SetSelectItemToSurface();
+                else if (FELoad is STLoad) _controller.SetSelectItemToSurface();
+                else if (FELoad is GravityLoad) _controller.SetSelectItemToPart();
+                else if (FELoad is CentrifLoad) _controller.SetSelectItemToPart();
+                else if (FELoad is PreTensionLoad) _controller.SetSelectItemToSurface();
+                else throw new NotSupportedException();
+            }
+            else _controller.SetSelectByToOff();
         }
         private void LoadInternal(bool toInternal)
         {

@@ -10,6 +10,7 @@ namespace CaeGlobals
     {
         // General
         Off,
+        Default,        
         // Mesh based
         Id,
         Node,
