@@ -100,7 +100,7 @@ namespace PrePoMax.Forms
         // Overrides                                                                                                                
         protected override void OnListViewTypeSelectedIndexChanged()
         {
-            if (lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)
+            if (lvTypes.Enabled && lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)
             {
                 object itemTag = lvTypes.SelectedItems[0].Tag;
                 if (itemTag is ViewError) _viewLoad = null;

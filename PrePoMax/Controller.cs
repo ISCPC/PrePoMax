@@ -8595,7 +8595,7 @@ namespace PrePoMax
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
             List<string> hiddenActors = new List<string>();
             //
-            SetStatusBlock();
+            SetStatusBlock(scale);
             //
             _form.InitializeResultWidgetPositions(); // reset the widget position after setting the status block content
             //
@@ -8673,10 +8673,10 @@ namespace PrePoMax
             //
             CheckResultsUnitSystem();
             // Settings - must be here before drawing parts to correctly set the numer of colors
-            SetLegendAndLimits();
-            SetStatusBlock();
-            //
             float scale = GetScale();
+            SetLegendAndLimits();
+            SetStatusBlock(scale);
+            //
             vtkControl.vtkMaxActorData data;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
             //
@@ -8748,10 +8748,10 @@ namespace PrePoMax
             //
             CheckResultsUnitSystem();
             // Settings - must be here before drawing parts to correctly set the numer of colors
-            SetLegendAndLimits();
-            SetStatusBlock();
-            //
             float scale = GetScaleForAllStepsAndIncrements();
+            SetLegendAndLimits();
+            SetStatusBlock(scale);
+            //
             vtkControl.vtkMaxActorData data = null;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
             //
@@ -8899,7 +8899,7 @@ namespace PrePoMax
                 _form.SetShowMaxValueLocation(postSettings.ShowMaxValueLocation);
             }
         }
-        private void SetStatusBlock()
+        private void SetStatusBlock(float scale)
         {
             string unit;
             if (_currentFieldData.Type == StepType.Static) unit = _results.UnitSystem.TimeUnitAbbreviation;
@@ -8908,8 +8908,6 @@ namespace PrePoMax
             else throw new NotSupportedException();
             //
             vtkControl.DataFieldType fieldType = ConvertStepType(_currentFieldData);
-            //
-            float scale = GetScaleForAllStepsAndIncrements();
             //
             int incrementNumber = _currentFieldData.StepIncrementId;
             //

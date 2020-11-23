@@ -123,7 +123,7 @@ namespace PrePoMax.Forms
             this.DialogResult = DialogResult.None;      
             this.btnOkAddNew.Visible = stepToEditName == null;
             //
-            _propertyItemChanged = true;
+            _propertyItemChanged = false;
             _stepNames = null;
             _stepToEditName = null;
             _viewStep = null;

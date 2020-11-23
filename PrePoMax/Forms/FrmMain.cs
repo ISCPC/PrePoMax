@@ -4975,16 +4975,14 @@ namespace PrePoMax
             InvokeIfRequired(() =>
             {
                 saveFileDialog.Filter = "PrePoMax files | *.pmx";
-
+                //
                 fileName = Path.GetFileName(_controller.OpenedFileName);
                 saveFileDialog.FileName = fileName;
-
+                //
                 saveFileDialog.OverwritePrompt = true;
-
-                if (saveFileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    fileName = saveFileDialog.FileName;
-                }
+                //
+                if (saveFileDialog.ShowDialog() == DialogResult.OK) fileName = saveFileDialog.FileName;
+                else fileName = null;
             });
             return fileName;
         }
