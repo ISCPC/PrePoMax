@@ -15,17 +15,18 @@ namespace CaeMesh
         public static string SlaveNameSuffix = "_Slave";
         public static string MasterNameSuffix = "_Master";
         //
-        public static Color[] PartColors = new Color[] { Color.FromArgb(245, 245, 220),     // light beige
-                                                         Color.FromArgb(69, 139, 116),      // dark green
-                                                         Color.FromArgb(193, 205, 205),     // light gray
-                                                         //Color.FromArgb(187, 58, 58),       // red 
-                                                         Color.FromArgb(0, 94, 157),        // blue
-                                                         Color.FromArgb(222, 184, 135),     // ligt brown
-                                                         Color.FromArgb(177, 198, 237),     // light blue
-                                                         Color.FromArgb(139, 136, 120),     // dark gray
-                                                         Color.FromArgb(233, 150, 122),     // apricot
-                                                         Color.FromArgb(189, 183, 107)};    // beige
-
-
+        public static Color[] ColorTable = new Color[]
+        {
+            Color.Beige,
+            Color.SeaGreen,
+            Color.LightGray,
+            Color.SteelBlue,
+            Color.BurlyWood,
+            Color.LightSteelBlue,
+            Color.Gray,
+            Color.DarkSalmon,
+            Color.DarkKhaki,
+            Color.NavajoWhite
+        };
     }
 }

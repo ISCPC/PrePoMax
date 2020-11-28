@@ -46,24 +46,6 @@ namespace PrePoMax.Settings
             set { _preSettings.MouseHighlightColor = value; }
         }
         //
-        [CategoryAttribute("Face orientation")]
-        [OrderedDisplayName(0, 10, "Front face color")]
-        [DescriptionAttribute("Select the front shell face color.")]
-        public Color FrontFaceColor
-        {
-            get { return _preSettings.FrontFaceColor; }
-            set { _preSettings.FrontFaceColor = value; }
-        }
-        //
-        [CategoryAttribute("Face orientation")]
-        [OrderedDisplayName(1, 10, "Back face color")]
-        [DescriptionAttribute("Select the back shell face color.")]
-        public Color BackFaceColor
-        {
-            get { return _preSettings.BackFaceColor; }
-            set { _preSettings.BackFaceColor = value; }
-        }
-        //
         [CategoryAttribute("Symbols")]
         [OrderedDisplayName(0, 10, "Constraint color")]
         [DescriptionAttribute("Select the constraint symbol color.")]

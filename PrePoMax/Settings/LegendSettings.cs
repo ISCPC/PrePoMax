@@ -86,6 +86,7 @@ namespace PrePoMax
             _backgroundType = WidgetBackgroundType.None;
             _drawBorder = false;
         }
+        //
         public string GetColorChartNumberFormat()
         {
             string numberformat = "";

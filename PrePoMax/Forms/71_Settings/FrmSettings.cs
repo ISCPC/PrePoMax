@@ -44,6 +44,7 @@ namespace PrePoMax.Forms
                 {
                     if (entry.Value is GeneralSettings ges) _viewSettings.Add(entry.Key, new ViewGeneralSettings(ges.DeepClone()));
                     else if (entry.Value is GraphicsSettings grs) _viewSettings.Add(entry.Key, new ViewGraphicsSettings(grs.DeepClone()));
+                    else if (entry.Value is ColorSettings cos) _viewSettings.Add(entry.Key, new ViewColorSettings(cos.DeepClone()));
                     else if (entry.Value is PreSettings prs) _viewSettings.Add(entry.Key, new ViewPreSettings(prs.DeepClone()));
                     else if (entry.Value is CalculixSettings cas) _viewSettings.Add(entry.Key, new ViewCalculixSettings(cas.DeepClone()));
                     else if (entry.Value is PostSettings pos) _viewSettings.Add(entry.Key, new ViewPostSettings(pos.DeepClone()));

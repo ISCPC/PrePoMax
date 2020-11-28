@@ -55,6 +55,7 @@ namespace PrePoMax
             //
             ResetFormSize();
         }
+        //
         private void ResetFormSize()
         {
             _formWindowState = FormWindowState.Normal;

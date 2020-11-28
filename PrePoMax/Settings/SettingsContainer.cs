@@ -17,6 +17,7 @@ namespace PrePoMax
         // Variables                                                                                                                
         private GeneralSettings _general;
         private GraphicsSettings _graphics;
+        private ColorSettings _color;
         private PreSettings _pre;
         private CalculixSettings _calculix;
         private PostSettings _post;
@@ -27,6 +28,7 @@ namespace PrePoMax
         // Properties                                                                                                               
         public GeneralSettings General { get { return _general; } set { _general = value; } }
         public GraphicsSettings Graphics { get { return _graphics; } set { _graphics = value; } }
+        public ColorSettings Color { get { return _color; } set { _color = value; } }
         public PreSettings Pre { get { return _pre; } set { _pre = value; } }
         public CalculixSettings Calculix { get { return _calculix; } set { _calculix = value; } }
         public PostSettings Post { get { return _post; } set { _post = value; } }
@@ -51,6 +53,7 @@ namespace PrePoMax
         {
             _general = new GeneralSettings();
             _graphics = new GraphicsSettings();
+            _color = new ColorSettings();
             _pre = new PreSettings();
             _calculix = new CalculixSettings();
             _post = new PostSettings();
@@ -61,6 +64,7 @@ namespace PrePoMax
         {
             _general.Reset();
             _graphics.Reset();
+            _color.Reset();
             _pre.Reset();
             _calculix.Reset();
             _post.Reset();
@@ -72,6 +76,7 @@ namespace PrePoMax
             Dictionary<string, ISettings> items = new Dictionary<string, ISettings>();
             items.Add(Globals.GeneralSettingsName, _general);
             items.Add(Globals.GraphicsSettingsName, _graphics);
+            items.Add(Globals.ColorSettingsName, _color);
             items.Add(Globals.PreSettingsName, _pre);
             items.Add(Globals.CalculixSettingsName, _calculix);
             items.Add(Globals.PostSettingsName, _post);
@@ -85,6 +90,7 @@ namespace PrePoMax
             {
                 _general = (GeneralSettings)items[Globals.GeneralSettingsName];
                 _graphics = (GraphicsSettings)items[Globals.GraphicsSettingsName];
+                _color = (ColorSettings)items[Globals.ColorSettingsName];
                 _pre = (PreSettings)items[Globals.PreSettingsName];
                 _calculix = (CalculixSettings)items[Globals.CalculixSettingsName];
                 _post = (PostSettings)items[Globals.PostSettingsName];

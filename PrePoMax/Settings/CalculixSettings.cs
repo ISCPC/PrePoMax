@@ -12,7 +12,7 @@ using DynamicTypeDescriptor;
 namespace PrePoMax
 {
     [Serializable]
-    public class CalculixSettings : PrePoMax.Settings.ViewSettings, ISettings, Settings.IReset
+    public class CalculixSettings : ISettings
     {
         // Variables                                                                                                                
         private string _workDirectory;
@@ -72,10 +72,6 @@ namespace PrePoMax
 
 
         // Methods                                                                                                                  
-        public override ISettings GetBase()
-        {
-            return this;
-        }
         public void CheckValues()
         {
         }

@@ -21,8 +21,6 @@ namespace PrePoMax
         private Color _constraintSymbolColor;
         private Color _boundaryConditionSymbolColor;
         private Color _loadSymbolColor;
-        private Color _frontFaceColor;
-        private Color _backFaceColor;
         private int _symbolSize;
         private int _nodeSymbolSize;
         private bool _drawSymbolEdges;
@@ -61,16 +59,6 @@ namespace PrePoMax
         {
             get { return _loadSymbolColor; }
             set { _loadSymbolColor = value; }
-        }
-        public Color FrontFaceColor
-        {
-            get { return _frontFaceColor; }
-            set { _frontFaceColor = value; }
-        }
-        public Color BackFaceColor
-        {
-            get { return _backFaceColor; }
-            set { _backFaceColor = value; }
         }
         public int SymbolSize
         {
@@ -130,8 +118,6 @@ namespace PrePoMax
             _constraintSymbolColor = Color.Yellow;
             _boundaryConditionSymbolColor = Color.Lime;
             _loadSymbolColor = Color.RoyalBlue;
-            _frontFaceColor = Color.FromArgb(252, 169, 133);
-            _backFaceColor = Color.FromArgb(154, 206, 223);
             _symbolSize = 50;
             _nodeSymbolSize = 3;
             _drawSymbolEdges = true;

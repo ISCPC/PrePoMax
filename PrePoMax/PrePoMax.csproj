@@ -264,6 +264,7 @@
     <Compile Include="Forms\43_FieldOutput\ViewContactFieldOutput.cs" />
     <Compile Include="Forms\51_BoundaryConditions\ViewFixedBC.cs" />
     <Compile Include="Forms\71_Settings\ViewCalculixSettings.cs" />
+    <Compile Include="Forms\71_Settings\ViewColorSettings.cs" />
     <Compile Include="Forms\71_Settings\ViewUnitSystemlSettings.cs" />
     <Compile Include="Forms\71_Settings\ViewStatusBlockSettings.cs" />
     <Compile Include="Forms\71_Settings\ViewLegendSettings.cs" />
@@ -464,6 +465,7 @@
     </Compile>
     <Compile Include="Selection\ItemSet\ItemSetDataEditor.cs" />
     <Compile Include="Settings.cs" />
+    <Compile Include="Settings\ColorSettings.cs" />
     <Compile Include="Settings\UnitSystemSettings.cs" />
     <Compile Include="Settings\GeneralSettings.cs" />
     <Compile Include="Settings\GraphicsSettings.cs" />

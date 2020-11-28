@@ -4872,6 +4872,8 @@ namespace PrePoMax
             _form.SetScaleWidgetVisibility(gs.ScaleWidgetVisibility);
             _form.SetLighting(gs.AmbientComponent, gs.DiffuseComponent, false);
             _form.SetSmoothing(gs.PointSmoothing, gs.LineSmoothing, false);
+            // Color settings
+            CaeMesh.Globals.ColorTable = _settings.Color.ColorTable;
             // Pre-processing settings
             PreSettings ps = _settings.Pre;
             _form.SetHighlightColor(ps.PrimaryHighlightColor, ps.SecundaryHighlightColor);
@@ -6634,9 +6636,10 @@ namespace PrePoMax
                 int maxColor = -int.MaxValue;
                 float value;
                 float[] values = new float[data.Geometry.Cells.Ids.Length];
+                ColorSettings colorSettings = _settings.Color;
                 for (int i = 0; i < values.Length; i++)
                 {
-                    value = elementIdColorId[data.Geometry.Cells.Ids[i]] % CaeMesh.Globals.PartColors.Length;
+                    value = elementIdColorId[data.Geometry.Cells.Ids[i]] % colorSettings.ColorTable.Length;
                     values[i] = value;
                     if (value > maxColor) maxColor = (int)value;
                 }
@@ -6644,7 +6647,9 @@ namespace PrePoMax
                 //
                 maxColor++; // first color is 0 so add +1
                 data.ColorTable = new Color[maxColor];
-                Array.Copy(CaeMesh.Globals.PartColors, data.ColorTable, maxColor);
+                Array.Copy(colorSettings.ColorTable, data.ColorTable, maxColor);
+                //
+                //data.ColorTable = colorSettings.ColorTable;
             }
             // Back face
             if (part.PartType == PartType.Shell) data.BackfaceCulling = false;
@@ -6731,9 +6736,9 @@ namespace PrePoMax
             {
                 if (part.PartType == PartType.Shell)
                 {
-                    PreSettings preSettings = _settings.Pre;
-                    color = preSettings.FrontFaceColor;
-                    backfaceColor = preSettings.BackFaceColor;
+                    ColorSettings colorSettings = _settings.Color;
+                    color = colorSettings.FrontFaceColor;
+                    backfaceColor = colorSettings.BackFaceColor;
                 }
                 else if (part.PartType == PartType.Solid || part.PartType == PartType.SolidAsShell)
                 {
@@ -6745,14 +6750,15 @@ namespace PrePoMax
         {
             if (_annotateWithColor == AnnotateWithColorEnum.None) return;
             //
+            
             _form.HideColorBar();   // clears the contents
             //
             if (_currentView == ViewGeometryModelResults.Results && _viewResultsType == ViewResultsType.ColorContours) return;
             // Face orientation legend
-            PreSettings preSettings = _settings.Pre;
+            ColorSettings colorSettings = _settings.Color;
             if (_annotateWithColor == AnnotateWithColorEnum.FaceOrientation)
             {
-                _form.SetColorBarColorsAndLabels(new Color[] { preSettings.FrontFaceColor, preSettings.BackFaceColor},
+                _form.SetColorBarColorsAndLabels(new Color[] { colorSettings.FrontFaceColor, colorSettings.BackFaceColor},
                                                                new string[] { "Front face", "Back face" });
             }
             if (_annotateWithColor == AnnotateWithColorEnum.Parts)
@@ -6788,7 +6794,7 @@ namespace PrePoMax
                     {
                         if (activeMaterials.Contains(entry.Value.Name))
                         {
-                            materialColors.Add(CaeMesh.Globals.PartColors[count++]);
+                            materialColors.Add(colorSettings.ColorTable[count++]);
                             materialNames.Add(entry.Value.Name);
                         }
                     }
@@ -6804,7 +6810,7 @@ namespace PrePoMax
                     int count = 0;
                     foreach (var entry in _model.Sections)
                     {
-                        sectionColors.Add(CaeMesh.Globals.PartColors[count++]);
+                        sectionColors.Add(colorSettings.ColorTable[count++]);
                         sectionNames.Add(entry.Value.Name);
                     }
                     _form.SetColorBarColorsAndLabels(sectionColors.ToArray(), sectionNames.ToArray());
@@ -6823,7 +6829,7 @@ namespace PrePoMax
                         {
                             if (!sectionThickness.Contains(ss.Thickness))
                             {
-                                sectionThicknessColors.Add(CaeMesh.Globals.PartColors[count++]);
+                                sectionThicknessColors.Add(colorSettings.ColorTable[count++]);
                                 sectionThickness.Add(ss.Thickness);
                             }
                         }

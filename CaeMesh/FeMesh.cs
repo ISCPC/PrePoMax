@@ -51,17 +51,17 @@ namespace CaeMesh
         [NonSerialized]
         private Octree.PointOctree<int> _octree;
 
+        private MeshRepresentation _meshRepresentation;                         //ISerializable
+        private OrderedDictionary<string, FeMeshRefinement> _meshRefinements;   //ISerializable
+        private OrderedDictionary<string, BasePart> _parts;                     //ISerializable
         private OrderedDictionary<string, FeNodeSet> _nodeSets;                 //ISerializable
         private OrderedDictionary<string, FeElementSet> _elementSets;           //ISerializable
         private OrderedDictionary<string, FeSurface> _surfaces;                 //ISerializable
         private OrderedDictionary<string, FeReferencePoint> _referencePoints;   //ISerializable
         private int _maxNodeId;                                                 //ISerializable
         private int _maxElementId;                                              //ISerializable
-        private BoundingBox _boundingBox;                                       //ISerializable
-        private OrderedDictionary<string, BasePart> _parts;                     //ISerializable
-        private OrderedDictionary<string, FeMeshRefinement> _meshRefinements;   //ISerializable
-        private MeshRepresentation _meshRepresentation;                         //ISerializable
         private bool _manifoldGeometry;                                         //ISerializable
+        private BoundingBox _boundingBox;                                       //ISerializable
 
 
         // Properties                                                                                                               
@@ -74,6 +74,14 @@ namespace CaeMesh
         {
             get { return _elements; }
             set { _elements = value; }
+        }
+        public OrderedDictionary<string, FeMeshRefinement> MeshRefinements
+        {
+            get { return _meshRefinements; }
+        }
+        public OrderedDictionary<string, BasePart> Parts
+        {
+            get { return _parts; }
         }
         public OrderedDictionary<string, FeNodeSet> NodeSets
         {
@@ -90,14 +98,6 @@ namespace CaeMesh
         public OrderedDictionary<string, FeReferencePoint> ReferencePoints
         {
             get { return _referencePoints; }
-        }
-        public OrderedDictionary<string, BasePart> Parts
-        {
-            get { return _parts; }
-        }
-        public OrderedDictionary<string, FeMeshRefinement> MeshRefinements
-        {
-            get { return _meshRefinements; }
         }
         public int MaxNodeId
         {
@@ -173,6 +173,9 @@ namespace CaeMesh
         }
         public FeMesh(FeMesh mesh, string[] partsToKeep)
         {
+            _meshRepresentation = mesh._meshRepresentation;
+            _meshRefinements = new OrderedDictionary<string, FeMeshRefinement>();
+            //
             _parts = new OrderedDictionary<string, BasePart>();
             foreach (var partName in partsToKeep)
             {
@@ -204,21 +207,33 @@ namespace CaeMesh
             _surfaces = new OrderedDictionary<string, FeSurface>();
             _referencePoints = new OrderedDictionary<string, FeReferencePoint>();
             //
-            _meshRefinements = new OrderedDictionary<string, FeMeshRefinement>();
-            //
             _maxNodeId = mesh._maxNodeId;
             _maxElementId = mesh._maxElementId;
-            ComputeBoundingBox();
-            _meshRepresentation = mesh._meshRepresentation;
             _manifoldGeometry = mesh.ManifoldGeometry;
+            //
+            ComputeBoundingBox();
         }
-
         public FeMesh(SerializationInfo info, StreamingContext context)
         {
             foreach (SerializationEntry entry in info)
             {
                 switch (entry.Name)
                 {
+                    case "_meshRepresentation":
+                        _meshRepresentation = (MeshRepresentation)entry.Value; break;
+                    case "_meshRefinements":
+                        _meshRefinements = (OrderedDictionary<string, FeMeshRefinement>)entry.Value; break;
+                    case "_parts":
+                        if (entry.Value is Dictionary<string, BasePart> bpd)
+                        {
+                            // Compatibility for version v0.5.1
+                            bpd.OnDeserialization(null);
+                            _parts = new OrderedDictionary<string, BasePart>(bpd);
+                        }
+                        else if (entry.Value is OrderedDictionary<string, BasePart> bpod) _parts = bpod;
+                        else if (entry.Value == null) _parts = null;
+                        else throw new NotSupportedException();
+                        break;
                     case "_nodeSets":
                         if (entry.Value is Dictionary<string, FeNodeSet> nsd)
                         {
@@ -267,25 +282,10 @@ namespace CaeMesh
                         _maxNodeId = (int)entry.Value; break;
                     case "_maxElementId":
                         _maxElementId = (int)entry.Value; break;
-                    case "_boundingBox":
-                        _boundingBox = (BoundingBox)entry.Value; break;
-                    case "_parts":
-                        if (entry.Value is Dictionary<string, BasePart> bpd)
-                        {
-                            // Compatibility for version v0.5.1
-                            bpd.OnDeserialization(null);
-                            _parts = new OrderedDictionary<string, BasePart>(bpd);
-                        }
-                        else if (entry.Value is OrderedDictionary<string, BasePart> bpod) _parts = bpod;
-                        else if (entry.Value == null) _parts = null;
-                        else throw new NotSupportedException();
-                        break;
-                    case "_meshRefinements":
-                        _meshRefinements = (OrderedDictionary<string, FeMeshRefinement>)entry.Value; break;
-                    case "_meshRepresentation":
-                        _meshRepresentation = (MeshRepresentation)entry.Value; break;
                     case "_manifoldGeometry":
                         _manifoldGeometry = (bool)entry.Value; break;
+                    case "_boundingBox":
+                        _boundingBox = (BoundingBox)entry.Value; break;
                     default:
                         throw new NotSupportedException();
                 }
@@ -294,7 +294,7 @@ namespace CaeMesh
             if (_meshRefinements == null) _meshRefinements = new OrderedDictionary<string, FeMeshRefinement>();
         }
 
-       
+
         // Static methods                                                                                                           
         public static void WriteToBinaryFile(FeMesh mesh, System.IO.BinaryWriter bw)
         {
@@ -2126,9 +2126,9 @@ namespace CaeMesh
             part = CreateBasePartFromElementIds(allElementIds.ToArray());
             //
             newMeshPart = new MeshPart(part);
-            newMeshPart.Name = NamedClass.GetNewValueName(_parts.Keys, "Merged_Part-");
+            newMeshPart.Name = NamedClass.GetNewValueName(_parts.Keys, "Merged_part-");
             newMeshPart.PartId = minId;
-            SetPartsColorFromId(newMeshPart);
+            SetPartsColorFromColorTable(newMeshPart);
             // Renumber elements
             foreach (var elementId in newMeshPart.Labels) _elements[elementId].PartId = minId;
             // Add new part
@@ -2136,7 +2136,8 @@ namespace CaeMesh
             // Update bounding boxes
             ComputeBoundingBox();
         }
-        public void MergeResultParts(string[] partNamesToMerge, out ResultPart newResultPart, out string[] mergedParts)
+        public void MergeResultParts(string[] partNamesToMerge, out ResultPart newResultPart, out string[] mergedParts,
+                                     System.Drawing.Color[] colorTable)
         {
             newResultPart = null;
             mergedParts = null;
@@ -2166,7 +2167,7 @@ namespace CaeMesh
             newResultPart = new ResultPart(part);
             newResultPart.Name = NamedClass.GetNewValueName(_parts.Keys, "Merged_Part-");
             newResultPart.PartId = minId;
-            SetPartsColorFromId(newResultPart);
+            SetPartsColorFromColorTable(newResultPart);
             //
             foreach (var elementId in newResultPart.Labels)
             {
@@ -2261,7 +2262,7 @@ namespace CaeMesh
         //
         public void CreateMeshPartsFromElementSets(string[] elementSetNames, out BasePart[] modifiedParts, out BasePart[] newParts)
         {
-            // get parts from ids
+            // Get parts from ids
             int maxPartId = -int.MaxValue;
             Dictionary<int, MeshPart> partIdNamePairs = new Dictionary<int, MeshPart>();
             foreach (var entry in _parts)
@@ -2273,8 +2274,7 @@ namespace CaeMesh
                 }
             }
             maxPartId++;
-
-            // get element ids to remove from parts by partIds
+            // Get element ids to remove from parts by partIds
             int partId;
             FeElementSet elementSet;
             FeElement element;
@@ -2291,15 +2291,15 @@ namespace CaeMesh
                     {
                         element = _elements[elementId];
                         partId = element.PartId;
-
+                        //
                         if (elementIdsToRemove.TryGetValue(partId, out elementIds)) elementIds.Add(elementId);
                         else elementIdsToRemove.Add(partId, new List<int>() { elementId });
-
+                        //
                         element.PartId = maxPartId + i;
                     }
                 }
             }
-
+            //
             int count = 0;
             MeshPart meshPart;
             BasePart newBasePart;
@@ -2309,21 +2309,19 @@ namespace CaeMesh
             {
                 meshPart = partIdNamePairs[entry.Key];
                 meshPart.Labels = meshPart.Labels.Except(entry.Value).ToArray();
-
+                //
                 newBasePart = CreateBasePartFromElementIds(meshPart.Labels);
                 newMeshPart = new MeshPart(newBasePart);
                 newMeshPart.Name = meshPart.Name;
                 newMeshPart.PartId = meshPart.PartId;
-                SetPartsColorFromId(newMeshPart);
+                SetPartsColorFromColorTable(newMeshPart);
                 newMeshPart.CopyActiveElementTypesFrom(meshPart);
-
+                //
                 _parts[newMeshPart.Name] = newMeshPart; // replace part
-
+                //
                 modifiedParts[count++] = newMeshPart;
             }
-
-
-            // create new parts and remove element sets
+            // Create new parts and remove element sets
             count = 0;
             newParts = new BasePart[newPartNames.Count];
             foreach (var newPartName in newPartNames)
@@ -2332,14 +2330,13 @@ namespace CaeMesh
                 newMeshPart = new MeshPart(newBasePart);
                 newMeshPart.Name = newPartName;
                 newMeshPart.PartId = maxPartId + count;
-                SetPartsColorFromId(newMeshPart);
-
+                SetPartsColorFromColorTable(newMeshPart);
+                //
                 _parts.Add(newMeshPart.Name, newMeshPart);
                 newParts[count++] = newMeshPart;
                 _elementSets.Remove(newMeshPart.Name);
             }
-
-            // update bounding boxes
+            // Update bounding boxes
             ComputeBoundingBox();
         }
         public BasePart CreateBasePartFromElementIds(int[] elementIds)
@@ -2639,7 +2636,7 @@ namespace CaeMesh
             foreach (var entry in _parts)
             {
                 if (entry.Value.Color == System.Drawing.Color.Gray) // Gray if default color
-                    SetPartsColorFromId(entry.Value);
+                    SetPartsColorFromColorTable(entry.Value);
             }
         }
         public void SetPartsColor(System.Drawing.Color color)
@@ -2649,9 +2646,9 @@ namespace CaeMesh
                 entry.Value.Color = color;
             }
         }
-        public void SetPartsColorFromId(BasePart part)
+        public void SetPartsColorFromColorTable(BasePart part)
         {
-            part.Color = Globals.PartColors[(part.PartId - 1) % Globals.PartColors.Length];
+            part.Color = Globals.ColorTable[(part.PartId - 1) % Globals.ColorTable.Length];
         }
 
         #endregion #################################################################################################################
@@ -7236,17 +7233,17 @@ namespace CaeMesh
         public void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             // using typeof() works also for null fields
+            info.AddValue("_meshRepresentation", _meshRepresentation, typeof(MeshRepresentation));
+            info.AddValue("_meshRefinements", _meshRefinements, typeof(OrderedDictionary<string, FeMeshRefinement>));
+            info.AddValue("_parts", _parts, typeof(OrderedDictionary<string, BasePart>));
             info.AddValue("_nodeSets", _nodeSets, typeof(OrderedDictionary<string, FeNodeSet>));
             info.AddValue("_elementSets", _elementSets, typeof(OrderedDictionary<string, FeElementSet>));
             info.AddValue("_surfaces", _surfaces, typeof(OrderedDictionary<string, FeSurface>));
             info.AddValue("_referencePoints", _referencePoints, typeof(OrderedDictionary<string, FeReferencePoint>));
             info.AddValue("_maxNodeId", _maxNodeId, typeof(int));
             info.AddValue("_maxElementId", _maxElementId, typeof(int));
-            info.AddValue("_boundingBox", _boundingBox, typeof(BoundingBox));
-            info.AddValue("_parts", _parts, typeof(OrderedDictionary<string, BasePart>));
-            info.AddValue("_meshRefinements", _meshRefinements, typeof(OrderedDictionary<string, FeMeshRefinement>));
-            info.AddValue("_meshRepresentation", _meshRepresentation, typeof(MeshRepresentation));
             info.AddValue("_manifoldGeometry", _manifoldGeometry, typeof(bool));
+            info.AddValue("_boundingBox", _boundingBox, typeof(BoundingBox));
         }
     }
 }
