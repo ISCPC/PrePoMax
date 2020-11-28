@@ -183,12 +183,12 @@ namespace PrePoMax
             //
             try
             {
-                //
                 // Vtk
-                //
                 _vtk = new vtkControl.vtkControl();
                 panelControl.Parent.Controls.Add(_vtk);
                 panelControl.SendToBack();
+                // Menu
+                tsmiColorAnnotations.DropDown.Closing += DropDown_Closing;
                 // Tree
                 this._modelTree = new UserControls.ModelTree();
                 this._modelTree.Name = "modelTree";
@@ -692,6 +692,7 @@ namespace PrePoMax
             else if (_controller.CurrentView == ViewGeometryModelResults.Model)
             {
                 HideShowItems<MeshPart>(items, operation, HideModelParts, ShowModelParts, ShowOnlyModelParts);
+                HideShowItems<FeReferencePoint>(items, operation, HideRPs, ShowRPs, ShowOnlyRPs);
                 HideShowItems<CaeModel.Constraint>(items, operation, HideConstraints, ShowConstraints, ShowOnlyConstraints);
                 HideShowItems<ContactPair>(items, operation, HideContactPairs, ShowContactPairs, ShowOnlyContactPairs);
                 HideShowStepItems<BoundaryCondition>(items, operation, stepNames, HideBoundaryConditions, 
@@ -1562,7 +1563,7 @@ namespace PrePoMax
         {
             _vtk.SetLeftRightView(true, false);
         }
-
+        //
         private void tsmiNormalView_Click(object sender, EventArgs e)
         {
             _vtk.SetNormalView(true);
@@ -1571,7 +1572,7 @@ namespace PrePoMax
         {
             _vtk.SetVerticalView(true, true);
         }
-
+        //
         private void tsmiIsometricView_Click(object sender, EventArgs e)
         {
             _vtk.SetIsometricView(true, true);
@@ -1580,7 +1581,7 @@ namespace PrePoMax
         {
             SetZoomToFit(true);
         }
-
+        //
         private void tsmiShowWireframeEdges_Click(object sender, EventArgs e)
         {
             try
@@ -1641,7 +1642,7 @@ namespace PrePoMax
             //
             ShowForm(_frmSectionView, tsmiSectionView.Text, null);
         }
-        //
+        // Hide/Show
         private void tsmiHideAllParts_Click(object sender, EventArgs e)
         {
             try
@@ -1732,12 +1733,151 @@ namespace PrePoMax
             }
             catch { }
         }
-        //
-        private void tsmiShowFaceOrientation_Click(object sender, EventArgs e)
+        // Annotate
+        private void DropDown_Closing(object sender, ToolStripDropDownClosingEventArgs e)
         {
-            tsmiShowFaceOrientation.Checked = !tsmiShowFaceOrientation.Checked;
-            //
-            _controller.ShowFaceOrientation = tsmiShowFaceOrientation.Checked;
+            if (e.CloseReason == ToolStripDropDownCloseReason.ItemClicked)
+                e.Cancel = true;
+        }
+        private void tsmiAnnotateFaceOrientations_Click(object sender, EventArgs e)
+        {
+            _controller.AnnotateWithColor = ChangeAnnotationStatus(sender);
+        }
+        private void tsmiAnnotateParts_Click(object sender, EventArgs e)
+        {
+            _controller.AnnotateWithColor = ChangeAnnotationStatus(sender);
+        }
+        private void tsmiAnnotateMaterials_Click(object sender, EventArgs e)
+        {
+            _controller.AnnotateWithColor = ChangeAnnotationStatus(sender);
+        }
+        private void tsmiAnnotateSections_Click(object sender, EventArgs e)
+        {
+            _controller.AnnotateWithColor = ChangeAnnotationStatus(sender);
+        }
+        private void tsmiAnnotateSectionThicknesses_Click(object sender, EventArgs e)
+        {
+            _controller.AnnotateWithColor = ChangeAnnotationStatus(sender);
+        }
+        private void tsmiAnnotateAllSymbols_Click(object sender, EventArgs e)
+        {
+            if (sender is ToolStripMenuItem tsmi)
+            {
+                // Turn off
+                if (tsmi.Checked)
+                {
+                    ClearAnnotationStatus();  // first check and then clear
+                    _controller.AnnotateWithColor = AnnotateWithColorEnum.None;
+                }
+                // Turn on
+                else
+                {
+                    ClearAnnotationStatus();
+                    //
+                    tsmi.Checked = true;
+                    tsmiAnnotateReferencePoints.Checked = true;
+                    tsmiAnnotateConstraints.Checked = true;
+                    tsmiAnnotateContactPairs.Checked = true;
+                    tsmiAnnotateBCs.Checked = true;
+                    tsmiAnnotateLoads.Checked = true;
+                    //
+                    _controller.AnnotateWithColor = AnnotateWithColorEnum.ReferencePoints |
+                                                    AnnotateWithColorEnum.Constraints |
+                                                    AnnotateWithColorEnum.ContactPairs |
+                                                    AnnotateWithColorEnum.BoundaryConditions |
+                                                    AnnotateWithColorEnum.Loads;
+                }
+            }
+        }
+        private void tsmiAnnotateReferencePoints_Click(object sender, EventArgs e)
+        {
+            _controller.AnnotateWithColor = ChangeAnnotationStatus(sender);
+        }
+        private void tsmiAnnotateConstraints_Click(object sender, EventArgs e)
+        {
+            _controller.AnnotateWithColor = ChangeAnnotationStatus(sender);
+        }
+        private void tsmiAnnotateContactPairs_Click(object sender, EventArgs e)
+        {
+            _controller.AnnotateWithColor = ChangeAnnotationStatus(sender);
+        }
+        private void tsmiAnnotateBCs_Click(object sender, EventArgs e)
+        {
+            _controller.AnnotateWithColor = ChangeAnnotationStatus(sender);
+        }
+        private void tsmiAnnotateLoads_Click(object sender, EventArgs e)
+        {
+            _controller.AnnotateWithColor = ChangeAnnotationStatus(sender);
+        }
+        //
+        private AnnotateWithColorEnum ChangeAnnotationStatus(object sender)
+        {
+            if (sender is ToolStripMenuItem tsmi)
+            {
+                // Turn off
+                if (tsmi.Checked) tsmi.Checked = false;
+                // Turn on
+                else
+                {
+                    // Only one possibility - Face orientations or parts
+                    if (tsmi == tsmiAnnotateFaceOrientations || tsmi == tsmiAnnotateParts ||
+                        tsmi == tsmiAnnotateMaterials || tsmi == tsmiAnnotateSections ||  
+                        tsmi == tsmiAnnotateSectionThicknesses)
+                    {
+                        ClearAnnotationStatus();
+                        tsmi.Checked = true;
+                    }
+                    // Symbols
+                    else
+                    {
+                        tsmiAnnotateFaceOrientations.Checked = false;
+                        tsmiAnnotateParts.Checked = false;
+                        tsmiAnnotateMaterials.Checked = false;
+                        tsmiAnnotateSections.Checked = false;
+                        tsmiAnnotateSectionThicknesses.Checked = false;
+                        //
+                        tsmi.Checked = true;
+                    }
+                }
+                //
+                if (tsmiAnnotateFaceOrientations.Checked) return AnnotateWithColorEnum.FaceOrientation;
+                else if (tsmiAnnotateParts.Checked) return AnnotateWithColorEnum.Parts;
+                else if (tsmiAnnotateMaterials.Checked) return AnnotateWithColorEnum.Materials;
+                else if (tsmiAnnotateSections.Checked) return AnnotateWithColorEnum.Sections;
+                else if (tsmiAnnotateSectionThicknesses.Checked) return AnnotateWithColorEnum.SectionThicknesses;
+                else
+                {
+                    AnnotateWithColorEnum status = AnnotateWithColorEnum.None;
+                    if (tsmiAnnotateReferencePoints.Checked) status |= AnnotateWithColorEnum.ReferencePoints;
+                    if (tsmiAnnotateConstraints.Checked) status |= AnnotateWithColorEnum.Constraints;
+                    if (tsmiAnnotateContactPairs.Checked) status |= AnnotateWithColorEnum.ContactPairs;
+                    if (tsmiAnnotateBCs.Checked) status |= AnnotateWithColorEnum.BoundaryConditions;
+                    if (tsmiAnnotateLoads.Checked) status |= AnnotateWithColorEnum.Loads;
+                    //
+                    tsmiAnnotateAllSymbols.Checked = status.HasFlag(AnnotateWithColorEnum.ReferencePoints |
+                                                                    AnnotateWithColorEnum.Constraints |
+                                                                    AnnotateWithColorEnum.ContactPairs |
+                                                                    AnnotateWithColorEnum.BoundaryConditions |
+                                                                    AnnotateWithColorEnum.Loads);
+                    //
+                    return status;
+                }
+            }
+            return AnnotateWithColorEnum.None;
+        }
+        private void ClearAnnotationStatus()
+        {
+            tsmiAnnotateFaceOrientations.Checked = false;
+            tsmiAnnotateParts.Checked = false;
+            tsmiAnnotateMaterials.Checked = false;
+            tsmiAnnotateSections.Checked = false;
+            tsmiAnnotateSectionThicknesses.Checked = false;
+            tsmiAnnotateReferencePoints.Checked = false;
+            tsmiAnnotateConstraints.Checked = false;
+            tsmiAnnotateContactPairs.Checked = false;
+            tsmiAnnotateBCs.Checked = false;
+            tsmiAnnotateLoads.Checked = false;
+            tsmiAnnotateAllSymbols.Checked = false;
         }
         //
         private void tsmiResultsUndeformed_Click(object sender, EventArgs e)
@@ -1978,8 +2118,8 @@ namespace PrePoMax
             try
             {
                 // Must be outside the await part otherwise couses screen flickering
-                bool _prevShowFaceOrientation = _controller.ShowFaceOrientation;
-                _controller.ShowFaceOrientation = true;
+                AnnotateWithColorEnum _prevShowWithColor = _controller.AnnotateWithColor;
+                _controller.AnnotateWithColor = AnnotateWithColorEnum.FaceOrientation;
                 //
                 await Task.Run(() =>
                 {
@@ -1991,7 +2131,7 @@ namespace PrePoMax
                     while (_frmSelectGeometry.Visible) System.Threading.Thread.Sleep(100);
                 });
                 //
-                _controller.ShowFaceOrientation = _prevShowFaceOrientation;
+                _controller.AnnotateWithColor = _prevShowWithColor;
             }
             catch (Exception ex)
             {
@@ -2931,6 +3071,21 @@ namespace PrePoMax
         private void EditRP(string referencePointName)
         {
             ShowForm(_frmReferencePoint, "Edit Reference Point", referencePointName);
+        }
+        private void HideRPs(string[] constraintNames)
+        {
+            _controller.HideReferencePointsCommand(constraintNames);
+        }
+        private void ShowRPs(string[] constraintNames)
+        {
+            _controller.ShowReferencePointsCommand(constraintNames);
+        }
+        private void ShowOnlyRPs(string[] referencePointNames)
+        {
+            HashSet<string> allNames = new HashSet<string>(_controller.Model.Mesh.ReferencePoints.Keys);
+            allNames.ExceptWith(referencePointNames);
+            _controller.ShowReferencePointsCommand(referencePointNames);
+            _controller.HideReferencePointsCommand(allNames.ToArray());
         }
         private void DeleteRPs(string[] referencePointNames)
         {
@@ -5029,6 +5184,7 @@ namespace PrePoMax
                 outputLines = new string[0];
                 tbOutput.Text = "";
                 ClearResults();
+                ClearAnnotationStatus();
                 
             });
         }
@@ -5244,7 +5400,10 @@ namespace PrePoMax
         public void SetColorBarColorsAndLabels(Color[] colors, string[] labels)
         {
             InvokeIfRequired(_vtk.SetColorBarColorsAndLabels, colors, labels);
-            
+        }
+        public void AddColorBarColorsAndLabels(Color[] colors, string[] labels)
+        {
+            InvokeIfRequired(_vtk.AddColorBarColorsAndLabels, colors, labels);
         }
         public void DrawColorBarBackground(bool drawBackground)
         {
@@ -5253,6 +5412,10 @@ namespace PrePoMax
         public void DrawColorBarBorder(bool drawBorder)
         {
             InvokeIfRequired(_vtk.DrawColorBarBorder, drawBorder);
+        }
+        public void HideColorBar()
+        {
+            InvokeIfRequired(_vtk.HideColorBar);
         }
         // Status bar
         public void DrawStatusBlockBackground(bool drawBackground)
@@ -5779,8 +5942,9 @@ namespace PrePoMax
 
         private void tsmiTest_Click(object sender, EventArgs e)
         {
-            if (timerTest.Enabled) timerTest.Stop();
-            else timerTest.Start();
+            //if (timerTest.Enabled) timerTest.Stop();
+            //else timerTest.Start();
+            _vtk.SwithchLights();
         }
 
         private void timerTest_Tick(object sender, EventArgs e)

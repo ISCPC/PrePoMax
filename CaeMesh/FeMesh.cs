@@ -1756,12 +1756,12 @@ namespace CaeMesh
             // Spread
             int edgeId;
             int[] edgeNodes;
-            bool hasFreeEdges = false;
             HashSet<int> surfaceEdgeIdsHash = new HashSet<int>();
             HashSet<int> cellNodes = new HashSet<int>();
             HashSet<int> newSurfaceCellIds = new HashSet<int>();
             HashSet<int> surfaceCellIdsHash = new HashSet<int>();
             HashSet<int> notVisitedCellIds = new HashSet<int>();
+            HashSet<int> freeEdgeCellIds = new HashSet<int>();
             //
             surfaceCellIdsHash.Add(cellId);
             notVisitedCellIds.Add(cellId);
@@ -1778,7 +1778,10 @@ namespace CaeMesh
                         {
                             if (!surfaceCellIdsHash.Contains(neighbourId) && !newSurfaceCellIds.Contains(neighbourId))
                             {
-                                if (neighbourId == -1) hasFreeEdges = true;
+                                if (neighbourId == -1)
+                                {
+                                    freeEdgeCellIds.Add(notVisitedCellId);
+                                }
                                 //
                                 else
                                 {
@@ -1807,15 +1810,26 @@ namespace CaeMesh
             while (notVisitedCellIds.Count > 0);
             // Cells
             surfaceCellIds = surfaceCellIdsHash.ToArray();
-            // Edges
-            HashSet<int> surfaceNodeIds = new HashSet<int>();
-            if (hasFreeEdges)
+            // Add Free edges
+            HashSet<int> freeEdgeCellsNodeIds = new HashSet<int>();
+            if (freeEdgeCellIds.Count > 0)
             {
-                for (int i = 0; i < surfaceCellIds.Length; i++) surfaceNodeIds.UnionWith(visualizationCells[surfaceCellIds[i]]);
+                foreach (var freeEdgeCellId in freeEdgeCellIds)
+                {
+                    freeEdgeCellsNodeIds.UnionWith(visualizationCells[freeEdgeCellId]);
+                }
                 foreach (var entry in modelEdges)
                 {
-                    if (surfaceNodeIds.Intersect(entry.Key).Count() == entry.Key.Length) surfaceEdgeIdsHash.Add(entry.Value);
+                    if (!surfaceEdgeIdsHash.Contains(entry.Value) && freeEdgeCellsNodeIds.Intersect(entry.Key).Count() == entry.Key.Length)
+                        surfaceEdgeIdsHash.Add(entry.Value);
                 }
+                //
+                //for (int i = 0; i < surfaceCellIds.Length; i++)
+                //    freeEdgeCellsNodeIds.UnionWith(visualizationCells[surfaceCellIds[i]]);
+                //foreach (var entry in modelEdges)
+                //{
+                //    if (freeEdgeCellsNodeIds.Intersect(entry.Key).Count() == entry.Key.Length) surfaceEdgeIdsHash.Add(entry.Value);
+                //}
             }
             surfaceEdgeIds = surfaceEdgeIdsHash.ToArray();
         }

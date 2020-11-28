@@ -222,7 +222,7 @@ namespace PrePoMax.Forms
         }
         private string GetReferencePointName()
         {
-            return NamedClass.GetNewValueName(_allExistingNames, "RP-");
+            return NamedClass.GetNewValueName(_allExistingNames, "Reference_point-");
         }
         private void HighlightReferencePoint()
         {
@@ -260,7 +260,7 @@ namespace PrePoMax.Forms
             {
                 // Convert the constraint from/to internal to hide/show it
                 _controller.GetReferencePoint(_referencePointToEditName).Internal = toInternal;
-                _controller.Update(UpdateType.RedrawSymbols);
+                _controller.FeModelUpdate(UpdateType.RedrawSymbols);
             }
         }
         // IFormHighlight

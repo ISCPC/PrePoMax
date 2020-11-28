@@ -198,7 +198,7 @@ namespace PrePoMax.Forms
         // Methods                                                                                                                  
         private string GetContactPairName()
         {
-            return NamedClass.GetNewValueName(_contactPairNames, "ContactPair-");
+            return NamedClass.GetNewValueName(_contactPairNames, "Contact_pair-");
         }
         private void HighlightContactPair()
         {
@@ -287,7 +287,7 @@ namespace PrePoMax.Forms
             {
                 // Convert the contact pair from/to internal to hide/show it
                 _controller.GetContactPair(_contactPairToEditName).Internal = toInternal;
-                _controller.Update(UpdateType.RedrawSymbols);
+                _controller.FeModelUpdate(UpdateType.RedrawSymbols);
             }
         }
         //

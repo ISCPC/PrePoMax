@@ -323,7 +323,8 @@ namespace PrePoMax.Forms
             lvTypes.Items.Add(item);
             // Displacement/Rotation
             item = new ListViewItem("Displacement/Rotation");
-            DisplacementRotation dr = new DisplacementRotation(GetBoundaryConditionName("Disp_rot"), "", RegionTypeEnum.Selection);
+            DisplacementRotation dr = new DisplacementRotation(GetBoundaryConditionName("Displacement_rotation"), 
+                                                               "", RegionTypeEnum.Selection);
             ViewDisplacementRotation vdr = new ViewDisplacementRotation(dr);
             vdr.PopululateDropDownLists(nodeSetNames, surfaceNames, referencePointNames);
             vdr.Color = color;
@@ -401,7 +402,7 @@ namespace PrePoMax.Forms
             {
                 // Convert the boundary condition from/to internal to hide/show it
                 _controller.GetBoundaryCondition(_stepName, _boundaryConditionToEditName).Internal = toInternal;
-                _controller.Update(UpdateType.RedrawSymbols);
+                _controller.FeModelUpdate(UpdateType.RedrawSymbols);
             }
         }
         //

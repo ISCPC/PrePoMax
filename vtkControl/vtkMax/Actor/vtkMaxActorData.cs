@@ -25,6 +25,7 @@ namespace vtkControl
         public float LineWidth;
         public Color Color;
         public Color BackfaceColor;
+        public Color[] ColorTable;
         public double Ambient;
         public double Diffuse;
         public vtkRendererLayer Layer;
@@ -51,6 +52,7 @@ namespace vtkControl
             LineWidth = 1;
             Color = Color.Empty;
             BackfaceColor = Color.Empty;
+            ColorTable = null;
             Ambient = 0.1;
             Diffuse = 0.1;
             Layer = vtkRendererLayer.Base;

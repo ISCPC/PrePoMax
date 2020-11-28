@@ -5,6 +5,7 @@ using Kitware.VTK;
 
 namespace vtkControl
 {
+    public delegate double[] GetPickPointDelegate(out vtkActor pickedActor, int x, int y);
     class vtkInteractorStyleControl : vtkInteractorStyleTrackballCamera
     {
         // Variables                                                                                                                
@@ -124,12 +125,16 @@ namespace vtkControl
         public bool Animating { get { return _animating; } set { _animating = value; } }
 
 
+        // Callbacks
+        public GetPickPointDelegate GetPickPoint;
+
+
         // Events                                                                                                                   
         public event Action<int, int, bool, int, int> PointPickedOnMouseMoveEvt;
         public event Action<int, int, bool, int, int> PointPickedOnLeftUpEvt;
         public event Action ClearCurrentMouseSelection;
         public event Action<int, int> LeftButtonPressEvent;
-        public event Action<int, int> RightButtonPressEvent;        
+        public event Action<int, int> RightButtonPressEvent;
 
 
         // Constructors                                                                                                             
@@ -278,27 +283,33 @@ namespace vtkControl
             if (_clickPos != null && Math.Abs(_clickPos[0] - currClickPos[0]) + Math.Abs(_clickPos[0] - currClickPos[0]) < 2)
             {
                 // Only click happened
-                vtkPropPicker picker = vtkPropPicker.New();
-                renderer.Render(); // to redraw the first - BASE - layer of geometry again
-                picker.Pick(currClickPos[0], currClickPos[1], 0, renderer);
-                _rotationCenterWorld = picker.GetPickPosition();
-                //
-                if (picker.GetActor() == null)
+                if (GetPickPoint != null)
                 {
-                    // The click was not a hit
-                    // Use the center of the bounding box
-                    double[] bounds = renderer.ComputeVisiblePropBounds();
-                    _rotationCenterWorld[0] = (bounds[1] + bounds[0]) / 2;
-                    _rotationCenterWorld[1] = (bounds[3] + bounds[2]) / 2;
-                    _rotationCenterWorld[2] = (bounds[5] + bounds[4]) / 2;
-                }
-                else
-                {
-                    // The click was a hit
-                    vtkCamera camera = renderer.GetActiveCamera();
-                    double[] center = camera.GetFocalPoint();
-                    PanCamera(camera, center, _rotationCenterWorld);
-                    AdjustCameraDistance(renderer, camera);
+                    //vtkPropPicker picker = vtkPropPicker.New();
+                    //renderer.Render(); // to redraw the first - BASE - layer of geometry again
+                    //picker.Pick(currClickPos[0], currClickPos[1], 0, renderer);
+                    //_rotationCenterWorld = picker.GetPickPosition();
+                    vtkActor actor;
+                    double[] pickPoint = GetPickPoint(out actor, currClickPos[0], currClickPos[1]);
+                    if (pickPoint != null) _rotationCenterWorld = pickPoint;
+                    //
+                    if (actor == null) // picker.GetActor() == null
+                    {
+                        // The click was not a hit
+                        // Use the center of the bounding box
+                        double[] bounds = renderer.ComputeVisiblePropBounds();
+                        _rotationCenterWorld[0] = (bounds[1] + bounds[0]) / 2;
+                        _rotationCenterWorld[1] = (bounds[3] + bounds[2]) / 2;
+                        _rotationCenterWorld[2] = (bounds[5] + bounds[4]) / 2;
+                    }
+                    else
+                    {
+                        // The click was a hit
+                        vtkCamera camera = renderer.GetActiveCamera();
+                        double[] center = camera.GetFocalPoint();
+                        PanCamera(camera, center, _rotationCenterWorld);
+                        AdjustCameraDistance(renderer, camera);
+                    }
                 }
             }
             // Adjust the clipping range and lights

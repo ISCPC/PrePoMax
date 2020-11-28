@@ -318,7 +318,7 @@ namespace PrePoMax.Forms
         }
         private string GetSurfaceInteractionName()
         {
-            return NamedClass.GetNewValueName(_surfraceInteractionNames, "SurfaceInteraction-");
+            return NamedClass.GetNewValueName(_surfraceInteractionNames, "Surface_interaction-");
         }
 
        

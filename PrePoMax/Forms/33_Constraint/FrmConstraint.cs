@@ -305,7 +305,7 @@ namespace PrePoMax.Forms
             item = new ListViewItem("Rigid body");
             if (referencePointNames.Length > 0)
             {
-                RigidBody rb = new RigidBody(GetConstraintName("Rigid-body-"), referencePointNames[0], "", RegionTypeEnum.Selection);
+                RigidBody rb = new RigidBody(GetConstraintName("Rigid_body-"), referencePointNames[0], "", RegionTypeEnum.Selection);
                 ViewRigidBody vrb = new ViewRigidBody(rb);
                 vrb.PopululateDropDownLists(referencePointNames, nodeSetNames, surfaceNames);
                 vrb.Color = color;
@@ -453,7 +453,7 @@ namespace PrePoMax.Forms
             {
                 // Convert the constraint from/to internal to hide/show it
                 _controller.GetConstraint(_constraintToEditName).Internal = toInternal;
-                _controller.Update(UpdateType.RedrawSymbols);
+                _controller.FeModelUpdate(UpdateType.RedrawSymbols);
             }
         }
         //

@@ -567,7 +567,7 @@ namespace PrePoMax.Forms
             {
                 // Convert the load from/to internal to hide/show it
                 _controller.GetLoad(_stepName, _loadToEditName).Internal = toInternal;
-                _controller.Update(UpdateType.RedrawSymbols);
+                _controller.FeModelUpdate(UpdateType.RedrawSymbols);
             }
         }
         //

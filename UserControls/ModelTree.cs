@@ -2165,6 +2165,7 @@ namespace UserControls
         private bool CanHide(object item)
         {
             if (item is BasePart) return true;
+            else if (item is FeReferencePoint) return true;
             else if (item is Constraint) return true;
             else if (item is ContactPair) return true;
             else if (item is BoundaryCondition) return true;

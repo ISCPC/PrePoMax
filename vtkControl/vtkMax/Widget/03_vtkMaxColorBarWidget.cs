@@ -30,6 +30,8 @@ namespace vtkControl
 
 
         // Properties                                                                                                               
+        public Color[] Colors {get {return _colors;} }
+        public string[] Labels { get { return _labels; } }
 
 
         // Constructors                                                                                                             
@@ -44,9 +46,11 @@ namespace vtkControl
             InitializeLabels();
             InitializeBar();
             //
-            _colors = new Color[] { Color.Red, Color.Green, Color.Blue, Color.Yellow, Color.Violet };
-            _labels = new string[] { "Red", "Green", "Blue", "Yellow", "Violet" };
-            SetColorsAndLabels(_colors, _labels);
+            SetColorsAndLabels(null, null);
+            //
+            //_colors = new Color[] { Color.Red, Color.Green, Color.Blue, Color.Yellow, Color.Violet };
+            //_labels = new string[] { "Red", "Green", "Blue", "Yellow", "Violet" };
+            //SetColorsAndLabels(_colors, _labels);
         }
 
 
@@ -340,11 +344,11 @@ namespace vtkControl
                 if (_colorBarColorsActor != null) _renderer.RemoveActor(_colorBarColorsActor);
             }
         }
-        public void SetText(string text)
-        {
-            base.SetText(text);
-            OnSizeChanged();
-        }
+        //public void SetText(string text)
+        //{
+        //    base.SetText(text);
+        //    OnSizeChanged();
+        //}
         
 
         // Public setters                                                                                                           
@@ -356,21 +360,42 @@ namespace vtkControl
             _renderer.AddActor(_colorBarColorsActor);
             _renderer.AddActor(_colorBarBorderActor);
         }
+        public void ClearColorsAndLabels()
+        {
+            SetColorsAndLabels(null, null);
+        }
         public void SetColorsAndLabels(Color[] colors, string[] labels)
         {
             if (colors != null) _colors = colors.ToArray();
+            else _colors = new Color[0];
             if (labels != null) _labels = labels.ToArray();
+            else _labels = new string[0];
+            // Replace _ and - for empty char
+            for (int i = 0; i < _labels.Length; i++) _labels[i] = _labels[i].Replace('_', ' ').Replace('-', ' ');
             //
             _lookupTable = vtkLookupTable.New();
             _lookupTable.SetNumberOfTableValues(_colors.Length);
             _lookupTable.SetRange(0, _colors.Length);
-            // Fill in a few known colors, the rest will be generated if needed
+            // Fill in the colors
             for (int i = 0; i < _colors.Length; i++)
             {
                 _lookupTable.SetTableValue(i, colors[i].R / 255.0, colors[i].G / 255.0, colors[i].B / 255.0, 1.0);
             }
             //
             OnSizeChanged();
+        }
+        public void AddColorsAndLabels(Color[] colors, string[] labels)
+        {
+            if (colors != null && labels != null)
+            {
+                List<Color> allColors = new List<Color>(_colors);
+                List<string> allLabels = new List<string>(_labels);
+                //
+                allColors.AddRange(colors);
+                allLabels.AddRange(labels);
+                //
+                SetColorsAndLabels(allColors.ToArray(), allLabels.ToArray());
+            }
         }
         //
         public override void SetTextProperty(vtkTextProperty textProperty)

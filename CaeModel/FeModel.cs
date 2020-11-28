@@ -384,14 +384,20 @@ namespace CaeModel
             }
         }
         //
-        public int[] CheckSectionAssignments()
+        public int[] GetSectionAssignments(out Dictionary<int, int> elementIdSectionId)
         {
-            HashSet<int> elementIds = new HashSet<int>();
+            int sectionId = 0;
+            elementIdSectionId = new Dictionary<int, int>();
+            //
             foreach (var entry in _sections)
             {
                 if (entry.Value.RegionType == RegionTypeEnum.PartName)
                 {
-                    elementIds.UnionWith(_mesh.Parts[entry.Value.RegionName].Labels);
+                    foreach (var elementId in _mesh.Parts[entry.Value.RegionName].Labels)
+                    {
+                        if (elementIdSectionId.ContainsKey(elementId)) elementIdSectionId[elementId] = sectionId;
+                        else elementIdSectionId.Add(elementId, sectionId);
+                    }
                 }
                 else if (entry.Value.RegionType == RegionTypeEnum.ElementSetName)
                 {
@@ -401,28 +407,101 @@ namespace CaeModel
                         if (elementSet.CreatedFromParts)
                         {
                             string[] partNames = _mesh.GetPartNamesByIds(elementSet.Labels);
-                            foreach (var partName in partNames) elementIds.UnionWith(_mesh.Parts[partName].Labels);
+                            foreach (var partName in partNames)
+                            {
+                                foreach (var elementId in _mesh.Parts[partName].Labels)
+                                {
+                                    if (elementIdSectionId.ContainsKey(elementId)) elementIdSectionId[elementId] = sectionId;
+                                    else elementIdSectionId.Add(elementId, sectionId);
+                                }
+                            }
                         }
-                        else  elementIds.UnionWith(elementSet.Labels);
+                        else
+                        {
+                            foreach (var elementId in elementSet.Labels)
+                            {
+                                if (elementIdSectionId.ContainsKey(elementId)) elementIdSectionId[elementId] = sectionId;
+                                else elementIdSectionId.Add(elementId, sectionId);
+                            }
+                        }
                     }
                     else if (entry.Value is ShellSection)
                     {
                         FeElementSet elementSet = _mesh.ElementSets[entry.Value.RegionName];
-                        //if (elementSet.CreationData.SelectItem == vtkSelectItem.Geometry)
-                        //{
-                        //    elementIds.UnionWith(_mesh.GetIdsFromGeometryIds(elementSet.CreationIds, vtkSelectItem.Element));
-                        //}
-                        //else
-                        elementIds.UnionWith(elementSet.Labels);
+                        foreach (var elementId in elementSet.Labels)
+                        {
+                            if (elementIdSectionId.ContainsKey(elementId)) elementIdSectionId[elementId] = sectionId;
+                            else elementIdSectionId.Add(elementId, sectionId);
+                        }
                     }
                     else throw new NotSupportedException();
                 }
                 else throw new NotSupportedException();
+                //
+                sectionId++;
             }
+            // Not assigned
+            IEnumerable<int> unAssignedElementIds = _mesh.Elements.Keys.Except(elementIdSectionId.Keys);
+            foreach (var elementId in unAssignedElementIds) elementIdSectionId.Add(elementId, -1);
             //
-            var notSpecifiedIds = _mesh.Elements.Keys.Except(elementIds);
-            //
-            return notSpecifiedIds.ToArray();
+            return unAssignedElementIds.ToArray();
+        }
+        public void GetMaterialAssignments(out Dictionary<int, int> elementIdMaterialId)
+        {
+            // Get element section ids
+            Dictionary<int, int> elementIdSectionId;
+            GetSectionAssignments(out elementIdSectionId);
+            // Get material ids
+            int count = 0;
+            Dictionary<string, int> materialId = new Dictionary<string, int>();
+            foreach (var entry in _materials) materialId.Add(entry.Value.Name, count++);
+            // Get a map of section materials
+            count = 0;
+            Dictionary<int, int> sectionIdMaterialId = new Dictionary<int, int>();
+            sectionIdMaterialId.Add(-1, -1);    // add missing section
+            foreach (var entry in _sections) sectionIdMaterialId.Add(count++, materialId[entry.Value.MaterialName]);
+            // Use the map
+            elementIdMaterialId = new Dictionary<int, int>();
+            foreach (var entry in elementIdSectionId) elementIdMaterialId.Add(entry.Key, sectionIdMaterialId[entry.Value]);
+        }
+        public void GetSectionThicknessAssignments(out Dictionary<int, int> elementIdSectionThicknessId)
+        {
+            // Get element section ids
+            Dictionary<int, int> elementIdSectionId;
+            GetSectionAssignments(out elementIdSectionId);
+            // Get thicknesses
+            int count = 0;
+            double thickness;
+            List<int> sectionIds;
+            Dictionary<double, List<int>> thicknessSectionIds = new Dictionary<double, List<int>>();
+            foreach (var entry in _sections)
+            {
+                if (entry.Value is ShellSection ss) thickness = ss.Thickness;
+                else thickness = -1;
+                //
+                if (thicknessSectionIds.TryGetValue(thickness, out sectionIds)) sectionIds.Add(count);
+                else thicknessSectionIds.Add(thickness, new List<int>() { count });
+                count++;
+            }
+            double[] sortedThicknesses = thicknessSectionIds.Keys.ToArray();
+            Array.Sort(sortedThicknesses);
+            // Get a map of section thicknesses
+            Dictionary<int, int> sectionIdSectionThicknessId = new Dictionary<int, int>();
+            sectionIdSectionThicknessId.Add(-1, -1);
+            if (sortedThicknesses.Length > 0 && sortedThicknesses[0] == -1) count = -1;
+            else count = 0;
+            foreach (var sortedThickness in sortedThicknesses)
+            {
+                foreach (var sectionId in thicknessSectionIds[sortedThickness])
+                {
+                    sectionIdSectionThicknessId.Add(sectionId, count);
+                }
+                count++;
+            }
+            // Use the map
+            elementIdSectionThicknessId = new Dictionary<int, int>();
+            foreach (var entry in elementIdSectionId)
+                elementIdSectionThicknessId.Add(entry.Key, sectionIdSectionThicknessId[entry.Value]);
         }
         //
         public void RemoveLostUserKeywords(Action<int> SetNumberOfUserKeywords)

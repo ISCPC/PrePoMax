@@ -33,6 +33,9 @@ namespace vtkControl
         private vtkRenderer _overlayRenderer;
         private vtkRenderWindow _renderWindow;
         private vtkRenderWindowInteractor _renderWindowInteractor;
+        private vtkLight _light1;
+        private vtkLight _light2;
+        private vtkLight _light3;
         private vtkOrientationMarkerWidget _coorSys;
         private vtkMaxScaleWidget _scaleWidget;
         private vtkLookupTable _lookupTable;
@@ -1567,26 +1570,36 @@ namespace vtkControl
             _renderWindow.LineSmoothingOn();
             //_renderWindow.PolygonSmoothingOn();
             _renderWindow.SetMultiSamples(2);
-
-            vtkLight light = vtkLight.New();
-            light.SetPosition(-1, 1, 1);
-            light.SetFocalPoint(0, 0, 0);
-            light.SetColor(1, 1, 1);
-            light.SetIntensity(0.5);
-            light.SetLightTypeToCameraLight();
-            _renderer.AddLight(light);
-            _overlayRenderer.AddLight(light);
-            _selectionRenderer.AddLight(light);
-
-            light = vtkLight.New();
-            light.SetPosition(1, 1, 1);
-            light.SetFocalPoint(0, 0, 0);
-            light.SetColor(1, 1, 1);
-            light.SetIntensity(0.5);
-            light.SetLightTypeToCameraLight();
-            _renderer.AddLight(light);
-            _overlayRenderer.AddLight(light);
-            _selectionRenderer.AddLight(light);
+            //Camera is located at (0, 0, 1), the camera is looking at (0, 0, 0), and up is (0, 1, 0).
+            _light1 = vtkLight.New();
+            _light1.SetPosition(-1, 1, 1);
+            _light1.SetFocalPoint(0, 0, 0);
+            _light1.SetColor(1, 1, 1);
+            _light1.SetIntensity(0.5);
+            _light1.SetLightTypeToCameraLight();
+            _renderer.AddLight(_light1);
+            _overlayRenderer.AddLight(_light1);
+            _selectionRenderer.AddLight(_light1);
+            //
+            _light2 = vtkLight.New();
+            _light2.SetPosition(1, 1, 1);
+            _light2.SetFocalPoint(0, 0, 0);
+            _light2.SetColor(1, 1, 1);
+            _light2.SetIntensity(0.5);
+            _light2.SetLightTypeToCameraLight();
+            _renderer.AddLight(_light2);
+            _overlayRenderer.AddLight(_light2);
+            _selectionRenderer.AddLight(_light2);
+            //
+            _light3 = vtkLight.New();
+            _light3.SetPosition(0, -1, 0);
+            _light3.SetFocalPoint(0, 0, 0);
+            _light3.SetColor(1, 1, 1);
+            _light3.SetSpecularColor(0, 0, 0);
+            _light3.SetIntensity(0.3);
+            _light3.SetLightTypeToCameraLight();
+            _light3.SwitchOff();
+            _renderer.AddLight(_light3);
 
             // coorSystem
             vtkAxesActor axes = vtkAxesActor.New();
@@ -1619,7 +1632,8 @@ namespace vtkControl
             _style.SetCurrentRenderer(_renderer);
             _style.SetOverlayRenderer(_overlayRenderer);
             _style.SetSelectionRenderer(_selectionRenderer);
-
+            _style.GetPickPoint = this.GetPickPoint;
+            //
             _style.PointPickedOnMouseMoveEvt += _style_PointPickedOnMouseMoveEvt;
             _style.PointPickedOnLeftUpEvt += _style_PointPickedOnLeftUpEvt;
             _style.ClearCurrentMouseSelection += ClearCurrentMouseSelection;
@@ -2862,7 +2876,7 @@ namespace vtkControl
             // Create actor
             vtkMaxActor actor = new vtkMaxActor(data);
             //
-            AddActor(actor, data.Layer, data.CanHaveElementEdges);
+            AddActor(actor, data.Layer, data.CanHaveElementEdges);            
             //
             _style.AdjustCameraDistanceAndClipping();
             this.Invalidate();
@@ -3280,6 +3294,8 @@ namespace vtkControl
             if (actor.ElementEdges != null) AddActorEdges(actor, false, layer);
             // Add modelEdges
             if (actor.ModelEdges != null) AddActorEdges(actor, true, layer);
+            // Turn on light3 for parts colored by elements
+            if (actor.ColorTable != null) _light3.SwitchOn();
         }
         private void AddActorGeometry(vtkMaxActor actor, vtkRendererLayer layer)
         {
@@ -4265,6 +4281,11 @@ namespace vtkControl
             _colorBarWidget.SetColorsAndLabels(colors, labels);
             _colorBarWidget.VisibilityOn();
         }
+        public void AddColorBarColorsAndLabels(Color[] colors, string[] labels)
+        {
+            _colorBarWidget.AddColorsAndLabels(colors, labels);
+            _colorBarWidget.VisibilityOn();
+        }
         public void DrawColorBarBackground(bool drawBackground)
         {
             _colorBarWidget.SetBackgroundColor(1, 1, 1);
@@ -4279,6 +4300,9 @@ namespace vtkControl
         public void HideColorBar()
         {
             _colorBarWidget.VisibilityOff();
+            _colorBarWidget.ClearColorsAndLabels();
+            //
+            this.Invalidate();
         }
         // Status bar
         public void DrawStatusBlockBackground(bool drawBackground)
@@ -4582,7 +4606,8 @@ namespace vtkControl
                         pointData.SetActiveScalars("none");
                     if (mapper.GetInterpolateScalarsBeforeMapping() != 0)
                         mapper.SetInterpolateScalarsBeforeMapping(0); // discrete colors must be turned off
-                    actor.Geometry.GetProperty().SetColor(actor.Color.R / 255d, actor.Color.G / 255d, actor.Color.B / 255d);
+                    //actor.Geometry.GetProperty().SetColor(actor.Color.R / 255d, actor.Color.G / 255d, actor.Color.B / 255d);
+                    actor.UpdateColor();
                 }
 
                 if (!actor.VtkMaxActorVisible || !actor.ColorContours) continue;
@@ -5083,6 +5108,8 @@ namespace vtkControl
             if (_sectionView) RemoveSectionView();
             _transforms.Clear();
             //
+            _light3.SwitchOff();
+            //
             foreach (var entry in _actors)
             {
                 _renderer.RemoveActor(entry.Value.Geometry);
@@ -5097,7 +5124,7 @@ namespace vtkControl
             _animationFrameData = new vtkMaxAnimationFrameData();
             //
             if (_scalarBarWidget != null) _scalarBarWidget.VisibilityOff();
-            if (_colorBarWidget != null) _colorBarWidget.VisibilityOff();
+            if (_colorBarWidget != null) HideColorBar();
             if (_statusBlockWidget != null) _statusBlockWidget.VisibilityOff();
             if (_minValueWidget != null) _minValueWidget.VisibilityOff();
             if (_maxValueWidget != null) _maxValueWidget.VisibilityOff();
@@ -5111,7 +5138,6 @@ namespace vtkControl
         {
             vtkMaxActor actor;
             List<string> actorsToRemove = new List<string>();
-
             // Add section cut actors if they exist
             HashSet<string> partNamesToKeep = new HashSet<string>(partNames);
             if (_sectionView)
@@ -5119,18 +5145,18 @@ namespace vtkControl
                 for (int i = 0; i < partNames.Length; i++)
                     partNamesToKeep.Add(GetSectionViewActorName(partNames[i]));
             }
-
+            //
             foreach (var entry in _actors)
             {
                 actor = entry.Value;
                 if (!partNamesToKeep.Contains(actor.Name))
                 {
                     actorsToRemove.Add(actor.Name);
-                    // remove from renderer
+                    // Remove from renderer
                     _renderer.RemoveActor(actor.Geometry);
                     _renderer.RemoveActor(actor.ElementEdges);
                     _renderer.RemoveActor(actor.ModelEdges);
-                    // remove cell locator and picker
+                    // Remove cell locator and picker
                     if (actor.Geometry.GetPickable() == 1)
                     {
                         if (actor.CellLocator != null) _cellPicker.RemoveLocator(actor.CellLocator);
@@ -5138,9 +5164,9 @@ namespace vtkControl
                     }
                 }
             }
-            // remove actors
+            // Remove actors
             foreach (string name in actorsToRemove) _actors.Remove(name);
-
+            //
             ClearSelection();
             ClearOverlay();
         }
@@ -5198,6 +5224,28 @@ namespace vtkControl
         }
         #endregion #################################################################################################################
 
+
+        public void SwithchLights()
+        {
+            _renderer.RemoveAllLights();
+            //
+            _renderer.AddLight(_light1);
+            _light1.SetSwitch((_light1.GetSwitch() + 1) % 2);
+            //
+            _renderer.AddLight(_light2);
+            _light2.SetSwitch((_light2.GetSwitch() + 1) % 2);
+            //
+            vtkLight light3 = vtkLight.New();
+            light3.SetPosition(0, -1, 0);
+            light3.SetFocalPoint(0, 0, 0);
+            light3.SetColor(1, 1, 1);
+            light3.SetIntensity(0.5);
+            light3.SetSpecularColor(0, 0, 0);
+            light3.SetLightTypeToCameraLight();
+            _renderer.AddLight(light3);
+            //
+            Invalidate();
+        }
 
 
         public bool ContainsActor(string actorName)

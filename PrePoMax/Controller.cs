@@ -30,7 +30,7 @@ namespace PrePoMax
         [NonSerialized] protected ViewGeometryModelResults _currentView;
         [NonSerialized] protected string _drawSymbolsForStep;
         [NonSerialized] protected Dictionary<ViewGeometryModelResults, Octree.Plane> _sectionViewPlanes;
-        [NonSerialized] protected bool _showFaceOrientation;
+        [NonSerialized] protected AnnotateWithColorEnum _annotateWithColor;
         // Selection
         [NonSerialized] protected vtkSelectBy _selectBy;
         [NonSerialized] protected double _selectAngle;
@@ -114,15 +114,16 @@ namespace PrePoMax
         {
             return _sectionViewPlanes[_currentView] != null;
         }
-        public bool ShowFaceOrientation
+        public AnnotateWithColorEnum AnnotateWithColor
         {
-            get { return _showFaceOrientation; } 
+            get { return _annotateWithColor; } 
             set
             {
-                _showFaceOrientation = value;
+                _annotateWithColor = value;
                 //
-                if (_showFaceOrientation) _form.InitializeColorBarWidgetPosition();
+                if (_annotateWithColor == AnnotateWithColorEnum.None) _form.HideColorBar();
                 //
+                _form.InitializeColorBarWidgetPosition();
                 if (_currentView == ViewGeometryModelResults.Geometry) DrawGeometry(false);
                 else if (_currentView == ViewGeometryModelResults.Model) DrawMesh(false);
                 else if (_currentView == ViewGeometryModelResults.Results) DrawResults(false); // Also calls Clear
@@ -969,7 +970,7 @@ namespace PrePoMax
             // Regenerate tree
             _form.RegenerateTree(_model, _jobs, _results, _history);
             // Redraw to be able to update sets based on selection
-            Update(UpdateType.DrawMesh);
+            FeModelUpdate(UpdateType.DrawMesh);
             // At the end update the sets
             if (renumbered)
             {
@@ -979,7 +980,7 @@ namespace PrePoMax
                 UpdateSurfacesBasedOnGeometry(false);
             }
             // Update the sets and symbols
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         // Save
         public string GetFileNameToSaveAs()
@@ -1428,6 +1429,8 @@ namespace PrePoMax
                 _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, name, _model.Geometry.Parts[name], null);
             }
             _form.HideActors(partNamesToHide.ToArray(), false);
+            // Update
+            AnnotateWithColorLegend();
         }
         public void ShowGeometryParts(string[] partNames)
         {
@@ -1466,6 +1469,8 @@ namespace PrePoMax
                 _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, name, _model.Geometry.Parts[name], null);
             }
             _form.ShowActors(partNamesToShow.ToArray(), false);
+            // Update
+            AnnotateWithColorLegend();
         }
         public void SetTransparencyForGeometryParts(string[] partNames, byte alpha)
         {
@@ -1513,6 +1518,7 @@ namespace PrePoMax
             // Update
             if (!(geomPart is CompoundGeometryPart)) _form.UpdateActor(oldPartName, geomPart.Name, geomPart.Color);
             _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, oldPartName, geomPart, null);
+            AnnotateWithColorLegend();
             //
             // Rename the mesh part in pair with the geometry part
             if (oldPartName != geomPart.Name && _model.Mesh != null && _model.Mesh.Parts.ContainsKey(oldPartName))
@@ -1768,20 +1774,23 @@ namespace PrePoMax
             int node2Id;
             FeNode node1;
             FeNode node2;
-            BasePart part;
+            BasePart tmpPart;
+            BasePart facePart;
             int[] itemTypePartIds;
             itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(surfaceSelection.GeometryIds[0]);
-            faceId = itemTypePartIds[0];
-            part = _model.Geometry.GetPartById(itemTypePartIds[2]);
+            facePart = _model.Geometry.GetPartById(itemTypePartIds[2]);
+            faceId = itemTypePartIds[0];            
             //
             itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(verticesSelection.GeometryIds[0]);
-            node1Id = part.Visualization.VertexNodeIds[itemTypePartIds[0]];
+            tmpPart = _model.Geometry.GetPartById(itemTypePartIds[2]);
+            node1Id = tmpPart.Visualization.VertexNodeIds[itemTypePartIds[0]];
             itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(verticesSelection.GeometryIds[1]);
-            node2Id = part.Visualization.VertexNodeIds[itemTypePartIds[0]];
+            tmpPart = _model.Geometry.GetPartById(itemTypePartIds[2]);
+            node2Id = tmpPart.Visualization.VertexNodeIds[itemTypePartIds[0]];
             node1 = _model.Geometry.Nodes[node1Id];
             node2 = _model.Geometry.Nodes[node2Id];
             //
-            if (part != null && part is GeometryPart gp)
+            if (facePart != null && facePart is GeometryPart gp)
             {
                 string brepFileName = SplitAFaceUsingTwoPoints(gp, faceId, node1, node2);
                 //
@@ -1831,7 +1840,7 @@ namespace PrePoMax
                 CalculixSettings settings = _settings.Calculix;
                 string fileName = Path.Combine(settings.WorkDirectory, Globals.StlFileName);
                 //
-                _form.CropPartWithCylinder(partName, 10, fileName);
+                _form.CropPartWithCylinder(partName, 1, fileName);
                 //
                 ReplacePartGeometryFromFile(part, fileName);
             }
@@ -2014,7 +2023,7 @@ namespace PrePoMax
             //
             _form.AddTreeNode(ViewGeometryModelResults.Geometry, meshRefinement, null);
             //
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public FeMeshRefinement GetMeshRefinement(string meshRefinementName)
         {
@@ -2035,7 +2044,7 @@ namespace PrePoMax
             //
             _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, meshRefinementName, meshRefinement, null);
             //
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void ReplaceMeshRefinement(string oldMeshRefinementName, FeMeshRefinement meshRefinement)
         {
@@ -2052,7 +2061,7 @@ namespace PrePoMax
             //
             _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, oldMeshRefinementName, meshRefinement, null);
             //
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void RemoveMeshRefinements(string[] meshRefinementNames)
         {
@@ -2062,7 +2071,7 @@ namespace PrePoMax
                 _form.RemoveTreeNode<FeMeshRefinement>(ViewGeometryModelResults.Geometry, name, null);
             }
             //
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public string[] GetPartNamesFromMeshRefinement(FeMeshRefinement meshRefinement)
         {
@@ -2161,10 +2170,10 @@ namespace PrePoMax
             //
             FileInOut.Output.MmgFileWriter.Write(mmgInMesh, _model.Geometry, new string[] { part.Name });
             //
-            string argument = "-m 5000 " +
+            string argument = "-nr " + "-m 10000 " + //"-ar 180 "
                               "-hmax " + part.MeshingParameters.MaxH + " " +
                               "-hmin " + part.MeshingParameters.MinH + " " +
-                              "-hausd " + 0.01 * part.BoundingBox.GetDiagonal() + " " +
+                              "-hausd " + 0.02 * part.BoundingBox.GetDiagonal() + " " +
                               "-in \"" + mmgInMesh + "\" " +
                               "-out \"" + mmgOutMesh + "\" ";
             //
@@ -2542,7 +2551,9 @@ namespace PrePoMax
             }
             _form.HideActors(partNames, false);
             //
-            Update(UpdateType.RedrawSymbols);
+            AnnotateWithColorLegend();
+            //
+            FeModelUpdate(UpdateType.RedrawSymbols);
         }
         public void ShowModelParts(string[] partNames)
         {
@@ -2557,7 +2568,9 @@ namespace PrePoMax
             }
             _form.ShowActors(partNames, false);
             //
-            Update(UpdateType.RedrawSymbols);
+            AnnotateWithColorLegend();
+            //
+            FeModelUpdate(UpdateType.RedrawSymbols);
         }
         public void SetTransparencyForModelParts(string[] partNames, byte alpha)
         {
@@ -2605,6 +2618,8 @@ namespace PrePoMax
                 _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, oldPartName, geomPart, null);
             }
             //
+            AnnotateWithColorLegend();
+            //
             CheckAndUpdateValidity();
         }
         public void TranslateModelParts(string[] partNames, double[] translateVector, bool copy)
@@ -2621,7 +2636,7 @@ namespace PrePoMax
                     _form.AddTreeNode(ViewGeometryModelResults.Model, _model.Mesh.Parts[partName], null);
                 }
             }
-            Update(UpdateType.DrawMesh | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.DrawMesh | UpdateType.RedrawSymbols);
         }
         public void ScaleModelParts(string[] partNames, double[] scaleCenter, double[] scaleFactors, bool copy)
         {
@@ -2636,7 +2651,7 @@ namespace PrePoMax
                     _form.AddTreeNode(ViewGeometryModelResults.Model, _model.Mesh.Parts[partName], null);
                 }
             }
-            Update(UpdateType.DrawMesh | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.DrawMesh | UpdateType.RedrawSymbols);
         }
         public void RotateModelParts(string[] partNames, double[] rotateCenter, double[] rotateAxis, double rotateAngle, bool copy)
         {
@@ -2651,26 +2666,28 @@ namespace PrePoMax
                     _form.AddTreeNode(ViewGeometryModelResults.Model, _model.Mesh.Parts[partName], null);
                 }
             }
-            Update(UpdateType.DrawMesh | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.DrawMesh | UpdateType.RedrawSymbols);
         }
         public void MergeModelParts(string[] partNames)
         {
             ViewGeometryModelResults view = ViewGeometryModelResults.Model;
             MeshPart newMeshPart;
             string[] mergedParts;
-
+            //
             _model.Mesh.MergeMeshParts(partNames, out newMeshPart, out mergedParts);
-
+            //
             if (newMeshPart != null && mergedParts != null)
             {
                 foreach (var partName in mergedParts)
                 {
                     _form.RemoveTreeNode<MeshPart>(view, partName, null);
                 }
-
+                //
                 _form.AddTreeNode(ViewGeometryModelResults.Model, newMeshPart, null);
-
-                Update(UpdateType.Check | UpdateType.DrawMesh | UpdateType.RedrawSymbols);
+                //
+                AnnotateWithColorLegend();
+                //
+                FeModelUpdate(UpdateType.Check | UpdateType.DrawMesh | UpdateType.RedrawSymbols);
             }
         }
         public int[] RemoveModelParts(string[] partNames, bool invalidate, bool removeForRemeshing)
@@ -2686,8 +2703,13 @@ namespace PrePoMax
             }
             //
             UpdateType ut = UpdateType.Check;
-            if (invalidate) ut |= UpdateType.DrawMesh | UpdateType.RedrawSymbols;
-            Update(ut);
+            if (invalidate)
+            {
+                ut |= UpdateType.DrawMesh | UpdateType.RedrawSymbols;
+                //
+                AnnotateWithColorLegend();
+            }
+            FeModelUpdate(ut);
             //
             return removedPartIds;
         }
@@ -2713,13 +2735,13 @@ namespace PrePoMax
                 string[] errors = null;
                 if (_model != null) errors = _model.Mesh.CreatePrismaticBoundaryLayer(geometryIds, thickness);                
                 // Redraw the geometry for update of the selection based sets
-                Update(UpdateType.DrawMesh);
+                FeModelUpdate(UpdateType.DrawMesh);
                 // Update sets - must be called with rendering off - SetStateWorking
                 UpdateNodeSetsBasedOnGeometry(false);
                 UpdateElementSetsBasedOnGeometry(false);
                 UpdateSurfacesBasedOnGeometry(false);
                 // Update the sets and symbols
-                Update(UpdateType.Check | UpdateType.RedrawSymbols);
+                FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
                 //
                 if (errors.Length > 0) throw new CaeException(errors[0]);
             }
@@ -2791,7 +2813,7 @@ namespace PrePoMax
             UpdateSurfacesBasedOnNodeSet(nodeSet.Name);
             UpdateReferencePointsDependentOnNodeSet(nodeSet.Name);
             //
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public FeNodeSet GetNodeSet(string nodeSetName)
         {
@@ -2826,7 +2848,7 @@ namespace PrePoMax
             UpdateSurfacesBasedOnNodeSet(nodeSet.Name);
             UpdateReferencePointsDependentOnNodeSet(nodeSet.Name);
             //
-            if (update) Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            if (update) FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void DuplicateNodeSets(string[] nodeSetNames)
         {
@@ -2852,7 +2874,7 @@ namespace PrePoMax
                 }
             }
             //
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void GetNodesCenterOfGravity(FeNodeSet nodeSet)
         {
@@ -3018,7 +3040,7 @@ namespace PrePoMax
             //
             _form.AddTreeNode(ViewGeometryModelResults.Model, elementSet, null);
             //
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public FeElementSet GetElementSet(string elementSetName)
         {
@@ -3048,7 +3070,7 @@ namespace PrePoMax
             //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldElementSetName, elementSet, null);
             //
-            if (update) Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            if (update) FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void DuplicateElementSets(string[] elementSetNames)
         {
@@ -3065,21 +3087,22 @@ namespace PrePoMax
         {
             BasePart[] modifiedParts;
             BasePart[] newParts;
-
+            //
             _model.Mesh.CreateMeshPartsFromElementSets(elementSetNames, out modifiedParts, out newParts);
             foreach (var part in modifiedParts)
             {
                 _form.UpdateTreeNode(ViewGeometryModelResults.Model, part.Name, part, null);
             }
-
-            // add new parts and remove element sets
+            // Add new parts and remove element sets
             foreach (var part in newParts)
             {
                 _form.AddTreeNode(ViewGeometryModelResults.Model, part, null);
                 _form.RemoveTreeNode<FeElementSet>(ViewGeometryModelResults.Model, part.Name, null);
             }
-
-            Update(UpdateType.Check | UpdateType.DrawMesh | UpdateType.RedrawSymbols);
+            //
+            AnnotateWithColorLegend();
+            //
+            FeModelUpdate(UpdateType.Check | UpdateType.DrawMesh | UpdateType.RedrawSymbols);
         }
         public void RemoveElementSets(string[] elementSetNames)
         {
@@ -3092,7 +3115,7 @@ namespace PrePoMax
                 }
             }
             //
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         //
         private void ReselectElementSet(FeElementSet elementSet)
@@ -3253,7 +3276,7 @@ namespace PrePoMax
             //
             UpdateReferencePointsDependentOnSurface(surface.Name);
             //
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public FeSurface GetSurface(string surfaceName)
         {
@@ -3292,7 +3315,7 @@ namespace PrePoMax
             //
             UpdateReferencePointsDependentOnSurface(surface.Name);
             //
-            if (update) Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            if (update) FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void RemoveSurfaces(string[] surfaceNames, bool update = true)
         {
@@ -3305,7 +3328,7 @@ namespace PrePoMax
                 UpdateReferencePointsDependentOnSurface(surface.Name);
             }
             //
-            if (update) Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            if (update) FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         private void AddSurfaceAndElementFaces(FeSurface surface)
         {
@@ -3431,6 +3454,16 @@ namespace PrePoMax
             Commands.CAddReferencePoint comm = new Commands.CAddReferencePoint(referencePoint);
             _commands.AddAndExecute(comm);
         }
+        public void HideReferencePointsCommand(string[] referencePointNames)
+        {
+            Commands.CHideReferencePoints comm = new Commands.CHideReferencePoints(referencePointNames);
+            _commands.AddAndExecute(comm);
+        }
+        public void ShowReferencePointsCommand(string[] referencePointNames)
+        {
+            Commands.CShowReferencePoints comm = new Commands.CShowReferencePoints(referencePointNames);
+            _commands.AddAndExecute(comm);
+        }
         public void ReplaceReferencePointCommand(string oldReferencePointName, FeReferencePoint newReferencePoint)
         {
             Commands.CReplaceReferencePoint comm = new Commands.CReplaceReferencePoint(oldReferencePointName, newReferencePoint);
@@ -3455,9 +3488,9 @@ namespace PrePoMax
             //
             _model.Mesh.ReferencePoints.Add(referencePoint.Name, referencePoint);
             //
-            _form.AddTreeNode(ViewGeometryModelResults.Model, referencePoint, null);
+            _form.AddTreeNode(ViewGeometryModelResults.Model, referencePoint, null);            
             //
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public FeReferencePoint GetReferencePoint(string referencePointName)
         {
@@ -3468,13 +3501,33 @@ namespace PrePoMax
             if (_model.Mesh == null) return null;
             return _model.Mesh.ReferencePoints.Values.ToArray();
         }
+        public void HideReferencePoints(string[] referencePointNames)
+        {
+            foreach (var name in referencePointNames)
+            {
+                _model.Mesh.ReferencePoints[name].Visible = false;
+                _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.Mesh.ReferencePoints[name], null);
+            }
+            //
+            FeModelUpdate(UpdateType.RedrawSymbols);
+        }
+        public void ShowReferencePoints(string[] referencePointNames)
+        {
+            foreach (var name in referencePointNames)
+            {
+                _model.Mesh.ReferencePoints[name].Visible = true;
+                _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.Mesh.ReferencePoints[name], null);
+            }
+            //
+            FeModelUpdate(UpdateType.RedrawSymbols);
+        }
         public void ReplaceReferencePoint(string oldReferencePointName, FeReferencePoint newReferencePoint)
         {
             _model.Mesh.ReferencePoints.Replace(oldReferencePointName, newReferencePoint.Name, newReferencePoint);
             //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldReferencePointName, newReferencePoint, null);
             //
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void RemoveReferencePoints(string[] referencePointNames)
         {
@@ -3484,7 +3537,7 @@ namespace PrePoMax
                 _form.RemoveTreeNode<FeReferencePoint>(ViewGeometryModelResults.Model, name, null);
             }
 
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         //
         public void UpdateReferencePoint(FeReferencePoint referencePoint)
@@ -3554,6 +3607,8 @@ namespace PrePoMax
             _model.Materials.Add(material.Name, material);
             _form.AddTreeNode(ViewGeometryModelResults.Model, material, null);
             //
+            AnnotateWithColorLegend();
+            //
             CheckAndUpdateValidity();
         }        
         public Material GetMaterial(string materialName)
@@ -3569,6 +3624,8 @@ namespace PrePoMax
             _model.Materials.Replace(oldMaterialName, newMaterial.Name, newMaterial);
             //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldMaterialName, newMaterial, null);
+            //
+            AnnotateWithColorLegend();
             //
             CheckAndUpdateValidity();
         }
@@ -3590,6 +3647,8 @@ namespace PrePoMax
                 _model.Materials.Remove(name);
                 _form.RemoveTreeNode<Material>(ViewGeometryModelResults.Model, name, null);
             }
+            //
+            AnnotateWithColorLegend();
             //
             CheckAndUpdateValidity();
         }
@@ -3627,6 +3686,11 @@ namespace PrePoMax
             _model.Sections.Add(section.Name, section);
             _form.AddTreeNode(ViewGeometryModelResults.Model, section, null);
             //
+            AnnotateWithColorEnum state = AnnotateWithColorEnum.Materials | AnnotateWithColorEnum.Sections |
+                                          AnnotateWithColorEnum.SectionThicknesses;
+            if (state.HasFlag(_annotateWithColor)) FeModelUpdate(UpdateType.DrawMesh);
+            else AnnotateWithColorLegend();
+            //
             CheckAndUpdateValidity();
         }
         public Section GetSection(string sectionName)
@@ -3646,6 +3710,11 @@ namespace PrePoMax
             //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldSectionName, section, null);
             //
+            AnnotateWithColorEnum state = AnnotateWithColorEnum.Materials | AnnotateWithColorEnum.Sections |
+                                          AnnotateWithColorEnum.SectionThicknesses;
+            if (state.HasFlag(_annotateWithColor)) FeModelUpdate(UpdateType.DrawMesh);
+            else AnnotateWithColorLegend();
+            //
             CheckAndUpdateValidity();
         }
         public void RemoveSections(string[] sectionNames)
@@ -3656,6 +3725,11 @@ namespace PrePoMax
                 _model.Sections.Remove(name);
                 _form.RemoveTreeNode<Section>(ViewGeometryModelResults.Model, name, null);
             }
+            //
+            AnnotateWithColorEnum state = AnnotateWithColorEnum.Materials | AnnotateWithColorEnum.Sections |
+                                          AnnotateWithColorEnum.SectionThicknesses;
+            if (state.HasFlag(_annotateWithColor)) FeModelUpdate(UpdateType.DrawMesh);
+            else AnnotateWithColorLegend();
             //
             CheckAndUpdateValidity();
         }
@@ -3743,7 +3817,7 @@ namespace PrePoMax
             //
             _form.AddTreeNode(ViewGeometryModelResults.Model, constraint, null);
             //
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public Constraint GetConstraint(string constraintName)
         {
@@ -3761,7 +3835,7 @@ namespace PrePoMax
                 _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.Constraints[name], null);
             }
             //
-            Update(UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.RedrawSymbols);
         }
         public void ShowConstraints(string[] constraintNames)
         {
@@ -3771,7 +3845,7 @@ namespace PrePoMax
                 _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.Constraints[name], null);
             }
             //
-            Update(UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.RedrawSymbols);
         }
         public void ReplaceConstraint(string oldConstraintName, Constraint constraint)
         {
@@ -3782,7 +3856,7 @@ namespace PrePoMax
             //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldConstraintName, constraint, null);
             //
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void ActivateDeactivateConstraint(string constraintName, bool active)
         {
@@ -3791,7 +3865,7 @@ namespace PrePoMax
             //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, constraintName, constraint, null);
             //
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void RemoveConstraints(string[] constraintNames)
         {
@@ -3802,7 +3876,7 @@ namespace PrePoMax
                 _form.RemoveTreeNode<Constraint>(ViewGeometryModelResults.Model, name, null);
             }
             //
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         //
         private void ConvertSelectionBasedConstraint(Constraint constraint)
@@ -4008,7 +4082,7 @@ namespace PrePoMax
             //
             _form.AddTreeNode(ViewGeometryModelResults.Model, contactPair, null);
             //
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public ContactPair GetContactPair(string contactPairName)
         {
@@ -4026,7 +4100,7 @@ namespace PrePoMax
                 _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.ContactPairs[name], null);
             }
             //
-            Update(UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.RedrawSymbols);
         }
         public void ShowContactPairs(string[] contactPairNames)
         {
@@ -4036,7 +4110,7 @@ namespace PrePoMax
                 _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.ContactPairs[name], null);
             }
             //
-            Update(UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.RedrawSymbols);
         }
         public void ReplaceContactPair(string oldContactPairName, ContactPair contactPair)
         {
@@ -4047,7 +4121,7 @@ namespace PrePoMax
             //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldContactPairName, contactPair, null);
             //
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void ActivateDeactivateContactPair(string contactPairName, bool active)
         {
@@ -4056,7 +4130,7 @@ namespace PrePoMax
             //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, contactPairName, contactPair, null);
             //
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void RemoveContactPairs(string[] contactPairNames)
         {
@@ -4067,7 +4141,7 @@ namespace PrePoMax
                 _form.RemoveTreeNode<ContactPair>(ViewGeometryModelResults.Model, name, null);
             }
             //
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         //
         private void ConvertSelectionBasedContactPair(ContactPair contactPair)
@@ -4163,7 +4237,7 @@ namespace PrePoMax
             _model.StepCollection.AddStep(step, copyBCsAndLoads);
             _form.AddTreeNode(ViewGeometryModelResults.Model, step, null);
             //
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public Step GetStep(string stepName)
         {
@@ -4178,7 +4252,7 @@ namespace PrePoMax
             _model.StepCollection.ReplaceStep(oldStepName, newStep);
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldStepName, newStep, null);
             //
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void DuplicateSteps(string[] stepNames)
         {
@@ -4198,7 +4272,7 @@ namespace PrePoMax
             //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, stepName, step, null);
             //
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void RemoveSteps(string[] stepNames)
         {
@@ -4214,7 +4288,7 @@ namespace PrePoMax
                 _form.RemoveTreeNode<Step>(ViewGeometryModelResults.Model, name, null);
             }
             //
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
 
         #endregion #################################################################################################################
@@ -4467,7 +4541,7 @@ namespace PrePoMax
             //
             _form.AddTreeNode(ViewGeometryModelResults.Model, boundaryCondition, stepName);
             //
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public BoundaryCondition GetBoundaryCondition(string stepName, string boundaryConditionName)
         {
@@ -4485,7 +4559,7 @@ namespace PrePoMax
                 _model.StepCollection.GetStep(stepName).BoundaryConditions[name].Visible = false;
                 _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.StepCollection.GetStep(stepName).BoundaryConditions[name], stepName);
             }
-            Update(UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.RedrawSymbols);
         }
         public void ShowBoundaryConditions(string stepName, string[] boundaryConditionNames)
         {
@@ -4494,7 +4568,7 @@ namespace PrePoMax
                 _model.StepCollection.GetStep(stepName).BoundaryConditions[name].Visible = true;
                 _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.StepCollection.GetStep(stepName).BoundaryConditions[name], stepName);
             }
-            Update(UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.RedrawSymbols);
         }
         public void ReplaceBoundaryCondition(string stepName, string oldBoundaryConditionName,
                                              BoundaryCondition boundaryCondition)
@@ -4508,7 +4582,7 @@ namespace PrePoMax
             //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldBoundaryConditionName, boundaryCondition, stepName);
             //
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void ActivateDeactivateBoundaryCondition(string stepName, string boundaryConditionName, bool active)
         {
@@ -4517,7 +4591,7 @@ namespace PrePoMax
             //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, boundaryConditionName, bc, stepName);
             //
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void RemoveBoundaryConditions(string stepName, string[] boundaryConditionNames)
         {
@@ -4528,7 +4602,7 @@ namespace PrePoMax
                 _form.RemoveTreeNode<BoundaryCondition>(ViewGeometryModelResults.Model, name, stepName);
             }
             //
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         //
         private void ConvertSelectionBasedBoundaryCondition(BoundaryCondition boundaryCondition)
@@ -4620,7 +4694,7 @@ namespace PrePoMax
             //
             _form.AddTreeNode(ViewGeometryModelResults.Model, load, stepName);
             //
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public Load GetLoad(string stepName, string loadName)
         {
@@ -4637,7 +4711,7 @@ namespace PrePoMax
                 _model.StepCollection.GetStep(stepName).Loads[name].Visible = false;
                 _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.StepCollection.GetStep(stepName).Loads[name], stepName);
             }
-            Update(UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.RedrawSymbols);
         }
         public void ShowLoads(string stepName, string[] loadNames)
         {
@@ -4646,7 +4720,7 @@ namespace PrePoMax
                 _model.StepCollection.GetStep(stepName).Loads[name].Visible = true;
                 _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.StepCollection.GetStep(stepName).Loads[name], stepName);
             }
-            Update(UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.RedrawSymbols);
         }
         public void ReplaceLoad(string stepName, string oldLoadName, Load load)
         {
@@ -4657,7 +4731,7 @@ namespace PrePoMax
             //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldLoadName, load, stepName);
             //
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void ActivateDeactivateLoad(string stepName, string loadName, bool active)
         {
@@ -4666,7 +4740,7 @@ namespace PrePoMax
             //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, loadName, load, stepName);
             //
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void RemoveLoads(string stepName, string[] loadNames)
         {
@@ -4676,7 +4750,7 @@ namespace PrePoMax
                 _model.StepCollection.GetStep(stepName).Loads.Remove(name);
                 _form.RemoveTreeNode<Load>(ViewGeometryModelResults.Model, name, stepName);
             }
-            Update(UpdateType.Check | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         //
         private void ConvertSelectionBasedLoad(Load load)
@@ -4893,11 +4967,11 @@ namespace PrePoMax
                     throw new CaeGlobals.CaeException(ex.Message);
                 }
                 //
-                int[] unspecifiedElementIds = _model.CheckSectionAssignments();
-                if (unspecifiedElementIds.Length != 0)
+                int[] unAssignedElementIds = _model.GetSectionAssignments(out Dictionary<int, int> elementIdSectionId);
+                if (unAssignedElementIds.Length != 0)
                 {
-                    DrawElements("MissingSection", unspecifiedElementIds, Color.Red, vtkControl.vtkRendererLayer.Selection);
-                    string msg = unspecifiedElementIds.Length + " finite elements are missing a section assignment. Continue?";
+                    DrawElements("MissingSection", unAssignedElementIds, Color.Red, vtkControl.vtkRendererLayer.Selection);
+                    string msg = unAssignedElementIds.Length + " finite elements are missing a section assignment. Continue?";
                     if (MessageBox.Show(msg, "Warning", MessageBoxButtons.OKCancel) == DialogResult.Cancel) return false;
                 }
                 ExportToCalculix(inputFileName);
@@ -4978,6 +5052,8 @@ namespace PrePoMax
                 _form.UpdateTreeNode(ViewGeometryModelResults.Results, name, _results.Mesh.Parts[name], null);
             }
             _form.HideActors(partNames, true);
+            //
+            AnnotateWithColorLegend();
         }
         public void ShowResultParts(string[] partNames)
         {
@@ -4987,6 +5063,8 @@ namespace PrePoMax
                 _form.UpdateTreeNode(ViewGeometryModelResults.Results, name, _results.Mesh.Parts[name], null);
             }
             _form.ShowActors(partNames, true);
+            //
+            AnnotateWithColorLegend();
         }
         public void SetTransparencyForResultParts(string[] partNames, byte alpha)
         {
@@ -5016,15 +5094,17 @@ namespace PrePoMax
             _results.Mesh.Parts.Add(part.Name, part);
             _form.UpdateActor(oldPartName, part.Name, part.Color);
             _form.UpdateTreeNode(ViewGeometryModelResults.Results, oldPartName, part, null);
+            //
+            AnnotateWithColorLegend();
         }
         public void RemoveResultParts(string[] partNames)
         {
             string[] removedParts;
             _results.Mesh.RemoveParts(partNames, out removedParts, false);
-
+            //
             ViewGeometryModelResults view = ViewGeometryModelResults.Results;
             foreach (var name in removedParts) _form.RemoveTreeNode<BasePart>(view, name, null);
-
+            //
             DrawResults(false);
         }
 
@@ -6366,7 +6446,7 @@ namespace PrePoMax
         // Visualize
         #region Draw  ##############################################################################################################
         // Update model stat
-        public void Update(UpdateType updateType)
+        public void FeModelUpdate(UpdateType updateType)
         {
             if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first check the validity to correctly draw the symbols
             if (updateType.HasFlag(UpdateType.DrawMesh)) DrawMesh(updateType.HasFlag(UpdateType.ResetCamera));
@@ -6396,7 +6476,7 @@ namespace PrePoMax
                         CurrentView = ViewGeometryModelResults.Geometry;
                         //
                         DrawAllGeomParts();
-                        ShowFaceOrientationLegend();
+                        AnnotateWithColorLegend();
                         //
                         Octree.Plane plane = _sectionViewPlanes[_currentView];
                         if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
@@ -6430,16 +6510,9 @@ namespace PrePoMax
         }
         private void DrawGeomPart(FeMesh mesh, BasePart part, vtkControl.vtkRendererLayer layer, bool canHaveElementEdges, bool pickable)
         {
-            Color color = part.Color;
-            //
-            foreach (var elType in part.ElementTypes)
-            {
-                if (elType == typeof(LinearBeamElement) || elType == typeof(ParabolicBeamElement)) color = Color.Black;
-            }
-            //
             vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
             data.Name = part.Name;
-            data.Color = color;
+            GetPartColor(part, ref data.Color, ref data.BackfaceColor);
             data.Layer = layer;
             data.CanHaveElementEdges = canHaveElementEdges;
             data.Pickable = pickable;
@@ -6464,16 +6537,7 @@ namespace PrePoMax
                                                    out data.ModelEdges.Cells.CellNodeIds, out data.ModelEdges.Cells.Types);
             }
             // Back face
-            if (part.PartType == PartType.Shell)
-            {
-                data.BackfaceCulling = false;
-                if (_showFaceOrientation)
-                {
-                    PreSettings preSettings = (PreSettings)_settings.Pre;
-                    data.Color = preSettings.FrontFaceColor;
-                    data.BackfaceColor = preSettings.BackFaceColor;
-                }
-            }
+            if (part.PartType == PartType.Shell) data.BackfaceCulling = false;
             //
             ApplyLighting(data);
             _form.Add3DCells(data);
@@ -6497,7 +6561,7 @@ namespace PrePoMax
                             //
                             DrawAllMeshParts();
                             DrawSymbols();
-                            ShowFaceOrientationLegend();
+                            AnnotateWithColorLegend();
                             //
                             Octree.Plane plane = _sectionViewPlanes[_currentView];
                             if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
@@ -6518,34 +6582,36 @@ namespace PrePoMax
         public void DrawAllMeshParts()
         {
             if (_model == null) return;
-
+            //
             IDictionary<string, BasePart> parts = _model.Mesh.Parts;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
-
+            //
             List<string> hiddenActors = new List<string>();
-
+            //
+            Dictionary<int, int> elementIdColorId = null;
+            if (_annotateWithColor == AnnotateWithColorEnum.Sections)
+                _model.GetSectionAssignments(out elementIdColorId);
+            else if (_annotateWithColor == AnnotateWithColorEnum.Materials)
+                _model.GetMaterialAssignments(out elementIdColorId);
+            else if (_annotateWithColor == AnnotateWithColorEnum.SectionThicknesses)
+                _model.GetSectionThicknessAssignments(out elementIdColorId);
+            //
             foreach (var entry in parts)
             {
-                DrawMeshPart(_model.Mesh, entry.Value, layer);
-
+                DrawMeshPart(_model.Mesh, entry.Value, layer, elementIdColorId);
+                //
                 if (!entry.Value.Visible) hiddenActors.Add(entry.Key);
             }
             if (hiddenActors.Count > 0) _form.HideActors(hiddenActors.ToArray(), false);
         }
-        public void DrawMeshPart(FeMesh mesh, BasePart part, vtkControl.vtkRendererLayer layer)
+        public void DrawMeshPart(FeMesh mesh, BasePart part, vtkControl.vtkRendererLayer layer,
+                                 Dictionary<int, int> elementIdColorId = null)
         {
             if (part is CompoundGeometryPart) return;
-            //
-            vtkControl.vtkMaxActorData data;
-            Color color = part.Color;
-            foreach (var elType in part.ElementTypes)
-            {
-                if (elType == typeof(LinearBeamElement) || elType == typeof(ParabolicBeamElement)) color = Color.Black;
-            }
-            //
-            data = new vtkControl.vtkMaxActorData();
+            // Data
+            vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
             data.Name = part.Name;
-            data.Color = color;
+            GetPartColor(part, ref data.Color, ref data.BackfaceColor);
             data.Layer = layer;
             data.CanHaveElementEdges = true;
             data.Pickable = true;
@@ -6553,11 +6619,35 @@ namespace PrePoMax
             data.ActorRepresentation = GetRepresentation(part);
             // Get all nodes and elements for selection - renumbered
             data.CellLocator = new PartExchangeData();
-            mesh.GetAllNodesAndCells(part, out data.CellLocator.Nodes.Ids, out data.CellLocator.Nodes.Coor, out data.CellLocator.Cells.Ids,
-                                     out data.CellLocator.Cells.CellNodeIds, out data.CellLocator.Cells.Types);
+            mesh.GetAllNodesAndCells(part, out data.CellLocator.Nodes.Ids, out data.CellLocator.Nodes.Coor,
+                                     out data.CellLocator.Cells.Ids,
+                                     out data.CellLocator.Cells.CellNodeIds,
+                                     out data.CellLocator.Cells.Types);
             // Get only needed nodes and elements - renumbered
-            mesh.GetVisualizationNodesAndCells(part, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.Ids,
-                                        out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
+            mesh.GetVisualizationNodesAndCells(part, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor,
+                                               out data.Geometry.Cells.Ids,
+                                               out data.Geometry.Cells.CellNodeIds,
+                                               out data.Geometry.Cells.Types);
+            // Custom coloring of elements
+            if (elementIdColorId != null)
+            {
+                int maxColor = -int.MaxValue;
+                float value;
+                float[] values = new float[data.Geometry.Cells.Ids.Length];
+                for (int i = 0; i < values.Length; i++)
+                {
+                    value = elementIdColorId[data.Geometry.Cells.Ids[i]] % CaeMesh.Globals.PartColors.Length;
+                    values[i] = value;
+                    if (value > maxColor) maxColor = (int)value;
+                }
+                data.Geometry.Cells.Values = values;
+                //
+                maxColor++; // first color is 0 so add +1
+                data.ColorTable = new Color[maxColor];
+                Array.Copy(CaeMesh.Globals.PartColors, data.ColorTable, maxColor);
+            }
+            // Back face
+            if (part.PartType == PartType.Shell) data.BackfaceCulling = false;
             // Model edges
             if (((part.PartType == PartType.Solid || part.PartType == PartType.SolidAsShell || part.PartType == PartType.Shell)
                 && part.Visualization.EdgeCells != null) || part.PartType == PartType.Wire)
@@ -6566,24 +6656,13 @@ namespace PrePoMax
                 mesh.GetNodesAndCellsForModelEdges(part, out data.ModelEdges.Nodes.Ids, out data.ModelEdges.Nodes.Coor,
                                                    out data.ModelEdges.Cells.CellNodeIds, out data.ModelEdges.Cells.Types);
             }
-            // Back face
-            if (part.PartType == PartType.Shell)
-            {
-                data.BackfaceCulling = false;
-                if (_showFaceOrientation)
-                {
-                    PreSettings preSettings = (PreSettings)_settings.Pre;
-                    data.Color = preSettings.FrontFaceColor;
-                    data.BackfaceColor = preSettings.BackFaceColor;
-                }
-            }
             //
             ApplyLighting(data);
             _form.Add3DCells(data);
         }
         // Symbols
         public void DrawSymbols()
-        {
+        {            
             if (_drawSymbolsForStep != null && _drawSymbolsForStep != "None")
             {
                 DrawAllReferencePoints();
@@ -6595,6 +6674,8 @@ namespace PrePoMax
                     DrawAllLoads(_drawSymbolsForStep);
                 }
             }
+            // Update color legend
+            AnnotateWithColorLegend();
         }
         public void RedrawSymbols(bool updateHighlights = true)
         {
@@ -6606,7 +6687,7 @@ namespace PrePoMax
                         _model.Mesh != null && _model.Mesh.Parts.Count > 0)
                     {
                         // Clear
-                        _form.ClearButKeepParts(_model.Mesh.Parts.Keys.ToArray());
+                        _form.ClearButKeepParts(_model.Mesh.Parts.Keys.ToArray());                        
                         //
                         try 
                         {
@@ -6634,13 +6715,250 @@ namespace PrePoMax
             }
         }
         //
-        private void ShowFaceOrientationLegend()
+        private void GetPartColor(BasePart part, ref Color color, ref Color backfaceColor)
         {
+            color = part.Color;
+            // wire part
+            foreach (var elType in part.ElementTypes)
+            {
+                if (elType == typeof(LinearBeamElement) || elType == typeof(ParabolicBeamElement))
+                {
+                    color = Color.Black;
+                    break;
+                }
+            }
+            if (_annotateWithColor == AnnotateWithColorEnum.FaceOrientation)
+            {
+                if (part.PartType == PartType.Shell)
+                {
+                    PreSettings preSettings = _settings.Pre;
+                    color = preSettings.FrontFaceColor;
+                    backfaceColor = preSettings.BackFaceColor;
+                }
+                else if (part.PartType == PartType.Solid || part.PartType == PartType.SolidAsShell)
+                {
+                    color = Color.White;
+                }
+            }
+        }
+        private void AnnotateWithColorLegend()
+        {
+            if (_annotateWithColor == AnnotateWithColorEnum.None) return;
+            //
+            _form.HideColorBar();   // clears the contents
+            //
+            if (_currentView == ViewGeometryModelResults.Results && _viewResultsType == ViewResultsType.ColorContours) return;
             // Face orientation legend
-            PreSettings preSettings = (PreSettings)_settings.Pre;
-            if (_showFaceOrientation) _form.SetColorBarColorsAndLabels(new Color[] { preSettings.FrontFaceColor,
-                                                                                   preSettings.BackFaceColor},
-                                                                       new string[] { "Front face", "Back face" });
+            PreSettings preSettings = _settings.Pre;
+            if (_annotateWithColor == AnnotateWithColorEnum.FaceOrientation)
+            {
+                _form.SetColorBarColorsAndLabels(new Color[] { preSettings.FrontFaceColor, preSettings.BackFaceColor},
+                                                               new string[] { "Front face", "Back face" });
+            }
+            if (_annotateWithColor == AnnotateWithColorEnum.Parts)
+            {
+                FeMesh mesh = DisplayedMesh;
+                List<Color> partColors = new List<Color>();
+                List<string> partNames = new List<string>();
+                foreach (var entry in mesh.Parts)
+                {
+                    if (entry.Value.Visible)
+                    {
+                        if (!(entry.Value is CompoundGeometryPart))
+                        {
+                            partColors.Add(entry.Value.Color);
+                            partNames.Add(entry.Value.Name);
+                        }
+                    }
+                }
+                _form.SetColorBarColorsAndLabels(partColors.ToArray(), partNames.ToArray());
+            }
+            if (_annotateWithColor == AnnotateWithColorEnum.Materials)
+            {
+                if (_currentView == ViewGeometryModelResults.Model)
+                {
+                    // Get active materials
+                    HashSet<string> activeMaterials = new HashSet<string>();
+                    foreach (var entry in _model.Sections) activeMaterials.Add(entry.Value.MaterialName);
+                    //
+                    List<Color> materialColors = new List<Color>();
+                    List<string> materialNames = new List<string>();
+                    int count = 0;
+                    foreach (var entry in _model.Materials)
+                    {
+                        if (activeMaterials.Contains(entry.Value.Name))
+                        {
+                            materialColors.Add(CaeMesh.Globals.PartColors[count++]);
+                            materialNames.Add(entry.Value.Name);
+                        }
+                    }
+                    _form.SetColorBarColorsAndLabels(materialColors.ToArray(), materialNames.ToArray());
+                }
+            }
+            if (_annotateWithColor == AnnotateWithColorEnum.Sections)
+            {
+                if (_currentView == ViewGeometryModelResults.Model)
+                {
+                    List<Color> sectionColors = new List<Color>();
+                    List<string> sectionNames = new List<string>();
+                    int count = 0;
+                    foreach (var entry in _model.Sections)
+                    {
+                        sectionColors.Add(CaeMesh.Globals.PartColors[count++]);
+                        sectionNames.Add(entry.Value.Name);
+                    }
+                    _form.SetColorBarColorsAndLabels(sectionColors.ToArray(), sectionNames.ToArray());
+                }
+            }
+            if (_annotateWithColor == AnnotateWithColorEnum.SectionThicknesses)
+            {
+                if (_currentView == ViewGeometryModelResults.Model)
+                {
+                    List<Color> sectionThicknessColors = new List<Color>();
+                    HashSet<double> sectionThickness = new HashSet<double>();                    
+                    int count = 0;
+                    foreach (var entry in _model.Sections)
+                    {
+                        if (entry.Value is ShellSection ss)
+                        {
+                            if (!sectionThickness.Contains(ss.Thickness))
+                            {
+                                sectionThicknessColors.Add(CaeMesh.Globals.PartColors[count++]);
+                                sectionThickness.Add(ss.Thickness);
+                            }
+                        }
+                    }
+                    // Sort thicknesses
+                    double[] sectionThicknessArray = sectionThickness.ToArray();
+                    Array.Sort(sectionThicknessArray);
+                    // Add unit
+                    string[] sectionThicknessNames = new string[sectionThicknessArray.Length];
+                    for (int i = 0; i < sectionThicknessArray.Length; i++)
+                        sectionThicknessNames[i] = sectionThicknessArray[i] + " " + _model.UnitSystem.LengthUnitAbbreviation;
+                    //
+                    _form.SetColorBarColorsAndLabels(sectionThicknessColors.ToArray(), sectionThicknessNames);
+                }
+            }
+            if (_annotateWithColor.HasFlag(AnnotateWithColorEnum.ReferencePoints))
+            {
+                if (_currentView == ViewGeometryModelResults.Model && _drawSymbolsForStep != null && _drawSymbolsForStep != "None")
+                {                    List<Color> itemColors = new List<Color>();
+                    List<string> itemNames = new List<string>();
+                    // Reference points
+                    foreach (var entry in _model.Mesh.ReferencePoints)
+                    {
+                        if (entry.Value.Visible && entry.Value.Active)
+                        {
+                            itemColors.Add(entry.Value.Color);
+                            itemNames.Add(entry.Value.Name);
+                        }
+                    }
+                    _form.SetColorBarColorsAndLabels(itemColors.ToArray(), itemNames.ToArray());
+                }
+            }
+            if (_annotateWithColor.HasFlag(AnnotateWithColorEnum.Constraints))
+            {
+                if (_currentView == ViewGeometryModelResults.Model && _drawSymbolsForStep != null && _drawSymbolsForStep != "None")
+                {
+                    List<Color> itemColors = new List<Color>();
+                    List<string> itemNames = new List<string>();
+                    // Constraints
+                    foreach (var entry in _model.Constraints)
+                    {
+                        if (entry.Value.Visible && entry.Value.Active)
+                        {
+                            if (entry.Value is RigidBody rb)
+                            {
+                                itemColors.Add(rb.MasterColor);
+                                itemNames.Add(rb.Name);
+                            }
+                            else if (entry.Value is Tie tie)
+                            {
+                                if (tie.MasterColor != tie.SlaveColor)
+                                {
+                                    itemColors.Add(tie.MasterColor);
+                                    itemNames.Add(tie.Name + " Master");
+                                    itemColors.Add(tie.SlaveColor);
+                                    itemNames.Add(tie.Name + " Slave");
+                                }
+                                else
+                                {
+                                    itemColors.Add(tie.MasterColor);
+                                    itemNames.Add(tie.Name);
+                                }
+                            }
+                            else throw new NotSupportedException();
+                        }
+                    }
+                    _form.AddColorBarColorsAndLabels(itemColors.ToArray(), itemNames.ToArray());
+                }
+            }
+            if (_annotateWithColor.HasFlag(AnnotateWithColorEnum.ContactPairs))
+            {
+                if (_currentView == ViewGeometryModelResults.Model && _drawSymbolsForStep != null && _drawSymbolsForStep != "None")
+                {
+                    List<Color> itemColors = new List<Color>();
+                    List<string> itemNames = new List<string>();
+                    // Contact pairs
+                    foreach (var entry in _model.ContactPairs)
+                    {
+                        if (entry.Value.Visible && entry.Value.Active)
+                        {
+                            if (entry.Value.MasterColor != entry.Value.SlaveColor)
+                            {
+                                itemColors.Add(entry.Value.MasterColor);
+                                itemNames.Add(entry.Value.Name + " Master");
+                                itemColors.Add(entry.Value.SlaveColor);
+                                itemNames.Add(entry.Value.Name + " Slave");
+                            }
+                            else
+                            {
+                                itemColors.Add(entry.Value.MasterColor);
+                                itemNames.Add(entry.Value.Name);
+                            }
+                        }
+                    }
+                    _form.AddColorBarColorsAndLabels(itemColors.ToArray(), itemNames.ToArray());
+                }
+            }
+            if (_annotateWithColor.HasFlag(AnnotateWithColorEnum.BoundaryConditions))
+            {
+                if (_currentView == ViewGeometryModelResults.Model && _drawSymbolsForStep != null
+                    && _drawSymbolsForStep != "None" && _drawSymbolsForStep != "Model")
+                {
+                    List<Color> itemColors = new List<Color>();
+                    List<string> itemNames = new List<string>();
+                    // Boundary Conditions
+                    foreach (var entry in _model.StepCollection.GetStep(_drawSymbolsForStep).BoundaryConditions)
+                    {
+                        if (entry.Value.Visible && entry.Value.Active)
+                        {
+                            itemColors.Add(entry.Value.Color);
+                            itemNames.Add(entry.Value.Name);
+                        }
+                    }
+                    _form.AddColorBarColorsAndLabels(itemColors.ToArray(), itemNames.ToArray());
+                }
+            }
+            if (_annotateWithColor.HasFlag(AnnotateWithColorEnum.Loads))
+            {
+                if (_currentView == ViewGeometryModelResults.Model && _drawSymbolsForStep != null
+                    && _drawSymbolsForStep != "None" && _drawSymbolsForStep != "Model")
+                {
+                    List<Color> itemColors = new List<Color>();
+                    List<string> itemNames = new List<string>();
+                    // Boundary Conditions
+                    foreach (var entry in _model.StepCollection.GetStep(_drawSymbolsForStep).Loads)
+                    {
+                        if (entry.Value.Visible && entry.Value.Active)
+                        {
+                            itemColors.Add(entry.Value.Color);
+                            itemNames.Add(entry.Value.Name);
+                        }
+                    }
+                    _form.AddColorBarColorsAndLabels(itemColors.ToArray(), itemNames.ToArray());
+                }
+            }
             //
         }
         // Reference points
@@ -8578,6 +8896,7 @@ namespace PrePoMax
             CheckResultsUnitSystem();
             // Settings - must be here before drawing parts to correctly set the numer of colors
             SetLegendAndLimits();
+            AnnotateWithColorLegend();
             //
             float scale = GetScale();
             DrawAllResultParts(_currentFieldData, scale, _settings.Post.DrawUndeformedModel, _settings.Post.UndeformedModelColor);
@@ -8643,23 +8962,14 @@ namespace PrePoMax
             //
             vtkControl.vtkMaxActorData data = GetVtkData(actorResultData, modelEdgesResultData, locatorResultData);
             data.Name = part.Name;
-            data.Color = part.Color;
+            GetPartColor(part, ref data.Color, ref data.BackfaceColor);
             data.ColorContours = part.ColorContours;
             data.CanHaveElementEdges = true;
             data.Pickable = true;
             data.SmoothShaded = part.SmoothShaded;
             data.ActorRepresentation = GetRepresentation(part);
             // Back face                                                    
-            if (part.PartType == PartType.Shell)
-            {
-                data.BackfaceCulling = false;
-                if (_showFaceOrientation)
-                {
-                    PreSettings preSettings = (PreSettings)_settings.Pre;
-                    data.Color = preSettings.FrontFaceColor;
-                    data.BackfaceColor = preSettings.BackFaceColor;
-                }
-            }
+            if (part.PartType == PartType.Shell) data.BackfaceCulling = false;
             //
             ApplyLighting(data);
             _form.AddScalarFieldOn3DCells(data);
@@ -8696,17 +9006,6 @@ namespace PrePoMax
                     {
                         if (nData.Values[0] < allFramesScalarRange[0]) allFramesScalarRange[0] = nData.Values[0];
                         if (nData.Values[1] > allFramesScalarRange[1]) allFramesScalarRange[1] = nData.Values[1];
-                    }
-                    // Back face                                                    
-                    if (resultPart.PartType == PartType.Shell)
-                    {
-                        data.BackfaceCulling = false;
-                        if (_showFaceOrientation)
-                        {
-                            PreSettings preSettings = (PreSettings)_settings.Pre;
-                            data.Color = preSettings.FrontFaceColor;
-                            data.BackfaceColor = preSettings.BackFaceColor;
-                        }
                     }
                     //
                     ApplyLighting(data);
@@ -8772,17 +9071,6 @@ namespace PrePoMax
                         if (nData.Values[0] < allFramesScalarRange[0]) allFramesScalarRange[0] = nData.Values[0];
                         if (nData.Values[1] > allFramesScalarRange[1]) allFramesScalarRange[1] = nData.Values[1];
                     }
-                    // Back face                                                    
-                    if (resultPart.PartType == PartType.Shell)
-                    {
-                        data.BackfaceCulling = false;
-                        if (_showFaceOrientation)
-                        {
-                            PreSettings preSettings = (PreSettings)_settings.Pre;
-                            data.Color = preSettings.FrontFaceColor;
-                            data.BackfaceColor = preSettings.BackFaceColor;
-                        }
-                    }
                     //
                     ApplyLighting(data);
                     result = _form.AddAnimatedScalarFieldOn3DCells(data);
@@ -8839,45 +9127,50 @@ namespace PrePoMax
             //
             vtkControl.vtkMaxActorData data = GetVtkData(actorResultData, modelEdgesResultData, locatorResultData);
             data.Name = part.Name;
-            data.Color = part.Color;
+            GetPartColor(part, ref data.Color, ref data.BackfaceColor);
             data.ColorContours = part.ColorContours;
             data.CanHaveElementEdges = true;
             data.Pickable = false;
             data.SmoothShaded = part.SmoothShaded;
             data.ActorRepresentation = GetRepresentation(part);
+            // Back face
+            if (part.PartType == PartType.Shell) data.BackfaceCulling = false;
+            //
             return data;
         }
         private vtkControl.vtkMaxActorData GetTimeIncrementAnimationDataFromPart(ResultPart part, FieldData fieldData, float scale)
         {
-            // get visualization nodes and renumbered elements
-            PartExchangeData actorResultData = _results.GetTimeIncrementAnimationDataVisualizationNodesCellsAndValues(part, fieldData, scale);
-
-            // model edges
+            // Get visualization nodes and renumbered elements
+            PartExchangeData actorResultData = _results.GetTimeIncrementAnimationDataVisualizationNodesCellsAndValues(part, fieldData,
+                                                                                                                      scale);
+            // Model edges
             PartExchangeData modelEdgesResultData = null;
             if ((part.PartType == PartType.Solid || part.PartType == PartType.SolidAsShell || part.PartType == PartType.Shell)
                 && part.Visualization.EdgeCells != null)
             {
                 modelEdgesResultData = _results.GetTimeIncrementAnimationDataVisualizationEdgesNodesAndCells(part, fieldData, scale);
             }
-
-            // get all needed nodes and elements - renumbered            
-            PartExchangeData locatorResultData = null;
-            locatorResultData = _results.GetTimeIncrementAnimationDataAllNodesCellsAndValues(part, fieldData, scale);
-
+            // Get all needed nodes and elements - renumbered
+            PartExchangeData locatorResultData = _results.GetTimeIncrementAnimationDataAllNodesCellsAndValues(part, fieldData,
+                                                                                                              scale);
+            //
             vtkControl.vtkMaxActorData data = GetVtkData(actorResultData, modelEdgesResultData, locatorResultData);
             data.Name = part.Name;
-            data.Color = part.Color;
+            GetPartColor(part, ref data.Color, ref data.BackfaceColor);
             data.ColorContours = part.ColorContours;
             data.CanHaveElementEdges = true;
             data.Pickable = false;
             data.SmoothShaded = part.SmoothShaded;
             data.ActorRepresentation = GetRepresentation(part);
+            // Back face
+            if (part.PartType == PartType.Shell) data.BackfaceCulling = false;
+            //
             return data;
         }
         // Common
         private void SetLegendAndLimits()
         {
-            if (_viewResultsType != ViewResultsType.Undeformed)
+            if (_viewResultsType == ViewResultsType.ColorContours)
             {
                 PostSettings postSettings = _settings.Post;
                 LegendSettings legendSettings = _settings.Legend;
