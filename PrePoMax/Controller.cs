@@ -906,7 +906,7 @@ namespace PrePoMax
         {
             _form.WriteDataToOutput(data);
         }
-        public void ImportGeneratedMesh(string fileName, GeometryPart part, bool resetCamera, bool fromBrep)
+        public void ImportGeneratedMesh(string fileName, BasePart part, bool fromBrep)
         {
             if (!File.Exists(fileName))
                 throw new CaeException("The file: '" + fileName + "' does not exist." + Environment.NewLine +
@@ -917,11 +917,17 @@ namespace PrePoMax
             else partNames = new string[] { part.Name };
             //
             int[] removedPartIds = RemoveModelParts(partNames, false, true);
-            // Convert mesh to second order
-            bool convertToSecondOrder = part.MeshingParameters.SecondOrder && !part.MeshingParameters.MidsideNodesOnGeometry;
-            if (convertToSecondOrder)
-                _form.WriteDataToOutput("Converting mesh to second order...");
-            bool splitCompoundMesh = part.MeshingParameters.SplitCompoundMesh;
+            //
+            bool convertToSecondOrder = false;
+            bool splitCompoundMesh = false;
+            if (part is GeometryPart gp)
+            {
+                // Convert mesh to second order
+                convertToSecondOrder = gp.MeshingParameters.SecondOrder && !gp.MeshingParameters.MidsideNodesOnGeometry;
+                if (convertToSecondOrder) _form.WriteDataToOutput("Converting mesh to second order...");
+                // Split compound mesh
+                splitCompoundMesh = gp.MeshingParameters.SplitCompoundMesh;
+            }
             // Import, convert and split mesh
             _model.ImportGeneratedMeshFromMeshFile(fileName, part, convertToSecondOrder, splitCompoundMesh);
             // Calculate the number of new nodes and elements
@@ -1329,6 +1335,12 @@ namespace PrePoMax
             Commands.CSplitAFaceUsingTwoPoints comm = new Commands.CSplitAFaceUsingTwoPoints(surfaceSelection, verticesSelection);
             _commands.AddAndExecute(comm);
         }
+        public void FindEdgesByAngleForGeometryPartsCommand(string[] partNames, double edgeAngle)
+        {
+            Commands.CFindEdgesByAngleForGeometryPartsCommand comm = 
+                new Commands.CFindEdgesByAngleForGeometryPartsCommand(partNames, edgeAngle);
+            _commands.AddAndExecute(comm);
+        }
 
         //******************************************************************************************
 
@@ -1358,6 +1370,18 @@ namespace PrePoMax
             foreach (var entry in _model.Geometry.Parts)
             {
                 if (entry.Value is GeometryPart gp && gp.CADFileData != null)
+                    parts.Add(gp);
+            }
+            return parts.ToArray();
+        }
+        public GeometryPart[] GetNonCADGeometryParts()
+        {
+            if (_model.Geometry == null) return null;
+            //
+            List<GeometryPart> parts = new List<GeometryPart>();
+            foreach (var entry in _model.Geometry.Parts)
+            {
+                if (entry.Value is GeometryPart gp && gp.CADFileData == null)
                     parts.Add(gp);
             }
             return parts.ToArray();
@@ -1649,7 +1673,7 @@ namespace PrePoMax
                 foreach (var entry in partIdFaceIds)
                 {
                     part = _model.Geometry.GetPartById(entry.Key);
-                    if (part != null && part is GeometryPart gp)
+                    if (part != null && part is GeometryPart gp && gp.CADFileData != null)
                     {
                         if (part.PartType == PartType.Shell)
                         {
@@ -1663,11 +1687,12 @@ namespace PrePoMax
                     }
                 }
                 //
+                string warning = "Face orientations on solid parts or non-CAD parts cannot be fliped.";
                 if (numOfShellParts <= 0)
-                    MessageBox.Show("Face orientations on solid parts cannot be fliped.", "Warning", MessageBoxButtons.OK);
+                    MessageBox.Show(warning, "Warning", MessageBoxButtons.OK);
                 else if (numOfShellParts < partIdFaceIds.Keys.Count)
-                    MessageBox.Show("Face orientations on solid parts cannot be fliped." + Environment.NewLine +
-                                    "Only face orientations on shell parts were fliped.", "Warning", MessageBoxButtons.OK);
+                    MessageBox.Show(warning + Environment.NewLine +
+                                    "Only face orientations on CAD shell parts were fliped.", "Warning", MessageBoxButtons.OK);
             }
         }
         private string FlipPartFaceOrientations(GeometryPart part, int[] faceIds)
@@ -1790,13 +1815,14 @@ namespace PrePoMax
             node1 = _model.Geometry.Nodes[node1Id];
             node2 = _model.Geometry.Nodes[node2Id];
             //
-            if (facePart != null && facePart is GeometryPart gp)
+            if (facePart != null && facePart is GeometryPart gp && gp.CADFileData != null)
             {
                 string brepFileName = SplitAFaceUsingTwoPoints(gp, faceId, node1, node2);
                 //
                 if (brepFileName != null) ReplacePartGeometryFromFile(gp, brepFileName);
                 else ClearAllSelection();
             }
+            else MessageBox.Show("Faces on non-CAD parts cannot be split.", "Warning", MessageBoxButtons.OK);
         }
         private string SplitAFaceUsingTwoPoints(GeometryPart part, int faceId, FeNode node1, FeNode node2)
         {
@@ -1831,6 +1857,21 @@ namespace PrePoMax
             else return null;
         }
         
+        // Find edges *****************************************************************************
+        public void FindEdgesByAngleForGeometryParts(string[] partNames, double edgeAngle)
+        {
+            BasePart part;
+            foreach (var partName in partNames)
+            {
+                part = _model.Geometry.Parts[partName];
+                _model.Geometry.ExtractShellPartVisualization(part, edgeAngle);
+                // Update
+                _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, part.Name, part, null);
+            }
+            // Draw
+            DrawGeometry(false);
+        }
+
         // Crop geometry using cylinder
         public void CropGeometryPartWithCylinder(string partName)
         {
@@ -1840,7 +1881,7 @@ namespace PrePoMax
                 CalculixSettings settings = _settings.Calculix;
                 string fileName = Path.Combine(settings.WorkDirectory, Globals.StlFileName);
                 //
-                _form.CropPartWithCylinder(partName, 1, fileName);
+                _form.CropPartWithCylinder(partName, 20, fileName);
                 //
                 ReplacePartGeometryFromFile(part, fileName);
             }
@@ -2144,7 +2185,7 @@ namespace PrePoMax
             // Job completed
             if (_netgenJob.JobStatus == JobStatus.OK)
             {
-                ImportGeneratedMesh(volFileName, part, false, false);
+                ImportGeneratedMesh(volFileName, part, false);
                 return true;
             }
             else return false;
@@ -2159,23 +2200,25 @@ namespace PrePoMax
             }
             //
             string executable = Application.StartupPath + Globals.MmgMesher;
-            string mmgInMesh = Path.Combine(settings.WorkDirectory, Globals.MmgMeshFileName);
-            string mmgOutMesh = Path.Combine(settings.WorkDirectory, Path.GetFileNameWithoutExtension(Globals.MmgMeshFileName) + 
-                                                                     ".o" + Path.GetExtension(Globals.MmgMeshFileName));
-            string mmgSolFile = Path.Combine(settings.WorkDirectory, Path.GetFileNameWithoutExtension(Globals.MmgMeshFileName) + ".sol");
+            string mmgInFileName = Path.Combine(settings.WorkDirectory, Globals.MmgMeshFileName);
+            string mmgOutFileName = Path.Combine(settings.WorkDirectory, Path.GetFileNameWithoutExtension(Globals.MmgMeshFileName) + 
+                                                 ".o" + Path.GetExtension(Globals.MmgMeshFileName));
+            string mmgSolFileName = Path.Combine(settings.WorkDirectory,
+                                                 Path.GetFileNameWithoutExtension(Globals.MmgMeshFileName) +
+                                                 ".sol");
             //
-            if (File.Exists(mmgInMesh)) File.Delete(mmgInMesh);
-            if (File.Exists(mmgOutMesh)) File.Delete(mmgOutMesh);
-            if (File.Exists(mmgSolFile)) File.Delete(mmgSolFile);
+            if (File.Exists(mmgInFileName)) File.Delete(mmgInFileName);
+            if (File.Exists(mmgOutFileName)) File.Delete(mmgOutFileName);
+            if (File.Exists(mmgSolFileName)) File.Delete(mmgSolFileName);
             //
-            FileInOut.Output.MmgFileWriter.Write(mmgInMesh, _model.Geometry, new string[] { part.Name });
+            FileInOut.Output.MmgFileWriter.Write(mmgInFileName, _model.Geometry, new string[] { part.Name });
             //
-            string argument = "-nr " + "-m 10000 " + //"-ar 180 "
+            string argument = "-nr " + "-m 10000 " + //"-ar 180 " // 
                               "-hmax " + part.MeshingParameters.MaxH + " " +
                               "-hmin " + part.MeshingParameters.MinH + " " +
                               "-hausd " + 0.02 * part.BoundingBox.GetDiagonal() + " " +
-                              "-in \"" + mmgInMesh + "\" " +
-                              "-out \"" + mmgOutMesh + "\" ";
+                              "-in \"" + mmgInFileName + "\" " +
+                              "-out \"" + mmgOutFileName + "\" ";
             //
             _netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
             _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
@@ -2183,7 +2226,7 @@ namespace PrePoMax
             // Job completed
             if (_netgenJob.JobStatus == JobStatus.OK)
             {
-                ImportGeneratedMesh(mmgOutMesh, part, false, false);
+                ImportGeneratedMesh(mmgOutFileName, part, false);
                 return true;
             }
             else return false;
@@ -2225,7 +2268,7 @@ namespace PrePoMax
             if (_netgenJob.JobStatus == JobStatus.OK)
             {
                 bool convertToSecondOrder = part.MeshingParameters.SecondOrder && !part.MeshingParameters.MidsideNodesOnGeometry;
-                ImportGeneratedMesh(volFileName, part, false, true);
+                ImportGeneratedMesh(volFileName, part, true);
                 return true;
             }
             else return false;
@@ -2318,6 +2361,48 @@ namespace PrePoMax
             }
             //
             File.WriteAllText(fileName, sb.ToString());
+        }
+        //
+        public bool RemeshShellMeshPart(BasePart part)
+        {
+            CalculixSettings settings = _settings.Calculix;
+            if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
+            {
+                MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
+                return false;
+            }
+            //
+            string executable = Application.StartupPath + Globals.MmgMesher;
+            string mmgInFileName = Path.Combine(settings.WorkDirectory, Globals.MmgMeshFileName);
+            string mmgOutFileName = Path.Combine(settings.WorkDirectory, Path.GetFileNameWithoutExtension(Globals.MmgMeshFileName) +
+                                                 ".o" + Path.GetExtension(Globals.MmgMeshFileName));
+            string mmgSolFileName = Path.Combine(settings.WorkDirectory,
+                                                 Path.GetFileNameWithoutExtension(Globals.MmgMeshFileName) +
+                                                 ".sol");
+            //
+            if (File.Exists(mmgInFileName)) File.Delete(mmgInFileName);
+            if (File.Exists(mmgOutFileName)) File.Delete(mmgOutFileName);
+            if (File.Exists(mmgSolFileName)) File.Delete(mmgSolFileName);
+            //
+            FileInOut.Output.MmgFileWriter.Write(mmgInFileName, _model.Mesh, new string[] { part.Name });
+            //
+            string argument = "-ar 360 " + "-m 10000 " + //"-ar 180 " // "-nr " +
+                              "-hmax " + 4 + " " +
+                              "-hmin " + 0.5 + " " +
+                              "-hausd " + 0.02 * part.BoundingBox.GetDiagonal() + " " +
+                              "-in \"" + mmgInFileName + "\" " +
+                              "-out \"" + mmgOutFileName + "\" ";
+            //
+            _netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
+            _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
+            _netgenJob.Submit();
+            // Job completed
+            if (_netgenJob.JobStatus == JobStatus.OK)
+            {
+                ImportGeneratedMesh(mmgOutFileName, part, false);
+                return true;
+            }
+            else return false;
         }
         //
         public void StopNetGenJob()
@@ -4972,7 +5057,10 @@ namespace PrePoMax
                 int[] unAssignedElementIds = _model.GetSectionAssignments(out Dictionary<int, int> elementIdSectionId);
                 if (unAssignedElementIds.Length != 0)
                 {
-                    DrawElements("MissingSection", unAssignedElementIds, Color.Red, vtkControl.vtkRendererLayer.Selection);
+                    string elementSetName = NamedClass.GetNewValueName(_model.Mesh.ElementSets.Keys, "Missing_section-");
+                    AddElementSet(new FeElementSet(elementSetName, unAssignedElementIds));
+                    //
+                    //DrawElements("MissingSection", unAssignedElementIds, Color.Red, vtkControl.vtkRendererLayer.Selection);
                     string msg = unAssignedElementIds.Length + " finite elements are missing a section assignment. Continue?";
                     if (MessageBox.Show(msg, "Warning", MessageBoxButtons.OKCancel) == DialogResult.Cancel) return false;
                 }
@@ -5278,10 +5366,11 @@ namespace PrePoMax
         {
             return (ViewGeometryModelResults)selection.CurrentView;
         }
-        public void CreateNewSelection(int selectionView, SelectionNode selectionNode, bool highlight)
+        public void CreateNewSelection(int selectionView, vtkSelectItem selectItem, SelectionNode selectionNode, bool highlight)
         {
             ClearSelectionHistoryAndCallSelectionChanged();
             SetSelectionView(selectionView);
+            _selection.SelectItem = selectItem;
             AddSelectionNode(selectionNode, highlight, false);
         }
         //
@@ -5493,8 +5582,8 @@ namespace PrePoMax
         }
         private int[] GetIdsFromSelectionNodeIds(SelectionNodeIds selectionNodeIds)
         {
-            int[] ids = null;
-
+            int[] ids;
+            //
             if (selectionNodeIds.SelectAll)
             {
                 if (_selection.SelectItem == vtkSelectItem.Node) ids = GetVisibleNodeIds();
@@ -6749,9 +6838,8 @@ namespace PrePoMax
         private void AnnotateWithColorLegend()
         {
             if (_annotateWithColor == AnnotateWithColorEnum.None) return;
-            //
-            
-            _form.HideColorBar();   // clears the contents
+            // Clears the contents
+            _form.HideColorBar();   
             //
             if (_currentView == ViewGeometryModelResults.Results && _viewResultsType == ViewResultsType.ColorContours) return;
             // Face orientation legend
@@ -8471,8 +8559,8 @@ namespace PrePoMax
             Color color = Color.Red;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
             //
-            bool error;
-            bool drawFreeEdges;
+            bool solidError;
+            bool shellError;
             HashSet<int> edgeElementIds = new HashSet<int>();
             HashSet<int> nodeIds = new HashSet<int>();
             List<int[]> edgeCells = new List<int[]>();
@@ -8480,14 +8568,14 @@ namespace PrePoMax
             {
                 if (partNamesToSelect.Contains(part.Name) && _form.ContainsActor(part.Name))
                 {
-                    error = false;
-                    drawFreeEdges = (part.PartType == PartType.Solid || part.PartType == PartType.SolidAsShell) && part.FreeEdgeElementIds != null;
+                    solidError = (part.PartType == PartType.Solid || part.PartType == PartType.SolidAsShell) && part.HasFreeEdges;
+                    shellError = part.PartType == PartType.Shell && part.HasErrors;
                     //
-                    if (part.ErrorEdgeElementIds != null || drawFreeEdges)
+                    if (solidError || shellError)
                     {
                         edgeElementIds.Clear();
                         if (part.ErrorEdgeElementIds != null) edgeElementIds.UnionWith(part.ErrorEdgeElementIds);
-                        if (drawFreeEdges) edgeElementIds.UnionWith(part.FreeEdgeElementIds);
+                        if (part.FreeEdgeElementIds != null) edgeElementIds.UnionWith(part.FreeEdgeElementIds);
                         //
                         edgeCells.Clear();
                         foreach (var elementId in edgeElementIds) edgeCells.Add(part.Visualization.EdgeCells[elementId]);
@@ -8515,19 +8603,14 @@ namespace PrePoMax
                         //
                         ApplyLighting(data);
                         _form.Add3DCells(data);
-                        //
-                        error = true;
-                    }
-                    if (part.ErrorNodeIds != null || drawFreeEdges)
-                    {
+                        // Nodes                                                            
                         nodeIds.Clear();
                         if (part.ErrorNodeIds != null) nodeIds.UnionWith(part.ErrorNodeIds);
-                        if (drawFreeEdges) nodeIds.UnionWith(part.FreeNodeIds);
+                        if (part.FreeNodeIds != null) nodeIds.UnionWith(part.FreeNodeIds);
                         //
                         DrawNodes(part.Name, nodeIds.ToArray(), color, layer);
-                        error = true;
                     }
-                    if (!error)
+                    else
                     {
                         _form.HighlightActor(part.Name);
                     }

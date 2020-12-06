@@ -167,6 +167,31 @@ namespace CaeGlobals
         {
             return (u.X * v.X + u.Y * v.Y + u.Z * v.Z);
         }
+
+        // Circle center
+        public static void GetCircle(Vec3D baseV1, Vec3D baseV2, Vec3D baseV3, out double r, out Vec3D center, out Vec3D axis)
+        {
+            Vec3D n12 = baseV1 - baseV2;
+            Vec3D n21 = baseV2 - baseV1;
+            Vec3D n23 = baseV2 - baseV3;
+            Vec3D n32 = baseV3 - baseV2;
+            Vec3D n13 = baseV1 - baseV3;
+            Vec3D n31 = baseV3 - baseV1;
+            Vec3D n12xn23 = Vec3D.CrossProduct(n12, n23);
+            //
+            r = (n12.Len * n23.Len * n31.Len) / (2 * n12xn23.Len);
+            //
+            double denominator = 2 * n12xn23.Len2;
+            double alpha = n23.Len2 * Vec3D.DotProduct(n12, n13) / denominator;
+            double beta = n13.Len2 * Vec3D.DotProduct(n21, n23) / denominator;
+            double gama = n12.Len2 * Vec3D.DotProduct(n31, n32) / denominator;
+            //
+            center = alpha * baseV1 + beta * baseV2 + gama * baseV3;
+            //
+            axis = Vec3D.CrossProduct(n21, n32);
+            axis.Normalize();
+        }
+
         #endregion
 
     }

@@ -486,7 +486,9 @@ namespace CaeMesh
             foreach (var entry in _referencePoints)
             {
                 referencePoint = entry.Value;
-                validFromCoordinates = referencePoint.CreatedFrom == FeReferencePointCreatedFrom.Selection;
+                validFromCoordinates = referencePoint.CreatedFrom == FeReferencePointCreatedFrom.Selection ||
+                                       referencePoint.CreatedFrom == FeReferencePointCreatedFrom.BetweenTwoPoints ||
+                                       referencePoint.CreatedFrom == FeReferencePointCreatedFrom.CircleCenter;
                 validFromBB = (referencePoint.CreatedFrom == FeReferencePointCreatedFrom.BoundingBoxCenter &&
                                (_nodeSets.ContainsValidKey(referencePoint.RegionName) ||
                                _surfaces.ContainsValidKey(referencePoint.RegionName)));
@@ -903,7 +905,7 @@ namespace CaeMesh
                         {
                             // Collect shell parts to be converted to solids
                             // Only closed shell parts without errors are considered
-                            if (importOptions == ImportOptions.ImportOneSolidPart || (!gp.HasFreeEdges && !gp.HasErrors))
+                            if (importOptions == ImportOptions.ImportOneSolidPart || !gp.HasFreeEdges)
                                 partsToRename.Add(gp.Name);
                         }
                     }
@@ -1013,7 +1015,7 @@ namespace CaeMesh
         }
 
         // Visualization
-        private void ExtractSolidPartVisualization(BasePart part)
+        public void ExtractSolidPartVisualization(BasePart part, double edgeAngle = 60)
         {
             //System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
             //watch.Start();
@@ -1022,7 +1024,7 @@ namespace CaeMesh
             //System.Diagnostics.Debug.WriteLine("ExtractVisualizationCells time: " + watch.ElapsedMilliseconds);
             //watch.Restart();
             //
-            ExtractEdgesFromShellByAngle(part, 30);
+            ExtractEdgesFromShellByAngle(part, edgeAngle);
             //System.Diagnostics.Debug.WriteLine("ExtractEdgesFromShellByAngle time: " + watch.ElapsedMilliseconds);
             //watch.Restart();
             //
@@ -1034,11 +1036,11 @@ namespace CaeMesh
             //
             CheckForFeeAndErrorElements(part);
         }
-        private void ExtractShellPartVisualization(BasePart part)
+        public void ExtractShellPartVisualization(BasePart part, double edgeAngle = 60)
         {
             part.Visualization.ExtractVisualizationCellsFromElements2D(_elements, part.Labels);
             //
-            ExtractEdgesFromShellByAngle(part, 30);
+            ExtractEdgesFromShellByAngle(part, edgeAngle);
             //
             SplitVisualizationEdgesAndFaces(part);
             //
@@ -1117,24 +1119,27 @@ namespace CaeMesh
             {
                 data = entry.Value;
                 cellsIds = data.CellIds.ToArray();      // for faster loops
-                //
-                if (cellsIds.Length == 1)               // free edges
+                // Free edges
+                if (cellsIds.Length == 1)               
                 {
                     edgeCells.Add(data.NodeIds);
                     continue;
                 }
                 //
-                for (int i = 0; i < cellsIds.Length - 1; i++)
+                if (angle >= 0)
                 {
-                    for (int j = i + 1; j < cellsIds.Length; j++)
+                    for (int i = 0; i < cellsIds.Length - 1; i++)
                     {
-                        visualizationCell1i = cellsIds[i];
-                        visualizationCell2i = cellsIds[j];
-                        //
-                        phi = ComputeAngleInRadFromCellIndices(cells[visualizationCell1i], cells[visualizationCell2i]);
-                        if (phi < 0) phi = -phi;
-                        if (phi > Math.PI / 2) phi = Math.PI - phi;
-                        if (phi > angle) edgeCells.Add(data.NodeIds);
+                        for (int j = i + 1; j < cellsIds.Length; j++)
+                        {
+                            visualizationCell1i = cellsIds[i];
+                            visualizationCell2i = cellsIds[j];
+                            //
+                            phi = ComputeAngleInRadFromCellIndices(cells[visualizationCell1i], cells[visualizationCell2i]);
+                            if (phi < 0) phi = -phi;
+                            if (phi > Math.PI / 2) phi = Math.PI - phi;
+                            if (phi > angle) edgeCells.Add(data.NodeIds);
+                        }
                     }
                 }
             }
@@ -2299,11 +2304,12 @@ namespace CaeMesh
                     }
                 }
             }
-            //
+            // Modify existing parts
             int count = 0;
             MeshPart meshPart;
             BasePart newBasePart;
             MeshPart newMeshPart;
+            List<FeElement1D> edgeElements = new List<FeElement1D>();
             modifiedParts = new BasePart[elementIdsToRemove.Count];
             foreach (var entry in elementIdsToRemove)
             {
@@ -2311,13 +2317,17 @@ namespace CaeMesh
                 meshPart.Labels = meshPart.Labels.Except(entry.Value).ToArray();
                 //
                 newBasePart = CreateBasePartFromElementIds(meshPart.Labels);
+                edgeElements.AddRange(GetLineElementsFromEdges(newBasePart)); // get new free edges
                 newMeshPart = new MeshPart(newBasePart);
                 newMeshPart.Name = meshPart.Name;
                 newMeshPart.PartId = meshPart.PartId;
                 SetPartsColorFromColorTable(newMeshPart);
                 newMeshPart.CopyActiveElementTypesFrom(meshPart);
-                //
-                _parts[newMeshPart.Name] = newMeshPart; // replace part
+                // Replace part
+                _parts[newMeshPart.Name] = newMeshPart;
+                // Keep existing edges
+                edgeElements.AddRange(GetLineElementsFromEdges(meshPart));
+                ConvertLineFeElementsToEdges(edgeElements, new string[] { newMeshPart.Name });
                 //
                 modifiedParts[count++] = newMeshPart;
             }
@@ -2334,6 +2344,9 @@ namespace CaeMesh
                 //
                 _parts.Add(newMeshPart.Name, newMeshPart);
                 newParts[count++] = newMeshPart;
+                // Keep existing edges
+                ConvertLineFeElementsToEdges(edgeElements, new string[] { newMeshPart.Name });
+                //
                 _elementSets.Remove(newMeshPart.Name);
             }
             // Update bounding boxes
@@ -2362,6 +2375,16 @@ namespace CaeMesh
             //
             return part;
         }
+        private FeElement1D[] GetLineElementsFromEdges(BasePart part)
+        {
+            VisualizationData vis = part.Visualization;
+            FeElement1D[] edgeElements = new FeElement1D[vis.EdgeCells.Length];
+            for (int i = 0; i < vis.EdgeCells.Length; i++)
+            {
+                edgeElements[i] = new LinearBeamElement(i, vis.EdgeCells[i]);
+            }
+            return edgeElements;
+        }
         //
         public void ConvertLineFeElementsToEdges(HashSet<int> vertexNodeIds = null)
         {
@@ -2372,6 +2395,14 @@ namespace CaeMesh
                 if (entry.Value is FeElement1D element1D) edgeElements.Add(element1D);
             }
             //
+            ConvertLineFeElementsToEdges(edgeElements, vertexNodeIds);
+        }
+        public void ConvertLineFeElementsToEdges(List<FeElement1D> edgeElements, HashSet<int> vertexNodeIds = null)
+        {
+            ConvertLineFeElementsToEdges(edgeElements, _parts.Keys.ToArray(), vertexNodeIds);
+        }
+        public void ConvertLineFeElementsToEdges(List<FeElement1D> edgeElements, string[] partNames, HashSet<int> vertexNodeIds = null)
+        {
             bool add;
             int n1;
             int[] key;
@@ -2384,14 +2415,14 @@ namespace CaeMesh
             HashSet<int[]> sortedEdgeCells = new HashSet<int[]>(comparer);    // to be unique
             Dictionary<int, List<int>> nodeCellIds = new Dictionary<int, List<int>>();
             // For each part
-            foreach (var entry in _parts)
+            foreach (var partName in partNames)
             {
-                part = entry.Value;
+                part = _parts[partName];
                 //
                 if (part.PartType == PartType.Solid
                     || part.PartType == PartType.SolidAsShell
                     || part.PartType == PartType.Shell)
-                {                    
+                {
                     // Build a map of cellIds connected to each node
                     cells = part.Visualization.Cells;
                     nodeCellIds.Clear();
@@ -7149,7 +7180,7 @@ namespace CaeMesh
                     part.Visualization = new VisualizationData();
                     part.Visualization.ExtractVisualizationCellsFromElements3D(_elements, part.Labels);
                     // This creates part.Visualization.CellNeighboursOverCellEdge;
-                    ExtractEdgesFromShellByAngle(part, 30);
+                    ExtractEdgesFromShellByAngle(part, -1);
                     // Add new created edges
                     foreach (var edgeNodeIds in newEdgeNodeIds)
                         edgeIdNodeIds.Add(edgeIdNodeIds.Count, new HashSet<int>(edgeNodeIds));

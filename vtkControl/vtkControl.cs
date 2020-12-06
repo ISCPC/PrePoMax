@@ -4598,7 +4598,7 @@ namespace vtkControl
                     if (pointData.GetAttribute(0) == null || pointData.GetAttribute(0).GetName() != Globals.ScalarArrayName)
                         pointData.SetActiveScalars(Globals.ScalarArrayName);
                     if (mapper.GetInterpolateScalarsBeforeMapping() != 1)
-                        mapper.SetInterpolateScalarsBeforeMapping(1); // discrete colors
+                        mapper.SetInterpolateScalarsBeforeMapping(1); // discrete colors - smooth colors
                 }
                 else
                 {

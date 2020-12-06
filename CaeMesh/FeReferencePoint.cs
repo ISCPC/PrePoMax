@@ -15,6 +15,10 @@ namespace CaeMesh
     {
         [StandardValue("Selection", Description = "Selection/Coordinates", DisplayName = "Selection/Coordinates")]
         Selection,
+        [StandardValue("BetweenTwoPoints", Description = "Between two points", DisplayName = "Between two points")]
+        BetweenTwoPoints,
+        [StandardValue("CircleCenter", Description = "Circle center by 3 points", DisplayName = "Circle center by 3 points")]
+        CircleCenter,
         [StandardValue("CenterOfGravity", Description = "Center of gravity", DisplayName = "Center of gravity")]
         CenterOfGravity,
         [StandardValue("BoundingBoxCenter", Description = "Bounding box center", DisplayName = "Bounding box center")]

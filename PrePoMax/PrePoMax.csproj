@@ -101,6 +101,7 @@
     <Compile Include="Command\0030_Geometry\01_Part\CRemoveGeometryParts.cs" />
     <Compile Include="Command\0030_Geometry\01_Part\CReplaceGeometryPartProperties.cs" />
     <Compile Include="Command\0030_Geometry\01_Part\CShowGeometryParts.cs" />
+    <Compile Include="Command\0030_Geometry\CFindEdgesByAngleForGeometryPartsCommand.cs" />
     <Compile Include="Command\0030_Geometry\CSplitAFaceUsingTwoPoints.cs" />
     <Compile Include="Command\0030_Geometry\CFlipFaceOrientations.cs" />
     <Compile Include="Command\0040_Mesh\CAddMeshRefinement.cs" />

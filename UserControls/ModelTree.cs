@@ -1930,7 +1930,7 @@ namespace UserControls
             {
                 CodersLabTreeView cltv = (CodersLabTreeView)node.TreeView;
                 NamedClass item = (NamedClass)node.Tag;
-                bool drawFreeEdges;
+                bool warning;
                 //
                 if (item.Active)
                 {
@@ -1960,8 +1960,14 @@ namespace UserControls
                             //
                             if (item is GeometryPart gp)
                             {
-                                drawFreeEdges = (gp.PartType == PartType.Solid || gp.PartType == PartType.SolidAsShell) && gp.FreeEdgeElementIds != null;
-                                if (gp.HasErrors || drawFreeEdges) SetNodeImage(node, "Warning.ico");
+                                if (gp.PartType == PartType.Solid || gp.PartType == PartType.SolidAsShell)
+                                    warning = gp.HasFreeEdges;
+                                else if (gp.PartType == PartType.Shell)
+                                    warning = gp.HasErrors;
+                                else
+                                    warning = false;
+                                //
+                                if (warning) SetNodeImage(node, "Warning.ico");
                             }
                         }
                     }

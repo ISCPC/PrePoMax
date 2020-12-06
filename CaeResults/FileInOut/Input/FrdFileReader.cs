@@ -476,29 +476,28 @@ namespace CaeResults
                 //  -5  D3          1    2    3    0
                 //  -5  ALL         1    2    0    0    1ALL
             }
-
+            //
             string[] record;
             string[] splitter = new string[] { " " };
-
+            //
             string name;
             int userDefinedBlockId = -1;
             StepType type = StepType.Static;
             float time;
             int stepId;
             int stepIncrementId;
-            
+            //
             record = lines[lineNum++].Split(splitter, StringSplitOptions.RemoveEmptyEntries);       // 1PSTEP
             stepId = int.Parse(record[3]);
             stepIncrementId = int.Parse(record[2]);
-
-            // find 100C line - user field data
+            // Find 100C line - user field data
             while (!lines[lineNum].TrimStart().StartsWith("100C")) lineNum++;
             record = lines[lineNum++].Split(splitter, StringSplitOptions.RemoveEmptyEntries);       // 100CL
             userDefinedBlockId = int.Parse(record[1]);
             time = float.Parse(record[2]);
             numOfVal = int.Parse(record[3]);
             if (int.Parse(record[4]) == 4) type = StepType.Buckling;                                // buckling switch
-
+            //
             if (type == StepType.Buckling)
             {
                 if (prevFieldData == null) // this is the first step
@@ -522,7 +521,7 @@ namespace CaeResults
                     stepIncrementId = prevFieldData.StepIncrementId;
                 }
             }
-            // check for modal analysis
+            // Check for modal analysis
             else if (record.Length > 5 && record[5].Contains("MODAL"))
             {
                 type = StepType.Frequency;
@@ -530,10 +529,10 @@ namespace CaeResults
                 int freqNum = int.Parse(record[1]);
                 stepIncrementId = freqNum;
             }
-
+            //
             record = lines[lineNum++].Split(splitter, StringSplitOptions.RemoveEmptyEntries);       // -4  DISP
             name = record[1];
-
+            //
             fieldData = new FieldData(name);
             fieldData.UserDefinedBlockId = userDefinedBlockId;
             fieldData.Type = type;
@@ -621,28 +620,28 @@ namespace CaeResults
         static private Field CreateVectorField(string name, List<string> components, float[][] values)
         {
             Field field = new Field(name);
-
+            //
             float[] magnitude = new float[values[0].Length];
             for (int i = 0; i < magnitude.Length; i++)
             {
                 magnitude[i] = (float)Math.Sqrt(Math.Pow(values[0][i], 2) + Math.Pow(values[1][i], 2) + Math.Pow(values[2][i], 2));
             }
             field.AddComponent("ALL", magnitude, true);
-
+            //
             for (int i = 0; i < components.Count; i++)
             {
                 // Field ALL is allready added
                 if (components[i] != "ALL") field.AddComponent(components[i], values[i]);
             }
-
+            //
             return field;
         }
         static private Field CreateStressField(string name, List<string> components, float[][] values)
         {
             // https://en.wikiversity.org/wiki/Principal_stresses
-
+            //
             Field field = new Field(name);
-
+            //
             if (values.Length == 6)
             {
                 float[] vonMises = new float[values[0].Length];
@@ -662,40 +661,40 @@ namespace CaeResults
                 }
                 field.AddComponent("MISES", vonMises, true);
             }
-
+            //
             for (int i = 0; i < components.Count; i++)
             {
                 field.AddComponent(components[i], values[i]);
             }
-
+            //
             if (values.Length == 6) ComputeAndAddPrincipalStresses(field, values);
-
+            //
             return field;
         }
         static private void ComputeAndAddPrincipalStresses(Field field, float[][] values)
         {
             // https://en.wikipedia.org/wiki/Cubic_function#General_solution_to_the_cubic_equation_with_arbitrary_coefficients
             // https://en.wikiversity.org/wiki/Principal_stresses
-
+            //
             float[] s0 = new float[values[0].Length];
             float[] s1 = new float[values[0].Length];
             float[] s2 = new float[values[0].Length];
             float[] s3 = new float[values[0].Length];
-
+            //
             float s11;
             float s22;
             float s33;
             float s12;
             float s23;
             float s31;
-
+            //
             double I1;
             double I2;
             double I3;
-
+            //
             double sp1, sp2, sp3;
             sp1 = sp2 = sp3 = 0;
-
+            //
             for (int i = 0; i < s1.Length; i++)
             {
                 s11 = values[0][i];
@@ -704,25 +703,26 @@ namespace CaeResults
                 s12 = values[3][i];
                 s23 = values[4][i];
                 s31 = values[5][i];
-
+                //
                 I1 = s11 + s22 + s33;
                 I2 = s11 * s22 + s22 * s33 + s33 * s11 - Math.Pow(s12, 2.0) - Math.Pow(s23, 2.0) - Math.Pow(s31, 2.0);
-                I3 = s11 * s22 * s33 - s11 * Math.Pow(s23, 2.0) - s22 * Math.Pow(s31, 2.0) - s33 * Math.Pow(s12, 2.0) + 2.0 * s12 * s23 * s31;
-
-                CaeGlobals.Tools.SolveQubicEquationDepressedCubic(1.0, -I1, I2, -I3, ref sp1, ref sp2, ref sp3);
-                CaeGlobals.Tools.Sort3_descending(ref sp1, ref sp2, ref sp3);
-
+                I3 = s11 * s22 * s33 - s11 * Math.Pow(s23, 2.0) - s22 * Math.Pow(s31, 2.0) - s33 * Math.Pow(s12, 2.0) +
+                     2.0 * s12 * s23 * s31;
+                //
+                Tools.SolveQubicEquationDepressedCubic(1.0, -I1, I2, -I3, ref sp1, ref sp2, ref sp3);
+                Tools.Sort3_descending(ref sp1, ref sp2, ref sp3);
+                //
                 s0[i] = Math.Abs(sp1) > Math.Abs(sp3) ? (float)sp1 : (float)sp3;
                 s1[i] = (float)sp1;
                 s2[i] = (float)sp2;
                 s3[i] = (float)sp3;
-
+                //
                 if (float.IsNaN(s0[i])) s0[i] = 0;
                 if (float.IsNaN(s1[i])) s1[i] = 0;
                 if (float.IsNaN(s2[i])) s2[i] = 0;
                 if (float.IsNaN(s3[i])) s3[i] = 0;
             }
-
+            //
             field.AddComponent("SGN-MAX-ABS-PRI", s0, true);
             field.AddComponent("PRINCIPAL-MAX", s1, true);
             field.AddComponent("PRINCIPAL-MID", s2, true);
@@ -770,7 +770,7 @@ namespace CaeResults
         static private LinearHexaElement GetLinearHexaElement(int id, string[] record)
         {
             int[] nodes = new int[8];
-
+            //
             nodes[0] = int.Parse(record[1]);
             nodes[1] = int.Parse(record[2]);
             nodes[2] = int.Parse(record[3]);
@@ -779,7 +779,7 @@ namespace CaeResults
             nodes[5] = int.Parse(record[6]);
             nodes[6] = int.Parse(record[7]);
             nodes[7] = int.Parse(record[8]);
-
+            //
             return new LinearHexaElement(id, nodes);
         }
 
@@ -819,40 +819,37 @@ namespace CaeResults
             {
                 nodes[i] = int.Parse(record1[i + 1]);
             }
-
-            // swap last 3 nodes with forelast 3 nodes
+            // Swap last 3 nodes with forelast 3 nodes
             nodes[9] = int.Parse(record2[3]);
             nodes[10] = int.Parse(record2[4]);
             nodes[11] = int.Parse(record2[5]);
             nodes[12] = int.Parse(record1[10]);
             nodes[13] = int.Parse(record2[1]);
             nodes[14] = int.Parse(record2[2]);
-
+            //
             return new ParabolicWedgeElement(id, nodes);
         }
         static private ParabolicHexaElement GetParabolicHexaElement(int id, string[] record1, string[] record2)
         {
             int[] nodes = new int[20];
-
-            // first 12 nodes are OK
+            // First 12 nodes are OK
             for (int i = 0; i < 10; i++)
             {
                 nodes[i] = int.Parse(record1[i + 1]);
             }
             nodes[10] = int.Parse(record2[1]);
             nodes[11] = int.Parse(record2[2]);
-            
-            // swap last 3 nodes with forelast 3 nodes
+            // Swap last 3 nodes with forelast 3 nodes
             nodes[12] = int.Parse(record2[7]);
             nodes[13] = int.Parse(record2[8]);
             nodes[14] = int.Parse(record2[9]);
             nodes[15] = int.Parse(record2[10]);
-
+            //
             nodes[16] = int.Parse(record2[3]);
             nodes[17] = int.Parse(record2[4]);
             nodes[18] = int.Parse(record2[5]);
             nodes[19] = int.Parse(record2[6]);
-
+            //
             return new ParabolicHexaElement(id, nodes);
         }
 

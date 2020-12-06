@@ -159,7 +159,7 @@ namespace PrePoMax.Forms
                     int[] ids = Surface.FaceIds;
                     _selectionNodeIds = new SelectionNodeIds(vtkSelectOperation.None, false, ids);
                     _prevSelectionNodes = Surface.CreationData.Nodes;
-                    _controller.CreateNewSelection(Surface.CreationData.CurrentView, _selectionNodeIds, true);
+                    _controller.CreateNewSelection(Surface.CreationData.CurrentView, vtkSelectItem.Surface, _selectionNodeIds, true);
                     Surface.CreationData = _controller.Selection.DeepClone();
                 }
                 //

@@ -201,7 +201,8 @@ namespace PrePoMax.Forms
                     int[] ids = MeshRefinement.GeometryIds;
                     _selectionNodeIds = new SelectionNodeIds(vtkSelectOperation.None, false, ids, true);
                     _prevSelectionNodes = MeshRefinement.CreationData.Nodes;
-                    _controller.CreateNewSelection(MeshRefinement.CreationData.CurrentView, _selectionNodeIds, true);
+                    _controller.CreateNewSelection(MeshRefinement.CreationData.CurrentView, vtkSelectItem.Geometry,
+                                                   _selectionNodeIds, true);
                     // Copy selection
                     MeshRefinement.CreationData = _controller.Selection.DeepClone();
                 }

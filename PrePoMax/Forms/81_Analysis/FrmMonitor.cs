@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using CaeGlobals;
 using CaeJob;
 
 namespace PrePoMax.Forms
@@ -15,7 +16,7 @@ namespace PrePoMax.Forms
     {
         // Variables                                                                                                                
         private AnalysisJob _job;
-
+        private Controller _controller;
 
         // Properties                                                                                                               
 
@@ -26,9 +27,11 @@ namespace PrePoMax.Forms
 
 
         // Constructors                                                                                                             
-        public FrmMonitor()
+        public FrmMonitor(Controller controller)
         {
             InitializeComponent();
+            //
+            _controller = controller;
         }
 
 
@@ -112,11 +115,11 @@ namespace PrePoMax.Forms
         }
 
         // Methods                                                                                                                  
-        public void PrepareForm(AnalysisJob job)
+        public void PrepareForm(string jobName)
         {
             this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
             //
-            _job = job;
+            _job = _controller.GetJob(jobName);
             _job.DataOutput += UpdateOutput;
             //
             UpdateProgress();
@@ -173,12 +176,43 @@ namespace PrePoMax.Forms
                     pbAnalysisStatus.Style = ProgressBarStyle.Blocks;
                     labAnalysisStatus.Text = "      " + "Failed with results";
                     labAnalysisStatus.Image = global::PrePoMax.Properties.Resources.Warning;
+                    //
+                    CheckForErrors();
                 }
                 else
                 {
                     pbAnalysisStatus.Style = ProgressBarStyle.Blocks;
                     labAnalysisStatus.Text = "      " + _job.JobStatus.ToString();
                     labAnalysisStatus.Image = global::PrePoMax.Properties.Resources.NoResult;
+                    //
+                    CheckForErrors();
+                }
+            }
+        }
+        private void CheckForErrors()
+        {
+            string output = tbOutput.Text.ToUpper();
+            //
+            if (output.Contains("*ERROR"))
+            {
+                if (output.Contains("NONPOSITIVE JACOBIAN"))
+                {
+                    string[] sets = output.Split(new string[] { "DETERMINANT IN ELEMENT" }, StringSplitOptions.RemoveEmptyEntries);
+                    //
+                    string[] tmp;
+                    HashSet<int> errorElementIds = new HashSet<int>();
+                    //
+                    for (int i = 1; i < sets.Length; i++)   // skip the first set
+                    {
+                        tmp = sets[i].Split(new string[] { "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
+                        errorElementIds.Add(int.Parse(tmp[0]));
+                    }
+                    string elementSetName = NamedClass.GetNewValueName(_controller.Model.Mesh.ElementSets.Keys, "Nonpositive_jacobian-");
+                    _controller.AddElementSet(new CaeMesh.FeElementSet(elementSetName, errorElementIds.ToArray()));
+                    //
+                    tbOutput.AppendText(Environment.NewLine);
+                    tbOutput.AppendText(" An element set containing elements with nonpositive jacobian determinant was created.");
+                    tbOutput.AppendText(Environment.NewLine);
                 }
             }
         }

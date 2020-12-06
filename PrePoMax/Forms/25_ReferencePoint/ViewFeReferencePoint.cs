@@ -127,7 +127,9 @@ namespace PrePoMax.Forms
         {
             DynamicCustomTypeDescriptor dctd = base.DynamicCustomTypeDescriptor;
             //
-            if (CreatedFrom == FeReferencePointCreatedFrom.Selection)
+            if (CreatedFrom == FeReferencePointCreatedFrom.Selection ||
+                CreatedFrom == FeReferencePointCreatedFrom.BetweenTwoPoints ||
+                CreatedFrom == FeReferencePointCreatedFrom.CircleCenter)
             {
                 dctd.GetProperty(nameof(RegionType)).SetIsBrowsable(false);
                 dctd.GetProperty(nameof(NodeSetName)).SetIsBrowsable(false);

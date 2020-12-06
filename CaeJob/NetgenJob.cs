@@ -293,7 +293,7 @@ namespace CaeJob
         {
             try
             {
-                AppendOutput(OutputData);
+                if (AppendOutput != null) AppendOutput(OutputData);
                 File.AppendAllText(_outputFileName, OutputData);
                 //
                 _sbOutput.Clear();

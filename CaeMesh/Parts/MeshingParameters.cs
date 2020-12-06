@@ -27,7 +27,9 @@ namespace CaeMesh
         private int _optimizeSteps2D;
         private int _optimizeSteps3D;
         private bool _splitCompoundMesh;
-        
+        //
+        private double _hausdorff;              // 0.01 for objects of size 1; allowed distance from geometry
+
 
         // Properties                                                                                                               
         public double MaxH 

@@ -503,7 +503,7 @@ namespace PrePoMax.Forms
             Vec3D baseV2 = new Vec3D(_controller.GetNode(nodeId2).Coor);
             Vec3D baseV3 = new Vec3D(_controller.GetNode(nodeId3).Coor);
             //
-            ComputeCircle(baseV1, baseV2, baseV3, out r, out center, out axis);
+            Vec3D.GetCircle(baseV1, baseV2, baseV3, out r, out center, out axis);
             string lenUnit = GetLengthUnit();
             //
             Form_WriteDataToOutput("");
@@ -523,7 +523,7 @@ namespace PrePoMax.Forms
                 baseV2 = new Vec3D(_controller.GetScaledNode(1, nodeId2).Coor);
                 baseV3 = new Vec3D(_controller.GetScaledNode(1, nodeId3).Coor);
                 //
-                ComputeCircle(baseV1, baseV2, baseV3, out r, out center, out axis);
+                Vec3D.GetCircle(baseV1, baseV2, baseV3, out r, out center, out axis);
                 //
                 data = string.Format("{0,16}{1,8}{2,16}{3,16:E}, {4,16:E}, {5,16:E}, {6,16:E}",
                                      "Deformed".PadRight(16), lenUnit, "x, y, z, R:", center.X, center.Y, center.Z, r);
@@ -537,7 +537,7 @@ namespace PrePoMax.Forms
                 baseV2 = new Vec3D(_controller.GetScaledNode(scale, nodeId2).Coor);    // for the _coorNodesToDraw
                 baseV3 = new Vec3D(_controller.GetScaledNode(scale, nodeId3).Coor);    // for the _coorNodesToDraw
                 //
-                ComputeCircle(baseV1, baseV2, baseV3, out r, out center, out axis);
+                Vec3D.GetCircle(baseV1, baseV2, baseV3, out r, out center, out axis);
             }
             Form_WriteDataToOutput("");
             //
@@ -570,29 +570,7 @@ namespace PrePoMax.Forms
             //
             double angle = Math.Acos(Vec3D.DotProduct(line1, line2)) * 180 / Math.PI;
             return angle;
-        }
-        private void ComputeCircle(Vec3D baseV1, Vec3D baseV2, Vec3D baseV3, out double r, out Vec3D center, out Vec3D axis)
-        {
-            Vec3D n12 = baseV1 - baseV2;
-            Vec3D n21 = baseV2 - baseV1;
-            Vec3D n23 = baseV2 - baseV3;
-            Vec3D n32 = baseV3 - baseV2;
-            Vec3D n13 = baseV1 - baseV3;
-            Vec3D n31 = baseV3 - baseV1;
-            Vec3D n12xn23 = Vec3D.CrossProduct(n12, n23);
-            //
-            r = (n12.Len * n23.Len * n31.Len) / (2 * n12xn23.Len);
-            //
-            double denominator = 2 * n12xn23.Len2;
-            double alpha = n23.Len2 * Vec3D.DotProduct(n12, n13) / denominator;
-            double beta = n13.Len2 * Vec3D.DotProduct(n21, n23) / denominator;
-            double gama = n12.Len2 * Vec3D.DotProduct(n31, n32) / denominator;
-            //
-            center = alpha * baseV1 + beta * baseV2 + gama * baseV3;
-            //
-            axis = Vec3D.CrossProduct(n21, n32);
-            axis.Normalize();
-        }
+        }        
         private double[][] ComputeCirclePoints(Vec3D c, Vec3D axis, Vec3D p, double angle)
         {
             // The circe is constructed by moving the r vector around the axis

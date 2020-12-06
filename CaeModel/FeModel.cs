@@ -442,9 +442,16 @@ namespace CaeModel
             }
             // Not assigned
             IEnumerable<int> unAssignedElementIds = _mesh.Elements.Keys.Except(elementIdSectionId.Keys);
-            foreach (var elementId in unAssignedElementIds) elementIdSectionId.Add(elementId, -1);
+            int[] unAssignedElementIdsArray = new int[unAssignedElementIds.Count()];
+            int count = 0;
+            foreach (var elementId in unAssignedElementIds)
+            {
+                elementIdSectionId.Add(elementId, -1);
+                unAssignedElementIdsArray[count++] = elementId;
+            }
             //
-            return unAssignedElementIds.ToArray();
+            return unAssignedElementIdsArray;
+
         }
         public void GetMaterialAssignments(out Dictionary<int, int> elementIdMaterialId)
         {
@@ -529,16 +536,6 @@ namespace CaeModel
         {
             FeMesh mesh = FileInOut.Input.StlFileReader.Read(fileName);
             //
-            bool noErrors = true;
-            foreach (var entry in mesh.Parts)
-            {
-                if (entry.Value is GeometryPart gp && gp.HasErrors)
-                {
-                    noErrors = false;
-                    break;
-                }
-            }
-            //
             string[] addedPartNames = ImportGeometry(mesh, GetReservedPartNames());
             //
             return addedPartNames;
@@ -598,7 +595,7 @@ namespace CaeModel
             //
             ImportMesh(mesh, GetReservedPartNames());
         }
-        public void ImportGeneratedMeshFromMeshFile(string fileName, GeometryPart part, bool convertToSecondorder,
+        public void ImportGeneratedMeshFromMeshFile(string fileName, BasePart part, bool convertToSecondorder,
                                                    bool splitCompoundMesh)
         {
             FileInOut.Input.ElementsToImport elementsToImport;

@@ -157,6 +157,10 @@ namespace CaeResults
             {
                 switch (fieldDataName.ToUpper())
                 {
+                    case "NONE":
+                        unitConverter = new DoubleConverter();
+                        unitAbbreviation = "";
+                        break;
                     case "DISP":
                         unitConverter = new StringLengthConverter();
                         unitAbbreviation = _unitSystem.LengthUnitAbbreviation;
@@ -384,8 +388,15 @@ namespace CaeResults
         }
         public FieldData GetFieldData(string name, string component, int stepId, int stepIncrementId)
         {
+            // Empty resoults
+            if (stepId == -1 && stepIncrementId == -1)
+            {
+                FieldData fieldData = new FieldData(name, component, stepId, stepIncrementId);
+                fieldData.Type = StepType.Static;
+                return fieldData;
+            }
             // Zero step
-            if (stepId == 1 && stepIncrementId == 0)
+            else if (stepId == 1 && stepIncrementId == 0)
             {
                 FieldData fieldData = new FieldData(name, component, stepId, stepIncrementId);
                 fieldData.Type = StepType.Static;
@@ -415,16 +426,26 @@ namespace CaeResults
         }
         public FieldData GetFirstComponentOfTheFirstFieldAtDefaultIncrement()
         {
-            string name = GetAllFieldNames()[0];
-            string component = GetComponentNames(name)[0];
-            int stepId = GetAllStepIds().Last();
-            int stepIncrementId = GetIncrementIds(stepId).Last();
-            //
-            FieldData fieldData = GetFieldData(name, component, stepId, stepIncrementId);
-            if (fieldData.Type == StepType.Frequency)
+            string[] names = GetAllFieldNames();
+            FieldData fieldData;
+            if (names.Length == 0)
             {
-                stepIncrementId = GetIncrementIds(stepId).First();
+                // There is no data
+                fieldData = GetFieldData("None", "None", -1, -1);
+            }
+            else
+            {
+                string name = names[0];
+                string component = GetComponentNames(name)[0];
+                int stepId = GetAllStepIds().Last();
+                int stepIncrementId = GetIncrementIds(stepId).Last();
+                //
                 fieldData = GetFieldData(name, component, stepId, stepIncrementId);
+                if (fieldData.Type == StepType.Frequency)
+                {
+                    stepIncrementId = GetIncrementIds(stepId).First();
+                    fieldData = GetFieldData(name, component, stepId, stepIncrementId);
+                }
             }
             return fieldData;
         }
@@ -451,12 +472,11 @@ namespace CaeResults
             HashSet<int> incrementIds = new HashSet<int>();
             foreach (var entry in _fields)
             {
-
                 if (entry.Key.StepId == stepId)
                 {
                     if (entry.Key.Type == StepType.Static && stepId == 1 && incrementIds.Count == 0)
                         incrementIds.Add(0);   // zero increment for the first step - static only
-
+                    //
                     incrementIds.Add(entry.Key.StepIncrementId);
                 }
             }
@@ -466,15 +486,22 @@ namespace CaeResults
         {
             int[] stepIds = GetAllStepIds();
             Dictionary<int, int[]> existingIncrementIds = new Dictionary<int, int[]>();
-            List<int> stepIncrementIds;
-            foreach (int stepId in stepIds)
+            if (stepIds.Length == 0)
             {
-                stepIncrementIds = new List<int>();
-                foreach (int incrementId in GetIncrementIds(stepId))
+                existingIncrementIds.Add(-1, new int[] { -1 });
+            }
+            else
+            {
+                List<int> stepIncrementIds;
+                foreach (int stepId in stepIds)
                 {
-                    if (FieldExists(fieldName, component, stepId, incrementId)) stepIncrementIds.Add(incrementId);
+                    stepIncrementIds = new List<int>();
+                    foreach (int incrementId in GetIncrementIds(stepId))
+                    {
+                        if (FieldExists(fieldName, component, stepId, incrementId)) stepIncrementIds.Add(incrementId);
+                    }
+                    existingIncrementIds.Add(stepId, stepIncrementIds.ToArray());
                 }
-                existingIncrementIds.Add(stepId, stepIncrementIds.ToArray());
             }
             return existingIncrementIds;
         }

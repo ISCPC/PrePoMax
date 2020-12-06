@@ -239,7 +239,10 @@ namespace CaeJob
                     AppendDataToOutput(" Job failed - no results exist.");
                     _jobStatus = JobStatus.Failed;
                 }
-                else if (_sbOutput.ToString().Contains("*ERROR")) _jobStatus = JobStatus.FailedWithResults;
+                else if (_sbOutput.ToString().Contains("*ERROR") || _sbAllOutput.ToString().Contains("*ERROR"))
+                {
+                    _jobStatus = JobStatus.FailedWithResults;
+                }
             }
             else if (_jobStatus == JobStatus.Killed)
             {

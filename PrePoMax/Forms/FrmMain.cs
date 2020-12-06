@@ -208,7 +208,7 @@ namespace PrePoMax
                 _modelTree.CreateCompoundPart += CreateAndImportCompoundPart;
                 _modelTree.MeshingParametersEvent += GetSetMeshingParameters;
                 _modelTree.PreviewEdgeMesh += PreviewEdgeMeshes;
-                _modelTree.CreateMeshEvent += CreateMeshes;
+                _modelTree.CreateMeshEvent += CreatePartMeshes;
                 _modelTree.CopyGeometryToResultsEvent += CopyGeometryPartsToResults;
                 _modelTree.EditCalculixKeywords += EditEditCalculiXKeywords;
                 _modelTree.MergeParts += MergeModelParts;
@@ -337,7 +337,7 @@ namespace PrePoMax
                 _frmAnalysis = new FrmAnalysis(_controller);
                 AddFormToAllForms(_frmAnalysis);
                 //
-                _frmMonitor = new FrmMonitor();
+                _frmMonitor = new FrmMonitor(_controller);
                 _frmMonitor.KillJob += KillAnalysis;
                 _frmMonitor.Results += ResultsAnalysis;
                 AddFormToAllForms(_frmMonitor);
@@ -2008,7 +2008,7 @@ namespace PrePoMax
                 presetValues.Add("Semi-transparent", 128);
                 presetValues.Add("Opaque", 255);
                 string desc = "Enter the transparency between 0 and 255.\n" + "(0 - transparent; 255 - opaque)";
-                frmGetValue.PrepareForm("Set Transparency", "Transparency",  desc, 128, presetValues);
+                frmGetValue.PrepareForm("Set Transparency: " + partNames.ToShortString(), "Transparency",  desc, 128, presetValues);
                 if (frmGetValue.ShowDialog() == DialogResult.OK)
                 {
                     _controller.SetTransparencyForGeometryPartsCommand(partNames,(byte)frmGetValue.Value);
@@ -2148,6 +2148,7 @@ namespace PrePoMax
             _controller.FlipFaceOrientationsCommand(geometrySelection);
             SetStateReady(Globals.FlippingNormals);
         }
+        //
         private async void tsmiSplitAFaceUsingTwoPoints_Click(object sender, EventArgs e)
         {
             try
@@ -2198,6 +2199,7 @@ namespace PrePoMax
                 SetStateReady(Globals.SplittingFaces);
             }
         }
+        //
         private void tsmiCropWithCylinder_Click(object sender, EventArgs e)
         {
             try
@@ -2209,6 +2211,38 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
+        //
+        private void tsmiFindEdgesByAngleForGeometryParts_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Parts", _controller.GetNonCADGeometryParts(), FindEdgesByAngleForGeometryParts);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void FindEdgesByAngleForGeometryParts(string[] partNames)
+        {
+            using (FrmGetValue frmGetValue = new FrmGetValue())
+            {
+                frmGetValue.NumOfDigits = 2;
+                frmGetValue.MinValue = 0;
+                frmGetValue.MaxValue = 180;
+                SetFormLoaction(frmGetValue);
+                OrderedDictionary<string, double> presetValues = new OrderedDictionary<string, double>();
+                presetValues.Add("Default ", 60);
+                string desc = "Enter the face angle [°] to detect edges.)";
+                frmGetValue.PrepareForm("Find edges: " + partNames.ToShortString() , "Angle", desc, 60, presetValues);
+                if (frmGetValue.ShowDialog() == DialogResult.OK)
+                {
+                    _controller.FindEdgesByAngleForGeometryPartsCommand(partNames, frmGetValue.Value);
+                }
+                GetFormLoaction(frmGetValue);
+            }
+        }
+
         #endregion  ################################################################################################################
 
         #region Mesh ###############################################################################################################
@@ -2276,7 +2310,7 @@ namespace PrePoMax
         {
             try
             {
-                SelectMultipleEntities("Parts", _controller.GetGeometryPartsWithoutSubParts(), CreateMeshes);
+                SelectMultipleEntities("Parts", _controller.GetGeometryPartsWithoutSubParts(), CreatePartMeshes);
             }
             catch (Exception ex)
             {
@@ -2419,7 +2453,7 @@ namespace PrePoMax
                 _controller.RemoveMeshRefinementsCommand(meshRefinementNames);
             }
         }
-        private async void CreateMeshes(string[] partNames)
+        private async void CreatePartMeshes(string[] partNames)
         {
             try
             {
@@ -2430,7 +2464,7 @@ namespace PrePoMax
                 //
                 foreach (var partName in partNames)
                 {
-                    CaeMesh.GeometryPart part = _controller.GetGeometryPart(partName);
+                    GeometryPart part = _controller.GetGeometryPart(partName);
                     if (part.MeshingParameters == null) SetDefaultMeshingParameters(partName);
                     //
                     CloseAllForms();
@@ -2476,7 +2510,7 @@ namespace PrePoMax
         private void CreateDefaultMeshes(string[] partNames)
         {
             foreach (var partName in partNames) SetDefaultMeshingParameters(partName);
-            CreateMeshes(partNames);
+            CreatePartMeshes(partNames);
         }
         private async void CreateUserDefinedMeshes(string[] partNames)
         {
@@ -2488,7 +2522,7 @@ namespace PrePoMax
                     System.Threading.Thread.Sleep(100);
                 }
             });
-            if (_frmMeshingParameters.DialogResult == DialogResult.OK) CreateMeshes(partNames);
+            if (_frmMeshingParameters.DialogResult == DialogResult.OK) CreatePartMeshes(partNames);
         }
 
         #endregion  ################################################################################################################
@@ -2528,6 +2562,18 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
+       private void tsmiRemesh_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                _controller.RemeshShellMeshPart(_controller.Model.Mesh.Parts["Nonpositive_jacobian-1"]);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        //
         private void EditModel()
         {
             ShowForm(_frmModelProperties, "Edit Model", null);
@@ -2783,7 +2829,7 @@ namespace PrePoMax
                 presetValues.Add("Semi-transparent", 128);
                 presetValues.Add("Opaque", 255);
                 string desc = "Enter the transparency between 0 and 255.\n" + "(0 - transparent; 255 - opaque)";
-                frmGetValue.PrepareForm("Set Transparency", "Transparency", desc, 128, presetValues);
+                frmGetValue.PrepareForm("Set Transparency: " + partNames.ToShortString(), "Transparency", desc, 128, presetValues);
                 if (frmGetValue.ShowDialog() == DialogResult.OK)
                 {
                     _controller.SetTransparencyForModelPartsCommand(partNames, (byte)frmGetValue.Value);
@@ -4223,8 +4269,8 @@ namespace PrePoMax
             {
                 CloseAllForms();
                 SetFormLoaction(_frmMonitor);
-                _frmMonitor.PrepareForm(_controller.GetJob(jobName));
-                _frmMonitor.ShowDialog();
+                _frmMonitor.PrepareForm(jobName);
+                _frmMonitor.ShowDialog(this);
             }
             catch (Exception ex)
             {
@@ -4448,7 +4494,7 @@ namespace PrePoMax
                 presetValues.Add("Semi-transparent", 128);
                 presetValues.Add("Opaque", 255);
                 string desc = "Enter the transparency between 0 and 255.\n" + "(0 - transparent; 255 - opaque)";
-                frmGetValue.PrepareForm("Set Transparency", "Transparency", desc, 128, presetValues);
+                frmGetValue.PrepareForm("Set Transparency: " + partNames.ToShortString(), "Transparency", desc, 128, presetValues);
                 if (frmGetValue.ShowDialog() == DialogResult.OK)
                 {
                     _controller.SetTransparencyForResultParts(partNames, (byte)frmGetValue.Value);

@@ -128,12 +128,13 @@ namespace PrePoMax.Forms
                     // Add creation data                    
                     ElementSet.CreationData = new Selection();
                     ElementSet.CreationData.SelectItem = vtkSelectItem.Element;
+                    //ElementSet.CreationData.CurrentView = 1;
                     ElementSet.CreationData.Add(new SelectionNodeIds(vtkSelectOperation.Add, false, ids));
                 }
                 // Change node selection history to ids to speed up
                 _selectionNodeIds = new SelectionNodeIds(vtkSelectOperation.None, false, ids);
                 _prevSelectionNodes = ElementSet.CreationData.Nodes;
-                _controller.CreateNewSelection(ElementSet.CreationData.CurrentView, _selectionNodeIds, true);
+                _controller.CreateNewSelection(ElementSet.CreationData.CurrentView, vtkSelectItem.Element, _selectionNodeIds, true);
                 ElementSet.CreationData = _controller.Selection.DeepClone();
             }
             //
