@@ -63,7 +63,7 @@ namespace PrePoMax
                     ApplySettings();
                     // Redraw model with new settings
                     if (_currentView == ViewGeometryModelResults.Geometry) DrawGeometry(false);
-                    else if (_currentView == ViewGeometryModelResults.Model) DrawMesh(false);
+                    else if (_currentView == ViewGeometryModelResults.Model) DrawModel(false);
                     else DrawResults(false);
                 }
                 catch
@@ -96,7 +96,7 @@ namespace PrePoMax
                     _form.SetCurrentView(_currentView);
                     //
                     if (_currentView == ViewGeometryModelResults.Geometry) DrawGeometry(false);
-                    else if (_currentView == ViewGeometryModelResults.Model) DrawMesh(false);
+                    else if (_currentView == ViewGeometryModelResults.Model) DrawModel(false);
                     else if (_currentView == ViewGeometryModelResults.Results) DrawResults(false); // Also calls Clear
                     else throw new NotSupportedException();
                 }
@@ -125,7 +125,7 @@ namespace PrePoMax
                 //
                 _form.InitializeColorBarWidgetPosition();
                 if (_currentView == ViewGeometryModelResults.Geometry) DrawGeometry(false);
-                else if (_currentView == ViewGeometryModelResults.Model) DrawMesh(false);
+                else if (_currentView == ViewGeometryModelResults.Model) DrawModel(false);
                 else if (_currentView == ViewGeometryModelResults.Results) DrawResults(false); // Also calls Clear
                 else throw new NotSupportedException();
             }
@@ -638,10 +638,9 @@ namespace PrePoMax
             // Import
             if (extension == ".stl")
             {
-                if (_model.ImportGeometryFromStlFile(fileName) == null || _model.Geometry.ManifoldGeometry)
+                if (_model.ImportGeometryFromStlFile(fileName) == null)
                 {
                     string message = "There are errors in the imported geometry.";
-                    if (_model.Geometry.ManifoldGeometry) message += Environment.NewLine + "The geometry is manifold.";
                     UserControls.AutoClosingMessageBox.Show(message, "Error", 3000);
                 }
             }
@@ -689,7 +688,7 @@ namespace PrePoMax
             {
                 _currentView = ViewGeometryModelResults.Model;
                 _form.SetCurrentView(_currentView);
-                DrawMesh(false);
+                DrawModel(false);
             }
             // Regenerate
             _form.RegenerateTree(_model, _jobs, _results, _history);
@@ -976,17 +975,21 @@ namespace PrePoMax
             // Regenerate tree
             _form.RegenerateTree(_model, _jobs, _results, _history);
             // Redraw to be able to update sets based on selection
-            FeModelUpdate(UpdateType.DrawMesh);
+            FeModelUpdate(UpdateType.DrawModel);
             // At the end update the sets
             if (renumbered)
             {
                 // Update sets - must be called with rendering off - SetStateWorking
-                UpdateNodeSetsBasedOnGeometry(false);
-                UpdateElementSetsBasedOnGeometry(false);
-                UpdateSurfacesBasedOnGeometry(false);
+                UpdateGeometryBasedItems(false);
             }
             // Update the sets and symbols
             FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
+        }
+        private void UpdateGeometryBasedItems(bool feModelUpdate)
+        {
+            UpdateNodeSetsBasedOnGeometry(feModelUpdate);
+            UpdateElementSetsBasedOnGeometry(feModelUpdate);
+            UpdateSurfacesBasedOnGeometry(feModelUpdate);
         }
         // Save
         public string GetFileNameToSaveAs()
@@ -1369,8 +1372,7 @@ namespace PrePoMax
             List<GeometryPart> parts = new List<GeometryPart>();
             foreach (var entry in _model.Geometry.Parts)
             {
-                if (entry.Value is GeometryPart gp && gp.CADFileData != null)
-                    parts.Add(gp);
+                if (entry.Value is GeometryPart gp && gp.CADFileData != null) parts.Add(gp);
             }
             return parts.ToArray();
         }
@@ -1381,8 +1383,23 @@ namespace PrePoMax
             List<GeometryPart> parts = new List<GeometryPart>();
             foreach (var entry in _model.Geometry.Parts)
             {
-                if (entry.Value is GeometryPart gp && gp.CADFileData == null)
-                    parts.Add(gp);
+                if (entry.Value is GeometryPart gp && gp.CADFileData == null) parts.Add(gp);
+            }
+            return parts.ToArray();
+        }
+        public MeshPart[] GetNonCADModelParts()
+        {
+            if (_model.Mesh == null) return null;
+            //
+            List<MeshPart> parts = new List<MeshPart>();
+            BasePart part = null;
+            foreach (var entry in _model.Mesh.Parts)
+            {
+                if (_model.Geometry != null) _model.Geometry.Parts.TryGetValue(entry.Key, out part);
+                if (part == null || (part != null && part is GeometryPart gp && gp.CADFileData == null))
+                {
+                    parts.Add((MeshPart)entry.Value);
+                }
             }
             return parts.ToArray();
         }
@@ -1860,13 +1877,13 @@ namespace PrePoMax
         // Find edges *****************************************************************************
         public void FindEdgesByAngleForGeometryParts(string[] partNames, double edgeAngle)
         {
-            BasePart part;
+            GeometryPart geometryPart;
             foreach (var partName in partNames)
             {
-                part = _model.Geometry.Parts[partName];
-                _model.Geometry.ExtractShellPartVisualization(part, edgeAngle);
+                geometryPart = (GeometryPart)_model.Geometry.Parts[partName];
+                _model.Geometry.ExtractShellPartVisualization(geometryPart, geometryPart.CADFileData != null, edgeAngle);
                 // Update
-                _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, part.Name, part, null);
+                _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, geometryPart.Name, geometryPart, null);
             }
             // Draw
             DrawGeometry(false);
@@ -2588,6 +2605,12 @@ namespace PrePoMax
             Commands.CCreateBoundaryLayer comm = new Commands.CCreateBoundaryLayer(geometryIds, thickness);
             _commands.AddAndExecute(comm);
         }
+        public void FindEdgesByAngleForModelPartsCommand(string[] partNames, double edgeAngle)
+        {
+            Commands.CFindEdgesByAngleForModelPartsCommand comm =
+                new Commands.CFindEdgesByAngleForModelPartsCommand(partNames, edgeAngle);
+            _commands.AddAndExecute(comm);
+        }
 
         //******************************************************************************************
 
@@ -2721,7 +2744,7 @@ namespace PrePoMax
                     _form.AddTreeNode(ViewGeometryModelResults.Model, _model.Mesh.Parts[partName], null);
                 }
             }
-            FeModelUpdate(UpdateType.DrawMesh | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.DrawModel | UpdateType.RedrawSymbols);
         }
         public void ScaleModelParts(string[] partNames, double[] scaleCenter, double[] scaleFactors, bool copy)
         {
@@ -2736,7 +2759,7 @@ namespace PrePoMax
                     _form.AddTreeNode(ViewGeometryModelResults.Model, _model.Mesh.Parts[partName], null);
                 }
             }
-            FeModelUpdate(UpdateType.DrawMesh | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.DrawModel | UpdateType.RedrawSymbols);
         }
         public void RotateModelParts(string[] partNames, double[] rotateCenter, double[] rotateAxis, double rotateAngle, bool copy)
         {
@@ -2751,7 +2774,7 @@ namespace PrePoMax
                     _form.AddTreeNode(ViewGeometryModelResults.Model, _model.Mesh.Parts[partName], null);
                 }
             }
-            FeModelUpdate(UpdateType.DrawMesh | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.DrawModel | UpdateType.RedrawSymbols);
         }
         public void MergeModelParts(string[] partNames)
         {
@@ -2772,7 +2795,7 @@ namespace PrePoMax
                 //
                 AnnotateWithColorLegend();
                 //
-                FeModelUpdate(UpdateType.Check | UpdateType.DrawMesh | UpdateType.RedrawSymbols);
+                FeModelUpdate(UpdateType.Check | UpdateType.DrawModel | UpdateType.RedrawSymbols);
             }
         }
         public int[] RemoveModelParts(string[] partNames, bool invalidate, bool removeForRemeshing)
@@ -2790,7 +2813,7 @@ namespace PrePoMax
             UpdateType ut = UpdateType.Check;
             if (invalidate)
             {
-                ut |= UpdateType.DrawMesh | UpdateType.RedrawSymbols;
+                ut |= UpdateType.DrawModel | UpdateType.RedrawSymbols;
                 //
                 AnnotateWithColorLegend();
             }
@@ -2820,7 +2843,7 @@ namespace PrePoMax
                 string[] errors = null;
                 if (_model != null) errors = _model.Mesh.CreatePrismaticBoundaryLayer(geometryIds, thickness);                
                 // Redraw the geometry for update of the selection based sets
-                FeModelUpdate(UpdateType.DrawMesh);
+                FeModelUpdate(UpdateType.DrawModel);
                 // Update sets - must be called with rendering off - SetStateWorking
                 UpdateNodeSetsBasedOnGeometry(false);
                 UpdateElementSetsBasedOnGeometry(false);
@@ -2838,6 +2861,25 @@ namespace PrePoMax
             {
                 _form.SetStateReady("Creating...");
             }
+        }
+        // Find edges
+        public void FindEdgesByAngleForModelParts(string[] partNames, double edgeAngle)
+        {
+            MeshPart meshPart;
+            foreach (var partName in partNames)
+            {
+                meshPart = (MeshPart)_model.Mesh.Parts[partName];
+                if (meshPart.PartType == PartType.Solid)
+                    _model.Mesh.ExtractSolidPartVisualization(meshPart, edgeAngle);
+                else if (meshPart.PartType == PartType.Shell)
+                    _model.Mesh.ExtractShellPartVisualization(meshPart, false, edgeAngle);
+                // Update
+                _form.UpdateTreeNode(ViewGeometryModelResults.Model, meshPart.Name, meshPart, null);
+            }
+            // Update
+            FeModelUpdate(UpdateType.DrawModel);
+            UpdateGeometryBasedItems(false);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
 
         #endregion #################################################################################################################
@@ -2918,7 +2960,7 @@ namespace PrePoMax
             }
             else return null;
         }
-        public void ReplaceNodeSet(string oldNodeSetName, FeNodeSet nodeSet, bool update)
+        public void ReplaceNodeSet(string oldNodeSetName, FeNodeSet nodeSet, bool feModelUpdate)
         {
             // In order for the Regenerate history to work perform the selection
             if (nodeSet.CreationData != null) ReselectNodeSet(nodeSet);
@@ -2933,7 +2975,7 @@ namespace PrePoMax
             UpdateSurfacesBasedOnNodeSet(nodeSet.Name);
             UpdateReferencePointsDependentOnNodeSet(nodeSet.Name);
             //
-            if (update) FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
+            if (feModelUpdate) FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void DuplicateNodeSets(string[] nodeSetNames)
         {
@@ -2987,7 +3029,7 @@ namespace PrePoMax
             //
             _selection.Clear();
         }
-        private void UpdateNodeSetsBasedOnGeometry(bool update)
+        private void UpdateNodeSetsBasedOnGeometry(bool feModelUpdate)
         {
             // Use list not to throw collection moddified exception
             List<CaeMesh.FeNodeSet> geomNodeSets = new List<FeNodeSet>();
@@ -3003,7 +3045,7 @@ namespace PrePoMax
                     foreach (FeNodeSet nodeSet in geomNodeSets)
                     {
                         nodeSet.Valid = true;
-                        ReplaceNodeSet(nodeSet.Name, nodeSet, update);
+                        ReplaceNodeSet(nodeSet.Name, nodeSet, feModelUpdate);
                     }
                 }
             }
@@ -3145,7 +3187,7 @@ namespace PrePoMax
             }
             else return null;
         }
-        public void ReplaceElementSet(string oldElementSetName, FeElementSet elementSet, bool update)
+        public void ReplaceElementSet(string oldElementSetName, FeElementSet elementSet, bool feModelUpdate)
         {
             // In order for the Regenerate history to work perform the selection again
             if (elementSet.CreationData != null) ReselectElementSet(elementSet);
@@ -3155,7 +3197,7 @@ namespace PrePoMax
             //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldElementSetName, elementSet, null);
             //
-            if (update) FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
+            if (feModelUpdate) FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void DuplicateElementSets(string[] elementSetNames)
         {
@@ -3187,7 +3229,7 @@ namespace PrePoMax
             //
             AnnotateWithColorLegend();
             //
-            FeModelUpdate(UpdateType.Check | UpdateType.DrawMesh | UpdateType.RedrawSymbols);
+            FeModelUpdate(UpdateType.Check | UpdateType.DrawModel | UpdateType.RedrawSymbols);
         }
         public void RemoveElementSets(string[] elementSetNames)
         {
@@ -3224,7 +3266,7 @@ namespace PrePoMax
             //
             _selection.Clear();
         }
-        private void UpdateElementSetsBasedOnGeometry(bool update)
+        private void UpdateElementSetsBasedOnGeometry(bool feModelUpdate)
         {
             // Use list not to throw collection moddified exception
             List<CaeMesh.FeElementSet> geomElementSets = new List<FeElementSet>();
@@ -3240,7 +3282,7 @@ namespace PrePoMax
                     foreach (FeElementSet elementSet in geomElementSets)
                     {
                         elementSet.Valid = true;
-                        ReplaceElementSet(elementSet.Name, elementSet, update);
+                        ReplaceElementSet(elementSet.Name, elementSet, feModelUpdate);
                     }
                 }
             }
@@ -3376,7 +3418,7 @@ namespace PrePoMax
             if (_model.Mesh == null) return null;
             return _model.Mesh.Surfaces.Values.ToArray();
         }
-        public void ReplaceSurface(string oldSurfaceName, FeSurface surface, bool update)
+        public void ReplaceSurface(string oldSurfaceName, FeSurface surface, bool feModelUpdate)
         {
             List<string> keys = _model.Mesh.Surfaces.Keys.ToList();     // copy
             RemoveSurfaceAndElementFacesFromModel(new string[] { oldSurfaceName });
@@ -3400,7 +3442,7 @@ namespace PrePoMax
             //
             UpdateReferencePointsDependentOnSurface(surface.Name);
             //
-            if (update) FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
+            if (feModelUpdate) FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void RemoveSurfaces(string[] surfaceNames, bool update = true)
         {
@@ -3462,7 +3504,7 @@ namespace PrePoMax
                 }
             }
         }
-        private void UpdateSurfacesBasedOnGeometry(bool update)
+        private void UpdateSurfacesBasedOnGeometry(bool feModelUpdate)
         {
             // use list not to throw collection moddified exception
             List<CaeMesh.FeSurface> geomSurfaces = new List<FeSurface>();
@@ -3478,7 +3520,7 @@ namespace PrePoMax
                     foreach (FeSurface surface in geomSurfaces)
                     {
                         surface.Valid = true;
-                        ReplaceSurface(surface.Name, surface, update);
+                        ReplaceSurface(surface.Name, surface, feModelUpdate);
                     }
                 }
             }
@@ -3773,7 +3815,7 @@ namespace PrePoMax
             //
             AnnotateWithColorEnum state = AnnotateWithColorEnum.Materials | AnnotateWithColorEnum.Sections |
                                           AnnotateWithColorEnum.SectionThicknesses;
-            if (state.HasFlag(_annotateWithColor)) FeModelUpdate(UpdateType.DrawMesh);
+            if (state.HasFlag(_annotateWithColor)) FeModelUpdate(UpdateType.DrawModel);
             else AnnotateWithColorLegend();
             //
             CheckAndUpdateValidity();
@@ -3797,7 +3839,7 @@ namespace PrePoMax
             //
             AnnotateWithColorEnum state = AnnotateWithColorEnum.Materials | AnnotateWithColorEnum.Sections |
                                           AnnotateWithColorEnum.SectionThicknesses;
-            if (state.HasFlag(_annotateWithColor)) FeModelUpdate(UpdateType.DrawMesh);
+            if (state.HasFlag(_annotateWithColor)) FeModelUpdate(UpdateType.DrawModel);
             else AnnotateWithColorLegend();
             //
             CheckAndUpdateValidity();
@@ -3813,7 +3855,7 @@ namespace PrePoMax
             //
             AnnotateWithColorEnum state = AnnotateWithColorEnum.Materials | AnnotateWithColorEnum.Sections |
                                           AnnotateWithColorEnum.SectionThicknesses;
-            if (state.HasFlag(_annotateWithColor)) FeModelUpdate(UpdateType.DrawMesh);
+            if (state.HasFlag(_annotateWithColor)) FeModelUpdate(UpdateType.DrawModel);
             else AnnotateWithColorLegend();
             //
             CheckAndUpdateValidity();
@@ -4950,6 +4992,8 @@ namespace PrePoMax
         //
         public void ApplySettings()
         {
+            // General settings
+            CaeMesh.Globals.EdgeAngle = _settings.General.EdgeAngle;
             // Graphics settings
             GraphicsSettings gs = _settings.Graphics;
             _form.SetBackground(gs.BackgroundType == BackgroundType.Gradient, gs.TopColor, gs.BottomColor, false);
@@ -6540,7 +6584,7 @@ namespace PrePoMax
         public void FeModelUpdate(UpdateType updateType)
         {
             if (updateType.HasFlag(UpdateType.Check)) CheckAndUpdateValidity(); // first check the validity to correctly draw the symbols
-            if (updateType.HasFlag(UpdateType.DrawMesh)) DrawMesh(updateType.HasFlag(UpdateType.ResetCamera));
+            if (updateType.HasFlag(UpdateType.DrawModel)) DrawModel(updateType.HasFlag(UpdateType.ResetCamera));
             if (updateType.HasFlag(UpdateType.RedrawSymbols)) RedrawSymbols();
         }
         private vtkControl.vtkMaxActorRepresentation GetRepresentation(BasePart part)
@@ -6633,8 +6677,8 @@ namespace PrePoMax
             ApplyLighting(data);
             _form.Add3DCells(data);
         }
-        // Mesh
-        public void DrawMesh(bool resetCamera)
+        // Model
+        public void DrawModel(bool resetCamera)
         {
             try
             {
@@ -6650,7 +6694,7 @@ namespace PrePoMax
                         {
                             CurrentView = ViewGeometryModelResults.Model;
                             //
-                            DrawAllMeshParts();
+                            DrawAllModelParts();
                             DrawSymbols();
                             AnnotateWithColorLegend();
                             //
@@ -6670,7 +6714,7 @@ namespace PrePoMax
                 // Do not throw an error - it might cancel a procedure
             }
         }
-        public void DrawAllMeshParts()
+        public void DrawAllModelParts()
         {
             if (_model == null) return;
             //
@@ -6689,14 +6733,14 @@ namespace PrePoMax
             //
             foreach (var entry in parts)
             {
-                DrawMeshPart(_model.Mesh, entry.Value, layer, elementIdColorId);
+                DrawModelPart(_model.Mesh, entry.Value, layer, elementIdColorId);
                 //
                 if (!entry.Value.Visible) hiddenActors.Add(entry.Key);
             }
             if (hiddenActors.Count > 0) _form.HideActors(hiddenActors.ToArray(), false);
         }
-        public void DrawMeshPart(FeMesh mesh, BasePart part, vtkControl.vtkRendererLayer layer,
-                                 Dictionary<int, int> elementIdColorId = null)
+        public void DrawModelPart(FeMesh mesh, BasePart part, vtkControl.vtkRendererLayer layer,
+                                  Dictionary<int, int> elementIdColorId = null)
         {
             if (part is CompoundGeometryPart) return;
             // Data
@@ -8561,7 +8605,7 @@ namespace PrePoMax
             //
             bool solidError;
             bool shellError;
-            HashSet<int> edgeElementIds = new HashSet<int>();
+            HashSet<int> edgeCellIds = new HashSet<int>();
             HashSet<int> nodeIds = new HashSet<int>();
             List<int[]> edgeCells = new List<int[]>();
             foreach (var part in parts)
@@ -8573,12 +8617,12 @@ namespace PrePoMax
                     //
                     if (solidError || shellError)
                     {
-                        edgeElementIds.Clear();
-                        if (part.ErrorEdgeElementIds != null) edgeElementIds.UnionWith(part.ErrorEdgeElementIds);
-                        if (part.FreeEdgeElementIds != null) edgeElementIds.UnionWith(part.FreeEdgeElementIds);
+                        edgeCellIds.Clear();
+                        if (part.ErrorEdgeCellIds != null) edgeCellIds.UnionWith(part.ErrorEdgeCellIds);
+                        if (part.FreeEdgeCellIds != null) edgeCellIds.UnionWith(part.FreeEdgeCellIds);
                         //
                         edgeCells.Clear();
-                        foreach (var elementId in edgeElementIds) edgeCells.Add(part.Visualization.EdgeCells[elementId]);
+                        foreach (var elementId in edgeCellIds) edgeCells.Add(part.Visualization.EdgeCells[elementId]);
                         //
                         vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
                         DisplayedMesh.GetNodesAndCellsForEdges(edgeCells.ToArray(), out data.Geometry.Nodes.Ids,
@@ -9014,7 +9058,7 @@ namespace PrePoMax
                     if (_viewResultsType == ViewResultsType.Undeformed)
                     {
                         // Udeformed shape
-                        DrawMeshPart(_results.Mesh, resultPart, layer);
+                        DrawModelPart(_results.Mesh, resultPart, layer);
                     }
                     else
                     {

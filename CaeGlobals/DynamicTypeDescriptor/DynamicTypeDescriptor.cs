@@ -2010,6 +2010,17 @@ namespace DynamicTypeDescriptor
             m_Attributes.Add(attr);
         }
 
+        public void SetTypeConverter(TypeConverter typeConverter)
+        {
+            TypeConverterAttribute attr = (TypeConverterAttribute)m_Attributes.FirstOrDefault(a => a is TypeConverterAttribute);
+            if (attr != null)
+            {
+                m_Attributes.RemoveAll(a => a is TypeConverterAttribute);
+            }
+            attr = new TypeConverterAttribute(typeConverter.GetType());
+            m_Attributes.Add(attr);
+        }
+
         public object DefaultValue
         {
             get

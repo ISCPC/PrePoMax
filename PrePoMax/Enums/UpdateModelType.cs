@@ -11,7 +11,7 @@ namespace PrePoMax
     public enum UpdateType
     {
         Check = 0x01,
-        DrawMesh = 0x02,
+        DrawModel = 0x02,
         ResetCamera = 0x04,
         RedrawSymbols = 0x08
     }

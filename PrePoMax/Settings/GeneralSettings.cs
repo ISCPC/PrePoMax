@@ -20,6 +20,7 @@ namespace PrePoMax
         private bool _saveResultsInPmx;
         private LinkedList<string> _recentFiles;
         private UnitSystemType _unitSystemType;
+        private double _edgeAngle;
 
         // Form size and position
         private FormWindowState _formWindowState;
@@ -32,7 +33,16 @@ namespace PrePoMax
         public string LastFileName { get { return _lastFileName; } set { _lastFileName = value; } }
         public bool SaveResultsInPmx { get { return _saveResultsInPmx; } set { _saveResultsInPmx = value; } }
         public UnitSystemType UnitSystemType { get { return _unitSystemType; } set { _unitSystemType = value; } }
-
+        public double EdgeAngle
+        {
+            get { return _edgeAngle; }
+            set
+            {
+                _edgeAngle = value;
+                if (_edgeAngle < 0) _edgeAngle = 0;
+                else if (_edgeAngle > 90) _edgeAngle = 90;
+            }
+        }
 
         // Constructors                                                                                                             
         public GeneralSettings()
@@ -52,6 +62,7 @@ namespace PrePoMax
             _saveResultsInPmx = true;
             _recentFiles = null;
             _unitSystemType = UnitSystemType.Undefined;
+            _edgeAngle = 30;
             //
             ResetFormSize();
         }

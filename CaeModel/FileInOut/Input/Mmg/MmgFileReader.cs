@@ -73,7 +73,7 @@ namespace FileInOut.Input
                 }
                 //
                 FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Mesh, null, null, false,
-                                         ImportOptions.None);
+                                         ImportOptions.DetectEdges);
                 //
                 return mesh;
             }

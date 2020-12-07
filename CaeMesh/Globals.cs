@@ -28,5 +28,6 @@ namespace CaeMesh
             Color.DarkKhaki,
             Color.NavajoWhite
         };
+        public static double EdgeAngle = 30;
     }
 }

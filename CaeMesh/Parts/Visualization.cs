@@ -222,6 +222,7 @@ namespace CaeMesh
             //
             List<int[]> visualizationCells = new List<int[]>();
             List<int> visualizationCellsIds = new List<int>();
+            // Extract free faces
             foreach (var entry in _cellNeighboursOverCell)
             {
                 if (entry.Value.Id2 == -1)

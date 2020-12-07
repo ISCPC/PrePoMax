@@ -62,6 +62,12 @@ namespace PrePoMax.Settings
                 throw new NotSupportedException();
             }
         }
+        //
+        [Category("Import mesh")]
+        [OrderedDisplayName(0, 10, "Edge angle")]
+        [Description("Select the edge angle for the detection of model edges. The angle will be used for future imports.")]
+        [TypeConverter(typeof(CaeGlobals.StringAngleDegConverter))]
+        public double EdgeAngle { get { return _generalSettings.EdgeAngle; } set { _generalSettings.EdgeAngle = value; } }
 
 
         // Constructors                                                                                                             

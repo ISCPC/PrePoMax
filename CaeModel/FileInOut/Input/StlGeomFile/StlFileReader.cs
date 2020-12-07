@@ -67,7 +67,7 @@ namespace FileInOut.Input
                 //
                 MergeNodes(nodes, elements, epsilon * max);
                 //
-                FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Geometry);
+                FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Geometry, ImportOptions.ImportStlParts);
                 //
                 //string namePrefix = Path.GetFileNameWithoutExtension(fileName).Replace(' ', '_');
                 //FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Geometry, namePrefix);

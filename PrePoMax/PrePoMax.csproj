@@ -132,6 +132,7 @@
     <Compile Include="Command\0050_Model\15_ReferencePoint\CRemoveReferencePoints.cs" />
     <Compile Include="Command\0050_Model\15_ReferencePoint\CReplaceReferencePoint.cs" />
     <Compile Include="Command\0050_Model\15_ReferencePoint\CShowReferencePoints.cs" />
+    <Compile Include="Command\0050_Model\CFindEdgesByAngleForModelPartsCommand.cs" />
     <Compile Include="Command\0050_Model\CSetModelUnitSystem.cs" />
     <Compile Include="Command\0050_Model\CCreateBoundaryLayer.cs" />
     <Compile Include="Command\0061_Material\CDuplicateMaterial.cs" />
@@ -353,7 +354,7 @@
     <Compile Include="Forms\IFormHighlight.cs" />
     <Compile Include="Forms\IFormItemSetDataParent.cs" />
     <Compile Include="Forms\IFormBase.cs" />
-    <Compile Include="Forms\00_Common\ViewValue.cs" />
+    <Compile Include="Forms\00_Common\ViewDoubleValue.cs" />
     <Compile Include="Forms\20_Model\FrmCalculixKeywordEditor.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -118,8 +118,8 @@
             this.tsmiGeometryAnalyze = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiFlipFaceNormal = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSplitAFaceUsingTwoPoints = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiCropWithCylinder = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiFindEdgesByAngleForGeometryParts = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiCropWithCylinder = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiMesh = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiMeshingParameters = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiMeshRefinement = new System.Windows.Forms.ToolStripMenuItem();
@@ -340,6 +340,7 @@
             this.tscbSymbolsForStep = new System.Windows.Forms.ToolStripComboBox();
             this.timerTest = new System.Windows.Forms.Timer(this.components);
             this.timerOutput = new System.Windows.Forms.Timer(this.components);
+            this.tsmiFindEdgesByAngleForModelParts = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStripMain.SuspendLayout();
             this.statusStripMain.SuspendLayout();
             this.tsResults.SuspendLayout();
@@ -1072,19 +1073,19 @@
             this.tsmiSplitAFaceUsingTwoPoints.Text = "Split a Face Using Two Points";
             this.tsmiSplitAFaceUsingTwoPoints.Click += new System.EventHandler(this.tsmiSplitAFaceUsingTwoPoints_Click);
             // 
+            // tsmiFindEdgesByAngleForGeometryParts
+            // 
+            this.tsmiFindEdgesByAngleForGeometryParts.Name = "tsmiFindEdgesByAngleForGeometryParts";
+            this.tsmiFindEdgesByAngleForGeometryParts.Size = new System.Drawing.Size(226, 22);
+            this.tsmiFindEdgesByAngleForGeometryParts.Text = "Find Model Edges By Angle";
+            this.tsmiFindEdgesByAngleForGeometryParts.Click += new System.EventHandler(this.tsmiFindEdgesByAngleForGeometryParts_Click);
+            // 
             // tsmiCropWithCylinder
             // 
             this.tsmiCropWithCylinder.Name = "tsmiCropWithCylinder";
             this.tsmiCropWithCylinder.Size = new System.Drawing.Size(226, 22);
             this.tsmiCropWithCylinder.Text = "Crop With Cylinder";
             this.tsmiCropWithCylinder.Click += new System.EventHandler(this.tsmiCropWithCylinder_Click);
-            // 
-            // tsmiFindEdgesByAngleForGeometryParts
-            // 
-            this.tsmiFindEdgesByAngleForGeometryParts.Name = "tsmiFindEdgesByAngleForGeometryParts";
-            this.tsmiFindEdgesByAngleForGeometryParts.Size = new System.Drawing.Size(226, 22);
-            this.tsmiFindEdgesByAngleForGeometryParts.Text = "Find Edges By Angle";
-            this.tsmiFindEdgesByAngleForGeometryParts.Click += new System.EventHandler(this.tsmiFindEdgesByAngleForGeometryParts_Click);
             // 
             // tsmiMesh
             // 
@@ -1170,6 +1171,7 @@
             this.tsmiReferencePointTool,
             this.tsmiDividerModel2,
             this.tsmiCreateBoundaryLayer,
+            this.tsmiFindEdgesByAngleForModelParts,
             this.tsmiRemesh});
             this.tsmiModel.Name = "tsmiModel";
             this.tsmiModel.Size = new System.Drawing.Size(53, 20);
@@ -1178,28 +1180,28 @@
             // tsmiEditModel
             // 
             this.tsmiEditModel.Name = "tsmiEditModel";
-            this.tsmiEditModel.Size = new System.Drawing.Size(194, 22);
+            this.tsmiEditModel.Size = new System.Drawing.Size(218, 22);
             this.tsmiEditModel.Text = "Edit";
             this.tsmiEditModel.Click += new System.EventHandler(this.tsmiEditModel_Click);
             // 
             // tsmiEditCalculiXKeywords
             // 
             this.tsmiEditCalculiXKeywords.Name = "tsmiEditCalculiXKeywords";
-            this.tsmiEditCalculiXKeywords.Size = new System.Drawing.Size(194, 22);
+            this.tsmiEditCalculiXKeywords.Size = new System.Drawing.Size(218, 22);
             this.tsmiEditCalculiXKeywords.Text = "Edit CalculiX Keywords";
             this.tsmiEditCalculiXKeywords.Click += new System.EventHandler(this.tsmiEditCalculiXKeywords_Click);
             // 
             // tsmiDividerModel1
             // 
             this.tsmiDividerModel1.Name = "tsmiDividerModel1";
-            this.tsmiDividerModel1.Size = new System.Drawing.Size(191, 6);
+            this.tsmiDividerModel1.Size = new System.Drawing.Size(215, 6);
             // 
             // tsmiNode
             // 
             this.tsmiNode.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmiRenumberAllNodes});
             this.tsmiNode.Name = "tsmiNode";
-            this.tsmiNode.Size = new System.Drawing.Size(194, 22);
+            this.tsmiNode.Size = new System.Drawing.Size(218, 22);
             this.tsmiNode.Text = "Node";
             // 
             // tsmiRenumberAllNodes
@@ -1224,7 +1226,7 @@
             this.tsmiDeleteParts});
             this.tsmiPart.Image = ((System.Drawing.Image)(resources.GetObject("tsmiPart.Image")));
             this.tsmiPart.Name = "tsmiPart";
-            this.tsmiPart.Size = new System.Drawing.Size(194, 22);
+            this.tsmiPart.Size = new System.Drawing.Size(218, 22);
             this.tsmiPart.Text = "Part";
             // 
             // tsmiEditPart
@@ -1330,7 +1332,7 @@
             this.tsmiDeleteNodeSet});
             this.tsmiNodeSet.Image = ((System.Drawing.Image)(resources.GetObject("tsmiNodeSet.Image")));
             this.tsmiNodeSet.Name = "tsmiNodeSet";
-            this.tsmiNodeSet.Size = new System.Drawing.Size(194, 22);
+            this.tsmiNodeSet.Size = new System.Drawing.Size(218, 22);
             this.tsmiNodeSet.Text = "Node set";
             // 
             // tsmiCreateNodeSet
@@ -1377,7 +1379,7 @@
             this.tsmiDeleteElementSet});
             this.tsmiElementSet.Image = ((System.Drawing.Image)(resources.GetObject("tsmiElementSet.Image")));
             this.tsmiElementSet.Name = "tsmiElementSet";
-            this.tsmiElementSet.Size = new System.Drawing.Size(194, 22);
+            this.tsmiElementSet.Size = new System.Drawing.Size(218, 22);
             this.tsmiElementSet.Text = "Element set";
             // 
             // tsmiCreateElementSet
@@ -1429,7 +1431,7 @@
             this.tsmiDeleteSurface});
             this.tsmiSurface.Image = ((System.Drawing.Image)(resources.GetObject("tsmiSurface.Image")));
             this.tsmiSurface.Name = "tsmiSurface";
-            this.tsmiSurface.Size = new System.Drawing.Size(194, 22);
+            this.tsmiSurface.Size = new System.Drawing.Size(218, 22);
             this.tsmiSurface.Text = "Surface";
             // 
             // tsmiCreateSurface
@@ -1467,51 +1469,51 @@
             this.tsmiDeleteRP});
             this.tsmiReferencePointTool.Image = ((System.Drawing.Image)(resources.GetObject("tsmiReferencePointTool.Image")));
             this.tsmiReferencePointTool.Name = "tsmiReferencePointTool";
-            this.tsmiReferencePointTool.Size = new System.Drawing.Size(194, 22);
+            this.tsmiReferencePointTool.Size = new System.Drawing.Size(218, 22);
             this.tsmiReferencePointTool.Text = "Reference point";
             // 
             // tsmiCreateRP
             // 
             this.tsmiCreateRP.Name = "tsmiCreateRP";
-            this.tsmiCreateRP.Size = new System.Drawing.Size(108, 22);
+            this.tsmiCreateRP.Size = new System.Drawing.Size(180, 22);
             this.tsmiCreateRP.Text = "Create";
             this.tsmiCreateRP.Click += new System.EventHandler(this.tsmiCreateRP_Click);
             // 
             // tsmiEditRP
             // 
             this.tsmiEditRP.Name = "tsmiEditRP";
-            this.tsmiEditRP.Size = new System.Drawing.Size(108, 22);
+            this.tsmiEditRP.Size = new System.Drawing.Size(180, 22);
             this.tsmiEditRP.Text = "Edit";
             this.tsmiEditRP.Click += new System.EventHandler(this.tsmiEditRP_Click);
             // 
             // tsmiRP
             // 
             this.tsmiRP.Name = "tsmiRP";
-            this.tsmiRP.Size = new System.Drawing.Size(105, 6);
+            this.tsmiRP.Size = new System.Drawing.Size(177, 6);
             // 
             // tsmiDeleteRP
             // 
             this.tsmiDeleteRP.Name = "tsmiDeleteRP";
-            this.tsmiDeleteRP.Size = new System.Drawing.Size(108, 22);
+            this.tsmiDeleteRP.Size = new System.Drawing.Size(180, 22);
             this.tsmiDeleteRP.Text = "Delete";
             this.tsmiDeleteRP.Click += new System.EventHandler(this.tsmiDeleteRP_Click);
             // 
             // tsmiDividerModel2
             // 
             this.tsmiDividerModel2.Name = "tsmiDividerModel2";
-            this.tsmiDividerModel2.Size = new System.Drawing.Size(191, 6);
+            this.tsmiDividerModel2.Size = new System.Drawing.Size(215, 6);
             // 
             // tsmiCreateBoundaryLayer
             // 
             this.tsmiCreateBoundaryLayer.Name = "tsmiCreateBoundaryLayer";
-            this.tsmiCreateBoundaryLayer.Size = new System.Drawing.Size(194, 22);
+            this.tsmiCreateBoundaryLayer.Size = new System.Drawing.Size(218, 22);
             this.tsmiCreateBoundaryLayer.Text = "Create Boundary Layer";
             this.tsmiCreateBoundaryLayer.Click += new System.EventHandler(this.tsmiCreateBoundaryLayer_Click);
             // 
             // tsmiRemesh
             // 
             this.tsmiRemesh.Name = "tsmiRemesh";
-            this.tsmiRemesh.Size = new System.Drawing.Size(194, 22);
+            this.tsmiRemesh.Size = new System.Drawing.Size(218, 22);
             this.tsmiRemesh.Text = "Remesh";
             this.tsmiRemesh.Click += new System.EventHandler(this.tsmiRemesh_Click);
             // 
@@ -2932,6 +2934,13 @@
             // 
             this.timerOutput.Tick += new System.EventHandler(this.timerOutput_Tick);
             // 
+            // tsmiFindEdgesByAngleForModelParts
+            // 
+            this.tsmiFindEdgesByAngleForModelParts.Name = "tsmiFindEdgesByAngleForModelParts";
+            this.tsmiFindEdgesByAngleForModelParts.Size = new System.Drawing.Size(218, 22);
+            this.tsmiFindEdgesByAngleForModelParts.Text = "Find Model Edges By Angle";
+            this.tsmiFindEdgesByAngleForModelParts.Click += new System.EventHandler(this.tsmiFindEdgesByAngleForModelParts_Click);
+            // 
             // FrmMain
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -3296,6 +3305,7 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiAnnotateSectionThicknesses;
         private System.Windows.Forms.ToolStripMenuItem tsmiRemesh;
         private System.Windows.Forms.ToolStripMenuItem tsmiFindEdgesByAngleForGeometryParts;
+        private System.Windows.Forms.ToolStripMenuItem tsmiFindEdgesByAngleForModelParts;
     }
 }
 

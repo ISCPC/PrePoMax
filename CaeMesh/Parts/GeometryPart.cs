@@ -12,8 +12,8 @@ namespace CaeMesh
     {
         // Variables                                                                                                                
         private MeshingParameters _meshingParameters;
-        private int[] _freeEdgeElementIds;
-        private int[] _errorEdgeElementIds;
+        private int[] _freeEdgeCellIds;
+        private int[] _errorEdgeCellIds;
         private int[] _freeNodeIds;
         private int[] _errorNodeIds;
         private string _cadFileData;
@@ -30,15 +30,15 @@ namespace CaeMesh
                     _meshingParameters.QuadDominated = false;
             }
         }
-        public int[] FreeEdgeElementIds { get { return _freeEdgeElementIds; } set { _freeEdgeElementIds = value; } }
-        public int[] ErrorEdgeElementIds { get { return _errorEdgeElementIds; } set { _errorEdgeElementIds = value; } }
+        public int[] FreeEdgeCellIds { get { return _freeEdgeCellIds; } set { _freeEdgeCellIds = value; } }
+        public int[] ErrorEdgeCellIds { get { return _errorEdgeCellIds; } set { _errorEdgeCellIds = value; } }
         public int[] FreeNodeIds { get { return _freeNodeIds; } set { _freeNodeIds = value; } }
         public int[] ErrorNodeIds { get { return _errorNodeIds; } set { _errorNodeIds = value; } }
         public bool HasErrors
         {
             get
             {
-                if (_errorEdgeElementIds != null) return true;
+                if (_errorEdgeCellIds != null) return true;
                 else if (_errorNodeIds != null) return true;
                 else return false;
             }
@@ -47,7 +47,7 @@ namespace CaeMesh
         {
             get
             {
-                if (_freeEdgeElementIds != null) return true;
+                if (_freeEdgeCellIds != null) return true;
                 else if (_freeNodeIds != null) return true;
                 else return false;
             }
@@ -72,8 +72,8 @@ namespace CaeMesh
             : base(name, partId, nodeLabels, elementLabels, elementTypes)
         {
             _meshingParameters = null;
-            _freeEdgeElementIds = null;
-            _errorEdgeElementIds = null;
+            _freeEdgeCellIds = null;
+            _errorEdgeCellIds = null;
             _freeNodeIds = null;
             _errorNodeIds = null;
             _cadFileData = null;
@@ -82,8 +82,8 @@ namespace CaeMesh
             : base(part)
         {
             _meshingParameters = null;
-            _freeEdgeElementIds = null;
-            _errorEdgeElementIds = null;
+            _freeEdgeCellIds = null;
+            _errorEdgeCellIds = null;
             _freeNodeIds = null;
             _errorNodeIds = null;
             _cadFileData = null;
@@ -92,8 +92,8 @@ namespace CaeMesh
             : base((BasePart)part)
         {
             _meshingParameters = part.MeshingParameters != null ? part.MeshingParameters.DeepClone() : null;
-            _freeEdgeElementIds = part.FreeEdgeElementIds != null ? part.FreeEdgeElementIds.ToArray() : null;
-            _errorEdgeElementIds = part.ErrorEdgeElementIds != null ? part.ErrorEdgeElementIds.ToArray() : null;
+            _freeEdgeCellIds = part.FreeEdgeCellIds != null ? part.FreeEdgeCellIds.ToArray() : null;
+            _errorEdgeCellIds = part.ErrorEdgeCellIds != null ? part.ErrorEdgeCellIds.ToArray() : null;
             _freeNodeIds = part.FreeNodeIds != null ? part.FreeNodeIds.ToArray() : null;
             _errorNodeIds = part.ErrorNodeIds != null ? part.ErrorNodeIds.ToArray() : null;
             _cadFileData = part._cadFileData != null ? _cadFileData : null;
@@ -124,15 +124,6 @@ namespace CaeMesh
         public override void RenumberVisualizationElements(Dictionary<int, int> newIds)
         {
             base.RenumberVisualizationElements(newIds);
-            //
-            //if (_freeEdgeElementIds != null)
-            //{
-            //    for (int i = 0; i < _freeEdgeElementIds.Length; i++) _freeEdgeElementIds[i] = newIds[_freeEdgeElementIds[i]];
-            //}
-            //if (_errorEdgeElementIds != null)
-            //{
-            //    for (int i = 0; i < _errorEdgeElementIds.Length; i++) _errorEdgeElementIds[i] = newIds[_errorEdgeElementIds[i]];
-            //}
         }
         public override void RenumberVisualizationNodes(Dictionary<int, int> newIds)
         {

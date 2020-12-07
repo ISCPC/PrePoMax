@@ -54,9 +54,9 @@ namespace FileInOut.Input
                 }
                 //
                 FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Mesh, null, null, convertToSecondOrder,
-                                         ImportOptions.None);
+                                         ImportOptions.DetectEdges);
                 //
-                mesh.ConvertLineFeElementsToEdges(vertexNodeIds);
+                mesh.ConvertLineFeElementsToEdges(vertexNodeIds, true);
                 //
                 mesh.RenumberVisualizationSurfaces(surfaceIdNodeIds);
                 mesh.RenumberVisualizationEdges(edgeIdNodeIds);

@@ -1044,7 +1044,7 @@ namespace PrePoMax
             }
             //
             if (_controller.CurrentView == ViewGeometryModelResults.Geometry) _controller.DrawGeometry(resetCamera);
-            else if (_controller.CurrentView == ViewGeometryModelResults.Model) _controller.DrawMesh(resetCamera);
+            else if (_controller.CurrentView == ViewGeometryModelResults.Model) _controller.DrawModel(resetCamera);
             else if (_controller.CurrentView == ViewGeometryModelResults.Results)
             {
                 // Set the representation which also calls Draw
@@ -2056,8 +2056,7 @@ namespace PrePoMax
             try
             {
                 Clear3DSelection();
-                SelectMultipleEntities("Parts", _controller.GetCADGeometryParts(), CreateAndImportCompoundPart);
-                _frmSelectEntity.MinNumberOfEntities = 2;
+                SelectMultipleEntities("Parts", _controller.GetCADGeometryParts(), CreateAndImportCompoundPart, 2);
             }
             catch (Exception ex)
             {
@@ -2227,20 +2226,26 @@ namespace PrePoMax
         {
             using (FrmGetValue frmGetValue = new FrmGetValue())
             {
-                frmGetValue.NumOfDigits = 2;
-                frmGetValue.MinValue = 0;
-                frmGetValue.MaxValue = 180;
-                SetFormLoaction(frmGetValue);
-                OrderedDictionary<string, double> presetValues = new OrderedDictionary<string, double>();
-                presetValues.Add("Default ", 60);
-                string desc = "Enter the face angle [°] to detect edges.)";
-                frmGetValue.PrepareForm("Find edges: " + partNames.ToShortString() , "Angle", desc, 60, presetValues);
+                SetUpFrmGetValueForEdgeAngle(frmGetValue, partNames);
+                //
                 if (frmGetValue.ShowDialog() == DialogResult.OK)
                 {
                     _controller.FindEdgesByAngleForGeometryPartsCommand(partNames, frmGetValue.Value);
                 }
                 GetFormLoaction(frmGetValue);
             }
+        }
+        private void SetUpFrmGetValueForEdgeAngle(FrmGetValue frmGetValue, string[] partNames)
+        {
+            frmGetValue.NumOfDigits = 2;
+            frmGetValue.MinValue = 0;
+            frmGetValue.MaxValue = 90;
+            SetFormLoaction(frmGetValue);
+            OrderedDictionary<string, double> presetValues = new OrderedDictionary<string, double>();
+            presetValues.Add("Default", CaeMesh.Globals.EdgeAngle);
+            string desc = "Enter the face angle for model edges detection.";
+            frmGetValue.PrepareForm("Find model edges: " + partNames.ToShortString(), "Angle", desc,
+                                    CaeMesh.Globals.EdgeAngle, presetValues, new StringAngleDegConverter());
         }
 
         #endregion  ################################################################################################################
@@ -2562,7 +2567,18 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
-       private void tsmiRemesh_Click(object sender, EventArgs e)
+        private void tsmiFindEdgesByAngleForModelParts_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Parts", _controller.GetNonCADModelParts(), FindEdgesByAngleForModelParts);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiRemesh_Click(object sender, EventArgs e)
         {
             try
             {
@@ -2611,7 +2627,20 @@ namespace PrePoMax
             ItemSetDataEditor.ParentForm = _frmBoundaryLayer;
             _frmSelectItemSet.SetOnlyGeometrySelection(true);
             ShowForm(_frmBoundaryLayer, "Create Boundary Layer", null);
-        }       
+        }
+        private void FindEdgesByAngleForModelParts(string[] partNames)
+        {
+            using (FrmGetValue frmGetValue = new FrmGetValue())
+            {
+                SetUpFrmGetValueForEdgeAngle(frmGetValue, partNames);
+                //
+                if (frmGetValue.ShowDialog() == DialogResult.OK)
+                {
+                    _controller.FindEdgesByAngleForModelPartsCommand(partNames, frmGetValue.Value);
+                }
+                GetFormLoaction(frmGetValue);
+            }
+        }
 
         #endregion  ################################################################################################################
 
@@ -2693,8 +2722,7 @@ namespace PrePoMax
         {
             try
             {
-                SelectMultipleEntities("Parts", _controller.GetModelParts(), MergeModelParts);
-                _frmSelectEntity.MinNumberOfEntities = 2;
+                SelectMultipleEntities("Parts", _controller.GetModelParts(), MergeModelParts, 2);
             }
             catch (Exception ex)
             {
@@ -2846,11 +2874,11 @@ namespace PrePoMax
                 _controller.RemoveModelPartsCommand(partNames);
             }
         }
-
+        
         #endregion  ################################################################################################################
-        
+
         #region Node set menu  #####################################################################################################
-        
+
         private void tsmiCreateNodeSet_Click(object sender, EventArgs e)
         {
             try
@@ -4603,13 +4631,14 @@ namespace PrePoMax
                 _frmSelectEntity.Show();
             }
         }
-        private void SelectMultipleEntities(string title, NamedClass[] entities, Action<string[]> OperateOnMultpleEntities)
+        private void SelectMultipleEntities(string title, NamedClass[] entities, Action<string[]> OperateOnMultpleEntities,
+                                            int minNumberOfEntities = 1)
         {
             if (entities == null || entities.Length == 0) return;
             // Only one entity exists
             if (entities.Length == 1)
             {
-                OperateOnMultpleEntities(entities.GetNames());
+                if (minNumberOfEntities == 1) OperateOnMultpleEntities(entities.GetNames());
             }
             // Multiple entities exists
             else
@@ -4619,6 +4648,7 @@ namespace PrePoMax
                 _frmSelectEntity.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
                 _frmSelectEntity.PrepareForm(title, true, entities, preSelectedEntityNames, null);
                 _frmSelectEntity.MultipleEntitiesSelected = OperateOnMultpleEntities;
+                _frmSelectEntity.MinNumberOfEntities = minNumberOfEntities;
                 _frmSelectEntity.Show();
             }
         }

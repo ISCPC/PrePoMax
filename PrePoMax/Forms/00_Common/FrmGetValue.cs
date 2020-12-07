@@ -67,7 +67,8 @@ namespace PrePoMax.Forms
 
         // Methods                                                                                                                  
         public void PrepareForm(string title, string valueName, string valueDescription,
-                                double value, OrderedDictionary<string, double> presetValues)
+                                double value, OrderedDictionary<string, double> presetValues,
+                                TypeConverter typeConverter = null)
         {
             this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
             //
@@ -78,9 +79,13 @@ namespace PrePoMax.Forms
             //
             _viewValue.SetDisplayName(valueName);
             _viewValue.SetDescription(valueDescription);
+            if (typeConverter != null) _viewValue.SetTypeConverter(typeConverter);
+            //
+            
             //
             propertyGrid.SelectedObject = _viewValue;
             propertyGrid.Select();
+            //
         }
 
     

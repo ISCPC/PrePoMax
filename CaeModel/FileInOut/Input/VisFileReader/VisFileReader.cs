@@ -34,23 +34,23 @@ namespace FileInOut.Input
                 int offsetElementId = 0;
                 //
                 string textToFind = null;
-                ImportOptions importOptions = ImportOptions.None;
+                ImportOptions importOptions = ImportOptions.DetectEdges;
                 // Import solid geometry
                 if (data.Contains("Solid number: "))
                 {
                     textToFind = "Solid number: ";
-                    importOptions = ImportOptions.ImportOneSolidPart;
+                    importOptions = ImportOptions.ImportOneCADSolidPart;
                 }
                 // Import shell geometry
                 else if (data.Contains("Shell number: "))
                 {
                     textToFind = "Shell number: ";
-                    importOptions = ImportOptions.ImportShellParts;
+                    importOptions = ImportOptions.ImportCADShellParts;
                 }
                 else if (data.Contains("Free face number: "))
                 {
                     textToFind = "Free face number: ";
-                    importOptions = ImportOptions.ImportShellParts;
+                    importOptions = ImportOptions.ImportCADShellParts;
                 }
                 //
                 if (textToFind != null)
@@ -75,7 +75,7 @@ namespace FileInOut.Input
                     //
                     FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Geometry, importOptions);
                     //
-                    mesh.ConvertLineFeElementsToEdges(vertexNodeIds);
+                    mesh.ConvertLineFeElementsToEdges(vertexNodeIds, true);
                     //
                     mesh.RenumberVisualizationSurfaces(surfaceIdNodeIds, faceTypes);
                     mesh.RenumberVisualizationEdges(edgeIdNodeIds);

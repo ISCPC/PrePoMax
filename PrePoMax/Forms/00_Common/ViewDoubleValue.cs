@@ -112,6 +112,13 @@ namespace PrePoMax.Forms
             CustomPropertyDescriptor cpd = _dctd.GetProperty(nameof(Value));
             cpd.SetDescription(description);
         }
+        //
+        [Browsable(false)]
+        public void SetTypeConverter(TypeConverter typeConverter)
+        {
+            CustomPropertyDescriptor cpd = _dctd.GetProperty(nameof(Value));
+            cpd.SetTypeConverter(typeConverter);
+        }
 
 
         // Constructors                                                                                                             
