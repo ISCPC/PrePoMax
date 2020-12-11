@@ -1865,20 +1865,6 @@ namespace PrePoMax
             }
             return AnnotateWithColorEnum.None;
         }
-        private void ClearAnnotationStatus()
-        {
-            tsmiAnnotateFaceOrientations.Checked = false;
-            tsmiAnnotateParts.Checked = false;
-            tsmiAnnotateMaterials.Checked = false;
-            tsmiAnnotateSections.Checked = false;
-            tsmiAnnotateSectionThicknesses.Checked = false;
-            tsmiAnnotateReferencePoints.Checked = false;
-            tsmiAnnotateConstraints.Checked = false;
-            tsmiAnnotateContactPairs.Checked = false;
-            tsmiAnnotateBCs.Checked = false;
-            tsmiAnnotateLoads.Checked = false;
-            tsmiAnnotateAllSymbols.Checked = false;
-        }
         //
         private void tsmiResultsUndeformed_Click(object sender, EventArgs e)
         {
@@ -5261,7 +5247,6 @@ namespace PrePoMax
                 tbOutput.Text = "";
                 ClearResults();
                 ClearAnnotationStatus();
-                
             });
         }
         private void ClearSymbolsDropDown()
@@ -5299,7 +5284,23 @@ namespace PrePoMax
         {
             InvokeIfRequired(_modelTree.ClearActiveTreeSelection);
         }
-        
+        private void ClearAnnotationStatus()
+        {
+            tsmiAnnotateFaceOrientations.Checked = false;
+            tsmiAnnotateParts.Checked = false;
+            tsmiAnnotateMaterials.Checked = false;
+            tsmiAnnotateSections.Checked = false;
+            tsmiAnnotateSectionThicknesses.Checked = false;
+            tsmiAnnotateReferencePoints.Checked = false;
+            tsmiAnnotateConstraints.Checked = false;
+            tsmiAnnotateContactPairs.Checked = false;
+            tsmiAnnotateBCs.Checked = false;
+            tsmiAnnotateLoads.Checked = false;
+            tsmiAnnotateAllSymbols.Checked = false;
+            //
+            HideColorBar();
+        }
+
         #endregion  ################################################################################################################
 
         #region vtkControl  ########################################################################################################

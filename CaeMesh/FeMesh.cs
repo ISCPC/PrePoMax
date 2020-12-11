@@ -281,6 +281,9 @@ namespace CaeMesh
                         _maxElementId = (int)entry.Value; break;
                     case "_boundingBox":
                         _boundingBox = (BoundingBox)entry.Value; break;
+                    // Compatibility for version v0.9.0
+                    case "_manifoldGeometry":
+                        break;
                     default:
                         throw new NotSupportedException();
                 }
@@ -3718,25 +3721,29 @@ namespace CaeMesh
             //
             return surfaceNodes.ToArray();
         }
-        public int[] GetElementIdsFromNodeIds(int[] nodeIds, bool containsEdge, bool containsFace, bool containsElement)
+        public int[] GetElementIdsFromNodeIds(int[] nodeIds, bool containsEdge, bool containsFace, bool containsElement,
+                                              int partId = -1)
         {
             if (nodeIds == null) return null;
-
+            //
             HashSet<int> allNodeIds = new HashSet<int>(nodeIds);
             HashSet<int> allElementIds = new HashSet<int>();
-
+            //
             bool parabolic;
-            int minNumberOfNodesToContain = 1;
+            int minNumberOfNodesToContain;
             int countNodes;
             FeElement element;
             int vtkType;
-
+            //
             foreach (var entry in _elements)
             {
                 element = entry.Value;
+                // Filter the elements by part id
+                if (partId > -1 && element.PartId != partId) continue;
+                //
                 vtkType = element.GetVtkCellType();
-
                 parabolic = FeElement.IsParabolic(element);
+                //
                 if (containsEdge)
                 {
                     minNumberOfNodesToContain = 2;
@@ -3748,7 +3755,7 @@ namespace CaeMesh
                 }
                 else if (containsElement) minNumberOfNodesToContain = element.NodeIds.Length;
                 else minNumberOfNodesToContain = 1;
-
+                //
                 countNodes = 0;
                 for (int i = 0; i < element.NodeIds.Length; i++)
                 {
@@ -3758,11 +3765,11 @@ namespace CaeMesh
                     }
                     if (countNodes >= minNumberOfNodesToContain) break;
                 }
-
+                //
                 if (countNodes >= minNumberOfNodesToContain)
                     allElementIds.Add(entry.Key);
             }
-            // return a copy
+            // Return
             return allElementIds.ToArray();
         }
         public int[] GetVisualizationFaceIds(int[] nodeIds, int[] elementIds, bool containsEdge, bool containsFace)
@@ -4498,12 +4505,7 @@ namespace CaeMesh
             }
             else if (selectItem == vtkSelectItem.Element)
             {
-                bool containsEdge = false;
-                bool containsFace = false;
-                if (itemTypePart[1] == 2) containsEdge = true;
-                else if (itemTypePart[1] == 3) containsFace = true;
-                nodeIds = GetNodeIdsFromGeometryId(geometryId);
-                return GetElementIdsFromNodeIds(nodeIds, containsEdge, containsFace, false);
+                return GetElementIdsFromGeometryId(itemTypePart, geometryId);
             }
             else if (selectItem == vtkSelectItem.Edge || selectItem == vtkSelectItem.Geometry)
             {
@@ -4552,6 +4554,15 @@ namespace CaeMesh
             else throw new NotSupportedException();
             //
             return nodeIds.ToArray();
+        }
+        public int[] GetElementIdsFromGeometryId(int[] itemTypePart, int geometryId)
+        {
+            bool containsEdge = false;
+            bool containsFace = false;
+            if (itemTypePart[1] == 2) containsEdge = true;
+            else if (itemTypePart[1] == 3) containsFace = true;
+            int[] nodeIds = GetNodeIdsFromGeometryId(geometryId);
+            return GetElementIdsFromNodeIds(nodeIds, containsEdge, containsFace, false, itemTypePart[2]);
         }
         // Get node, edge or triangle coordinates for mesh refinement for Netgen
         public void GetVetexAndEdgeCoorFromGeometryIds(int[] ids, double meshSize, bool edgeRepresentation,

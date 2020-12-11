@@ -331,7 +331,7 @@ namespace PrePoMax
             //
             if (_form != null)
             {
-                _form.ClearControls();
+                _form.ClearControls();                
                 _form.SetCurrentView(_currentView);
             }
             //
@@ -350,6 +350,7 @@ namespace PrePoMax
             _model = new FeModel("Model-1");
             SetModelUnitSystem(_model.UnitSystem.UnitSystemType);   // update widgets
             //
+            _annotateWithColor = AnnotateWithColorEnum.None;
             _drawSymbolsForStep = null;
             _jobs.Clear();
             ClearAllSelection();
@@ -6600,27 +6601,31 @@ namespace PrePoMax
         {
             try
             {
-                _form.Clear3D();
-                //
-                if (_model != null)
+                // Set the current view and call DrawGeometry
+                if (CurrentView != ViewGeometryModelResults.Geometry) CurrentView = ViewGeometryModelResults.Geometry;
+                // Draw geometry
+                else
                 {
-                    if (_model.Geometry != null && _model.Geometry.Parts.Count > 0)
+                    _form.Clear3D();    // Removes section cut
+                    //
+                    if (_model != null)
                     {
-                        CheckModelUnitSystem();
-                        //
-                        CurrentView = ViewGeometryModelResults.Geometry;
-                        //
-                        DrawAllGeomParts();
-                        AnnotateWithColorLegend();
-                        //
-                        Octree.Plane plane = _sectionViewPlanes[_currentView];
-                        if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
+                        if (_model.Geometry != null && _model.Geometry.Parts.Count > 0)
+                        {
+                            CheckModelUnitSystem();
+                            //
+                            DrawAllGeomParts();
+                            AnnotateWithColorLegend();
+                            //
+                            Octree.Plane plane = _sectionViewPlanes[_currentView];
+                            if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
+                        }
+                        UpdateHighlight();
                     }
-                    UpdateHighlight();
+                    //
+                    if (resetCamera) _form.SetFrontBackView(false, true);
+                    _form.AdjustCameraDistanceAndClipping();
                 }
-                //
-                if (resetCamera) _form.SetFrontBackView(false, true);
-                _form.AdjustCameraDistanceAndClipping();
             }
             catch
             {
@@ -6682,32 +6687,36 @@ namespace PrePoMax
         {
             try
             {
-                _form.Clear3D();    // Removes section cut
-                //
-                if (_model != null)
-                {                   
-                    if (_model.Mesh != null && _model.Mesh.Parts.Count > 0)
+                // Set the current view and call DrawModel
+                if (CurrentView != ViewGeometryModelResults.Model) CurrentView = ViewGeometryModelResults.Model;
+                // Draw model
+                else
+                {
+                    _form.Clear3D();    // Removes section cut
+                    //
+                    if (_model != null)
                     {
-                        CheckModelUnitSystem();
-                        //
-                        try // must be inside to continue screen update
+                        if (_model.Mesh != null && _model.Mesh.Parts.Count > 0)
                         {
-                            CurrentView = ViewGeometryModelResults.Model;
-                            //
-                            DrawAllModelParts();
-                            DrawSymbols();
-                            AnnotateWithColorLegend();
-                            //
-                            Octree.Plane plane = _sectionViewPlanes[_currentView];
-                            if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
+                            CheckModelUnitSystem();
+                            // Must be inside to continue screen update
+                            try
+                            {
+                                DrawAllModelParts();
+                                DrawSymbols();
+                                AnnotateWithColorLegend();
+                                //
+                                Octree.Plane plane = _sectionViewPlanes[_currentView];
+                                if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
+                            }
+                            catch { }
                         }
-                        catch { }
+                        UpdateHighlight();
                     }
-                    UpdateHighlight();
+                    //
+                    if (resetCamera) _form.SetFrontBackView(false, true);
+                    _form.AdjustCameraDistanceAndClipping();
                 }
-                //
-                if (resetCamera) _form.SetFrontBackView(false, true);
-                _form.AdjustCameraDistanceAndClipping();
             }
             catch
             {
@@ -9022,25 +9031,31 @@ namespace PrePoMax
         #region Results  ###########################################################################################################
         public void DrawResults(bool resetCamera)
         {
-            _form.Clear3D();
-            //
-            if (_results == null) return;
-            //
-            CheckResultsUnitSystem();
-            // Settings - must be here before drawing parts to correctly set the numer of colors
-            SetLegendAndLimits();
-            AnnotateWithColorLegend();
-            //
-            float scale = GetScale();
-            DrawAllResultParts(_currentFieldData, scale, _settings.Post.DrawUndeformedModel, _settings.Post.UndeformedModelColor);
-            // Transformation
-            ApplyTransformation();
-            //
-            Octree.Plane plane = _sectionViewPlanes[_currentView];
-            if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
-            //
-            if (resetCamera) _form.SetFrontBackView(true, true); // animation:true is here to correctly draw max/min widgets 
-            _form.AdjustCameraDistanceAndClipping();
+            // Set the current view and call DrawResults
+            if (CurrentView != ViewGeometryModelResults.Results) CurrentView = ViewGeometryModelResults.Results;
+            // Draw results
+            else
+            {
+                _form.Clear3D();    // Removes section cut
+                //
+                if (_results == null) return;
+                //
+                CheckResultsUnitSystem();
+                // Settings - must be here before drawing parts to correctly set the numer of colors
+                SetLegendAndLimits();
+                AnnotateWithColorLegend();
+                //
+                float scale = GetScale();
+                DrawAllResultParts(_currentFieldData, scale, _settings.Post.DrawUndeformedModel, _settings.Post.UndeformedModelColor);
+                // Transformation
+                ApplyTransformation();
+                //
+                Octree.Plane plane = _sectionViewPlanes[_currentView];
+                if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
+                //
+                if (resetCamera) _form.SetFrontBackView(true, true); // animation:true is here to correctly draw max/min widgets 
+                _form.AdjustCameraDistanceAndClipping();
+            }
         }
         private void DrawAllResultParts(FieldData fieldData, float scale, bool drawUndeformedModel, Color undeformedModelColor)
         {
