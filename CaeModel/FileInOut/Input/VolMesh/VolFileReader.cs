@@ -225,7 +225,7 @@ namespace FileInOut.Input
             string[] record;
             string[] splitter = new string[] { " " };
             HashSet<int> edge;
-            FeElement1D element = null;
+            FeElement1D element;
             Dictionary<int, int> nodeIdCount;
             Dictionary<int, Dictionary<int, int>> edgeIdNodeIdCount = new Dictionary<int, Dictionary<int, int>>();
             // Line 0 is the line with the Keyword

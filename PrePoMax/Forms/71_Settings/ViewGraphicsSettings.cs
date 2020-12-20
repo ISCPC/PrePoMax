@@ -31,31 +31,31 @@ namespace PrePoMax.Settings
                 if (value == BackgroundType.White)
                 {
                     CustomPropertyDescriptor cpd;
-                    cpd = _dctd.GetProperty("Color");
+                    cpd = _dctd.GetProperty(nameof(Color));
                     cpd.SetIsBrowsable(false);
-                    cpd = _dctd.GetProperty("TopColor");
+                    cpd = _dctd.GetProperty(nameof(TopColor));
                     cpd.SetIsBrowsable(false);
-                    cpd = _dctd.GetProperty("BottomColor");
+                    cpd = _dctd.GetProperty(nameof(BottomColor));
                     cpd.SetIsBrowsable(false);
                 }
                 else if (value == BackgroundType.Solid)
                 {
                     CustomPropertyDescriptor cpd;
-                    cpd = _dctd.GetProperty("Color");
+                    cpd = _dctd.GetProperty(nameof(Color));
                     cpd.SetIsBrowsable(true);
-                    cpd = _dctd.GetProperty("TopColor");
+                    cpd = _dctd.GetProperty(nameof(TopColor));
                     cpd.SetIsBrowsable(false);
-                    cpd = _dctd.GetProperty("BottomColor");
+                    cpd = _dctd.GetProperty(nameof(BottomColor));
                     cpd.SetIsBrowsable(false);
                 }
                 else
                 {
                     CustomPropertyDescriptor cpd;
-                    cpd = _dctd.GetProperty("Color");
+                    cpd = _dctd.GetProperty(nameof(Color));
                     cpd.SetIsBrowsable(false);
-                    cpd = _dctd.GetProperty("TopColor");
+                    cpd = _dctd.GetProperty(nameof(TopColor));
                     cpd.SetIsBrowsable(true);
-                    cpd = _dctd.GetProperty("BottomColor");
+                    cpd = _dctd.GetProperty(nameof(BottomColor));
                     cpd.SetIsBrowsable(true);
                 }
             }

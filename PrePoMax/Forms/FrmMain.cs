@@ -60,6 +60,7 @@ namespace PrePoMax
         private FrmCalculixKeywordEditor _frmCalculixKeywordEditor;
         private FrmPartProperties _frmPartProperties;
         private FrmBoundaryLayer _frmBoundaryLayer;
+        private FrmRemeshingParameters _frmRemeshingParameters;
         private FrmTranslate _frmTranslate;
         private FrmScale _frmScale;
         private FrmRotate _frmRotate;
@@ -282,6 +283,9 @@ namespace PrePoMax
                 //
                 _frmBoundaryLayer = new FrmBoundaryLayer(_controller);
                 AddFormToAllForms(_frmBoundaryLayer);
+                //
+                _frmRemeshingParameters = new FrmRemeshingParameters(_controller);
+                AddFormToAllForms(_frmRemeshingParameters);
                 //
                 _frmTranslate = new FrmTranslate(_controller);
                 AddFormToAllForms(_frmTranslate);
@@ -1295,7 +1299,7 @@ namespace PrePoMax
                     if (_controller.OpenedFileName != null)
                         saveFileDialog.FileName = Path.GetFileNameWithoutExtension(_controller.OpenedFileName) + ".mesh";
                     //
-                    if (saveFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                    if (saveFileDialog.ShowDialog() == DialogResult.OK)
                     {
                         // The filter adds the extension to the file name
                         SetStateWorking(Globals.ExportingText);
@@ -1693,7 +1697,7 @@ namespace PrePoMax
         {
             try
             {
-                CaeMesh.BasePart[] parts;
+                BasePart[] parts;
                 List<string> partNamesToHide = new List<string>();
                 List<string> partNamesToShow = new List<string>();
 
@@ -2008,7 +2012,7 @@ namespace PrePoMax
             HashSet<string> partsToShow = new HashSet<string>(partNames);
             foreach (var entry in _controller.Model.Geometry.Parts)
             {
-                if (entry.Value is CaeMesh.CompoundGeometryPart cgp)
+                if (entry.Value is CompoundGeometryPart cgp)
                 {
                     if (partNames.Contains(cgp.Name))
                     {
@@ -2055,10 +2059,10 @@ namespace PrePoMax
             {
                 SetStateWorking(Globals.CreatingCompound, true);
                 //
-                CaeMesh.GeometryPart part;
+                GeometryPart part;
                 foreach (var partName in partNames)
                 {
-                    part = (CaeMesh.GeometryPart)_controller.Model.Geometry.Parts[partName];
+                    part = (GeometryPart)_controller.Model.Geometry.Parts[partName];
                     if (part.CADFileData == null)
                         throw new CaeException("Compound part can only be made from CAD based geometry parts.");
                 }
@@ -2321,22 +2325,25 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
-        public CaeMesh.MeshingParameters GetMeshingParameters(string[] partNames, bool formModal)
+        public MeshingParameters GetMeshingParameters(string[] partNames, bool formModal)
         {
             double sumMax = 0;
             double sumMin = 0;
-            CaeMesh.GeometryPart part;
-            CaeMesh.MeshingParameters meshingParameters = null;
-            CaeMesh.MeshingParameters defaultMeshingParameters = null;
+            GeometryPart part;
+            MeshingParameters meshingParameters = null;
+            MeshingParameters defaultMeshingParameters = null;
+            HashSet<bool> useMmg = new HashSet<bool>();
             foreach (var partName in partNames)
             {
                 part = _controller.GetGeometryPart(partName);
                 // Default parameters
                 defaultMeshingParameters = GetDefaultMeshingParameters(partName);
+                // Check for different types of meshes
+                useMmg.Add(defaultMeshingParameters.UseMmg);                
                 // First time set the meshing parameters
                 if (partName == partNames[0]) meshingParameters = part.MeshingParameters;
                 // Meshing parameters exist only when all parts have the same meshing parameters
-                if (!CaeMesh.MeshingParameters.Equals(meshingParameters, part.MeshingParameters))
+                if (!MeshingParameters.Equals(meshingParameters, part.MeshingParameters))
                     meshingParameters = null;
                 //
                 sumMax += defaultMeshingParameters.MaxH;
@@ -2347,45 +2354,40 @@ namespace PrePoMax
             // Use meshingParameters as default if meshing parameters are not equal
             if (meshingParameters == null) meshingParameters = defaultMeshingParameters;
             //
-            CaeMesh.MeshingParameters parameters = null;
-
-            InvokeIfRequired(() =>
+            MeshingParameters parameters = null;
+            //
+            if (useMmg.Count() == 1)
             {
-                parameters = GetMeshingParametersForm(partNames, defaultMeshingParameters, meshingParameters, formModal);
-            });
-            //if (this.InvokeRequired)
-            //{
-            //    this.Invoke((MethodInvoker)delegate () 
-            //    {
-            //        parameters = GetMeshingParametersForm(partNames, defaultMeshingParameters, meshingParameters, formModal); 
-            //    });
-            //}
-            //else
-            //{
-            //    parameters = GetMeshingParametersForm(partNames, defaultMeshingParameters, meshingParameters, formModal);
-            //}
+                InvokeIfRequired(() =>
+                {
+                    parameters = GetMeshingParametersForm(partNames, defaultMeshingParameters, meshingParameters, formModal);
+                });
+            }
             return parameters;
         }
-        public CaeMesh.MeshingParameters GetDefaultMeshingParameters(string partName)
+        public MeshingParameters GetDefaultMeshingParameters(string partName)
         {
-            CaeMesh.GeometryPart part = _controller.GetGeometryPart(partName);
-
-            //if (part.CADFileData == null && part.HasErrors)
-            //    throw new Exception("The part '" + partName + "' contains errors and can not be meshed.");
+            GeometryPart part = _controller.GetGeometryPart(partName);
+            //
             if (!_controller.MeshJobIdle) throw new Exception("The meshing is already in progress.");
-
-            CaeMesh.MeshingParameters defaultMeshingParameters = new CaeMesh.MeshingParameters();
+            //
+            MeshingParameters defaultMeshingParameters = new MeshingParameters();
             double factorMax = 20;
             double factorMin = 1000;
+            double factorHausdorff = 500;
             double maxSize = part.BoundingBox.GetDiagonal();
+            //
+            if (part.PartType == PartType.Shell && part.CADFileData == null) defaultMeshingParameters.UseMmg = true;
+            //defaultMeshingParameters.UseMmg = true;
             defaultMeshingParameters.MaxH = CaeGlobals.Tools.RoundToSignificantDigits(maxSize / factorMax, 2);
             defaultMeshingParameters.MinH = CaeGlobals.Tools.RoundToSignificantDigits(maxSize / factorMin, 2);
-
+            defaultMeshingParameters.Hausdorff = CaeGlobals.Tools.RoundToSignificantDigits(maxSize / factorHausdorff, 2);
+            //
             return defaultMeshingParameters;
         }
-        public CaeMesh.MeshingParameters GetMeshingParametersForm(string[] partNames,
-                                                                  CaeMesh.MeshingParameters defaultMeshingParameters,
-                                                                  CaeMesh.MeshingParameters meshingParameters,
+        public MeshingParameters GetMeshingParametersForm(string[] partNames,
+                                                                  MeshingParameters defaultMeshingParameters,
+                                                                  MeshingParameters meshingParameters,
                                                                   bool formModal)
         {
             // - show form
@@ -2409,7 +2411,7 @@ namespace PrePoMax
         }
         public void SetDefaultMeshingParameters(string partName)
         {
-            CaeMesh.MeshingParameters defaultMeshingParameters = GetDefaultMeshingParameters(partName);
+            MeshingParameters defaultMeshingParameters = GetDefaultMeshingParameters(partName);
             _controller.SetMeshingParametersCommand(new string[] { partName }, defaultMeshingParameters);
         }
         private async void PreviewEdgeMeshes(string[] partNames)
@@ -2542,6 +2544,7 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
+        // Tools
         private void tsmiCreateBoundaryLayer_Click(object sender, EventArgs e)
         {
             try
@@ -2564,18 +2567,19 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiRemesh_Click(object sender, EventArgs e)
+        private void tsmiRemeshElements_Click(object sender, EventArgs e)
         {
             try
             {
-                _controller.RemeshShellMeshPart(_controller.Model.Mesh.Parts["Nonpositive_jacobian-1"]);
+                RemeshElements();
+                //_controller.RemeshShellMeshPart(_controller.Model.Mesh.Parts["Nonpositive_jacobian-1"]);
             }
             catch (Exception ex)
             {
                 ExceptionTools.Show(this, ex);
             }
         }
-        //
+        //                                                                                                                          
         private void EditModel()
         {
             ShowForm(_frmModelProperties, "Edit Model", null);
@@ -2606,6 +2610,7 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
+        // Tools
         private void CreateBoundaryLayer()
         {
             // Data editor
@@ -2626,6 +2631,14 @@ namespace PrePoMax
                 }
                 GetFormLoaction(frmGetValue);
             }
+        }
+        private void RemeshElements()
+        {
+            // Data editor
+            ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
+            ItemSetDataEditor.ParentForm = _frmRemeshingParameters;
+            _frmSelectItemSet.SetOnlyGeometrySelection(false);
+            ShowForm(_frmRemeshingParameters, "Remeshing Parameters", null);
         }
 
         #endregion  ################################################################################################################
@@ -2671,6 +2684,7 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
+        // Transform
         private void tsmiTranslateParts_Click(object sender, EventArgs e)
         {
             try
@@ -2704,6 +2718,7 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
+        //
         private void tsmiMergeParts_Click(object sender, EventArgs e)
         {
             try
@@ -2772,12 +2787,13 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
-        //
+        //                                                                                                                          
         private void EditModelPart(string partName)
         {
             _frmPartProperties.View = ViewGeometryModelResults.Model; 
             ShowForm(_frmPartProperties, "Edit Part", partName);
         }
+        // Transform
         private void TranslateParts(string[] partNames)
         {
             SinglePointDataEditor.ParentForm = _frmTranslate;
@@ -2805,6 +2821,7 @@ namespace PrePoMax
             //
             ShowForm(_frmRotate, "Rotate parts: " + partNames.ToShortString(), null);
         }
+        //
         private void MergeModelParts(string[] partNames)
         {
             if (MessageBox.Show("OK to merge selected parts?",
@@ -4427,7 +4444,7 @@ namespace PrePoMax
         {
             try
             {
-                SelectMultipleEntities("Parts", _controller.GetResultParts<CaeMesh.ResultPart>(), ColorContoursOffResultPart);
+                SelectMultipleEntities("Parts", _controller.GetResultParts<ResultPart>(), ColorContoursOffResultPart);
             }
             catch (Exception ex)
             {
@@ -4438,7 +4455,7 @@ namespace PrePoMax
         {
             try
             {
-                SelectMultipleEntities("Parts", _controller.GetResultParts<CaeMesh.ResultPart>(), ColorContoursOnResultPart);
+                SelectMultipleEntities("Parts", _controller.GetResultParts<ResultPart>(), ColorContoursOnResultPart);
             }
             catch (Exception ex)
             {
@@ -4687,6 +4704,7 @@ namespace PrePoMax
             if (_frmSelectGeometry != null && _frmSelectGeometry.Visible) _frmSelectGeometry.SelectionChanged(ids);
             //
             if (_frmBoundaryLayer != null && _frmBoundaryLayer.Visible) _frmBoundaryLayer.SelectionChanged(ids);
+            if (_frmRemeshingParameters != null && _frmRemeshingParameters.Visible) _frmRemeshingParameters.SelectionChanged(ids);
             if (_frmNodeSet != null && _frmNodeSet.Visible) _frmNodeSet.SelectionChanged(ids);
             if (_frmElementSet != null && _frmElementSet.Visible) _frmElementSet.SelectionChanged(ids);
             if (_frmSurface != null && _frmSurface.Visible) _frmSurface.SelectionChanged(ids);
@@ -5803,7 +5821,7 @@ namespace PrePoMax
                 else
                 {
                     int count = 0;
-                    CaeMesh.BasePart part;
+                    BasePart part;
                     int numOfSelectedTreeNodes = 0;
                     //
                     foreach (var partName in partNames)

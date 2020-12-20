@@ -294,6 +294,7 @@ namespace CaeJob
             try
             {
                 if (AppendOutput != null) AppendOutput(OutputData);
+                //if (Tools.WaitForFileToUnlock(_outputFileName, 5000))
                 File.AppendAllText(_outputFileName, OutputData);
                 //
                 _sbOutput.Clear();

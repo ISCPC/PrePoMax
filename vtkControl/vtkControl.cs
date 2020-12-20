@@ -629,7 +629,7 @@ namespace vtkControl
             }
             //
             //pickedPoint = new double[] { 69.5036385225361, 46.5475130793349, 18.5134144946738 };
-            System.Diagnostics.Debug.WriteLine("x: " + pickedPoint[0] + "   y: " + pickedPoint[1] + "   z: " + pickedPoint[2]);
+            //System.Diagnostics.Debug.WriteLine("x: " + pickedPoint[0] + "   y: " + pickedPoint[1] + "   z: " + pickedPoint[2]);
             //
             vtkCell cell;
             vtkCellLocator cellLocator;
@@ -3872,12 +3872,12 @@ namespace vtkControl
 
             if (cutter.GetOutput().GetNumberOfPoints() == 0) return null;
 
-            System.Diagnostics.Debug.WriteLine("Cutter num. of points: " + cutter.GetOutput().GetNumberOfPoints());
-            System.Diagnostics.Debug.WriteLine("Cutter num. of cells: " + cutter.GetOutput().GetNumberOfCells());
+            //System.Diagnostics.Debug.WriteLine("Cutter num. of points: " + cutter.GetOutput().GetNumberOfPoints());
+            //System.Diagnostics.Debug.WriteLine("Cutter num. of cells: " + cutter.GetOutput().GetNumberOfCells());
             
             // GEOMETRY                                                                             
-            System.Diagnostics.Debug.WriteLine("CutStrips num. of points: " + cutStrips.GetOutput().GetNumberOfPoints());
-            System.Diagnostics.Debug.WriteLine("CutStrips num. of cells: " + cutStrips.GetOutput().GetNumberOfCells());
+            //System.Diagnostics.Debug.WriteLine("CutStrips num. of points: " + cutStrips.GetOutput().GetNumberOfPoints());
+            //System.Diagnostics.Debug.WriteLine("CutStrips num. of cells: " + cutStrips.GetOutput().GetNumberOfCells());
 
            
             // Noraml
@@ -4001,8 +4001,8 @@ namespace vtkControl
 
             // EDGES                                                                                
 
-            System.Diagnostics.Debug.WriteLine("Num. of points: " + polyData.GetNumberOfPoints());
-            System.Diagnostics.Debug.WriteLine("Num. of cells: " + polyData.GetNumberOfCells());
+            //System.Diagnostics.Debug.WriteLine("Num. of points: " + polyData.GetNumberOfPoints());
+            //System.Diagnostics.Debug.WriteLine("Num. of cells: " + polyData.GetNumberOfCells());
 
             vtkExtractEdges extractEdges = vtkExtractEdges.New();
             extractEdges.SetInput(polyData);

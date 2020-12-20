@@ -80,27 +80,17 @@ namespace PrePoMax.Settings
                 _legendSettings.ColorSpectrum.MinMaxType = value;
                 if (value == vtkControl.vtkColorSpectrumMinMaxType.Automatic)
                 {
-                    CustomPropertyDescriptor cpd;
-                    cpd = _dctd.GetProperty("ColorSpectrumMin");
-                    cpd.SetIsBrowsable(false);
-                    cpd = _dctd.GetProperty("ColorSpectrumMax");
-                    cpd.SetIsBrowsable(false);
-                    cpd = _dctd.GetProperty("ColorSpectrumMinColor");
-                    cpd.SetIsBrowsable(false);
-                    cpd = _dctd.GetProperty("ColorSpectrumMaxColor");
-                    cpd.SetIsBrowsable(false);
+                    _dctd.GetProperty(nameof(ColorSpectrumMin)).SetIsBrowsable(false);
+                    _dctd.GetProperty(nameof(ColorSpectrumMax)).SetIsBrowsable(false);
+                    _dctd.GetProperty(nameof(ColorSpectrumMinColor)).SetIsBrowsable(false);
+                    _dctd.GetProperty(nameof(ColorSpectrumMaxColor)).SetIsBrowsable(false);
                 }
                 else 
                 {
-                    CustomPropertyDescriptor cpd;
-                    cpd = _dctd.GetProperty("ColorSpectrumMin");
-                    cpd.SetIsBrowsable(true);
-                    cpd = _dctd.GetProperty("ColorSpectrumMax");
-                    cpd.SetIsBrowsable(true);
-                    cpd = _dctd.GetProperty("ColorSpectrumMinColor");
-                    cpd.SetIsBrowsable(true);
-                    cpd = _dctd.GetProperty("ColorSpectrumMaxColor");
-                    cpd.SetIsBrowsable(true);
+                    _dctd.GetProperty(nameof(ColorSpectrumMin)).SetIsBrowsable(true);
+                    _dctd.GetProperty(nameof(ColorSpectrumMax)).SetIsBrowsable(true);
+                    _dctd.GetProperty(nameof(ColorSpectrumMinColor)).SetIsBrowsable(true);
+                    _dctd.GetProperty(nameof(ColorSpectrumMaxColor)).SetIsBrowsable(true);
                 }
             }
         }

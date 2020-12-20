@@ -52,6 +52,7 @@ namespace UserControls
 
         private void Form_KeyDown(object sender, KeyEventArgs e)
         {
+            //System.Diagnostics.Debug.WriteLine(DateTime.Now.Millisecond + e.KeyCode.ToString());
             // Exit if cursor not in control
             //if (!this.RectangleToScreen(this.ClientRectangle).Contains(Cursor.Position))
             if (!this.ContainsFocus)
@@ -87,7 +88,7 @@ namespace UserControls
             // Get position of selected griditem in collection
             int index = gridItems.IndexOf(gridItem);
 
-            int nextIndex = index + 1;
+            int nextIndex = index + 1;  
             if (nextIndex >= gridItems.Count) 
             {
                 //this.SelectedGridItem = gridItems[0];
@@ -127,10 +128,34 @@ namespace UserControls
 
         protected override void OnGotFocus(EventArgs e)
         {
+            //System.Diagnostics.Debug.WriteLine(DateTime.Now.Millisecond + " OnGotFocus");
+            //// Get selected griditem
+            //GridItem gridItem = this.SelectedGridItem;
+            //if (gridItem == null) { return; }
+
+            //// Create a collection all visible child griditems in propertygrid
+            //GridItem root = gridItem;
+            //while (root.GridItemType != GridItemType.Root)
+            //{
+            //    root = root.Parent;
+            //}
+            //List<GridItem> gridItems = new List<GridItem>();
+            //this.FindItems(root, gridItems);
+
+            ////this.SelectedGridItem = gridItems[0];
+            //this.SelectedGridItem = gridItem;
+            
+            ////SendKeys.Send("{Tab}");
+
+            base.OnGotFocus(e);
+        }
+
+        protected override void OnEnter(EventArgs e)
+        {
+            //System.Diagnostics.Debug.WriteLine(DateTime.Now.Millisecond + " OnEnter");
             // Get selected griditem
             GridItem gridItem = this.SelectedGridItem;
             if (gridItem == null) { return; }
-
             // Create a collection all visible child griditems in propertygrid
             GridItem root = gridItem;
             while (root.GridItemType != GridItemType.Root)
@@ -139,13 +164,10 @@ namespace UserControls
             }
             List<GridItem> gridItems = new List<GridItem>();
             this.FindItems(root, gridItems);
-
-            //this.SelectedGridItem = gridItems[0];
-            this.SelectedGridItem = gridItem;
-            
-            //SendKeys.Send("{Tab}");
-
-            base.OnGotFocus(e);
+            //
+            this.SelectedGridItem = gridItems[0];
+            //
+            base.OnEnter(e);
         }
 
         private void InitializeComponent()

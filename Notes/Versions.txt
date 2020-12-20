@@ -1,6 +1,12 @@
 ﻿Requirements
 
 Selection - UNDO after empty click
+By Students
+Add the possibility ot output the Query command as General text formating
+
+By Silvio
+15. 12. 2020
+add support for automatic mesh convergance on a single face, edga or vertex
 
 By Massimiliano
 10. 9. 2020

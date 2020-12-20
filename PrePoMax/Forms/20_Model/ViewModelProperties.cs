@@ -83,7 +83,7 @@ namespace PrePoMax.Forms
         }
         private void UpdateVisibility()
         {
-            cpd = _dctd.GetProperty("GlobalResultsFileName");
+            cpd = _dctd.GetProperty(nameof(GlobalResultsFileName));
             if (_modelProperties.ModelType == ModelType.Submodel) cpd.SetIsBrowsable(true);
             else cpd.SetIsBrowsable(false);
         }

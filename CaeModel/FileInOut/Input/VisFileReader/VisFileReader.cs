@@ -71,7 +71,9 @@ namespace FileInOut.Input
                     }
                     //
                     double max = bBox.GetDiagonal();
-                    MergeNodes(nodes, elements, surfaceIdNodeIds, edgeIdNodeIds, epsilon * max);
+                    int[] mergedNodes;
+                    MergeNodes(nodes, elements, surfaceIdNodeIds, edgeIdNodeIds, epsilon * max, out mergedNodes);
+                    foreach (int mergedNode in mergedNodes) vertexNodeIds.Remove(mergedNode);
                     //
                     FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Geometry, importOptions);
                     //
@@ -244,7 +246,8 @@ namespace FileInOut.Input
                                        Dictionary<int, FeElement> elements,
                                        Dictionary<int, HashSet<int>> surfaceIdNodeIds,
                                        Dictionary<int, HashSet<int>> edgeIdNodeIds,
-                                       double epsilon)
+                                       double epsilon,
+                                       out int[] mergedNodes)
         {
             int count = 0;
             FeNode[] sortedNodes = new FeNode[nodes.Count];
@@ -280,7 +283,8 @@ namespace FileInOut.Input
                 }
             }
             // Remove unused nodes
-            foreach (var entry in mergeMap) nodes.Remove(entry.Key);
+            mergedNodes = mergeMap.Keys.ToArray();
+            foreach (int mergedNode in mergedNodes) nodes.Remove(mergedNode);
             // Apply the map to the elements
             int newId;
             HashSet<int> nodeIds = new HashSet<int>();

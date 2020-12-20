@@ -43,18 +43,15 @@ namespace UserControls
             }
             set
             {
-                CustomPropertyDescriptor cpd;
                 if (value == RegionTypeEnum.PartName.ToFriendlyString())
                 {
                     _section.RegionType = RegionTypeEnum.PartName;
-                    cpd = _dctd.GetProperty("PartName");
-                    _section.RegionName = cpd.StatandardValues.First().ToString();
+                    _section.RegionName = _dctd.GetProperty(nameof(PartName)).StatandardValues.First().ToString();
                 }
                 else if (value == RegionTypeEnum.ElementSetName.ToFriendlyString())
                 {
                     _section.RegionType = RegionTypeEnum.ElementSetName;
-                    cpd = _dctd.GetProperty("ElementSetName");
-                    _section.RegionName = cpd.StatandardValues.First().ToString();
+                    _section.RegionName = _dctd.GetProperty(nameof(ElementSetName)).StatandardValues.First().ToString();
                 }
                 else throw new NotSupportedException();
 
@@ -112,13 +109,13 @@ namespace UserControls
         {
             if (_section.RegionType == RegionTypeEnum.PartName)
             {
-                _dctd.GetProperty("PartName").SetIsBrowsable(true);
-                _dctd.GetProperty("ElementSetName").SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(PartName)).SetIsBrowsable(true);
+                _dctd.GetProperty(nameof(ElementSetName)).SetIsBrowsable(false);
             }
             else if (_section.RegionType == RegionTypeEnum.ElementSetName)
             {
-                _dctd.GetProperty("PartName").SetIsBrowsable(false);
-                _dctd.GetProperty("ElementSetName").SetIsBrowsable(true);
+                _dctd.GetProperty(nameof(PartName)).SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(ElementSetName)).SetIsBrowsable(true);
             }
         }
     }
