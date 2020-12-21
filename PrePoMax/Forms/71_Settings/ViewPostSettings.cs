@@ -32,27 +32,19 @@ namespace PrePoMax.Settings
 
                 if (value == PrePoMax.DeformationScaleFactorType.Automatic)
                 {
-                    CustomPropertyDescriptor cpd;
-                    cpd = _dctd.GetProperty("DeformationScaleFactorValue");
-                    cpd.SetIsBrowsable(false);
+                    _dctd.GetProperty(nameof(DeformationScaleFactorValue)).SetIsBrowsable(false);
                 }
                 else if (value == PrePoMax.DeformationScaleFactorType.TrueScale)
                 {
-                    CustomPropertyDescriptor cpd;
-                    cpd = _dctd.GetProperty("DeformationScaleFactorValue");
-                    cpd.SetIsBrowsable(false);
+                    _dctd.GetProperty(nameof(DeformationScaleFactorValue)).SetIsBrowsable(false);
                 }
                 else if (value == PrePoMax.DeformationScaleFactorType.Off)
                 {
-                    CustomPropertyDescriptor cpd;
-                    cpd = _dctd.GetProperty("DeformationScaleFactorValue");
-                    cpd.SetIsBrowsable(false);
+                    _dctd.GetProperty(nameof(DeformationScaleFactorValue)).SetIsBrowsable(false);
                 }
                 else if (value == PrePoMax.DeformationScaleFactorType.UserDefined)
                 {
-                    CustomPropertyDescriptor cpd;
-                    cpd = _dctd.GetProperty("DeformationScaleFactorValue");
-                    cpd.SetIsBrowsable(true);
+                    _dctd.GetProperty(nameof(DeformationScaleFactorValue)).SetIsBrowsable(true);
                 }
                 else throw new NotSupportedException();
             }
@@ -82,10 +74,8 @@ namespace PrePoMax.Settings
             set
             {
                 _postSettings.DrawUndeformedModel = value;
-
-                CustomPropertyDescriptor cpd;
-                cpd = _dctd.GetProperty("UndeformedModelColor");
-                cpd.SetIsBrowsable(_postSettings.DrawUndeformedModel);
+                //
+                _dctd.GetProperty(nameof(UndeformedModelColor)).SetIsBrowsable(_postSettings.DrawUndeformedModel);
             }
         }
         //

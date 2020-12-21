@@ -13,6 +13,7 @@ using CaeGlobals;
 using System.IO.Compression;
 using System.Drawing;
 using System.ComponentModel;
+using System.Management;
 
 namespace PrePoMax
 {
@@ -255,7 +256,7 @@ namespace PrePoMax
         }
         public void SetSelectAngle(double angle)
         {
-            System.Diagnostics.Debug.WriteLine("Angle: " + angle);
+            //System.Diagnostics.Debug.WriteLine("Angle: " + angle);
             SelectAngle = angle;
         }
         public void SetSelectItemToNode()
@@ -1098,12 +1099,16 @@ namespace PrePoMax
             string stepFileName;
             string directory = Path.GetDirectoryName(fileName);
             string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+            string extension = Path.GetExtension(fileName);
             GeometryPart part;
             foreach (var partName in partNames)
             {
                 part = (GeometryPart)_model.Geometry.Parts[partName];
-                stepFileName = Path.Combine(directory, fileNameWithoutExtension + "-" + partName + ".stp");
+                if (partNames.Length == 1) stepFileName = fileName;
+                else stepFileName = Path.Combine(directory, fileNameWithoutExtension + "_" + partName + extension);
                 ExportCADGeometryPartAsStep(part, stepFileName);
+                //
+                _form.WriteDataToOutput("Part " + partName + " exported to file: " + stepFileName);
             }
         }
         public void ExportCADGeometryPartsAsBrep(string[] partNames, string fileName)
@@ -1111,11 +1116,13 @@ namespace PrePoMax
             string brepFileName;
             string directory = Path.GetDirectoryName(fileName);
             string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+            string extension = Path.GetExtension(fileName);
             GeometryPart part;
             foreach (var partName in partNames)
             {
                 part = (GeometryPart)_model.Geometry.Parts[partName];
-                brepFileName = Path.Combine(directory, fileNameWithoutExtension + "-" + partName + ".brep");
+                if (partNames.Length == 1) brepFileName = fileName;
+                else brepFileName = Path.Combine(directory, fileNameWithoutExtension + "_" + partName + extension);
                 File.WriteAllText(brepFileName, part.CADFileData);
                 //
                 _form.WriteDataToOutput("Part " + partName +" exported to file: " + brepFileName);
@@ -1155,11 +1162,19 @@ namespace PrePoMax
         }
         public void ExportGeometryPartsAsMmgMesh(string[] partNames, string fileName)
         {
-            FileInOut.Output.MmgFileWriter.Write(fileName, _model.Geometry, partNames);
-            //
+            string mmgFileName;
+            string directory = Path.GetDirectoryName(fileName);
+            string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+            string extension = Path.GetExtension(fileName);
+            GeometryPart part;
             foreach (var partName in partNames)
             {
-                _form.WriteDataToOutput("Part " + partName + " exported to file: " + fileName);
+                part = (GeometryPart)_model.Geometry.Parts[partName];
+                if (partNames.Length == 1) mmgFileName = fileName;
+                else mmgFileName = Path.Combine(directory, fileNameWithoutExtension + "_" + partName + extension);
+                FileInOut.Output.MmgFileWriter.Write(mmgFileName, part, _model.Geometry, true, false);
+                //
+                _form.WriteDataToOutput("Part " + partName + " exported to file: " + mmgFileName);
             }
         }
         public void ExportGeometryPartsAsStl(string[] partNames, string fileName)
@@ -2154,6 +2169,8 @@ namespace PrePoMax
         {
             GeometryPart part = (GeometryPart)_model.Geometry.Parts[partName];
             //
+            //return CreateMeshFromStl(part);
+            //
             if (part.CADFileData == null) return CreateMeshFromStl(part);
             else return CreateMeshFromBrep(part);
         }
@@ -2229,12 +2246,18 @@ namespace PrePoMax
             if (File.Exists(mmgOutFileName)) File.Delete(mmgOutFileName);
             if (File.Exists(mmgSolFileName)) File.Delete(mmgSolFileName);
             //
-            FileInOut.Output.MmgFileWriter.Write(mmgInFileName, _model.Geometry, new string[] { part.Name });
+            FileInOut.Output.MmgFileWriter.Write(mmgInFileName, part, _model.Geometry, part.MeshingParameters.KeepModelEdges, false);
             //
-            string argument = "-nr " + "-m 10000 " + //"-ar 180 " // 
+            System.Diagnostics.PerformanceCounter ramCounter;
+            ramCounter = new System.Diagnostics.PerformanceCounter("Memory", "Available MBytes");
+            //
+            string argument = //"-nr " + 
+                              "-m " + ramCounter.NextValue() * 0.9 + " " +
+                              "-ar 0.01 " + // this removes curving of the faces
+                              //"-hsiz 0.08 " +  
                               "-hmax " + part.MeshingParameters.MaxH + " " +
                               "-hmin " + part.MeshingParameters.MinH + " " +
-                              "-hausd " + 0.02 * part.BoundingBox.GetDiagonal() + " " +
+                              "-hausd " + part.MeshingParameters.Hausdorff + " " +
                               "-in \"" + mmgInFileName + "\" " +
                               "-out \"" + mmgOutFileName + "\" ";
             //
@@ -2244,8 +2267,38 @@ namespace PrePoMax
             // Job completed
             if (_netgenJob.JobStatus == JobStatus.OK)
             {
-                ImportGeneratedMesh(mmgOutFileName, part, false);
-                return true;
+                //ImportGeneratedMesh(mmgOutFileName, part, false);
+                ImportFile(mmgOutFileName);
+                //
+                FeMesh mesh = FileInOut.Input.MmgFileReader.Read(mmgOutFileName, MeshRepresentation.Geometry);
+                GeometryPart partOut = (GeometryPart)mesh.Parts.First().Value;
+                //
+                if (File.Exists(mmgInFileName)) File.Delete(mmgInFileName);
+                if (File.Exists(mmgOutFileName)) File.Delete(mmgOutFileName);
+                if (File.Exists(mmgSolFileName)) File.Delete(mmgSolFileName);
+                //
+                FileInOut.Output.MmgFileWriter.Write(mmgInFileName, partOut, mesh, part.MeshingParameters.KeepModelEdges, true);
+                //
+                argument = "-nr " + 
+                           "-m " + ramCounter.NextValue() * 0.9 + " " +
+                           //"-ar 0 " +
+                           //"-hsiz 0.08 " +  
+                           "-hmax " + part.MeshingParameters.MaxH + " " +
+                           "-hmin " + part.MeshingParameters.MinH + " " +
+                           "-hausd " + part.MeshingParameters.Hausdorff + " " +
+                           "-in \"" + mmgInFileName + "\" " +
+                           "-out \"" + mmgOutFileName + "\" ";
+                //
+                _netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
+                _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
+                _netgenJob.Submit();
+                //
+                if (_netgenJob.JobStatus == JobStatus.OK)
+                {
+                    ImportGeneratedMesh(mmgOutFileName, part, false);
+                    return true;
+                }
+                else return false;
             }
             else return false;
         }
@@ -2379,49 +2432,7 @@ namespace PrePoMax
             }
             //
             File.WriteAllText(fileName, sb.ToString());
-        }
-        //
-        public bool RemeshShellMeshPart(BasePart part)
-        {
-            CalculixSettings settings = _settings.Calculix;
-            if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
-            {
-                MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
-                return false;
-            }
-            //
-            string executable = Application.StartupPath + Globals.MmgMesher;
-            string mmgInFileName = Path.Combine(settings.WorkDirectory, Globals.MmgMeshFileName);
-            string mmgOutFileName = Path.Combine(settings.WorkDirectory, Path.GetFileNameWithoutExtension(Globals.MmgMeshFileName) +
-                                                 ".o" + Path.GetExtension(Globals.MmgMeshFileName));
-            string mmgSolFileName = Path.Combine(settings.WorkDirectory,
-                                                 Path.GetFileNameWithoutExtension(Globals.MmgMeshFileName) +
-                                                 ".sol");
-            //
-            if (File.Exists(mmgInFileName)) File.Delete(mmgInFileName);
-            if (File.Exists(mmgOutFileName)) File.Delete(mmgOutFileName);
-            if (File.Exists(mmgSolFileName)) File.Delete(mmgSolFileName);
-            //
-            FileInOut.Output.MmgFileWriter.Write(mmgInFileName, _model.Mesh, new string[] { part.Name });
-            //
-            string argument = "-ar 360 " + "-m 10000 " + //"-ar 180 " // "-nr " +
-                              "-hmax " + 4 + " " +
-                              "-hmin " + 0.5 + " " +
-                              "-hausd " + 0.02 * part.BoundingBox.GetDiagonal() + " " +
-                              "-in \"" + mmgInFileName + "\" " +
-                              "-out \"" + mmgOutFileName + "\" ";
-            //
-            _netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
-            _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
-            _netgenJob.Submit();
-            // Job completed
-            if (_netgenJob.JobStatus == JobStatus.OK)
-            {
-                ImportGeneratedMesh(mmgOutFileName, part, false);
-                return true;
-            }
-            else return false;
-        }
+        }        
         //
         public void StopNetGenJob()
         {
@@ -2541,7 +2552,24 @@ namespace PrePoMax
         {
             Commands.CReplaceModelProperties comm = new Commands.CReplaceModelProperties(newModelName, newModelProperties);
             _commands.AddAndExecute(comm);
-        }        
+        }
+        // Tools
+        public void CreateBoundaryLayerCommand(int[] geometryIds, double thickness)
+        {
+            Commands.CCreateBoundaryLayer comm = new Commands.CCreateBoundaryLayer(geometryIds, thickness);
+            _commands.AddAndExecute(comm);
+        }
+        public void FindEdgesByAngleForModelPartsCommand(string[] partNames, double edgeAngle)
+        {
+            Commands.CFindEdgesByAngleForModelPartsCommand comm =
+                new Commands.CFindEdgesByAngleForModelPartsCommand(partNames, edgeAngle);
+            _commands.AddAndExecute(comm);
+        }
+        public void RemeshElementsCommand(RemeshingParameters remeshingParameters)
+        {
+            Commands.CRemeshElements comm = new Commands.CRemeshElements(remeshingParameters);
+            _commands.AddAndExecute(comm);
+        }
 
         //******************************************************************************************
 
@@ -2549,7 +2577,149 @@ namespace PrePoMax
         {
             _model.Name = newModelName;
             _model.Properties = newModelProperties;
-        }        
+        }
+        // Tools
+        public void CreateBoundaryLayer(int[] geometryIds, double thickness)
+        {
+            try
+            {
+                _form.SetStateWorking("Creating...");
+                //
+                string[] errors = null;
+                if (_model != null) errors = _model.Mesh.CreatePrismaticBoundaryLayer(geometryIds, thickness);
+                // Redraw the geometry for update of the selection based sets
+                FeModelUpdate(UpdateType.DrawModel);
+                // Update sets - must be called with rendering off - SetStateWorking
+                UpdateNodeSetsBasedOnGeometry(false);
+                UpdateElementSetsBasedOnGeometry(false);
+                UpdateSurfacesBasedOnGeometry(false);
+                // Update the sets and symbols
+                FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
+                //
+                if (errors.Length > 0) throw new CaeException(errors[0]);
+            }
+            catch (Exception ex)
+            {
+                throw new CaeException(ex.Message);
+            }
+            finally
+            {
+                _form.SetStateReady("Creating...");
+            }
+        }
+        public void FindEdgesByAngleForModelParts(string[] partNames, double edgeAngle)
+        {
+            MeshPart meshPart;
+            foreach (var partName in partNames)
+            {
+                meshPart = (MeshPart)_model.Mesh.Parts[partName];
+                if (meshPart.PartType == PartType.Solid)
+                    _model.Mesh.ExtractSolidPartVisualization(meshPart, edgeAngle);
+                else if (meshPart.PartType == PartType.Shell)
+                    _model.Mesh.ExtractShellPartVisualization(meshPart, false, edgeAngle);
+                // Update
+                _form.UpdateTreeNode(ViewGeometryModelResults.Model, meshPart.Name, meshPart, null);
+            }
+            // Update
+            FeModelUpdate(UpdateType.DrawModel);
+            UpdateGeometryBasedItems(false);
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
+        }
+        public bool RemeshElements(RemeshingParameters remeshingParameters)
+        {
+            bool result;
+            // Create an element set to reselect the selection based items
+            string name = NamedClass.GetNewValueName(GetAllElementSetNames(), CaeMesh.Globals.InternalName + "_Remeshing-");
+            FeElementSet elementSet;
+            if (remeshingParameters.RegionType == RegionTypeEnum.ElementSetName)
+                elementSet = new FeElementSet(_model.Mesh.ElementSets[remeshingParameters.RegionName]);
+            else if (remeshingParameters.RegionType == RegionTypeEnum.Selection)
+            {
+                elementSet = new FeElementSet(name, null);
+                elementSet.CreationData = remeshingParameters.CreationData;
+                elementSet.CreationIds = remeshingParameters.CreationIds;
+            }
+            else throw new NotSupportedException();
+            //
+            elementSet.Internal = true;
+            AddElementSet(elementSet);
+            //
+            result = RemeshShellElements(elementSet, remeshingParameters);
+            //
+            RemoveElementSets(new string[] { elementSet.Name });
+            //
+            return result;
+        }
+        private bool RemeshShellElements(FeElementSet elementSet, RemeshingParameters remeshingParameters)
+        {
+            bool result = true;
+            FeElement element;
+            List<int> elementIds;
+            Dictionary<int, List<int>> partIdElementIds = new Dictionary<int, List<int>>();
+            foreach (var elementId in elementSet.Labels)
+            {
+                element = _model.Mesh.Elements[elementId];
+                if (element is FeElement2D)
+                {
+                    if (partIdElementIds.TryGetValue(element.PartId, out elementIds)) elementIds.Add(elementId);
+                    else partIdElementIds.Add(element.PartId, new List<int>() { elementId });
+                }
+            }
+            //
+            MeshPart part;
+            foreach (var entry in partIdElementIds)
+            {
+                part = (MeshPart)_model.Mesh.GetPartById(entry.Key);
+                result &= RemeshShellElementsByPart(part, entry.Value.ToArray(), remeshingParameters);
+            }
+            //
+            return result;
+        }
+        private bool RemeshShellElementsByPart(MeshPart part, int[] elementIds, RemeshingParameters remeshingParameters)
+        {
+            return true;
+        }
+        private bool RemeshShellElementsFromPart(BasePart part)
+        {
+            CalculixSettings settings = _settings.Calculix;
+            if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
+            {
+                MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
+                return false;
+            }
+            //
+            string executable = Application.StartupPath + Globals.MmgMesher;
+            string mmgInFileName = Path.Combine(settings.WorkDirectory, Globals.MmgMeshFileName);
+            string mmgOutFileName = Path.Combine(settings.WorkDirectory, Path.GetFileNameWithoutExtension(Globals.MmgMeshFileName) +
+                                                 ".o" + Path.GetExtension(Globals.MmgMeshFileName));
+            string mmgSolFileName = Path.Combine(settings.WorkDirectory,
+                                                 Path.GetFileNameWithoutExtension(Globals.MmgMeshFileName) +
+                                                 ".sol");
+            //
+            if (File.Exists(mmgInFileName)) File.Delete(mmgInFileName);
+            if (File.Exists(mmgOutFileName)) File.Delete(mmgOutFileName);
+            if (File.Exists(mmgSolFileName)) File.Delete(mmgSolFileName);
+            //
+            FileInOut.Output.MmgFileWriter.Write(mmgInFileName, part, _model.Mesh, true, false);
+            //
+            string argument = "-ar 360 " + "-m 10000 " + //"-ar 180 " // "-nr " +
+                              "-hmax " + 4 + " " +
+                              "-hmin " + 0.5 + " " +
+                              "-hausd " + 0.02 * part.BoundingBox.GetDiagonal() + " " +
+                              "-in \"" + mmgInFileName + "\" " +
+                              "-out \"" + mmgOutFileName + "\" ";
+            //
+            _netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
+            _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
+            _netgenJob.Submit();
+            // Job completed
+            if (_netgenJob.JobStatus == JobStatus.OK)
+            {
+                ImportGeneratedMesh(mmgOutFileName, part, false);
+                return true;
+            }
+            else return false;
+        }
 
         #endregion #################################################################################################################
 
@@ -2570,11 +2740,13 @@ namespace PrePoMax
             Commands.CSetTransparencyForModelParts comm = new Commands.CSetTransparencyForModelParts(partNames, alpha);
             _commands.AddAndExecute(comm);
         }
+        // Edit
         public void ReplaceModelPartPropertiesCommand(string oldPartName, PartProperties newPartProperties)
         {
             Commands.CReplaceModelPart comm = new Commands.CReplaceModelPart(oldPartName, newPartProperties);
             _commands.AddAndExecute(comm);
         }
+        // Transform
         public void TranlsateModelPartsCommand(string[] partNames, double[] translateVector, bool copy)
         {
             Commands.CTranslateModelParts comm = new Commands.CTranslateModelParts(partNames, translateVector, copy);
@@ -2590,6 +2762,7 @@ namespace PrePoMax
             Commands.CRotateModelParts comm = new Commands.CRotateModelParts(partNames, rotateCenter, rotateAxis, rotateAngle, copy);
             _commands.AddAndExecute(comm);
         }
+        //
         public void MergeModelPartsCommand(string[] partNames)
         {
             Commands.CMergeModelParts comm = new Commands.CMergeModelParts(partNames);
@@ -2598,18 +2771,6 @@ namespace PrePoMax
         public void RemoveModelPartsCommand(string[] partNames)
         {
             Commands.CRemoveModelParts comm = new Commands.CRemoveModelParts(partNames);
-            _commands.AddAndExecute(comm);
-        }
-        //
-        public void CreateBoundaryLayerCommand(int[] geometryIds, double thickness)
-        {
-            Commands.CCreateBoundaryLayer comm = new Commands.CCreateBoundaryLayer(geometryIds, thickness);
-            _commands.AddAndExecute(comm);
-        }
-        public void FindEdgesByAngleForModelPartsCommand(string[] partNames, double edgeAngle)
-        {
-            Commands.CFindEdgesByAngleForModelPartsCommand comm =
-                new Commands.CFindEdgesByAngleForModelPartsCommand(partNames, edgeAngle);
             _commands.AddAndExecute(comm);
         }
 
@@ -2731,6 +2892,7 @@ namespace PrePoMax
             //
             CheckAndUpdateValidity();
         }
+        // Transform
         public void TranslateModelParts(string[] partNames, double[] translateVector, bool copy)
         {
             if (!copy) ChangeAllSelectionsToIdSelections(partNames);
@@ -2777,6 +2939,7 @@ namespace PrePoMax
             }
             FeModelUpdate(UpdateType.DrawModel | UpdateType.RedrawSymbols);
         }
+        //
         public void MergeModelParts(string[] partNames)
         {
             ViewGeometryModelResults view = ViewGeometryModelResults.Model;
@@ -2833,54 +2996,6 @@ namespace PrePoMax
             ChangeSelectedNodeSetsToIds(partNames, parts);
             ChangeSelectedElementSetsToIds(partNames, parts);
             ChangeSelectedSurfacesToIds(partNames, parts);
-        }
-        //
-        public void CreateBoundaryLayer(int[] geometryIds, double thickness)
-        {
-            try
-            {
-                _form.SetStateWorking("Creating...");
-                //
-                string[] errors = null;
-                if (_model != null) errors = _model.Mesh.CreatePrismaticBoundaryLayer(geometryIds, thickness);                
-                // Redraw the geometry for update of the selection based sets
-                FeModelUpdate(UpdateType.DrawModel);
-                // Update sets - must be called with rendering off - SetStateWorking
-                UpdateNodeSetsBasedOnGeometry(false);
-                UpdateElementSetsBasedOnGeometry(false);
-                UpdateSurfacesBasedOnGeometry(false);
-                // Update the sets and symbols
-                FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
-                //
-                if (errors.Length > 0) throw new CaeException(errors[0]);
-            }
-            catch (Exception ex)
-            {
-                throw new CaeException(ex.Message);
-            }
-            finally
-            {
-                _form.SetStateReady("Creating...");
-            }
-        }
-        // Find edges
-        public void FindEdgesByAngleForModelParts(string[] partNames, double edgeAngle)
-        {
-            MeshPart meshPart;
-            foreach (var partName in partNames)
-            {
-                meshPart = (MeshPart)_model.Mesh.Parts[partName];
-                if (meshPart.PartType == PartType.Solid)
-                    _model.Mesh.ExtractSolidPartVisualization(meshPart, edgeAngle);
-                else if (meshPart.PartType == PartType.Shell)
-                    _model.Mesh.ExtractShellPartVisualization(meshPart, false, edgeAngle);
-                // Update
-                _form.UpdateTreeNode(ViewGeometryModelResults.Model, meshPart.Name, meshPart, null);
-            }
-            // Update
-            FeModelUpdate(UpdateType.DrawModel);
-            UpdateGeometryBasedItems(false);
-            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
 
         #endregion #################################################################################################################

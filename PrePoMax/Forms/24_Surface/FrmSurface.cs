@@ -32,11 +32,11 @@ namespace PrePoMax.Forms
         public FrmSurface(Controller controller) 
         {
             InitializeComponent();
-
+            //
             _controller = controller;
             _viewSurface = null;
             _allExistingNames = new HashSet<string>();
-
+            //
             SelectionClear = _controller.Selection.Clear;
         }
         private void InitializeComponent()

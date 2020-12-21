@@ -132,6 +132,7 @@
     <Compile Include="Command\0050_Model\15_ReferencePoint\CRemoveReferencePoints.cs" />
     <Compile Include="Command\0050_Model\15_ReferencePoint\CReplaceReferencePoint.cs" />
     <Compile Include="Command\0050_Model\15_ReferencePoint\CShowReferencePoints.cs" />
+    <Compile Include="Command\0050_Model\CRemeshElements.cs" />
     <Compile Include="Command\0050_Model\CFindEdgesByAngleForModelPartsCommand.cs" />
     <Compile Include="Command\0050_Model\CSetModelUnitSystem.cs" />
     <Compile Include="Command\0050_Model\CCreateBoundaryLayer.cs" />
@@ -228,7 +229,11 @@
     <Compile Include="Forms\20_Model\FrmModelProperties.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Forms\20_Model\FrmRemeshingParameters.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Forms\20_Model\ViewBoundaryLayer.cs" />
+    <Compile Include="Forms\20_Model\ViewRemeshingParameters.cs" />
     <Compile Include="Forms\20_Model\ViewModelProperties.cs" />
     <Compile Include="Forms\21_Part\FrmScale.cs">
       <SubType>Form</SubType>
@@ -242,6 +247,9 @@
     <Compile Include="Forms\21_Part\ScaleParameters.cs" />
     <Compile Include="Forms\21_Part\RotateParameters.cs" />
     <Compile Include="Forms\21_Part\TranslateParameters.cs" />
+    <Compile Include="Forms\22_NodeSet\FrmNodeSet.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Forms\31_Material\MaterialLibraryItem.cs" />
     <Compile Include="Forms\31_Material\FrmMaterialLibrary.cs">
       <SubType>Form</SubType>
@@ -312,9 +320,6 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\21_Part\FrmPartProperties.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\22_NodeSet\FrmNodeSet.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\23_ElementSet\FrmElementSet.cs">
@@ -502,6 +507,9 @@
     <EmbeddedResource Include="Forms\20_Model\FrmModelProperties.resx">
       <DependentUpon>FrmModelProperties.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Forms\20_Model\FrmRemeshingParameters.resx">
+      <DependentUpon>FrmRemeshingParameters.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\21_Part\FrmScale.resx">
       <DependentUpon>FrmScale.cs</DependentUpon>
     </EmbeddedResource>
@@ -510,6 +518,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\21_Part\FrmTranslate.resx">
       <DependentUpon>FrmTranslate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\22_NodeSet\FrmNodeSet.resx">
+      <DependentUpon>FrmNodeSet.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\31_Material\FrmMaterialLibrary.resx">
       <DependentUpon>FrmMaterialLibrary.cs</DependentUpon>
@@ -534,9 +545,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\21_Part\FrmPartProperties.resx">
       <DependentUpon>FrmPartProperties.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Forms\22_NodeSet\FrmNodeSet.resx">
-      <DependentUpon>FrmNodeSet.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\23_ElementSet\FrmElementSet.resx">
       <DependentUpon>FrmElementSet.cs</DependentUpon>

@@ -207,7 +207,7 @@ namespace PrePoMax.Forms
             // Get start point grid item
             GridItem gi = propertyGrid.EnumerateAllItems().First((item) =>
                           item.PropertyDescriptor != null &&
-                          item.PropertyDescriptor.Name == "PointItemSet");
+                          item.PropertyDescriptor.Name == nameof(_sectionViewParameters.PointItemSet));
             // Select it
             gi.Select();
             //
@@ -222,7 +222,7 @@ namespace PrePoMax.Forms
             if (ids != null)
             {
                 string propertyName = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
-                if (propertyName == "PointItemSet")
+                if (propertyName == nameof(_sectionViewParameters.PointItemSet))
                 {
                     if (ids.Length == 0)
                     {
@@ -239,7 +239,7 @@ namespace PrePoMax.Forms
                         selectionFinished = true;
                     }
                 }
-                else if (propertyName == "NormalItemSet") 
+                else if (propertyName == nameof(_sectionViewParameters.NormalItemSet)) 
                 {
                     if (ids.Length == 2)
                     {
@@ -346,7 +346,7 @@ namespace PrePoMax.Forms
                 //
                 _controller.UpdateSectionView(point, normal);
                 //
-                System.Diagnostics.Debug.WriteLine("Section cut time: " + DateTime.Now.ToLongTimeString() + "   Duration: " + watch.ElapsedMilliseconds);
+                //System.Diagnostics.Debug.WriteLine("Section cut time: " + DateTime.Now.ToLongTimeString() + "   Duration: " + watch.ElapsedMilliseconds);
             }
             catch
             { }

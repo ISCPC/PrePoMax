@@ -542,7 +542,7 @@ namespace CaeModel
         }
         public bool ImportGeometryFromMmgMeshFile(string fileName)
         {
-            FeMesh mesh = FileInOut.Input.MmgFileReader.Read(fileName);
+            FeMesh mesh = FileInOut.Input.MmgFileReader.Read(fileName, MeshRepresentation.Mesh);
             //
             bool noErrors = true;
             foreach (var entry in mesh.Parts)
@@ -615,7 +615,7 @@ namespace CaeModel
             if (Path.GetExtension(fileName) == ".vol")
                 mesh = FileInOut.Input.VolFileReader.Read(fileName, elementsToImport, convertToSecondorder);
             else if (Path.GetExtension(fileName) == ".mesh")
-                mesh = FileInOut.Input.MmgFileReader.Read(fileName);
+                mesh = FileInOut.Input.MmgFileReader.Read(fileName, MeshRepresentation.Mesh);
             else throw new NotSupportedException();
             // Split compound mesh
             if (splitCompoundMesh) mesh.SplitCompoundMesh();

@@ -53,7 +53,7 @@ namespace CaeMesh
         private Octree.PointOctree<int> _octree;
 
         private MeshRepresentation _meshRepresentation;                         //ISerializable
-        private OrderedDictionary<string, FeMeshRefinement> _meshRefinements;   //ISerializable
+        private OrderedDictionary<string, FeMeshRefinement> _meshRefinements;     //ISerializable
         private OrderedDictionary<string, BasePart> _parts;                     //ISerializable
         private OrderedDictionary<string, FeNodeSet> _nodeSets;                 //ISerializable
         private OrderedDictionary<string, FeElementSet> _elementSets;           //ISerializable
@@ -1027,7 +1027,9 @@ namespace CaeMesh
             //
             ExtractEdgesFromShellByAngle(part, edgeAngle);  // extracts free and error elements
             //
-            SplitVisualizationEdgesAndFaces(part);
+            HashSet<int> vertexNodeIds = ExtractVerticesFromEdgesByAngle(part, edgeAngle);
+            //
+            SplitVisualizationEdgesAndFaces(part, vertexNodeIds);
         }
         public void ExtractShellPartVisualization(BasePart part, bool isCADPart, double edgeAngle)
         {
@@ -1035,7 +1037,9 @@ namespace CaeMesh
             //
             ExtractEdgesFromShellByAngle(part, edgeAngle);  // extracts free and error elements
             //
-            SplitVisualizationEdgesAndFaces(part);
+            HashSet<int> vertexNodeIds = ExtractVerticesFromEdgesByAngle(part, edgeAngle);
+            //
+            SplitVisualizationEdgesAndFaces(part, vertexNodeIds);
             //
             if (part is GeometryPart gp)
             {
@@ -1109,7 +1113,7 @@ namespace CaeMesh
             }
             //
             watch.Stop();
-            // Get only edges where cellst met at an angle > input angle
+            // Get only edges where cells meet at an angle > input angle
             // Get free surface edges
             int[] cellsIds;
             int visualizationCell1i;
@@ -1227,6 +1231,37 @@ namespace CaeMesh
             }
             part.Visualization.CellNeighboursOverCellEdge = cellNeighboursArray;
         }
+        private HashSet<int> ExtractVerticesFromEdgesByAngle(BasePart part, double angle)
+        {
+            int[] cell1;
+            int[] cell2;
+            IEnumerable<int> nodeIds;
+            double phi;
+            HashSet<int> vertexNodeIds = new HashSet<int>();
+            //
+            if (angle >= 0)
+            {
+                angle *= Math.PI / 180;
+                //
+                for (int i = 0; i < part.Visualization.EdgeCells.Length; i++)
+                {
+                    cell1 = part.Visualization.EdgeCells[i];
+                    for (int j = i + 1; j < part.Visualization.EdgeCells.Length; j++)
+                    {
+                        cell2 = part.Visualization.EdgeCells[j];
+                        nodeIds = cell1.Intersect(cell2);
+                        if (nodeIds.Count() == 1)
+                        {
+                            phi = ComputeAngleInRadFromEdgeCellIndices(cell1, cell2, nodeIds.First());
+                            //if (phi > Math.PI / 2) 
+                            phi = Math.PI - phi;
+                            if (phi > angle) vertexNodeIds.Add(nodeIds.First());
+                        }
+                    }
+                }
+            }
+            return vertexNodeIds;
+        }
         private void CheckForFreeAndErrorElementsInCADPart(BasePart part)
         {
             if (part.PartType == PartType.Wire) return;
@@ -1325,7 +1360,7 @@ namespace CaeMesh
                 if (freeEdgeCellIds.Count > 0) gp.FreeEdgeCellIds = freeEdgeCellIds.ToArray();
                 else gp.FreeEdgeCellIds = null;
                 if (freeNodeIds.Count > 0) gp.FreeNodeIds = freeNodeIds.ToArray();
-                else gp.ErrorNodeIds = null;
+                else gp.FreeNodeIds = null;
                 // Error
                 CheckForErrorElementsInCADPart(gp);
             }
@@ -1341,7 +1376,6 @@ namespace CaeMesh
             HashSet<int> errorEdgeIds = new HashSet<int>();
             VisualizationData vis = gp.Visualization;
             HashSet<int> vertexNodeIds = new HashSet<int>(vis.VertexNodeIds);
-           
             // Shell parts
             if (gp.PartType == PartType.Shell)
             {
@@ -1382,7 +1416,7 @@ namespace CaeMesh
                     // For each vertex
                     foreach (var entry in faceVertexEdgeIds[i])
                     {
-                        // Cylindera and toutuses have a single edge along their axis which creates 3 edge vertices
+                        // Cylinder and toruses have a single edge along their axis which creates 3 edge vertices
                         if (entry.Value.Count == 3 && (faceType == FaceType.Cylinder || faceType == FaceType.Torus)) continue;
                         else if (entry.Value.Count != 2)
                         {
@@ -1627,7 +1661,7 @@ namespace CaeMesh
         {
             FeNode n1 = ComputeNormalFromCellIndices(cell1);
             FeNode n2 = ComputeNormalFromCellIndices(cell2);
-
+            //
             double scalar = n1.X * n2.X + n1.Y * n2.Y + n1.Z * n2.Z;
             if (scalar > 1) return 0;
             else if (scalar < -1) return Math.PI;
@@ -1638,19 +1672,19 @@ namespace CaeMesh
             FeNode node1 = _nodes[cell[0]];
             FeNode node2 = _nodes[cell[1]];
             FeNode node3 = _nodes[cell[2]];
-
+            //
             return ComputeNormalFromCellIndices(node1, node2, node3);
         }
         private FeNode ComputeNormalFromCellIndices(FeNode n1, FeNode n2, FeNode n3)
         {
             FeNode v = new FeNode(0, n2.X - n1.X, n2.Y - n1.Y, n2.Z - n1.Z);
             FeNode w = new FeNode(0, n3.X - n1.X, n3.Y - n1.Y, n3.Z - n1.Z);
-
+            //
             FeNode n = new FeNode();
             n.X = v.Y * w.Z - v.Z * w.Y;
             n.Y = v.Z * w.X - v.X * w.Z;
             n.Z = v.X * w.Y - v.Y * w.X;
-
+            //
             double d = Math.Sqrt(Math.Pow(n.X, 2) + Math.Pow(n.Y, 2) + Math.Pow(n.Z, 2));
             if (d != 0)
             {
@@ -1659,6 +1693,29 @@ namespace CaeMesh
                 n.Z /= d;
             }
             return n;
+        }
+        public double ComputeAngleInRadFromEdgeCellIndices(int[] cell1, int[] cell2, int nodeIdAtAngle)
+        {
+            Vec3D t1 = ComputeDirectionFromEdgeCellIndices(cell1, nodeIdAtAngle);
+            Vec3D t2 = ComputeDirectionFromEdgeCellIndices(cell2, nodeIdAtAngle);
+            //
+            double scalar = Vec3D.DotProduct(t1, t2);
+            if (scalar > 1) return 0;
+            else if (scalar < -1) return Math.PI;
+            else return Math.Acos(scalar);
+        }
+        private Vec3D ComputeDirectionFromEdgeCellIndices(int[] cell, int nodeIdAtAngle)
+        {
+            Vec3D n1 = new Vec3D(_nodes[cell[0]].Coor);
+            Vec3D n2 = new Vec3D(_nodes[cell[1]].Coor);
+            Vec3D t;
+            if (cell[0] == nodeIdAtAngle) t = n2 - n1;
+            else if (cell[1] == nodeIdAtAngle) t = n1 - n2;
+            else throw new NotSupportedException();
+            //
+            t.Normalize();
+            //
+            return t;
         }
         public int[] GetSplitEdgeByEdgeCellId(BasePart part, int edgeCellId, int[][] edgeNeighbours, HashSet<int> verticeNodeIds)
         {
@@ -1889,8 +1946,7 @@ namespace CaeMesh
             foreach (var entry in _parts)
             {
                 RenumberVisualizationSurfaces(entry.Value, surfaceIdNodeIds, faceTypes);
-                if (faceTypes != null && entry.Value is GeometryPart gp && gp.CADFileData != null)
-                    CheckForFreeAndErrorElementsInCADPart(entry.Value);
+                if (faceTypes != null) CheckForFreeAndErrorElementsInCADPart(entry.Value);
             }
         }
         public void RenumberVisualizationSurfaces(BasePart part, Dictionary<int, HashSet<int>> surfaceIdNodeIds,
@@ -1996,15 +2052,28 @@ namespace CaeMesh
                 edgeFound = false;
                 foreach (var entry in edgeIdNodeIds)
                 {
-                    if ((entry.Value.Count == edgeNodeIds.Count && entry.Value.Except(edgeNodeIds).ToArray().Length == 0)
-                        // Next line is for when the mesh is converted to parabolic outside netgen
-                        || (entry.Value.Intersect(edgeNodeIds).Count() == entry.Value.Count()))
+                    if (entry.Value.Count == edgeNodeIds.Count && entry.Value.Except(edgeNodeIds).ToArray().Length == 0)
                     {
                         newEdgeIds[edgeCount] = entry.Key;
                         oldEdgeIds[edgeCount] = edgeCount;
                         edgeCount++;
                         edgeFound = true;
                         break;
+                    }
+                }
+                // Next line is for when the mesh is converted to parabolic outside netgen
+                if (!edgeFound)
+                {
+                    foreach (var entry in edgeIdNodeIds)
+                    {
+                        if (entry.Value.Intersect(edgeNodeIds).Count() == entry.Value.Count())
+                        {
+                            newEdgeIds[edgeCount] = entry.Key;
+                            oldEdgeIds[edgeCount] = edgeCount;
+                            edgeCount++;
+                            edgeFound = true;
+                            break;
+                        }
                     }
                 }
                 //

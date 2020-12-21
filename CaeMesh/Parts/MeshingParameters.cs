@@ -27,8 +27,11 @@ namespace CaeMesh
         private int _optimizeSteps2D;
         private int _optimizeSteps3D;
         private bool _splitCompoundMesh;
-        //
+        // mmgPlatform
+        private bool _useMmg;
         private double _hausdorff;              // 0.01 for objects of size 1; allowed distance from geometry
+        private bool _keepModelEdges;
+
 
 
         // Properties                                                                                                               
@@ -115,6 +118,18 @@ namespace CaeMesh
         }
         //
         public bool SplitCompoundMesh { get { return _splitCompoundMesh; } set { _splitCompoundMesh = value; } }
+        //
+        public bool UseMmg { get { return _useMmg; } set { _useMmg = value; } }
+        public double Hausdorff
+        {
+            get { return _hausdorff; }
+            set
+            {
+                if (value <= 0) throw new Exception("The value must be larger than 0.");
+                _hausdorff = value;
+            }
+        }
+        public bool KeepModelEdges { get { return _keepModelEdges; } set { _keepModelEdges = value; } }
 
 
         // Constructors                                                                                                             
@@ -133,6 +148,10 @@ namespace CaeMesh
             _quadDominated = false;
             _midsideNodesOnGeometry = false;
             _splitCompoundMesh = false;
+            //
+            _useMmg = false;
+            _hausdorff = 0.01;
+            _keepModelEdges = true;
         }
 
 
@@ -207,6 +226,10 @@ namespace CaeMesh
             if (meshingParameters1._quadDominated != meshingParameters2._quadDominated) return false;
             if (meshingParameters1._midsideNodesOnGeometry != meshingParameters2._midsideNodesOnGeometry) return false;
             if (meshingParameters1._splitCompoundMesh != meshingParameters2._splitCompoundMesh) return false;
+            //
+            if (meshingParameters1._useMmg != meshingParameters2._useMmg) return false;
+            if (meshingParameters1._hausdorff != meshingParameters2._hausdorff) return false;
+            if (meshingParameters1._keepModelEdges != meshingParameters2._keepModelEdges) return false;
             return true;
         }
     }

@@ -205,7 +205,7 @@ namespace PrePoMax.Forms
                 //
                 if (PartType == PartType.Compound)
                 {
-                    cpd = _dctd.GetProperty("Color");
+                    cpd = _dctd.GetProperty(nameof(Color));
                     cpd.SetIsBrowsable(false);
                 }
             }

@@ -100,30 +100,30 @@ namespace PrePoMax
         {
             if (_step.Nlgeom)
             {
-                _dctd.GetProperty("Direct").SetIsBrowsable(true);
-                _dctd.GetProperty("TimePeriod").SetIsBrowsable(true);
-                _dctd.GetProperty("MaxIncrements").SetIsBrowsable(true);
-                _dctd.GetProperty("InitialTimeIncrement").SetIsBrowsable(true);
+                _dctd.GetProperty(nameof(Direct)).SetIsBrowsable(true);
+                _dctd.GetProperty(nameof(TimePeriod)).SetIsBrowsable(true);
+                _dctd.GetProperty(nameof(MaxIncrements)).SetIsBrowsable(true);
+                _dctd.GetProperty(nameof(InitialTimeIncrement)).SetIsBrowsable(true);
 
                 if (_step.Direct)
                 {
-                    _dctd.GetProperty("MinTimeIncrement").SetIsBrowsable(false);
-                    _dctd.GetProperty("MaxTimeIncrement").SetIsBrowsable(false);
+                    _dctd.GetProperty(nameof(MinTimeIncrement)).SetIsBrowsable(false);
+                    _dctd.GetProperty(nameof(MaxTimeIncrement)).SetIsBrowsable(false);
                 }
                 else
                 {
-                    _dctd.GetProperty("MinTimeIncrement").SetIsBrowsable(true);
-                    _dctd.GetProperty("MaxTimeIncrement").SetIsBrowsable(true);
+                    _dctd.GetProperty(nameof(MinTimeIncrement)).SetIsBrowsable(true);
+                    _dctd.GetProperty(nameof(MaxTimeIncrement)).SetIsBrowsable(true);
                 }
             }
             else
             {
-                _dctd.GetProperty("Direct").SetIsBrowsable(false);
-                _dctd.GetProperty("TimePeriod").SetIsBrowsable(false);
-                _dctd.GetProperty("MaxIncrements").SetIsBrowsable(false);
-                _dctd.GetProperty("InitialTimeIncrement").SetIsBrowsable(false);
-                _dctd.GetProperty("MinTimeIncrement").SetIsBrowsable(false);
-                _dctd.GetProperty("MaxTimeIncrement").SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(Direct)).SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(TimePeriod)).SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(MaxIncrements)).SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(InitialTimeIncrement)).SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(MinTimeIncrement)).SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(MaxTimeIncrement)).SetIsBrowsable(false);
             }
             
         }

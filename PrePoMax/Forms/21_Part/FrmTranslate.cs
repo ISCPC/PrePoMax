@@ -128,7 +128,7 @@ namespace PrePoMax.Forms
             // Get start point grid item
             GridItem gi = propertyGrid.EnumerateAllItems().First((item) =>
                               item.PropertyDescriptor != null &&
-                              item.PropertyDescriptor.Name == "StartPointItemSet");
+                              item.PropertyDescriptor.Name == nameof(_translateParameters.StartPointItemSet));
             // Select it
             gi.Select();
             //
@@ -159,13 +159,13 @@ namespace PrePoMax.Forms
             {
                 FeNode node = _controller.Model.Mesh.Nodes[ids[0]];
                 string propertyName = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
-                if (propertyName == "StartPointItemSet")
+                if (propertyName == nameof(_translateParameters.StartPointItemSet))
                 {
                     _translateParameters.X1 = node.X;
                     _translateParameters.Y1 = node.Y;
                     _translateParameters.Z1 = node.Z;
                 }
-                else if(propertyName == "EndPointItemSet")
+                else if(propertyName == nameof(_translateParameters.EndPointItemSet))
                 {
                     _translateParameters.X2 = node.X;
                     _translateParameters.Y2 = node.Y;

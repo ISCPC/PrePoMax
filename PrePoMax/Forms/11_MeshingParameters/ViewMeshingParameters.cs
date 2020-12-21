@@ -15,92 +15,107 @@ namespace PrePoMax.Forms
     {
         // Variables                                                                                                                
         private MeshingParameters _parameters;
-        private CustomPropertyDescriptor cpd = null;
-        private DynamicCustomTypeDescriptor _dctd = null;
+        private readonly DynamicCustomTypeDescriptor _dctd;
 
 
         // Properties                                                                                                               
-        [CategoryAttribute("Mesh size")]
-        [OrderedDisplayNameAttribute(0, 10, "Max element size")]
-        [DescriptionAttribute("The value for the maximum element size.")]
+        [Category("Mesh size")]
+        [OrderedDisplayName(0, 10, "Max element size")]
+        [Description("The value for the maximum element size.")]
         [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
         [Id(1, 1)]
         public double MaxH { get { return _parameters.MaxH; } set { _parameters.MaxH = value; } }
         //
-        [CategoryAttribute("Mesh size")]
-        [OrderedDisplayNameAttribute(1, 10, "Min element size")]
-        [DescriptionAttribute("The value for the minimum element size.")]
+        [Category("Mesh size")]
+        [OrderedDisplayName(1, 10, "Min element size")]
+        [Description("The value for the minimum element size.")]
         [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
         [Id(2, 1)]
         public double MinH { get { return _parameters.MinH; } set { _parameters.MinH = value; } }
         //
-        [CategoryAttribute("Mesh size")]
-        [OrderedDisplayNameAttribute(2, 10, "Grading")]
-        [DescriptionAttribute("The value of the mesh grading (0 => uniform mesh; 1 => aggressive local grading).")]
+        [Category("Mesh size")]
+        [OrderedDisplayName(2, 10, "Grading")]
+        [Description("The value of the mesh grading (0 => uniform mesh; 1 => aggressive local grading).")]
         [Id(3, 1)]
         public double Grading { get { return _parameters.Grading; } set { _parameters.Grading = value; } }
         //
-        [CategoryAttribute("Mesh size")]
-        [OrderedDisplayNameAttribute(3, 10, "Elements per edge")]
-        [DescriptionAttribute("Number of elements to generate per edge of the geometry.")]
+        [Category("Mesh size")]
+        [OrderedDisplayName(3, 10, "Elements per edge")]
+        [Description("Number of elements to generate per edge of the geometry.")]
         [Id(4, 1)]
         public double Elementsperedge { get { return _parameters.Elementsperedge; } set { _parameters.Elementsperedge = value; } }
         //
-        [CategoryAttribute("Mesh size")]
-        [OrderedDisplayNameAttribute(4, 10, "Elements per curvature")]
-        [DescriptionAttribute("Number of elements to generate per curvature radius.")]
+        [Category("Mesh size")]
+        [OrderedDisplayName(4, 10, "Elements per curvature")]
+        [Description("Number of elements to generate per curvature radius.")]
         [Id(5, 1)]
         public double Elementspercurve { get { return _parameters.Elementspercurve; } set { _parameters.Elementspercurve = value; } }
+        // Maximal Hausdorff distance for the boundaries approximation.
+        [Category("Mesh size")]
+        [OrderedDisplayName(5, 10, "Hausdorff")]
+        [Description("Maximal Hausdorff distance for the boundaries approximation. " +
+                              "A value of 0.01 is a suitable value for an object of size 1 in each direction.")]
+        [TypeConverter(typeof(StringLengthConverter))]
+        [Id(6, 1)]
+        public double Hausdorff { get { return _parameters.Hausdorff; } set { _parameters.Hausdorff = value; } }
         //
         //
-        [CategoryAttribute("Mesh optimization")]
-        [OrderedDisplayNameAttribute(0, 10, "Optimize steps 2D")]
-        [DescriptionAttribute("Number of optimize steps to use for 2-D mesh optimization.")]
+        [Category("Mesh optimization")]
+        [OrderedDisplayName(0, 10, "Optimize steps 2D")]
+        [Description("Number of optimize steps to use for 2-D mesh optimization.")]
         [Id(1, 2)]
         public int OptimizeSteps2D { get { return _parameters.OptimizeSteps2D; } set { _parameters.OptimizeSteps2D = value; } }
         //
-        [CategoryAttribute("Mesh optimization")]
-        [OrderedDisplayNameAttribute(1, 10, "Optimize steps 3D")]
-        [DescriptionAttribute("Number of optimize steps to use for 3-D mesh optimization.")]
+        [Category("Mesh optimization")]
+        [OrderedDisplayName(1, 10, "Optimize steps 3D")]
+        [Description("Number of optimize steps to use for 3-D mesh optimization.")]
         [Id(2, 2)]
         public int OptimizeSteps3D { get { return _parameters.OptimizeSteps3D; } set { _parameters.OptimizeSteps3D = value; } }
         //
         //
-        [CategoryAttribute("Mesh type")]
-        [OrderedDisplayNameAttribute(0, 10, "Second order")]
-        [DescriptionAttribute("Create second order elements.")]
+        [Category("Mesh type")]
+        [OrderedDisplayName(0, 10, "Second order")]
+        [Description("Create second order elements.")]
         [Id(1, 3)]
         public bool SecondOrder
         {
-            get{return _parameters.SecondOrder;}
+            get {return _parameters.SecondOrder;}
             set
             {
                 _parameters.SecondOrder = value;
                 //
-                cpd = _dctd.GetProperty("MidsideNodesOnGeometry");
-                cpd.SetIsBrowsable(value);
-                _dctd.PropertySortOrder = CustomSortOrder.AscendingById;
+                if (!_parameters.UseMmg)
+                {
+                    _dctd.GetProperty(nameof(MidsideNodesOnGeometry)).SetIsBrowsable(value);
+                    _dctd.PropertySortOrder = CustomSortOrder.AscendingById;
+                }
             }
         }
         //
-        [CategoryAttribute("Mesh type")]
-        [OrderedDisplayNameAttribute(1, 10, "Midside nodes on geometry")]
-        [DescriptionAttribute("Create midside nodes on geometry.")]
+        [Category("Mesh type")]
+        [OrderedDisplayName(1, 10, "Midside nodes on geometry")]
+        [Description("Create midside nodes on geometry.")]
         [Id(2, 3)]
         public bool MidsideNodesOnGeometry { get { return _parameters.MidsideNodesOnGeometry; } set { _parameters.MidsideNodesOnGeometry = value; } }
         //
-        [CategoryAttribute("Mesh type")]
-        [OrderedDisplayNameAttribute(2, 10, "Quad-dominated mesh")]
-        [DescriptionAttribute("Use quad-dominated mesh for shell parts.")]
+        [Category("Mesh type")]
+        [OrderedDisplayName(2, 10, "Quad-dominated mesh")]
+        [Description("Use quad-dominated mesh for shell parts.")]
         [Id(3, 3)]
         public bool QuadDominated { get { return _parameters.QuadDominated; } set { _parameters.QuadDominated = value; } }
         //
         //
-        [CategoryAttribute("Mesh operations")]
-        [OrderedDisplayNameAttribute(0, 10, "Split compound mesh")]
-        [DescriptionAttribute("Split compound part mesh to unconnected part meshes.")]
+        [Category("Mesh operations")]
+        [OrderedDisplayName(0, 10, "Split compound mesh")]
+        [Description("Split compound part mesh to unconnected part meshes.")]
         [Id(1, 4)]
         public bool SplitCompoundMesh { get { return _parameters.SplitCompoundMesh; } set { _parameters.SplitCompoundMesh = value; } }
+        //
+        [Category("Mesh operations")]
+        [OrderedDisplayName(1, 10, "Keep model edges")]
+        [Description("Select Yes to keep and No to ignore the model edges.")]
+        [Id(2, 4)]
+        public bool KeepModelEdges { get { return _parameters.KeepModelEdges; } set { _parameters.KeepModelEdges = value; } }
 
 
         // Constructors                                                                                                             
@@ -111,13 +126,28 @@ namespace PrePoMax.Forms
             // Category sorting
             _dctd.CategorySortOrder = CustomSortOrder.AscendingById;
             _dctd.PropertySortOrder = CustomSortOrder.AscendingById;    // seems not to work
-            // To show/hide the MediumNodesOnGeometry property
-            SecondOrder = parameters.SecondOrder;
             // Now lets display Yes/No instead of True/False
             _dctd.RenameBooleanPropertyToYesNo(nameof(SecondOrder));
             _dctd.RenameBooleanPropertyToYesNo(nameof(MidsideNodesOnGeometry));
             _dctd.RenameBooleanPropertyToYesNo(nameof(QuadDominated));
             _dctd.RenameBooleanPropertyToYesNo(nameof(SplitCompoundMesh));
+            _dctd.RenameBooleanPropertyToYesNo(nameof(KeepModelEdges));
+            //
+            _dctd.GetProperty(nameof(MaxH)).SetIsBrowsable(true);
+            _dctd.GetProperty(nameof(MinH)).SetIsBrowsable(true);
+            _dctd.GetProperty(nameof(Grading)).SetIsBrowsable(!_parameters.UseMmg);
+            _dctd.GetProperty(nameof(Elementsperedge)).SetIsBrowsable(!_parameters.UseMmg);
+            _dctd.GetProperty(nameof(Elementspercurve)).SetIsBrowsable(!_parameters.UseMmg);
+            _dctd.GetProperty(nameof(Hausdorff)).SetIsBrowsable(_parameters.UseMmg);            // mmg only
+            _dctd.GetProperty(nameof(OptimizeSteps2D)).SetIsBrowsable(!_parameters.UseMmg);
+            _dctd.GetProperty(nameof(OptimizeSteps3D)).SetIsBrowsable(!_parameters.UseMmg);
+            _dctd.GetProperty(nameof(SecondOrder)).SetIsBrowsable(true);
+            _dctd.GetProperty(nameof(MidsideNodesOnGeometry)).SetIsBrowsable(!_parameters.UseMmg);
+            _dctd.GetProperty(nameof(QuadDominated)).SetIsBrowsable(!_parameters.UseMmg);
+            _dctd.GetProperty(nameof(SplitCompoundMesh)).SetIsBrowsable(!_parameters.UseMmg);
+            _dctd.GetProperty(nameof(KeepModelEdges)).SetIsBrowsable(_parameters.UseMmg);       // mmg only
+            // To show/hide the MediumNodesOnGeometry property
+            SecondOrder = parameters.SecondOrder;
         }
 
 

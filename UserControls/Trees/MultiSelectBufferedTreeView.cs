@@ -161,7 +161,7 @@ namespace UserControls
                     TextRenderer.DrawText(e.Graphics, e.Node.Text, treeFont, rect, foreColor, TextFormatFlags.VerticalCenter);
                 }
             }
-            System.Diagnostics.Debug.WriteLine(DateTime.Now.ToLongTimeString() + "     " + m_coll.Count);
+            //System.Diagnostics.Debug.WriteLine(DateTime.Now.ToLongTimeString() + "     " + m_coll.Count);
         }
         public void ResetHighlightColors()
         {

@@ -48,18 +48,22 @@ namespace PrePoMax.Forms
             this.gbProperties.SuspendLayout();
             this.SuspendLayout();
             // 
+            // gbType
+            // 
+            this.gbType.Size = new System.Drawing.Size(310, 97);
+            // 
             // lvTypes
             // 
             this.lvTypes.Size = new System.Drawing.Size(298, 69);
             // 
             // gbProperties
             // 
-            this.gbProperties.Location = new System.Drawing.Point(12, 109);
-            this.gbProperties.Size = new System.Drawing.Size(310, 311);
+            this.gbProperties.Location = new System.Drawing.Point(12, 115);
+            this.gbProperties.Size = new System.Drawing.Size(310, 305);
             // 
             // propertyGrid
             // 
-            this.propertyGrid.Size = new System.Drawing.Size(298, 283);
+            this.propertyGrid.Size = new System.Drawing.Size(298, 277);
             // 
             // FrmHistoryOutput
             // 
@@ -126,11 +130,11 @@ namespace PrePoMax.Forms
         }
         protected override void OnApply(bool onOkAddNew)
         {
-            if (propertyGrid.SelectedObject is ViewError ve) throw new CaeGlobals.CaeException(ve.Message);
+            if (propertyGrid.SelectedObject is ViewError ve) throw new CaeException(ve.Message);
             //
             _viewHistoryOutput = (ViewHistoryOutput)propertyGrid.SelectedObject;
             //
-            if (HistoryOutput == null) throw new CaeGlobals.CaeException("No history output was selected.");
+            if (HistoryOutput == null) throw new CaeException("No history output was selected.");
             //
             if (HistoryOutput.RegionType == RegionTypeEnum.Selection &&
                 (HistoryOutput.CreationIds == null || HistoryOutput.CreationIds.Length == 0))
