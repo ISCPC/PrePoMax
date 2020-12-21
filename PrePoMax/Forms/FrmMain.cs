@@ -1155,7 +1155,8 @@ namespace PrePoMax
                         {
                             // the filter adds the extension to the file name
                             SetStateWorking(Globals.ExportingText);
-                            _controller.ExportToCalculix(saveFileDialog.FileName);
+                            //_controller.ExportToCalculix(saveFileDialog.FileName);
+                            _controller.ExportToAbaqus(saveFileDialog.FileName);
                         }
                     }
                 }

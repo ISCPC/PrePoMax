@@ -75,12 +75,34 @@ namespace FileInOut.Output
             // get separate lists of element types
             foreach (var entry in elements)
             {
-                if (entry.Value is LinearTetraElement)
+                // Shell
+                if (entry.Value is LinearTriangleElement)
+                {
+                    if (elementTypes.ContainsKey("S3")) elementTypes["S3"].Add(entry.Value);
+                    else elementTypes.Add("S3", new List<FeElement>() { entry.Value });
+                }
+                else if (entry.Value is LinearQuadrilateralElement)
+                {
+                    if (elementTypes.ContainsKey("S4")) elementTypes["S4"].Add(entry.Value);
+                    else elementTypes.Add("S4", new List<FeElement>() { entry.Value });
+                }
+                else if (entry.Value is ParabolicTriangleElement)
+                {
+                    if (elementTypes.ContainsKey("STRI65")) elementTypes["STRI65"].Add(entry.Value);
+                    else elementTypes.Add("STRI65", new List<FeElement>() { entry.Value });
+                }
+                else if (entry.Value is ParabolicQuadrilateralElement)
+                {
+                    if (elementTypes.ContainsKey("S8R")) elementTypes["S8R"].Add(entry.Value);
+                    else elementTypes.Add("S8R", new List<FeElement>() { entry.Value });
+                }
+                // Solid
+                else if (entry.Value is LinearTetraElement)
                 {
                     if (elementTypes.ContainsKey("C3D4")) elementTypes["C3D4"].Add(entry.Value);
                     else elementTypes.Add("C3D4", new List<FeElement>() { entry.Value });
                 }
-                if (entry.Value is LinearWedgeElement)
+                else if (entry.Value is LinearWedgeElement)
                 {
                     if (elementTypes.ContainsKey("C3D6")) elementTypes["C3D6"].Add(entry.Value);
                     else elementTypes.Add("C3D6", new List<FeElement>() { entry.Value });
@@ -236,11 +258,15 @@ namespace FileInOut.Output
             {
                 if (entry.Value.Active)
                 {
-                    if (entry.Value is SolidSection)
+                    if (entry.Value is SolidSection solid)
                     {
-                        SolidSection solid = (SolidSection)entry.Value;
                         sb.AppendFormat("*Solid section, elset={0}, material={1}", solid.RegionName, solid.MaterialName).AppendLine();
                         if (solid.Type == SolidSectionType.TwoDimensional) sb.AppendLine(solid.Thickness.ToString());
+                    }
+                    else if (entry.Value is ShellSection shell)
+                    {
+                        sb.AppendFormat("*Shell section, elset={0}, material={1}", shell.RegionName, shell.MaterialName).AppendLine();
+                         sb.AppendLine(shell.Thickness.ToString());
                     }
                     else throw new NotImplementedException();
                 }
@@ -294,16 +320,27 @@ namespace FileInOut.Output
         {
             if (boundaryCondition.Active)
             {
-                if (boundaryCondition is DisplacementRotation)
+                if (boundaryCondition is DisplacementRotation dispRot)
                 {
-                    DisplacementRotation constraint = (DisplacementRotation)boundaryCondition;
-                    int[] directions = constraint.GetConstrainedDirections();
-                    double[] values = constraint.GetConstrainValues();
-
+                    int[] directions = dispRot.GetConstrainedDirections();
+                    double[] values = dispRot.GetConstrainValues();
+                    //
                     sb.AppendLine("*Boundary");
                     for (int i = 0; i < directions.Length; i++)
                     {
-                        sb.AppendFormat("PART-1-1.{0}, {1}, {2}, {3}", constraint.RegionName, directions[i], directions[i], values[i].ToString());
+                        sb.AppendFormat("PART-1-1.{0}, {1}, {2}, {3}", dispRot.RegionName, directions[i], directions[i], values[i].ToString());
+                        sb.AppendLine();
+                    }
+                }
+                else if (boundaryCondition is FixedBC fix)
+                {
+                    int[] directions = new int[] { 1, 2, 3, 4, 5, 6};
+                    double[] values = new double[] { 0, 0, 0, 0, 0, 0 };
+                    //
+                    sb.AppendLine("*Boundary");
+                    for (int i = 0; i < directions.Length; i++)
+                    {
+                        sb.AppendFormat("PART-1-1.{0}, {1}, {2}, {3}", fix.RegionName, directions[i], directions[i], values[i].ToString());
                         sb.AppendLine();
                     }
                 }
