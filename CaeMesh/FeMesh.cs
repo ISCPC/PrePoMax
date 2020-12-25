@@ -1939,22 +1939,28 @@ namespace CaeMesh
             surfaceEdgeIds = surfaceEdgeIdsHash.ToArray();
         }
         //
-        public void RenumberVisualizationSurfaces(Dictionary<int, HashSet<int>> surfaceIdNodeIds,
-                                                  SortedDictionary<int, FaceType> faceTypes = null)
+        public Dictionary<string, Dictionary<int, int>> RenumberVisualizationSurfaces(Dictionary<int, HashSet<int>> surfaceIdNodeIds,
+                                                                                      SortedDictionary<int, FaceType> faceTypes = null)
         {
+            Dictionary<int, int> newSurfIdOldSurfId;
+            Dictionary<string, Dictionary<int, int>> partIdNewSurfIdOldSurfId = new Dictionary<string, Dictionary<int, int>>();
             // For each part
             foreach (var entry in _parts)
             {
-                RenumberVisualizationSurfaces(entry.Value, surfaceIdNodeIds, faceTypes);
+                newSurfIdOldSurfId = RenumberVisualizationSurfaces(entry.Value, surfaceIdNodeIds, faceTypes);
+                partIdNewSurfIdOldSurfId.Add(entry.Key, newSurfIdOldSurfId);
                 if (faceTypes != null) CheckForFreeAndErrorElementsInCADPart(entry.Value);
             }
+            //
+            return partIdNewSurfIdOldSurfId;
         }
-        public void RenumberVisualizationSurfaces(BasePart part, Dictionary<int, HashSet<int>> surfaceIdNodeIds,
-                                                  SortedDictionary<int, FaceType> faceTypes = null)
+        public Dictionary<int, int> RenumberVisualizationSurfaces(BasePart part, Dictionary<int, HashSet<int>> surfaceIdNodeIds,
+                                                                  SortedDictionary<int, FaceType> faceTypes = null)
         {
             int[] cellIdsByFace;
             VisualizationData vis;
             HashSet<int> partFaceNodeIds = new HashSet<int>();
+            Dictionary<int, int> oldIdNewId = new Dictionary<int, int>();
             int[] newSurfaceIds;
             int[] oldSurfaceIds;
             FaceType[] partFaceTypes;
@@ -1963,7 +1969,7 @@ namespace CaeMesh
             //
             vis = part.Visualization;
             // Skip wire parts
-            if (vis.CellIdsByFace == null) return;
+            if (vis.CellIdsByFace == null) return oldIdNewId;
             //
             surfaceCount = 0;
             newSurfaceIds = new int[vis.CellIdsByFace.Length];
@@ -1986,7 +1992,9 @@ namespace CaeMesh
                     {
                         newSurfaceIds[surfaceCount] = surfaceNodeIdsEntry.Key;
                         oldSurfaceIds[surfaceCount] = surfaceCount;
-                        
+                        //
+                        oldIdNewId.Add(surfaceCount, surfaceNodeIdsEntry.Key);
+                        //
                         surfaceCount++;
                         oneSurfCount++;
                         break;
@@ -2014,20 +2022,27 @@ namespace CaeMesh
                 }
                 part.Visualization.FaceTypes = partFaceTypes;
             }
+            return oldIdNewId;
         }
-        public void RenumberVisualizationEdges(Dictionary<int, HashSet<int>> edgeIdNodeIds)
+        public Dictionary<string, Dictionary<int, int>> RenumberVisualizationEdges(Dictionary<int, HashSet<int>> edgeIdNodeIds)
         {
+            Dictionary<int, int> newEdgeIdOldEdgeId;
+            Dictionary<string, Dictionary<int, int>> partIdNewEdgeIdOldEdgeId = new Dictionary<string, Dictionary<int, int>>();
             // For each part
             foreach (var entry in _parts)
             {
-                RenumberVisualizationEdges(entry.Value, edgeIdNodeIds);
+                newEdgeIdOldEdgeId = RenumberVisualizationEdges(entry.Value, edgeIdNodeIds);
+                partIdNewEdgeIdOldEdgeId.Add(entry.Key, newEdgeIdOldEdgeId);
             }
+            //
+            return partIdNewEdgeIdOldEdgeId;
         }
-        public void RenumberVisualizationEdges(BasePart part, Dictionary<int, HashSet<int>> edgeIdNodeIds)
+        public Dictionary<int, int> RenumberVisualizationEdges(BasePart part, Dictionary<int, HashSet<int>> edgeIdNodeIds)
         {
             int[] edgeCellIdsByEdge;
             VisualizationData vis;
             HashSet<int> edgeNodeIds = new HashSet<int>();
+            Dictionary<int, int> oldIdNewId = new Dictionary<int, int>();
             int[] newEdgeIds;
             int[] oldEdgeIds;
             int edgeCount;
@@ -2035,7 +2050,7 @@ namespace CaeMesh
             //
             vis = part.Visualization;
             // Skip wire parts
-            if (vis.EdgeCellIdsByEdge == null) return;
+            if (vis.EdgeCellIdsByEdge == null) return oldIdNewId;
             // Split edges with midpoints
             if (SplitVizualizationEdges(vis, edgeIdNodeIds)) ComputeEdgeLengths(part);
             //
@@ -2056,6 +2071,8 @@ namespace CaeMesh
                     {
                         newEdgeIds[edgeCount] = entry.Key;
                         oldEdgeIds[edgeCount] = edgeCount;
+                        oldIdNewId.Add(edgeCount, entry.Key);
+                        //
                         edgeCount++;
                         edgeFound = true;
                         break;
@@ -2070,6 +2087,8 @@ namespace CaeMesh
                         {
                             newEdgeIds[edgeCount] = entry.Key;
                             oldEdgeIds[edgeCount] = edgeCount;
+                            oldIdNewId.Add(edgeCount, entry.Key);
+                            //
                             edgeCount++;
                             edgeFound = true;
                             break;
@@ -2085,6 +2104,8 @@ namespace CaeMesh
             //
             Array.Sort(newEdgeIds, oldEdgeIds);
             part.RenumberVisualizationEdges(oldEdgeIds);
+            //
+            return oldIdNewId;
         }
         private bool SplitVizualizationEdges(VisualizationData visualization, Dictionary<int, HashSet<int>> edgeIdNodeIds)
         {
@@ -2480,6 +2501,29 @@ namespace CaeMesh
             }
             BasePart part = new BasePart("Part-from-element-Ids", -1, partNodeIds.ToArray(),
                                          partElementIds.ToArray(), partElementTypes.ToArray());
+            //
+            if (part.PartType == PartType.Solid)
+                ExtractSolidPartVisualization(part, Globals.EdgeAngle);
+            else if (part.PartType == PartType.Shell || part.PartType == PartType.SolidAsShell)
+                ExtractShellPartVisualization(part, isCADPart: false, Globals.EdgeAngle);
+            //
+            return part;
+        }
+        public GeometryPart CreateGeometryPartFromElementIds(int[] elementIds)
+        {
+            HashSet<Type> partElementTypes = new HashSet<Type>();
+            HashSet<int> partNodeIds = new HashSet<int>();
+            HashSet<int> partElementIds = new HashSet<int>();
+            FeElement element;
+            for (int i = 0; i < elementIds.Length; i++)
+            {
+                element = _elements[elementIds[i]];
+                partElementIds.Add(element.Id);
+                partElementTypes.Add(element.GetType());
+                partNodeIds.UnionWith(element.NodeIds);
+            }
+            GeometryPart part = new GeometryPart("Part-from-element-Ids", -1, partNodeIds.ToArray(),
+                                                 partElementIds.ToArray(), partElementTypes.ToArray());
             //
             if (part.PartType == PartType.Solid)
                 ExtractSolidPartVisualization(part, Globals.EdgeAngle);
@@ -3803,6 +3847,8 @@ namespace CaeMesh
             int countNodes;
             FeElement element;
             int vtkType;
+            bool added;
+            int[][] vtkCells;
             //
             foreach (var entry in _elements)
             {
@@ -3813,17 +3859,43 @@ namespace CaeMesh
                 vtkType = element.GetVtkCellType();
                 parabolic = FeElement.IsParabolic(element);
                 //
+                minNumberOfNodesToContain = 1;
+                //
                 if (containsEdge)
                 {
                     minNumberOfNodesToContain = 2;
                 }
                 else if (containsFace)
                 {
-                    if (parabolic) minNumberOfNodesToContain = 4;
-                    else minNumberOfNodesToContain = 3;
+                    vtkCells = null;
+                    if (element is LinearTriangleElement || element is LinearTetraElement)
+                        minNumberOfNodesToContain = 3;
+                    else if (element is ParabolicTriangleElement || element is ParabolicTetraElement)
+                        minNumberOfNodesToContain = 6;
+                    else if (element is LinearQuadrilateralElement || element is LinearHexaElement)
+                        minNumberOfNodesToContain = 4;
+                    else if (element is ParabolicQuadrilateralElement || element is ParabolicHexaElement)
+                        minNumberOfNodesToContain = 8;
+                    else if (element is LinearWedgeElement lwe) vtkCells = lwe.GetAllVtkCells();
+                    else if (element is ParabolicWedgeElement pwe) vtkCells = pwe.GetAllVtkCells();
+                    else throw new NotSupportedException();
+                    //
+                    if (vtkCells != null)
+                    {
+                        added = false;
+                        for (int i = 0; i < vtkCells.Length; i++)
+                        {
+                            if (allNodeIds.Intersect(vtkCells[i]).Count() == vtkCells[i].Length)
+                            {
+                                allElementIds.Add(entry.Key);
+                                added = true;
+                                break;
+                            }
+                        }
+                        if (added) continue;  // for each element
+                    }
                 }
                 else if (containsElement) minNumberOfNodesToContain = element.NodeIds.Length;
-                else minNumberOfNodesToContain = 1;
                 //
                 countNodes = 0;
                 for (int i = 0; i < element.NodeIds.Length; i++)

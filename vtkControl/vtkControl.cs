@@ -589,6 +589,7 @@ namespace vtkControl
             _mouseSelectionCurrentIds = new int[] { globalCellId };
 
             vtkMaxActorData actorData = Controller_GetCellActorData(_mouseSelectionCurrentIds, null);
+
             vtkMaxActor actor = new vtkMaxActor(actorData, true, false);
             actor.Geometry.GetMapper().GetInput().GetPointData().RemoveArray(Globals.ScalarArrayName);
             _mouseSelectionActorCurrent = actor;

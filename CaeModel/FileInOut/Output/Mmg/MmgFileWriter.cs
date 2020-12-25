@@ -48,6 +48,14 @@ namespace FileInOut.Output
                                                                 oldNodeIdNewId[element.NodeIds[2]],
                                                                 i + 1 });
                     }
+                    //else if (element is ParabolicTriangleElement)
+                    //{
+                    //    elementNodeIdsSurfaceId.Add(new int[] { oldNodeIdNewId[element.NodeIds[0]],
+                    //                                            oldNodeIdNewId[element.NodeIds[1]],
+                    //                                            oldNodeIdNewId[element.NodeIds[2]],
+                    //                                            i + 1 });
+                    //}
+                    else throw new NotSupportedException();
                 }
             }
             WriteTriangles(sb, elementNodeIdsSurfaceId);
@@ -81,7 +89,7 @@ namespace FileInOut.Output
             int[] ridgeIds = new int[vis.EdgeCells.Length];
             for (int i = 0; i < ridgeIds.Length; i++) ridgeIds[i] = i + 1;
             WriteRidges(sb, ridgeIds);
-            // Required edges - keep edge cells connected to the vertices with only 2 edge cells
+            // Required edges - keep edge cells connected to the vertices with only 2 edge cells: on the outside of the rectangle
             HashSet<int> requiredEdgeIds = new HashSet<int>();
             foreach (var cornerEntry in vertexEdgeIds)
             {
@@ -93,153 +101,9 @@ namespace FileInOut.Output
             //
             File.WriteAllText(fileName, sb.ToString());
         }
-        public static void WriteSplit(string fileName, GeometryPart part, FeMesh mesh, bool keepModelEdges)
-        {
-            int nodeId = mesh.MaxNodeId + 1;
-            int elementId = 1;
-            Dictionary<int, FeNode> nodes = new Dictionary<int, FeNode>();
-            Dictionary<int, FeElement> elements = new Dictionary<int, FeElement>();
-            //
-            CompareIntArray comparer = new CompareIntArray();
-            Dictionary<int[], int> edgeByKeyMidNodeId = new Dictionary<int[], int>(comparer);
-            //
-            int[] cell;
-            int[] key;
-            VisualizationData vis = part.Visualization;
-            Vec3D v1, v2, v3, v4, v5, v6;
-            int id1, id2, id3, id4, id5, id6, existingId;
-            //
-            for (int i = 0; i < vis.CellIdsByFace.Length; i++)
-            {
-                for (int j = 0; j < vis.CellIdsByFace[i].Length; j++)
-                {
-                    cell = vis.Cells[vis.CellIdsByFace[i][j]];
-                    id1 = cell[0];
-                    id2 = cell[1];
-                    id3 = cell[2];
-                    //
-                    key = GetSortedKey(id1, id2);
-                    if (!edgeByKeyMidNodeId.TryGetValue(key, out existingId))
-                    {
-                        existingId = nodeId++;
-                        edgeByKeyMidNodeId.Add(key, existingId);
-                    }
-                    id4 = existingId;
-                    key = GetSortedKey(id2, id3);
-                    if (!edgeByKeyMidNodeId.TryGetValue(key, out existingId))
-                    {
-                        existingId = nodeId++;
-                        edgeByKeyMidNodeId.Add(key, existingId);
-                    }
-                    id5 = existingId;
-                    key = GetSortedKey(id3, id1);
-                    if (!edgeByKeyMidNodeId.TryGetValue(key, out existingId))
-                    {
-                        existingId = nodeId++;
-                        edgeByKeyMidNodeId.Add(key, existingId);
-                    }
-                    id6 = existingId;
-                    //
-                    v1 = new Vec3D(mesh.Nodes[id1].Coor);
-                    v2 = new Vec3D(mesh.Nodes[id2].Coor);
-                    v3 = new Vec3D(mesh.Nodes[id3].Coor);
-                    v4 = (v1 + v2) * 0.5;
-                    v5 = (v2 + v3) * 0.5;
-                    v6 = (v3 + v1) * 0.5;
-                    //
-                    if (!nodes.ContainsKey(id1)) nodes.Add(id1, new FeNode(id1, v1.Coor));
-                    if (!nodes.ContainsKey(id2)) nodes.Add(id2, new FeNode(id2, v2.Coor));
-                    if (!nodes.ContainsKey(id3)) nodes.Add(id3, new FeNode(id3, v3.Coor));
-                    if (!nodes.ContainsKey(id4)) nodes.Add(id4, new FeNode(id4, v4.Coor));
-                    if (!nodes.ContainsKey(id5)) nodes.Add(id5, new FeNode(id5, v5.Coor));
-                    if (!nodes.ContainsKey(id6)) nodes.Add(id6, new FeNode(id6, v6.Coor));
-                    //
-                    elements.Add(elementId, new LinearTriangleElement(elementId++, 1, new int[] { id4, id6, id1 }));
-                    elements.Add(elementId, new LinearTriangleElement(elementId++, 1, new int[] { id4, id5, id6 }));
-                    elements.Add(elementId, new LinearTriangleElement(elementId++, 1, new int[] { id4, id2, id5 }));
-                    elements.Add(elementId, new LinearTriangleElement(elementId++, 1, new int[] { id5, id3, id6 }));
-                }
-            }
-            //
-            FeMesh meshSplit = new FeMesh(nodes, elements, MeshRepresentation.Geometry);
-            StlFileWriter.Write(@"C:\Temp\out.stl", meshSplit, meshSplit.Parts.Keys.ToArray());
-            int numOfVertices = nodes.Count;
-            int numOfTriangles = elements.Count;
-            //
-            double[] coor;
-            FeNode node;
-            int count = 1;
-            int vertexPartId = 1;
-            Dictionary<int, int> nodeIdVertexId = new Dictionary<int, int>();
-            // Vertices
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine("MeshVersionFormatted 2");
-            sb.AppendLine("Dimension 3");
-            sb.AppendLine("Vertices");
-            sb.AppendLine(numOfVertices.ToString());
-            //
-            foreach (var entry in nodes)
-            {
-                node = entry.Value;
-                coor = node.Coor;
-                sb.AppendFormat("{0} {1} {2} {3}{4}", coor[0], coor[1], coor[2], vertexPartId, Environment.NewLine);
-                nodeIdVertexId.Add(node.Id, count);
-                count++;
-            }
-            // Triangles
-            sb.AppendLine("Triangles");
-            sb.AppendLine(numOfTriangles.ToString());
-            //
-            foreach (var entry in elements)
-            {
-                cell = entry.Value.NodeIds;
-                sb.AppendFormat("{0} {1} {2} {3}{4}", nodeIdVertexId[cell[0]],
-                                                      nodeIdVertexId[cell[1]],
-                                                      nodeIdVertexId[cell[2]],
-                                                      entry.Value.PartId, // part id
-                                                      Environment.NewLine);
-            }
-
-            for (int i = 0; i < vis.CellIdsByFace.Length; i++)
-            {
-                for (int j = 0; j < vis.CellIdsByFace[i].Length; j++)
-                {
-                    cell = vis.Cells[vis.CellIdsByFace[i][j]];
-                    sb.AppendFormat("{0} {1} {2} {3}{4}", nodeIdVertexId[cell[0]],
-                                                          nodeIdVertexId[cell[1]],
-                                                          nodeIdVertexId[cell[2]],
-                                                          i, // part id
-                                                          Environment.NewLine);
-                }
-            }
-            //// Edges
-            //sb.AppendLine("Ridges");
-            //sb.AppendLine(vis.EdgeCells.Length.ToString());
-            //int edgePartId = 1;
-            //for (int i = 0; i < vis.EdgeCells.Length; i++)
-            //{
-            //    sb.AppendFormat("{0} {1} {2}{3}", nodeIdVertexId[vis.EdgeCells[i][0]],
-            //                                      nodeIdVertexId[vis.EdgeCells[i][1]],
-            //                                      edgePartId,
-            //                                      Environment.NewLine);
-            //}
-            // End
-            sb.AppendLine("End");
-            //
-            File.WriteAllText(fileName, sb.ToString());
-        }
-        //
-        public static void WriteShellElements(string fileName, int[] elementIds, BasePart part, FeMesh mesh, bool keepModelEdges)
+        public static void WriteShellElementsFix(string fileName, int[] elementIds, BasePart part, FeMesh mesh, bool keepModelEdges)
         {
             VisualizationData vis = part.Visualization;
-            // Collect node ids
-            FeElement element;
-            HashSet<int> nodeIds = new HashSet<int>();
-            foreach (var elementId in elementIds)
-            {
-                element = mesh.Elements[elementId];
-                nodeIds.UnionWith(element.NodeIds);
-            }
             // File
             StringBuilder sb = new StringBuilder();
             WriteHeading(sb);
@@ -247,44 +111,218 @@ namespace FileInOut.Output
             Dictionary<int, int> oldNodeIdNewId;
             FeNode node;
             List<double[]> nodeCoorNodeId = new List<double[]>();
-            foreach (var nodeId in nodeIds)
+            foreach (var nodeId in part.NodeLabels)
             {
                 node = mesh.Nodes[nodeId];
                 nodeCoorNodeId.Add(new double[] { node.X, node.Y, node.Z, node.Id });
             }
             WriteVertices(sb, nodeCoorNodeId, out oldNodeIdNewId);
+            // Corners
+            List<int> cornerIds = new List<int>();
+            for (int i = 0; i < vis.VertexNodeIds.Length; i++) cornerIds.Add(oldNodeIdNewId[vis.VertexNodeIds[i]]);
+            WriteCorners(sb, cornerIds);
+            // Elements
+            int elementId;
+            FeElement element;
+            List<int[]> triangleNodeIdsSurfaceId = new List<int[]>();
+            List<int[]> quadNodeIdsSurfaceId = new List<int[]>();
+            for (int i = 0; i < vis.CellIdsByFace.Length; i++)
+            {
+                for (int j = 0; j < vis.CellIdsByFace[i].Length; j++)
+                {
+                    elementId = vis.CellIds[vis.CellIdsByFace[i][j]];
+                    element = mesh.Elements[elementId];
+                    if (element is LinearTriangleElement || element is ParabolicTriangleElement)
+                    {
+                        triangleNodeIdsSurfaceId.Add(new int[] { oldNodeIdNewId[element.NodeIds[0]],
+                                                                     oldNodeIdNewId[element.NodeIds[1]],
+                                                                     oldNodeIdNewId[element.NodeIds[2]],
+                                                                     i + 1 });
+                    }
+                    else if (element is LinearQuadrilateralElement || element is ParabolicQuadrilateralElement)
+                    {
+                        quadNodeIdsSurfaceId.Add(new int[] { oldNodeIdNewId[element.NodeIds[0]],
+                                                                 oldNodeIdNewId[element.NodeIds[1]],
+                                                                 oldNodeIdNewId[element.NodeIds[2]],
+                                                                 oldNodeIdNewId[element.NodeIds[3]],
+                                                                 i + 1 });
+                    }
+                    else throw new NotSupportedException();
+                }
+            }
             // Triangles
-            //FeElement element;
-            //foreach (var elementId in elementIds)
-            //{
-
-            //}
-            //{
-
-            //}
-            //List<int[]> elementNodeIdsSurfaceId = new List<int[]>();
-            //for (int i = 0; i < vis.CellIdsByFace.Length; i++)
-            //{
-            //    for (int j = 0; j < vis.CellIdsByFace[i].Length; j++)
-            //    {
-            //        elementId = vis.CellIds[vis.CellIdsByFace[i][j]];
-            //        element = mesh.Elements[elementId];
-            //        if (element is LinearTriangleElement)
-            //        {
-            //            elementNodeIdsSurfaceId.Add(new int[] { oldNodeIdNewId[element.NodeIds[0]],
-            //                                                    oldNodeIdNewId[element.NodeIds[1]],
-            //                                                    oldNodeIdNewId[element.NodeIds[2]],
-            //                                                    i + 1 });
-            //        }
-            //    }
-            //}
-            //WriteLinearTriangles(sb, elementIds, vis, oldNodeIdNewId);
+            WriteTriangles(sb, triangleNodeIdsSurfaceId);
+            // Quadrilaterals
+            WriteQuadrilaterals(sb, quadNodeIdsSurfaceId);
+            // RequiredElements                                                                     
+            int[] requiredTriangleIds = part.Labels.Except(elementIds).ToArray();
+            WriteRequiredTriangles(sb, requiredTriangleIds);
             // Edges
-
-
-
-            
+            int id1, id2;
+            List<int[]> edgeNodeIdsEdgeId = new List<int[]>();
+            for (int i = 0; i < vis.EdgeCellIdsByEdge.Length; i++)
+            {
+                for (int j = 0; j < vis.EdgeCellIdsByEdge[i].Length; j++)
+                {
+                    id1 = vis.EdgeCells[vis.EdgeCellIdsByEdge[i][j]][0];
+                    id2 = vis.EdgeCells[vis.EdgeCellIdsByEdge[i][j]][1];
+                    edgeNodeIdsEdgeId.Add(new int[] { oldNodeIdNewId[id1], oldNodeIdNewId[id2], i + 1 });
+                }
+            }
+            //
+            if (keepModelEdges) WriteEdges(sb, edgeNodeIdsEdgeId);
+            // Ridges - all edges are ridges
+            int[] ridgeIds = new int[vis.EdgeCells.Length];
+            for (int i = 0; i < ridgeIds.Length; i++) ridgeIds[i] = i + 1;
+            WriteRidges(sb, ridgeIds);
+            // Required edges - keep edge cells connected to the vertices with only 2 edge cells: on the outside of the rectangle
+            //HashSet<int> requiredEdgeIds = new HashSet<int>();
+            //foreach (var cornerEntry in vertexEdgeIds)
+            //{
+            //    if (cornerEntry.Value.Count == 2) requiredEdgeIds.UnionWith(cornerEntry.Value);
+            //}
+            //if (keepVetexEdges) WriteRequiredEdges(sb, requiredEdgeIds.ToArray());
             // End
+            WriteEnd(sb);
+            //
+            File.WriteAllText(fileName, sb.ToString());
+        }
+        public static void WriteShellElements(string fileName, int[] elementIds, BasePart part, FeMesh mesh, bool keepModelEdges)
+        {
+            VisualizationData vis = part.Visualization;
+            // File                                                                                 
+            StringBuilder sb = new StringBuilder();
+            WriteHeading(sb);
+            // Vertices                                                                             
+            int nodeId;
+            FeNode node;
+            FeElement element;
+            Dictionary<int, int> oldNodeIdNewId;
+            HashSet<int> allNodeIds = new HashSet<int>();
+            List<double[]> nodeCoorNodeId = new List<double[]>();
+            // Use only vertices of the selected element set
+            for (int i = 0; i < elementIds.Length; i++)
+            {
+                element = mesh.Elements[elementIds[i]];
+                for (int j = 0; j < element.NodeIds.Length; j++)
+                {
+                    nodeId = element.NodeIds[j];
+                    if (!allNodeIds.Contains(nodeId))
+                    {
+                        node = mesh.Nodes[nodeId];
+                        nodeCoorNodeId.Add(new double[] { node.X, node.Y, node.Z, node.Id });
+                        allNodeIds.Add(nodeId);
+                    }
+                }
+            }
+            WriteVertices(sb, nodeCoorNodeId, out oldNodeIdNewId);
+            // Corners                                                                              
+            List<int> cornerIds = new List<int>();
+            for (int i = 0; i < vis.VertexNodeIds.Length; i++)
+            {
+                nodeId = vis.VertexNodeIds[i];
+                if (allNodeIds.Contains(nodeId)) cornerIds.Add(oldNodeIdNewId[nodeId]);
+            }
+            WriteCorners(sb, cornerIds);
+            // Elements                                                                             
+            int elementId;
+            HashSet<int> allElementIds = new HashSet<int>(elementIds); // for speedup
+            List<int[]> triangleNodeIdsSurfaceId = new List<int[]>();
+            List<int[]> quadNodeIdsSurfaceId = new List<int[]>();
+            for (int i = 0; i < vis.CellIdsByFace.Length; i++)
+            {
+                for (int j = 0; j < vis.CellIdsByFace[i].Length; j++)
+                {
+                    elementId = vis.CellIds[vis.CellIdsByFace[i][j]];
+                    if (allElementIds.Contains(elementId))
+                    {
+                        element = mesh.Elements[elementId];
+                        if (element is LinearTriangleElement || element is ParabolicTriangleElement)
+                        {
+                            triangleNodeIdsSurfaceId.Add(new int[] { oldNodeIdNewId[element.NodeIds[0]],
+                                                                     oldNodeIdNewId[element.NodeIds[1]],
+                                                                     oldNodeIdNewId[element.NodeIds[2]],
+                                                                     i + 1 });
+                        }
+                        else if (element is LinearQuadrilateralElement || element is ParabolicQuadrilateralElement)
+                        {
+                            triangleNodeIdsSurfaceId.Add(new int[] { oldNodeIdNewId[element.NodeIds[0]],
+                                                                     oldNodeIdNewId[element.NodeIds[1]],
+                                                                     oldNodeIdNewId[element.NodeIds[2]],
+                                                                     i + 1 });
+                            triangleNodeIdsSurfaceId.Add(new int[] { oldNodeIdNewId[element.NodeIds[0]],
+                                                                     oldNodeIdNewId[element.NodeIds[2]],
+                                                                     oldNodeIdNewId[element.NodeIds[3]],
+                                                                     i + 1 });
+                            //quadNodeIdsSurfaceId.Add(new int[] { oldNodeIdNewId[element.NodeIds[0]],
+                            //                                     oldNodeIdNewId[element.NodeIds[1]],
+                            //                                     oldNodeIdNewId[element.NodeIds[2]],
+                            //                                     oldNodeIdNewId[element.NodeIds[3]],
+                            //                                     i + 1 });
+                        }
+                        else throw new NotSupportedException();
+                    }
+                }
+            }
+            // Triangles
+            WriteTriangles(sb, triangleNodeIdsSurfaceId);
+            // Quadrilaterals
+            WriteQuadrilaterals(sb, quadNodeIdsSurfaceId);
+            // Edges                                                                                
+            int[] key;
+            int id1, id2;
+            CompareIntArray comparer = new CompareIntArray();
+            Dictionary<int[], int> edgeKeys = new Dictionary<int[], int>(comparer);
+            List<int[]> edgeNodeIdsEdgeId = new List<int[]>();
+            // Free edges
+            HashSet<int[]> freeEdges = GetFreeEdges(part);
+            // Model edges - first since they are numbered by the EdgeCellIdsByEdge
+            if (keepModelEdges)
+            {
+                for (int i = 0; i < vis.EdgeCellIdsByEdge.Length; i++)
+                {
+                    for (int j = 0; j < vis.EdgeCellIdsByEdge[i].Length; j++)
+                    {
+                        id1 = vis.EdgeCells[vis.EdgeCellIdsByEdge[i][j]][0];
+                        id2 = vis.EdgeCells[vis.EdgeCellIdsByEdge[i][j]][1];
+                        key = GetSortedKey(id1, id2);
+                        if (!edgeKeys.ContainsKey(key) && (allNodeIds.Contains(id1) && allNodeIds.Contains(id2)))
+                        {                            
+                            edgeNodeIdsEdgeId.Add(new int[] { oldNodeIdNewId[id1], oldNodeIdNewId[id2], i + 1 });
+                            edgeKeys.Add(key, edgeNodeIdsEdgeId.Count);
+                        }
+                    }
+                }
+            }
+            // Boundary edges
+            int edgeId;
+            int[] edgeCell;
+            List<int> requiredEdgeIds = new List<int>();
+            GeometryPart subPart = mesh.CreateGeometryPartFromElementIds(elementIds);
+            for (int i = 0; i < subPart.FreeEdgeCellIds.Length; i++)
+            {
+                edgeCell = subPart.Visualization.EdgeCells[subPart.FreeEdgeCellIds[i]];
+                id1 = edgeCell[0];
+                id2 = edgeCell[1];
+                key = GetSortedKey(id1, id2);
+                // Add boundary edges to all edges
+                if (!edgeKeys.TryGetValue(key, out edgeId))
+                {
+                    edgeNodeIdsEdgeId.Add(new int[] { oldNodeIdNewId[id1], oldNodeIdNewId[id2], 0 });
+                    edgeId = edgeNodeIdsEdgeId.Count;
+                    edgeKeys.Add(key, edgeId);
+                }
+                // Free edges must not be kept
+                if (!freeEdges.Contains(key))  requiredEdgeIds.Add(edgeId);
+            }
+            WriteEdges(sb, edgeNodeIdsEdgeId);
+            // Ridges - all edges are ridges                                                        
+            //int[] ridgeIds = new int[edgeNodeIdsEdgeId.Count];
+            //for (int i = 0; i < ridgeIds.Length; i++) ridgeIds[i] = i + 1;
+            //WriteRidges(sb, requiredEdgeIds.ToArray());
+            // Required edges
+            WriteRequiredEdges(sb, requiredEdgeIds.ToArray());
+            // End                                                                                  
             WriteEnd(sb);
             //
             File.WriteAllText(fileName, sb.ToString());
@@ -299,6 +337,8 @@ namespace FileInOut.Output
         {
             int count = 1;
             oldNodeIdNewId = new Dictionary<int, int>();
+            //
+            if (nodeCoorNodeId == null || nodeCoorNodeId.Count == 0) return;
             // Vertices
             sb.AppendLine();
             sb.AppendLine("Vertices");
@@ -314,6 +354,8 @@ namespace FileInOut.Output
         }
         private static void WriteCorners(StringBuilder sb, List<int> cornerIds)
         {
+            if (cornerIds == null || cornerIds.Count == 0) return;
+            //
             sb.AppendLine();
             sb.AppendLine("Corners");
             sb.AppendLine(cornerIds.Count.ToString());
@@ -325,6 +367,8 @@ namespace FileInOut.Output
         }
         private static void WriteTriangles(StringBuilder sb, List<int[]> elementNodeIdsElementId)
         {
+            if (elementNodeIdsElementId == null || elementNodeIdsElementId.Count == 0) return;
+            //
             sb.AppendLine();
             sb.AppendLine("Triangles");
             sb.AppendLine(elementNodeIdsElementId.Count.ToString());
@@ -338,8 +382,40 @@ namespace FileInOut.Output
                                                       Environment.NewLine);
             }
         }
+        private static void WriteQuadrilaterals(StringBuilder sb, List<int[]> elementNodeIdsElementId)
+        {
+            if (elementNodeIdsElementId == null || elementNodeIdsElementId.Count == 0) return;
+            //
+            sb.AppendLine();
+            sb.AppendLine("Quadrilaterals");
+            sb.AppendLine(elementNodeIdsElementId.Count.ToString());
+            //
+            foreach (var elementData in elementNodeIdsElementId)
+            {
+                sb.AppendFormat("{0} {1} {2} {3} {4}{5}", elementData[0],
+                                                          elementData[1],
+                                                          elementData[2],
+                                                          elementData[3],
+                                                          elementData[4],   //  id
+                                                          Environment.NewLine);
+            }
+        }
+        private static void WriteRequiredTriangles(StringBuilder sb, int[] requiredTrianglesIds)
+        {
+            if (requiredTrianglesIds == null || requiredTrianglesIds.Length == 0) return;
+            //
+            sb.AppendLine();
+            sb.AppendLine("RequiredTriangles");
+            sb.AppendLine(requiredTrianglesIds.Length.ToString());
+            for (int i = 0; i < requiredTrianglesIds.Length; i++)
+            {
+                sb.AppendFormat("{0}{1}", requiredTrianglesIds[i], Environment.NewLine);
+            }
+        }
         private static void WriteEdges(StringBuilder sb, List<int[]> edgeCellEdgeId)
         {
+            if (edgeCellEdgeId == null || edgeCellEdgeId.Count == 0) return;
+            //
             sb.AppendLine();
             sb.AppendLine("Edges");
             sb.AppendLine(edgeCellEdgeId.Count.ToString());
@@ -353,6 +429,8 @@ namespace FileInOut.Output
         }
         private static void WriteRidges(StringBuilder sb, int[] ridgeIds)
         {
+            if (ridgeIds == null || ridgeIds.Length == 0) return;
+            //
             sb.AppendLine();
             sb.AppendLine("Ridges");
             sb.AppendLine(ridgeIds.Length.ToString());
@@ -363,6 +441,8 @@ namespace FileInOut.Output
         }
         private static void WriteRequiredEdges(StringBuilder sb, int[] requiredEdgeIds)
         {
+            if (requiredEdgeIds == null || requiredEdgeIds.Length == 0) return;
+            //
             sb.AppendLine();
             sb.AppendLine("RequiredEdges");
             sb.AppendLine(requiredEdgeIds.Length.ToString());
@@ -377,6 +457,38 @@ namespace FileInOut.Output
             sb.AppendLine("End");
         }
         //
+        private static HashSet<int[]> GetFreeEdges(BasePart part)
+        {
+            int[][] cells = part.Visualization.Cells;
+            CompareIntArray comparer = new CompareIntArray();
+            Dictionary<int[], byte[]> allEdges = new Dictionary<int[], byte[]>(comparer);
+            //
+            int[] key;
+            byte[] count;
+            int[][] cellEdges;
+            // Get all edges
+            for (int i = 0; i < cells.Length; i++)
+            {
+                cellEdges = FeMesh.GetVisualizationEdgeCells(cells[i]);
+                //
+                foreach (var cellEdge in cellEdges)
+                {
+                    key = cellEdge.ToArray();
+                    Array.Sort(key);
+                    //
+                    if (allEdges.TryGetValue(key, out count)) count[0]++;
+                    else allEdges.Add(key, new byte[] { 1 });
+                }
+            }
+            //
+            HashSet<int[]> freeEdges = new HashSet<int[]>(comparer);
+            foreach (var entry in allEdges)
+            {
+                if (entry.Value[0] == 1) freeEdges.Add(entry.Key);
+            }
+            //
+            return freeEdges;
+        }
         private static int[] GetSortedKey(int id1, int id2)
         {
             if (id1 < id2) return new int[] { id1, id2};

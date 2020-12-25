@@ -42,7 +42,7 @@ namespace PrePoMax
         public static string UnitSystemSettingsName = "Unit system";
         //
         public static string NetGenMesher = @"\NetGen\NetGenMesher.exe";
-        public static string MmgMesher = @"\NetGen\mmgs_O3.exe";
+        public static string MmgsMesher = @"\NetGen\mmgs.exe";
         public static string VisFileName = "geometry.vis";
         public static string BrepFileName = "geometry.brep";
         public static string StlFileName = "geometry.stl";        

@@ -38,8 +38,8 @@ namespace CaeMesh
         public FeElementSet(FeElementSet elementSet)
            : base(elementSet)
         {
-            _creationData = elementSet.CreationData.DeepClone();
-            _creationIds = elementSet.CreationIds.ToArray();
+            _creationData = elementSet.CreationData != null ? elementSet.CreationData.DeepClone() : null;
+            _creationIds = elementSet.CreationIds != null ? elementSet.CreationIds.ToArray() : null;
             _createdFromParts = elementSet._createdFromParts;
         }
 

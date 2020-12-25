@@ -2328,47 +2328,74 @@ namespace PrePoMax
         }
         public MeshingParameters GetMeshingParameters(string[] partNames, bool formModal)
         {
+            BasePart part;
+            MeshingParameters meshingParameters = null;
+            MeshingParameters defaultMeshingParameters = GetDefaultMeshingParameters(partNames);
+            if (defaultMeshingParameters != null)
+            {
+                foreach (var partName in partNames)
+                {
+                    part = _controller.GetGeometryPart(partName);
+                    // First time set the meshing parameters
+                    if (partName == partNames[0] && part is GeometryPart gp1)
+                        meshingParameters = gp1.MeshingParameters;
+                    // Meshing parameters exist only when all parts have the same meshing parameters
+                    if (!(part is GeometryPart gp2) || !MeshingParameters.Equals(meshingParameters, gp2.MeshingParameters))
+                        meshingParameters = null;
+                }
+                // Use meshingParameters as default if meshing parameters are not equal
+                if (meshingParameters == null) meshingParameters = defaultMeshingParameters;
+            }
+            else return null;
+            //
+            MeshingParameters parameters = null;
+            //
+            InvokeIfRequired(() =>
+            {
+                parameters = GetMeshingParametersForm(partNames, defaultMeshingParameters, meshingParameters, formModal);
+            });
+            return parameters;
+        }
+        public MeshingParameters GetDefaultMeshingParameters(string[] partNames)
+        {
             double sumMax = 0;
             double sumMin = 0;
-            GeometryPart part;
-            MeshingParameters meshingParameters = null;
+            double sumHausDorff = 0;
             MeshingParameters defaultMeshingParameters = null;
             HashSet<bool> useMmg = new HashSet<bool>();
             foreach (var partName in partNames)
             {
-                part = _controller.GetGeometryPart(partName);
                 // Default parameters
                 defaultMeshingParameters = GetDefaultMeshingParameters(partName);
-                // Check for different types of meshes
-                useMmg.Add(defaultMeshingParameters.UseMmg);                
-                // First time set the meshing parameters
-                if (partName == partNames[0]) meshingParameters = part.MeshingParameters;
-                // Meshing parameters exist only when all parts have the same meshing parameters
-                if (!MeshingParameters.Equals(meshingParameters, part.MeshingParameters))
-                    meshingParameters = null;
-                //
-                sumMax += defaultMeshingParameters.MaxH;
-                sumMin += defaultMeshingParameters.MinH;
-            }
-            defaultMeshingParameters.MaxH = CaeGlobals.Tools.RoundToSignificantDigits(sumMax / partNames.Length, 2);
-            defaultMeshingParameters.MinH = CaeGlobals.Tools.RoundToSignificantDigits(sumMin / partNames.Length, 2);
-            // Use meshingParameters as default if meshing parameters are not equal
-            if (meshingParameters == null) meshingParameters = defaultMeshingParameters;
-            //
-            MeshingParameters parameters = null;
-            //
-            if (useMmg.Count() == 1)
-            {
-                InvokeIfRequired(() =>
+                // If part is not found return null
+                if (defaultMeshingParameters != null)
                 {
-                    parameters = GetMeshingParametersForm(partNames, defaultMeshingParameters, meshingParameters, formModal);
-                });
+                    // Check for different types of meshes
+                    useMmg.Add(defaultMeshingParameters.UseMmg);
+                    //
+                    sumMax += defaultMeshingParameters.MaxH;
+                    sumMin += defaultMeshingParameters.MinH;
+                    sumHausDorff += defaultMeshingParameters.Hausdorff;
+                }
+                // Part was not found
+                else return null;
             }
-            return parameters;
+            // All parts must be of either netgen type or mmg type
+            if (useMmg.Count() == 1)            
+            {
+                defaultMeshingParameters.MaxH = CaeGlobals.Tools.RoundToSignificantDigits(sumMax / partNames.Length, 2);
+                defaultMeshingParameters.MinH = CaeGlobals.Tools.RoundToSignificantDigits(sumMin / partNames.Length, 2);
+                defaultMeshingParameters.Hausdorff = CaeGlobals.Tools.RoundToSignificantDigits(sumHausDorff / partNames.Length, 2);
+                //
+                return defaultMeshingParameters;
+            }
+            else return null;
         }
         public MeshingParameters GetDefaultMeshingParameters(string partName)
         {
-            GeometryPart part = _controller.GetGeometryPart(partName);
+            BasePart part = _controller.GetGeometryPart(partName);
+            if (part == null) part = _controller.GetModelPart(partName);
+            if (part == null) return null;
             //
             if (!_controller.MeshJobIdle) throw new Exception("The meshing is already in progress.");
             //
@@ -2378,8 +2405,9 @@ namespace PrePoMax
             double factorHausdorff = 500;
             double maxSize = part.BoundingBox.GetDiagonal();
             //
-            if (part.PartType == PartType.Shell && part.CADFileData == null) defaultMeshingParameters.UseMmg = true;
-            //defaultMeshingParameters.UseMmg = true;
+            if (part.PartType == PartType.Shell && part is GeometryPart gp && gp.CADFileData == null)
+                defaultMeshingParameters.UseMmg = true;
+            //
             defaultMeshingParameters.MaxH = CaeGlobals.Tools.RoundToSignificantDigits(maxSize / factorMax, 2);
             defaultMeshingParameters.MinH = CaeGlobals.Tools.RoundToSignificantDigits(maxSize / factorMin, 2);
             defaultMeshingParameters.Hausdorff = CaeGlobals.Tools.RoundToSignificantDigits(maxSize / factorHausdorff, 2);
@@ -2573,7 +2601,6 @@ namespace PrePoMax
             try
             {
                 RemeshElements();
-                //_controller.RemeshShellMeshPart(_controller.Model.Mesh.Parts["Nonpositive_jacobian-1"]);
             }
             catch (Exception ex)
             {

@@ -137,8 +137,10 @@ namespace FileInOut.Input
                 //
                 mesh.ConvertLineFeElementsToEdges(vertexNodeIds);
                 //
-                mesh.RenumberVisualizationSurfaces(surfaceIdNodeIds);
-                mesh.RenumberVisualizationEdges(edgeIdNodeIds);
+                Dictionary<string, Dictionary<int,int>> partIdNewSurfIdOldSurfId = 
+                    mesh.RenumberVisualizationSurfaces(surfaceIdNodeIds);
+                Dictionary<string, Dictionary<int, int>> partIdNewEdgeIdOldEdgeId = 
+                    mesh.RenumberVisualizationEdges(edgeIdNodeIds);
                 //
                 mesh.RemoveElementsByType<FeElement1D>();
                 //

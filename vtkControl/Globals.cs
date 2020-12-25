@@ -43,7 +43,8 @@ namespace vtkControl
             _currentMouseSelectionProperty.SetPointSize(7);
             _currentMouseSelectionProperty.SetLineWidth(2);
             _currentMouseSelectionProperty.SetOpacity(1);
-            _currentMouseSelectionProperty.BackfaceCullingOn();
+            //_currentMouseSelectionProperty.BackfaceCullingOn();
+            _currentMouseSelectionProperty.BackfaceCullingOff();
         }
        
     }

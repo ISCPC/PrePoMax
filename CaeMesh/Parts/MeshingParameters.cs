@@ -153,6 +153,25 @@ namespace CaeMesh
             _hausdorff = 0.01;
             _keepModelEdges = true;
         }
+        public MeshingParameters(MeshingParameters meshingParameters)
+        {
+            _maxH = meshingParameters.MaxH;
+            _minH = meshingParameters.MinH;
+            _fineness = meshingParameters.Fineness;
+            _grading = meshingParameters.Grading;
+            _elementsperedge = meshingParameters.Elementsperedge;
+            _elementspercurve = meshingParameters.Elementspercurve;
+            _optimizeSteps2D = meshingParameters.OptimizeSteps2D;
+            _optimizeSteps3D = meshingParameters.OptimizeSteps3D;
+            _secondOrder = meshingParameters.SecondOrder;
+            _quadDominated = meshingParameters.QuadDominated;
+            _midsideNodesOnGeometry = meshingParameters.MidsideNodesOnGeometry;
+            _splitCompoundMesh = meshingParameters.SplitCompoundMesh;
+            //
+            _useMmg = meshingParameters.UseMmg;
+            _hausdorff = meshingParameters.Hausdorff;
+            _keepModelEdges = meshingParameters.KeepModelEdges;
+        }
 
 
         // Methods                                                                                                                  

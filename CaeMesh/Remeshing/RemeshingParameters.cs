@@ -34,6 +34,16 @@ namespace CaeMesh
             _creationData = null;
             _creationIds = null;
         }
+        public RemeshingParameters(string regionName, RegionTypeEnum regionType, MeshingParameters meshingParameters)
+            : base(meshingParameters)
+        {
+            UseMmg = true;
+            //
+            _regionName = regionName;
+            _regionType = regionType;
+            _creationData = null;
+            _creationIds = null;
+        }
 
 
         // Methods                                                                                                                  

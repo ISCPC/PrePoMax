@@ -101,7 +101,9 @@ namespace PrePoMax.Forms
             //
             string[] elementSetNames = _controller.GetUserElementSetNames();
             // Create new
-            RemeshingParameters = new RemeshingParameters("", RegionTypeEnum.Selection);
+            MeshingParameters meshingParameters =
+                _controller.GetDefaultMeshingParameters(_controller.Model.Mesh.Parts.Keys.ToArray());
+            RemeshingParameters = new RemeshingParameters("", RegionTypeEnum.Selection, meshingParameters);
             _controller.Selection.Clear();                
             //
             _viewRemeshingParameters.PopululateDropDownLists(elementSetNames);
