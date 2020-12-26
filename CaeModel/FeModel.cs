@@ -642,6 +642,87 @@ namespace CaeModel
                     importedParts[i].Color = _geometry.Parts[importedParts[i].Name].Color;
             }
         }
+        public void ImportGeneratedRemeshFromMeshFile(string fileName, int[] elementIds, BasePart part, bool convertToSecondorder)
+        {
+            // Remove elements
+            HashSet<int> possiblyUnrefNodeIds = new HashSet<int>();
+            foreach (var elId in elementIds) possiblyUnrefNodeIds.UnionWith(_mesh.Elements[elId].NodeIds);
+            HashSet<int> removedNodeIds =
+                _mesh.RemoveElementsByIds(new HashSet<int>(elementIds), possiblyUnrefNodeIds, false, false, true);
+            HashSet<int> borderNodeIds = new HashSet<int>(possiblyUnrefNodeIds.Except(removedNodeIds));
+            Dictionary<int, FeNode> borderNodes = new Dictionary<int, FeNode>();
+            foreach (var ndId in borderNodeIds) borderNodes.Add(ndId, _mesh.Nodes[ndId]);
+
+            // Read the mmg file and renumber nodes and elements
+            double epsilon = 1E-6;
+            double max = part.BoundingBox.GetDiagonal();
+            Dictionary<string, Dictionary<int, int>> partIdNewSurfIdOldSurfId = new Dictionary<string, Dictionary<int, int>>();
+            Dictionary<string, Dictionary<int, int>> partIdNewEdgeIdOldEdgeId = new Dictionary<string, Dictionary<int, int>>();
+
+            FeMesh mmgMmesh = FileInOut.Input.MmgFileReader.Read(fileName, MeshRepresentation.Mesh,
+                                                                 _mesh.MaxNodeId + 1, _mesh.MaxElementId + 1,
+                                                                 borderNodes, epsilon * max,
+                                                                 partIdNewSurfIdOldSurfId, partIdNewEdgeIdOldEdgeId);
+            BasePart mmgPart = mmgMmesh.Parts.First().Value;
+            // Add elements to mesh                                                                                     
+            FeElement element;
+            foreach (var entry in mmgMmesh.Elements)
+            {
+                element = entry.Value;
+                element.PartId = part.PartId;
+                _mesh.Elements.Add(entry.Key, element);
+            }
+            // Add elements to part
+            HashSet<int> newPartElementIds = new HashSet<int>(part.Labels);
+            newPartElementIds.UnionWith(_mesh.Elements.Keys);
+            part.Labels = newPartElementIds.ToArray();
+            Array.Sort(part.Labels);
+            // Add nodes to mesh                                                                                        
+            foreach (var entry in mmgMmesh.Nodes)
+            {
+                if (!_mesh.Nodes.ContainsKey(entry.Key)) _mesh.Nodes.Add(entry.Key, entry.Value);
+            }
+            // Add nodes to part
+            HashSet<int> newPartNodeIds = new HashSet<int>(part.NodeLabels);
+            newPartNodeIds.UnionWith(_mesh.Nodes.Keys);
+            part.NodeLabels = newPartNodeIds.ToArray();
+            Array.Sort(part.NodeLabels);
+            // Update ids
+            _mesh.UpdateMaxNodeAndElementIds();
+            // Model edges                                                                                              
+            int nodeId = mmgMmesh.MaxNodeId + 1;
+            int elementId = mmgMmesh.MaxElementId + 1;
+            VisualizationData vis = part.Visualization;
+            LinearBeamElement beamElement;
+            List<FeElement1D> edgeElements = new List<FeElement1D>();
+            // Get model edges from part - only edges that are not completely removed
+            foreach (var edgeCell in part.Visualization.EdgeCells)
+            {
+                if (!(possiblyUnrefNodeIds.Contains(edgeCell[0]) && possiblyUnrefNodeIds.Contains(edgeCell[1])))
+                {
+                    beamElement = new LinearBeamElement(elementId++, new int[] { edgeCell[0], edgeCell[1] });
+                    edgeElements.Add(beamElement);
+                }
+            }
+            // Get model edges from mmgPart
+            foreach (var edgeCell in mmgPart.Visualization.EdgeCells)
+            {
+                beamElement = new LinearBeamElement(elementId++, new int[] { edgeCell[0], edgeCell[1] });
+                edgeElements.Add(beamElement);
+            }
+            // Add edge elements to mesh
+            foreach (var edgeElement in edgeElements) _mesh.Elements.Add(edgeElement.Id, edgeElement);
+            // Extract visualization
+            _mesh.ExtractShellPartVisualization(part, false, -1);
+            //
+            _mesh.ConvertLineFeElementsToEdges();
+            //
+            _mesh.RemoveElementsByType<FeElement1D>();
+
+
+            //
+            //ImportMesh(mmgMmesh, null, false);
+        }
         public List<string> ImportMeshFromInpFile(string fileName, Action<string> WriteDataToOutput)
         {
             FileInOut.Input.InpFileReader.Read(fileName, FileInOut.Input.ElementsToImport.Solid 

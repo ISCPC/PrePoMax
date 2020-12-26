@@ -1424,12 +1424,13 @@ namespace vtkControl
         private int[] GetCellFaceNodeIds(vtkCell cell, vtkCellLocator cellLocator)
         {
             vtkDataArray globalIds = cellLocator.GetDataSet().GetPointData().GetGlobalIds();
-
+            //
             int[] faceGlobalNodeIds = new int[cell.GetPointIds().GetNumberOfIds()];
             for (int i = 0; i < faceGlobalNodeIds.Length; i++)
             {
                 faceGlobalNodeIds[i] = (int)globalIds.GetTuple1(cell.GetPointId(i));
             }
+            //
             return faceGlobalNodeIds;
         }        
         private int GetNodeIdOnCellFaceClosestToPoint(double[] point)

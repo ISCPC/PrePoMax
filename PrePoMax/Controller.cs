@@ -987,83 +987,24 @@ namespace PrePoMax
             // Update the sets and symbols
             FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
-        public void ImportGeneratedRemesh(string fileName, BasePart part, bool fromBrep)
+        public void ImportGeneratedRemesh(string fileName, int[] elementIds, BasePart part, bool convertToSecondOrder)
         {
             if (!File.Exists(fileName))
                 throw new CaeException("The file: '" + fileName + "' does not exist." + Environment.NewLine +
                                        "The reason is a failed mesh generation procedure for part: " + part.Name);
-            //
-            string[] partNames;
-            if (part is CompoundGeometryPart cgp) partNames = cgp.SubPartNames.ToArray();
-            else partNames = new string[] { part.Name };
-            //
-            int[] removedPartIds = null;
-            //
-            bool convertToSecondOrder = false;
-            bool splitCompoundMesh = false;
-            if (part is GeometryPart gp)
-            {
-                // Convert mesh to second order
-                convertToSecondOrder = gp.MeshingParameters.SecondOrder && !gp.MeshingParameters.MidsideNodesOnGeometry;
-                if (convertToSecondOrder) _form.WriteDataToOutput("Converting mesh to second order...");
-                // Split compound mesh
-                splitCompoundMesh = gp.MeshingParameters.SplitCompoundMesh;
-            }
             // Import, convert and split mesh
-            _model.ImportGeneratedMeshFromMeshFile(fileName, part, convertToSecondOrder, splitCompoundMesh);
-            // Calculate the number of new nodes and elements
-            BasePart basePart;
-            if (convertToSecondOrder)
-            {
-                int numPoints = 0;
-                int numElements = 0;
-                foreach (var partName in partNames)
-                {
-                    if (_model.Mesh.Parts.TryGetValue(partName, out basePart))
-                    {
-                        numPoints += basePart.NodeLabels.Length;
-                        numElements += basePart.Labels.Length;
-                    }
-                }
-                _form.WriteDataToOutput("Nodes: " + numPoints);
-                _form.WriteDataToOutput("Elements: " + numElements);
-            }
+            _model.ImportGeneratedRemeshFromMeshFile(fileName, elementIds, part, convertToSecondOrder);
             // Regenerate and change the DisplayedMesh to Model before updating sets
             _form.Clear3D();
             _currentView = ViewGeometryModelResults.Model;
             _form.SetCurrentView(_currentView);
-            // This is not executed for the first meshing                               
-            // For geometry based sets the part id must remain the same after remesh    
-            bool renumbered = false;
-            if (removedPartIds != null)
-            {
-                for (int i = 0; i < removedPartIds.Length; i++)
-                {
-                    if (removedPartIds[i] != -1)
-                    {
-                        _model.Mesh.RenumberPart(partNames[i], removedPartIds[i]);
-                        renumbered = true;
-                    }
-                }
-            }
-            // Shading
-            if (fromBrep)
-            {
-                foreach (var partName in partNames)
-                {
-                    if (_model.Mesh.Parts.TryGetValue(partName, out basePart)) basePart.SmoothShaded = true;
-                }
-            }
             // Regenerate tree
             _form.RegenerateTree(_model, _jobs, _results, _history);
             // Redraw to be able to update sets based on selection
             FeModelUpdate(UpdateType.DrawModel);
             // At the end update the sets
-            if (renumbered)
-            {
-                // Update sets - must be called with rendering off - SetStateWorking
-                UpdateGeometryBasedItems(false);
-            }
+            // Update sets - must be called with rendering off - SetStateWorking
+            UpdateGeometryBasedItems(false);
             // Update the sets and symbols
             FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
@@ -2351,9 +2292,6 @@ namespace PrePoMax
             // Job completed
             if (_netgenJob.JobStatus == JobStatus.OK)
             {
-                //ImportGeneratedMesh(mmgOutFileName, part, false);
-                //ImportFile(mmgOutFileName);
-                //
                 FeMesh mesh = FileInOut.Input.MmgFileReader.Read(mmgOutFileName, MeshRepresentation.Geometry);
                 GeometryPart partOut = (GeometryPart)mesh.Parts.First().Value;
                 //
@@ -2789,8 +2727,27 @@ namespace PrePoMax
             System.Diagnostics.PerformanceCounter ramCounter;
             ramCounter = new System.Diagnostics.PerformanceCounter("Memory", "Available MBytes");
             //
-            string argument = "-n 4 " +
-                              "-nr " + 
+            //string argument = //"-n 4 " +
+            //                  "-nr " + 
+            //                  "-m " + ramCounter.NextValue() * 0.9 + " " +
+            //                  "-hmax " + remeshingParameters.MaxH + " " +
+            //                  "-hmin " + remeshingParameters.MinH + " " +
+            //                  "-hausd " + remeshingParameters.Hausdorff + " " +
+            //                  "-in \"" + mmgInFileName + "\" " +
+            //                  "-out \"" + mmgOutFileName + "\" ";
+            ////
+            //_netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
+            //_netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
+            //_netgenJob.Submit();
+            //// Job completed
+            //if (_netgenJob.JobStatus == JobStatus.OK)
+            //{
+            //    ImportGeneratedRemesh(mmgOutFileName, elementIds, part, remeshingParameters.SecondOrder);
+            //    return true;
+            //}
+            //else return false;
+
+            string argument = "-ar 0.01 " + // this removes curving of the faces
                               "-m " + ramCounter.NextValue() * 0.9 + " " +
                               "-hmax " + remeshingParameters.MaxH + " " +
                               "-hmin " + remeshingParameters.MinH + " " +
@@ -2804,8 +2761,33 @@ namespace PrePoMax
             // Job completed
             if (_netgenJob.JobStatus == JobStatus.OK)
             {
-                ImportGeneratedRemesh(mmgOutFileName, part, false);
-                return true;
+                FeMesh mesh = FileInOut.Input.MmgFileReader.Read(mmgOutFileName, MeshRepresentation.Geometry);
+                GeometryPart partOut = (GeometryPart)mesh.Parts.First().Value;
+                //
+                if (File.Exists(mmgInFileName)) File.Delete(mmgInFileName);
+                if (File.Exists(mmgOutFileName)) File.Delete(mmgOutFileName);
+                if (File.Exists(mmgSolFileName)) File.Delete(mmgSolFileName);
+                //
+                FileInOut.Output.MmgFileWriter.Write(mmgInFileName, partOut, mesh, remeshingParameters.KeepModelEdges, true);
+                //
+                argument = "-nr " + // no edge detection
+                           "-m " + ramCounter.NextValue() * 0.9 + " " +
+                           "-hmax " + remeshingParameters.MaxH + " " +
+                           "-hmin " + remeshingParameters.MinH + " " +
+                           "-hausd " + remeshingParameters.Hausdorff + " " +
+                           "-in \"" + mmgInFileName + "\" " +
+                           "-out \"" + mmgOutFileName + "\" ";
+                //
+                _netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
+                _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
+                _netgenJob.Submit();
+                //
+                if (_netgenJob.JobStatus == JobStatus.OK)
+                {
+                    ImportGeneratedRemesh(mmgOutFileName, elementIds, part, remeshingParameters.SecondOrder);
+                    return true;
+                }
+                else return false;
             }
             else return false;
         }

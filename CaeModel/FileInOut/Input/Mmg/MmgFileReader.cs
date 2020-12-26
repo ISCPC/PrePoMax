@@ -10,8 +10,17 @@ namespace FileInOut.Input
 {
     static public class MmgFileReader
     {
-        public static FeMesh Read(string fileName, MeshRepresentation meshRepresentation)
+        public static FeMesh Read(string fileName, MeshRepresentation meshRepresentation,
+                                  int firstNodeId = 1,
+                                  int firstElementId = 1,
+                                  Dictionary<int, FeNode> existingNodes = null,
+                                  double epsilon = 1E-6,
+                                  Dictionary<string, Dictionary<int, int>> partIdNewSurfIdOldSurfId = null,
+                                  Dictionary<string, Dictionary<int, int>> partIdNewEdgeIdOldEdgeId = null)
         {
+            partIdNewSurfIdOldSurfId = null;
+            partIdNewEdgeIdOldEdgeId = null;
+            //
             if (File.Exists(fileName))
             {
                 FeNode node;
@@ -25,17 +34,18 @@ namespace FileInOut.Input
                 Dictionary<int, HashSet<int>> edgeIdNodeIds = new Dictionary<int, HashSet<int>>();
                 Dictionary<int, Dictionary<int, bool>> edgeIdNodeIdCount = new Dictionary<int, Dictionary<int, bool>>();
                 Dictionary<int, bool> nodeIdCount;
+                Dictionary<int, int> oldNodeIdNewNodeId = new Dictionary<int, int>();
                 //
                 int numOfNodes;
                 int numOfElements;
                 int numOfEdges;
-                int elementId = 1;
+                int elementId = firstElementId;
+                int possibleNodeId;
                 string[] splitter = new string[] { " " };
                 string[] tmp;
                 string[] lines = File.ReadAllLines(fileName);
                 int surfaceId;
                 int edgeId;
-                int[] key;
                 //
                 for (int i = 0; i < lines.Length; i++)
                 {
@@ -52,11 +62,17 @@ namespace FileInOut.Input
                                 if (tmp.Length >= 3)
                                 {
                                     node = new FeNode();
-                                    node.Id = j + 1;
+                                    node.Id = j + firstElementId;
                                     node.X = double.Parse(tmp[0]);
                                     node.Y = double.Parse(tmp[1]);
                                     node.Z = double.Parse(tmp[2]);
+                                    possibleNodeId = int.Parse(tmp[3]);
+                                    // If the node id is not equal to 0 check if the node exists by coordinates
+                                    if (existingNodes != null && possibleNodeId != 0)
+                                        node.Id = GetExistingNodeId(node, possibleNodeId, existingNodes, epsilon);
                                     nodes.Add(node.Id, node);
+                                    //
+                                    oldNodeIdNewNodeId.Add(j + 1, node.Id);
                                 }
                             }
                         }
@@ -74,9 +90,9 @@ namespace FileInOut.Input
                                 if (tmp.Length >= 4)
                                 {
                                     triangle = new LinearTriangleElement(elementId++, new int[3]);
-                                    triangle.NodeIds[0] = int.Parse(tmp[0]);
-                                    triangle.NodeIds[1] = int.Parse(tmp[1]);
-                                    triangle.NodeIds[2] = int.Parse(tmp[2]);
+                                    triangle.NodeIds[0] = oldNodeIdNewNodeId[int.Parse(tmp[0])];
+                                    triangle.NodeIds[1] = oldNodeIdNewNodeId[int.Parse(tmp[1])];
+                                    triangle.NodeIds[2] = oldNodeIdNewNodeId[int.Parse(tmp[2])];
                                     surfaceId = int.Parse(tmp[3]) - 1;
                                     //
                                     elements.Add(triangle.Id, triangle);
@@ -112,8 +128,8 @@ namespace FileInOut.Input
                                         }
                                         //
                                         beam = new LinearBeamElement(elementId++, new int[2]);
-                                        beam.NodeIds[0] = int.Parse(tmp[0]);
-                                        beam.NodeIds[1] = int.Parse(tmp[1]);
+                                        beam.NodeIds[0] = oldNodeIdNewNodeId[int.Parse(tmp[0])];
+                                        beam.NodeIds[1] = oldNodeIdNewNodeId[int.Parse(tmp[1])];
                                         //
                                         if (!nodeIdCount.Remove(beam.NodeIds[0])) nodeIdCount.Add(beam.NodeIds[0], true);
                                         if (!nodeIdCount.Remove(beam.NodeIds[1])) nodeIdCount.Add(beam.NodeIds[1], true);
@@ -137,10 +153,8 @@ namespace FileInOut.Input
                 //
                 mesh.ConvertLineFeElementsToEdges(vertexNodeIds);
                 //
-                Dictionary<string, Dictionary<int,int>> partIdNewSurfIdOldSurfId = 
-                    mesh.RenumberVisualizationSurfaces(surfaceIdNodeIds);
-                Dictionary<string, Dictionary<int, int>> partIdNewEdgeIdOldEdgeId = 
-                    mesh.RenumberVisualizationEdges(edgeIdNodeIds);
+                mesh.RenumberVisualizationSurfaces(surfaceIdNodeIds, null, partIdNewSurfIdOldSurfId);
+                mesh.RenumberVisualizationEdges(edgeIdNodeIds, partIdNewEdgeIdOldEdgeId);
                 //
                 mesh.RemoveElementsByType<FeElement1D>();
                 //
@@ -153,6 +167,40 @@ namespace FileInOut.Input
         {
             if (id1 < id2) return new int[] { id1, id2 };
             else return new int[] { id2, id1 };
+        }
+        private static int GetExistingNodeId(FeNode node, int possibleId, Dictionary<int, FeNode> existingNodes, double epsilon)
+        {
+            FeNode node2;
+            // Check if the node ids represent the same coordinates
+            if (existingNodes.TryGetValue(possibleId, out node2))
+            {
+                if (Math.Abs(node.X - node2.X) < epsilon)
+                {
+                    if (Math.Abs(node.Y - node2.Y) < epsilon)
+                    {
+                        if (Math.Abs(node.Z - node2.Z) < epsilon)
+                        {
+                            return node2.Id;
+                        }
+                    }
+                }
+            }
+            // Search for the same coordinates
+            foreach (var entry in existingNodes)
+            {
+                if (Math.Abs(node.X - entry.Value.X) < epsilon)
+                {
+                    if (Math.Abs(node.Y - entry.Value.Y) < epsilon)
+                    {
+                        if (Math.Abs(node.Z - entry.Value.Z) < epsilon)
+                        {
+                            return entry.Key;
+                        }
+                    }
+                }
+            }
+            //
+            return node.Id;
         }
     }
 }

@@ -552,7 +552,7 @@ namespace CaeMesh
         }
 
         // Bounding box
-        private void UpdateMaxNodeAndElementIds()
+        public void UpdateMaxNodeAndElementIds()
         {
             // determine max node id
             _maxNodeId = 0;
@@ -1939,20 +1939,18 @@ namespace CaeMesh
             surfaceEdgeIds = surfaceEdgeIdsHash.ToArray();
         }
         //
-        public Dictionary<string, Dictionary<int, int>> RenumberVisualizationSurfaces(Dictionary<int, HashSet<int>> surfaceIdNodeIds,
-                                                                                      SortedDictionary<int, FaceType> faceTypes = null)
+        public void RenumberVisualizationSurfaces(Dictionary<int, HashSet<int>> surfaceIdNodeIds,
+                                                  SortedDictionary<int, FaceType> faceTypes = null,
+                                                  Dictionary<string, Dictionary<int, int>> partIdNewSurfIdOldSurfId = null)
         {
             Dictionary<int, int> newSurfIdOldSurfId;
-            Dictionary<string, Dictionary<int, int>> partIdNewSurfIdOldSurfId = new Dictionary<string, Dictionary<int, int>>();
             // For each part
             foreach (var entry in _parts)
             {
                 newSurfIdOldSurfId = RenumberVisualizationSurfaces(entry.Value, surfaceIdNodeIds, faceTypes);
-                partIdNewSurfIdOldSurfId.Add(entry.Key, newSurfIdOldSurfId);
+                if (partIdNewSurfIdOldSurfId != null) partIdNewSurfIdOldSurfId.Add(entry.Key, newSurfIdOldSurfId);
                 if (faceTypes != null) CheckForFreeAndErrorElementsInCADPart(entry.Value);
             }
-            //
-            return partIdNewSurfIdOldSurfId;
         }
         public Dictionary<int, int> RenumberVisualizationSurfaces(BasePart part, Dictionary<int, HashSet<int>> surfaceIdNodeIds,
                                                                   SortedDictionary<int, FaceType> faceTypes = null)
@@ -2024,18 +2022,16 @@ namespace CaeMesh
             }
             return oldIdNewId;
         }
-        public Dictionary<string, Dictionary<int, int>> RenumberVisualizationEdges(Dictionary<int, HashSet<int>> edgeIdNodeIds)
+        public void RenumberVisualizationEdges(Dictionary<int, HashSet<int>> edgeIdNodeIds,
+                                               Dictionary<string, Dictionary<int, int>> partIdNewEdgeIdOldEdgeId = null)
         {
             Dictionary<int, int> newEdgeIdOldEdgeId;
-            Dictionary<string, Dictionary<int, int>> partIdNewEdgeIdOldEdgeId = new Dictionary<string, Dictionary<int, int>>();
             // For each part
             foreach (var entry in _parts)
             {
                 newEdgeIdOldEdgeId = RenumberVisualizationEdges(entry.Value, edgeIdNodeIds);
-                partIdNewEdgeIdOldEdgeId.Add(entry.Key, newEdgeIdOldEdgeId);
+                if (partIdNewEdgeIdOldEdgeId != null) partIdNewEdgeIdOldEdgeId.Add(entry.Key, newEdgeIdOldEdgeId);
             }
-            //
-            return partIdNewEdgeIdOldEdgeId;
         }
         public Dictionary<int, int> RenumberVisualizationEdges(BasePart part, Dictionary<int, HashSet<int>> edgeIdNodeIds)
         {
@@ -5492,11 +5488,11 @@ namespace CaeMesh
         #endregion #################################################################################################################
 
         #region Remove entities ####################################################################################################
-        public string[] RemoveUnreferencedNodes(HashSet<int> possiblyUnrefNodeIds, bool removeEmptyNodeSets, bool removeForRemeshing)
+        public HashSet<int> RemoveUnreferencedNodes(HashSet<int> possiblyUnrefNodeIds,
+                                                    bool removeEmptyNodeSets, bool removeForRemeshing)
         {
-            // for each node find it's connected elements
+            // For each node find it's connected elements
             Dictionary<int, List<FeElement>> nodeElements = new Dictionary<int, List<FeElement>>();
-
             foreach (var entry in _elements)
             {
                 foreach (var nodeId in entry.Value.NodeIds)
@@ -5505,68 +5501,78 @@ namespace CaeMesh
                     else nodeElements.Add(nodeId, new List<FeElement>() { entry.Value });
                 }
             }
-
-            // get unreferenced nodes
+            // Get unreferenced nodes
             HashSet<int> unreferenced = new HashSet<int>();
             foreach (var nodeId in possiblyUnrefNodeIds)
             {
                 if (!nodeElements.ContainsKey(nodeId)) unreferenced.Add(nodeId);
             }
-
-            // remove unreferenced nodes
-            foreach (var key in unreferenced) _nodes.Remove(key);
-
-            // remove unreferenced nodes from node sets
-            List<int> newNodeSetLabels = new List<int>();
-            List<string> emptyNodeSets = new List<string>();
-            List<string> changedNodeSets = new List<string>();
-            foreach (var entry in _nodeSets)
+            if (unreferenced.Count > 0)
             {
-                newNodeSetLabels.Clear();
-                foreach (var id in entry.Value.Labels)
+                // Remove unreferenced nodes
+                foreach (var key in unreferenced) _nodes.Remove(key);
+                // Remove unreferenced nodes from node sets
+                List<int> newNodeSetLabels = new List<int>();
+                List<string> emptyNodeSets = new List<string>();
+                List<string> changedNodeSets = new List<string>();
+                foreach (var entry in _nodeSets)
                 {
-                    if (!unreferenced.Contains(id)) newNodeSetLabels.Add(id);
+                    newNodeSetLabels.Clear();
+                    foreach (var id in entry.Value.Labels)
+                    {
+                        if (!unreferenced.Contains(id)) newNodeSetLabels.Add(id);
+                    }
+                    if (newNodeSetLabels.Count != entry.Value.Labels.Length)
+                    {
+                        entry.Value.Labels = newNodeSetLabels.ToArray();
+                        changedNodeSets.Add(entry.Key);
+                    }
+                    if (entry.Value.Labels.Length == 0) emptyNodeSets.Add(entry.Key);
                 }
-                if (newNodeSetLabels.Count != entry.Value.Labels.Length)
+                // Changed node sets
+                bool geometryBased;
+                FeNodeSet nodeSet;
+                foreach (string name in changedNodeSets)
                 {
-                    entry.Value.Labels = newNodeSetLabels.ToArray();
-                    changedNodeSets.Add(entry.Key);
+                    nodeSet = _nodeSets[name];
+                    geometryBased = nodeSet.CreationData != null && nodeSet.CreationData.IsGeometryBased();
+                    // Do not change the geometry based node set if remeshing is done
+                    if (!(removeForRemeshing && geometryBased))
+                    {
+                        UpdateNodeSetCenterOfGravity(nodeSet);
+                        nodeSet.CreationData = new Selection();
+                        nodeSet.CreationData.Add(new SelectionNodeIds(vtkSelectOperation.None, false, nodeSet.Labels));
+                        nodeSet.Valid = false;          // mark it as unvalid to highlight it for the user
+                    }
                 }
-                if (entry.Value.Labels.Length == 0) emptyNodeSets.Add(entry.Key);
-            }
-
-            // changed node sets
-            bool geometryBased;
-            FeNodeSet nodeSet;
-            foreach (string name in changedNodeSets)
-            {
-                nodeSet = _nodeSets[name];
-                geometryBased = nodeSet.CreationData != null && nodeSet.CreationData.IsGeometryBased();
-
-                // do not change the geometry based node set if remeshing is done
-                if (!(removeForRemeshing && geometryBased))
+                // Remove empty node sets
+                if (removeEmptyNodeSets)
                 {
-                    UpdateNodeSetCenterOfGravity(nodeSet);
-                    nodeSet.CreationData = new Selection();
-                    nodeSet.CreationData.Add(new SelectionNodeIds(vtkSelectOperation.None, false, nodeSet.Labels));
-                    nodeSet.Valid = false;          // mark it as unvalid to highlight it for the user
+                    foreach (var name in emptyNodeSets) _nodeSets.Remove(name);
+                }
+                // Remove unreferenced nodes from parts
+                foreach (var entry in _parts)
+                {
+                    newNodeSetLabels.Clear();
+                    foreach (var id in entry.Value.NodeLabels)
+                    {
+                        if (!unreferenced.Contains(id)) newNodeSetLabels.Add(id);
+                    }
+                    if (newNodeSetLabels.Count != entry.Value.NodeLabels.Length)
+                    {
+                        entry.Value.NodeLabels = newNodeSetLabels.ToArray();
+                    }
                 }
             }
-
-            // remove empty node sets
-            if (removeEmptyNodeSets)
-            {
-                foreach (var name in emptyNodeSets) _nodeSets.Remove(name);
-            }
-
-            return emptyNodeSets.ToArray();
+            //
+            return unreferenced;
         }
         public string[] RemoveElementsFromElementSets(HashSet<int> removedElementIds, bool removeEmptyElementSets, bool removeForRemeshing)
         {
             List<int> newElementSetLabels = new List<int>();
             List<string> emptyElementSets = new List<string>();
             List<string> changedElementSets = new List<string>();
-
+            //
             foreach (var entry in _elementSets)
             {
                 newElementSetLabels.Clear();
@@ -5581,16 +5587,14 @@ namespace CaeMesh
                 }
                 if (entry.Value.Labels.Length == 0) emptyElementSets.Add(entry.Key);
             }
-
-            // changed element sets
+            // Changed element sets
             bool geometryBased;
             FeElementSet elementSet;
             foreach (string name in changedElementSets)
             {
                 elementSet = _elementSets[name];
                 geometryBased = elementSet.CreationData != null && elementSet.CreationData.IsGeometryBased();
-
-                // do not change the geometry based element set if remeshing is done
+                // Do not change the geometry based element set if remeshing is done
                 if (!(removeForRemeshing && geometryBased))
                 {
                     elementSet.CreationData = new Selection();
@@ -5598,13 +5602,12 @@ namespace CaeMesh
                     elementSet.Valid = false;          // mark it as unvalid to highlight it for the user
                 }
             }
-
-            // remove empty element sets
+            // Remove empty element sets
             if (removeEmptyElementSets)
             {
                 foreach (var name in emptyElementSets) _elementSets.Remove(name);
             }
-
+            //
             return changedElementSets.ToArray();
         }
         public string[] RemoveElementsFromSurfaceFaces(HashSet<int> removedElementIds,
@@ -5668,14 +5671,13 @@ namespace CaeMesh
             HashSet<int> possiblyUnrefNodeIds = new HashSet<int>();
             List<string> removedPartsList = new List<string>();     // Use a list to keep the sorting of the input partNames
             HashSet<int> removedElementIds = new HashSet<int>();
-
+            //
             int partCount = 0;
             foreach (var name in partNames)
             {
                 if (!_parts.ContainsKey(name)) removedPartIds[partCount] = -1;
                 else
                 {
-                    //
                     removedPartIds[partCount] = _parts[name].PartId;
                     // Remove elements
                     foreach (int elementId in _parts[name].Labels)
@@ -5698,9 +5700,9 @@ namespace CaeMesh
             // Remove unreferenced nodes and keep empty node sets
             RemoveUnreferencedNodes(possiblyUnrefNodeIds, false, removeForRemeshing);
             // Remove elements from element sets and find empty element sets but do not remove them
-            string[] changedElementSets = RemoveElementsFromElementSets(removedElementIds, false, removeForRemeshing);
+            RemoveElementsFromElementSets(removedElementIds, false, removeForRemeshing);
             // Find changed surface
-            string[] changedSurfaces = RemoveElementsFromSurfaceFaces(removedElementIds, false, removeForRemeshing);
+            RemoveElementsFromSurfaceFaces(removedElementIds, false, removeForRemeshing);
             // Bounding box
             ComputeBoundingBox();
             //
@@ -5751,61 +5753,62 @@ namespace CaeMesh
         {
             HashSet<int> removedElementIds = new HashSet<int>();
             HashSet<int> possiblyUnrefNodeIds = new HashSet<int>();
-
             foreach (var entry in _elements)
             {
                 if (entry.Value is T)
                 {
-                    // get removed element ids
+                    // Get removed element ids
                     foreach (int nodeId in entry.Value.NodeIds) possiblyUnrefNodeIds.Add(nodeId);
                     removedElementIds.Add(entry.Key);
                 }
             }
-            // remove elements
-            foreach (var elementId in removedElementIds) _elements.Remove(elementId);
-
+            //
+            RemoveElementsByIds(removedElementIds, possiblyUnrefNodeIds, true, true, false);
+        }
+        public HashSet<int> RemoveElementsByIds(HashSet<int> elementIds, HashSet<int> possiblyUnrefNodeIds,
+                                                bool removeEmptyParts,
+                                                bool removeEmptyNodeSets,
+                                                bool removeForRemeshing)
+        {
+            // Remove elements
+            foreach (var elementId in elementIds) _elements.Remove(elementId);
+            // Remove elements from element sets
             List<int> newLabels = new List<int>();
             List<string> emptyElementSets = new List<string>();
-
-            // remove elements from element sets
             foreach (var entry in _elementSets)
             {
                 newLabels.Clear();
                 foreach (var id in entry.Value.Labels)
                 {
-                    if (!removedElementIds.Contains(id)) newLabels.Add(id);
+                    if (!elementIds.Contains(id)) newLabels.Add(id);
                 }
                 if (newLabels.Count == 0) emptyElementSets.Add(entry.Key);
                 else entry.Value.Labels = newLabels.ToArray();
             }
-
-            foreach (var key in emptyElementSets)
-            {
-                _elementSets.Remove(key);
-            }
-
+            //
+            foreach (var key in emptyElementSets) _elementSets.Remove(key);
+            //
             List<string> emptyParts = new List<string>();
-
-            // remove elements from Parts
+            // Remove elements from Parts
             foreach (var entry in _parts)
             {
                 newLabels.Clear();
                 foreach (var id in entry.Value.Labels)
                 {
-                    if (!removedElementIds.Contains(id)) newLabels.Add(id);
+                    if (!elementIds.Contains(id)) newLabels.Add(id);
                 }
+                entry.Value.Labels = newLabels.ToArray();
+                //
                 if (newLabels.Count == 0) emptyParts.Add(entry.Key);
-                else entry.Value.Labels = newLabels.ToArray();
             }
-
-            foreach (var key in emptyParts)
-            {
-                _parts.Remove(key);
-            }
-
-            RemoveUnreferencedNodes(possiblyUnrefNodeIds, true, false);
-
+            //
+            if (removeEmptyParts) foreach (var key in emptyParts) _parts.Remove(key);
+            //
+            HashSet<int> unreferenced = RemoveUnreferencedNodes(possiblyUnrefNodeIds, removeEmptyNodeSets, removeForRemeshing);
+            //
             ComputeBoundingBox();
+            //
+            return unreferenced;
         }
 
         #endregion #################################################################################################################
@@ -6312,8 +6315,7 @@ namespace CaeMesh
         private int[] GetRenumberedNodesAndCells(int firstNodeId, out double[][] nodeCoor, ref int[][] cells)
         {
             HashSet<int> nodeIds = new HashSet<int>();
-
-            // get all cells and all nodes ids for elementSet
+            // Get all cells and all nodes ids for elementSet
             for (int i = 0; i < cells.Length; i++)
             {
                 for (int j = 0; j < cells[i].Length; j++)
@@ -6321,8 +6323,7 @@ namespace CaeMesh
                     nodeIds.Add(cells[i][j]);
                 }
             }
-
-            // get all node coordinates and prepare re-numbering map
+            // Get all node coordinates and prepare re-numbering map
             Dictionary<int, int> oldIds = new Dictionary<int, int>();   // the order of items is not retained
             int[] orderedNodeIds = new int[nodeIds.Count];
             nodeCoor = new double[nodeIds.Count][];
@@ -6334,7 +6335,7 @@ namespace CaeMesh
                 orderedNodeIds[count] = nodeId;
                 count++;
             }
-
+            //
             for (int i = 0; i < cells.Length; i++)
             {
                 for (int j = 0; j < cells[i].Length; j++)
@@ -6342,7 +6343,7 @@ namespace CaeMesh
                     cells[i][j] = oldIds[cells[i][j]] + firstNodeId;
                 }
             }
-
+            //
             return orderedNodeIds;       // return ordered node ids for the nodeCoords
         }
         public int[][] GetFreeEdgesFromVisualizationCells(int[][] cells)
