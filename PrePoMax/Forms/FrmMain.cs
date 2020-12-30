@@ -2407,6 +2407,8 @@ namespace PrePoMax
             //
             if (part.PartType == PartType.Shell && part is GeometryPart gp && gp.CADFileData == null)
                 defaultMeshingParameters.UseMmg = true;
+            else if (part.PartType == PartType.Shell && part is MeshPart)   // for remeshing
+                defaultMeshingParameters.UseMmg = true;
             //
             defaultMeshingParameters.MaxH = CaeGlobals.Tools.RoundToSignificantDigits(maxSize / factorMax, 2);
             defaultMeshingParameters.MinH = CaeGlobals.Tools.RoundToSignificantDigits(maxSize / factorMin, 2);

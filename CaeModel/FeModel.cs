@@ -615,7 +615,7 @@ namespace CaeModel
             if (Path.GetExtension(fileName) == ".vol")
                 mesh = FileInOut.Input.VolFileReader.Read(fileName, elementsToImport, convertToSecondorder);
             else if (Path.GetExtension(fileName) == ".mesh")
-                mesh = FileInOut.Input.MmgFileReader.Read(fileName, MeshRepresentation.Mesh);
+                mesh = FileInOut.Input.MmgFileReader.Read(fileName, MeshRepresentation.Mesh, convertToSecondorder);
             else throw new NotSupportedException();
             // Split compound mesh
             if (splitCompoundMesh) mesh.SplitCompoundMesh();
@@ -642,28 +642,34 @@ namespace CaeModel
                     importedParts[i].Color = _geometry.Parts[importedParts[i].Name].Color;
             }
         }
-        public void ImportGeneratedRemeshFromMeshFile(string fileName, int[] elementIds, BasePart part, bool convertToSecondorder)
+        public void ImportGeneratedRemeshFromMeshFile(string fileName, int[] elementIds, BasePart part,
+                                                      bool convertToSecondOrder, Dictionary<int[], FeNode> midNodes)
         {
-            // Remove elements
+            // Remove elements from the mesh
             HashSet<int> possiblyUnrefNodeIds = new HashSet<int>();
-            foreach (var elId in elementIds) possiblyUnrefNodeIds.UnionWith(_mesh.Elements[elId].NodeIds);
+            foreach (var elId in elementIds) possiblyUnrefNodeIds.UnionWith(_mesh.Elements[elId].NodeIds);  // contains midside nodes
             HashSet<int> removedNodeIds =
                 _mesh.RemoveElementsByIds(new HashSet<int>(elementIds), possiblyUnrefNodeIds, false, false, true);
-            HashSet<int> borderNodeIds = new HashSet<int>(possiblyUnrefNodeIds.Except(removedNodeIds));
+            HashSet<int> borderNodeIds = new HashSet<int>(possiblyUnrefNodeIds.Except(removedNodeIds));     // contains midside nodes
             Dictionary<int, FeNode> borderNodes = new Dictionary<int, FeNode>();
-            foreach (var ndId in borderNodeIds) borderNodes.Add(ndId, _mesh.Nodes[ndId]);
-
+            foreach (var ndId in borderNodeIds) borderNodes.Add(ndId, _mesh.Nodes[ndId]);                   // contains midside nodes
+            HashSet<int> remainingNodeIds = new HashSet<int>(_mesh.Nodes.Keys.Except(removedNodeIds));
             // Read the mmg file and renumber nodes and elements
             double epsilon = 1E-6;
             double max = part.BoundingBox.GetDiagonal();
             Dictionary<string, Dictionary<int, int>> partIdNewSurfIdOldSurfId = new Dictionary<string, Dictionary<int, int>>();
             Dictionary<string, Dictionary<int, int>> partIdNewEdgeIdOldEdgeId = new Dictionary<string, Dictionary<int, int>>();
-
-            FeMesh mmgMmesh = FileInOut.Input.MmgFileReader.Read(fileName, MeshRepresentation.Mesh,
+            FeMesh mmgMmesh = FileInOut.Input.MmgFileReader.Read(fileName, MeshRepresentation.Mesh, convertToSecondOrder,
                                                                  _mesh.MaxNodeId + 1, _mesh.MaxElementId + 1,
-                                                                 borderNodes, epsilon * max,
+                                                                 borderNodes, midNodes,
+                                                                 epsilon * max,
                                                                  partIdNewSurfIdOldSurfId, partIdNewEdgeIdOldEdgeId);
-            BasePart mmgPart = mmgMmesh.Parts.First().Value;
+            // Get surface nodes before modification
+            Dictionary<int, HashSet<int>> surfaceIdNodeIds = part.Visualization.GetNodeIdsBySurfaces();
+            foreach (var entry in surfaceIdNodeIds) entry.Value.ExceptWith(removedNodeIds);
+            // Get edge nodes before modification
+            Dictionary<int, HashSet<int>> edgeIdNodeIds = part.Visualization.GetNodeIdsByEdges();
+            foreach (var entry in edgeIdNodeIds) entry.Value.ExceptWith(removedNodeIds);
             // Add elements to mesh                                                                                     
             FeElement element;
             foreach (var entry in mmgMmesh.Elements)
@@ -674,7 +680,7 @@ namespace CaeModel
             }
             // Add elements to part
             HashSet<int> newPartElementIds = new HashSet<int>(part.Labels);
-            newPartElementIds.UnionWith(_mesh.Elements.Keys);
+            newPartElementIds.UnionWith(mmgMmesh.Elements.Keys);
             part.Labels = newPartElementIds.ToArray();
             Array.Sort(part.Labels);
             // Add nodes to mesh                                                                                        
@@ -687,41 +693,87 @@ namespace CaeModel
             newPartNodeIds.UnionWith(_mesh.Nodes.Keys);
             part.NodeLabels = newPartNodeIds.ToArray();
             Array.Sort(part.NodeLabels);
-            // Update ids
+            // Update node ids
             _mesh.UpdateMaxNodeAndElementIds();
+            // Model vertices                                                                                           
+            HashSet<int> vertexNodeIds = new HashSet<int>();
+            // Get vertices from part - only those that were not removed
+            foreach (var nodeId in part.Visualization.VertexNodeIds)
+            {
+                if (!removedNodeIds.Contains(nodeId)) vertexNodeIds.Add(nodeId);
+            }
+            // Get vertices from mmgPart
+            foreach (var entry in mmgMmesh.Parts) vertexNodeIds.UnionWith(entry.Value.Visualization.VertexNodeIds);
             // Model edges                                                                                              
-            int nodeId = mmgMmesh.MaxNodeId + 1;
             int elementId = mmgMmesh.MaxElementId + 1;
-            VisualizationData vis = part.Visualization;
             LinearBeamElement beamElement;
             List<FeElement1D> edgeElements = new List<FeElement1D>();
             // Get model edges from part - only edges that are not completely removed
+            int[] key;
+            CompareIntArray comparer = new CompareIntArray();
+            HashSet<int[]> edgeKeys = new HashSet<int[]>(comparer);
+            //
             foreach (var edgeCell in part.Visualization.EdgeCells)
             {
-                if (!(possiblyUnrefNodeIds.Contains(edgeCell[0]) && possiblyUnrefNodeIds.Contains(edgeCell[1])))
+                if (remainingNodeIds.Contains(edgeCell[0]) && remainingNodeIds.Contains(edgeCell[1]))
                 {
-                    beamElement = new LinearBeamElement(elementId++, new int[] { edgeCell[0], edgeCell[1] });
-                    edgeElements.Add(beamElement);
+                    key = Tools.GetSortedKey(edgeCell[0], edgeCell[1]);
+                    if (!edgeKeys.Contains(key))
+                    {
+                        beamElement = new LinearBeamElement(elementId++, key);
+                        edgeElements.Add(beamElement);
+                        edgeKeys.Add(key);
+                    }
                 }
             }
             // Get model edges from mmgPart
-            foreach (var edgeCell in mmgPart.Visualization.EdgeCells)
+            foreach (var entry in mmgMmesh.Parts)
             {
-                beamElement = new LinearBeamElement(elementId++, new int[] { edgeCell[0], edgeCell[1] });
-                edgeElements.Add(beamElement);
+                foreach (var edgeCell in entry.Value.Visualization.EdgeCells)
+                {
+                    key = Tools.GetSortedKey(edgeCell[0], edgeCell[1]);
+                    if (!edgeKeys.Contains(key))
+                    {
+                        beamElement = new LinearBeamElement(elementId++, key);
+                        edgeElements.Add(beamElement);
+                        edgeKeys.Add(key);
+                    }
+                }
             }
             // Add edge elements to mesh
             foreach (var edgeElement in edgeElements) _mesh.Elements.Add(edgeElement.Id, edgeElement);
-            // Extract visualization
+            // Extract visualization                                                                                    
             _mesh.ExtractShellPartVisualization(part, false, -1);
             //
-            _mesh.ConvertLineFeElementsToEdges();
+            _mesh.ConvertLineFeElementsToEdges(vertexNodeIds, false, part.Name);
+            // Renumber surfaces                                                                                        
+            BasePart mmgPart;
+            Dictionary<int, HashSet<int>> itemIdNodeIds;
+            foreach (var partNewSurfIdOldSurfId in partIdNewSurfIdOldSurfId)
+            {
+                mmgPart = mmgMmesh.Parts[partNewSurfIdOldSurfId.Key];
+                itemIdNodeIds = mmgPart.Visualization.GetNodeIdsBySurfaces();
+                //
+                foreach (var newSurfIdOldSurfId in partNewSurfIdOldSurfId.Value)
+                {
+                    surfaceIdNodeIds[newSurfIdOldSurfId.Value].UnionWith(itemIdNodeIds[newSurfIdOldSurfId.Key]);
+                }
+            }
+            _mesh.RenumberVisualizationSurfaces(part, surfaceIdNodeIds);
+            // Renumber edges                                                                                           
+            foreach (var partNewEdgeIdOldEdgeId in partIdNewEdgeIdOldEdgeId)
+            {
+                mmgPart = mmgMmesh.Parts[partNewEdgeIdOldEdgeId.Key];
+                itemIdNodeIds = mmgPart.Visualization.GetNodeIdsByEdges();
+                //
+                foreach (var newEdgeIdOldEdgeId in partNewEdgeIdOldEdgeId.Value)
+                {
+                    edgeIdNodeIds[newEdgeIdOldEdgeId.Value].UnionWith(itemIdNodeIds[newEdgeIdOldEdgeId.Key]);
+                }
+            }
+            _mesh.RenumberVisualizationEdges(part, edgeIdNodeIds);
             //
             _mesh.RemoveElementsByType<FeElement1D>();
-
-
-            //
-            //ImportMesh(mmgMmesh, null, false);
         }
         public List<string> ImportMeshFromInpFile(string fileName, Action<string> WriteDataToOutput)
         {

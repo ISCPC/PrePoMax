@@ -987,26 +987,67 @@ namespace PrePoMax
             // Update the sets and symbols
             FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
-        public void ImportGeneratedRemesh(string fileName, int[] elementIds, BasePart part, bool convertToSecondOrder)
+        public void ImportGeneratedRemesh(string fileName, int[] elementIds, BasePart part,
+                                          bool convertToSecondOrder, Dictionary<int[], FeNode> midNodes,
+                                          bool preview)
         {
             if (!File.Exists(fileName))
                 throw new CaeException("The file: '" + fileName + "' does not exist." + Environment.NewLine +
                                        "The reason is a failed mesh generation procedure for part: " + part.Name);
-            // Import, convert and split mesh
-            _model.ImportGeneratedRemeshFromMeshFile(fileName, elementIds, part, convertToSecondOrder);
-            // Regenerate and change the DisplayedMesh to Model before updating sets
-            _form.Clear3D();
-            _currentView = ViewGeometryModelResults.Model;
-            _form.SetCurrentView(_currentView);
-            // Regenerate tree
-            _form.RegenerateTree(_model, _jobs, _results, _history);
-            // Redraw to be able to update sets based on selection
-            FeModelUpdate(UpdateType.DrawModel);
-            // At the end update the sets
-            // Update sets - must be called with rendering off - SetStateWorking
-            UpdateGeometryBasedItems(false);
-            // Update the sets and symbols
-            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
+            //
+            if (preview)
+            {
+                int id2;
+                int[] key;
+                FeElement element;
+                CompareIntArray comparer = new CompareIntArray();
+                HashSet<int[]> edgeKeys = new HashSet<int[]>(comparer);
+                List<double[][]> lines = new List<double[][]>();
+                double[][] line;
+                //
+                FeMesh mmgMmesh = FileInOut.Input.MmgFileReader.Read(fileName, MeshRepresentation.Mesh);
+                //
+                foreach (var entry in mmgMmesh.Elements)
+                {
+                    element = entry.Value;
+                    if (entry.Value is LinearTriangleElement lte)
+                    {
+                        for (int i = 0; i < 3; i++)
+                        {
+                            id2 = (i + 1) % 3;
+                            key = CaeGlobals.Tools.GetSortedKey(element.NodeIds[i], element.NodeIds[id2]);
+                            if (!edgeKeys.Contains(key))
+                            {
+                                line = new double[2][];
+                                line[0] = mmgMmesh.Nodes[element.NodeIds[i]].Coor;
+                                line[1] = mmgMmesh.Nodes[element.NodeIds[id2]].Coor;
+                                lines.Add(line);
+                                edgeKeys.Add(key);
+                            }
+                        }
+                    }
+                    else throw new NotSupportedException();
+                }
+                //
+                HighlightConnectedEdges(lines.ToArray());
+            }
+            else
+            {
+                _model.ImportGeneratedRemeshFromMeshFile(fileName, elementIds, part, convertToSecondOrder, midNodes);
+                // Regenerate and change the DisplayedMesh to Model before updating sets
+                _form.Clear3D();
+                _currentView = ViewGeometryModelResults.Model;
+                _form.SetCurrentView(_currentView);
+                // Regenerate tree
+                _form.RegenerateTree(_model, _jobs, _results, _history);
+                // Redraw to be able to update sets based on selection
+                FeModelUpdate(UpdateType.DrawModel);
+                // At the end update the sets
+                // Update sets - must be called with rendering off - SetStateWorking
+                UpdateGeometryBasedItems(false);
+                // Update the sets and symbols
+                FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
+            }
         }
         private void UpdateGeometryBasedItems(bool feModelUpdate)
         {
@@ -2276,10 +2317,59 @@ namespace PrePoMax
             System.Diagnostics.PerformanceCounter ramCounter;
             ramCounter = new System.Diagnostics.PerformanceCounter("Memory", "Available MBytes");
             //
+
+
+
+            //string argument = "-nr " +
+            //                  "-m " + ramCounter.NextValue() * 0.9 + " " +
+            //                  //"-ar 0 " +
+            //                  //"-hsiz 0.08 " +  
+            //                  "-hmax " + part.MeshingParameters.MaxH + " " +
+            //                  "-hmin " + part.MeshingParameters.MinH + " " +
+            //                  "-hausd " + part.MeshingParameters.Hausdorff + " " +
+            //                  "-in \"" + mmgInFileName + "\" " +
+            //                  "-out \"" + mmgOutFileName + "\" ";
+            ////
+            //_netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
+            //_netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
+            //_netgenJob.Submit();
+            ////
+            //if (_netgenJob.JobStatus == JobStatus.OK)
+            //{
+            //    ImportGeneratedMesh(mmgOutFileName, part, false);
+            //    return true;
+            //}
+            //else return false;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             string argument = //"-nr " + 
                               "-m " + ramCounter.NextValue() * 0.9 + " " +
                               "-ar 0.01 " + // this removes curving of the faces
-                              //"-hsiz 0.08 " +  
+                                            //"-hsiz 0.08 " +  
                               "-hmax " + part.MeshingParameters.MaxH + " " +
                               "-hmin " + part.MeshingParameters.MinH + " " +
                               "-hausd " + part.MeshingParameters.Hausdorff + " " +
@@ -2301,7 +2391,7 @@ namespace PrePoMax
                 //
                 FileInOut.Output.MmgFileWriter.Write(mmgInFileName, partOut, mesh, part.MeshingParameters.KeepModelEdges, true);
                 //
-                argument = "-nr " + 
+                argument = "-nr " +
                            "-m " + ramCounter.NextValue() * 0.9 + " " +
                            //"-ar 0 " +
                            //"-hsiz 0.08 " +  
@@ -2647,7 +2737,7 @@ namespace PrePoMax
             UpdateGeometryBasedItems(false);
             FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
-        public bool RemeshElements(RemeshingParameters remeshingParameters)
+        public bool RemeshElements(RemeshingParameters remeshingParameters, bool preview = false)
         {
             bool result;
             // Create an element set to reselect the selection based items
@@ -2669,18 +2759,19 @@ namespace PrePoMax
             elementSet.Internal = true;
             AddElementSet(elementSet);
             //
-            result = RemeshShellElements(elementSet, remeshingParameters);
+            result = RemeshShellElements(elementSet, remeshingParameters, preview);
             //
             RemoveElementSets(new string[] { elementSet.Name });
             //
             return result;
         }
-        private bool RemeshShellElements(FeElementSet elementSet, RemeshingParameters remeshingParameters)
+        private bool RemeshShellElements(FeElementSet elementSet, RemeshingParameters remeshingParameters, bool preview)
         {
             bool result = true;
             FeElement element;
             List<int> elementIds;
             Dictionary<int, List<int>> partIdElementIds = new Dictionary<int, List<int>>();
+            // Collect elements by part id
             foreach (var elementId in elementSet.Labels)
             {
                 element = _model.Mesh.Elements[elementId];
@@ -2690,17 +2781,18 @@ namespace PrePoMax
                     else partIdElementIds.Add(element.PartId, new List<int>() { elementId });
                 }
             }
-            //
+            // Remesh
             MeshPart part;
             foreach (var entry in partIdElementIds)
             {
                 part = (MeshPart)_model.Mesh.GetPartById(entry.Key);
-                result &= RemeshShellElementsByPart(part, entry.Value.ToArray(), remeshingParameters);
+                result &= RemeshShellElementsByPart(part, entry.Value.ToArray(), remeshingParameters, preview);
             }
             //
             return result;
         }
-        private bool RemeshShellElementsByPart(MeshPart part, int[] elementIds, RemeshingParameters remeshingParameters)
+        private bool RemeshShellElementsByPart(MeshPart part, int[] elementIds, RemeshingParameters remeshingParameters,
+                                               bool preview)
         {
             CalculixSettings settings = _settings.Calculix;
             if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
@@ -2721,14 +2813,41 @@ namespace PrePoMax
             if (File.Exists(mmgOutFileName)) File.Delete(mmgOutFileName);
             if (File.Exists(mmgSolFileName)) File.Delete(mmgSolFileName);
             //
+            Dictionary<int[], FeNode> midNodes;
             FileInOut.Output.MmgFileWriter.WriteShellElements(mmgInFileName, elementIds, part, _model.Mesh,
-                                                              remeshingParameters.KeepModelEdges);
+                                                              remeshingParameters.KeepModelEdges, out midNodes);
             //
             System.Diagnostics.PerformanceCounter ramCounter;
             ramCounter = new System.Diagnostics.PerformanceCounter("Memory", "Available MBytes");
             //
-            //string argument = //"-n 4 " +
-            //                  "-nr " + 
+            string argument = "-nr " +
+                              "-optim " +
+                              //"-ar 30 " +
+                              "-m " + ramCounter.NextValue() * 0.9 + " " +
+                              "-hgrad " + 1 + " " +
+                              "-hgradreq " + 1 + " " +
+                              "-hmax " + remeshingParameters.MaxH + " " +
+                              "-hmin " + remeshingParameters.MinH + " " +
+                              "-hausd " + remeshingParameters.Hausdorff + " " +
+                              "-in \"" + mmgInFileName + "\" " +
+                              "-out \"" + mmgOutFileName + "\" ";
+            //
+            _netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
+            _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
+            _netgenJob.Submit();
+            // Job completed
+            if (_netgenJob.JobStatus == JobStatus.OK)
+            {
+                HashSet<bool> parabolic = new HashSet<bool>();
+                foreach (var elementType in part.ElementTypes) parabolic.Add(FeElement.IsParabolic(elementType));
+                if (parabolic.Count != 1) throw new NotSupportedException();
+                ImportGeneratedRemesh(mmgOutFileName, elementIds, part, parabolic.First(), midNodes, preview);
+                return true;
+            }
+            else return false;
+
+
+            //argument = "-ar 0.01 " + // this removes curving of the faces
             //                  "-m " + ramCounter.NextValue() * 0.9 + " " +
             //                  "-hmax " + remeshingParameters.MaxH + " " +
             //                  "-hmin " + remeshingParameters.MinH + " " +
@@ -2742,54 +2861,36 @@ namespace PrePoMax
             //// Job completed
             //if (_netgenJob.JobStatus == JobStatus.OK)
             //{
-            //    ImportGeneratedRemesh(mmgOutFileName, elementIds, part, remeshingParameters.SecondOrder);
-            //    return true;
+            //    FeMesh mesh = FileInOut.Input.MmgFileReader.Read(mmgOutFileName, MeshRepresentation.Geometry);
+            //    GeometryPart partOut = (GeometryPart)mesh.Parts.First().Value;
+            //    //
+            //    if (File.Exists(mmgInFileName)) File.Delete(mmgInFileName);
+            //    if (File.Exists(mmgOutFileName)) File.Delete(mmgOutFileName);
+            //    if (File.Exists(mmgSolFileName)) File.Delete(mmgSolFileName);
+            //    //
+            //    FileInOut.Output.MmgFileWriter.Write(mmgInFileName, partOut, mesh, remeshingParameters.KeepModelEdges, true);
+            //    //
+            //    argument = "-nr " + // no edge detection
+            //               "-m " + ramCounter.NextValue() * 0.9 + " " +
+            //               "-hgrad " + 1 + " " +
+            //               "-hmax " + remeshingParameters.MaxH + " " +
+            //               "-hmin " + remeshingParameters.MinH + " " +
+            //               "-hausd " + remeshingParameters.Hausdorff + " " +
+            //               "-in \"" + mmgInFileName + "\" " +
+            //               "-out \"" + mmgOutFileName + "\" ";
+            //    //
+            //    _netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
+            //    _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
+            //    _netgenJob.Submit();
+            //    //
+            //    if (_netgenJob.JobStatus == JobStatus.OK)
+            //    {
+            //        ImportGeneratedRemesh(mmgOutFileName, elementIds, part, remeshingParameters.SecondOrder, midNodes);
+            //        return true;
+            //    }
+            //    else return false;
             //}
             //else return false;
-
-            string argument = "-ar 0.01 " + // this removes curving of the faces
-                              "-m " + ramCounter.NextValue() * 0.9 + " " +
-                              "-hmax " + remeshingParameters.MaxH + " " +
-                              "-hmin " + remeshingParameters.MinH + " " +
-                              "-hausd " + remeshingParameters.Hausdorff + " " +
-                              "-in \"" + mmgInFileName + "\" " +
-                              "-out \"" + mmgOutFileName + "\" ";
-            //
-            _netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
-            _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
-            _netgenJob.Submit();
-            // Job completed
-            if (_netgenJob.JobStatus == JobStatus.OK)
-            {
-                FeMesh mesh = FileInOut.Input.MmgFileReader.Read(mmgOutFileName, MeshRepresentation.Geometry);
-                GeometryPart partOut = (GeometryPart)mesh.Parts.First().Value;
-                //
-                if (File.Exists(mmgInFileName)) File.Delete(mmgInFileName);
-                if (File.Exists(mmgOutFileName)) File.Delete(mmgOutFileName);
-                if (File.Exists(mmgSolFileName)) File.Delete(mmgSolFileName);
-                //
-                FileInOut.Output.MmgFileWriter.Write(mmgInFileName, partOut, mesh, remeshingParameters.KeepModelEdges, true);
-                //
-                argument = "-nr " + // no edge detection
-                           "-m " + ramCounter.NextValue() * 0.9 + " " +
-                           "-hmax " + remeshingParameters.MaxH + " " +
-                           "-hmin " + remeshingParameters.MinH + " " +
-                           "-hausd " + remeshingParameters.Hausdorff + " " +
-                           "-in \"" + mmgInFileName + "\" " +
-                           "-out \"" + mmgOutFileName + "\" ";
-                //
-                _netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
-                _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
-                _netgenJob.Submit();
-                //
-                if (_netgenJob.JobStatus == JobStatus.OK)
-                {
-                    ImportGeneratedRemesh(mmgOutFileName, elementIds, part, remeshingParameters.SecondOrder);
-                    return true;
-                }
-                else return false;
-            }
-            else return false;
         }
 
         private bool RemeshShellElementsFromPart(BasePart part)
@@ -3394,9 +3495,12 @@ namespace PrePoMax
             //
             _model.Mesh.ElementSets.Add(elementSet.Name, elementSet);
             //
-            _form.AddTreeNode(ViewGeometryModelResults.Model, elementSet, null);
-            //
-            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
+            if (!elementSet.Internal)   // needed for remeshing
+            {
+                _form.AddTreeNode(ViewGeometryModelResults.Model, elementSet, null);
+                //
+                FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
+            }
         }
         public FeElementSet GetElementSet(string elementSetName)
         {
@@ -3463,15 +3567,17 @@ namespace PrePoMax
         public void RemoveElementSets(string[] elementSetNames)
         {
             FeElementSet elementSet;
+            bool update = false;    // needed for remeshing
             foreach (var name in elementSetNames)
             {
                 if (_model.Mesh.ElementSets.TryRemove(name, out elementSet) && !elementSet.Internal)
                 {
                     _form.RemoveTreeNode<FeElementSet>(ViewGeometryModelResults.Model, name, null);
+                    update = true;
                 }
             }
             //
-            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
+            if (update) FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         //
         private void ReselectElementSet(FeElementSet elementSet)
@@ -5331,7 +5437,7 @@ namespace PrePoMax
                 if (unAssignedElementIds.Length != 0)
                 {
                     string elementSetName = NamedClass.GetNewValueName(_model.Mesh.ElementSets.Keys, "Missing_section-");
-                    AddElementSet(new FeElementSet(elementSetName, unAssignedElementIds));
+                    AddElementSetCommand(new FeElementSet(elementSetName, unAssignedElementIds));
                     //
                     //DrawElements("MissingSection", unAssignedElementIds, Color.Red, vtkControl.vtkRendererLayer.Selection);
                     string msg = unAssignedElementIds.Length + " finite elements are missing a section assignment. Continue?";
@@ -9103,12 +9209,12 @@ namespace PrePoMax
         }
         public void HighlightConnectedLines(double[][] lineNodeCoor)
         {
-            // create wire elements
+            // Create wire elements
             Color color = Color.Red;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
-
+            //
             LinearBeamElement element = new LinearBeamElement(0, new int[] { 0, 1 });
-
+            //
             int[][] cells = new int[lineNodeCoor.GetLength(0) - 1][];
             int[] cellsTypes = new int[cells.GetLength(0)];
             for (int i = 0; i < cells.GetLength(0); i++)
@@ -9116,7 +9222,7 @@ namespace PrePoMax
                 cells[i] = new int[] { i, i + 1 };
                 cellsTypes[i] = element.GetVtkCellType();
             }
-
+            //
             vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
             data.Color = color;
             data.Layer = layer;
@@ -9125,14 +9231,14 @@ namespace PrePoMax
             data.Geometry.Nodes.Coor = lineNodeCoor.ToArray();
             data.Geometry.Cells.CellNodeIds = cells;
             data.Geometry.Cells.Types = cellsTypes;
-
+            //
             ApplyLighting(data);
             _form.Add3DCells(data);
-
+            //
             double[][] nodeCoor = new double[2][];
             nodeCoor[0] = lineNodeCoor[0];
             nodeCoor[1] = lineNodeCoor[lineNodeCoor.Length - 1];
-
+            //
             //DrawNodes("short_edges", nodeCoor, color, layer, nodeSize);
         }
         public void HighlightConnectedEdges(double[][][] lineNodeCoor, int nodeSize = 5)

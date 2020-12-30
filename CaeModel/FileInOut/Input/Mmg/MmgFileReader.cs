@@ -11,16 +11,15 @@ namespace FileInOut.Input
     static public class MmgFileReader
     {
         public static FeMesh Read(string fileName, MeshRepresentation meshRepresentation,
+                                  bool convertToSecondOrder = false,
                                   int firstNodeId = 1,
                                   int firstElementId = 1,
                                   Dictionary<int, FeNode> existingNodes = null,
+                                  Dictionary<int[], FeNode> existingMidNodes = null,
                                   double epsilon = 1E-6,
                                   Dictionary<string, Dictionary<int, int>> partIdNewSurfIdOldSurfId = null,
                                   Dictionary<string, Dictionary<int, int>> partIdNewEdgeIdOldEdgeId = null)
         {
-            partIdNewSurfIdOldSurfId = null;
-            partIdNewEdgeIdOldEdgeId = null;
-            //
             if (File.Exists(fileName))
             {
                 FeNode node;
@@ -62,7 +61,7 @@ namespace FileInOut.Input
                                 if (tmp.Length >= 3)
                                 {
                                     node = new FeNode();
-                                    node.Id = j + firstElementId;
+                                    node.Id = j + firstNodeId;
                                     node.X = double.Parse(tmp[0]);
                                     node.Y = double.Parse(tmp[1]);
                                     node.Z = double.Parse(tmp[2]);
@@ -130,7 +129,7 @@ namespace FileInOut.Input
                                         beam = new LinearBeamElement(elementId++, new int[2]);
                                         beam.NodeIds[0] = oldNodeIdNewNodeId[int.Parse(tmp[0])];
                                         beam.NodeIds[1] = oldNodeIdNewNodeId[int.Parse(tmp[1])];
-                                        //
+                                        // If node already on the edge remove it
                                         if (!nodeIdCount.Remove(beam.NodeIds[0])) nodeIdCount.Add(beam.NodeIds[0], true);
                                         if (!nodeIdCount.Remove(beam.NodeIds[1])) nodeIdCount.Add(beam.NodeIds[1], true);
                                         //
@@ -145,8 +144,24 @@ namespace FileInOut.Input
                         }
                     }
                 }
+                // Count number of edges in an edge node
+                Dictionary<int, int> nodeIdEdgeCount = new Dictionary<int, int>();
+                foreach (var edgeEntry in edgeIdNodeIdCount)
+                {
+                    foreach (var nodeEntry in edgeEntry.Value)
+                    {
+                        if (nodeIdEdgeCount.ContainsKey(nodeEntry.Key)) nodeIdEdgeCount[nodeEntry.Key]++;
+                        else nodeIdEdgeCount.Add(nodeEntry.Key, 1);
+                    }
+                }
+                // Get vertices
                 HashSet<int> vertexNodeIds = new HashSet<int>();
-                foreach (var entry in edgeIdNodeIdCount) vertexNodeIds.UnionWith(entry.Value.Keys);
+                foreach (var entry in nodeIdEdgeCount)
+                {
+                    if (entry.Value > 1) vertexNodeIds.Add(entry.Key);
+                }
+                //
+                if (convertToSecondOrder) FeMesh.LinearToParabolic(ref nodes, ref elements, existingMidNodes);
                 //
                 FeMesh mesh = new FeMesh(nodes, elements, meshRepresentation, null, null, false,
                                          ImportOptions.DetectEdges);
@@ -162,11 +177,6 @@ namespace FileInOut.Input
             }
             //
             return null;
-        }
-        private static int[] GetSortedKey(int id1, int id2)
-        {
-            if (id1 < id2) return new int[] { id1, id2 };
-            else return new int[] { id2, id1 };
         }
         private static int GetExistingNodeId(FeNode node, int possibleId, Dictionary<int, FeNode> existingNodes, double epsilon)
         {

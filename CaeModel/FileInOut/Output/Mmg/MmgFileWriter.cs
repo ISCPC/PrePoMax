@@ -187,8 +187,12 @@ namespace FileInOut.Output
             //
             File.WriteAllText(fileName, sb.ToString());
         }
-        public static void WriteShellElements(string fileName, int[] elementIds, BasePart part, FeMesh mesh, bool keepModelEdges)
+        public static void WriteShellElements(string fileName, int[] elementIds, BasePart part, FeMesh mesh, bool keepModelEdges,
+                                              out Dictionary<int[], FeNode> midNodes)
         {
+            CompareIntArray comparer = new CompareIntArray();
+            midNodes = new Dictionary<int[], FeNode>(comparer);
+            Dictionary<int[], FeNode> allMidNodes = new Dictionary<int[], FeNode>(comparer);
             VisualizationData vis = part.Visualization;
             // File                                                                                 
             StringBuilder sb = new StringBuilder();
@@ -226,9 +230,12 @@ namespace FileInOut.Output
             WriteCorners(sb, cornerIds);
             // Elements                                                                             
             int elementId;
+            int[] key;
+            bool parabolic;
             HashSet<int> allElementIds = new HashSet<int>(elementIds); // for speedup
             List<int[]> triangleNodeIdsSurfaceId = new List<int[]>();
             List<int[]> quadNodeIdsSurfaceId = new List<int[]>();
+            HashSet<int[]> allElementEdges = new HashSet<int[]>(comparer);
             for (int i = 0; i < vis.CellIdsByFace.Length; i++)
             {
                 for (int j = 0; j < vis.CellIdsByFace[i].Length; j++)
@@ -243,6 +250,27 @@ namespace FileInOut.Output
                                                                      oldNodeIdNewId[element.NodeIds[1]],
                                                                      oldNodeIdNewId[element.NodeIds[2]],
                                                                      i + 1 });
+                            //
+                            parabolic = element is ParabolicTriangleElement;
+                            //
+                            key = Tools.GetSortedKey(element.NodeIds[0], element.NodeIds[1]);
+                            if (!allElementEdges.Contains(key))
+                            {
+                                allElementEdges.Add(key);
+                                if (parabolic) allMidNodes.Add(key, mesh.Nodes[element.NodeIds[3]]);
+                            }
+                            key = Tools.GetSortedKey(element.NodeIds[1], element.NodeIds[2]);
+                            if (!allElementEdges.Contains(key))
+                            {
+                                allElementEdges.Add(key);
+                                if (parabolic) allMidNodes.Add(key, mesh.Nodes[element.NodeIds[4]]);
+                            }
+                            key = Tools.GetSortedKey(element.NodeIds[2], element.NodeIds[0]);
+                            if (!allElementEdges.Contains(key))
+                            {
+                                allElementEdges.Add(key);
+                                if (parabolic) allMidNodes.Add(key, mesh.Nodes[element.NodeIds[5]]);
+                            }
                         }
                         else if (element is LinearQuadrilateralElement || element is ParabolicQuadrilateralElement)
                         {
@@ -254,6 +282,33 @@ namespace FileInOut.Output
                                                                      oldNodeIdNewId[element.NodeIds[2]],
                                                                      oldNodeIdNewId[element.NodeIds[3]],
                                                                      i + 1 });
+                            //
+                            parabolic = element is ParabolicTriangleElement;
+                            //
+                            key = Tools.GetSortedKey(element.NodeIds[0], element.NodeIds[1]);
+                            if (!allElementEdges.Contains(key))
+                            {
+                                allElementEdges.Add(key);
+                                if (parabolic) allMidNodes.Add(key, mesh.Nodes[element.NodeIds[3]]);
+                            }
+                            key = Tools.GetSortedKey(element.NodeIds[1], element.NodeIds[2]);
+                            if (!allElementEdges.Contains(key))
+                            {
+                                allElementEdges.Add(key);
+                                if (parabolic) allMidNodes.Add(key, mesh.Nodes[element.NodeIds[4]]);
+                            }
+                            key = Tools.GetSortedKey(element.NodeIds[2], element.NodeIds[3]);
+                            if (!allElementEdges.Contains(key))
+                            {
+                                allElementEdges.Add(key);
+                                if (parabolic) allMidNodes.Add(key, mesh.Nodes[element.NodeIds[5]]);
+                            }
+                            key = Tools.GetSortedKey(element.NodeIds[3], element.NodeIds[0]);
+                            if (!allElementEdges.Contains(key))
+                            {
+                                allElementEdges.Add(key);
+                                if (parabolic) allMidNodes.Add(key, mesh.Nodes[element.NodeIds[6]]);
+                            }
                             //quadNodeIdsSurfaceId.Add(new int[] { oldNodeIdNewId[element.NodeIds[0]],
                             //                                     oldNodeIdNewId[element.NodeIds[1]],
                             //                                     oldNodeIdNewId[element.NodeIds[2]],
@@ -269,9 +324,7 @@ namespace FileInOut.Output
             // Quadrilaterals
             WriteQuadrilaterals(sb, quadNodeIdsSurfaceId);
             // Edges                                                                                
-            int[] key;
             int id1, id2;
-            CompareIntArray comparer = new CompareIntArray();
             Dictionary<int[], int> edgeKeys = new Dictionary<int[], int>(comparer);
             List<int[]> edgeNodeIdsEdgeId = new List<int[]>();
             // Free edges
@@ -285,16 +338,16 @@ namespace FileInOut.Output
                     {
                         id1 = vis.EdgeCells[vis.EdgeCellIdsByEdge[i][j]][0];
                         id2 = vis.EdgeCells[vis.EdgeCellIdsByEdge[i][j]][1];
-                        key = GetSortedKey(id1, id2);
-                        if (!edgeKeys.ContainsKey(key) && (allNodeIds.Contains(id1) && allNodeIds.Contains(id2)))
-                        {                            
+                        key = Tools.GetSortedKey(id1, id2);
+                        if (!edgeKeys.ContainsKey(key) && allElementEdges.Contains(key))
+                        {
                             edgeNodeIdsEdgeId.Add(new int[] { oldNodeIdNewId[id1], oldNodeIdNewId[id2], i + 1 });
                             edgeKeys.Add(key, edgeNodeIdsEdgeId.Count);
                         }
                     }
                 }
             }
-            // Boundary edges
+            // Boundary edges - free edges of the new subPart
             int edgeId;
             int[] edgeCell;
             List<int> requiredEdgeIds = new List<int>();
@@ -304,7 +357,7 @@ namespace FileInOut.Output
                 edgeCell = subPart.Visualization.EdgeCells[subPart.FreeEdgeCellIds[i]];
                 id1 = edgeCell[0];
                 id2 = edgeCell[1];
-                key = GetSortedKey(id1, id2);
+                key = Tools.GetSortedKey(id1, id2);
                 // Add boundary edges to all edges
                 if (!edgeKeys.TryGetValue(key, out edgeId))
                 {
@@ -313,17 +366,23 @@ namespace FileInOut.Output
                     edgeKeys.Add(key, edgeId);
                 }
                 // Free edges must not be kept
-                if (!freeEdges.Contains(key))  requiredEdgeIds.Add(edgeId);
+                if (!freeEdges.Contains(key))
+                {
+                    requiredEdgeIds.Add(edgeId);
+                    if (allMidNodes.Count > 0) midNodes.Add(key, allMidNodes[key]);
+                }
             }
             WriteEdges(sb, edgeNodeIdsEdgeId);
-            // Ridges - all edges are ridges                                                        
-            //int[] ridgeIds = new int[edgeNodeIdsEdgeId.Count];
-            //for (int i = 0; i < ridgeIds.Length; i++) ridgeIds[i] = i + 1;
-            //WriteRidges(sb, requiredEdgeIds.ToArray());
-            // Required edges
+            // Ridges - sharp or triple edges between faces - all edges are ridges                  
+            int[] ridgeIds = new int[edgeNodeIdsEdgeId.Count];
+            for (int i = 0; i < ridgeIds.Length; i++) ridgeIds[i] = i + 1;
+            WriteRidges(sb, ridgeIds);
+            // Required edges                                                                       
             WriteRequiredEdges(sb, requiredEdgeIds.ToArray());
             // End                                                                                  
             WriteEnd(sb);
+            //
+            if (midNodes.Count == 0) midNodes = null;
             //
             File.WriteAllText(fileName, sb.ToString());
         }
@@ -473,9 +532,7 @@ namespace FileInOut.Output
                 //
                 foreach (var cellEdge in cellEdges)
                 {
-                    key = cellEdge.ToArray();
-                    Array.Sort(key);
-                    //
+                    key = Tools.GetSortedKey(cellEdge[0], cellEdge[1]);
                     if (allEdges.TryGetValue(key, out count)) count[0]++;
                     else allEdges.Add(key, new byte[] { 1 });
                 }
@@ -488,11 +545,29 @@ namespace FileInOut.Output
             }
             //
             return freeEdges;
-        }
-        private static int[] GetSortedKey(int id1, int id2)
+        }        
+        private static FeNode GetOrCreateMidNode(FeNode n1, FeNode n2, ref Dictionary<int[], FeNode> midNodes, ref int maxNodeId)
         {
-            if (id1 < id2) return new int[] { id1, id2};
-            else return new int[] { id2, id1 };
+            int[] ids;
+            if (n1.Id < n2.Id) ids = new int[] { n1.Id, n2.Id };
+            else ids = new int[] { n2.Id, n1.Id };
+            //
+            FeNode newNode;
+            if (!midNodes.TryGetValue(ids, out newNode))
+            {
+                maxNodeId++;
+                newNode = new FeNode(maxNodeId, GetMidNodeCoor(n1, n2));
+                midNodes.Add(ids, newNode);
+            }
+            return newNode;
+        }
+        private static double[] GetMidNodeCoor(FeNode n1, FeNode n2)
+        {
+            double[] coor = new double[3];
+            coor[0] = 0.5 * (n1.X + n2.X);
+            coor[1] = 0.5 * (n1.Y + n2.Y);
+            coor[2] = 0.5 * (n1.Z + n2.Z);
+            return coor;
         }
     }
 }

@@ -53,7 +53,7 @@ namespace PrePoMax.Forms
         public double MinH { get { return _parameters.MinH; } set { _parameters.MinH = value; } }
         // Maximal Hausdorff distance for the boundaries approximation.
         [Category("Mesh size")]
-        [OrderedDisplayName(1, 10, "Hausdorff")]
+        [OrderedDisplayName(2, 10, "Hausdorff")]
         [Description("Maximal Hausdorff distance for the boundaries approximation. " +
                               "A value of 0.01 is a suitable value for an object of size 1 in each direction.")]
         [TypeConverter(typeof(StringLengthConverter))]
@@ -63,6 +63,7 @@ namespace PrePoMax.Forms
         [Category("Mesh type")]
         [OrderedDisplayName(0, 10, "Second order")]
         [Description("Create second order elements.")]
+        [Browsable(false)]
         [Id(1, 3)]
         public bool SecondOrder
         {
@@ -74,6 +75,7 @@ namespace PrePoMax.Forms
         [Category("Mesh operations")]
         [OrderedDisplayName(0, 10, "Keep model edges")]
         [Description("Select Yes to keep and No to ignore the model edges.")]
+        [Browsable(false)]
         [Id(1, 4)]
         public bool KeepModelEdges { get { return _parameters.KeepModelEdges; } set { _parameters.KeepModelEdges = value; } }
 

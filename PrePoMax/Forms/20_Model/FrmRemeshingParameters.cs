@@ -12,7 +12,10 @@ namespace PrePoMax.Forms
     class FrmRemeshingParameters : UserControls.FrmProperties, IFormBase, IFormItemSetDataParent, IFormHighlight
     {
         // Variables                                                                                                                
+        bool _highlightEnabled;
         private ViewRemeshingParameters _viewRemeshingParameters;
+        private RemeshingParameters _prevRemeshingParameters;
+        private Button btnPreview;
         private Controller _controller;
 
 
@@ -30,20 +33,49 @@ namespace PrePoMax.Forms
             InitializeComponent();
             //
             _controller = controller;
+            _highlightEnabled = true;
             _viewRemeshingParameters = null;
+            _prevRemeshingParameters = null;
             //
             SelectionClear = _controller.Selection.Clear;
         }
         private void InitializeComponent()
         {
+            this.btnPreview = new System.Windows.Forms.Button();
             this.gbProperties.SuspendLayout();
             this.SuspendLayout();
+            // 
+            // btnCancel
+            // 
+            this.btnCancel.Text = "Close";
+            // 
+            // btnOkAddNew
+            // 
+            this.btnOkAddNew.Location = new System.Drawing.Point(160, 376);
+            this.btnOkAddNew.Text = "Apply";
+            // 
+            // btnPreview
+            // 
+            this.btnPreview.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnPreview.Location = new System.Drawing.Point(79, 376);
+            this.btnPreview.Name = "btnPreview";
+            this.btnPreview.Size = new System.Drawing.Size(75, 23);
+            this.btnPreview.TabIndex = 17;
+            this.btnPreview.Text = "Preview";
+            this.btnPreview.UseVisualStyleBackColor = true;
+            this.btnPreview.Click += new System.EventHandler(this.btnPreview_Click);
             // 
             // FrmRemeshingParameters
             // 
             this.ClientSize = new System.Drawing.Size(334, 411);
+            this.Controls.Add(this.btnPreview);
             this.Name = "FrmRemeshingParameters";
             this.Text = "Remeshing Parameters";
+            this.Controls.SetChildIndex(this.gbProperties, 0);
+            this.Controls.SetChildIndex(this.btnCancel, 0);
+            this.Controls.SetChildIndex(this.btnOK, 0);
+            this.Controls.SetChildIndex(this.btnOkAddNew, 0);
+            this.Controls.SetChildIndex(this.btnPreview, 0);
             this.gbProperties.ResumeLayout(false);
             this.ResumeLayout(false);
 
@@ -70,20 +102,18 @@ namespace PrePoMax.Forms
         }
         protected override void OnApply(bool onOkAddNew)
         {
-            _viewRemeshingParameters = (ViewRemeshingParameters)propertyGrid.SelectedObject;
+            _highlightEnabled = false;
             //
-            if (_viewRemeshingParameters == null) throw new CaeException("No remeshing was selected.");
-            //
-            if (RemeshingParameters.RegionType == RegionTypeEnum.Selection &&
-                (RemeshingParameters.CreationIds == null || RemeshingParameters.CreationIds.Length == 0))
-                throw new CaeException("The element set for remeshing must contain at least one item.");
+            CheckRemeshingParameters();
             //
             _controller.RemeshElementsCommand(RemeshingParameters);
             // If all is successful close the ItemSetSelectionForm - except for OKAddNew
-            if (!onOkAddNew) ItemSetDataEditor.SelectionForm.Hide();
+            if (onOkAddNew) _prevRemeshingParameters = RemeshingParameters.DeepClone();
+            else ItemSetDataEditor.SelectionForm.Hide();
         }
         protected override void OnHideOrClose()
         {
+            _prevRemeshingParameters = null;
             // Close the ItemSetSelectionForm
             ItemSetDataEditor.SelectionForm.Hide();
             //
@@ -93,17 +123,23 @@ namespace PrePoMax.Forms
         {
             // To prevent the call to frmMain.itemForm_VisibleChanged when minimized
             this.DialogResult = DialogResult.None;
-            this.btnOkAddNew.Visible = false;
+            this.btnOK.Visible = false;
             //
+            _highlightEnabled = true;
             _propertyItemChanged = false;
             _viewRemeshingParameters = null;
             propertyGrid.SelectedObject = null;
             //
             string[] elementSetNames = _controller.GetUserElementSetNames();
             // Create new
-            MeshingParameters meshingParameters =
-                _controller.GetDefaultMeshingParameters(_controller.Model.Mesh.Parts.Keys.ToArray());
-            RemeshingParameters = new RemeshingParameters("", RegionTypeEnum.Selection, meshingParameters);
+            if (_prevRemeshingParameters == null)
+            {
+                MeshingParameters meshingParameters =
+                    _controller.GetDefaultMeshingParameters(_controller.Model.Mesh.Parts.Keys.ToArray());
+                RemeshingParameters = new RemeshingParameters("", RegionTypeEnum.Selection, meshingParameters);
+            }
+            else RemeshingParameters = _prevRemeshingParameters;
+            //
             _controller.Selection.Clear();                
             //
             _viewRemeshingParameters.PopululateDropDownLists(elementSetNames);
@@ -125,6 +161,16 @@ namespace PrePoMax.Forms
 
 
         // Methods                                                                                                                  
+        private void CheckRemeshingParameters()
+        {
+            _viewRemeshingParameters = (ViewRemeshingParameters)propertyGrid.SelectedObject;
+            //
+            if (_viewRemeshingParameters == null) throw new CaeException("No remeshing was selected.");
+            //
+            if (RemeshingParameters.RegionType == RegionTypeEnum.Selection &&
+                (RemeshingParameters.CreationIds == null || RemeshingParameters.CreationIds.Length == 0))
+                throw new CaeException("The element set for remeshing must contain at least one item.");
+        }
         private void HighlightElementSet()
         {
             try
@@ -182,11 +228,33 @@ namespace PrePoMax.Forms
                 _propertyItemChanged = true;
             }
         }
+        async private void btnPreview_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                HighlightElementSet();
+                //
+                btnPreview.Enabled = false;
+                //
+                CheckRemeshingParameters();
+                //
+                await Task.Run(() => _controller.RemeshElements(RemeshingParameters, true));
+            }
+            catch (Exception ex)
+            {
+                btnPreview.Enabled = true;
+                ExceptionTools.Show(this, ex);
+            }
+            finally
+            {
+                btnPreview.Enabled = true;
+            }
+        }
 
         // IFormHighlight
         public void Highlight()
         {
-            HighlightElementSet();
+            if(_highlightEnabled) HighlightElementSet();
         }
 
         // IFormItemSetDataParent
@@ -196,6 +264,8 @@ namespace PrePoMax.Forms
             if (RemeshingParameters == null || RemeshingParameters.CreationData == null) return true;
             return RemeshingParameters.CreationData.IsGeometryBased();
         }
+
+        
     }
 
 

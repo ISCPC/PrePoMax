@@ -42,8 +42,21 @@ namespace CaeMesh
         // Methods                                                                                                                  
         public static bool IsParabolic(FeElement element)
         {
-            return element is ParabolicBeamElement || element is ParabolicTriangleElement || element is ParabolicQuadrilateralElement ||
-                   element is ParabolicTetraElement || element is ParabolicWedgeElement || element is ParabolicHexaElement; 
+            return element is ParabolicBeamElement ||
+                   element is ParabolicTriangleElement ||
+                   element is ParabolicQuadrilateralElement ||
+                   element is ParabolicTetraElement ||
+                   element is ParabolicWedgeElement ||
+                   element is ParabolicHexaElement; 
+        }
+        public static bool IsParabolic(Type elementType)
+        {
+            return elementType == typeof(ParabolicBeamElement) ||
+                   elementType == typeof(ParabolicTriangleElement) ||
+                   elementType == typeof(ParabolicQuadrilateralElement) ||
+                   elementType == typeof(ParabolicTetraElement) ||
+                   elementType == typeof(ParabolicWedgeElement) ||
+                   elementType == typeof(ParabolicHexaElement);
         }
 
 

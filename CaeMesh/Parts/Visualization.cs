@@ -421,7 +421,7 @@ namespace CaeMesh
         {
             HashSet<int> edgeNodeIds;
             Dictionary<int, HashSet<int>> edgeIdNodeIds = new Dictionary<int, HashSet<int>>();
-            //Dictionary<int, HashSet<int>> surfaceIdNodeIds = new Dictionary<int, HashSet<int>>();
+            //
             for (int i = 0; i < _edgeCellIdsByEdge.Length; i++)
             {
                 edgeNodeIds = new HashSet<int>();
