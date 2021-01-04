@@ -757,6 +757,7 @@ namespace CaeModel
                 foreach (var newSurfIdOldSurfId in partNewSurfIdOldSurfId.Value)
                 {
                     surfaceIdNodeIds[newSurfIdOldSurfId.Value].UnionWith(itemIdNodeIds[newSurfIdOldSurfId.Key]);
+                    surfaceIdNodeIds[newSurfIdOldSurfId.Value].IntersectWith(part.NodeLabels);
                 }
             }
             _mesh.RenumberVisualizationSurfaces(part, surfaceIdNodeIds);
@@ -769,6 +770,7 @@ namespace CaeModel
                 foreach (var newEdgeIdOldEdgeId in partNewEdgeIdOldEdgeId.Value)
                 {
                     edgeIdNodeIds[newEdgeIdOldEdgeId.Value].UnionWith(itemIdNodeIds[newEdgeIdOldEdgeId.Key]);
+                    edgeIdNodeIds[newEdgeIdOldEdgeId.Value].IntersectWith(part.NodeLabels);
                 }
             }
             _mesh.RenumberVisualizationEdges(part, edgeIdNodeIds);

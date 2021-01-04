@@ -22,7 +22,7 @@ namespace PrePoMax.Commands
         public CRemeshElements(RemeshingParameters remeshingParameters)
             : base("Remesh elements")
         {
-            _remeshingParameters = remeshingParameters;
+            _remeshingParameters = remeshingParameters.DeepClone();
         }
 
 

@@ -1941,6 +1941,20 @@ namespace CaeMesh
             surfaceEdgeIds = surfaceEdgeIdsHash.ToArray();
         }
         //
+        public void RenumberVisualizationSurfaces(Dictionary<string, Dictionary<int, HashSet<int>>> partSurfaceIdNodeIds,
+                                                  SortedDictionary<int, FaceType> faceTypes = null, // Plane, Cylinder, Cone...
+                                                  Dictionary<string, Dictionary<int, int>> partIdNewSurfIdOldSurfId = null)
+        {
+            Dictionary<int, int> newSurfIdOldSurfId;
+            // For each part
+            foreach (var entry in _parts)
+            {
+                newSurfIdOldSurfId = RenumberVisualizationSurfaces(entry.Value, partSurfaceIdNodeIds[entry.Key], faceTypes);
+                if (partIdNewSurfIdOldSurfId != null && newSurfIdOldSurfId != null)
+                    partIdNewSurfIdOldSurfId.Add(entry.Key, newSurfIdOldSurfId);
+                if (faceTypes != null) CheckForFreeAndErrorElementsInCADPart(entry.Value);
+            }
+        }
         public void RenumberVisualizationSurfaces(Dictionary<int, HashSet<int>> surfaceIdNodeIds,
                                                   SortedDictionary<int, FaceType> faceTypes = null, // Plane, Cylinder, Cone...
                                                   Dictionary<string, Dictionary<int, int>> partIdNewSurfIdOldSurfId = null)
@@ -1960,7 +1974,6 @@ namespace CaeMesh
         {
             VisualizationData vis;
             HashSet<int> surfaceNodeIds;        // node ids of the part surface
-            HashSet<int> partSurfaceNodeIds;    // node ids of the surface to be found
             Dictionary<int, int> oldIdNewId = new Dictionary<int, int>();
             int[] newSurfaceIds;
             int[] oldSurfaceIds;
@@ -1985,14 +1998,12 @@ namespace CaeMesh
                 oneSurfCount = 0;
                 foreach (var surfaceNodeIdsEntry in surfaceIdNodeIds)
                 {
-                    // Remesh - surfaceIdNodeIds can contain multiple parts on the same surface
-                    partSurfaceNodeIds = new HashSet<int>(surfaceNodeIdsEntry.Value.Intersect(part.NodeLabels));
-                    if (partSurfaceNodeIds.Count > 0)
+                    if (surfaceNodeIdsEntry.Value.Count > 0)
                     {
-                        if ((partSurfaceNodeIds.Count == surfaceNodeIds.Count &&
-                             partSurfaceNodeIds.Except(surfaceNodeIds).Count() == 0)
+                        if ((surfaceNodeIdsEntry.Value.Count == surfaceNodeIds.Count &&
+                             surfaceNodeIdsEntry.Value.Except(surfaceNodeIds).Count() == 0)
                             // Next line is for when the mesh is converted to parabolic mesh outside netgen - before this method
-                            || (partSurfaceNodeIds.Intersect(surfaceNodeIds).Count() == partSurfaceNodeIds.Count()))
+                            || (surfaceNodeIdsEntry.Value.Intersect(surfaceNodeIds).Count() == surfaceNodeIdsEntry.Value.Count()))
                         {
                             newSurfaceIds[surfaceCount] = surfaceNodeIdsEntry.Key;
                             oldSurfaceIds[surfaceCount] = surfaceCount;
@@ -2036,6 +2047,18 @@ namespace CaeMesh
             //
             return oldIdNewId;
         }
+        public void RenumberVisualizationEdges(Dictionary<string, Dictionary<int, HashSet<int>>> partEdgeIdNodeIds,
+                                               Dictionary<string, Dictionary<int, int>> partIdNewEdgeIdOldEdgeId = null)
+        {
+            Dictionary<int, int> newEdgeIdOldEdgeId;
+            // For each part
+            foreach (var entry in _parts)
+            {
+                newEdgeIdOldEdgeId = RenumberVisualizationEdges(entry.Value, partEdgeIdNodeIds[entry.Key]);
+                if (partIdNewEdgeIdOldEdgeId != null && newEdgeIdOldEdgeId != null)
+                    partIdNewEdgeIdOldEdgeId.Add(entry.Key, newEdgeIdOldEdgeId);
+            }
+        }
         public void RenumberVisualizationEdges(Dictionary<int, HashSet<int>> edgeIdNodeIds,
                                                Dictionary<string, Dictionary<int, int>> partIdNewEdgeIdOldEdgeId = null)
         {
@@ -2052,7 +2075,6 @@ namespace CaeMesh
         {
             VisualizationData vis;
             HashSet<int> edgeNodeIds;       // node ids of the part surface
-            HashSet<int> partEdgeNodeIds;   // node ids of the surface to be found
             Dictionary<int, int> oldIdNewId = new Dictionary<int, int>();
             int[] newEdgeIds;
             int[] oldEdgeIds;
@@ -2077,11 +2099,9 @@ namespace CaeMesh
                 edgeFound = false;
                 foreach (var edgeEntry in edgeIdNodeIds)
                 {
-                    // Remesh - surfaceIdNodeIds can contain multiple parts on the same surface
-                    partEdgeNodeIds = new HashSet<int>(edgeEntry.Value.Intersect(part.NodeLabels));
-                    if (partEdgeNodeIds.Count > 0)
+                    if (edgeEntry.Value.Count > 0)  // for remeshing it can be 0
                     {
-                        if (partEdgeNodeIds.Count == edgeNodeIds.Count && partEdgeNodeIds.Except(edgeNodeIds).ToArray().Length == 0)
+                        if (edgeEntry.Value.Count == edgeNodeIds.Count && edgeEntry.Value.Except(edgeNodeIds).ToArray().Length == 0)
                         {
                             newEdgeIds[edgeCount] = edgeEntry.Key;
                             oldEdgeIds[edgeCount] = edgeCount;
@@ -2098,11 +2118,9 @@ namespace CaeMesh
                 {
                     foreach (var edgeEntry in edgeIdNodeIds)
                     {
-                        // Remesh - surfaceIdNodeIds can contain multiple parts on the same surface
-                        partEdgeNodeIds = new HashSet<int>(edgeEntry.Value.Intersect(part.NodeLabels));
-                        if (partEdgeNodeIds.Count > 0)
+                        if (edgeEntry.Value.Count > 0)  // for remeshing it can be 0
                         {
-                            if (partEdgeNodeIds.Intersect(edgeNodeIds).Count() == partEdgeNodeIds.Count())
+                            if (edgeEntry.Value.Intersect(edgeNodeIds).Count() == edgeEntry.Value.Count())
                             {
                                 newEdgeIds[edgeCount] = edgeEntry.Key;
                                 oldEdgeIds[edgeCount] = edgeCount;

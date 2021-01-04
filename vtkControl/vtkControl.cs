@@ -898,11 +898,8 @@ namespace vtkControl
             {
                 string surfaceId = actorData.Name;
                 // Probe widget
-                string format = _scalarBarWidget.GetLabelFormat();
-                //
                 _renderer.SetWorldPoint(pickedPoint[0], pickedPoint[1], pickedPoint[2], 1.0);
                 _renderer.WorldToDisplay();
-                double[] display = _renderer.GetDisplayPoint();
                 //
                 double w = x + 20d;
                 double h = y + 10d;
@@ -1345,10 +1342,10 @@ namespace vtkControl
             cell = null;
             cellLocator = null;
             //
-            IntPtr x = System.Runtime.InteropServices.Marshal.AllocHGlobal(3 * 8);
+            IntPtr x = Marshal.AllocHGlobal(3 * 8);
             Marshal.Copy(point, 0, x, 3);
             //
-            IntPtr closestPoint = System.Runtime.InteropServices.Marshal.AllocHGlobal(3 * 8);
+            IntPtr closestPoint = Marshal.AllocHGlobal(3 * 8);
             //
             int globalCellId = -1;
             double minDist = double.MaxValue;

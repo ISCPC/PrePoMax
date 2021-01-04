@@ -2781,6 +2781,8 @@ namespace PrePoMax
                     else partIdElementIds.Add(element.PartId, new List<int>() { elementId });
                 }
             }
+            //
+            if (partIdElementIds.Count == 0) return false;
             // Remesh
             MeshPart part;
             foreach (var entry in partIdElementIds)
@@ -5804,7 +5806,7 @@ namespace PrePoMax
                         for (int i = 0; i < ids.Length; i++)
                         {
                             if (!mesh.Nodes.ContainsKey(ids[i]))
-                                throw new CaeGlobals.CaeException("The selected node id does not exist.");
+                                throw new CaeException("The selected node id does not exist.");
                         }
                     }
                     else if (_selection.SelectItem == vtkSelectItem.Element)
@@ -5812,7 +5814,7 @@ namespace PrePoMax
                         for (int i = 0; i < ids.Length; i++)
                         {
                             if (!mesh.Elements.ContainsKey(ids[i]))
-                                throw new CaeGlobals.CaeException("The selected element id does not exist.");
+                                throw new CaeException("The selected element id does not exist.");
                         }
                     }
                     else if (_selection.SelectItem == vtkSelectItem.Edge || _selectBy == vtkSelectBy.QuerySurface)

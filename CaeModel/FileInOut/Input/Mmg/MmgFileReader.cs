@@ -167,9 +167,43 @@ namespace FileInOut.Input
                                          ImportOptions.DetectEdges);
                 //
                 mesh.ConvertLineFeElementsToEdges(vertexNodeIds);
-                //
-                mesh.RenumberVisualizationSurfaces(surfaceIdNodeIds, null, partIdNewSurfIdOldSurfId);
-                mesh.RenumberVisualizationEdges(edgeIdNodeIds, partIdNewEdgeIdOldEdgeId);
+                // Collect surfaceIdNodeIds for each part
+                var allPartsSurfaceIdNodeIds = new Dictionary<string, Dictionary<int, HashSet<int>>>();
+                Dictionary<int, HashSet<int>> partSurfaceIdNodeIds;
+                HashSet<int> intersect;
+                foreach (var partEntry in mesh.Parts)
+                {
+                    partSurfaceIdNodeIds = new Dictionary<int, HashSet<int>>();
+                    if (partEntry.Value.PartType != PartType.Wire)
+                    {
+                        foreach (var surfaceEntry in surfaceIdNodeIds)
+                        {
+                            intersect = new HashSet<int>(surfaceEntry.Value.Intersect(partEntry.Value.NodeLabels));
+                            partSurfaceIdNodeIds.Add(surfaceEntry.Key, intersect);
+                        }
+                    }
+                    allPartsSurfaceIdNodeIds.Add(partEntry.Key, partSurfaceIdNodeIds);
+                }
+                // Renumber surfaces                                                                        
+                mesh.RenumberVisualizationSurfaces(allPartsSurfaceIdNodeIds, null, partIdNewSurfIdOldSurfId);
+                // Collect edgeIdNodeIds for each part
+                var allPartsEdgeIdNodeIds = new Dictionary<string, Dictionary<int, HashSet<int>>>();
+                Dictionary<int, HashSet<int>> partEdgeIdNodeIds;
+                foreach (var partEntry in mesh.Parts)
+                {
+                    partEdgeIdNodeIds = new Dictionary<int, HashSet<int>>();
+                    if (partEntry.Value.PartType != PartType.Wire)
+                    {
+                        foreach (var edgeEntry in edgeIdNodeIds)
+                        {
+                            intersect = new HashSet<int>(edgeEntry.Value.Intersect(partEntry.Value.NodeLabels));
+                            partEdgeIdNodeIds.Add(edgeEntry.Key, intersect);
+                        }
+                    }
+                    allPartsEdgeIdNodeIds.Add(partEntry.Key, partEdgeIdNodeIds);
+                }
+                // Renumber edges                                                                        
+                mesh.RenumberVisualizationEdges(allPartsEdgeIdNodeIds, partIdNewEdgeIdOldEdgeId);
                 //
                 mesh.RemoveElementsByType<FeElement1D>();
                 //

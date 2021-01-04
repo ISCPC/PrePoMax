@@ -239,6 +239,12 @@ namespace PrePoMax.Forms
                 CheckRemeshingParameters();
                 //
                 await Task.Run(() => _controller.RemeshElements(RemeshingParameters, true));
+                //
+                if (RemeshingParameters.RegionType == RegionTypeEnum.Selection &&
+                    RemeshingParameters.CreationData != null)
+                {
+                    _controller.Selection = RemeshingParameters.CreationData.DeepClone();
+                }
             }
             catch (Exception ex)
             {
