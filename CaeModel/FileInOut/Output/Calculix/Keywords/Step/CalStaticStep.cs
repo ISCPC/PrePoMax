@@ -25,17 +25,17 @@ namespace FileInOut.Output.Calculix
         // Methods                                                                                                                  
         public override string GetKeywordString()
         {
-            string direct = _step.Direct ? ", Direct" : "";
-            //SOLVER=ITERATIVE CHOLESKY
-            //SOLVER=ITERATIVE SCALING
+            string direct = _step.IncrementationType == IncrementationTypeEnum.Direct ? ", Direct" : "";
             return string.Format("*Static{0}{1}", direct, Environment.NewLine);
         }
         public override string GetDataString()
         {
-            if (_step.Nlgeom)
+            if (_step.IncrementationType != IncrementationTypeEnum.Default)
             {
-                string minMax = _step.Direct ? "" : string.Format(", {0}, {1}", _step.MinTimeIncrement, _step.MaxTimeIncrement);
-
+                string minMax = "";
+                if (_step.IncrementationType == IncrementationTypeEnum.Automatic)
+                    minMax = string.Format(", {0}, {1}", _step.MinTimeIncrement, _step.MaxTimeIncrement);
+                //
                 return string.Format("{0}, {1}{2}{3}", _step.InitialTimeIncrement, _step.TimePeriod, minMax, Environment.NewLine);
             }
             else return "";

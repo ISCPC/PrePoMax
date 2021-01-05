@@ -26,10 +26,12 @@ namespace FileInOut.Output.Calculix
         public override string GetKeywordString()
         {
             string perturbation = _step.Perturbation ? ", Perturbation" : "";
-            string nlGeom = _step.Nlgeom ? string.Format(", Nlgeom, Inc={0}", _step.MaxIncrements) : "";
-
+            string nlGeom = _step.Nlgeom ? ", Nlgeom" : "";
+            string inc = "";
+            if (_step.IncrementationType != IncrementationTypeEnum.Default) inc = ", Inc=" + _step.MaxIncrements;
+            //
             StringBuilder sb = new StringBuilder();
-            sb.AppendFormat("*Step{0}{1}", perturbation, nlGeom).AppendLine();
+            sb.AppendFormat("*Step{0}{1}{2}", perturbation, nlGeom, inc).AppendLine();
             return sb.ToString();
         }
         public override string GetDataString()

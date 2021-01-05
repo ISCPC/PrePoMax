@@ -181,9 +181,14 @@ Dependency nglib - added following files for c++ redistriburable compatibility:
 
 Done
 
-Version 0.9.0 Master branch
+Version 1.0.0 Master branch
 Added support for .inp files using *Include keyword
 Added support for Unit-less unit system
+Added support for remeshing of shell finite element meshes
+Added a feature to create a reference point between two points and in the circle center
+Added support for generating model edges based on the face angle
+Added support for color visualization of parts, materials, sections and FE symbols
+Fixed the incrementation for the static step.
 Bug fixes
 
 

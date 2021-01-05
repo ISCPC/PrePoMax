@@ -4710,9 +4710,10 @@ namespace PrePoMax
 
         #region Mouse selection methods  ###########################################################################################
 
-        public void SelectPointOrArea(double[] pickedPoint, double[][] planeParameters, vtkSelectOperation selectOperation)
+        public void SelectPointOrArea(double[] pickedPoint, double[] selectionDirection, double[][] planeParameters,
+                                      vtkSelectOperation selectOperation)
         {
-            _controller.SelectPointOrArea(pickedPoint, planeParameters, selectOperation);
+            _controller.SelectPointOrArea(pickedPoint, selectionDirection, planeParameters, selectOperation);
             //
             int[] ids = _controller.GetSelectionIds();
             // Must be here since it calls Clear which calls SelectionChanged

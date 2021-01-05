@@ -5756,15 +5756,16 @@ namespace PrePoMax
         }
         //
         // the function called from vtk_control
-        public void SelectPointOrArea(double[] pickedPoint, double[][] planeParameters, vtkSelectOperation selectOperation)
+        public void SelectPointOrArea(double[] pickedPoint, double[] selectionDirection, double[][] planeParameters,
+                                      vtkSelectOperation selectOperation)
         {
             try
             {
                 if (_selectBy == vtkSelectBy.Id) return;
                 // Set the current view for the selection;
                 if (_selection.Nodes.Count == 0) SetSelectionView(_currentView);
-                //
-                if (pickedPoint == null && planeParameters == null) ClearSelectionHistoryAndCallSelectionChanged();   // empty pick - clear
+                // Empty pick - Clear
+                if (pickedPoint == null && planeParameters == null) ClearSelectionHistoryAndCallSelectionChanged();
                 else
                 {
                     vtkSelectBy selectBy = _selectBy;
@@ -5779,9 +5780,8 @@ namespace PrePoMax
                         // New pick - Clear history
                         if (selectOperation == vtkSelectOperation.None) ClearSelectionHistoryAndCallSelectionChanged();
                     }
-                    SelectionNode selectionNode = new SelectionNodeMouse(pickedPoint, planeParameters,
-                                                                         selectOperation,
-                                                                         _selectBy, _selectAngle);
+                    SelectionNode selectionNode = new SelectionNodeMouse(pickedPoint, selectionDirection, planeParameters,
+                                                                         selectOperation, _selectBy, _selectAngle);
                     AddSelectionNode(selectionNode, true, false);
                 }
             }
@@ -6018,7 +6018,7 @@ namespace PrePoMax
                 { }
                 else if (_selection.SelectItem == vtkSelectItem.Node)
                 {
-                    ids = GetNodeIdsAtPoint(selectionNodeMouse);
+                    ids = GetNodeIdsAtPoint(selectionNodeMouse, out int elementId);
                 }
                 else if (_selection.SelectItem == vtkSelectItem.Element)
                 {
@@ -6078,9 +6078,8 @@ namespace PrePoMax
             ids = DisplayedMesh.GetIdsFromGeometryIds(ids, _selection.SelectItem);
             return ids;
         }
-        private int[] GetNodeIdsAtPoint(SelectionNodeMouse selectionNodeMouse)
+        private int[] GetNodeIdsAtPoint(SelectionNodeMouse selectionNodeMouse, out int elementId)
         {
-            int elementId;
             int[] edgeNodeIds;
             int[] cellFaceNodeIds;
             double[] pickedPoint = selectionNodeMouse.PickedPoint;
@@ -6184,35 +6183,53 @@ namespace PrePoMax
         private int[] GetVisualizationFaceIdsAtPoint(SelectionNodeMouse selectionNodeMouse)
         {
             // Surface is based on node selection which is converted to face ids
-            int[] elementIds;
-            int[] ids = GetNodeIdsAtPoint(selectionNodeMouse);
-
+            int elementId;
+            int[] elementIds;            
+            int[] ids = GetNodeIdsAtPoint(selectionNodeMouse, out elementId);
+            bool frontFace = true;
+            //
+            if (selectionNodeMouse.SelectionDirection != null)
+            {
+                FeElement element = DisplayedMesh.Elements[elementId];
+                if (element is FeElement2D)
+                {
+                    // Front face is S2
+                    DisplayedMesh.GetElementFaceNormal(elementId, FeFaceName.S2, out double[] normal);
+                    //
+                    Vec3D n1 = new Vec3D(selectionNodeMouse.SelectionDirection);
+                    Vec3D n2 = new Vec3D(normal);
+                    double cross = Vec3D.DotProduct(n1, n2);
+                    //
+                    if (cross > 0) frontFace = false;
+                }
+            }
+            //
             if (selectionNodeMouse.SelectBy == vtkSelectBy.Node)
             {
                 elementIds = DisplayedMesh.GetElementIdsFromNodeIds(ids, false, false, false);
-                ids = DisplayedMesh.GetVisualizationFaceIds(ids, elementIds, false, false);
+                ids = DisplayedMesh.GetVisualizationFaceIds(ids, elementIds, false, false, frontFace);
             }
             else if (selectionNodeMouse.SelectBy == vtkSelectBy.Element)
             {
                 elementIds = DisplayedMesh.GetElementIdsFromNodeIds(ids, false, false, true);
-                ids = DisplayedMesh.GetVisualizationFaceIds(ids, elementIds, false, true);
+                ids = DisplayedMesh.GetVisualizationFaceIds(ids, elementIds, false, true, frontFace);
             }
             else if (selectionNodeMouse.SelectBy == vtkSelectBy.Part)
             {
                 elementIds = DisplayedMesh.GetElementIdsFromNodeIds(ids, false, true, false);
-                ids = DisplayedMesh.GetVisualizationFaceIds(ids, elementIds, false, true);
+                ids = DisplayedMesh.GetVisualizationFaceIds(ids, elementIds, false, true, frontFace);
             }
             else if (selectionNodeMouse.SelectBy == vtkSelectBy.Edge ||
                         selectionNodeMouse.SelectBy == vtkSelectBy.EdgeAngle)
             {
                 elementIds = DisplayedMesh.GetElementIdsFromNodeIds(ids, true, false, false);
-                ids = DisplayedMesh.GetVisualizationFaceIds(ids, elementIds, true, false);
+                ids = DisplayedMesh.GetVisualizationFaceIds(ids, elementIds, true, false, frontFace);
             }
             else if (selectionNodeMouse.SelectBy == vtkSelectBy.Surface ||
                      selectionNodeMouse.SelectBy == vtkSelectBy.SurfaceAngle)
             {
                 elementIds = DisplayedMesh.GetElementIdsFromNodeIds(ids, false, true, false);
-                ids = DisplayedMesh.GetVisualizationFaceIds(ids, elementIds, false, true);
+                ids = DisplayedMesh.GetVisualizationFaceIds(ids, elementIds, false, true, frontFace);
             }
             return ids;
         }
@@ -6459,7 +6476,7 @@ namespace PrePoMax
             // Create surface by area selecting nodes or elements
             int[] nodeIds = GetNodeIdsFromFrustum(selectionNodeMouse.PlaneParameters, selectionNodeMouse.SelectBy);
             int[] elementIds = GetElementIdsFromFrustum(selectionNodeMouse.PlaneParameters, selectionNodeMouse.SelectBy);
-            ids = DisplayedMesh.GetVisualizationFaceIds(nodeIds, elementIds, false, true);
+            ids = DisplayedMesh.GetVisualizationFaceIds(nodeIds, elementIds, false, true, true);
             return ids;
         }
 
@@ -6573,20 +6590,19 @@ namespace PrePoMax
         public vtkControl.vtkMaxActorData GetCellFaceActorData(int elementId, int[] nodeIds)
         {
             if (elementId < 0) return null;
-            //
-            // get all faces containing at least 1 node id
-            int[] faceIds = DisplayedMesh.GetVisualizationFaceIds(nodeIds, new int[] { elementId }, false, false);
+            // Get all faces containing at least 1 node id
+            int[] faceIds = DisplayedMesh.GetVisualizationFaceIds(nodeIds, new int[] { elementId }, false, false, true);
             //
             bool add;
             int[] cell = null;
-            FeElement element = null;
+            FeElement element;
             HashSet<int> hashCell;
-            // find a face containing all node ids
+            // Find a face containing all node ids
             foreach (int faceId in faceIds)
             {
                 cell = DisplayedMesh.GetCellFromFaceId(faceId, out element);
                 if (cell.Length < nodeIds.Length) continue;
-
+                //
                 hashCell = new HashSet<int>(cell);
                 add = true;
                 for (int i = 0; i < nodeIds.Length; i++)
@@ -6599,14 +6615,14 @@ namespace PrePoMax
                 }
                 if (add) break;
             }
-            // get coordinates
+            // Get coordinates
             double[][] nodeCoor = new double[cell.Length][];
             for (int i = 0; i < cell.Length; i++) nodeCoor[i] = DisplayedMesh.Nodes[cell[i]].Coor;
-            // renumber cell node ids
+            // Renumber cell node ids
             int[][] cells = new int[1][];
             cells[0] = new int[cell.Length];
             for (int i = 0; i < cell.Length; i++) cells[0][i] = i;
-            // get cell type
+            // Get cell type
             int cellTypes;
             if (cell.Length == 3) cellTypes = (int)vtkCellType.VTK_TRIANGLE;
             else if (cell.Length == 4) cellTypes = (int)vtkCellType.VTK_QUAD;
@@ -6681,8 +6697,8 @@ namespace PrePoMax
         public vtkControl.vtkMaxActorData GetSurfaceActorDataByNodeIds(int[] nodeIds)
         {
             int[] elementIds = DisplayedMesh.GetElementIdsFromNodeIds(nodeIds, false, true, false);
-            int[] faceIds = DisplayedMesh.GetVisualizationFaceIds(nodeIds, elementIds, false, true);
-
+            int[] faceIds = DisplayedMesh.GetVisualizationFaceIds(nodeIds, elementIds, false, true, true);
+            //
             int[][] cells = new int[faceIds.Length][];
             int count = 0;
             foreach (int faceId in faceIds)
@@ -6690,10 +6706,10 @@ namespace PrePoMax
                 cells[count] = DisplayedMesh.GetCellFromFaceId(faceId, out FeElement element);
                 count++;
             }
-
+            //
             vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
             int[][] freeEdges = DisplayedMesh.GetFreeEdgesFromVisualizationCells(cells);
-
+            //
             DisplayedMesh.GetNodesAndCellsForEdges(freeEdges, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor,
                                                    out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
             return data;

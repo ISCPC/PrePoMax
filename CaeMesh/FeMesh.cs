@@ -3201,9 +3201,9 @@ namespace CaeMesh
             double area;
             int[] nodeIds;
             Dictionary<FeFaceName, List<int>> elementSets;
-
+            //
             surface.ClearElementFaces(); // area = 0 
-
+            //
             if (surface.CreatedFrom == FeSurfaceCreatedFrom.Selection)
             {
                 CreateSurfaceFacesFromSelection(surface.FaceIds, out nodeIds, out elementSets, out area);
@@ -3215,23 +3215,21 @@ namespace CaeMesh
                 surface.Area = area;
             }
             else throw new NotSupportedException();
-
+            //
             if (elementSets.Count == 0)
             {
                 surface.NodeSetName = null;
                 surface.ClearElementFaces();
                 return;
             }
-
-            // node set
+            // Node set
             string nodeSetName = GetNextFreeInternalName(_nodeSets) + surface.Name;
             FeNodeSet nodeSet = new FeNodeSet(nodeSetName, nodeIds);
             nodeSet.Internal = true;
             UpdateNodeSetCenterOfGravity(nodeSet);
             _nodeSets.Add(nodeSetName, nodeSet);
             surface.NodeSetName = nodeSetName;
-
-            // element sets
+            // Element sets
             FeElementSet elementSet;
             string elementSetName;
             foreach (KeyValuePair<FeFaceName, List<int>> entry in elementSets)
@@ -3286,61 +3284,57 @@ namespace CaeMesh
             }
             else throw new CaeException("The surface is not created from node set.");
         }
-        private void CreateSurfaceFacesFromSelection(int[] surfaceFaceIds, out int[] nodeIds, out Dictionary<FeFaceName,
-                                                     List<int>> elementSets, out double area)
+        private void CreateSurfaceFacesFromSelection(int[] surfaceFaceIds, out int[] nodeIds,
+                                                     out Dictionary<FeFaceName, List<int>> elementSets, out double area)
         {
             nodeIds = null;
             elementSets = new Dictionary<FeFaceName, List<int>>();
             area = 0;
             //
+            int vtkCellId;
+            FeFaceName faceName;
             List<int> elementIds;
-            HashSet<int> faceNodeIds = new HashSet<int>();
             HashSet<int> allNodeIds = new HashSet<int>();
-            Dictionary<FeFaceName, double> faces;
             //
             int[] cell;
             foreach (var faceId in surfaceFaceIds)
             {
                 cell = GetCellFromFaceId(faceId, out FeElement element);
+                allNodeIds.UnionWith(cell);
                 //
-                faceNodeIds.Clear();
-                faceNodeIds.UnionWith(cell);
-                allNodeIds.UnionWith(faceNodeIds);
+                vtkCellId = faceId % 10;
+                faceName = FeElement.FaceNameFromVtkCellId(vtkCellId);
                 //
-                faces = element.GetFaceNamesAndAreasFromNodeSet(faceNodeIds, _nodes);
+                area += element.GetArea(faceName, _nodes);
                 //
+                if (elementSets.TryGetValue(faceName, out elementIds)) elementIds.Add(element.Id);
+                else elementSets.Add(faceName, new List<int>() { element.Id });
+            }
+            nodeIds = allNodeIds.ToArray();
+        }
+        private void CreateSurfaceFacesFromNodeSet(FeSurface surface, out int[] nodeIds,
+                                                   out Dictionary<FeFaceName, List<int>> elementSets,
+                                                   out double area)
+        {
+            int[] elementIds;
+            List<int> elementIdList;
+            elementSets = new Dictionary<FeFaceName, List<int>>();
+            area = 0;
+            //
+            GetNodeAndElementIdsFromNodeSetSurface(surface, out nodeIds, out elementIds);
+            // To speed up the search
+            HashSet<int> nodeSetLookUp = new HashSet<int>(nodeIds);
+            //
+            Dictionary<FeFaceName, double> faces;
+            foreach (int elementId in elementIds)
+            {
+                faces = _elements[elementId].GetFaceNamesAndAreasFromNodeSet(nodeSetLookUp, _nodes);
                 foreach (var entry in faces)
                 {
                     area += entry.Value;
                     //
-                    if (elementSets.TryGetValue(entry.Key, out elementIds)) elementIds.Add(element.Id);
-                    else elementSets.Add(entry.Key, new List<int>() { element.Id });
-                }
-            }
-            nodeIds = allNodeIds.ToArray();
-        }
-        private void CreateSurfaceFacesFromNodeSet(FeSurface surface, out int[] nodeIds, out Dictionary<FeFaceName,
-                                                   List<int>> elementSets, out double area)
-        {
-            int[] elementIds;
-            elementSets = new Dictionary<FeFaceName, List<int>>();
-            area = 0;
-
-            GetNodeAndElementIdsFromNodeSetSurface(surface, out nodeIds, out elementIds);
-
-            // to speed up the search
-            HashSet<int> nodeSetLookUp = new HashSet<int>(nodeIds);
-
-            Dictionary<FeFaceName, double> faces;
-            foreach (int elementID in elementIds)
-            {
-                faces = _elements[elementID].GetFaceNamesAndAreasFromNodeSet(nodeSetLookUp, _nodes);
-                foreach (var entry in faces)
-                {
-                    area += entry.Value;
-
-                    if (elementSets.ContainsKey(entry.Key)) elementSets[entry.Key].Add(elementID);
-                    else elementSets.Add(entry.Key, new List<int>() { elementID });
+                    if (elementSets.TryGetValue(entry.Key, out elementIdList)) elementIdList.Add(elementId);
+                    else elementSets.Add(entry.Key, new List<int>() { elementId });
                 }
             }
         }        
@@ -3349,21 +3343,25 @@ namespace CaeMesh
             element = null;
             int elementId = faceId / 10;
             int vtkCellId = faceId % 10;
-
+            FeFaceName faceName = FeElement.FaceNameFromVtkCellId(vtkCellId);
+            //
             if (_elements.TryGetValue(elementId, out element))
             {
                 if (element is FeElement3D element3D)
                 {
-                    int[][] vtkCells = element3D.GetAllVtkCells();
-                    return vtkCells[vtkCellId];
+                    //int[][] vtkCells = element3D.GetAllVtkCells();
+                    //return vtkCells[vtkCellId];
+                    return element3D.GetVtkCellFromFaceName(faceName);
                 }
                 else if (element is FeElement2D element2D)    // shell and geometry
                 {
-                    return element2D.GetVtkNodeIds();
+                    //int[][] vtkCells = element2D.GetAllVtkCells();
+                    //return vtkCells[vtkCellId];
+                    return element2D.GetVtkCellFromFaceName(faceName);
                 }
                 else throw new NotSupportedException();
             }
-            else throw new CaeGlobals.CaeException("The selected face id does not exist.");
+            else throw new CaeException("The selected face id does not exist.");
         }
         //
         public static string GetNextFreeInternalName<T>(IDictionary<string, T> dictionary)
@@ -3545,7 +3543,7 @@ namespace CaeMesh
         {
             // Get all faces containing at least 1 node id
             // Face id = 10 * elementId + vtkCellId
-            int[] faceIds = GetVisualizationFaceIds(edgeNodeIds, new int[] { elementId }, false, false);
+            int[] faceIds = GetVisualizationFaceIds(edgeNodeIds, new int[] { elementId }, false, false, frontShellFace: true);
             bool add;
             int[] cell = null;
             FeElement element = null;
@@ -3963,23 +3961,22 @@ namespace CaeMesh
             // Return
             return allElementIds.ToArray();
         }
-        public int[] GetVisualizationFaceIds(int[] nodeIds, int[] elementIds, bool containsEdge, bool containsFace)
+        public int[] GetVisualizationFaceIds(int[] nodeIds, int[] elementIds, bool containsEdge, bool containsFace,
+                                             bool frontShellFace)
         {
             HashSet<int> hashElementIds = new HashSet<int>(elementIds);
             HashSet<int> hashNodeIds = new HashSet<int>();
             HashSet<int> globalVisualizationFaceIds = new HashSet<int>();
-
-            // get all visualization cell ids
+            // Get all visualization cell ids
             int elementId;
             int vtkCellId;
             int count;
             int[] cell;
             int minNumberOfNodes = 1;
             FeElement element;
-            CompareIntArray comparer = new CompareIntArray();
-
+            //
             if (nodeIds != null && nodeIds.Length > 0) hashNodeIds.UnionWith(nodeIds);
-
+            //
             foreach (var entry in _parts)
             {
                 if (entry.Value is CompoundGeometryPart) continue;
@@ -4008,7 +4005,7 @@ namespace CaeMesh
                                 if (hashNodeIds.Count > 0) minNumberOfNodes = 1;
                                 else minNumberOfNodes = -1;
                             }
-
+                            //
                             if (hashNodeIds.Contains(nodeId))
                             {
                                 count++;
@@ -4026,7 +4023,9 @@ namespace CaeMesh
                             }
                             else if (element is FeElement2D) // shell and geometry
                             {
-                                globalVisualizationFaceIds.Add(10 * elementId + 0);
+                                if (frontShellFace) vtkCellId = 1;
+                                else vtkCellId = 0;
+                                globalVisualizationFaceIds.Add(10 * elementId + vtkCellId);
                             }
                             else throw new NotSupportedException();
                         }
@@ -5954,113 +5953,18 @@ namespace CaeMesh
         {
             return _elementSets.Keys.ToArray();
         }
-        public void GetElementFaceCenter(int elementId, FeFaceName faceName, out double[] faceCenter)
-        {
-            FeNode[] nodes;
-            FeElement element = _elements[elementId];
-            int[] nodeIds = element.GetNodeIdsFromFaceName(faceName);
-            faceCenter = null;
-            if (element is LinearTetraElement || element is ParabolicTetraElement ||
-                element is LinearTriangleElement || element is ParabolicTriangleElement)
-            {
-                nodes = new FeNode[3];
-                faceCenter = new double[nodes.Length];
-                for (int i = 0; i < nodes.Length; i++)
-                {
-                    nodes[i] = _nodes[nodeIds[i]];
-                    faceCenter[0] += nodes[i].X;
-                    faceCenter[1] += nodes[i].Y;
-                    faceCenter[2] += nodes[i].Z;
-                }
-                faceCenter[0] /= nodes.Length;
-                faceCenter[1] /= nodes.Length;
-                faceCenter[2] /= nodes.Length;
-            }
-            else if (element is LinearWedgeElement || element is ParabolicWedgeElement)
-            {
-                if (faceName == FeFaceName.S1 || faceName == FeFaceName.S2) nodes = new FeNode[3];
-                else nodes = new FeNode[4];
-
-                faceCenter = new double[nodes.Length];
-                for (int i = 0; i < nodes.Length; i++)
-                {
-                    nodes[i] = _nodes[nodeIds[i]];
-                    faceCenter[0] += nodes[i].X;
-                    faceCenter[1] += nodes[i].Y;
-                    faceCenter[2] += nodes[i].Z;
-                }
-                faceCenter[0] /= nodes.Length;
-                faceCenter[1] /= nodes.Length;
-                faceCenter[2] /= nodes.Length;
-            }
-            else if (element is LinearHexaElement || element is ParabolicHexaElement ||
-                     element is LinearQuadrilateralElement || element is ParabolicQuadrilateralElement)
-            {
-                nodes = new FeNode[4];
-                faceCenter = new double[nodes.Length];
-                for (int i = 0; i < nodes.Length; i++)
-                {
-                    nodes[i] = _nodes[nodeIds[i]];
-                    faceCenter[0] += nodes[i].X;
-                    faceCenter[1] += nodes[i].Y;
-                    faceCenter[2] += nodes[i].Z;
-                }
-                faceCenter[0] /= nodes.Length;
-                faceCenter[1] /= nodes.Length;
-                faceCenter[2] /= nodes.Length;
-            }
-            else throw new NotSupportedException();
-        }
         public void GetElementFaceNormal(int elementId, FeFaceName faceName, out double[] faceNormal)
         {
-            FeElement element = _elements[elementId];
-            GetElementFaceNormal(element, faceName, out faceNormal);
+            GetElementFaceCenterAndNormal(elementId, faceName, out double[] faceCenter, out faceNormal, out bool shellElement);
         }
-        public void GetElementFaceNormal(FeElement element, FeFaceName faceName, out double[] faceNormal)
+        public void GetElementFaceCenter(int elementId, FeFaceName faceName, out double[] faceCenter)
         {
-            FeNode[] nodes;
-            int[] nodeIds = element.GetNodeIdsFromFaceName(faceName);
-            faceNormal = null;
-            if (element is LinearTriangleElement || element is ParabolicTriangleElement)
-            {
-                nodes = new FeNode[3];
-                for (int i = 0; i < nodes.Length; i++) nodes[i] = _nodes[nodeIds[i]];
-                // Element normal to outside
-                faceNormal = ComputeNormalFromCellIndices(nodes[0], nodes[2], nodes[1]).Coor;
-            }
-            else if (element is LinearTetraElement || element is ParabolicTetraElement)
-            {
-                nodes = new FeNode[3];
-                for (int i = 0; i < nodes.Length; i++) nodes[i] = _nodes[nodeIds[i]];
-                // Element normal to inside
-                faceNormal = ComputeNormalFromCellIndices(nodes[0], nodes[1], nodes[2]).Coor;
-            }
-            else if (element is LinearWedgeElement || element is ParabolicWedgeElement)
-            {
-                if (faceName == FeFaceName.S1 || faceName == FeFaceName.S2) nodes = new FeNode[3];
-                else nodes = new FeNode[4];
-                //
-                for (int i = 0; i < nodes.Length; i++) nodes[i] = _nodes[nodeIds[i]];
-                // Element normal to inside
-                if (faceName == FeFaceName.S1) faceNormal = ComputeNormalFromCellIndices(nodes[0], nodes[1], nodes[2]).Coor;
-                // Element normal to outside
-                else faceNormal = ComputeNormalFromCellIndices(nodes[0], nodes[2], nodes[1]).Coor;
-            }
-            else if (element is LinearQuadrilateralElement || element is ParabolicQuadrilateralElement)
-            {
-                nodes = new FeNode[4];
-                for (int i = 0; i < nodes.Length; i++) nodes[i] = _nodes[nodeIds[i]];
-                // Element normal to outside
-                faceNormal = ComputeNormalFromCellIndices(nodes[0], nodes[2], nodes[1]).Coor;
-            }
-            else if (element is LinearHexaElement || element is ParabolicHexaElement)
-            {
-                nodes = new FeNode[4];
-                for (int i = 0; i < nodes.Length; i++) nodes[i] = _nodes[nodeIds[i]];
-                // Element normal to inside
-                faceNormal = ComputeNormalFromCellIndices(nodes[0], nodes[1], nodes[2]).Coor;
-            }
-            else throw new NotSupportedException();
+            GetElementFaceCenterAndNormal(elementId, faceName, out faceCenter, out double[] faceNormal, out bool shellElement);
+        }
+        public void GetElementFaceNormalAndArea(int elementId, FeFaceName faceName, out double[] faceNormal, out double area)
+        {
+            GetElementFaceCenterAndNormal(elementId, faceName, out double[] faceCenter, out faceNormal, out bool shellElement);
+            area = _elements[elementId].GetArea(faceName, _nodes);
         }
         public void GetElementFaceCenterAndNormal(int elementId, FeFaceName faceName, out double[] faceCenter,
                                                   out double[] faceNormal, out bool shellElement)
@@ -6073,6 +5977,25 @@ namespace CaeMesh
             if (element is LinearTriangleElement || element is ParabolicTriangleElement)
             {
                 nodes = new FeNode[3];
+                faceCenter = new double[nodes.Length];
+                for (int i = 0; i < nodes.Length; i++)
+                {
+                    nodes[i] = _nodes[nodeIds[i]];
+                    faceCenter[0] += nodes[i].X;
+                    faceCenter[1] += nodes[i].Y;
+                    faceCenter[2] += nodes[i].Z;
+                }
+                faceCenter[0] /= nodes.Length;
+                faceCenter[1] /= nodes.Length;
+                faceCenter[2] /= nodes.Length;
+                // Element normal to NEG S1
+                faceNormal = ComputeNormalFromCellIndices(nodes[0], nodes[1], nodes[2]).Coor;
+                //
+                shellElement = true;
+            }
+            else if (element is LinearQuadrilateralElement || element is ParabolicQuadrilateralElement)
+            {
+                nodes = new FeNode[4];
                 faceCenter = new double[nodes.Length];
                 for (int i = 0; i < nodes.Length; i++)
                 {
@@ -6131,25 +6054,6 @@ namespace CaeMesh
                 //
                 shellElement = false;
             }
-            else if (element is LinearQuadrilateralElement || element is ParabolicQuadrilateralElement)
-            {
-                nodes = new FeNode[4];
-                faceCenter = new double[nodes.Length];
-                for (int i = 0; i < nodes.Length; i++)
-                {
-                    nodes[i] = _nodes[nodeIds[i]];
-                    faceCenter[0] += nodes[i].X;
-                    faceCenter[1] += nodes[i].Y;
-                    faceCenter[2] += nodes[i].Z;
-                }
-                faceCenter[0] /= nodes.Length;
-                faceCenter[1] /= nodes.Length;
-                faceCenter[2] /= nodes.Length;
-                // Element normal to NEG S1
-                faceNormal = ComputeNormalFromCellIndices(nodes[0], nodes[1], nodes[2]).Coor;
-                //
-                shellElement = true;
-            }
             else if (element is LinearHexaElement || element is ParabolicHexaElement)
             {
                 nodes = new FeNode[4];
@@ -6171,12 +6075,7 @@ namespace CaeMesh
             }
             else throw new NotSupportedException();
         }
-        public void GetElementFaceNormalAndArea(int elementId, FeFaceName faceName, out double[] faceNormal, out double area)
-        {
-            FeElement element = _elements[elementId];
-            GetElementFaceNormal(element, faceName, out faceNormal);
-            area = element.GetArea(faceName, _nodes);
-        }
+        
         public int[] GetVisibleElementIds()
         {
             HashSet<int> ids = new HashSet<int>();

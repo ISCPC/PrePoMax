@@ -10,6 +10,14 @@ using CaeGlobals;
 namespace CaeModel
 {
     [Serializable]
+    public enum IncrementationTypeEnum
+    {
+        Default,
+        Automatic,
+        Direct
+    }
+
+    [Serializable]
     public abstract class Step : NamedClass, ISerializable
     {
         // Variables                                                                                                                
@@ -21,6 +29,7 @@ namespace CaeModel
         protected bool _nlgeom;                                                         //ISerializable
         protected int _maxIncrements;                                                   //ISerializable
         protected bool _supportsLoads;                                                  //ISerializable
+        protected IncrementationTypeEnum _incrementationType;                           //ISerializable
 
 
         // Properties                                                                                                               
@@ -32,6 +41,7 @@ namespace CaeModel
         public bool Nlgeom { get { return _nlgeom; } set { _nlgeom = value; } }
         public int MaxIncrements { get { return _maxIncrements; } set { _maxIncrements = Math.Max(value, 1); } }
         public bool SupportsLoads { get { return _supportsLoads; } }
+        public IncrementationTypeEnum IncrementationType { get { return _incrementationType; } set { _incrementationType = value; } }
 
 
         // Constructors                                                                                                             
@@ -50,13 +60,16 @@ namespace CaeModel
             _nlgeom = false;
             _maxIncrements = 100;
             _supportsLoads = true;
+            _incrementationType = IncrementationTypeEnum.Default;
         }
         public Step(SerializationInfo info, StreamingContext context)
             :base(info, context)
         {
-            int count = 0;
             foreach (SerializationEntry entry in info)
             {
+                // Compatibility for version v.0.9.0
+                _incrementationType = IncrementationTypeEnum.Automatic;
+                //
                 switch (entry.Name)
                 {
                     case "_boundayConditions":
@@ -69,7 +82,7 @@ namespace CaeModel
                         else if (entry.Value is OrderedDictionary<string, BoundaryCondition> bcod) _boundayConditions = bcod;
                         else if (entry.Value == null) _boundayConditions = null;
                         else throw new NotSupportedException();
-                        count++; break;
+                        break;
                     case "_loads":
                         if (entry.Value is Dictionary<string, Load> l)
                         {
@@ -80,7 +93,7 @@ namespace CaeModel
                         else if (entry.Value is OrderedDictionary<string, Load> lod) _loads = lod;
                         else if (entry.Value == null) _loads = null;
                         else throw new NotSupportedException();
-                        count++; break;
+                        break;
                     case "_fieldOutputs":
                         if (entry.Value is Dictionary<string, FieldOutput> fo)
                         {
@@ -91,7 +104,7 @@ namespace CaeModel
                         else if (entry.Value is OrderedDictionary<string, FieldOutput> food) _fieldOutputs = food;
                         else if (entry.Value == null) _fieldOutputs = null;
                         else throw new NotSupportedException();
-                        count++; break;
+                        break;
                     case "_historyOutputs":
                         if (entry.Value is Dictionary<string, HistoryOutput> ho)
                         {
@@ -102,18 +115,21 @@ namespace CaeModel
                         else if (entry.Value is OrderedDictionary<string, HistoryOutput> hood) _historyOutputs = hood;
                         else if (entry.Value == null) _historyOutputs = null;
                         else throw new NotSupportedException();
-                        count++; break;
+                        break;
                     case "_perturbation":
-                        _perturbation = (bool)entry.Value; count++; break;
+                        _perturbation = (bool)entry.Value; break;
                     case "_nlgeom":
-                        _nlgeom = (bool)entry.Value; count++; break;
+                        _nlgeom = (bool)entry.Value; break;
                     case "_maxIncrements":
-                        _maxIncrements = (int)entry.Value; count++; break;
+                        _maxIncrements = (int)entry.Value; break;
                     case "_supportsLoads":
-                        _supportsLoads = (bool)entry.Value; count++; break;                    
+                        _supportsLoads = (bool)entry.Value; break;
+                    case "_incrementationType":
+                        _incrementationType = (IncrementationTypeEnum)entry.Value; break;
+                    //default:
+                    //    throw new NotSupportedException();
                 }
             }
-            if (count != 8) throw new NotSupportedException();
         }
 
 
@@ -149,6 +165,7 @@ namespace CaeModel
             info.AddValue("_nlgeom", _nlgeom, typeof(bool));
             info.AddValue("_maxIncrements", _maxIncrements, typeof(int));
             info.AddValue("_supportsLoads", _supportsLoads, typeof(bool));
+            info.AddValue("_incrementationType", _incrementationType, typeof(IncrementationTypeEnum));
         }
     }
 }

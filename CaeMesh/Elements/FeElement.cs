@@ -58,7 +58,15 @@ namespace CaeMesh
                    elementType == typeof(ParabolicWedgeElement) ||
                    elementType == typeof(ParabolicHexaElement);
         }
-
+        //
+        public static int VtkCellIdFromFaceName(FeFaceName faceName)
+        {
+            return (int)faceName - 1;
+        }
+        public static FeFaceName FaceNameFromVtkCellId(int vtkCellId)
+        {
+            return (FeFaceName)(vtkCellId + 1);
+        }
 
         // Abstract methods                                                                                                         
         abstract public int[] GetVtkNodeIds();

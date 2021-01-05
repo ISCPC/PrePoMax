@@ -95,8 +95,8 @@ namespace PrePoMax.Forms
         {
             if (btvKeywordsTree.SelectedNode != null)
             {
-                CalculixUserKeyword keyword = new CalculixUserKeyword("User data");
-                TreeNode node = btvKeywordsTree.SelectedNode.Nodes.Add("User data");
+                CalculixUserKeyword keyword = new CalculixUserKeyword("User keyword");
+                TreeNode node = btvKeywordsTree.SelectedNode.Nodes.Add("User keyword");
 
                 AddUserKeywordToTreeNode(keyword, node);
                 btvKeywordsTree.SelectedNode.Expand();
@@ -311,7 +311,7 @@ namespace PrePoMax.Forms
         {
             node.Text = GetFirstLineFromMultiline(keyword.GetKeywordString());
             node.Tag = keyword;
-            Font font = new System.Drawing.Font(btvKeywordsTree.Font, FontStyle.Bold);
+            Font font = new Font(btvKeywordsTree.Font, FontStyle.Bold);
             node.NodeFont = font;
             node.ForeColor = Color.Red;
         }
@@ -388,7 +388,7 @@ namespace PrePoMax.Forms
                         // Change the name of the Selected tree node
                         LockWindowUpdate(btvKeywordsTree.Handle);
                         if (rtbKeyword.Lines.Length > 0 && rtbKeyword.Lines[0].Length > 0) btvKeywordsTree.SelectedNode.Text = rtbKeyword.Lines[0];
-                        else btvKeywordsTree.SelectedNode.Text = "User data";
+                        else btvKeywordsTree.SelectedNode.Text = "User keyword";
                         LockWindowUpdate(IntPtr.Zero);
 
                         FormatInp(rtbKeyword);
@@ -515,7 +515,9 @@ namespace PrePoMax.Forms
 
         private string GetFirstLineFromMultiline(string multiLinedata)
         {
-            return multiLinedata.Split(new string[] { "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries)[0];
+            string[] tmp = multiLinedata.Split(new string[] { "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+            if (tmp.Length > 0) return tmp[0];
+            else return "User keyword";
         }
 
       

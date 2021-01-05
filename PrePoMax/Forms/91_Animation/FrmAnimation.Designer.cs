@@ -570,8 +570,6 @@
             // cbGraphicsRam
             // 
             this.cbGraphicsRam.AutoSize = true;
-            this.cbGraphicsRam.Checked = true;
-            this.cbGraphicsRam.CheckState = System.Windows.Forms.CheckState.Checked;
             this.cbGraphicsRam.Location = new System.Drawing.Point(6, 22);
             this.cbGraphicsRam.Name = "cbGraphicsRam";
             this.cbGraphicsRam.Size = new System.Drawing.Size(258, 19);

@@ -229,7 +229,7 @@ namespace vtkControl
 
 
         // Events                                                                                                                   
-        public event Action<double[], double[][], vtkSelectOperation> OnMouseLeftButtonUpSelection;
+        public event Action<double[], double[], double[][], vtkSelectOperation> OnMouseLeftButtonUpSelection;
         public event Action<sbyte> KeyPressEvent;
 
 
@@ -478,7 +478,8 @@ namespace vtkControl
                 if (!rubberBandSelection)
                 {
                     double[] pickedPoint = GetPickPoint(out pickedActor, x1, y1);
-                    OnMouseLeftButtonUpSelection?.Invoke(pickedPoint, null, selectOperation);
+                    double[] direction = _renderer.GetActiveCamera().GetDirectionOfProjection();
+                    OnMouseLeftButtonUpSelection?.Invoke(pickedPoint, direction,  null, selectOperation);
                 }
                 // Area selection
                 else
@@ -496,7 +497,7 @@ namespace vtkControl
                         normal = plane.GetNormal();
                         planeParameters[i] = new double[] { origin[0], origin[1], origin[2], normal[0], normal[1], normal[2] };
                     }
-                    OnMouseLeftButtonUpSelection?.Invoke(null, planeParameters, selectOperation);
+                    OnMouseLeftButtonUpSelection?.Invoke(null, null, planeParameters, selectOperation);
                 }
             }
         }
@@ -1405,17 +1406,16 @@ namespace vtkControl
         }
         private int[] GetEdgeNodeIds(double[] point, int globalCellId, vtkCell cell, vtkCellLocator cellLocator)
         {
-            // cell face
+            // Cell face
             int[] globalCellFaceNodeIds = GetCellFaceNodeIds(cell, cellLocator);
             vtkMaxActorData cellFaceData = Controller_GetCellFaceActorData(globalCellId, globalCellFaceNodeIds); // works on undeformed mesh
-
-            // closest edge cell
+            // Closest edge cell
             int[] nodeIds = null;
             double[][] nodeCoor = null;
             int[] edgeCell = null;
             int edgeCellType;
             GetClosestEdgeCell(point, cellFaceData, out nodeIds, out nodeCoor, out edgeCell, out edgeCellType);
-           
+            //
             return nodeIds;
         }
         private int[] GetCellFaceNodeIds(vtkCell cell, vtkCellLocator cellLocator)
@@ -4999,10 +4999,11 @@ namespace vtkControl
             _style.AdjustCameraDistanceAndClipping();
         }
 
-        public void SaveAnimationAsAVI(string fileName, int[] firstLastFrame, int step, int fps, bool scalarRangeFromAllFrames, bool swing, bool encoderOptions)
+        public void SaveAnimationAsAVI(string fileName, int[] firstLastFrame, int step, int fps, bool scalarRangeFromAllFrames,
+                                       bool swing, bool encoderOptions)
         {
             if (step < 1) step = 1;
-
+            //
             if (System.IO.File.Exists(fileName))
             {
                 if (CaeGlobals.Tools.IsFileLocked(fileName))
@@ -5011,22 +5012,24 @@ namespace vtkControl
                     return;
                 }
             }
-
+            //
             vtkWindowToImageFilter windowToImage = vtkWindowToImageFilter.New();
             windowToImage.SetInput(_renderWindow);
             windowToImage.SetInputBufferTypeToRGB();
-
+            //
             vtkAVIWriter avw = vtkAVIWriter.New();
             avw.SetInputConnection(windowToImage.GetOutputPort());
             avw.SetFileName(fileName);
             avw.SetQuality(2);
             avw.SetRate(fps);
-            if (encoderOptions) avw.SetPromptCompressionOptions(1);
-
+            //
+            if (encoderOptions) avw.PromptCompressionOptionsOn();
+            //avw.SetCompressorFourCC("MSVC");  //DIVX, XVID, and H264
+            //
             vtkObject.GlobalWarningDisplayOff();    // if the video compression window is closed an error occurs
             avw.Start();
             vtkObject.GlobalWarningDisplayOn();
-
+            //
             for (int i = firstLastFrame[0]; i <= firstLastFrame[1]; i += step)
             {
                 SetAnimationFrame(i, scalarRangeFromAllFrames);

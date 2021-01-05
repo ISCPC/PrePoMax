@@ -75,18 +75,23 @@ namespace CaeMesh
         }
         public override int[][] GetAllVtkCells()
         {
-            throw new NotImplementedException();
+            int[][] cells = new int[5][];
+            //
+            cells[0] = new int[] { NodeIds[0], NodeIds[2], NodeIds[1] };
+            cells[1] = new int[] { NodeIds[0], NodeIds[1], NodeIds[2] };
+            cells[2] = new int[] { NodeIds[0], NodeIds[1] };
+            cells[3] = new int[] { NodeIds[1], NodeIds[2] };
+            cells[4] = new int[] { NodeIds[2], NodeIds[0] };
+            //
+            return cells;
         }
         public override Dictionary<FeFaceName, double> GetFaceNamesAndAreasFromNodeSet(HashSet<int> nodeSet,
                                                                                        Dictionary<int, FeNode> nodes)
         {
-            // Check all nodes
-            int significantNodes = NodeIds.Length;
-            //
-            bool[] faceNodeIds = new bool[significantNodes];
+            bool[] faceNodeIds = new bool[NodeIds.Length];
             //
             int count = 0;
-            for (int i = 0; i < significantNodes; i++)
+            for (int i = 0; i < NodeIds.Length; i++)
             {
                 if (nodeSet.Contains(NodeIds[i]))
                 {
@@ -98,7 +103,7 @@ namespace CaeMesh
             // POS S2 = 1-2-3 . 0-1-2
             Dictionary<FeFaceName, double> faces = new Dictionary<FeFaceName, double>();
             //
-            if (count >= 3)
+            if (count == 3)
             {
                 if (faceNodeIds[0] && faceNodeIds[1] && faceNodeIds[2]) faces.Add(FeFaceName.S2, GetArea(FeFaceName.S2, nodes));
             }
