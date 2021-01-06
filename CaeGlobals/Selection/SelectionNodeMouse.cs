@@ -78,6 +78,7 @@ namespace CaeGlobals
 
         // Methods                                                                                                                  
 
+
         // ISerialization
         public new void GetObjectData(SerializationInfo info, StreamingContext context)
         {
@@ -91,6 +92,7 @@ namespace CaeGlobals
             info.AddValue("_partId", _partId, typeof(int));
             info.AddValue("_precision", _precision, typeof(double));
         }
+
 
     }
 }

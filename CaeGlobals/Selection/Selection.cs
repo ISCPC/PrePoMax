@@ -15,10 +15,10 @@ namespace CaeGlobals
         private vtkSelectItem _selectItem;                  //ISerializable
         private int _currentView;                           //ISerializable
         private int _maxNumberOfIds;                        //ISerializable
+        private bool _limitSelectionToFirstPart;            //ISerializable
 
         // Temporary storage for speed optimization: keep current ids; do not copy
         [NonSerialized] private Dictionary<SelectionNode, int[]> _nodeIds;
-        [NonSerialized] private bool _limitSelectionToFirstPart;
 
 
         // Properties                                                                                                               
@@ -49,8 +49,9 @@ namespace CaeGlobals
         }
         public Selection(SerializationInfo info, StreamingContext context)
         {
-            _currentView = -1;              // Compatibility for version v0.5.2
-            _maxNumberOfIds = -1;           // Compatibility for version v0.8.0
+            _currentView = -1;                      // Compatibility for version v0.5.2
+            _maxNumberOfIds = -1;                   // Compatibility for version v0.8.0
+            _limitSelectionToFirstPart = false;     // Compatibility for version v0.9.0
             foreach (SerializationEntry entry in info)
             {
                 switch (entry.Name)
@@ -64,6 +65,8 @@ namespace CaeGlobals
                         _currentView = (int)entry.Value; break;
                     case "_maxNumberOfIds":
                         _maxNumberOfIds = (int)entry.Value; break;
+                    case "_limitSelectionToFirstPart":
+                        _limitSelectionToFirstPart = (bool)entry.Value; break;
                     default:
                         break;
                 }
@@ -138,6 +141,7 @@ namespace CaeGlobals
             info.AddValue("_selectItem", _selectItem, typeof(vtkSelectItem));
             info.AddValue("_currentView", _currentView, typeof(int));
             info.AddValue("_maxNumberOfIds", _maxNumberOfIds, typeof(int));
+            info.AddValue("_limitSelectionToFirstPart", _limitSelectionToFirstPart, typeof(bool));
         }
 
     }

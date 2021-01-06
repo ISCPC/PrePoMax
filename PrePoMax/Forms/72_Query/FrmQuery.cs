@@ -240,15 +240,15 @@ namespace PrePoMax.Forms
         }
         public void OneEdgePicked(int geometryId)
         {
-            int[] itemTypePart = CaeMesh.FeMesh.GetItemTypePartIdsFromGeometryId(geometryId);
-            CaeMesh.BasePart part = _controller.DisplayedMesh.GetPartById(itemTypePart[2]);
+            int[] itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(geometryId);
+            BasePart part = _controller.DisplayedMesh.GetPartById(itemTypePartIds[2]);
             double length1 = _controller.DisplayedMesh.GetEdgeLength(geometryId);
             string lenUnit = GetLengthUnit();
             //
             Form_WriteDataToOutput("");
             string data = string.Format("Edge on part: {0}", part.Name);            
             Form_WriteDataToOutput(data);
-            data = string.Format("{0,16}{1,8}{2,16}{3,16}", "Edge".PadRight(16), "[/]", "id:", itemTypePart[0]);
+            data = string.Format("{0,16}{1,8}{2,16}{3,16}", "Edge".PadRight(16), "[/]", "id:", itemTypePartIds[0]);
             Form_WriteDataToOutput(data);
             data = string.Format("{0,16}{1,8}{2,16}{3,16:E}", "Base".PadRight(16), lenUnit, "L:", length1);
             Form_WriteDataToOutput(data);
@@ -280,9 +280,9 @@ namespace PrePoMax.Forms
         }
         public void OneSurfacePicked(int geometryId)
         {
-            int[] itemTypePart = CaeMesh.FeMesh.GetItemTypePartIdsFromGeometryId(geometryId);
-            CaeMesh.BasePart part = _controller.DisplayedMesh.GetPartById(itemTypePart[2]);
-            int faceId = itemTypePart[0];
+            int[] itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(geometryId);
+            BasePart part = _controller.DisplayedMesh.GetPartById(itemTypePartIds[2]);
+            int faceId = itemTypePartIds[0];
             double area1 = _controller.DisplayedMesh.GetSurfaceArea(geometryId);
             string areaUnit = GetAreaUnit();
             //

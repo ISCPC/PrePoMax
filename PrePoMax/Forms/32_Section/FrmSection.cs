@@ -338,8 +338,9 @@ namespace PrePoMax.Forms
                         //
                         if (Section.CreationData != null)
                         {
+                            bool backfaceCulling = !(_viewSection is ViewShellSection);
                             _controller.Selection = Section.CreationData.DeepClone();
-                            _controller.HighlightSelection();
+                            _controller.HighlightSelection(true, backfaceCulling);
                         }
                     }
                     else throw new NotSupportedException();
@@ -381,6 +382,8 @@ namespace PrePoMax.Forms
                     propertyGrid.Refresh();
                     //
                     _propertyItemChanged = true;
+                    //
+                    if (ids.Length != 0) HighlightSection(); // this will redraw the selection with correct backfaceCulling
                 }
                 else throw new NotSupportedException();
             }

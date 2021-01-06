@@ -2063,29 +2063,26 @@ namespace vtkControl
 
         private void ApplyEdgesVisibilityAndBackfaceCulling()
         {
-            // visibility functions must use vtkMaxActor.Visible property to determine visibility
-
-            // base layer
+            // Visibility functions must use vtkMaxActor.Visible property to determine visibility
+            // Base layer
             foreach (var entry in _actors)
             {
                 ApplyEdgeVisibilityAndBackfaceCullingToActor(entry.Value.Geometry, vtkRendererLayer.Base);
                 if (entry.Value.ElementEdges != null) ApplyEdgeVisibilityAndBackfaceCullingToActorEdges(entry.Value.ElementEdges, entry.Key);
                 if (entry.Value.ModelEdges != null) ApplyEdgeVisibilityAndBackfaceCullingToModelEdges(entry.Value.ModelEdges, entry.Key);
             }
-
-            // selection
+            // Selection
             foreach (var selectedActor in _selectedActors)
             {
                 ApplyEdgeVisibilityAndBackfaceCullingToActor(selectedActor.Geometry, vtkRendererLayer.Selection);
                 if (selectedActor.ElementEdges != null) ApplyEdgeVisibilityAndBackfaceCullingToActorEdges(selectedActor.ElementEdges, null);
             }
-
-            // overlay
+            // Overlay
             foreach (var entry in _overlayActors)
             {
                 ApplyEdgeVisibilityAndBackfaceCullingToActor(entry.Value, vtkRendererLayer.Selection);
             }
-
+            //
             this.Invalidate();
         }
         private void ApplyEdgeVisibilityAndBackfaceCullingToActor(vtkActor actor, vtkRendererLayer layer)
@@ -2103,12 +2100,22 @@ namespace vtkControl
                 actor.VisibilityOff();
             }
             else
-            {                
+            {
                 actor.GetProperty().SetRepresentationToSurface();
+                //
+                vtkMaxActor maxActor = null;
                 if (layer == vtkRendererLayer.Base)
                 {
                     string actorName = GetActorName(actor);
-                    vtkMaxActor maxActor = _actors[actorName];
+                    maxActor = _actors[actorName];
+                }
+                else if (layer == vtkRendererLayer.Selection)
+                {
+                    maxActor = GetSelectedMaxActor(actor);
+                }
+                //
+                if (maxActor != null)
+                {
                     if (maxActor.VtkMaxActorVisible) actor.VisibilityOn();
                     else actor.VisibilityOff();
                     //
@@ -5262,6 +5269,18 @@ namespace vtkControl
             {
                 if (entry.Value.Geometry == actor || entry.Value.ElementEdges == actor ||entry.Value.ModelEdges == actor)
                     return entry.Key;
+            }
+            //
+            return null;
+        }
+        private vtkMaxActor GetSelectedMaxActor(vtkActor actor)
+        {
+            if (actor == null) return null;
+            //
+            foreach (var selectionActor in _selectedActors)
+            {
+                if (selectionActor.Geometry == actor || selectionActor.ElementEdges == actor || selectionActor.ModelEdges == actor)
+                    return selectionActor;
             }
             //
             return null;

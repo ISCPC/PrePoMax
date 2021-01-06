@@ -235,10 +235,16 @@ namespace PrePoMax.Forms
                 {
                     _controller.SetSelectItemToGeometry();
                     // Surface.CreationData is set to null when the CreatedFrom is changed
-                    if (MeshRefinement.CreationData != null)
+                    if (MeshRefinement.CreationData != null && MeshRefinement.GeometryIds != null &&
+                        MeshRefinement.GeometryIds.Length > 0)
                     {
-                        _controller.Selection = MeshRefinement.CreationData;  // deep copy to not clear
-                        _controller.HighlightSelection();
+                        // The selection is limited to one part
+                        int[] itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(MeshRefinement.GeometryIds[0]);
+                        BasePart part = _controller.Model.Geometry.GetPartById(itemTypePartIds[2]);
+                        bool backfaceCulling = part.PartType != PartType.Shell;
+                        //
+                        _controller.Selection = MeshRefinement.CreationData;  // deep copy to not clear?
+                        _controller.HighlightSelection(true, backfaceCulling);
                     }
                 }
             }
@@ -287,6 +293,8 @@ namespace PrePoMax.Forms
                 propertyGrid.Refresh();
                 //
                 _propertyItemChanged = true;
+                //
+                if (ids.Length != 0) HighlightMeshRefinement(); // this will redraw the selection with correct backfaceCulling
             }
         }
 

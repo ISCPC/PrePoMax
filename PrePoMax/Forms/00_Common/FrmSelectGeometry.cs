@@ -165,6 +165,7 @@ namespace PrePoMax.Forms
                 string partName;
                 string itemName;
                 int[] itemTypePartIds;
+                GeometryType geomType;
                 ListViewItem listViewItem;
                 FeMesh mesh = _controller.DisplayedMesh;
                 //
@@ -173,15 +174,19 @@ namespace PrePoMax.Forms
                     itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(id);
                     itemName = null;
                     partName = mesh.GetPartById(itemTypePartIds[2]).Name;
-                    if (itemTypePartIds[1] == 1)    // 1 for vertex
+                    geomType = (GeometryType)itemTypePartIds[1];
+                    //
+                    if (geomType == GeometryType.Vertex)
                     {
                         itemName = "Vertex " + itemTypePartIds[0];
                     }
-                    else if (itemTypePartIds[1] == 2)    // 2 for edge
+                    else if (geomType == GeometryType.Edge)
                     {
                         itemName = "Edge " + itemTypePartIds[0];
                     }
-                    else if (itemTypePartIds[1] == 3)    // 3 for surface
+                    else if (geomType == GeometryType.SolidSurface ||
+                             geomType == GeometryType.ShellFrontSurface ||
+                             geomType == GeometryType.ShellBackSurface)
                     {
                         itemName = "Surface " + itemTypePartIds[0];
                     }
@@ -189,7 +194,6 @@ namespace PrePoMax.Forms
                     if (itemName != null)
                     {
                         listViewItem = lvItems.Items.Add(new ListViewItem(partName + " : " + itemName));
-                        //listViewItem.Selected = true;
                     }
                 }
             }

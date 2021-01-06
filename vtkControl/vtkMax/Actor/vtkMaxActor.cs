@@ -209,7 +209,6 @@ namespace vtkControl
                 if (extractVisualizationSurface) CreateFromDataByVisualizationSurfaceExtraction(data);
                 else
                 {
-                    //CreateFromData(data);
                     CreatePolyFromData(data);
                 }
                 //

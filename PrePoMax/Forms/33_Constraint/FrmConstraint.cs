@@ -395,7 +395,7 @@ namespace PrePoMax.Forms
                 if (creationData != null)
                 {
                     _controller.Selection = creationData.DeepClone();
-                    _controller.HighlightSelection(clear, useSecondaryHighlightColor);
+                    _controller.HighlightSelection(clear, true, useSecondaryHighlightColor);
                 }
             }
         }
