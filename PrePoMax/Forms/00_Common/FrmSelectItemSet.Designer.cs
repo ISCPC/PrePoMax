@@ -133,7 +133,7 @@
             this.tbEdgeAngle.Name = "tbEdgeAngle";
             this.tbEdgeAngle.Size = new System.Drawing.Size(58, 23);
             this.tbEdgeAngle.TabIndex = 10;
-            this.tbEdgeAngle.Text = "10";
+            this.tbEdgeAngle.Text = "30";
             this.tbEdgeAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.tbEdgeAngle.UnitConverter = null;
             this.tbEdgeAngle.KeyUp += new System.Windows.Forms.KeyEventHandler(this.tbAngle_KeyUp);
@@ -188,7 +188,7 @@
             this.tbSurfaceAngle.Name = "tbSurfaceAngle";
             this.tbSurfaceAngle.Size = new System.Drawing.Size(58, 23);
             this.tbSurfaceAngle.TabIndex = 5;
-            this.tbSurfaceAngle.Text = "10";
+            this.tbSurfaceAngle.Text = "30";
             this.tbSurfaceAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.tbSurfaceAngle.UnitConverter = null;
             this.tbSurfaceAngle.KeyUp += new System.Windows.Forms.KeyEventHandler(this.tbAngle_KeyUp);
@@ -303,7 +303,7 @@
             this.tbGeometrySurfaceAngle.Name = "tbGeometrySurfaceAngle";
             this.tbGeometrySurfaceAngle.Size = new System.Drawing.Size(58, 23);
             this.tbGeometrySurfaceAngle.TabIndex = 17;
-            this.tbGeometrySurfaceAngle.Text = "10";
+            this.tbGeometrySurfaceAngle.Text = "30";
             this.tbGeometrySurfaceAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.tbGeometrySurfaceAngle.UnitConverter = null;
             this.tbGeometrySurfaceAngle.KeyUp += new System.Windows.Forms.KeyEventHandler(this.tbAngle_KeyUp);
@@ -326,7 +326,7 @@
             this.tbGeometryEdgeAngle.Name = "tbGeometryEdgeAngle";
             this.tbGeometryEdgeAngle.Size = new System.Drawing.Size(58, 23);
             this.tbGeometryEdgeAngle.TabIndex = 15;
-            this.tbGeometryEdgeAngle.Text = "10";
+            this.tbGeometryEdgeAngle.Text = "30";
             this.tbGeometryEdgeAngle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.tbGeometryEdgeAngle.UnitConverter = null;
             this.tbGeometryEdgeAngle.KeyUp += new System.Windows.Forms.KeyEventHandler(this.tbAngle_KeyUp);

@@ -16,7 +16,7 @@ namespace CaeGlobals
         private double[][] _planeParameters; // Ox,Oy,Oz,Nx,Ny,Nz       //ISerializable
         private vtkSelectBy _selectBy;                                  //ISerializable
         private double _angle;                                          //ISerializable
-        private int _partId;                                            //ISerializable
+        private int[] _partIds;                                         //ISerializable
         private double _precision;                                      //ISerializable
 
 
@@ -26,14 +26,14 @@ namespace CaeGlobals
         public double[][] PlaneParameters { get { return _planeParameters; } set { _planeParameters = value; } }
         public vtkSelectBy SelectBy { get { return _selectBy; } set { _selectBy = value; } }
         public double Angle { get { return _angle; } set { _angle = value; } }        
-        public int PartId { get { return _partId; } set { _partId = value; } }
+        public int[] PartIds { get { return _partIds; } }
         public double Precision { get { return _precision; } set { _precision = value; } }
         public bool IsGeometryBased { get { return _selectBy.IsGeometryBased(); } }
 
 
         // Constructors                                                                                                             
         public SelectionNodeMouse(double[] pickedPoint, double[] selectionDirection, double[][] planeParameters,
-                                  vtkSelectOperation selectOpreation, vtkSelectBy selectBy, double angle)
+                                  vtkSelectOperation selectOpreation, int[] partIds, vtkSelectBy selectBy, double angle)
             : base(selectOpreation)
         {
             _pickedPoint = pickedPoint;
@@ -41,13 +41,13 @@ namespace CaeGlobals
             _planeParameters = planeParameters;
             _selectBy = selectBy;
             _angle = angle;
-            _partId = -1;
+            _partIds = partIds;
             _precision = -1;
         }
         public SelectionNodeMouse(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
-            _partId = -1;               // Compatibility for version v0.5.2
+            _partIds = null;            // Compatibility for version v0.9.0
             _precision = -1;            // Compatibility for version v0.5.2
             _selectionDirection = null; // Compatibility for version v0.9.0
             //
@@ -65,8 +65,8 @@ namespace CaeGlobals
                         _selectBy = (vtkSelectBy)entry.Value; break;
                     case "_angle":
                         _angle = (double)entry.Value; break;
-                    case "_partId":
-                        _partId = (int)entry.Value; break;
+                    case "_partIds":
+                        _partIds = (int[])entry.Value; break;
                     case "_precision":
                         _precision = (double)entry.Value; break;
                     default:
@@ -89,7 +89,7 @@ namespace CaeGlobals
             info.AddValue("_planeParameters", _planeParameters, typeof(double[][]));
             info.AddValue("_selectBy", _selectBy, typeof(vtkSelectBy));
             info.AddValue("_angle", _angle, typeof(double));
-            info.AddValue("_partId", _partId, typeof(int));
+            info.AddValue("_partIds", _partIds, typeof(int[]));
             info.AddValue("_precision", _precision, typeof(double));
         }
 

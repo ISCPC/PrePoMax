@@ -180,7 +180,7 @@ namespace PrePoMax.Forms
                     {
                         itemName = "Vertex " + itemTypePartIds[0];
                     }
-                    else if (geomType == GeometryType.Edge)
+                    else if (geomType == GeometryType.Edge || geomType == GeometryType.ShellEdgeSurface)
                     {
                         itemName = "Edge " + itemTypePartIds[0];
                     }
@@ -190,6 +190,7 @@ namespace PrePoMax.Forms
                     {
                         itemName = "Surface " + itemTypePartIds[0];
                     }
+                    else throw new NotSupportedException();
                     //
                     if (itemName != null)
                     {

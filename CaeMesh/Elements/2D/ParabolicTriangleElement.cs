@@ -10,8 +10,10 @@ namespace CaeMesh
     public class ParabolicTriangleElement : FeElement2D
     {
         // Variables                                                                                                                
-        private static int vtkCellTypeInt = (int)vtkCellType.VTK_QUADRATIC_TRIANGLE;
-        private static double a = 1.0 / 3.0;
+        private static readonly int vtkCellTypeInt = (int)vtkCellType.VTK_QUADRATIC_TRIANGLE;
+        private static readonly double a = 1.0 / 3.0;
+        private static readonly double b = 1.0 / 6.0;
+        private static readonly double c = 4.0 / 6.0;
 
 
         // Properties                                                                                                               
@@ -33,9 +35,6 @@ namespace CaeMesh
         {
             // return a copy -> ToArray
             return NodeIds.ToArray();
-            //
-            // Return S1
-            //return new int[] { NodeIds[0], NodeIds[2], NodeIds[1], NodeIds[5], NodeIds[4], NodeIds[3] };
         }
         public override int GetVtkCellType()
         {
@@ -49,12 +48,21 @@ namespace CaeMesh
         {
             // NEG S1 = 1-3-2-6-5-4  . 0-2-1-5-4-3
             // POS S2 = 1-2-3-4-5-6  . 0-1-2-3-4-5
+            //     S3 = 1-2-4 . 0-1-3
+            //     S4 = 2-3-5 . 1-2-4
+            //     S5 = 3-1-6 . 2-0-5
             switch (faceName)
             {
                 case FeFaceName.S1:
                     return new int[] { NodeIds[0], NodeIds[2], NodeIds[1], NodeIds[5], NodeIds[4], NodeIds[3] };
                 case FeFaceName.S2:
                     return new int[] { NodeIds[0], NodeIds[1], NodeIds[2], NodeIds[3], NodeIds[4], NodeIds[5] };
+                case FeFaceName.S3:
+                    return new int[] { NodeIds[0], NodeIds[1], NodeIds[3] };
+                case FeFaceName.S4:
+                    return new int[] { NodeIds[1], NodeIds[2], NodeIds[4] };
+                case FeFaceName.S5:
+                    return new int[] { NodeIds[2], NodeIds[0], NodeIds[5] };
                 default:
                     throw new NotSupportedException();
             }
@@ -63,19 +71,36 @@ namespace CaeMesh
         {
             // NEG S1 = 1-3-2-6-5-4  . 0-2-1-5-4-3
             // POS S2 = 1-2-3-4-5-6  . 0-1-2-3-4-5
+            //     S3 = 1-2-4 . 0-1-3
+            //     S4 = 2-3-5 . 1-2-4
+            //     S5 = 3-1-6 . 2-0-5
             switch (faceName)
             {
                 case FeFaceName.S1:
                     return new int[] { NodeIds[0], NodeIds[2], NodeIds[1], NodeIds[5], NodeIds[4], NodeIds[3] };
                 case FeFaceName.S2:
                     return new int[] { NodeIds[0], NodeIds[1], NodeIds[2], NodeIds[3], NodeIds[4], NodeIds[5] };
+                case FeFaceName.S3:
+                    return new int[] { NodeIds[0], NodeIds[1], NodeIds[3] };
+                case FeFaceName.S4:
+                    return new int[] { NodeIds[1], NodeIds[2], NodeIds[4] };
+                case FeFaceName.S5:
+                    return new int[] { NodeIds[2], NodeIds[0], NodeIds[5] };
                 default:
                     throw new NotSupportedException();
             }
         }
         public override int[][] GetAllVtkCells()
         {
-            throw new NotImplementedException();
+            int[][] cells = new int[5][];
+            //
+            cells[0] = new int[] { NodeIds[0], NodeIds[2], NodeIds[1], NodeIds[5], NodeIds[4], NodeIds[3] };
+            cells[1] = new int[] { NodeIds[0], NodeIds[1], NodeIds[2], NodeIds[3], NodeIds[4], NodeIds[5] };
+            cells[2] = new int[] { NodeIds[0], NodeIds[1], NodeIds[3] };
+            cells[3] = new int[] { NodeIds[1], NodeIds[2], NodeIds[4] };
+            cells[4] = new int[] { NodeIds[2], NodeIds[0], NodeIds[5] };
+            //
+            return cells;
         }
         public override Dictionary<FeFaceName, double> GetFaceNamesAndAreasFromNodeSet(HashSet<int> nodeSet,
                                                                                        Dictionary<int, FeNode> nodes)
@@ -107,20 +132,31 @@ namespace CaeMesh
         }
         public override double[] GetEquivalentForcesFromFaceName(FeFaceName faceName)
         {
-            return new double[] { 0, 0, 0, a, a, a };
+            if (faceName == FeFaceName.S1 || faceName == FeFaceName.S2)
+                return new double[] { 0, 0, 0, a, a, a };
+            else if (faceName == FeFaceName.S3 || faceName == FeFaceName.S4 || faceName == FeFaceName.S5)
+                return new double[] { b, b, c };
+            else throw new NotSupportedException();
         }
         public override double GetArea(FeFaceName faceName, Dictionary<int, FeNode> nodes)
         {
             int[] cell = GetVtkCellFromFaceName(faceName);
-            return GeometryTools.TriangleArea(nodes[cell[0]], nodes[cell[1]], nodes[cell[2]],
-                                              nodes[cell[3]], nodes[cell[4]], nodes[cell[5]]);
+            if (cell.Length == 6)
+                return GeometryTools.TriangleArea(nodes[cell[0]], nodes[cell[1]], nodes[cell[2]],
+                                                  nodes[cell[3]], nodes[cell[4]], nodes[cell[5]]);
+            else if (cell.Length == 3)
+                return GeometryTools.EdgeLength(nodes[cell[0]], nodes[cell[1]], nodes[cell[2]]);
+            else throw new NotSupportedException();
         }
         public override double[] GetCG(FeFaceName faceName, Dictionary<int, FeNode> nodes, out double area)
         {
             int[] cell = GetVtkCellFromFaceName(faceName);
-            double[] cg = GeometryTools.TriangleCG(nodes[cell[0]], nodes[cell[1]], nodes[cell[2]],
-                                                   nodes[cell[3]], nodes[cell[4]], nodes[cell[5]], out area);
-            return cg;
+            if (cell.Length == 6)
+                return GeometryTools.TriangleCG(nodes[cell[0]], nodes[cell[1]], nodes[cell[2]],
+                                                nodes[cell[3]], nodes[cell[4]], nodes[cell[5]], out area);
+            else if (cell.Length == 3)
+                return GeometryTools.EdgeCG(nodes[cell[0]], nodes[cell[1]], nodes[cell[2]], out area);
+            else throw new NotSupportedException();
         }
         public override FeElement DeepCopy()
         {

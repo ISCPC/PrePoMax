@@ -111,6 +111,34 @@ namespace PrePoMax.Forms
             _controller.Selection.LimitSelectionToFirstPart = Visible;
             btnPreview.Enabled = true;
         }
+        async private void btnPreview_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                btnPreview.Enabled = false;
+                FeMeshRefinement meshRefinement = MeshRefinement.DeepClone();
+                string[] partNames = _controller.GetPartNamesFromMeshRefinement(meshRefinement);
+                if (partNames != null && partNames.Length > 0)
+                {
+                    HighlightMeshRefinement();
+                    //Set the name to the prev meshRefinement name
+                    if (_meshRefinementToEditName != null) meshRefinement.Name = _meshRefinementToEditName;
+                    //
+                    foreach (var partName in partNames)
+                    {
+                        await Task.Run(() => _controller.PreviewEdgeMesh(partName, null, meshRefinement));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+            finally
+            {
+                btnPreview.Enabled = true;
+            }
+        }
 
 
         // Overrides                                                                                                                
@@ -249,34 +277,6 @@ namespace PrePoMax.Forms
                 }
             }
             catch { }
-        }
-        async private void btnPreview_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                btnPreview.Enabled = false;
-                FeMeshRefinement meshRefinement = MeshRefinement.DeepClone();
-                string[] partNames = _controller.GetPartNamesFromMeshRefinement(meshRefinement);
-                if (partNames != null && partNames.Length > 0)
-                {
-                    HighlightMeshRefinement();
-                    //Set the name to the prev meshRefinement name
-                    if (_meshRefinementToEditName != null) meshRefinement.Name = _meshRefinementToEditName;
-                    //
-                    foreach (var partName in partNames)
-                    {
-                        await Task.Run(() => _controller.PreviewEdgeMesh(partName, null, meshRefinement));
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                CaeGlobals.ExceptionTools.Show(this, ex);
-            }
-            finally
-            {
-                btnPreview.Enabled = true;
-            }
         }
         private void SetSelectItem()
         {

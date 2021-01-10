@@ -1753,14 +1753,15 @@ namespace PrePoMax
             HashSet<int> faceIds;
             Dictionary<int, HashSet<int>> partIdFaceIds = new Dictionary<int, HashSet<int>>();
             //
+            int countSolidFaces = 0;
             foreach (int id in geometrySelection.GeometryIds)
             {
                 itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(id);
                 geomType = (GeometryType)itemTypePartIds[1];
                 // Surface
-                if (geomType == GeometryType.SolidSurface ||
-                    geomType == GeometryType.ShellFrontSurface ||
-                    geomType == GeometryType.ShellBackSurface)
+                if (geomType == GeometryType.SolidSurface) countSolidFaces++;
+                else if (geomType == GeometryType.ShellFrontSurface ||
+                         geomType == GeometryType.ShellBackSurface)
                 {
                     if (partIdFaceIds.TryGetValue(itemTypePartIds[2], out faceIds)) faceIds.Add(itemTypePartIds[0]);
                     else partIdFaceIds.Add(itemTypePartIds[2], new HashSet<int>() { itemTypePartIds[0] });
@@ -1775,24 +1776,21 @@ namespace PrePoMax
                 foreach (var entry in partIdFaceIds)
                 {
                     part = _model.Geometry.GetPartById(entry.Key);
-                    if (part != null && part is GeometryPart gp && gp.CADFileData != null)
+                    if (part != null && part is GeometryPart gp && gp.CADFileData != null && part.PartType == PartType.Shell)
                     {
-                        if (part.PartType == PartType.Shell)
-                        {
-                            brepFileName = FlipPartFaceOrientations(gp, entry.Value.ToArray());
-                            //
-                            if (brepFileName != null) ReplacePartGeometryFromFile(gp, brepFileName);
-                            else ClearAllSelection();
-                            //
-                            numOfShellParts++;
-                        }
+                        brepFileName = FlipPartFaceOrientations(gp, entry.Value.ToArray());
+                        //
+                        if (brepFileName != null) ReplacePartGeometryFromFile(gp, brepFileName);
+                        else ClearAllSelection();
+                        //
+                        numOfShellParts++;
                     }
                 }
                 //
                 string warning = "Face orientations on solid parts or non-CAD parts cannot be fliped.";
                 if (numOfShellParts <= 0)
                     MessageBox.Show(warning, "Warning", MessageBoxButtons.OK);
-                else if (numOfShellParts < partIdFaceIds.Keys.Count)
+                else if (countSolidFaces > 0)
                     MessageBox.Show(warning + Environment.NewLine +
                                     "Only face orientations on CAD shell parts were fliped.", "Warning", MessageBoxButtons.OK);
             }
@@ -3369,7 +3367,7 @@ namespace PrePoMax
         private void UpdateNodeSetsBasedOnGeometry(bool feModelUpdate)
         {
             // Use list not to throw collection moddified exception
-            List<CaeMesh.FeNodeSet> geomNodeSets = new List<FeNodeSet>();
+            List<FeNodeSet> geomNodeSets = new List<FeNodeSet>();
             if (_model != null && _model.Mesh != null)
             {
                 foreach (var entry in _model.Mesh.NodeSets)
@@ -5759,10 +5757,9 @@ namespace PrePoMax
             _selection.SelectItem = selectItem;
             AddSelectionNode(selectionNode, highlight, false);
         }
-        //
-        // the function called from vtk_control
+        // The function called from vtk_control
         public void SelectPointOrArea(double[] pickedPoint, double[] selectionDirection, double[][] planeParameters,
-                                      vtkSelectOperation selectOperation)
+                                      vtkSelectOperation selectOperation, string[] pickedPartNames)
         {
             try
             {
@@ -5774,7 +5771,6 @@ namespace PrePoMax
                 else
                 {
                     vtkSelectBy selectBy = _selectBy;
-
                     // Querry nodes - more than one selection node is needed - change None to Add
                     if (_selectBy == vtkSelectBy.QueryNode)
                     {
@@ -5785,8 +5781,18 @@ namespace PrePoMax
                         // New pick - Clear history
                         if (selectOperation == vtkSelectOperation.None) ClearSelectionHistoryAndCallSelectionChanged();
                     }
+                    //
+                    int[] pickedPartIds = null;
+                    if (pickedPartNames != null && pickedPartNames.Length > 0)
+                    {
+                        FeMesh mesh = DisplayedMesh;
+                        pickedPartIds = new int[pickedPartNames.Length];
+                        for (int i = 0; i < pickedPartNames.Length; i++) pickedPartIds[i] = mesh.Parts[pickedPartNames[i]].PartId;
+                    }
+                    //
                     SelectionNode selectionNode = new SelectionNodeMouse(pickedPoint, selectionDirection, planeParameters,
-                                                                         selectOperation, _selectBy, _selectAngle);
+                                                                         selectOperation, pickedPartIds, _selectBy, _selectAngle);
+
                     AddSelectionNode(selectionNode, true, false);
                 }
             }
@@ -5846,11 +5852,18 @@ namespace PrePoMax
             }
             //
             bool add = false;
-            if (_selection.IsGeometryBased() && _selection.LimitSelectionToFirstPart)
+            if (_selection.LimitSelectionToFirstPart)
             {
-                HashSet<int> prevPartIds = new HashSet<int>(FeMesh.GetPartIdsFromGeometryIds(GetSelectionIds()));
-                prevPartIds.UnionWith(FeMesh.GetPartIdsFromGeometryIds(ids));
-                if (prevPartIds.Count == 1) add = true;
+                if (node is SelectionNodeMouse snm1 && snm1.PartIds != null && snm1.PartIds.Length == 1)
+                {
+                    // First go through all the nodes (some are not mouse selection) to determine all previously selected parts
+                    HashSet<int> prevPartIds = new HashSet<int>();
+                    foreach (var selectionNode in _selection.Nodes)
+                    {
+                        if (selectionNode is SelectionNodeMouse snm2) prevPartIds.UnionWith(snm2.PartIds);
+                    }
+                    if (prevPartIds.Count == 0 || (prevPartIds.Count <= 1 && prevPartIds.Contains(snm1.PartIds[0]))) add = true;
+                }
             }
             else add = true;
             //
@@ -6076,9 +6089,6 @@ namespace PrePoMax
             if (selectionNodeMouse.Precision == -1) selectionNodeMouse.Precision = precision;
             //
             int[] ids = GetGeometryIdsAtPoint(selectionNodeMouse);
-            // The first time the selectionNodeMouse.PartId equals -1; if so set the PartId for all future queries
-            if (selectionNodeMouse.PartId == -1 && ids.Length > 0)
-                selectionNodeMouse.PartId = FeMesh.GetPartIdFromGeometryId(ids[0]); 
             // Change geometry ids to node, elemet or cell ids if necessary
             ids = DisplayedMesh.GetIdsFromGeometryIds(ids, _selection.SelectItem);
             return ids;
@@ -6209,7 +6219,7 @@ namespace PrePoMax
                 ids = DisplayedMesh.GetVisualizationFaceIds(ids, elementIds, false, true, shellFrontFace);
             }
             else if (selectionNodeMouse.SelectBy == vtkSelectBy.Edge ||
-                        selectionNodeMouse.SelectBy == vtkSelectBy.EdgeAngle)
+                     selectionNodeMouse.SelectBy == vtkSelectBy.EdgeAngle)
             {
                 elementIds = DisplayedMesh.GetElementIdsFromNodeIds(ids, true, false, false);
                 ids = DisplayedMesh.GetVisualizationFaceIds(ids, elementIds, true, false, shellFrontFace);
@@ -6242,7 +6252,7 @@ namespace PrePoMax
             double[] selectionDirection = selectionNodeMouse.SelectionDirection;
             vtkSelectBy selectBy = selectionNodeMouse.SelectBy;
             double angle = selectionNodeMouse.Angle;
-            int selectionOnPartId = selectionNodeMouse.PartId;
+            int selectionOnPartId = selectionNodeMouse.PartIds[0];
             double precision = selectionNodeMouse.Precision;
             //
             int[] ids;
@@ -6258,15 +6268,21 @@ namespace PrePoMax
             }
             else if (selectBy == vtkSelectBy.GeometryEdge || selectBy == vtkSelectBy.QueryEdge)
             {
-                ids = GetGeometryEdgeIdsByAngle(pickedPoint, -1, selectionOnPartId);
+                // GeometryEdge - from form FrmSelectGeometry
+                ids = GetGeometryEdgeIdsByAngle(pickedPoint, -1, selectionOnPartId, false);
             }
             else if (selectBy == vtkSelectBy.GeometrySurface || selectBy == vtkSelectBy.QuerySurface)
             {
+                // GeometrySurface - from form FrmSelectGeometry
                 ids = GetGeometrySurfaceIdsByAngle(pickedPoint, selectionDirection, -1, selectionOnPartId);
             }
             else if (selectBy == vtkSelectBy.GeometryEdgeAngle)
             {
-                ids = GetGeometryEdgeIdsByAngle(pickedPoint, angle, selectionOnPartId);
+                bool shellEdgeFace = false;
+                if (DisplayedMesh.GetPartById(selectionOnPartId).PartType == PartType.Shell &&
+                    _selection.SelectItem == vtkSelectItem.Surface) shellEdgeFace = true;
+                //
+                ids = GetGeometryEdgeIdsByAngle(pickedPoint, angle, selectionOnPartId, shellEdgeFace);
             }
             else if (selectBy == vtkSelectBy.GeometrySurfaceAngle)
             {
@@ -6433,7 +6449,7 @@ namespace PrePoMax
             _form.GetGeometryPickProperties(point, out elementId, out edgeNodeIds, out cellFaceNodeIds, partNames);
             return DisplayedMesh.GetGeometryVertexIdByPrecision(point, elementId, cellFaceNodeIds, precision);
         }
-        private int[] GetGeometryEdgeIdsByAngle(double[] point, double angle, int selectionOnPartId)
+        private int[] GetGeometryEdgeIdsByAngle(double[] point, double angle, int selectionOnPartId, bool shellEdgeFace)
         {
             int elementId;
             int[] edgeNodeIds;
@@ -6445,7 +6461,7 @@ namespace PrePoMax
             else partNames = null;
             //
             _form.GetGeometryPickProperties(point, out elementId, out edgeNodeIds, out cellFaceNodeIds, partNames);
-            return DisplayedMesh.GetGeometryEdgeIdsByAngle(elementId, edgeNodeIds, angle);
+            return DisplayedMesh.GetGeometryEdgeIdsByAngle(elementId, edgeNodeIds, angle, shellEdgeFace);
         }
         private int[] GetGeometrySurfaceIdsByAngle(double[] point, double[] selectionDirection, double angle, int selectionOnPartId)
         {
@@ -6747,6 +6763,7 @@ namespace PrePoMax
         }
         public vtkControl.vtkMaxActorData GetSurfaceEdgeActorDataFromNodeAndElementIds(int[] nodeIds, int[] elementIds)
         {
+            // Called by pick by area
             int itemId;
             int partId;
             int[] itemTypePartIds;
@@ -6762,7 +6779,7 @@ namespace PrePoMax
             {
                 itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(grometryId);
                 GeometryType geomType = (GeometryType)itemTypePartIds[1];
-                // Surface
+                // Surface - but do not select shell edge surfaces
                 if (geomType == GeometryType.SolidSurface ||
                     geomType == GeometryType.ShellFrontSurface ||
                     geomType == GeometryType.ShellBackSurface) 
@@ -6844,7 +6861,11 @@ namespace PrePoMax
                 int[] nodeIds = mesh.GetNodeIdsFromGeometryId(geomId);
                 return GetNodeActorData(nodeIds);
             }
-            else if (geomType == GeometryType.Edge) return GetGeometryEdgeActorData(new int[] { geomId });
+            else if (geomType == GeometryType.Edge ||
+                     geomType == GeometryType.ShellEdgeSurface)
+            {
+                return GetGeometryEdgeActorData(new int[] { geomId });
+            }
             else if (geomType == GeometryType.SolidSurface ||
                      geomType == GeometryType.ShellFrontSurface ||
                      geomType == GeometryType.ShellBackSurface)
@@ -6871,14 +6892,16 @@ namespace PrePoMax
                     int[] nodeIds = mesh.GetNodeIdsFromGeometryId(geomId);
                     return GetNodeActorData(nodeIds);
                 }
-                else if (geomType == GeometryType.Edge) return GetGeometryEdgeActorData(new int[] { geomId });
-                else if (geomType == GeometryType.SolidSurface ||
-                         geomType == GeometryType.ShellFrontSurface ||
-                         geomType == GeometryType.ShellBackSurface)
-                {
-                    return GetSurfaceEdgeActorDataFromElementId(elementId, cellFaceNodeIds);
-                }
                 else throw new NotSupportedException();
+                //
+                //else if (geomType == GeometryType.Edge) return GetGeometryEdgeActorData(new int[] { geomId });
+                //else if (geomType == GeometryType.SolidSurface ||
+                //         geomType == GeometryType.ShellFrontSurface ||
+                //         geomType == GeometryType.ShellBackSurface)
+                //{
+                //    return GetSurfaceEdgeActorDataFromElementId(elementId, cellFaceNodeIds);
+                //}
+                //else throw new NotSupportedException();
             }
         }
 
@@ -8814,7 +8837,8 @@ namespace PrePoMax
                 {
                     GeometryType geomType = (GeometryType)itemTypePartIds[1];
                     if (geomType == GeometryType.Vertex) nodeIdsList.Add(id);
-                    else if (geomType == GeometryType.Edge) edgeIdsList.Add(id);
+                    else if (geomType == GeometryType.Edge ||
+                             geomType == GeometryType.ShellEdgeSurface) edgeIdsList.Add(id);
                     else if (geomType == GeometryType.SolidSurface ||
                              geomType == GeometryType.ShellFrontSurface ||
                              geomType == GeometryType.ShellBackSurface) surfaceIdsList.Add(id);

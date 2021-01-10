@@ -229,7 +229,7 @@ namespace vtkControl
 
 
         // Events                                                                                                                   
-        public event Action<double[], double[], double[][], vtkSelectOperation> OnMouseLeftButtonUpSelection;
+        public event Action<double[], double[], double[][], vtkSelectOperation, string[]> OnMouseLeftButtonUpSelection;
         public event Action<sbyte> KeyPressEvent;
 
 
@@ -443,12 +443,12 @@ namespace vtkControl
         }
         private void _style_PointPickedOnLeftUpEvt(int x1, int y1, bool rubberBandSelection, int x2, int y2)
         {
+            string[] pickedActorNames = null;
             // Off
             if (_selectBy == vtkSelectBy.Off) return;
             // Default selection of parts
             if (_selectBy == vtkSelectBy.Default)
             {
-                string[] pickedActorNames = null;
                 // Point selection
                 if (!rubberBandSelection)
                 {
@@ -479,17 +479,20 @@ namespace vtkControl
                 {
                     double[] pickedPoint = GetPickPoint(out pickedActor, x1, y1);
                     double[] direction = _renderer.GetActiveCamera().GetDirectionOfProjection();
-                    OnMouseLeftButtonUpSelection?.Invoke(pickedPoint, direction,  null, selectOperation);
+                    pickedActorNames = new string[] { GetActorName(pickedActor) };
+                    OnMouseLeftButtonUpSelection?.Invoke(pickedPoint, direction,  null, selectOperation, pickedActorNames);
                 }
                 // Area selection
                 else
                 {
-                    _areaPicker.AreaPick(x1, y1, x2, y2, _renderer);
+                    //_areaPicker.AreaPick(x1, y1, x2, y2, _renderer);
+                    PickByArea(x1, y1, x2, y2, false, out pickedActorNames);
                     vtkPlanes planes = _areaPicker.GetFrustum();
                     vtkPlane plane;
                     double[] origin;
                     double[] normal;
                     double[][] planeParameters = new double[planes.GetNumberOfPlanes()][];
+                    //
                     for (int i = 0; i < planes.GetNumberOfPlanes(); i++)
                     {
                         plane = planes.GetPlane(i);
@@ -497,7 +500,8 @@ namespace vtkControl
                         normal = plane.GetNormal();
                         planeParameters[i] = new double[] { origin[0], origin[1], origin[2], normal[0], normal[1], normal[2] };
                     }
-                    OnMouseLeftButtonUpSelection?.Invoke(null, null, planeParameters, selectOperation);
+                    //
+                    OnMouseLeftButtonUpSelection?.Invoke(null, null, planeParameters, selectOperation, pickedActorNames);
                 }
             }
         }

@@ -71,6 +71,7 @@ namespace PrePoMax.Forms
             this.Controls.Add(this.btnPreview);
             this.Name = "FrmRemeshingParameters";
             this.Text = "Remeshing Parameters";
+            this.VisibleChanged += new System.EventHandler(this.FrmRemeshingParameters_VisibleChanged);
             this.Controls.SetChildIndex(this.gbProperties, 0);
             this.Controls.SetChildIndex(this.btnCancel, 0);
             this.Controls.SetChildIndex(this.btnOK, 0);
@@ -79,6 +80,43 @@ namespace PrePoMax.Forms
             this.gbProperties.ResumeLayout(false);
             this.ResumeLayout(false);
 
+        }
+
+
+        // Event handlers                                                                                                           
+        private void FrmRemeshingParameters_VisibleChanged(object sender, EventArgs e)
+        {
+            // Limit selection to the first selected part
+            _controller.Selection.LimitSelectionToFirstPart = Visible;
+            btnPreview.Enabled = true;
+        }
+        async private void btnPreview_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                HighlightElementSet();
+                //
+                btnPreview.Enabled = false;
+                //
+                CheckRemeshingParameters();
+                //
+                await Task.Run(() => _controller.RemeshElements(RemeshingParameters, true));
+                //
+                if (RemeshingParameters.RegionType == RegionTypeEnum.Selection &&
+                    RemeshingParameters.CreationData != null)
+                {
+                    _controller.Selection = RemeshingParameters.CreationData.DeepClone();
+                }
+            }
+            catch (Exception ex)
+            {
+                btnPreview.Enabled = true;
+                ExceptionTools.Show(this, ex);
+            }
+            finally
+            {
+                btnPreview.Enabled = true;
+            }
         }
 
 
@@ -228,34 +266,7 @@ namespace PrePoMax.Forms
                 _propertyItemChanged = true;
             }
         }
-        async private void btnPreview_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                HighlightElementSet();
-                //
-                btnPreview.Enabled = false;
-                //
-                CheckRemeshingParameters();
-                //
-                await Task.Run(() => _controller.RemeshElements(RemeshingParameters, true));
-                //
-                if (RemeshingParameters.RegionType == RegionTypeEnum.Selection &&
-                    RemeshingParameters.CreationData != null)
-                {
-                    _controller.Selection = RemeshingParameters.CreationData.DeepClone();
-                }
-            }
-            catch (Exception ex)
-            {
-                btnPreview.Enabled = true;
-                ExceptionTools.Show(this, ex);
-            }
-            finally
-            {
-                btnPreview.Enabled = true;
-            }
-        }
+        
 
         // IFormHighlight
         public void Highlight()
@@ -271,7 +282,7 @@ namespace PrePoMax.Forms
             return RemeshingParameters.CreationData.IsGeometryBased();
         }
 
-        
+      
     }
 
 

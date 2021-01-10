@@ -964,9 +964,9 @@ namespace CaeResults
         //
         public double GetEdgeLength(int geometryEdgeId)
         {
-            int[] itemTypePart = FeMesh.GetItemTypePartIdsFromGeometryId(geometryEdgeId);
-            BasePart part = _mesh.GetPartById(itemTypePart[2]);
-            int[] nodeIds = part.Visualization.GetOrderedNodeIdsForEdge(itemTypePart[0]);
+            int[] itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(geometryEdgeId);
+            BasePart part = _mesh.GetPartById(itemTypePartIds[2]);
+            int[] nodeIds = part.Visualization.GetOrderedNodeIdsForEdge(itemTypePartIds[0]);
             //
             return 0;
         }

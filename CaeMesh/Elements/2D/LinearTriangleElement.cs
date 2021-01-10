@@ -10,8 +10,9 @@ namespace CaeMesh
     public class LinearTriangleElement : FeElement2D
     {
         // Variables                                                                                                                
-        private static int vtkCellTypeInt = (int)vtkCellType.VTK_TRIANGLE;
-        private static double a = 1.0 / 3.0;
+        private static readonly int vtkCellTypeInt = (int)vtkCellType.VTK_TRIANGLE;
+        private static readonly double a = 1.0 / 3.0;
+        private static readonly double b = 1.0 / 2.0;
 
 
         // Properties                                                                                                               
@@ -33,9 +34,6 @@ namespace CaeMesh
         {
             // return a copy -> ToArray
             return NodeIds.ToArray();
-            //
-            // Return S1
-            //return new int[] { NodeIds[0], NodeIds[2], NodeIds[1] };
         }
         public override int GetVtkCellType()
         {
@@ -49,12 +47,21 @@ namespace CaeMesh
         {
             // NEG S1 = 1-3-2 . 0-2-1
             // POS S2 = 1-2-3 . 0-1-2
+            //     S3 = 1-2 . 0-1
+            //     S4 = 2-3 . 1-2
+            //     S5 = 3-1 . 2-0
             switch (faceName)
             {
                 case FeFaceName.S1:
                     return new int[] { NodeIds[0], NodeIds[2], NodeIds[1] };
                 case FeFaceName.S2:
                     return new int[] { NodeIds[0], NodeIds[1], NodeIds[2] };
+                case FeFaceName.S3:
+                    return new int[] { NodeIds[0], NodeIds[1] };
+                case FeFaceName.S4:
+                    return new int[] { NodeIds[1], NodeIds[2] };
+                case FeFaceName.S5:
+                    return new int[] { NodeIds[2], NodeIds[0] };
                 default:
                     throw new NotSupportedException();
             }
@@ -63,12 +70,21 @@ namespace CaeMesh
         {
             // NEG S1 = 1-3-2 . 0-2-1
             // POS S2 = 1-2-3 . 0-1-2
+            //     S3 = 1-2 . 0-1
+            //     S4 = 2-3 . 1-2
+            //     S5 = 3-1 . 2-0
             switch (faceName)
             {
                 case FeFaceName.S1:
                     return new int[] { NodeIds[0], NodeIds[2], NodeIds[1] };
                 case FeFaceName.S2:
                     return new int[] { NodeIds[0], NodeIds[1], NodeIds[2] };
+                case FeFaceName.S3:
+                    return new int[] { NodeIds[0], NodeIds[1] };
+                case FeFaceName.S4:
+                    return new int[] { NodeIds[1], NodeIds[2] };
+                case FeFaceName.S5:
+                    return new int[] { NodeIds[2], NodeIds[0] };
                 default:
                     throw new NotSupportedException();
             }
@@ -88,10 +104,11 @@ namespace CaeMesh
         public override Dictionary<FeFaceName, double> GetFaceNamesAndAreasFromNodeSet(HashSet<int> nodeSet,
                                                                                        Dictionary<int, FeNode> nodes)
         {
-            bool[] faceNodeIds = new bool[NodeIds.Length];
+            int significantNodes = NodeIds.Length;
+            bool[] faceNodeIds = new bool[significantNodes];
             //
             int count = 0;
-            for (int i = 0; i < NodeIds.Length; i++)
+            for (int i = 0; i < significantNodes; i++)
             {
                 if (nodeSet.Contains(NodeIds[i]))
                 {
@@ -112,18 +129,29 @@ namespace CaeMesh
         }
         public override double[] GetEquivalentForcesFromFaceName(FeFaceName faceName)
         {
-            return new double[] { a, a, a };
+            if (faceName == FeFaceName.S1 || faceName == FeFaceName.S2)
+                return new double[] { a, a, a };
+            else if (faceName == FeFaceName.S3 || faceName == FeFaceName.S4 || faceName == FeFaceName.S5)
+                return new double[] { b, b };
+            else throw new NotSupportedException();
         }
         public override double GetArea(FeFaceName faceName, Dictionary<int, FeNode> nodes)
         {
             int[] cell = GetVtkCellFromFaceName(faceName);
-            return GeometryTools.TriangleArea(nodes[cell[0]], nodes[cell[1]], nodes[cell[2]]);
+            if (cell.Length == 3)
+                return GeometryTools.TriangleArea(nodes[cell[0]], nodes[cell[1]], nodes[cell[2]]);
+            else if (cell.Length == 2)
+                return GeometryTools.EdgeLength(nodes[cell[0]], nodes[cell[1]]);
+            else throw new NotSupportedException();
         }
         public override double[] GetCG(FeFaceName faceName, Dictionary<int, FeNode> nodes, out double area)
         {
             int[] cell = GetVtkCellFromFaceName(faceName);
-            double[] cg = GeometryTools.TriangleCG(nodes[cell[0]], nodes[cell[1]], nodes[cell[2]], out area);
-            return cg;
+            if (cell.Length == 3)
+                return GeometryTools.TriangleCG(nodes[cell[0]], nodes[cell[1]], nodes[cell[2]], out area);
+            else if (cell.Length == 2)
+                return GeometryTools.EdgeCG(nodes[cell[0]], nodes[cell[1]], out area);
+            else throw new NotSupportedException();
         }
         public override FeElement DeepCopy()
         {

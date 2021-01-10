@@ -497,7 +497,43 @@ namespace CaeMesh
             }
             return surfaceIdSurfaceNeighbourIds;
         }
-
+        // Free edges and nodes
+        public HashSet<int> GetFreeEdgeIds()
+        {
+            int[] edgeCount;
+            HashSet<int> freeEdgeIds = new HashSet<int>();
+            Dictionary<int, int[]> edgeIdCount = new Dictionary<int, int[]>();
+            //
+            foreach (var faceEdgeId in _faceEdgeIds)
+            {
+                foreach (var edgeId in faceEdgeId)
+                {
+                    if (edgeIdCount.TryGetValue(edgeId, out edgeCount)) edgeCount[0]++;
+                    else edgeIdCount.Add(edgeId, new int[] { 1 });
+                }
+            }
+            //
+            freeEdgeIds.Clear();
+            foreach (var edgeEntry in edgeIdCount)
+            {
+                if (edgeEntry.Value[0] == 1) freeEdgeIds.Add(edgeEntry.Key);
+            }
+            //
+            return freeEdgeIds;
+        }
+        public HashSet<int> GetFreeEdgeNodeIds()
+        {
+            HashSet<int> freeEdgeIds = GetFreeEdgeIds();
+            HashSet<int> freeNodeIds = new HashSet<int>();
+            foreach (var edgeId in freeEdgeIds)
+            {
+                foreach (var edgeCellId in _edgeCellIdsByEdge[edgeId])
+                {
+                    freeNodeIds.UnionWith(_edgeCells[edgeCellId]);
+                }
+            }
+            return freeNodeIds;
+        }
         //
         public VisualizationData DeepCopy()
         {
