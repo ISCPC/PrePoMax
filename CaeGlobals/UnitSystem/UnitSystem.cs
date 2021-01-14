@@ -55,6 +55,7 @@ namespace CaeGlobals
         RotationalSpeedUnit _rotationalSpeedUnit;   //ISerializable
         AccelerationUnit _accelerationUnit;         //ISerializable
         ForceUnit _forceUnit;                       //ISerializable
+        ForcePerLengthUnit _forcePerLengthUnit;     //ISerializable
         TorqueUnit _momentUnit;                     //ISerializable
         PressureUnit _pressureUnit;                 //ISerializable
         DensityUnit _densityUnit;                   //ISerializable
@@ -64,25 +65,6 @@ namespace CaeGlobals
 
         // Properties                                                                                                               
         public UnitSystemType UnitSystemType { get { return _unitSystemType; } }
-        //// Base units
-        //public LengthUnit LengthUnit { get { return _lengthUnit; } }
-        //public AngleUnit AngleUnit { get { return _angleUnit; } }
-        //public MassUnit MassUnit { get { return _massUnit; } }
-        //public DurationUnit TimeUnit { get { return _timeUnit; } }
-        //public TemperatureUnit TemperatureUnit { get { return _temperatureUnit; } }
-        //// Derived units
-        //public AreaUnit AreaUnit { get { return _areaUnit; } }
-        //public VolumeUnit VolumeUnit { get { return _volumeUnit; } }
-        //public SpeedUnit SpeedUnit { get { return _speedUnit; } }
-        //public RotationalSpeedUnit RotationalSpeedUnit { get { return _rotationalSpeedUnit; } }
-        //public AccelerationUnit AccelerationUnit { get { return _accelerationUnit; } }
-        //public ForceUnit ForceUnit { get { return _forceUnit; } }
-        //public TorqueUnit MomentUnit { get { return _momentUnit; } }
-        //public PressureUnit PressureUnit { get { return _pressureUnit; } }
-        //public DensityUnit DensityUnit { get { return _densityUnit; } }
-        //public EnergyUnit EnergyUnit { get { return _energyUnit; } }
-        //public FrequencyUnit FrequencyUnit { get { return _frequencyUnit; } }
-        //
         // Abbreviations                                                                                
         //
         // Base units
@@ -176,6 +158,14 @@ namespace CaeGlobals
                 else return Force.GetAbbreviation(_forceUnit);
             }
         }
+        public string ForcePerLengthUnitAbbreviation
+        {
+            get
+            {
+                if ((int)_forceUnit == MyUnit.NoUnit) return "";
+                else return ForcePerLength.GetAbbreviation(_forcePerLengthUnit);
+            }
+        }
         public string MomentUnitAbbreviation
         {
             get
@@ -251,6 +241,7 @@ namespace CaeGlobals
                     _rotationalSpeedUnit = (RotationalSpeedUnit)MyUnit.NoUnit;
                     _accelerationUnit = (AccelerationUnit)MyUnit.NoUnit;
                     _forceUnit = (ForceUnit)MyUnit.NoUnit;
+                    _forcePerLengthUnit = (ForcePerLengthUnit)MyUnit.NoUnit;
                     _momentUnit = (TorqueUnit)MyUnit.NoUnit;
                     _pressureUnit = (PressureUnit)MyUnit.NoUnit;
                     _densityUnit = (DensityUnit)MyUnit.NoUnit;
@@ -271,6 +262,7 @@ namespace CaeGlobals
                     _rotationalSpeedUnit = RotationalSpeedUnit.RadianPerSecond;
                     _accelerationUnit = AccelerationUnit.MeterPerSecondSquared;
                     _forceUnit = ForceUnit.Newton;
+                    _forcePerLengthUnit = ForcePerLengthUnit.NewtonPerMeter;
                     _momentUnit = TorqueUnit.NewtonMeter;
                     _pressureUnit = PressureUnit.Pascal;
                     _densityUnit = DensityUnit.KilogramPerCubicMeter;
@@ -290,6 +282,7 @@ namespace CaeGlobals
                     _rotationalSpeedUnit = RotationalSpeedUnit.RadianPerSecond;
                     _accelerationUnit = AccelerationUnit.MillimeterPerSecondSquared;
                     _forceUnit = ForceUnit.Newton;
+                    _forcePerLengthUnit = ForcePerLengthUnit.NewtonPerMillimeter;
                     _momentUnit = TorqueUnit.NewtonMillimeter;
                     _pressureUnit = PressureUnit.Megapascal;
                     _densityUnit = DensityUnit.TonnePerCubicMillimeter;
@@ -309,6 +302,7 @@ namespace CaeGlobals
                     _rotationalSpeedUnit = RotationalSpeedUnit.RadianPerSecond;
                     _accelerationUnit = AccelerationUnit.MeterPerSecondSquared;
                     _forceUnit = ForceUnit.Kilonewton;
+                    _forcePerLengthUnit = ForcePerLengthUnit.KilonewtonPerMeter;
                     _momentUnit = TorqueUnit.KilonewtonMeter;
                     _pressureUnit = PressureUnit.Kilopascal;
                     _densityUnit = DensityUnit.TonnePerCubicMeter;
@@ -328,6 +322,7 @@ namespace CaeGlobals
                     _rotationalSpeedUnit = RotationalSpeedUnit.RadianPerSecond;
                     _accelerationUnit = AccelerationUnit.InchPerSecondSquared;
                     _forceUnit = ForceUnit.PoundForce;
+                    _forcePerLengthUnit = ForcePerLengthUnit.PoundForcePerInch;
                     _momentUnit = TorqueUnit.PoundForceInch;
                     _pressureUnit = PressureUnit.PoundForcePerSquareInch;
                     _densityUnit = DensityUnit.PoundPerCubicInch;
@@ -346,6 +341,7 @@ namespace CaeGlobals
         {
             foreach (SerializationEntry entry in info)
             {
+                bool isForcePerLengtUnitDefined = false;     // compatibility for version 0.9.0
                 switch (entry.Name)
                 {
                     // Base units
@@ -374,6 +370,9 @@ namespace CaeGlobals
                         _accelerationUnit = (AccelerationUnit)entry.Value; break;
                     case "_forceUnit":
                         _forceUnit = (ForceUnit)entry.Value; break;
+                    case "_forcePerLengthUnit":
+                        _forcePerLengthUnit = (ForcePerLengthUnit)entry.Value;
+                        isForcePerLengtUnitDefined = true; break;
                     case "_momentUnit":
                         _momentUnit = (TorqueUnit)entry.Value; break;
                     case "_pressureUnit":
@@ -386,6 +385,12 @@ namespace CaeGlobals
                         _frequencyUnit = (FrequencyUnit)entry.Value; break;
                     default:
                         throw new NotSupportedException();
+                }
+                // Compatibility
+                if (!isForcePerLengtUnitDefined)
+                {
+                    UnitSystem system = new UnitSystem(_unitSystemType);
+                    _forcePerLengthUnit = system._forcePerLengthUnit;
                 }
             }
             //
@@ -411,6 +416,7 @@ namespace CaeGlobals
             StringRotationalSpeedConverter.SetUnit = RotationalSpeedUnitAbbreviation;
             StringAccelerationConverter.SetUnit = AccelerationUnitAbbreviation;
             StringForceConverter.SetUnit = ForceUnitAbbreviation;
+            StringForcePerLenghtConverter.SetUnit = ForcePerLengthUnitAbbreviation;
             StringMomentConverter.SetUnit = MomentUnitAbbreviation;
             StringPressureConverter.SetUnit = PressureUnitAbbreviation;
             StringPressureFromConverter.SetUnit = PressureUnitAbbreviation;     // not really necessary
@@ -452,6 +458,7 @@ namespace CaeGlobals
             info.AddValue("_rotationalSpeedUnit", _rotationalSpeedUnit, typeof(RotationalSpeedUnit));
             info.AddValue("_accelerationUnit", _accelerationUnit, typeof(AccelerationUnit));
             info.AddValue("_forceUnit", _forceUnit, typeof(ForceUnit));
+            info.AddValue("_forcePerLengthUnit", _forcePerLengthUnit, typeof(ForcePerLengthUnit));
             info.AddValue("_momentUnit", _momentUnit, typeof(TorqueUnit));
             info.AddValue("_pressureUnit", _pressureUnit, typeof(PressureUnit));
             info.AddValue("_densityUnit", _densityUnit, typeof(DensityUnit));

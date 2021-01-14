@@ -121,6 +121,8 @@ namespace PrePoMax.Forms
         {
             // Close the ItemSetSelectionForm
             ItemSetDataEditor.SelectionForm.Hide();
+            // Deactivate selection limit
+            _controller.Selection.LimitSelectionToFirstGeometryType = false;
             //
             base.OnHideOrClose();
         }
@@ -181,6 +183,8 @@ namespace PrePoMax.Forms
             }
             //
             SetSelectItem();
+            //
+            _controller.Selection.LimitSelectionToFirstGeometryType = true;
             //
             HighlightSurface();
             //

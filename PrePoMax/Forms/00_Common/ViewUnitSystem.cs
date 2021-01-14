@@ -84,33 +84,39 @@ namespace PrePoMax
         public string ForceUnitAbbreviation { get { return _unitSystem.ForceUnitAbbreviation; } }
         //
         [CategoryAttribute("Derived units")]
-        [OrderedDisplayName(6, 20, "Moment unit")]
-        [DescriptionAttribute("Default moment unit.")]
+        [OrderedDisplayName(6, 20, "Force per length unit")]
+        [DescriptionAttribute("Default force per length unit.")]
         [Id(7, 1)]
+        public string ForcePerLengthUnitAbbreviation { get { return _unitSystem.ForcePerLengthUnitAbbreviation; } }
+        //
+        [CategoryAttribute("Derived units")]
+        [OrderedDisplayName(7, 20, "Moment unit")]
+        [DescriptionAttribute("Default moment unit.")]
+        [Id(8, 1)]
         public string MomentUnitAbbreviation { get { return _unitSystem.MomentUnitAbbreviation; } }
         //
         [CategoryAttribute("Derived units")]
-        [OrderedDisplayName(7, 20, "Pressure unit")]
+        [OrderedDisplayName(8, 20, "Pressure unit")]
         [DescriptionAttribute("Default pressure unit.")]
-        [Id(8, 1)]
+        [Id(9, 1)]
         public string PressureUnitAbbreviation { get { return _unitSystem.PressureUnitAbbreviation; } }
         //
         [CategoryAttribute("Derived units")]
-        [OrderedDisplayName(8, 20, "Density unit")]
+        [OrderedDisplayName(9, 20, "Density unit")]
         [DescriptionAttribute("Default density unit.")]
-        [Id(9, 1)]
+        [Id(10, 1)]
         public string DensityUnitAbbreviation { get { return _unitSystem.DensityUnitAbbreviation; } }
         //
         [CategoryAttribute("Derived units")]
-        [OrderedDisplayName(9, 20, "Energy unit")]
+        [OrderedDisplayName(10, 20, "Energy unit")]
         [DescriptionAttribute("Default energy unit.")]
-        [Id(10, 1)]
+        [Id(11, 1)]
         public string EnergyUnitAbbreviation { get { return _unitSystem.EnergyUnitAbbreviation; } }
         //
         [CategoryAttribute("Derived units")]
-        [OrderedDisplayName(10, 20, "Frequency")]
+        [OrderedDisplayName(11, 20, "Frequency")]
         [DescriptionAttribute("Default frequency unit.")]
-        [Id(11, 1)]
+        [Id(12, 1)]
         public string FrequencyUnitAbbreviation { get { return _unitSystem.FrequencyUnitAbbreviation; } }
 
 

@@ -39,6 +39,7 @@ namespace CaeMesh
         private double _area;
         private Dictionary<FeFaceName, string> _elementFaces;
         private Selection _creationData;
+        private bool _isShellBasedSurface = false;
 
 
         // Properties                                                                                                               
@@ -71,7 +72,8 @@ namespace CaeMesh
         public double Area { get { return _area; } set { _area = value; } }
         public Dictionary<FeFaceName, string> ElementFaces { get { return _elementFaces; } }
         public Selection CreationData { get { return _creationData; } set { _creationData = value; } }
-        
+        public bool IsShellBasedSurface { get { return _isShellBasedSurface; } set { _isShellBasedSurface = value; } }
+
 
         // Constructors                                                                                                             
         public FeSurface(string name)
@@ -102,6 +104,7 @@ namespace CaeMesh
             _area = surface._area;
             _elementFaces = surface._elementFaces != null ? new Dictionary<FeFaceName, string>(surface._elementFaces) : null;
             _creationData = surface._creationData != null ? surface._creationData.DeepClone() : null;
+            _isShellBasedSurface = surface._isShellBasedSurface;
         }
 
 
@@ -115,6 +118,7 @@ namespace CaeMesh
             _area = -1;
             _elementFaces = null;
             _creationData = null;
+            _isShellBasedSurface = false;
         }
         public void AddElementFace(FeFaceName faceName, string elementSetName)
         {

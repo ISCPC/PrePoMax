@@ -93,6 +93,8 @@ namespace PrePoMax.Forms
         {
             // Close the ItemSetSelectionForm
             ItemSetDataEditor.SelectionForm.Hide();
+            // Deactivate selection limit
+            _controller.Selection.LimitSelectionToFirstGeometryType = false;
             //
             base.OnHideOrClose();
         }
@@ -145,6 +147,8 @@ namespace PrePoMax.Forms
             ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
             //
             SetSelectItem();
+            //
+            _controller.Selection.LimitSelectionToFirstGeometryType = true;
             //
             _controller.HighlightSelection();
             //

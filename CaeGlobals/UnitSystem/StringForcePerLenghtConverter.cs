@@ -11,25 +11,24 @@ using UnitsNet.Units;
 
 namespace CaeGlobals
 {
-    public class StringPressureConverter : TypeConverter
+    public class StringForcePerLenghtConverter : TypeConverter
     {
         // Variables                                                                                                                
-        protected static PressureUnit _pressureUnit = PressureUnit.Pascal;
-        
+        protected static ForcePerLengthUnit _forcePerLengthUnit = ForcePerLengthUnit.NewtonPerMeter;
+
 
         // Properties                                                                                                               
         public static string SetUnit
         {
             set
             {
-                if (value == "") _pressureUnit = (PressureUnit)MyUnit.NoUnit;
-                else _pressureUnit = Pressure.ParseUnit(value);
+                if (value == "") _forcePerLengthUnit = (ForcePerLengthUnit)MyUnit.NoUnit;
+                else _forcePerLengthUnit = ForcePerLength.ParseUnit(value);
             }
         }
-        
 
         // Constructors                                                                                                             
-        public StringPressureConverter()
+        public StringForcePerLenghtConverter()
         {
         }
 
@@ -49,9 +48,9 @@ namespace CaeGlobals
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    Pressure pressure = Pressure.Parse(valueString);
-                    if ((int)_pressureUnit != MyUnit.NoUnit) pressure = pressure.ToUnit(_pressureUnit);
-                    valueDouble = pressure.Value;
+                    ForcePerLength forcePerLength = ForcePerLength.Parse(valueString);
+                    if ((int)_forcePerLengthUnit != MyUnit.NoUnit) forcePerLength = forcePerLength.ToUnit(_forcePerLengthUnit);
+                    valueDouble = forcePerLength.Value;
                 }
                 //
                 return valueDouble;
@@ -68,7 +67,8 @@ namespace CaeGlobals
                     if (value is double valueDouble)
                     {
                         string valueString = valueDouble.ToString();
-                        if ((int)_pressureUnit != MyUnit.NoUnit) valueString += " " + Pressure.GetAbbreviation(_pressureUnit);
+                        if ((int)_forcePerLengthUnit != MyUnit.NoUnit)
+                            valueString += " " + ForcePerLength.GetAbbreviation(_forcePerLengthUnit);
                         return valueString;
                     }
                 }

@@ -39,12 +39,17 @@ namespace FileInOut.Output.Calculix
             //_obremenitev_el_surf_S4, P4, 1
             //_obremenitev_el_surf_S1, P1, 1
             //_obremenitev_el_surf_S2, P2, 1
-
             StringBuilder sb = new StringBuilder();
             FeSurface surface = _surfaces[_load.SurfaceName];
+            FeFaceName faceName;
+            double magnitude;
             foreach (var entry in surface.ElementFaces)
             {
-                sb.AppendFormat("{0}, P{1}, {2}", entry.Value, entry.Key.ToString()[1], _load.Magnitude).AppendLine();
+                faceName = entry.Key;
+                if (surface.IsShellBasedSurface && faceName == FeFaceName.S2) magnitude = -_load.Magnitude;
+                else magnitude = _load.Magnitude;
+                //
+                sb.AppendFormat("{0}, P{1}, {2}", entry.Value, faceName.ToString()[1], magnitude).AppendLine();
             }
             return sb.ToString();
         }

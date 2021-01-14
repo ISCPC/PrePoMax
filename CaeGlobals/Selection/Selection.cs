@@ -16,42 +16,68 @@ namespace CaeGlobals
         private int _currentView;                           //ISerializable
         private int _maxNumberOfIds;                        //ISerializable
         private bool _limitSelectionToFirstPart;            //ISerializable
+        private bool _limitSelectionToFirstGeometryType;    //ISerializable
+        private bool _enableShellEdgeFaceSelection;         //ISerializable
 
         // Temporary storage for speed optimization: keep current ids; do not copy
         [NonSerialized] private Dictionary<SelectionNode, int[]> _nodeIds;
 
 
         // Properties                                                                                                               
-        public vtkSelectItem SelectItem { get { return _selectItem; } set { _selectItem = value; } }
         public List<SelectionNode> Nodes { get { return _nodes; } set { _nodes = value; } }
+        public vtkSelectItem SelectItem { get { return _selectItem; } set { _selectItem = value; } }
+        public int CurrentView
+        {
+            get { return _currentView; }
+            set { _currentView = value; }
+        }
+        public int MaxNumberOfIds { get { return _maxNumberOfIds; } set { _maxNumberOfIds = value; } }
         public bool LimitSelectionToFirstPart 
         {
             get { return _limitSelectionToFirstPart; }
-            set { _limitSelectionToFirstPart = value; } 
+            set
+            {
+                _limitSelectionToFirstPart = value;
+                if (_limitSelectionToFirstPart) _limitSelectionToFirstGeometryType = false;
+            } 
         }
-        public int CurrentView 
-        { 
-            get { return _currentView; } 
-            set { _currentView = value; } 
+        public bool LimitSelectionToFirstGeometryType
+        {
+            get { return _limitSelectionToFirstGeometryType; }
+            set
+            {
+                _limitSelectionToFirstGeometryType = value;
+                if (_limitSelectionToFirstGeometryType) _limitSelectionToFirstPart = false;
+            }
         }
-        public int MaxNumberOfIds { get { return _maxNumberOfIds; } set { _maxNumberOfIds = value; } }
+        public bool EnableShellEdgeFaceSelection
+        {
+            get { return _enableShellEdgeFaceSelection; }
+            set { _enableShellEdgeFaceSelection = value; }
+        }
 
 
         // Constructors                                                                                                             
         public Selection()
         {
             _nodes = new List<SelectionNode>();
-            _nodeIds = null;
             _selectItem = vtkSelectItem.None;
-            _limitSelectionToFirstPart = false;
             _currentView = -1;
             _maxNumberOfIds = -1;
+            _limitSelectionToFirstPart = false;
+            _limitSelectionToFirstGeometryType = false;
+            _enableShellEdgeFaceSelection = false;
+            //
+            _nodeIds = null;
         }
         public Selection(SerializationInfo info, StreamingContext context)
         {
-            _currentView = -1;                      // Compatibility for version v0.5.2
-            _maxNumberOfIds = -1;                   // Compatibility for version v0.8.0
-            _limitSelectionToFirstPart = false;     // Compatibility for version v0.9.0
+            _currentView = -1;                          // Compatibility for version v0.5.2
+            _maxNumberOfIds = -1;                       // Compatibility for version v0.8.0
+            _limitSelectionToFirstPart = false;         // Compatibility for version v0.9.0
+            _limitSelectionToFirstGeometryType = false; // Compatibility for version v0.9.0
+            _enableShellEdgeFaceSelection = false;      // Compatibility for version v0.9.0
+            //
             foreach (SerializationEntry entry in info)
             {
                 switch (entry.Name)
@@ -67,6 +93,10 @@ namespace CaeGlobals
                         _maxNumberOfIds = (int)entry.Value; break;
                     case "_limitSelectionToFirstPart":
                         _limitSelectionToFirstPart = (bool)entry.Value; break;
+                    case "_limitSelectionToFirstGeometryType":
+                        _limitSelectionToFirstGeometryType = (bool)entry.Value; break;
+                    case "_enableShellEdgeFaceSelection":
+                        _enableShellEdgeFaceSelection = (bool)entry.Value; break;
                     default:
                         break;
                 }
@@ -75,14 +105,6 @@ namespace CaeGlobals
 
 
         // Methods                                                                                                                  
-        public void CopySelectonData(Selection selection)
-        {
-            _nodes.Clear();
-            foreach (var selectionNode in selection.Nodes) _nodes.Add(selectionNode);
-            _nodeIds = null;
-            _selectItem = selection._selectItem;
-            _currentView = selection._currentView;
-        }
         public void Add(SelectionNode node, int[] ids)
         {
             _nodes.Add(node);
@@ -142,7 +164,8 @@ namespace CaeGlobals
             info.AddValue("_currentView", _currentView, typeof(int));
             info.AddValue("_maxNumberOfIds", _maxNumberOfIds, typeof(int));
             info.AddValue("_limitSelectionToFirstPart", _limitSelectionToFirstPart, typeof(bool));
+            info.AddValue("_limitSelectionToFirstGeometryType", _limitSelectionToFirstGeometryType, typeof(bool));
+            info.AddValue("_enableShellEdgeFaceSelection", _enableShellEdgeFaceSelection, typeof(bool));
         }
-
     }
 }

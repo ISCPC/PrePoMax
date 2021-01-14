@@ -346,6 +346,10 @@ namespace CaeModel
                     {
                         valid = (_mesh.Surfaces.TryGetValue(stl.SurfaceName, out s) && s.Valid);
                     }
+                    else if (load is ShellEdgeLoad sel)
+                    {
+                        valid = (_mesh.Surfaces.TryGetValue(sel.SurfaceName, out s) && s.Valid);
+                    }
                     else if (load is GravityLoad gl)
                     {
                         valid = (gl.RegionType == RegionTypeEnum.PartName && _mesh.Parts.ContainsValidKey(gl.RegionName))

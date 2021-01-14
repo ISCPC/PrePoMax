@@ -7,10 +7,11 @@ using System.Threading.Tasks;
 namespace CaeMesh
 {
     [Serializable]
-    public enum MeshType
+    public enum ElementFaceType
     {
-        Wire,
-        Shell,
-        Solid
+        Unknown,
+        Vertex,
+        Edge,
+        Face
     }
 }

@@ -273,6 +273,7 @@
     <Compile Include="Forms\42_HistoryOutput\ViewContactHistoryOutput.cs" />
     <Compile Include="Forms\43_FieldOutput\ViewContactFieldOutput.cs" />
     <Compile Include="Forms\51_BoundaryConditions\ViewFixedBC.cs" />
+    <Compile Include="Forms\61_Load\ViewShellEdgeLoad.cs" />
     <Compile Include="Forms\71_Settings\ViewCalculixSettings.cs" />
     <Compile Include="Forms\71_Settings\ViewColorSettings.cs" />
     <Compile Include="Forms\71_Settings\ViewUnitSystemlSettings.cs" />

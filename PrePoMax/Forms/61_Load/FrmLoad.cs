@@ -30,6 +30,7 @@ namespace PrePoMax.Forms
                 else if (clone is MomentLoad ml) _viewLoad = new ViewMomentLoad(ml);
                 else if (clone is DLoad dl) _viewLoad = new ViewDLoad(dl);
                 else if (clone is STLoad stl) _viewLoad = new ViewSTLoad(stl);
+                else if (clone is ShellEdgeLoad sel) _viewLoad = new ViewShellEdgeLoad(sel);
                 else if (clone is GravityLoad gl) _viewLoad = new ViewGravityLoad(gl);
                 else if (clone is CentrifLoad cfl) _viewLoad = new ViewCentrifLoad(cfl);
                 else if (clone is PreTensionLoad ptl) _viewLoad = new ViewPreTensionLoad(ptl);
@@ -48,7 +49,7 @@ namespace PrePoMax.Forms
             //
             _selectedPropertyGridItemChangedEventActive = true;
             //
-            this.Height = 637 + 2 * 19;
+            this.Height = 640 + 3 * 19;
         }
         private void InitializeComponent()
         {
@@ -58,20 +59,20 @@ namespace PrePoMax.Forms
             // 
             // gbType
             // 
-            this.gbType.Size = new System.Drawing.Size(310, 161);
+            this.gbType.Size = new System.Drawing.Size(310, 177);
             // 
             // lvTypes
             // 
-            this.lvTypes.Size = new System.Drawing.Size(298, 133);
+            this.lvTypes.Size = new System.Drawing.Size(298, 149);
             // 
             // gbProperties
             // 
-            this.gbProperties.Location = new System.Drawing.Point(12, 179);
-            this.gbProperties.Size = new System.Drawing.Size(310, 379);
+            this.gbProperties.Location = new System.Drawing.Point(12, 195);
+            this.gbProperties.Size = new System.Drawing.Size(310, 363);
             // 
             // propertyGrid
             // 
-            this.propertyGrid.Size = new System.Drawing.Size(298, 351);
+            this.propertyGrid.Size = new System.Drawing.Size(298, 335);
             // 
             // btnOK
             // 
@@ -94,6 +95,7 @@ namespace PrePoMax.Forms
             this.gbType.ResumeLayout(false);
             this.gbProperties.ResumeLayout(false);
             this.ResumeLayout(false);
+
         }
 
 
@@ -103,11 +105,18 @@ namespace PrePoMax.Forms
             if (lvTypes.Enabled && lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)
             {
                 object itemTag = lvTypes.SelectedItems[0].Tag;
+                _controller.Selection.LimitSelectionToFirstPart = false;
+                //
                 if (itemTag is ViewError) _viewLoad = null;
                 else if (itemTag is ViewCLoad vcl) _viewLoad = vcl;
                 else if (itemTag is ViewMomentLoad vml) _viewLoad = vml;
-                else if (itemTag is ViewDLoad vdl) _viewLoad = vdl;
+                else if (itemTag is ViewDLoad vdl)
+                {
+                    _viewLoad = vdl;
+                    _controller.Selection.LimitSelectionToFirstGeometryType = true;
+                }
                 else if (itemTag is ViewSTLoad vstl) _viewLoad = vstl;
+                else if (itemTag is ViewShellEdgeLoad vsel) _viewLoad = vsel;
                 else if (itemTag is ViewGravityLoad vgl) _viewLoad = vgl;
                 else if (itemTag is ViewCentrifLoad vcfl) _viewLoad = vcfl;
                 else if (itemTag is ViewPreTensionLoad vprl) _viewLoad = vprl;
@@ -146,6 +155,10 @@ namespace PrePoMax.Forms
                 HighlightLoad();
             }
             else if (_viewLoad is ViewSTLoad vstl && property == nameof(vstl.SurfaceName))
+            {
+                HighlightLoad();
+            }
+            else if (_viewLoad is ViewShellEdgeLoad vsel && property == nameof(vstl.SurfaceName))
             {
                 HighlightLoad();
             }
@@ -203,6 +216,11 @@ namespace PrePoMax.Forms
                 if (stl.F1 == 0 && stl.F2 == 0 && stl.F3 == 0)
                     throw new CaeException("At least one surface traction load component must not be equal to 0.");
             }
+            else if (FELoad is ShellEdgeLoad sel)
+            {
+                if (sel.Magnitude == 0)
+                    throw new CaeException("The shell edge magnitude must not be equal to 0.");
+            }
             else if (FELoad is GravityLoad gl)
             {
                 if (gl.F1 == 0 && gl.F2 == 0 && gl.F3 == 0)
@@ -244,6 +262,8 @@ namespace PrePoMax.Forms
         {
             // Close the ItemSetSelectionForm
             ItemSetDataEditor.SelectionForm.Hide();
+            // Deactivate selection limit
+            _controller.Selection.LimitSelectionToFirstGeometryType = false;
             // Convert the load from internal to show it
             LoadInternal(false);
             //
@@ -309,9 +329,10 @@ namespace PrePoMax.Forms
                 else if (_viewLoad is ViewMomentLoad) lvTypes.Items[1].Selected = true;
                 else if (_viewLoad is ViewDLoad) lvTypes.Items[2].Selected = true;
                 else if (_viewLoad is ViewSTLoad) lvTypes.Items[3].Selected = true;
-                else if (_viewLoad is ViewGravityLoad) lvTypes.Items[4].Selected = true;
-                else if (_viewLoad is ViewCentrifLoad) lvTypes.Items[5].Selected = true;
-                else if (_viewLoad is ViewPreTensionLoad) lvTypes.Items[6].Selected = true;
+                else if (_viewLoad is ViewShellEdgeLoad) lvTypes.Items[4].Selected = true;
+                else if (_viewLoad is ViewGravityLoad) lvTypes.Items[5].Selected = true;
+                else if (_viewLoad is ViewCentrifLoad) lvTypes.Items[6].Selected = true;
+                else if (_viewLoad is ViewPreTensionLoad) lvTypes.Items[7].Selected = true;
                 else throw new NotSupportedException();
                 //
                 lvTypes.Enabled = false;
@@ -360,6 +381,16 @@ namespace PrePoMax.Forms
                     else throw new NotSupportedException();
                     //
                     vstl.PopululateDropDownLists(surfaceNames);
+                }
+                else if (_viewLoad is ViewShellEdgeLoad vsel)
+                {
+                    // Check for deleted regions
+                    if (vsel.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
+                    else if (vsel.RegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
+                        CheckMissingValueRef(ref surfaceNames, vsel.SurfaceName, s => { vsel.SurfaceName = s; });
+                    else throw new NotSupportedException();
+                    //
+                    vsel.PopululateDropDownLists(surfaceNames);
                 }
                 else if (_viewLoad is ViewGravityLoad vgl)
                 {
@@ -455,6 +486,15 @@ namespace PrePoMax.Forms
             vstl.Color = color;
             item.Tag = vstl;
             lvTypes.Items.Add(item);
+            // Shell edge load
+            name = "Shell edge load";
+            loadName = GetLoadName(name);
+            item = new ListViewItem(name);
+            ViewShellEdgeLoad vsel = new ViewShellEdgeLoad(new ShellEdgeLoad(loadName, "", RegionTypeEnum.Selection, 0));
+            vsel.PopululateDropDownLists(surfaceNames);
+            vsel.Color = color;
+            item.Tag = vsel;
+            lvTypes.Items.Add(item);
             // Gravity load -  part, element sets
             name = "Gravity";
             loadName = GetLoadName(name);
@@ -509,8 +549,9 @@ namespace PrePoMax.Forms
                 _controller.ClearSelectionHistory();
                 //
                 if (_viewLoad == null) { }
-                else if (FELoad is CLoad || FELoad is MomentLoad || FELoad is DLoad || FELoad is STLoad 
-                         || FELoad is GravityLoad || FELoad is CentrifLoad || FELoad is PreTensionLoad)
+                else if (FELoad is CLoad || FELoad is MomentLoad || FELoad is DLoad || FELoad is STLoad
+                         || FELoad is ShellEdgeLoad || FELoad is GravityLoad || FELoad is CentrifLoad
+                         || FELoad is PreTensionLoad)
                 {
                     if (FELoad.RegionType == RegionTypeEnum.NodeSetName ||
                         FELoad.RegionType == RegionTypeEnum.ReferencePointName ||
@@ -554,6 +595,7 @@ namespace PrePoMax.Forms
                 else if (FELoad is MomentLoad) _controller.SetSelectItemToNode();
                 else if (FELoad is DLoad) _controller.SetSelectItemToSurface();
                 else if (FELoad is STLoad) _controller.SetSelectItemToSurface();
+                else if (FELoad is ShellEdgeLoad) _controller.SetSelectItemToSurface();
                 else if (FELoad is GravityLoad) _controller.SetSelectItemToPart();
                 else if (FELoad is CentrifLoad) _controller.SetSelectItemToPart();
                 else if (FELoad is PreTensionLoad) _controller.SetSelectItemToSurface();
@@ -575,8 +617,8 @@ namespace PrePoMax.Forms
         {
             if (FELoad != null && FELoad.RegionType == RegionTypeEnum.Selection)
             {
-                if (FELoad is CLoad || FELoad is MomentLoad || FELoad is DLoad || FELoad is STLoad
-                    || FELoad is GravityLoad || FELoad is CentrifLoad || FELoad is PreTensionLoad)
+                if (FELoad is CLoad || FELoad is MomentLoad || FELoad is DLoad || FELoad is STLoad ||
+                    FELoad is ShellEdgeLoad || FELoad is GravityLoad || FELoad is CentrifLoad || FELoad is PreTensionLoad)
                 {
                     FELoad.CreationIds = ids;
                     FELoad.CreationData = _controller.Selection.DeepClone();

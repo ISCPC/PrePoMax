@@ -528,7 +528,7 @@ namespace FileInOut.Output
             // Get all edges
             for (int i = 0; i < cells.Length; i++)
             {
-                cellEdges = FeMesh.GetVisualizationEdgeCells(cells[i]);
+                cellEdges = FeMesh.GetVisualizationEdgeCells(cells[i], ElementFaceType.Face);
                 //
                 foreach (var cellEdge in cellEdges)
                 {

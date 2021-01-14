@@ -42,7 +42,7 @@ namespace PrePoMax.Forms
             //
             _selectedPropertyGridItemChangedEventActive = false;
             //
-            this.Height = 330 + 18 * 19;
+            this.Height = 330 + 19 * 19;
             //
             btnOkAddNew.Visible = false;
             btnCancel.Visible = false;

@@ -8,23 +8,6 @@ using System.Threading.Tasks;
 namespace CaeMesh
 {
     [Serializable]
-    public enum FaceType
-    {
-            Plane,
-			Cylinder,
-			Cone,
-			Sphere,
-			Torus,
-			BezierSurface,
-			BSplineSurface,
-			SurfaceOfRevolution,
-			SurfaceOfExtrusion,
-			OffsetSurface,
-			OtherSurface,
-			Unknown
-    }
-
-    [Serializable]
     public class VisualizationData
     {
         // vertex
@@ -37,7 +20,7 @@ namespace CaeMesh
         protected int[] _cellIds;
         protected int[][] _cellIdsByFace;        // coud be hashset<> but serialization coud be bad
         protected double[] _faceAreas;
-        protected FaceType[] _faceTypes;
+        protected GeomFaceType[] _faceTypes;
         protected int[][] _faceEdgeIds;
         protected int[][] _cellNeighboursOverCellEdge;
         protected int[][] _edgeCells;
@@ -91,7 +74,7 @@ namespace CaeMesh
         /// FaceTypes
         /// [0...num. of faces]
         /// </summary>
-        public FaceType[] FaceTypes
+        public GeomFaceType[] FaceTypes
         {
             get { return _faceTypes; }
             set { _faceTypes = value; }
@@ -337,7 +320,7 @@ namespace CaeMesh
             // Types
             if (_faceTypes != null)
             {
-                FaceType[] newFaceTypes = new FaceType[_faceTypes.Length];
+                GeomFaceType[] newFaceTypes = new GeomFaceType[_faceTypes.Length];
                 for (int i = 0; i < orderedSurfaceIds.Length; i++)
                 {
                     newFaceTypes[i] = _faceTypes[orderedSurfaceIds[i]];
@@ -783,7 +766,7 @@ namespace CaeMesh
             Dictionary<int[], int[]> allEdgeCells = new Dictionary<int[], int[]>(comparer);
             foreach (int[] cell in sectionPlaneCells)
             {
-                cellEdges = FeMesh.GetVisualizationEdgeCells(cell);
+                cellEdges = FeMesh.GetVisualizationEdgeCells(cell, ElementFaceType.Face);
                 for (int i = 0; i < cellEdges.Length; i++)
                 {
                     sorted = cellEdges[i].ToArray();

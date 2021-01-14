@@ -41,8 +41,8 @@ namespace CaeMesh
             set
             {
                 if (value < 0) throw new Exception("The value must be larger or equal to 0.");
-                if (value < _minH) throw new Exception("The value must be larger than min value.");
                 _maxH = value;
+                if (value < _minH) _minH = _maxH;
             } 
         }
         public double MinH 
@@ -51,8 +51,8 @@ namespace CaeMesh
             set 
             {
                 if (value < 0) throw new Exception("The value must be larger or equal to 0.");
-                if (value > _maxH) throw new Exception("The value must be smaller than max value.");
-                _minH = value; 
+                _minH = value;
+                if (value > _maxH) _maxH = _minH;
             } 
         }
         public double Fineness

@@ -1733,7 +1733,7 @@ namespace PrePoMax
             //ClearAllSelection();
             FeMesh mesh = DisplayedMesh;
             int[][] cells = mesh.GetSmallestFaces(minFaceArea, partNames);
-            HighlightSurface(cells, false);
+            HighlightSurface(cells, null, false);
         }
 
         // Flip face orientation ******************************************************************
@@ -5251,7 +5251,7 @@ namespace PrePoMax
                     load.RegionType = RegionTypeEnum.ElementSetName;
                 }
                 // Surface
-                else if (load is DLoad || load is STLoad || load is PreTensionLoad)
+                else if (load is DLoad || load is STLoad || load is ShellEdgeLoad || load is PreTensionLoad)
                 {
                     name = FeMesh.GetNextFreeSelectionName(_model.Mesh.Surfaces) + load.Name;
                     FeSurface surface = new FeSurface(name, load.CreationIds, load.CreationData.DeepClone());
@@ -5282,7 +5282,7 @@ namespace PrePoMax
                     RemoveNodeSets(new string[] { load.RegionName });
                 else if (load is GravityLoad || load is CentrifLoad)
                     RemoveElementSets(new string[] { load.RegionName });
-                else if (load is DLoad || load is STLoad || load is PreTensionLoad)
+                else if (load is DLoad || load is STLoad || load is ShellEdgeLoad || load is PreTensionLoad)
                     RemoveSurfaces(new string[] { load.RegionName }, false);
                 else throw new NotSupportedException();
             }
@@ -5804,14 +5804,13 @@ namespace PrePoMax
         {
             // Ger selected ids
             int[] ids = GetIdsFromSelectionNode(node, new HashSet<int>());
+            FeMesh mesh = DisplayedMesh;
             // Check for errors    
             if (node is SelectionNodeIds)
             {
                 SelectionNodeIds selectionNodeIds = node as SelectionNodeIds;
                 if (!selectionNodeIds.SelectAll)
                 {
-                    FeMesh mesh = DisplayedMesh;
-                    //
                     if (_selection.SelectItem == vtkSelectItem.Node)
                     {
                         for (int i = 0; i < ids.Length; i++)
@@ -5839,7 +5838,7 @@ namespace PrePoMax
                         for (int i = 0; i < ids.Length; i++)
                         {
                             // Check: The selected face id does not exist."
-                            mesh.GetCellFromFaceId(ids[i], out FeElement element);
+                            mesh.GetCellFromFaceId(ids[i], out ElementFaceType elementFaceType, out FeElement element);
                         }
                     }
                     else if (_selection.SelectItem == vtkSelectItem.Geometry)
@@ -5863,6 +5862,27 @@ namespace PrePoMax
                         if (selectionNode is SelectionNodeMouse snm2) prevPartIds.UnionWith(snm2.PartIds);
                     }
                     if (prevPartIds.Count == 0 || (prevPartIds.Count <= 1 && prevPartIds.Contains(snm1.PartIds[0]))) add = true;
+                }
+            }
+            else if (_selection.LimitSelectionToFirstGeometryType)
+            {
+                if (node is SelectionNodeMouse snm1)
+                {
+                    HashSet<PartType> partTypes = new HashSet<PartType>();
+                    foreach (var partId in snm1.PartIds) partTypes.Add(mesh.GetPartById(partId).PartType);
+                    if (partTypes.Count == 1)
+                    {
+                        HashSet<PartType> prevPartTypes = new HashSet<PartType>();
+                        foreach (var selectionNode in _selection.Nodes)
+                        {
+                            if (selectionNode is SelectionNodeMouse snm2)
+                            {
+                                foreach (var partId in snm2.PartIds) prevPartTypes.Add(mesh.GetPartById(partId).PartType);
+                            }
+                        }
+                        if (prevPartTypes.Count == 0 || (prevPartTypes.Count == 1 && prevPartTypes.First() == partTypes.First()))
+                            add = true;
+                    }
                 }
             }
             else add = true;
@@ -6610,7 +6630,7 @@ namespace PrePoMax
             // Find a face containing all node ids
             foreach (int faceId in faceIds)
             {
-                cell = DisplayedMesh.GetCellFromFaceId(faceId, out element);
+                cell = DisplayedMesh.GetCellFromFaceId(faceId, out ElementFaceType elementFaceType, out element);
                 if (cell.Length < nodeIds.Length) continue;
                 //
                 hashCell = new HashSet<int>(cell);
@@ -6691,17 +6711,20 @@ namespace PrePoMax
             }
             else return null;
         }
-        public int[][] GetSurfaceCellsByFaceIds(int[] faceIds)
+        public int[][] GetSurfaceCellsByFaceIds(int[] faceIds, out ElementFaceType[] elementFaceTypes)
         {
             int[][] cells = new int[faceIds.Length][];
+            elementFaceTypes = new ElementFaceType[faceIds.Length];
             int count = 0;
+            ElementFaceType cellType;
             FeMesh mesh = DisplayedMesh;        // it is used in loop
             //
             foreach (int faceId in faceIds)
             {
-                cells[count++] = mesh.GetCellFromFaceId(faceId, out FeElement element);
+                cells[count] = mesh.GetCellFromFaceId(faceId, out cellType, out FeElement element);
+                elementFaceTypes[count] = cellType;
+                count++;
             }
-            //
             return cells;
         }
         public vtkControl.vtkMaxActorData GetSurfaceActorDataByNodeIds(int[] nodeIds)
@@ -6713,12 +6736,12 @@ namespace PrePoMax
             int count = 0;
             foreach (int faceId in faceIds)
             {
-                cells[count] = DisplayedMesh.GetCellFromFaceId(faceId, out FeElement element);
+                cells[count] = DisplayedMesh.GetCellFromFaceId(faceId, out ElementFaceType elementFaceType, out FeElement element);
                 count++;
             }
             //
             vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
-            int[][] freeEdges = DisplayedMesh.GetFreeEdgesFromVisualizationCells(cells);
+            int[][] freeEdges = DisplayedMesh.GetFreeEdgesFromVisualizationCells(cells, null);
             //
             DisplayedMesh.GetNodesAndCellsForEdges(freeEdges, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor,
                                                    out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
@@ -6815,11 +6838,11 @@ namespace PrePoMax
             return data;
         }
 
-        public int[][] GetSurfaceCellsByGeometryId(int[] geometrySurfaceIds)
+        public int[][] GetSurfaceCellsByGeometryId(int[] geometrySurfaceIds, out ElementFaceType[] elementFaceTypes)
         {
             if (geometrySurfaceIds.Length != 1) throw new NotSupportedException();
             //
-            int[][] cells = DisplayedMesh.GetSurfaceCells(geometrySurfaceIds[0]);
+            int[][] cells = DisplayedMesh.GetSurfaceCells(geometrySurfaceIds[0], out elementFaceTypes);
             //
             return cells;
         }
@@ -8145,6 +8168,16 @@ namespace PrePoMax
                     else throw new NotSupportedException();
                     if (count > 0) DrawMomentLoadSymbols(prefixName, momentLoad, coor, color, symbolSize, symbolLayer);
                 }
+                else if (load is DLoad dLoad)
+                {
+                    if (!_model.Mesh.Surfaces.ContainsKey(dLoad.SurfaceName)) return;
+                    //
+                    count += DrawSurface(prefixName, dLoad.SurfaceName, color, layer, true, false, onlyVisible);
+                    if (layer == vtkControl.vtkRendererLayer.Selection)
+                        DrawSurfaceEdge(prefixName, dLoad.SurfaceName, color, layer, true, false, onlyVisible);
+                    //
+                    if (count > 0) DrawDLoadSymbols(prefixName, dLoad, color, symbolSize, layer);
+                }
                 else if (load is STLoad stLoad)
                 {
                     if (!_model.Mesh.Surfaces.ContainsKey(stLoad.SurfaceName)) return;
@@ -8157,15 +8190,13 @@ namespace PrePoMax
                     //
                     if (count > 0) DrawSTLoadSymbols(prefixName, stLoad, coor, color, symbolSize, symbolLayer);
                 }
-                else if (load is DLoad dLoad)
+                else if (load is ShellEdgeLoad shellEdgeLoad)
                 {
-                    if (!_model.Mesh.Surfaces.ContainsKey(dLoad.SurfaceName)) return;
+                    if (!_model.Mesh.Surfaces.ContainsKey(shellEdgeLoad.SurfaceName)) return;
                     //
-                    count += DrawSurface(prefixName, dLoad.SurfaceName, color, layer, true, false, onlyVisible);
-                    if (layer == vtkControl.vtkRendererLayer.Selection)
-                        DrawSurfaceEdge(prefixName, dLoad.SurfaceName, color, layer, true, false, onlyVisible);
+                    count += DrawSurface(prefixName, shellEdgeLoad.SurfaceName, color, layer, true, false, onlyVisible);
                     //
-                    if (count > 0) DrawDLoadSymbols(prefixName, dLoad, color, symbolSize, layer);
+                    if (count > 0) DrawShellEdgeLoadSymbols(prefixName, shellEdgeLoad, color, symbolSize, layer);
                 }
                 else if (load is GravityLoad gLoad)
                 {
@@ -8305,6 +8336,84 @@ namespace PrePoMax
                 _form.AddOrientedDoubleArrowsActor(data, symbolSize);
             }
         }
+        public void DrawDLoadSymbols(string prefixName, DLoad dLoad, Color color, int symbolSize,
+                                     vtkControl.vtkRendererLayer layer)
+        {
+            FeSurface surface = _model.Mesh.Surfaces[dLoad.SurfaceName];
+            //
+            List<int> allElementIds = new List<int>();
+            List<FeFaceName> allElementFaceNames = new List<FeFaceName>();
+            List<double[]> allCoor = new List<double[]>();
+            double[] faceCenter;
+            FeElementSet elementSet;
+            foreach (var entry in surface.ElementFaces)     // entry:  S3; elementSetName
+            {
+                elementSet = _model.Mesh.ElementSets[entry.Value];
+                foreach (var elementId in elementSet.Labels)
+                {
+                    allElementIds.Add(elementId);
+                    allElementFaceNames.Add(entry.Key);
+                    _model.Mesh.GetElementFaceCenter(elementId, entry.Key, out faceCenter);
+                    allCoor.Add(faceCenter);
+                }
+            }
+            //
+            int[] distributedElementIds = GetSpatiallyEquallyDistributedCoor(allCoor.ToArray(), 6);
+            // Front shell face which is a S2 POS face works in the same way as a solid face
+            // Back shell face which is a S1 NEG must be inverted
+            int id;
+            double[] faceNormal;
+            bool shellElement;
+            bool[] shellFacesS1 = new bool[distributedElementIds.Length];
+            double[][] distributedCoor = new double[distributedElementIds.Length][];
+            double[][] distributedLoadNormals = new double[distributedElementIds.Length][];
+            for (int i = 0; i < distributedElementIds.Length; i++)
+            {
+                id = distributedElementIds[i];
+                _model.Mesh.GetElementFaceCenterAndNormal(allElementIds[id], allElementFaceNames[id], out faceCenter,
+                                                          out faceNormal, out shellElement);
+                //
+                if ((dLoad.Magnitude < 0) != shellElement) // if both are equal no need to reverse the direction
+                {
+                    faceNormal[0] *= -1;
+                    faceNormal[1] *= -1;
+                    faceNormal[2] *= -1;
+                }
+                //
+                distributedCoor[i] = faceCenter;
+                distributedLoadNormals[i] = faceNormal;
+            }
+            // Arrows - draw each arrow separatelly since shells can have different orientations
+            //vtkControl.vtkMaxActorData data;
+            //for (int i = 0; i < distributedElementIds.Length; i++)
+            //{
+            //    data = new vtkControl.vtkMaxActorData();
+            //    data.Name = prefixName + "_" + i;
+            //    data.Color = color;
+            //    data.Layer = layer;
+            //    data.Geometry.Nodes.Coor = new double[][] { distributedCoor[i] };
+            //    data.Geometry.Nodes.Normals = new double[][] { distributedLoadNormals[i] };
+            //    data.SectionViewPossible = false;
+            //    ApplyLighting(data);
+            //    bool translate = dLoad.Magnitude > 0;
+            //    _form.AddOrientedArrowsActor(data, symbolSize, translate);
+            //}
+
+            // Arrows
+            if (allCoor.Count > 0)
+            {
+                vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
+                data.Name = prefixName;
+                data.Color = color;
+                data.Layer = layer;
+                data.Geometry.Nodes.Coor = distributedCoor.ToArray();
+                data.Geometry.Nodes.Normals = distributedLoadNormals.ToArray();
+                data.SectionViewPossible = false;
+                ApplyLighting(data);
+                bool translate = dLoad.Magnitude > 0;
+                _form.AddOrientedArrowsActor(data, symbolSize, translate);
+            }
+        }
         public void DrawSTLoadSymbols(string prefixName, STLoad stLoad, double[][] symbolCoor, Color color,
                                       int symbolSize, vtkControl.vtkRendererLayer layer)
         {
@@ -8328,10 +8437,10 @@ namespace PrePoMax
                 _form.AddOrientedArrowsActor(data, symbolSize);
             }
         }
-        public void DrawDLoadSymbols(string prefixName, DLoad dLoad, Color color, int symbolSize, 
-                                     vtkControl.vtkRendererLayer layer)
+        public void DrawShellEdgeLoadSymbols(string prefixName, ShellEdgeLoad shellEdgeLoad, Color color, int symbolSize,
+                                             vtkControl.vtkRendererLayer layer)
         {
-            FeSurface surface = _model.Mesh.Surfaces[dLoad.SurfaceName];
+            FeSurface surface = _model.Mesh.Surfaces[shellEdgeLoad.SurfaceName];
             //
             List<int> allElementIds = new List<int>();
             List<FeFaceName> allElementFaceNames = new List<FeFaceName>();
@@ -8355,20 +8464,21 @@ namespace PrePoMax
             int id;
             double[] faceNormal;
             bool shellElement = false;
+            bool shellFaceS1 = false;
             List<double[]> distributedCoor = new List<double[]>();
             List<double[]> distributedLoadNormals = new List<double[]>();
             for (int i = 0; i < distributedElementIds.Length; i++)
             {
                 id = distributedElementIds[i];
-                _model.Mesh.GetElementFaceCenterAndNormal(allElementIds[id], allElementFaceNames[id], out faceCenter, 
+                _model.Mesh.GetElementFaceCenterAndNormal(allElementIds[id], allElementFaceNames[id], out faceCenter,
                                                           out faceNormal, out shellElement);
-                if (dLoad.Magnitude < 0)
+                if (shellEdgeLoad.Magnitude < 0)
                 {
                     faceNormal[0] *= -1;
                     faceNormal[1] *= -1;
                     faceNormal[2] *= -1;
                 }
-                
+                //
                 distributedCoor.Add(faceCenter);
                 distributedLoadNormals.Add(faceNormal);
             }
@@ -8383,8 +8493,7 @@ namespace PrePoMax
                 data.Geometry.Nodes.Normals = distributedLoadNormals.ToArray();
                 data.SectionViewPossible = false;
                 ApplyLighting(data);
-                bool translate = dLoad.Magnitude > 0;
-                if (shellElement) translate = !translate;
+                bool translate = shellEdgeLoad.Magnitude > 0;
                 _form.AddOrientedArrowsActor(data, symbolSize, translate);
             }
         }
@@ -8742,7 +8851,7 @@ namespace PrePoMax
             //
             if (!drawEdges) return;
             // Edges
-            cells = mesh.GetFreeEdgesFromVisualizationCells(cellsCopy);
+            cells = mesh.GetFreeEdgesFromVisualizationCells(cellsCopy, null);
             //
             data = new vtkControl.vtkMaxActorData();
             data.Name = prefixName + Globals.NameSeparator + "draw_surface_edges";
@@ -8782,8 +8891,10 @@ namespace PrePoMax
                     data.CanHaveElementEdges = true;
                     data.BackfaceCulling = backfaceCulling;
                     data.UseSecondaryHighightColor = useSecondaryHighlightColor;
-                    _model.Mesh.GetSurfaceEdgesGeometry(surfaceName, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types, onlyVisible);
-
+                    _model.Mesh.GetSurfaceEdgesGeometry(surfaceName, out data.Geometry.Nodes.Coor,
+                                                        out data.Geometry.Cells.CellNodeIds,
+                                                        out data.Geometry.Cells.Types, onlyVisible);
+                    //
                     ApplyLighting(data);
                     _form.Add3DCells(data);
                 }
@@ -8815,9 +8926,11 @@ namespace PrePoMax
                                           bool useSecondaryHighlightColor = false, bool drawSurfaceEdges = false)
         {
             int[][] cells;
+            ElementFaceType[] elementFaceTypes;
             // Highlight surface: QuerySurface from frmQuery
-            if (ids.Length == 1 && DisplayedMesh.IsThisIdGeometryId(ids[0])) cells = GetSurfaceCellsByGeometryId(ids);
-            else cells = GetSurfaceCellsByFaceIds(ids);
+            if (ids.Length == 1 && DisplayedMesh.IsThisIdGeometryId(ids[0]))
+                cells = GetSurfaceCellsByGeometryId(ids, out elementFaceTypes);
+            else cells = GetSurfaceCellsByFaceIds(ids, out elementFaceTypes);
             //
             DrawSurface(prefixName, cells, color, layer, backfaceCulling, useSecondaryHighlightColor, drawSurfaceEdges);
         }
@@ -9151,7 +9264,7 @@ namespace PrePoMax
             return count;
         }
         
-        public void HighlightSurface(int[][] cells, bool useSecondaryHighlightColor)
+        public void HighlightSurface(int[][] cells, ElementFaceType[] elementFaceTypes, bool useSecondaryHighlightColor)
         {
             FeMesh mesh = DisplayedMesh;
             Color color = Color.Red;
@@ -9181,7 +9294,7 @@ namespace PrePoMax
             ApplyLighting(data);
             _form.Add3DCells(data);
             // Edges
-            cells = mesh.GetFreeEdgesFromVisualizationCells(cellsCopy);
+            cells = mesh.GetFreeEdgesFromVisualizationCells(cellsCopy, elementFaceTypes);
             //
             data = new vtkControl.vtkMaxActorData();
             data.Name = "highlight_surface_edges_by_cells";
@@ -9407,11 +9520,12 @@ namespace PrePoMax
         public void HighlightItemsBySurfaceIds(int[] ids, bool useSecondaryHighlightColor)
         {
             int[][] cells;
+            ElementFaceType[] elementFaceTypes = null;
             // QuerySurface from frmQuery
-            if (ids.Length == 1 && DisplayedMesh.IsThisIdGeometryId(ids[0])) cells = GetSurfaceCellsByGeometryId(ids);
-            else cells = GetSurfaceCellsByFaceIds(ids);
+            if (ids.Length == 1 && DisplayedMesh.IsThisIdGeometryId(ids[0])) cells = GetSurfaceCellsByGeometryId(ids, out elementFaceTypes);
+            else cells = GetSurfaceCellsByFaceIds(ids, out elementFaceTypes);
             //
-            HighlightSurface(cells, useSecondaryHighlightColor);
+            HighlightSurface(cells, elementFaceTypes, useSecondaryHighlightColor);
         }
         private void HighlightItemsByGeometryIds(int[] ids, bool backfaceCulling, bool useSecondaryHighlightColor)
         {
