@@ -681,20 +681,25 @@ namespace FileInOut.Output
                     CalCLoad cload = new CalCLoad(cl, referencePointsNodeIds);
                     parent.AddKeyword(cload);
                 }
-                else if (load is DLoad dl)
-                {
-                    CalDLoad dload = new CalDLoad(model.Mesh.Surfaces, dl);
-                    parent.AddKeyword(dload);
-                }
                 else if (load is MomentLoad ml)
                 {
                     CalMomentLoad mload = new CalMomentLoad(ml, referencePointsNodeIds);
                     parent.AddKeyword(mload);
                 }
+                else if (load is DLoad dl)
+                {
+                    CalDLoad dload = new CalDLoad(model.Mesh.Surfaces, dl);
+                    parent.AddKeyword(dload);
+                }
                 else if (load is STLoad stl)
                 {
                     CalSTLoad stload = new CalSTLoad(model, stl, referencePointsNodeIds);
                     parent.AddKeyword(stload);
+                }
+                else if (load is ShellEdgeLoad sel)
+                {
+                    CalShellEdgeLoad seload = new CalShellEdgeLoad(model.Mesh.Surfaces, sel);
+                    parent.AddKeyword(seload);
                 }
                 else if (load is GravityLoad gl)
                 {

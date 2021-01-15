@@ -80,7 +80,6 @@ namespace PrePoMax.Forms
                 //
                 if (_hideFormOnOK)
                 {
-                    this.DialogResult = DialogResult.OK;
                     Hide();
                 }
             }
@@ -91,8 +90,6 @@ namespace PrePoMax.Forms
         }
         private void btnClose_Click(object sender, EventArgs e)
         {
-            this.DialogResult = DialogResult.Cancel;
-            //
             Hide();
         }
         private void FrmSelectEntity_FormClosing(object sender, FormClosingEventArgs e)
@@ -114,8 +111,6 @@ namespace PrePoMax.Forms
         // Methods                                                                                                                  
         public bool PrepareForm(string stepName, string itemName)
         {
-            // To prevent the call to frmMain.itemForm_VisibleChanged when minimized
-            this.DialogResult = DialogResult.None;
             // Clear items
             _geometrySelection.Clear();
             lvItems.Items.Clear();

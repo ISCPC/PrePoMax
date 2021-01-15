@@ -159,8 +159,6 @@ namespace PrePoMax.Forms
         }
         protected override bool OnPrepareForm(string stepName, string itemToEditName)
         {
-            // To prevent the call to frmMain.itemForm_VisibleChanged when minimized
-            this.DialogResult = DialogResult.None;
             this.btnOK.Visible = false;
             //
             _highlightEnabled = true;

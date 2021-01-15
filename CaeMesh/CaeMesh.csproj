@@ -64,9 +64,9 @@
     <Compile Include="Elements\VtkCellType.cs" />
     <Compile Include="Enums\GeomFaceType.cs" />
     <Compile Include="Enums\ImportOptions.cs" />
-    <Compile Include="Enums\CellEdgeData.cs" />
+    <Compile Include="CellEdgeData.cs" />
     <Compile Include="Enums\GeometryType.cs" />
-    <Compile Include="Enums\CellType.cs" />
+    <Compile Include="Enums\ElementFaceType.cs" />
     <Compile Include="Enums\MeshRepresentation.cs" />
     <Compile Include="FeReferencePoint.cs" />
     <Compile Include="Elements\3D\FeElement3D.cs" />

@@ -1205,7 +1205,7 @@ namespace CaeMesh
         {
             int[] cell1;
             int[] cell2;
-            IEnumerable<int> nodeIds;
+            int commonNode;
             double phi;
             HashSet<int> vertexNodeIds = new HashSet<int>();
             //
@@ -1219,13 +1219,17 @@ namespace CaeMesh
                     for (int j = i + 1; j < part.Visualization.EdgeCells.Length; j++)
                     {
                         cell2 = part.Visualization.EdgeCells[j];
-                        nodeIds = cell1.Intersect(cell2);
-                        if (nodeIds.Count() == 1)
+                        //
+                        if (cell1[0] == cell2[0] || cell1[0] == cell2[1]) commonNode = cell1[0];
+                        else if (cell1[1] == cell2[0] || cell1[1] == cell2[1]) commonNode = cell1[1];
+                        else commonNode = -1;
+                        //nodeIds = cell1.Intersect(cell2);
+                        if (commonNode > 0)
                         {
-                            phi = ComputeAngleInRadFromEdgeCellIndices(cell1, cell2, nodeIds.First());
+                            phi = ComputeAngleInRadFromEdgeCellIndices(cell1, cell2, commonNode);
                             //if (phi > Math.PI / 2) 
                             phi = Math.PI - phi;
-                            if (phi > angle) vertexNodeIds.Add(nodeIds.First());
+                            if (phi > angle) vertexNodeIds.Add(commonNode);
                         }
                     }
                 }
@@ -2783,6 +2787,61 @@ namespace CaeMesh
             }
             return partIds.ToArray();
         }
+        public HashSet<BasePart> GetPartsFromSelectionIds(int[] prevIds, vtkSelectItem selectItem)
+        {
+            HashSet<BasePart> parts = new HashSet<BasePart>();
+            if (selectItem == vtkSelectItem.Node)
+            {
+                foreach (var entry in _parts)
+                {
+                    if (entry.Value.NodeLabels.Intersect(prevIds).Count() > 0) parts.Add(entry.Value);
+                }
+            }
+            else if (selectItem == vtkSelectItem.Element)
+            {
+                foreach (var entry in _parts)
+                {
+                    if (entry.Value.Labels.Intersect(prevIds).Count() > 0) parts.Add(entry.Value);
+                }
+            }
+            else if (selectItem == vtkSelectItem.Edge)
+            {
+                int[] itemTypePartIds;
+                foreach (var edgeId in prevIds)
+                {
+                    itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(edgeId);
+                    parts.Add(GetPartById(itemTypePartIds[2]));
+                }
+            }
+            else if (selectItem == vtkSelectItem.Surface)
+            {
+                int elementId;
+                int vtkCellId;
+                HashSet<int> partIds = new HashSet<int>();
+                foreach (var faceId in prevIds)
+                {
+                    GetElementIdVtkCellIdFromFaceId(faceId, out elementId, out vtkCellId);
+                    partIds.Add(_elements[elementId].PartId);
+                }
+                foreach (var partId in partIds) parts.Add(GetPartById(partId));
+            }
+            else if (selectItem == vtkSelectItem.Geometry)
+            {
+                int[] itemTypePartIds;
+                foreach (var geometryId in prevIds)
+                {
+                    itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(geometryId);
+                    parts.Add(GetPartById(itemTypePartIds[2]));
+                }
+            }
+            else if (selectItem == vtkSelectItem.Part)
+            {
+                foreach (var partId in prevIds) parts.Add(GetPartById(partId));
+            }
+            else throw new NotSupportedException();
+            //
+            return parts;
+        }
         // Section view - OLD
         public void ApplySectionView(Octree.Plane sectionPlane)
         {
@@ -3157,12 +3216,12 @@ namespace CaeMesh
         {
             double area;
             int[] nodeIds;
-            bool isShellBasedSurface;
+            FeSurfaceFaceTypes surfaceFaceTypes;
             Dictionary<FeFaceName, List<int>> elementSets;
             //
             if (surface.CreatedFrom == FeSurfaceCreatedFrom.Selection)
             {
-                CreateSurfaceFacesFromSelection(surface.FaceIds, out nodeIds, out elementSets, out area, out isShellBasedSurface);
+                CreateSurfaceFacesFromSelection(surface.FaceIds, out nodeIds, out elementSets, out area, out surfaceFaceTypes);
                 // Node set
                 string nodeSetName = GetNextFreeInternalName(_nodeSets) + surface.Name;
                 FeNodeSet nodeSet = new FeNodeSet(nodeSetName, nodeIds);
@@ -3170,7 +3229,7 @@ namespace CaeMesh
                 UpdateNodeSetCenterOfGravity(nodeSet);
                 _nodeSets.Add(nodeSetName, nodeSet);
                 surface.NodeSetName = nodeSetName;
-                surface.IsShellBasedSurface = isShellBasedSurface;
+                surface.SurfaceFaceTypes = surfaceFaceTypes;
             }
             else if (surface.CreatedFrom == FeSurfaceCreatedFrom.NodeSet)
             {
@@ -3184,22 +3243,22 @@ namespace CaeMesh
         {
             double area;
             int[] nodeIds;
-            bool isShellBasedSurface;
+            FeSurfaceFaceTypes surfaceFaceTypes = FeSurfaceFaceTypes.Unknown;
             Dictionary<FeFaceName, List<int>> elementSets;
             //
             surface.ClearElementFaces(); // area = 0 
             //
             if (surface.CreatedFrom == FeSurfaceCreatedFrom.Selection)
             {
-                CreateSurfaceFacesFromSelection(surface.FaceIds, out nodeIds, out elementSets, out area, out isShellBasedSurface);
+                CreateSurfaceFacesFromSelection(surface.FaceIds, out nodeIds, out elementSets, out area, out surfaceFaceTypes);
                 surface.Area = area;
-                surface.IsShellBasedSurface = isShellBasedSurface;
+                surface.SurfaceFaceTypes = surfaceFaceTypes;
             }
             else if (surface.CreatedFrom == FeSurfaceCreatedFrom.NodeSet)
             {
-                CreateSurfaceFacesFromNodeSet(surface, out nodeIds, out elementSets, out area, out isShellBasedSurface);
+                CreateSurfaceFacesFromNodeSet(surface, out nodeIds, out elementSets, out area, out surfaceFaceTypes);
                 surface.Area = area;
-                surface.IsShellBasedSurface = isShellBasedSurface;
+                surface.SurfaceFaceTypes = surfaceFaceTypes;
             }
             else throw new NotSupportedException();
             //
@@ -3273,15 +3332,14 @@ namespace CaeMesh
         }
         private void CreateSurfaceFacesFromSelection(int[] surfaceFaceIds, out int[] nodeIds,
                                                      out Dictionary<FeFaceName, List<int>> elementSets,
-                                                     out double area, out bool isShellBasedSurface)
+                                                     out double area, out FeSurfaceFaceTypes surfaceFaceTypes)
         {
             nodeIds = null;
             elementSets = new Dictionary<FeFaceName, List<int>>();
             area = 0;
-            isShellBasedSurface = false;
-            HashSet<Type> elementTypes = new HashSet<Type>();
             //
             int vtkCellId;
+            int elementId;
             FeFaceName faceName;
             List<int> elementIds;
             HashSet<int> allNodeIds = new HashSet<int>();
@@ -3292,12 +3350,7 @@ namespace CaeMesh
                 cell = GetCellFromFaceId(faceId, out ElementFaceType elementFaceType, out FeElement element);
                 allNodeIds.UnionWith(cell);
                 //
-                if (element is FeElement1D) elementTypes.Add(typeof(FeElement1D));
-                else if (element is FeElement2D) elementTypes.Add(typeof(FeElement2D));
-                else if (element is FeElement3D) elementTypes.Add(typeof(FeElement3D));
-                else throw new NotSupportedException();
-                //
-                vtkCellId = faceId % 10;
+                GetElementIdVtkCellIdFromFaceId(faceId, out elementId, out vtkCellId);
                 faceName = FeElement.FaceNameFromVtkCellId(vtkCellId);
                 //
                 area += element.GetArea(faceName, _nodes);
@@ -3307,38 +3360,34 @@ namespace CaeMesh
             }
             nodeIds = allNodeIds.ToArray();
             //
+            surfaceFaceTypes = FeSurfaceFaceTypes.Unknown;
             if (surfaceFaceIds.Length > 0)
             {
-                if (elementTypes.Count != 1) throw new NotSupportedException();
-                if (elementTypes.First() == typeof(FeElement2D)) isShellBasedSurface = true;
+                HashSet<FeSurfaceFaceTypes> allSurfaceFaceTypes = GetSurfaceFaceTypesFromFaceIds(surfaceFaceIds);
+                if (allSurfaceFaceTypes.Count == 1) surfaceFaceTypes = allSurfaceFaceTypes.First();
+                else throw new NotSupportedException();
             }
         }
         private void CreateSurfaceFacesFromNodeSet(FeSurface surface, out int[] nodeIds,
                                                    out Dictionary<FeFaceName, List<int>> elementSets,
-                                                   out double area, out bool isShellBasedSurface)
+                                                   out double area, out FeSurfaceFaceTypes surfaceFaceTypes)
         {
             int[] elementIds;
-            List<int> elementIdList;
-            elementSets = new Dictionary<FeFaceName, List<int>>();
-            area = 0;
-            isShellBasedSurface = false;
-            HashSet<Type> elementTypes = new HashSet<Type>();
-            //
             GetNodeAndElementIdsFromNodeSetSurface(surface, out nodeIds, out elementIds);
             // To speed up the search
             HashSet<int> nodeSetLookUp = new HashSet<int>(nodeIds);
             //
-            Dictionary<FeFaceName, double> faces;
+            area = 0;
             FeElement element;
+            List<int> elementIdList;
+            Dictionary<FeFaceName, double> faces;
+            HashSet<int> faceIds = new HashSet<int>();
+            elementSets = new Dictionary<FeFaceName, List<int>>();
+            //
             foreach (int elementId in elementIds)
             {
                 element = _elements[elementId];
                 faces = element.GetFaceNamesAndAreasFromNodeSet(nodeSetLookUp, _nodes);
-                //
-                if (element is FeElement1D) elementTypes.Add(typeof(FeElement1D));
-                else if (element is FeElement2D) elementTypes.Add(typeof(FeElement2D));
-                else if (element is FeElement3D) elementTypes.Add(typeof(FeElement3D));
-                else throw new NotSupportedException();
                 //
                 foreach (var entry in faces)
                 {
@@ -3346,19 +3395,52 @@ namespace CaeMesh
                     //
                     if (elementSets.TryGetValue(entry.Key, out elementIdList)) elementIdList.Add(elementId);
                     else elementSets.Add(entry.Key, new List<int>() { elementId });
+                    //
+                    faceIds.Add(elementId * 10 + FeElement.VtkCellIdFromFaceName(entry.Key));
                 }
             }
             //
-            if (elementIds.Length > 0)
+            surfaceFaceTypes = FeSurfaceFaceTypes.Unknown;
+            if (faceIds.Count > 0)
             {
-                if (elementTypes.Count != 1) throw new NotSupportedException();
-                if (elementTypes.First() == typeof(FeElement2D)) isShellBasedSurface = true;
+                HashSet<FeSurfaceFaceTypes> allSurfaceFaceTypes = GetSurfaceFaceTypesFromFaceIds(faceIds);
+                if (allSurfaceFaceTypes.Count == 1) surfaceFaceTypes = allSurfaceFaceTypes.First();
+                else throw new NotSupportedException();
             }
-        }        
+        }
+        public HashSet<FeSurfaceFaceTypes> GetSurfaceFaceTypesFromFaceIds(IEnumerable<int> faceIds)
+        {
+            int elementId;
+            int vtkCellId;
+            FeElement element;
+            HashSet<FeSurfaceFaceTypes> allSurfaceFaceTypes = new HashSet<FeSurfaceFaceTypes>();
+            foreach (var faceId in faceIds)
+            {
+                GetElementIdVtkCellIdFromFaceId(faceId, out elementId, out vtkCellId);
+                element = _elements[elementId];
+                //
+                if (element is FeElement1D) allSurfaceFaceTypes.Add(FeSurfaceFaceTypes.BeamFaces);
+                else if (element is FeElement2D)
+                {
+                    GetElementIdVtkCellIdFromFaceId(faceId, out elementId, out vtkCellId);
+                    if (vtkCellId <= 1) allSurfaceFaceTypes.Add(FeSurfaceFaceTypes.ShellFaces);
+                    else allSurfaceFaceTypes.Add(FeSurfaceFaceTypes.ShellEdgeFaces);
+                }
+                else if (element is FeElement3D) allSurfaceFaceTypes.Add(FeSurfaceFaceTypes.SolidFaces);
+                else throw new NotSupportedException();
+            }
+            return allSurfaceFaceTypes;
+        }
+        public void GetElementIdVtkCellIdFromFaceId(int faceId, out int elementId, out int vtkCellId)
+        {
+            elementId = faceId / 10;
+            vtkCellId = faceId % 10;
+        }
         public int[] GetCellFromFaceId(int faceId, out ElementFaceType elementFaceType, out FeElement element)
         {
-            int elementId = faceId / 10;
-            int vtkCellId = faceId % 10;
+            int elementId;
+            int vtkCellId;
+            GetElementIdVtkCellIdFromFaceId(faceId, out elementId, out vtkCellId);
             //
             FeFaceName faceName = FeElement.FaceNameFromVtkCellId(vtkCellId);
             //
@@ -4739,7 +4821,8 @@ namespace CaeMesh
             bool containsEdge = false;
             bool containsFace = false;
             GeometryType geomType = (GeometryType)itemTypePartIds[1];
-            if (geomType == GeometryType.Edge ||
+            if (geomType == GeometryType.Vertex) { }
+            else if (geomType == GeometryType.Edge ||
                 geomType == GeometryType.ShellEdgeSurface) containsEdge = true;
             else if (geomType == GeometryType.SolidSurface ||
                      geomType == GeometryType.ShellFrontSurface ||
@@ -5475,18 +5558,18 @@ namespace CaeMesh
             {
                 double area;
                 int[] nodeIds;
-                bool isShellBasedSurface;
+                FeSurfaceFaceTypes surfaceFaceTypes;
                 Dictionary<FeFaceName, List<int>> elementSets;
                 //
                 if (surface.CreatedFrom == FeSurfaceCreatedFrom.Selection)
                 {
                     CreateSurfaceFacesFromSelection(surface.FaceIds, out nodeIds, out elementSets,
-                                                    out area, out isShellBasedSurface);
+                                                    out area, out surfaceFaceTypes);
                 }
                 else if (surface.CreatedFrom == FeSurfaceCreatedFrom.NodeSet)
                 {
                     CreateSurfaceFacesFromNodeSet(surface, out nodeIds, out elementSets, out area,
-                                                  out isShellBasedSurface);
+                                                  out surfaceFaceTypes);
                 }
                 else throw new CaeException("The surface created from faces is not supported.");
                 //
@@ -5976,22 +6059,56 @@ namespace CaeMesh
             //
             if (element is LinearTriangleElement || element is ParabolicTriangleElement)
             {
-                nodeIds = element.GetNodeIdsFromFaceName(faceName);
-                nodes = new FeNode[3];
-                faceCenter = new double[3];
-                //
-                for (int i = 0; i < nodes.Length; i++)
+                // Shell surface face
+                if (faceName == FeFaceName.S1 || faceName == FeFaceName.S2)
                 {
-                    nodes[i] = _nodes[nodeIds[i]];
-                    faceCenter[0] += nodes[i].X;
-                    faceCenter[1] += nodes[i].Y;
-                    faceCenter[2] += nodes[i].Z;
+                    nodeIds = element.GetNodeIdsFromFaceName(faceName);
+                    nodes = new FeNode[3];
+                    faceCenter = new double[3];
+                    //
+                    for (int i = 0; i < nodes.Length; i++)
+                    {
+                        nodes[i] = _nodes[nodeIds[i]];
+                        faceCenter[0] += nodes[i].X;
+                        faceCenter[1] += nodes[i].Y;
+                        faceCenter[2] += nodes[i].Z;
+                    }
+                    faceCenter[0] /= nodes.Length;
+                    faceCenter[1] /= nodes.Length;
+                    faceCenter[2] /= nodes.Length;
+                    //
+                    faceNormal = ComputeNormalFromFaceCellNodes(nodes[0], nodes[1], nodes[2]).Coor;
                 }
-                faceCenter[0] /= nodes.Length;
-                faceCenter[1] /= nodes.Length;
-                faceCenter[2] /= nodes.Length;
-                //
-                faceNormal = ComputeNormalFromFaceCellNodes(nodes[0], nodes[1], nodes[2]).Coor;
+                // Shell edge face
+                else
+                {
+                    nodeIds = element.GetNodeIdsFromFaceName(FeFaceName.S2); // the element normal
+                    nodes = new FeNode[3];
+                    for (int i = 0; i < nodes.Length; i++) nodes[i] = _nodes[nodeIds[i]];
+                    faceNormal = ComputeNormalFromFaceCellNodes(nodes[0], nodes[1], nodes[2]).Coor;
+                    //
+                    nodeIds = element.GetNodeIdsFromFaceName(faceName);
+                    nodes = new FeNode[2];
+                    faceCenter = new double[3];
+                    for (int i = 0; i < nodes.Length; i++)
+                    {
+                        nodes[i] = _nodes[nodeIds[i]];
+                        faceCenter[0] += nodes[i].X;
+                        faceCenter[1] += nodes[i].Y;
+                        faceCenter[2] += nodes[i].Z;
+                    }
+                    faceCenter[0] /= nodes.Length;
+                    faceCenter[1] /= nodes.Length;
+                    faceCenter[2] /= nodes.Length;
+                    //
+                    double[] edgeDirection = ComputeDirectionFromEdgeCellNodes(nodes[0], nodes[1]);
+                    // Return the normal towards element inside
+                    Vec3D n = new Vec3D(faceNormal);
+                    Vec3D d = new Vec3D(edgeDirection);
+                    Vec3D en = Vec3D.CrossProduct(n, d);
+                    en.Normalize();
+                    faceNormal = en.Coor;
+                }
                 //
                 shellElement = true;
             }

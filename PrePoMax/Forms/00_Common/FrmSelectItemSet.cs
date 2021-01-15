@@ -93,18 +93,10 @@ namespace PrePoMax
                     // Form was just shown                
                     if (ItemSetDataEditor.ParentForm is Forms.IFormItemSetDataParent fdsp)
                         SetGeometrySelection(fdsp.IsSelectionGeometryBased());
-                    // To prevent the call to _frmSelectItemSet_VisibleChanged when minimized
-                    this.DialogResult = DialogResult.None;
                     rbSelectBy_CheckedChanged(null, null);
                 }
                 else
                 {
-                    // Form was just hidden
-                    if (this.DialogResult == DialogResult.OK || this.DialogResult == DialogResult.Cancel)
-                    {
-                        ItemSetDataEditor.ParentForm.DialogResult = this.DialogResult;
-                    }
-                    //
                     _controller.SetSelectByToDefault();
                 }
             }
@@ -116,7 +108,7 @@ namespace PrePoMax
             if (e.CloseReason == CloseReason.UserClosing)
             {
                 e.Cancel = true;
-                Hide(DialogResult.Cancel);
+                Hide();
             }
         }
         //
@@ -308,16 +300,15 @@ namespace PrePoMax
         private void btnCancel_Click(object sender, EventArgs e)
         {
             btnClearSelection_Click(null, null);
-            Hide(DialogResult.Cancel);
+            Hide();
         }
         private void btnOK_Click(object sender, EventArgs e)
         {
             _itemSetData.ItemIds = _controller.GetSelectionIds();
-            Hide(DialogResult.OK);
+            Hide();
         }
-        public void Hide(DialogResult dialogResult)
+        public void Hide()
         {
-            this.DialogResult = dialogResult;
             base.Hide();
         }
         //

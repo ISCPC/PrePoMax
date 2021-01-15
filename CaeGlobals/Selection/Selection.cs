@@ -17,7 +17,9 @@ namespace CaeGlobals
         private int _maxNumberOfIds;                        //ISerializable
         private bool _limitSelectionToFirstPart;            //ISerializable
         private bool _limitSelectionToFirstGeometryType;    //ISerializable
+        private bool _limitSelectionToShellEdges;           //ISerializable
         private bool _enableShellEdgeFaceSelection;         //ISerializable
+        
 
         // Temporary storage for speed optimization: keep current ids; do not copy
         [NonSerialized] private Dictionary<SelectionNode, int[]> _nodeIds;
@@ -50,6 +52,11 @@ namespace CaeGlobals
                 if (_limitSelectionToFirstGeometryType) _limitSelectionToFirstPart = false;
             }
         }
+        public bool LimitSelectionToShellEdges
+        {
+            get { return _limitSelectionToShellEdges; }
+            set { _limitSelectionToShellEdges = value; }
+        }
         public bool EnableShellEdgeFaceSelection
         {
             get { return _enableShellEdgeFaceSelection; }
@@ -66,6 +73,7 @@ namespace CaeGlobals
             _maxNumberOfIds = -1;
             _limitSelectionToFirstPart = false;
             _limitSelectionToFirstGeometryType = false;
+            _limitSelectionToShellEdges = false;
             _enableShellEdgeFaceSelection = false;
             //
             _nodeIds = null;
@@ -95,6 +103,8 @@ namespace CaeGlobals
                         _limitSelectionToFirstPart = (bool)entry.Value; break;
                     case "_limitSelectionToFirstGeometryType":
                         _limitSelectionToFirstGeometryType = (bool)entry.Value; break;
+                    case "_limitSelectionToShellEdges":
+                        _limitSelectionToShellEdges = (bool)entry.Value; break;
                     case "_enableShellEdgeFaceSelection":
                         _enableShellEdgeFaceSelection = (bool)entry.Value; break;
                     default:
@@ -165,6 +175,7 @@ namespace CaeGlobals
             info.AddValue("_maxNumberOfIds", _maxNumberOfIds, typeof(int));
             info.AddValue("_limitSelectionToFirstPart", _limitSelectionToFirstPart, typeof(bool));
             info.AddValue("_limitSelectionToFirstGeometryType", _limitSelectionToFirstGeometryType, typeof(bool));
+            info.AddValue("_limitSelectionToShellEdges", _limitSelectionToShellEdges, typeof(bool));
             info.AddValue("_enableShellEdgeFaceSelection", _enableShellEdgeFaceSelection, typeof(bool));
         }
     }

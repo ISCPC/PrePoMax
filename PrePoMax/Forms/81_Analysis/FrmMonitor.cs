@@ -48,11 +48,10 @@ namespace PrePoMax.Forms
                 _job.DataOutput -= UpdateOutput;
                 _job = null;
             }
-
+            //
             if (e.CloseReason == CloseReason.UserClosing)
             {
                 e.Cancel = true;
-                this.DialogResult = System.Windows.Forms.DialogResult.Cancel;
                 Hide();
             }
         }
@@ -110,15 +109,12 @@ namespace PrePoMax.Forms
                 _job.DataOutput -= UpdateOutput;
                 _job = null;
             }
-            this.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             Hide();
         }
 
         // Methods                                                                                                                  
         public void PrepareForm(string jobName)
         {
-            this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
-            //
             _job = _controller.GetJob(jobName);
             _job.DataOutput += UpdateOutput;
             //

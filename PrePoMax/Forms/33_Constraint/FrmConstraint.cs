@@ -200,8 +200,6 @@ namespace PrePoMax.Forms
         {
             // To prevent clear of the selection
             _selectedPropertyGridItemChangedEventActive = false;
-            // To prevent the call to frmMain.itemForm_VisibleChanged when minimized
-            this.DialogResult = DialogResult.None;
             this.btnOkAddNew.Visible = constraintToEditName == null;
             //
             _propertyItemChanged = false;

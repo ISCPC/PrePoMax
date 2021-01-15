@@ -202,10 +202,8 @@ namespace PrePoMax.Forms
         private void btnOK_Click(object sender, EventArgs e)
         {
             _userKeywords = new OrderedDictionary<int[], CalculixUserKeyword>();
-
+            //
             FindUserKeywords(btvKeywordsTree.Nodes[0], _userKeywords);
-
-            this.DialogResult = System.Windows.Forms.DialogResult.OK;
         }
         private void FindUserKeywords(TreeNode node, OrderedDictionary<int[], CalculixUserKeyword> userKeywords)
         {
@@ -236,9 +234,6 @@ namespace PrePoMax.Forms
         // Methods                                                                                                                  
         public void PrepareForm()
         {
-            // To prevent the call to frmMain.itemForm_VisibleChanged when minimized
-            this.DialogResult = DialogResult.None;
-            //
             TreeNode node = new TreeNode();
             node.Text = "CalculiX inp file";
             btvKeywordsTree.Nodes.Add(node);

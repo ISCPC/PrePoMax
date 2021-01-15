@@ -71,7 +71,6 @@ namespace PrePoMax.Forms
                     // Replace
                     if (_propertyItemChanged) _controller.ReplaceJobCommand(_jobToEditName, Job);
                 }
-                this.DialogResult = System.Windows.Forms.DialogResult.OK;       // use this value to update the model tree selected item highlight
                 Hide();
             }
             catch (Exception ex)
@@ -81,7 +80,6 @@ namespace PrePoMax.Forms
         }
         private void btnCancel_Click(object sender, EventArgs e)
         {
-            this.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             Hide();
         }
         private void FrmAnalysis_FormClosing(object sender, FormClosingEventArgs e)
@@ -89,7 +87,6 @@ namespace PrePoMax.Forms
             if (e.CloseReason == CloseReason.UserClosing)
             {
                 e.Cancel = true;
-                this.DialogResult = System.Windows.Forms.DialogResult.Cancel;
                 Hide();
             }
         }
@@ -97,8 +94,6 @@ namespace PrePoMax.Forms
         // Methods                                                                                                                  
         public bool PrepareForm(string stepName, string jobToEditName)
         {
-            this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
-            //
             _propertyItemChanged = false;
             _jobNames = null;
             _jobToEditName = null;

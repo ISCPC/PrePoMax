@@ -521,9 +521,7 @@ namespace PrePoMax
             foreach (var aForm in _allForms)
             {
                 // Do not count the Query form
-                if (aForm.Visible 
-                    //&& !(aForm is FrmQuery)
-                    ) count++;
+                if (aForm.Visible) count++;
             }
             // Disable model tree mouse and keyboard actions for the form
             bool unactive;
@@ -961,7 +959,7 @@ namespace PrePoMax
         {
             try
             {                
-                using (System.Windows.Forms.OpenFileDialog openFileDialog = new System.Windows.Forms.OpenFileDialog())
+                using (OpenFileDialog openFileDialog = new OpenFileDialog())
                 {
                     if (!System.Diagnostics.Debugger.IsAttached)
                     {
@@ -978,7 +976,7 @@ namespace PrePoMax
                     }
                     //
                     openFileDialog.FileName = "";
-                    if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                    if (openFileDialog.ShowDialog() == DialogResult.OK)
                     {
                         if (CheckBeforeOpen(openFileDialog.FileName)) OpenAsync(openFileDialog.FileName);
                     }
@@ -1000,13 +998,13 @@ namespace PrePoMax
                 {
                     if (MessageBox.Show("OK to close current model?",
                         Globals.ProgramName,
-                        MessageBoxButtons.OKCancel) != System.Windows.Forms.DialogResult.OK) return false;
+                        MessageBoxButtons.OKCancel) != DialogResult.OK) return false;
                 }
                 else if (Path.GetExtension(fileName).ToLower() == ".frd" && _controller.Results != null)
                 {
                     if (MessageBox.Show("OK to overwrite current results?",
                         Globals.ProgramName,
-                        MessageBoxButtons.OKCancel) != System.Windows.Forms.DialogResult.OK) return false;
+                        MessageBoxButtons.OKCancel) != DialogResult.OK) return false;
                 }
             }
             return true;
@@ -1126,7 +1124,7 @@ namespace PrePoMax
                         saveFileDialog.Filter = "Calculix files | *.inp";
                         if (_controller.OpenedFileName != null)
                             saveFileDialog.FileName = Path.GetFileNameWithoutExtension(_controller.OpenedFileName) + ".inp";
-                        if (saveFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                        if (saveFileDialog.ShowDialog() == DialogResult.OK)
                         {
                             // the filter adds the extension to the file name
                             SetStateWorking(Globals.ExportingText);
@@ -1155,7 +1153,7 @@ namespace PrePoMax
                         saveFileDialog.Filter = "Abaqus files | *.inp";
                         if (_controller.OpenedFileName != null)
                             saveFileDialog.FileName = Path.GetFileNameWithoutExtension(_controller.OpenedFileName) + ".inp";
-                        if (saveFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                        if (saveFileDialog.ShowDialog() == DialogResult.OK)
                         {
                             // the filter adds the extension to the file name
                             SetStateWorking(Globals.ExportingText);
@@ -1244,7 +1242,7 @@ namespace PrePoMax
                     if (_controller.OpenedFileName != null)
                         saveFileDialog.FileName = Path.GetFileNameWithoutExtension(_controller.OpenedFileName) + ".stp";
                     //
-                    if (saveFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                    if (saveFileDialog.ShowDialog() == DialogResult.OK)
                     {
                         // The filter adds the extension to the file name
                         SetStateWorking(Globals.ExportingText);
@@ -1272,7 +1270,7 @@ namespace PrePoMax
                     if (_controller.OpenedFileName != null)
                         saveFileDialog.FileName = Path.GetFileNameWithoutExtension(_controller.OpenedFileName) + ".brep";
                     //
-                    if (saveFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                    if (saveFileDialog.ShowDialog() == DialogResult.OK)
                     {
                         // The filter adds the extension to the file name
                         SetStateWorking(Globals.ExportingText);
@@ -2036,7 +2034,7 @@ namespace PrePoMax
         private void DeleteGeometryParts(string[] partNames)
         {
             if (MessageBox.Show("OK to delete selected parts?" + Environment.NewLine + partNames.ToRows(),
-                                Globals.ProgramName, MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+                                Globals.ProgramName, MessageBoxButtons.OKCancel) == DialogResult.OK)
             {
                 _controller.RemoveGeometryPartsCommand(partNames);
             }
@@ -2430,7 +2428,7 @@ namespace PrePoMax
             //
             if (formModal)
             {
-                if (_frmMeshingParameters.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                if (_frmMeshingParameters.ShowDialog() == DialogResult.OK)
                     return _frmMeshingParameters.MeshingParameters;
                 else return null; // Cancel pressed on Meshing parameters form
             }
@@ -2472,7 +2470,7 @@ namespace PrePoMax
         {
             if (MessageBox.Show("OK to delete selected mesh refinements?" + Environment.NewLine + meshRefinementNames.ToRows(),
                                 Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+                                MessageBoxButtons.OKCancel) == DialogResult.OK)
             {
                 _controller.RemoveMeshRefinementsCommand(meshRefinementNames);
             }
@@ -2628,7 +2626,7 @@ namespace PrePoMax
                     if (_frmCalculixKeywordEditor.Keywords != null)
                     {
                         _frmCalculixKeywordEditor.PrepareForm(); // must be here to check for errors
-                        if (_frmCalculixKeywordEditor.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                        if (_frmCalculixKeywordEditor.ShowDialog() == DialogResult.OK)
                         {
                             _controller.SetCalculixUserKeywordsCommand(_frmCalculixKeywordEditor.UserKeywords);
                         }
@@ -2856,7 +2854,7 @@ namespace PrePoMax
         {
             if (MessageBox.Show("OK to merge selected parts?",
                                 Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+                                MessageBoxButtons.OKCancel) == DialogResult.OK)
             {
                 _controller.MergeModelPartsCommand(partNames);
             }
@@ -2978,7 +2976,7 @@ namespace PrePoMax
         {
             if (MessageBox.Show("OK to delete selected node sets?" + Environment.NewLine + nodeSetNames.ToRows(),
                                 Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+                                MessageBoxButtons.OKCancel) == DialogResult.OK)
             {
                 _controller.RemoveNodeSetsCommand(nodeSetNames);
             }
@@ -3069,7 +3067,7 @@ namespace PrePoMax
         {
             if (MessageBox.Show("OK to delete selected element sets?" + Environment.NewLine + elementSetNames.ToRows(),
                                 Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+                                MessageBoxButtons.OKCancel) == DialogResult.OK)
             {
                 _controller.RemoveElementSetsCommand(elementSetNames);
             }
@@ -3129,7 +3127,7 @@ namespace PrePoMax
         {
             if (MessageBox.Show("OK to delete selected surfaces?" + Environment.NewLine + surfaceNames.ToRows(),
                                 Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+                                MessageBoxButtons.OKCancel) == DialogResult.OK)
             {
                 _controller.RemoveSurfacesCommand(surfaceNames);
             }
@@ -3198,7 +3196,7 @@ namespace PrePoMax
         {
             if (MessageBox.Show("OK to delete selected reference points?" + Environment.NewLine + referencePointNames.ToRows(),
                                 Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+                                MessageBoxButtons.OKCancel) == DialogResult.OK)
             {
                 _controller.RemoveReferencePointsCommand(referencePointNames);
             }
@@ -3273,7 +3271,7 @@ namespace PrePoMax
         {
             if (MessageBox.Show("OK to delete selected materials?" + Environment.NewLine + materialNames.ToRows(),
                                 Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+                                MessageBoxButtons.OKCancel) == DialogResult.OK)
             {
                 _controller.RemoveMaterialsCommand(materialNames);
             }
@@ -3355,7 +3353,7 @@ namespace PrePoMax
         {
             if (MessageBox.Show("OK to delete selected sections?" + Environment.NewLine + sectionNames.ToRows(),
                                 Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+                                MessageBoxButtons.OKCancel) == DialogResult.OK)
             {
                 _controller.RemoveSectionsCommand(sectionNames);
             }
@@ -3452,7 +3450,7 @@ namespace PrePoMax
         {
             if (MessageBox.Show("OK to delete selected constraints?" + Environment.NewLine + constraintNames.ToRows(),
                                 Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+                                MessageBoxButtons.OKCancel) == DialogResult.OK)
             {
                 _controller.RemoveConstraintsCommand(constraintNames);
             }
@@ -3523,7 +3521,7 @@ namespace PrePoMax
             if (MessageBox.Show("OK to delete selected surface interactions?" + Environment.NewLine +
                                 surfaceInteractionNames.ToRows(),
                                 Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+                                MessageBoxButtons.OKCancel) == DialogResult.OK)
             {
                 _controller.RemoveSurfaceInteractionsCommand(surfaceInteractionNames);
             }
@@ -3622,7 +3620,7 @@ namespace PrePoMax
         {
             if (MessageBox.Show("OK to delete selected contact pairs?" + Environment.NewLine + contactPairNames.ToRows(),
                                 Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+                                MessageBoxButtons.OKCancel) == DialogResult.OK)
             {
                 _controller.RemoveContactPairsCommand(contactPairNames);
             }
@@ -3694,7 +3692,7 @@ namespace PrePoMax
         {
             if (MessageBox.Show("OK to delete selected steps?" + Environment.NewLine + stepNames.ToRows(),
                                 Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+                                MessageBoxButtons.OKCancel) == DialogResult.OK)
             {
                 _controller.RemoveStepsCommnad(stepNames);
             }
@@ -3769,7 +3767,7 @@ namespace PrePoMax
             if (MessageBox.Show("OK to delete selected history outputs from step " + stepName + "?" + Environment.NewLine +
                                 historyOutputNames.ToRows(),
                                 Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+                                MessageBoxButtons.OKCancel) == DialogResult.OK)
             {
                 _controller.RemoveHistoryOutputsForStepCommand(stepName, historyOutputNames);
             }
@@ -3834,7 +3832,7 @@ namespace PrePoMax
             if (MessageBox.Show("OK to delete selected field outputs from step " + stepName + "?" + Environment.NewLine +
                                 fieldOutputNames.ToRows(),
                                 Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+                                MessageBoxButtons.OKCancel) == DialogResult.OK)
             {
                 _controller.RemoveFieldOutputsForStepCommand(stepName, fieldOutputNames);
             }
@@ -3962,7 +3960,7 @@ namespace PrePoMax
             if (MessageBox.Show("OK to delete selected boundary conditions from step " + stepName + "?" + Environment.NewLine +
                                 boundaryConditionNames.ToRows(),
                                 Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+                                MessageBoxButtons.OKCancel) == DialogResult.OK)
             {
                 _controller.RemoveBoundaryConditionsCommand(stepName, boundaryConditionNames);
             }
@@ -4086,7 +4084,7 @@ namespace PrePoMax
             if (MessageBox.Show("OK to delete selected loads from step " + stepName + "?" + Environment.NewLine +
                                 loadNames.ToRows(),
                                 Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+                                MessageBoxButtons.OKCancel) == DialogResult.OK)
             {
                 _controller.RemoveLoadsCommand(stepName, loadNames);
             }
@@ -4364,7 +4362,7 @@ namespace PrePoMax
             {
                 if (MessageBox.Show("OK to kill selected analysis?",
                                     Globals.ProgramName,
-                                    MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+                                    MessageBoxButtons.OKCancel) == DialogResult.OK)
                 {
                     _controller.KillJob(jobName);
                 }
@@ -4378,7 +4376,7 @@ namespace PrePoMax
         {
             if (MessageBox.Show("OK to delete selected analyses?" + Environment.NewLine + jobNames.ToRows(),
                                 Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+                                MessageBoxButtons.OKCancel) == DialogResult.OK)
             {
                 _controller.RemoveJobsCommand(jobNames);
             }
@@ -4575,7 +4573,7 @@ namespace PrePoMax
         {
             if (MessageBox.Show("OK to delete selected parts?" + Environment.NewLine + partNames.ToRows(),
                                 Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+                                MessageBoxButtons.OKCancel) == DialogResult.OK)
             {
                 _controller.RemoveResultParts(partNames);
             }
@@ -4832,16 +4830,13 @@ namespace PrePoMax
         {
             InvokeIfRequired(() =>
             {
-               if (_allForms != null)
-               {
-                    // first hide the _frmSelectItemSet, since it's hiding enables the form it was called from (like _frmNodeSet...)
-                    if (_frmSelectItemSet.Visible) _frmSelectItemSet.Hide(DialogResult.Cancel);
-
-                   foreach (var form in _allForms)
-                   {
-                       if (form.Visible) form.Hide();
-                   }
-               }
+                if (_allForms != null)
+                {
+                    foreach (var form in _allForms)
+                    {
+                        if (form.Visible) form.Hide();
+                    }
+                }
            });
         }
 

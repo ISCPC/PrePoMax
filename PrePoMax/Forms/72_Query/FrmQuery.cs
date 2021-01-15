@@ -138,9 +138,6 @@ namespace PrePoMax.Forms
         // Methods                                                                                                                  
         public void PrepareForm(Controller controller)
         {
-            // To prevent the call to frmMain.itemForm_VisibleChanged when minimized
-            this.DialogResult = DialogResult.None;      
-            //
             _controller = controller;
             lvQueries.HideSelection = false;
             lvQueries.SelectedIndices.Clear();

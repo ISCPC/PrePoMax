@@ -5804,7 +5804,9 @@ namespace PrePoMax
         {
             // Ger selected ids
             int[] ids = GetIdsFromSelectionNode(node, new HashSet<int>());
+            int[] afterIds = null;
             FeMesh mesh = DisplayedMesh;
+            FeElement element;
             // Check for errors    
             if (node is SelectionNodeIds)
             {
@@ -5838,7 +5840,7 @@ namespace PrePoMax
                         for (int i = 0; i < ids.Length; i++)
                         {
                             // Check: The selected face id does not exist."
-                            mesh.GetCellFromFaceId(ids[i], out ElementFaceType elementFaceType, out FeElement element);
+                            mesh.GetCellFromFaceId(ids[i], out ElementFaceType elementFaceType, out element);
                         }
                     }
                     else if (_selection.SelectItem == vtkSelectItem.Geometry)
@@ -5849,43 +5851,60 @@ namespace PrePoMax
                 }
                 else ClearSelectionHistoryAndCallSelectionChanged();   // Before adding all clear selection
             }
+            // Limit selection to shell edges, parts, geometry type
+            int elementId;
+            int vtkCellId;
+            bool add = true;
             //
-            bool add = false;
-            if (_selection.LimitSelectionToFirstPart)
+            if (_selection.SelectItem == vtkSelectItem.Surface)
             {
-                if (node is SelectionNodeMouse snm1 && snm1.PartIds != null && snm1.PartIds.Length == 1)
+                // Limit surface selection to first shell face type
+                if (afterIds == null) { _selection.Add(node, ids); afterIds = GetSelectionIds(); _selection.RemoveLast(); }
+                HashSet<FeSurfaceFaceTypes> surfaceFaceTypes = mesh.GetSurfaceFaceTypesFromFaceIds(afterIds);
+                if (surfaceFaceTypes.Count() != 1) add = false;
+                // Limit surface selection to shell edge surfaces
+                else if (_selection.LimitSelectionToShellEdges)
                 {
-                    // First go through all the nodes (some are not mouse selection) to determine all previously selected parts
-                    HashSet<int> prevPartIds = new HashSet<int>();
-                    foreach (var selectionNode in _selection.Nodes)
+                    for (int i = 0; i < ids.Length; i++)
                     {
-                        if (selectionNode is SelectionNodeMouse snm2) prevPartIds.UnionWith(snm2.PartIds);
+                        mesh.GetElementIdVtkCellIdFromFaceId(ids[i], out elementId, out vtkCellId);
+                        element = mesh.Elements[elementId];
+                        if (!(element is FeElement2D && vtkCellId >= 2)) { add = false; break; }
                     }
-                    if (prevPartIds.Count == 0 || (prevPartIds.Count <= 1 && prevPartIds.Contains(snm1.PartIds[0]))) add = true;
+                }
+                // Enable selection of shell edge surfaces
+                else if (!_selection.EnableShellEdgeFaceSelection)
+                {
+                    for (int i = 0; i < ids.Length; i++)
+                    {
+                        mesh.GetElementIdVtkCellIdFromFaceId(ids[i], out elementId, out vtkCellId);
+                        element = mesh.Elements[elementId];
+                        if (element is FeElement2D && vtkCellId >= 2) { add = false; break; }
+                    }
                 }
             }
-            else if (_selection.LimitSelectionToFirstGeometryType)
+            //
+            if (add)
             {
-                if (node is SelectionNodeMouse snm1)
+                add = false;
+                // Limit selection to first part
+                if (_selection.LimitSelectionToFirstPart)
                 {
+                    if (afterIds == null) { _selection.Add(node, ids); afterIds = GetSelectionIds(); _selection.RemoveLast(); }
+                    HashSet<BasePart> parts = mesh.GetPartsFromSelectionIds(afterIds, _selection.SelectItem);
+                    if (parts.Count == 1) add = true;
+                }
+                // Limit selection to first geometry type
+                else if (_selection.LimitSelectionToFirstGeometryType)
+                {
+                    if (afterIds == null) { _selection.Add(node, ids); afterIds = GetSelectionIds(); _selection.RemoveLast(); }
+                    HashSet<BasePart> parts = mesh.GetPartsFromSelectionIds(afterIds, _selection.SelectItem);
                     HashSet<PartType> partTypes = new HashSet<PartType>();
-                    foreach (var partId in snm1.PartIds) partTypes.Add(mesh.GetPartById(partId).PartType);
-                    if (partTypes.Count == 1)
-                    {
-                        HashSet<PartType> prevPartTypes = new HashSet<PartType>();
-                        foreach (var selectionNode in _selection.Nodes)
-                        {
-                            if (selectionNode is SelectionNodeMouse snm2)
-                            {
-                                foreach (var partId in snm2.PartIds) prevPartTypes.Add(mesh.GetPartById(partId).PartType);
-                            }
-                        }
-                        if (prevPartTypes.Count == 0 || (prevPartTypes.Count == 1 && prevPartTypes.First() == partTypes.First()))
-                            add = true;
-                    }
+                    foreach (var part in parts) partTypes.Add(part.PartType);
+                    if (partTypes.Count == 1) add = true;
                 }
+                else add = true;
             }
-            else add = true;
             //
             if (add)
             {
@@ -5980,7 +5999,7 @@ namespace PrePoMax
         private int[] GetIdsFromSelectionNodeInvert(SelectionNodeInvert selectionNodeInvert, HashSet<int> selectedIds)
         {
             HashSet<int> allIds = null;
-
+            //
             if (_selection.SelectItem == vtkSelectItem.Node)
             {
                 allIds = new HashSet<int>(GetVisibleNodeIds());
@@ -5994,9 +6013,9 @@ namespace PrePoMax
                 allIds = new HashSet<int>(GetVisibleFaceIds());
             }
             else throw new NotSupportedException();
-
+            //
             allIds.ExceptWith(selectedIds);
-
+            //
             return allIds.ToArray();
         }
         private int[] GetIdsFromSelectionNodeIds(SelectionNodeIds selectionNodeIds)
@@ -8464,7 +8483,6 @@ namespace PrePoMax
             int id;
             double[] faceNormal;
             bool shellElement = false;
-            bool shellFaceS1 = false;
             List<double[]> distributedCoor = new List<double[]>();
             List<double[]> distributedLoadNormals = new List<double[]>();
             for (int i = 0; i < distributedElementIds.Length; i++)

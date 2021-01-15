@@ -70,8 +70,6 @@ namespace PrePoMax.Forms
                                 double value, OrderedDictionary<string, double> presetValues,
                                 TypeConverter typeConverter = null)
         {
-            this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
-            //
             Text = title;
             //
             _viewValue.Value = value;

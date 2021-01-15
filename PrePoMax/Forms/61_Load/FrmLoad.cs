@@ -105,18 +105,23 @@ namespace PrePoMax.Forms
             if (lvTypes.Enabled && lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)
             {
                 object itemTag = lvTypes.SelectedItems[0].Tag;
-                _controller.Selection.LimitSelectionToFirstPart = false;
+                _controller.Selection.LimitSelectionToFirstGeometryType = false;
+                _controller.Selection.LimitSelectionToShellEdges = false;
                 //
                 if (itemTag is ViewError) _viewLoad = null;
                 else if (itemTag is ViewCLoad vcl) _viewLoad = vcl;
                 else if (itemTag is ViewMomentLoad vml) _viewLoad = vml;
-                else if (itemTag is ViewDLoad vdl)
+                else if (itemTag is ViewDLoad vdl)  // in order for S1, S2,... to include the same element types
                 {
                     _viewLoad = vdl;
                     _controller.Selection.LimitSelectionToFirstGeometryType = true;
                 }
                 else if (itemTag is ViewSTLoad vstl) _viewLoad = vstl;
-                else if (itemTag is ViewShellEdgeLoad vsel) _viewLoad = vsel;
+                else if (itemTag is ViewShellEdgeLoad vsel)
+                {
+                    _viewLoad = vsel;
+                    _controller.Selection.LimitSelectionToShellEdges = true;
+                }
                 else if (itemTag is ViewGravityLoad vgl) _viewLoad = vgl;
                 else if (itemTag is ViewCentrifLoad vcfl) _viewLoad = vcfl;
                 else if (itemTag is ViewPreTensionLoad vprl) _viewLoad = vprl;
@@ -181,7 +186,7 @@ namespace PrePoMax.Forms
         }
         protected override void OnApply(bool onOkAddNew)
         {
-            if (propertyGrid.SelectedObject is ViewError ve) throw new CaeGlobals.CaeException(ve.Message);
+            if (propertyGrid.SelectedObject is ViewError ve) throw new CaeException(ve.Message);
             //
             _viewLoad = (ViewLoad)propertyGrid.SelectedObject;
             //
@@ -209,7 +214,7 @@ namespace PrePoMax.Forms
             else if (FELoad is DLoad dl)
             {
                 if (dl.Magnitude == 0)
-                    throw new CaeException("The pressure magnitude must not be equal to 0.");
+                    throw new CaeException("The pressure load magnitude must not be equal to 0.");
             }
             else if (FELoad is STLoad stl)
             {
@@ -219,7 +224,7 @@ namespace PrePoMax.Forms
             else if (FELoad is ShellEdgeLoad sel)
             {
                 if (sel.Magnitude == 0)
-                    throw new CaeException("The shell edge magnitude must not be equal to 0.");
+                    throw new CaeException("The shell edge load magnitude must not be equal to 0.");
             }
             else if (FELoad is GravityLoad gl)
             {
@@ -262,8 +267,9 @@ namespace PrePoMax.Forms
         {
             // Close the ItemSetSelectionForm
             ItemSetDataEditor.SelectionForm.Hide();
-            // Deactivate selection limit
+            // Deactivate selection limits
             _controller.Selection.LimitSelectionToFirstGeometryType = false;
+            _controller.Selection.LimitSelectionToShellEdges = false;
             // Convert the load from internal to show it
             LoadInternal(false);
             //
@@ -273,8 +279,6 @@ namespace PrePoMax.Forms
         {
             // To prevent clear of the selection
             _selectedPropertyGridItemChangedEventActive = false;                             
-            // To prevent the call to frmMain.itemForm_VisibleChanged when minimized
-            this.DialogResult = DialogResult.None;      
             this.btnOkAddNew.Visible = loadToEditName == null;
             // Clear
             _propertyItemChanged = false;

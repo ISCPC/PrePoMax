@@ -87,9 +87,6 @@ namespace PrePoMax.Forms
         }
         protected override bool OnPrepareForm(string stepName, string meshRefinementToEditName)
         {
-            // To prevent the call to frmMain.itemForm_VisibleChanged when minimized
-            this.DialogResult = DialogResult.None;      
-            //
             _propertyItemChanged = false;
             _viewBoundaryLayer = null;
             propertyGrid.SelectedObject = null;

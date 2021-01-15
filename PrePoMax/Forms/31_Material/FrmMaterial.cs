@@ -180,7 +180,6 @@ namespace PrePoMax.Forms
             {
                 Add();
                 //
-                this.DialogResult = DialogResult.OK;       // use this value to update the model tree selected item highlight
                 Hide();
             }
             catch (Exception ex)
@@ -225,11 +224,7 @@ namespace PrePoMax.Forms
         // Methods                                                                                                                  
         public bool PrepareForm(string stepName, string materialToEditName)
         {
-            // To prevent the call to frmMain.itemForm_VisibleChanged when minimized
-            this.DialogResult = DialogResult.None;      
             this.btnOKAddNew.Visible = materialToEditName == null;
-            //
-
             //
             _propertyChanged = false;
             _propertyItemChanged = false;

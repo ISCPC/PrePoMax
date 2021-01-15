@@ -109,7 +109,6 @@ namespace PrePoMax.Forms
         }
         protected override bool OnPrepareForm(string stepName, string fieldOutputToEditName)
         {
-            this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
             this.btnOkAddNew.Visible = fieldOutputToEditName == null;
             //
             _propertyItemChanged = false;

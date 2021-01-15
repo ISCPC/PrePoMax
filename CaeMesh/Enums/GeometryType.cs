@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace CaeMesh
 {
+    // Used to encode the selected geometry items into ItemTypePart id
     [Serializable]
     public enum GeometryType
     {

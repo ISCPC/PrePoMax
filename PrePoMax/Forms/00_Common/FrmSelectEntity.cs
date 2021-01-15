@@ -94,10 +94,9 @@ namespace PrePoMax.Forms
             try
             {
                 string[] selectedEntityNames = GetSelectedEntityNames();
+                // First hide since this form calls itself in the following lines
+                Hide();
                 //
-                this.DialogResult = System.Windows.Forms.DialogResult.OK;
-                Hide();  // first hide since this form calls itself in the following lines
-
                 if (dgvNames.MultiSelect)
                 {
                     if (_stepName == null)
@@ -123,12 +122,11 @@ namespace PrePoMax.Forms
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void btnCancel_Click(object sender, EventArgs e)
         {
-            this.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             Hide();
         }
         private void FrmSelectEntity_FormClosing(object sender, FormClosingEventArgs e)
@@ -136,7 +134,6 @@ namespace PrePoMax.Forms
             if (e.CloseReason == CloseReason.UserClosing)
             {
                 e.Cancel = true;
-                this.DialogResult = System.Windows.Forms.DialogResult.Cancel;
                 Hide();
             }
         }
@@ -180,8 +177,6 @@ namespace PrePoMax.Forms
         public void PrepareForm(string title, bool multiselect, NamedClass[] entitiesToSelect, string[] preSelectedEntities,
                                 string stepName = null)
         {
-            // Prevent the call to frmMain.itemForm_VisibleChanged when minimized
-            this.DialogResult = DialogResult.None;
             // Disable selection
             _controller.SetSelectByToOff();
             //

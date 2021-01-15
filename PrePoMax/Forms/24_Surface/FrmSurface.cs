@@ -123,13 +123,12 @@ namespace PrePoMax.Forms
             ItemSetDataEditor.SelectionForm.Hide();
             // Deactivate selection limit
             _controller.Selection.LimitSelectionToFirstGeometryType = false;
+            _controller.Selection.EnableShellEdgeFaceSelection = false;
             //
             base.OnHideOrClose();
         }
         protected override bool OnPrepareForm(string stepName, string surfaceToEditName)
         {
-            // To prevent the call to frmMain.itemForm_VisibleChanged when minimized
-            this.DialogResult = DialogResult.None;
             this.btnOkAddNew.Visible = surfaceToEditName == null;
             //
             _propertyItemChanged = false;
@@ -185,6 +184,7 @@ namespace PrePoMax.Forms
             SetSelectItem();
             //
             _controller.Selection.LimitSelectionToFirstGeometryType = true;
+            _controller.Selection.EnableShellEdgeFaceSelection = true;
             //
             HighlightSurface();
             //

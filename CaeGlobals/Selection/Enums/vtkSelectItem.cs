@@ -10,11 +10,11 @@ namespace CaeGlobals
     public enum vtkSelectItem
     {   
         None,
-        Node,
-        Element,
-        Edge,
-        Surface,
-        Geometry,
-        Part,
+        Node,           // nodeIds
+        Element,        // elementIds
+        Edge,           // geometryEdgeIds
+        Surface,        // faceIds
+        Geometry,       // geometryIds
+        Part,           // partIds
     }
 }

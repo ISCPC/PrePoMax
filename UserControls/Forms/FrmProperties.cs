@@ -78,8 +78,7 @@ namespace UserControls
             {
                 OnApply(false);
                 //
-                this.DialogResult = DialogResult.OK;       // use OK to update the model tree selected item highlight
-                if (_hideOnClose) Hide();
+                if (_hideOnClose) OnHideOrClose();
                 else Close();
             }
             catch (Exception ex)
@@ -149,7 +148,6 @@ namespace UserControls
         protected virtual void OnHideOrClose()
         {
             _controller_SelectionClear?.Invoke();
-            this.DialogResult = DialogResult.Cancel;
             if (_hideOnClose) Hide();
             else Close();
         }

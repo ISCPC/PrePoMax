@@ -199,6 +199,7 @@ namespace FileInOut.Output
             WriteHeading(sb);
             // Vertices                                                                             
             int nodeId;
+            int numOfSignificantNodes;
             FeNode node;
             FeElement element;
             Dictionary<int, int> oldNodeIdNewId;
@@ -208,7 +209,13 @@ namespace FileInOut.Output
             for (int i = 0; i < elementIds.Length; i++)
             {
                 element = mesh.Elements[elementIds[i]];
-                for (int j = 0; j < element.NodeIds.Length; j++)
+                if (element is LinearTriangleElement || element is ParabolicTriangleElement)
+                    numOfSignificantNodes = 3;
+                else if (element is LinearQuadrilateralElement || element is ParabolicQuadrilateralElement)
+                    numOfSignificantNodes = 4;
+                else throw new NotSupportedException();
+                //
+                for (int j = 0; j < numOfSignificantNodes; j++)
                 {
                     nodeId = element.NodeIds[j];
                     if (!allNodeIds.Contains(nodeId))
@@ -283,31 +290,31 @@ namespace FileInOut.Output
                                                                      oldNodeIdNewId[element.NodeIds[3]],
                                                                      i + 1 });
                             //
-                            parabolic = element is ParabolicTriangleElement;
+                            parabolic = element is ParabolicQuadrilateralElement;
                             //
                             key = Tools.GetSortedKey(element.NodeIds[0], element.NodeIds[1]);
                             if (!allElementEdges.Contains(key))
                             {
                                 allElementEdges.Add(key);
-                                if (parabolic) allMidNodes.Add(key, mesh.Nodes[element.NodeIds[3]]);
+                                if (parabolic) allMidNodes.Add(key, mesh.Nodes[element.NodeIds[4]]);
                             }
                             key = Tools.GetSortedKey(element.NodeIds[1], element.NodeIds[2]);
                             if (!allElementEdges.Contains(key))
                             {
                                 allElementEdges.Add(key);
-                                if (parabolic) allMidNodes.Add(key, mesh.Nodes[element.NodeIds[4]]);
+                                if (parabolic) allMidNodes.Add(key, mesh.Nodes[element.NodeIds[5]]);
                             }
                             key = Tools.GetSortedKey(element.NodeIds[2], element.NodeIds[3]);
                             if (!allElementEdges.Contains(key))
                             {
                                 allElementEdges.Add(key);
-                                if (parabolic) allMidNodes.Add(key, mesh.Nodes[element.NodeIds[5]]);
+                                if (parabolic) allMidNodes.Add(key, mesh.Nodes[element.NodeIds[6]]);
                             }
                             key = Tools.GetSortedKey(element.NodeIds[3], element.NodeIds[0]);
                             if (!allElementEdges.Contains(key))
                             {
                                 allElementEdges.Add(key);
-                                if (parabolic) allMidNodes.Add(key, mesh.Nodes[element.NodeIds[6]]);
+                                if (parabolic) allMidNodes.Add(key, mesh.Nodes[element.NodeIds[7]]);
                             }
                             //quadNodeIdsSurfaceId.Add(new int[] { oldNodeIdNewId[element.NodeIds[0]],
                             //                                     oldNodeIdNewId[element.NodeIds[1]],
@@ -328,7 +335,7 @@ namespace FileInOut.Output
             Dictionary<int[], int> edgeKeys = new Dictionary<int[], int>(comparer);
             List<int[]> edgeNodeIdsEdgeId = new List<int[]>();
             // Free edges
-            HashSet<int[]> freeEdges = GetFreeEdges(part);
+            HashSet<int[]> freeEdgeCells = GetFreeEdgeCells(part);
             // Model edges - first since they are numbered by the EdgeCellIdsByEdge
             if (keepModelEdges)
             {
@@ -366,7 +373,7 @@ namespace FileInOut.Output
                     edgeKeys.Add(key, edgeId);
                 }
                 // Free edges must not be kept
-                if (!freeEdges.Contains(key))
+                if (!freeEdgeCells.Contains(key))
                 {
                     requiredEdgeIds.Add(edgeId);
                     if (allMidNodes.Count > 0) midNodes.Add(key, allMidNodes[key]);
@@ -516,35 +523,52 @@ namespace FileInOut.Output
             sb.AppendLine("End");
         }
         //
-        private static HashSet<int[]> GetFreeEdges(BasePart part)
+        private static HashSet<int[]> GetFreeEdgeCells(BasePart part)
         {
-            int[][] cells = part.Visualization.Cells;
-            CompareIntArray comparer = new CompareIntArray();
-            Dictionary<int[], byte[]> allEdges = new Dictionary<int[], byte[]>(comparer);
-            //
             int[] key;
-            byte[] count;
-            int[][] cellEdges;
-            // Get all edges
-            for (int i = 0; i < cells.Length; i++)
+            int[] edgeCell;
+            CompareIntArray comparer = new CompareIntArray();
+            HashSet<int[]> freeEdgeCells = new HashSet<int[]>(comparer);
+            HashSet<int> freeEdgeIds = part.Visualization.GetFreeEdgeIds();
+            //
+            foreach (var edgeId in freeEdgeIds)
             {
-                cellEdges = FeMesh.GetVisualizationEdgeCells(cells[i], ElementFaceType.Face);
-                //
-                foreach (var cellEdge in cellEdges)
+                foreach (var edgeCellId in part.Visualization.EdgeCellIdsByEdge[edgeId])
                 {
-                    key = Tools.GetSortedKey(cellEdge[0], cellEdge[1]);
-                    if (allEdges.TryGetValue(key, out count)) count[0]++;
-                    else allEdges.Add(key, new byte[] { 1 });
+                    edgeCell = part.Visualization.EdgeCells[edgeCellId];
+                    key = Tools.GetSortedKey(edgeCell[0], edgeCell[1]);
+                    freeEdgeCells.Add(key);
                 }
             }
-            //
-            HashSet<int[]> freeEdges = new HashSet<int[]>(comparer);
-            foreach (var entry in allEdges)
-            {
-                if (entry.Value[0] == 1) freeEdges.Add(entry.Key);
-            }
-            //
-            return freeEdges;
+            return freeEdgeCells;
+
+            //int[][] cells = part.Visualization.Cells;
+            //CompareIntArray comparer = new CompareIntArray();
+            //Dictionary<int[], byte[]> allEdges = new Dictionary<int[], byte[]>(comparer);
+            ////
+            //int[] key;
+            //byte[] count;
+            //int[][] cellEdges;
+            //// Get all edges
+            //for (int i = 0; i < cells.Length; i++)
+            //{
+            //    cellEdges = FeMesh.GetVisualizationEdgeCells(cells[i], ElementFaceType.Face);
+            //    //
+            //    foreach (var cellEdge in cellEdges)
+            //    {
+            //        key = Tools.GetSortedKey(cellEdge[0], cellEdge[1]);
+            //        if (allEdges.TryGetValue(key, out count)) count[0]++;
+            //        else allEdges.Add(key, new byte[] { 1 });
+            //    }
+            //}
+            ////
+            //HashSet<int[]> freeEdges = new HashSet<int[]>(comparer);
+            //foreach (var entry in allEdges)
+            //{
+            //    if (entry.Value[0] == 1) freeEdges.Add(entry.Key);
+            //}
+            ////
+            //return freeEdges;
         }        
         private static FeNode GetOrCreateMidNode(FeNode n1, FeNode n2, ref Dictionary<int[], FeNode> midNodes, ref int maxNodeId)
         {

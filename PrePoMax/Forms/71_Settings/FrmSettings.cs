@@ -134,7 +134,6 @@ namespace PrePoMax.Forms
         }
         private void btnCancel_Click(object sender, EventArgs e)
         {
-            this.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             Hide();
         }
         private void FrmSettings_FormClosing(object sender, FormClosingEventArgs e)
@@ -142,7 +141,6 @@ namespace PrePoMax.Forms
             if (e.CloseReason == CloseReason.UserClosing)
             {
                 e.Cancel = true;
-                this.DialogResult = System.Windows.Forms.DialogResult.Cancel;
                 Hide();
             }
         }
@@ -150,9 +148,6 @@ namespace PrePoMax.Forms
         // Methods                                                                                                                  
         public void PrepareForm(Controller controller)
         {
-            // To prevent the call to frmMain.itemForm_VisibleChanged when minimized
-            this.DialogResult = DialogResult.None;      
-            //
             _propertyItemChanged = false;
             _viewSettings = null;
             lvSettings.Items.Clear();

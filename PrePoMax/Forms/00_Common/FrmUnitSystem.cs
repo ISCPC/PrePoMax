@@ -101,7 +101,6 @@ namespace PrePoMax.Forms
         // Overrides                                                                                                                
         protected override void OnHideOrClose()
         {
-            this.DialogResult = DialogResult.Cancel;
         }
         protected override void OnListViewTypeSelectedIndexChanged()
         {
@@ -135,7 +134,6 @@ namespace PrePoMax.Forms
         }
         protected override bool OnPrepareForm(string stepName, string geometryAndModelOrResults)
         {
-            this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
             propertyGrid.SelectedObject = null;
             //
             if (geometryAndModelOrResults == "Geometry & Model" || geometryAndModelOrResults == "Results")

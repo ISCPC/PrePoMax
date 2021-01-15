@@ -9,15 +9,15 @@ using CaeMesh;
 namespace FileInOut.Output.Calculix
 {
     [Serializable]
-    internal class CalDLoad : CalculixKeyword
+    internal class CalShellEdgeLoad : CalculixKeyword
     {
         // Variables                                                                                                                
-        private DLoad _load;
+        private ShellEdgeLoad _load;
         private IDictionary<string, FeSurface> _surfaces;
 
         
         // Constructor                                                                                                              
-        public CalDLoad(IDictionary<string, FeSurface> surfaces, DLoad load)
+        public CalShellEdgeLoad(IDictionary<string, FeSurface> surfaces, ShellEdgeLoad load)
         {
             _surfaces = surfaces;
             _load = load;
@@ -42,16 +42,16 @@ namespace FileInOut.Output.Calculix
             StringBuilder sb = new StringBuilder();
             FeSurface surface = _surfaces[_load.SurfaceName];
             FeFaceName faceName;
+            int faceId = -1;
             double magnitude;
             foreach (var entry in surface.ElementFaces)
             {
                 faceName = entry.Key;
-                if (surface.SurfaceFaceTypes == FeSurfaceFaceTypes.ShellFaces && faceName == FeFaceName.S2)
-                    magnitude = -_load.Magnitude;
-                else
-                    magnitude = _load.Magnitude;
+                faceId = int.Parse(faceName.ToString().Substring(1)) - 2;
+                magnitude = _load.Magnitude;
+                if (faceName == FeFaceName.S1 || faceName == FeFaceName.S2) throw new NotSupportedException();
                 //
-                sb.AppendFormat("{0}, P{1}, {2}", entry.Value, faceName.ToString()[1], magnitude).AppendLine();
+                sb.AppendFormat("{0}, EDNOR{1}, {2}", entry.Value, faceId, magnitude).AppendLine();
             }
             return sb.ToString();
         }

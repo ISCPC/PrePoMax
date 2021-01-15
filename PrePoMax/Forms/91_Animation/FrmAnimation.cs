@@ -286,8 +286,6 @@ namespace PrePoMax.Forms
         // Methods                                                                                                                  
         public void PrepareForm(FrmMain form, Controller controller)
         {
-            this.DialogResult = DialogResult.None;      // to prevent the call to frmMain.itemForm_VisibleChanged when minimized
-            //
             _form = form;
             _controller = controller;
             // This calls UpdateFrame
@@ -467,7 +465,7 @@ namespace PrePoMax.Forms
                 numCurrFrame.Value = _currFrme;
                 tbarFrameSelector.ValueChanged += tbarFrameSelector_ValueChanged;
                 numCurrFrame.ValueChanged += numCurrFrame_ValueChanged;
-
+                //
                 bool timer;
                 bool close = false;
                 if (_updateAnimation)
@@ -487,7 +485,7 @@ namespace PrePoMax.Forms
                         if (numFrames > 0) numNumOfFrames.Value = numFrames;   // this changes _updateAnimation = true
                     }
                     _updateAnimation = false;
-
+                    //
                     if (close)
                     {
                         this.DialogResult = DialogResult.Abort;     // out of memory
@@ -495,7 +493,7 @@ namespace PrePoMax.Forms
                         else OnHide();          // before it is shown - called from prepare form
                         return;
                     }
-
+                    //
                     timerAnimation.Enabled = timer;
                 }
                 if (_countFrames >= 1000)

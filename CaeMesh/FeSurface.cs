@@ -28,6 +28,16 @@ namespace CaeMesh
     }
 
     [Serializable]
+    public enum FeSurfaceFaceTypes
+    {
+        Unknown,
+        BeamFaces,
+        ShellFaces,
+        ShellEdgeFaces,
+        SolidFaces
+    }
+
+    [Serializable]
     public class FeSurface : NamedClass
     {
         // Variables                                                                                                                
@@ -39,7 +49,7 @@ namespace CaeMesh
         private double _area;
         private Dictionary<FeFaceName, string> _elementFaces;
         private Selection _creationData;
-        private bool _isShellBasedSurface = false;
+        private FeSurfaceFaceTypes _surfaceFaceTypes = FeSurfaceFaceTypes.Unknown;
 
 
         // Properties                                                                                                               
@@ -72,7 +82,7 @@ namespace CaeMesh
         public double Area { get { return _area; } set { _area = value; } }
         public Dictionary<FeFaceName, string> ElementFaces { get { return _elementFaces; } }
         public Selection CreationData { get { return _creationData; } set { _creationData = value; } }
-        public bool IsShellBasedSurface { get { return _isShellBasedSurface; } set { _isShellBasedSurface = value; } }
+        public FeSurfaceFaceTypes SurfaceFaceTypes { get { return _surfaceFaceTypes; } set { _surfaceFaceTypes = value; } }
 
 
         // Constructors                                                                                                             
@@ -104,7 +114,7 @@ namespace CaeMesh
             _area = surface._area;
             _elementFaces = surface._elementFaces != null ? new Dictionary<FeFaceName, string>(surface._elementFaces) : null;
             _creationData = surface._creationData != null ? surface._creationData.DeepClone() : null;
-            _isShellBasedSurface = surface._isShellBasedSurface;
+            _surfaceFaceTypes = surface._surfaceFaceTypes;
         }
 
 
@@ -118,7 +128,7 @@ namespace CaeMesh
             _area = -1;
             _elementFaces = null;
             _creationData = null;
-            _isShellBasedSurface = false;
+            _surfaceFaceTypes = FeSurfaceFaceTypes.Unknown;
         }
         public void AddElementFace(FeFaceName faceName, string elementSetName)
         {
