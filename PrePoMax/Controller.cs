@@ -3714,14 +3714,28 @@ namespace PrePoMax
             }
             else return null;
         }
-        public string[] GetUserElementBasedSurfaceNames()
+        public string[] GetUserSurfaceNames(FeSurfaceType surfaceType)
         {
             List<string> surfaceNames = new List<string>();
             if (_model.Mesh != null)
             {
                 foreach (var entry in _model.Mesh.Surfaces)
                 {
-                    if (!entry.Value.Internal && entry.Value.Type == FeSurfaceType.Element) surfaceNames.Add(entry.Key);
+                    if (!entry.Value.Internal && entry.Value.Type == surfaceType) surfaceNames.Add(entry.Key);
+                }
+                return surfaceNames.ToArray();
+            }
+            else return null;
+        }
+        public string[] GetUserSurfaceNames(FeSurfaceType surfaceType, FeSurfaceFaceTypes surfaceFaceTypes)
+        {
+            List<string> surfaceNames = new List<string>();
+            if (_model.Mesh != null)
+            {
+                foreach (var entry in _model.Mesh.Surfaces)
+                {
+                    if (!entry.Value.Internal && entry.Value.Type == surfaceType &&
+                        entry.Value.SurfaceFaceTypes == surfaceFaceTypes) surfaceNames.Add(entry.Key);
                 }
                 return surfaceNames.ToArray();
             }
@@ -4211,6 +4225,7 @@ namespace PrePoMax
                 if (section is SolidSection || section is ShellSection)
                 {
                     name = FeMesh.GetNextFreeSelectionName(_model.Mesh.ElementSets) + section.Name;
+                    // For solids only
                     bool createdByPart = section.CreationData != null && section.CreationData.SelectItem == vtkSelectItem.Part;
                     FeElementSet elementSet = new FeElementSet(name, section.CreationIds, createdByPart);
                     elementSet.CreationData = section.CreationData.DeepClone();
@@ -8402,22 +8417,6 @@ namespace PrePoMax
                 distributedCoor[i] = faceCenter;
                 distributedLoadNormals[i] = faceNormal;
             }
-            // Arrows - draw each arrow separatelly since shells can have different orientations
-            //vtkControl.vtkMaxActorData data;
-            //for (int i = 0; i < distributedElementIds.Length; i++)
-            //{
-            //    data = new vtkControl.vtkMaxActorData();
-            //    data.Name = prefixName + "_" + i;
-            //    data.Color = color;
-            //    data.Layer = layer;
-            //    data.Geometry.Nodes.Coor = new double[][] { distributedCoor[i] };
-            //    data.Geometry.Nodes.Normals = new double[][] { distributedLoadNormals[i] };
-            //    data.SectionViewPossible = false;
-            //    ApplyLighting(data);
-            //    bool translate = dLoad.Magnitude > 0;
-            //    _form.AddOrientedArrowsActor(data, symbolSize, translate);
-            //}
-
             // Arrows
             if (allCoor.Count > 0)
             {

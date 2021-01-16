@@ -455,7 +455,6 @@ namespace CaeModel
             }
             //
             return unAssignedElementIdsArray;
-
         }
         public void GetMaterialAssignments(out Dictionary<int, int> elementIdMaterialId)
         {
@@ -830,13 +829,27 @@ namespace CaeModel
         // Loads
         public CLoad[] GetNodalLoadsFromSurfaceTraction(STLoad load)
         {
-            FeElement element;
-            double A;
             int nodeId;
+            int sectionId = 0;
             int[] nodeIds;
-            double[] equForces;
-            Dictionary<int, double> nodalForces = new Dictionary<int, double>();
+            double A;
             double aSum = 0;
+            double thickness;
+            double[] equForces;
+            FeElement element;
+            Dictionary<int, double> nodalForces = new Dictionary<int, double>();
+            Dictionary<int, int> elementIdSectionId;            
+            Dictionary<int, double> sectionIdThickness = new Dictionary<int, double>();
+            // Get element thicknesses
+            GetSectionAssignments(out elementIdSectionId);
+            foreach (var entry in _sections)
+            {
+                if (entry.Value is SolidSection solid) thickness = solid.Thickness;
+                else if (entry.Value is ShellSection shell) thickness = shell.Thickness;
+                else throw new NotSupportedException();
+                //
+                sectionIdThickness.Add(sectionId++, thickness);
+            }
             //
             FeSurface surface = _mesh.Surfaces[load.SurfaceName];
             if (surface.ElementFaces == null) return null;
@@ -847,6 +860,14 @@ namespace CaeModel
                 {
                     element = _mesh.Elements[elementId];
                     A = element.GetArea(entry.Key, _mesh.Nodes);
+                    if (element is FeElement2D element2D)
+                    {
+                        sectionId = elementIdSectionId[elementId];
+                        if (sectionId == -1) throw new CaeException("Missing section assignment at element " + elementId +
+                                                                    " from part " + _mesh.GetPartById(element.PartId) + ".");
+                        thickness = sectionIdThickness[sectionId];
+                        A *= thickness;
+                    }
                     aSum += A;
                     nodeIds = element.GetNodeIdsFromFaceName(entry.Key);
                     equForces = element.GetEquivalentForcesFromFaceName(entry.Key);
