@@ -234,6 +234,7 @@
             this.tsmiBCs = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiCreateBC = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEditBC = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiPropagateBC = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerBC1 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiHideBC = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiShowBC = new System.Windows.Forms.ToolStripMenuItem();
@@ -1960,6 +1961,7 @@
             this.tsmiBCs.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmiCreateBC,
             this.tsmiEditBC,
+            this.tsmiPropagateBC,
             this.tsmiDividerBC1,
             this.tsmiHideBC,
             this.tsmiShowBC,
@@ -1972,27 +1974,34 @@
             // tsmiCreateBC
             // 
             this.tsmiCreateBC.Name = "tsmiCreateBC";
-            this.tsmiCreateBC.Size = new System.Drawing.Size(108, 22);
+            this.tsmiCreateBC.Size = new System.Drawing.Size(180, 22);
             this.tsmiCreateBC.Text = "Create";
             this.tsmiCreateBC.Click += new System.EventHandler(this.tsmiCreateBC_Click);
             // 
             // tsmiEditBC
             // 
             this.tsmiEditBC.Name = "tsmiEditBC";
-            this.tsmiEditBC.Size = new System.Drawing.Size(108, 22);
+            this.tsmiEditBC.Size = new System.Drawing.Size(180, 22);
             this.tsmiEditBC.Text = "Edit";
             this.tsmiEditBC.Click += new System.EventHandler(this.tsmiEditBC_Click);
+            // 
+            // tsmiPropagateBC
+            // 
+            this.tsmiPropagateBC.Name = "tsmiPropagateBC";
+            this.tsmiPropagateBC.Size = new System.Drawing.Size(180, 22);
+            this.tsmiPropagateBC.Text = "Propagate";
+            this.tsmiPropagateBC.Click += new System.EventHandler(this.tsmiPropagateBC_Click);
             // 
             // tsmiDividerBC1
             // 
             this.tsmiDividerBC1.Name = "tsmiDividerBC1";
-            this.tsmiDividerBC1.Size = new System.Drawing.Size(105, 6);
+            this.tsmiDividerBC1.Size = new System.Drawing.Size(177, 6);
             // 
             // tsmiHideBC
             // 
             this.tsmiHideBC.Image = ((System.Drawing.Image)(resources.GetObject("tsmiHideBC.Image")));
             this.tsmiHideBC.Name = "tsmiHideBC";
-            this.tsmiHideBC.Size = new System.Drawing.Size(108, 22);
+            this.tsmiHideBC.Size = new System.Drawing.Size(180, 22);
             this.tsmiHideBC.Text = "Hide";
             this.tsmiHideBC.Click += new System.EventHandler(this.tsmiHideBC_Click);
             // 
@@ -2000,19 +2009,19 @@
             // 
             this.tsmiShowBC.Image = ((System.Drawing.Image)(resources.GetObject("tsmiShowBC.Image")));
             this.tsmiShowBC.Name = "tsmiShowBC";
-            this.tsmiShowBC.Size = new System.Drawing.Size(108, 22);
+            this.tsmiShowBC.Size = new System.Drawing.Size(180, 22);
             this.tsmiShowBC.Text = "Show";
             this.tsmiShowBC.Click += new System.EventHandler(this.tsmiShowBC_Click);
             // 
             // tsmiDividerBC2
             // 
             this.tsmiDividerBC2.Name = "tsmiDividerBC2";
-            this.tsmiDividerBC2.Size = new System.Drawing.Size(105, 6);
+            this.tsmiDividerBC2.Size = new System.Drawing.Size(177, 6);
             // 
             // tsmiDeleteBC
             // 
             this.tsmiDeleteBC.Name = "tsmiDeleteBC";
-            this.tsmiDeleteBC.Size = new System.Drawing.Size(108, 22);
+            this.tsmiDeleteBC.Size = new System.Drawing.Size(180, 22);
             this.tsmiDeleteBC.Text = "Delete";
             this.tsmiDeleteBC.Click += new System.EventHandler(this.tsmiDeleteBC_Click);
             // 
@@ -3308,6 +3317,7 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiFindEdgesByAngleForGeometryParts;
         private System.Windows.Forms.ToolStripMenuItem tsmiFindEdgesByAngleForModelParts;
         private System.Windows.Forms.ToolStripMenuItem tsmiToolsParts;
+        private System.Windows.Forms.ToolStripMenuItem tsmiPropagateBC;
     }
 }
 

@@ -201,8 +201,9 @@ namespace PrePoMax
                 _modelTree.SelectEvent += ModelTree_Select;
                 _modelTree.ClearSelectionEvent += Clear3DSelection;
                 _modelTree.CreateEvent += ModelTree_CreateEvent;
-                _modelTree.DuplicateEvent += ModelTree_DuplicateEvent;
                 _modelTree.EditEvent += ModelTree_Edit;
+                _modelTree.DuplicateEvent += ModelTree_DuplicateEvent;
+                _modelTree.PropagateEvent += ModelTree_PropagateEvent;
                 _modelTree.HideShowEvent += ModelTree_HideShowEvent;
                 _modelTree.SetTransparencyEvent += ModelTree_SetTransparencyEvent;
                 _modelTree.ColorContoursVisibilityEvent += ModelTree_ColorContoursVisibilityEvent;
@@ -666,7 +667,7 @@ namespace PrePoMax
                 else if (namedClass is CaeResults.HistoryResultData hd) ShowHistoryOutput(hd);
             }
         }
-        private void ModelTree_DuplicateEvent(NamedClass[] items, string[] stepNames)
+        private void ModelTree_DuplicateEvent(NamedClass[] items)
         {
             if (_controller.CurrentView == ViewGeometryModelResults.Geometry)
             {
@@ -679,6 +680,19 @@ namespace PrePoMax
                 ApplyActionOnItems<SurfaceInteraction>(items, DuplicateSurfaceInteractions);
                 //
                 ApplyActionOnItems<Step>(items, DuplicateSteps);
+            }
+            else if (_controller.CurrentView == ViewGeometryModelResults.Results)
+            {
+            }
+        }
+        private void ModelTree_PropagateEvent(NamedClass[] items, string[] stepNames)
+        {
+            if (_controller.CurrentView == ViewGeometryModelResults.Geometry)
+            {
+            }
+            else if (_controller.CurrentView == ViewGeometryModelResults.Model)
+            {
+                ApplyActionOnItemsInStep<BoundaryCondition>(items, stepNames, PropagateBoundaryCondition);
             }
             else if (_controller.CurrentView == ViewGeometryModelResults.Results)
             {
@@ -820,14 +834,22 @@ namespace PrePoMax
                 }
             }
         }
-        private void ApplyActionOnItems<T>(NamedClass[] items, Action<string[]> Delete)
+        private void ApplyActionOnItems<T>(NamedClass[] items, Action<string[]> Action)
         {
             List<string> names = new List<string>();
             for (int i = 0; i < items.Length; i++)
             {
                 if (items[i] is T) names.Add(items[i].Name);
             }
-            if (names.Count > 0) Delete(names.ToArray());
+            if (names.Count > 0) Action(names.ToArray());
+        }
+        private void ApplyActionOnItemsInStep<T>(NamedClass[] items, string[] steps, Action<string, string> Action)
+        {
+            List<string> names = new List<string>();
+            for (int i = 0; i < items.Length; i++)
+            {
+                if (items[i] is T) Action(steps[i], items[i].Name);
+            }
         }
         private void DeleteStepItems<T>(NamedClass[] items, string[] stepNames, Action<string, string[]> Delete)
         {
@@ -2354,7 +2376,7 @@ namespace PrePoMax
             });
             return parameters;
         }
-        public MeshingParameters GetDefaultMeshingParameters(string[] partNames)
+        public MeshingParameters GetDefaultMeshingParameters(string[] partNames, bool onlyOneMeshType = true)
         {
             double sumMax = 0;
             double sumMin = 0;
@@ -2378,16 +2400,17 @@ namespace PrePoMax
                 // Part was not found
                 else return null;
             }
+            //
+            defaultMeshingParameters.MaxH = CaeGlobals.Tools.RoundToSignificantDigits(sumMax / partNames.Length, 2);
+            defaultMeshingParameters.MinH = CaeGlobals.Tools.RoundToSignificantDigits(sumMin / partNames.Length, 2);
+            defaultMeshingParameters.Hausdorff = CaeGlobals.Tools.RoundToSignificantDigits(sumHausDorff / partNames.Length, 2);
             // All parts must be of either netgen type or mmg type
-            if (useMmg.Count() == 1)            
+            if (onlyOneMeshType)
             {
-                defaultMeshingParameters.MaxH = CaeGlobals.Tools.RoundToSignificantDigits(sumMax / partNames.Length, 2);
-                defaultMeshingParameters.MinH = CaeGlobals.Tools.RoundToSignificantDigits(sumMin / partNames.Length, 2);
-                defaultMeshingParameters.Hausdorff = CaeGlobals.Tools.RoundToSignificantDigits(sumHausDorff / partNames.Length, 2);
-                //
-                return defaultMeshingParameters;
+                if (useMmg.Count() == 1) return defaultMeshingParameters;
+                else return null;
             }
-            else return null;
+            else return defaultMeshingParameters;
         }
         public MeshingParameters GetDefaultMeshingParameters(string partName)
         {
@@ -3867,6 +3890,17 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
+        private void tsmiPropagateBC_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectOneEntity("Steps", _controller.GetAllSteps(), SelectAndPropagateBoundaryCondition);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
         private void tsmiHideBC_Click(object sender, EventArgs e)
         {
             try
@@ -3906,6 +3940,11 @@ namespace PrePoMax
             SelectOneEntityInStep("Boundary conditions", _controller.GetStepBoundaryConditions(stepName), stepName,
                                   EditBoundaryCondition);
         }
+        private void SelectAndPropagateBoundaryCondition(string stepName)
+        {
+            SelectOneEntityInStep("Boundary conditions", _controller.GetStepBoundaryConditions(stepName), stepName,
+                                  PropagateBoundaryCondition);
+        }
         private void SelectAndHideBoundaryConditions(string stepName)
         {
             SelectMultipleEntitiesInStep("Boundary conditions", _controller.GetStepBoundaryConditions(stepName),
@@ -3938,6 +3977,29 @@ namespace PrePoMax
             ItemSetDataEditor.ParentForm = _frmBoundaryCondition;
             _frmSelectItemSet.SetOnlyGeometrySelection(true);
             ShowForm(_frmBoundaryCondition, "Edit Boundary Condition", stepName, boundaryConditionName);
+        }
+        private void PropagateBoundaryCondition(string stepName, string boundaryConditionName)
+        {
+            bool exists = false;
+            string[] nextStepNames = _controller.Model.StepCollection.GetNextStepNames(stepName);
+            //
+            foreach (var nextStepName in nextStepNames)
+            {
+                if (_controller.Model.StepCollection.GetStep(nextStepName).BoundaryConditions.ContainsKey(boundaryConditionName))
+                {
+                    exists = true;
+                    break;
+                }
+            }
+            //
+            bool propagate = true;
+            if (exists)
+            {
+                if (MessageBox.Show("OK to overwrite the existing boundary condition " + boundaryConditionName + "?",
+                                    Globals.ProgramName,
+                                    MessageBoxButtons.OKCancel) == DialogResult.Cancel) propagate = false;
+            }
+            if (propagate) _controller.PropagateBoundaryConditionCommand(stepName, boundaryConditionName);
         }
         private void HideBoundaryConditions(string stepName, string[] boundaryConditionNames)
         {
@@ -6146,6 +6208,6 @@ namespace PrePoMax
             }
         }
 
-        
+       
     }
 }

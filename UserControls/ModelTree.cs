@@ -26,6 +26,7 @@ namespace UserControls
         public int Create;
         public int Edit;
         public int Duplicate;
+        public int Propagate;
         public int Hide;
         public int Show;
         public int Transparency;
@@ -155,8 +156,9 @@ namespace UserControls
         public event Action ClearSelectionEvent;
 
         public event Action<string, string> CreateEvent;
-        public event Action<NamedClass[], string[]> DuplicateEvent;
         public event Action<NamedClass, string> EditEvent;
+        public event Action<NamedClass[]> DuplicateEvent;
+        public event Action<NamedClass[], string[]> PropagateEvent;
         public event Action<NamedClass[], HideShowOperation, string[]> HideShowEvent;
         public event Action<string[]> SetTransparencyEvent;
         public event Action<NamedClass[], bool> ColorContoursVisibilityEvent;
@@ -337,6 +339,10 @@ namespace UserControls
             visible = menuFields.Duplicate == n;
             tsmiDuplicate.Visible = visible;
             oneAboveVisible |= visible;
+            // Propagate
+            visible = menuFields.Propagate == n;
+            tsmiPropagate.Visible = visible;
+            oneAboveVisible |= visible;
             //Geometry                                              
             visible = menuFields.CompoundPart == n && n > 1;
             tsmiSpaceCompoundPart.Visible = false;
@@ -467,6 +473,8 @@ namespace UserControls
             if (item != null) menuFields.Edit++;
             //Duplicate
             if (item != null && CanDuplicate(node)) menuFields.Duplicate++;
+            //Propagate
+            if (item != null && CanPropagate(node)) menuFields.Propagate++;
             // Hide/Show
             if (item != null && CanHide(item))
             {
@@ -706,37 +714,6 @@ namespace UserControls
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiDuplicate_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                List<NamedClass> items = new List<NamedClass>();
-                string stepName;
-                List<string> stepNames = new List<string>();
-                //
-                foreach (TreeNode selectedNode in GetActiveTree().SelectedNodes)
-                {
-                    if (selectedNode.Tag == null) continue;
-                    //
-                    items.Add((NamedClass)selectedNode.Tag);
-                    stepName = null;
-                    if (selectedNode.Parent != null && selectedNode.Parent.Parent != null && selectedNode.Parent.Parent.Tag is Step)
-                        stepName = selectedNode.Parent.Parent.Text;
-                    stepNames.Add(stepName);
-                }
-                //
-                if (items.Count > 0)
-                {
-                    RenderingOff?.Invoke();
-                    DuplicateEvent?.Invoke(items.ToArray(), stepNames.ToArray());
-                    RenderingOn?.Invoke();
-                }
-            }
-            catch (Exception ex)
-            {
-                CaeGlobals.ExceptionTools.Show(this, ex);
-            }
-        }
         private void tsmiEdit_Click(object sender, EventArgs e)
         {
             try
@@ -759,6 +736,65 @@ namespace UserControls
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
+        private void tsmiDuplicate_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                List<NamedClass> items = new List<NamedClass>();
+                //
+                foreach (TreeNode selectedNode in GetActiveTree().SelectedNodes)
+                {
+                    if (selectedNode.Tag == null) continue;
+                    //
+                    items.Add((NamedClass)selectedNode.Tag);
+                }
+                //
+                if (items.Count > 0)
+                {
+                    RenderingOff?.Invoke();
+                    DuplicateEvent?.Invoke(items.ToArray());
+                    RenderingOn?.Invoke();
+                }
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiPropagate_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string stepName;
+                List<NamedClass> items = new List<NamedClass>();
+                List<string> stepNames = new List<string>();
+                //
+                foreach (TreeNode selectedNode in GetActiveTree().SelectedNodes)
+                {
+                    if (selectedNode.Tag == null) continue;
+                    //
+                    stepName = null;
+                    if (selectedNode.Parent != null && selectedNode.Parent.Parent != null && selectedNode.Parent.Parent.Tag is Step)
+                        stepName = selectedNode.Parent.Parent.Text;
+                    //
+                    if (stepNames == null) continue;
+                    //
+                    items.Add((NamedClass)selectedNode.Tag);
+                    stepNames.Add(stepName);
+                }
+                //
+                if (items.Count > 0)
+                {
+                    RenderingOff?.Invoke();
+                    PropagateEvent?.Invoke(items.ToArray(), stepNames.ToArray());
+                    RenderingOn?.Invoke();
+                }
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
         // Visibility
         private void tsmiHideShow_Click(object sender, EventArgs e)
         {
@@ -767,12 +803,11 @@ namespace UserControls
                 List<NamedClass> items = new List<NamedClass>();
                 string stepName;
                 List<string> stepNames = new List<string>();
-
-
+                //
                 foreach (TreeNode selectedNode in GetActiveTree().SelectedNodes)
                 {
                     if (selectedNode.Tag == null) continue;
-
+                    //
                     if (CanHide(selectedNode.Tag))
                     {
                         items.Add((NamedClass)selectedNode.Tag);
@@ -782,7 +817,7 @@ namespace UserControls
                         stepNames.Add(stepName);
                     }
                 }
-
+                //
                 if (items.Count > 0)
                 {
                     RenderingOff?.Invoke();
@@ -1690,22 +1725,23 @@ namespace UserControls
             else throw new NotImplementedException();
             //
             parent.Text = parent.Name;
-            parent.Expand();
             if (parent.Nodes.Count > 0) parent.Text += " (" + parent.Nodes.Count + ")";
             //
             SetNodeStatus(node);
             //
-            GetActiveTree().SelectedNode = node;
+            GetTree(view).SelectedNode = node;
+            // Expand for propagate
+            while (node.Parent != null)
+            {
+                node = node.Parent;
+                if (!node.IsExpanded) node.Expand();
+            }
         }
         public void UpdateTreeNode(ViewType view, string oldItemName, NamedClass item, string stepName, bool updateSelection)
         {
             if (!_screenUpdating) return;   // must be here; when _screenUpdating = false the function add tree node is not working
             //
-            CodersLabTreeView tree = null;
-            if (view == ViewType.Geometry) tree = cltvGeometry;
-            else if (view == ViewType.Model) tree = cltvModel;
-            else if (view == ViewType.Results) tree = cltvResults;
-            else throw new NotSupportedException();
+            CodersLabTreeView tree = GetTree(view);
             //
             TreeNode baseNode = null;
             if (item is AnalysisJob) baseNode = _analyses;
@@ -1750,20 +1786,22 @@ namespace UserControls
 
             // update selection
             if (updateSelection)
-            {
+            {                
                 if (tree != null && tree.SelectedNodes.Contains(baseNode)) UpdateHighlight();    // update only once
-                else baseNode.TreeView.SelectedNode = baseNode; // for job the tree is null
+                else tree.SelectedNode = baseNode; // for job the tree is null
+                // Expand for propagate
+                while (baseNode.Parent != null)
+                {
+                    baseNode = baseNode.Parent;
+                    if (!baseNode.IsExpanded) baseNode.Expand();
+                }
             }
         }
         public void RemoveTreeNode<T>(ViewType view, string nodeName, string stepName) where T : NamedClass
         {
             if (!_screenUpdating) return;
             //
-            CodersLabTreeView tree = null;      // the tree depends on the view
-            if (view == ViewType.Geometry) tree = cltvGeometry;
-            else if (view == ViewType.Model) tree = cltvModel;
-            else if (view == ViewType.Results) tree = cltvResults;
-            else throw new NotSupportedException();
+            CodersLabTreeView tree = GetTree(view);
             //
             TreeNode baseNode = null;
             if (typeof(T) == typeof(AnalysisJob)) baseNode = _analyses;
@@ -2081,6 +2119,13 @@ namespace UserControls
             else if (tcGeometryModelResults.SelectedTab == tpResults) return cltvResults;
             else throw new NotSupportedException();
         }
+        private CodersLabTreeView GetTree(ViewType view)
+        {
+            if (view == ViewType.Geometry) return cltvGeometry;
+            else if (view == ViewType.Model) return cltvModel;
+            else if (view == ViewType.Results) return cltvResults;
+            else throw new NotSupportedException();
+        }
         public bool[] GetTreeExpandCollapseState()
         {
             List<bool> states = new List<bool>();
@@ -2156,6 +2201,14 @@ namespace UserControls
             else if (node.Tag is Material) return true;
             else if (node.Tag is SurfaceInteraction) return true;
             else if (node.Tag is Step) return true;
+            else return false;
+        }
+        private bool CanPropagate(TreeNode node)
+        {
+            if (node.Tag is HistoryOutput) return true;
+            else if (node.Tag is FieldOutput) return true;
+            else if (node.Tag is BoundaryCondition) return true;
+            else if (node.Tag is Load) return true;
             else return false;
         }
         private bool CanDeactivate(TreeNode node)

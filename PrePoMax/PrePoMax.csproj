@@ -167,6 +167,7 @@
     <Compile Include="Command\0083_FieldOutput\CAddFieldOutput.cs" />
     <Compile Include="Command\0083_FieldOutput\CRemoveFieldOutputs.cs" />
     <Compile Include="Command\0083_FieldOutput\CReplaceFieldOutput.cs" />
+    <Compile Include="Command\0091_BoundaryConditions\CPropagateBC.cs" />
     <Compile Include="Command\0091_BoundaryConditions\CAddBC.cs" />
     <Compile Include="Command\0091_BoundaryConditions\CHideBCs.cs" />
     <Compile Include="Command\0091_BoundaryConditions\CRemoveBCs.cs" />

@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using System.Drawing;
 
 namespace CaeMesh
-
 {
     public class Globals
     {

@@ -26,11 +26,42 @@ namespace CaeModel
 
 
         // Static Methods                                                                                                           
+        public bool MulitRegionSelectionExists(string stepName, IMultiRegion newRegion)
+        {
+            List<Step> prevSteps = new List<Step>();
+            foreach (var step in _steps)
+            {
+                if (step.Name != stepName) prevSteps.Add(step);
+                else break;
+            }
+            //
+            List<IMultiRegion> existingRegions = new List<IMultiRegion>();
+            foreach (var step in prevSteps)
+            {
+                if (newRegion is HistoryOutput) existingRegions.AddRange(step.HistoryOutputs.Values);
+                else if (newRegion is BoundaryCondition) existingRegions.AddRange(step.BoundaryConditions.Values);
+                else if (newRegion is Load) existingRegions.AddRange(step.Loads.Values);
+                else throw new NotSupportedException();
+            }
+            //
+            return MulitRegionSelectionExists(existingRegions, newRegion);
+        }
+        private bool MulitRegionSelectionExists(List<IMultiRegion> existingRegions, IMultiRegion newRegion)
+        {
+            foreach (var existingRegion in existingRegions)
+            {
+                if (IsSelectionRegionEqual(existingRegion, newRegion))
+                {
+                    newRegion.RegionName = existingRegion.RegionName;
+                    newRegion.RegionType = existingRegion.RegionType;
+                    return true;
+                }
+            }
+            return false;
+        }
         public static bool MultiRegionChanged(IMultiRegion oldRegion, IMultiRegion newRegion)
         {
-            if (newRegion.RegionType == RegionTypeEnum.Selection &&
-                newRegion.CreationIds.Length == oldRegion.CreationIds.Length &&
-                newRegion.CreationIds.Except(oldRegion.CreationIds).Count() == 0)
+            if (IsSelectionRegionEqual(oldRegion, newRegion))
             {
                 // Region remained the same
                 newRegion.RegionName = oldRegion.RegionName;
@@ -43,8 +74,28 @@ namespace CaeModel
                 return true;
             }
         }
-        
-        
+        private static bool IsSelectionRegionEqual(IMultiRegion existingRegion, IMultiRegion newRegion)
+        {
+            // IsRegionNameSelection(newRegion.RegionName) is used for Propagate
+            if ((newRegion.RegionType == RegionTypeEnum.Selection || IsRegionNameSelection(newRegion.RegionName)) &&
+                IsRegionNameSelection(existingRegion.RegionName) &&
+                newRegion.CreationIds.Length == existingRegion.CreationIds.Length &&
+                newRegion.GetType() == existingRegion.GetType() &&
+                newRegion.CreationIds.Except(existingRegion.CreationIds).Count() == 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        private static bool IsRegionNameSelection(string regionName)
+        {
+            return regionName.StartsWith(CaeMesh.Globals.InternalSelectionName);
+        }
+
+
         // Methods                                                                                                                  
         public void AddStep(Step step, bool copyBCsAndLoads = true)
         {
@@ -102,7 +153,17 @@ namespace CaeModel
             //
             return stepToRemove;
         }
-        
+        public string[] GetNextStepNames(string stepName)
+        {
+            List<string> stepNames = null;
+            foreach (var step in _steps)
+            {
+                if (stepNames != null) stepNames.Add(step.Name);
+                if (step.Name == stepName) stepNames = new List<string>();
+            }
+            if (stepNames.Count > 0) return stepNames.ToArray();
+            else return null;
+        }
         // History
         public void AddHistoryOutput(HistoryOutput historyOutput, string stepName)
         {

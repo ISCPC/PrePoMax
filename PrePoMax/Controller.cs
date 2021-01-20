@@ -2021,9 +2021,9 @@ namespace PrePoMax
         {
             return _form.GetMeshingParameters(partNames, true);
         }
-        public MeshingParameters GetDefaultMeshingParameters(string[] partNames)
+        public MeshingParameters GetDefaultMeshingParameters(string[] partNames, bool onlyOneMeshType)
         {
-            return _form.GetDefaultMeshingParameters(partNames);
+            return _form.GetDefaultMeshingParameters(partNames, onlyOneMeshType);
         }
         public void SetMeshingParameters(string partName, MeshingParameters meshingParameters)
         {
@@ -4805,7 +4805,8 @@ namespace PrePoMax
         }
         public void AddHistoryOutput(string stepName, HistoryOutput historyOutput)
         {
-            ConvertSelectionBasedHistoryOutput(historyOutput);
+            if (!_model.StepCollection.MulitRegionSelectionExists(stepName, historyOutput))
+                ConvertSelectionBasedHistoryOutput(historyOutput);
             //
             _model.StepCollection.GetStep(stepName).HistoryOutputs.Add(historyOutput.Name, historyOutput);
             _form.AddTreeNode(ViewGeometryModelResults.Results, historyOutput, stepName);
@@ -4990,6 +4991,12 @@ namespace PrePoMax
             Commands.CAddBC comm = new Commands.CAddBC(stepName, boundaryCondition);
             _commands.AddAndExecute(comm);
         }
+        public void ReplaceBoundaryConditionCommand(string stepName, string oldBoundaryConditionName,
+                                                    BoundaryCondition boundaryCondition)
+        {
+            Commands.CReplaceBC comm = new Commands.CReplaceBC(stepName, oldBoundaryConditionName, boundaryCondition);
+            _commands.AddAndExecute(comm);
+        }
         public void HideBoundaryConditionCommand(string stepName, string[] boundaryConditionNames)
         {
             Commands.CHideBCs comm = new Commands.CHideBCs(stepName, boundaryConditionNames);
@@ -5000,10 +5007,9 @@ namespace PrePoMax
             Commands.CShowBCs comm = new Commands.CShowBCs(stepName, boundaryConditionNames);
             _commands.AddAndExecute(comm);
         }
-        public void ReplaceBoundaryConditionCommand(string stepName, string oldBoundaryConditionName,
-                                                    BoundaryCondition boundaryCondition)
+        public void PropagateBoundaryConditionCommand(string stepName, string boundaryConditionName)
         {
-            Commands.CReplaceBC comm = new Commands.CReplaceBC(stepName, oldBoundaryConditionName, boundaryCondition);
+            Commands.CPropagateBC comm = new Commands.CPropagateBC(stepName, boundaryConditionName);
             _commands.AddAndExecute(comm);
         }
         public void RemoveBoundaryConditionsCommand(string stepName, string[] boundaryConditionNames)
@@ -5020,7 +5026,8 @@ namespace PrePoMax
         }
         public void AddBoundaryCondition(string stepName, BoundaryCondition boundaryCondition)
         {
-            ConvertSelectionBasedBoundaryCondition(boundaryCondition);
+            if (!_model.StepCollection.MulitRegionSelectionExists(stepName, boundaryCondition))
+                ConvertSelectionBasedBoundaryCondition(boundaryCondition);
             //
             _model.StepCollection.AddBoundaryCondition(boundaryCondition, stepName);
             //
@@ -5071,6 +5078,21 @@ namespace PrePoMax
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldBoundaryConditionName, boundaryCondition, stepName);
             //
             FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
+        }
+        public void PropagateBoundaryCondition(string stepName, string boundaryConditionName)
+        {
+            string[] nextStepNames = _model.StepCollection.GetNextStepNames(stepName);
+            if (nextStepNames != null)
+            {
+                BoundaryCondition bc = _model.StepCollection.GetStep(stepName).BoundaryConditions[boundaryConditionName].DeepClone();
+                foreach (var nextStepName in nextStepNames)
+                {
+                    if (_model.StepCollection.GetStep(nextStepName).BoundaryConditions.ContainsKey(boundaryConditionName))
+                        ReplaceBoundaryCondition(nextStepName, boundaryConditionName, bc);
+                    else
+                        AddBoundaryCondition(nextStepName, bc);
+                }
+            }
         }
         public void ActivateDeactivateBoundaryCondition(string stepName, string boundaryConditionName, bool active)
         {
@@ -5176,7 +5198,8 @@ namespace PrePoMax
         }
         public void AddLoad(string stepName, Load load)
         {
-            ConvertSelectionBasedLoad(load);
+            if (!_model.StepCollection.MulitRegionSelectionExists(stepName, load))
+                ConvertSelectionBasedLoad(load);
             //
             _model.StepCollection.GetStep(stepName).Loads.Add(load.Name, load);
             //
@@ -5759,8 +5782,7 @@ namespace PrePoMax
         }
 
         #endregion #################################################################################################################
-
-
+        //
         #region Selection  #########################################################################################################
         public void SetSelectionView(ViewGeometryModelResults selectionView)
         {
