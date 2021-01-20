@@ -4822,8 +4822,11 @@ namespace PrePoMax
         }
         public void ReplaceHistoryOutput(string stepName, string oldHistoryOutputName, HistoryOutput historyOutput)
         {
-            DeleteSelectionBasedHistoryOutputSets(stepName, oldHistoryOutputName);
-            ConvertSelectionBasedHistoryOutput(historyOutput);
+            if (StepCollection.MultiRegionChanged(GetHistoryOutput(stepName, oldHistoryOutputName), historyOutput))
+            {
+                DeleteSelectionBasedHistoryOutputSets(stepName, oldHistoryOutputName);
+                ConvertSelectionBasedHistoryOutput(historyOutput);
+            }
             //
             _model.StepCollection.GetStep(stepName).HistoryOutputs.Replace(oldHistoryOutputName, historyOutput.Name, historyOutput);
             //
@@ -5055,8 +5058,11 @@ namespace PrePoMax
         public void ReplaceBoundaryCondition(string stepName, string oldBoundaryConditionName,
                                              BoundaryCondition boundaryCondition)
         {
-            DeleteSelectionBasedBoundaryConditionSets(stepName, oldBoundaryConditionName);
-            ConvertSelectionBasedBoundaryCondition(boundaryCondition);
+            if (StepCollection.MultiRegionChanged(GetBoundaryCondition(stepName, oldBoundaryConditionName), boundaryCondition))
+            {
+                DeleteSelectionBasedBoundaryConditionSets(stepName, oldBoundaryConditionName);
+                ConvertSelectionBasedBoundaryCondition(boundaryCondition);
+            }
             //
             _model.StepCollection.GetStep(stepName).BoundaryConditions.Replace(oldBoundaryConditionName, 
                                                                                boundaryCondition.Name, 
@@ -5206,8 +5212,11 @@ namespace PrePoMax
         }
         public void ReplaceLoad(string stepName, string oldLoadName, Load load)
         {
-            DeleteSelectionBasedLoadSets(stepName, oldLoadName);
-            ConvertSelectionBasedLoad(load);
+            if (StepCollection.MultiRegionChanged(GetLoad(stepName, oldLoadName), load))
+            {
+                DeleteSelectionBasedLoadSets(stepName, oldLoadName);
+                ConvertSelectionBasedLoad(load);
+            }
             //
             _model.StepCollection.GetStep(stepName).Loads.Replace(oldLoadName, load.Name, load);
             //

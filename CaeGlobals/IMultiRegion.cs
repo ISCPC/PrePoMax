@@ -11,5 +11,7 @@ namespace CaeGlobals
     {
         string RegionName { get; set; }
         RegionTypeEnum RegionType { get; set; }
+        int[] CreationIds { get; set; }
+        Selection CreationData { get; set; }
     }
 }

@@ -34,12 +34,11 @@ namespace PrePoMax.Forms
         public FrmReferencePoint(Controller controller)
         {
             InitializeComponent();
-
+            //
             _controller = controller;
             _viewReferencePoint = null;
             _allExistingNames = new HashSet<string>();
-            _selectedPropertyGridItemChangedEventActive = true;
-
+            //
             _coorNodesToDraw = new double[1][];
             _coorNodesToDraw[0] = new double[3];
         }
@@ -119,6 +118,7 @@ namespace PrePoMax.Forms
             else if (_propertyItemChanged)
             {
                  _controller.ReplaceReferencePointCommand(_referencePointToEditName, ReferencePoint);
+                _referencePointToEditName = null; // prevents the execution of toInternal in OnHideOrClose
             }
             // Convert the reference point from internal to show it
             else

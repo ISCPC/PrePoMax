@@ -81,6 +81,7 @@ namespace UserControls
         private TreeNode _materials;
         private TreeNode _sections;
         private TreeNode _constraints;
+        private TreeNode _contact;
         private TreeNode _surfaceInteractions;
         private TreeNode _contactPairs;
         private TreeNode _steps;
@@ -102,6 +103,7 @@ namespace UserControls
         private string _materialsName;
         private string _sectionsName;
         private string _constraintsName;
+        private string _contactName;
         private string _surfaceInteractionsName;
         private string _contactPairsName;
         private string _stepsName;
@@ -184,7 +186,7 @@ namespace UserControls
         public ModelTree()
         {
             InitializeComponent();
-
+            //
             _geomPartsName = "Parts";
             _meshRefinementsName = "Mesh refinements";
             //
@@ -198,6 +200,7 @@ namespace UserControls
             _materialsName = "Materials";
             _sectionsName = "Sections";
             _constraintsName = "Constraints";
+            _contactName = "Contact";
             _surfaceInteractionsName = "Surface interactions";
             _contactPairsName = "Contact pairs";
             _stepsName = "Steps";
@@ -221,14 +224,14 @@ namespace UserControls
             _materials = cltvModel.Nodes.Find(_materialsName, true)[0];
             _sections = cltvModel.Nodes.Find(_sectionsName, true)[0];
             _constraints = cltvModel.Nodes.Find(_constraintsName, true)[0];
+            _contact = cltvModel.Nodes.Find(_contactName, true)[0];
             _surfaceInteractions = cltvModel.Nodes.Find(_surfaceInteractionsName, true)[0];
             _contactPairs = cltvModel.Nodes.Find(_contactPairsName, true)[0];
             _steps = cltvModel.Nodes.Find(_stepsName, true)[0];
             _analyses = cltvModel.Nodes.Find(_analysesName, true)[0];
             _resultFieldOutputs = cltvResults.Nodes.Find(_fieldOutputsName, true)[0];
             _resultHistoryOutputs = cltvResults.Nodes.Find(_historyOutputsName, true)[0];
-
-            // add NamedClasses to static items
+            // Add NamedClasses to static items
             _model.Tag = new EmptyNamedClass(typeof(CaeModel.FeModel).ToString());
             // Geometry icons
             _geomParts.StateImageKey = "GeomPart";
@@ -251,17 +254,14 @@ namespace UserControls
             _resultParts.StateImageKey = "BasePart";
             _resultFieldOutputs.StateImageKey = "Field_output";
             _resultHistoryOutputs.StateImageKey = "History_output";
-
+            //
             _doubleClick = false;
             _screenUpdating = true;
-
+            //
             cltvGeometry.Nodes[0].ExpandAll();
             cltvModel.Nodes[0].ExpandAll();
             cltvResults.Nodes[0].ExpandAll();
             cltvResults.Nodes[1].ExpandAll();
-
-            //cltvModel.SelectionBackColor = Color.White;
-            //cltvModel.ForeColor = Color.Black;
         }
 
 
@@ -464,7 +464,7 @@ namespace UserControls
             // Create
             if (CanCreate(node)) menuFields.Create++;
             // Edit
-            if (item != null && item.Visible && item.Active) menuFields.Edit++;
+            if (item != null) menuFields.Edit++;
             //Duplicate
             if (item != null && CanDuplicate(node)) menuFields.Duplicate++;
             // Hide/Show
@@ -573,7 +573,7 @@ namespace UserControls
             try
             {
                 CodersLabTreeView tree = (CodersLabTreeView)sender;
-
+                //
                 if (e.Button == MouseButtons.Right)
                 {
                     if (tree.SelectedNodes.Count > 0)
@@ -589,21 +589,19 @@ namespace UserControls
         private void cltv_SelectionsChanged(object sender, EventArgs e)
         {
             if (_disableSelectionsChanged) return;
-
-            // this function is also called with sender as null parameter
+            // This function is also called with sender as null parameter
             CodersLabTreeView tree = GetActiveTree();
-
             TreeNode node;
             List<NamedClass> items = new List<NamedClass>();
-
+            //
             if (!_doubleClick && tree.SelectedNodes.Count > 0)
             {
                 // Select field data
                 if (tree.SelectedNodes.Count == 1)
                 {
                     node = tree.SelectedNodes[0];
-
-                    if (node.Tag is FieldData)          // Results
+                    // Results
+                    if (node.Tag is FieldData)          
                     {
                         SelectEvent?.Invoke(null);      // clear selection
                         FieldDataSelectEvent?.Invoke(new string[] { node.Parent.Name, node.Name });
@@ -611,7 +609,6 @@ namespace UserControls
                         return;
                     }
                 }
-
                 // Select
                 foreach (TreeNode selectedNode in tree.SelectedNodes)
                 {
@@ -622,22 +619,19 @@ namespace UserControls
                 SelectEvent?.Invoke(items.ToArray());
             }
             else if (tree.SelectedNodes.Count == 0) ClearSelectionEvent();
-
+            //
             return;
         }
         private void cltv_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             CodersLabTreeView tree = (CodersLabTreeView)sender;
-
+            //
             if (tree.SelectedNode == null || ModifierKeys == Keys.Shift || ModifierKeys == Keys.Control) return;
-
+            //
             if (tree.SelectedNode == tree.HitTest(e.Location).Node)
             {
                 if (tree.SelectedNode.Tag == null) tsmiCreate_Click(null, null);
-                else
-                {
-                    if ((tree.SelectedNode.Tag as NamedClass).Visible) tsmiEdit_Click(null, null);
-                }
+                else tsmiEdit_Click(null, null);
             }
             _doubleClick = false;
         }
@@ -1291,6 +1285,9 @@ namespace UserControls
             cltvModel.SelectedNodes.Clear();
             //
             ClearResults(); //calls cltvResults.SelectedNodes.Clear();
+            //
+            _contact.Collapse();
+
         }
         public void ClearActiveTreeSelection()
         {
@@ -1396,6 +1393,8 @@ namespace UserControls
             //
             try
             {
+                bool[] prevModelTreeStates = GetTreeExpandCollapseState();
+                //
                 cltvGeometry.BeginUpdate();
                 cltvModel.BeginUpdate();
                 cltvResults.BeginUpdate();
@@ -1471,6 +1470,9 @@ namespace UserControls
                 }
                 //
                 SelectNodesByPath(selectedNodePaths);
+                //
+                bool[] afterModelTreeStates = GetTreeExpandCollapseState();
+                if (prevModelTreeStates.Length == afterModelTreeStates.Length) SetTreeExpandCollapseState(prevModelTreeStates);
                 //
                 cltvGeometry.EndUpdate();
                 cltvModel.EndUpdate();
@@ -2086,7 +2088,7 @@ namespace UserControls
             {
                 GetNodeExpandCollapseState(node, states);
             }
-           
+            //
             return states.ToArray();
         }
         private void GetNodeExpandCollapseState(TreeNode node, List<bool> states)
@@ -2119,7 +2121,7 @@ namespace UserControls
             if (states[count]) node.Expand();
             else node.Collapse();
             count++;
-
+            //
             foreach (TreeNode child in node.Nodes)
             {
                 SetNodeExpandCollapseState(child, states, ref count);

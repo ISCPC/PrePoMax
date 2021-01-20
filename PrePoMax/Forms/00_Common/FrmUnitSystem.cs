@@ -40,8 +40,6 @@ namespace PrePoMax.Forms
             _controller = controller;
             _viewUnitSystem = null;
             //
-            _selectedPropertyGridItemChangedEventActive = false;
-            //
             this.Height = 330 + 19 * 19;
             //
             btnOkAddNew.Visible = false;
@@ -99,9 +97,6 @@ namespace PrePoMax.Forms
 
 
         // Overrides                                                                                                                
-        protected override void OnHideOrClose()
-        {
-        }
         protected override void OnListViewTypeSelectedIndexChanged()
         {
             if (lvTypes.Enabled && lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)

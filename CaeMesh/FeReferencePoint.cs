@@ -29,20 +29,22 @@ namespace CaeMesh
     public class FeReferencePoint : NamedClass, IMultiRegion, ISerializable
     {
         // Variables                                                                                                                
+        public const string RefName = "_ref_";
+        public const string RotName = "_rot_";
         private double _x;                                      //ISerializable
         private double _y;                                      //ISerializable
         private double _z;                                      //ISerializable
         private FeReferencePointCreatedFrom _createdFrom;       //ISerializable
         private string _regionName;                 // new      //ISerializable
         private RegionTypeEnum _regionType;         // new      //ISerializable
+        [NonSerialized] private int[] _creationIds;             //IMultiRegion - no used
+        [NonSerialized] private Selection _creationData;        //IMultiRegion - no used
         private int _createdFromRefNodeId1;                     //ISerializable
         private int _createdFromRefNodeId2;                     //ISerializable
         private string _refNodeSetName;                         //ISerializable
         private string _rotNodeSetName;                         //ISerializable
         private Color _color;                                   //ISerializable
-        public const string RefName = "_ref_";
-        public const string RotName = "_rot_";
-
+        
 
         // Properties                                                                                                               
         public double X { get { return _x; } set { _x = value; } }
@@ -62,6 +64,8 @@ namespace CaeMesh
         }
         public string RegionName { get { return _regionName; } set { _regionName = value; } }
         public RegionTypeEnum RegionType { get { return _regionType; } set { _regionType = value; } }
+        public int[] CreationIds { get { return _creationIds; } set { _creationIds = value; } }
+        public Selection CreationData { get { return _creationData; } set { _creationData = value; } }
         public int CreatedFromRefNodeId1 { get { return _createdFromRefNodeId1; } set { _createdFromRefNodeId1 = value; } }
         public int CreatedFromRefNodeId2 { get { return _createdFromRefNodeId2; } set { _createdFromRefNodeId2 = value; } }
         public string RefNodeSetName { get { return _refNodeSetName; } set { _refNodeSetName = value; } }

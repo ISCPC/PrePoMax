@@ -19,7 +19,6 @@ namespace UserControls
         protected string _stepName;
         protected bool _hideOnClose;
         protected bool _addNew;
-        protected bool _selectedPropertyGridItemChangedEventActive;
 
 
         // Properties                                                                                                               
@@ -38,12 +37,11 @@ namespace UserControls
         public FrmProperties(double labelRatio)
         {
             InitializeComponent();
-
+            //
             _controller_SelectionClear = null;
             _hideOnClose = true;
             _addNew = true;
-            _selectedPropertyGridItemChangedEventActive = false;
-
+            //
             propertyGrid.SetParent(this);   // for the Tab key to work
             propertyGrid.SetLabelColumnWidth(labelRatio);
         }
@@ -65,7 +63,7 @@ namespace UserControls
         {
             try
             {
-                if (_selectedPropertyGridItemChangedEventActive) OnPropertyGridSelectedGridItemChanged();
+                OnPropertyGridSelectedGridItemChanged();
             }
             catch (Exception ex)
             {

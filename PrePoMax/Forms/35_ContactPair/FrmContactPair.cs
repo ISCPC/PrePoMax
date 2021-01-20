@@ -34,8 +34,6 @@ namespace PrePoMax.Forms
             //
             _controller = controller;
             _viewContactPair = null;
-            //
-            _selectedPropertyGridItemChangedEventActive = true;
         }
         private void InitializeComponent()
         {
@@ -96,6 +94,7 @@ namespace PrePoMax.Forms
             else if (_propertyItemChanged)
             {
                 _controller.ReplaceContactPairCommand(_contactPairToEditName, cp);
+                _contactPairToEditName = null; // prevents the execution of toInternal in OnHideOrClose
             }
             // Convert the constraint from internal to show it
             else
@@ -116,8 +115,6 @@ namespace PrePoMax.Forms
         }       
         protected override bool OnPrepareForm(string stepName, string contactPairToEditName)
         {
-            // To prevent clear of the selection
-            _selectedPropertyGridItemChangedEventActive = false;
             this.btnOkAddNew.Visible = contactPairToEditName == null;
             //
             _propertyItemChanged = false;
@@ -183,8 +180,6 @@ namespace PrePoMax.Forms
                 propertyGrid.SelectedObject = _viewContactPair;
                 propertyGrid.Select();
             }
-            _selectedPropertyGridItemChangedEventActive = true;
-            //
             ShowHideSelectionForm();
             //
             HighlightContactPair(); // must be here if called from the menu

@@ -39,8 +39,6 @@ namespace PrePoMax.Forms
             //
             _controller = controller;
             _viewSection = null;
-            //
-            _selectedPropertyGridItemChangedEventActive = true;
         }
         private void InitializeComponent()
         {
@@ -65,7 +63,7 @@ namespace PrePoMax.Forms
         {
             _controller.ClearAllSelection();    // clears all selected items
             //
-            if (lvTypes.Enabled && lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)
+            if (lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)
             {
                 object itemTag = lvTypes.SelectedItems[0].Tag;
                 if (itemTag is ViewError) 
@@ -141,8 +139,6 @@ namespace PrePoMax.Forms
         }
         protected override bool OnPrepareForm(string stepName, string sectionToEditName)
         {
-            // To prevent clear of the selection
-            _selectedPropertyGridItemChangedEventActive = false;
             this.btnOkAddNew.Visible = sectionToEditName == null;
             //
             _propertyItemChanged = false;
@@ -167,17 +163,14 @@ namespace PrePoMax.Forms
             {
                 lvTypes.Enabled = true;
                 _viewSection = null;
-                // Choose one - this is not needed if the user chooses
-                if (lvTypes.Items.Count == 1)
+                //
+                HashSet<PartType> partTypes = new HashSet<PartType>();
+                foreach (var entry in _controller.Model.Mesh.Parts) partTypes.Add(entry.Value.PartType);
+                if (partTypes.Count == 1)
                 {
-                    lvTypes.Items[0].Selected = true;
-                    // ??? The code in the previous line does not call OnListViewTypeSelectedIndexChanged ???
-                    if (lvTypes.Items[0].Tag is ViewSection vs)
-                    {
-                        _viewSection = vs;                          // ??? repeate ???
-                        propertyGrid.SelectedObject = _viewSection; // ??? repeate ???
-                        propertyGrid.Select();                      // ??? repeate ???
-                    }
+                    if (partTypes.First() == PartType.Solid) _preselectIndex = 0;
+                    else if (partTypes.First() == PartType.Shell) _preselectIndex = 1;
+                    else throw new NotSupportedException();
                 }
             }
             // Edit existing section
@@ -185,16 +178,11 @@ namespace PrePoMax.Forms
             {
                 Section = _controller.GetSection(_sectionToEditName); // to clone
                 if (Section.CreationData != null) Section.RegionType = RegionTypeEnum.Selection;
-                // Select the appropriate constraint in the list view - disable event SelectedIndexChanged
-                _lvTypesSelectedIndexChangedEventActive = false;
-                if (_viewSection is ViewSolidSection) lvTypes.Items[0].Selected = true;
-                else if (_viewSection is ViewShellSection) lvTypes.Items[1].Selected = true;
-                else throw new NotSupportedException();
-                lvTypes.Enabled = false;
-                _lvTypesSelectedIndexChangedEventActive = true;
                 //
+                int selectedId;
                 if (_viewSection is ViewSolidSection vss)
                 {
+                    selectedId = 0;
                     // Check for deleted entities
                     CheckMissingValueRef(ref materialNames, vss.MaterialName, s => { vss.MaterialName = s; });
                     if (vss.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
@@ -210,6 +198,7 @@ namespace PrePoMax.Forms
                 }
                 else if (_viewSection is ViewShellSection vshs)
                 {
+                    selectedId = 1;
                     // Check for deleted entities
                     CheckMissingValueRef(ref materialNames, vshs.MaterialName, s => { vshs.MaterialName = s; });
                     if (vshs.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
@@ -225,11 +214,9 @@ namespace PrePoMax.Forms
                 }
                 else throw new NotSupportedException();
                 //
-                propertyGrid.SelectedObject = _viewSection;
-                propertyGrid.Select();
+                lvTypes.Items[selectedId].Tag = _viewSection;
+                _preselectIndex = selectedId;
             }
-            _selectedPropertyGridItemChangedEventActive = true;
-            //
             ShowHideSelectionForm();
             //
             HighlightSection(); // must be here if called from the menu
@@ -294,10 +281,12 @@ namespace PrePoMax.Forms
                     {
                         if (Section.CreationIds != null)
                         {
+                            int partId;
                             BasePart part;
-                            int[] partIds = Section.CreationIds;
-                            foreach (int partId in partIds)
+                            int[] geometryIds = Section.CreationIds;
+                            foreach (int geometryId in geometryIds)
                             {
+                                partId = FeMesh.GetItemTypePartIdsFromGeometryId(geometryId)[2];
                                 part = _controller.Model.Mesh.GetPartById(partId);
                                 if (part == null) { }
                                 else if (Section is SolidSection && part.PartType != PartType.Solid) return false;

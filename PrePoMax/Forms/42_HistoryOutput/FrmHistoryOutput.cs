@@ -39,8 +39,6 @@ namespace PrePoMax.Forms
             //
             _controller = controller;
             _viewHistoryOutput = null;
-            //
-            _selectedPropertyGridItemChangedEventActive = true;
         }
         private void InitializeComponent()
         {
@@ -81,7 +79,7 @@ namespace PrePoMax.Forms
         // Overrides                                                                                                                
         protected override void OnListViewTypeSelectedIndexChanged()
         {
-            if (lvTypes.Enabled && lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)
+            if (lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)
             {
                 object itemTag = lvTypes.SelectedItems[0].Tag;
                 if (itemTag is ViewError)  _viewHistoryOutput = null;
@@ -167,8 +165,6 @@ namespace PrePoMax.Forms
         }
         protected override bool OnPrepareForm(string stepName, string historyToOutputToEditName)
         {
-            // To prevent clear of the selection
-            _selectedPropertyGridItemChangedEventActive = false;
             this.btnOkAddNew.Visible = historyToOutputToEditName == null;
             //
             _propertyItemChanged = false;
@@ -204,18 +200,11 @@ namespace PrePoMax.Forms
                 // Get and convert a converted load back to selection
                 HistoryOutput = _controller.GetHistoryOutput(_stepName, _historyOutputToEditName); // to clone
                 if (HistoryOutput.CreationData != null) HistoryOutput.RegionType = RegionTypeEnum.Selection;
-                // Select the appropriate history output in the list view - disable event SelectedIndexChanged
-                _lvTypesSelectedIndexChangedEventActive = false;
-                if (_viewHistoryOutput is ViewNodalHistoryOutput) lvTypes.Items[0].Selected = true;
-                else if (_viewHistoryOutput is ViewElementHistoryOutput) lvTypes.Items[1].Selected = true;
-                else if (_viewHistoryOutput is ViewContactHistoryOutput) lvTypes.Items[2].Selected = true;
-                else throw new NotSupportedException();
                 //
-                lvTypes.Enabled = false;
-                _lvTypesSelectedIndexChangedEventActive = true;
-                //
+                int selectedId;
                 if (_viewHistoryOutput is ViewNodalHistoryOutput vnho)
                 {
+                    selectedId = 0;
                     // Check for deleted entities
                     if (vnho.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else if (vnho.RegionType == RegionTypeEnum.NodeSetName.ToFriendlyString())
@@ -230,6 +219,7 @@ namespace PrePoMax.Forms
                 }
                 else if (_viewHistoryOutput is ViewElementHistoryOutput veho)
                 {
+                    selectedId = 1;
                     // Check for deleted entities
                     if (veho.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else if (veho.RegionType == RegionTypeEnum.ElementSetName.ToFriendlyString())
@@ -238,9 +228,9 @@ namespace PrePoMax.Forms
                     //
                     veho.PopululateDropDownLists(elementSetNames);
                 }
-
                 else if (_viewHistoryOutput is ViewContactHistoryOutput vcho)
                 {
+                    selectedId = 2;
                     // Check for deleted entities
                     CheckMissingValueRef(ref contactPairNames, vcho.ContactPairName, s => { vcho.ContactPairName = s; });
                     //
@@ -248,11 +238,9 @@ namespace PrePoMax.Forms
                 }
                 else throw new NotSupportedException();
                 //
-                propertyGrid.SelectedObject = _viewHistoryOutput;
-                propertyGrid.Select();
+                lvTypes.Items[selectedId].Tag = _viewHistoryOutput;
+                _preselectIndex = selectedId;
             }
-            _selectedPropertyGridItemChangedEventActive = true;
-            //
             ShowHideSelectionForm();
             //
             HighlightHistoryOutput(); // must be here if called from the menu

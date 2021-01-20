@@ -24,7 +24,28 @@ namespace CaeModel
             _steps = new List<Step>();
         }
 
-        // Methods                                                                                                                         
+
+        // Static Methods                                                                                                           
+        public static bool MultiRegionChanged(IMultiRegion oldRegion, IMultiRegion newRegion)
+        {
+            if (newRegion.RegionType == RegionTypeEnum.Selection &&
+                newRegion.CreationIds.Length == oldRegion.CreationIds.Length &&
+                newRegion.CreationIds.Except(oldRegion.CreationIds).Count() == 0)
+            {
+                // Region remained the same
+                newRegion.RegionName = oldRegion.RegionName;
+                newRegion.RegionType = oldRegion.RegionType;
+                return false;
+            }
+            else
+            {
+                // Region changed
+                return true;
+            }
+        }
+        
+        
+        // Methods                                                                                                                  
         public void AddStep(Step step, bool copyBCsAndLoads = true)
         {
             if (copyBCsAndLoads && _steps.Count >= 1)
@@ -81,6 +102,7 @@ namespace CaeModel
             //
             return stepToRemove;
         }
+        
         // History
         public void AddHistoryOutput(HistoryOutput historyOutput, string stepName)
         {

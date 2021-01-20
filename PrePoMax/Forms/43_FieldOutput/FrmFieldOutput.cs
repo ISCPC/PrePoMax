@@ -81,7 +81,7 @@ namespace PrePoMax.Forms
         // Overrides                                                                                                                
         protected override void OnListViewTypeSelectedIndexChanged()
         {
-            if (lvTypes.Enabled && lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)
+            if (lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)
             {
                 propertyGrid.SelectedObject = lvTypes.SelectedItems[0].Tag;
                 propertyGrid.Select();
@@ -136,17 +136,15 @@ namespace PrePoMax.Forms
             else
             {
                 FieldOutput = _controller.GetFieldOutput(_stepName, fieldOutputToEditName); // to clone
-                // Select the appropriate constraint in the list view - disable event SelectedIndexChanged
-                _lvTypesSelectedIndexChangedEventActive = false;
-                if (_viewFieldOutput.Base is NodalFieldOutput) lvTypes.Items[0].Selected = true;
-                else if (_viewFieldOutput.Base is ElementFieldOutput) lvTypes.Items[1].Selected = true;
-                else if (_viewFieldOutput.Base is ContactFieldOutput) lvTypes.Items[2].Selected = true;
-                else throw new NotSupportedException();
-                lvTypes.Enabled = false;
-                _lvTypesSelectedIndexChangedEventActive = true;
                 //
-                propertyGrid.SelectedObject = _viewFieldOutput;
-                propertyGrid.Select();
+                int selectedId;
+                if (_viewFieldOutput.Base is NodalFieldOutput) selectedId = 0;
+                else if (_viewFieldOutput.Base is ElementFieldOutput) selectedId = 1;
+                else if (_viewFieldOutput.Base is ContactFieldOutput) selectedId = 2;
+                else throw new NotSupportedException();
+                //
+                lvTypes.Items[selectedId].Tag = _viewFieldOutput;
+                _preselectIndex = selectedId;
             }
             //
             _controller.SetSelectByToOff();

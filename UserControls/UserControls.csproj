@@ -352,6 +352,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="License-LGPL.txt" />
+    <None Include="Resources\Hide2.ico" />
     <None Include="Resources\Close_White.ico" />
     <None Include="Resources\Close_Red1.ico" />
     <None Include="Resources\Close_Red.ico" />

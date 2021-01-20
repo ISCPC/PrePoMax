@@ -39,8 +39,6 @@ namespace PrePoMax.Forms
             //
             _controller = controller;
             _viewBc = null;
-            //
-            _selectedPropertyGridItemChangedEventActive = true;
         }
         private void InitializeComponent()
         {
@@ -179,6 +177,7 @@ namespace PrePoMax.Forms
             else if (_propertyItemChanged)
             {
                 _controller.ReplaceBoundaryConditionCommand(_stepName, _boundaryConditionToEditName, BoundaryCondition);
+                _boundaryConditionToEditName = null; // prevents the execution of toInternal in OnHideOrClose
             }
             // Convert the boundary condition from internal to show it
             else
@@ -199,8 +198,6 @@ namespace PrePoMax.Forms
         }
         protected override bool OnPrepareForm(string stepName, string boundaryConditionToEditName)
         {
-            // To prevent clear of the selection
-            _selectedPropertyGridItemChangedEventActive = false;
             this.btnOkAddNew.Visible = boundaryConditionToEditName == null;
             //
             _propertyItemChanged = false;
@@ -223,7 +220,7 @@ namespace PrePoMax.Forms
             if (referencePointNames == null) referencePointNames = new string[0];
             //
             if (_boundaryConditionNames == null)
-                throw new CaeGlobals.CaeException("The boundary condition names must be defined first.");
+                throw new CaeException("The boundary condition names must be defined first.");
             // Populate list view
             PopulateListOfBCs(nodeSetNames, surfaceNames, referencePointNames);
             // Create new boundary condition
@@ -237,22 +234,14 @@ namespace PrePoMax.Forms
             {
                 // Get and convert a converted load back to selection
                 BoundaryCondition = _controller.GetBoundaryCondition(stepName, _boundaryConditionToEditName); // to clone
+                if (BoundaryCondition.CreationData != null) BoundaryCondition.RegionType = RegionTypeEnum.Selection;
                 // Convert the boundary condition to internal to hide it
                 BoundaryConditionInternal(true);
                 //
-                if (BoundaryCondition.CreationData != null) BoundaryCondition.RegionType = RegionTypeEnum.Selection;
-                // Select the appropriate boundary condition in the list view - disable event SelectedIndexChanged
-                _lvTypesSelectedIndexChangedEventActive = false;
-                if (_viewBc is ViewFixedBC) lvTypes.Items[0].Selected = true;
-                else if (_viewBc is ViewDisplacementRotation) lvTypes.Items[1].Selected = true;
-                else if (_viewBc is ViewSubmodelBC) lvTypes.Items[2].Selected = true;
-                else throw new NotSupportedException();
-                //
-                lvTypes.Enabled = false;
-                _lvTypesSelectedIndexChangedEventActive = true;
-                //
+                int selectedId;
                 if (_viewBc is ViewFixedBC fix)
                 {
+                    selectedId = 0;
                     // Check for deleted entities
                     if (fix.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else if (fix.RegionType == RegionTypeEnum.NodeSetName.ToFriendlyString())
@@ -267,6 +256,7 @@ namespace PrePoMax.Forms
                 }
                 else if (_viewBc is ViewDisplacementRotation vdr)
                 {
+                    selectedId = 1;
                     // Check for deleted entities
                     if (vdr.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else if (vdr.RegionType == RegionTypeEnum.NodeSetName.ToFriendlyString())
@@ -281,6 +271,7 @@ namespace PrePoMax.Forms
                 }
                 else if (_viewBc is ViewSubmodelBC vsm)
                 {
+                    selectedId = 2;
                     // Check for deleted entities
                     if (vsm.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else if (vsm.RegionType == RegionTypeEnum.NodeSetName.ToFriendlyString())
@@ -293,11 +284,9 @@ namespace PrePoMax.Forms
                 }
                 else throw new NotSupportedException();
                 //
-                propertyGrid.SelectedObject = _viewBc;
-                propertyGrid.Select();
+                lvTypes.Items[selectedId].Tag = _viewBc;
+                _preselectIndex = selectedId;
             }
-            _selectedPropertyGridItemChangedEventActive = true;
-            //
             ShowHideSelectionForm();
             //
             HighlightBoundaryCondition(); // must be here if called from the menu

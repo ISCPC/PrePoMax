@@ -47,8 +47,6 @@ namespace PrePoMax.Forms
             _controller = controller;
             _viewLoad = null;
             //
-            _selectedPropertyGridItemChangedEventActive = true;
-            //
             this.Height = 640 + 3 * 19;
         }
         private void InitializeComponent()
@@ -102,7 +100,7 @@ namespace PrePoMax.Forms
         // Overrides                                                                                                                
         protected override void OnListViewTypeSelectedIndexChanged()
         {
-            if (lvTypes.Enabled && lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)
+            if (lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)
             {
                 object itemTag = lvTypes.SelectedItems[0].Tag;
                 _controller.Selection.LimitSelectionToFirstGeometryType = false;
@@ -258,6 +256,7 @@ namespace PrePoMax.Forms
             else if (_propertyItemChanged)
             {
                 _controller.ReplaceLoadCommand(_stepName, _loadToEditName, FELoad);
+                _loadToEditName = null; // prevents the execution of toInternal in OnHideOrClose
             }
             // Convert the load from internal to show it
             else
@@ -282,8 +281,6 @@ namespace PrePoMax.Forms
         }
         protected override bool OnPrepareForm(string stepName, string loadToEditName)
         {
-            // To prevent clear of the selection
-            _selectedPropertyGridItemChangedEventActive = false;                             
             this.btnOkAddNew.Visible = loadToEditName == null;
             // Clear
             _propertyItemChanged = false;
@@ -331,27 +328,14 @@ namespace PrePoMax.Forms
             {
                 // Get and convert a converted load back to selection
                 FELoad = _controller.GetLoad(stepName, _loadToEditName); // to clone
+                if (FELoad.CreationData != null) FELoad.RegionType = RegionTypeEnum.Selection;
                 // Convert the load to internal to hide it
                 LoadInternal(true);
                 //
-                if (FELoad.CreationData != null) FELoad.RegionType = RegionTypeEnum.Selection;
-                // Select the appropriate load in the list view - disable event SelectedIndexChanged
-                _lvTypesSelectedIndexChangedEventActive = false;
-                if (_viewLoad is ViewCLoad) lvTypes.Items[0].Selected = true;
-                else if (_viewLoad is ViewMomentLoad) lvTypes.Items[1].Selected = true;
-                else if (_viewLoad is ViewDLoad) lvTypes.Items[2].Selected = true;
-                else if (_viewLoad is ViewSTLoad) lvTypes.Items[3].Selected = true;
-                else if (_viewLoad is ViewShellEdgeLoad) lvTypes.Items[4].Selected = true;
-                else if (_viewLoad is ViewGravityLoad) lvTypes.Items[5].Selected = true;
-                else if (_viewLoad is ViewCentrifLoad) lvTypes.Items[6].Selected = true;
-                else if (_viewLoad is ViewPreTensionLoad) lvTypes.Items[7].Selected = true;
-                else throw new NotSupportedException();
-                //
-                lvTypes.Enabled = false;
-                _lvTypesSelectedIndexChangedEventActive = true;
-                //
+                int selectedId;
                 if (_viewLoad is ViewCLoad vcl)
                 {
+                    selectedId = 0;
                     // Check for deleted regions
                     if (vcl.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else if (vcl.RegionType == RegionTypeEnum.NodeSetName.ToFriendlyString())
@@ -364,6 +348,7 @@ namespace PrePoMax.Forms
                 }
                 else if (_viewLoad is ViewMomentLoad vml)
                 {
+                    selectedId = 1;
                     // Check for deleted regions
                     if (vml.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else if (vml.RegionType == RegionTypeEnum.NodeSetName.ToFriendlyString())
@@ -376,6 +361,7 @@ namespace PrePoMax.Forms
                 }
                 else if (_viewLoad is ViewDLoad vdl)
                 {
+                    selectedId = 2;
                     // Check for deleted regions
                     if (vdl.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else if (vdl.RegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
@@ -386,6 +372,7 @@ namespace PrePoMax.Forms
                 }
                 else if (_viewLoad is ViewSTLoad vstl)
                 {
+                    selectedId = 3;
                     // Check for deleted regions
                     if (vstl.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else if (vstl.RegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
@@ -396,6 +383,7 @@ namespace PrePoMax.Forms
                 }
                 else if (_viewLoad is ViewShellEdgeLoad vsel)
                 {
+                    selectedId = 4;
                     // Check for deleted regions
                     if (vsel.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else if (vsel.RegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
@@ -406,6 +394,7 @@ namespace PrePoMax.Forms
                 }
                 else if (_viewLoad is ViewGravityLoad vgl)
                 {
+                    selectedId = 5;
                     // Check for deleted regions
                     if (vgl.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else if (vgl.RegionType == RegionTypeEnum.PartName.ToFriendlyString())
@@ -418,6 +407,7 @@ namespace PrePoMax.Forms
                 }
                 else if (_viewLoad is ViewCentrifLoad vcfl)
                 {
+                    selectedId = 6;
                     // Check for deleted regions
                     if (vcfl.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else if (vcfl.RegionType == RegionTypeEnum.PartName.ToFriendlyString())
@@ -430,6 +420,7 @@ namespace PrePoMax.Forms
                 }
                 else if (_viewLoad is ViewPreTensionLoad vptl)
                 {
+                    selectedId = 7;
                     // Check for deleted regions
                     if (vptl.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else if (vptl.RegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
@@ -440,11 +431,9 @@ namespace PrePoMax.Forms
                 }
                 else throw new NotSupportedException();
                 //
-                propertyGrid.SelectedObject = _viewLoad;
-                propertyGrid.Select();
+                lvTypes.Items[selectedId].Tag = _viewLoad;
+                _preselectIndex = selectedId;
             }
-            _selectedPropertyGridItemChangedEventActive = true;
-            //
             ShowHideSelectionForm();
             //
             HighlightLoad(); // must be here if called from the menu

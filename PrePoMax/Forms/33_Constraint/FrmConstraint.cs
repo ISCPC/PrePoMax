@@ -43,8 +43,6 @@ namespace PrePoMax.Forms
             //
             _controller = controller;
             _viewConstraint = null;
-            //
-            _selectedPropertyGridItemChangedEventActive = true;
         }
         private void InitializeComponent()
         {
@@ -113,7 +111,7 @@ namespace PrePoMax.Forms
         // Overrides                                                                                                                
         protected override void OnListViewTypeSelectedIndexChanged()
         {
-            if (lvTypes.Enabled && lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)
+            if (lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)
             {
                 object itemTag = lvTypes.SelectedItems[0].Tag;
                 if (itemTag is ViewError) _viewConstraint = null;
@@ -178,6 +176,7 @@ namespace PrePoMax.Forms
             else if (_propertyItemChanged)
             {
                 _controller.ReplaceConstraintCommand(_constraintToEditName, Constraint);
+                _constraintToEditName = null; // prevents the execution of toInternal in OnHideOrClose
             }
             // Convert the constraint from internal to show it
             else
@@ -198,8 +197,6 @@ namespace PrePoMax.Forms
         }
         protected override bool OnPrepareForm(string stepName, string constraintToEditName)
         {
-            // To prevent clear of the selection
-            _selectedPropertyGridItemChangedEventActive = false;
             this.btnOkAddNew.Visible = constraintToEditName == null;
             //
             _propertyItemChanged = false;
@@ -233,25 +230,20 @@ namespace PrePoMax.Forms
             else
             {
                 // Get and convert a converted constraint back to selection
-                Constraint = _controller.GetConstraint(_constraintToEditName); // to clone
-                // Convert the constraint to internal to hide it
-                ConstraintInternal(true);
-                //
+                Constraint = _controller.GetConstraint(_constraintToEditName); // to clone                
                 if (Constraint is RigidBody rb && rb.CreationData != null) rb.RegionType = RegionTypeEnum.Selection;
                 else if (Constraint is Tie tie)
                 {
                     if (tie.MasterCreationData != null) tie.MasterRegionType = RegionTypeEnum.Selection;
                     if (tie.SlaveCreationData != null) tie.SlaveRegionType = RegionTypeEnum.Selection;
                 }
-                // Select the appropriate constraint in the list view - disable event SelectedIndexChanged
-                _lvTypesSelectedIndexChangedEventActive = false;
-                if (_viewConstraint is ViewRigidBody) lvTypes.Items[0].Selected = true;
-                else if (_viewConstraint is ViewTie) lvTypes.Items[1].Selected = true;
-                lvTypes.Enabled = false;
-                _lvTypesSelectedIndexChangedEventActive = true;
+                // Convert the constraint to internal to hide it
+                ConstraintInternal(true);
                 //
+                int selectedId;
                 if (_viewConstraint is ViewRigidBody vrb)
                 {
+                    selectedId = 0;
                     CheckMissingValueRef(ref referencePointNames, vrb.ReferencePointName, s => { vrb.ReferencePointName = s; });
                     //
                     if (vrb.SlaveRegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
@@ -267,6 +259,7 @@ namespace PrePoMax.Forms
                 }
                 else if (_viewConstraint is ViewTie vt)
                 {
+                    selectedId = 1;
                     // Master
                     if (vt.MasterRegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else CheckMissingValueRef(ref surfaceNames, vt.MasterSurfaceName, s => { vt.MasterSurfaceName = s; });
@@ -280,11 +273,9 @@ namespace PrePoMax.Forms
                 }
                 else throw new NotSupportedException();
                 //
-                propertyGrid.SelectedObject = _viewConstraint;
-                propertyGrid.Select();
+                lvTypes.Items[selectedId].Tag = _viewConstraint;
+                _preselectIndex = selectedId;
             }
-            _selectedPropertyGridItemChangedEventActive = true;
-            //
             ShowHideSelectionForm();
             //
             HighlightConstraint(); // must be here if called from the menu

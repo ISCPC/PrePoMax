@@ -14,11 +14,7 @@ namespace UserControls
     public partial class FrmPropertyListView : FrmProperties
     {
         // Variables                                                                                                                
-        protected bool _lvTypesSelectedIndexChangedEventActive;
-        protected bool _selectPropertyGrid;
         protected int _preselectIndex;
-        protected bool _firstTime;
-        protected bool _callSelectedIndexChangedOnFirstRun;
 
 
         // Constructors                                                                                                             
@@ -35,32 +31,26 @@ namespace UserControls
         {
             InitializeComponent();
             //
-            _lvTypesSelectedIndexChangedEventActive = true;
             _preselectIndex = -1;
-            _firstTime = true;
-            _callSelectedIndexChangedOnFirstRun = false;
         }
 
 
         // Event handlers                                                                                                           
         private void FrmPropertyListView_VisibleChanged(object sender, EventArgs e)
         {
-            if (Visible && _firstTime)
-            {
-                _firstTime = false;
-                if (_callSelectedIndexChangedOnFirstRun) OnListViewTypeSelectedIndexChanged();
-            }
+            if (Visible) OnListViewTypeSelectedIndexChanged();
         }
         private void lvTypes_SelectedIndexChanged(object sender, EventArgs e)
         {
-            try
-            {
-                if (_lvTypesSelectedIndexChangedEventActive) OnListViewTypeSelectedIndexChanged();
-            }
-            catch (Exception ex)
-            {
-                ExceptionTools.Show(this, ex);
-            }
+            OnListViewTypeSelectedIndexChanged();
+            //try
+            //{
+            //    OnListViewTypeSelectedIndexChanged();
+            //}
+            //catch (Exception ex)
+            //{
+            //    ExceptionTools.Show(this, ex);
+            //}
         }
         private void lvTypes_MouseUp(object sender, MouseEventArgs e)
         {
@@ -80,7 +70,6 @@ namespace UserControls
                 lvTypes.Items[_preselectIndex].Selected = true;
                 lvTypes.Enabled = false;
                 _preselectIndex = -1;
-                _callSelectedIndexChangedOnFirstRun = true;
             }
             //
             return result;
