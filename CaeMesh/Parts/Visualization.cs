@@ -240,7 +240,6 @@ namespace CaeMesh
             CompareIntArray comparer = new CompareIntArray();
             CellNeighbour cellNeighbour;
             _cellNeighboursOverCell = new Dictionary<int[], CellNeighbour>(elementIds.Length, comparer);
-
             // Parallelizing this loop does not bring any speedup
             foreach (var id in elementIds)
             {
@@ -248,7 +247,7 @@ namespace CaeMesh
                 {
                     sorted = cell.ToArray();
                     Array.Sort(sorted);
-
+                    //
                     if (_cellNeighboursOverCell.TryGetValue(sorted, out cellNeighbour)) cellNeighbour.Id2 = id;
                     else _cellNeighboursOverCell.Add(sorted, new CellNeighbour(id, -1, cell));
                 }
@@ -516,6 +515,80 @@ namespace CaeMesh
                 }
             }
             return freeNodeIds;
+        }
+        //
+        public Dictionary<int[], CellEdgeData> GetCellEdgeData(Func<int[], ElementFaceType, int[][]> GetVisualizationEdgeCells)
+        {
+            int[][] cells = _cells;
+            CompareIntArray comparer = new CompareIntArray();
+            Dictionary<int[], CellEdgeData> allEdges = new Dictionary<int[], CellEdgeData>(comparer);
+            //
+            int[] key;
+            CellEdgeData data;
+            int[][] cellEdges;
+            //
+            System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
+            watch.Start();
+            // Get all edges
+            for (int i = 0; i < cells.Length; i++)
+            {
+                cellEdges = GetVisualizationEdgeCells(cells[i], ElementFaceType.Face);
+                //
+                foreach (var cellEdge in cellEdges)
+                {
+                    key = cellEdge.ToArray();
+                    Array.Sort(key);
+                    //
+                    if (key[0] == key[1] || (key.Length == 3 && key[1] == key[2]))
+                    {
+                        //manifoldGeometry
+                        continue;
+                    }
+                    //
+                    if (allEdges.TryGetValue(key, out data)) data.CellIds.Add(i);
+                    else allEdges.Add(key, new CellEdgeData() { NodeIds = cellEdge, CellIds = new List<int>() { i } });
+                }
+            }
+            watch.Stop();
+            if (watch.ElapsedMilliseconds > 500)
+                cells = cells;
+            //
+            return allEdges;
+        }
+        public int[] GetFreeEdgeCellIds(Func<int[], ElementFaceType, int[][]> GetVisualizationEdgeCells)
+        {
+            Dictionary<int[], CellEdgeData> allEdges = GetCellEdgeData(GetVisualizationEdgeCells);
+            //
+            int[] key;
+            int edgeCellId = 0;
+            CompareIntArray comparer = new CompareIntArray();
+            Dictionary<int[], int> edgeCellEdgeCellId = new Dictionary<int[], int>(comparer);
+            foreach (var edgeCell in _edgeCells)
+            {
+                key = edgeCell.ToArray();
+                Array.Sort(key);
+                edgeCellEdgeCellId.Add(key, edgeCellId++);
+            }
+            //
+            List<int> freeEdgeCellIds = new List<int>();
+            foreach (var entry in allEdges)
+            {
+                // Free edges
+                if (entry.Value.CellIds.Count == 1) freeEdgeCellIds.Add(edgeCellEdgeCellId[entry.Key]);
+            }
+            //
+            return freeEdgeCellIds.ToArray();
+        }
+        public int[] GetFreeVertexNodeIds(int[] freeEdgeCellIds)
+        {
+            HashSet<int> freeEdgeNodeIds = new HashSet<int>();
+            foreach (var edgeCellId in freeEdgeCellIds) freeEdgeNodeIds.UnionWith(_edgeCells[edgeCellId]);
+            List<int> freeVertexNodeIds = new List<int>();
+            foreach (var nodeId in _vertexNodeIds)
+            {
+                if (freeEdgeNodeIds.Contains(nodeId)) freeVertexNodeIds.Add(nodeId);
+            }
+            return freeVertexNodeIds.ToArray();
         }
         //
         public VisualizationData DeepCopy()

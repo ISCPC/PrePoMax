@@ -692,7 +692,10 @@ namespace PrePoMax
             }
             else if (_controller.CurrentView == ViewGeometryModelResults.Model)
             {
+                ApplyActionOnItemsInStep<HistoryOutput>(items, stepNames, PropagateHistoryOutput);
+                ApplyActionOnItemsInStep<FieldOutput>(items, stepNames, PropagateFieldOutput);
                 ApplyActionOnItemsInStep<BoundaryCondition>(items, stepNames, PropagateBoundaryCondition);
+                ApplyActionOnItemsInStep<Load>(items, stepNames, PropagateLoad);
             }
             else if (_controller.CurrentView == ViewGeometryModelResults.Results)
             {
@@ -3746,6 +3749,17 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
+        private void tsmiPropagateHistoryOutput_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectOneEntity("Steps", _controller.GetAllSteps(), SelectAndPropagateHistoryOutput);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
         private void tsmiDeleteHistoryOutput_Click(object sender, EventArgs e)
         {
             try
@@ -3761,6 +3775,10 @@ namespace PrePoMax
         private void SelectAndEditHistoryOutput(string stepName)
         {
             SelectOneEntityInStep("History outputs", _controller.GetAllHistoryOutputs(stepName), stepName, EditHistoryOutput);
+        }
+        private void SelectAndPropagateHistoryOutput(string stepName)
+        {
+            SelectOneEntityInStep("History outputs", _controller.GetAllHistoryOutputs(stepName), stepName, PropagateHistoryOutput);
         }
         private void SelectAndDeleteHistoryOutputs(string stepName)
         {
@@ -3784,6 +3802,29 @@ namespace PrePoMax
             ItemSetDataEditor.ParentForm = _frmHistoryOutput;
             _frmSelectItemSet.SetOnlyGeometrySelection(false);
             ShowForm(_frmHistoryOutput, "Edit History Output", stepName, historyOutputName);
+        }
+        private void PropagateHistoryOutput(string stepName, string historyOutputName)
+        {
+            bool exists = false;
+            string[] nextStepNames = _controller.Model.StepCollection.GetNextStepNames(stepName);
+            //
+            foreach (var nextStepName in nextStepNames)
+            {
+                if (_controller.Model.StepCollection.GetStep(nextStepName).HistoryOutputs.ContainsKey(historyOutputName))
+                {
+                    exists = true;
+                    break;
+                }
+            }
+            //
+            bool propagate = true;
+            if (exists)
+            {
+                if (MessageBox.Show("OK to overwrite the existing history output " + historyOutputName + "?",
+                                    Globals.ProgramName,
+                                    MessageBoxButtons.OKCancel) == DialogResult.Cancel) propagate = false;
+            }
+            if (propagate) _controller.PropagateHistoryOutputCommand(stepName, historyOutputName);
         }
         private void DeleteHistoryOutputs(string stepName, string[] historyOutputNames)
         {
@@ -3820,6 +3861,17 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
+        private void tsmiPropagateFieldOutput_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectOneEntity("Steps", _controller.GetAllSteps(), SelectAndPropagateFieldOutput);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
         private void tsmiDeleteFieldOutput_Click(object sender, EventArgs e)
         {
             try
@@ -3836,6 +3888,10 @@ namespace PrePoMax
         {
             SelectOneEntityInStep("Field outputs", _controller.GetAllFieldOutputs(stepName), stepName, EditFieldOutput);
         }
+        private void SelectAndPropagateFieldOutput(string stepName)
+        {
+            SelectOneEntityInStep("Field outputs", _controller.GetAllFieldOutputs(stepName), stepName, PropagateFieldOutput);
+        }
         private void SelectAndDeleteFieldOutputs(string stepName)
         {
             SelectMultipleEntitiesInStep("Field outputs", _controller.GetAllFieldOutputs(stepName), stepName, DeleteFieldOutputs);
@@ -3849,6 +3905,29 @@ namespace PrePoMax
         private void EditFieldOutput(string stepName, string fieldOutputName)
         {
             ShowForm(_frmFieldOutput, "Edit Field Output", stepName, fieldOutputName);
+        }
+        private void PropagateFieldOutput(string stepName, string fieldOutputName)
+        {
+            bool exists = false;
+            string[] nextStepNames = _controller.Model.StepCollection.GetNextStepNames(stepName);
+            //
+            foreach (var nextStepName in nextStepNames)
+            {
+                if (_controller.Model.StepCollection.GetStep(nextStepName).FieldOutputs.ContainsKey(fieldOutputName))
+                {
+                    exists = true;
+                    break;
+                }
+            }
+            //
+            bool propagate = true;
+            if (exists)
+            {
+                if (MessageBox.Show("OK to overwrite the existing filed output " + fieldOutputName + "?",
+                                    Globals.ProgramName,
+                                    MessageBoxButtons.OKCancel) == DialogResult.Cancel) propagate = false;
+            }
+            if (propagate) _controller.PropagateFieldOutputCommand(stepName, fieldOutputName);
         }
         private void DeleteFieldOutputs(string stepName, string[] fieldOutputNames)
         {
@@ -4058,6 +4137,17 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
+        private void tsmiPropagateLoad_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectOneEntity("Steps", _controller.GetAllSteps(), SelectAndPropagateLoad);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
         private void tsmiHideLoad_Click(object sender, EventArgs e)
         {
             try
@@ -4096,6 +4186,10 @@ namespace PrePoMax
         {
             SelectOneEntityInStep("Loads", _controller.GetStepLoads(stepName), stepName, EditLoad);
         }
+        private void SelectAndPropagateLoad(string stepName)
+        {
+            SelectOneEntityInStep("Loads", _controller.GetStepLoads(stepName), stepName, PropagateLoad);
+        }
         private void SelectAndHideLoads(string stepName)
         {
             SelectMultipleEntitiesInStep("Loads", _controller.GetStepLoads(stepName), stepName, HideLoads);
@@ -4125,6 +4219,29 @@ namespace PrePoMax
             ItemSetDataEditor.ParentForm = _frmLoad;
             _frmSelectItemSet.SetOnlyGeometrySelection(false);
             ShowForm(_frmLoad, "Edit Load", stepName, loadName);
+        }
+        private void PropagateLoad(string stepName, string loadName)
+        {
+            bool exists = false;
+            string[] nextStepNames = _controller.Model.StepCollection.GetNextStepNames(stepName);
+            //
+            foreach (var nextStepName in nextStepNames)
+            {
+                if (_controller.Model.StepCollection.GetStep(nextStepName).Loads.ContainsKey(loadName))
+                {
+                    exists = true;
+                    break;
+                }
+            }
+            //
+            bool propagate = true;
+            if (exists)
+            {
+                if (MessageBox.Show("OK to overwrite the existing load " + loadName + "?",
+                                    Globals.ProgramName,
+                                    MessageBoxButtons.OKCancel) == DialogResult.Cancel) propagate = false;
+            }
+            if (propagate) _controller.PropagateLoadCommand(stepName, loadName);
         }
         private void HideLoads(string stepName, string[] loadNames)
         {
@@ -6208,6 +6325,6 @@ namespace PrePoMax
             }
         }
 
-       
+      
     }
 }

@@ -10,31 +10,32 @@ using CaeGlobals;
 namespace PrePoMax.Commands
 {
     [Serializable]
-    class CPropagateBC : Command
+    class CPropagateFieldOutput : Command
     {
         // Variables                                                                                                                
         private string _stepName;
-        private string _boundaryConditionName;
+        private string _fieldOutputName;
 
 
         // Constructor                                                                                                              
-        public CPropagateBC(string stepName, string boundaryConditionName)
-            : base("Propagate BC")
+        public CPropagateFieldOutput(string stepName, string fieldOutputName)
+            : base("Propagate field output")
         {
             _stepName = stepName;
-            _boundaryConditionName = boundaryConditionName;
+            _fieldOutputName = fieldOutputName;
         }
 
 
         // Methods                                                                                                                  
         public override bool Execute(Controller receiver)
         {
-            receiver.PropagateBoundaryCondition(_stepName, _boundaryConditionName);
+            receiver.PropagateFieldOutput(_stepName, _fieldOutputName);
             return true;
         }
+
         public override string GetCommandString()
         {
-            return base.GetCommandString() + _stepName + ": " + _boundaryConditionName;
+            return base.GetCommandString() + _stepName + ": " + _fieldOutputName;
         }
     }
 }

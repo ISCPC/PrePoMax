@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace CaeMesh
 {
     [Serializable]
-    class CellEdgeData
+    public class CellEdgeData
     {
         public int[] NodeIds;
         public List<int> CellIds;

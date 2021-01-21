@@ -27,6 +27,7 @@ namespace PrePoMax.Forms
         private bool _hideFormOnOK;
         private SelectGeometryEnum _selectionFilter;
 
+
         // Properties                                                                                                               
         public GeometrySelection GeometrySelection
         {
@@ -75,8 +76,8 @@ namespace PrePoMax.Forms
                 }
                 // Clear items
                 _controller.ClearAllSelection();
-                //_geometrySelection.Clear();
-                //lvItems.Items.Clear();
+                //
+                DialogResult = DialogResult.OK;
                 //
                 if (_hideFormOnOK)
                 {

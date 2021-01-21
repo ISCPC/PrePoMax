@@ -767,8 +767,8 @@ namespace PrePoMax
             if (createdFileNames.Length == 1)
             {
                 string brepFileName = createdFileNames[0];
-                importedPartNames = ImportCompoundPart(brepFileName);
                 HideGeometryParts(partNames);
+                importedPartNames = ImportCompoundPart(brepFileName);
             }
             //
             return importedPartNames;
@@ -1547,7 +1547,7 @@ namespace PrePoMax
             {
                 part = _model.Geometry.Parts[name];
                 part.Visible = false;
-                _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, name, _model.Geometry.Parts[name], null);
+                _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, name, _model.Geometry.Parts[name], null, false);
             }
             _form.HideActors(partNamesToHide.ToArray(), false);
             // Update
@@ -1587,7 +1587,7 @@ namespace PrePoMax
             {
                 part = _model.Geometry.Parts[name];
                 part.Visible = true;
-                _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, name, _model.Geometry.Parts[name], null);
+                _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, name, _model.Geometry.Parts[name], null, false);
             }
             _form.ShowActors(partNamesToShow.ToArray(), false);
             // Update
@@ -4787,6 +4787,11 @@ namespace PrePoMax
             Commands.CReplaceHisotryOutput comm = new Commands.CReplaceHisotryOutput(stepName, oldHistoryOutputName, historyOutput);
             _commands.AddAndExecute(comm);
         }
+        public void PropagateHistoryOutputCommand(string stepName, string historyOutputName)
+        {
+            Commands.CPropagateHisotryOutput comm = new Commands.CPropagateHisotryOutput(stepName, historyOutputName);
+            _commands.AddAndExecute(comm);
+        }
         public void RemoveHistoryOutputsForStepCommand(string stepName, string[] historyOutputNames)
         {
             Commands.CRemoveHistoryOutputs comm = new Commands.CRemoveHistoryOutputs(stepName, historyOutputNames);
@@ -4809,7 +4814,7 @@ namespace PrePoMax
                 ConvertSelectionBasedHistoryOutput(historyOutput);
             //
             _model.StepCollection.GetStep(stepName).HistoryOutputs.Add(historyOutput.Name, historyOutput);
-            _form.AddTreeNode(ViewGeometryModelResults.Results, historyOutput, stepName);
+            _form.AddTreeNode(ViewGeometryModelResults.Model, historyOutput, stepName);
             //
             CheckAndUpdateValidity();
         }
@@ -4834,6 +4839,19 @@ namespace PrePoMax
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldHistoryOutputName, historyOutput, stepName);
             //
             CheckAndUpdateValidity();
+        }
+        public void PropagateHistoryOutput(string stepName, string historyOutputName)
+        {
+            string[] nextStepNames = _model.StepCollection.GetNextStepNames(stepName);
+            HistoryOutput historyOutput = GetHistoryOutput(stepName, historyOutputName).DeepClone();
+            foreach (var nextStepName in nextStepNames)
+            {
+                if (_model.StepCollection.GetStep(nextStepName).HistoryOutputs.ContainsKey(historyOutputName))
+                    ReplaceHistoryOutput(nextStepName, historyOutputName, historyOutput);
+                else
+                    AddHistoryOutput(nextStepName, historyOutput);
+            }
+            
         }
         public void ActivateDeactivateHistoryOutput(string stepName, string historyOutputName, bool active)
         {
@@ -4923,6 +4941,11 @@ namespace PrePoMax
             Commands.CReplaceFieldOutput comm = new Commands.CReplaceFieldOutput(stepName, oldFieldOutputName, fieldOutput);
             _commands.AddAndExecute(comm);
         }
+        public void PropagateFieldOutputCommand(string stepName, string fieldOutputName)
+        {
+            Commands.CPropagateFieldOutput comm = new Commands.CPropagateFieldOutput(stepName, fieldOutputName);
+            _commands.AddAndExecute(comm);
+        }
         public void RemoveFieldOutputsForStepCommand(string stepName, string[] fieldOutputNames)
         {
             Commands.CRemoveFieldOutputs comm = new Commands.CRemoveFieldOutputs(stepName, fieldOutputNames);
@@ -4942,7 +4965,7 @@ namespace PrePoMax
         public void AddFieldOutput(string stepName, FieldOutput fieldOutput)
         {
             _model.StepCollection.GetStep(stepName).FieldOutputs.Add(fieldOutput.Name, fieldOutput);
-            _form.AddTreeNode(ViewGeometryModelResults.Results, fieldOutput, stepName);
+            _form.AddTreeNode(ViewGeometryModelResults.Model, fieldOutput, stepName);
 
             CheckAndUpdateValidity();
         }
@@ -4961,6 +4984,18 @@ namespace PrePoMax
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldFieldOutputName, fieldOutput, stepName);
             //
             CheckAndUpdateValidity();
+        }
+        public void PropagateFieldOutput(string stepName, string fieldOutputName)
+        {
+            string[] nextStepNames = _model.StepCollection.GetNextStepNames(stepName);
+            FieldOutput fieldOutput = GetFieldOutput(stepName, fieldOutputName).DeepClone();
+            foreach (var nextStepName in nextStepNames)
+            {
+                if (_model.StepCollection.GetStep(nextStepName).FieldOutputs.ContainsKey(fieldOutputName))
+                    ReplaceFieldOutput(nextStepName, fieldOutputName, fieldOutput);
+                else
+                    AddFieldOutput(nextStepName, fieldOutput);
+            }
         }
         public void ActivateDeactivateFieldOutput(string stepName, string fieldOutputName, bool active)
         {
@@ -4997,6 +5032,11 @@ namespace PrePoMax
             Commands.CReplaceBC comm = new Commands.CReplaceBC(stepName, oldBoundaryConditionName, boundaryCondition);
             _commands.AddAndExecute(comm);
         }
+        public void PropagateBoundaryConditionCommand(string stepName, string boundaryConditionName)
+        {
+            Commands.CPropagateBC comm = new Commands.CPropagateBC(stepName, boundaryConditionName);
+            _commands.AddAndExecute(comm);
+        }
         public void HideBoundaryConditionCommand(string stepName, string[] boundaryConditionNames)
         {
             Commands.CHideBCs comm = new Commands.CHideBCs(stepName, boundaryConditionNames);
@@ -5005,11 +5045,6 @@ namespace PrePoMax
         public void ShowBoundaryConditionCommand(string stepName, string[] boundaryConditionNames)
         {
             Commands.CShowBCs comm = new Commands.CShowBCs(stepName, boundaryConditionNames);
-            _commands.AddAndExecute(comm);
-        }
-        public void PropagateBoundaryConditionCommand(string stepName, string boundaryConditionName)
-        {
-            Commands.CPropagateBC comm = new Commands.CPropagateBC(stepName, boundaryConditionName);
             _commands.AddAndExecute(comm);
         }
         public void RemoveBoundaryConditionsCommand(string stepName, string[] boundaryConditionNames)
@@ -5024,6 +5059,15 @@ namespace PrePoMax
         {
             return _model.StepCollection.GetAllBoundaryConditionNames();
         }
+        public BoundaryCondition GetBoundaryCondition(string stepName, string boundaryConditionName)
+        {
+            return _model.StepCollection.GetStep(stepName).BoundaryConditions[boundaryConditionName];
+        }
+        public BoundaryCondition[] GetStepBoundaryConditions(string stepName)
+        {
+            return _model.StepCollection.GetStep(stepName).BoundaryConditions.Values.ToArray();
+        }
+        //
         public void AddBoundaryCondition(string stepName, BoundaryCondition boundaryCondition)
         {
             if (!_model.StepCollection.MulitRegionSelectionExists(stepName, boundaryCondition))
@@ -5034,33 +5078,6 @@ namespace PrePoMax
             _form.AddTreeNode(ViewGeometryModelResults.Model, boundaryCondition, stepName);
             //
             FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
-        }
-        public BoundaryCondition GetBoundaryCondition(string stepName, string boundaryConditionName)
-        {
-            return _model.StepCollection.GetStep(stepName).BoundaryConditions[boundaryConditionName];
-        }
-        public BoundaryCondition[] GetStepBoundaryConditions(string stepName)
-        {
-            return _model.StepCollection.GetStep(stepName).BoundaryConditions.Values.ToArray();
-        }
-        //
-        public void HideBoundaryConditions(string stepName, string[] boundaryConditionNames)
-        {
-            foreach (var name in boundaryConditionNames)
-            {
-                _model.StepCollection.GetStep(stepName).BoundaryConditions[name].Visible = false;
-                _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.StepCollection.GetStep(stepName).BoundaryConditions[name], stepName);
-            }
-            FeModelUpdate(UpdateType.RedrawSymbols);
-        }
-        public void ShowBoundaryConditions(string stepName, string[] boundaryConditionNames)
-        {
-            foreach (var name in boundaryConditionNames)
-            {
-                _model.StepCollection.GetStep(stepName).BoundaryConditions[name].Visible = true;
-                _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.StepCollection.GetStep(stepName).BoundaryConditions[name], stepName);
-            }
-            FeModelUpdate(UpdateType.RedrawSymbols);
         }
         public void ReplaceBoundaryCondition(string stepName, string oldBoundaryConditionName,
                                              BoundaryCondition boundaryCondition)
@@ -5082,17 +5099,32 @@ namespace PrePoMax
         public void PropagateBoundaryCondition(string stepName, string boundaryConditionName)
         {
             string[] nextStepNames = _model.StepCollection.GetNextStepNames(stepName);
-            if (nextStepNames != null)
+            BoundaryCondition boundaryCondition = GetBoundaryCondition(stepName, boundaryConditionName).DeepClone();
+            foreach (var nextStepName in nextStepNames)
             {
-                BoundaryCondition bc = _model.StepCollection.GetStep(stepName).BoundaryConditions[boundaryConditionName].DeepClone();
-                foreach (var nextStepName in nextStepNames)
-                {
-                    if (_model.StepCollection.GetStep(nextStepName).BoundaryConditions.ContainsKey(boundaryConditionName))
-                        ReplaceBoundaryCondition(nextStepName, boundaryConditionName, bc);
-                    else
-                        AddBoundaryCondition(nextStepName, bc);
-                }
+                if (_model.StepCollection.GetStep(nextStepName).BoundaryConditions.ContainsKey(boundaryConditionName))
+                    ReplaceBoundaryCondition(nextStepName, boundaryConditionName, boundaryCondition);
+                else
+                    AddBoundaryCondition(nextStepName, boundaryCondition);
             }
+        }
+        public void HideBoundaryConditions(string stepName, string[] boundaryConditionNames)
+        {
+            foreach (var name in boundaryConditionNames)
+            {
+                _model.StepCollection.GetStep(stepName).BoundaryConditions[name].Visible = false;
+                _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.StepCollection.GetStep(stepName).BoundaryConditions[name], stepName);
+            }
+            FeModelUpdate(UpdateType.RedrawSymbols);
+        }
+        public void ShowBoundaryConditions(string stepName, string[] boundaryConditionNames)
+        {
+            foreach (var name in boundaryConditionNames)
+            {
+                _model.StepCollection.GetStep(stepName).BoundaryConditions[name].Visible = true;
+                _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.StepCollection.GetStep(stepName).BoundaryConditions[name], stepName);
+            }
+            FeModelUpdate(UpdateType.RedrawSymbols);
         }
         public void ActivateDeactivateBoundaryCondition(string stepName, string boundaryConditionName, bool active)
         {
@@ -5169,6 +5201,16 @@ namespace PrePoMax
             Commands.CAddLoad comm = new Commands.CAddLoad(stepName, load);
             _commands.AddAndExecute(comm);
         }
+        public void ReplaceLoadCommand(string stepName, string oldLoadName, Load load)
+        {
+            Commands.CReplaceLoad comm = new Commands.CReplaceLoad(stepName, oldLoadName, load);
+            _commands.AddAndExecute(comm);
+        }
+        public void PropagateLoadCommand(string stepName, string loadName)
+        {
+            Commands.CPropagateLoad comm = new Commands.CPropagateLoad(stepName, loadName);
+            _commands.AddAndExecute(comm);
+        }
         public void HideLoadsCommand(string stepName, string[] loadNames)
         {
             Commands.CHideLoads comm = new Commands.CHideLoads(stepName, loadNames);
@@ -5177,11 +5219,6 @@ namespace PrePoMax
         public void ShowLoadsCommand(string stepName, string[] loadNames)
         {
             Commands.CShowLoads comm = new Commands.CShowLoads(stepName, loadNames);
-            _commands.AddAndExecute(comm);
-        }
-        public void ReplaceLoadCommand(string stepName, string oldLoadName, Load load)
-        {
-            Commands.CReplaceLoad comm = new Commands.CReplaceLoad(stepName, oldLoadName, load);
             _commands.AddAndExecute(comm);
         }
         public void RemoveLoadsCommand(string stepName, string[] loadNames)
@@ -5196,6 +5233,15 @@ namespace PrePoMax
         {
             return _model.StepCollection.GetAllLoadNames();
         }
+        public Load GetLoad(string stepName, string loadName)
+        {
+            return _model.StepCollection.GetStep(stepName).Loads[loadName];
+        }
+        public Load[] GetStepLoads(string stepName)
+        {
+            return _model.StepCollection.GetStep(stepName).Loads.Values.ToArray();
+        }
+        //
         public void AddLoad(string stepName, Load load)
         {
             if (!_model.StepCollection.MulitRegionSelectionExists(stepName, load))
@@ -5207,13 +5253,31 @@ namespace PrePoMax
             //
             FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
-        public Load GetLoad(string stepName, string loadName)
+        public void ReplaceLoad(string stepName, string oldLoadName, Load load)
         {
-            return _model.StepCollection.GetStep(stepName).Loads[loadName];
+            if (StepCollection.MultiRegionChanged(GetLoad(stepName, oldLoadName), load))
+            {
+                DeleteSelectionBasedLoadSets(stepName, oldLoadName);
+                ConvertSelectionBasedLoad(load);
+            }
+            //
+            _model.StepCollection.GetStep(stepName).Loads.Replace(oldLoadName, load.Name, load);
+            //
+            _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldLoadName, load, stepName);
+            //
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
-        public Load[] GetStepLoads(string stepName)
+        public void PropagateLoad(string stepName, string loadName)
         {
-            return _model.StepCollection.GetStep(stepName).Loads.Values.ToArray();
+            string[] nextStepNames = _model.StepCollection.GetNextStepNames(stepName);
+            Load load = GetLoad(stepName, loadName).DeepClone();
+            foreach (var nextStepName in nextStepNames)
+            {
+                if (_model.StepCollection.GetStep(nextStepName).Loads.ContainsKey(loadName))
+                    ReplaceLoad(nextStepName, loadName, load);
+                else
+                    AddLoad(nextStepName, load);
+            }
         }
         public void HideLoads(string stepName, string[] loadNames)
         {
@@ -5232,20 +5296,6 @@ namespace PrePoMax
                 _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.StepCollection.GetStep(stepName).Loads[name], stepName);
             }
             FeModelUpdate(UpdateType.RedrawSymbols);
-        }
-        public void ReplaceLoad(string stepName, string oldLoadName, Load load)
-        {
-            if (StepCollection.MultiRegionChanged(GetLoad(stepName, oldLoadName), load))
-            {
-                DeleteSelectionBasedLoadSets(stepName, oldLoadName);
-                ConvertSelectionBasedLoad(load);
-            }
-            //
-            _model.StepCollection.GetStep(stepName).Loads.Replace(oldLoadName, load.Name, load);
-            //
-            _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldLoadName, load, stepName);
-            //
-            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void ActivateDeactivateLoad(string stepName, string loadName, bool active)
         {

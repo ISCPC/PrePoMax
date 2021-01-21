@@ -1046,49 +1046,15 @@ namespace CaeMesh
         private void ExtractEdgesFromShellByAngle(BasePart part, double angle)
         {
             int[][] cells = part.Visualization.Cells;
-            CompareIntArray comparer = new CompareIntArray();
-            Dictionary<int[], CellEdgeData> allEdges = new Dictionary<int[], CellEdgeData>(comparer);
-            //
-            int[] key;
-            CellEdgeData data;
-            int[][] cellEdges;
-            //
-            System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
-            watch.Start();
             // Get all edges
-            for (int i = 0; i < cells.Length; i++)
-            {
-                cellEdges = GetVisualizationEdgeCells(cells[i], ElementFaceType.Face);
-                //
-                foreach (var cellEdge in cellEdges)
-                {
-                    key = cellEdge.ToArray();
-                    Array.Sort(key);
-                    //
-                    if (key[0] == key[1] || (key.Length == 3 && key[1] == key[2]))
-                    {
-                        //manifoldGeometry
-                        continue;
-                    }
-                    //
-                    if (allEdges.TryGetValue(key, out data))
-                    {
-                        data.CellIds.Add(i);
-                    }
-                    else
-                    {
-                        allEdges.Add(key, new CellEdgeData() { NodeIds = cellEdge, CellIds = new List<int>() { i } });
-                    }
-                }
-            }
-            //
-            watch.Stop();
+            Dictionary<int[], CellEdgeData> allEdges = part.Visualization.GetCellEdgeData(GetVisualizationEdgeCells);
             // Get only edges where cells meet at an angle > input angle
             // Get free surface edges
+            double phi;
             int[] cellsIds;
+            CellEdgeData data;
             int visualizationCell1i;
             int visualizationCell2i;
-            double phi;
             List<int[]> edgeCells = new List<int[]>();
             GeometryPart geometryPart;
             List<int> freeEdgeCellIds = new List<int>();
@@ -1245,95 +1211,13 @@ namespace CaeMesh
                 gp.FreeEdgeCellIds = null;
                 gp.FreeNodeIds = null;
                 //
-                gp.ErrorEdgeCellIds = null;
-                gp.ErrorNodeIds = null;
-                //
                 VisualizationData vis = gp.Visualization;
-                List<int> freeEdgeIds = new List<int>();
-                List<int> freeEdgeCellIds = new List<int>();
-                HashSet<int> freeNodeIds = new HashSet<int>();
-                HashSet<int> openLoopFreeEdgeCellIds = new HashSet<int>();
-                HashSet<int> closeLoopFreeEdgeCellIds;
-                //
-                int edgeId;
-                int[] edgeIdsCounter = new int[vis.EdgeCellIdsByEdge.Length];
-                // Find free edges                                                      
-                // Create a map of how many times an edge is used on all part surfaces  
-                // For each surface
-                for (int i = 0; i < vis.FaceEdgeIds.Length; i++)
-                {
-                    // For each surface edge
-                    for (int j = 0; j < vis.FaceEdgeIds[i].Length; j++)
-                    {
-                        edgeId = vis.FaceEdgeIds[i][j];
-                        edgeIdsCounter[edgeId]++;
-                    }
-                }
-                // From the map extract all free edges - contained in open and closed loops
-                for (int i = 0; i < edgeIdsCounter.Length; i++)
-                {
-                    edgeId = i;
-                    if (edgeIdsCounter[edgeId] == 1)
-                    {
-                        freeEdgeIds.Add(edgeId);
-                    }
-                }
-                // Build a map of free edges connected to a vertex
-                int[] edgeCell;
-                List<int> vertexEdgeIds;
-                Dictionary<int, List<int>> vertexFreeEdgeIds = new Dictionary<int, List<int>>();
-                HashSet<int> vertexNodeIds = new HashSet<int>(vis.VertexNodeIds);
-                // For each surface edge
-                foreach(var freeEdgeId in freeEdgeIds)
-                {
-                    edgeId = freeEdgeId;
-                    // For each edge cell
-                    for (int i = 0; i < vis.EdgeCellIdsByEdge[edgeId].Length; i++)
-                    {
-                        edgeCell = vis.EdgeCells[vis.EdgeCellIdsByEdge[edgeId][i]];
-                        // For each node in edge cell
-                        for (int j = 0; j < edgeCell.Length; j++)
-                        {
-                            if (vertexNodeIds.Contains(edgeCell[j]))    // is this node a vertex
-                            {
-                                if (vertexFreeEdgeIds.TryGetValue(edgeCell[j], out vertexEdgeIds))
-                                    vertexEdgeIds.Add(edgeId);
-                                else vertexFreeEdgeIds.Add(edgeCell[j], new List<int>() { edgeId });
-                            }
-                        }
-                    }
-                }
-                // Find free endges that form open loops (such loops occur when a surface is curved and connected to itself on one edge
-                // Example: a cylindrical surface with one edge in the axis direction
-                int nodeId;
-                foreach (var entry in vertexFreeEdgeIds)
-                {
-                    if (entry.Value.Count == 1)
-                    {
-                        nodeId = entry.Key;
-                        GetEdgeIdsOnEdgeLoop(nodeId, vertexFreeEdgeIds, ref openLoopFreeEdgeCellIds);
-                    }
-                }
-                // Get close loop free edges
-                closeLoopFreeEdgeCellIds = new HashSet<int>(freeEdgeIds.Except(openLoopFreeEdgeCellIds));
-                // Collect close loop free edges cell ids and node ids
-                int edgeCelld;
-                int[] edgeCellIds;
-                foreach (var closeLoopFreeEdgeId in closeLoopFreeEdgeCellIds)
-                {
-                    edgeCellIds = vis.EdgeCellIdsByEdge[closeLoopFreeEdgeId];
-                    freeEdgeCellIds.AddRange(edgeCellIds);
-                    //
-                    for (int i = 0; i < edgeCellIds.Length; i++)
-                    {
-                        edgeCelld = edgeCellIds[i];
-                        freeNodeIds.UnionWith(vis.EdgeCells[edgeCelld]);
-                    }
-                }
+                int[] freeEdgeCellIds = vis.GetFreeEdgeCellIds(GetVisualizationEdgeCells);
+                int[] freeVetexNodeIds = vis.GetFreeVertexNodeIds(freeEdgeCellIds);
                 // Save
-                if (freeEdgeCellIds.Count > 0) gp.FreeEdgeCellIds = freeEdgeCellIds.ToArray();
+                if (freeEdgeCellIds.Length > 0) gp.FreeEdgeCellIds = freeEdgeCellIds;
                 else gp.FreeEdgeCellIds = null;
-                if (freeNodeIds.Count > 0) gp.FreeNodeIds = freeNodeIds.ToArray();
+                if (freeVetexNodeIds.Length > 0) gp.FreeNodeIds = freeVetexNodeIds;
                 else gp.FreeNodeIds = null;
                 // Error
                 CheckForErrorElementsInCADPart(gp);
@@ -1341,6 +1225,10 @@ namespace CaeMesh
         }
         private void CheckForErrorElementsInCADPart(GeometryPart gp)
         {
+            // Clear
+            gp.ErrorEdgeCellIds = null;
+            gp.ErrorNodeIds = null;
+            //
             int nodeId;
             int edgeId;
             int[] edgeCell;
@@ -6505,22 +6393,22 @@ namespace CaeMesh
             {
                 if (cell.Length == 3)
                 {
-                    return new int[][] {    new int[] { cell[0], cell[1] },
-                                        new int[] { cell[1], cell[2] },
-                                        new int[] { cell[2], cell[0] } };
+                    return new int[][] { new int[] { cell[0], cell[1] },
+                                         new int[] { cell[1], cell[2] },
+                                         new int[] { cell[2], cell[0] } };
                 }
                 else if (cell.Length == 4)
                 {
-                    return new int[][] {    new int[] { cell[0], cell[1] },
-                                        new int[] { cell[1], cell[2] },
-                                        new int[] { cell[2], cell[3] },
-                                        new int[] { cell[3], cell[0] } };
+                    return new int[][] { new int[] { cell[0], cell[1] },
+                                         new int[] { cell[1], cell[2] },
+                                         new int[] { cell[2], cell[3] },
+                                         new int[] { cell[3], cell[0] } };
                 }
                 else if (cell.Length == 6)
                 {
-                    return new int[][] {    new int[] { cell[0], cell[1], cell[3] },
-                                        new int[] { cell[1], cell[2], cell[4] },
-                                        new int[] { cell[2], cell[0], cell[5] } };
+                    return new int[][] { new int[] { cell[0], cell[1], cell[3] },
+                                         new int[] { cell[1], cell[2], cell[4] },
+                                         new int[] { cell[2], cell[0], cell[5] } };
 
                     //return new int[][] {    new int[] { cell[0], cell[3], cell[1] },
                     //                        new int[] { cell[1], cell[4], cell[2] },
@@ -6528,10 +6416,10 @@ namespace CaeMesh
                 }
                 else if (cell.Length == 8)
                 {
-                    return new int[][] {    new int[] { cell[0], cell[1], cell[4] },
-                                        new int[] { cell[1], cell[2], cell[5] },
-                                        new int[] { cell[2], cell[3], cell[6] },
-                                        new int[] { cell[3], cell[0], cell[7] } };
+                    return new int[][] { new int[] { cell[0], cell[1], cell[4] },
+                                         new int[] { cell[1], cell[2], cell[5] },
+                                         new int[] { cell[2], cell[3], cell[6] },
+                                         new int[] { cell[3], cell[0], cell[7] } };
 
                     //return new int[][] {    new int[] { cell[0], cell[4], cell[1] },
                     //                        new int[] { cell[1], cell[5], cell[2] },

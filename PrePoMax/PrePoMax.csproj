@@ -163,9 +163,11 @@
     <Compile Include="Command\0081_Step\CReplaceStep.cs" />
     <Compile Include="Command\0082_HistoryOutput\CAddHistoryOutput.cs" />
     <Compile Include="Command\0082_HistoryOutput\CRemoveHistoryOutputs.cs" />
+    <Compile Include="Command\0082_HistoryOutput\CPropagateHisotryOutput.cs" />
     <Compile Include="Command\0082_HistoryOutput\CReplaceHisotryOutput.cs" />
     <Compile Include="Command\0083_FieldOutput\CAddFieldOutput.cs" />
     <Compile Include="Command\0083_FieldOutput\CRemoveFieldOutputs.cs" />
+    <Compile Include="Command\0083_FieldOutput\CPropagateFieldOutput.cs" />
     <Compile Include="Command\0083_FieldOutput\CReplaceFieldOutput.cs" />
     <Compile Include="Command\0091_BoundaryConditions\CPropagateBC.cs" />
     <Compile Include="Command\0091_BoundaryConditions\CAddBC.cs" />
@@ -176,6 +178,7 @@
     <Compile Include="Command\0101_Load\CAddLoad.cs" />
     <Compile Include="Command\0101_Load\CHideLoads.cs" />
     <Compile Include="Command\0101_Load\CRemoveLoads.cs" />
+    <Compile Include="Command\0101_Load\CPropagateLoad.cs" />
     <Compile Include="Command\0101_Load\CReplaceLoad.cs" />
     <Compile Include="Command\0101_Load\CShowLoads.cs" />
     <Compile Include="Command\0121_Analysis\CAddJob.cs" />

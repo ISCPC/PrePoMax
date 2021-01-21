@@ -887,9 +887,9 @@ namespace CaeModel
                 if (entry.Value != 0 && (load.F1 != 0 || load.F2 != 0 || load.F3 != 0))
                 {
                     loads.Add(new CLoad("_cLoad_" + entry.Key.ToString(), entry.Key,
-                                        load.F1 / surface.Area * entry.Value,
-                                        load.F2 / surface.Area * entry.Value,
-                                        load.F3 / surface.Area * entry.Value));
+                                        load.F1 / aSum * entry.Value,
+                                        load.F2 / aSum * entry.Value,
+                                        load.F3 / aSum * entry.Value));
                 }
             }
             //

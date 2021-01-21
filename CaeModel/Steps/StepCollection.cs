@@ -162,7 +162,7 @@ namespace CaeModel
                 if (step.Name == stepName) stepNames = new List<string>();
             }
             if (stepNames.Count > 0) return stepNames.ToArray();
-            else return null;
+            else return new string[0];
         }
         // History
         public void AddHistoryOutput(HistoryOutput historyOutput, string stepName)

@@ -490,7 +490,7 @@ namespace PrePoMax.Forms
             item.Tag = vstl;
             lvTypes.Items.Add(item);
             // Shell edge load
-            name = "Shell edge load";
+            name = "Normal shell edge load";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
             ViewShellEdgeLoad vsel = new ViewShellEdgeLoad(new ShellEdgeLoad(loadName, "", RegionTypeEnum.Selection, 0));
