@@ -39,6 +39,7 @@ namespace CaeJob
         [NonSerialized] private StringBuilder _sbOutput;
         [NonSerialized] private string _outputFileName;
         [NonSerialized] private string _errorFileName;
+        [NonSerialized] private object _myLock;
 
 
         // Properties                                                                                                               
@@ -73,7 +74,11 @@ namespace CaeJob
             {
                 try
                 {
-                    if (_sbOutput != null) return _sbOutput.ToString();
+                    if (_sbOutput != null)
+                    {
+                        if (_myLock == null) _myLock = new object();
+                        lock (_myLock) return _sbOutput.ToString();
+                    }
                     else return null;
                 }
                 catch
@@ -95,11 +100,12 @@ namespace CaeJob
             _executable = executable;
             _argument = argument;
             _workDirectory = workDirectory;
-
+            //
             _exe = null;
             _jobStatus = JobStatus.None;
             _watch = null;
             _updateWatch = null;
+            _sbOutput = null;
         }
 
         // Event handlers                                                                                                           
@@ -108,8 +114,12 @@ namespace CaeJob
         // Methods                                                                                                                  
         public void Submit()
         {
-            if (_sbOutput == null) _sbOutput = new StringBuilder();
-            _sbOutput.Clear();
+            if (_myLock == null) _myLock = new object();
+            lock (_myLock)
+            {
+                if (_sbOutput == null) _sbOutput = new StringBuilder();
+                _sbOutput.Clear();
+            }
             //
             AddDataToOutput("Running command: " + _executable + " " + _argument);
             //
@@ -282,7 +292,9 @@ namespace CaeJob
         }
         private void AddDataToOutput(string data)
         {
-            _sbOutput.AppendLine(data);
+            if (_myLock == null) _myLock = new object();
+            lock (_myLock) _sbOutput.AppendLine(data);
+            //
             if (_updateWatch != null && _updateWatch.ElapsedMilliseconds > 1000)
             {
                 UpdateOutput();
@@ -293,11 +305,12 @@ namespace CaeJob
         {
             try
             {
-                if (AppendOutput != null) AppendOutput(OutputData);
+                AppendOutput?.Invoke(OutputData);
                 //if (Tools.WaitForFileToUnlock(_outputFileName, 5000))
                 File.AppendAllText(_outputFileName, OutputData);
                 //
-                _sbOutput.Clear();
+                if (_myLock == null) _myLock = new object();
+                lock (_myLock) _sbOutput.Clear();
             }
             catch { }
         }

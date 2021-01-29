@@ -61,8 +61,6 @@ namespace PrePoMax.Forms
         // Overrides                                                                                                                
         protected override void OnListViewTypeSelectedIndexChanged()
         {
-            _controller.ClearAllSelection();    // clears all selected items
-            //
             if (lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)
             {
                 object itemTag = lvTypes.SelectedItems[0].Tag;
@@ -172,6 +170,7 @@ namespace PrePoMax.Forms
                     else if (partTypes.First() == PartType.Shell) _preselectIndex = 1;
                     else throw new NotSupportedException();
                 }
+                else HighlightSection(); // must be here if called from the menu
             }
             // Edit existing section
             else
@@ -193,8 +192,6 @@ namespace PrePoMax.Forms
                     else throw new NotSupportedException();
                     //
                     _viewSection.PopululateDropDownLists(materialNames, partNames, elementSetNames);
-                    //
-                    _controller.SetSelectItemToPart();
                 }
                 else if (_viewSection is ViewShellSection vshs)
                 {
@@ -209,8 +206,6 @@ namespace PrePoMax.Forms
                     else throw new NotSupportedException();
                     //
                     _viewSection.PopululateDropDownLists(materialNames, partNames, elementSetNames);
-                    //
-                    _controller.SetSelectItemToPart();
                 }
                 else throw new NotSupportedException();
                 //
@@ -218,8 +213,6 @@ namespace PrePoMax.Forms
                 _preselectIndex = selectedId;
             }
             ShowHideSelectionForm();
-            //
-            HighlightSection(); // must be here if called from the menu
             //
             return true;
         }

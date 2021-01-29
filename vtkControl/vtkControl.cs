@@ -1523,40 +1523,43 @@ namespace vtkControl
                     else entry.Value.Geometry.VisibilityOff();
                 }
                 // Skip invisible actors
-                if (entry.Value.Geometry.GetVisibility() == 0) continue;
-                //
-                locator = entry.Value.FrustumCellLocator;
-                if (locator != null)
+                if (entry.Value.Geometry.GetVisibility() != 0)
                 {
-                    // Inside points                
-                    extractor = vtkExtractSelectedFrustum.New(); // must be inside the loop
-                    extractor.SetFieldType((int)vtkSelectionField.POINT);
-                    extractor.SetContainingCells(0);
-                    extractor.SetInput(0, locator.GetDataSet());
-                    extractor.SetFrustum(planes);
-                    extractor.Update();
-                    //
-                    globalPointIdsDataArray = (extractor.GetOutput() as vtkUnstructuredGrid).GetPointData().GetGlobalIds();
-                    if (globalPointIdsDataArray != null)
+                    locator = entry.Value.FrustumCellLocator;
+                    if (locator != null)
                     {
-                        for (int i = 0; i < globalPointIdsDataArray.GetNumberOfTuples(); i++)
+                        // Inside points                
+                        extractor = vtkExtractSelectedFrustum.New(); // must be inside the loop
+                        extractor.SetFieldType((int)vtkSelectionField.POINT);
+                        extractor.SetContainingCells(0);
+                        extractor.SetInput(0, locator.GetDataSet());
+                        extractor.SetFrustum(planes);
+                        extractor.Update();
+                        //
+                        globalPointIdsDataArray = (extractor.GetOutput() as vtkUnstructuredGrid).GetPointData().GetGlobalIds();
+                        if (globalPointIdsDataArray != null)
                         {
-                            globalPointIds.Add((int)globalPointIdsDataArray.GetTuple1(i));
+                            for (int i = 0; i < globalPointIdsDataArray.GetNumberOfTuples(); i++)
+                            {
+                                globalPointIds.Add((int)globalPointIdsDataArray.GetTuple1(i));
+                            }
                         }
-                    }
-                    // Inside and border cells      
-                    extractor.SetFieldType((int)vtkSelectionField.CELL);
-                    extractor.Update();
-                    //
-                    globalCellIdsDataArray = (extractor.GetOutput() as vtkUnstructuredGrid).GetCellData().GetGlobalIds();
-                    if (globalCellIdsDataArray != null)
-                    {
-                        for (int i = 0; i < globalCellIdsDataArray.GetNumberOfTuples(); i++)
+                        // Inside and border cells      
+                        extractor.SetFieldType((int)vtkSelectionField.CELL);
+                        extractor.Update();
+                        //
+                        globalCellIdsDataArray = (extractor.GetOutput() as vtkUnstructuredGrid).GetCellData().GetGlobalIds();
+                        if (globalCellIdsDataArray != null)
                         {
-                            globalCellIds.Add((int)globalCellIdsDataArray.GetTuple1(i));
+                            for (int i = 0; i < globalCellIdsDataArray.GetNumberOfTuples(); i++)
+                            {
+                                globalCellIds.Add((int)globalCellIdsDataArray.GetTuple1(i));
+                            }
                         }
                     }
                 }
+                // Reset visibility
+                ApplyEdgeVisibilityAndBackfaceCullingToActor(entry.Value.Geometry, vtkRendererLayer.Base);
             }
             //
             pointIds = globalPointIds.ToArray();

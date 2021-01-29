@@ -323,6 +323,8 @@ namespace PrePoMax.Forms
             {
                 lvTypes.Enabled = true;
                 _viewLoad = null;
+                //
+                HighlightLoad(); // must be here if called from the menu
             }
             else
             {
@@ -435,8 +437,6 @@ namespace PrePoMax.Forms
                 _preselectIndex = selectedId;
             }
             ShowHideSelectionForm();
-            //
-            HighlightLoad(); // must be here if called from the menu
             //
             return true;
         }

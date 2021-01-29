@@ -147,19 +147,17 @@ namespace PrePoMax.Forms
             {
                 Step = _controller.GetStep(_stepToEditName);    // to clone and set _viewStep
                 // Select the appropriate load in the list view
+                int selectedId = 0;
                 foreach (ListViewItem item in lvTypes.Items)
                 {
                     if (item.Tag != null && item.Tag.GetType() == _viewStep.GetType())
                     {
-                        item.Selected = true;
+                        lvTypes.Items[selectedId].Tag = _viewStep;
+                        _preselectIndex = selectedId;
                         break;
                     }
+                    selectedId++;
                 }
-                //
-                lvTypes.Enabled = false;
-                //
-                propertyGrid.SelectedObject = _viewStep;
-                propertyGrid.Select();
             }
             //
             _controller.SetSelectByToOff();

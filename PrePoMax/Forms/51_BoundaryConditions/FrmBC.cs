@@ -228,6 +228,8 @@ namespace PrePoMax.Forms
             {
                 lvTypes.Enabled = true;
                 _viewBc = null;
+                //
+                HighlightBoundaryCondition(); // must be here if called from the menu
             }
             // Edit existing boundary condition
             else
@@ -288,8 +290,6 @@ namespace PrePoMax.Forms
                 _preselectIndex = selectedId;
             }
             ShowHideSelectionForm();
-            //
-            HighlightBoundaryCondition(); // must be here if called from the menu
             //
             return true;
         }

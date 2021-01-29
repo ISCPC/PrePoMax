@@ -2081,7 +2081,7 @@ namespace PrePoMax
         {
             try
             {
-                SetStateWorking(Globals.CreatingCompound, true);
+                SetStateWorking(Globals.CreatingCompoundText, true);
                 //
                 GeometryPart part;
                 foreach (var partName in partNames)
@@ -2099,7 +2099,7 @@ namespace PrePoMax
             }
             finally
             {
-                SetStateReady(Globals.CreatingCompound);
+                SetStateReady(Globals.CreatingCompoundText);
             }
         }
         // 
@@ -2152,14 +2152,14 @@ namespace PrePoMax
             }
             finally
             {
-                SetStateReady(Globals.FlippingNormals);
+                SetStateReady(Globals.FlippingNormalsText);
             }
         }
         private void FlipFaces(GeometrySelection geometrySelection)
         {
-            SetStateWorking(Globals.FlippingNormals);
+            SetStateWorking(Globals.FlippingNormalsText);
             _controller.FlipFaceOrientationsCommand(geometrySelection);
-            SetStateReady(Globals.FlippingNormals);
+            SetStateReady(Globals.FlippingNormalsText);
         }
         //
         private async void tsmiSplitAFaceUsingTwoPoints_Click(object sender, EventArgs e)
@@ -2193,9 +2193,9 @@ namespace PrePoMax
                             {
                                 verticesSelection = _frmSelectGeometry.GeometrySelection.DeepClone();
                                 //
-                                SetStateWorking(Globals.SplittingFaces);
+                                SetStateWorking(Globals.SplittingFacesText);
                                 _controller.SplitAFaceUsingTwoPointsCommand(surfaceSelection, verticesSelection);
-                                SetStateReady(Globals.SplittingFaces);
+                                SetStateReady(Globals.SplittingFacesText);
                             }
                             else break;
                         }
@@ -2209,7 +2209,7 @@ namespace PrePoMax
             }
             finally
             {
-                SetStateReady(Globals.SplittingFaces);
+                SetStateReady(Globals.SplittingFacesText);
             }
         }
         //
@@ -6244,7 +6244,10 @@ namespace PrePoMax
         {
             //if (timerTest.Enabled) timerTest.Stop();
             //else timerTest.Start();
-            _vtk.SwithchLights();
+
+            //_vtk.SwithchLights();
+
+            _controller.ReplaceGeometryParts("Nosilec", "Nosilec_r");
         }
 
         private void timerTest_Tick(object sender, EventArgs e)

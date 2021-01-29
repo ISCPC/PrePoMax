@@ -193,6 +193,8 @@ namespace PrePoMax.Forms
             {
                 lvTypes.Enabled = true;
                 _viewHistoryOutput = null;
+                //
+                HighlightHistoryOutput(); // must be here if called from the menu
             }
             else
             // Edit existing history output
@@ -242,8 +244,6 @@ namespace PrePoMax.Forms
                 _preselectIndex = selectedId;
             }
             ShowHideSelectionForm();
-            //
-            HighlightHistoryOutput(); // must be here if called from the menu
             //
             return true;
         }

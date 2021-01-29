@@ -46,6 +46,8 @@ namespace UserControls
         // Methods                                                                                                                  
         public void AutoScrollAppendText(string text)
         {
+            if (text == null) return;
+            //
             bool bottomFlag = false;
             int VSmin;
             int VSmax;

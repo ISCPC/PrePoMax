@@ -3474,17 +3474,20 @@ namespace CaeMesh
         {
             if (selectionDirection != null)
             {
-                FeElement element = _elements[elementId];
-                if (element is FeElement2D)
+                FeElement element;
+                if (_elements.TryGetValue(elementId, out element))
                 {
-                    // Front face is S2
-                    GetElementFaceNormal(elementId, FeFaceName.S2, out double[] elementNormal);
-                    //
-                    Vec3D n1 = new Vec3D(selectionDirection);
-                    Vec3D n2 = new Vec3D(elementNormal);
-                    double cross = Vec3D.DotProduct(n1, n2);
-                    //
-                    if (cross > 0) return false;
+                    if (element is FeElement2D)
+                    {
+                        // Front face is S2
+                        GetElementFaceNormal(elementId, FeFaceName.S2, out double[] elementNormal);
+                        //
+                        Vec3D n1 = new Vec3D(selectionDirection);
+                        Vec3D n2 = new Vec3D(elementNormal);
+                        double cross = Vec3D.DotProduct(n1, n2);
+                        //
+                        if (cross > 0) return false;
+                    }
                 }
             }
             return true;
@@ -5740,31 +5743,33 @@ namespace CaeMesh
             foreach (var name in surfaceNames)
             {
                 // Remove old element sets
-                surface = Surfaces[name];
-                if (surface.ElementFaces != null)
+                if (Surfaces.TryGetValue(name, out surface))
                 {
-                    foreach (var entry in surface.ElementFaces)
+                    if (surface.ElementFaces != null)
                     {
-                        if (_elementSets.ContainsKey(entry.Value))
+                        foreach (var entry in surface.ElementFaces)
                         {
-                            _elementSets.Remove(entry.Value);
-                            removedElementSetsHashSet.Add(entry.Value);
+                            if (_elementSets.ContainsKey(entry.Value))
+                            {
+                                _elementSets.Remove(entry.Value);
+                                removedElementSetsHashSet.Add(entry.Value);
+                            }
                         }
                     }
-                }
-                //
-                if (!(surface.Type == FeSurfaceType.Node && surface.CreatedFrom == FeSurfaceCreatedFrom.NodeSet))
-                {
-                    // Null is in the case when no elements were found to form a surface
-                    if (surface.NodeSetName != null) 
+                    //
+                    if (!(surface.Type == FeSurfaceType.Node && surface.CreatedFrom == FeSurfaceCreatedFrom.NodeSet))
                     {
-                        removedNodeSetsHashSet.Add(surface.NodeSetName);
-                        _nodeSets.Remove(surface.NodeSetName);
+                        // Null is in the case when no elements were found to form a surface
+                        if (surface.NodeSetName != null)
+                        {
+                            removedNodeSetsHashSet.Add(surface.NodeSetName);
+                            _nodeSets.Remove(surface.NodeSetName);
+                        }
                     }
+                    // Remove surface
+                    Surfaces.Remove(name);
+                    removedSurfaces.Add(surface);
                 }
-                // Remove surface
-                Surfaces.Remove(name);
-                removedSurfaces.Add(surface);
             }
             removedNodeSets = removedNodeSetsHashSet.ToArray();
             removedElementSets = removedElementSetsHashSet.ToArray();

@@ -47,6 +47,7 @@ namespace CaeJob
         [NonSerialized] private StringBuilder _sbAllOutput;
         [NonSerialized] private string _outputFileName;
         [NonSerialized] private string _errorFileName;
+        [NonSerialized] private object _myLock;
 
 
         // Properties                                                                                                               
@@ -97,7 +98,11 @@ namespace CaeJob
             {
                 try
                 {
-                    if (_sbOutput != null) return _sbOutput.ToString();
+                    if (_sbOutput != null)
+                    {
+                        if (_myLock == null) _myLock = new object();
+                        lock (_myLock) return _sbOutput.ToString();
+                    }
                     else return null;
                 }
                 catch
@@ -161,17 +166,25 @@ namespace CaeJob
             //
             DataOutput?.Invoke();
             //
-            _sbAllOutput.Append(_sbOutput);
-            _sbOutput.Clear();
+            if (_myLock == null) _myLock = new object();
+            lock (_myLock)
+            {
+                _sbAllOutput.Append(_sbOutput);
+                _sbOutput.Clear();
+            }
         }
 
 
         // Methods                                                                                                                  
         public void Submit()
         {
-            if (_sbOutput == null) _sbOutput = new StringBuilder();
+            if (_myLock == null) _myLock = new object();
+            lock (_myLock)
+            {
+                if (_sbOutput == null) _sbOutput = new StringBuilder();
+                _sbOutput.Clear();
+            }
             if (_sbAllOutput == null) _sbAllOutput = new StringBuilder();
-            _sbOutput.Clear();
             _sbAllOutput.Clear();
             //
             AppendDataToOutput(DateTime.Now + Environment.NewLine);
@@ -418,7 +431,8 @@ namespace CaeJob
 
         private void AppendDataToOutput(string data)
         {
-            _sbOutput.AppendLine(data);
+            if (_myLock == null) _myLock = new object();
+            lock (_myLock) _sbOutput.AppendLine(data);
         }
         private void GetStatusFileContents()
         {

@@ -115,8 +115,16 @@ namespace PrePoMax.Forms
             {
                 object itemTag = lvTypes.SelectedItems[0].Tag;
                 if (itemTag is ViewError) _viewConstraint = null;
-                else if (itemTag is ViewRigidBody vrd) _viewConstraint = vrd;
-                else if (itemTag is ViewTie vt) _viewConstraint = vt;
+                else if (itemTag is ViewRigidBody vrd)
+                {
+                    _viewConstraint = vrd;
+                    _controller.Selection.EnableShellEdgeFaceSelection = true;
+                }
+                else if (itemTag is ViewTie vt)
+                {
+                    _viewConstraint = vt;
+                    _controller.Selection.EnableShellEdgeFaceSelection = true;
+                }
                 else throw new NotImplementedException();
                 //
                 propertyGrid.SelectedObject = itemTag;
@@ -190,6 +198,8 @@ namespace PrePoMax.Forms
         {
             // Close the ItemSetSelectionForm
             ItemSetDataEditor.SelectionForm.Hide();
+            // Deactivate selection limits
+            _controller.Selection.LimitSelectionToFirstGeometryType = false;
             // Convert the constraint from internal to show it
             ConstraintInternal(false);
             //
@@ -225,6 +235,8 @@ namespace PrePoMax.Forms
             {
                 lvTypes.Enabled = true;
                 _viewConstraint = null;
+                //
+                HighlightConstraint(); // must be here if called from the menu
             }
             // Edit existing constraint
             else
@@ -277,8 +289,6 @@ namespace PrePoMax.Forms
                 _preselectIndex = selectedId;
             }
             ShowHideSelectionForm();
-            //
-            HighlightConstraint(); // must be here if called from the menu
             //
             return true;
         }

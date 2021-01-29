@@ -43,14 +43,6 @@ namespace UserControls
         private void lvTypes_SelectedIndexChanged(object sender, EventArgs e)
         {
             OnListViewTypeSelectedIndexChanged();
-            //try
-            //{
-            //    OnListViewTypeSelectedIndexChanged();
-            //}
-            //catch (Exception ex)
-            //{
-            //    ExceptionTools.Show(this, ex);
-            //}
         }
         private void lvTypes_MouseUp(object sender, MouseEventArgs e)
         {

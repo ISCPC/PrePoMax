@@ -21,10 +21,10 @@ namespace PrePoMax
         public static string ExportingText = "Exporting...";
         public static string MeshingText = "Meshing...";
         public static string UndoingText = "Undoing...";
-        public static string CreatingCompound = "Creating compound...";
+        public static string CreatingCompoundText = "Creating compound...";
         public static string RegeneratingText = "Regenerating history...";
-        public static string FlippingNormals = "Flipping normals...";
-        public static string SplittingFaces = "Splitting faces...";
+        public static string FlippingNormalsText = "Flipping normals...";
+        public static string SplittingFacesText = "Splitting faces...";
         //
         public static string SettingsFileName = "settings.bin";
         public static string MaterialLibraryFileName = "materials.lib";
@@ -51,7 +51,8 @@ namespace PrePoMax
         public static string VolFileName = "geometry.vol";
         public static string MmgMeshFileName = "geometry.mesh";
         public static string EdgeNodesFileName = "edgeNodes";
-        //
+        // Names
         public static string NameSeparator = ":";
+        public static string MissingSectionName = "Missing_section-";
     }
 }

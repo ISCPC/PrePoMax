@@ -204,6 +204,8 @@ namespace PrePoMax.Forms
             _userKeywords = new OrderedDictionary<int[], CalculixUserKeyword>();
             //
             FindUserKeywords(btvKeywordsTree.Nodes[0], _userKeywords);
+            //
+            this.DialogResult = DialogResult.OK;
         }
         private void FindUserKeywords(TreeNode node, OrderedDictionary<int[], CalculixUserKeyword> userKeywords)
         {
@@ -213,7 +215,7 @@ namespace PrePoMax.Forms
                 GetNodeIdices(node, indices);
                 userKeywords.Add(indices.ToArray(), calculixUserKeyword);
             }
-
+            //
             foreach (TreeNode childNode in node.Nodes)
             {
                 FindUserKeywords(childNode, userKeywords);
