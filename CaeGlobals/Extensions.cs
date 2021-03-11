@@ -204,14 +204,15 @@ namespace CaeGlobals
         }
 
         // String[]
-        public static string ToRows(this string[] names)
+        public static string ToRows(this string[] names, int maxRows = 30)
         {
             string rows = "";
-            for (int i = 0; i < names.Length; i++)
+            for (int i = 0; i < Math.Min(names.Length, maxRows); i++)
             {
                 rows += names[i];
                 if (i < names.Length - 1) rows += Environment.NewLine;
             }
+            if (maxRows < names.Length) rows += "...";
             return rows;
         }
         // Enum
