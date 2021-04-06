@@ -2250,6 +2250,17 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
+        private void tsmiCropWithCube_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectOneEntity("Parts", _controller.GetGeometryParts(), _controller.CropGeometryPartWithCylinder);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
         //
         private void tsmiFindEdgesByAngleForGeometryParts_Click(object sender, EventArgs e)
         {

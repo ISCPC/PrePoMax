@@ -345,6 +345,7 @@
             this.tscbSymbolsForStep = new System.Windows.Forms.ToolStripComboBox();
             this.timerTest = new System.Windows.Forms.Timer(this.components);
             this.timerOutput = new System.Windows.Forms.Timer(this.components);
+            this.tsmiCropWithCube = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSwapGeometryParts = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStripMain.SuspendLayout();
             this.statusStripMain.SuspendLayout();
@@ -952,7 +953,8 @@
             this.tsmiFlipFaceNormal,
             this.tsmiSplitAFaceUsingTwoPoints,
             this.tsmiFindEdgesByAngleForGeometryParts,
-            this.tsmiCropWithCylinder});
+            this.tsmiCropWithCylinder,
+            this.tsmiCropWithCube});
             this.tsmiGeometry.Name = "tsmiGeometry";
             this.tsmiGeometry.Size = new System.Drawing.Size(71, 20);
             this.tsmiGeometry.Text = "Geometry";
@@ -2981,6 +2983,13 @@
             // 
             this.timerOutput.Tick += new System.EventHandler(this.timerOutput_Tick);
             // 
+            // tsmiCropWithCube
+            // 
+            this.tsmiCropWithCube.Name = "tsmiCropWithCube";
+            this.tsmiCropWithCube.Size = new System.Drawing.Size(226, 22);
+            this.tsmiCropWithCube.Text = "Crop With Cube";
+            this.tsmiCropWithCube.Click += new System.EventHandler(this.tsmiCropWithCube_Click);
+            // 
             // tsmiSwapGeometryParts
             // 
             this.tsmiSwapGeometryParts.Name = "tsmiSwapGeometryParts";
@@ -3357,6 +3366,7 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiPropagateHistoryOutput;
         private System.Windows.Forms.ToolStripMenuItem tsmiPropagateFieldOutput;
         private System.Windows.Forms.ToolStripMenuItem tsmiPropagateLoad;
+        private System.Windows.Forms.ToolStripMenuItem tsmiCropWithCube;
         private System.Windows.Forms.ToolStripMenuItem tsmiSwapGeometryParts;
     }
 }
