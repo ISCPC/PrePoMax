@@ -5341,6 +5341,11 @@ namespace vtkControl
             vtkMaxActor actor = _actors[partName];
             actor.CropWithCylinder(r, fileName);
         }
+        public void CropPartWithCube(string partName, double a, string fileName)
+        {
+            vtkMaxActor actor = _actors[partName];
+            actor.CropWithCube(a, fileName);
+        }
 
 
 

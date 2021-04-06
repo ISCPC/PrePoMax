@@ -2045,6 +2045,20 @@ namespace PrePoMax
                 ReplacePartGeometryFromFile(part, fileName);
             }
         }
+        // Crop geometry using cube
+        public void CropGeometryPartWithCube(string partName)
+        {
+            GeometryPart part = (GeometryPart)_model.Geometry.Parts[partName];
+            if (part != null)
+            {
+                CalculixSettings settings = _settings.Calculix;
+                string fileName = Path.Combine(settings.WorkDirectory, Globals.StlFileName);
+                //
+                _form.CropPartWithCube(partName, 300, fileName);
+                //
+                ReplacePartGeometryFromFile(part, fileName);
+            }
+        }
         #endregion #################################################################################################################
 
         #region Mesh   #############################################################################################################

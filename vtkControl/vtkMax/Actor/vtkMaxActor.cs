@@ -365,6 +365,29 @@ namespace vtkControl
             stlWriter.SetInput(decimate.GetOutput());
             stlWriter.Write();
         }
+        public void CropWithCube(double a, string fileName)
+        {
+            vtkBox box = vtkBox.New();
+            box.SetBounds(0, a, 0, a, -100 * a, 200 * a);
+            //
+            vtkClipPolyData clipper = vtkClipPolyData.New();
+            clipper.SetInput(_geometry.GetMapper().GetInput());
+            clipper.SetClipFunction(box);
+            clipper.GenerateClippedOutputOn();
+            clipper.GenerateClipScalarsOn();
+            clipper.SetValue(0);
+            //
+            vtkDecimatePro decimate = vtkDecimatePro.New();
+            decimate.SetInput(clipper.GetClippedOutput());
+            decimate.SetTargetReduction(0.05);
+            decimate.PreserveTopologyOn();
+            decimate.Update();
+            //
+            vtkSTLWriter stlWriter = vtkSTLWriter.New();
+            stlWriter.SetFileName(fileName);
+            stlWriter.SetInput(decimate.GetOutput());
+            stlWriter.Write();
+        }
         private void AddCellDataToGrid(vtkUnstructuredGrid source, vtkUnstructuredGrid uGridActor, vtkUnstructuredGrid uGridEdges)
         {
             List<int> actorCellIds = new List<int>();
