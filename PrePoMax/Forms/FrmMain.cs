@@ -208,6 +208,7 @@ namespace PrePoMax
                 _modelTree.SetTransparencyEvent += ModelTree_SetTransparencyEvent;
                 _modelTree.ColorContoursVisibilityEvent += ModelTree_ColorContoursVisibilityEvent;
                 _modelTree.CreateCompoundPart += CreateAndImportCompoundPart;
+                _modelTree.SwapParts += SwapParts;
                 _modelTree.MeshingParametersEvent += GetSetMeshingParameters;
                 _modelTree.PreviewEdgeMesh += PreviewEdgeMeshes;
                 _modelTree.CreateMeshEvent += CreatePartMeshes;
@@ -2076,7 +2077,7 @@ namespace PrePoMax
             {
                 ExceptionTools.Show(this, ex);
             }
-        }
+        }        
         private async void CreateAndImportCompoundPart(string[] partNames)
         {
             try
@@ -2103,6 +2104,31 @@ namespace PrePoMax
             }
         }
         // 
+        private void tsmiSwapGeometryParts_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Parts", _controller.GetGeometryParts(), SwapParts, 2, 2);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void SwapParts(string[] partNames)
+        {
+            GeometryPart[] parts = _controller.GetGeometryPartsWithoutSubParts();
+            GeometryPart part1 = _controller.GetGeometryPart(partNames[0]);
+            GeometryPart part2 = _controller.GetGeometryPart(partNames[1]);
+            if (parts.Contains(part1) && parts.Contains(part2))
+            {
+                if (part1 is CompoundGeometryPart || part2 is CompoundGeometryPart)
+                    MessageBox.Show("Compound parts cannot be swaped.", Globals.ProgramName);
+                else
+                    _controller.SwapGeometryParts(partNames[0], partNames[1]);
+            }
+            else MessageBox.Show("Compound subparts cannot be swaped.", Globals.ProgramName);
+        }
         private void tsmiGeometryAnalyze_Click(object sender, EventArgs e)
         {
             try
@@ -4842,9 +4868,9 @@ namespace PrePoMax
             }
         }
         private void SelectMultipleEntities(string title, NamedClass[] entities, Action<string[]> OperateOnMultpleEntities,
-                                            int minNumberOfEntities = 1)
+                                            int minNumberOfEntities = 1, int maxNumberOfEntities = int.MaxValue)
         {
-            if (entities == null || entities.Length == 0) return;
+            if (entities == null || entities.Length == 0 || entities.Length < minNumberOfEntities) return;
             // Only one entity exists
             if (entities.Length == 1)
             {
@@ -4859,6 +4885,7 @@ namespace PrePoMax
                 _frmSelectEntity.PrepareForm(title, true, entities, preSelectedEntityNames, null);
                 _frmSelectEntity.MultipleEntitiesSelected = OperateOnMultpleEntities;
                 _frmSelectEntity.MinNumberOfEntities = minNumberOfEntities;
+                _frmSelectEntity.MaxNumberOfEntities = maxNumberOfEntities;
                 _frmSelectEntity.Show();
             }
         }
@@ -6247,7 +6274,7 @@ namespace PrePoMax
 
             //_vtk.SwithchLights();
 
-            _controller.ReplaceGeometryParts("Nosilec", "Nosilec_r");
+            _controller.SwapGeometryParts("Nosilec", "Nosilec_r");
         }
 
         private void timerTest_Tick(object sender, EventArgs e)
@@ -6328,6 +6355,6 @@ namespace PrePoMax
             }
         }
 
-      
+        
     }
 }

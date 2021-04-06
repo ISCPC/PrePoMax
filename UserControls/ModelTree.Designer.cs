@@ -90,6 +90,7 @@
             this.tsmiCreate = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEdit = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDuplicate = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiPropagate = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSpaceCompoundPart = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiCompoundPart = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSpaceMesh = new System.Windows.Forms.ToolStripSeparator();
@@ -136,7 +137,7 @@
             this.cltvModel = new UserControls.CodersLabTreeView();
             this.tpResults = new System.Windows.Forms.TabPage();
             this.cltvResults = new UserControls.CodersLabTreeView();
-            this.tsmiPropagate = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiSwapParts = new System.Windows.Forms.ToolStripMenuItem();
             this.cmsTree.SuspendLayout();
             this.tcGeometryModelResults.SuspendLayout();
             this.tpGeometry.SuspendLayout();
@@ -153,6 +154,7 @@
             this.tsmiPropagate,
             this.tsmiSpaceCompoundPart,
             this.tsmiCompoundPart,
+            this.tsmiSwapParts,
             this.tsmiSpaceMesh,
             this.tsmiMeshingParameters,
             this.tsmiPreviewEdgeMesh,
@@ -189,7 +191,7 @@
             this.tsmiSpaceDelete,
             this.tsmiDelete});
             this.cmsTree.Name = "cmsTree";
-            this.cmsTree.Size = new System.Drawing.Size(212, 720);
+            this.cmsTree.Size = new System.Drawing.Size(212, 742);
             // 
             // tsmiCreate
             // 
@@ -211,6 +213,13 @@
             this.tsmiDuplicate.Size = new System.Drawing.Size(211, 22);
             this.tsmiDuplicate.Text = "Duplicate";
             this.tsmiDuplicate.Click += new System.EventHandler(this.tsmiDuplicate_Click);
+            // 
+            // tsmiPropagate
+            // 
+            this.tsmiPropagate.Name = "tsmiPropagate";
+            this.tsmiPropagate.Size = new System.Drawing.Size(211, 22);
+            this.tsmiPropagate.Text = "Propagate";
+            this.tsmiPropagate.Click += new System.EventHandler(this.tsmiPropagate_Click);
             // 
             // tsmiSpaceCompoundPart
             // 
@@ -780,12 +789,12 @@
             this.cltvResults.MouseDown += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseDown);
             this.cltvResults.MouseUp += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseUp);
             // 
-            // tsmiPropagate
+            // tsmiSwapParts
             // 
-            this.tsmiPropagate.Name = "tsmiPropagate";
-            this.tsmiPropagate.Size = new System.Drawing.Size(211, 22);
-            this.tsmiPropagate.Text = "Propagate";
-            this.tsmiPropagate.Click += new System.EventHandler(this.tsmiPropagate_Click);
+            this.tsmiSwapParts.Name = "tsmiSwapParts";
+            this.tsmiSwapParts.Size = new System.Drawing.Size(211, 22);
+            this.tsmiSwapParts.Text = "Swap Parts";
+            this.tsmiSwapParts.Click += new System.EventHandler(this.tsmiSwapParts_Click);
             // 
             // ModelTree
             // 
@@ -866,5 +875,6 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiCompoundPart;
         private System.Windows.Forms.ToolStripMenuItem tsmiDuplicate;
         private System.Windows.Forms.ToolStripMenuItem tsmiPropagate;
+        private System.Windows.Forms.ToolStripMenuItem tsmiSwapParts;
     }
 }

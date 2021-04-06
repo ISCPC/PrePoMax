@@ -306,11 +306,14 @@ namespace CaeJob
             try
             {
                 AppendOutput?.Invoke(OutputData);
-                //if (Tools.WaitForFileToUnlock(_outputFileName, 5000))
-                File.AppendAllText(_outputFileName, OutputData);
                 //
                 if (_myLock == null) _myLock = new object();
-                lock (_myLock) _sbOutput.Clear();
+                lock (_myLock)
+                {
+                    //if (Tools.WaitForFileToUnlock(_outputFileName, 5000))
+                    File.AppendAllText(_outputFileName, OutputData);
+                    _sbOutput.Clear();
+                }
             }
             catch { }
         }

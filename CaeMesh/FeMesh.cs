@@ -861,7 +861,7 @@ namespace CaeMesh
                 edgeAngle = Globals.EdgeAngle;
                 isCADPart = false;
                 //
-                if (importOptions == ImportOptions.ImportStlParts && _elements.Count > 10E5) edgeAngle = -1;
+                if (importOptions == ImportOptions.ImportStlParts && _elements.Count > 1E5) edgeAngle = -1;
             }
             else throw new NotSupportedException();
             //

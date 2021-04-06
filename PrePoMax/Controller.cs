@@ -640,10 +640,24 @@ namespace PrePoMax
             // Import
             if (extension == ".stl")
             {
-                if (_model.ImportGeometryFromStlFile(fileName) == null)
+                string[] addedPartNames = _model.ImportGeometryFromStlFile(fileName);
+                if (addedPartNames == null)
                 {
                     string message = "There are errors in the imported geometry.";
                     UserControls.AutoClosingMessageBox.Show(message, "Error", 3000);
+                }
+                else
+                {
+                    List<string> largeModels = new List<string>();
+                    foreach (var partName in addedPartNames)
+                    {
+                        if (_model.Geometry.Parts[partName].Labels.Length > 1E5) largeModels.Add(partName);
+                    }
+                    if (largeModels.Count > 0)
+                    {
+                        _form.WriteDataToOutput("Feature edge detection was turned off due to a high number of .stl triangles.");
+                        _form.WriteDataToOutput("Use the following menu to turn it back on: Geometry -> Find Model Edges by Angle");
+                    }
                 }
             }
             else if (extension == ".mesh")
@@ -1676,7 +1690,7 @@ namespace PrePoMax
             }
             _modelChanged = true;
         }
-        public void ReplaceGeometryParts(string partName1, string partName2)
+        public void SwapGeometryParts(string partName1, string partName2)
         {
             GeometryPart part1 = (GeometryPart)_model.Geometry.Parts[partName1];
             GeometryPart part2 = (GeometryPart)_model.Geometry.Parts[partName2];
@@ -2026,7 +2040,7 @@ namespace PrePoMax
                 CalculixSettings settings = _settings.Calculix;
                 string fileName = Path.Combine(settings.WorkDirectory, Globals.StlFileName);
                 //
-                _form.CropPartWithCylinder(partName, 20, fileName);
+                _form.CropPartWithCylinder(partName, 9.95, fileName);
                 //
                 ReplacePartGeometryFromFile(part, fileName);
             }

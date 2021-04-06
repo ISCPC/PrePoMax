@@ -33,6 +33,7 @@ namespace UserControls
         public int Deformed;
         public int ColorContours;
         public int CompoundPart;
+        public int SwapParts;
         public int MeshingParameters;
         public int PreviewEdgeMesh;
         public int CreateMesh;
@@ -163,6 +164,7 @@ namespace UserControls
         public event Action<string[]> SetTransparencyEvent;
         public event Action<NamedClass[], bool> ColorContoursVisibilityEvent;
         public event Action<string[]> CreateCompoundPart;
+        public event Action<string[]> SwapParts;
         public event Action<string[]> MeshingParametersEvent;
         public event Action<string[]> PreviewEdgeMesh;
         public event Action<string[]> CreateMeshEvent;
@@ -347,6 +349,8 @@ namespace UserControls
             visible = menuFields.CompoundPart == n && n > 1;
             tsmiSpaceCompoundPart.Visible = false;
             tsmiCompoundPart.Visible = visible;
+            visible = menuFields.SwapParts == n && n == 2;
+            tsmiSwapParts.Visible = visible;
             oneAboveVisible |= visible;
             //Mesh                                                  
             visible = menuFields.MeshingParameters == n;
@@ -370,7 +374,6 @@ namespace UserControls
             oneAboveVisible |= visible;
             // Convert element set                                  
             visible = menuFields.ConvertToPart == n;
-            //tsmiSpaceConvertToPart.Visible = visible;
             tsmiSpaceConvertToPart.Visible = false;
             tsmiConvertToPart.Visible = visible;
             oneAboveVisible |= visible;
@@ -499,6 +502,7 @@ namespace UserControls
             if (item != null && item is GeometryPart && GetActiveTree() == cltvGeometry)
             {
                 menuFields.CompoundPart++;
+                menuFields.SwapParts++;
             }
             // Geometry part - Mesh
             if (item != null && item is GeometryPart && GetActiveTree() == cltvGeometry)
@@ -926,7 +930,7 @@ namespace UserControls
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-        // Geometry - compound
+        // Geometry - compound, swap
         private void tsmiCompoundPart_Click(object sender, EventArgs e)
         {
             try
@@ -936,7 +940,23 @@ namespace UserControls
                 {
                     if (node.Tag != null) names.Add(((NamedClass)node.Tag).Name);
                 }
-                if (names.Count > 0) CreateCompoundPart?.Invoke(names.ToArray());
+                if (names.Count > 1) CreateCompoundPart?.Invoke(names.ToArray());
+            }
+            catch (Exception ex)
+            {
+                CaeGlobals.ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiSwapParts_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                List<string> names = new List<string>();
+                foreach (TreeNode node in cltvGeometry.SelectedNodes)
+                {
+                    if (node.Tag != null) names.Add(((NamedClass)node.Tag).Name);
+                }
+                if (names.Count == 2) SwapParts?.Invoke(names.ToArray());
             }
             catch (Exception ex)
             {
@@ -2258,6 +2278,6 @@ namespace UserControls
             }
         }
 
-       
+        
     }
 }
