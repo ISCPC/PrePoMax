@@ -382,6 +382,7 @@ namespace PrePoMax
             {
                 tsmiTest.Visible = false;
                 tsmiCropWithCylinder.Visible = false;
+                tsmiCropWithCylinder.Visible = false;
             }
         }
         //
@@ -2218,6 +2219,17 @@ namespace PrePoMax
             try
             {
                 SelectOneEntity("Parts", _controller.GetGeometryParts(), _controller.CropGeometryPartWithCylinder);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiCropWithCube_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectOneEntity("Parts", _controller.GetGeometryParts(), _controller.CropGeometryPartWithCube);
             }
             catch (Exception ex)
             {
@@ -5773,6 +5785,10 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.CropPartWithCylinder, partName, r, fileName);
         }
+        public void CropPartWithCube(string partName, double a, string fileName)
+        {
+            InvokeIfRequired(_vtk.CropPartWithCube, partName, a, fileName);
+        }
 
         #endregion  ################################################################################################################
 
@@ -6328,6 +6344,6 @@ namespace PrePoMax
             }
         }
 
-      
+        
     }
 }
