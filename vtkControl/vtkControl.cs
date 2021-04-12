@@ -518,15 +518,15 @@ namespace vtkControl
         }
         private void _style_RightButtonPressEvent(int x, int y)
         {
-            //if (_selectBy == vtkSelectBy.Off)
+            // Off
+            if (_selectBy == vtkSelectBy.Off) return;
+            //
+            vtkActor pickedActor;
+            GetPickPoint(out pickedActor, x, y);
+            if (pickedActor != null)
             {
-                vtkActor pickedActor = null;
-                GetPickPoint(out pickedActor, x, y);
-                if (pickedActor != null)
-                {
-                    MouseEventArgs e = new MouseEventArgs(MouseButtons.Right, 1, x, y, 0);
-                    Controller_ActorsPicked?.Invoke(e, ModifierKeys, new string[] { GetActorName(pickedActor) });
-                }
+                MouseEventArgs e = new MouseEventArgs(MouseButtons.Right, 1, x, y, 0);
+                Controller_ActorsPicked?.Invoke(e, ModifierKeys, new string[] { GetActorName(pickedActor) });
             }
         }
 
@@ -2187,7 +2187,6 @@ namespace vtkControl
 
         // Public methods                                                                                                          
         #region Views  #############################################################################################################
-        
         public void SetFrontBackView(bool animate, bool front)
         {
             if (_animating) return;
@@ -2405,7 +2404,7 @@ namespace vtkControl
             if (animate) AnimateCamera(cameraStart, camera, camera);
             else this.Invalidate();
         }
-
+        //
         private void ResetCamera()
         {
             if (_overlayActors.Count > 0)
@@ -2475,7 +2474,7 @@ namespace vtkControl
 
             _style.ResetClippingRange();
         }
-
+        //
         private int GetClosestIsoDirectionQuadrant(double[] camera)
         {
             double[] quadrant = new double[3];
@@ -2560,7 +2559,7 @@ namespace vtkControl
             v[2] = v1[2] - v2[2];
             return v;
         }
-        
+        //
         public void AnimateCamera_(vtkCamera cameraStart, vtkCamera cameraEnd, vtkCamera camera)
         {
             vtkCameraInterpolator interpolator = vtkCameraInterpolator.New();
@@ -2864,7 +2863,7 @@ namespace vtkControl
                 ((vtkInteractorStyleControl)_renderWindowInteractor.GetInteractorStyle()).Animating = false;
             }
         }
-
+        //
         public void AdjustCameraDistanceAndClipping()
         {
             _style.AdjustCameraDistanceAndClipping();
@@ -3550,7 +3549,7 @@ namespace vtkControl
 
         #endregion  ################################################################################################################
 
-        #region Section view  ######################################################################################################
+        #region Section/Exploded view  #############################################################################################
         public void ApplySectionView(double[] point, double[] normal)
         {
             lock (myLock)
@@ -4062,6 +4061,61 @@ namespace vtkControl
             string name = actorName + Globals.NameSeparator + Globals.SectionViewSuffix + Globals.NameSeparator;
             name = NamedClass.GetNewValueName(_actors.Keys, name, Globals.NameSeparator);
             return name;
+        }
+        // Exploded view
+        public void PreviewExplodedView(Dictionary<string, double[]> partOffsets)
+        {
+            vtkMaxActor actor;
+            double[] offset;
+            string[] tmp;
+            //
+            foreach (var partOffset in partOffsets)
+            {
+                offset = partOffset.Value;
+                if (_actors.TryGetValue(partOffset.Key, out actor))
+                {
+                    actor.Geometry.SetPosition(offset[0], offset[1], offset[2]);
+                    actor.ModelEdges.SetPosition(offset[0], offset[1], offset[2]);
+                    actor.ElementEdges.SetPosition(offset[0], offset[1], offset[2]);
+                }
+            }
+            //
+            AdjustCameraDistanceAndClipping();
+            //
+            this.Invalidate();
+        }
+        public void RemovePreviewedExplodedView(string[] partNames)
+        {
+            vtkMaxActor actor;
+            double[] offset = new double[] { 0, 0, 0 };
+            //
+            foreach (var partName in partNames)
+            {
+                if (_actors.TryGetValue(partName, out actor))
+                {
+                    actor.Geometry.SetPosition(offset[0], offset[1], offset[2]);
+                    actor.ModelEdges.SetPosition(offset[0], offset[1], offset[2]);
+                    actor.ElementEdges.SetPosition(offset[0], offset[1], offset[2]);
+                }
+                //
+                //if (_sectionView)
+                //{
+                //    string[] tmp;
+                //    foreach (var entry in _actors)
+                //    {
+                //        tmp = entry.Key.Split(Globals.NameSeparator);
+                //        //
+                //        if (tmp.Length > 1 && tmp[0] == partName)
+                //        {
+                //            entry.Value.Geometry.SetPosition(offset[0], offset[1], offset[2]);
+                //            entry.Value.ModelEdges.SetPosition(offset[0], offset[1], offset[2]);
+                //            entry.Value.ElementEdges.SetPosition(offset[0], offset[1], offset[2]);
+                //        }
+                //    }
+                //}
+            }
+            //
+            this.Invalidate();
         }
 
         #endregion  ################################################################################################################

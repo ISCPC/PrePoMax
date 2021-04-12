@@ -48,7 +48,8 @@ namespace PrePoMax
         //
         private Point _formLocation;
         private List<Form> _allForms;
-        private FrmSectionView _frmSectionView;        
+        private FrmSectionView _frmSectionView;
+        private FrmExplodedView _frmExplodedView;
         private FrmSelectEntity _frmSelectEntity;
         private FrmSelectGeometry _frmSelectGeometry;
         private FrmSelectItemSet _frmSelectItemSet;
@@ -208,7 +209,7 @@ namespace PrePoMax
                 _modelTree.SetTransparencyEvent += ModelTree_SetTransparencyEvent;
                 _modelTree.ColorContoursVisibilityEvent += ModelTree_ColorContoursVisibilityEvent;
                 _modelTree.CreateCompoundPart += CreateAndImportCompoundPart;
-                _modelTree.SwapParts += SwapParts;
+                _modelTree.SwapPartGeometries += SwapPartGeometries;
                 _modelTree.MeshingParametersEvent += GetSetMeshingParameters;
                 _modelTree.PreviewEdgeMesh += PreviewEdgeMeshes;
                 _modelTree.CreateMeshEvent += CreatePartMeshes;
@@ -263,6 +264,10 @@ namespace PrePoMax
                 //
                 _frmSectionView = new FrmSectionView(_controller);
                 AddFormToAllForms(_frmSectionView);
+                //
+                _frmExplodedView = new FrmExplodedView(_controller);
+                _frmExplodedView.Clear3D = Clear3DSelection;
+                AddFormToAllForms(_frmExplodedView);
                 //
                 _frmUnitSystem = new FrmUnitSystem(_controller);
                 AddFormToAllForms(_frmUnitSystem);
@@ -993,7 +998,7 @@ namespace PrePoMax
                         openFileDialog.Filter = "All files|*.pmx;*.frd;*.dat" +
                                                 "|PrePoMax files|*.pmx" +
                                                 "|Calculix result files|*.frd" +
-                                                "|Calculix dat files|*.dat";
+                                                "|Calculix dat files|*.dat";        // added .dat file
                     }
                     else
                     {
@@ -1045,7 +1050,7 @@ namespace PrePoMax
                 {
                     stateSet = true;
                     await Task.Run(() => Open(fileName, resetCamera));
-                    callback?.Invoke();
+                    callback?.Invoke();                    
                 }
                 else MessageBox.Show("Another task is already running.");
             }
@@ -1081,7 +1086,7 @@ namespace PrePoMax
                 //
                 if (resetCamera) tsmiFrontView_Click(null, null);
             }
-            else throw new NotSupportedException();
+            else throw new NotSupportedException();            
         }
         internal async void tsmiImportFile_Click(object sender, EventArgs e)
         {
@@ -1667,11 +1672,33 @@ namespace PrePoMax
         //
         private void tsmiSectionView_Click(object sender, EventArgs e)
         {
-            SinglePointDataEditor.ParentForm = _frmSectionView;
-            SinglePointDataEditor.Controller = _controller;
-            //
-            ShowForm(_frmSectionView, tsmiSectionView.Text, null);
+            try
+            {
+                SinglePointDataEditor.ParentForm = _frmSectionView;
+                SinglePointDataEditor.Controller = _controller;
+                //
+                ShowForm(_frmSectionView, tsmiSectionView.Text, null);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
         }
+        private void tsmiExplodedView_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                ExplodedViewParameters parms = _controller.GetCurrentExplodedViewScaleFactors();
+                _frmExplodedView.ScaleFactor = parms.ScaleFactor;
+                _frmExplodedView.Magnification = parms.Magnification;
+                //
+                ShowForm(_frmExplodedView, _frmExplodedView.Text, null);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }       
         // Hide/Show
         private void tsmiHideAllParts_Click(object sender, EventArgs e)
         {
@@ -2105,18 +2132,18 @@ namespace PrePoMax
             }
         }
         // 
-        private void tsmiSwapGeometryParts_Click(object sender, EventArgs e)
+        private void tsmiSwapGeometryPartGeometries_Click(object sender, EventArgs e)
         {
             try
             {
-                SelectMultipleEntities("Parts", _controller.GetGeometryParts(), SwapParts, 2, 2);
+                SelectMultipleEntities("Parts", _controller.GetGeometryParts(), SwapPartGeometries, 2, 2);
             }
             catch (Exception ex)
             {
                 ExceptionTools.Show(this, ex);
             }
         }
-        private void SwapParts(string[] partNames)
+        private void SwapPartGeometries(string[] partNames)
         {
             GeometryPart[] parts = _controller.GetGeometryPartsWithoutSubParts();
             GeometryPart part1 = _controller.GetGeometryPart(partNames[0]);
@@ -2126,7 +2153,7 @@ namespace PrePoMax
                 if (part1 is CompoundGeometryPart || part2 is CompoundGeometryPart)
                     MessageBox.Show("Compound parts cannot be swaped.", Globals.ProgramName);
                 else
-                    _controller.SwapGeometryParts(partNames[0], partNames[1]);
+                    _controller.SwapGeometryPartgeometries(partNames[0], partNames[1]);
             }
             else MessageBox.Show("Compound subparts cannot be swaped.", Globals.ProgramName);
         }
@@ -2374,7 +2401,7 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }            
         }
-        
+
         //
         private void GetSetMeshingParameters(string[] partNames)
         {
@@ -2558,6 +2585,8 @@ namespace PrePoMax
                     //
                     _modelTree.SelectBasePart(e, modifierKeys, part);
                 }
+                //
+                _controller.UpdateExplodedView(true);
             }
             catch (Exception ex)
             {
@@ -5103,7 +5132,7 @@ namespace PrePoMax
         {
             tsmiRightView_Click(null, null);
         }
-        
+        //
         private void tsbNormalView_Click(object sender, EventArgs e)
         {
             tsmiNormalView_Click(null, null);
@@ -5112,17 +5141,17 @@ namespace PrePoMax
         {
             tsmiVerticalView_Click(null, null);
         }
-
+        //
         private void tsbIsometric_Click(object sender, EventArgs e)
         {
             tsmiIsometricView_Click(null, null);
         }
-        
+        //
         private void tsbZoomToFit_Click(object sender, EventArgs e)
         {
             tsmiZoomToFit_Click(null, null);
         }
-
+        //
         private void tsbShowWireframeEdges_Click(object sender, EventArgs e)
         {
             tsmiShowWireframeEdges_Click(null, null);
@@ -5139,12 +5168,16 @@ namespace PrePoMax
         {
             tsmiShowNoEdges_Click(null, null);
         }
-
+        //
         private void tsbSectionView_Click(object sender, EventArgs e)
         {
             tsmiSectionView_Click(null, null);
         }
-
+        private void tsbExplodedView_Click(object sender, EventArgs e)
+        {
+            tsmiExplodedView_Click(null, null);
+        }
+        //
         private void tsbHideAllParts_Click(object sender, EventArgs e)
         {
             tsmiHideAllParts_Click(sender, e);
@@ -5157,7 +5190,7 @@ namespace PrePoMax
         {
             tsmiInvertVisibleParts_Click(sender, e);
         }
-
+        //
         private void tscbSymbolsForStep_SelectedIndexChanged(object sender, System.EventArgs e)
         {
             // If BC or load is selected it will reset the step - clear selection
@@ -5238,7 +5271,6 @@ namespace PrePoMax
                 }
             });
         }
-
 
         #endregion  ################################################################################################################
 
@@ -5593,6 +5625,7 @@ namespace PrePoMax
         // Section view
         public void ApplySectionView(double[] point, double[] normal)
         {
+
             InvokeIfRequired(_vtk.ApplySectionView, point, normal);
         }
         public void UpdateSectionView(double[] point, double[] normal)
@@ -5603,8 +5636,28 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.RemoveSectionView);
         }
+        public void SetSectionViewStatus(bool status)
+        {
+            // Must be updated on view change and clear
+
+            //tsbSectionView.Checked = status;
+        }
+        // Exploded view
+        public void PreviewExplodedView(Dictionary<string, double[]> partOffsets)
+        {
+            InvokeIfRequired(_vtk.PreviewExplodedView, partOffsets);
+        }
+        public void RemovePreviewedExplodedView(string[] partNames)
+        {
+            InvokeIfRequired(_vtk.RemovePreviewedExplodedView, partNames);
+        }
+        public void SetExplodedViewStatus(bool status)
+        {
+            // Must be updated on view change and clear
+
+            //tsbExplodedView.Checked = status;
+        }
         // Transforms
-        
         public void AddSymetry(int symetryPlane, double[] symetryPoint)
         {
             InvokeIfRequired(_vtk.AddSymetry, symetryPlane, symetryPoint);
@@ -6290,7 +6343,7 @@ namespace PrePoMax
 
             //_vtk.SwithchLights();
 
-            _controller.SwapGeometryParts("Nosilec", "Nosilec_r");
+            _controller.SwapGeometryPartgeometries("Nosilec", "Nosilec_r");
         }
 
         private void timerTest_Tick(object sender, EventArgs e)

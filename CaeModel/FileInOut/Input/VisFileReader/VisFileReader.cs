@@ -157,7 +157,7 @@ namespace FileInOut.Input
                 node.Y = double.Parse(tmp[2]);
                 node.Z = double.Parse(tmp[3]);
 
-                bBox.CheckNode(node);
+                bBox.IncludeNode(node);
 
                 nodes.Add(node.Id, node);
             }

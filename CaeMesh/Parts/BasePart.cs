@@ -19,6 +19,7 @@ namespace CaeMesh
         protected int[] _nodeLabels;
         protected bool _smoothShaded;
         protected BoundingBox _boundingBox;
+        protected double[] _offset;
 
         [NonSerialized]
         protected VisualizationData _visualizationCopy;
@@ -38,6 +39,7 @@ namespace CaeMesh
         public int[] NodeLabels { get { return _nodeLabels; } set { _nodeLabels = value; } }
         public bool SmoothShaded { get { return _smoothShaded; } set { _smoothShaded = value; } }
         public BoundingBox BoundingBox { get { return _boundingBox; } set { _boundingBox = value; } }
+        public double[] Offset { get { return _offset; } set { _offset = value; } }
 
 
         // Constructors                                                                                                             
@@ -52,7 +54,8 @@ namespace CaeMesh
             _visualizationCopy = null;
             _smoothShaded = false;
             _boundingBox = new BoundingBox();
-
+            _offset = new double[3];
+            //
             if (IsSolid()) _partType = PartType.Solid;
             else if (IsShell()) _partType = PartType.Shell;
             else if (IsBeam()) _partType = PartType.Wire;
@@ -62,23 +65,25 @@ namespace CaeMesh
             : base(part.Name, part.Labels.ToArray())
         {
             _partId = part.PartId;
-
+            //
             _partType = part.PartType;
-
+            //
             _color = part.Color;
-
+            //
             _elementTypes = part.ElementTypes != null ? part.ElementTypes.ToArray() : null;
-
+            //
             _visualization = part.Visualization.DeepCopy();
-
+            //
             if (part.VisualizationCopy != null)
                 _visualizationCopy = part.VisualizationCopy.DeepCopy();
-            
+            //
             _nodeLabels = part.NodeLabels != null ? part.NodeLabels.ToArray() : null;
-
+            //
             _smoothShaded = part.SmoothShaded;
-
+            //
             _boundingBox = part.BoundingBox.DeepClone();
+            //
+            if (part.Offset != null) _offset = part.Offset.ToArray();
         }
 
 
@@ -123,7 +128,6 @@ namespace CaeMesh
             }
             else throw new NotSupportedException();
         }
-       
 
         public virtual BasePart DeepCopy()
         {
@@ -169,7 +173,6 @@ namespace CaeMesh
             //    if (_nodeLabels[i] != part.NodeLabels[i])
             //        return false;
             //}
-
             return true;
         }
     }

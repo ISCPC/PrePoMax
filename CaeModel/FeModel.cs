@@ -561,7 +561,7 @@ namespace CaeModel
             //
             return noErrors;
         }
-        public string[] ImportGeometryFromBrepFile(string visFileName, string brepFileName, bool mergeParts)
+        public string[] ImportGeometryFromBrepFile(string visFileName, string brepFileName)
         {
             FeMesh mesh = FileInOut.Input.VisFileReader.Read(visFileName);
             //

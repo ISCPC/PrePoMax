@@ -19,6 +19,8 @@ namespace CaeMesh
         private Dictionary<int, FeElement> _elements;
         [NonSerialized]
         private Octree.PointOctree<int> _octree;
+        [NonSerialized]
+        private Dictionary<string, double[]> _partOffsets;
 
         private MeshRepresentation _meshRepresentation;                         //ISerializable
         private OrderedDictionary<string, FeMeshRefinement> _meshRefinements;   //ISerializable
@@ -550,9 +552,9 @@ namespace CaeMesh
                     for (int i = 0; i < entry.Value.NodeLabels.Length; i++)
                     {
                         node = _nodes[entry.Value.NodeLabels[i]];
-                        entry.Value.BoundingBox.CheckNode(node);
+                        entry.Value.BoundingBox.IncludeNode(node);
                     }
-                    _boundingBox.CheckBox(entry.Value.BoundingBox);
+                    _boundingBox.IncludeBox(entry.Value.BoundingBox);
                 }
                 // Compound parts
                 foreach (var entry in _parts)
@@ -562,7 +564,7 @@ namespace CaeMesh
                         cgp.BoundingBox.Reset();
                         foreach (var partName in cgp.SubPartNames)
                         {
-                            cgp.BoundingBox.CheckBox(_parts[partName].BoundingBox);
+                            cgp.BoundingBox.IncludeBox(_parts[partName].BoundingBox);
                         }
                     }
                 }
@@ -2188,48 +2190,6 @@ namespace CaeMesh
             // Update bounding boxes
             ComputeBoundingBox();
         }
-        public void MergeResultParts(string[] partNamesToMerge, out ResultPart newResultPart, out string[] mergedParts,
-                                     System.Drawing.Color[] colorTable)
-        {
-            newResultPart = null;
-            mergedParts = null;
-            if (partNamesToMerge == null || partNamesToMerge.Length < 2) return;
-            // Find parts to merge
-            HashSet<int> allElementIds = new HashSet<int>();
-            List<string> mergedPartsList = new List<string>();
-            int minId = int.MaxValue;
-            BasePart part;
-            foreach (string partName in partNamesToMerge)
-            {
-                if (_parts.TryGetValue(partName, out part) && part is ResultPart meshPart)
-                {
-                    mergedPartsList.Add(partName);
-                    allElementIds.UnionWith(meshPart.Labels);
-                    if (meshPart.PartId < minId) minId = meshPart.PartId;
-                }
-            }
-            if (mergedPartsList.Count == 1) return;
-            //
-            mergedParts = mergedPartsList.ToArray();
-            // Remove parts
-            foreach (var partName in mergedParts) _parts.Remove(partName);
-            // Create new part
-            part = CreateBasePartFromElementIds(allElementIds.ToArray());
-            //
-            newResultPart = new ResultPart(part);
-            newResultPart.Name = NamedClass.GetNewValueName(_parts.Keys, "Merged_Part-");
-            newResultPart.PartId = minId;
-            SetPartsColorFromColorTable(newResultPart);
-            //
-            foreach (var elementId in newResultPart.Labels)
-            {
-                _elements[elementId].PartId = minId;
-            }
-            // Add new part
-            _parts.Add(newResultPart.Name, newResultPart);
-            // Update bounding boxes
-            ComputeBoundingBox();
-        }
         public void MergePartsBasedOnMesh(FeMesh mesh, Type resultingPartType)
         {
             _parts.Clear();
@@ -2649,15 +2609,11 @@ namespace CaeMesh
             }
             return partNames.ToArray();
         }
-        public int[] GetPartIds()
+        public int[] GetPartIdsByNames(string[] partNames)
         {
-            int count = 0;
-            int[] ids = new int[_parts.Count];
-            foreach (var entry in _parts)
-            {
-                ids[count++] = entry.Value.PartId;
-            }
-            return ids;
+            int[] partIds = new int[partNames.Length];
+            for (int i = 0; i < partNames.Length; i++) partIds[i] = _parts[partNames[i]].PartId;
+            return partIds;
         }
         public int[] GetPartIdsByElementIds(int[] elementIds)
         {
@@ -2785,6 +2741,247 @@ namespace CaeMesh
             {
                 entry.Value.Visualization = entry.Value.VisualizationCopy;
                 entry.Value.VisualizationCopy = null;
+            }
+        }
+        // Exploded view
+        public Dictionary<string, double[]> GetExplodedViewOffsets(double evRatio, string[] partNames = null)
+        {
+            BoundingBox bb = new BoundingBox();
+            BoundingBox partBb;
+            Dictionary<string, double[]> partOffsets = new Dictionary<string, double[]>();
+            HashSet<string> subPartNames = new HashSet<string>();
+            if (partNames == null) partNames = _parts.Keys.ToArray();
+            // Get bounding box of the assembly
+            foreach (var partName in partNames)
+            {
+                bb.IncludeBox(_parts[partName].BoundingBox);
+            }
+            // Get connected part names
+            List<List<BasePart>> allConnectedParts = GetAllConnectedParts(partNames);
+            //
+            double[] offset;
+            Vec3D v1;
+            Vec3D v2;
+            Vec3D center = new Vec3D(bb.GetCenter());
+            foreach (var connectedParts in allConnectedParts)
+            {
+                partBb = new BoundingBox();
+                foreach (var connectedPart in connectedParts)
+                {
+                    partBb.IncludeBox(connectedPart.BoundingBox);                
+                }
+
+                // Compute the offset
+                v1 = new Vec3D(partBb.GetCenter());
+                v2 = (v1 - center) * (evRatio);
+                offset = v2.Coor;
+                offset[0] = Tools.RoundToSignificantDigits(offset[0], 3);
+                offset[1] = Tools.RoundToSignificantDigits(offset[1], 3);
+                offset[2] = Tools.RoundToSignificantDigits(offset[2], 3);
+                // Set the offset
+                foreach (var connectedPart in connectedParts)
+                {
+                    partOffsets.Add(connectedPart.Name, offset);
+                }
+            }
+            return partOffsets;
+        }
+        public void ApplyExplodedView(Dictionary<string, double[]> partOffsets)
+        {
+            double[] offset;
+            BasePart part;
+            FeNode node;
+            HashSet<int> movedNodes = new HashSet<int>();
+            //
+            foreach (var entry in partOffsets)
+            {
+                offset = entry.Value;
+                if (_parts.TryGetValue(entry.Key, out part))
+                {
+                    part.Offset = offset;
+                    if (offset != null && (offset[0] != 0 || offset[1] != 0 || offset[2] != 0))
+                    {
+                        part.BoundingBox.AddOffset(offset);
+                        //
+                        foreach (var nodeId in part.NodeLabels.Except(movedNodes))
+                        {
+                            node = _nodes[nodeId];
+                            node.X += offset[0];
+                            node.Y += offset[1];
+                            node.Z += offset[2];
+                            _nodes[nodeId] = node;
+                        }
+                        movedNodes.UnionWith(part.NodeLabels);
+                    }
+                }
+            }
+            if (movedNodes.Count > 0)
+            {
+                foreach (var entry in _nodeSets) UpdateNodeSetCenterOfGravity(entry.Value);
+                foreach (var entry in _referencePoints) UpdateReferencePoint(entry.Value);
+            }
+        }
+        public void SuppressExploededView(string[] partNames = null)
+        {
+            partNames = ConnectedPartNames(partNames);
+            // Remove already suppresed parts
+            if (_partOffsets != null) partNames = partNames.Except(_partOffsets.Keys).ToArray();
+            // Suppress exploded view
+            Dictionary<string, double[]>  partOffsets = RemoveExplodedView(partNames);
+            //
+            if (_partOffsets == null) _partOffsets = partOffsets;
+            else
+            {
+                foreach (var entry in partOffsets) _partOffsets.Add(entry.Key, entry.Value);
+            }
+        }
+        public bool ResumeExploededView()
+        {
+            bool update = false;
+            if (_partOffsets != null && _partOffsets.Count > 0)
+            {
+                ApplyExplodedView(_partOffsets);
+                update = true;
+            }
+            _partOffsets = null;
+            //
+            return update;
+        }
+        public Dictionary<string, double[]> RemoveExplodedView(string[] partNames = null)
+        {
+            double[] offset;
+            BasePart part;
+            FeNode node;
+            HashSet<int> movedNodes = new HashSet<int>();
+            Dictionary<string, double[]> partOffsets = new Dictionary<string, double[]>();
+            //
+            if (partNames == null) partNames = _parts.Keys.ToArray();
+            //
+            foreach (var partName in partNames)
+            {
+                if (_parts.TryGetValue(partName, out part))
+                {
+                    part = _parts[partName];
+                    offset = part.Offset;
+                    //
+                    if (offset != null && (offset[0] != 0 || offset[1] != 0 || offset[2] != 0))
+                    {
+                        foreach (var nodeId in part.NodeLabels.Except(movedNodes))
+                        {
+                            node = _nodes[nodeId];
+                            node.X -= offset[0];
+                            node.Y -= offset[1];
+                            node.Z -= offset[2];
+                            _nodes[nodeId] = node;
+                        }
+                        movedNodes.UnionWith(part.NodeLabels);
+                        //
+                        _parts[partName].Offset = new double[3];
+                        part.BoundingBox.RemoveOffset(offset);
+                        //
+                        partOffsets.Add(partName, offset); // only add non-zero offsets
+                    }
+                }
+            }
+            if (movedNodes.Count > 0)
+            {
+                foreach (var entry in _nodeSets) UpdateNodeSetCenterOfGravity(entry.Value);
+                foreach (var entry in _referencePoints) UpdateReferencePoint(entry.Value);
+            }
+            return partOffsets;
+        }
+        private List<List<BasePart>> GetAllConnectedParts(string[] partNames)
+        {
+            BasePart part;
+            HashSet<BasePart> partsToInclude = new HashSet<BasePart>();
+            foreach (var partName in partNames)
+            {
+                if (_parts.TryGetValue(partName, out part)) partsToInclude.Add(part);
+            }
+            //
+            BasePart[] parts = _parts.Values.ToArray();
+            HashSet<string> includedParts = new HashSet<string>();
+            List<BasePart> connectedParts;
+            List<List<BasePart>> allConnectedParts = new List<List<BasePart>>();
+            //
+            if (_meshRepresentation == MeshRepresentation.Geometry)
+            {
+                for (int i = 0; i < parts.Length; i++)
+                {
+                    if (parts[i] is CompoundGeometryPart cgp)
+                    {
+                        connectedParts = new List<BasePart>();
+                        for (int j = 0; j < cgp.SubPartNames.Length; j++)
+                        {
+                            connectedParts.Add(_parts[cgp.SubPartNames[j]]);
+                            includedParts.Add(cgp.SubPartNames[j]);
+                        }
+                        if (partsToInclude.Intersect(connectedParts).Count() > 0) allConnectedParts.Add(connectedParts);
+                        includedParts.Add(parts[i].Name);
+                    }
+                }
+                for (int i = 0; i < parts.Length; i++)
+                {
+                    if (!includedParts.Contains(parts[i].Name))
+                    {
+                        connectedParts = new List<BasePart>() { parts[i] };
+                        if (partsToInclude.Intersect(connectedParts).Count() > 0) allConnectedParts.Add(connectedParts);
+                    }
+                }
+            }
+            else if (_meshRepresentation == MeshRepresentation.Mesh || _meshRepresentation == MeshRepresentation.Results)
+            {
+                for (int i = 0; i < parts.Length; i++)
+                {
+                    if (!includedParts.Contains(parts[i].Name))
+                    {
+                        connectedParts = new List<BasePart>() { parts[i] };
+                        for (int j = i + 1; j < parts.Length; j++)
+                        {
+                            if (parts[i].BoundingBox.Intesects(parts[j].BoundingBox))
+                            {
+                                if (parts[i].NodeLabels.Intersect(parts[j].NodeLabels).Count() > 0)
+                                {
+                                    connectedParts.Add(parts[j]);
+                                    includedParts.Add(parts[j].Name);
+                                }
+                            }
+                        }
+                        if (partsToInclude.Intersect(connectedParts).Count() > 0) allConnectedParts.Add(connectedParts);
+                    }
+                }
+            }
+            //
+            return allConnectedParts;
+        }
+        private string[] ConnectedPartNames(string[] partNames)
+        {
+            if (partNames == null) return _parts.Keys.ToArray();
+            else
+            {
+                HashSet<string> connectedPartNames = new HashSet<string>(partNames);
+                // Get all part names that are connected to the given part names
+                if (partNames != null)
+                {
+                    List<List<BasePart>> allConnectedParts = GetAllConnectedParts(_parts.Keys.ToArray());
+                    foreach (var connectedParts in allConnectedParts)
+                    {
+                        if (connectedParts.Count > 1)
+                        {
+                            foreach (var connectedPart in connectedParts)
+                            {
+                                if (connectedPartNames.Contains(connectedPart.Name))
+                                {
+                                    // Add all connected part names
+                                    foreach (var connectedPartForName in connectedParts)
+                                        connectedPartNames.Add(connectedPartForName.Name);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                return connectedPartNames.ToArray();
             }
         }
 
@@ -5144,7 +5341,7 @@ namespace CaeMesh
             _maxNodeId++;
             FeNode node = new FeNode(_maxNodeId, x, y, z);
             _nodes.Add(node.Id, node);
-            _boundingBox.CheckNode(node);
+            _boundingBox.IncludeNode(node);
             return node;
         }
         public void AddNodeSet(FeNodeSet nodeSet)
@@ -5425,7 +5622,7 @@ namespace CaeMesh
                 allNames.Add(entryName);
             }
             // Bounding box
-            _boundingBox.CheckBox(mesh.BoundingBox);
+            _boundingBox.IncludeBox(mesh.BoundingBox);
             //
             return addedPartNames.ToArray();
         }
@@ -7392,8 +7589,15 @@ namespace CaeMesh
                     }
 
                     // Create new visualization 
-                    part.NodeLabels = part.NodeLabels.Union(oldNewNodeIds.Values).ToArray();
+                    HashSet<int> newPartNodeIds = new HashSet<int>(part.NodeLabels);
+                    newPartNodeIds.UnionWith(oldNewNodeIds.Values);
+                    foreach (var entry in midNodes) newPartNodeIds.Add(entry.Value.Id);
+                    part.NodeLabels = newPartNodeIds.ToArray();
+                    Array.Sort(part.NodeLabels);
+                    //
                     part.Labels = part.Labels.Union(newElements.Keys).ToArray();
+                    Array.Sort(part.Labels);
+                    //
                     part.AddElementTypes(newElementTypes.ToArray());
                     part.Visualization = new VisualizationData();
                     part.Visualization.ExtractVisualizationCellsFromElements3D(_elements, part.Labels);

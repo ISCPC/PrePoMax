@@ -77,6 +77,7 @@
             this.tsmiShowNoEdges = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerView2 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiSectionView = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiExplodedView = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerView3 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiShowAllParts = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiHideAllParts = new System.Windows.Forms.ToolStripMenuItem();
@@ -114,12 +115,14 @@
             this.tsmiDeleteGeometryParts = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerGeometry1 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiCreateAndImportCompoundPart = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiSwapGeometryPartGeometries = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerGeometry2 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiGeometryAnalyze = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiFlipFaceNormal = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSplitAFaceUsingTwoPoints = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiFindEdgesByAngleForGeometryParts = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiCropWithCylinder = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiCropWithCube = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiMesh = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiMeshingParameters = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiMeshRefinement = new System.Windows.Forms.ToolStripMenuItem();
@@ -336,6 +339,7 @@
             this.tsbShowNoEdges = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.tsbSectionView = new System.Windows.Forms.ToolStripButton();
+            this.tsbExplodedView = new System.Windows.Forms.ToolStripButton();
             this.toolStripViewSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.tsbShowAllParts = new System.Windows.Forms.ToolStripButton();
             this.tsbHideAllParts = new System.Windows.Forms.ToolStripButton();
@@ -345,8 +349,6 @@
             this.tscbSymbolsForStep = new System.Windows.Forms.ToolStripComboBox();
             this.timerTest = new System.Windows.Forms.Timer(this.components);
             this.timerOutput = new System.Windows.Forms.Timer(this.components);
-            this.tsmiCropWithCube = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiSwapGeometryParts = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStripMain.SuspendLayout();
             this.statusStripMain.SuspendLayout();
             this.tsResults.SuspendLayout();
@@ -611,6 +613,7 @@
             this.tsmiShowNoEdges,
             this.tsmiDividerView2,
             this.tsmiSectionView,
+            this.tsmiExplodedView,
             this.tsmiDividerView3,
             this.tsmiShowAllParts,
             this.tsmiHideAllParts,
@@ -765,11 +768,19 @@
             // 
             // tsmiSectionView
             // 
-            this.tsmiSectionView.Image = ((System.Drawing.Image)(resources.GetObject("tsmiSectionView.Image")));
+            this.tsmiSectionView.Image = global::PrePoMax.Properties.Resources.SectionView;
             this.tsmiSectionView.Name = "tsmiSectionView";
             this.tsmiSectionView.Size = new System.Drawing.Size(239, 22);
             this.tsmiSectionView.Text = "Section View";
             this.tsmiSectionView.Click += new System.EventHandler(this.tsmiSectionView_Click);
+            // 
+            // tsmiExplodedView
+            // 
+            this.tsmiExplodedView.Image = global::PrePoMax.Properties.Resources.Explode;
+            this.tsmiExplodedView.Name = "tsmiExplodedView";
+            this.tsmiExplodedView.Size = new System.Drawing.Size(239, 22);
+            this.tsmiExplodedView.Text = "Exploded View";
+            this.tsmiExplodedView.Click += new System.EventHandler(this.tsmiExplodedView_Click);
             // 
             // tsmiDividerView3
             // 
@@ -947,7 +958,7 @@
             this.tsmiGeometryPart,
             this.tsmiDividerGeometry1,
             this.tsmiCreateAndImportCompoundPart,
-            this.tsmiSwapGeometryParts,
+            this.tsmiSwapGeometryPartGeometries,
             this.tsmiDividerGeometry2,
             this.tsmiGeometryAnalyze,
             this.tsmiFlipFaceNormal,
@@ -1055,6 +1066,13 @@
             this.tsmiCreateAndImportCompoundPart.Text = "Create Compound Part";
             this.tsmiCreateAndImportCompoundPart.Click += new System.EventHandler(this.tsmiCreateAndImportCompoundPart_Click);
             // 
+            // tsmiSwapGeometryPartGeometries
+            // 
+            this.tsmiSwapGeometryPartGeometries.Name = "tsmiSwapGeometryPartGeometries";
+            this.tsmiSwapGeometryPartGeometries.Size = new System.Drawing.Size(226, 22);
+            this.tsmiSwapGeometryPartGeometries.Text = "Swap Part Geometries";
+            this.tsmiSwapGeometryPartGeometries.Click += new System.EventHandler(this.tsmiSwapGeometryPartGeometries_Click);
+            // 
             // tsmiDividerGeometry2
             // 
             this.tsmiDividerGeometry2.Name = "tsmiDividerGeometry2";
@@ -1094,6 +1112,13 @@
             this.tsmiCropWithCylinder.Size = new System.Drawing.Size(226, 22);
             this.tsmiCropWithCylinder.Text = "Crop With Cylinder";
             this.tsmiCropWithCylinder.Click += new System.EventHandler(this.tsmiCropWithCylinder_Click);
+            // 
+            // tsmiCropWithCube
+            // 
+            this.tsmiCropWithCube.Name = "tsmiCropWithCube";
+            this.tsmiCropWithCube.Size = new System.Drawing.Size(226, 22);
+            this.tsmiCropWithCube.Text = "Crop With Cube";
+            this.tsmiCropWithCube.Click += new System.EventHandler(this.tsmiCropWithCube_Click);
             // 
             // tsmiMesh
             // 
@@ -2741,6 +2766,7 @@
             this.tsbShowNoEdges,
             this.toolStripSeparator1,
             this.tsbSectionView,
+            this.tsbExplodedView,
             this.toolStripViewSeparator3,
             this.tsbShowAllParts,
             this.tsbHideAllParts,
@@ -2750,7 +2776,7 @@
             this.tscbSymbolsForStep});
             this.tsViews.Location = new System.Drawing.Point(107, 25);
             this.tsViews.Name = "tsViews";
-            this.tsViews.Size = new System.Drawing.Size(631, 25);
+            this.tsViews.Size = new System.Drawing.Size(687, 25);
             this.tsViews.TabIndex = 6;
             this.tsViews.Text = "Views";
             // 
@@ -2912,12 +2938,22 @@
             // tsbSectionView
             // 
             this.tsbSectionView.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbSectionView.Image = ((System.Drawing.Image)(resources.GetObject("tsbSectionView.Image")));
+            this.tsbSectionView.Image = global::PrePoMax.Properties.Resources.SectionView;
             this.tsbSectionView.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbSectionView.Name = "tsbSectionView";
             this.tsbSectionView.Size = new System.Drawing.Size(23, 22);
             this.tsbSectionView.Text = "Section view";
             this.tsbSectionView.Click += new System.EventHandler(this.tsbSectionView_Click);
+            // 
+            // tsbExplodedView
+            // 
+            this.tsbExplodedView.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbExplodedView.Image = global::PrePoMax.Properties.Resources.Explode;
+            this.tsbExplodedView.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbExplodedView.Name = "tsbExplodedView";
+            this.tsbExplodedView.Size = new System.Drawing.Size(23, 22);
+            this.tsbExplodedView.Text = "Exploded view";
+            this.tsbExplodedView.Click += new System.EventHandler(this.tsbExplodedView_Click);
             // 
             // toolStripViewSeparator3
             // 
@@ -2982,20 +3018,6 @@
             // timerOutput
             // 
             this.timerOutput.Tick += new System.EventHandler(this.timerOutput_Tick);
-            // 
-            // tsmiCropWithCube
-            // 
-            this.tsmiCropWithCube.Name = "tsmiCropWithCube";
-            this.tsmiCropWithCube.Size = new System.Drawing.Size(226, 22);
-            this.tsmiCropWithCube.Text = "Crop With Cube";
-            this.tsmiCropWithCube.Click += new System.EventHandler(this.tsmiCropWithCube_Click);
-            // 
-            // tsmiSwapGeometryParts
-            // 
-            this.tsmiSwapGeometryParts.Name = "tsmiSwapGeometryParts";
-            this.tsmiSwapGeometryParts.Size = new System.Drawing.Size(226, 22);
-            this.tsmiSwapGeometryParts.Text = "Swap parts";
-            this.tsmiSwapGeometryParts.Click += new System.EventHandler(this.tsmiSwapGeometryParts_Click);
             // 
             // FrmMain
             // 
@@ -3367,7 +3389,9 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiPropagateFieldOutput;
         private System.Windows.Forms.ToolStripMenuItem tsmiPropagateLoad;
         private System.Windows.Forms.ToolStripMenuItem tsmiCropWithCube;
-        private System.Windows.Forms.ToolStripMenuItem tsmiSwapGeometryParts;
+        private System.Windows.Forms.ToolStripMenuItem tsmiSwapGeometryPartGeometries;
+        private System.Windows.Forms.ToolStripButton tsbExplodedView;
+        private System.Windows.Forms.ToolStripMenuItem tsmiExplodedView;
     }
 }
 

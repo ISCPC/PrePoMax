@@ -28,6 +28,5 @@ namespace CaeMesh
         public FeElementTypeParabolicWedge ParabolicWedgeType;
         public FeElementTypeLinearHexa LinearHexaType;
         public FeElementTypeParabolicHexa ParabolicHexaType;
-        //public MeshingParameters MeshingParameters;
     }
 }

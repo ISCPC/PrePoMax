@@ -31,6 +31,7 @@ namespace PrePoMax
         [NonSerialized] protected ViewGeometryModelResults _currentView;
         [NonSerialized] protected string _drawSymbolsForStep;
         [NonSerialized] protected Dictionary<ViewGeometryModelResults, Octree.Plane> _sectionViewPlanes;
+        [NonSerialized] protected Dictionary<ViewGeometryModelResults, ExplodedViewParameters> _explodedViewScaleFactors;
         [NonSerialized] protected AnnotateWithColorEnum _annotateWithColor;
         // Selection
         [NonSerialized] protected vtkSelectBy _selectBy;
@@ -63,9 +64,7 @@ namespace PrePoMax
                     //
                     ApplySettings();
                     // Redraw model with new settings
-                    if (_currentView == ViewGeometryModelResults.Geometry) DrawGeometry(false);
-                    else if (_currentView == ViewGeometryModelResults.Model) DrawModel(false);
-                    else DrawResults(false);
+                    Redraw();
                 }
                 catch
                 { }
@@ -96,10 +95,7 @@ namespace PrePoMax
                     ClearSelectionHistoryAndCallSelectionChanged(); // the selection nodes are only valid on default mesh
                     _form.SetCurrentView(_currentView);
                     //
-                    if (_currentView == ViewGeometryModelResults.Geometry) DrawGeometry(false);
-                    else if (_currentView == ViewGeometryModelResults.Model) DrawModel(false);
-                    else if (_currentView == ViewGeometryModelResults.Results) DrawResults(false); // Also calls Clear
-                    else throw new NotSupportedException();
+                    Redraw();
                 }
             }
         }
@@ -111,9 +107,26 @@ namespace PrePoMax
                 RedrawSymbols(updateHighlight);
             }
         }
+        public string GetDrawSymbolsForStep()
+        {
+            return _drawSymbolsForStep;
+        }
+        //
         public bool IsSectionViewActive()
         {
             return _sectionViewPlanes[_currentView] != null;
+        }
+        public Octree.Plane GetSectionViewPlane()
+        {
+            return _sectionViewPlanes[_currentView];
+        }
+        public bool IsExplodedViewActive()
+        {
+            return _explodedViewScaleFactors[_currentView].ScaleFactor != -1;
+        }
+        public ExplodedViewParameters GetCurrentExplodedViewScaleFactors()
+        {
+            return _explodedViewScaleFactors[_currentView];
         }
         public AnnotateWithColorEnum AnnotateWithColor
         {
@@ -125,10 +138,8 @@ namespace PrePoMax
                 if (_annotateWithColor == AnnotateWithColorEnum.None) _form.HideColorBar();
                 //
                 _form.InitializeColorBarWidgetPosition();
-                if (_currentView == ViewGeometryModelResults.Geometry) DrawGeometry(false);
-                else if (_currentView == ViewGeometryModelResults.Model) DrawModel(false);
-                else if (_currentView == ViewGeometryModelResults.Results) DrawResults(false); // Also calls Clear
-                else throw new NotSupportedException();
+                //
+                Redraw();
             }
         }
         // Selection
@@ -235,7 +246,11 @@ namespace PrePoMax
             {
                 if (_currentView == ViewGeometryModelResults.Geometry) return _model.Geometry;
                 else if (_currentView == ViewGeometryModelResults.Model) return _model.Mesh;
-                else if (_currentView == ViewGeometryModelResults.Results) return _results.Mesh;
+                else if (_currentView == ViewGeometryModelResults.Results)
+                {
+                    if (_results != null) return _results.Mesh;
+                    else return null;
+                }
                 else throw new NotSupportedException();
             }
         }
@@ -300,6 +315,11 @@ namespace PrePoMax
             _sectionViewPlanes.Add(ViewGeometryModelResults.Model, null);
             _sectionViewPlanes.Add(ViewGeometryModelResults.Results, null);
             //
+            _explodedViewScaleFactors = new Dictionary<ViewGeometryModelResults, ExplodedViewParameters>();
+            _explodedViewScaleFactors.Add(ViewGeometryModelResults.Geometry, new ExplodedViewParameters());
+            _explodedViewScaleFactors.Add(ViewGeometryModelResults.Model, new ExplodedViewParameters());
+            _explodedViewScaleFactors.Add(ViewGeometryModelResults.Results, new ExplodedViewParameters());
+            //
             Clear();
             // Settings
             _settings = new SettingsContainer();
@@ -345,8 +365,12 @@ namespace PrePoMax
         }
         public void ClearModel()
         {
+            // Section view
             _sectionViewPlanes[ViewGeometryModelResults.Geometry] = null;
             _sectionViewPlanes[ViewGeometryModelResults.Model] = null;
+            // Exploded view
+            _explodedViewScaleFactors[ViewGeometryModelResults.Geometry] = new ExplodedViewParameters();
+            _explodedViewScaleFactors[ViewGeometryModelResults.Model] = new ExplodedViewParameters();
             //
             _model = new FeModel("Model-1");
             SetModelUnitSystem(_model.UnitSystem.UnitSystemType);   // update widgets
@@ -362,6 +386,8 @@ namespace PrePoMax
         {
             // Section view
             _sectionViewPlanes[ViewGeometryModelResults.Results] = null;
+            // Exploded view
+            _explodedViewScaleFactors[ViewGeometryModelResults.Results] = new ExplodedViewParameters();
             //
             if (_results != null || _history != null)
             {
@@ -430,8 +456,10 @@ namespace PrePoMax
             else throw new NotSupportedException();
             // Get first component of the first field for the last increment in the last step
             if (_results != null) _currentFieldData = _results.GetFirstComponentOfTheFirstFieldAtDefaultIncrement();
+            //
+            UpdateExplodedView(false);
             // Settings
-            AddFileNameToRecent(fileName);
+            AddFileNameToRecent(fileName);  // this redraws the scene
         }
         private void OpenPmx(string fileName)
         {
@@ -496,7 +524,10 @@ namespace PrePoMax
                 // Check if the meshes are the same and rename the parts
                 if (_model.Mesh != null && _results.Mesh != null && _model.HashName == _results.HashName)
                 {
+                    SuppressExplodedViews();
+                    //
                     double similarity = _model.Mesh.IsEqual(_results.Mesh);
+                    //
                     if (similarity > 0)
                     {
                         if (similarity < 1)
@@ -512,6 +543,8 @@ namespace PrePoMax
                             _results.Mesh.MergePartsBasedOnMesh(_model.Mesh, typeof(ResultPart));
                         }
                     }
+                    //
+                    ResumeExplodedViews(false); // must be here after the MergePartsBasedOnMesh
                 }
                 // Set the view but do not draw
                 _currentView = ViewGeometryModelResults.Results;     
@@ -687,11 +720,11 @@ namespace PrePoMax
             else throw new NotSupportedException();
             //
             UpdateAfterImport(extension);
-            //
-            if (extension == ".inp") CheckAndUpdateValidity();  // must be here after UpdateAfterImport
         }
         private void UpdateAfterImport(string extension)
         {
+            // Exploded view
+            UpdateExplodedView(false);
             // Visualization
             if (extension == ".stl" || extension == ".stp" || extension == ".step"
                 || extension == ".igs" || extension == ".iges" || extension == ".brep")
@@ -708,6 +741,8 @@ namespace PrePoMax
             }
             // Regenerate
             _form.RegenerateTree(_model, _jobs, _results, _history);
+            //
+            if (extension == ".inp") CheckAndUpdateValidity();  // must be here at the last place
         }
         public string[] ImportCADAssemblyFile(string assemblyFileName, string splitCommand)
         {
@@ -843,7 +878,7 @@ namespace PrePoMax
             {
                 CompoundGeometryPart compPart = new CompoundGeometryPart(compoundPartName, importedPartNames);
                 for (int i = 0; i < importedPartNames.Length; i++)
-                    compPart.BoundingBox.CheckBox(_model.Geometry.Parts[importedPartNames[i]].BoundingBox);
+                    compPart.BoundingBox.IncludeBox(_model.Geometry.Parts[importedPartNames[i]].BoundingBox);
                 compPart.CADFileDataFromFile(brepFileName);
                 _model.Geometry.Parts.Add(compoundPartName, compPart);
             }
@@ -879,7 +914,7 @@ namespace PrePoMax
             //
             if (_netgenJob.JobStatus == JobStatus.OK)
             {
-                string[] addedPartNames = _model.ImportGeometryFromBrepFile(visFileName, brepFileName, true);
+                string[] addedPartNames = _model.ImportGeometryFromBrepFile(visFileName, brepFileName);
                 if (addedPartNames.Length == 0)
                 {
                     if (showError) MessageBox.Show("No geometry to import.", "Error", MessageBoxButtons.OK);
@@ -1099,6 +1134,8 @@ namespace PrePoMax
                 // Use a temporary file to save the data and copy it at the end
                 string tmpFileName = GetFreeRandomFileName(Path.GetDirectoryName(fileName), ".tmp");
                 //
+                SuppressExplodedViews();
+                //
                 using (BinaryWriter bw = new BinaryWriter(new MemoryStream()))
                 using (FileStream fs = new FileStream(tmpFileName, FileMode.Create))
                 {
@@ -1114,7 +1151,7 @@ namespace PrePoMax
                         _history = null;
                     }
                     // Controller
-                    data.DumpToStream(bw);
+                    data.DumpToStream(bw);                    
                     // Model - data is saved inside data[0]._model but without mesh data - speed up
                     FeModel.WriteToFile(_model, bw);
                     // Results - data is saved inside data[0]._results but without mesh data - speed up
@@ -1141,15 +1178,18 @@ namespace PrePoMax
                     _form.WriteDataToOutput("Model saved to file: " + fileName);
                 }
                 //
+                ResumeExplodedViews(false);
+                //
                 File.Copy(tmpFileName, fileName, true);
                 File.Delete(tmpFileName);
                 // Settings
-                AddFileNameToRecent(fileName);
+                AddFileNameToRecent(fileName); // this line redraws the scene
                 //
                 _modelChanged = false;
             }
             catch (Exception ex)
             {
+                ResumeExplodedViews(true);
                 throw ex;
             }
             finally
@@ -1160,13 +1200,17 @@ namespace PrePoMax
         // Export
         public void ExportToCalculix(string fileName)
         {
+            SuppressExplodedViews();
             FileInOut.Output.CalculixFileWriter.Write(fileName, _model);
+            ResumeExplodedViews(false);
             //
             _form.WriteDataToOutput("Model exported to file: " + fileName);
         }
         public void ExportToAbaqus(string fileName)
         {
+            SuppressExplodedViews();
             FileInOut.Output.AbaqusFileWriter.Write(fileName, _model);
+            ResumeExplodedViews(false);
             //
             _form.WriteDataToOutput("Model exported to file: " + fileName);
         }
@@ -1243,6 +1287,9 @@ namespace PrePoMax
             string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
             string extension = Path.GetExtension(fileName);
             GeometryPart part;
+            //
+            SuppressExplodedViews(partNames);
+            //
             foreach (var partName in partNames)
             {
                 part = (GeometryPart)_model.Geometry.Parts[partName];
@@ -1252,10 +1299,14 @@ namespace PrePoMax
                 //
                 _form.WriteDataToOutput("Part " + partName + " exported to file: " + mmgFileName);
             }
+            //
+            ResumeExplodedViews(false);
         }
         public void ExportGeometryPartsAsStl(string[] partNames, string fileName)
         {
+            SuppressExplodedViews(partNames);
             FileInOut.Output.StlFileWriter.Write(fileName, _model.Geometry, partNames);
+            ResumeExplodedViews(false);
             //
             foreach (var partName in partNames)
             {
@@ -1379,15 +1430,103 @@ namespace PrePoMax
         {
             _sectionViewPlanes[_currentView] = null;
             _form.RemoveSectionView();
-        }
-        public Octree.Plane GetSectionViewPlane()
-        {
-            return _sectionViewPlanes[_currentView];
-        }
-
+        }        
+        //
         public double[] GetViewPlaneNormal()
         {
             return _form.GetViewPlaneNormal();
+        }
+        //
+        public void PreviewExplodedView(double scaleFactor, double magnification, string[] partNames = null)
+        {
+            FeMesh mesh = DisplayedMesh;
+            if (mesh == null) return;
+            //
+            Dictionary<string, double[]> partOffsets;
+            partOffsets = mesh.GetExplodedViewOffsets(scaleFactor * magnification, partNames);
+            //
+            _form.PreviewExplodedView(partOffsets);
+        }
+        public void ApplyExplodedView(double scaleFactor, double magnification, string[] partNames = null)
+        {
+            FeMesh mesh = DisplayedMesh;
+            if (mesh == null) return;
+            //
+            _explodedViewScaleFactors[CurrentView].ScaleFactor = scaleFactor;
+            _explodedViewScaleFactors[CurrentView].Magnification = magnification;
+            //
+            mesh.RemoveExplodedView();
+            //
+            Dictionary<string, double[]> partOffsets;
+            partOffsets = mesh.GetExplodedViewOffsets(scaleFactor * magnification, partNames);
+            mesh.ApplyExplodedView(partOffsets);
+            //
+            _form.SetExplodedViewStatus(true);
+            //
+            Redraw();
+        }
+        public void SuppressExplodedViews(string[] partNames = null)
+        {
+            if (_model.Geometry != null && _explodedViewScaleFactors[ViewGeometryModelResults.Geometry].ScaleFactor != -1)
+            {
+                _model.Geometry.SuppressExploededView(partNames);
+            }
+            if (_model.Mesh != null && _explodedViewScaleFactors[ViewGeometryModelResults.Model].ScaleFactor != -1)
+            {
+                _model.Mesh.SuppressExploededView(partNames);
+            }
+            if (_results != null && _results.Mesh != null && 
+                _explodedViewScaleFactors[ViewGeometryModelResults.Results].ScaleFactor != -1)
+            {
+                _results.Mesh.SuppressExploededView(partNames);
+            }
+        }
+        public void ResumeExplodedViews(bool update)
+        {
+            bool updateG = false;
+            bool updateM = false;
+            bool updateR = false;
+            //
+            if (_model.Geometry != null) updateG = _model.Geometry.ResumeExploededView();
+            if (_model.Mesh != null) updateM = _model.Mesh.ResumeExploededView();
+            if (_results != null && _results.Mesh != null) updateR = _results.Mesh.ResumeExploededView();
+            //
+            if ((_currentView == ViewGeometryModelResults.Geometry && updateG) ||
+                (_currentView == ViewGeometryModelResults.Model && updateM) ||
+                (_currentView == ViewGeometryModelResults.Results && updateR))
+            {
+                if (update) Redraw();
+            }
+        }
+        public void UpdateExplodedView(bool update, string[] partNames = null)
+        {
+            FeMesh mesh = DisplayedMesh;
+            if (mesh == null) return;
+            //
+            double scaleFactor = _explodedViewScaleFactors[CurrentView].ScaleFactor;
+            if (scaleFactor != -1)
+            {
+                mesh.RemoveExplodedView();
+                //
+                scaleFactor *= _explodedViewScaleFactors[CurrentView].Magnification;
+                Dictionary<string, double[]> partOffsets = mesh.GetExplodedViewOffsets(scaleFactor, partNames);
+                mesh.ApplyExplodedView(partOffsets);
+                //
+                if (update) Redraw();
+            }
+        }
+        public void RemoveExplodedView(string[] partNames = null)
+        {
+            FeMesh mesh = DisplayedMesh;
+            if (mesh == null) return;
+            //
+            _explodedViewScaleFactors[CurrentView].ScaleFactor = -1;
+            //
+            mesh.RemoveExplodedView(partNames);
+            //
+            _form.SetExplodedViewStatus(false);
+            //
+            Redraw();
         }
 
         #endregion ################################################################################################################
@@ -1690,7 +1829,7 @@ namespace PrePoMax
             }
             _modelChanged = true;
         }
-        public void SwapGeometryParts(string partName1, string partName2)
+        public void SwapGeometryPartgeometries(string partName1, string partName2)
         {
             GeometryPart part1 = (GeometryPart)_model.Geometry.Parts[partName1];
             GeometryPart part2 = (GeometryPart)_model.Geometry.Parts[partName2];
@@ -1712,16 +1851,24 @@ namespace PrePoMax
             //
             _model.Geometry.Parts[part1.Name] = part1;
             _model.Geometry.Parts[part2.Name] = part2;
-            //
+            // Renumber elements
             foreach (var elementId in part1.Labels) _model.Geometry.Elements[elementId].PartId = part1.PartId;
             foreach (var elementId in part2.Labels) _model.Geometry.Elements[elementId].PartId = part2.PartId;
-            //
+            // Swap parts in the tree
+            bool swapInTree = false;
             string tmpName = _model.Geometry.Parts.GetNextNumberedKey("tmpName");
             BasePart part = new BasePart(tmpName, -1, null, null, null);
-            _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, part1.Name, part, null, false);
-            _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, part2.Name, part1, null, false);
-            _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, part.Name, part2, null, true);
-            //
+            if (swapInTree)
+            {
+                _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, part1.Name, part, null, false);
+                _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, part2.Name, part1, null, false);
+                _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, part.Name, part2, null, true);
+            }
+            else
+            {
+                _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, part1.Name, part1, null, false);
+                _form.UpdateTreeNode(ViewGeometryModelResults.Geometry, part2.Name, part2, null, false);
+            }
             _form.UpdateActor(part1.Name, tmpName, Color.Gray);
             _form.UpdateActor(part2.Name, part1.Name, part1.Color);
             _form.UpdateActor(tmpName, part2.Name, part2.Color);
@@ -2190,9 +2337,11 @@ namespace PrePoMax
             if (File.Exists(meshParametersFileName)) File.Delete(meshParametersFileName);
             if (File.Exists(meshRefinementFileName)) File.Delete(meshRefinementFileName);
             //
+            SuppressExplodedViews(new string[] { part.Name });
             File.WriteAllText(brepFileName, part.CADFileData);
             CreateMeshRefinementFile(part, meshRefinementFileName, newMeshRefinement);
             parameters.WriteToFile(meshParametersFileName);
+            ResumeExplodedViews(false);
             //
             string argument = "BREP_EDGE_MESH " +
                               "\"" + brepFileName.ToUTF8() + "\" " +
@@ -2218,6 +2367,14 @@ namespace PrePoMax
                                                 "The reason is a failed mesh generation procedure for part: " + part.Name);
             //
             FeMesh mesh = FileInOut.Input.VolFileReader.Read(fileName, FileInOut.Input.ElementsToImport.All, false);
+            // Exploded view
+            if (part.CADFileData != null && GetCurrentExplodedViewScaleFactors().ScaleFactor != -1)
+            {
+                Dictionary<string, double[]> partOffsets = new Dictionary<string, double[]>();
+                foreach (var entry in mesh.Parts) partOffsets.Add(entry.Key, part.Offset);
+                mesh.ApplyExplodedView(partOffsets);
+            }
+            //
             double[][] nodeCoor = mesh.GetAllNodeCoor();
             DrawNodes("nodeMesh", nodeCoor, Color.Black, vtkControl.vtkRendererLayer.Selection, 7, true);
         }
@@ -2344,10 +2501,13 @@ namespace PrePoMax
             if (File.Exists(meshRefinementFileName)) File.Delete(meshRefinementFileName);
             if (File.Exists(edgeNodesFileName)) File.Delete(edgeNodesFileName);
             //
-            FileInOut.Output.StlFileWriter.Write(stlFileName, _model.Geometry, new string[] { part.Name });
+            string[] partNames = new string[] { part.Name };
+            SuppressExplodedViews(partNames);
+            FileInOut.Output.StlFileWriter.Write(stlFileName, _model.Geometry, partNames);
             CreateMeshRefinementFile(part, meshRefinementFileName, null);
             part.MeshingParameters.WriteToFile(meshParametersFileName);
             _model.Geometry.WriteEdgeNodesToFile(part, edgeNodesFileName);
+            ResumeExplodedViews(false);
             //
             string argument = "STL_MESH " +
                               "\"" + stlFileName + "\" " +
@@ -2388,60 +2548,13 @@ namespace PrePoMax
             if (File.Exists(mmgOutFileName)) File.Delete(mmgOutFileName);
             if (File.Exists(mmgSolFileName)) File.Delete(mmgSolFileName);
             //
+            SuppressExplodedViews(new string[] { part.Name });
             FileInOut.Output.MmgFileWriter.Write(mmgInFileName, part, _model.Geometry, part.MeshingParameters.KeepModelEdges, false);
+            ResumeExplodedViews(false);
             //
             System.Diagnostics.PerformanceCounter ramCounter;
             ramCounter = new System.Diagnostics.PerformanceCounter("Memory", "Available MBytes");
             //
-
-
-
-            //string argument = "-nr " +
-            //                  "-m " + ramCounter.NextValue() * 0.9 + " " +
-            //                  //"-ar 0 " +
-            //                  //"-hsiz 0.08 " +  
-            //                  "-hmax " + part.MeshingParameters.MaxH + " " +
-            //                  "-hmin " + part.MeshingParameters.MinH + " " +
-            //                  "-hausd " + part.MeshingParameters.Hausdorff + " " +
-            //                  "-in \"" + mmgInFileName + "\" " +
-            //                  "-out \"" + mmgOutFileName + "\" ";
-            ////
-            //_netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
-            //_netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
-            //_netgenJob.Submit();
-            ////
-            //if (_netgenJob.JobStatus == JobStatus.OK)
-            //{
-            //    ImportGeneratedMesh(mmgOutFileName, part, false);
-            //    return true;
-            //}
-            //else return false;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             string argument = //"-nr " + 
                               "-m " + ramCounter.NextValue() * 0.9 + " " +
                               "-ar 0.01 " + // this removes curving of the faces
@@ -2510,9 +2623,11 @@ namespace PrePoMax
             if (File.Exists(meshParametersFileName)) File.Delete(meshParametersFileName);
             if (File.Exists(meshRefinementFileName)) File.Delete(meshRefinementFileName);
             //
+            SuppressExplodedViews(new string[] { part.Name });
             File.WriteAllText(brepFileName, part.CADFileData);
             CreateMeshRefinementFile(part, meshRefinementFileName, null);
             part.MeshingParameters.WriteToFile(meshParametersFileName);
+            ResumeExplodedViews(false);
             //
             string argument = "BREP_MESH " +
                               "\"" + brepFileName.ToUTF8() + "\" " +
@@ -2859,6 +2974,8 @@ namespace PrePoMax
             }
             //
             if (partIdElementIds.Count == 0) return false;
+            //
+            SuppressExplodedViews();
             // Remesh
             MeshPart part;
             foreach (var entry in partIdElementIds)
@@ -2866,6 +2983,8 @@ namespace PrePoMax
                 part = (MeshPart)_model.Mesh.GetPartById(entry.Key);
                 result &= RemeshShellElementsByPart(part, entry.Value.ToArray(), remeshingParameters, preview);
             }
+            //
+            ResumeExplodedViews(false);
             //
             return result;
         }
@@ -2923,52 +3042,6 @@ namespace PrePoMax
                 return true;
             }
             else return false;
-
-
-            //argument = "-ar 0.01 " + // this removes curving of the faces
-            //                  "-m " + ramCounter.NextValue() * 0.9 + " " +
-            //                  "-hmax " + remeshingParameters.MaxH + " " +
-            //                  "-hmin " + remeshingParameters.MinH + " " +
-            //                  "-hausd " + remeshingParameters.Hausdorff + " " +
-            //                  "-in \"" + mmgInFileName + "\" " +
-            //                  "-out \"" + mmgOutFileName + "\" ";
-            ////
-            //_netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
-            //_netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
-            //_netgenJob.Submit();
-            //// Job completed
-            //if (_netgenJob.JobStatus == JobStatus.OK)
-            //{
-            //    FeMesh mesh = FileInOut.Input.MmgFileReader.Read(mmgOutFileName, MeshRepresentation.Geometry);
-            //    GeometryPart partOut = (GeometryPart)mesh.Parts.First().Value;
-            //    //
-            //    if (File.Exists(mmgInFileName)) File.Delete(mmgInFileName);
-            //    if (File.Exists(mmgOutFileName)) File.Delete(mmgOutFileName);
-            //    if (File.Exists(mmgSolFileName)) File.Delete(mmgSolFileName);
-            //    //
-            //    FileInOut.Output.MmgFileWriter.Write(mmgInFileName, partOut, mesh, remeshingParameters.KeepModelEdges, true);
-            //    //
-            //    argument = "-nr " + // no edge detection
-            //               "-m " + ramCounter.NextValue() * 0.9 + " " +
-            //               "-hgrad " + 1 + " " +
-            //               "-hmax " + remeshingParameters.MaxH + " " +
-            //               "-hmin " + remeshingParameters.MinH + " " +
-            //               "-hausd " + remeshingParameters.Hausdorff + " " +
-            //               "-in \"" + mmgInFileName + "\" " +
-            //               "-out \"" + mmgOutFileName + "\" ";
-            //    //
-            //    _netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
-            //    _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
-            //    _netgenJob.Submit();
-            //    //
-            //    if (_netgenJob.JobStatus == JobStatus.OK)
-            //    {
-            //        ImportGeneratedRemesh(mmgOutFileName, elementIds, part, remeshingParameters.SecondOrder, midNodes);
-            //        return true;
-            //    }
-            //    else return false;
-            //}
-            //else return false;
         }
 
         private bool RemeshShellElementsFromPart(BasePart part)
@@ -3238,7 +3311,9 @@ namespace PrePoMax
             MeshPart newMeshPart;
             string[] mergedParts;
             //
+            SuppressExplodedViews();
             _model.Mesh.MergeMeshParts(partNames, out newMeshPart, out mergedParts);
+            ResumeExplodedViews(false);
             //
             if (newMeshPart != null && mergedParts != null)
             {
@@ -5950,18 +6025,33 @@ namespace PrePoMax
                         // New pick - Clear history
                         if (selectOperation == vtkSelectOperation.None) ClearSelectionHistoryAndCallSelectionChanged();
                     }
-                    //
+                    // Part ids
                     int[] pickedPartIds = null;
                     if (pickedPartNames != null && pickedPartNames.Length > 0)
                     {
                         FeMesh mesh = DisplayedMesh;
-                        pickedPartIds = new int[pickedPartNames.Length];
-                        for (int i = 0; i < pickedPartNames.Length; i++) pickedPartIds[i] = mesh.Parts[pickedPartNames[i]].PartId;
+                        pickedPartIds = mesh.GetPartIdsByNames(pickedPartNames);
+                        // Exploded view - remove offset from picked point
+                        if (IsExplodedViewActive() && pickedPoint != null && pickedPartNames.Length == 1)
+                        {
+                            double[] offset = mesh.Parts[pickedPartNames[0]].Offset;
+                            if (offset != null)
+                            {
+                                pickedPoint[0] -= offset[0];
+                                pickedPoint[1] -= offset[1];
+                                pickedPoint[2] -= offset[2];
+                            }
+                        }
+                    }
+                    //
+                    if (IsExplodedViewActive() && pickedPoint == null && planeParameters != null)
+                    {
+                        _form.WriteDataToOutput("Area selection is not possible while exploded view is active.");
+                        return;
                     }
                     //
                     SelectionNode selectionNode = new SelectionNodeMouse(pickedPoint, selectionDirection, planeParameters,
                                                                          selectOperation, pickedPartIds, _selectBy, _selectAngle);
-
                     AddSelectionNode(selectionNode, true, false);
                 }
             }
@@ -6233,30 +6323,46 @@ namespace PrePoMax
             // Pick a point
             if (selectionNodeMouse.PickedPoint != null)
             {
+                // Exploded view
+                double[] pickedPoint = selectionNodeMouse.PickedPoint.ToArray();
+                string[] partNames = DisplayedMesh.GetPartNamesByIds(selectionNodeMouse.PartIds);
+                if (partNames.Length == 1)
+                {
+                    double[] offset = DisplayedMesh.Parts[partNames[0]].Offset;
+                    //
+                    if (offset != null)
+                    {
+                        pickedPoint[0] += offset[0];
+                        pickedPoint[1] += offset[1];
+                        pickedPoint[2] += offset[2];
+                    }
+                }
+                SelectionNodeMouse selectionNodeMouseOffset = selectionNodeMouse.DeepClone();
+                selectionNodeMouseOffset.PickedPoint = pickedPoint;
                 // Are node ids allready recorded in this session - speed optimization
                 if (_selection.TryGetNodeIds(selectionNodeMouse, out ids))
                 { }
                 else if (selectionNodeMouse.IsGeometryBased)
                 {
-                    ids = GetIdsAtPointFromGeometrySelection(selectionNodeMouse);
+                    ids = GetIdsAtPointFromGeometrySelection(selectionNodeMouseOffset);
                 }
                 else if (_selection.SelectItem == vtkSelectItem.None)
                 { }
                 else if (_selection.SelectItem == vtkSelectItem.Node)
                 {
-                    ids = GetNodeIdsAtPoint(selectionNodeMouse, out int elementId);
+                    ids = GetNodeIdsAtPoint(selectionNodeMouseOffset, out int elementId);
                 }
                 else if (_selection.SelectItem == vtkSelectItem.Element)
                 {
-                    ids = GetElementIdsAtPoint(selectionNodeMouse);
+                    ids = GetElementIdsAtPoint(selectionNodeMouseOffset);
                 }
                 else if (_selection.SelectItem == vtkSelectItem.Surface)
                 {
-                    ids = GetVisualizationFaceIdsAtPoint(selectionNodeMouse);
+                    ids = GetVisualizationFaceIdsAtPoint(selectionNodeMouseOffset);
                 }                
                 else if (_selection.SelectItem == vtkSelectItem.Part)
                 {
-                    ids = GetPartIdAtPoint(selectionNodeMouse);
+                    ids = GetPartIdAtPoint(selectionNodeMouseOffset);
                 }
                 else throw new NotSupportedException();
             }
@@ -7185,6 +7291,14 @@ namespace PrePoMax
        
 
         // Visualize
+        public void Redraw(bool resetCamera = false)
+        {
+            if (_currentView == ViewGeometryModelResults.Geometry) DrawGeometry(resetCamera);
+            else if (_currentView == ViewGeometryModelResults.Model) DrawModel(resetCamera);
+            else if (_currentView == ViewGeometryModelResults.Results) DrawResults(resetCamera);
+            else throw new NotSupportedException();
+        }
+        //
         #region Draw  ##############################################################################################################
         // Update model stat
         public void FeModelUpdate(UpdateType updateType)
@@ -8739,7 +8853,7 @@ namespace PrePoMax
             if (coor.Length <= 0) return null;
             // Bounding box
             BoundingBox box = new BoundingBox();
-            box.CheckCoors(coor);
+            box.IncludeCoors(coor);
             //
             double max = Math.Max(box.MaxX - box.MinX, box.MaxY - box.MinY);
             max = Math.Max(max, box.MaxZ - box.MinZ);
@@ -8753,7 +8867,7 @@ namespace PrePoMax
             if (coor.Length <= 0) return null;
             // Bounding box
             BoundingBox box = new BoundingBox();
-            box.CheckCoors(coor);
+            box.IncludeCoors(coor);
             //
             return GetSpatiallyEquallyDistributedCoor(coor, box, delta);
         }

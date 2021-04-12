@@ -53,7 +53,25 @@ namespace CaeMesh
             MaxY = node.Y;
             MaxZ = node.Z;
         }
-        public void CheckCoor(double[] coor)
+        public void AddOffset(double[] vector)
+        {
+            MinX += vector[0];
+            MaxX += vector[0];
+            MinY += vector[1];
+            MaxY += vector[1];
+            MinZ += vector[2];
+            MaxZ += vector[2];
+        }
+        public void RemoveOffset(double[] vector)
+        {
+            MinX -= vector[0];
+            MaxX -= vector[0];
+            MinY -= vector[1];
+            MaxY -= vector[1];
+            MinZ -= vector[2];
+            MaxZ -= vector[2];
+        }
+        public void IncludeCoor(double[] coor)
         {
             if (coor[0] > MaxX) MaxX = coor[0];
             if (coor[0] < MinX) MinX = coor[0];
@@ -64,14 +82,14 @@ namespace CaeMesh
             if (coor[2] > MaxZ) MaxZ = coor[2];
             if (coor[2] < MinZ) MinZ = coor[2];
         }
-        public void CheckCoors(double[][] coors)
+        public void IncludeCoors(double[][] coors)
         {
             for (int i = 0; i < coors.Length; i++)
             {
-                CheckCoor(coors[i]);
+                IncludeCoor(coors[i]);
             }
         }
-        public void CheckNode(FeNode node)
+        public void IncludeNode(FeNode node)
         {
             if (node.X > MaxX) MaxX = node.X;
             if (node.X < MinX) MinX = node.X;
@@ -82,7 +100,7 @@ namespace CaeMesh
             if (node.Z > MaxZ) MaxZ = node.Z;
             if (node.Z < MinZ) MinZ = node.Z;
         }
-        public void CheckBox(BoundingBox box)
+        public void IncludeBox(BoundingBox box)
         {
             if (box.MaxX > MaxX) MaxX = box.MaxX;
             if (box.MinX < MinX) MinX = box.MinX;
@@ -93,9 +111,20 @@ namespace CaeMesh
             if (box.MaxZ > MaxZ) MaxZ = box.MaxZ;
             if (box.MinZ < MinZ) MinZ = box.MinZ;
         }
+        public bool Intesects(BoundingBox box)
+        {
+            if (box.MaxX < MinX || box.MinX > MaxX) return false;
+            else if (box.MaxY < MinY || box.MinY > MaxY) return false;
+            else if (box.MaxZ < MinZ || box.MinZ > MaxZ) return false;
+            else return true;
+        }
         public double GetDiagonal()
         {
             return Math.Sqrt(Math.Pow(MaxX - MinX, 2) + Math.Pow(MaxY - MinY, 2) + Math.Pow(MaxZ - MinZ, 2));
+        }
+        public double[] GetCenter()
+        {
+            return new double[] { (MinX + MaxX) / 2, (MinY + MaxY) / 2, (MinZ + MaxZ) / 2 };
         }
 
         public bool IsEqual(BoundingBox boundingBox)

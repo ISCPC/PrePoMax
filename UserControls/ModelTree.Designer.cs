@@ -93,6 +93,7 @@
             this.tsmiPropagate = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSpaceCompoundPart = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiCompoundPart = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiSwapPartGeometries = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSpaceMesh = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiMeshingParameters = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiPreviewEdgeMesh = new System.Windows.Forms.ToolStripMenuItem();
@@ -137,7 +138,6 @@
             this.cltvModel = new UserControls.CodersLabTreeView();
             this.tpResults = new System.Windows.Forms.TabPage();
             this.cltvResults = new UserControls.CodersLabTreeView();
-            this.tsmiSwapParts = new System.Windows.Forms.ToolStripMenuItem();
             this.cmsTree.SuspendLayout();
             this.tcGeometryModelResults.SuspendLayout();
             this.tpGeometry.SuspendLayout();
@@ -154,7 +154,7 @@
             this.tsmiPropagate,
             this.tsmiSpaceCompoundPart,
             this.tsmiCompoundPart,
-            this.tsmiSwapParts,
+            this.tsmiSwapPartGeometries,
             this.tsmiSpaceMesh,
             this.tsmiMeshingParameters,
             this.tsmiPreviewEdgeMesh,
@@ -232,6 +232,13 @@
             this.tsmiCompoundPart.Size = new System.Drawing.Size(211, 22);
             this.tsmiCompoundPart.Text = "Create Compound Part";
             this.tsmiCompoundPart.Click += new System.EventHandler(this.tsmiCompoundPart_Click);
+            // 
+            // tsmiSwapPartGeometries
+            // 
+            this.tsmiSwapPartGeometries.Name = "tsmiSwapPartGeometries";
+            this.tsmiSwapPartGeometries.Size = new System.Drawing.Size(211, 22);
+            this.tsmiSwapPartGeometries.Text = "Swap Part Geometries";
+            this.tsmiSwapPartGeometries.Click += new System.EventHandler(this.tsmiSwapPartGeometries_Click);
             // 
             // tsmiSpaceMesh
             // 
@@ -789,13 +796,6 @@
             this.cltvResults.MouseDown += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseDown);
             this.cltvResults.MouseUp += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseUp);
             // 
-            // tsmiSwapParts
-            // 
-            this.tsmiSwapParts.Name = "tsmiSwapParts";
-            this.tsmiSwapParts.Size = new System.Drawing.Size(211, 22);
-            this.tsmiSwapParts.Text = "Swap Parts";
-            this.tsmiSwapParts.Click += new System.EventHandler(this.tsmiSwapParts_Click);
-            // 
             // ModelTree
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -875,6 +875,6 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiCompoundPart;
         private System.Windows.Forms.ToolStripMenuItem tsmiDuplicate;
         private System.Windows.Forms.ToolStripMenuItem tsmiPropagate;
-        private System.Windows.Forms.ToolStripMenuItem tsmiSwapParts;
+        private System.Windows.Forms.ToolStripMenuItem tsmiSwapPartGeometries;
     }
 }

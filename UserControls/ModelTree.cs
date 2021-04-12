@@ -164,7 +164,7 @@ namespace UserControls
         public event Action<string[]> SetTransparencyEvent;
         public event Action<NamedClass[], bool> ColorContoursVisibilityEvent;
         public event Action<string[]> CreateCompoundPart;
-        public event Action<string[]> SwapParts;
+        public event Action<string[]> SwapPartGeometries;
         public event Action<string[]> MeshingParametersEvent;
         public event Action<string[]> PreviewEdgeMesh;
         public event Action<string[]> CreateMeshEvent;
@@ -350,7 +350,7 @@ namespace UserControls
             tsmiSpaceCompoundPart.Visible = false;
             tsmiCompoundPart.Visible = visible;
             visible = menuFields.SwapParts == n && n == 2;
-            tsmiSwapParts.Visible = visible;
+            tsmiSwapPartGeometries.Visible = visible;
             oneAboveVisible |= visible;
             //Mesh                                                  
             visible = menuFields.MeshingParameters == n;
@@ -947,7 +947,7 @@ namespace UserControls
                 CaeGlobals.ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiSwapParts_Click(object sender, EventArgs e)
+        private void tsmiSwapPartGeometries_Click(object sender, EventArgs e)
         {
             try
             {
@@ -956,7 +956,7 @@ namespace UserControls
                 {
                     if (node.Tag != null) names.Add(((NamedClass)node.Tag).Name);
                 }
-                if (names.Count == 2) SwapParts?.Invoke(names.ToArray());
+                if (names.Count == 2) SwapPartGeometries?.Invoke(names.ToArray());
             }
             catch (Exception ex)
             {

@@ -45,7 +45,7 @@ namespace FileInOut.Input
                     foreach (var v in facet.Vertices)
                     {
                         node = new FeNode(nodes.Count + 1, v.X, v.Y, v.Z);
-                        box.CheckNode(node);
+                        box.IncludeNode(node);
                         //
                         if (nodeMap.TryGetValue(node, out nodeId))
                         {
