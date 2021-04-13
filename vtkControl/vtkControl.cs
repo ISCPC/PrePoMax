@@ -2757,7 +2757,7 @@ namespace vtkControl
                 double zStart = cameraStart.GetParallelScale();
                 double[] q1 = QuaternionHelper.QuaternionFromMatrix3x3(rStart);
                 pq1 = QuaternionHelper.IntPtrFromQuaternion(q1);
-
+                //
                 vtkMatrix4x4 mCamEnd = cameraEnd.GetViewTransformMatrix();
                 double[][] rEnd = new double[3][];
                 for (int i = 0; i < 3; i++)
@@ -2777,7 +2777,7 @@ namespace vtkControl
                 double zEnd = cameraEnd.GetParallelScale();
                 double[] q2 = QuaternionHelper.QuaternionFromMatrix3x3(rEnd);
                 pq2 = QuaternionHelper.IntPtrFromQuaternion(q2);
-
+                //
                 double[] q;
                 double[][] rOut;
                 double[][] rOutT;
@@ -2787,19 +2787,20 @@ namespace vtkControl
                 double[] up = new double[3];
                 double z;
                 double t;
-                
+                //
                 vtkQuaternionInterpolator qi = vtkQuaternionInterpolator.New();
                 qi.SetInterpolationTypeToLinear();
                 qi.AddQuaternion(0, pq1);
                 qi.AddQuaternion(1, pq2);
                 pq = Marshal.AllocHGlobal(Marshal.SizeOf(q1[0]) * q1.Length);
-
+                //
                 DateTime start = DateTime.Now;
                 int delta = 500; //ms
                 double currentDelta = 0;
-
+                //
                 do
                 {
+                    //
                     //http://math.stackexchange.com/questions/82602/how-to-find-camera-position-and-rotation-from-a-4x4-matrix
                     //
                     //     |         |     
@@ -2810,11 +2811,10 @@ namespace vtkControl
                     // camera positon C:   
                     // C = -R(transponse)*T
                     //                     
-
                     currentDelta = (DateTime.Now - start).TotalMilliseconds;
                     t = currentDelta / delta ;
                     if (t > 1) t = 1;
-
+                    //
                     if (Math.Abs(q1[0] - q2[0]) + Math.Abs(q1[1] - q2[1]) + Math.Abs(q1[2] - q2[2]) + Math.Abs(q1[3] - q2[3]) < 0.00001)
                         q = q1;
                     else
@@ -2822,32 +2822,31 @@ namespace vtkControl
                         qi.InterpolateQuaternion(t, pq);
                         q = QuaternionHelper.QuaternionFromIntPtr(pq);
                     }
-
+                    //
                     transform = QuaternionHelper.VectorLerp(tStart, tEnd, t);
                     fp = QuaternionHelper.VectorLerp(fpStart, fpEnd, t);
                     z = zStart + (t) * (zEnd - zStart);
                     rOut = QuaternionHelper.Matrix3x3FromQuaternion(q);
                     rOutT = QuaternionHelper.TransponseMatrix3x3(rOut);
-
+                    //
                     pos[0] = -(rOutT[0][0] * transform[0] + rOutT[0][1] * transform[1] + rOutT[0][2] * transform[2]);
                     pos[1] = -(rOutT[1][0] * transform[0] + rOutT[1][1] * transform[1] + rOutT[1][2] * transform[2]);
                     pos[2] = -(rOutT[2][0] * transform[0] + rOutT[2][1] * transform[1] + rOutT[2][2] * transform[2]);
-
+                    //
                     up[0] = rOutT[0][1];
                     up[1] = rOutT[1][1];
                     up[2] = rOutT[2][1];
-
+                    //
                     camera.SetPosition(pos[0], pos[1], pos[2]);
                     camera.SetFocalPoint(fp[0], fp[1], fp[2]);
                     camera.SetViewUp(up[0], up[1], up[2]);
                     camera.SetParallelScale(z);
                     camera.OrthogonalizeViewUp();
                     _style.AdjustCameraDistanceAndClipping();
-
                     //System.Threading.Thread.Sleep(5);
                     _renderWindowInteractor.Modified(); // this updates the vtkMax annotation objects
                     this.Invalidate();
-                    
+                    //
                     Application.DoEvents();
                 }
                 while (currentDelta < delta);
@@ -4063,11 +4062,10 @@ namespace vtkControl
             return name;
         }
         // Exploded view
-        public void PreviewExplodedView(Dictionary<string, double[]> partOffsets)
+        public void PreviewExplodedView_(Dictionary<string, double[]> partOffsets)
         {
             vtkMaxActor actor;
             double[] offset;
-            string[] tmp;
             //
             foreach (var partOffset in partOffsets)
             {
@@ -4084,6 +4082,58 @@ namespace vtkControl
             //
             this.Invalidate();
         }
+        public void PreviewExplodedView(Dictionary<string, double[]> partOffsets, bool animate)
+        {
+            vtkMaxActor actor;
+            double[] offsetFinal;
+            double[] offsetStart;
+            //
+            Dictionary<string, double[]> partOffsetsAnim = new Dictionary<string, double[]>();
+            foreach (var partOffset in partOffsets)
+            {
+                offsetFinal = partOffset.Value;
+                if (_actors.TryGetValue(partOffset.Key, out actor))
+                {
+                    offsetStart = actor.Geometry.GetPosition();
+                    partOffsetsAnim.Add(partOffset.Key, new double[] { offsetFinal[0] - offsetStart[0],
+                                                                       offsetFinal[1] - offsetStart[1],
+                                                                       offsetFinal[2] - offsetStart[2]});
+                }
+            }
+            //
+            DateTime start = DateTime.Now;
+            int delta = 500; //ms
+            double currentDelta;
+            double t;
+            double tPrev = 0;
+            Vec3D position = new Vec3D();
+            do
+            {
+                currentDelta = (DateTime.Now - start).TotalMilliseconds;
+                t = currentDelta / delta;
+                if (t > 1 || !animate) t = 1;
+                //
+                foreach (var partOffset in partOffsetsAnim)
+                {
+                    position.Coor = partOffset.Value;
+                    position *= (t - tPrev);
+                    actor = _actors[partOffset.Key];
+                    position += new Vec3D(actor.Geometry.GetPosition());
+                    //
+                    actor.Geometry.SetPosition(position.X, position.Y, position.Z);
+                    actor.ModelEdges.SetPosition(position.X, position.Y, position.Z);
+                    actor.ElementEdges.SetPosition(position.X, position.Y, position.Z);
+                }
+                tPrev = t;
+                //
+                AdjustCameraDistanceAndClipping();
+                //
+                this.Invalidate();
+                //
+                Application.DoEvents();
+            }
+            while (t < 1);
+        }
         public void RemovePreviewedExplodedView(string[] partNames)
         {
             vtkMaxActor actor;
@@ -4097,22 +4147,6 @@ namespace vtkControl
                     actor.ModelEdges.SetPosition(offset[0], offset[1], offset[2]);
                     actor.ElementEdges.SetPosition(offset[0], offset[1], offset[2]);
                 }
-                //
-                //if (_sectionView)
-                //{
-                //    string[] tmp;
-                //    foreach (var entry in _actors)
-                //    {
-                //        tmp = entry.Key.Split(Globals.NameSeparator);
-                //        //
-                //        if (tmp.Length > 1 && tmp[0] == partName)
-                //        {
-                //            entry.Value.Geometry.SetPosition(offset[0], offset[1], offset[2]);
-                //            entry.Value.ModelEdges.SetPosition(offset[0], offset[1], offset[2]);
-                //            entry.Value.ElementEdges.SetPosition(offset[0], offset[1], offset[2]);
-                //        }
-                //    }
-                //}
             }
             //
             this.Invalidate();

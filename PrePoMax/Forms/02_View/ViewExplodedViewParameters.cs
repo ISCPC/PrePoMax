@@ -10,28 +10,32 @@ using DynamicTypeDescriptor;
 using System.Drawing.Design;
 
 namespace PrePoMax.Forms
-{
-    [Serializable]
-    public enum ExplodedViewStyleEnum
-    {
-        XYZ
-    }
-
+{    
     [Serializable]
     public class ViewExplodedViewParameters
     {
         // Variables                                                                                                                
         private DynamicCustomTypeDescriptor _dctd = null;
-        private ExplodedViewStyleEnum _explodedViewStyle;
         private ExplodedViewParameters _explodedViewParameters;
 
 
         // Properties                                                                                                               
+        [Browsable(false)]
+        public ExplodedViewParameters Parameters
+        {
+            get { return _explodedViewParameters; }
+            set { _explodedViewParameters = value; }
+        }
+        //
         [Category("Data")]
         [OrderedDisplayName(0, 10, "Exploded view style")]
         [DescriptionAttribute("Select the exploded view style.")]
         [Id(1, 1)]
-        public ExplodedViewStyleEnum ExplodedViewStyle { get { return _explodedViewStyle; } set { _explodedViewStyle = value; } }
+        public ExplodedViewTypeEnum Type
+        {
+            get { return _explodedViewParameters.Type; }
+            set { _explodedViewParameters.Type = value; }
+        }
         //
         [Category("Data")]
         [OrderedDisplayName(1, 10, "Magnification")]
@@ -68,7 +72,6 @@ namespace PrePoMax.Forms
         public ViewExplodedViewParameters()
         {
             _explodedViewParameters = new ExplodedViewParameters();
-            Clear();
             //
             _dctd = ProviderInstaller.Install(this);
             _dctd.CategorySortOrder = CustomSortOrder.AscendingById;
@@ -77,12 +80,9 @@ namespace PrePoMax.Forms
 
 
         // Methods                                                                                                                  
-        public void Clear()
-        {
-            _explodedViewStyle = ExplodedViewStyleEnum.XYZ;
-            _explodedViewParameters.ScaleFactor = 0.5;
-            _explodedViewParameters.Magnification = 3;
-        }
        
+
+       
+
     }
 }

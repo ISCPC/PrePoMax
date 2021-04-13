@@ -17,33 +17,21 @@ namespace PrePoMax.Forms
     {
         // Variables                                                                                                                
         private Controller _controller;
-        private ViewExplodedViewParameters _explodedViewParameters;
-        private double _cancelScaleFactor;
-        private double _cancelMagnification;
+        private ViewExplodedViewParameters _viewExplodedViewParameters;
+        private ExplodedViewParameters _cancelParam;
         private string _drawSymbolsForStep;
         private Octree.Plane _sectionViewPlane;
+        private bool _continueExplodedView;
 
         // Properties                                                                                                               
-        public double ScaleFactor
+        public void SetExplodedViewParameters(ExplodedViewParameters parameters)
         {
-            get { return _explodedViewParameters.ScaleFactor; }
-            set
-            {
-                _cancelScaleFactor = value;
-                if (value == -1) value = 0.5;   // -1 stands for disabled scale factor
-                _explodedViewParameters.ScaleFactor = value;
-                UpdateScrollbarPosition();
-            }
-        }
-        public double Magnification
-        {
-            get { return _explodedViewParameters.Magnification; }
-            set
-            {
-                _cancelMagnification = value;
-                _explodedViewParameters.Magnification = value;
-                UpdateScrollbarPosition();
-            }
+            _cancelParam = parameters.DeepClone();
+            //
+            if (parameters.ScaleFactor == -1) parameters.ScaleFactor = 0.5;   // -1 stands for disabled scale factor
+            _viewExplodedViewParameters.Parameters = parameters.DeepClone();
+            //
+            UpdateScrollbarPosition(false);
         }
 
 
@@ -57,8 +45,8 @@ namespace PrePoMax.Forms
             InitializeComponent();
             //
             _controller = controller;
-            _explodedViewParameters = new ViewExplodedViewParameters();
-            propertyGrid.SelectedObject = _explodedViewParameters;
+            _viewExplodedViewParameters = new ViewExplodedViewParameters();
+            propertyGrid.SelectedObject = _viewExplodedViewParameters;
             //
             propertyGrid.SetParent(this);   // for the Tab key to work
             propertyGrid.SetLabelColumnWidth(1.75);
@@ -78,93 +66,112 @@ namespace PrePoMax.Forms
         {
             if (this.Visible)
             {
+                // Suppress section view
                 _sectionViewPlane = _controller.GetSectionViewPlane();
                 if (_sectionViewPlane != null) _controller.RemoveSectionView();
                 //
                 _drawSymbolsForStep = _controller.GetDrawSymbolsForStep();
                 _controller.DrawSymbolsForStep("None", false);
-                UpdateScrollbarPosition();
+                UpdateScrollbarPosition(true);
             }
             else
             {
+                // Resume section view
                 if (_sectionViewPlane != null) _controller.ApplySectionView(_sectionViewPlane.Point.Coor,
                                                                             _sectionViewPlane.Normal.Coor);
                 //
                 _controller.DrawSymbolsForStep(_drawSymbolsForStep, false);
+                //
+                if (DialogResult == DialogResult.OK) _controller.ApplyExplodedView(_viewExplodedViewParameters.Parameters);
+                else if (DialogResult == DialogResult.Abort) _controller.RemoveExplodedView(true);
+                else if (DialogResult == DialogResult.Cancel) Cancel();
+                else if (DialogResult == DialogResult.None) Cancel(); // the form was closed from frmMain.CloseAllForms
             }
         }
         private void propertyGrid_PropertyValueChanged(object s, PropertyValueChangedEventArgs e)
         {
-            UpdateScrollbarPosition();
+            UpdateScrollbarPosition(true);
         }
         //
         private void hsbPosition_Scroll(object sender, ScrollEventArgs e)
         {
-            //timerUpdate.Start();    // use timer to speed things up
-            UpdateExplodedViewFromScrollBar();
+            UpdateExplodedViewFromScrollBar(false);
         }
         private void btnOK_Click(object sender, EventArgs e)
         {
-            _controller.ApplyExplodedView(_explodedViewParameters.ScaleFactor, _explodedViewParameters.Magnification);
-            //
             this.DialogResult = DialogResult.OK;
             Hide();
         }
         private void btnDisable_Click(object sender, EventArgs e)
         {
-            _controller.RemoveExplodedView();
-            //
             this.DialogResult = DialogResult.Abort;
             Hide();
         }
         private void btnCancel_Click(object sender, EventArgs e)
         {
-            if (_cancelScaleFactor == -1) _controller.RemoveExplodedView();
-            else
-            {
-                _explodedViewParameters.ScaleFactor = _cancelScaleFactor;
-                _controller.ApplyExplodedView(_explodedViewParameters.ScaleFactor, _explodedViewParameters.Magnification);
-            }
-            //
             this.DialogResult = DialogResult.Cancel;
             Hide();
         }
-        //
-        private void timerUpdate_Tick(object sender, EventArgs e)
-        {
-            timerUpdate.Stop();
-            UpdateExplodedViewFromScrollBar();
-        }
+        
 
         // Methods                                                                                                                  
 
         // IFormBase
         public bool PrepareForm(string stepName, string itemToEditName)
         {
-            propertyGrid.Refresh();
+            this.DialogResult = DialogResult.None;
             //
-            _controller.RemoveExplodedView();   // this redraws the scene and redraws selection
+            propertyGrid.Refresh();
+            // Set exploded view
+            ExplodedViewParameters parameters;
+            if (_cancelParam.ScaleFactor == -1)
+            {
+                parameters = _cancelParam.DeepClone();
+                parameters.ScaleFactor = 0;
+                _continueExplodedView = false;
+            }
+            else
+            {
+                parameters = _viewExplodedViewParameters.Parameters.DeepClone();
+                _continueExplodedView = true;   // animation of exploded view is not needed
+            }
+            _controller.RemoveExplodedView(true);   // this redraws the scene and redraws selection
+            _controller.PreviewExplodedView(parameters, false);
             _controller.ClearSelectionHistory();
             _controller.SetSelectByToOff();
             //
             return true;
         }
-        private void UpdateScrollbarPosition()
+        //
+        private void Cancel()
         {
-            hsbPosition.Value = (int)(_explodedViewParameters.ScaleFactor * 1000);
-            //
-            UpdateExplodedViewFromScrollBar();
+            if (_cancelParam.ScaleFactor == -1) _controller.RemoveExplodedView(true);
+            else _controller.ApplyExplodedView(_cancelParam);
         }
-        private void UpdateExplodedViewFromScrollBar()
+        private void UpdateScrollbarPosition(bool animate)
+        {
+            hsbPosition.Value = (int)(_viewExplodedViewParameters.ScaleFactor * 1000);
+            //
+            UpdateExplodedViewFromScrollBar(animate);
+        }
+        private void UpdateExplodedViewFromScrollBar(bool animate)
         {
             try
             {
                 double scaleFactor = (double)hsbPosition.Value / hsbPosition.Maximum;
-                _explodedViewParameters.ScaleFactor = scaleFactor;
+                _viewExplodedViewParameters.ScaleFactor = scaleFactor;
                 propertyGrid.Refresh();
                 //
                 if (this.Visible)
-                    _controller.PreviewExplodedView(_explodedViewParameters.ScaleFactor, _explodedViewParameters.Magnification);
+                {
+                    if (_continueExplodedView)
+                    {
+                        animate = false;    // animation of exploded view is not needed
+                        _continueExplodedView = false;  // next time animate
+                    }
+                    //
+                    _controller.PreviewExplodedView(_viewExplodedViewParameters.Parameters, animate);
+                }
             }
             catch
             { }

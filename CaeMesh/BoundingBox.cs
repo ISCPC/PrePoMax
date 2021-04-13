@@ -3,20 +3,39 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CaeGlobals;
 
 namespace CaeMesh
 {
+    class BoundingBoxVolmeComparer : IComparer<BoundingBox>
+    {
+        public int Compare(BoundingBox bb1, BoundingBox bb2)
+        {
+            double v1 = bb1.GetVolume();
+            double v2 = bb2.GetVolume();
+            //
+            if (v1 < v2) return 1;
+            else if (v1 > v2) return -1;
+            else return 0;
+        }
+    }
+
     [Serializable]
     public class BoundingBox
     {
+        // Variables                                                                                                                
         public double MinX;
         public double MinY;
         public double MinZ;
-
+        //
         public double MaxX;
         public double MaxY;
         public double MaxZ;
+        //
+        public object Tag;
 
+
+        // Constructors                                                                                                             
         public BoundingBox()
         {
             Reset();
@@ -26,12 +45,25 @@ namespace CaeMesh
             MinX = box.MinX;
             MinY = box.MinY;
             MinZ = box.MinZ;
-
+            //
             MaxX = box.MaxX;
             MaxY = box.MaxY;
             MaxZ = box.MaxZ;
+            //
+            if (box.Tag != null) Tag = box.Tag.DeepClone();
         }
 
+
+        // Static methods                                                                                                           
+        public static double[] GetCenter(IEnumerable<BoundingBox> boxes)
+        {
+            BoundingBox bb = new BoundingBox();
+            foreach (var box in boxes) bb.IncludeBox(box);
+            return bb.GetCenter();
+        }
+
+
+        // Methods                                                                                                                  
         public void Reset()
         {
             MinX = double.MaxValue;
@@ -41,36 +73,25 @@ namespace CaeMesh
             MaxY = -double.MaxValue;
             MaxZ = -double.MaxValue;
         }
-        public void SetMin(FeNode node)
+        public void AddOffset(double[] offset)
         {
-            MinX = node.X;
-            MinY = node.Y;
-            MinZ = node.Z;
+            MinX += offset[0];
+            MaxX += offset[0];
+            MinY += offset[1];
+            MaxY += offset[1];
+            MinZ += offset[2];
+            MaxZ += offset[2];
         }
-        public void SetMax(FeNode node)
+        public void RemoveOffset(double[] offset)
         {
-            MaxX = node.X;
-            MaxY = node.Y;
-            MaxZ = node.Z;
+            MinX -= offset[0];
+            MaxX -= offset[0];
+            MinY -= offset[1];
+            MaxY -= offset[1];
+            MinZ -= offset[2];
+            MaxZ -= offset[2];
         }
-        public void AddOffset(double[] vector)
-        {
-            MinX += vector[0];
-            MaxX += vector[0];
-            MinY += vector[1];
-            MaxY += vector[1];
-            MinZ += vector[2];
-            MaxZ += vector[2];
-        }
-        public void RemoveOffset(double[] vector)
-        {
-            MinX -= vector[0];
-            MaxX -= vector[0];
-            MinY -= vector[1];
-            MaxY -= vector[1];
-            MinZ -= vector[2];
-            MaxZ -= vector[2];
-        }
+        //
         public void IncludeCoor(double[] coor)
         {
             if (coor[0] > MaxX) MaxX = coor[0];
@@ -111,6 +132,21 @@ namespace CaeMesh
             if (box.MaxZ > MaxZ) MaxZ = box.MaxZ;
             if (box.MinZ < MinZ) MinZ = box.MinZ;
         }
+        public void Scale(double scaleFactor)
+        {
+            double delta = 0.5 * (MaxX - MinX) * (scaleFactor - 1);
+            MinX -= delta;
+            MaxX += delta;
+            //
+            delta = 0.5 * (MaxY - MinY) * (scaleFactor - 1);
+            MinY -= delta;
+            MaxY += delta;
+            //
+            delta = 0.5 * (MaxZ - MinZ) * (scaleFactor - 1);
+            MinZ -= delta;
+            MaxZ += delta;
+        }
+        //
         public bool Intesects(BoundingBox box)
         {
             if (box.MaxX < MinX || box.MinX > MaxX) return false;
@@ -118,15 +154,28 @@ namespace CaeMesh
             else if (box.MaxZ < MinZ || box.MinZ > MaxZ) return false;
             else return true;
         }
-        public double GetDiagonal()
+        public bool Intesects(List<BoundingBox> boxes)
         {
-            return Math.Sqrt(Math.Pow(MaxX - MinX, 2) + Math.Pow(MaxY - MinY, 2) + Math.Pow(MaxZ - MinZ, 2));
+            foreach (var box in boxes)
+            {
+                if (Intesects(box)) return true;
+            }
+            return false;
         }
+        //
         public double[] GetCenter()
         {
             return new double[] { (MinX + MaxX) / 2, (MinY + MaxY) / 2, (MinZ + MaxZ) / 2 };
         }
-
+        public double GetDiagonal()
+        {
+            return Math.Sqrt(Math.Pow(MaxX - MinX, 2) + Math.Pow(MaxY - MinY, 2) + Math.Pow(MaxZ - MinZ, 2));
+        }
+        public double GetVolume()
+        {
+            return (MaxX - MinX) * (MaxY - MinY) * (MaxZ - MinZ);
+        }
+        //
         public bool IsEqual(BoundingBox boundingBox)
         {
             double diagonal = Math.Pow(MinX - MaxX, 2) + Math.Pow(MinY - MaxY, 2) + Math.Pow(MinZ - MaxZ, 2);
@@ -136,7 +185,7 @@ namespace CaeMesh
             else if (diagonal != 0 && bbDiagonal != 0) return Math.Abs(diagonal - bbDiagonal) / Math.Max(diagonal, bbDiagonal) < 0.001 ? true : false;
             return false;
         }
-
+        //
         public BoundingBox DeepCopy()
         {
             return new BoundingBox(this);

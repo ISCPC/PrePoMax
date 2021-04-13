@@ -28,14 +28,12 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.hsbPosition = new System.Windows.Forms.HScrollBar();
             this.panel1 = new System.Windows.Forms.Panel();
             this.propertyGrid = new UserControls.TabbedPropertyGrid();
             this.btnCancel = new System.Windows.Forms.Button();
-            this.timerUpdate = new System.Windows.Forms.Timer(this.components);
             this.btnOK = new System.Windows.Forms.Button();
             this.btnDisable = new System.Windows.Forms.Button();
             this.groupBox3.SuspendLayout();
@@ -114,11 +112,6 @@
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
-            // timerUpdate
-            // 
-            this.timerUpdate.Interval = 20;
-            this.timerUpdate.Tick += new System.EventHandler(this.timerUpdate_Tick);
-            // 
             // btnOK
             // 
             this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
@@ -175,7 +168,6 @@
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.HScrollBar hsbPosition;
-        private System.Windows.Forms.Timer timerUpdate;
         private System.Windows.Forms.Button btnOK;
         protected UserControls.TabbedPropertyGrid propertyGrid;
         private System.Windows.Forms.GroupBox groupBox1;

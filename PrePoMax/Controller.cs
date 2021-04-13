@@ -41,6 +41,8 @@ namespace PrePoMax
         [NonSerialized] protected ViewResultsType _viewResultsType;
         [NonSerialized] protected FieldData _currentFieldData;
         [NonSerialized] protected List<Transformation> _transformations;
+        // Errors
+        [NonSerialized] protected List<string> _errors;
         //
         protected FeModel _model;
         protected NetgenJob _netgenJob;
@@ -254,6 +256,11 @@ namespace PrePoMax
                 else throw new NotSupportedException();
             }
         }
+        //
+        public int GetNumberOfErrors()
+        {
+            return _errors.Count();
+        }
 
 
         // Setters                                                                                                                  
@@ -319,6 +326,8 @@ namespace PrePoMax
             _explodedViewScaleFactors.Add(ViewGeometryModelResults.Geometry, new ExplodedViewParameters());
             _explodedViewScaleFactors.Add(ViewGeometryModelResults.Model, new ExplodedViewParameters());
             _explodedViewScaleFactors.Add(ViewGeometryModelResults.Results, new ExplodedViewParameters());
+            //
+            _errors = new List<string>();
             //
             Clear();
             // Settings
@@ -706,18 +715,8 @@ namespace PrePoMax
             else if (extension == ".vol")
                 _model.ImportMeshFromVolFile(fileName);
             else if (extension == ".inp")
-            {
-                List<string> errors = _model.ImportMeshFromInpFile(fileName, _form.WriteDataToOutput);
-                if (errors.Count > 0)
-                {
-                    _form.WriteDataToOutput("");
-                    foreach (var line in errors) _form.WriteDataToOutput("Error: " + line);
-                    string message = "There were " + errors.Count + " errors while importing the file.";
-                    _form.WriteDataToOutput(message);
-                    UserControls.AutoClosingMessageBox.Show(message, "Error", 3000);
-                }
-            }
-            else throw new NotSupportedException();
+                _errors = _model.ImportMeshFromInpFile(fileName, _form.WriteDataToOutput);
+            else throw new NotSupportedException();           
             //
             UpdateAfterImport(extension);
         }
@@ -754,15 +753,32 @@ namespace PrePoMax
             {
                 foreach (var partFileName in filesToImport)
                 {
-                    if (partFileName.ToLower().Contains("compound"))
+                    try
                     {
-                        addedPartNames = ImportCompoundPart(partFileName);
+                        if (partFileName.ToLower().Contains("compound"))
+                        {
+                            addedPartNames = ImportCompoundPart(partFileName);
+                        }
+                        else
+                        {
+                            addedPartNames = ImportBrepPartFile(partFileName);
+                        }
+                        if (addedPartNames != null) allAddedPartNames.AddRange(addedPartNames);
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        addedPartNames = ImportBrepPartFile(partFileName);
+                        string[] lines = ex.StackTrace.Split(new string[] { "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+                        string error = ex.Message;
+                        for (int i = 0; i < lines.Length; i++)
+                        {
+                            if (lines[i].Contains("PrePoMax"))
+                            {
+                                error += Environment.NewLine + lines[i];
+                                break;
+                            }
+                        }
+                        _errors.Add("The file " + assemblyFileName + " could not be imported correctly: " + error);
                     }
-                    if (addedPartNames != null) allAddedPartNames.AddRange(addedPartNames);
                     //
                     if (File.Exists(partFileName)) File.Delete(partFileName);
                 }
@@ -1437,28 +1453,29 @@ namespace PrePoMax
             return _form.GetViewPlaneNormal();
         }
         //
-        public void PreviewExplodedView(double scaleFactor, double magnification, string[] partNames = null)
+        public void PreviewExplodedView(ExplodedViewParameters parameters, bool animate, string[] partNames = null)
         {
             FeMesh mesh = DisplayedMesh;
             if (mesh == null) return;
             //
             Dictionary<string, double[]> partOffsets;
-            partOffsets = mesh.GetExplodedViewOffsets(scaleFactor * magnification, partNames);
+            partOffsets = mesh.GetExplodedViewOffsets((int)parameters.Type, parameters.ScaleFactor * parameters.Magnification,
+                                                      partNames);
             //
-            _form.PreviewExplodedView(partOffsets);
+            _form.PreviewExplodedView(partOffsets, animate);
         }
-        public void ApplyExplodedView(double scaleFactor, double magnification, string[] partNames = null)
+        public void ApplyExplodedView(ExplodedViewParameters parameters, string[] partNames = null)
         {
             FeMesh mesh = DisplayedMesh;
             if (mesh == null) return;
             //
-            _explodedViewScaleFactors[CurrentView].ScaleFactor = scaleFactor;
-            _explodedViewScaleFactors[CurrentView].Magnification = magnification;
+            _explodedViewScaleFactors[CurrentView] = parameters;
             //
             mesh.RemoveExplodedView();
             //
             Dictionary<string, double[]> partOffsets;
-            partOffsets = mesh.GetExplodedViewOffsets(scaleFactor * magnification, partNames);
+            partOffsets = mesh.GetExplodedViewOffsets((int)parameters.Type, parameters.ScaleFactor * parameters.Magnification,
+                                                      partNames);
             mesh.ApplyExplodedView(partOffsets);
             //
             _form.SetExplodedViewStatus(true);
@@ -1503,30 +1520,38 @@ namespace PrePoMax
             FeMesh mesh = DisplayedMesh;
             if (mesh == null) return;
             //
-            double scaleFactor = _explodedViewScaleFactors[CurrentView].ScaleFactor;
-            if (scaleFactor != -1)
+            ExplodedViewParameters parameters = _explodedViewScaleFactors[CurrentView];
+            if (parameters.ScaleFactor != -1)
             {
                 mesh.RemoveExplodedView();
                 //
-                scaleFactor *= _explodedViewScaleFactors[CurrentView].Magnification;
-                Dictionary<string, double[]> partOffsets = mesh.GetExplodedViewOffsets(scaleFactor, partNames);
+                Dictionary<string, double[]> partOffsets = 
+                    mesh.GetExplodedViewOffsets((int)parameters.Type, parameters.ScaleFactor * parameters.Magnification,
+                                                partNames);
                 mesh.ApplyExplodedView(partOffsets);
                 //
                 if (update) Redraw();
             }
         }
-        public void RemoveExplodedView(string[] partNames = null)
+        public void RemoveExplodedView(bool update, string[] partNames = null)
         {
             FeMesh mesh = DisplayedMesh;
             if (mesh == null) return;
             //
-            _explodedViewScaleFactors[CurrentView].ScaleFactor = -1;
+            if (partNames == null) partNames = mesh.Parts.Keys.ToArray();
             //
-            mesh.RemoveExplodedView(partNames);
+            _form.RemovePreviewedExplodedView(partNames);
             //
-            _form.SetExplodedViewStatus(false);
-            //
-            Redraw();
+            if (_explodedViewScaleFactors[CurrentView].ScaleFactor != -1)
+            {
+                _explodedViewScaleFactors[CurrentView].ScaleFactor = -1;
+                //
+                mesh.RemoveExplodedView(partNames);
+                //
+                _form.SetExplodedViewStatus(false);
+                //
+                if (update) Redraw();
+            }
         }
 
         #endregion ################################################################################################################
@@ -7286,7 +7311,19 @@ namespace PrePoMax
             double[] size = _form.GetBondingBoxSize();
             return string.Format("x: {0}   y: {1}   z: {2}", size[0], size[1], size[2]);
         }
-
+        public void ClearErrors()
+        {
+            _errors.Clear();
+        }
+        public int OutputErrors()
+        {
+            if (_errors.Count > 0)
+            {
+                _form.WriteDataToOutput("");
+                foreach (var line in _errors) _form.WriteDataToOutput("Error: " + line);
+            }
+            return _errors.Count;
+        }
 
        
 

@@ -1095,12 +1095,23 @@ namespace PrePoMax
                 string[] files = GetFileNamesToImport();
                 if (files != null && files.Length > 0)
                 {
+                    _controller.ClearErrors();
+                    //
                     SetStateWorking(Globals.ImportingText);
                     foreach (var file in files)
                     {
                         await _controller.ImportFileAsync(file);
                     }
                     SetFrontBackView(true, true);   // animate must be true in order for the scale bar to work correctly
+                    //
+                    int numErrors = _controller.GetNumberOfErrors();
+                    if (numErrors > 0)
+                    {
+                        _controller.OutputErrors();
+                        string message = "There were errors while importing the file/files.";
+                        WriteDataToOutput(message);
+                        AutoClosingMessageBox.Show(message, "Error", 3000);
+                    }
                 }
             }
             catch (Exception ex)
@@ -1688,9 +1699,8 @@ namespace PrePoMax
         {
             try
             {
-                ExplodedViewParameters parms = _controller.GetCurrentExplodedViewScaleFactors();
-                _frmExplodedView.ScaleFactor = parms.ScaleFactor;
-                _frmExplodedView.Magnification = parms.Magnification;
+                ExplodedViewParameters parameters = _controller.GetCurrentExplodedViewScaleFactors();
+                _frmExplodedView.SetExplodedViewParameters(parameters);
                 //
                 ShowForm(_frmExplodedView, _frmExplodedView.Text, null);
             }
@@ -5643,9 +5653,9 @@ namespace PrePoMax
             //tsbSectionView.Checked = status;
         }
         // Exploded view
-        public void PreviewExplodedView(Dictionary<string, double[]> partOffsets)
+        public void PreviewExplodedView(Dictionary<string, double[]> partOffsets, bool animate)
         {
-            InvokeIfRequired(_vtk.PreviewExplodedView, partOffsets);
+            InvokeIfRequired(_vtk.PreviewExplodedView, partOffsets, animate);
         }
         public void RemovePreviewedExplodedView(string[] partNames)
         {

@@ -2744,8 +2744,85 @@ namespace CaeMesh
             }
         }
         // Exploded view
-        public Dictionary<string, double[]> GetExplodedViewOffsets(double evRatio, string[] partNames = null)
+        public Dictionary<string, double[]> GetExplodedViewOffsets1(int explodedType, double scaleFactor, string[] partNames = null)
         {
+            //
+            // https://stackoverflow.com/questions/3265986/an-algorithm-to-space-out-overlapping-rectangles
+            //
+            if (partNames == null) partNames = _parts.Keys.ToArray();
+            // Get bounding boxes of the selected parts
+            int count = 0;
+            BoundingBox box;
+            List<BoundingBox> nonIntersectingBBs = new List<BoundingBox>();
+            BoundingBox[] boxes = new BoundingBox[partNames.Length];
+            foreach (var partName in partNames)
+            {
+                boxes[count] = new BoundingBox(_parts[partName].BoundingBox);
+                boxes[count].Scale(1.2);
+                boxes[count].Tag = partName;
+                count++;
+            }
+            Array.Sort(boxes, new BoundingBoxVolmeComparer());
+            // Add the largest box
+            BoundingBox globalBox = new BoundingBox();
+            nonIntersectingBBs.Add(boxes[0]);
+            globalBox.IncludeBox(boxes[0]);
+            //
+            Vec3D center;
+            Vec3D offset;
+            Vec3D direction;
+            Dictionary<string, double[]> partOffsets = new Dictionary<string, double[]>();
+            for (int i = 1; i < boxes.Length; i++)
+            {
+                box = boxes[i];
+                center = new Vec3D(globalBox.GetCenter());
+                offset = new Vec3D();
+                direction = new Vec3D(box.GetCenter()) - center;
+                
+
+                // Set the offset type
+                if (explodedType == 1) direction.Y = direction.Z = 0;
+                else if (explodedType == 2) direction.X = direction.Z = 0;
+                else if (explodedType == 3) direction.X = direction.Y = 0;
+                else if (explodedType == 4) direction.Z = 0;
+                else if (explodedType == 5) direction.Y = 0;
+                else if (explodedType == 6) direction.X = 0;
+
+
+                // Fix the 0 length direction
+                if (direction.Len2 < 1E-6 * globalBox.GetDiagonal()) direction.Coor = new double[] { 1, 1, 1 };
+                // Set the offset type
+                if (explodedType == 1) direction.Y = direction.Z = 0;
+                else if (explodedType == 2) direction.X = direction.Z = 0;
+                else if (explodedType == 3) direction.X = direction.Y = 0;
+                else if (explodedType == 4) direction.Z = 0;
+                else if (explodedType == 5) direction.Y = 0;
+                else if (explodedType == 6) direction.X = 0;
+
+
+                //
+                direction.Normalize();
+                direction *= (0.01 * globalBox.GetDiagonal());
+                //
+                count = 0;
+                while (box.Intesects(nonIntersectingBBs) && count++ < 10000)
+                {
+                    box.AddOffset(direction.Coor);
+                    offset += direction;
+                }
+                nonIntersectingBBs.Add(box);
+                globalBox.IncludeBox(box);
+                //
+                partOffsets.Add((string)(box.Tag), (offset * scaleFactor).Coor);
+            }
+            //
+            return partOffsets;
+        }
+       
+        public Dictionary<string, double[]> GetExplodedViewOffsets(int explodedType, double scaleFactor, string[] partNames = null)
+        {
+            return GetExplodedViewOffsets1(explodedType, scaleFactor, partNames);
+
             BoundingBox bb = new BoundingBox();
             BoundingBox partBb;
             Dictionary<string, double[]> partOffsets = new Dictionary<string, double[]>();
@@ -2773,11 +2850,15 @@ namespace CaeMesh
 
                 // Compute the offset
                 v1 = new Vec3D(partBb.GetCenter());
-                v2 = (v1 - center) * (evRatio);
+                v2 = (v1 - center) * (scaleFactor);
                 offset = v2.Coor;
                 offset[0] = Tools.RoundToSignificantDigits(offset[0], 3);
                 offset[1] = Tools.RoundToSignificantDigits(offset[1], 3);
                 offset[2] = Tools.RoundToSignificantDigits(offset[2], 3);
+                // Set the offset type
+                if (explodedType == 1) offset[1] = offset[2] = 0;
+                else if (explodedType == 2) offset[0] = offset[2] = 0;
+                else if (explodedType == 3) offset[0] = offset[1] = 0;
                 // Set the offset
                 foreach (var connectedPart in connectedParts)
                 {

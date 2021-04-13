@@ -570,11 +570,17 @@ namespace CaeMesh
                 edgeCellEdgeCellId.Add(key, edgeCellId++);
             }
             //
+            int freeEdgeCellId;
             List<int> freeEdgeCellIds = new List<int>();
             foreach (var entry in allEdges)
             {
                 // Free edges
-                if (entry.Value.CellIds.Count == 1) freeEdgeCellIds.Add(edgeCellEdgeCellId[entry.Key]);
+                if (entry.Value.CellIds.Count == 1)
+                {
+                    if (edgeCellEdgeCellId.TryGetValue(entry.Key, out freeEdgeCellId)) freeEdgeCellIds.Add(freeEdgeCellId);
+                    else
+                        freeEdgeCellId = freeEdgeCellId;
+                }
             }
             //
             return freeEdgeCellIds.ToArray();

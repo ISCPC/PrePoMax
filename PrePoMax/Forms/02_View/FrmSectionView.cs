@@ -46,14 +46,14 @@ namespace PrePoMax.Forms
             if (e.CloseReason == CloseReason.UserClosing)
             {
                 e.Cancel = true;
-                Hide();
+                btnCancel_Click(null, null);
             }
         }
         private void FrmSectionView_VisibleChanged(object sender, EventArgs e)
         {
             try
             {
-                if (Visible)
+                if (this.Visible)
                 {
                     _pause = true;
                     _plane = _controller.GetSectionViewPlane();
@@ -92,8 +92,8 @@ namespace PrePoMax.Forms
                 }
                 else
                 {
-                    if (this.DialogResult == DialogResult.Abort) _controller.RemoveSectionView();
-                    else if (this.DialogResult == DialogResult.Cancel)
+                    if (DialogResult == DialogResult.Abort) _controller.RemoveSectionView();
+                    else if (DialogResult == DialogResult.Cancel || DialogResult == DialogResult.None)
                     {
                         if (_plane == null)
                         {
@@ -198,6 +198,7 @@ namespace PrePoMax.Forms
         // IFormBase
         public bool PrepareForm(string stepName, string partToEditName)
         {
+            this.DialogResult = DialogResult.None;
             // Clear selection
             _controller.ClearSelectionHistoryAndCallSelectionChanged();
             // Disable selection
