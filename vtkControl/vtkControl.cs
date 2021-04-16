@@ -230,7 +230,7 @@ namespace vtkControl
 
         // Events                                                                                                                   
         public event Action<double[], double[], double[][], vtkSelectOperation, string[]> OnMouseLeftButtonUpSelection;
-        public event Action<sbyte> KeyPressEvent;
+        public event Action<Keys> KeyPressEvent;
 
 
         // Constructors                                                                                                             
@@ -315,7 +315,7 @@ namespace vtkControl
         {
             InitializeControl();
         }
-
+        //
         void _renderWindowInteractor_ModifiedEvt(vtkObject sender, vtkObjectEventArgs e)
         {
             if (_style.GetState() == vtkInteractorStyleControl.VTKIS_ROTATE && _probeWidget != null && _probeWidget.GetVisibility() == 1)
@@ -323,7 +323,7 @@ namespace vtkControl
                 _probeWidget.VisibilityOff();
             }
         }
-
+        //
         void _style_EnterEvt(vtkObject sender, vtkObjectEventArgs e)
         {
             if (!_mouseIn) _mouseIn = true;
@@ -333,7 +333,7 @@ namespace vtkControl
             if (_mouseIn) _mouseIn = false;
             _renderWindow.SetCurrentCursor(0);  // Default
         }
-
+        //
         private void widget_ShowPostSettings(object sender)
         {
             if (sender is vtkMaxScalarBarWidget) Controller_ShowLegendSettings?.Invoke();
@@ -1650,9 +1650,8 @@ namespace vtkControl
             _style.EnterEvt += _style_EnterEvt;
             _renderWindowInteractor.SetInteractorStyle(_style);
             _style.Reset();
-
             _renderWindowInteractor.ModifiedEvt += _renderWindowInteractor_ModifiedEvt;
-            
+
 
             // background
             _renderer.SetBackground(0.4, 0.4, 0.4);     // bottm
@@ -1748,6 +1747,12 @@ namespace vtkControl
             //timer.Interval = 10 * 1000;
             //timer.Enabled = true;
         }
+
+        private void _style_KeyboardKeyPressEvent(Keys obj)
+        {
+            throw new NotImplementedException();
+        }
+
         private void InitializeScalarBar()
         {
             // Lookup table
@@ -1778,7 +1783,12 @@ namespace vtkControl
         {
             if (_scalarBarWidget.GetVisibility() == 1) _scalarBarWidget.OnRenderWindowModified();
             //
-            sbyte key = _renderWindowInteractor.GetKeyCode();
+            Keys key = (Keys)_renderWindowInteractor.GetKeyCode();
+            // Test for the delete key
+            if (key == Keys.None)
+            {
+                if (_renderWindowInteractor.GetKeySym() == "Delete") key = Keys.Delete;
+            }
             if (!_style.RubberBandCanceledByEsc) KeyPressEvent?.Invoke(key);
         }
 
@@ -4062,26 +4072,6 @@ namespace vtkControl
             return name;
         }
         // Exploded view
-        public void PreviewExplodedView_(Dictionary<string, double[]> partOffsets)
-        {
-            vtkMaxActor actor;
-            double[] offset;
-            //
-            foreach (var partOffset in partOffsets)
-            {
-                offset = partOffset.Value;
-                if (_actors.TryGetValue(partOffset.Key, out actor))
-                {
-                    actor.Geometry.SetPosition(offset[0], offset[1], offset[2]);
-                    actor.ModelEdges.SetPosition(offset[0], offset[1], offset[2]);
-                    actor.ElementEdges.SetPosition(offset[0], offset[1], offset[2]);
-                }
-            }
-            //
-            AdjustCameraDistanceAndClipping();
-            //
-            this.Invalidate();
-        }
         public void PreviewExplodedView(Dictionary<string, double[]> partOffsets, bool animate)
         {
             vtkMaxActor actor;
@@ -4112,6 +4102,8 @@ namespace vtkControl
                 currentDelta = (DateTime.Now - start).TotalMilliseconds;
                 t = currentDelta / delta;
                 if (t > 1 || !animate) t = 1;
+                //t = 0.5 - 0.5 * Math.Cos(t * Math.PI);
+                t = 0.5 + 0.5 * Math.Atan(t * 6 - 3) / Math.Atan(3);
                 //
                 foreach (var partOffset in partOffsetsAnim)
                 {

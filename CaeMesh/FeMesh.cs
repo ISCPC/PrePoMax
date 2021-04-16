@@ -489,7 +489,7 @@ namespace CaeMesh
             //
             if (_nodes.Count == mesh.Nodes.Count)
             {
-                int numToCheck = 1000;
+                int numToCheck = 10000;
                 int n = Math.Min(numToCheck, _nodes.Count);
                 n = Math.Max(_nodes.Count / numToCheck, n);
                 //
@@ -2615,11 +2615,22 @@ namespace CaeMesh
             for (int i = 0; i < partNames.Length; i++) partIds[i] = _parts[partNames[i]].PartId;
             return partIds;
         }
+        public double[][] GetPartOffsetsByNames(string[] partNames)
+        {
+            double[][] partOffsets = new double[partNames.Length][];
+            for (int i = 0; i < partNames.Length; i++) partOffsets[i] = _parts[partNames[i]].Offset.ToArray();
+            return partOffsets;
+        }
         public int[] GetPartIdsByElementIds(int[] elementIds)
         {
             HashSet<int> partIds = new HashSet<int>();
             foreach (var elementId in elementIds) partIds.Add(_elements[elementId].PartId);
             return partIds.ToArray();
+        }
+        public string[] GetPartNamesByElementIds(int[] elementIds)
+        {
+            int[] ids = GetPartIdsByElementIds(elementIds);
+            return GetPartNamesByIds(ids);
         }
         public int[] GetPartIdsByNodeIds(int[] nodeIds)
         {

@@ -19,6 +19,7 @@ namespace PrePoMax.Forms
         private Controller _controller;
         private ViewExplodedViewParameters _viewExplodedViewParameters;
         private ExplodedViewParameters _cancelParam;
+        private ExplodedViewParameters _defaultParam;
         private string _drawSymbolsForStep;
         private Octree.Plane _sectionViewPlane;
         private bool _continueExplodedView;
@@ -50,6 +51,9 @@ namespace PrePoMax.Forms
             //
             propertyGrid.SetParent(this);   // for the Tab key to work
             propertyGrid.SetLabelColumnWidth(1.75);
+            //
+            _defaultParam = new ExplodedViewParameters();
+            _defaultParam.ScaleFactor = 0;
         }
 
 
@@ -69,7 +73,7 @@ namespace PrePoMax.Forms
                 // Suppress section view
                 _sectionViewPlane = _controller.GetSectionViewPlane();
                 if (_sectionViewPlane != null) _controller.RemoveSectionView();
-                //
+                // Suppress symbols
                 _drawSymbolsForStep = _controller.GetDrawSymbolsForStep();
                 _controller.DrawSymbolsForStep("None", false);
                 UpdateScrollbarPosition(true);
@@ -79,13 +83,14 @@ namespace PrePoMax.Forms
                 // Resume section view
                 if (_sectionViewPlane != null) _controller.ApplySectionView(_sectionViewPlane.Point.Coor,
                                                                             _sectionViewPlane.Normal.Coor);
-                //
+                // Resume symbols
                 _controller.DrawSymbolsForStep(_drawSymbolsForStep, false);
                 //
                 if (DialogResult == DialogResult.OK) _controller.ApplyExplodedView(_viewExplodedViewParameters.Parameters);
-                else if (DialogResult == DialogResult.Abort) _controller.RemoveExplodedView(true);
-                else if (DialogResult == DialogResult.Cancel) Cancel();
-                else if (DialogResult == DialogResult.None) Cancel(); // the form was closed from frmMain.CloseAllForms
+                else if (DialogResult == DialogResult.Abort) Cancel(true);
+                else if (DialogResult == DialogResult.Cancel) Cancel(_cancelParam.ScaleFactor == -1);
+                // the form was closed from frmMain.CloseAllForms
+                else if (DialogResult == DialogResult.None) Cancel(_cancelParam.ScaleFactor == -1);
             }
         }
         private void propertyGrid_PropertyValueChanged(object s, PropertyValueChangedEventArgs e)
@@ -123,30 +128,35 @@ namespace PrePoMax.Forms
             //
             propertyGrid.Refresh();
             // Set exploded view
-            ExplodedViewParameters parameters;
+            
             if (_cancelParam.ScaleFactor == -1)
             {
-                parameters = _cancelParam.DeepClone();
-                parameters.ScaleFactor = 0;
                 _continueExplodedView = false;
             }
             else
             {
-                parameters = _viewExplodedViewParameters.Parameters.DeepClone();
-                _continueExplodedView = true;   // animation of exploded view is not needed
+                _continueExplodedView = true;           // animation of exploded view is not needed
+                _controller.RemoveExplodedView(true);   // this redraws the scene and redraws selection
+                _controller.PreviewExplodedView(_viewExplodedViewParameters.Parameters, false);
             }
-            _controller.RemoveExplodedView(true);   // this redraws the scene and redraws selection
-            _controller.PreviewExplodedView(parameters, false);
             _controller.ClearSelectionHistory();
             _controller.SetSelectByToOff();
             //
             return true;
         }
         //
-        private void Cancel()
+        private void Cancel(bool cancelToDefault)
         {
-            if (_cancelParam.ScaleFactor == -1) _controller.RemoveExplodedView(true);
-            else _controller.ApplyExplodedView(_cancelParam);
+            if (cancelToDefault)
+            {
+                _controller.PreviewExplodedView(_defaultParam, true);
+                _controller.RemoveExplodedView(true);
+            }
+            else
+            {
+                _controller.PreviewExplodedView(_cancelParam, true);
+                _controller.ApplyExplodedView(_cancelParam);
+            }
         }
         private void UpdateScrollbarPosition(bool animate)
         {

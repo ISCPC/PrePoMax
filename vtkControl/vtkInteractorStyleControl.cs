@@ -147,10 +147,10 @@ namespace vtkControl
             _timer = new System.Windows.Threading.DispatcherTimer();
             _timer.Interval = new TimeSpan(0, 0, 0, 0, 200);
             _timer.Tick += timer_Tick;
-
+            //
             _rubberBandEnabled = true;
             _widgets = new List<vtkMaxBorderWidget>();
-
+            //
             this.LeftButtonPressEvt += vtkInteractorStyleControl_LeftButtonPressEvt;
             this.LeftButtonReleaseEvt += vtkInteractorStyleControl_LeftButtonReleaseEvt;
             this.MiddleButtonPressEvt += vtkInteractorStyleControl_MiddleButtonPressEvt;
@@ -242,7 +242,7 @@ namespace vtkControl
             //
             this.GetInteractor().Render();
         }
-        
+        //
         void vtkInteractorStyleControl_MiddleButtonPressEvt(vtkObject sender, vtkObjectEventArgs e)
         {
             base.OnLeftButtonDown();
@@ -327,7 +327,7 @@ namespace vtkControl
             //
             base.OnLeftButtonUp();  // left button is rotation by default
         }
-        
+        //
         void vtkInteractorStyleControl_RightButtonPressEvt(vtkObject sender, vtkObjectEventArgs e)
         {
             vtkRenderWindowInteractor rwi = this.GetInteractor();
@@ -350,7 +350,7 @@ namespace vtkControl
         void vtkInteractorStyleControl_RightButtonReleaseEvt(vtkObject sender, vtkObjectEventArgs e)
         {
         }
-        
+        //
         void vtkInteractorStyleControl_MouseMoveEvt(vtkObject sender, vtkObjectEventArgs e)
         {
             _x = this.GetInteractor().GetEventPosition()[0];
@@ -396,7 +396,7 @@ namespace vtkControl
                     break;
             }
         }
-        
+        //
         void vtkInteractorStyleControl_MouseWheelForwardEvt(vtkObject sender, vtkObjectEventArgs e)
         {
             if (this.GetState() == VTKIS_NONE)
@@ -454,14 +454,14 @@ namespace vtkControl
                 this.GetInteractor().Render();                
             }
         }
-
+        //
         private void VtkInteractorStyleControl_KeyPressEvt(vtkObject sender, vtkObjectEventArgs e)
         {
             vtkRenderer renderer = this.GetCurrentRenderer();
             if (renderer == null) return;
             //
             vtkRenderWindowInteractor rwi = this.GetInteractor();
-            sbyte key = rwi.GetKeyCode();
+            sbyte key = rwi.GetKeyCode();           
             //
             _rubberBandCanceledByEsc = false;
             //
@@ -499,7 +499,7 @@ namespace vtkControl
                 }
             }
         }
-
+       
 
         // Public setters                                                                                                           
         public void SetSelectionRenderer(vtkRenderer renderer)

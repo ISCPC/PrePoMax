@@ -672,7 +672,7 @@ namespace UserControls
             foreach (TreeNode node in tree.Nodes) SetAllNodesStatusIcons(node);
             
         }
-        private void cltv_KeyDown(object sender, KeyEventArgs e)
+        public void cltv_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Delete)
             {

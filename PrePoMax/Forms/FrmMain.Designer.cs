@@ -2953,7 +2953,7 @@
             this.tsbExplodedView.Name = "tsbExplodedView";
             this.tsbExplodedView.Size = new System.Drawing.Size(23, 22);
             this.tsbExplodedView.Text = "Exploded view";
-            this.tsbExplodedView.Click += new System.EventHandler(this.tsbExplodedView_Click);
+            this.tsbExplodedView.MouseUp += new System.Windows.Forms.MouseEventHandler(this.tsbExplodedView_MouseUp);
             // 
             // toolStripViewSeparator3
             // 

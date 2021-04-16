@@ -561,9 +561,10 @@ namespace PrePoMax
             GetFormLoaction(form);
         }
         //
-        private void Vtk_KeyPressEvent(sbyte key)
+        private void Vtk_KeyPressEvent(Keys key)
         {
-            if (key == 27) CloseAllForms(); // = Esc
+            if (key == Keys.Escape) CloseAllForms();
+            else _modelTree.cltv_KeyDown(this, new KeyEventArgs(key));
         }
         //
         private void timerOutput_Tick(object sender, EventArgs e)
@@ -787,8 +788,6 @@ namespace PrePoMax
                 ApplyActionOnItems<ResultPart>(items, DeleteResultParts);
                 ApplyActionOnItems<GeometryPart>(items, DeleteResultParts);
             }
-            //
-            ClearSelection();
         }
         private void ModelTree_ActivateDeactivateEvent(NamedClass[] items, bool activate, string[] stepNames)
         {
@@ -1708,7 +1707,19 @@ namespace PrePoMax
             {
                 ExceptionTools.Show(this, ex);
             }
-        }       
+        }
+        private void TurnExplodedViewOnOff(bool animate)
+        {
+            try
+            {
+                _controller.TurnExplodedViewOnOff(animate);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        
         // Hide/Show
         private void tsmiHideAllParts_Click(object sender, EventArgs e)
         {
@@ -2974,8 +2985,8 @@ namespace PrePoMax
         {
             HashSet<string> allNames = new HashSet<string>(_controller.Model.Mesh.Parts.Keys);
             allNames.ExceptWith(partNames);
-            _controller.ShowModelPartsCommand(partNames);
             _controller.HideModelPartsCommand(allNames.ToArray());
+            _controller.ShowModelPartsCommand(partNames);
         }
         private void SetTransparencyForModelParts(string[] partNames)
         {
@@ -3292,8 +3303,8 @@ namespace PrePoMax
         {
             HashSet<string> allNames = new HashSet<string>(_controller.Model.Mesh.ReferencePoints.Keys);
             allNames.ExceptWith(referencePointNames);
-            _controller.ShowReferencePointsCommand(referencePointNames);
             _controller.HideReferencePointsCommand(allNames.ToArray());
+            _controller.ShowReferencePointsCommand(referencePointNames);
         }
         private void DeleteRPs(string[] referencePointNames)
         {
@@ -3546,8 +3557,8 @@ namespace PrePoMax
         {
             HashSet<string> allNames = new HashSet<string>(_controller.Model.Constraints.Keys);
             allNames.ExceptWith(constraintNames);
-            _controller.ShowConstraintsCommand(constraintNames);
             _controller.HideConstraintsCommand(allNames.ToArray());
+            _controller.ShowConstraintsCommand(constraintNames);
         }
         private void DeleteConstraints(string[] constraintNames)
         {
@@ -3716,8 +3727,8 @@ namespace PrePoMax
         {
             HashSet<string> allNames = new HashSet<string>(_controller.Model.ContactPairs.Keys);
             allNames.ExceptWith(contactPairNames);
-            _controller.ShowContactPairsCommand(contactPairNames);
             _controller.HideContactPairsCommand(allNames.ToArray());
+            _controller.ShowContactPairsCommand(contactPairNames);
         }
         private void DeleteContactPairs(string[] contactPairNames)
         {
@@ -4170,8 +4181,8 @@ namespace PrePoMax
             HashSet<string> allNames =
                 new HashSet<string>(_controller.Model.StepCollection.GetStep(stepName).BoundaryConditions.Keys);
             allNames.ExceptWith(boundaryConditionNames);
-            _controller.ShowBoundaryConditionCommand(stepName, boundaryConditionNames);
             _controller.HideBoundaryConditionCommand(stepName, allNames.ToArray());
+            _controller.ShowBoundaryConditionCommand(stepName, boundaryConditionNames);
         }
         private void DeleteBoundaryConditions(string stepName, string[] boundaryConditionNames)
         {
@@ -4332,8 +4343,8 @@ namespace PrePoMax
         {
             HashSet<string> allNames = new HashSet<string>(_controller.Model.StepCollection.GetStep(stepName).Loads.Keys);
             allNames.ExceptWith(loadNames);
-            _controller.ShowLoadsCommand(stepName, loadNames);
             _controller.HideLoadsCommand(stepName, allNames.ToArray());
+            _controller.ShowLoadsCommand(stepName, loadNames);
         }
         private void DeleteLoads(string stepName, string[] loadNames)
         {
@@ -5031,8 +5042,8 @@ namespace PrePoMax
         {
             return _vtk.GetSelectionPrecision();
         }
-        public void GetPointAndCellIdsInsideFrustum(double[][] planeParameters, out int[] pointIds, out int[] cellIds,
-                                                    string[] selectionPartNames = null)
+        public void GetPointAndCellIdsInsideFrustum(double[][] planeParameters, string[] selectionPartNames,
+                                                    out int[] pointIds, out int[] cellIds)
         {
             cellIds = null;
             pointIds = null;
@@ -5183,7 +5194,12 @@ namespace PrePoMax
         {
             tsmiSectionView_Click(null, null);
         }
-        private void tsbExplodedView_Click(object sender, EventArgs e)
+        private void tsbExplodedView_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left) TurnExplodedViewOnOff(true);
+            else if (e.Button == MouseButtons.Right) tsmiExplodedView_Click(null, null);
+        }
+        private void tsbExplodedView_DoubleClick(object sender, EventArgs e)
         {
             tsmiExplodedView_Click(null, null);
         }
@@ -5660,13 +5676,7 @@ namespace PrePoMax
         public void RemovePreviewedExplodedView(string[] partNames)
         {
             InvokeIfRequired(_vtk.RemovePreviewedExplodedView, partNames);
-        }
-        public void SetExplodedViewStatus(bool status)
-        {
-            // Must be updated on view change and clear
-
-            //tsbExplodedView.Checked = status;
-        }
+        }        
         // Transforms
         public void AddSymetry(int symetryPlane, double[] symetryPoint)
         {
@@ -6434,6 +6444,6 @@ namespace PrePoMax
             }
         }
 
-        
+       
     }
 }

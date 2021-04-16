@@ -17,6 +17,7 @@ namespace CaeGlobals
         private vtkSelectBy _selectBy;                                  //ISerializable
         private double _angle;                                          //ISerializable
         private int[] _partIds;                                         //ISerializable
+        private double[][] _partOffsets;                                //ISerializable
         private double _precision;                                      //ISerializable
 
 
@@ -27,13 +28,15 @@ namespace CaeGlobals
         public vtkSelectBy SelectBy { get { return _selectBy; } set { _selectBy = value; } }
         public double Angle { get { return _angle; } set { _angle = value; } }        
         public int[] PartIds { get { return _partIds; } }
+        public double[][] PartOffsets { get { return _partOffsets; } }
         public double Precision { get { return _precision; } set { _precision = value; } }
         public bool IsGeometryBased { get { return _selectBy.IsGeometryBased(); } }
 
 
         // Constructors                                                                                                             
         public SelectionNodeMouse(double[] pickedPoint, double[] selectionDirection, double[][] planeParameters,
-                                  vtkSelectOperation selectOpreation, int[] partIds, vtkSelectBy selectBy, double angle)
+                                  vtkSelectOperation selectOpreation, int[] partIds, double[][] partOffsets, 
+                                  vtkSelectBy selectBy, double angle)
             : base(selectOpreation)
         {
             _pickedPoint = pickedPoint;
@@ -42,6 +45,7 @@ namespace CaeGlobals
             _selectBy = selectBy;
             _angle = angle;
             _partIds = partIds;
+            _partOffsets = partOffsets;
             _precision = -1;
         }
         public SelectionNodeMouse(SerializationInfo info, StreamingContext context)
@@ -50,6 +54,7 @@ namespace CaeGlobals
             _partIds = null;            // Compatibility for version v0.9.0
             _precision = -1;            // Compatibility for version v0.5.2
             _selectionDirection = null; // Compatibility for version v0.9.0
+            _partOffsets = null; // Compatibility for version v0.9.0
             //
             foreach (SerializationEntry entry in info)
             {
@@ -67,6 +72,8 @@ namespace CaeGlobals
                         _angle = (double)entry.Value; break;
                     case "_partIds":
                         _partIds = (int[])entry.Value; break;
+                    case "_partOffsets":
+                        _partOffsets = (double[][])entry.Value; break;
                     case "_precision":
                         _precision = (double)entry.Value; break;
                     default:
@@ -80,6 +87,46 @@ namespace CaeGlobals
 
 
         // ISerialization
+        public void AddOffset(double[] offset)
+        {
+            if (offset == null) return;
+            //
+            if (_pickedPoint != null)
+            {
+                _pickedPoint[0] += offset[0];
+                _pickedPoint[1] += offset[1];
+                _pickedPoint[2] += offset[2];
+            }
+            if (_planeParameters != null)
+            {
+                for (int i = 0; i < 6; i++)
+                {
+                    _planeParameters[i][0] += offset[0];
+                    _planeParameters[i][1] += offset[1];
+                    _planeParameters[i][2] += offset[2];
+                }
+            }
+        }
+        public void RemoveOffset(double[] offset)
+        {
+            if (offset == null) return;
+            //
+            if (_pickedPoint != null)
+            {
+                _pickedPoint[0] -= offset[0];
+                _pickedPoint[1] -= offset[1];
+                _pickedPoint[2] -= offset[2];
+            }
+            if (_planeParameters != null)
+            {
+                for (int i = 0; i < 6; i++)
+                {
+                    _planeParameters[i][0] -= offset[0];
+                    _planeParameters[i][1] -= offset[1];
+                    _planeParameters[i][2] -= offset[2];
+                }
+            }
+        }
         public new void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             base.GetObjectData(info, context);
@@ -90,6 +137,7 @@ namespace CaeGlobals
             info.AddValue("_selectBy", _selectBy, typeof(vtkSelectBy));
             info.AddValue("_angle", _angle, typeof(double));
             info.AddValue("_partIds", _partIds, typeof(int[]));
+            info.AddValue("_partOffsets", _partOffsets, typeof(double[][]));
             info.AddValue("_precision", _precision, typeof(double));
         }
 
