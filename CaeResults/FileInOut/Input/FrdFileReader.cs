@@ -477,6 +477,7 @@ namespace CaeResults
                 //  -5  ALL         1    2    0    0    1ALL
             }
             //
+            string line;
             string[] record;
             string[] splitter = new string[] { " " };
             //
@@ -492,7 +493,13 @@ namespace CaeResults
             stepIncrementId = int.Parse(record[2]);
             // Find 100C line - user field data
             while (!lines[lineNum].TrimStart().StartsWith("100C")) lineNum++;
-            record = lines[lineNum++].Split(splitter, StringSplitOptions.RemoveEmptyEntries);       // 100CL
+            //
+            line = lines[lineNum++];
+            int position = line.IndexOf("CL") + 2;                                                  // +2 for CL
+            line = line.Insert(position + 5, " ");                                                  // +5 for block id
+            line = line.Insert(position, " ");
+            //
+            record = line.Split(splitter, StringSplitOptions.RemoveEmptyEntries);                   // 100CL
             userDefinedBlockId = int.Parse(record[1]);
             time = float.Parse(record[2]);
             numOfVal = int.Parse(record[3]);

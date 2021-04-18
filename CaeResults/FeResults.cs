@@ -493,12 +493,17 @@ namespace CaeResults
             else
             {
                 List<int> stepIncrementIds;
+                string fieldHash;
+                HashSet<string> fieldHashes = GetAllFieldHashes();
+                //
                 foreach (int stepId in stepIds)
                 {
                     stepIncrementIds = new List<int>();
                     foreach (int incrementId in GetIncrementIds(stepId))
                     {
-                        if (FieldExists(fieldName, component, stepId, incrementId)) stepIncrementIds.Add(incrementId);
+                        fieldHash = GetFieldHash(fieldName, component, stepId, incrementId);
+                        //if (FieldExists(fieldName, component, stepId, incrementId)) stepIncrementIds.Add(incrementId);
+                        if (fieldHashes.Contains(fieldHash)) stepIncrementIds.Add(incrementId);
                     }
                     existingIncrementIds.Add(stepId, stepIncrementIds.ToArray());
                 }
@@ -515,6 +520,25 @@ namespace CaeResults
             }
             return false;
         }
+        private HashSet<string> GetAllFieldHashes()
+        {
+            HashSet<string> fieldHashes = new HashSet<string>();
+            foreach (var fieldEntry in _fields)
+            {
+                foreach (var componentName in fieldEntry.Value.GetCmponentNames())
+                {
+                    fieldHashes.Add(GetFieldHash(fieldEntry.Key.Name, componentName, 1, 0));
+                    fieldHashes.Add(GetFieldHash(fieldEntry.Key.Name, componentName, fieldEntry.Key.StepId, fieldEntry.Key.StepIncrementId));
+                }
+            }
+            return fieldHashes;
+        }
+        private string GetFieldHash(string fieldName, string component, int stepId, int stepIncrementId)
+        {
+            return fieldName.ToUpper() + "_" + component.ToUpper() + "_" + stepId.ToString() + "_" + stepIncrementId.ToString();
+        }
+
+
         public float GetIncrementTime(string fieldName, int stepId, int stepIncrementId)
         {
             if (stepIncrementId == 0) return 0; // zero increment
