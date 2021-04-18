@@ -2604,7 +2604,7 @@ namespace PrePoMax
                     CloseAllForms();
                     await Task.Run(() => _controller.CreateMeshCommand(partName));
                     //
-                    _modelTree.SelectBasePart(e, modifierKeys, part);
+                    _modelTree.SelectBasePart(e, modifierKeys, part, true);
                 }
                 //
                 _controller.UpdateExplodedView(true);
@@ -6142,21 +6142,22 @@ namespace PrePoMax
                 else
                 {
                     int count = 0;
-                    BasePart part;
+                    BasePart[] parts;
                     int numOfSelectedTreeNodes = 0;
                     //
-                    foreach (var partName in partNames)
+                    if (GetCurrentView() == ViewGeometryModelResults.Geometry) parts = _controller.GetGeometryParts(partNames);
+                    else if (GetCurrentView() == ViewGeometryModelResults.Model) parts = _controller.GetModelParts(partNames);
+                    else if (GetCurrentView() == ViewGeometryModelResults.Results) parts = _controller.GetResultParts(partNames);
+                    else throw new NotSupportedException();
+                    //
+                    foreach (var part in parts)
                     {
-                        if (GetCurrentView() == ViewGeometryModelResults.Geometry) part = _controller.GetGeometryPart(partName);
-                        else if (GetCurrentView() == ViewGeometryModelResults.Model) part = _controller.GetModelPart(partName);
-                        else if (GetCurrentView() == ViewGeometryModelResults.Results) part = _controller.GetResultPart(partName);
-                        else throw new NotSupportedException();
-                        //
-                        numOfSelectedTreeNodes = _modelTree.SelectBasePart(e, modifierKeys, part);
+                        numOfSelectedTreeNodes = _modelTree.SelectBasePart(e, modifierKeys, part, false);
                         count++;
                         //
                         if (count == 1 && modifierKeys == Keys.None) modifierKeys |= Keys.Shift;
                     }
+                    _modelTree.UpdateHighlight();
                     //
                     if (numOfSelectedTreeNodes > 0 && e.Button == MouseButtons.Right)
                     {
@@ -6358,15 +6359,21 @@ namespace PrePoMax
 
         private void tsmiTest_Click(object sender, EventArgs e)
         {
-            //if (timerTest.Enabled) timerTest.Stop();
-            //else timerTest.Start();
+            if (timerTest.Enabled) timerTest.Stop();
+            else timerTest.Start();
 
             //_vtk.SwithchLights();
 
-            _controller.SwapGeometryPartgeometries("Nosilec", "Nosilec_r");
+            //_controller.SwapGeometryPartgeometries("Nosilec", "Nosilec_r");
         }
 
         private void timerTest_Tick(object sender, EventArgs e)
+        {
+            //TestAnimation();
+            //TestSelection1();
+            TestSelection2();
+        }
+        private void TestAnimation()
         {
             try
             {
@@ -6385,9 +6392,51 @@ namespace PrePoMax
                 SetFieldData(names[i % len], components[i % len], 1, 1);
             }
             catch
-            {}
+            { }
         }
+        private void TestSelection1()
+        {
+            try
+            {
+                timerTest.Interval = 100;
+                //
+                string[] allPartNames = _controller.GetGeometryPartNames();
+                HashSet<string> selectedPartNames = new HashSet<string>();
+                //
+                Random rand = new Random();
+                for (int i = 0; i < 100; i++)
+                {
+                    selectedPartNames.Add(allPartNames[(int)(rand.NextDouble() * allPartNames.Length - 1)]);
+                }
+                Clear3DSelection();
+                _controller.HighlightGeometryParts(selectedPartNames.ToArray());
+                //
+                Application.DoEvents();
+            }
+            catch
+            { }
+        }
+        private void TestSelection2()
+        {
+            try
+            {
+                timerTest.Interval = 50;
+                //
+                Random rand = new Random();
+                int x1 = _vtk.Width / 4 + rand.Next(_vtk.Width / 2);
+                int y1 = _vtk.Height / 4 + rand.Next(_vtk.Height / 2);
 
+                //x1 = 523;
+                //y1 = 421;
+
+                Clear3DSelection();
+                _vtk.Pick(x1, y1, false, 0, 0);
+                //
+                Application.DoEvents();
+            }
+            catch
+            { }
+        }
         internal void tsmiAdvisor_Click(object sender, EventArgs e)
         {
             // Change the wizzard check state

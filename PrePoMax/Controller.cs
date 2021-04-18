@@ -1546,20 +1546,18 @@ namespace PrePoMax
             string drawSymbolsForStep = GetDrawSymbolsForStep();
             DrawSymbolsForStep("None", false);
             //
-            
-            //
             if (IsExplodedViewActive())
             {
                 ExplodedViewParameters parameters = _explodedViewScaleFactors[CurrentView].DeepClone();
                 RemoveExplodedView(true);   // Highlight
-                ClearSelectionHistory();
+                _form.Clear3DSelection();
                 PreviewExplodedView(parameters, false);
                 parameters.ScaleFactor = 0;
                 PreviewExplodedView(parameters, animate);
             }
             else
             {
-                ClearSelectionHistory();
+                _form.Clear3DSelection();
                 ExplodedViewParameters parameters = new ExplodedViewParameters();
                 parameters.ScaleFactor = 0.5;
                 PreviewExplodedView(parameters, animate);
@@ -1570,7 +1568,8 @@ namespace PrePoMax
             // Resume symbols
             DrawSymbolsForStep(drawSymbolsForStep, false);  // Clears highlight
             //
-            _form.UpdateHighlightFromTree();
+            if (_selection.Nodes.Count > 0) HighlightSelection();
+            else _form.UpdateHighlightFromTree();
         }
         public void RemoveExplodedView(bool update, string[] partNames = null)
         {
@@ -1651,6 +1650,17 @@ namespace PrePoMax
             BasePart part = null;
             _model.Geometry.Parts.TryGetValue(partName, out part);
             return (GeometryPart)part;
+        }
+        public GeometryPart[] GetGeometryParts(string[] partNames)
+        {
+            BasePart part;
+            GeometryPart[] parts = new GeometryPart[partNames.Length];
+            for (int i = 0; i < partNames.Length; i++)
+            {
+                _model.Geometry.Parts.TryGetValue(partNames[i], out part);
+                parts[i] = (GeometryPart)part;
+            }
+            return parts;
         }
         public GeometryPart[] GetGeometryParts()
         {
@@ -3208,6 +3218,17 @@ namespace PrePoMax
         {
             return (MeshPart)_model.Mesh.Parts[partName];
         }
+        public MeshPart[] GetModelParts(string[] partNames)
+        {
+            BasePart part;
+            MeshPart[] parts = new MeshPart[partNames.Length];
+            for (int i = 0; i < partNames.Length; i++)
+            {
+                _model.Mesh.Parts.TryGetValue(partNames[i], out part);
+                parts[i] = (MeshPart)part;
+            }
+            return parts;
+        }
         public MeshPart[] GetModelParts()
         {
             if (_model.Mesh == null) return null;
@@ -4431,7 +4452,7 @@ namespace PrePoMax
                 if (section is SolidSection || section is ShellSection)
                 {
                     name = FeMesh.GetNextFreeSelectionName(_model.Mesh.ElementSets) + section.Name;
-                    // For solids only
+                    // For
                     bool createdByPart = section.CreationData != null && section.CreationData.SelectItem == vtkSelectItem.Part;
                     FeElementSet elementSet = new FeElementSet(name, section.CreationIds, createdByPart);
                     elementSet.CreationData = section.CreationData.DeepClone();
@@ -5797,6 +5818,17 @@ namespace PrePoMax
         {
             return _results.Mesh.Parts[partName];
         }
+        public BasePart[] GetResultParts(string[] partNames)
+        {
+            BasePart part;
+            BasePart[] parts = new BasePart[partNames.Length];
+            for (int i = 0; i < partNames.Length; i++)
+            {
+                _results.Mesh.Parts.TryGetValue(partNames[i], out part);
+                parts[i] = part;
+            }
+            return parts;
+        }
         public BasePart[] GetResultParts()
         {
             int i = 0;
@@ -6376,12 +6408,13 @@ namespace PrePoMax
         {
             int[] ids;
             // Get offset
-            double[][] offsets = GetRelativePartOffsets(selectionNodeMouse);
+            bool allZero;
+            double[][] offsets = GetRelativePartOffsets(selectionNodeMouse, out allZero);
             // Pick a point
             if (selectionNodeMouse.PickedPoint != null)
             {
                 // Apply offset
-                if (offsets != null && offsets.Length == 1) selectionNodeMouse.AddOffset(offsets[0]);
+                if (offsets != null && offsets.Length == 1 && !allZero) selectionNodeMouse.AddOffset(offsets[0]);
                 // Are node ids allready recorded in this session - speed optimization
                 if (_selection.TryGetNodeIds(selectionNodeMouse, out ids))
                 { }
@@ -6409,52 +6442,63 @@ namespace PrePoMax
                 }
                 else throw new NotSupportedException();
                 // Remove offset
-                if (offsets != null && offsets.Length == 1) selectionNodeMouse.RemoveOffset(offsets[0]);
+                if (offsets != null && offsets.Length == 1 && !allZero) selectionNodeMouse.RemoveOffset(offsets[0]);
             }
             // Pick an area
             else
             {
                 FeMesh mesh = DisplayedMesh;
                 string[] partNames = mesh.GetPartNamesByIds(selectionNodeMouse.PartIds);
-                HashSet<int> idsHash = new HashSet<int>();
-                for (int i = 0; i < partNames.Length; i++)
+                if (offsets == null || allZero)
                 {
-                    // Apply offset
-                    if (offsets != null) selectionNodeMouse.AddOffset(offsets[i]);
-                    //
-                    if (_selection.SelectItem == vtkSelectItem.Node)
-                    {
-                        ids = GetNodeIdsFromFrustum(selectionNodeMouse.PlaneParameters, new string[] { partNames[i] },
-                                                    selectionNodeMouse.SelectBy);
-                    }
-                    else if (_selection.SelectItem == vtkSelectItem.Element)
-                    {
-                        ids = GetElementIdsFromFrustum(selectionNodeMouse.PlaneParameters, new string[] { partNames[i] },
-                                                       selectionNodeMouse.SelectBy);
-                    }
-                    else if (_selection.SelectItem == vtkSelectItem.Surface)
-                    {
-                        ids = GetVisualizationFaceIdsFromFrustum(selectionNodeMouse.PlaneParameters, new string[] { partNames[i] },
-                                                                 selectionNodeMouse.SelectBy);
-                    }
-                    else if (_selection.SelectItem == vtkSelectItem.Part)
-                    {
-                        ids = GetPartIdsFromFrustum(selectionNodeMouse.PlaneParameters, new string[] { partNames[i] },
-                                                    selectionNodeMouse.SelectBy);
-                    }
-                    else if (_selection.SelectItem == vtkSelectItem.Geometry)
-                    {
-                        ids = GetIdsFromFrustumFromGeometrySelection(selectionNodeMouse.PlaneParameters,
-                                                                     new string[] { partNames[i] });
-                    }
-                    else throw new NotSupportedException();
-                    // Remove offset
-                    if (offsets != null && offsets.Length == 1) selectionNodeMouse.RemoveOffset(offsets[i]);
-                    //
-                    idsHash.UnionWith(ids);
+                    ids = GetIdsFromSelectionInArea(selectionNodeMouse, partNames);
                 }
-                ids = idsHash.ToArray();
+                else
+                {
+                    HashSet<int> idsHash = new HashSet<int>();
+                    for (int i = 0; i < partNames.Length; i++)
+                    {
+                        selectionNodeMouse.AddOffset(offsets[i]);
+                        ids = GetIdsFromSelectionInArea(selectionNodeMouse, new string[] { partNames[i] });
+                        selectionNodeMouse.RemoveOffset(offsets[i]);
+                        //
+                        idsHash.UnionWith(ids);
+                    }
+                    ids = idsHash.ToArray();
+                }
             }
+            //
+            return ids;
+        }
+        private int[] GetIdsFromSelectionInArea(SelectionNodeMouse selectionNodeMouse, string[] partNames)
+        {
+            int[] ids;
+            //
+            if (_selection.SelectItem == vtkSelectItem.Node)
+            {
+                ids = GetNodeIdsFromFrustum(selectionNodeMouse.PlaneParameters, partNames,
+                                            selectionNodeMouse.SelectBy);
+            }
+            else if (_selection.SelectItem == vtkSelectItem.Element)
+            {
+                ids = GetElementIdsFromFrustum(selectionNodeMouse.PlaneParameters, partNames,
+                                               selectionNodeMouse.SelectBy);
+            }
+            else if (_selection.SelectItem == vtkSelectItem.Surface)
+            {
+                ids = GetVisualizationFaceIdsFromFrustum(selectionNodeMouse.PlaneParameters, partNames,
+                                                         selectionNodeMouse.SelectBy);
+            }
+            else if (_selection.SelectItem == vtkSelectItem.Part)
+            {
+                ids = GetPartIdsFromFrustum(selectionNodeMouse.PlaneParameters, partNames,
+                                            selectionNodeMouse.SelectBy);
+            }
+            else if (_selection.SelectItem == vtkSelectItem.Geometry)
+            {
+                ids = GetIdsFromFrustumFromGeometrySelection(selectionNodeMouse.PlaneParameters, partNames);
+            }
+            else throw new NotSupportedException();
             //
             return ids;
         }
@@ -6808,7 +6852,7 @@ namespace PrePoMax
             ids = mesh.GetIdsFromGeometryIds(ids, _selection.SelectItem);
             return ids;
         }
-        public double[][] GetRelativePartOffsets(SelectionNodeMouse selectionNodeMouse)
+        public double[][] GetRelativePartOffsets(SelectionNodeMouse selectionNodeMouse, out bool allZero)
         {
             double[][] partOffsets = null;
             // Previous exploded view
@@ -6830,6 +6874,19 @@ namespace PrePoMax
                 {
                     if (partOffsets[i] == null) partOffsets[i] = new double[3];
                     partOffsets[i] = (new Vec3D(partOffsets[i]) + new Vec3D(mesh.Parts[partNames[i]].Offset)).Coor;
+                }
+            }
+            //
+            allZero = true;
+            if (partOffsets != null)
+            {
+                for (int i = 0; i < partOffsets.Length; i++)
+                {
+                    if (partOffsets[i][0] != 0 || partOffsets[i][1] != 0 || partOffsets[i][2] != 0)
+                    {
+                        allZero = false;
+                        break;
+                    }
                 }
             }
             //

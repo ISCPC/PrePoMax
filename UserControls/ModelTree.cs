@@ -1375,16 +1375,16 @@ namespace UserControls
         {
             cltv_SelectionsChanged(null, null);
         }
-        public int SelectBasePart(MouseEventArgs e, Keys modifierKeys, BasePart part)
+        public int SelectBasePart(MouseEventArgs e, Keys modifierKeys, BasePart part, bool highlight)
         {
             try
             {
                 _disableSelectionsChanged = true;
-
+                //
                 CodersLabTreeView tree = GetActiveTree();
                 TreeNode baseNode = tree.Nodes[0];
                 TreeNode[] tmp = baseNode.Nodes.Find(part.Name, true);
-
+                //
                 if (tmp.Length > 1)
                 {
                     foreach (var treeNode in tmp)
@@ -1430,10 +1430,10 @@ namespace UserControls
                         tree.SelectedNodes.Add(baseNode);
                     }
                 }
-
+                //
                 _disableSelectionsChanged = false;
-                UpdateHighlight();
-
+                if (highlight) UpdateHighlight();
+                //
                 return tree.SelectedNodes.Count;
             }
             catch { return -1; }
