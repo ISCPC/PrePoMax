@@ -728,7 +728,7 @@ namespace FileInOut.Input
                 record1 = lines[1].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
                 double rho = double.Parse(record1[0]);
                 // End of JAW Mods
-                Density density = new Density(rho);
+                Density density = new Density(new double[][] { new double[] { rho, 0 } });
                 return density;
             }
             catch

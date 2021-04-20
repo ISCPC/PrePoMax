@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("Materials");
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmMaterialLibrary));
             this.groupBox2 = new System.Windows.Forms.GroupBox();
@@ -44,7 +45,7 @@
             this.btnSave = new System.Windows.Forms.Button();
             this.btnCopyToLibrary = new System.Windows.Forms.Button();
             this.btnCopyToModel = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
+            this.ttText = new System.Windows.Forms.ToolTip(this.components);
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.SuspendLayout();
@@ -58,7 +59,7 @@
             this.groupBox2.Controls.Add(this.lvModelMaterials);
             this.groupBox2.Location = new System.Drawing.Point(333, 14);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(172, 142);
+            this.groupBox2.Size = new System.Drawing.Size(172, 456);
             this.groupBox2.TabIndex = 0;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "FE Model materials";
@@ -79,6 +80,7 @@
             this.lvModelMaterials.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.lvModelMaterials.DisableMouse = false;
             this.lvModelMaterials.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.lvModelMaterials.FullRowSelect = true;
             this.lvModelMaterials.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
@@ -87,7 +89,7 @@
             this.lvModelMaterials.MultiSelect = false;
             this.lvModelMaterials.Name = "lvModelMaterials";
             this.lvModelMaterials.ShowGroups = false;
-            this.lvModelMaterials.Size = new System.Drawing.Size(159, 85);
+            this.lvModelMaterials.Size = new System.Drawing.Size(159, 399);
             this.lvModelMaterials.TabIndex = 1;
             this.lvModelMaterials.UseCompatibleStateImageBehavior = false;
             this.lvModelMaterials.View = System.Windows.Forms.View.List;
@@ -220,6 +222,8 @@
             this.btnCopyToLibrary.Name = "btnCopyToLibrary";
             this.btnCopyToLibrary.Size = new System.Drawing.Size(27, 27);
             this.btnCopyToLibrary.TabIndex = 10;
+            this.ttText.SetToolTip(this.btnCopyToLibrary, "Copy the selected material model from the FE model to the selected library catego" +
+        "ry");
             this.btnCopyToLibrary.UseVisualStyleBackColor = true;
             this.btnCopyToLibrary.Click += new System.EventHandler(this.btnCopyToLibrary_Click);
             // 
@@ -230,21 +234,9 @@
             this.btnCopyToModel.Name = "btnCopyToModel";
             this.btnCopyToModel.Size = new System.Drawing.Size(27, 27);
             this.btnCopyToModel.TabIndex = 8;
+            this.ttText.SetToolTip(this.btnCopyToModel, "Copy the selected material model from the library to the FE model");
             this.btnCopyToModel.UseVisualStyleBackColor = true;
             this.btnCopyToModel.Click += new System.EventHandler(this.btnCopyToModel_Click);
-            // 
-            // label1
-            // 
-            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(337, 176);
-            this.label1.MaximumSize = new System.Drawing.Size(165, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(165, 120);
-            this.label1.TabIndex = 14;
-            this.label1.Text = "Right arrow: copies the selected material model from the library to the FE model\r" +
-    "\n\r\nLeft arrow: copies the selected material model from the FE model to the selec" +
-    "ted library category\r\n";
             // 
             // FrmMaterialLibrary
             // 
@@ -252,7 +244,6 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
             this.ClientSize = new System.Drawing.Size(524, 511);
-            this.Controls.Add(this.label1);
             this.Controls.Add(this.btnSave);
             this.Controls.Add(this.btnOK);
             this.Controls.Add(this.btnCancel);
@@ -263,7 +254,6 @@
             this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
-            this.MaximumSize = new System.Drawing.Size(540, 2160);
             this.MinimizeBox = false;
             this.MinimumSize = new System.Drawing.Size(540, 550);
             this.Name = "FrmMaterialLibrary";
@@ -276,7 +266,6 @@
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
@@ -296,6 +285,6 @@
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.Button btnSave;
         private System.Windows.Forms.Button btnDeleteFromModel;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.ToolTip ttText;
     }
 }

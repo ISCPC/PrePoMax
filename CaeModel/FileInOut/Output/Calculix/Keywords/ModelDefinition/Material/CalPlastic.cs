@@ -13,12 +13,14 @@ namespace FileInOut.Output.Calculix
     {
         // Variables                                                                                                                
         private Plastic _plastic;
+        private bool _temperatureDependent;
 
 
         // Constructor                                                                                                              
-        public CalPlastic(Plastic plastic)
+        public CalPlastic(Plastic plastic, bool temperatureDependent)
         {
             _plastic = plastic;
+            _temperatureDependent = temperatureDependent;
         }
 
 
@@ -32,9 +34,13 @@ namespace FileInOut.Output.Calculix
         public override string GetDataString()
         {
             StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < _plastic.StressStrain.GetLength(0); i++)
+            double[][] data = _plastic.StressStrainTemp;
+            for (int i = 0; i < data.Length; i++)
             {
-                sb.AppendFormat("{0}, {1}{2}", _plastic.StressStrain[i][0], _plastic.StressStrain[i][1], Environment.NewLine);
+                if (_temperatureDependent)
+                    sb.AppendFormat("{0}, {1}, {2}{3}", data[i][0], data[i][1], data[i][2], Environment.NewLine);
+                else
+                    sb.AppendFormat("{0}, {1}{2}", data[i][0], data[i][1], Environment.NewLine);
             }
             return sb.ToString();
         }

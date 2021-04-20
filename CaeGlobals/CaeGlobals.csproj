@@ -136,6 +136,9 @@
     <Compile Include="UnitSystem\StringForcePerVolumeConverter.cs" />
     <Compile Include="UnitSystem\StringForcePerVolumeDefaultConverter.cs" />
     <Compile Include="UnitSystem\StringEnergyConverter.cs" />
+    <Compile Include="UnitSystem\StringDensityFromConverter.cs" />
+    <Compile Include="UnitSystem\StringTemperatureFromConverter.cs" />
+    <Compile Include="UnitSystem\StringTemperatureConverter.cs" />
     <Compile Include="UnitSystem\StringVolumeConverter.cs" />
     <Compile Include="UnitSystem\StringLengthConverter.cs" />
     <Compile Include="UnitSystem\StringLengthDefaultConverter.cs" />

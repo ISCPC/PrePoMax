@@ -18,15 +18,14 @@ namespace CaeModel
     public class Plastic : MaterialProperty
     {
         // Variables                                                                                                                
-        public double[][] StressStrain { get; set; }
-
-        public PlasticHardening Hardening { get; set; }
+        public double[][] StressStrainTemp { get; set; }
+        public PlasticHardening Hardening { get; set; }        
 
 
         // Constructors                                                                                                             
-        public Plastic(double[][] stressStrain)
+        public Plastic(double[][] stressStrainTemp)
         {
-            StressStrain = stressStrain;
+            StressStrainTemp = stressStrainTemp;
             Hardening = PlasticHardening.Isotropic;
         }
 

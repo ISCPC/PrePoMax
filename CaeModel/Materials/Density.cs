@@ -13,21 +13,31 @@ namespace CaeModel
         // Variables                                                                                                                
         private static string _positive = "The value must be larger than 0.";
         //
-        private double _value;
+        private double[][] _densityTemp;
 
 
         // Properties                                                                                                               
-        public double Value 
+        public double[][] DensityTemp
         {
-            get { return _value; }
-            set { if (value > 0) _value = value; else throw new CaeException(_positive); } 
+            get { return _densityTemp; }
+            set
+            {
+                _densityTemp = value;
+                if (_densityTemp != null)
+                {
+                    for (int i = 0; i < _densityTemp.Length; i++)
+                    {
+                        if (_densityTemp[i][0] <= 0) throw new CaeException(_positive);
+                    }
+                }
+            }
         }
 
 
         // Constructors                                                                                                             
-        public Density(double density)
+        public Density(double[][] densityTemp)
         {
-            _value = density;
+            _densityTemp = densityTemp;
         }
 
 

@@ -13,12 +13,14 @@ namespace FileInOut.Output.Calculix
     {
         // Variables                                                                                                                
         private Density _density;
+        private bool _temperatureDependent;
 
-       
+
         // Constructor                                                                                                              
-        public CalDensity(Density density)
+        public CalDensity(Density density, bool temperatureDependent)
         {
             _density = density;
+            _temperatureDependent = temperatureDependent;
         }
 
 
@@ -29,7 +31,19 @@ namespace FileInOut.Output.Calculix
         }
         public override string GetDataString()
         {
-            return string.Format("{0}{1}", _density.Value, Environment.NewLine);
+            StringBuilder sb = new StringBuilder();
+            double[][] data = _density.DensityTemp;
+            for (int i = 0; i < data.Length; i++)
+            {
+                if (_temperatureDependent)
+                    sb.AppendFormat("{0}, {1}{2}", data[i][0], data[i][1], Environment.NewLine);
+                else
+                {
+                    sb.AppendFormat("{0}{1}", data[i][0], Environment.NewLine);
+                    break;
+                }
+            }
+            return sb.ToString();
         }
     }
 }

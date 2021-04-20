@@ -44,6 +44,9 @@
             this.btnOK = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
             this.gbData = new System.Windows.Forms.GroupBox();
+            this.cbTemperatureDependent = new System.Windows.Forms.CheckBox();
+            this.tbDescription = new System.Windows.Forms.TextBox();
+            this.lDescription = new System.Windows.Forms.Label();
             this.tbName = new System.Windows.Forms.TextBox();
             this.lName = new System.Windows.Forms.Label();
             this.gbProperties = new System.Windows.Forms.GroupBox();
@@ -103,7 +106,7 @@
             this.propertyGrid.LineColor = System.Drawing.SystemColors.Control;
             this.propertyGrid.Location = new System.Drawing.Point(3, 3);
             this.propertyGrid.Name = "propertyGrid";
-            this.propertyGrid.Size = new System.Drawing.Size(289, 216);
+            this.propertyGrid.Size = new System.Drawing.Size(501, 225);
             this.propertyGrid.TabIndex = 6;
             this.propertyGrid.ToolbarVisible = false;
             this.propertyGrid.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.propertyGrid_PropertyValueChanged);
@@ -111,7 +114,7 @@
             // btnOK
             // 
             this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOK.Location = new System.Drawing.Point(160, 497);
+            this.btnOK.Location = new System.Drawing.Point(372, 579);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 8;
@@ -123,7 +126,7 @@
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(241, 497);
+            this.btnCancel.Location = new System.Drawing.Point(453, 579);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 7;
@@ -135,14 +138,51 @@
             // 
             this.gbData.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.gbData.Controls.Add(this.cbTemperatureDependent);
+            this.gbData.Controls.Add(this.tbDescription);
+            this.gbData.Controls.Add(this.lDescription);
             this.gbData.Controls.Add(this.tbName);
             this.gbData.Controls.Add(this.lName);
             this.gbData.Location = new System.Drawing.Point(12, 12);
             this.gbData.Name = "gbData";
-            this.gbData.Size = new System.Drawing.Size(310, 57);
+            this.gbData.Size = new System.Drawing.Size(522, 130);
             this.gbData.TabIndex = 10;
             this.gbData.TabStop = false;
             this.gbData.Text = "Data";
+            // 
+            // cbTemperatureDependent
+            // 
+            this.cbTemperatureDependent.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.cbTemperatureDependent.AutoSize = true;
+            this.cbTemperatureDependent.Location = new System.Drawing.Point(95, 105);
+            this.cbTemperatureDependent.Name = "cbTemperatureDependent";
+            this.cbTemperatureDependent.Size = new System.Drawing.Size(199, 19);
+            this.cbTemperatureDependent.TabIndex = 4;
+            this.cbTemperatureDependent.Text = "Use temperature dependent data";
+            this.cbTemperatureDependent.UseVisualStyleBackColor = true;
+            this.cbTemperatureDependent.CheckedChanged += new System.EventHandler(this.cbTemperatureDependent_CheckedChanged);
+            // 
+            // tbDescription
+            // 
+            this.tbDescription.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbDescription.Location = new System.Drawing.Point(95, 48);
+            this.tbDescription.Multiline = true;
+            this.tbDescription.Name = "tbDescription";
+            this.tbDescription.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.tbDescription.Size = new System.Drawing.Size(422, 51);
+            this.tbDescription.TabIndex = 3;
+            this.tbDescription.Text = "1\r\n2\r\n3";
+            // 
+            // lDescription
+            // 
+            this.lDescription.AutoSize = true;
+            this.lDescription.Location = new System.Drawing.Point(22, 51);
+            this.lDescription.Name = "lDescription";
+            this.lDescription.Size = new System.Drawing.Size(67, 15);
+            this.lDescription.TabIndex = 2;
+            this.lDescription.Text = "Description";
             // 
             // tbName
             // 
@@ -150,7 +190,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tbName.Location = new System.Drawing.Point(95, 19);
             this.tbName.Name = "tbName";
-            this.tbName.Size = new System.Drawing.Size(210, 23);
+            this.tbName.Size = new System.Drawing.Size(422, 23);
             this.tbName.TabIndex = 1;
             this.tbName.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbName_KeyDown);
             // 
@@ -175,9 +215,9 @@
             this.gbProperties.Controls.Add(this.btnAdd);
             this.gbProperties.Controls.Add(this.btnRemove);
             this.gbProperties.Controls.Add(this.tvProperties);
-            this.gbProperties.Location = new System.Drawing.Point(12, 75);
+            this.gbProperties.Location = new System.Drawing.Point(12, 148);
             this.gbProperties.Name = "gbProperties";
-            this.gbProperties.Size = new System.Drawing.Size(310, 416);
+            this.gbProperties.Size = new System.Drawing.Size(522, 425);
             this.gbProperties.TabIndex = 0;
             this.gbProperties.TabStop = false;
             this.gbProperties.Text = "Material models";
@@ -193,7 +233,7 @@
             this.tcProperties.Margin = new System.Windows.Forms.Padding(0);
             this.tcProperties.Name = "tcProperties";
             this.tcProperties.SelectedIndex = 0;
-            this.tcProperties.Size = new System.Drawing.Size(303, 250);
+            this.tcProperties.Size = new System.Drawing.Size(515, 259);
             this.tcProperties.TabIndex = 11;
             // 
             // tpProperties
@@ -203,7 +243,7 @@
             this.tpProperties.Location = new System.Drawing.Point(4, 24);
             this.tpProperties.Name = "tpProperties";
             this.tpProperties.Padding = new System.Windows.Forms.Padding(3);
-            this.tpProperties.Size = new System.Drawing.Size(295, 222);
+            this.tpProperties.Size = new System.Drawing.Size(507, 231);
             this.tpProperties.TabIndex = 0;
             this.tpProperties.Text = "Properties";
             // 
@@ -214,7 +254,7 @@
             this.tpDataPoints.Location = new System.Drawing.Point(4, 24);
             this.tpDataPoints.Name = "tpDataPoints";
             this.tpDataPoints.Padding = new System.Windows.Forms.Padding(3);
-            this.tpDataPoints.Size = new System.Drawing.Size(295, 222);
+            this.tpDataPoints.Size = new System.Drawing.Size(507, 231);
             this.tpDataPoints.TabIndex = 1;
             this.tpDataPoints.Text = "Data points";
             // 
@@ -234,7 +274,7 @@
             this.dgvData.EnablePasteMenu = true;
             this.dgvData.Location = new System.Drawing.Point(3, 3);
             this.dgvData.Name = "dgvData";
-            this.dgvData.Size = new System.Drawing.Size(289, 216);
+            this.dgvData.Size = new System.Drawing.Size(501, 225);
             this.dgvData.StartPlotAtZero = false;
             this.dgvData.TabIndex = 0;
             this.dgvData.XColIndex = 0;
@@ -268,7 +308,7 @@
             this.lvAddedProperties.Location = new System.Drawing.Point(177, 38);
             this.lvAddedProperties.MultiSelect = false;
             this.lvAddedProperties.Name = "lvAddedProperties";
-            this.lvAddedProperties.Size = new System.Drawing.Size(128, 122);
+            this.lvAddedProperties.Size = new System.Drawing.Size(340, 122);
             this.lvAddedProperties.TabIndex = 5;
             this.lvAddedProperties.UseCompatibleStateImageBehavior = false;
             this.lvAddedProperties.View = System.Windows.Forms.View.List;
@@ -297,7 +337,7 @@
             // btnOKAddNew
             // 
             this.btnOKAddNew.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOKAddNew.Location = new System.Drawing.Point(64, 497);
+            this.btnOKAddNew.Location = new System.Drawing.Point(276, 579);
             this.btnOKAddNew.Name = "btnOKAddNew";
             this.btnOKAddNew.Size = new System.Drawing.Size(90, 23);
             this.btnOKAddNew.TabIndex = 17;
@@ -309,7 +349,7 @@
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(334, 531);
+            this.ClientSize = new System.Drawing.Size(546, 613);
             this.Controls.Add(this.btnOKAddNew);
             this.Controls.Add(this.gbProperties);
             this.Controls.Add(this.gbData);
@@ -356,5 +396,8 @@
         private System.Windows.Forms.TabPage tpDataPoints;
         private UserControls.DataGridViewCopyPaste dgvData;
         private System.Windows.Forms.Button btnOKAddNew;
+        private System.Windows.Forms.TextBox tbDescription;
+        private System.Windows.Forms.Label lDescription;
+        private System.Windows.Forms.CheckBox cbTemperatureDependent;
     }
 }

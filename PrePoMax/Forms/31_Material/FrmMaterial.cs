@@ -18,7 +18,6 @@ namespace PrePoMax.Forms
     public partial class FrmMaterial : UserControls.PrePoMaxChildForm, IFormBase
     {
         // Variables                                                                                                                
-        private bool _propertyChanged;
         private string[] _materialNames;
         private string _materialToEditName;
         private Material _material;
@@ -80,6 +79,11 @@ namespace PrePoMax.Forms
                 e.SuppressKeyPress = true;  // no beep
             }
         }
+        private void cbTemperatureDependent_CheckedChanged(object sender, EventArgs e)
+        {
+            HideShowTemperature();
+            _propertyItemChanged = true;
+        }
         private void btnAdd_Click(object sender, EventArgs e)
         {
             if (tvProperties.SelectedNode != null && tvProperties.SelectedNode.Tag != null)
@@ -104,7 +108,7 @@ namespace PrePoMax.Forms
                     lvAddedProperties.Select();
                 }
             }
-            _propertyChanged = true;
+            _propertyItemChanged = true;
         }
         private void btnRemove_Click(object sender, EventArgs e)
         {
@@ -114,13 +118,45 @@ namespace PrePoMax.Forms
                 if (lvAddedProperties.Items.Count > 0) lvAddedProperties.Items[0].Selected = true;
                 else ClearControls();
             }
-            _propertyChanged = true;
+            _propertyItemChanged = true;
         }
         private void lvAddedProperties_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (lvAddedProperties.SelectedItems.Count == 1)
             {
-                if (lvAddedProperties.SelectedItems[0].Tag is ViewDensity || lvAddedProperties.SelectedItems[0].Tag is ViewElastic ||
+                // Clear
+                dgvData.DataSource = null;      
+                dgvData.Columns.Clear();
+                //
+                if (lvAddedProperties.SelectedItems[0].Tag is ViewDensity vd)
+                {
+                    tcProperties.TabPages.Clear();
+                    tcProperties.TabPages.Add(_pages[1]);
+                    //
+                    BindingSource binding = new BindingSource();
+                    binding.DataSource = vd.DataPoints;
+                    dgvData.DataSource = binding; // bind datagridview to binding source - enables adding of new lines
+                    binding.ListChanged += Binding_ListChanged;
+                    // Unit
+                    string unitDensity = _controller.Model.UnitSystem.DensityUnitAbbreviation;
+                    string unitTemperature = _controller.Model.UnitSystem.TemperatureUnitAbbreviation;
+                    // HeaderText
+                    string headerText;
+                    string densityName = nameof(DensityDataPoint.Density);
+                    string temperatureName = nameof(TempDataPoint.Temperature);
+                    //
+                    headerText = dgvData.Columns[densityName].HeaderText;
+                    if (headerText != null) dgvData.Columns[densityName].HeaderText = headerText.Replace("?", unitDensity);
+                    headerText = dgvData.Columns[temperatureName].HeaderText;
+                    if (headerText != null) dgvData.Columns[temperatureName].HeaderText = headerText.Replace("?", unitTemperature);
+                    // Alignment
+                    dgvData.Columns[densityName].HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
+                    dgvData.Columns[temperatureName].HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
+                    //
+                    dgvData.XColIndex = 1;
+                    dgvData.StartPlotAtZero = true;
+                }
+                else if (lvAddedProperties.SelectedItems[0].Tag is ViewElastic ||
                     lvAddedProperties.SelectedItems[0].Tag is ViewElasticWithDensity)
                 {
                     tcProperties.TabPages.Clear();
@@ -130,8 +166,8 @@ namespace PrePoMax.Forms
                 else if (lvAddedProperties.SelectedItems[0].Tag is ViewPlastic vp)
                 {
                     tcProperties.TabPages.Clear();
-                    tcProperties.TabPages.Add(_pages[0]);
                     tcProperties.TabPages.Add(_pages[1]);
+                    tcProperties.TabPages.Add(_pages[0]);
                     //
                     BindingSource binding = new BindingSource();
                     binding.DataSource = vp.DataPoints;
@@ -139,18 +175,23 @@ namespace PrePoMax.Forms
                     binding.ListChanged += Binding_ListChanged;
                     // Unit
                     string unitStress = _controller.Model.UnitSystem.PressureUnitAbbreviation;
+                    string unitTemperature = _controller.Model.UnitSystem.TemperatureUnitAbbreviation;
                     // HeaderText
                     string headerText;
-                    string stressName = nameof(MaterialDataPoint.Stress);
-                    string strainName = nameof(MaterialDataPoint.Strain);
+                    string stressName = nameof(PlasticDataPoint.Stress);
+                    string strainName = nameof(PlasticDataPoint.Strain);
+                    string temperatureName = nameof(TempDataPoint.Temperature);
                     //
                     headerText = dgvData.Columns[stressName].HeaderText;
                     if (headerText != null) dgvData.Columns[stressName].HeaderText = headerText.Replace("?", unitStress);
                     headerText = dgvData.Columns[strainName].HeaderText;
                     if (headerText != null) dgvData.Columns[strainName].HeaderText = headerText.Replace("?", "/");
+                    headerText = dgvData.Columns[temperatureName].HeaderText;
+                    if (headerText != null) dgvData.Columns[temperatureName].HeaderText = headerText.Replace("?", unitTemperature);
                     // Alignment
                     dgvData.Columns[stressName].HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
                     dgvData.Columns[strainName].HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
+                    dgvData.Columns[temperatureName].HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
                     //
                     dgvData.XColIndex = 1;
                     dgvData.StartPlotAtZero = true;
@@ -158,12 +199,14 @@ namespace PrePoMax.Forms
                     propertyGrid.SelectedObject = vp;
                 }
                 else throw new NotSupportedException();
+                //
+                HideShowTemperature();
             }
             lvAddedProperties.Select();
         }
         private void Binding_ListChanged(object sender, ListChangedEventArgs e)
         {
-            _propertyChanged = true;
+            _propertyItemChanged = true;
         }
         private void propertyGrid_PropertyValueChanged(object s, PropertyValueChangedEventArgs e)
         {
@@ -226,7 +269,6 @@ namespace PrePoMax.Forms
         {
             this.btnOKAddNew.Visible = materialToEditName == null;
             //
-            _propertyChanged = false;
             _propertyItemChanged = false;
             _materialNames = null;
             _materialToEditName = null;
@@ -237,21 +279,26 @@ namespace PrePoMax.Forms
             _materialNames = _controller.GetMaterialNames();
             _materialToEditName = materialToEditName;
             // Initialize material properties
-            tvProperties.Nodes.Find("Density", true)[0].Tag = new Density(0);
+            tvProperties.Nodes.Find("Density", true)[0].Tag = new Density(new double[][] { new double[] { 0, 0 } });
             tvProperties.Nodes.Find("Elastic", true)[0].Tag = new Elastic(0, 0);
-            tvProperties.Nodes.Find("Plastic", true)[0].Tag = new Plastic(new double[][] { new double[] { 0, 0 } });
+            tvProperties.Nodes.Find("Plastic", true)[0].Tag = new Plastic(new double[][] { new double[] { 0, 0, 0 } });
             tvProperties.ExpandAll();
             //
             if (_materialToEditName == null)
             {
                 _material = null;
                 tbName.Text = GetMaterialName();
+                tbDescription.Text = "";
+                cbTemperatureDependent.Checked = false;
             }
             else
             {
                 Material = _controller.GetMaterial(_materialToEditName); // to clone
                 //
                 tbName.Text = _material.Name;
+                tbDescription.Text = _material.Description;
+                cbTemperatureDependent.Checked = _material.TemperatureDependent;
+                //
                 if (_material.Properties.Count > 0)
                 {
                     ListViewItem item;
@@ -322,12 +369,20 @@ namespace PrePoMax.Forms
                 throw new CaeGlobals.CaeException("The selected material name already exists.");
             //
             _material = new CaeModel.Material(tbName.Text);
+            _material.Description = tbDescription.Text;
+            _material.TemperatureDependent = cbTemperatureDependent.Checked;
+            //
             ViewMaterialProperty property;
             foreach (ListViewItem item in lvAddedProperties.Items)
             {
                 property = (ViewMaterialProperty)item.Tag;
-                if (property is ViewDensity vd && vd.Value <= 0)
-                    throw new CaeGlobals.CaeException("The density must be larger than 0.");
+                if (property is ViewDensity vd)
+                {
+                    for (int i = 0; i < vd.DataPoints.Count; i++)
+                    {
+                        if (vd.DataPoints[i].Density <= 0) throw new CaeException("The density must be larger than 0.");
+                    }
+                }
                 else if (property is ViewElastic ve && ve.YoungsModulus <= 0)
                     throw new CaeGlobals.CaeException("The Young's modulus must be larger than 0.");
                 else if (property is ViewElasticWithDensity ewd)
@@ -347,7 +402,7 @@ namespace PrePoMax.Forms
             else
             {
                 // Replace
-                if (_materialToEditName != Material.Name || _propertyChanged || _propertyItemChanged)
+                if (_materialToEditName != Material.Name || _propertyItemChanged)
                 {
                     _controller.ReplaceMaterialCommand(_materialToEditName, Material);
                 }
@@ -357,10 +412,15 @@ namespace PrePoMax.Forms
         {
             return NamedClass.GetNewValueName(_materialNames, "Material-");
         }
+        private void HideShowTemperature()
+        {
+            string temperatureName = nameof(TempDataPoint.Temperature);
+            DataGridViewColumn col = dgvData.Columns[temperatureName];
+            if (col != null) col.Visible = cbTemperatureDependent.Checked;
+        }
 
+        
 
-
-
-
+       
     }
 }

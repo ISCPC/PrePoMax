@@ -237,7 +237,7 @@ namespace FileInOut.Output
                         {
                             Density density = (Density)property;
                             sb.AppendLine("*Density");
-                            sb.AppendFormat("{0}", density.Value).AppendLine();
+                            sb.AppendFormat("{0}", density.DensityTemp[0][0]).AppendLine();
                         }
                         else if (property is Elastic)
                         {

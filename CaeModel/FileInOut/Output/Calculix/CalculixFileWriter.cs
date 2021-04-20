@@ -420,14 +420,18 @@ namespace FileInOut.Output
                     //
                     foreach (var property in entry.Value.Properties)
                     {
-                        if (property is Density) material.AddKeyword(new CalDensity(property as Density));
+                        if (property is Density) material.AddKeyword(new CalDensity(property as Density,
+                                                                     entry.Value.TemperatureDependent));
                         else if (property is Elastic) material.AddKeyword(new CalElastic(property as Elastic));
                         else if (property is ElasticWithDensity ewd)
                         {
-                            material.AddKeyword(new CalDensity(new Density(ewd.Density)));
+                            material.AddKeyword(new CalDensity(property as Density,
+                                                               entry.Value.TemperatureDependent));
+                            //
                             material.AddKeyword(new CalElastic(new Elastic(ewd.YoungsModulus, ewd.PoissonsRatio)));
                         }
-                        else if (property is Plastic) material.AddKeyword(new CalPlastic(property as Plastic));
+                        else if (property is Plastic) material.AddKeyword(new CalPlastic(property as Plastic,
+                                                                          entry.Value.TemperatureDependent));
                         else throw new NotImplementedException();
                     }
                 }
