@@ -80,6 +80,15 @@ Old
 
 
 By Sergio:
+20. 4. 2020
+- add description field for materials
+- add support for printing material datasheet option
+- add support to export material to .csv
+- add engineering constants as yield, ultimate stress and strain, fatigue limit and then scale the resuls using them
+- add support for initial temperatures, steps temperatures
+- add support for amplitudes
+
+
 8. 6. 2020
 - in the material definition, support for themal expansion coefficient and conductivity
 - in options, a way to setup the default unit sistem
@@ -182,12 +191,15 @@ Dependency nglib - added following files for c++ redistriburable compatibility:
 Done
 
 Version 1.0.0 Master branch
+Added support to swap geometry between parts
+Added support for exploded view
+Added Shell edge load
 Added support for .inp files using *Include keyword
 Added support for Unit-less unit system
 Added support for remeshing of shell finite element meshes
 Added a feature to create a reference point between two points and in the circle center
 Added support for generating model edges based on the face angle
-Added support for color visualization of parts, materials, sections and FE symbols
+Added support for color annotations of parts, materials, sections and FE symbols
 Fixed the incrementation for the static step.
 Bug fixes
 
