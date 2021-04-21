@@ -243,7 +243,8 @@ namespace FileInOut.Output
                         {
                             Elastic elastic = (Elastic)property;
                             sb.AppendLine("*Elastic");
-                            sb.AppendFormat("{0}, {1}", elastic.YoungsModulus, elastic.PoissonsRatio).AppendLine();
+                            sb.AppendFormat("{0}, {1}", elastic.YoungsPoissonsTemp[0][0],
+                                            elastic.YoungsPoissonsTemp[0][1]).AppendLine();
                         }
                         else throw new NotImplementedException();
                     }

@@ -4,32 +4,30 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CaeGlobals;
-using System.Runtime.Serialization;
 
 namespace CaeModel
 {
     [Serializable]
-    public class Elastic : MaterialProperty
+    public class Expansion : MaterialProperty
     {
         // Variables                                                                                                                
-        [NonSerialized]
         private static string _positive = "The value must be larger than 0.";
         //
-        private double[][] _youngsPoissonsTemp;
+        private double[][] _expansionTemp;
 
 
         // Properties                                                                                                               
-        public double[][] YoungsPoissonsTemp
+        public double[][] ExpansionTemp
         {
-            get { return _youngsPoissonsTemp; }
+            get { return _expansionTemp; }
             set
             {
-                _youngsPoissonsTemp = value;
-                if (_youngsPoissonsTemp != null)
+                _expansionTemp = value;
+                if (_expansionTemp != null)
                 {
-                    for (int i = 0; i < _youngsPoissonsTemp.Length; i++)
+                    for (int i = 0; i < _expansionTemp.Length; i++)
                     {
-                        if (_youngsPoissonsTemp[i][0] <= 0) throw new CaeException(_positive);
+                        if (_expansionTemp[i][0] <= 0) throw new CaeException(_positive);
                     }
                 }
             }
@@ -37,10 +35,9 @@ namespace CaeModel
 
 
         // Constructors                                                                                                             
-        public Elastic(double[][] youngsPoissonsTemp)
+        public Expansion(double[][] expansionTemp)
         {
-            // The constructor must wotk with E = 0
-            _youngsPoissonsTemp = youngsPoissonsTemp;
+            _expansionTemp = expansionTemp;
         }
 
 

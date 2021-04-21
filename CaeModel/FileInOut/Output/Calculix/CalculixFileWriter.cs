@@ -420,18 +420,30 @@ namespace FileInOut.Output
                     //
                     foreach (var property in entry.Value.Properties)
                     {
-                        if (property is Density) material.AddKeyword(new CalDensity(property as Density,
-                                                                     entry.Value.TemperatureDependent));
-                        else if (property is Elastic) material.AddKeyword(new CalElastic(property as Elastic));
+                        if (property is Density de)
+                        {
+                            material.AddKeyword(new CalDensity(de, entry.Value.TemperatureDependent));
+                        }
+                        else if (property is Elastic el)
+                        {
+                            material.AddKeyword(new CalElastic(el, entry.Value.TemperatureDependent));
+                        }
                         else if (property is ElasticWithDensity ewd)
                         {
-                            material.AddKeyword(new CalDensity(property as Density,
-                                                               entry.Value.TemperatureDependent));
+                            Density density = new Density(new double[][] { new double[] { ewd.Density } });
+                            material.AddKeyword(new CalDensity(density, entry.Value.TemperatureDependent));
                             //
-                            material.AddKeyword(new CalElastic(new Elastic(ewd.YoungsModulus, ewd.PoissonsRatio)));
+                            Elastic elastic = new Elastic(new double[][] { new double[] { ewd.YoungsModulus, ewd.PoissonsRatio } });
+                            material.AddKeyword(new CalElastic(elastic, entry.Value.TemperatureDependent));
                         }
-                        else if (property is Plastic) material.AddKeyword(new CalPlastic(property as Plastic,
-                                                                          entry.Value.TemperatureDependent));
+                        else if (property is Plastic pl)
+                        {
+                            material.AddKeyword(new CalPlastic(pl, entry.Value.TemperatureDependent));
+                        }
+                        else if (property is Expansion ex)
+                        {
+                            material.AddKeyword(new CalExpansion(ex, entry.Value.TemperatureDependent));
+                        }
                         else throw new NotImplementedException();
                     }
                 }

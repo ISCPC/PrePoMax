@@ -262,7 +262,9 @@
     <Compile Include="Forms\22_NodeSet\FrmNodeSet.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Forms\31_Material\DataPoints\ExpansionDataPoint.cs" />
     <Compile Include="Forms\31_Material\DataPoints\DensityDataPoint.cs" />
+    <Compile Include="Forms\31_Material\DataPoints\ElasticDataPoint.cs" />
     <Compile Include="Forms\31_Material\DataPoints\TempDataPoint.cs" />
     <Compile Include="Forms\31_Material\MaterialLibraryItem.cs" />
     <Compile Include="Forms\31_Material\FrmMaterialLibrary.cs">
@@ -272,6 +274,7 @@
       <DependentUpon>FrmMaterialLibrary.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\31_Material\DataPoints\PlasticDataPoint.cs" />
+    <Compile Include="Forms\31_Material\ViewExpansion.cs" />
     <Compile Include="Forms\31_Material\ViewElasticWithDensity.cs" />
     <Compile Include="Forms\32_Section\ViewShellSection.cs" />
     <Compile Include="Forms\34_SurfaceInteraction\ListViewItemComparer.cs" />

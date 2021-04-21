@@ -118,6 +118,12 @@ namespace PrePoMax
         [DescriptionAttribute("Default frequency unit.")]
         [Id(12, 1)]
         public string FrequencyUnitAbbreviation { get { return _unitSystem.FrequencyUnitAbbreviation; } }
+        //
+        [CategoryAttribute("Derived units")]
+        [OrderedDisplayName(12, 20, "Thermal expansion coefficient")]
+        [DescriptionAttribute("Default thermal expansion coefficient.")]
+        [Id(13, 1)]
+        public string Expansion { get { return _unitSystem.ExpansionUnitAbbreviation; } }
 
 
         // Constructors                                                                                                             

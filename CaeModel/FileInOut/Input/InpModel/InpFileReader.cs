@@ -751,7 +751,7 @@ namespace FileInOut.Input
                 double E = double.Parse(record1[0]);
                 double v = double.Parse(record1[1]);
 
-                Elastic elastic = new Elastic(E, v);
+                Elastic elastic = new Elastic(new double[][] { new double[] { E, v, 0 } });
                 return elastic;
             }
             catch

@@ -33,14 +33,14 @@ namespace PrePoMax.Forms
 
         // Constructors                                                                                                             
         public FrmUnitSystem(Controller controller)
-            : base(1.8)
+            : base(1.4)
         {
             InitializeComponent();
             //
             _controller = controller;
             _viewUnitSystem = null;
             //
-            this.Height = 330 + 19 * 19;
+            this.Height = 330 + 20 * 19;
             //
             btnOkAddNew.Visible = false;
             btnCancel.Visible = false;

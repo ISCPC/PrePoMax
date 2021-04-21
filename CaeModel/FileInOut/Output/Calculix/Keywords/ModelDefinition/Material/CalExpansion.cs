@@ -9,17 +9,17 @@ using CaeMesh;
 namespace FileInOut.Output.Calculix
 {
     [Serializable]
-    internal class CalElastic : CalculixKeyword
+    internal class CalExpansion : CalculixKeyword
     {
         // Variables                                                                                                                
-        private Elastic _elastic;
+        private Expansion _expansion;
         private bool _temperatureDependent;
 
 
         // Constructor                                                                                                              
-        public CalElastic(Elastic elastic, bool temperatureDependent)
+        public CalExpansion(Expansion expansion, bool temperatureDependent)
         {
-            _elastic = elastic;
+            _expansion = expansion;
             _temperatureDependent = temperatureDependent;
         }
 
@@ -27,20 +27,19 @@ namespace FileInOut.Output.Calculix
         // Methods                                                                                                                  
         public override string GetKeywordString()
         {
-            return string.Format("*Elastic{0}", Environment.NewLine);
+            return string.Format("*Expansion{0}", Environment.NewLine);
         }
         public override string GetDataString()
         {
             StringBuilder sb = new StringBuilder();
-            double[][] data = _elastic.YoungsPoissonsTemp;
-            //
+            double[][] data = _expansion.ExpansionTemp;
             for (int i = 0; i < data.Length; i++)
             {
                 if (_temperatureDependent)
-                    sb.AppendFormat("{0}, {1}, {2}{3}", data[i][0], data[i][1], data[i][2], Environment.NewLine);
+                    sb.AppendFormat("{0}, {1}{2}", data[i][0], data[i][1], Environment.NewLine);
                 else
                 {
-                    sb.AppendFormat("{0}, {1}{2}", data[i][0], data[i][1], Environment.NewLine);
+                    sb.AppendFormat("{0}{1}", data[i][0], Environment.NewLine);
                     break;
                 }
             }

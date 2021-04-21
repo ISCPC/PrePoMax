@@ -54,12 +54,18 @@ namespace CaeModel
                             // Desity
                             den.DensityTemp[i][0] = fromSystem.Convert(den.DensityTemp[i][0], sdc, toSystem);
                             // Temp
-                            den.DensityTemp[i][1] = currentSystem.Convert(den.DensityTemp[i][1], stc, toSystem);
+                            den.DensityTemp[i][1] = fromSystem.Convert(den.DensityTemp[i][1], stc, toSystem);
                         }
                     }
                     else if (property is Elastic el)
                     {
-                        el.YoungsModulus = fromSystem.Convert(el.YoungsModulus, spc, toSystem);
+                        for (int i = 0; i < el.YoungsPoissonsTemp.Length; i++)
+                        {
+                            // Youngs modulus
+                            el.YoungsPoissonsTemp[i][0] = fromSystem.Convert(el.YoungsPoissonsTemp[i][0], spc, toSystem);
+                            // Temp
+                            el.YoungsPoissonsTemp[i][2] = fromSystem.Convert(el.YoungsPoissonsTemp[i][2], stc, toSystem);
+                        }
                     }
                     else if (property is ElasticWithDensity ewd)
                     {
@@ -73,7 +79,7 @@ namespace CaeModel
                             // Stress
                             pl.StressStrainTemp[i][0] = fromSystem.Convert(pl.StressStrainTemp[i][0], spc, toSystem);
                             // Temp
-                            pl.StressStrainTemp[i][2] = currentSystem.Convert(pl.StressStrainTemp[i][2], stc, toSystem);
+                            pl.StressStrainTemp[i][2] = fromSystem.Convert(pl.StressStrainTemp[i][2], stc, toSystem);
                         }
                     }
                     else throw new NotSupportedException();
@@ -85,6 +91,7 @@ namespace CaeModel
             }
             finally
             {
+                // fromSystem.Convert calls changes converter units - reset it here
                 currentSystem.SetConverterUnits();
             }
         }

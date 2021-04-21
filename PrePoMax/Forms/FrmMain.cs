@@ -619,6 +619,7 @@ namespace PrePoMax
             }
             else if (_controller.Model.Mesh != null && _controller.CurrentView == ViewGeometryModelResults.Model)
             {
+                // _controller.Model.Mesh defines the unit system and must
                 if (nodeName == "Node sets") tsmiCreateNodeSet_Click(null, null);
                 else if (nodeName == "Element sets") tsmiCreateElementSet_Click(null, null);
                 else if (nodeName == "Surfaces") tsmiCreateSurface_Click(null, null);
@@ -3325,7 +3326,6 @@ namespace PrePoMax
             try
             {
                 if (_controller.Model.Mesh == null) return;
-                //
                 ShowForm(_frmMaterial, "Create Material", null);
             }
             catch (Exception ex)

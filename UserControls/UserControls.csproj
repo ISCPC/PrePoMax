@@ -178,7 +178,6 @@
       <DependentUpon>ToolStripFocus.cs</DependentUpon>
     </Compile>
     <Compile Include="Trees\OrderedDictionary.cs" />
-    <Compile Include="Views\Materials\ViewMaterial.cs" />
     <Compile Include="Views\Sections\ViewSection.cs" />
     <Compile Include="Views\Sections\ViewSolidSection.cs" />
     <Compile Include="Views\Step\ViewStaticStep.cs" />
@@ -361,6 +360,9 @@
     <None Include="Resources\Paste.png" />
     <None Include="Resources\Copy.png" />
     <None Include="Resources\Cut.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Views\Materials\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

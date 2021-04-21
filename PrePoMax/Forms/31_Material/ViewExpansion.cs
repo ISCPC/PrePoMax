@@ -10,16 +10,16 @@ using CaeModel;
 namespace PrePoMax
 {
    [Serializable]
-    public class ViewDensity : ViewMaterialProperty
+    public class ViewExpansion : ViewMaterialProperty
     {
         // Variables                                                                                                                
-        private List<DensityDataPoint> _points;
+        private List<ExpansionDataPoint> _points;
 
 
         // Properties                                                                                                               
         public override string Name
         {
-            get { return "Density"; }
+            get { return "Expansion"; }
         }
         //
         [Browsable(false)]
@@ -28,48 +28,48 @@ namespace PrePoMax
             get
             {
                 int i = 0;
-                double[][] densityTemp = new double[_points.Count][];
+                double[][] expansionTemp = new double[_points.Count][];
                 //
-                foreach (DensityDataPoint point in _points)
+                foreach (ExpansionDataPoint point in _points)
                 {
-                    densityTemp[i] = new double[2];
-                    densityTemp[i][0] = point.Density;
-                    densityTemp[i][1] = point.Temperature;
+                    expansionTemp[i] = new double[2];
+                    expansionTemp[i][0] = point.Expansion;
+                    expansionTemp[i][1] = point.Temperature;
                     i++;
                 }
-                Density density = new Density(densityTemp);
+                Expansion expansion = new Expansion(expansionTemp);
                 //
-                return density;
+                return expansion;
             }
         }
         //
         [Browsable(false)]
-        public List<DensityDataPoint> DataPoints { get { return _points; } set { _points = value; } }
+        public List<ExpansionDataPoint> DataPoints { get { return _points; } set { _points = value; } }
         //
         [CategoryAttribute("Data"),
-        DisplayName("Density"),
-        DescriptionAttribute("The value of the density.")]
-        [TypeConverter(typeof(CaeGlobals.StringDensityConverter))]
-        public double Density
+        DisplayName("Expansion"),
+        DescriptionAttribute("The value of the thermal expansion coefficient.")]
+        [TypeConverter(typeof(CaeGlobals.StringExpansionConverter))]
+        public double Expansion
         {
             get
             {
-                if (_points != null && _points.Count > 0) return _points[0].Density;
+                if (_points != null && _points.Count > 0) return _points[0].Expansion;
                 else return 0;
             }
             set
             {
-                if (_points != null && _points.Count > 0) _points[0].Density = value;
+                if (_points != null && _points.Count > 0) _points[0].Expansion = value;
             }
         }
 
         // Constructors                                                                                                             
-        public ViewDensity(Density density)
+        public ViewExpansion(Expansion expansion)
         {
-            _points = new List<DensityDataPoint>();
-            for (int i = 0; i < density.DensityTemp.Length; i++)
+            _points = new List<ExpansionDataPoint>();
+            for (int i = 0; i < expansion.ExpansionTemp.Length; i++)
             {
-                _points.Add(new DensityDataPoint(density.DensityTemp[i][0], density.DensityTemp[i][1]));
+                _points.Add(new ExpansionDataPoint(expansion.ExpansionTemp[i][0], expansion.ExpansionTemp[i][1]));
             }
             //
             base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
