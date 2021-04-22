@@ -28,18 +28,18 @@ namespace PrePoMax
             get
             {
                 int i = 0;
-                double[][] expansionTemp = new double[_points.Count][];
+                double[][] thermalExpansionTemp = new double[_points.Count][];
                 //
                 foreach (ExpansionDataPoint point in _points)
                 {
-                    expansionTemp[i] = new double[2];
-                    expansionTemp[i][0] = point.Expansion;
-                    expansionTemp[i][1] = point.Temperature;
+                    thermalExpansionTemp[i] = new double[2];
+                    thermalExpansionTemp[i][0] = point.ThermalExpansion;
+                    thermalExpansionTemp[i][1] = point.Temperature;
                     i++;
                 }
-                Expansion expansion = new Expansion(expansionTemp);
+                ThermalExpansion thermalExpansion = new ThermalExpansion(thermalExpansionTemp);
                 //
-                return expansion;
+                return thermalExpansion;
             }
         }
         //
@@ -49,27 +49,28 @@ namespace PrePoMax
         [CategoryAttribute("Data"),
         DisplayName("Expansion"),
         DescriptionAttribute("The value of the thermal expansion coefficient.")]
-        [TypeConverter(typeof(CaeGlobals.StringExpansionConverter))]
-        public double Expansion
+        [TypeConverter(typeof(CaeGlobals.StringThermalExpansionConverter))]
+        public double ThermalExpansion
         {
             get
             {
-                if (_points != null && _points.Count > 0) return _points[0].Expansion;
+                if (_points != null && _points.Count > 0) return _points[0].ThermalExpansion;
                 else return 0;
             }
             set
             {
-                if (_points != null && _points.Count > 0) _points[0].Expansion = value;
+                if (_points != null && _points.Count > 0) _points[0].ThermalExpansion = value;
             }
         }
 
         // Constructors                                                                                                             
-        public ViewExpansion(Expansion expansion)
+        public ViewExpansion(ThermalExpansion thermalExpansion)
         {
             _points = new List<ExpansionDataPoint>();
-            for (int i = 0; i < expansion.ExpansionTemp.Length; i++)
+            for (int i = 0; i < thermalExpansion.ThermalExpansionTemp.Length; i++)
             {
-                _points.Add(new ExpansionDataPoint(expansion.ExpansionTemp[i][0], expansion.ExpansionTemp[i][1]));
+                _points.Add(new ExpansionDataPoint(thermalExpansion.ThermalExpansionTemp[i][0],
+                                                   thermalExpansion.ThermalExpansionTemp[i][1]));
             }
             //
             base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);

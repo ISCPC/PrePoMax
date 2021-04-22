@@ -11,7 +11,7 @@ using UnitsNet.Units;
 
 namespace CaeGlobals
 {
-    public class StringExpansionFromConverter : StringExpansionConverter
+    public class StringThermalExpansionFromConverter : StringThermalExpansionConverter
     {
         // Variables                                                                                                                
 
@@ -20,7 +20,7 @@ namespace CaeGlobals
 
 
         // Constructors                                                                                                             
-        public StringExpansionFromConverter()
+        public StringThermalExpansionFromConverter()
         {
         }
 

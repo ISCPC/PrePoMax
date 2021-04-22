@@ -440,9 +440,9 @@ namespace FileInOut.Output
                         {
                             material.AddKeyword(new CalPlastic(pl, entry.Value.TemperatureDependent));
                         }
-                        else if (property is Expansion ex)
+                        else if (property is ThermalExpansion te)
                         {
-                            material.AddKeyword(new CalExpansion(ex, entry.Value.TemperatureDependent));
+                            material.AddKeyword(new CalThermalExpansion(te, entry.Value.TemperatureDependent));
                         }
                         else throw new NotImplementedException();
                     }

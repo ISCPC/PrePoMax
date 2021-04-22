@@ -8,26 +8,26 @@ using CaeGlobals;
 namespace CaeModel
 {
     [Serializable]
-    public class Expansion : MaterialProperty
+    public class ThermalExpansion : MaterialProperty
     {
         // Variables                                                                                                                
         private static string _positive = "The value must be larger than 0.";
         //
-        private double[][] _expansionTemp;
+        private double[][] _thermalExpansionTemp;
 
 
         // Properties                                                                                                               
-        public double[][] ExpansionTemp
+        public double[][] ThermalExpansionTemp
         {
-            get { return _expansionTemp; }
+            get { return _thermalExpansionTemp; }
             set
             {
-                _expansionTemp = value;
-                if (_expansionTemp != null)
+                _thermalExpansionTemp = value;
+                if (_thermalExpansionTemp != null)
                 {
-                    for (int i = 0; i < _expansionTemp.Length; i++)
+                    for (int i = 0; i < _thermalExpansionTemp.Length; i++)
                     {
-                        if (_expansionTemp[i][0] <= 0) throw new CaeException(_positive);
+                        if (_thermalExpansionTemp[i][0] <= 0) throw new CaeException(_positive);
                     }
                 }
             }
@@ -35,9 +35,9 @@ namespace CaeModel
 
 
         // Constructors                                                                                                             
-        public Expansion(double[][] expansionTemp)
+        public ThermalExpansion(double[][] thermalExpansionTemp)
         {
-            _expansionTemp = expansionTemp;
+            _thermalExpansionTemp = thermalExpansionTemp;
         }
 
 

@@ -12,25 +12,25 @@ namespace CaeModel
     public class ExpansionDataPoint : TempDataPoint
     {
         // Variables                                                                                                                
-        private double _expansion;
+        private double _thermalExpansion;
 
 
         // Properties                                                                                                               
-        [DisplayName("Expansion\n[?]")]
-        [TypeConverter(typeof(CaeGlobals.StringExpansionFromConverter))]
-        public double Expansion { get { return _expansion; } set { _expansion = value; } }
+        [DisplayName("Thermal Expansion\n[?]")]
+        [TypeConverter(typeof(CaeGlobals.StringThermalExpansionFromConverter))]
+        public double ThermalExpansion { get { return _thermalExpansion; } set { _thermalExpansion = value; } }
 
 
         // Constructors                                                                                                             
         public ExpansionDataPoint()
             :base(0)
         {
-            _expansion = 0;
+            _thermalExpansion = 0;
         }
-        public ExpansionDataPoint(double expansion, double temperature)
+        public ExpansionDataPoint(double thermalExpansion, double temperature)
             :base(temperature)
         {
-            _expansion = expansion;
+            _thermalExpansion = thermalExpansion;
         }
     }
 }

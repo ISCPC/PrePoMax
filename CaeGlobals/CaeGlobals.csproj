@@ -124,7 +124,7 @@
     <Compile Include="CommonClasses\Vec3D.cs" />
     <Compile Include="UnitSystem\MyUnit.cs" />
     <Compile Include="UnitSystem\StringAccelerationConverter.cs" />
-    <Compile Include="UnitSystem\StringExpansionConverter.cs" />
+    <Compile Include="UnitSystem\StringThermalExpansionConverter.cs" />
     <Compile Include="UnitSystem\StringAngleConverter.cs" />
     <Compile Include="UnitSystem\StringAngleDegConverter.cs" />
     <Compile Include="UnitSystem\StringAngleDOFConverter.cs" />
@@ -138,7 +138,7 @@
     <Compile Include="UnitSystem\StringForcePerVolumeDefaultConverter.cs" />
     <Compile Include="UnitSystem\StringEnergyConverter.cs" />
     <Compile Include="UnitSystem\StringDensityFromConverter.cs" />
-    <Compile Include="UnitSystem\StringExpansionFromConverter.cs" />
+    <Compile Include="UnitSystem\StringThermalExpansionFromConverter.cs" />
     <Compile Include="UnitSystem\StringTemperatureFromConverter.cs" />
     <Compile Include="UnitSystem\StringTemperatureConverter.cs" />
     <Compile Include="UnitSystem\StringVolumeConverter.cs" />

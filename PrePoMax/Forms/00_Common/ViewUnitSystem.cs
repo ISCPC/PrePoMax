@@ -123,7 +123,7 @@ namespace PrePoMax
         [OrderedDisplayName(12, 20, "Thermal expansion coefficient")]
         [DescriptionAttribute("Default thermal expansion coefficient.")]
         [Id(13, 1)]
-        public string Expansion { get { return _unitSystem.ExpansionUnitAbbreviation; } }
+        public string ThermalExpansion { get { return _unitSystem.ThermalExpansionUnitAbbreviation; } }
 
 
         // Constructors                                                                                                             

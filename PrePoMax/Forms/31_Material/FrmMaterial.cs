@@ -98,7 +98,7 @@ namespace PrePoMax.Forms
                         if (mp is Density de) item.Tag = new ViewDensity(de.DeepClone());
                         else if (mp is Elastic el) item.Tag = new ViewElastic(el.DeepClone());
                         else if (mp is Plastic pl) item.Tag = new ViewPlastic(pl.DeepClone());
-                        else if (mp is Expansion ex) item.Tag = new ViewExpansion(ex.DeepClone());
+                        else if (mp is ThermalExpansion te) item.Tag = new ViewExpansion(te.DeepClone());
                         else throw new NotSupportedException();
                     }
                     else throw new NotSupportedException();
@@ -251,19 +251,21 @@ namespace PrePoMax.Forms
                     dgvData.DataSource = binding; // bind datagridview to binding source - enables adding of new lines
                     binding.ListChanged += Binding_ListChanged;
                     // Unit
-                    string unitExpansion = _controller.Model.UnitSystem.ExpansionUnitAbbreviation;
+                    string unitThermalExpansion = _controller.Model.UnitSystem.ThermalExpansionUnitAbbreviation;
                     string unitTemperature = _controller.Model.UnitSystem.TemperatureUnitAbbreviation;
                     // HeaderText
                     string headerText;
-                    string expansionName = nameof(ExpansionDataPoint.Expansion);
+                    string thermalExpansionName = nameof(ExpansionDataPoint.ThermalExpansion);
                     string temperatureName = nameof(TempDataPoint.Temperature);
                     //
-                    headerText = dgvData.Columns[expansionName].HeaderText;
-                    if (headerText != null) dgvData.Columns[expansionName].HeaderText = headerText.Replace("?", unitExpansion);
+                    headerText = dgvData.Columns[thermalExpansionName].HeaderText;
+                    if (headerText != null)
+                        dgvData.Columns[thermalExpansionName].HeaderText = headerText.Replace("?", unitThermalExpansion);
                     headerText = dgvData.Columns[temperatureName].HeaderText;
-                    if (headerText != null) dgvData.Columns[temperatureName].HeaderText = headerText.Replace("?", unitTemperature);
+                    if (headerText != null)
+                        dgvData.Columns[temperatureName].HeaderText = headerText.Replace("?", unitTemperature);
                     // Alignment
-                    dgvData.Columns[expansionName].HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
+                    dgvData.Columns[thermalExpansionName].HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
                     dgvData.Columns[temperatureName].HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
                     //
                     dgvData.XColIndex = 1;
@@ -355,7 +357,7 @@ namespace PrePoMax.Forms
             tvProperties.Nodes.Find("Density", true)[0].Tag = new Density(new double[][] { new double[] { 0, 0 } });
             tvProperties.Nodes.Find("Elastic", true)[0].Tag = new Elastic(new double[][] { new double[] { 0, 0, 0 } });
             tvProperties.Nodes.Find("Plastic", true)[0].Tag = new Plastic(new double[][] { new double[] { 0, 0, 0 } });
-            tvProperties.Nodes.Find("Expansion", true)[0].Tag = new Expansion(new double[][] { new double[] { 0, 0 } });
+            tvProperties.Nodes.Find("Expansion", true)[0].Tag = new ThermalExpansion(new double[][] { new double[] { 0, 0 } });
             tvProperties.ExpandAll();
             //
             if (_materialToEditName == null)
@@ -387,7 +389,7 @@ namespace PrePoMax.Forms
                             _useSimpleEditor = true;
                         }
                         else if (property is Plastic pl) view = new ViewPlastic(pl);
-                        else if (property is Expansion ex) view = new ViewExpansion(ex);
+                        else if (property is ThermalExpansion te) view = new ViewExpansion(te);
                         else throw new NotSupportedException();
                         //
                         item = new ListViewItem(view.Name);
@@ -471,7 +473,7 @@ namespace PrePoMax.Forms
                 {
                     for (int i = 0; i < vex.DataPoints.Count; i++)
                     {
-                        if (vex.DataPoints[i].Expansion <= 0)
+                        if (vex.DataPoints[i].ThermalExpansion <= 0)
                             throw new CaeException("The thermal expansion coefficient must be larger than 0.");
                     }
                 }

@@ -11,7 +11,7 @@ using UnitsNet.Units;
 
 namespace CaeGlobals
 {
-    public class StringExpansionConverter : TypeConverter
+    public class StringThermalExpansionConverter : TypeConverter
     {
         // Variables                                                                                                                
         protected static CoefficientOfThermalExpansionUnit _expansionUnit = CoefficientOfThermalExpansionUnit.InverseDegreeCelsius;
@@ -29,7 +29,7 @@ namespace CaeGlobals
 
 
         // Constructors                                                                                                             
-        public StringExpansionConverter()
+        public StringThermalExpansionConverter()
         {
         }
 
@@ -49,9 +49,9 @@ namespace CaeGlobals
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    CoefficientOfThermalExpansion expansion = CoefficientOfThermalExpansion.Parse(valueString);
-                    if ((int)_expansionUnit != MyUnit.NoUnit) expansion = expansion.ToUnit(_expansionUnit);
-                    valueDouble = expansion.Value;
+                    CoefficientOfThermalExpansion thermalExpansion = CoefficientOfThermalExpansion.Parse(valueString);
+                    if ((int)_expansionUnit != MyUnit.NoUnit) thermalExpansion = thermalExpansion.ToUnit(_expansionUnit);
+                    valueDouble = thermalExpansion.Value;
                 }
                 //
                 return valueDouble;

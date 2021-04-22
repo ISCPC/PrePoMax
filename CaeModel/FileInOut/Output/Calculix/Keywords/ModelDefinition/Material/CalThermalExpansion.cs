@@ -9,17 +9,17 @@ using CaeMesh;
 namespace FileInOut.Output.Calculix
 {
     [Serializable]
-    internal class CalExpansion : CalculixKeyword
+    internal class CalThermalExpansion : CalculixKeyword
     {
         // Variables                                                                                                                
-        private Expansion _expansion;
+        private ThermalExpansion _thermalExpansion;
         private bool _temperatureDependent;
 
 
         // Constructor                                                                                                              
-        public CalExpansion(Expansion expansion, bool temperatureDependent)
+        public CalThermalExpansion(ThermalExpansion thermalExpansion, bool temperatureDependent)
         {
-            _expansion = expansion;
+            _thermalExpansion = thermalExpansion;
             _temperatureDependent = temperatureDependent;
         }
 
@@ -32,7 +32,7 @@ namespace FileInOut.Output.Calculix
         public override string GetDataString()
         {
             StringBuilder sb = new StringBuilder();
-            double[][] data = _expansion.ExpansionTemp;
+            double[][] data = _thermalExpansion.ThermalExpansionTemp;
             for (int i = 0; i < data.Length; i++)
             {
                 if (_temperatureDependent)

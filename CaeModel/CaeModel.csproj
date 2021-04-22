@@ -72,7 +72,7 @@
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalDeactivated.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalContactPair.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalShellSection.cs" />
-    <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\Material\CalExpansion.cs" />
+    <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\Material\CalThermalExpansion.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\SurfaceInteraction\CalFriction.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\SurfaceInteraction\CalSurfaceBehavior.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\SurfaceInteraction\CalSurfaceInteraction.cs" />
@@ -85,7 +85,7 @@
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalSubmodel.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\Load\CalShellEdgeLoad.cs" />
     <Compile Include="FileInOut\Output\Mmg\MmgFileWriter.cs" />
-    <Compile Include="Materials\Expansion.cs" />
+    <Compile Include="Materials\ThermalExpansion.cs" />
     <Compile Include="Materials\ElasticWithDensity.cs" />
     <Compile Include="ModelProperties.cs" />
     <Compile Include="Sections\ShellSection.cs" />
