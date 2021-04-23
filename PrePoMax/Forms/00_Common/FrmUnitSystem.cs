@@ -40,7 +40,7 @@ namespace PrePoMax.Forms
             _controller = controller;
             _viewUnitSystem = null;
             //
-            this.Height = 330 + 20 * 19;
+            this.Height = 340 + 21 * 19;
             //
             btnOkAddNew.Visible = false;
             btnCancel.Visible = false;
@@ -158,7 +158,7 @@ namespace PrePoMax.Forms
             item.Tag = new ViewUnitSystem(new UnitSystem(unitSystemType));
             lvTypes.Items.Add(item);
             //
-            unitSystemType = UnitSystemType.IN_LB_S_C;
+            unitSystemType = UnitSystemType.IN_LB_S_F;
             item = new ListViewItem("Unit system: " + unitSystemType.GetDescription());
             item.Tag = new ViewUnitSystem(new UnitSystem(unitSystemType));
             lvTypes.Items.Add(item);

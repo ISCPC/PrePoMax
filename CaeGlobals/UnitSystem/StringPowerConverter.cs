@@ -11,10 +11,10 @@ using UnitsNet.Units;
 
 namespace CaeGlobals
 {
-    public class StringEnergyConverter : TypeConverter
+    public class StringPowerConverter : TypeConverter
     {
         // Variables                                                                                                                
-        protected static EnergyUnit _energyUnit = EnergyUnit.Joule;
+        protected static PowerUnit _powerUnit = PowerUnit.Watt;
 
 
         // Properties                                                                                                               
@@ -22,23 +22,23 @@ namespace CaeGlobals
         {
             set
             {
-                if (value == "") _energyUnit = (EnergyUnit)MyUnit.NoUnit;
-                else if (value == MyUnit.InchPoundAbbreviation) _energyUnit = MyUnit.InchPound;
-                else { _energyUnit = Energy.ParseUnit(value); }
+                if (value == "") _powerUnit = (PowerUnit)MyUnit.NoUnit;
+                else if (value == MyUnit.InchPoundPerSecondAbbreviation) _powerUnit = MyUnit.InchPoundPerSecond;
+                else { _powerUnit = Power.ParseUnit(value); }
             }
         }
-        public static string GetUnitAbbreviation(EnergyUnit energyUnit)
+        public static string GetUnitAbbreviation(PowerUnit powerUnit)
         {
             string unit;
-            if ((int)energyUnit == MyUnit.NoUnit) unit = "";
-            else if (energyUnit == MyUnit.InchPound) return MyUnit.InchPoundAbbreviation;
-            else unit = Energy.GetAbbreviation(energyUnit);
+            if ((int)powerUnit == MyUnit.NoUnit) unit = "";
+            else if (powerUnit == MyUnit.InchPoundPerSecond) return MyUnit.InchPoundPerSecondAbbreviation;
+            else unit = Power.GetAbbreviation(powerUnit);
             return unit;
         }
 
 
         // Constructors                                                                                                             
-        public StringEnergyConverter()
+        public StringPowerConverter()
         {
         }
 
@@ -58,32 +58,35 @@ namespace CaeGlobals
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    // 1 inch = 1/12 foot
-                    double conversion = 1.0 / 12.0;
+                    // 1 inch = 0.0254 meters
+                    // 1 pound force = 4.44822162 newtons
+                    // 1 pound force inch = 0.112984829 joules
+                    // 1 pound force inch per second = 0.112984829 watts
+                    double conversion = 0.112984829;
                     double scale = 1;
                     valueString = valueString.Trim().Replace(" ", "");
                     // Check if it is given in unsupported units
-                    if (valueString.Contains(MyUnit.InchPoundAbbreviation))
+                    if (valueString.Contains(MyUnit.InchPoundPerSecondAbbreviation))
                     {
-                        valueString = valueString.Replace(MyUnit.InchPoundAbbreviation, "ft·lb");
-                        scale = conversion;
+                        valueString = valueString.Replace(MyUnit.InchPoundPerSecondAbbreviation, "W");
+                        scale = 0.112984829;
                     }
                     // Check if it must be converted to unsupported units
-                    if ((int)_energyUnit == MyUnit.NoUnit)
+                    if ((int)_powerUnit == MyUnit.NoUnit)
                     {
-                        Energy energy = Energy.Parse(valueString);
-                        valueDouble = energy.Value;
+                        Power power = Power.Parse(valueString);
+                        valueDouble = (double)power.Value;
                     }
-                    else if (_energyUnit == MyUnit.InchPound)
-                    {                        
-                        Energy energy = Energy.Parse(valueString).ToUnit(EnergyUnit.FootPound);
-                        if (scale == conversion) valueDouble = energy.Value;
-                        else valueDouble = scale * energy.Value / conversion;
+                    else if (_powerUnit == MyUnit.InchPoundPerSecond)
+                    {
+                        Power power = Power.Parse(valueString).ToUnit(PowerUnit.Watt);
+                        if (scale == conversion) valueDouble = (double)power.Value;
+                        else valueDouble = scale * (double)power.Value / conversion;
                     }
                     else
                     {
-                        Energy energy = Energy.Parse(valueString).ToUnit(_energyUnit);
-                        valueDouble = scale * energy.Value;
+                        Power power = Power.Parse(valueString).ToUnit(_powerUnit);
+                        valueDouble = scale * (double)power.Value;
                     }
                 }
                 //
@@ -101,7 +104,7 @@ namespace CaeGlobals
                     if (value is double valueDouble)
                     {
                         string valueString = valueDouble.ToString();
-                        string unit = GetUnitAbbreviation(_energyUnit);
+                        string unit = GetUnitAbbreviation(_powerUnit);
                         if (unit.Length > 0) valueString += " " + unit;
                         return valueString;
                     }

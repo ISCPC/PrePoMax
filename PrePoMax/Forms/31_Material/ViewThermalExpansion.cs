@@ -10,16 +10,16 @@ using CaeModel;
 namespace PrePoMax
 {
    [Serializable]
-    public class ViewExpansion : ViewMaterialProperty
+    public class ViewThermalExpansion : ViewMaterialProperty
     {
         // Variables                                                                                                                
-        private List<ExpansionDataPoint> _points;
+        private List<ThermalExpansionDataPoint> _points;
 
 
         // Properties                                                                                                               
         public override string Name
         {
-            get { return "Expansion"; }
+            get { return "Thermal expansion"; }
         }
         //
         [Browsable(false)]
@@ -30,7 +30,7 @@ namespace PrePoMax
                 int i = 0;
                 double[][] thermalExpansionTemp = new double[_points.Count][];
                 //
-                foreach (ExpansionDataPoint point in _points)
+                foreach (ThermalExpansionDataPoint point in _points)
                 {
                     thermalExpansionTemp[i] = new double[2];
                     thermalExpansionTemp[i][0] = point.ThermalExpansion;
@@ -44,10 +44,10 @@ namespace PrePoMax
         }
         //
         [Browsable(false)]
-        public List<ExpansionDataPoint> DataPoints { get { return _points; } set { _points = value; } }
+        public List<ThermalExpansionDataPoint> DataPoints { get { return _points; } set { _points = value; } }
         //
         [CategoryAttribute("Data"),
-        DisplayName("Expansion"),
+        DisplayName("Thermal expansion"),
         DescriptionAttribute("The value of the thermal expansion coefficient.")]
         [TypeConverter(typeof(CaeGlobals.StringThermalExpansionConverter))]
         public double ThermalExpansion
@@ -64,12 +64,12 @@ namespace PrePoMax
         }
 
         // Constructors                                                                                                             
-        public ViewExpansion(ThermalExpansion thermalExpansion)
+        public ViewThermalExpansion(ThermalExpansion thermalExpansion)
         {
-            _points = new List<ExpansionDataPoint>();
+            _points = new List<ThermalExpansionDataPoint>();
             for (int i = 0; i < thermalExpansion.ThermalExpansionTemp.Length; i++)
             {
-                _points.Add(new ExpansionDataPoint(thermalExpansion.ThermalExpansionTemp[i][0],
+                _points.Add(new ThermalExpansionDataPoint(thermalExpansion.ThermalExpansionTemp[i][0],
                                                    thermalExpansion.ThermalExpansionTemp[i][1]));
             }
             //

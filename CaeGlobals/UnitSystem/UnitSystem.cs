@@ -29,8 +29,8 @@ namespace CaeGlobals
         [Description("m, ton, s, °C")]
         M_TON_S_C = 3,
         //
-        [Description("in, lb, s, °C")]
-        IN_LB_S_C = 20,
+        [Description("in, lb, s, °F")]
+        IN_LB_S_F = 20,
         //
         [Description("Unitless")]
         UNIT_LESS = 40
@@ -41,28 +41,31 @@ namespace CaeGlobals
     public class UnitSystem : ISerializable
     {
         // Variables                                                                                                                
-        UnitSystemType _unitSystemType;                             //ISerializable
+        private UnitSystemType _unitSystemType;                             //ISerializable
         // Base units
-        LengthUnit _lengthUnit;                                     //ISerializable
-        AngleUnit _angleUnit;                                       //ISerializable
-        MassUnit _massUnit;                                         //ISerializable
-        DurationUnit _timeUnit;                                     //ISerializable
-        TemperatureUnit _temperatureUnit;                           //ISerializable
+        private LengthUnit _lengthUnit;                                     //ISerializable
+        private AngleUnit _angleUnit;                                       //ISerializable
+        private MassUnit _massUnit;                                         //ISerializable
+        private DurationUnit _timeUnit;                                     //ISerializable
+        private TemperatureUnit _temperatureUnit;                           //ISerializable
+        private TemperatureDeltaUnit _temperatureDeltaUnit;                 //ISerializable
         // Derived units
-        AreaUnit _areaUnit;                                         //ISerializable
-        VolumeUnit _volumeUnit;                                     //ISerializable
-        SpeedUnit _speedUnit;                                       //ISerializable
-        RotationalSpeedUnit _rotationalSpeedUnit;                   //ISerializable
-        AccelerationUnit _accelerationUnit;                         //ISerializable
-        ForceUnit _forceUnit;                                       //ISerializable
-        ForcePerLengthUnit _forcePerLengthUnit;                     //ISerializable
-        TorqueUnit _momentUnit;                                     //ISerializable
-        PressureUnit _pressureUnit;                                 //ISerializable
-        DensityUnit _densityUnit;                                   //ISerializable
-        EnergyUnit _energyUnit;                                     //ISerializable
-        FrequencyUnit _frequencyUnit;                               //ISerializable
+        private AreaUnit _areaUnit;                                         //ISerializable
+        private VolumeUnit _volumeUnit;                                     //ISerializable
+        private SpeedUnit _speedUnit;                                       //ISerializable
+        private RotationalSpeedUnit _rotationalSpeedUnit;                   //ISerializable
+        private AccelerationUnit _accelerationUnit;                         //ISerializable
+        private ForceUnit _forceUnit;                                       //ISerializable
+        private ForcePerLengthUnit _forcePerLengthUnit;                     //ISerializable
+        private TorqueUnit _momentUnit;                                     //ISerializable
+        private PressureUnit _pressureUnit;                                 //ISerializable
+        private DensityUnit _densityUnit;                                   //ISerializable
+        private EnergyUnit _energyUnit;                                     //ISerializable
+        private PowerUnit _powerUnit;                                       //ISerializable
+        private FrequencyUnit _frequencyUnit;                               //ISerializable
         // Thermal units
-        CoefficientOfThermalExpansionUnit _thermalExpansionUnit;    //ISerializable
+        private CoefficientOfThermalExpansionUnit _thermalExpansionUnit;    //ISerializable
+        private ThermalConductivityUnit _thermalConductivityUnit;           //ISerializable
 
 
         // Properties                                                                                                               
@@ -108,6 +111,14 @@ namespace CaeGlobals
             {
                 if ((int)_temperatureUnit == MyUnit.NoUnit) return "";
                 else return Temperature.GetAbbreviation(_temperatureUnit);
+            }
+        }
+        public string TemperatureDeltaUnitAbbreviation
+        {
+            get
+            {
+                if ((int)_temperatureDeltaUnit == MyUnit.NoUnit) return "";
+                else return TemperatureDelta.GetAbbreviation(_temperatureDeltaUnit);
             }
         }
         // Derived units
@@ -196,17 +207,21 @@ namespace CaeGlobals
         {
             get
             {
-                if ((int)_energyUnit == MyUnit.NoUnit) return "";
-                else if (_energyUnit == MyUnit.InchPound) return "in·lb";
-                else return Energy.GetAbbreviation(_energyUnit);
+                return StringEnergyConverter.GetUnitAbbreviation(_energyUnit);
             }
         }
         public string EnergyPerVolumeUnitAbbreviation
         {
             get
             {
-                if ((int)_energyUnit == MyUnit.NoUnit || (int)_volumeUnit == MyUnit.NoUnit) return "";
-                else return StringEnergyPerVolumeConverter.GetUnitAbbreviation();
+                return StringEnergyPerVolumeConverter.GetUnitAbbreviation(_energyUnit, _volumeUnit);
+            }
+        }
+        public string PowerUnitAbbreviation
+        {
+            get
+            {
+                return StringPowerConverter.GetUnitAbbreviation(_powerUnit);
             }
         }
         public string FrequencyUnitAbbreviation 
@@ -224,6 +239,21 @@ namespace CaeGlobals
             {
                 if ((int)_thermalExpansionUnit == MyUnit.NoUnit) return "";
                 else return CoefficientOfThermalExpansion.GetAbbreviation(_thermalExpansionUnit);
+            }
+        }
+        public string ThermalConductivityUnitAbbreviation
+        {
+            get
+            {
+                return StringThermalConductivityConverter.GetUnitAbbreviation(_powerUnit, _lengthUnit, _temperatureDeltaUnit,
+                                                                              _thermalConductivityUnit);
+            }
+        }
+        public string SpecificHeatUnitAbbreviation
+        {
+            get
+            {
+                return StringSpecificHeatConverter.GetUnitAbbreviation(_energyUnit, _massUnit, _temperatureDeltaUnit);
             }
         }
 
@@ -245,6 +275,7 @@ namespace CaeGlobals
                     _massUnit = (MassUnit)MyUnit.NoUnit;
                     _timeUnit = (DurationUnit)MyUnit.NoUnit;
                     _temperatureUnit = (TemperatureUnit)MyUnit.NoUnit;
+                    _temperatureDeltaUnit = (TemperatureDeltaUnit)MyUnit.NoUnit;
                     //
                     _areaUnit = (AreaUnit)MyUnit.NoUnit;
                     _volumeUnit = (VolumeUnit)MyUnit.NoUnit;
@@ -257,9 +288,11 @@ namespace CaeGlobals
                     _pressureUnit = (PressureUnit)MyUnit.NoUnit;
                     _densityUnit = (DensityUnit)MyUnit.NoUnit;
                     _energyUnit = (EnergyUnit)MyUnit.NoUnit;
+                    _powerUnit = (PowerUnit)MyUnit.NoUnit;
                     _frequencyUnit = (FrequencyUnit)MyUnit.NoUnit;
                     //
                     _thermalExpansionUnit = (CoefficientOfThermalExpansionUnit)MyUnit.NoUnit;
+                    _thermalConductivityUnit = ThermalConductivityUnit.Undefined;
                     break;
                 case UnitSystemType.Undefined:
                 case UnitSystemType.M_KG_S_C:
@@ -268,6 +301,7 @@ namespace CaeGlobals
                     _massUnit = MassUnit.Kilogram;
                     _timeUnit = DurationUnit.Second;
                     _temperatureUnit = TemperatureUnit.DegreeCelsius;
+                    _temperatureDeltaUnit = TemperatureDeltaUnit.DegreeCelsius;
                     //
                     _areaUnit = AreaUnit.SquareMeter;
                     _volumeUnit = VolumeUnit.CubicMeter;
@@ -280,9 +314,11 @@ namespace CaeGlobals
                     _pressureUnit = PressureUnit.Pascal;
                     _densityUnit = DensityUnit.KilogramPerCubicMeter;
                     _energyUnit = EnergyUnit.Joule;
+                    _powerUnit = PowerUnit.Watt;
                     _frequencyUnit = FrequencyUnit.Hertz;
                     //
                     _thermalExpansionUnit = CoefficientOfThermalExpansionUnit.InverseDegreeCelsius;
+                    _thermalConductivityUnit = ThermalConductivityUnit.Undefined;
                     break;
                 case UnitSystemType.MM_TON_S_C:
                     _lengthUnit = LengthUnit.Millimeter;
@@ -290,6 +326,7 @@ namespace CaeGlobals
                     _massUnit = MassUnit.Tonne;
                     _timeUnit = DurationUnit.Second;
                     _temperatureUnit = TemperatureUnit.DegreeCelsius;
+                    _temperatureDeltaUnit = TemperatureDeltaUnit.DegreeCelsius;
                     //
                     _areaUnit = AreaUnit.SquareMillimeter;
                     _volumeUnit = VolumeUnit.CubicMillimeter;
@@ -302,9 +339,11 @@ namespace CaeGlobals
                     _pressureUnit = PressureUnit.Megapascal;
                     _densityUnit = DensityUnit.TonnePerCubicMillimeter;
                     _energyUnit = EnergyUnit.Millijoule;
+                    _powerUnit = PowerUnit.Milliwatt;
                     _frequencyUnit = FrequencyUnit.Hertz;
                     //
                     _thermalExpansionUnit = CoefficientOfThermalExpansionUnit.InverseDegreeCelsius;
+                    _thermalConductivityUnit = ThermalConductivityUnit.Undefined;
                     break;
                 case UnitSystemType.M_TON_S_C:
                     _lengthUnit = LengthUnit.Meter;
@@ -312,6 +351,7 @@ namespace CaeGlobals
                     _massUnit = MassUnit.Tonne;
                     _timeUnit = DurationUnit.Second;
                     _temperatureUnit = TemperatureUnit.DegreeCelsius;
+                    _temperatureDeltaUnit = TemperatureDeltaUnit.DegreeCelsius;
                     //
                     _areaUnit = AreaUnit.SquareMeter;
                     _volumeUnit = VolumeUnit.CubicMeter;
@@ -324,16 +364,19 @@ namespace CaeGlobals
                     _pressureUnit = PressureUnit.Kilopascal;
                     _densityUnit = DensityUnit.TonnePerCubicMeter;
                     _energyUnit = EnergyUnit.Kilojoule;
+                    _powerUnit = PowerUnit.Kilowatt;
                     _frequencyUnit = FrequencyUnit.Hertz;
                     //
                     _thermalExpansionUnit = CoefficientOfThermalExpansionUnit.InverseDegreeCelsius;
+                    _thermalConductivityUnit = ThermalConductivityUnit.Undefined;
                     break;
-                case UnitSystemType.IN_LB_S_C:
+                case UnitSystemType.IN_LB_S_F:
                     _lengthUnit = LengthUnit.Inch;
                     _angleUnit = AngleUnit.Radian;
                     _massUnit = MassUnit.Pound;
                     _timeUnit = DurationUnit.Second;
-                    _temperatureUnit = TemperatureUnit.DegreeCelsius;
+                    _temperatureUnit = TemperatureUnit.DegreeFahrenheit;
+                    _temperatureDeltaUnit = TemperatureDeltaUnit.DegreeFahrenheit;
                     //
                     _areaUnit = AreaUnit.SquareInch;
                     _volumeUnit = VolumeUnit.CubicInch;
@@ -346,9 +389,11 @@ namespace CaeGlobals
                     _pressureUnit = PressureUnit.PoundForcePerSquareInch;
                     _densityUnit = DensityUnit.PoundPerCubicInch;
                     _energyUnit = MyUnit.InchPound; // EnergyUnit.InchPound;
+                    _powerUnit = MyUnit.InchPoundPerSecond;
                     _frequencyUnit = FrequencyUnit.Hertz;
                     //
-                    _thermalExpansionUnit = CoefficientOfThermalExpansionUnit.InverseDegreeCelsius;
+                    _thermalExpansionUnit = CoefficientOfThermalExpansionUnit.InverseDegreeFahrenheit;
+                    _thermalConductivityUnit = MyUnit.InchPoundPerSecondInchFahrenheit;
                     break;
                 default:
                     break;
@@ -362,8 +407,11 @@ namespace CaeGlobals
         {
             foreach (SerializationEntry entry in info)
             {
-                bool isForcePerLengtUnitDefined = false;    // compatibility for version 0.9.0
-                bool isThermalExpansionDefined = false;     // compatibility for version 1.0.0
+                bool isTemperatureDelataUnitDefined = false;    // compatibility for version 1.0.0
+                bool isForcePerLengtUnitDefined = false;        // compatibility for version 0.9.0
+                bool isPowerUnitDefined = false;                // compatibility for version 1.0.0
+                bool isThermalExpansionUnitDefined = false;     // compatibility for version 1.0.0
+                bool isThermalConductivityUnitDefined = false;  // compatibility for version 1.0.0
                 switch (entry.Name)
                 {
                     // Base units
@@ -379,6 +427,9 @@ namespace CaeGlobals
                         _timeUnit = (DurationUnit)entry.Value; break;
                     case "_temperatureUnit":
                         _temperatureUnit = (TemperatureUnit)entry.Value; break;
+                    case "_temperatureDeltaUnit":
+                        _temperatureDeltaUnit = (TemperatureDeltaUnit)entry.Value;
+                        isTemperatureDelataUnitDefined = true; break;
                     // Derived units
                     case "_areaUnit":
                         _areaUnit = (AreaUnit)entry.Value; break;
@@ -403,25 +454,46 @@ namespace CaeGlobals
                         _densityUnit = (DensityUnit)entry.Value; break;
                     case "_energyUnit":
                         _energyUnit = (EnergyUnit)entry.Value; break;
+                    case "_powerUnit":
+                        _powerUnit = (PowerUnit)entry.Value;
+                        isPowerUnitDefined = true; break;
                     case "_frequencyUnit":
                         _frequencyUnit = (FrequencyUnit)entry.Value; break;
                     // Thermal units
                     case "_thermalExpansionUnit":
                         _thermalExpansionUnit = (CoefficientOfThermalExpansionUnit)entry.Value;
-                        isThermalExpansionDefined = true; break;
+                        isThermalExpansionUnitDefined = true; break;
+                    case "_thermalConductivityUnit":
+                        _thermalConductivityUnit = (ThermalConductivityUnit)entry.Value;
+                        isThermalConductivityUnitDefined = true; break;
                     default:
                         throw new NotSupportedException();
                 }
                 // Compatibility
+                if (!isTemperatureDelataUnitDefined)
+                {
+                    UnitSystem system = new UnitSystem(_unitSystemType);
+                    _temperatureDeltaUnit = system._temperatureDeltaUnit;
+                }
                 if (!isForcePerLengtUnitDefined)
                 {
                     UnitSystem system = new UnitSystem(_unitSystemType);
                     _forcePerLengthUnit = system._forcePerLengthUnit;
                 }
-                if (!isThermalExpansionDefined)
+                if (!isPowerUnitDefined)
+                {
+                    UnitSystem system = new UnitSystem(_unitSystemType);
+                    _powerUnit = system._powerUnit;
+                }
+                if (!isThermalExpansionUnitDefined)
                 {
                     UnitSystem system = new UnitSystem(_unitSystemType);
                     _thermalExpansionUnit = system._thermalExpansionUnit;
+                }
+                if (!isThermalConductivityUnitDefined)
+                {
+                    UnitSystem system = new UnitSystem(_unitSystemType);
+                    _thermalConductivityUnit = system._thermalConductivityUnit;
                 }
             }
             //
@@ -450,11 +522,11 @@ namespace CaeGlobals
             StringForcePerLenghtConverter.SetUnit = ForcePerLengthUnitAbbreviation;
             StringMomentConverter.SetUnit = MomentUnitAbbreviation;
             StringPressureConverter.SetUnit = PressureUnitAbbreviation;
-            StringPressureFromConverter.SetUnit = PressureUnitAbbreviation;     // not really necessary
             StringDensityConverter.SetUnit = DensityUnitAbbreviation;
             StringEnergyConverter.SetUnit = EnergyUnitAbbreviation;
             StringEnergyPerVolumeConverter.SetEnergyUnit = EnergyUnitAbbreviation;
             StringEnergyPerVolumeConverter.SetVolumeUnit = VolumeUnitAbbreviation;
+            StringPowerConverter.SetUnit = PowerUnitAbbreviation;
             // Contact
             StringForcePerVolumeConverter.SetForceUnit = ForceUnitAbbreviation;
             StringForcePerVolumeConverter.SetVolumeUnit = VolumeUnitAbbreviation;
@@ -462,6 +534,19 @@ namespace CaeGlobals
             StringForcePerVolumeDefaultConverter.SetVolumeUnit = VolumeUnitAbbreviation;
             // Thermal
             StringThermalExpansionConverter.SetUnit = ThermalExpansionUnitAbbreviation;
+            if (_thermalConductivityUnit == MyUnit.InchPoundPerSecondInchFahrenheit)
+            {
+                StringThermalConductivityConverter.SetUnit = MyUnit.InchPoundPerSecondInchFahrenheitAbbreviation;
+            }
+            else
+            {
+                StringThermalConductivityConverter.SetPowerUnit = PowerUnitAbbreviation;
+                StringThermalConductivityConverter.SetLengthUnit = LengthUnitAbbreviation;
+                StringThermalConductivityConverter.SetTemperatureDeltaUnit = TemperatureDeltaUnitAbbreviation;
+            }
+            StringSpecificHeatConverter.SetEnergyUnit = EnergyUnitAbbreviation;
+            StringSpecificHeatConverter.SetMassUnit = MassUnitAbbreviation;
+            StringSpecificHeatConverter.SetTemperatureDeltaUnit = TemperatureDeltaUnitAbbreviation;
         }
         public double Convert(double value, TypeConverter converter, UnitSystem toSystem)
         {
@@ -484,6 +569,7 @@ namespace CaeGlobals
             info.AddValue("_massUnit", _massUnit, typeof(MassUnit));
             info.AddValue("_timeUnit", _timeUnit, typeof(DurationUnit));
             info.AddValue("_temperatureUnit", _temperatureUnit, typeof(TemperatureUnit));
+            info.AddValue("_temperatureDeltaUnit", _temperatureDeltaUnit, typeof(TemperatureDeltaUnit));
             // Derived units
             info.AddValue("_areaUnit", _areaUnit, typeof(AreaUnit));
             info.AddValue("_volumeUnit", _volumeUnit, typeof(VolumeUnit));
@@ -496,9 +582,11 @@ namespace CaeGlobals
             info.AddValue("_pressureUnit", _pressureUnit, typeof(PressureUnit));
             info.AddValue("_densityUnit", _densityUnit, typeof(DensityUnit));
             info.AddValue("_energyUnit", _energyUnit, typeof(EnergyUnit));
+            info.AddValue("_powerUnit", _powerUnit, typeof(EnergyUnit));
             info.AddValue("_frequencyUnit", _frequencyUnit, typeof(FrequencyUnit));
             // thermal units
             info.AddValue("_thermalExpansionUnit", _thermalExpansionUnit, typeof(CoefficientOfThermalExpansionUnit));
+            info.AddValue("_thermalConductivityUnit", _thermalConductivityUnit, typeof(ThermalConductivityUnit));
         }
     }
 }

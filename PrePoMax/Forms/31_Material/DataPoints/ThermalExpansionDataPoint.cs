@@ -9,25 +9,25 @@ using DynamicTypeDescriptor;
 namespace CaeModel
 {
     [Serializable]
-    public class ExpansionDataPoint : TempDataPoint
+    public class ThermalExpansionDataPoint : TempDataPoint
     {
         // Variables                                                                                                                
         private double _thermalExpansion;
 
 
         // Properties                                                                                                               
-        [DisplayName("Thermal Expansion\n[?]")]
+        [DisplayName("Thermal expansion\n[?]")]
         [TypeConverter(typeof(CaeGlobals.StringThermalExpansionFromConverter))]
         public double ThermalExpansion { get { return _thermalExpansion; } set { _thermalExpansion = value; } }
 
 
         // Constructors                                                                                                             
-        public ExpansionDataPoint()
+        public ThermalExpansionDataPoint()
             :base(0)
         {
             _thermalExpansion = 0;
         }
-        public ExpansionDataPoint(double thermalExpansion, double temperature)
+        public ThermalExpansionDataPoint(double thermalExpansion, double temperature)
             :base(temperature)
         {
             _thermalExpansion = thermalExpansion;

@@ -9,34 +9,30 @@ using DynamicTypeDescriptor;
 namespace CaeModel
 {
     [Serializable]
-    public class PlasticDataPoint : TempDataPoint
+    public class ThermalConductivityDataPoint : TempDataPoint
     {
         // Variables                                                                                                                
-        private double _strain;
-        private double _stress;
+        private double _thermalConductivity;
 
 
         // Properties                                                                                                               
-        [DisplayName("Yield stress\n[?]")]
-        [TypeConverter(typeof(CaeGlobals.StringPressureFromConverter))]
-        public double Stress { get { return _stress; } set { _stress = value; } }
-        //
-        [DisplayName("Plastic strain\n[?]")]
-        public double Strain { get { return _strain; } set { _strain = value; } }
+        [DisplayName("Thermal conductivity\n[?]")]
+        [TypeConverter(typeof(CaeGlobals.StringThermalConductivityFromConverter))]
+        public double ThermalConductivity { get { return _thermalConductivity; } set { _thermalConductivity = value; } }
 
 
         // Constructors                                                                                                             
-        public PlasticDataPoint()
-            : base(0)
+        public ThermalConductivityDataPoint()
+            :base(0)
         {
-            _stress = 0;
-            _strain = 0;
+            _thermalConductivity = 0;
         }
-        public PlasticDataPoint(double stress, double strain, double temperature)
+        public ThermalConductivityDataPoint(double thermalConductivity, double temperature)
             :base(temperature)
         {
-            _stress = stress;
-            _strain = strain;
+            _thermalConductivity = thermalConductivity;
         }
     }
 }
+
+

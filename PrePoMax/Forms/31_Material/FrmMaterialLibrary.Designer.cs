@@ -57,9 +57,9 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox2.Controls.Add(this.btnDeleteFromModel);
             this.groupBox2.Controls.Add(this.lvModelMaterials);
-            this.groupBox2.Location = new System.Drawing.Point(333, 14);
+            this.groupBox2.Location = new System.Drawing.Point(330, 14);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(172, 456);
+            this.groupBox2.Size = new System.Drawing.Size(175, 456);
             this.groupBox2.TabIndex = 0;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "FE Model materials";
@@ -67,7 +67,7 @@
             // btnDeleteFromModel
             // 
             this.btnDeleteFromModel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnDeleteFromModel.Location = new System.Drawing.Point(91, 22);
+            this.btnDeleteFromModel.Location = new System.Drawing.Point(94, 22);
             this.btnDeleteFromModel.Name = "btnDeleteFromModel";
             this.btnDeleteFromModel.Size = new System.Drawing.Size(75, 23);
             this.btnDeleteFromModel.TabIndex = 10;
@@ -89,7 +89,7 @@
             this.lvModelMaterials.MultiSelect = false;
             this.lvModelMaterials.Name = "lvModelMaterials";
             this.lvModelMaterials.ShowGroups = false;
-            this.lvModelMaterials.Size = new System.Drawing.Size(159, 399);
+            this.lvModelMaterials.Size = new System.Drawing.Size(162, 399);
             this.lvModelMaterials.TabIndex = 1;
             this.lvModelMaterials.UseCompatibleStateImageBehavior = false;
             this.lvModelMaterials.View = System.Windows.Forms.View.List;
@@ -218,9 +218,9 @@
             // btnCopyToLibrary
             // 
             this.btnCopyToLibrary.Image = global::PrePoMax.Properties.Resources.Left_arrow;
-            this.btnCopyToLibrary.Location = new System.Drawing.Point(300, 98);
+            this.btnCopyToLibrary.Location = new System.Drawing.Point(300, 95);
             this.btnCopyToLibrary.Name = "btnCopyToLibrary";
-            this.btnCopyToLibrary.Size = new System.Drawing.Size(27, 27);
+            this.btnCopyToLibrary.Size = new System.Drawing.Size(24, 24);
             this.btnCopyToLibrary.TabIndex = 10;
             this.ttText.SetToolTip(this.btnCopyToLibrary, "Copy the selected material model from the FE model to the selected library catego" +
         "ry");
@@ -232,7 +232,7 @@
             this.btnCopyToModel.Image = global::PrePoMax.Properties.Resources.Right_arrow;
             this.btnCopyToModel.Location = new System.Drawing.Point(300, 65);
             this.btnCopyToModel.Name = "btnCopyToModel";
-            this.btnCopyToModel.Size = new System.Drawing.Size(27, 27);
+            this.btnCopyToModel.Size = new System.Drawing.Size(24, 24);
             this.btnCopyToModel.TabIndex = 8;
             this.ttText.SetToolTip(this.btnCopyToModel, "Copy the selected material model from the library to the FE model");
             this.btnCopyToModel.UseVisualStyleBackColor = true;

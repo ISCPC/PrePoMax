@@ -29,18 +29,22 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("Density");
-            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("General", new System.Windows.Forms.TreeNode[] {
-            treeNode1});
-            System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("Elastic");
-            System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("Elasticity", new System.Windows.Forms.TreeNode[] {
-            treeNode3});
-            System.Windows.Forms.TreeNode treeNode5 = new System.Windows.Forms.TreeNode("Plastic");
-            System.Windows.Forms.TreeNode treeNode6 = new System.Windows.Forms.TreeNode("Plasticity", new System.Windows.Forms.TreeNode[] {
-            treeNode5});
-            System.Windows.Forms.TreeNode treeNode7 = new System.Windows.Forms.TreeNode("Expansion");
-            System.Windows.Forms.TreeNode treeNode8 = new System.Windows.Forms.TreeNode("Thermal", new System.Windows.Forms.TreeNode[] {
-            treeNode7});
+            System.Windows.Forms.TreeNode treeNode21 = new System.Windows.Forms.TreeNode("Density");
+            System.Windows.Forms.TreeNode treeNode22 = new System.Windows.Forms.TreeNode("General", new System.Windows.Forms.TreeNode[] {
+            treeNode21});
+            System.Windows.Forms.TreeNode treeNode23 = new System.Windows.Forms.TreeNode("Elastic");
+            System.Windows.Forms.TreeNode treeNode24 = new System.Windows.Forms.TreeNode("Elasticity", new System.Windows.Forms.TreeNode[] {
+            treeNode23});
+            System.Windows.Forms.TreeNode treeNode25 = new System.Windows.Forms.TreeNode("Plastic");
+            System.Windows.Forms.TreeNode treeNode26 = new System.Windows.Forms.TreeNode("Plasticity", new System.Windows.Forms.TreeNode[] {
+            treeNode25});
+            System.Windows.Forms.TreeNode treeNode27 = new System.Windows.Forms.TreeNode("Thermal expansion");
+            System.Windows.Forms.TreeNode treeNode28 = new System.Windows.Forms.TreeNode("Thermal conductivity");
+            System.Windows.Forms.TreeNode treeNode29 = new System.Windows.Forms.TreeNode("Specific heat");
+            System.Windows.Forms.TreeNode treeNode30 = new System.Windows.Forms.TreeNode("Thermal", new System.Windows.Forms.TreeNode[] {
+            treeNode27,
+            treeNode28,
+            treeNode29});
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             this.tvProperties = new System.Windows.Forms.TreeView();
             this.propertyGrid = new UserControls.TabbedPropertyGrid();
@@ -53,15 +57,17 @@
             this.tbName = new System.Windows.Forms.TextBox();
             this.lName = new System.Windows.Forms.Label();
             this.gbProperties = new System.Windows.Forms.GroupBox();
+            this.btnMoveDown = new System.Windows.Forms.Button();
+            this.btnMoveUp = new System.Windows.Forms.Button();
             this.tcProperties = new System.Windows.Forms.TabControl();
             this.tpProperties = new System.Windows.Forms.TabPage();
             this.tpDataPoints = new System.Windows.Forms.TabPage();
             this.dgvData = new UserControls.DataGridViewCopyPaste();
             this.labSelected = new System.Windows.Forms.Label();
             this.labAvailable = new System.Windows.Forms.Label();
-            this.lvAddedProperties = new System.Windows.Forms.ListView();
             this.btnAdd = new System.Windows.Forms.Button();
             this.btnRemove = new System.Windows.Forms.Button();
+            this.lvAddedProperties = new System.Windows.Forms.ListView();
             this.btnOKAddNew = new System.Windows.Forms.Button();
             this.gbData.SuspendLayout();
             this.gbProperties.SuspendLayout();
@@ -74,37 +80,43 @@
             // tvProperties
             // 
             this.tvProperties.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.tvProperties.Location = new System.Drawing.Point(6, 38);
+            this.tvProperties.Location = new System.Drawing.Point(6, 37);
             this.tvProperties.Name = "tvProperties";
-            treeNode1.Name = "Density";
-            treeNode1.Text = "Density";
-            treeNode1.ToolTipText = "Density";
-            treeNode2.Name = "General";
-            treeNode2.Text = "General";
-            treeNode3.Name = "Elastic";
-            treeNode3.Text = "Elastic";
-            treeNode3.ToolTipText = "Elastic";
-            treeNode4.Name = "Elasticity";
-            treeNode4.Text = "Elasticity";
-            treeNode4.ToolTipText = "Elasticity";
-            treeNode5.Name = "Plastic";
-            treeNode5.Text = "Plastic";
-            treeNode5.ToolTipText = "Plastic";
-            treeNode6.Name = "Plasticity";
-            treeNode6.Text = "Plasticity";
-            treeNode6.ToolTipText = "Plasticity";
-            treeNode7.Name = "Expansion";
-            treeNode7.Text = "Expansion";
-            treeNode7.ToolTipText = "Expansion";
-            treeNode8.Name = "Thermal";
-            treeNode8.Text = "Thermal";
-            treeNode8.ToolTipText = "Thermal";
+            treeNode21.Name = "Density";
+            treeNode21.Text = "Density";
+            treeNode21.ToolTipText = "Density";
+            treeNode22.Name = "General";
+            treeNode22.Text = "General";
+            treeNode23.Name = "Elastic";
+            treeNode23.Text = "Elastic";
+            treeNode23.ToolTipText = "Elastic";
+            treeNode24.Name = "Elasticity";
+            treeNode24.Text = "Elasticity";
+            treeNode24.ToolTipText = "Elasticity";
+            treeNode25.Name = "Plastic";
+            treeNode25.Text = "Plastic";
+            treeNode25.ToolTipText = "Plastic";
+            treeNode26.Name = "Plasticity";
+            treeNode26.Text = "Plasticity";
+            treeNode26.ToolTipText = "Plasticity";
+            treeNode27.Name = "ThermalExpansion";
+            treeNode27.Text = "Thermal expansion";
+            treeNode27.ToolTipText = "Thermal expansion";
+            treeNode28.Name = "ThermalConductivity";
+            treeNode28.Text = "Thermal conductivity";
+            treeNode28.ToolTipText = "Thermal conductivity";
+            treeNode29.Name = "SpecificHeat";
+            treeNode29.Text = "Specific heat";
+            treeNode29.ToolTipText = "Specific heat";
+            treeNode30.Name = "Thermal";
+            treeNode30.Text = "Thermal";
+            treeNode30.ToolTipText = "Thermal";
             this.tvProperties.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
-            treeNode2,
-            treeNode4,
-            treeNode6,
-            treeNode8});
-            this.tvProperties.Size = new System.Drawing.Size(137, 167);
+            treeNode22,
+            treeNode24,
+            treeNode26,
+            treeNode30});
+            this.tvProperties.Size = new System.Drawing.Size(192, 185);
             this.tvProperties.TabIndex = 2;
             this.tvProperties.DoubleClick += new System.EventHandler(this.tvProperties_DoubleClick);
             // 
@@ -116,7 +128,7 @@
             this.propertyGrid.LineColor = System.Drawing.SystemColors.Control;
             this.propertyGrid.Location = new System.Drawing.Point(3, 3);
             this.propertyGrid.Name = "propertyGrid";
-            this.propertyGrid.Size = new System.Drawing.Size(389, 248);
+            this.propertyGrid.Size = new System.Drawing.Size(439, 231);
             this.propertyGrid.TabIndex = 6;
             this.propertyGrid.ToolbarVisible = false;
             this.propertyGrid.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.propertyGrid_PropertyValueChanged);
@@ -124,7 +136,7 @@
             // btnOK
             // 
             this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOK.Location = new System.Drawing.Point(260, 647);
+            this.btnOK.Location = new System.Drawing.Point(310, 647);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 8;
@@ -136,7 +148,7 @@
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(341, 647);
+            this.btnCancel.Location = new System.Drawing.Point(391, 647);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 7;
@@ -155,7 +167,7 @@
             this.gbData.Controls.Add(this.lName);
             this.gbData.Location = new System.Drawing.Point(12, 12);
             this.gbData.Name = "gbData";
-            this.gbData.Size = new System.Drawing.Size(410, 130);
+            this.gbData.Size = new System.Drawing.Size(460, 130);
             this.gbData.TabIndex = 10;
             this.gbData.TabStop = false;
             this.gbData.Text = "Data";
@@ -181,7 +193,7 @@
             this.tbDescription.Multiline = true;
             this.tbDescription.Name = "tbDescription";
             this.tbDescription.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.tbDescription.Size = new System.Drawing.Size(310, 51);
+            this.tbDescription.Size = new System.Drawing.Size(360, 51);
             this.tbDescription.TabIndex = 3;
             this.tbDescription.Text = "1\r\n2\r\n3";
             // 
@@ -200,7 +212,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tbName.Location = new System.Drawing.Point(95, 19);
             this.tbName.Name = "tbName";
-            this.tbName.Size = new System.Drawing.Size(310, 23);
+            this.tbName.Size = new System.Drawing.Size(360, 23);
             this.tbName.TabIndex = 1;
             this.tbName.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbName_KeyDown);
             // 
@@ -219,18 +231,42 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.gbProperties.Controls.Add(this.tcProperties);
+            this.gbProperties.Controls.Add(this.btnMoveDown);
+            this.gbProperties.Controls.Add(this.btnMoveUp);
             this.gbProperties.Controls.Add(this.labSelected);
             this.gbProperties.Controls.Add(this.labAvailable);
-            this.gbProperties.Controls.Add(this.lvAddedProperties);
             this.gbProperties.Controls.Add(this.btnAdd);
             this.gbProperties.Controls.Add(this.btnRemove);
             this.gbProperties.Controls.Add(this.tvProperties);
+            this.gbProperties.Controls.Add(this.lvAddedProperties);
             this.gbProperties.Location = new System.Drawing.Point(12, 148);
             this.gbProperties.Name = "gbProperties";
-            this.gbProperties.Size = new System.Drawing.Size(410, 493);
+            this.gbProperties.Size = new System.Drawing.Size(460, 493);
             this.gbProperties.TabIndex = 0;
             this.gbProperties.TabStop = false;
             this.gbProperties.Text = "Material models";
+            // 
+            // btnMoveDown
+            // 
+            this.btnMoveDown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnMoveDown.Image = global::PrePoMax.Properties.Resources.Down_arrow;
+            this.btnMoveDown.Location = new System.Drawing.Point(431, 67);
+            this.btnMoveDown.Name = "btnMoveDown";
+            this.btnMoveDown.Size = new System.Drawing.Size(24, 24);
+            this.btnMoveDown.TabIndex = 13;
+            this.btnMoveDown.UseVisualStyleBackColor = true;
+            this.btnMoveDown.Click += new System.EventHandler(this.btnMoveDown_Click);
+            // 
+            // btnMoveUp
+            // 
+            this.btnMoveUp.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnMoveUp.Image = global::PrePoMax.Properties.Resources.Up_arrow;
+            this.btnMoveUp.Location = new System.Drawing.Point(431, 37);
+            this.btnMoveUp.Name = "btnMoveUp";
+            this.btnMoveUp.Size = new System.Drawing.Size(24, 24);
+            this.btnMoveUp.TabIndex = 12;
+            this.btnMoveUp.UseVisualStyleBackColor = true;
+            this.btnMoveUp.Click += new System.EventHandler(this.btnMoveUp_Click);
             // 
             // tcProperties
             // 
@@ -239,11 +275,11 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tcProperties.Controls.Add(this.tpProperties);
             this.tcProperties.Controls.Add(this.tpDataPoints);
-            this.tcProperties.Location = new System.Drawing.Point(6, 208);
+            this.tcProperties.Location = new System.Drawing.Point(6, 225);
             this.tcProperties.Margin = new System.Windows.Forms.Padding(0);
             this.tcProperties.Name = "tcProperties";
             this.tcProperties.SelectedIndex = 0;
-            this.tcProperties.Size = new System.Drawing.Size(403, 282);
+            this.tcProperties.Size = new System.Drawing.Size(453, 265);
             this.tcProperties.TabIndex = 11;
             // 
             // tpProperties
@@ -253,7 +289,7 @@
             this.tpProperties.Location = new System.Drawing.Point(4, 24);
             this.tpProperties.Name = "tpProperties";
             this.tpProperties.Padding = new System.Windows.Forms.Padding(3);
-            this.tpProperties.Size = new System.Drawing.Size(395, 254);
+            this.tpProperties.Size = new System.Drawing.Size(445, 237);
             this.tpProperties.TabIndex = 0;
             this.tpProperties.Text = "Properties";
             // 
@@ -264,7 +300,7 @@
             this.tpDataPoints.Location = new System.Drawing.Point(4, 24);
             this.tpDataPoints.Name = "tpDataPoints";
             this.tpDataPoints.Padding = new System.Windows.Forms.Padding(3);
-            this.tpDataPoints.Size = new System.Drawing.Size(295, 263);
+            this.tpDataPoints.Size = new System.Drawing.Size(445, 237);
             this.tpDataPoints.TabIndex = 1;
             this.tpDataPoints.Text = "Data points";
             // 
@@ -284,7 +320,7 @@
             this.dgvData.EnablePasteMenu = true;
             this.dgvData.Location = new System.Drawing.Point(3, 3);
             this.dgvData.Name = "dgvData";
-            this.dgvData.Size = new System.Drawing.Size(289, 257);
+            this.dgvData.Size = new System.Drawing.Size(439, 231);
             this.dgvData.StartPlotAtZero = false;
             this.dgvData.TabIndex = 0;
             this.dgvData.XColIndex = 0;
@@ -293,7 +329,7 @@
             // labSelected
             // 
             this.labSelected.AutoSize = true;
-            this.labSelected.Location = new System.Drawing.Point(177, 19);
+            this.labSelected.Location = new System.Drawing.Point(209, 19);
             this.labSelected.Name = "labSelected";
             this.labSelected.Size = new System.Drawing.Size(51, 15);
             this.labSelected.TabIndex = 8;
@@ -308,6 +344,27 @@
             this.labAvailable.TabIndex = 7;
             this.labAvailable.Text = "Available";
             // 
+            // btnAdd
+            // 
+            this.btnAdd.Image = global::PrePoMax.Properties.Resources.Right_arrow;
+            this.btnAdd.Location = new System.Drawing.Point(204, 37);
+            this.btnAdd.Name = "btnAdd";
+            this.btnAdd.Size = new System.Drawing.Size(24, 24);
+            this.btnAdd.TabIndex = 3;
+            this.btnAdd.UseVisualStyleBackColor = true;
+            this.btnAdd.Click += new System.EventHandler(this.btnAdd_Click);
+            // 
+            // btnRemove
+            // 
+            this.btnRemove.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnRemove.Image = global::PrePoMax.Properties.Resources.Remove;
+            this.btnRemove.Location = new System.Drawing.Point(431, 97);
+            this.btnRemove.Name = "btnRemove";
+            this.btnRemove.Size = new System.Drawing.Size(24, 24);
+            this.btnRemove.TabIndex = 4;
+            this.btnRemove.UseVisualStyleBackColor = true;
+            this.btnRemove.Click += new System.EventHandler(this.btnRemove_Click);
+            // 
             // lvAddedProperties
             // 
             this.lvAddedProperties.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
@@ -315,39 +372,19 @@
             this.lvAddedProperties.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.lvAddedProperties.FullRowSelect = true;
             this.lvAddedProperties.HideSelection = false;
-            this.lvAddedProperties.Location = new System.Drawing.Point(177, 38);
+            this.lvAddedProperties.Location = new System.Drawing.Point(234, 37);
             this.lvAddedProperties.MultiSelect = false;
             this.lvAddedProperties.Name = "lvAddedProperties";
-            this.lvAddedProperties.Size = new System.Drawing.Size(228, 167);
+            this.lvAddedProperties.Size = new System.Drawing.Size(191, 185);
             this.lvAddedProperties.TabIndex = 5;
             this.lvAddedProperties.UseCompatibleStateImageBehavior = false;
             this.lvAddedProperties.View = System.Windows.Forms.View.List;
             this.lvAddedProperties.SelectedIndexChanged += new System.EventHandler(this.lvAddedProperties_SelectedIndexChanged);
             // 
-            // btnAdd
-            // 
-            this.btnAdd.Image = global::PrePoMax.Properties.Resources.Right_arrow;
-            this.btnAdd.Location = new System.Drawing.Point(149, 38);
-            this.btnAdd.Name = "btnAdd";
-            this.btnAdd.Size = new System.Drawing.Size(22, 22);
-            this.btnAdd.TabIndex = 3;
-            this.btnAdd.UseVisualStyleBackColor = true;
-            this.btnAdd.Click += new System.EventHandler(this.btnAdd_Click);
-            // 
-            // btnRemove
-            // 
-            this.btnRemove.Image = global::PrePoMax.Properties.Resources.Remove;
-            this.btnRemove.Location = new System.Drawing.Point(149, 66);
-            this.btnRemove.Name = "btnRemove";
-            this.btnRemove.Size = new System.Drawing.Size(22, 22);
-            this.btnRemove.TabIndex = 4;
-            this.btnRemove.UseVisualStyleBackColor = true;
-            this.btnRemove.Click += new System.EventHandler(this.btnRemove_Click);
-            // 
             // btnOKAddNew
             // 
             this.btnOKAddNew.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOKAddNew.Location = new System.Drawing.Point(164, 647);
+            this.btnOKAddNew.Location = new System.Drawing.Point(214, 647);
             this.btnOKAddNew.Name = "btnOKAddNew";
             this.btnOKAddNew.Size = new System.Drawing.Size(90, 23);
             this.btnOKAddNew.TabIndex = 17;
@@ -359,7 +396,7 @@
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(434, 681);
+            this.ClientSize = new System.Drawing.Size(484, 681);
             this.Controls.Add(this.btnOKAddNew);
             this.Controls.Add(this.gbProperties);
             this.Controls.Add(this.gbData);
@@ -368,12 +405,13 @@
             this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.MinimumSize = new System.Drawing.Size(350, 420);
+            this.MinimumSize = new System.Drawing.Size(430, 650);
             this.Name = "FrmMaterial";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Edit Material";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmMaterial_FormClosing);
+            this.VisibleChanged += new System.EventHandler(this.FrmMaterial_VisibleChanged);
             this.gbData.ResumeLayout(false);
             this.gbData.PerformLayout();
             this.gbProperties.ResumeLayout(false);
@@ -409,5 +447,7 @@
         private System.Windows.Forms.TextBox tbDescription;
         private System.Windows.Forms.Label lDescription;
         private System.Windows.Forms.CheckBox cbTemperatureDependent;
+        private System.Windows.Forms.Button btnMoveDown;
+        private System.Windows.Forms.Button btnMoveUp;
     }
 }

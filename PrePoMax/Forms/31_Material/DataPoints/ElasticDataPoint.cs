@@ -17,11 +17,11 @@ namespace CaeModel
 
 
         // Properties                                                                                                               
-        [DisplayName("Youngs Modulus\n[?]")]
+        [DisplayName("Youngs modulus\n[?]")]
         [TypeConverter(typeof(CaeGlobals.StringPressureFromConverter))]
         public double YoungsModulus { get { return _youngsModulus; } set { _youngsModulus = value; } }
         //
-        [DisplayName("Poissons Ratio\n[?]")]
+        [DisplayName("Poissons ratio\n[?]")]
         public double PoissonsRatio { get { return _poissonsRatio; } set { _poissonsRatio = value; } }
 
 

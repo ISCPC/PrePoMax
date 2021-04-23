@@ -48,8 +48,6 @@ namespace PrePoMax.Forms
                 _pages[i++] = tabPage;
             }
             //
-            lvAddedProperties.Sorting = SortOrder.Ascending;
-            //
             ClearControls();
             //
             _useSimpleEditor = false;
@@ -57,6 +55,12 @@ namespace PrePoMax.Forms
 
 
         // Event handling
+        private void FrmMaterial_VisibleChanged(object sender, EventArgs e)
+        {
+            cbTemperatureDependent.Enabled = !_useSimpleEditor;
+            tvProperties.Visible = !_useSimpleEditor;
+            lvAddedProperties.Visible = !_useSimpleEditor;
+        }
         private void TabPage_Paint(object sender, PaintEventArgs e)
         {
             SolidBrush fillBrush = new SolidBrush(((TabPage)sender).BackColor);
@@ -88,22 +92,28 @@ namespace PrePoMax.Forms
         {
             if (tvProperties.SelectedNode != null && tvProperties.SelectedNode.Tag != null)
             {
-                string propertyName = tvProperties.SelectedNode.Name;
+                string propertyText = tvProperties.SelectedNode.Text;
                 //
-                if (lvAddedProperties.FindItemWithText(propertyName) == null)
+                ListViewItem existingItem = null;
+                if (lvAddedProperties.Items.Count > 0)
+                    existingItem = lvAddedProperties.FindItemWithText(propertyText, true, 0, false);
+                //
+                if (existingItem == null)
                 {
-                    ListViewItem item = new ListViewItem(propertyName);
+                    ListViewItem item = new ListViewItem(propertyText);
                     if (tvProperties.SelectedNode.Tag is MaterialProperty mp)
                     {
                         if (mp is Density de) item.Tag = new ViewDensity(de.DeepClone());
                         else if (mp is Elastic el) item.Tag = new ViewElastic(el.DeepClone());
                         else if (mp is Plastic pl) item.Tag = new ViewPlastic(pl.DeepClone());
-                        else if (mp is ThermalExpansion te) item.Tag = new ViewExpansion(te.DeepClone());
+                        else if (mp is ThermalExpansion te) item.Tag = new ViewThermalExpansion(te.DeepClone());
+                        else if (mp is ThermalConductivity tc) item.Tag = new ViewThermalConductivity(tc.DeepClone());
+                        else if (mp is SpecificHeat sh) item.Tag = new ViewSpecificHeat(sh.DeepClone());
                         else throw new NotSupportedException();
                     }
                     else throw new NotSupportedException();
                     //
-                    lvAddedProperties.Items.Add(item);                    
+                    lvAddedProperties.Items.Add(item);
                     int id = lvAddedProperties.Items.IndexOf(item);
                     lvAddedProperties.Items[id].Selected = true;
                     lvAddedProperties.Select();
@@ -121,6 +131,37 @@ namespace PrePoMax.Forms
             }
             _propertyItemChanged = true;
         }
+        private void btnMoveUp_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                int currentIndex = lvAddedProperties.SelectedItems[0].Index;
+                ListViewItem item = lvAddedProperties.Items[currentIndex];
+                if (currentIndex > 0)
+                {
+                    lvAddedProperties.Items.RemoveAt(currentIndex);
+                    lvAddedProperties.Items.Insert(currentIndex - 1, item);
+                }
+            }
+            catch
+            { }
+        }
+        private void btnMoveDown_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                int currentIndex = lvAddedProperties.SelectedItems[0].Index;
+                ListViewItem item = lvAddedProperties.Items[currentIndex];
+                if (currentIndex < lvAddedProperties.Items.Count - 1)
+                {
+                    lvAddedProperties.Items.RemoveAt(currentIndex);
+                    lvAddedProperties.Items.Insert(currentIndex + 1, item);
+                }
+            }
+            catch
+            { }
+        }
+        //
         private void lvAddedProperties_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (lvAddedProperties.SelectedItems.Count == 1)
@@ -128,157 +169,64 @@ namespace PrePoMax.Forms
                 // Clear
                 dgvData.DataSource = null;      
                 dgvData.Columns.Clear();
+                tcProperties.TabPages.Clear();
                 //
                 if (lvAddedProperties.SelectedItems[0].Tag is ViewDensity vd)
                 {
-                    tcProperties.TabPages.Clear();
-                    // Properites
-                    tcProperties.TabPages.Add(_pages[0]);
-                    // Data points
-                    tcProperties.TabPages.Add(_pages[1]);
+                    tcProperties.TabPages.Add(_pages[0]);   // properites
+                    tcProperties.TabPages.Add(_pages[1]);   // data points
                     //
-                    BindingSource binding = new BindingSource();
-                    binding.DataSource = vd.DataPoints;
-                    dgvData.DataSource = binding; // bind datagridview to binding source - enables adding of new lines
-                    binding.ListChanged += Binding_ListChanged;
-                    // Unit
-                    string unitDensity = _controller.Model.UnitSystem.DensityUnitAbbreviation;
-                    string unitTemperature = _controller.Model.UnitSystem.TemperatureUnitAbbreviation;
-                    // HeaderText
-                    string headerText;
-                    string densityName = nameof(DensityDataPoint.Density);
-                    string temperatureName = nameof(TempDataPoint.Temperature);
-                    //
-                    headerText = dgvData.Columns[densityName].HeaderText;
-                    if (headerText != null) dgvData.Columns[densityName].HeaderText = headerText.Replace("?", unitDensity);
-                    headerText = dgvData.Columns[temperatureName].HeaderText;
-                    if (headerText != null) dgvData.Columns[temperatureName].HeaderText = headerText.Replace("?", unitTemperature);
-                    // Alignment
-                    dgvData.Columns[densityName].HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
-                    dgvData.Columns[temperatureName].HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
-                    //
-                    dgvData.XColIndex = 1;
-                    dgvData.StartPlotAtZero = true;
-                    //
-                    propertyGrid.SelectedObject = vd;
+                    SetDataGridViewBinding(vd.DataPoints);
                 }
                 else if (lvAddedProperties.SelectedItems[0].Tag is ViewElastic ve)
                 {
-                    tcProperties.TabPages.Clear();
-                    tcProperties.TabPages.Add(_pages[1]);
-                    tcProperties.TabPages.Add(_pages[0]);
+                    tcProperties.TabPages.Add(_pages[0]);   // properites
+                    tcProperties.TabPages.Add(_pages[1]);   // data points
                     //
-                    BindingSource binding = new BindingSource();
-                    binding.DataSource = ve.DataPoints;
-                    dgvData.DataSource = binding; // bind datagridview to binding source - enables adding of new lines
-                    binding.ListChanged += Binding_ListChanged;
-                    // Unit
-                    string unitStress = _controller.Model.UnitSystem.PressureUnitAbbreviation;
-                    string unitTemperature = _controller.Model.UnitSystem.TemperatureUnitAbbreviation;
-                    // HeaderText
-                    string headerText;
-                    string youngsName = nameof(ElasticDataPoint.YoungsModulus);
-                    string poissonsName = nameof(ElasticDataPoint.PoissonsRatio);
-                    string temperatureName = nameof(TempDataPoint.Temperature);
-                    //
-                    headerText = dgvData.Columns[youngsName].HeaderText;
-                    if (headerText != null) dgvData.Columns[youngsName].HeaderText = headerText.Replace("?", unitStress);
-                    headerText = dgvData.Columns[poissonsName].HeaderText;
-                    if (headerText != null) dgvData.Columns[poissonsName].HeaderText = headerText.Replace("?", "/");
-                    headerText = dgvData.Columns[temperatureName].HeaderText;
-                    if (headerText != null) dgvData.Columns[temperatureName].HeaderText = headerText.Replace("?", unitTemperature);
-                    // Alignment
-                    dgvData.Columns[youngsName].HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
-                    dgvData.Columns[poissonsName].HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
-                    dgvData.Columns[temperatureName].HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
-                    //
-                    dgvData.XColIndex = 1;
-                    dgvData.StartPlotAtZero = true;
-                    //
-                    propertyGrid.SelectedObject = ve;
+                    SetDataGridViewBinding(ve.DataPoints);
                 }
                 else if (lvAddedProperties.SelectedItems[0].Tag is ViewElasticWithDensity)
                 {
-                    tcProperties.TabPages.Clear();
                     tcProperties.TabPages.Add(_pages[0]);
-                    propertyGrid.SelectedObject = lvAddedProperties.SelectedItems[0].Tag;
                 }
                 else if (lvAddedProperties.SelectedItems[0].Tag is ViewPlastic vp)
                 {
-                    tcProperties.TabPages.Clear();
-                    tcProperties.TabPages.Add(_pages[1]);
-                    tcProperties.TabPages.Add(_pages[0]);
+                    tcProperties.TabPages.Add(_pages[1]);   // data points
+                    tcProperties.TabPages.Add(_pages[0]);   // properites
                     //
-                    BindingSource binding = new BindingSource();
-                    binding.DataSource = vp.DataPoints;
-                    dgvData.DataSource = binding; // bind datagridview to binding source - enables adding of new lines
-                    binding.ListChanged += Binding_ListChanged;
-                    // Unit
-                    string unitStress = _controller.Model.UnitSystem.PressureUnitAbbreviation;
-                    string unitTemperature = _controller.Model.UnitSystem.TemperatureUnitAbbreviation;
-                    // HeaderText
-                    string headerText;
-                    string stressName = nameof(PlasticDataPoint.Stress);
-                    string strainName = nameof(PlasticDataPoint.Strain);
-                    string temperatureName = nameof(TempDataPoint.Temperature);
-                    //
-                    headerText = dgvData.Columns[stressName].HeaderText;
-                    if (headerText != null) dgvData.Columns[stressName].HeaderText = headerText.Replace("?", unitStress);
-                    headerText = dgvData.Columns[strainName].HeaderText;
-                    if (headerText != null) dgvData.Columns[strainName].HeaderText = headerText.Replace("?", "/");
-                    headerText = dgvData.Columns[temperatureName].HeaderText;
-                    if (headerText != null) dgvData.Columns[temperatureName].HeaderText = headerText.Replace("?", unitTemperature);
-                    // Alignment
-                    dgvData.Columns[stressName].HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
-                    dgvData.Columns[strainName].HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
-                    dgvData.Columns[temperatureName].HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
-                    //
-                    dgvData.XColIndex = 1;
-                    dgvData.StartPlotAtZero = true;
-                    //
-                    propertyGrid.SelectedObject = vp;
+                    SetDataGridViewBinding(vp.DataPoints);
                 }
-                else if (lvAddedProperties.SelectedItems[0].Tag is ViewExpansion vex)
+                else if (lvAddedProperties.SelectedItems[0].Tag is ViewThermalExpansion vte)
                 {
-                    tcProperties.TabPages.Clear();
-                    // Properites
-                    tcProperties.TabPages.Add(_pages[0]);
-                    // Data points
-                    tcProperties.TabPages.Add(_pages[1]);
+                    tcProperties.TabPages.Add(_pages[0]);   // properites
+                    tcProperties.TabPages.Add(_pages[1]);   // data points
                     //
-                    BindingSource binding = new BindingSource();
-                    binding.DataSource = vex.DataPoints;
-                    dgvData.DataSource = binding; // bind datagridview to binding source - enables adding of new lines
-                    binding.ListChanged += Binding_ListChanged;
-                    // Unit
-                    string unitThermalExpansion = _controller.Model.UnitSystem.ThermalExpansionUnitAbbreviation;
-                    string unitTemperature = _controller.Model.UnitSystem.TemperatureUnitAbbreviation;
-                    // HeaderText
-                    string headerText;
-                    string thermalExpansionName = nameof(ExpansionDataPoint.ThermalExpansion);
-                    string temperatureName = nameof(TempDataPoint.Temperature);
+                    SetDataGridViewBinding(vte.DataPoints);
+                }
+                else if (lvAddedProperties.SelectedItems[0].Tag is ViewThermalConductivity vtc)
+                {
+                    tcProperties.TabPages.Add(_pages[0]);   // properites
+                    tcProperties.TabPages.Add(_pages[1]);   // data points
                     //
-                    headerText = dgvData.Columns[thermalExpansionName].HeaderText;
-                    if (headerText != null)
-                        dgvData.Columns[thermalExpansionName].HeaderText = headerText.Replace("?", unitThermalExpansion);
-                    headerText = dgvData.Columns[temperatureName].HeaderText;
-                    if (headerText != null)
-                        dgvData.Columns[temperatureName].HeaderText = headerText.Replace("?", unitTemperature);
-                    // Alignment
-                    dgvData.Columns[thermalExpansionName].HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
-                    dgvData.Columns[temperatureName].HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
+                    SetDataGridViewBinding(vtc.DataPoints);
+                }
+                else if (lvAddedProperties.SelectedItems[0].Tag is ViewSpecificHeat vsh)
+                {
+                    tcProperties.TabPages.Add(_pages[0]);   // properites
+                    tcProperties.TabPages.Add(_pages[1]);   // data points
                     //
-                    dgvData.XColIndex = 1;
-                    dgvData.StartPlotAtZero = true;
-                    //
-                    propertyGrid.SelectedObject = vex;
+                    SetDataGridViewBinding(vsh.DataPoints);
                 }
                 else throw new NotSupportedException();
+                //
+                propertyGrid.SelectedObject = lvAddedProperties.SelectedItems[0].Tag;
+                //
+                SetAllGridViewUnits();
                 //
                 HideShowTemperature();
             }
             lvAddedProperties.Select();
-        }
+        }        
         private void Binding_ListChanged(object sender, ListChangedEventArgs e)
         {
             _propertyItemChanged = true;
@@ -354,10 +302,19 @@ namespace PrePoMax.Forms
             _materialNames = _controller.GetMaterialNames();
             _materialToEditName = materialToEditName;
             // Initialize material properties
-            tvProperties.Nodes.Find("Density", true)[0].Tag = new Density(new double[][] { new double[] { 0, 0 } });
-            tvProperties.Nodes.Find("Elastic", true)[0].Tag = new Elastic(new double[][] { new double[] { 0, 0, 0 } });
-            tvProperties.Nodes.Find("Plastic", true)[0].Tag = new Plastic(new double[][] { new double[] { 0, 0, 0 } });
-            tvProperties.Nodes.Find("Expansion", true)[0].Tag = new ThermalExpansion(new double[][] { new double[] { 0, 0 } });
+            TreeNode node;
+            node = tvProperties.Nodes.Find("Density", true)[0];
+            node.Tag = new Density(new double[][] { new double[] { 0, 0 } });
+            node = tvProperties.Nodes.Find("Elastic", true)[0];
+            node.Tag = new Elastic(new double[][] { new double[] { 0, 0, 0 } });
+            node = tvProperties.Nodes.Find("Plastic", true)[0];
+            node.Tag = new Plastic(new double[][] { new double[] { 0, 0, 0 } });
+            node = tvProperties.Nodes.Find("ThermalExpansion", true)[0];
+            node.Tag = new ThermalExpansion(new double[][] { new double[] { 0, 0 } });
+            node = tvProperties.Nodes.Find("ThermalConductivity", true)[0];
+            node.Tag = new ThermalConductivity(new double[][] { new double[] { 0, 0 } });
+            node = tvProperties.Nodes.Find("SpecificHeat", true)[0];
+            node.Tag = new SpecificHeat(new double[][] { new double[] { 0, 0 } });
             tvProperties.ExpandAll();
             //
             if (_materialToEditName == null)
@@ -389,7 +346,9 @@ namespace PrePoMax.Forms
                             _useSimpleEditor = true;
                         }
                         else if (property is Plastic pl) view = new ViewPlastic(pl);
-                        else if (property is ThermalExpansion te) view = new ViewExpansion(te);
+                        else if (property is ThermalExpansion te) view = new ViewThermalExpansion(te);
+                        else if (property is ThermalConductivity tc) view = new ViewThermalConductivity(tc);
+                        else if (property is SpecificHeat sh) view = new ViewSpecificHeat(sh);
                         else throw new NotSupportedException();
                         //
                         item = new ListViewItem(view.Name);
@@ -404,7 +363,7 @@ namespace PrePoMax.Forms
             // Simple material editor
             int delta;
             if (_useSimpleEditor)
-            {
+            {                
                 if (_materialToEditName == null)
                 {
                     ViewMaterialProperty view = new ViewElasticWithDensity(new ElasticWithDensity(0, 0, 0));
@@ -413,6 +372,7 @@ namespace PrePoMax.Forms
                     lvAddedProperties.Items.Add(item);
                     lvAddedProperties.Items[0].Selected = true;
                     lvAddedProperties.Select();
+                    lvAddedProperties_SelectedIndexChanged(null, null);
                 }
                 delta = tcProperties.Top - labAvailable.Top;
                 tcProperties.Top = labAvailable.Top;
@@ -462,19 +422,35 @@ namespace PrePoMax.Forms
                 }
                 else if (property is ViewElastic ve && ve.YoungsModulus <= 0)
                 {
-                    throw new CaeGlobals.CaeException("The Young's modulus must be larger than 0.");
+                    throw new CaeException("The Young's modulus must be larger than 0.");
                 }
                 else if (property is ViewElasticWithDensity ewd)
                 {
                     if (ewd.YoungsModulus <= 0) throw new CaeGlobals.CaeException("The Young's modulus must be larger than 0.");
                     if (ewd.Density <= 0) throw new CaeGlobals.CaeException("The density must be larger than 0.");
                 }
-                else if (property is ViewExpansion vex)
+                else if (property is ViewThermalExpansion vex)
                 {
                     for (int i = 0; i < vex.DataPoints.Count; i++)
                     {
                         if (vex.DataPoints[i].ThermalExpansion <= 0)
                             throw new CaeException("The thermal expansion coefficient must be larger than 0.");
+                    }
+                }
+                else if (property is ViewThermalConductivity vtc)
+                {
+                    for (int i = 0; i < vtc.DataPoints.Count; i++)
+                    {
+                        if (vtc.DataPoints[i].ThermalConductivity <= 0)
+                            throw new CaeException("The thermal conductivity coefficient must be larger than 0.");
+                    }
+                }
+                else if (property is ViewSpecificHeat vsh)
+                {
+                    for (int i = 0; i < vsh.DataPoints.Count; i++)
+                    {
+                        if (vsh.DataPoints[i].SpecificHeat <= 0)
+                            throw new CaeException("The thermal conductivity coefficient must be larger than 0.");
                     }
                 }
                 //
@@ -495,16 +471,61 @@ namespace PrePoMax.Forms
                 }
             }
         }
+        private void SetAllGridViewUnits()
+        {
+            string noUnit = "/";
+            // Density
+            SetGridViewUnit(nameof(DensityDataPoint.Density), _controller.Model.UnitSystem.DensityUnitAbbreviation);
+            // Elastic
+            SetGridViewUnit(nameof(ElasticDataPoint.YoungsModulus), _controller.Model.UnitSystem.PressureUnitAbbreviation);
+            SetGridViewUnit(nameof(ElasticDataPoint.PoissonsRatio), noUnit);
+            // Plastic
+            SetGridViewUnit(nameof(PlasticDataPoint.Stress), _controller.Model.UnitSystem.PressureUnitAbbreviation);
+            SetGridViewUnit(nameof(PlasticDataPoint.Strain), noUnit);
+            // Thermal expansion
+            SetGridViewUnit(nameof(ThermalExpansionDataPoint.ThermalExpansion),
+                            _controller.Model.UnitSystem.ThermalExpansionUnitAbbreviation);
+            // Thermal conductivity
+            SetGridViewUnit(nameof(ThermalConductivityDataPoint.ThermalConductivity),
+                            _controller.Model.UnitSystem.ThermalConductivityUnitAbbreviation);
+            // Specific heat
+            SetGridViewUnit(nameof(SpecificHeatDataPoint.SpecificHeat), _controller.Model.UnitSystem.SpecificHeatUnitAbbreviation);
+            // Temperature
+            SetGridViewUnit(nameof(TempDataPoint.Temperature), _controller.Model.UnitSystem.TemperatureUnitAbbreviation);
+            //
+            dgvData.XColIndex = 1;
+            dgvData.StartPlotAtZero = true;
+        }
+        private void SetGridViewUnit(string columnName, string unit)
+        {
+            DataGridViewColumn col = dgvData.Columns[columnName];
+            if (col != null)
+            {
+                // Unit
+                if (col.HeaderText != null) col.HeaderText = col.HeaderText.Replace("?", unit);
+                // Alignment
+                col.HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
+            }
+        }
         private string GetMaterialName()
         {
             return NamedClass.GetNewValueName(_materialNames, "Material-");
+        }
+        private void SetDataGridViewBinding(object data)
+        {
+            BindingSource binding = new BindingSource();
+            binding.DataSource = data;
+            dgvData.DataSource = binding; // bind datagridview to binding source - enables adding of new lines
+            binding.ListChanged += Binding_ListChanged;
         }
         private void HideShowTemperature()
         {
             if (lvAddedProperties.SelectedItems.Count > 0 &&
                 (lvAddedProperties.SelectedItems[0].Tag is ViewDensity ||
                  lvAddedProperties.SelectedItems[0].Tag is ViewElastic ||
-                 lvAddedProperties.SelectedItems[0].Tag is ViewExpansion))
+                 lvAddedProperties.SelectedItems[0].Tag is ViewThermalExpansion ||
+                 lvAddedProperties.SelectedItems[0].Tag is ViewThermalConductivity ||
+                 lvAddedProperties.SelectedItems[0].Tag is ViewSpecificHeat))
             {
                 tcProperties.TabPages.Clear();
                 // Data points
@@ -519,7 +540,5 @@ namespace PrePoMax.Forms
         }
 
         
-
-       
     }
 }

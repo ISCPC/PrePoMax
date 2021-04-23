@@ -72,7 +72,7 @@
             this.tvProperties.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
             treeNode1,
             treeNode2});
-            this.tvProperties.Size = new System.Drawing.Size(137, 101);
+            this.tvProperties.Size = new System.Drawing.Size(135, 101);
             this.tvProperties.TabIndex = 2;
             this.tvProperties.DoubleClick += new System.EventHandler(this.tvProperties_DoubleClick);
             // 
@@ -258,9 +258,9 @@
             // btnAdd
             // 
             this.btnAdd.Image = global::PrePoMax.Properties.Resources.Right_arrow;
-            this.btnAdd.Location = new System.Drawing.Point(149, 38);
+            this.btnAdd.Location = new System.Drawing.Point(147, 38);
             this.btnAdd.Name = "btnAdd";
-            this.btnAdd.Size = new System.Drawing.Size(22, 22);
+            this.btnAdd.Size = new System.Drawing.Size(24, 24);
             this.btnAdd.TabIndex = 3;
             this.btnAdd.UseVisualStyleBackColor = true;
             this.btnAdd.Click += new System.EventHandler(this.btnAdd_Click);
@@ -268,9 +268,9 @@
             // btnRemove
             // 
             this.btnRemove.Image = global::PrePoMax.Properties.Resources.Remove;
-            this.btnRemove.Location = new System.Drawing.Point(149, 66);
+            this.btnRemove.Location = new System.Drawing.Point(147, 68);
             this.btnRemove.Name = "btnRemove";
-            this.btnRemove.Size = new System.Drawing.Size(22, 22);
+            this.btnRemove.Size = new System.Drawing.Size(24, 24);
             this.btnRemove.TabIndex = 4;
             this.btnRemove.UseVisualStyleBackColor = true;
             this.btnRemove.Click += new System.EventHandler(this.btnRemove_Click);

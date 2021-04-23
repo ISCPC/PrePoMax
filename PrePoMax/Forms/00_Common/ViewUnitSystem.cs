@@ -114,16 +114,28 @@ namespace PrePoMax
         public string EnergyUnitAbbreviation { get { return _unitSystem.EnergyUnitAbbreviation; } }
         //
         [CategoryAttribute("Derived units")]
-        [OrderedDisplayName(11, 20, "Frequency")]
-        [DescriptionAttribute("Default frequency unit.")]
+        [OrderedDisplayName(11, 20, "Power unit")]
+        [DescriptionAttribute("Default power unit.")]
         [Id(12, 1)]
+        public string PowerUnitAbbreviation { get { return _unitSystem.PowerUnitAbbreviation; } }
+        //
+        [CategoryAttribute("Derived units")]
+        [OrderedDisplayName(12, 20, "Frequency")]
+        [DescriptionAttribute("Default frequency unit.")]
+        [Id(13, 1)]
         public string FrequencyUnitAbbreviation { get { return _unitSystem.FrequencyUnitAbbreviation; } }
         //
         [CategoryAttribute("Derived units")]
-        [OrderedDisplayName(12, 20, "Thermal expansion coefficient")]
-        [DescriptionAttribute("Default thermal expansion coefficient.")]
-        [Id(13, 1)]
+        [OrderedDisplayName(13, 20, "Thermal expansion")]
+        [DescriptionAttribute("Default thermal expansion unit.")]
+        [Id(14, 1)]
         public string ThermalExpansion { get { return _unitSystem.ThermalExpansionUnitAbbreviation; } }
+        //
+        [CategoryAttribute("Derived units")]
+        [OrderedDisplayName(14, 20, "Thermal conductivity")]
+        [DescriptionAttribute("Default thermal conductivity unit.")]
+        [Id(15, 1)]
+        public string ThermalConductivity { get { return _unitSystem.ThermalConductivityUnitAbbreviation; } }
 
 
         // Constructors                                                                                                             

@@ -11,12 +11,12 @@ using UnitsNet;
 
 namespace CaeGlobals
 {
-    public class StringEnergyPerVolumeConverter : TypeConverter
+    public class StringSpecificHeatConverter : TypeConverter
     {
         // Variables                                                                                                                
         protected static EnergyUnit _energyUnit = EnergyUnit.Joule;
-        protected static VolumeUnit _volumeUnit = VolumeUnit.CubicMeter;
-        protected static string _inlb = "in·lb";
+        protected static MassUnit _massUnit = MassUnit.Kilogram;
+        protected static TemperatureDeltaUnit _temperatureDeltaUnit = TemperatureDeltaUnit.DegreeCelsius;
         protected static string error = "Unable to parse quantity. Expected the form \"{value} {unit abbreviation}" +
                                         "\", such as \"5.5 m\". The spacing is optional.";
 
@@ -29,35 +29,52 @@ namespace CaeGlobals
                 if (value == "")
                 {
                     _energyUnit = (EnergyUnit)MyUnit.NoUnit;
-                    _volumeUnit = (VolumeUnit)MyUnit.NoUnit;
+                    _massUnit = (MassUnit)MyUnit.NoUnit;
+                    _temperatureDeltaUnit = (TemperatureDeltaUnit)MyUnit.NoUnit;
                 }
-                else if (value == _inlb) _energyUnit = MyUnit.InchPound;
-                else { _energyUnit = Energy.ParseUnit(value); }
+                else _energyUnit = Energy.ParseUnit(value);
             }
         }
-        public static string SetVolumeUnit
+        public static string SetMassUnit
+        { 
+            set 
+            {
+                if (value == "")
+                {
+                    _energyUnit = (EnergyUnit)MyUnit.NoUnit;
+                    _massUnit = (MassUnit)MyUnit.NoUnit;
+                    _temperatureDeltaUnit = (TemperatureDeltaUnit)MyUnit.NoUnit;
+                }
+                else _massUnit = Mass.ParseUnit(value);
+            }
+        }
+        public static string SetTemperatureDeltaUnit
         {
             set
             {
                 if (value == "")
                 {
                     _energyUnit = (EnergyUnit)MyUnit.NoUnit;
-                    _volumeUnit = (VolumeUnit)MyUnit.NoUnit;                    
+                    _massUnit = (MassUnit)MyUnit.NoUnit;
+                    _temperatureDeltaUnit = (TemperatureDeltaUnit)MyUnit.NoUnit;
                 }
-                else _volumeUnit = Volume.ParseUnit(value);
-            } 
+                else _temperatureDeltaUnit = TemperatureDelta.ParseUnit(value);
+            }
         }
-        public static string GetUnitAbbreviation(EnergyUnit energyUnit, VolumeUnit volumeUnit)
+        public static string GetUnitAbbreviation(EnergyUnit energyUnit, MassUnit massUnit,
+                                                 TemperatureDeltaUnit temperatureDeltaUnit)
         {
             string unit;
-            if ((int)energyUnit == MyUnit.NoUnit || (int)volumeUnit == MyUnit.NoUnit) unit = "";
-            else unit = Energy.GetAbbreviation(energyUnit) + "/" + Volume.GetAbbreviation(volumeUnit);
-            return unit;
+            if ((int)energyUnit == MyUnit.NoUnit || (int)massUnit == MyUnit.NoUnit || (int)temperatureDeltaUnit == MyUnit.NoUnit)
+                unit = "";
+            else unit = Energy.GetAbbreviation(energyUnit) + "/(" + Mass.GetAbbreviation(massUnit) + "·" +
+                        TemperatureDelta.GetAbbreviation(temperatureDeltaUnit) + ")";
+            return unit.Replace("∆", "");
         }
-
-
+        
+        
         // Constructors                                                                                                             
-        public StringEnergyPerVolumeConverter()
+        public StringSpecificHeatConverter()
         {
         }
 
@@ -76,7 +93,7 @@ namespace CaeGlobals
                 double valueDouble;
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    valueDouble = ConvertEnergyPerVolume(valueString);
+                    valueDouble = ConvertForcePerVolume(valueString);
                 }
                 return valueDouble;
             }
@@ -91,7 +108,7 @@ namespace CaeGlobals
                     if (value is double valueDouble)
                     {
                         string valueString = valueDouble.ToString();
-                        string unit = GetUnitAbbreviation(_energyUnit, _volumeUnit);
+                        string unit = GetUnitAbbreviation(_energyUnit, _massUnit, _temperatureDeltaUnit);
                         if (unit.Length > 0) valueString += " " + unit;
                         return valueString;
                     }
@@ -104,22 +121,29 @@ namespace CaeGlobals
             }
         }
         //
-        private static double ConvertEnergyPerVolume(string valueWithUnitString)
-        {
+        private static double ConvertForcePerVolume(string valueWithUnitString)
+        {            
             valueWithUnitString = valueWithUnitString.Trim().Replace(" ", "");
             //
             string[] tmp = valueWithUnitString.Split('/');
             if (tmp.Length != 2) throw new FormatException(error);
-            //
-            StringEnergyConverter converter = new StringEnergyConverter();  // this includes conversion to NoUnit
-            double energy = (double)converter.ConvertFromString(tmp[0]);
+            Energy energy = Energy.Parse(tmp[0]);
             // NoUnit
-            if ((int)_energyUnit == MyUnit.NoUnit || (int)_volumeUnit == MyUnit.NoUnit) return energy;
+            if ((int)_energyUnit == MyUnit.NoUnit || (int)_massUnit == MyUnit.NoUnit || (int)_temperatureDeltaUnit == MyUnit.NoUnit)
+                return energy.Value;
+            else energy = energy.ToUnit(_energyUnit);
             //
-            VolumeUnit volumeUnit = Volume.ParseUnit(tmp[1]);
-            Volume volume = Volume.From(1, volumeUnit).ToUnit(_volumeUnit);
-            double value = energy / volume.Value;
+            tmp = tmp[1].Replace("(", "").Replace(")", "").Split(new string[] { "*", "·" }, StringSplitOptions.RemoveEmptyEntries);
+            if (tmp.Length != 2) throw new FormatException(error);
             //
+            MassUnit massUnit = Mass.ParseUnit(tmp[0]);
+            Mass mass = Mass.From(1, massUnit).ToUnit(_massUnit);
+            //
+            if (!tmp[1].Contains("∆")) tmp[1] = "∆" + tmp[1];
+            TemperatureDeltaUnit temperatureDeltaUnit = TemperatureDelta.ParseUnit(tmp[1]);
+            TemperatureDelta temperatureDelta = TemperatureDelta.From(1, temperatureDeltaUnit).ToUnit(_temperatureDeltaUnit);
+            //
+            double value = (double)energy.Value / (mass.Value * temperatureDelta.Value);
             return value;
         }
     }

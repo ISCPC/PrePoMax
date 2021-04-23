@@ -66,7 +66,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Serialization" />
     <Reference Include="UnitsNet, Version=4.0.0.0, Culture=neutral, PublicKeyToken=f8601875a1f041da, processorArchitecture=MSIL">
-      <HintPath>..\packages\UnitsNet.4.62.0\lib\net40\UnitsNet.dll</HintPath>
+      <HintPath>..\packages\UnitsNet.4.89.0\lib\net40\UnitsNet.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -124,6 +124,9 @@
     <Compile Include="CommonClasses\Vec3D.cs" />
     <Compile Include="UnitSystem\MyUnit.cs" />
     <Compile Include="UnitSystem\StringAccelerationConverter.cs" />
+    <Compile Include="UnitSystem\StringPowerConverter.cs" />
+    <Compile Include="UnitSystem\StringSpecificHeatConverter.cs" />
+    <Compile Include="UnitSystem\StringThermalConductivityConverter.cs" />
     <Compile Include="UnitSystem\StringThermalExpansionConverter.cs" />
     <Compile Include="UnitSystem\StringAngleConverter.cs" />
     <Compile Include="UnitSystem\StringAngleDegConverter.cs" />
@@ -138,6 +141,8 @@
     <Compile Include="UnitSystem\StringForcePerVolumeDefaultConverter.cs" />
     <Compile Include="UnitSystem\StringEnergyConverter.cs" />
     <Compile Include="UnitSystem\StringDensityFromConverter.cs" />
+    <Compile Include="UnitSystem\StringThermalConductivityFromConverter.cs" />
+    <Compile Include="UnitSystem\StringSpecificHeatFromConverter.cs" />
     <Compile Include="UnitSystem\StringThermalExpansionFromConverter.cs" />
     <Compile Include="UnitSystem\StringTemperatureFromConverter.cs" />
     <Compile Include="UnitSystem\StringTemperatureConverter.cs" />

@@ -444,6 +444,14 @@ namespace FileInOut.Output
                         {
                             material.AddKeyword(new CalThermalExpansion(te, entry.Value.TemperatureDependent));
                         }
+                        else if (property is ThermalConductivity tc)
+                        {
+                            material.AddKeyword(new CalThermalConductivity(tc, entry.Value.TemperatureDependent));
+                        }
+                        else if (property is SpecificHeat sh)
+                        {
+                            material.AddKeyword(new CalSpecificHeat(sh, entry.Value.TemperatureDependent));
+                        }
                         else throw new NotImplementedException();
                     }
                 }
