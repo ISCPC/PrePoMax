@@ -2379,8 +2379,70 @@ namespace CaeMesh
                 ExtractSolidPartVisualization(part, Globals.EdgeAngle);
             else if (part.PartType == PartType.Shell || part.PartType == PartType.SolidAsShell)
                 ExtractShellPartVisualization(part, isCADPart: false, Globals.EdgeAngle);
+            else if (part.PartType == PartType.Unknown)
+                throw new NotSupportedException();
             //
             return part;
+        }
+        public BasePart[] CreateBasePartsByTypeFromElementIds(int[] elementIds)
+        {
+            HashSet<Type>[] partElementTypes = new HashSet<Type>[3];
+            HashSet<int>[] partNodeIds = new HashSet<int>[3];
+            HashSet<int>[] partElementIds = new HashSet<int>[3];
+            for (int i = 0; i < 3; i++)
+            {
+                partElementTypes[i] = new HashSet<Type>();
+                partNodeIds[i] = new HashSet<int>();
+                partElementIds[i] = new HashSet<int>();
+            }
+            //
+            int index;
+            FeElement element;
+            //
+            for (int i = 0; i < elementIds.Length; i++)
+            {
+                element = _elements[elementIds[i]];
+                if (element is FeElement3D) index = 0;
+                else if (element is FeElement2D) index = 1;
+                else if (element is FeElement1D) index = 2;
+                else throw new NotSupportedException();
+                //
+                partElementIds[index].Add(element.Id);
+                partElementTypes[index].Add(element.GetType());
+                partNodeIds[index].UnionWith(element.NodeIds);
+            }
+            BasePart part;
+            List<BasePart> parts = new List<BasePart>();
+            if (partElementIds[0].Count > 0)
+            {
+                part = new BasePart("Part-3D-from-element-Ids", -1, partNodeIds[0].ToArray(),
+                                    partElementIds[0].ToArray(), partElementTypes[0].ToArray());
+                parts.Add(part);
+            }
+            if (partElementIds[1].Count > 0)
+            {
+                part = new BasePart("Part-2D-from-element-Ids", -1, partNodeIds[1].ToArray(),
+                                    partElementIds[1].ToArray(), partElementTypes[1].ToArray());
+                parts.Add(part);
+            }
+            if (partElementIds[2].Count > 0)
+            {
+                part = new BasePart("Part-1D-from-element-Ids", -1, partNodeIds[2].ToArray(),
+                                    partElementIds[2].ToArray(), partElementTypes[2].ToArray());
+                parts.Add(part);
+            }
+            //
+            foreach (var newPart in parts)
+            {
+                if (newPart.PartType == PartType.Solid)
+                    ExtractSolidPartVisualization(newPart, Globals.EdgeAngle);
+                else if (newPart.PartType == PartType.Shell || newPart.PartType == PartType.SolidAsShell)
+                    ExtractShellPartVisualization(newPart, isCADPart: false, Globals.EdgeAngle);
+                else if (newPart.PartType == PartType.Unknown)
+                    throw new NotSupportedException();
+            }
+            //
+            return parts.ToArray();
         }
         public GeometryPart CreateGeometryPartFromElementIds(int[] elementIds)
         {
@@ -2755,7 +2817,7 @@ namespace CaeMesh
             }
         }
         // Exploded view
-        public Dictionary<string, double[]> GetExplodedViewOffsets1(int explodedType, double scaleFactor, string[] partNames = null)
+        public Dictionary<string, double[]> GetExplodedViewOffsets(int explodedType, double scaleFactor, string[] partNames = null)
         {
             //
             // https://stackoverflow.com/questions/3265986/an-algorithm-to-space-out-overlapping-rectangles
@@ -2827,55 +2889,6 @@ namespace CaeMesh
                 partOffsets.Add((string)(box.Tag), (offset * scaleFactor).Coor);
             }
             //
-            return partOffsets;
-        }
-       
-        public Dictionary<string, double[]> GetExplodedViewOffsets(int explodedType, double scaleFactor, string[] partNames = null)
-        {
-            return GetExplodedViewOffsets1(explodedType, scaleFactor, partNames);
-
-            BoundingBox bb = new BoundingBox();
-            BoundingBox partBb;
-            Dictionary<string, double[]> partOffsets = new Dictionary<string, double[]>();
-            HashSet<string> subPartNames = new HashSet<string>();
-            if (partNames == null) partNames = _parts.Keys.ToArray();
-            // Get bounding box of the assembly
-            foreach (var partName in partNames)
-            {
-                bb.IncludeBox(_parts[partName].BoundingBox);
-            }
-            // Get connected part names
-            List<List<BasePart>> allConnectedParts = GetAllConnectedParts(partNames);
-            //
-            double[] offset;
-            Vec3D v1;
-            Vec3D v2;
-            Vec3D center = new Vec3D(bb.GetCenter());
-            foreach (var connectedParts in allConnectedParts)
-            {
-                partBb = new BoundingBox();
-                foreach (var connectedPart in connectedParts)
-                {
-                    partBb.IncludeBox(connectedPart.BoundingBox);                
-                }
-
-                // Compute the offset
-                v1 = new Vec3D(partBb.GetCenter());
-                v2 = (v1 - center) * (scaleFactor);
-                offset = v2.Coor;
-                offset[0] = Tools.RoundToSignificantDigits(offset[0], 3);
-                offset[1] = Tools.RoundToSignificantDigits(offset[1], 3);
-                offset[2] = Tools.RoundToSignificantDigits(offset[2], 3);
-                // Set the offset type
-                if (explodedType == 1) offset[1] = offset[2] = 0;
-                else if (explodedType == 2) offset[0] = offset[2] = 0;
-                else if (explodedType == 3) offset[0] = offset[1] = 0;
-                // Set the offset
-                foreach (var connectedPart in connectedParts)
-                {
-                    partOffsets.Add(connectedPart.Name, offset);
-                }
-            }
             return partOffsets;
         }
         public void ApplyExplodedView(Dictionary<string, double[]> partOffsets)
@@ -4297,6 +4310,7 @@ namespace CaeMesh
                 for (int i = 0; i < entry.Value.Visualization.CellIds.Length; i++)
                 {
                     elementId = entry.Value.Visualization.CellIds[i];
+                    //
                     if (hashElementIds.Contains(elementId))
                     {
                         cell = entry.Value.Visualization.Cells[i];          // these are surface cells
@@ -4319,6 +4333,7 @@ namespace CaeMesh
                             else minNumberOfNodes = -1;
                         }
                         //
+                        edgeNodes.Clear();
                         foreach (int nodeId in cell)                        // maybe try the Intersect !!!
                         {
                             if (hashNodeIds.Contains(nodeId) && !(containsEdge && !freeEdgeNodeIds.Contains(nodeId)))
@@ -4465,7 +4480,41 @@ namespace CaeMesh
             //
             return globalVisualizationFaceIds.ToArray();
         }
-        public int[] GetVisibleVisualizationFaceIds()
+        public int[] GetVisualizationFaceIds(string partName, bool shellFrontFace)
+        {
+            // Get all visualization cell ids
+            int elementId;
+            int vtkCellId;
+            int[] cell;
+            FeElement element;
+            BasePart part;
+            HashSet<int> visualizationFaceIds = new HashSet<int>();
+            //
+            if (_parts.TryGetValue(partName, out part))
+            {
+                for (int i = 0; i < part.Visualization.CellIds.Length; i++)
+                {
+                    cell = part.Visualization.Cells[i];   // these are surface cells
+                    elementId = part.Visualization.CellIds[i];
+                    element = _elements[elementId];
+                    if (element is FeElement3D element3D)
+                    {
+                        vtkCellId = element3D.GetVtkCellIdFromCell(cell);
+                        if (vtkCellId != -1) visualizationFaceIds.Add(10 * elementId + vtkCellId);
+                        else throw new Exception();
+                    }
+                    else if (element is FeElement2D) // shell nad geometry
+                    {
+                        vtkCellId = shellFrontFace ? 1 : 0;
+                        visualizationFaceIds.Add(10 * elementId + vtkCellId);
+                    }
+                    else throw new NotSupportedException();
+                }
+            }
+            //
+            return visualizationFaceIds.ToArray();
+        }
+        public int[] GetVisibleVisualizationFaceIds(bool shellFrontFace = true)
         {
             // Get all visualization cell ids
             int elementId;
@@ -4473,7 +4522,7 @@ namespace CaeMesh
             int[] cell;
             FeElement element;
             HashSet<int> visualizationFaceIds = new HashSet<int>();
-
+            //
             foreach (var entry in _parts)
             {
                 if (entry.Value.Visible)
@@ -4488,6 +4537,11 @@ namespace CaeMesh
                             vtkCellId = element3D.GetVtkCellIdFromCell(cell);
                             if (vtkCellId != -1) visualizationFaceIds.Add(10 * elementId + vtkCellId);
                             else throw new Exception();
+                        }
+                        else if (element is FeElement2D) // shell nad geometry
+                        {
+                            vtkCellId = shellFrontFace ? 1 : 0;
+                            visualizationFaceIds.Add(10 * elementId + vtkCellId);
                         }
                         else throw new NotSupportedException();
                     }
@@ -4586,7 +4640,7 @@ namespace CaeMesh
             geometryId = itemId * 100000 + typeId * 10000 + partId;
             return geometryId;
         }
-        public int[] GetGeometryIds(int[] nodeIds, int[] elementIds)
+        public int[] GetGeometryIds(int[] elementIds)
         {
             // geometryId = itemId * 100000 + typeId * 10000 + partId       
             int itemId = -1;
@@ -4952,6 +5006,10 @@ namespace CaeMesh
                     bool shellFrontFace = geomType == GeometryType.ShellFrontSurface;
                     return GetVisualizationFaceIds(itemTypePartIds[0], itemTypePartIds[2], shellFrontFace);
                 }
+                else if (geomType == GeometryType.Part)
+                {
+                    return GetVisualizationFaceIds(part.Name, true);
+                }
                 else return new int[] { };
             }
             else if (selectItem == vtkSelectItem.Part)
@@ -4992,6 +5050,10 @@ namespace CaeMesh
                     nodeIds.UnionWith(vis.Cells[cellId]);
                 }
             }
+            else if (geomType == GeometryType.Part)
+            {
+                nodeIds.UnionWith(part.NodeLabels);
+            }
             else throw new NotSupportedException();
             //
             return nodeIds.ToArray();
@@ -5003,10 +5065,11 @@ namespace CaeMesh
             GeometryType geomType = (GeometryType)itemTypePartIds[1];
             if (geomType == GeometryType.Vertex) { }
             else if (geomType == GeometryType.Edge ||
-                geomType == GeometryType.ShellEdgeSurface) containsEdge = true;
+                     geomType == GeometryType.ShellEdgeSurface) containsEdge = true;
             else if (geomType == GeometryType.SolidSurface ||
                      geomType == GeometryType.ShellFrontSurface ||
-                     geomType == GeometryType.ShellBackSurface) containsFace = true;
+                     geomType == GeometryType.ShellBackSurface ||
+                     geomType == GeometryType.Part) containsFace = true;
             else throw new NotSupportedException();
             //
             int[] nodeIds = GetNodeIdsFromGeometryId(geometryId);
@@ -5120,6 +5183,17 @@ namespace CaeMesh
                     {
                         cellsList.Add(vis.Cells[cellId]);
                     }
+                }
+            }
+            else if (geomType == GeometryType.Part)
+            {
+                if (edgeRepresentation)
+                {
+                    cellsList.AddRange(vis.EdgeCells);
+                }
+                else
+                {
+                    cellsList.AddRange(vis.Cells);
                 }
             }
             else throw new NotSupportedException();
@@ -5332,6 +5406,11 @@ namespace CaeMesh
             int typeId = (geometryId / 10000) % 10;     // GeometryType
             int itemId = geometryId / 100000;
             return new int[] { itemId, typeId, partId };
+        }
+        public static int GetGeometryPartIdFromGeometryId(int geometryId)
+        {
+            int[] itemTypePartIds = GetItemTypePartIdsFromGeometryId(geometryId);
+            return itemTypePartIds[0] * 100000 + (int)GeometryType.Part * 10000 + itemTypePartIds[2];
         }
         //
         private int GetNextEdgeNodeId(int n1Id, int n2Id, HashSet<int> n2Neighbours, double angle)

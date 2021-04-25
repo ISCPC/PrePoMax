@@ -90,34 +90,41 @@ namespace PrePoMax.Forms
         }
         private void btnAdd_Click(object sender, EventArgs e)
         {
-            if (tvProperties.SelectedNode != null && tvProperties.SelectedNode.Tag != null)
+            if (tvProperties.SelectedNodes != null)
             {
-                string propertyText = tvProperties.SelectedNode.Text;
-                //
-                ListViewItem existingItem = null;
-                if (lvAddedProperties.Items.Count > 0)
-                    existingItem = lvAddedProperties.FindItemWithText(propertyText, true, 0, false);
-                //
-                if (existingItem == null)
+                foreach (TreeNode treeNode in tvProperties.SelectedNodes)
                 {
-                    ListViewItem item = new ListViewItem(propertyText);
-                    if (tvProperties.SelectedNode.Tag is MaterialProperty mp)
+                    if (treeNode.Tag != null)
                     {
-                        if (mp is Density de) item.Tag = new ViewDensity(de.DeepClone());
-                        else if (mp is Elastic el) item.Tag = new ViewElastic(el.DeepClone());
-                        else if (mp is Plastic pl) item.Tag = new ViewPlastic(pl.DeepClone());
-                        else if (mp is ThermalExpansion te) item.Tag = new ViewThermalExpansion(te.DeepClone());
-                        else if (mp is ThermalConductivity tc) item.Tag = new ViewThermalConductivity(tc.DeepClone());
-                        else if (mp is SpecificHeat sh) item.Tag = new ViewSpecificHeat(sh.DeepClone());
-                        else throw new NotSupportedException();
+                        string propertyText = treeNode.Text;
+                        //
+                        ListViewItem existingItem = null;
+                        if (lvAddedProperties.Items.Count > 0)
+                            existingItem = lvAddedProperties.FindItemWithText(propertyText, true, 0, false);
+                        //
+                        if (existingItem == null)
+                        {
+                            ListViewItem item = new ListViewItem(propertyText);
+                            if (treeNode.Tag is MaterialProperty mp)
+                            {
+                                if (mp is Density de) item.Tag = new ViewDensity(de.DeepClone());
+                                else if (mp is Elastic el) item.Tag = new ViewElastic(el.DeepClone());
+                                else if (mp is Plastic pl) item.Tag = new ViewPlastic(pl.DeepClone());
+                                else if (mp is ThermalExpansion te) item.Tag = new ViewThermalExpansion(te.DeepClone());
+                                else if (mp is ThermalConductivity tc) item.Tag = new ViewThermalConductivity(tc.DeepClone());
+                                else if (mp is SpecificHeat sh) item.Tag = new ViewSpecificHeat(sh.DeepClone());
+                                else throw new NotSupportedException();
+                            }
+                            else throw new NotSupportedException();
+                            //
+                            lvAddedProperties.Items.Add(item);
+                            int id = lvAddedProperties.Items.IndexOf(item);
+                            lvAddedProperties.Items[id].Selected = true;
+                            lvAddedProperties.Select();
+                        }
                     }
-                    else throw new NotSupportedException();
-                    //
-                    lvAddedProperties.Items.Add(item);
-                    int id = lvAddedProperties.Items.IndexOf(item);
-                    lvAddedProperties.Items[id].Selected = true;
-                    lvAddedProperties.Select();
                 }
+                tvProperties.SelectedNodes.Clear();
             }
             _propertyItemChanged = true;
         }
@@ -125,8 +132,12 @@ namespace PrePoMax.Forms
         {
             if (lvAddedProperties.SelectedItems.Count == 1)
             {
-                lvAddedProperties.SelectedItems[0].Remove();
-                if (lvAddedProperties.Items.Count > 0) lvAddedProperties.Items[0].Selected = true;
+                ListViewItem item = lvAddedProperties.SelectedItems[0];
+                int index = item.Index;
+                if (index == lvAddedProperties.Items.Count - 1) index--;
+                item.Remove();
+                //
+                if (lvAddedProperties.Items.Count > 0) lvAddedProperties.Items[index].Selected = true;
                 else ClearControls();
             }
             _propertyItemChanged = true;

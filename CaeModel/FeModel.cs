@@ -23,6 +23,7 @@ namespace CaeModel
         private OrderedDictionary<string, Constraint> _constraints;                             //ISerializable
         private OrderedDictionary<string, SurfaceInteraction> _surfaceInteractions;             //ISerializable
         private OrderedDictionary<string, ContactPair> _contactPairs;                           //ISerializable
+        private OrderedDictionary<string, InitialCondition> _initialConditions;                 //ISerializable
         private StepCollection _stepCollection;                                                 //ISerializable
         private OrderedDictionary<int[], Calculix.CalculixUserKeyword> _calculixUserKeywords;   //ISerializable
         private ModelProperties _properties;                                                    //ISerializable
@@ -39,6 +40,7 @@ namespace CaeModel
         public OrderedDictionary<string, Constraint> Constraints { get { return _constraints; } }
         public OrderedDictionary<string, SurfaceInteraction> SurfaceInteractions { get { return _surfaceInteractions; } }
         public OrderedDictionary<string, ContactPair> ContactPairs { get { return _contactPairs; } }
+        public OrderedDictionary<string, InitialCondition> InitialConditions { get { return _initialConditions; } }
         public StepCollection StepCollection { get { return _stepCollection; } }
         public OrderedDictionary<int[], Calculix.CalculixUserKeyword> CalculixUserKeywords 
         { 
@@ -62,6 +64,7 @@ namespace CaeModel
             _constraints = new OrderedDictionary<string, Constraint>();
             _surfaceInteractions = new OrderedDictionary<string, SurfaceInteraction>();
             _contactPairs = new OrderedDictionary<string, ContactPair>();
+            _initialConditions = new OrderedDictionary<string, InitialCondition>();
             _stepCollection = new StepCollection();
             _unitSystem = new UnitSystem();
         }
@@ -76,6 +79,8 @@ namespace CaeModel
             _unitSystem = new UnitSystem();
             // Compatibility for version v.0.8.0
             _hashName = Tools.GetRandomString(8);
+            // Compatibility for version v.1.0.0
+            _initialConditions = new OrderedDictionary<string, InitialCondition>();
             //
             foreach (SerializationEntry entry in info)
             {
@@ -125,6 +130,8 @@ namespace CaeModel
                         _surfaceInteractions = (OrderedDictionary<string, SurfaceInteraction>)entry.Value; break;
                     case "_contactPairs":
                         _contactPairs = (OrderedDictionary<string, ContactPair>)entry.Value; break;
+                    case "_initialConditions":
+                        _initialConditions = (OrderedDictionary<string, InitialCondition>)entry.Value; break;
                     case "_stepCollection":
                         _stepCollection = (StepCollection)entry.Value; break;
                     case "_calculixUserKeywords":
@@ -262,6 +269,13 @@ namespace CaeModel
                 //
                 SetItemValidity(null, contactPair, valid, items);
                 if (!valid && contactPair.Active) invalidItems.Add("Contact pair: " + contactPair.Name);
+            }
+            // Initial conditions
+            InitialCondition initialCondition;
+            foreach (var entry in _initialConditions)
+            {
+                initialCondition = entry.Value;
+                throw new NotSupportedException();
             }
             // Steps
             HistoryOutput historyOutput;
@@ -907,6 +921,7 @@ namespace CaeModel
             info.AddValue("_constraints", _constraints, typeof(OrderedDictionary<string, Constraint>));
             info.AddValue("_surfaceInteractions", _surfaceInteractions, typeof(OrderedDictionary<string, SurfaceInteraction>));
             info.AddValue("_contactPairs", _contactPairs, typeof(OrderedDictionary<string, ContactPair>));
+            info.AddValue("_initialConditions", _initialConditions, typeof(OrderedDictionary<string, InitialCondition>));
             info.AddValue("_stepCollection", _stepCollection, typeof(StepCollection));
             info.AddValue("_calculixUserKeywords", _calculixUserKeywords, typeof(OrderedDictionary<int[], Calculix.CalculixUserKeyword>));
             info.AddValue("_properties", _properties, typeof(ModelProperties));

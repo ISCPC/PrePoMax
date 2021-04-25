@@ -164,6 +164,7 @@ namespace vtkControl
                         case vtkSelectBy.Part:
                         // Geometry
                         case vtkSelectBy.Geometry:
+                        case vtkSelectBy.GeometryPart:
                             _style.RubberBandEnabled = true;
                             break;
                         // Mesh based
@@ -420,6 +421,9 @@ namespace vtkControl
                             break;
                         case vtkSelectBy.GeometrySurfaceAngle:
                             PickBySurface(out pickedActor, x1, y1, false);
+                            break;
+                        case vtkSelectBy.GeometryPart:
+                            PickByActor(out pickedActor, x1, y1);
                             break;
                         case vtkSelectBy.QueryNode:
                             PickByNode(out pickedActor, x1, y1, true);
@@ -1186,9 +1190,8 @@ namespace vtkControl
                     _mouseSelectionCurrentIds = data.Geometry.Cells.Ids;
                     _mouseSelectionActorCurrent = new vtkMaxActor(data, true, false);
                 }
-                else if (_selectBy == vtkSelectBy.Part)
+                else if (_selectBy == vtkSelectBy.Part || _selectBy == vtkSelectBy.GeometryPart)
                 {
-                    //_mouseSelectionCurrentIds = ???;
                     _mouseSelectionActorCurrent = GetCopyOfModelEdgesActor(pickedActorNames);
                     //
                     if (_mouseSelectionActorCurrent == null) return;

@@ -157,6 +157,9 @@
     <Compile Include="Command\0073_ContactPair\CRemoveContactPairs.cs" />
     <Compile Include="Command\0073_ContactPair\CReplaceContactPair.cs" />
     <Compile Include="Command\0073_ContactPair\CShowContactPairs.cs" />
+    <Compile Include="Command\0074_InitialCondition\CAddInitialCondition.cs" />
+    <Compile Include="Command\0074_InitialCondition\CRemoveInitialConditions.cs" />
+    <Compile Include="Command\0074_InitialCondition\CReplaceInitialCondition.cs" />
     <Compile Include="Command\0081_Step\CAddStep.cs" />
     <Compile Include="Command\0081_Step\CDuplicateSteps.cs" />
     <Compile Include="Command\0081_Step\CRemoveSteps.cs" />
@@ -740,6 +743,7 @@
   <ItemGroup>
     <Folder Include="Command\0020_View\" />
     <Folder Include="Command\0110_Tools\" />
+    <Folder Include="Forms\36_InitialConditions\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -29,24 +29,24 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.TreeNode treeNode21 = new System.Windows.Forms.TreeNode("Density");
-            System.Windows.Forms.TreeNode treeNode22 = new System.Windows.Forms.TreeNode("General", new System.Windows.Forms.TreeNode[] {
-            treeNode21});
-            System.Windows.Forms.TreeNode treeNode23 = new System.Windows.Forms.TreeNode("Elastic");
-            System.Windows.Forms.TreeNode treeNode24 = new System.Windows.Forms.TreeNode("Elasticity", new System.Windows.Forms.TreeNode[] {
-            treeNode23});
-            System.Windows.Forms.TreeNode treeNode25 = new System.Windows.Forms.TreeNode("Plastic");
-            System.Windows.Forms.TreeNode treeNode26 = new System.Windows.Forms.TreeNode("Plasticity", new System.Windows.Forms.TreeNode[] {
-            treeNode25});
-            System.Windows.Forms.TreeNode treeNode27 = new System.Windows.Forms.TreeNode("Thermal expansion");
-            System.Windows.Forms.TreeNode treeNode28 = new System.Windows.Forms.TreeNode("Thermal conductivity");
-            System.Windows.Forms.TreeNode treeNode29 = new System.Windows.Forms.TreeNode("Specific heat");
-            System.Windows.Forms.TreeNode treeNode30 = new System.Windows.Forms.TreeNode("Thermal", new System.Windows.Forms.TreeNode[] {
-            treeNode27,
-            treeNode28,
-            treeNode29});
+            System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("Density");
+            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("General", new System.Windows.Forms.TreeNode[] {
+            treeNode1});
+            System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("Elastic");
+            System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("Elasticity", new System.Windows.Forms.TreeNode[] {
+            treeNode3});
+            System.Windows.Forms.TreeNode treeNode5 = new System.Windows.Forms.TreeNode("Plastic");
+            System.Windows.Forms.TreeNode treeNode6 = new System.Windows.Forms.TreeNode("Plasticity", new System.Windows.Forms.TreeNode[] {
+            treeNode5});
+            System.Windows.Forms.TreeNode treeNode7 = new System.Windows.Forms.TreeNode("Thermal expansion");
+            System.Windows.Forms.TreeNode treeNode8 = new System.Windows.Forms.TreeNode("Thermal conductivity");
+            System.Windows.Forms.TreeNode treeNode9 = new System.Windows.Forms.TreeNode("Specific heat");
+            System.Windows.Forms.TreeNode treeNode10 = new System.Windows.Forms.TreeNode("Thermal", new System.Windows.Forms.TreeNode[] {
+            treeNode7,
+            treeNode8,
+            treeNode9});
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            this.tvProperties = new System.Windows.Forms.TreeView();
+            this.tvProperties = new UserControls.CodersLabTreeView();
             this.propertyGrid = new UserControls.TabbedPropertyGrid();
             this.btnOK = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
@@ -57,12 +57,12 @@
             this.tbName = new System.Windows.Forms.TextBox();
             this.lName = new System.Windows.Forms.Label();
             this.gbProperties = new System.Windows.Forms.GroupBox();
-            this.btnMoveDown = new System.Windows.Forms.Button();
-            this.btnMoveUp = new System.Windows.Forms.Button();
             this.tcProperties = new System.Windows.Forms.TabControl();
             this.tpProperties = new System.Windows.Forms.TabPage();
             this.tpDataPoints = new System.Windows.Forms.TabPage();
             this.dgvData = new UserControls.DataGridViewCopyPaste();
+            this.btnMoveDown = new System.Windows.Forms.Button();
+            this.btnMoveUp = new System.Windows.Forms.Button();
             this.labSelected = new System.Windows.Forms.Label();
             this.labAvailable = new System.Windows.Forms.Label();
             this.btnAdd = new System.Windows.Forms.Button();
@@ -79,43 +79,48 @@
             // 
             // tvProperties
             // 
+            this.tvProperties.DisableMouse = false;
             this.tvProperties.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.tvProperties.HideSelection = false;
+            this.tvProperties.HighlightForeErrorColor = System.Drawing.Color.Red;
             this.tvProperties.Location = new System.Drawing.Point(6, 37);
             this.tvProperties.Name = "tvProperties";
-            treeNode21.Name = "Density";
-            treeNode21.Text = "Density";
-            treeNode21.ToolTipText = "Density";
-            treeNode22.Name = "General";
-            treeNode22.Text = "General";
-            treeNode23.Name = "Elastic";
-            treeNode23.Text = "Elastic";
-            treeNode23.ToolTipText = "Elastic";
-            treeNode24.Name = "Elasticity";
-            treeNode24.Text = "Elasticity";
-            treeNode24.ToolTipText = "Elasticity";
-            treeNode25.Name = "Plastic";
-            treeNode25.Text = "Plastic";
-            treeNode25.ToolTipText = "Plastic";
-            treeNode26.Name = "Plasticity";
-            treeNode26.Text = "Plasticity";
-            treeNode26.ToolTipText = "Plasticity";
-            treeNode27.Name = "ThermalExpansion";
-            treeNode27.Text = "Thermal expansion";
-            treeNode27.ToolTipText = "Thermal expansion";
-            treeNode28.Name = "ThermalConductivity";
-            treeNode28.Text = "Thermal conductivity";
-            treeNode28.ToolTipText = "Thermal conductivity";
-            treeNode29.Name = "SpecificHeat";
-            treeNode29.Text = "Specific heat";
-            treeNode29.ToolTipText = "Specific heat";
-            treeNode30.Name = "Thermal";
-            treeNode30.Text = "Thermal";
-            treeNode30.ToolTipText = "Thermal";
+            treeNode1.Name = "Density";
+            treeNode1.Text = "Density";
+            treeNode1.ToolTipText = "Density";
+            treeNode2.Name = "General";
+            treeNode2.Text = "General";
+            treeNode3.Name = "Elastic";
+            treeNode3.Text = "Elastic";
+            treeNode3.ToolTipText = "Elastic";
+            treeNode4.Name = "Elasticity";
+            treeNode4.Text = "Elasticity";
+            treeNode4.ToolTipText = "Elasticity";
+            treeNode5.Name = "Plastic";
+            treeNode5.Text = "Plastic";
+            treeNode5.ToolTipText = "Plastic";
+            treeNode6.Name = "Plasticity";
+            treeNode6.Text = "Plasticity";
+            treeNode6.ToolTipText = "Plasticity";
+            treeNode7.Name = "ThermalExpansion";
+            treeNode7.Text = "Thermal expansion";
+            treeNode7.ToolTipText = "Thermal expansion";
+            treeNode8.Name = "ThermalConductivity";
+            treeNode8.Text = "Thermal conductivity";
+            treeNode8.ToolTipText = "Thermal conductivity";
+            treeNode9.Name = "SpecificHeat";
+            treeNode9.Text = "Specific heat";
+            treeNode9.ToolTipText = "Specific heat";
+            treeNode10.Name = "Thermal";
+            treeNode10.Text = "Thermal";
+            treeNode10.ToolTipText = "Thermal";
             this.tvProperties.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
-            treeNode22,
-            treeNode24,
-            treeNode26,
-            treeNode30});
+            treeNode2,
+            treeNode4,
+            treeNode6,
+            treeNode10});
+            this.tvProperties.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            this.tvProperties.SelectionMode = UserControls.TreeViewSelectionMode.MultiSelectSameLevel;
             this.tvProperties.Size = new System.Drawing.Size(192, 185);
             this.tvProperties.TabIndex = 2;
             this.tvProperties.DoubleClick += new System.EventHandler(this.tvProperties_DoubleClick);
@@ -246,28 +251,6 @@
             this.gbProperties.TabStop = false;
             this.gbProperties.Text = "Material models";
             // 
-            // btnMoveDown
-            // 
-            this.btnMoveDown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnMoveDown.Image = global::PrePoMax.Properties.Resources.Down_arrow;
-            this.btnMoveDown.Location = new System.Drawing.Point(431, 67);
-            this.btnMoveDown.Name = "btnMoveDown";
-            this.btnMoveDown.Size = new System.Drawing.Size(24, 24);
-            this.btnMoveDown.TabIndex = 13;
-            this.btnMoveDown.UseVisualStyleBackColor = true;
-            this.btnMoveDown.Click += new System.EventHandler(this.btnMoveDown_Click);
-            // 
-            // btnMoveUp
-            // 
-            this.btnMoveUp.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnMoveUp.Image = global::PrePoMax.Properties.Resources.Up_arrow;
-            this.btnMoveUp.Location = new System.Drawing.Point(431, 37);
-            this.btnMoveUp.Name = "btnMoveUp";
-            this.btnMoveUp.Size = new System.Drawing.Size(24, 24);
-            this.btnMoveUp.TabIndex = 12;
-            this.btnMoveUp.UseVisualStyleBackColor = true;
-            this.btnMoveUp.Click += new System.EventHandler(this.btnMoveUp_Click);
-            // 
             // tcProperties
             // 
             this.tcProperties.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -325,6 +308,28 @@
             this.dgvData.TabIndex = 0;
             this.dgvData.XColIndex = 0;
             this.dgvData.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dgvData_DataError);
+            // 
+            // btnMoveDown
+            // 
+            this.btnMoveDown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnMoveDown.Image = global::PrePoMax.Properties.Resources.Down_arrow;
+            this.btnMoveDown.Location = new System.Drawing.Point(431, 67);
+            this.btnMoveDown.Name = "btnMoveDown";
+            this.btnMoveDown.Size = new System.Drawing.Size(24, 24);
+            this.btnMoveDown.TabIndex = 13;
+            this.btnMoveDown.UseVisualStyleBackColor = true;
+            this.btnMoveDown.Click += new System.EventHandler(this.btnMoveDown_Click);
+            // 
+            // btnMoveUp
+            // 
+            this.btnMoveUp.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnMoveUp.Image = global::PrePoMax.Properties.Resources.Up_arrow;
+            this.btnMoveUp.Location = new System.Drawing.Point(431, 37);
+            this.btnMoveUp.Name = "btnMoveUp";
+            this.btnMoveUp.Size = new System.Drawing.Size(24, 24);
+            this.btnMoveUp.TabIndex = 12;
+            this.btnMoveUp.UseVisualStyleBackColor = true;
+            this.btnMoveUp.Click += new System.EventHandler(this.btnMoveUp_Click);
             // 
             // labSelected
             // 
@@ -426,7 +431,7 @@
 
         #endregion
 
-        private System.Windows.Forms.TreeView tvProperties;
+        private UserControls.CodersLabTreeView tvProperties;
         private UserControls.TabbedPropertyGrid propertyGrid;
         private System.Windows.Forms.Button btnOK;
         private System.Windows.Forms.Button btnCancel;

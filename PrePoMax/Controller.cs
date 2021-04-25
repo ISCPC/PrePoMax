@@ -3500,7 +3500,7 @@ namespace PrePoMax
             _form.AddTreeNode(ViewGeometryModelResults.Model, nodeSet, null);
             //
             UpdateSurfacesBasedOnNodeSet(nodeSet.Name);
-            UpdateReferencePointsDependentOnNodeSet(nodeSet.Name);
+            UpdateReferencePointsBasedOnNodeSet(nodeSet.Name);
             //
             FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
@@ -3535,7 +3535,7 @@ namespace PrePoMax
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldNodeSetName, nodeSet, null);
             //
             UpdateSurfacesBasedOnNodeSet(nodeSet.Name);
-            UpdateReferencePointsDependentOnNodeSet(nodeSet.Name);
+            UpdateReferencePointsBasedOnNodeSet(nodeSet.Name);
             //
             if (feModelUpdate) FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
@@ -3559,7 +3559,7 @@ namespace PrePoMax
                 {
                     if (!nodeSet.Internal) _form.RemoveTreeNode<FeNodeSet>(ViewGeometryModelResults.Model, name, null);
                     UpdateSurfacesBasedOnNodeSet(name);
-                    UpdateReferencePointsDependentOnNodeSet(name);
+                    UpdateReferencePointsBasedOnNodeSet(name);
                 }
             }
             //
@@ -3982,7 +3982,7 @@ namespace PrePoMax
             //
             _form.AddTreeNode(ViewGeometryModelResults.Model, surface, null);
             //
-            UpdateReferencePointsDependentOnSurface(surface.Name);
+            UpdateReferencePointsBasedOnSurface(surface.Name);
             //
             FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
@@ -4021,7 +4021,7 @@ namespace PrePoMax
             //
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldSurfaceName, surface, null);
             //
-            UpdateReferencePointsDependentOnSurface(surface.Name);
+            UpdateReferencePointsBasedOnSurface(surface.Name);
             //
             if (feModelUpdate) FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
@@ -4033,7 +4033,7 @@ namespace PrePoMax
             {
                 if (!surface.Internal) _form.RemoveTreeNode<FeSurface>(ViewGeometryModelResults.Model, surface.Name, null);
                 //
-                UpdateReferencePointsDependentOnSurface(surface.Name);
+                UpdateReferencePointsBasedOnSurface(surface.Name);
             }
             //
             if (update) FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
@@ -4252,7 +4252,7 @@ namespace PrePoMax
         {
             _model.Mesh.UpdateReferencePoint(referencePoint);
         }
-        private void UpdateReferencePointsDependentOnNodeSet(string nodeSetName)
+        private void UpdateReferencePointsBasedOnNodeSet(string nodeSetName)
         {
             if (_model != null && _model.Mesh != null)
             {
@@ -4265,7 +4265,7 @@ namespace PrePoMax
                 }
             }
         }
-        private void UpdateReferencePointsDependentOnSurface(string surfaceName)
+        private void UpdateReferencePointsBasedOnSurface(string surfaceName)
         {
             if (_model != null && _model.Mesh != null)
             {
@@ -4399,7 +4399,7 @@ namespace PrePoMax
             if (state.HasFlag(_annotateWithColor)) FeModelUpdate(UpdateType.DrawModel);
             else AnnotateWithColorLegend();
             //
-            CheckAndUpdateValidity();
+            CheckAndUpdateValidity();   // Check the model in both cases: FeModelUpdate and AnnotateWithColorLegend
         }
         public Section GetSection(string sectionName)
         {
@@ -4484,7 +4484,7 @@ namespace PrePoMax
 
         #endregion #################################################################################################################
 
-        #region Constraints menu   #################################################################################################
+        #region Constraint menu   ##################################################################################################
         // COMMANDS ********************************************************************************
         public void AddConstraintCommand(Constraint constraint)
         {
@@ -4672,7 +4672,7 @@ namespace PrePoMax
 
         #endregion #################################################################################################################
 
-        #region Surface Interaction menu   #########################################################################################
+        #region Surface interaction menu   #########################################################################################
         // COMMANDS ********************************************************************************
         public void AddSurfaceInteractionCommand(SurfaceInteraction surfaceInteraction)
         {
@@ -4902,7 +4902,117 @@ namespace PrePoMax
             if (contactPair.SlaveCreationData != null && contactPair.SlaveRegionName != null)
                 RemoveSurfaces(new string[] { contactPair.SlaveRegionName }, false);
         }
+        
+        #endregion #################################################################################################################
 
+        #region Initial condition menu   ###########################################################################################
+        // COMMANDS ********************************************************************************
+        public void AddInitialConditionCommand(InitialCondition initialCondition)
+        {
+            Commands.CAddInitialCondition comm = new Commands.CAddInitialCondition(initialCondition);
+            _commands.AddAndExecute(comm);
+        }
+        public void ReplaceInitialConditionCommand(string oldInitialConditionName, InitialCondition newInitialCondition)
+        {
+            Commands.CReplaceInitialCondition comm = new Commands.CReplaceInitialCondition(oldInitialConditionName,
+                                                                                           newInitialCondition);
+            _commands.AddAndExecute(comm);
+        }
+        public void RemoveInitialConditionsCommand(string[] initialConditionNames)
+        {
+            Commands.CRemoveInitialConditions comm = new Commands.CRemoveInitialConditions(initialConditionNames);
+            _commands.AddAndExecute(comm);
+        }
+
+        //******************************************************************************************
+
+        public string[] GetInitialConditionNames()
+        {
+            return _model.InitialConditions.Keys.ToArray();
+        }
+        public void AddInitialCondition(InitialCondition initialCondition)
+        {
+            ConvertSelectionBasedInitialCondition(initialCondition);
+            //
+            _model.InitialConditions.Add(initialCondition.Name, initialCondition);
+            //
+            _form.AddTreeNode(ViewGeometryModelResults.Model, initialCondition, null);
+            //
+            FeModelUpdate(UpdateType.Check);
+        }
+        public InitialCondition GetInitialCondition(string initialConditionName)
+        {
+            return _model.InitialConditions[initialConditionName];
+        }
+        public InitialCondition[] GetAllInitialConditions()
+        {
+            return _model.InitialConditions.Values.ToArray();
+        }
+        public void ReplaceInitialCondition(string oldInitialConditionName, InitialCondition initialCondition)
+        {
+            DeleteSelectionBasedInitialConditionSets(oldInitialConditionName);
+            ConvertSelectionBasedInitialCondition(initialCondition);
+            //
+            _model.InitialConditions.Replace(oldInitialConditionName, initialCondition.Name, initialCondition);
+            //
+            _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldInitialConditionName, initialCondition, null);
+            //
+            FeModelUpdate(UpdateType.Check);
+        }
+        public void RemoveInitialConditions(string[] initialConditionNames)
+        {
+            foreach (var name in initialConditionNames)
+            {
+                DeleteSelectionBasedInitialConditionSets(name);
+                _model.InitialConditions.Remove(name);
+                _form.RemoveTreeNode<InitialCondition>(ViewGeometryModelResults.Model, name, null);
+            }
+            //
+            FeModelUpdate(UpdateType.Check);
+        }
+        //
+        private void ConvertSelectionBasedInitialCondition(InitialCondition initialCondition)
+        {
+            // Create a named set and convert a selection to a named set
+            if (initialCondition.RegionType == RegionTypeEnum.Selection)
+            {
+                //string name;
+                //// Element set output
+                //if (initialCondition is SolidSection || initialCondition is ShellSection)
+                //{
+                //    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.ElementSets) + initialCondition.Name;
+                //    // For
+                //    bool createdByPart = initialCondition.CreationData != null && initialCondition.CreationData.SelectItem == vtkSelectItem.Part;
+                //    FeElementSet elementSet = new FeElementSet(name, initialCondition.CreationIds, createdByPart);
+                //    elementSet.CreationData = initialCondition.CreationData.DeepClone();
+                //    elementSet.Internal = true;
+                //    AddElementSet(elementSet);
+                //    //
+                //    initialCondition.RegionName = name;
+                //    initialCondition.RegionType = RegionTypeEnum.ElementSetName;
+                //}
+                //else
+                throw new NotSupportedException();
+            }
+            // Clear the creation data if not used
+            else
+            {
+                initialCondition.CreationData = null;
+                initialCondition.CreationIds = null;
+            }
+        }
+        private void DeleteSelectionBasedInitialConditionSets(string oldInitialConditionName)
+        {
+            // Delete previously created sets
+            InitialCondition initialCondition = GetInitialCondition(oldInitialConditionName);
+            if (initialCondition.CreationData != null && initialCondition.RegionName != null)
+            {
+                //if (initialCondition is SolidSection || initialCondition is ShellSection) RemoveElementSets(new string[] { initialCondition.RegionName });
+                //else
+                throw new NotSupportedException();
+            }
+        }
+        
         #endregion #################################################################################################################
 
         #region Step menu   ########################################################################################################
@@ -5809,7 +5919,7 @@ namespace PrePoMax
 
         #endregion #################################################################################################################
 
-        #region Result Part menu  ##################################################################################################
+        #region Result part menu  ##################################################################################################
         public string[] GetResultPartNames()
         {
             return _results.Mesh.Parts.Keys.ToArray();
@@ -6497,6 +6607,11 @@ namespace PrePoMax
             else if (_selection.SelectItem == vtkSelectItem.Geometry)
             {
                 ids = GetIdsFromFrustumFromGeometrySelection(selectionNodeMouse.PlaneParameters, partNames);
+                if (selectionNodeMouse.SelectBy == vtkSelectBy.GeometryPart)
+                {
+                    // Convert any geometry id to geometry part id
+                    for (int i = 0; i < ids.Length; i++) ids[i] = FeMesh.GetGeometryPartIdFromGeometryId(ids[i]);
+                }
             }
             else throw new NotSupportedException();
             //
@@ -6710,6 +6825,12 @@ namespace PrePoMax
             {
                 ids = GetGeometrySurfaceIdsByAngle(pickedPoint, selectionDirection, angle, selectionOnPartId);
             }
+            else if (selectBy == vtkSelectBy.GeometryPart)
+            {
+                int selectedGeomId = GetGeometryId(pickedPoint, selectionDirection, selectionOnPartId, precision);
+                // Convert any geometry id to geometry part id
+                return new int[] { FeMesh.GetGeometryPartIdFromGeometryId(selectedGeomId) };
+            }
             else throw new NotSupportedException();
             //
             return ids;
@@ -6736,13 +6857,13 @@ namespace PrePoMax
                     return data.Geometry.Nodes.Ids;
                 }
             }
-            else if (selectBy == vtkSelectBy.Part)
+            else if (selectBy == vtkSelectBy.Part || selectBy == vtkSelectBy.GeometryPart)
             {
                 if (elementIds.Length > 0)
                 {
-                    int[] partIdsByElements = mesh.GetPartIdsByElementIds(elementIds);
+                    string[] partNamesByElementId = mesh.GetPartNamesByElementIds(elementIds);
                     HashSet<int> partNodeIds = new HashSet<int>();
-                    foreach (var partId in partIdsByElements) partNodeIds.UnionWith(mesh.GetPartById(partId).NodeLabels);
+                    foreach (var partName in partNamesByElementId) partNodeIds.UnionWith(mesh.Parts[partName].NodeLabels);
                     return partNodeIds.ToArray();
                 }
             }
@@ -6750,7 +6871,7 @@ namespace PrePoMax
             {
                 if (elementIds.Length > 0)
                 {
-                    int[] ids = mesh.GetGeometryIds(nodeIds, elementIds);
+                    int[] ids = mesh.GetGeometryIds(elementIds);
                     ids = mesh.GetIdsFromGeometryIds(ids, vtkSelectItem.Node);
                     return ids;
                 }
@@ -6777,7 +6898,7 @@ namespace PrePoMax
                 vtkControl.vtkMaxActorData data = GetCellActorData(elementIds, nodeIds);
                 return data.Geometry.Cells.Ids;
             }
-            else if (selectBy == vtkSelectBy.Part)
+            else if (selectBy == vtkSelectBy.Part || selectBy == vtkSelectBy.GeometryPart)
             {
                 if (elementIds.Length > 0)
                 {
@@ -6791,7 +6912,7 @@ namespace PrePoMax
             {
                 if (elementIds.Length > 0)
                 {
-                    int[] ids = mesh.GetGeometryIds(nodeIds, elementIds);
+                    int[] ids = mesh.GetGeometryIds(elementIds);
                     ids = mesh.GetIdsFromGeometryIds(ids, vtkSelectItem.Element);
                     return ids;
                 }
@@ -6802,12 +6923,38 @@ namespace PrePoMax
         }
         private int[] GetVisualizationFaceIdsFromFrustum(double[][] planeParameters, string[] selectionPartNames,
                                                          vtkSelectBy selectBy)
+
         {
             int[] ids;
+            int[] nodeIds;
+            int[] elementIds;
+            int[] geomIds;
             // Create surface by area selecting nodes or elements
-            int[] nodeIds = GetNodeIdsFromFrustum(planeParameters, selectionPartNames, selectBy);
-            int[] elementIds = GetElementIdsFromFrustum(planeParameters, selectionPartNames, selectBy);
-            ids = DisplayedMesh.GetVisualizationFaceIds(nodeIds, elementIds, false, true, true);
+            if (selectBy == vtkSelectBy.Node || selectBy == vtkSelectBy.Element)
+            {
+                nodeIds = GetNodeIdsFromFrustum(planeParameters, selectionPartNames, selectBy);
+                elementIds = GetElementIdsFromFrustum(planeParameters, selectionPartNames, selectBy);
+                ids = DisplayedMesh.GetVisualizationFaceIds(nodeIds, elementIds, false, true, true);
+            }
+            else if (selectBy == vtkSelectBy.Part || selectBy == vtkSelectBy.GeometryPart)
+            {
+                FeMesh mesh = DisplayedMesh;
+                _form.GetPointAndCellIdsInsideFrustum(planeParameters, selectionPartNames, out nodeIds, out elementIds);
+                string[] partNamesByElementId = mesh.GetPartNamesByElementIds(elementIds);
+                HashSet<int> partVisualizationFaceIds = new HashSet<int>();
+                foreach (var partName in partNamesByElementId)
+                    partVisualizationFaceIds.UnionWith(mesh.GetVisualizationFaceIds(partName, true));
+                ids = partVisualizationFaceIds.ToArray();
+            }
+            else if (selectBy == vtkSelectBy.Geometry)
+            {
+                FeMesh mesh = DisplayedMesh;
+                _form.GetPointAndCellIdsInsideFrustum(planeParameters, selectionPartNames, out nodeIds, out elementIds);
+                geomIds = mesh.GetGeometryIds(elementIds);
+                ids = mesh.GetIdsFromGeometryIds(geomIds, vtkSelectItem.Surface);
+            }
+            else throw new NotSupportedException();
+            //
             return ids;
         }
         public int[] GetPartIdsFromFrustum(double[][] planeParameters, string[] selectionPartNames, vtkSelectBy selectBy)
@@ -6826,7 +6973,7 @@ namespace PrePoMax
             {
                 if (elementIds.Length > 0) return mesh.GetPartIdsByElementIds(elementIds);
             }
-            else if (selectBy == vtkSelectBy.Part)
+            else if (selectBy == vtkSelectBy.Part ||selectBy == vtkSelectBy.GeometryPart)
             {
                 if (nodeIds.Length > 0) return mesh.GetPartIdsByNodeIds(nodeIds);
                 else if (elementIds.Length > 0) return mesh.GetPartIdsByElementIds(elementIds);
@@ -6848,7 +6995,7 @@ namespace PrePoMax
             //
             _form.GetPointAndCellIdsInsideFrustum(planeParameters, selectionPartNames, out nodeIds, out elementIds);
             //
-            int[] ids = mesh.GetGeometryIds(nodeIds, elementIds);
+            int[] ids = mesh.GetGeometryIds(elementIds);
             ids = mesh.GetIdsFromGeometryIds(ids, _selection.SelectItem);
             return ids;
         }
@@ -7236,7 +7383,7 @@ namespace PrePoMax
             int partId;
             int[] itemTypePartIds;
             FeMesh mesh = DisplayedMesh;
-            int[] geometryIds = mesh.GetGeometryIds(nodeIds, elementIds);
+            int[] geometryIds = mesh.GetGeometryIds(elementIds);
             //
             BasePart part;
             int edgeId;
@@ -9175,33 +9322,40 @@ namespace PrePoMax
             vtkControl.vtkMaxActorData data;
             //
             FeMesh mesh = DisplayedMesh;
-            BasePart part = mesh.CreateBasePartFromElementIds(elementIds);
-            mesh.GetVisualizationNodesAndCells(part, out nodeIds, out nodeCoor, out cellIds, out cells, out cellTypes);
+            BasePart[] parts = mesh.CreateBasePartsByTypeFromElementIds(elementIds);
             //
-            data = new vtkControl.vtkMaxActorData();
-            data.Name = prefixName + Globals.NameSeparator + "elements";
-            data.Color = color;
-            data.Layer = layer;
-            if (part.PartType == PartType.Shell) data.BackfaceCulling = false;
-            else data.BackfaceCulling = true;
-            //
-            data.CanHaveElementEdges = canHaveEdges;
-            data.Geometry.Nodes.Ids = null;
-            data.Geometry.Nodes.Coor = nodeCoor;
-            data.Geometry.Cells.CellNodeIds = cells;
-            data.Geometry.Cells.Types = cellTypes;
-            // Scale nodes
-            if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
+            int drawnCells = 0;
+            foreach (BasePart part in parts)
             {
-                float scale = GetScale();
-                Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId, nodeIds,
-                                             ref data.Geometry.Nodes.Coor);
+                mesh.GetVisualizationNodesAndCells(part, out nodeIds, out nodeCoor, out cellIds, out cells, out cellTypes);
+                //
+                data = new vtkControl.vtkMaxActorData();
+                data.Name = prefixName + Globals.NameSeparator + "elements";
+                data.Color = color;
+                data.Layer = layer;
+                if (part.PartType == PartType.Shell) data.BackfaceCulling = false;
+                else data.BackfaceCulling = true;
+                //
+                data.CanHaveElementEdges = canHaveEdges;
+                data.Geometry.Nodes.Ids = null;
+                data.Geometry.Nodes.Coor = nodeCoor;
+                data.Geometry.Cells.CellNodeIds = cells;
+                data.Geometry.Cells.Types = cellTypes;
+                // Scale nodes
+                if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
+                {
+                    float scale = GetScale();
+                    Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId, nodeIds,
+                                                 ref data.Geometry.Nodes.Coor);
+                }
+                //
+                ApplyLighting(data);
+                _form.Add3DCells(data);
+                //
+                drawnCells += cellIds.Length;
             }
             //
-            ApplyLighting(data);
-            _form.Add3DCells(data);
-            //
-            return cellIds.Length;
+            return drawnCells;
         }
         private int DrawElementSet(string prefixName, FeElementSet elementSet, Color color,
                                    vtkControl.vtkRendererLayer layer, bool backfaceCulling = true)
@@ -9395,12 +9549,13 @@ namespace PrePoMax
             List<int> nodeIdsList = new List<int>();
             List<int> edgeIdsList = new List<int>();
             List<int> surfaceIdsList = new List<int>();
+            List<int> partIdsList = new List<int>();
             int[] itemTypePartIds;
             FeMesh mesh = DisplayedMesh;
             foreach (var id in ids)
             {
                 itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(id);
-                if (mesh.GetPartById(itemTypePartIds[2]) is BasePart bs && bs != null && bs.Visible)
+                if (mesh.GetPartById(itemTypePartIds[2]) is BasePart bp && bp != null && bp.Visible)
                 {
                     GeometryType geomType = (GeometryType)itemTypePartIds[1];
                     if (geomType == GeometryType.Vertex) nodeIdsList.Add(id);
@@ -9409,6 +9564,7 @@ namespace PrePoMax
                     else if (geomType == GeometryType.SolidSurface ||
                              geomType == GeometryType.ShellFrontSurface ||
                              geomType == GeometryType.ShellBackSurface) surfaceIdsList.Add(id);
+                    else if (geomType == GeometryType.Part) partIdsList.Add(id);
                     else throw new NotSupportedException();
                 }
             }
@@ -9416,6 +9572,7 @@ namespace PrePoMax
             int[] nodeIds = mesh.GetIdsFromGeometryIds(nodeIdsList.ToArray(), vtkSelectItem.Node, onlyVisible);
             int[] edgeIds = mesh.GetIdsFromGeometryIds(edgeIdsList.ToArray(), vtkSelectItem.Edge, onlyVisible);
             int[] surfaceFaceIds = mesh.GetIdsFromGeometryIds(surfaceIdsList.ToArray(), vtkSelectItem.Surface, onlyVisible);
+            int[] partFaceIds = mesh.GetIdsFromGeometryIds(partIdsList.ToArray(), vtkSelectItem.Surface, onlyVisible);
             //
             string name = prefixName + Globals.NameSeparator + itemName;
             bool selection = layer == vtkControl.vtkRendererLayer.Selection;
@@ -9430,8 +9587,10 @@ namespace PrePoMax
             if (edgeIds.Length > 0) DrawEdgesByGeometryEdgeIds(name, edgeIds, color, layer, nodeSize, useSecondaryHighlightColor);
             if (surfaceFaceIds.Length > 0) DrawItemsBySurfaceIds(name, surfaceFaceIds, color, layer, backfaceCulling,
                                                                  useSecondaryHighlightColor, drawSurfaceEdges);
+            if (partFaceIds.Length > 0) DrawItemsBySurfaceIds(name, partFaceIds, color, layer, backfaceCulling,
+                                                             useSecondaryHighlightColor, drawSurfaceEdges);
             //
-            return nodeIds.Length + edgeIds.Length + surfaceFaceIds.Length;
+            return nodeIds.Length + edgeIds.Length + surfaceFaceIds.Length + partFaceIds.Length;
         }
 
         // Apply settings

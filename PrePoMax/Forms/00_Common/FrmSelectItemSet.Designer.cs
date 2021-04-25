@@ -56,6 +56,7 @@
             this.btnOK = new System.Windows.Forms.Button();
             this.btnMoreLess = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
+            this.rbGeometryPart = new System.Windows.Forms.RadioButton();
             this.gbFEMesh.SuspendLayout();
             this.gbGeometry.SuspendLayout();
             this.SuspendLayout();
@@ -284,6 +285,7 @@
             // 
             // gbGeometry
             // 
+            this.gbGeometry.Controls.Add(this.rbGeometryPart);
             this.gbGeometry.Controls.Add(this.tbGeometrySurfaceAngle);
             this.gbGeometry.Controls.Add(this.rbGeometrySurfaceAngle);
             this.gbGeometry.Controls.Add(this.tbGeometryEdgeAngle);
@@ -291,7 +293,7 @@
             this.gbGeometry.Controls.Add(this.rbGeometry);
             this.gbGeometry.Location = new System.Drawing.Point(6, 12);
             this.gbGeometry.Name = "gbGeometry";
-            this.gbGeometry.Size = new System.Drawing.Size(179, 95);
+            this.gbGeometry.Size = new System.Drawing.Size(179, 120);
             this.gbGeometry.TabIndex = 13;
             this.gbGeometry.TabStop = false;
             this.gbGeometry.Text = "Geometry based selection";
@@ -299,7 +301,7 @@
             // tbGeometrySurfaceAngle
             // 
             this.tbGeometrySurfaceAngle.Enabled = false;
-            this.tbGeometrySurfaceAngle.Location = new System.Drawing.Point(115, 66);
+            this.tbGeometrySurfaceAngle.Location = new System.Drawing.Point(115, 91);
             this.tbGeometrySurfaceAngle.Name = "tbGeometrySurfaceAngle";
             this.tbGeometrySurfaceAngle.Size = new System.Drawing.Size(58, 23);
             this.tbGeometrySurfaceAngle.TabIndex = 17;
@@ -311,7 +313,7 @@
             // rbGeometrySurfaceAngle
             // 
             this.rbGeometrySurfaceAngle.AutoSize = true;
-            this.rbGeometrySurfaceAngle.Location = new System.Drawing.Point(6, 66);
+            this.rbGeometrySurfaceAngle.Location = new System.Drawing.Point(6, 91);
             this.rbGeometrySurfaceAngle.Name = "rbGeometrySurfaceAngle";
             this.rbGeometrySurfaceAngle.Size = new System.Drawing.Size(96, 19);
             this.rbGeometrySurfaceAngle.TabIndex = 16;
@@ -322,7 +324,7 @@
             // tbGeometryEdgeAngle
             // 
             this.tbGeometryEdgeAngle.Enabled = false;
-            this.tbGeometryEdgeAngle.Location = new System.Drawing.Point(115, 41);
+            this.tbGeometryEdgeAngle.Location = new System.Drawing.Point(115, 66);
             this.tbGeometryEdgeAngle.Name = "tbGeometryEdgeAngle";
             this.tbGeometryEdgeAngle.Size = new System.Drawing.Size(58, 23);
             this.tbGeometryEdgeAngle.TabIndex = 15;
@@ -334,7 +336,7 @@
             // rbGeometryEdgeAngle
             // 
             this.rbGeometryEdgeAngle.AutoSize = true;
-            this.rbGeometryEdgeAngle.Location = new System.Drawing.Point(6, 42);
+            this.rbGeometryEdgeAngle.Location = new System.Drawing.Point(6, 67);
             this.rbGeometryEdgeAngle.Name = "rbGeometryEdgeAngle";
             this.rbGeometryEdgeAngle.Size = new System.Drawing.Size(83, 19);
             this.rbGeometryEdgeAngle.TabIndex = 14;
@@ -377,11 +379,22 @@
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.label1.Location = new System.Drawing.Point(12, 110);
+            this.label1.Location = new System.Drawing.Point(9, 135);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(117, 30);
             this.label1.TabIndex = 15;
             this.label1.Text = "SHIFT - add items\r\nCTRL - remove items\r\n";
+            // 
+            // rbGeometryPart
+            // 
+            this.rbGeometryPart.AutoSize = true;
+            this.rbGeometryPart.Location = new System.Drawing.Point(6, 42);
+            this.rbGeometryPart.Name = "rbGeometryPart";
+            this.rbGeometryPart.Size = new System.Drawing.Size(46, 19);
+            this.rbGeometryPart.TabIndex = 18;
+            this.rbGeometryPart.Text = "Part";
+            this.rbGeometryPart.UseVisualStyleBackColor = true;
+            this.rbGeometryPart.CheckedChanged += new System.EventHandler(this.rbSelectBy_CheckedChanged);
             // 
             // FrmSelectItemSet
             // 
@@ -448,5 +461,6 @@
         private System.Windows.Forms.RadioButton rbGeometryEdgeAngle;
         private System.Windows.Forms.Button btnMoreLess;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.RadioButton rbGeometryPart;
     }
 }

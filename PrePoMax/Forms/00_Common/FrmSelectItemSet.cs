@@ -129,6 +129,8 @@ namespace PrePoMax
                 // Set new states of radio buttons before everything else
                 if (rbGeometry.Checked && sender != rbGeometry)
                     rbGeometry.Checked = false;
+                if (rbGeometryPart.Checked && sender != rbGeometryPart)
+                    rbGeometryPart.Checked = false;
                 if (rbGeometryEdgeAngle.Checked && sender != rbGeometryEdgeAngle)
                     rbGeometryEdgeAngle.Checked = false;
                 if (rbGeometrySurfaceAngle.Checked && sender != rbGeometrySurfaceAngle)
@@ -146,7 +148,7 @@ namespace PrePoMax
             // Determine selection type and change of selection type
             bool selectionTypeChanged = false;
             SelectionType currentSelectionType;
-            if (rbGeometry.Checked || rbGeometryEdgeAngle.Checked || rbGeometrySurfaceAngle.Checked)
+            if (rbGeometry.Checked || rbGeometryPart.Checked || rbGeometryEdgeAngle.Checked || rbGeometrySurfaceAngle.Checked)
             {
                 selectionTypeChanged = _prevSelectionType != SelectionType.Geometry;
                 currentSelectionType = SelectionType.Geometry;
@@ -176,6 +178,7 @@ namespace PrePoMax
             //
             vtkSelectBy selectBy;
             if (rbGeometry.Checked) selectBy = vtkSelectBy.Geometry;
+            else if (rbGeometryPart.Checked) selectBy = vtkSelectBy.GeometryPart;
             else if (rbGeometryEdgeAngle.Checked)
             {
                 selectBy = vtkSelectBy.GeometryEdgeAngle;

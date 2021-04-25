@@ -87,6 +87,8 @@
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalSubmodel.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\Load\CalShellEdgeLoad.cs" />
     <Compile Include="FileInOut\Output\Mmg\MmgFileWriter.cs" />
+    <Compile Include="InitialConditions\InitialTemperature.cs" />
+    <Compile Include="InitialConditions\InitialCondition.cs" />
     <Compile Include="Materials\SpecificHeat.cs" />
     <Compile Include="Materials\ThermalConductivity.cs" />
     <Compile Include="Materials\ThermalExpansion.cs" />

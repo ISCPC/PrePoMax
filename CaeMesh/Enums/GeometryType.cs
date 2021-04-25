@@ -16,6 +16,7 @@ namespace CaeMesh
         SolidSurface = 3,
         ShellFrontSurface = 4,
         ShellBackSurface = 5,
-        ShellEdgeSurface = 6
+        ShellEdgeSurface = 6,
+        Part = 9
     }
 }

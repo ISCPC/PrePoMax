@@ -27,6 +27,7 @@ namespace CaeGlobals
         GeometrySurface,
         GeometryEdgeAngle,
         GeometrySurfaceAngle,
+        GeometryPart,
         // Querry
         QueryNode,
         QueryElement,
