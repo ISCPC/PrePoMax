@@ -33,7 +33,11 @@ namespace CaeGlobals
                     _lengthUnit = (LengthUnit)MyUnit.NoUnit;
                     _temperatureDeltaUnit = (TemperatureDeltaUnit)MyUnit.NoUnit;
                 }
-                else _powerUnit = Power.ParseUnit(value);
+                else
+                {
+                    if (value == MyUnit.InchPoundPerSecondAbbreviation) _powerUnit = MyUnit.InchPoundPerSecond;
+                    else _powerUnit = Power.ParseUnit(value);
+                }
                 //
                 _thermalConductivityUnit = ThermalConductivityUnit.Undefined;
             }

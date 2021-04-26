@@ -35,15 +35,15 @@ namespace FileInOut.Output.Calculix
         public override string GetDataString()
         {
             StringBuilder sb = new StringBuilder();
-
+            //
             int[] rpNodeIds = null;
             if (_load.RegionType == CaeGlobals.RegionTypeEnum.ReferencePointName) rpNodeIds = _referencePointsNodeIds[_load.RegionName];
-
+            //
             List<int> directions = new List<int>();
             if (_load.F1 != 0) directions.Add(1);
             if (_load.F2 != 0) directions.Add(2);
             if (_load.F3 != 0) directions.Add(3);
-
+            //
             foreach (var dir in directions)
             {
                 if (_load.RegionType == CaeGlobals.RegionTypeEnum.NodeId)

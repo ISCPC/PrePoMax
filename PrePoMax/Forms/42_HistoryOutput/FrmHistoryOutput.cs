@@ -163,9 +163,9 @@ namespace PrePoMax.Forms
             //
             base.OnHideOrClose();
         }
-        protected override bool OnPrepareForm(string stepName, string historyToOutputToEditName)
+        protected override bool OnPrepareForm(string stepName, string historyOutputToEditName)
         {
-            this.btnOkAddNew.Visible = historyToOutputToEditName == null;
+            this.btnOkAddNew.Visible = historyOutputToEditName == null;
             //
             _propertyItemChanged = false;
             _stepName = null;
@@ -177,7 +177,7 @@ namespace PrePoMax.Forms
             //
             _stepName = stepName;
             _historyOutputNames = _controller.GetHistoryOutputNamesForStep(_stepName);
-            _historyOutputToEditName = historyToOutputToEditName;
+            _historyOutputToEditName = historyOutputToEditName;
             string[] nodeSetNames = _controller.GetUserNodeSetNames();
             string[] elementSetNames = _controller.GetUserElementSetNames();
             string[] surfaceNames = _controller.GetUserSurfaceNames();
@@ -199,7 +199,7 @@ namespace PrePoMax.Forms
             else
             // Edit existing history output
             {
-                // Get and convert a converted load back to selection
+                // Get and convert a converted history output back to selection
                 HistoryOutput = _controller.GetHistoryOutput(_stepName, _historyOutputToEditName); // to clone
                 if (HistoryOutput.CreationData != null) HistoryOutput.RegionType = RegionTypeEnum.Selection;
                 //
@@ -284,7 +284,6 @@ namespace PrePoMax.Forms
                 item.Tag = vcho;
             }
             else item.Tag = new ViewError("There is no contact pair defined for the history output definition.");
-            //
             lvTypes.Items.Add(item);
         }
         private string GetHistoryOutputName(string prefix)

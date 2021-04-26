@@ -4959,6 +4959,15 @@ namespace PrePoMax
             //
             FeModelUpdate(UpdateType.Check);
         }
+        public void ActivateDeactivateInitialCondition(string initialConditionName, bool active)
+        {
+            InitialCondition initialCondition = _model.InitialConditions[initialConditionName];
+            initialCondition.Active = active;
+            //
+            _form.UpdateTreeNode(ViewGeometryModelResults.Model, initialConditionName, initialCondition, null);
+            //
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
+        }
         public void RemoveInitialConditions(string[] initialConditionNames)
         {
             foreach (var name in initialConditionNames)
@@ -4976,23 +4985,20 @@ namespace PrePoMax
             // Create a named set and convert a selection to a named set
             if (initialCondition.RegionType == RegionTypeEnum.Selection)
             {
-                //string name;
-                //// Element set output
-                //if (initialCondition is SolidSection || initialCondition is ShellSection)
-                //{
-                //    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.ElementSets) + initialCondition.Name;
-                //    // For
-                //    bool createdByPart = initialCondition.CreationData != null && initialCondition.CreationData.SelectItem == vtkSelectItem.Part;
-                //    FeElementSet elementSet = new FeElementSet(name, initialCondition.CreationIds, createdByPart);
-                //    elementSet.CreationData = initialCondition.CreationData.DeepClone();
-                //    elementSet.Internal = true;
-                //    AddElementSet(elementSet);
-                //    //
-                //    initialCondition.RegionName = name;
-                //    initialCondition.RegionType = RegionTypeEnum.ElementSetName;
-                //}
-                //else
-                throw new NotSupportedException();
+                string name;
+                // Initial temperature
+                if (initialCondition is InitialTemperature)
+                {
+                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.NodeSets) + initialCondition.Name;
+                    FeNodeSet nodeSet = new FeNodeSet(name, initialCondition.CreationIds);
+                    nodeSet.CreationData = initialCondition.CreationData.DeepClone();
+                    nodeSet.Internal = true;
+                    AddNodeSet(nodeSet);
+                    //
+                    initialCondition.RegionName = name;
+                    initialCondition.RegionType = RegionTypeEnum.NodeSetName;
+                }
+                else throw new NotSupportedException();
             }
             // Clear the creation data if not used
             else
@@ -5007,9 +5013,8 @@ namespace PrePoMax
             InitialCondition initialCondition = GetInitialCondition(oldInitialConditionName);
             if (initialCondition.CreationData != null && initialCondition.RegionName != null)
             {
-                //if (initialCondition is SolidSection || initialCondition is ShellSection) RemoveElementSets(new string[] { initialCondition.RegionName });
-                //else
-                throw new NotSupportedException();
+                if (initialCondition is InitialTemperature) RemoveNodeSets(new string[] { initialCondition.RegionName });
+                else throw new NotSupportedException();
             }
         }
         
@@ -6150,6 +6155,10 @@ namespace PrePoMax
             else if (item is ContactPair cp)
             {
                 ActivateDeactivateContactPair(cp.Name, activate);
+            }
+            else if (item is InitialCondition ic)
+            {
+                ActivateDeactivateInitialCondition(ic.Name, activate);
             }
             else if (item is Step st)
             {
@@ -9685,6 +9694,13 @@ namespace PrePoMax
                     else if (obj is ContactPair cp)
                     {
                         HighlightContactPairs(new string[] { cp.Name });
+                    }
+                    else if (obj is InitialCondition ic)
+                    {
+                        if (ic.RegionType == RegionTypeEnum.NodeSetName) HighlightNodeSets(new string[] { ic.RegionName });
+                        else if (ic.RegionType == RegionTypeEnum.SurfaceName) HighlightSurfaces(new string[] { ic.RegionName });
+                        else if (ic.RegionType == RegionTypeEnum.Selection) { }
+                        else throw new NotSupportedException();
                     }
                     else if (obj is HistoryOutput ho)
                     {

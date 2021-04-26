@@ -18,9 +18,10 @@ namespace PrePoMax
         // must start at 1 for the UI to work
         [StandardValue("RF", Description = "Reaction forces.")]
         RF = 1,
-
         [StandardValue("U", Description = "Displacements.")]
-        U = 2
+        U = 2,
+        [StandardValue("NT", Description = "Temperatures.")]
+        NT = 4
     }
 
     [Serializable]
@@ -33,7 +34,7 @@ namespace PrePoMax
         // Properties                                                                                                               
         public override string Name { get { return _historyOutput.Name; } set { _historyOutput.Name = value; } }
         public override int Frequency { get { return _historyOutput.Frequency; } set { _historyOutput.Frequency = value; } }
-
+        //
         [OrderedDisplayName(2, 10, "Variables to output")]
         [CategoryAttribute("Data")]
         [DescriptionAttribute("Nodal history variables")]

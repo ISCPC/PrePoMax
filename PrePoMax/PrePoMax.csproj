@@ -295,6 +295,11 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\35_ContactPair\ViewContactPair.cs" />
+    <Compile Include="Forms\36_InitialConditions\FrmInitialCondition.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\36_InitialConditions\ViewInitialCondition.cs" />
+    <Compile Include="Forms\36_InitialConditions\ViewInitialTemperature.cs" />
     <Compile Include="Forms\42_HistoryOutput\ViewContactHistoryOutput.cs" />
     <Compile Include="Forms\43_FieldOutput\ViewContactFieldOutput.cs" />
     <Compile Include="Forms\51_BoundaryConditions\ViewFixedBC.cs" />
@@ -560,6 +565,9 @@
     <EmbeddedResource Include="Forms\35_ContactPair\FrmContactPair.resx">
       <DependentUpon>FrmContactPair.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Forms\36_InitialConditions\FrmInitialCondition.resx">
+      <DependentUpon>FrmInitialCondition.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\42_HistoryOutput\FrmHistoryOutput.resx">
       <DependentUpon>FrmHistoryOutput.cs</DependentUpon>
     </EmbeddedResource>
@@ -743,7 +751,6 @@
   <ItemGroup>
     <Folder Include="Command\0020_View\" />
     <Folder Include="Command\0110_Tools\" />
-    <Folder Include="Forms\36_InitialConditions\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

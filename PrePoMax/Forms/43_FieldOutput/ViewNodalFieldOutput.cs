@@ -18,9 +18,10 @@ namespace PrePoMax
         // must start at 1 for the UI to work
         [StandardValue("RF", Description = "Reaction forces.")]
         RF = 1,
-
         [StandardValue("U", Description = "Displacements.")]
-        U = 2
+        U = 2,
+        [StandardValue("NT", Description = "Temperatures.")]
+        NT = 4
     }
 
     [Serializable]

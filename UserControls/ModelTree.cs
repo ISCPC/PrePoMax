@@ -86,6 +86,7 @@ namespace UserControls
         private TreeNode _contact;
         private TreeNode _surfaceInteractions;
         private TreeNode _contactPairs;
+        private TreeNode _initialConditions;
         private TreeNode _steps;
         private TreeNode _analyses;
         // Results
@@ -108,6 +109,7 @@ namespace UserControls
         private string _contactName;
         private string _surfaceInteractionsName;
         private string _contactPairsName;
+        private string _initialConditionsName;
         private string _stepsName;
         private string _historyOutputsName;
         private string _fieldOutputsName;
@@ -207,6 +209,7 @@ namespace UserControls
             _contactName = "Contact";
             _surfaceInteractionsName = "Surface interactions";
             _contactPairsName = "Contact pairs";
+            _initialConditionsName = "Initial conditions";
             _stepsName = "Steps";
             _boundaryConditionsName = "BCs";
             _loadsName = "Loads";
@@ -231,6 +234,7 @@ namespace UserControls
             _contact = cltvModel.Nodes.Find(_contactName, true)[0];
             _surfaceInteractions = cltvModel.Nodes.Find(_surfaceInteractionsName, true)[0];
             _contactPairs = cltvModel.Nodes.Find(_contactPairsName, true)[0];
+            _initialConditions = cltvModel.Nodes.Find(_initialConditionsName, true)[0];
             _steps = cltvModel.Nodes.Find(_stepsName, true)[0];
             _analyses = cltvModel.Nodes.Find(_analysesName, true)[0];
             _resultFieldOutputs = cltvResults.Nodes.Find(_fieldOutputsName, true)[0];
@@ -1316,6 +1320,7 @@ namespace UserControls
             _constraints.Nodes.Clear();
             _surfaceInteractions.Nodes.Clear();
             _contactPairs.Nodes.Clear();
+            _initialConditions.Nodes.Clear();
             _steps.Nodes.Clear();
             _analyses.Nodes.Clear();
             //
@@ -1333,6 +1338,7 @@ namespace UserControls
             _constraints.Text = _constraintsName;
             _surfaceInteractions.Text = _surfaceInteractionsName;
             _contactPairs.Text = _contactPairsName;
+            _initialConditions.Text = _initialConditionsName;
             _steps.Text = _stepsName;
             _analyses.Text = _analysesName;
             //
@@ -1495,6 +1501,8 @@ namespace UserControls
                                                                  model.SurfaceInteractions);
                     // Contact pairs
                     AddObjectsToNode<string, ContactPair>(_contactPairsName, _contactPairs, model.ContactPairs);
+                    // Initial conditions
+                    AddObjectsToNode<string, InitialCondition>(_initialConditionsName, _initialConditions, model.InitialConditions);
                     // Steps
                     AddSteps(model.StepCollection.StepsList);
                     // Analyses
@@ -1677,6 +1685,13 @@ namespace UserControls
                 node.Name = node.Text;
                 node.Tag = item;
                 parent = _contactPairs;
+            }
+            else if (item is InitialCondition)
+            {
+                node = _initialConditions.Nodes.Add(item.Name);
+                node.Name = node.Text;
+                node.Tag = item;
+                parent = _initialConditions;
             }
             else if (item is Step)
             {
@@ -2206,6 +2221,7 @@ namespace UserControls
             else if (node.Name == _constraintsName) return true;
             else if (node.Name == _surfaceInteractionsName) return true;
             else if (node.Name == _contactPairsName) return true;
+            else if (node.Name == _initialConditionsName) return true;
             else if (node.Name == _stepsName) return true;
             else if (node.Name == _historyOutputsName) return true;
             else if (node.Name == _fieldOutputsName) return true;
@@ -2236,6 +2252,7 @@ namespace UserControls
             if (node.Tag is FeMeshRefinement) return true;
             else if (node.Tag is Constraint) return true;
             else if (node.Tag is ContactPair) return true;
+            else if (node.Tag is InitialCondition) return true;
             else if (node.Tag is Step) return true;
             else if (node.Tag is HistoryOutput) return true;
             else if (node.Tag is FieldOutput) return true;

@@ -209,6 +209,10 @@ namespace CaeResults
                             }
                         }
                         break;
+                    case "NDTEMP":
+                        unitConverter = new StringTemperatureConverter();
+                        unitAbbreviation = _unitSystem.TemperatureUnitAbbreviation;
+                        break;
                     default:
                         throw new NotSupportedException();
                 }
@@ -297,6 +301,12 @@ namespace CaeResults
                         unitConverter = new StringMomentConverter();
                         unitAbbreviation = _unitSystem.MomentUnitAbbreviation;
                         break;
+                    // Thermal
+                    case "TEMPERATURES":
+                        unitConverter = new StringTemperatureConverter();
+                        unitAbbreviation = _unitSystem.TemperatureUnitAbbreviation;
+                        break;
+                    // Error
                     case "ERROR":
                         unitConverter = new DoubleConverter();
                         unitAbbreviation = "?";

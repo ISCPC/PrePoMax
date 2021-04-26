@@ -13,6 +13,7 @@ namespace CaeResults
     [Serializable]
     public static class DatFileReader
     {
+        // Nodal
         private static readonly string nameDisplacements = "Displacements";
         private static readonly string nameForces = "Forces";
         private static readonly string nameTotalForce = "Total force";
@@ -21,6 +22,8 @@ namespace CaeResults
         private static readonly string nameMechanicalStrains = "Mechanical strains";
         private static readonly string nameEquivalentPlasticStrains = "Equivalent plastic strain";
         private static readonly string nameInternalEnergyDensity = "Internal energy density";
+        // Thermal
+        private static readonly string nameTemperatures = "Temperatures";
         // Contact
         private static readonly string nameRelativeContactDisplacement = "Relative contact displacement";
         private static readonly string nameContactStress = "Contact stress";
@@ -35,11 +38,12 @@ namespace CaeResults
         private static readonly string nameSurfaceArea = "Surface area";
         private static readonly string nameNormalSurfaceForce = "Normal surface force";
         private static readonly string nameShearSurfaceForce = "Shear surface force";
-        //
+        // Element
         private static readonly string nameVolume = "Volume";
         private static readonly string nameTotalVolume = "Total volume";
         private static readonly string nameInternalEnergy = "Internal energy";
         private static readonly string nameTotalInternalEnergy = "Total internal energy";
+        // Error
         private static readonly string nameError = "Error";
         //
         private static readonly string[] spaceSplitter = new string[] { " " };
@@ -92,6 +96,8 @@ namespace CaeResults
                 dataSetNames.Add(nameMechanicalStrains);
                 dataSetNames.Add(nameEquivalentPlasticStrains);
                 dataSetNames.Add(nameInternalEnergyDensity);
+                // Thermal
+                dataSetNames.Add(nameTemperatures);
                 // Contact
                 dataSetNames.Add(nameRelativeContactDisplacement);
                 dataSetNames.Add(nameContactStress);
@@ -349,6 +355,14 @@ namespace CaeResults
                                 lines[0] = lines[0].Replace("(elem, integ.pnt.,eneset ",
                                                             "(Id,Int.Pnt.,ENER) for set ");
                             }
+
+                            else if (name == nameTemperatures)
+                            {
+                                // temperatures for set INTERNAL_SELECTION-1_NH_OUTPUT-1 and time  0.1000000E+01
+                                //      3450  1.000000E+02
+                                lines[0] = lines[0].Replace("temperatures for set", "temperatures (Id,T) for set");
+                            }
+
                             else if (name == nameInternalEnergy)
                             {
                                 //internal energy (element, energy) for set SOLID_PART-1 and time  0.1000000E+01

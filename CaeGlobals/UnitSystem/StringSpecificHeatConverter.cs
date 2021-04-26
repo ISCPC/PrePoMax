@@ -32,7 +32,11 @@ namespace CaeGlobals
                     _massUnit = (MassUnit)MyUnit.NoUnit;
                     _temperatureDeltaUnit = (TemperatureDeltaUnit)MyUnit.NoUnit;
                 }
-                else _energyUnit = Energy.ParseUnit(value);
+                else
+                {
+                    if (value == MyUnit.InchPoundAbbreviation) _energyUnit = MyUnit.InchPound;
+                    else _energyUnit = Energy.ParseUnit(value);
+                }
             }
         }
         public static string SetMassUnit

@@ -14,7 +14,8 @@ namespace CaeModel
     {
         // must start at 1 for the UI to work
         RF = 1,
-        U = 2
+        U = 2,
+        NT = 4
     }
 
     [Serializable]

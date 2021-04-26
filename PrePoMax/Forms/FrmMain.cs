@@ -74,6 +74,7 @@ namespace PrePoMax
         private FrmConstraint _frmConstraint;
         private FrmSurfaceInteraction _frmSurfaceInteraction;
         private FrmContactPair _frmContactPair;
+        private FrmInitialCondition _frmInitialCondition;
         private FrmStep _frmStep;
         private FrmHistoryOutput _frmHistoryOutput;
         private FrmFieldOutput _frmFieldOutput;
@@ -329,6 +330,9 @@ namespace PrePoMax
                 //
                 _frmContactPair = new FrmContactPair(_controller);
                 AddFormToAllForms(_frmContactPair);
+                //
+                _frmInitialCondition = new FrmInitialCondition(_controller);
+                AddFormToAllForms(_frmInitialCondition);
                 //
                 _frmStep = new FrmStep(_controller);
                 AddFormToAllForms(_frmStep);
@@ -629,6 +633,7 @@ namespace PrePoMax
                 else if (nodeName == "Constraints") tsmiCreateConstraint_Click(null, null);
                 else if (nodeName == "Surface interactions") tsmiCreateSurfaceInteraction_Click(null, null);
                 else if (nodeName == "Contact pairs") tsmiCreateContactPair_Click(null, null);
+                else if (nodeName == "Initial conditions") tsmiCreateInitialCondition_Click(null, null);
                 else if (nodeName == "Steps") tsmiCreateStep_Click(null, null);
                 else if (nodeName == "History outputs" && stepName != null) CreateHistoryOutput(stepName);
                 else if (nodeName == "Field outputs" && stepName != null) CreateFieldOutput(stepName);
@@ -662,6 +667,7 @@ namespace PrePoMax
                 else if (namedClass is CaeModel.Constraint) EditConstraint(namedClass.Name);
                 else if (namedClass is SurfaceInteraction) EditSurfaceInteraction(namedClass.Name);
                 else if (namedClass is ContactPair) EditContactPair(namedClass.Name);
+                else if (namedClass is InitialCondition) EditInitialCondition(namedClass.Name);
                 else if (namedClass is Step) EditStep(namedClass.Name);
                 else if (namedClass is HistoryOutput) EditHistoryOutput(stepName, namedClass.Name);
                 else if (namedClass is FieldOutput) EditFieldOutput(stepName, namedClass.Name);
@@ -773,6 +779,7 @@ namespace PrePoMax
                 ApplyActionOnItems<CaeModel.Constraint>(items, DeleteConstraints);
                 ApplyActionOnItems<SurfaceInteraction>(items, DeleteSurfaceInteractions);
                 ApplyActionOnItems<ContactPair>(items, DeleteContactPairs);
+                ApplyActionOnItems<InitialCondition>(items, DeleteInitialConditions);
                 //
                 DeleteStepItems<HistoryOutput>(items, stepNames, DeleteHistoryOutputs);
                 DeleteStepItems<FieldOutput>(items, stepNames, DeleteFieldOutputs);
@@ -897,7 +904,7 @@ namespace PrePoMax
                     tsmiProperty.Enabled = false;
                     tsmiInteraction.Enabled = false;
                     tsmiStepMenu.Enabled = false;
-                    tsmiBCs.Enabled = false;
+                    tsmiBC.Enabled = false;
                     tsmiLoad.Enabled = false;
                     tsmiAnalysis.Enabled = false;
                     tsmiResults.Enabled = false;
@@ -921,7 +928,7 @@ namespace PrePoMax
                     tsmiProperty.Enabled = true;
                     tsmiInteraction.Enabled = true;
                     tsmiStepMenu.Enabled = true;
-                    tsmiBCs.Enabled = true;
+                    tsmiBC.Enabled = true;
                     tsmiLoad.Enabled = true;
                     tsmiAnalysis.Enabled = true;
                     tsmiResults.Enabled = false;
@@ -945,7 +952,7 @@ namespace PrePoMax
                     tsmiProperty.Enabled = false;
                     tsmiInteraction.Enabled = false;
                     tsmiStepMenu.Enabled = false;
-                    tsmiBCs.Enabled = false;
+                    tsmiBC.Enabled = false;
                     tsmiLoad.Enabled = false;
                     tsmiAnalysis.Enabled = false;
                     tsmiResults.Enabled = true;
@@ -3420,12 +3427,7 @@ namespace PrePoMax
         {
             try
             {
-                if (_controller.Model.Mesh == null) return;
-                // Data editor
-                ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
-                ItemSetDataEditor.ParentForm = _frmSection;
-                _frmSelectItemSet.SetOnlyGeometrySelection(true);
-                ShowForm(_frmSection, "Create Section", null);
+                CreateSection();
             }
             catch (Exception ex)
             {
@@ -3455,6 +3457,15 @@ namespace PrePoMax
             }
         }
         //
+        private void CreateSection()
+        {
+            if (_controller.Model.Mesh == null) return;
+            // Data editor
+            ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
+            ItemSetDataEditor.ParentForm = _frmSection;
+            _frmSelectItemSet.SetOnlyGeometrySelection(true);
+            ShowForm(_frmSection, "Create Section", null);
+        }
         private void EditSection(string sectionName)
         {
             // Data editor
@@ -3739,6 +3750,70 @@ namespace PrePoMax
                 _controller.RemoveContactPairsCommand(contactPairNames);
             }
         }
+        #endregion  ################################################################################################################
+
+        #region Initial condition menu  ############################################################################################
+        private void tsmiCreateInitialCondition_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                CreateInitialCondition();
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiEditInitialCondition_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectOneEntity("Initial Conditions", _controller.GetAllInitialConditions(), EditInitialCondition);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiDeleteInitialCondition_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Initial Conditions", _controller.GetAllInitialConditions(), DeleteInitialConditions);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        //
+        private void CreateInitialCondition()
+        {
+            if (_controller.Model.Mesh == null) return;
+            // Data editor
+            ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
+            ItemSetDataEditor.ParentForm = _frmInitialCondition;
+            _frmSelectItemSet.SetOnlyGeometrySelection(false);
+            ShowForm(_frmInitialCondition, "Create Initial Condition", null);
+        }
+        private void EditInitialCondition(string initialConditionName)
+        {
+            // Data editor
+            ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
+            ItemSetDataEditor.ParentForm = _frmInitialCondition;
+            _frmSelectItemSet.SetOnlyGeometrySelection(false);
+            ShowForm(_frmInitialCondition, "Edit Initial Condition", initialConditionName);
+        }
+        private void DeleteInitialConditions(string[] initialConditionNames)
+        {
+            if (MessageBox.Show("OK to delete selected initial conditions?" + Environment.NewLine + initialConditionNames.ToRows(),
+                                Globals.ProgramName,
+                                MessageBoxButtons.OKCancel) == DialogResult.OK)
+            {
+                _controller.RemoveInitialConditionsCommand(initialConditionNames);
+            }
+        }
+
         #endregion  ################################################################################################################
 
         #region Step menu  #########################################################################################################
@@ -5001,13 +5076,14 @@ namespace PrePoMax
             if (_frmSelectGeometry != null && _frmSelectGeometry.Visible) _frmSelectGeometry.SelectionChanged(ids);
             //
             if (_frmBoundaryLayer != null && _frmBoundaryLayer.Visible) _frmBoundaryLayer.SelectionChanged(ids);
-            if (_frmRemeshingParameters != null && _frmRemeshingParameters.Visible) _frmRemeshingParameters.SelectionChanged(ids);
+            if (_frmRemeshingParameters != null && _frmRemeshingParameters.Visible) _frmRemeshingParameters.SelectionChanged(ids);            
             if (_frmNodeSet != null && _frmNodeSet.Visible) _frmNodeSet.SelectionChanged(ids);
             if (_frmElementSet != null && _frmElementSet.Visible) _frmElementSet.SelectionChanged(ids);
             if (_frmSurface != null && _frmSurface.Visible) _frmSurface.SelectionChanged(ids);
             if (_frmSection != null && _frmSection.Visible) _frmSection.SelectionChanged(ids);
             if (_frmConstraint != null && _frmConstraint.Visible) _frmConstraint.SelectionChanged(ids);
             if (_frmContactPair != null && _frmContactPair.Visible) _frmContactPair.SelectionChanged(ids);
+            if (_frmInitialCondition != null && _frmInitialCondition.Visible) _frmInitialCondition.SelectionChanged(ids);
             //
             if (_frmHistoryOutput != null && _frmHistoryOutput.Visible) _frmHistoryOutput.SelectionChanged(ids);
             if (_frmBoundaryCondition != null && _frmBoundaryCondition.Visible) _frmBoundaryCondition.SelectionChanged(ids);
@@ -6493,6 +6569,6 @@ namespace PrePoMax
             }
         }
 
-       
+        
     }
 }

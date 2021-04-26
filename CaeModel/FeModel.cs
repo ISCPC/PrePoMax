@@ -275,7 +275,13 @@ namespace CaeModel
             foreach (var entry in _initialConditions)
             {
                 initialCondition = entry.Value;
-                throw new NotSupportedException();
+                if (initialCondition is InitialTemperature it)
+                {
+                    valid = (it.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(it.RegionName))
+                            || (it.RegionType == RegionTypeEnum.SurfaceName && _mesh.Surfaces.ContainsValidKey(it.RegionName));
+                }
+                SetItemValidity(null, initialCondition, valid, items);
+                if (!valid && initialCondition.Active) invalidItems.Add("Initial condition: " + initialCondition.Name);
             }
             // Steps
             HistoryOutput historyOutput;
