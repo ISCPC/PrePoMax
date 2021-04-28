@@ -351,7 +351,6 @@ namespace PrePoMax
             Commands.CClear comm = new Commands.CClear();
             _commands.AddAndExecute(comm);
         }
-
         //******************************************************************************************
         public void Clear()
         {
@@ -443,7 +442,6 @@ namespace PrePoMax
             Commands.CCreateAndImportCompoundPart comm = new Commands.CCreateAndImportCompoundPart(partNames);
             _commands.AddAndExecute(comm);
         }
-
         //******************************************************************************************
         public void New()
         {
@@ -1381,7 +1379,7 @@ namespace PrePoMax
             Commands.CSetCalculixUserKeywords comm = new Commands.CSetCalculixUserKeywords(userKeywords);
             _commands.AddAndExecute(comm);
         }
-
+        //******************************************************************************************
         public void UndoHistory()
         {
             string lastFileName = OpenedFileName;
@@ -1404,7 +1402,7 @@ namespace PrePoMax
             _commands.ExecuteAllCommands(showImportDialog, showMeshParametersDialog);
             OpenedFileName = lastFileName;
         }
-
+        //
         public List<FileInOut.Output.Calculix.CalculixKeyword> GetCalculixModelKeywords()
         {
             if (_model == null)
@@ -1432,8 +1430,7 @@ namespace PrePoMax
         #endregion ################################################################################################################
 
         #region View menu   ########################################################################################################
-        // COMMANDS ********************************************************************************
-
+        //
         public void ApplySectionView(double[] point, double[] normal)
         {
             _sectionViewPlanes[_currentView] = new Octree.Plane(point, normal);
@@ -1588,8 +1585,7 @@ namespace PrePoMax
                 //
                 if (update) Redraw();
             }
-        }
-        
+        }        
 
         #endregion ################################################################################################################
 
@@ -1637,9 +1633,7 @@ namespace PrePoMax
                 new Commands.CFindEdgesByAngleForGeometryPartsCommand(partNames, edgeAngle);
             _commands.AddAndExecute(comm);
         }
-
         //******************************************************************************************
-
         public string[] GetGeometryPartNames()
         {
             if (_model.Geometry != null) return _model.Geometry.Parts.Keys.ToArray();
@@ -1983,7 +1977,6 @@ namespace PrePoMax
             //
             DrawGeometry(false);
         }
-
         // Analyze geometry ***********************************************************************
         public double GetShortestEdgeLen(string[] partNames)
         {
@@ -2014,7 +2007,6 @@ namespace PrePoMax
             int[][] cells = mesh.GetSmallestFaces(minFaceArea, partNames);
             HighlightSurface(cells, null, false);
         }
-
         // Flip face orientation ******************************************************************
         public void FlipFaceOrientations(GeometrySelection geometrySelection)
         {
@@ -2153,7 +2145,6 @@ namespace PrePoMax
             }
             return true;
         }
-        
         // Split a face using two points **********************************************************
         public void SplitAFaceUsingTwoPoints(GeometrySelection surfaceSelection, GeometrySelection verticesSelection)
         {
@@ -2235,7 +2226,6 @@ namespace PrePoMax
             if (_netgenJob.JobStatus == JobStatus.OK) return outputBrepFileName;
             else return null;
         }
-        
         // Find edges *****************************************************************************
         public void FindEdgesByAngleForGeometryParts(string[] partNames, double edgeAngle)
         {
@@ -2250,7 +2240,6 @@ namespace PrePoMax
             // Draw
             DrawGeometry(false);
         }
-
         // Crop geometry using cylinder
         public void CropGeometryPartWithCylinder(string partName)
         {
@@ -2308,7 +2297,6 @@ namespace PrePoMax
             Commands.CCreateMesh comm = new Commands.CCreateMesh(partName);
             _commands.AddAndExecute(comm);
         }
-
         //******************************************************************************************
         public MeshingParameters GetMeshingParameters(string[] partNames)
         {
@@ -2832,7 +2820,6 @@ namespace PrePoMax
             Commands.CRenumberNodes comm = new Commands.CRenumberNodes(startNodeId, _currentView);
             _commands.AddAndExecute(comm);
         }
-
         //******************************************************************************************
         public void RenumberNodes(int startNodeId)
         {
@@ -2885,7 +2872,7 @@ namespace PrePoMax
         #endregion #################################################################################################################
 
         #region Element menu   #####################################################################################################
-
+        //
         public int[] GetAllElementIds()
         {
             if (_currentView == ViewGeometryModelResults.Geometry) return _model.Geometry.Elements.Keys.ToArray();
@@ -2946,9 +2933,7 @@ namespace PrePoMax
             Commands.CRemeshElements comm = new Commands.CRemeshElements(remeshingParameters);
             _commands.AddAndExecute(comm);
         }
-
         //******************************************************************************************
-
         public void ReplaceModelProperties(string newModelName, ModelProperties newModelProperties)
         {
             _model.Name = newModelName;
@@ -3206,9 +3191,7 @@ namespace PrePoMax
             Commands.CRemoveModelParts comm = new Commands.CRemoveModelParts(partNames);
             _commands.AddAndExecute(comm);
         }
-
         //******************************************************************************************
-
         public string[] GetModelPartNames()
         {
             if (_model.Mesh != null) return _model.Mesh.Parts.Keys.ToArray();
@@ -3468,9 +3451,7 @@ namespace PrePoMax
             Commands.CRemoveNodeSets comm = new Commands.CRemoveNodeSets(nodeSetNames);
             _commands.AddAndExecute(comm);
         }
-
         //******************************************************************************************
-
         public string[] GetAllNodeSetNames()
         {
             return _model.Mesh.NodeSets.Keys.ToArray();
@@ -3688,9 +3669,7 @@ namespace PrePoMax
             Commands.CRemoveElementSets comm = new Commands.CRemoveElementSets(elementSetNames);
             _commands.AddAndExecute(comm);
         }
-
         //******************************************************************************************
-
         public string[] GetAllElementSetNames()
         {
             return _model.Mesh.ElementSets.Keys.ToArray();
@@ -3920,9 +3899,7 @@ namespace PrePoMax
             Commands.CRemoveSurfaces comm = new Commands.CRemoveSurfaces(surfaceNames);
             _commands.AddAndExecute(comm);
         }
-
         //******************************************************************************************
-
         public string[] GetAllSurfaceNames()
         {
             if (_model.Mesh != null) return _model.Mesh.Surfaces.Keys.ToArray();
@@ -4182,9 +4159,7 @@ namespace PrePoMax
             Commands.CRemoveReferencePoints comm = new Commands.CRemoveReferencePoints(referencePointNames);
             _commands.AddAndExecute(comm);
         }
-
-        ////******************************************************************************************
-
+        //******************************************************************************************
         public string[] GetReferencePointNames()
         {
             if (_model.Mesh != null) return _model.Mesh.ReferencePoints.Keys.ToArray();
@@ -4303,9 +4278,7 @@ namespace PrePoMax
             Commands.CRemoveMaterials comm = new Commands.CRemoveMaterials(materialNames);
             _commands.AddAndExecute(comm);
         }
-
         //******************************************************************************************
-
         public string[] GetMaterialNames()
         {
             return _model.Materials.Keys.ToArray();
@@ -4380,9 +4353,7 @@ namespace PrePoMax
             Commands.CRemoveSections comm = new Commands.CRemoveSections(sectionNames);
             _commands.AddAndExecute(comm);
         }
-
         //******************************************************************************************
-
         public string[] GetSectionNames()
         {
             return _model.Sections.Keys.ToArray();
@@ -4511,9 +4482,7 @@ namespace PrePoMax
             Commands.CRemoveConstraints comm = new Commands.CRemoveConstraints(constraintNames);
             _commands.AddAndExecute(comm);
         }
-
         //******************************************************************************************
-
         public string[] GetConstraintNames()
         {
             return _model.Constraints.Keys.ToArray();
@@ -4695,9 +4664,7 @@ namespace PrePoMax
             Commands.CRemoveSurfaceInteractions comm = new Commands.CRemoveSurfaceInteractions(surfaceInteractionNames);
             _commands.AddAndExecute(comm);
         }
-
         //******************************************************************************************
-
         public string[] GetSurfaceInteractionNames()
         {
             return _model.SurfaceInteractions.Keys.ToArray();
@@ -4776,9 +4743,7 @@ namespace PrePoMax
             Commands.CRemoveContactPairs comm = new Commands.CRemoveContactPairs(contactPairNames);
             _commands.AddAndExecute(comm);
         }
-
         //******************************************************************************************
-
         public string[] GetContactPairNames()
         {
             return _model.ContactPairs.Keys.ToArray();
@@ -4923,9 +4888,7 @@ namespace PrePoMax
             Commands.CRemoveInitialConditions comm = new Commands.CRemoveInitialConditions(initialConditionNames);
             _commands.AddAndExecute(comm);
         }
-
         //******************************************************************************************
-
         public string[] GetInitialConditionNames()
         {
             return _model.InitialConditions.Keys.ToArray();
@@ -5042,9 +5005,7 @@ namespace PrePoMax
             Commands.CRemoveSteps comm = new Commands.CRemoveSteps(stepNames);
             _commands.AddAndExecute(comm);
         }
-
         //******************************************************************************************
-
         public string[] GetStepNames()
         {
             return _model.StepCollection.GetStepNames();
@@ -5139,13 +5100,7 @@ namespace PrePoMax
             Commands.CRemoveHistoryOutputs comm = new Commands.CRemoveHistoryOutputs(stepName, historyOutputNames);
             _commands.AddAndExecute(comm);
         }
-
         //******************************************************************************************
-
-        public string[] GetHistoryOutputNames()
-        {
-            return _model.StepCollection.GetHistoryOutputNames();
-        }
         public string[] GetHistoryOutputNamesForStep(string stepName)
         {
             return _model.StepCollection.GetStep(stepName).HistoryOutputs.Keys.ToArray();
@@ -5155,7 +5110,7 @@ namespace PrePoMax
             if (!_model.StepCollection.MulitRegionSelectionExists(stepName, historyOutput))
                 ConvertSelectionBasedHistoryOutput(historyOutput);
             //
-            _model.StepCollection.GetStep(stepName).HistoryOutputs.Add(historyOutput.Name, historyOutput);
+            _model.StepCollection.AddHistoryOutput(historyOutput, stepName);
             _form.AddTreeNode(ViewGeometryModelResults.Model, historyOutput, stepName);
             //
             CheckAndUpdateValidity();
@@ -5293,20 +5248,14 @@ namespace PrePoMax
             Commands.CRemoveFieldOutputs comm = new Commands.CRemoveFieldOutputs(stepName, fieldOutputNames);
             _commands.AddAndExecute(comm);
         }
-
         //******************************************************************************************
-
-        public string[] GetFieldOutputNames()
-        {
-            return _model.StepCollection.GetFieldOutputNames();
-        }
         public string[] GetFieldOutputNamesForStep(string stepName)
         {
             return _model.StepCollection.GetStep(stepName).FieldOutputs.Keys.ToArray();
         }
         public void AddFieldOutput(string stepName, FieldOutput fieldOutput)
         {
-            _model.StepCollection.GetStep(stepName).FieldOutputs.Add(fieldOutput.Name, fieldOutput);
+            _model.StepCollection.AddFieldOutput(fieldOutput, stepName);
             _form.AddTreeNode(ViewGeometryModelResults.Model, fieldOutput, stepName);
 
             CheckAndUpdateValidity();
@@ -5394,9 +5343,7 @@ namespace PrePoMax
             Commands.CRemoveBCs comm = new Commands.CRemoveBCs(stepName, boundaryConditionNames);
             _commands.AddAndExecute(comm);
         }
-
         //******************************************************************************************
-
         public string[] GetAllBoundaryConditionNames()
         {
             return _model.StepCollection.GetAllBoundaryConditionNames();
@@ -5570,9 +5517,7 @@ namespace PrePoMax
             Commands.CRemoveLoads comm = new Commands.CRemoveLoads(stepName, loadNames);
             _commands.AddAndExecute(comm);
         }
-
         //******************************************************************************************
-
         public string[] GetAllLoadNames()
         {
             return _model.StepCollection.GetAllLoadNames();
@@ -5733,6 +5678,142 @@ namespace PrePoMax
 
         #endregion #################################################################################################################
 
+        #region Defined field menu   ###############################################################################################
+        // COMMANDS ********************************************************************************
+        public void AddDefinedFieldCommand(string stepName, DefinedField definedField)
+        {
+            Commands.CAddDefinedField comm = new Commands.CAddDefinedField(stepName, definedField);
+            _commands.AddAndExecute(comm);
+        }
+        public void ReplaceDefinedFieldCommand(string stepName, string oldDefinedFieldName, DefinedField definedField)
+        {
+            Commands.CReplaceDefinedField comm = new Commands.CReplaceDefinedField(stepName, oldDefinedFieldName, definedField);
+            _commands.AddAndExecute(comm);
+        }
+        public void PropagateDefinedFieldCommand(string stepName, string definedFieldName)
+        {
+            Commands.CPropagateDefinedField comm = new Commands.CPropagateDefinedField(stepName, definedFieldName);
+            _commands.AddAndExecute(comm);
+        }
+        public void RemoveDefinedFieldsForStepCommand(string stepName, string[] definedFieldNames)
+        {
+            Commands.CRemoveDefinedFields comm = new Commands.CRemoveDefinedFields(stepName, definedFieldNames);
+            _commands.AddAndExecute(comm);
+        }
+        //******************************************************************************************
+        public string[] GetDefinedFieldNamesForStep(string stepName)
+        {
+            return _model.StepCollection.GetStep(stepName).DefinedFields.Keys.ToArray();
+        }
+        public void AddDefinedField(string stepName, DefinedField definedField)
+        {
+            if (!_model.StepCollection.MulitRegionSelectionExists(stepName, definedField))
+                ConvertSelectionBasedDefinedField(definedField);
+            //
+            _model.StepCollection.AddDefinedField(definedField, stepName);
+            _form.AddTreeNode(ViewGeometryModelResults.Model, definedField, stepName);
+            //
+            CheckAndUpdateValidity();
+        }
+        public DefinedField GetDefinedField(string stepName, string definedFieldName)
+        {
+            return _model.StepCollection.GetStep(stepName).DefinedFields[definedFieldName]; ;
+        }
+        public DefinedField[] GetAllDefinedFields(string stepName)
+        {
+            return _model.StepCollection.GetStep(stepName).DefinedFields.Values.ToArray();
+        }
+        public void ReplaceDefinedField(string stepName, string oldDefinedFieldName, DefinedField definedField)
+        {
+            if (StepCollection.MultiRegionChanged(GetDefinedField(stepName, oldDefinedFieldName), definedField))
+            {
+                DeleteSelectionBasedDefinedFieldSets(stepName, oldDefinedFieldName);
+                ConvertSelectionBasedDefinedField(definedField);
+            }
+            //
+            _model.StepCollection.GetStep(stepName).DefinedFields.Replace(oldDefinedFieldName, definedField.Name, definedField);
+            //
+            _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldDefinedFieldName, definedField, stepName);
+            //
+            CheckAndUpdateValidity();
+        }
+        public void PropagateDefinedField(string stepName, string definedFieldName)
+        {
+            string[] nextStepNames = _model.StepCollection.GetNextStepNames(stepName);
+            DefinedField definedField = GetDefinedField(stepName, definedFieldName).DeepClone();
+            foreach (var nextStepName in nextStepNames)
+            {
+                if (_model.StepCollection.GetStep(nextStepName).DefinedFields.ContainsKey(definedFieldName))
+                    ReplaceDefinedField(nextStepName, definedFieldName, definedField);
+                else
+                    AddDefinedField(nextStepName, definedField);
+            }
+
+        }
+        public void ActivateDeactivateDefinedField(string stepName, string definedFieldName, bool active)
+        {
+            DefinedField definedField = _model.StepCollection.GetStep(stepName).DefinedFields[definedFieldName];
+            definedField.Active = active;
+            //
+            _form.UpdateTreeNode(ViewGeometryModelResults.Model, definedFieldName, definedField, stepName);
+            //
+            CheckAndUpdateValidity();
+        }
+        public void RemoveDefinedFields(string stepName, string[] definedFieldNames)
+        {
+            foreach (var name in definedFieldNames)
+            {
+                DeleteSelectionBasedDefinedFieldSets(stepName, name);
+                _model.StepCollection.GetStep(stepName).DefinedFields.Remove(name);
+                _form.RemoveTreeNode<DefinedField>(ViewGeometryModelResults.Model, name, stepName);
+            }
+            //
+            CheckAndUpdateValidity();
+        }
+        //
+        private void ConvertSelectionBasedDefinedField(DefinedField definedField)
+        {
+            // Create a named set and convert a selection to a named set
+            if (definedField.RegionType == RegionTypeEnum.Selection)
+            {
+                string name;
+                // Node output
+                if (definedField is DefinedTemperature)
+                {
+                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.NodeSets) + definedField.Name;
+                    FeNodeSet nodeSet = new FeNodeSet(name, definedField.CreationIds);
+                    nodeSet.CreationData = definedField.CreationData.DeepClone();
+                    nodeSet.Internal = true;
+                    AddNodeSet(nodeSet);
+                    //
+                    definedField.RegionName = name;
+                    definedField.RegionType = RegionTypeEnum.NodeSetName;
+                }
+                else throw new NotSupportedException();
+            }
+            // Clear the creation data if not used
+            else
+            {
+                definedField.CreationData = null;
+                definedField.CreationIds = null;
+            }
+        }
+        private void DeleteSelectionBasedDefinedFieldSets(string stepName, string oldDefinedFieldName)
+        {
+            DefinedField definedField = GetDefinedField(stepName, oldDefinedFieldName);
+            //
+            Dictionary<string, int> regionsCount = _model.StepCollection.GetDefinedFieldRegionsCount();
+            // Delete previously created sets
+            if (definedField.CreationData != null && definedField.RegionName != null &&
+                regionsCount[definedField.RegionName] == 1)
+            {
+                if (definedField is DefinedTemperature) RemoveNodeSets(new string[] { definedField.RegionName });
+                else throw new NotSupportedException();
+            }
+        }
+
+        #endregion #################################################################################################################
+
         #region Settings menu   ####################################################################################################
         // COMMANDS ********************************************************************************
         public void SetModelUnitSystemCommand(UnitSystemType unitSystemType)
@@ -5741,7 +5822,6 @@ namespace PrePoMax
             _commands.AddAndExecute(comm);
         }
         //******************************************************************************************
-
         public void SetModelUnitSystem(UnitSystemType unitSystemType)
         {
             _model.UnitSystem = new UnitSystem(unitSystemType);
@@ -5807,7 +5887,6 @@ namespace PrePoMax
                 }
             }
         }
-        //
 
         #endregion #################################################################################################################
 
@@ -5828,9 +5907,7 @@ namespace PrePoMax
             Commands.CRemoveJobs comm = new Commands.CRemoveJobs(jobNames);
             _commands.AddAndExecute(comm);
         }
-
         //******************************************************************************************
-
         public string[] GetJobNames()
         {
             return _jobs.Keys.ToArray();
@@ -5920,7 +5997,6 @@ namespace PrePoMax
                 _form.RemoveTreeNode<AnalysisJob>(ViewGeometryModelResults.Model, name, null);
             }
         }
-
 
         #endregion #################################################################################################################
 
@@ -6137,49 +6213,21 @@ namespace PrePoMax
             Commands.CActivateDeactivateMultilpe comm = new Commands.CActivateDeactivateMultilpe(items, activate, stepNames);
             _commands.AddAndExecute(comm);
         }
-
         //******************************************************************************************
-
         public void ActivateDeactivate(NamedClass item, bool activate, string stepName)
         {
             // Do not call the replace command here
             item.Active = activate;
-            if (item is FeMeshRefinement mr)
-            {
-                ActivateDeactivateMeshRefinement(mr.Name, activate);
-            }
-            else if (item is Constraint co)
-            {
-                ActivateDeactivateConstraint(co.Name, activate);
-            }
-            else if (item is ContactPair cp)
-            {
-                ActivateDeactivateContactPair(cp.Name, activate);
-            }
-            else if (item is InitialCondition ic)
-            {
-                ActivateDeactivateInitialCondition(ic.Name, activate);
-            }
-            else if (item is Step st)
-            {
-                ActivateDeactivateStep(st.Name, activate);
-            }
-            else if (item is HistoryOutput ho)
-            {
-                ActivateDeactivateHistoryOutput(stepName, ho.Name, activate);
-            }
-            else if (item is FieldOutput fo)
-            {
-                ActivateDeactivateFieldOutput(stepName, fo.Name, activate);
-            }
-            else if (item is BoundaryCondition bc)
-            {
-                ActivateDeactivateBoundaryCondition(stepName, bc.Name, activate);
-            }
-            else if (item is Load lo)
-            {
-                ActivateDeactivateLoad(stepName, lo.Name, activate);
-            }
+            if (item is FeMeshRefinement mr) ActivateDeactivateMeshRefinement(mr.Name, activate);
+            else if (item is Constraint co) ActivateDeactivateConstraint(co.Name, activate);
+            else if (item is ContactPair cp) ActivateDeactivateContactPair(cp.Name, activate);
+            else if (item is InitialCondition ic) ActivateDeactivateInitialCondition(ic.Name, activate);
+            else if (item is Step st) ActivateDeactivateStep(st.Name, activate);
+            else if (item is HistoryOutput ho) ActivateDeactivateHistoryOutput(stepName, ho.Name, activate);
+            else if (item is FieldOutput fo) ActivateDeactivateFieldOutput(stepName, fo.Name, activate);
+            else if (item is BoundaryCondition bc) ActivateDeactivateBoundaryCondition(stepName, bc.Name, activate);
+            else if (item is Load lo) ActivateDeactivateLoad(stepName, lo.Name, activate);
+            else if (item is DefinedField df) ActivateDeactivateDefinedField(stepName, df.Name, activate);
             else throw new NotImplementedException();
         }
         public void ActivateDeactivateMultiple(NamedClass[] items, bool activate, string[] stepNames)
@@ -7438,7 +7486,7 @@ namespace PrePoMax
             //
             return data;
         }
-
+        //
         public int[][] GetSurfaceCellsByGeometryId(int[] geometrySurfaceIds, out ElementFaceType[] elementFaceTypes)
         {
             if (geometrySurfaceIds.Length != 1) throw new NotSupportedException();
@@ -7531,7 +7579,6 @@ namespace PrePoMax
 
         #endregion #################################################################################################################
 
-
         public void ResetAllJobStatus()
         {
             foreach (var entry in _jobs)
@@ -7597,8 +7644,6 @@ namespace PrePoMax
             }
             return _errors.Count;
         }
-
-       
 
         // Visualize
         public void Redraw(bool resetCamera = false)
@@ -9720,6 +9765,13 @@ namespace PrePoMax
                     {
                         HighlightLoad(l);
                     }
+                    else if (obj is DefinedField df)
+                    {
+                        if (df.RegionType == RegionTypeEnum.NodeSetName) HighlightNodeSets(new string[] { df.RegionName });
+                        else if (df.RegionType == RegionTypeEnum.SurfaceName) HighlightSurfaces(new string[] { df.RegionName });
+                        else if (df.RegionType == RegionTypeEnum.Selection) { }
+                        else throw new NotSupportedException();
+                    }
                 }
                 else if (view == ViewGeometryModelResults.Results)
                 {
@@ -10633,7 +10685,6 @@ namespace PrePoMax
             else return values[0];
         }
         #endregion #################################################################################################################
-
 
         // Tools
         public float GetScale()

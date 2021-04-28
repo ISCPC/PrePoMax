@@ -115,6 +115,7 @@ namespace UserControls
         private string _fieldOutputsName;
         private string _boundaryConditionsName;
         private string _loadsName;
+        private string _definedFieldsName;
         private string _analysesName;
         
         
@@ -213,6 +214,7 @@ namespace UserControls
             _stepsName = "Steps";
             _boundaryConditionsName = "BCs";
             _loadsName = "Loads";
+            _definedFieldsName = "Defined fields";
             _analysesName = "Analyses";
             // Results
             _fieldOutputsName = "Field outputs";
@@ -1750,6 +1752,19 @@ namespace UserControls
                 node.Tag = item;
                 parent = tmp[0];
             }
+            else if (item is DefinedField && stepName != null)
+            {
+                tmp = _steps.Nodes.Find(stepName, true);
+                if (tmp.Length > 1) throw new Exception("Adding operation failed. More than one step named: " + stepName);
+                //
+                tmp = tmp[0].Nodes.Find(_definedFieldsName, true);
+                if (tmp.Length > 1) throw new Exception("Adding operation failed. There is no defined field node to add to.");
+                //
+                node = tmp[0].Nodes.Add(item.Name);
+                node.Name = node.Text;
+                node.Tag = item;
+                parent = tmp[0];
+            }
             else if (item is AnalysisJob)
             {
                 node = _analyses.Nodes.Add(item.Name);
@@ -1954,34 +1969,35 @@ namespace UserControls
             stepNode.Name = stepNode.Text;
             stepNode.Tag = step;
             SetNodeStatus(stepNode);
-
+            //
             TreeNode tmp;
-            // HistoryOutputs
+            // History outputs
             tmp = stepNode.Nodes.Add(_historyOutputsName);
             tmp.Name = tmp.Text;
             AddObjectsToNode<string, HistoryOutput>(_historyOutputsName, tmp, step.HistoryOutputs);
             SetNodeImage(tmp, "History_output.ico");
-
-            // FieldOutputs
+            // Field outputs
             tmp = stepNode.Nodes.Add(_fieldOutputsName);
             tmp.Name = tmp.Text;
             AddObjectsToNode<string, FieldOutput>(_fieldOutputsName, tmp, step.FieldOutputs);
             SetNodeImage(tmp, "Field_output.ico");
-
-            // BoundaryConditions
+            // Boundary conditions
             tmp = stepNode.Nodes.Add(_boundaryConditionsName);
             tmp.Name = tmp.Text;
             AddObjectsToNode<string, BoundaryCondition>(_boundaryConditionsName, tmp, step.BoundaryConditions);
             SetNodeImage(tmp, "Bc.ico");
-            
             // Loads
             tmp = stepNode.Nodes.Add(_loadsName);
             tmp.Name = tmp.Text;
             AddObjectsToNode<string, Load>(_loadsName, tmp, step.Loads);
             SetNodeImage(tmp, "Load.ico");
-
+            // Defined fields
+            tmp = stepNode.Nodes.Add(_definedFieldsName);
+            tmp.Name = tmp.Text;
+            AddObjectsToNode<string, DefinedField>(_definedFieldsName, tmp, step.DefinedFields);
+            SetNodeImage(tmp, "Defined_field.ico");
+            //
             stepNode.Expand();
-
             return stepNode;
         }
 
@@ -2227,6 +2243,7 @@ namespace UserControls
             else if (node.Name == _fieldOutputsName) return true;
             else if (node.Name == _boundaryConditionsName) return true;
             else if (node.Name == _loadsName) return true;
+            else if (node.Name == _definedFieldsName) return true;
             else if (node.Name == _analysesName) return true;
             else return false;
         }
@@ -2245,6 +2262,7 @@ namespace UserControls
             else if (node.Tag is FieldOutput) return true;
             else if (node.Tag is BoundaryCondition) return true;
             else if (node.Tag is Load) return true;
+            else if (node.Tag is DefinedField) return true;
             else return false;
         }
         private bool CanDeactivate(TreeNode node)
@@ -2258,6 +2276,7 @@ namespace UserControls
             else if (node.Tag is FieldOutput) return true;
             else if (node.Tag is BoundaryCondition) return true;
             else if (node.Tag is Load) return true;
+            else if (node.Tag is DefinedField) return true;
             else return false;
         }
         private bool CanHide(object item)
@@ -2294,7 +2313,5 @@ namespace UserControls
                 cmsTree.Show(control, x, y);
             }
         }
-
-        
     }
 }

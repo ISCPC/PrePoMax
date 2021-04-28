@@ -65,6 +65,8 @@ namespace CaeResults
             { "RF1", "RM1" },
             { "RF2", "RM2" },
             { "RF3", "RM3" },
+            //
+            { "T", "T" }
         };
 
 

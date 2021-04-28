@@ -80,6 +80,7 @@ namespace PrePoMax
         private FrmFieldOutput _frmFieldOutput;
         private FrmBC _frmBoundaryCondition;
         private FrmLoad _frmLoad;
+        private FrmDefinedField _frmDefinedField;
         private FrmSettings _frmSettings;
         private FrmQuery _frmQuery;
         private FrmAnalysis _frmAnalysis;
@@ -348,6 +349,9 @@ namespace PrePoMax
                 //
                 _frmLoad = new FrmLoad(_controller);
                 AddFormToAllForms(_frmLoad);
+                //
+                _frmDefinedField = new FrmDefinedField(_controller);
+                AddFormToAllForms(_frmDefinedField);
                 //
                 _frmAnalysis = new FrmAnalysis(_controller);
                 AddFormToAllForms(_frmAnalysis);
@@ -639,6 +643,7 @@ namespace PrePoMax
                 else if (nodeName == "Field outputs" && stepName != null) CreateFieldOutput(stepName);
                 else if (nodeName == "BCs" && stepName != null) CreateBoundaryCondition(stepName);
                 else if (nodeName == "Loads" && stepName != null) CreateLoad(stepName);
+                else if (nodeName == "Defined fields" && stepName != null) CreateDefinedField(stepName);
                 else if (nodeName == "Analyses") tsmiCreateAnalysis_Click(null, null);
             }
         }
@@ -673,6 +678,7 @@ namespace PrePoMax
                 else if (namedClass is FieldOutput) EditFieldOutput(stepName, namedClass.Name);
                 else if (namedClass is BoundaryCondition) EditBoundaryCondition(stepName, namedClass.Name);
                 else if (namedClass is Load) EditLoad(stepName, namedClass.Name);
+                else if (namedClass is DefinedField) EditDefinedField(stepName, namedClass.Name);
                 else if (namedClass is AnalysisJob) EditAnalysis(namedClass.Name);
             }
             // Results
@@ -711,6 +717,7 @@ namespace PrePoMax
                 ApplyActionOnItemsInStep<FieldOutput>(items, stepNames, PropagateFieldOutput);
                 ApplyActionOnItemsInStep<BoundaryCondition>(items, stepNames, PropagateBoundaryCondition);
                 ApplyActionOnItemsInStep<Load>(items, stepNames, PropagateLoad);
+                ApplyActionOnItemsInStep<DefinedField>(items, stepNames, PropagateDefinedField);
             }
             else if (_controller.CurrentView == ViewGeometryModelResults.Results)
             {
@@ -785,6 +792,7 @@ namespace PrePoMax
                 DeleteStepItems<FieldOutput>(items, stepNames, DeleteFieldOutputs);
                 DeleteStepItems<BoundaryCondition>(items, stepNames, DeleteBoundaryConditions);
                 DeleteStepItems<Load>(items, stepNames, DeleteLoads);
+                DeleteStepItems<DefinedField>(items, stepNames, DeleteDefinedFields);
                 ApplyActionOnItems<Step>(items, DeleteSteps);
                 //
                 ApplyActionOnItems<AnalysisJob>(items, DeleteAnalyses);
@@ -3951,11 +3959,11 @@ namespace PrePoMax
         //
         private void CreateHistoryOutput(string stepName)
         {
+            if (_controller.Model.Mesh == null) return;
             // Data editor
             ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
             ItemSetDataEditor.ParentForm = _frmHistoryOutput;
             _frmSelectItemSet.SetOnlyGeometrySelection(false);
-            if (_controller.Model.Mesh == null) return;
             ShowForm(_frmHistoryOutput, "Create History Output", stepName, null);
         }
         private void EditHistoryOutput(string stepName, string historyOutputName)
@@ -4046,7 +4054,7 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
-
+        //
         private void SelectAndEditFieldOutput(string stepName)
         {
             SelectOneEntityInStep("Field outputs", _controller.GetAllFieldOutputs(stepName), stepName, EditFieldOutput);
@@ -4059,10 +4067,11 @@ namespace PrePoMax
         {
             SelectMultipleEntitiesInStep("Field outputs", _controller.GetAllFieldOutputs(stepName), stepName, DeleteFieldOutputs);
         }
-
+        //
         private void CreateFieldOutput(string stepName)
         {
             if (_controller.Model.Mesh == null) return;
+            //
             ShowForm(_frmFieldOutput, "Create Field Output", stepName, null);
         }
         private void EditFieldOutput(string stepName, string fieldOutputName)
@@ -4105,7 +4114,7 @@ namespace PrePoMax
 
         #endregion  ################################################################################################################
 
-        #region Boundary conditions menu  ##########################################################################################
+        #region Boundary condition menu  ###########################################################################################
         internal void tsmiCreateBC_Click(object sender, EventArgs e)
         {
             try
@@ -4344,7 +4353,7 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
-
+        //
         private void SelectAndEditLoad(string stepName)
         {
             SelectOneEntityInStep("Loads", _controller.GetStepLoads(stepName), stepName, EditLoad);
@@ -4365,7 +4374,7 @@ namespace PrePoMax
         {
             SelectMultipleEntitiesInStep("Loads", _controller.GetStepLoads(stepName), stepName, DeleteLoads);
         }
-
+        //
         private void CreateLoad(string stepName)
         {
             if (_controller.Model.Mesh == null) return;
@@ -4432,6 +4441,119 @@ namespace PrePoMax
             }
         }
 
+        #endregion  ################################################################################################################
+
+        #region Defined field menu #################################################################################################
+        private void tsmiCreateDefinedField_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectOneEntity("Steps", _controller.GetAllSteps(), CreateDefinedField);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiEditDefinedField_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectOneEntity("Steps", _controller.GetAllSteps(), SelectAndEditDefinedField);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiPropagateDefinedField_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectOneEntity("Steps", _controller.GetAllSteps(), SelectAndPropagateDefinedField);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiDeleteDefinedField_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectOneEntity("Steps", _controller.GetAllSteps(), SelectAndDeleteDefinedFields);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        //
+        private void SelectAndEditDefinedField(string stepName)
+        {
+            SelectOneEntityInStep("Defined fields", _controller.GetAllDefinedFields(stepName), stepName, EditDefinedField);
+        }
+        private void SelectAndPropagateDefinedField(string stepName)
+        {
+            SelectOneEntityInStep("Defined fields", _controller.GetAllDefinedFields(stepName), stepName, PropagateDefinedField);
+        }
+        private void SelectAndDeleteDefinedFields(string stepName)
+        {
+            SelectMultipleEntitiesInStep("Defined fields", _controller.GetAllDefinedFields(stepName),
+                                         stepName, DeleteDefinedFields);
+        }
+        //
+        private void CreateDefinedField(string stepName)
+        {
+            if (_controller.Model.Mesh == null) return;
+            // Data editor
+            ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
+            ItemSetDataEditor.ParentForm = _frmDefinedField;
+            _frmSelectItemSet.SetOnlyGeometrySelection(false);
+            ShowForm(_frmDefinedField, "Create Defined Field", stepName, null);
+        }
+        private void EditDefinedField(string stepName, string definedFieldName)
+        {
+            // Data editor
+            ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
+            ItemSetDataEditor.ParentForm = _frmDefinedField;
+            _frmSelectItemSet.SetOnlyGeometrySelection(false);
+            ShowForm(_frmDefinedField, "Edit Defined Field", stepName, definedFieldName);
+        }
+        private void PropagateDefinedField(string stepName, string definedFieldName)
+        {
+            bool exists = false;
+            string[] nextStepNames = _controller.Model.StepCollection.GetNextStepNames(stepName);
+            //
+            foreach (var nextStepName in nextStepNames)
+            {
+                if (_controller.Model.StepCollection.GetStep(nextStepName).DefinedFields.ContainsKey(definedFieldName))
+                {
+                    exists = true;
+                    break;
+                }
+            }
+            //
+            bool propagate = true;
+            if (exists)
+            {
+                if (MessageBox.Show("OK to overwrite the existing defined field " + definedFieldName + "?",
+                                    Globals.ProgramName,
+                                    MessageBoxButtons.OKCancel) == DialogResult.Cancel) propagate = false;
+            }
+            if (propagate) _controller.PropagateDefinedFieldCommand(stepName, definedFieldName);
+        }
+        private void DeleteDefinedFields(string stepName, string[] definedFieldNames)
+        {
+            if (MessageBox.Show("OK to delete selected defined fields from step " + stepName + "?" + Environment.NewLine +
+                                definedFieldNames.ToRows(),
+                                Globals.ProgramName,
+                                MessageBoxButtons.OKCancel) == DialogResult.OK)
+            {
+                _controller.RemoveDefinedFieldsForStepCommand(stepName, definedFieldNames);
+            }
+        }
+        
         #endregion  ################################################################################################################
 
         #region Tools ##############################################################################################################
@@ -5088,6 +5210,7 @@ namespace PrePoMax
             if (_frmHistoryOutput != null && _frmHistoryOutput.Visible) _frmHistoryOutput.SelectionChanged(ids);
             if (_frmBoundaryCondition != null && _frmBoundaryCondition.Visible) _frmBoundaryCondition.SelectionChanged(ids);
             if (_frmLoad != null && _frmLoad.Visible) _frmLoad.SelectionChanged(ids);
+            if (_frmDefinedField != null && _frmDefinedField.Visible) _frmDefinedField.SelectionChanged(ids);
         }
         public void SetSelectBy(vtkSelectBy selectBy)
         {
@@ -6569,6 +6692,6 @@ namespace PrePoMax
             }
         }
 
-        
+       
     }
 }

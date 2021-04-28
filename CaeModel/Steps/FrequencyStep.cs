@@ -35,10 +35,10 @@ namespace CaeModel
         {
             _perturbation = true;
             _supportsLoads = false;
-
+            //
             _numOfFrequencies = 10;
             _storage = false;
-
+            //
             AddFieldOutput(new NodalFieldOutput("NF-Output-1", NodalFieldVariable.U | NodalFieldVariable.RF));
             AddFieldOutput(new ElementFieldOutput("EF-Output-1", ElementFieldVariable.E | ElementFieldVariable.S));
         }

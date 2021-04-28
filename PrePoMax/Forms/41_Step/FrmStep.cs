@@ -221,10 +221,10 @@ namespace PrePoMax.Forms
         private Step CreateNewOrCloneLast(Type stepTypeToCreate)
         {
             if (stepTypeToCreate == null) throw new ArgumentNullException();
-
-            Step newStep = null;
+            //
+            Step newStep;
             Step prevOrLastStep = GetPreviousOrLastStep();
-
+            //
             if (prevOrLastStep == null)
             {
                 newStep = (Step)Activator.CreateInstance(stepTypeToCreate, new object[] { GetStepName() });
@@ -232,9 +232,11 @@ namespace PrePoMax.Forms
             else
             {
                 newStep = prevOrLastStep.DeepClone();
-                //newStep.FieldOutputs.Clear();
+                //
                 newStep.BoundaryConditions.Clear(); // this gets added at the step collection
                 newStep.Loads.Clear();              // this gets added at the step collection
+                newStep.DefinedFields.Clear();      // this gets added at the step collection
+                //
                 newStep.Name = GetStepName();
             }
             return newStep;

@@ -9,34 +9,34 @@ using System.Windows.Forms;
 
 namespace PrePoMax.Forms
 {
-    class FrmInitialCondition : UserControls.FrmPropertyListView, IFormBase, IFormItemSetDataParent, IFormHighlight
+    class FrmDefinedField : UserControls.FrmPropertyListView, IFormBase, IFormItemSetDataParent, IFormHighlight
     {
         // Variables                                                                                                                
-        private string[] _initialConditionNames;
-        private string _initialConditionToEditName;
-        private ViewInitialCondition _viewInitialCondition;
+        private string[] _definedFieldNames;
+        private string _definedFieldToEditName;
+        private ViewDefinedField _viewDefinedField;
         private Controller _controller;
 
 
         // Properties                                                                                                               
-        public InitialCondition InitialCondition
+        public DefinedField DefinedField
         {
-            get { return _viewInitialCondition != null ? _viewInitialCondition.GetBase() : null; }
+            get { return _viewDefinedField != null ? _viewDefinedField.GetBase() : null; }
             set
             {
-                if (value is InitialTemperature it) _viewInitialCondition = new ViewInitialTemperature(it.DeepClone());
+                if (value is DefinedTemperature dt) _viewDefinedField = new ViewDefinedTemperature(dt.DeepClone());
                 else throw new NotImplementedException();
             }
         }
 
 
         // Constructors                                                                                                             
-        public FrmInitialCondition(Controller controller)
+        public FrmDefinedField(Controller controller)
         {
             InitializeComponent();
             //
             _controller = controller;
-            _viewInitialCondition = null;
+            _viewDefinedField = null;
         }
         private void InitializeComponent()
         {
@@ -61,12 +61,12 @@ namespace PrePoMax.Forms
             // 
             this.propertyGrid.Size = new System.Drawing.Size(298, 277);
             // 
-            // FrmInitialConditions
+            // FrmDefinedField
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.ClientSize = new System.Drawing.Size(334, 461);
-            this.Name = "FrmInitialConditions";
-            this.Text = "Edit Initial Condition";
+            this.Name = "FrmDefinedField";
+            this.Text = "Edit Defined Field";
             this.gbType.ResumeLayout(false);
             this.gbProperties.ResumeLayout(false);
             this.ResumeLayout(false);
@@ -80,8 +80,8 @@ namespace PrePoMax.Forms
             if (lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)
             {
                 object itemTag = lvTypes.SelectedItems[0].Tag;
-                if (itemTag is ViewError)  _viewInitialCondition = null;
-                else if (itemTag is ViewInitialTemperature vi) _viewInitialCondition = vi;
+                if (itemTag is ViewError)  _viewDefinedField = null;
+                else if (itemTag is ViewDefinedTemperature vdt) _viewDefinedField = vdt;
                 else throw new NotImplementedException();
                 //
                 ShowHideSelectionForm();
@@ -89,24 +89,24 @@ namespace PrePoMax.Forms
                 propertyGrid.SelectedObject = itemTag;
                 propertyGrid.Select();
                 //
-                HighlightInitialCondition();
+                HighlightDefinedField();
             }
         }
         protected override void OnPropertyGridPropertyValueChanged()
         {
             string property = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
             //
-            if (property == nameof(_viewInitialCondition.RegionType))
+            if (property == nameof(_viewDefinedField.RegionType))
             {
                 ShowHideSelectionForm();
                 //
-                HighlightInitialCondition();
+                HighlightDefinedField();
             }
-            else if (_viewInitialCondition is ViewInitialTemperature vit &&
-                     (property == nameof(vit.NodeSetName) ||
-                      property == nameof(vit.SurfaceName)))
+            else if (_viewDefinedField is ViewDefinedTemperature vdt &&
+                     (property == nameof(vdt.NodeSetName) ||
+                      property == nameof(vdt.SurfaceName)))
             {
-                HighlightInitialCondition();
+                HighlightDefinedField();
             }
             //
             base.OnPropertyGridPropertyValueChanged();
@@ -115,28 +115,28 @@ namespace PrePoMax.Forms
         {
             if (propertyGrid.SelectedObject is ViewError ve) throw new CaeException(ve.Message);
             //
-            _viewInitialCondition = (ViewInitialCondition)propertyGrid.SelectedObject;
+            _viewDefinedField = (ViewDefinedField)propertyGrid.SelectedObject;
             //
-            if (InitialCondition == null) throw new CaeException("No initial condition was selected.");
+            if (DefinedField == null) throw new CaeException("No defined field was selected.");
             //
-            if (InitialCondition.RegionType == RegionTypeEnum.Selection &&
-                (InitialCondition.CreationIds == null || InitialCondition.CreationIds.Length == 0))
-                throw new CaeException("The initial condition must contain at least one item.");
+            if (DefinedField.RegionType == RegionTypeEnum.Selection &&
+                (DefinedField.CreationIds == null || DefinedField.CreationIds.Length == 0))
+                throw new CaeException("The defined field must contain at least one item.");
             //
-            if ((_initialConditionToEditName == null &&
-                 _initialConditionNames.Contains(InitialCondition.Name)) ||   // named to existing name
-                (InitialCondition.Name != _initialConditionToEditName &&
-                 _initialConditionNames.Contains(InitialCondition.Name)))     // renamed to existing name
-                throw new CaeException("The selected initial condition name already exists.");            
+            if ((_definedFieldToEditName == null &&
+                 _definedFieldNames.Contains(DefinedField.Name)) ||   // named to existing name
+                (DefinedField.Name != _definedFieldToEditName &&
+                 _definedFieldNames.Contains(DefinedField.Name)))     // renamed to existing name
+                throw new CaeException("The selected defined field name already exists.");
             // Create
-            if (_initialConditionToEditName == null)
+            if (_definedFieldToEditName == null)
             {
-                _controller.AddInitialConditionCommand(InitialCondition);
+                _controller.AddDefinedFieldCommand(_stepName, DefinedField);
             }
             // Replace
             else if (_propertyItemChanged)
             {
-                _controller.ReplaceInitialConditionCommand(_initialConditionToEditName, InitialCondition);
+                _controller.ReplaceDefinedFieldCommand(_stepName, _definedFieldToEditName, DefinedField);
             }
             // If all is successful close the ItemSetSelectionForm - except for OKAddNew
             if (!onOkAddNew) ItemSetDataEditor.SelectionForm.Hide();
@@ -148,61 +148,61 @@ namespace PrePoMax.Forms
             //
             base.OnHideOrClose();
         }
-        protected override bool OnPrepareForm(string stepName, string initialConditionToEditName)
+        protected override bool OnPrepareForm(string stepName, string definedFieldToEditName)
         {
-            this.btnOkAddNew.Visible = initialConditionToEditName == null;
+            this.btnOkAddNew.Visible = definedFieldToEditName == null;
             //
             _propertyItemChanged = false;
             _stepName = null;
-            _initialConditionNames = null;
-            _initialConditionToEditName = null;
-            _viewInitialCondition = null;
+            _definedFieldNames = null;
+            _definedFieldToEditName = null;
+            _viewDefinedField = null;
             lvTypes.Items.Clear();
             propertyGrid.SelectedObject = null;
             //
             _stepName = stepName;
-            _initialConditionNames = _controller.GetInitialConditionNames();
-            _initialConditionToEditName = initialConditionToEditName;
+            _definedFieldNames = _controller.GetDefinedFieldNamesForStep(_stepName);
+            _definedFieldToEditName = definedFieldToEditName;
             string[] nodeSetNames = _controller.GetUserNodeSetNames();
             string[] surfaceNames = _controller.GetUserSurfaceNames();
             //
-            if (_initialConditionNames == null)
-                throw new CaeException("The initial condition names must be defined first.");
+            if (_definedFieldNames == null)
+                throw new CaeException("The defined field names must be defined first.");
             // Populate list view
-            PopulateListOfHistoryOutputs(nodeSetNames, surfaceNames);
-            // Create new initial condition
-            if (_initialConditionToEditName == null)
+            PopulateListOfDefinedFields(nodeSetNames, surfaceNames);
+            // Create new defined field
+            if (_definedFieldToEditName == null)
             {
                 lvTypes.Enabled = true;
-                _viewInitialCondition = null;
+                _viewDefinedField = null;
                 if (lvTypes.Items.Count == 1) _preselectIndex = 0;
                 //
-                HighlightInitialCondition(); // must be here if called from the menu
+                HighlightDefinedField(); // must be here if called from the menu
             }
             else
-            // Edit existing initial condition
+            // Edit existing defined field
             {
-                // Get and convert a converted initial condition back to selection
-                InitialCondition = _controller.GetInitialCondition(_initialConditionToEditName); // to clone
-                if (InitialCondition.CreationData != null) InitialCondition.RegionType = RegionTypeEnum.Selection;
+                // Get and convert a converted history output back to selection
+                DefinedField = _controller.GetDefinedField(_stepName, _definedFieldToEditName); // to clone
+                if (DefinedField.CreationData != null) DefinedField.RegionType = RegionTypeEnum.Selection;
                 //
                 int selectedId;
-                if (_viewInitialCondition is ViewInitialTemperature vit)
+                if (_viewDefinedField is ViewDefinedTemperature vdt)
                 {
                     selectedId = 0;
                     // Check for deleted entities
-                    if (vit.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
-                    else if (vit.RegionType == RegionTypeEnum.NodeSetName.ToFriendlyString())
-                        CheckMissingValueRef(ref nodeSetNames, vit.NodeSetName, s => { vit.NodeSetName = s; });
-                    else if (vit.RegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
-                        CheckMissingValueRef(ref surfaceNames, vit.SurfaceName, s => { vit.SurfaceName = s; });
+                    if (vdt.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
+                    else if (vdt.RegionType == RegionTypeEnum.NodeSetName.ToFriendlyString())
+                        CheckMissingValueRef(ref nodeSetNames, vdt.NodeSetName, s => { vdt.NodeSetName = s; });
+                    else if (vdt.RegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
+                        CheckMissingValueRef(ref surfaceNames, vdt.SurfaceName, s => { vdt.SurfaceName = s; });
                     else throw new NotSupportedException();
                     //
-                    vit.PopululateDropDownLists(nodeSetNames, surfaceNames);
+                    vdt.PopululateDropDownLists(nodeSetNames, surfaceNames);
                 }
                 else throw new NotSupportedException();
                 //
-                lvTypes.Items[selectedId].Tag = _viewInitialCondition;
+                lvTypes.Items[selectedId].Tag = _viewDefinedField;
                 _preselectIndex = selectedId;
             }
             ShowHideSelectionForm();
@@ -212,48 +212,48 @@ namespace PrePoMax.Forms
 
 
         // Methods                                                                                                                  
-        private void PopulateListOfHistoryOutputs(string[] nodeSetNames, string[] surfaceNames)
+        private void PopulateListOfDefinedFields(string[] nodeSetNames, string[] surfaceNames)
         {
             ListViewItem item;
-            // Initial temperature
-            string name = "Initial temperature";
+            // Defined temperature
+            string name = "Defined temperature";
             item = new ListViewItem(name);
-            InitialTemperature it = new InitialTemperature(GetInitialConditionName(name), "", RegionTypeEnum.Selection);
-            ViewInitialTemperature vit = new ViewInitialTemperature(it);
-            vit.PopululateDropDownLists(nodeSetNames, surfaceNames);
-            item.Tag = vit;
+            DefinedTemperature dt = new DefinedTemperature(GetDefinedFieldName(name), "", RegionTypeEnum.Selection);
+            ViewDefinedTemperature vdt = new ViewDefinedTemperature(dt);
+            vdt.PopululateDropDownLists(nodeSetNames, surfaceNames);
+            item.Tag = vdt;
             lvTypes.Items.Add(item);
         }
-        private string GetInitialConditionName(string name)
+        private string GetDefinedFieldName(string name)
         {
-            if (name == null || name == "") name = "Initial condition";
+            if (name == null || name == "") name = "Defined field";
             name = name.Replace(' ', '_');
             if (name[name.Length - 1] != '-') name += '-';
-            name = NamedClass.GetNewValueName(_initialConditionNames, name);
+            name = NamedClass.GetNewValueName(_definedFieldNames, name);
             //
             return name;
         }
-        private void HighlightInitialCondition()
+        private void HighlightDefinedField()
         {
             try
             {
                 _controller.ClearSelectionHistory();
                 //
-                if (_viewInitialCondition == null) { }
-                else if (InitialCondition is InitialTemperature)
+                if (_viewDefinedField == null) { }
+                else if (DefinedField is DefinedTemperature)
                 {
-                    if (InitialCondition.RegionType == RegionTypeEnum.NodeSetName ||
-                        InitialCondition.RegionType == RegionTypeEnum.SurfaceName)
+                    if (DefinedField.RegionType == RegionTypeEnum.NodeSetName ||
+                        DefinedField.RegionType == RegionTypeEnum.SurfaceName)
                     {
-                        _controller.Highlight3DObjects(new object[] { InitialCondition.RegionName });
+                        _controller.Highlight3DObjects(new object[] { DefinedField.RegionName });
                     }
-                    else if (InitialCondition.RegionType == RegionTypeEnum.Selection)
+                    else if (DefinedField.RegionType == RegionTypeEnum.Selection)
                     {
                         SetSelectItem();
                         //
-                        if (InitialCondition.CreationData != null)
+                        if (DefinedField.CreationData != null)
                         {
-                            _controller.Selection = InitialCondition.CreationData.DeepClone();
+                            _controller.Selection = DefinedField.CreationData.DeepClone();
                             _controller.HighlightSelection();
                         }
                     }
@@ -265,7 +265,7 @@ namespace PrePoMax.Forms
         }
         private void ShowHideSelectionForm()
         {
-            if (InitialCondition != null && InitialCondition.RegionType == RegionTypeEnum.Selection)
+            if (DefinedField != null && DefinedField.RegionType == RegionTypeEnum.Selection)
                 ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
             else
                 ItemSetDataEditor.SelectionForm.Hide();
@@ -274,22 +274,22 @@ namespace PrePoMax.Forms
         }
         private void SetSelectItem()
         {
-            if (InitialCondition != null && InitialCondition.RegionType == RegionTypeEnum.Selection)
+            if (DefinedField != null && DefinedField.RegionType == RegionTypeEnum.Selection)
             {
-                if (InitialCondition is null) { }
-                else if (InitialCondition is InitialTemperature) _controller.SetSelectItemToNode();
+                if (DefinedField is null) { }
+                else if (DefinedField is DefinedTemperature) _controller.SetSelectItemToNode();
             }
             else _controller.SetSelectByToOff();
         }
         //
         public void SelectionChanged(int[] ids)
         {
-            if (InitialCondition != null && InitialCondition.RegionType == RegionTypeEnum.Selection)
+            if (DefinedField != null && DefinedField.RegionType == RegionTypeEnum.Selection)
             {
-                if (InitialCondition is InitialTemperature)
+                if (DefinedField is DefinedTemperature)
                 {
-                    InitialCondition.CreationIds = ids;
-                    InitialCondition.CreationData = _controller.Selection.DeepClone();
+                    DefinedField.CreationIds = ids;
+                    DefinedField.CreationData = _controller.Selection.DeepClone();
                     //
                     propertyGrid.Refresh();
                     //
@@ -302,15 +302,15 @@ namespace PrePoMax.Forms
         // IFormHighlight
         public void Highlight()
         {
-            HighlightInitialCondition();
+            HighlightDefinedField();
         }
 
         // IFormItemSetDataParent
         public bool IsSelectionGeometryBased()
         {
             // Prepare ItemSetDataEditor - prepare Geometry or Mesh based selection
-            if (InitialCondition == null || InitialCondition.CreationData == null) return true;
-            return InitialCondition.CreationData.IsGeometryBased();
+            if (DefinedField == null || DefinedField.CreationData == null) return true;
+            return DefinedField.CreationData.IsGeometryBased();
         }
     }
 }

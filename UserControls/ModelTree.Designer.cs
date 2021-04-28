@@ -135,10 +135,10 @@
             this.ilStatusIcons = new System.Windows.Forms.ImageList(this.components);
             this.tcGeometryModelResults = new System.Windows.Forms.TabControl();
             this.tpGeometry = new System.Windows.Forms.TabPage();
-            this.tpModel = new System.Windows.Forms.TabPage();
-            this.tpResults = new System.Windows.Forms.TabPage();
             this.cltvGeometry = new UserControls.CodersLabTreeView();
+            this.tpModel = new System.Windows.Forms.TabPage();
             this.cltvModel = new UserControls.CodersLabTreeView();
+            this.tpResults = new System.Windows.Forms.TabPage();
             this.cltvResults = new UserControls.CodersLabTreeView();
             this.cmsTree.SuspendLayout();
             this.tcGeometryModelResults.SuspendLayout();
@@ -493,19 +493,20 @@
             this.ilIcons.Images.SetKeyName(16, "Contact.ico");
             this.ilIcons.Images.SetKeyName(17, "SurfaceInteraction.ico");
             this.ilIcons.Images.SetKeyName(18, "ContactPair.ico");
-            this.ilIcons.Images.SetKeyName(19, "InitialCondition.ico");
+            this.ilIcons.Images.SetKeyName(19, "InitialConditions.ico");
             this.ilIcons.Images.SetKeyName(20, "Step.ico");
             this.ilIcons.Images.SetKeyName(21, "History_output.ico");
             this.ilIcons.Images.SetKeyName(22, "Field_output.ico");
             this.ilIcons.Images.SetKeyName(23, "Bc.ico");
             this.ilIcons.Images.SetKeyName(24, "Load.ico");
-            this.ilIcons.Images.SetKeyName(25, "Analysis.ico");
-            this.ilIcons.Images.SetKeyName(26, "NoResult.ico");
-            this.ilIcons.Images.SetKeyName(27, "Running.ico");
-            this.ilIcons.Images.SetKeyName(28, "OK.ico");
-            this.ilIcons.Images.SetKeyName(29, "Warning.ico");
-            this.ilIcons.Images.SetKeyName(30, "Dots.ico");
-            this.ilIcons.Images.SetKeyName(31, "Dots_t.ico");
+            this.ilIcons.Images.SetKeyName(25, "Defined_field.ico");
+            this.ilIcons.Images.SetKeyName(26, "Analysis.ico");
+            this.ilIcons.Images.SetKeyName(27, "NoResult.ico");
+            this.ilIcons.Images.SetKeyName(28, "Running.ico");
+            this.ilIcons.Images.SetKeyName(29, "OK.ico");
+            this.ilIcons.Images.SetKeyName(30, "Warning.ico");
+            this.ilIcons.Images.SetKeyName(31, "Dots.ico");
+            this.ilIcons.Images.SetKeyName(32, "Dots_t.ico");
             // 
             // ilStatusIcons
             // 
@@ -539,27 +540,6 @@
             this.tpGeometry.TabIndex = 2;
             this.tpGeometry.Text = "Geometry";
             this.tpGeometry.UseVisualStyleBackColor = true;
-            // 
-            // tpModel
-            // 
-            this.tpModel.Controls.Add(this.cltvModel);
-            this.tpModel.Location = new System.Drawing.Point(4, 24);
-            this.tpModel.Name = "tpModel";
-            this.tpModel.Size = new System.Drawing.Size(231, 470);
-            this.tpModel.TabIndex = 0;
-            this.tpModel.Text = "FE Model";
-            this.tpModel.UseVisualStyleBackColor = true;
-            // 
-            // tpResults
-            // 
-            this.tpResults.Controls.Add(this.cltvResults);
-            this.tpResults.Location = new System.Drawing.Point(4, 24);
-            this.tpResults.Name = "tpResults";
-            this.tpResults.Padding = new System.Windows.Forms.Padding(3);
-            this.tpResults.Size = new System.Drawing.Size(231, 470);
-            this.tpResults.TabIndex = 1;
-            this.tpResults.Text = "Results";
-            this.tpResults.UseVisualStyleBackColor = true;
             // 
             // cltvGeometry
             // 
@@ -637,6 +617,16 @@
             this.cltvGeometry.MouseDown += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseDown);
             this.cltvGeometry.MouseUp += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseUp);
             // 
+            // tpModel
+            // 
+            this.tpModel.Controls.Add(this.cltvModel);
+            this.tpModel.Location = new System.Drawing.Point(4, 24);
+            this.tpModel.Name = "tpModel";
+            this.tpModel.Size = new System.Drawing.Size(231, 470);
+            this.tpModel.TabIndex = 0;
+            this.tpModel.Text = "FE Model";
+            this.tpModel.UseVisualStyleBackColor = true;
+            // 
             // cltvModel
             // 
             this.cltvModel.BackColor = System.Drawing.SystemColors.Window;
@@ -711,9 +701,9 @@
             treeNode23.SelectedImageIndex = 16;
             treeNode23.Text = "Contact";
             treeNode23.ToolTipText = "Contact";
-            treeNode24.ImageKey = "InitialCondition.ico";
+            treeNode24.ImageKey = "InitialConditions.ico";
             treeNode24.Name = "Initial conditions";
-            treeNode24.SelectedImageKey = "InitialCondition.ico";
+            treeNode24.SelectedImageKey = "InitialConditions.ico";
             treeNode24.Text = "Initial conditions";
             treeNode24.ToolTipText = "Initial conditions";
             treeNode25.ImageKey = "Step.ico";
@@ -746,6 +736,17 @@
             this.cltvModel.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseDoubleClick);
             this.cltvModel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseDown);
             this.cltvModel.MouseUp += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseUp);
+            // 
+            // tpResults
+            // 
+            this.tpResults.Controls.Add(this.cltvResults);
+            this.tpResults.Location = new System.Drawing.Point(4, 24);
+            this.tpResults.Name = "tpResults";
+            this.tpResults.Padding = new System.Windows.Forms.Padding(3);
+            this.tpResults.Size = new System.Drawing.Size(231, 470);
+            this.tpResults.TabIndex = 1;
+            this.tpResults.Text = "Results";
+            this.tpResults.UseVisualStyleBackColor = true;
             // 
             // cltvResults
             // 

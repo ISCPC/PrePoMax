@@ -121,6 +121,34 @@
     <value>17, 17</value>
   </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="tsmiStep.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAL
+        EwAACxMBAJqcGAAAAAd0SU1FB+ACCwcgEY0qd5YAAACLSURBVDhPxZKxDcUgDERZkIaChoaChoYVGIId
+        GIIhWMmJIztCVgrwL/5JV1nvQXHmKyklkKXTXkopMOeEMQb03iGEcCbIOb9waw2892cC/DLDtVZwzp0J
+        YozPt/FlhK21ZwLOTelAzv8ECMrSaT8/wRw1LGeMpdNeEFinrBKsU1YJ1imrBLJ0EjHmAilMkTMNL1ts
+        AAAAAElFTkSuQmCC
+</value>
+  </data>
+  <data name="tsmiHistoryOutput.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
+        wwAADsMBx2+oZAAAANxJREFUOE+lkjsKg0AURad1EenciGCTwtrKXYh7sLKxCFmAVRoxVQrr2GUVFoJl
+        IEWYm7mTUYxK8HPgMZ/HnJn3GLEH6XnQE9/3v5OVXISAKMsSFHA0+4uQVYWagiiKtICjyS0CQQA4zvYS
+        cDhAJslUUKcprirP+uQf8YnP7xgKdGMMrJE3mWUPsgzvOQGKAs0woXipNcMsNbBtNHE8I3BdsDl6c4C0
+        LEgjadv2mI2EvYA3Ic8nAsKO39RwV/EMw3nBeWxeSid47BVsZo2AP3by7SnYEub4On5fIMQHoyqk5lEh
+        ZP4AAAAASUVORK5CYII=
+</value>
+  </data>
+  <data name="tsmiFieldOutput.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAL
+        EwAACxMBAJqcGAAAAAd0SU1FB+ADFxUTC7wuXVUAAACHSURBVDhPY6AacHJy2hcQEPAfF4YqwwpMYJq3
+        sKj9v5fo+//LrOr/X4+s/X/37l3CBgAl58EUYcNnzvwH01DlmAAoCTYAl+3DxICwsDCcmKABILzjws//
+        vRv+/U9qevXf2ucAGJNkADYMMwSvASCMzXaYASB6JBsA1szAEAI3gFQM1szAwAAAJMrgYOpzvJQAAAAA
+        SUVORK5CYII=
+</value>
+  </data>
   <data name="tsmiNew.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
@@ -580,34 +608,6 @@
         kH/AGUageBeGcAQltSJFJ2Z2kMIAQurDCQ5QFFY2VVyBjaN1A3dY5GsLJI2xhCs0FFjDTcbTDOywKtnq
         6wJbmaoE6sI6CCaIjSD2EBxBasO3H7GjQFm6/9g1TkFdBxX7kf5LSfIBaT87zlUDkZoAAAAASUVORK5C
         YII=
-</value>
-  </data>
-  <data name="tsmiStep.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAL
-        EwAACxMBAJqcGAAAAAd0SU1FB+ACCwcgEY0qd5YAAACLSURBVDhPxZKxDcUgDERZkIaChoaChoYVGIId
-        GIIhWMmJIztCVgrwL/5JV1nvQXHmKyklkKXTXkopMOeEMQb03iGEcCbIOb9waw2892cC/DLDtVZwzp0J
-        YozPt/FlhK21ZwLOTelAzv8ECMrSaT8/wRw1LGeMpdNeEFinrBKsU1YJ1imrBLJ0EjHmAilMkTMNL1ts
-        AAAAAElFTkSuQmCC
-</value>
-  </data>
-  <data name="tsmiHistoryOutput.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
-        wwAADsMBx2+oZAAAANxJREFUOE+lkjsKg0AURad1EenciGCTwtrKXYh7sLKxCFmAVRoxVQrr2GUVFoJl
-        IEWYm7mTUYxK8HPgMZ/HnJn3GLEH6XnQE9/3v5OVXISAKMsSFHA0+4uQVYWagiiKtICjyS0CQQA4zvYS
-        cDhAJslUUKcprirP+uQf8YnP7xgKdGMMrJE3mWUPsgzvOQGKAs0woXipNcMsNbBtNHE8I3BdsDl6c4C0
-        LEgjadv2mI2EvYA3Ic8nAsKO39RwV/EMw3nBeWxeSid47BVsZo2AP3by7SnYEub4On5fIMQHoyqk5lEh
-        ZP4AAAAASUVORK5CYII=
-</value>
-  </data>
-  <data name="tsmiFieldOutput.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAL
-        EwAACxMBAJqcGAAAAAd0SU1FB+ADFxUTC7wuXVUAAACHSURBVDhPY6AacHJy2hcQEPAfF4YqwwpMYJq3
-        sKj9v5fo+//LrOr/X4+s/X/37l3CBgAl58EUYcNnzvwH01DlmAAoCTYAl+3DxICwsDCcmKABILzjws//
-        vRv+/U9qevXf2ucAGJNkADYMMwSvASCMzXaYASB6JBsA1szAEAI3gFQM1szAwAAAJMrgYOpzvJQAAAAA
-        SUVORK5CYII=
 </value>
   </data>
   <data name="tsmiHideBC.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">

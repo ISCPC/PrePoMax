@@ -653,8 +653,18 @@ namespace FileInOut.Output
                 //
                 foreach (var loadEntry in step.Loads)
                 {
-                    if (step.Active && loadEntry.Value.Active) AppendLoad(model, step, loadEntry.Value, referencePointsNodeIds, title);
+                    if (step.Active && loadEntry.Value.Active) AppendLoad(model, loadEntry.Value, referencePointsNodeIds, title);
                     else title.AddKeyword(new CalDeactivated(loadEntry.Value.Name));
+                }
+                // Defined fields
+                if (step.Active) title = new CalTitle("Defined fields", "*Temperature, op=New");
+                else title = new CalTitle("Defined fields", "");
+                calStep.AddKeyword(title);
+                //
+                foreach (var definedFieldEntry in step.DefinedFields)
+                {
+                    if (step.Active && definedFieldEntry.Value.Active) AppendDefinedField(model, definedFieldEntry.Value, title);
+                    else title.AddKeyword(new CalDeactivated(definedFieldEntry.Value.Name));
                 }
                 // History outputs
                 title = new CalTitle("History outputs", "");
@@ -717,7 +727,7 @@ namespace FileInOut.Output
                 else throw new NotImplementedException();
             }
         }
-        static private void AppendLoad(FeModel model, Step step, Load load, Dictionary<string, int[]> referencePointsNodeIds,
+        static private void AppendLoad(FeModel model, Load load, Dictionary<string, int[]> referencePointsNodeIds,
                                        CalculixKeyword parent)
         {
             if (model.Mesh != null)
@@ -782,7 +792,15 @@ namespace FileInOut.Output
                 else throw new NotImplementedException();
             }
         }
-        
+        static private void AppendDefinedField(FeModel model, DefinedField definedField, CalculixKeyword parent)
+        {
+            if (definedField is DefinedTemperature dt)
+            {
+                CalDefinedTemperature definedTemperature = new CalDefinedTemperature(model, dt);
+                parent.AddKeyword(definedTemperature);
+            }
+            else throw new NotImplementedException();
+        }
         static private void AppendHistoryOutput(FeModel model, HistoryOutput historyOutput, CalculixKeyword parent)
         {
             if (historyOutput is NodalHistoryOutput nho)

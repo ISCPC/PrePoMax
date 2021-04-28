@@ -251,8 +251,16 @@ namespace CaeResults
                     case "RELATIVE CONTACT DISPLACEMENT":
                     case "CENTER OF GRAVITY CG":
                     case "MEAN SURFACE NORMAL":
-                        unitConverter = new StringLengthConverter();
-                        unitAbbreviation = _unitSystem.LengthUnitAbbreviation;
+                        if (componentName.ToUpper().StartsWith("UR"))
+                        {
+                            unitConverter = new StringAngleConverter();
+                            unitAbbreviation = _unitSystem.AngleUnitAbbreviation;
+                        }
+                        else
+                        {
+                            unitConverter = new StringLengthConverter();
+                            unitAbbreviation = _unitSystem.LengthUnitAbbreviation;
+                        }
                         break;
                     case "SURFACE AREA":
                         unitConverter = new StringAreaConverter();
@@ -268,8 +276,16 @@ namespace CaeResults
                     case "NORMAL SURFACE FORCE":
                     case "SHEAR SURFACE FORCE":
                     case "TOTAL SURFACE FORCE":
-                        unitConverter = new StringForceConverter();
-                        unitAbbreviation = _unitSystem.ForceUnitAbbreviation;
+                        if (componentName.ToUpper().StartsWith("RM"))
+                        {
+                            unitConverter = new StringMomentConverter();
+                            unitAbbreviation = _unitSystem.MomentUnitAbbreviation;
+                        }
+                        else
+                        {
+                            unitConverter = new StringForceConverter();
+                            unitAbbreviation = _unitSystem.ForceUnitAbbreviation;
+                        }
                         break;
                     case "STRESSES":
                     case "CONTACT STRESS":

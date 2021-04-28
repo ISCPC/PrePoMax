@@ -142,7 +142,7 @@ namespace PrePoMax.Forms
                  _historyOutputNames.Contains(HistoryOutput.Name)) ||   // named to existing name
                 (HistoryOutput.Name != _historyOutputToEditName &&
                  _historyOutputNames.Contains(HistoryOutput.Name)))     // renamed to existing name
-                throw new CaeGlobals.CaeException("The selected history output name already exists.");            
+                throw new CaeException("The selected history output name already exists.");            
             // Create
             if (_historyOutputToEditName == null)
             {

@@ -41,6 +41,7 @@ namespace CaeModel
                 if (newRegion is HistoryOutput) existingRegions.AddRange(step.HistoryOutputs.Values);
                 else if (newRegion is BoundaryCondition) existingRegions.AddRange(step.BoundaryConditions.Values);
                 else if (newRegion is Load) existingRegions.AddRange(step.Loads.Values);
+                else if (newRegion is DefinedField) existingRegions.AddRange(step.DefinedFields.Values);
                 else throw new NotSupportedException();
             }
             //
@@ -111,6 +112,10 @@ namespace CaeModel
                 {
                     if (step.SupportsLoads) step.AddLoad(entry.Value.DeepClone());
                 }
+                foreach (var entry in lastStep.DefinedFields)
+                {
+                    if (step.SupportsLoads) step.AddDefinedField(entry.Value.DeepClone());
+                }
             }
             _steps.Add(step);
         }
@@ -172,15 +177,6 @@ namespace CaeModel
                 if (step.Name == stepName) step.AddHistoryOutput(historyOutput);
             }
         }
-        public string[] GetHistoryOutputNames()
-        {
-            List<string> names = new List<string>();
-            foreach (var step in _steps)
-            {
-                foreach (var history in step.HistoryOutputs) names.Add(step.Name + " -> " + history.Key);
-            }
-            return names.ToArray();
-        }
         public Dictionary<string, int> GetHistoryOutputRegionsCount()
         {
             Dictionary<string, int> regionsCount = new Dictionary<string, int>();
@@ -201,15 +197,6 @@ namespace CaeModel
             {
                 if (step.Name == stepName) step.AddFieldOutput(fieldOutput);
             }
-        }
-        public string[] GetFieldOutputNames()
-        {
-            List<string> names = new List<string>();
-            foreach (var step in _steps)
-            {
-                foreach (var field in step.FieldOutputs) names.Add(step.Name + " -> " + field.Key);
-            }
-            return names.ToArray();
         }
         // Boundary condition
         public string[] GetAllBoundaryConditionNames()
@@ -281,6 +268,43 @@ namespace CaeModel
             foreach (var step in _steps)
             {
                 if (step.Loads.TryGetValue(load.Name, out existing) && existing == load)
+                    return step;
+            }
+            return null;
+        }
+        // Defined field
+        public string[] GetAllDefinedFieldNames()
+        {
+            HashSet<string> allNames = new HashSet<string>();
+            foreach (var step in _steps) allNames.UnionWith(step.DefinedFields.Keys);
+            return allNames.ToArray();
+        }
+        public void AddDefinedField(DefinedField definedField, string stepName)
+        {
+            foreach (var step in _steps)
+            {
+                if (step.Name == stepName) step.AddDefinedField(definedField);
+            }
+        }
+        public Dictionary<string, int> GetDefinedFieldRegionsCount()
+        {
+            Dictionary<string, int> regionsCount = new Dictionary<string, int>();
+            foreach (var step in _steps)
+            {
+                foreach (var entry in step.DefinedFields)
+                {
+                    if (regionsCount.ContainsKey(entry.Value.RegionName)) regionsCount[entry.Value.RegionName]++;
+                    else regionsCount.Add(entry.Value.RegionName, 1);
+                }
+            }
+            return regionsCount;
+        }
+        public Step GetDefinedFieldStep(DefinedField definedField)
+        {
+            DefinedField existing;
+            foreach (var step in _steps)
+            {
+                if (step.DefinedFields.TryGetValue(definedField.Name, out existing) && existing == definedField)
                     return step;
             }
             return null;
