@@ -1558,7 +1558,7 @@ namespace PrePoMax
             else
             {
                 _form.Clear3DSelection();
-                ExplodedViewParameters parameters = new ExplodedViewParameters();
+                ExplodedViewParameters parameters = _explodedViewScaleFactors[CurrentView].DeepClone();
                 parameters.ScaleFactor = 0.5;
                 PreviewExplodedView(parameters, animate);
                 ApplyExplodedView(parameters);  // Highlight
