@@ -30,7 +30,7 @@ namespace PrePoMax.Settings
         //
         [CategoryAttribute("Design")]
         [OrderedDisplayName(1, 10, "Draw a border rectangle")]
-        [DescriptionAttribute("Draw a border rectangle around the legend.")]
+        [DescriptionAttribute("Draw a border rectangle around the status block.")]
         public bool DrawBorder
         {
             get { return _statusBlockSettings.DrawBorder; }

@@ -2823,16 +2823,25 @@ namespace CaeMesh
             // https://stackoverflow.com/questions/3265986/an-algorithm-to-space-out-overlapping-rectangles
             //
             if (partNames == null) partNames = _parts.Keys.ToArray();
+            // Get connected part names
+            List<List<BasePart>> allConnectedParts = GetAllConnectedParts(partNames);
             // Get bounding boxes of the selected parts
             int count = 0;
             BoundingBox box;
             List<BoundingBox> nonIntersectingBBs = new List<BoundingBox>();
-            BoundingBox[] boxes = new BoundingBox[partNames.Length];
-            foreach (var partName in partNames)
+            BoundingBox[] boxes = new BoundingBox[allConnectedParts.Count];
+            foreach (var connectedParts in allConnectedParts)
             {
-                boxes[count] = new BoundingBox(_parts[partName].BoundingBox);
+                boxes[count] = new BoundingBox();
+                foreach (var connectedPart in connectedParts)
+                {
+                    if (connectedPart.Name == "Solid_part-2")
+                        count = count;
+                    boxes[count].IncludeBox(connectedPart.BoundingBox);
+                }
+                //
                 boxes[count].Scale(1.2);
-                boxes[count].Tag = partName;
+                boxes[count].Tag = connectedParts;
                 count++;
             }
             Array.Sort(boxes, new BoundingBoxVolmeComparer());
@@ -2844,6 +2853,7 @@ namespace CaeMesh
             Vec3D center;
             Vec3D offset;
             Vec3D direction;
+            List<BasePart> parts;
             Dictionary<string, double[]> partOffsets = new Dictionary<string, double[]>();
             for (int i = 1; i < boxes.Length; i++)
             {
@@ -2886,7 +2896,8 @@ namespace CaeMesh
                 nonIntersectingBBs.Add(box);
                 globalBox.IncludeBox(box);
                 //
-                partOffsets.Add((string)(box.Tag), (offset * scaleFactor).Coor);
+                parts = (List<BasePart>)box.Tag;
+                foreach (var part in parts) partOffsets.Add(part.Name, (offset * scaleFactor).Coor);
             }
             //
             return partOffsets;

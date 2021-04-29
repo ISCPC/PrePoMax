@@ -11,8 +11,9 @@ namespace CaeMesh
     {
         public int Compare(BoundingBox bb1, BoundingBox bb2)
         {
-            double v1 = bb1.GetVolume();
-            double v2 = bb2.GetVolume();
+            // Use rounding to eliminate numerical error - different exploded view
+            double v1 = Tools.RoundToSignificantDigits(bb1.GetVolume(), 6);
+            double v2 = Tools.RoundToSignificantDigits(bb2.GetVolume(), 6);
             //
             if (v1 < v2) return 1;
             else if (v1 > v2) return -1;
