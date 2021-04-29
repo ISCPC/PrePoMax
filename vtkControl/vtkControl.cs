@@ -2021,9 +2021,17 @@ namespace vtkControl
         private vtkColorTransferFunction GetColorTransferFunction()
         {
             vtkColorTransferFunction ctf = vtkColorTransferFunction.New();
-            if (_colorSpectrum.Type == vtkColorSpectrumType.Rainbow)
+            if (_colorSpectrum.Type == vtkColorSpectrumType.CoolWarm)
             {
-                // Rainbow
+                // Cool-Warm
+                //http://aplotnikov.com/2016/simple-visualization-of-unstructured-grid-quality/
+                //http://www.kennethmoreland.com/color-maps/
+                ctf.SetColorSpaceToDiverging();
+                ctf.AddRGBPoint(0, 0.230, 0.299, 0.754);
+                ctf.AddRGBPoint(1, 0.706, 0.016, 0.150);
+            }
+            else if (_colorSpectrum.Type == vtkColorSpectrumType.Rainbow)
+            {
                 double b = 0.0;
                 ctf.SetColorSpaceToHSV();
                 ctf.AddRGBPoint(0.000, b, b, 1);
@@ -2032,14 +2040,88 @@ namespace vtkControl
                 ctf.AddRGBPoint(0.750, 1, 1, b);
                 ctf.AddRGBPoint(1.000, 1, b, b);
             }
-            else if (_colorSpectrum.Type == vtkColorSpectrumType.CoolWarm)
+            else if (_colorSpectrum.Type == vtkColorSpectrumType.Warm)
             {
-                // Cool-Warm
-                //http://aplotnikov.com/2016/simple-visualization-of-unstructured-grid-quality/
-                //http://www.kennethmoreland.com/color-maps/
-                ctf.SetColorSpaceToDiverging();
-                ctf.AddRGBPoint(0, 0.230, 0.299, 0.754);
-                ctf.AddRGBPoint(1, 0.706, 0.016, 0.150);
+                ctf.SetColorSpaceToRGB();
+                ctf.AddRGBPoint(0, 0.549, 0.176, 0.016);
+                ctf.AddRGBPoint(0.143, 0.8, 0.298, 0.008);
+                ctf.AddRGBPoint(0.286, 0.925, 0.439, 0.078);
+                ctf.AddRGBPoint(0.429, 0.996, 0.6, 0.161);
+                ctf.AddRGBPoint(0.571, 0.996, 0.769, 0.31);
+                ctf.AddRGBPoint(0.714, 0.996, 0.89, 0.569);
+                ctf.AddRGBPoint(0.857, 1, 0.969, 0.737);
+                ctf.AddRGBPoint(1, 1, 1, 0.898);
+            }
+            else if (_colorSpectrum.Type == vtkColorSpectrumType.Cold)
+            {
+                ctf.SetColorSpaceToRGB();
+                ctf.AddRGBPoint(0, 0.031, 0.271, 0.58);
+                ctf.AddRGBPoint(0.143, 0.129, 0.443, 0.71);
+                ctf.AddRGBPoint(0.286, 0.259, 0.573, 0.776);
+                ctf.AddRGBPoint(0.429, 0.42, 0.682, 0.839);
+                ctf.AddRGBPoint(0.571, 0.62, 0.792, 0.882);
+                ctf.AddRGBPoint(0.714, 0.776, 0.859, 0.937);
+                ctf.AddRGBPoint(0.857, 0.871, 0.922, 0.969);
+                ctf.AddRGBPoint(1, 0.969, 0.984, 1);
+            }
+            else if (_colorSpectrum.Type == vtkColorSpectrumType.Cividis)
+            {
+                ctf.SetColorSpaceToRGB();
+                ctf.AddRGBPoint(0, 0, 0.125, 0.297);
+                ctf.AddRGBPoint(0.125, 0.023, 0.211, 0.43);
+                ctf.AddRGBPoint(0.25, 0.254, 0.301, 0.418);
+                ctf.AddRGBPoint(0.375, 0.375, 0.391, 0.43);
+                ctf.AddRGBPoint(0.5, 0.484, 0.48, 0.469);
+                ctf.AddRGBPoint(0.625, 0.609, 0.578, 0.465);
+                ctf.AddRGBPoint(0.75, 0.738, 0.684, 0.43);
+                ctf.AddRGBPoint(0.875, 0.875, 0.793, 0.363);
+                ctf.AddRGBPoint(1, 0.996, 0.91, 0.27);
+            }
+            else if (_colorSpectrum.Type == vtkColorSpectrumType.Viridis)
+            {
+                ctf.SetColorSpaceToRGB();
+                ctf.AddRGBPoint(0, 0.267, 0.005, 0.329);
+                ctf.AddRGBPoint(0.143, 0.275, 0.197, 0.497);
+                ctf.AddRGBPoint(0.286, 0.213, 0.359, 0.552);
+                ctf.AddRGBPoint(0.429, 0.153, 0.498, 0.558);
+                ctf.AddRGBPoint(0.571, 0.122, 0.632, 0.531);
+                ctf.AddRGBPoint(0.714, 0.29, 0.759, 0.428);
+                ctf.AddRGBPoint(0.857, 0.622, 0.854, 0.226);
+                ctf.AddRGBPoint(1, 0.993, 0.906, 0.144);
+            }
+            else if (_colorSpectrum.Type == vtkColorSpectrumType.Plasma)
+            {
+                ctf.SetColorSpaceToRGB();
+                ctf.AddRGBPoint(0, 0.05, 0.03, 0.528);
+                ctf.AddRGBPoint(0.143, 0.328, 0.007, 0.64);
+                ctf.AddRGBPoint(0.286, 0.545, 0.038, 0.647);
+                ctf.AddRGBPoint(0.429, 0.725, 0.197, 0.538);
+                ctf.AddRGBPoint(0.571, 0.859, 0.359, 0.408);
+                ctf.AddRGBPoint(0.714, 0.956, 0.534, 0.285);
+                ctf.AddRGBPoint(0.857, 0.995, 0.738, 0.167);
+                ctf.AddRGBPoint(1, 0.94, 0.975, 0.131);
+            }
+            else if (_colorSpectrum.Type == vtkColorSpectrumType.BlackBody)
+            {
+                ctf.SetColorSpaceToLab();
+                ctf.AddRGBPoint(0, 0.257, 0.089, 0.069);
+                ctf.AddRGBPoint(0.167, 0.502, 0.123, 0.107);
+                ctf.AddRGBPoint(0.333, 0.735, 0.198, 0.124);
+                ctf.AddRGBPoint(0.5, 0.877, 0.395, 0.038);
+                ctf.AddRGBPoint(0.667, 0.911, 0.632, 0.1);
+                ctf.AddRGBPoint(0.833, 0.907, 0.855, 0.189);
+                ctf.AddRGBPoint(1, 1, 1, 1);
+            }
+            else if (_colorSpectrum.Type == vtkColorSpectrumType.Kindlmann)
+            {
+                ctf.SetColorSpaceToLab();
+                ctf.AddRGBPoint(0, 0.14, 0.022, 0.46);
+                ctf.AddRGBPoint(0.167, 0.028, 0.243, 0.587);
+                ctf.AddRGBPoint(0.333, 0.021, 0.449, 0.382);
+                ctf.AddRGBPoint(0.5, 0.031, 0.625, 0.083);
+                ctf.AddRGBPoint(0.667, 0.44, 0.767, 0.037);
+                ctf.AddRGBPoint(0.833, 0.98, 0.815, 0.572);
+                ctf.AddRGBPoint(1, 1, 1, 1);
             }
             return ctf;
         }

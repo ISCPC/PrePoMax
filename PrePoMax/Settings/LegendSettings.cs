@@ -78,7 +78,7 @@ namespace PrePoMax
         }
         public void Reset()
         {
-            _numberFormat = PrePoMax.WidgetNumberFormat.Scientific;
+            _numberFormat = WidgetNumberFormat.Scientific;
             _numberOfSignificantDigits = 4;
             //
             _colorSpectrum = new vtkControl.vtkMaxColorSpectrum();
@@ -90,7 +90,7 @@ namespace PrePoMax
         public string GetColorChartNumberFormat()
         {
             string numberformat = "";
-            if (_numberFormat == PrePoMax.WidgetNumberFormat.General)
+            if (_numberFormat == WidgetNumberFormat.General)
             {
                 numberformat = "G" + _numberOfSignificantDigits.ToString();
             }

@@ -11,6 +11,14 @@ namespace vtkControl
     public enum vtkColorSpectrumType
     {
         CoolWarm,
-        Rainbow
+        Rainbow,
+        Warm,
+        Cold,
+        Cividis,
+        Viridis,
+        Plasma,
+        BlackBody,
+        Kindlmann
+
     }
 }
