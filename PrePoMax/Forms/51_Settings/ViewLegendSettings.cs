@@ -22,8 +22,8 @@ namespace PrePoMax.Settings
         [StandardValue("Warm", DisplayName = "Warm", Description = "Warm")]
         Warm,
         //
-        [StandardValue("Cold", DisplayName = "Cold", Description = "Cold")]
-        Cold,
+        [StandardValue("Cool", DisplayName = "Cool", Description = "Cool")]
+        Cool,
         //
         [StandardValue("Cividis", DisplayName = "Cividis", Description = "Cividis")]
         Cividis,
@@ -37,8 +37,14 @@ namespace PrePoMax.Settings
         [StandardValue("BlackBody", DisplayName = "Black body", Description = "Black body")]
         BlackBody,
         //
+        [StandardValue("Inferno", DisplayName = "Inferno", Description = "Inferno")]
+        Inferno,
+        //
         [StandardValue("Kindlmann", DisplayName = "Kindlmann", Description = "Kindlmann")]
-        Kindlmann
+        Kindlmann,
+        //
+        [StandardValue("Grayscale", DisplayName = "Grayscale", Description = "Grayscale")]
+        Grayscale
     }
 
     [Serializable]
@@ -55,17 +61,19 @@ namespace PrePoMax.Settings
         [DescriptionAttribute("Select the color spectrum type for the visualization of the results.")]
         public ColorSpectrum ColorSpectrum 
         { 
-            get 
+            get
             {
                 if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.CoolWarm) return ColorSpectrum.CoolWarm;
                 else if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.Rainbow) return ColorSpectrum.Rainbow;
                 else if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.Warm) return ColorSpectrum.Warm;
-                else if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.Cold) return ColorSpectrum.Cold;
+                else if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.Cool) return ColorSpectrum.Cool;
                 else if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.Cividis) return ColorSpectrum.Cividis;
                 else if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.Viridis) return ColorSpectrum.Viridis;
                 else if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.Plasma) return ColorSpectrum.Plasma;
                 else if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.BlackBody) return ColorSpectrum.BlackBody;
+                else if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.Inferno) return ColorSpectrum.Inferno;
                 else if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.Kindlmann) return ColorSpectrum.Kindlmann;
+                else if (_legendSettings.ColorSpectrum.Type == vtkControl.vtkColorSpectrumType.Grayscale) return ColorSpectrum.Grayscale;
                 else throw new NotSupportedException();
             }
             set
@@ -73,18 +81,38 @@ namespace PrePoMax.Settings
                 if (value == ColorSpectrum.CoolWarm) _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.CoolWarm;
                 else if (value == ColorSpectrum.Rainbow) _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.Rainbow;
                 else if (value == ColorSpectrum.Warm) _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.Warm;
-                else if (value == ColorSpectrum.Cold) _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.Cold;
+                else if (value == ColorSpectrum.Cool) _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.Cool;
                 else if (value == ColorSpectrum.Cividis) _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.Cividis;
                 else if (value == ColorSpectrum.Viridis) _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.Viridis;
                 else if (value == ColorSpectrum.Plasma) _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.Plasma;
                 else if (value == ColorSpectrum.BlackBody) _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.BlackBody;
+                else if (value == ColorSpectrum.Inferno) _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.Inferno;
                 else if (value == ColorSpectrum.Kindlmann) _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.Kindlmann;
+                else if (value == ColorSpectrum.Grayscale) _legendSettings.ColorSpectrum.Type = vtkControl.vtkColorSpectrumType.Grayscale;
                 else throw new NotSupportedException();
             } 
         }
         //
         [CategoryAttribute("Color spectrum settings")]
-        [OrderedDisplayName(1, 10, "Number of discrete colors")]
+        [OrderedDisplayName(1, 10, "Brightness")]
+        [DescriptionAttribute("Set the brightness of the color legend (0 ... 1).")]
+        public double ColorBrightness
+        {
+            get { return _legendSettings.ColorSpectrum.ColorBrightness; }
+            set { _legendSettings.ColorSpectrum.ColorBrightness = value; }
+        }
+        //
+        [CategoryAttribute("Color spectrum settings")]
+        [OrderedDisplayName(2, 10, "Reverse colors")]
+        [DescriptionAttribute("Reverse colors.")]
+        public bool ReverseColors
+        {
+            get { return _legendSettings.ColorSpectrum.ReverseColors; }
+            set { _legendSettings.ColorSpectrum.ReverseColors = value; }
+        }
+        //
+        [CategoryAttribute("Color spectrum settings")]
+        [OrderedDisplayName(3, 10, "Number of discrete colors")]
         [DescriptionAttribute("Set the number of discrete colors (2 ... 24).")]
         public int NumberOfDiscreteColors
         {
@@ -195,6 +223,7 @@ namespace PrePoMax.Settings
             //
             ColorSpectrumMinMaxType = _legendSettings.ColorSpectrum.MinMaxType; // add this also to Reset()
             // Now lets display Yes/No instead of True/False
+            _dctd.RenameBooleanPropertyToYesNo(nameof(ReverseColors));
             _dctd.RenameBooleanPropertyToYesNo(nameof(DrawBorder));
         }
 

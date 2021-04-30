@@ -19,6 +19,8 @@ namespace vtkControl
         private System.Drawing.Color _minColor;
         private System.Drawing.Color _maxColor;
         private int _numberOfColors;
+        private bool _reverseColors;
+        private double _colorBrightness;
 
 
         // Properties                                                                                                               
@@ -54,6 +56,17 @@ namespace vtkControl
                 if (_numberOfColors > 24) _numberOfColors = 24;
             }
         }
+        public bool ReverseColors { get { return _reverseColors; } set { _reverseColors = value; } }
+        public double ColorBrightness
+        {
+            get { return _colorBrightness; }
+            set
+            {
+                _colorBrightness = value;
+                if (_colorBrightness < 0) _colorBrightness = 0;
+                else if (_colorBrightness > 1) _colorBrightness = 1;
+            }
+        }
 
 
         // Constructors                                                                                                             
@@ -66,6 +79,8 @@ namespace vtkControl
             _minColor = System.Drawing.Color.LightGray;
             _maxColor = System.Drawing.Color.DarkGray;
             _numberOfColors = 9;
+            _reverseColors = false;
+            _colorBrightness = 0.2;
         }
 
 
@@ -79,6 +94,8 @@ namespace vtkControl
             _minColor = source.MinColor;
             _maxColor = source.MaxColor;
             _numberOfColors = source.NumberOfColors;
+            _reverseColors = source._reverseColors;
+            _colorBrightness = source._colorBrightness;
         }
 
     }

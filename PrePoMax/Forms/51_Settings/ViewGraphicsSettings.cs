@@ -107,7 +107,7 @@ namespace PrePoMax.Settings
 
         [CategoryAttribute("Lighting")]
         [OrderedDisplayName(0, 10, "Ambient component")]
-        [DescriptionAttribute("Select the ambient light component between 0 and 1.")]
+        [DescriptionAttribute("Select the ambient light component (0 ... 1).")]
         public double AmbientComponent
         {
             get { return _graphicsSettings.AmbientComponent; }
@@ -116,7 +116,7 @@ namespace PrePoMax.Settings
 
         [CategoryAttribute("Lighting")]
         [OrderedDisplayName(1, 10, "Diffuse component")]
-        [DescriptionAttribute("Select the diffuse light component between 0 and 1.")]
+        [DescriptionAttribute("Select the diffuse light component (0 ... 1).")]
         public double DiffuseComponent
         {
             get { return _graphicsSettings.DiffuseComponent; }

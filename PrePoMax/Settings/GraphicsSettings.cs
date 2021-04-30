@@ -66,8 +66,26 @@ namespace PrePoMax
         public Color BottomColor { get { return _bottomColor; } set { _bottomColor = value; } }
         public bool CoorSysVisibility { get { return _coorSysVisibility; } set { _coorSysVisibility = value; } }
         public bool ScaleWidgetVisibility { get { return _scaleWidgetVisibility; } set { _scaleWidgetVisibility = value; } }
-        public double AmbientComponent { get { return _ambientComponent; } set { _ambientComponent = value; } }
-        public double DiffuseComponent { get { return _diffuseComponent; } set { _diffuseComponent = value; } }
+        public double AmbientComponent
+        {
+            get { return _ambientComponent; }
+            set
+            {
+                _ambientComponent = value;
+                if (_ambientComponent < 0) _ambientComponent = 0;
+                else if (_ambientComponent > 1) _ambientComponent = 1;
+            }
+        }
+        public double DiffuseComponent
+        {
+            get { return _diffuseComponent; }
+            set
+            {
+                _diffuseComponent = value;
+                if (_diffuseComponent < 0) _diffuseComponent = 0;
+                else if (_diffuseComponent > 1) _diffuseComponent = 1;
+            }
+        }
         public bool PointSmoothing { get { return _pointSmoothing; } set { _pointSmoothing = value; } }
         public bool LineSmoothing { get { return _lineSmoothing; } set { _lineSmoothing = value; } }
         public double GeometryDeflection

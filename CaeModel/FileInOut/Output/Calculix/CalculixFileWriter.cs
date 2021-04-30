@@ -657,7 +657,7 @@ namespace FileInOut.Output
                     else title.AddKeyword(new CalDeactivated(loadEntry.Value.Name));
                 }
                 // Defined fields
-                if (step.Active) title = new CalTitle("Defined fields", "*Temperature, op=New");
+                if (step.Active && step.DefinedFields.Count > 0) title = new CalTitle("Defined fields", "*Temperature, op=New");
                 else title = new CalTitle("Defined fields", "");
                 calStep.AddKeyword(title);
                 //

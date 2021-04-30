@@ -1916,20 +1916,19 @@ namespace vtkControl
         private void PrepareActorLookupTable(double scalarRangeMin, double scalarRangeMax)
         {
             vtkColorTransferFunction ctf = GetColorTransferFunction();
-
+            //
             double min = scalarRangeMin;
             double max = scalarRangeMax;
             double minNormalized = 0;
             double maxNormalized = 1;
             bool addMinColor = false;
             bool addMaxColor = false;
-
-            // determine the need for min max color
+            // Determine the need for min max color
             if (_colorSpectrum.MinMaxType == vtkColorSpectrumMinMaxType.Manual)
             {
                 min = Math.Min(scalarRangeMin, _colorSpectrum.MinUserValue);
                 max = Math.Max(scalarRangeMax, _colorSpectrum.MaxUserValue);
-
+                //
                 if (_colorSpectrum.MinUserValue > min && max != min)
                 {
                     addMinColor = true;
@@ -1941,13 +1940,12 @@ namespace vtkControl
                     maxNormalized = (_colorSpectrum.MaxUserValue - min) / (max - min);
                 }
             }
-            
+            //
             double[] color;
             double delta;
             _lookupTable = vtkLookupTable.New(); // this is a fix for a _lookupTable.DeepCopy later on
             _lookupTable.SetTableRange(min, max);
-            
-            // create numOfAllColors discrete colors in the lookup table and then apply it to the actor
+            // Create numOfAllColors discrete colors in the lookup table and then apply it to the actor
             if (addMinColor || addMaxColor)
             {
                 int colorCount = 0;
@@ -1957,8 +1955,7 @@ namespace vtkControl
                 int numOfAllColors = (int)Math.Ceiling(10 * _colorSpectrum.NumberOfColors / (maxNormalized - minNormalized));
                 numOfAllColors = Math.Max(128, numOfAllColors);
                 _lookupTable.SetNumberOfColors(numOfAllColors);
-
-                // below range color
+                // Below range color
                 if (addMinColor)
                 {
                     color = new double[] { _colorSpectrum.MinColor.R / 256.0,
@@ -1972,12 +1969,11 @@ namespace vtkControl
                                                                                            1.0); //R,G,B,A
                     countStart = countEnd;
                 }
-
-                // between range color
+                // Between range color
                 double endValue;
                 delta = 1.0 / (_colorSpectrum.NumberOfColors - 1);
                 double deltaNormalized = (maxNormalized - minNormalized) / (_colorSpectrum.NumberOfColors);
-
+                //
                 for (int i = 0; i < _colorSpectrum.NumberOfColors; i++)
                 {
                     color = ctf.GetColor(i * delta);
@@ -1991,8 +1987,7 @@ namespace vtkControl
                                                                                            1.0); //R,G,B,A
                     countStart = countEnd;
                 }
-
-                // above range color
+                // Above range color
                 if (addMaxColor)
                 {
                     color = new double[] { _colorSpectrum.MaxColor.R / 256.0,
@@ -2021,108 +2016,146 @@ namespace vtkControl
         private vtkColorTransferFunction GetColorTransferFunction()
         {
             vtkColorTransferFunction ctf = vtkColorTransferFunction.New();
+            List<double[]> rgbPoints = new List<double[]>();
+            //
             if (_colorSpectrum.Type == vtkColorSpectrumType.CoolWarm)
             {
                 // Cool-Warm
                 //http://aplotnikov.com/2016/simple-visualization-of-unstructured-grid-quality/
                 //http://www.kennethmoreland.com/color-maps/
                 ctf.SetColorSpaceToDiverging();
-                ctf.AddRGBPoint(0, 0.230, 0.299, 0.754);
-                ctf.AddRGBPoint(1, 0.706, 0.016, 0.150);
+                rgbPoints.Add(new double[] { 0, 0.230, 0.299, 0.754 });
+                rgbPoints.Add(new double[] { 1, 0.706, 0.016, 0.150 });
             }
             else if (_colorSpectrum.Type == vtkColorSpectrumType.Rainbow)
             {
                 double b = 0.0;
                 ctf.SetColorSpaceToHSV();
-                ctf.AddRGBPoint(0.000, b, b, 1);
-                ctf.AddRGBPoint(0.250, b, 1, 1);
-                ctf.AddRGBPoint(0.500, b, 1, b);
-                ctf.AddRGBPoint(0.750, 1, 1, b);
-                ctf.AddRGBPoint(1.000, 1, b, b);
+                rgbPoints.Add(new double[] { 0.000, b, b, 1 });
+                rgbPoints.Add(new double[] { 0.250, b, 1, 1 });
+                rgbPoints.Add(new double[] { 0.500, b, 1, b });
+                rgbPoints.Add(new double[] { 0.750, 1, 1, b });
+                rgbPoints.Add(new double[] { 1.000, 1, b, b });
             }
             else if (_colorSpectrum.Type == vtkColorSpectrumType.Warm)
             {
                 ctf.SetColorSpaceToRGB();
-                ctf.AddRGBPoint(0, 0.549, 0.176, 0.016);
-                ctf.AddRGBPoint(0.143, 0.8, 0.298, 0.008);
-                ctf.AddRGBPoint(0.286, 0.925, 0.439, 0.078);
-                ctf.AddRGBPoint(0.429, 0.996, 0.6, 0.161);
-                ctf.AddRGBPoint(0.571, 0.996, 0.769, 0.31);
-                ctf.AddRGBPoint(0.714, 0.996, 0.89, 0.569);
-                ctf.AddRGBPoint(0.857, 1, 0.969, 0.737);
-                ctf.AddRGBPoint(1, 1, 1, 0.898);
+                rgbPoints.Add(new double[] { 0, 0.549, 0.176, 0.016 });
+                rgbPoints.Add(new double[] { 0.143, 0.8, 0.298, 0.008 });
+                rgbPoints.Add(new double[] { 0.286, 0.925, 0.439, 0.078 });
+                rgbPoints.Add(new double[] { 0.429, 0.996, 0.6, 0.161 });
+                rgbPoints.Add(new double[] { 0.571, 0.996, 0.769, 0.31 });
+                rgbPoints.Add(new double[] { 0.714, 0.996, 0.89, 0.569 });
+                rgbPoints.Add(new double[] { 0.857, 1, 0.969, 0.737 });
+                rgbPoints.Add(new double[] { 1, 1, 1, 0.898 });
             }
-            else if (_colorSpectrum.Type == vtkColorSpectrumType.Cold)
+            else if (_colorSpectrum.Type == vtkColorSpectrumType.Cool)
             {
                 ctf.SetColorSpaceToRGB();
-                ctf.AddRGBPoint(0, 0.031, 0.271, 0.58);
-                ctf.AddRGBPoint(0.143, 0.129, 0.443, 0.71);
-                ctf.AddRGBPoint(0.286, 0.259, 0.573, 0.776);
-                ctf.AddRGBPoint(0.429, 0.42, 0.682, 0.839);
-                ctf.AddRGBPoint(0.571, 0.62, 0.792, 0.882);
-                ctf.AddRGBPoint(0.714, 0.776, 0.859, 0.937);
-                ctf.AddRGBPoint(0.857, 0.871, 0.922, 0.969);
-                ctf.AddRGBPoint(1, 0.969, 0.984, 1);
+                rgbPoints.Add(new double[] { 0, 0.031, 0.271, 0.58 });
+                rgbPoints.Add(new double[] { 0.143, 0.129, 0.443, 0.71 });
+                rgbPoints.Add(new double[] { 0.286, 0.259, 0.573, 0.776 });
+                rgbPoints.Add(new double[] { 0.429, 0.42, 0.682, 0.839 });
+                rgbPoints.Add(new double[] { 0.571, 0.62, 0.792, 0.882 });
+                rgbPoints.Add(new double[] { 0.714, 0.776, 0.859, 0.937 });
+                rgbPoints.Add(new double[] { 0.857, 0.871, 0.922, 0.969 });
+                rgbPoints.Add(new double[] { 1, 0.969, 0.984, 1 });
             }
             else if (_colorSpectrum.Type == vtkColorSpectrumType.Cividis)
             {
                 ctf.SetColorSpaceToRGB();
-                ctf.AddRGBPoint(0, 0, 0.125, 0.297);
-                ctf.AddRGBPoint(0.125, 0.023, 0.211, 0.43);
-                ctf.AddRGBPoint(0.25, 0.254, 0.301, 0.418);
-                ctf.AddRGBPoint(0.375, 0.375, 0.391, 0.43);
-                ctf.AddRGBPoint(0.5, 0.484, 0.48, 0.469);
-                ctf.AddRGBPoint(0.625, 0.609, 0.578, 0.465);
-                ctf.AddRGBPoint(0.75, 0.738, 0.684, 0.43);
-                ctf.AddRGBPoint(0.875, 0.875, 0.793, 0.363);
-                ctf.AddRGBPoint(1, 0.996, 0.91, 0.27);
+                rgbPoints.Add(new double[] { 0, 0, 0.125, 0.297 });
+                rgbPoints.Add(new double[] { 0.125, 0.023, 0.211, 0.43 });
+                rgbPoints.Add(new double[] { 0.25, 0.254, 0.301, 0.418 });
+                rgbPoints.Add(new double[] { 0.375, 0.375, 0.391, 0.43 });
+                rgbPoints.Add(new double[] { 0.5, 0.484, 0.48, 0.469 });
+                rgbPoints.Add(new double[] { 0.625, 0.609, 0.578, 0.465 });
+                rgbPoints.Add(new double[] { 0.75, 0.738, 0.684, 0.43 });
+                rgbPoints.Add(new double[] { 0.875, 0.875, 0.793, 0.363 });
+                rgbPoints.Add(new double[] { 1, 0.996, 0.91, 0.27 });
             }
             else if (_colorSpectrum.Type == vtkColorSpectrumType.Viridis)
             {
                 ctf.SetColorSpaceToRGB();
-                ctf.AddRGBPoint(0, 0.267, 0.005, 0.329);
-                ctf.AddRGBPoint(0.143, 0.275, 0.197, 0.497);
-                ctf.AddRGBPoint(0.286, 0.213, 0.359, 0.552);
-                ctf.AddRGBPoint(0.429, 0.153, 0.498, 0.558);
-                ctf.AddRGBPoint(0.571, 0.122, 0.632, 0.531);
-                ctf.AddRGBPoint(0.714, 0.29, 0.759, 0.428);
-                ctf.AddRGBPoint(0.857, 0.622, 0.854, 0.226);
-                ctf.AddRGBPoint(1, 0.993, 0.906, 0.144);
+                rgbPoints.Add(new double[] { 0, 0.267, 0.005, 0.329 });
+                rgbPoints.Add(new double[] { 0.143, 0.275, 0.197, 0.497 });
+                rgbPoints.Add(new double[] { 0.286, 0.213, 0.359, 0.552 });
+                rgbPoints.Add(new double[] { 0.429, 0.153, 0.498, 0.558 });
+                rgbPoints.Add(new double[] { 0.571, 0.122, 0.632, 0.531 });
+                rgbPoints.Add(new double[] { 0.714, 0.29, 0.759, 0.428 });
+                rgbPoints.Add(new double[] { 0.857, 0.622, 0.854, 0.226 });
+                rgbPoints.Add(new double[] { 1, 0.993, 0.906, 0.144 });
             }
             else if (_colorSpectrum.Type == vtkColorSpectrumType.Plasma)
             {
                 ctf.SetColorSpaceToRGB();
-                ctf.AddRGBPoint(0, 0.05, 0.03, 0.528);
-                ctf.AddRGBPoint(0.143, 0.328, 0.007, 0.64);
-                ctf.AddRGBPoint(0.286, 0.545, 0.038, 0.647);
-                ctf.AddRGBPoint(0.429, 0.725, 0.197, 0.538);
-                ctf.AddRGBPoint(0.571, 0.859, 0.359, 0.408);
-                ctf.AddRGBPoint(0.714, 0.956, 0.534, 0.285);
-                ctf.AddRGBPoint(0.857, 0.995, 0.738, 0.167);
-                ctf.AddRGBPoint(1, 0.94, 0.975, 0.131);
+                rgbPoints.Add(new double[] { 0, 0.05, 0.03, 0.528 });
+                rgbPoints.Add(new double[] { 0.143, 0.328, 0.007, 0.64 });
+                rgbPoints.Add(new double[] { 0.286, 0.545, 0.038, 0.647 });
+                rgbPoints.Add(new double[] { 0.429, 0.725, 0.197, 0.538 });
+                rgbPoints.Add(new double[] { 0.571, 0.859, 0.359, 0.408 });
+                rgbPoints.Add(new double[] { 0.714, 0.956, 0.534, 0.285 });
+                rgbPoints.Add(new double[] { 0.857, 0.995, 0.738, 0.167 });
+                rgbPoints.Add(new double[] { 1, 0.94, 0.975, 0.131 });
             }
             else if (_colorSpectrum.Type == vtkColorSpectrumType.BlackBody)
             {
                 ctf.SetColorSpaceToLab();
-                ctf.AddRGBPoint(0, 0.257, 0.089, 0.069);
-                ctf.AddRGBPoint(0.167, 0.502, 0.123, 0.107);
-                ctf.AddRGBPoint(0.333, 0.735, 0.198, 0.124);
-                ctf.AddRGBPoint(0.5, 0.877, 0.395, 0.038);
-                ctf.AddRGBPoint(0.667, 0.911, 0.632, 0.1);
-                ctf.AddRGBPoint(0.833, 0.907, 0.855, 0.189);
-                ctf.AddRGBPoint(1, 1, 1, 1);
+                rgbPoints.Add(new double[] { 0, 0, 0, 0 });
+                rgbPoints.Add(new double[] { 0.143, 0.257, 0.089, 0.069 });
+                rgbPoints.Add(new double[] { 0.286, 0.502, 0.123, 0.107 });
+                rgbPoints.Add(new double[] { 0.429, 0.735, 0.198, 0.124 });
+                rgbPoints.Add(new double[] { 0.571, 0.877, 0.395, 0.038 });
+                rgbPoints.Add(new double[] { 0.714, 0.911, 0.632, 0.1 });
+                rgbPoints.Add(new double[] { 0.857, 0.907, 0.855, 0.189 });
+                rgbPoints.Add(new double[] { 1, 1, 1, 1 });
+            }
+            else if (_colorSpectrum.Type == vtkColorSpectrumType.Inferno)
+            {
+                ctf.SetColorSpaceToLab();
+                rgbPoints.Add(new double[] { 0, 0.001, 0, 0.014 });
+                rgbPoints.Add(new double[] { 0.143, 0.159, 0.044, 0.329 });
+                rgbPoints.Add(new double[] { 0.286, 0.397, 0.083, 0.433 });
+                rgbPoints.Add(new double[] { 0.429, 0.623, 0.165, 0.388 });
+                rgbPoints.Add(new double[] { 0.571, 0.831, 0.283, 0.259 });
+                rgbPoints.Add(new double[] { 0.714, 0.962, 0.49, 0.084 });
+                rgbPoints.Add(new double[] { 0.857, 0.982, 0.756, 0.153 });
+                rgbPoints.Add(new double[] { 1, 0.988, 0.998, 0.645 });
             }
             else if (_colorSpectrum.Type == vtkColorSpectrumType.Kindlmann)
             {
                 ctf.SetColorSpaceToLab();
-                ctf.AddRGBPoint(0, 0.14, 0.022, 0.46);
-                ctf.AddRGBPoint(0.167, 0.028, 0.243, 0.587);
-                ctf.AddRGBPoint(0.333, 0.021, 0.449, 0.382);
-                ctf.AddRGBPoint(0.5, 0.031, 0.625, 0.083);
-                ctf.AddRGBPoint(0.667, 0.44, 0.767, 0.037);
-                ctf.AddRGBPoint(0.833, 0.98, 0.815, 0.572);
-                ctf.AddRGBPoint(1, 1, 1, 1);
+                rgbPoints.Add(new double[] { 0, 0, 0, 0 });
+                rgbPoints.Add(new double[] { 0.143, 0.14, 0.022, 0.46 });
+                rgbPoints.Add(new double[] { 0.286, 0.028, 0.243, 0.587 });
+                rgbPoints.Add(new double[] { 0.429, 0.021, 0.449, 0.382 });
+                rgbPoints.Add(new double[] { 0.571, 0.031, 0.625, 0.083 });
+                rgbPoints.Add(new double[] { 0.714, 0.44, 0.767, 0.037 });
+                rgbPoints.Add(new double[] { 0.857, 0.98, 0.815, 0.572 });
+                rgbPoints.Add(new double[] { 1, 1, 1, 1 });
             }
+            else if (_colorSpectrum.Type == vtkColorSpectrumType.Grayscale)
+            {
+                ctf.SetColorSpaceToLab();
+                rgbPoints.Add(new double[] { 0, 0.2, 0.2, 0.2 });
+                rgbPoints.Add(new double[] { 1, 1.0, 1.0, 1.0 });
+            }
+            //
+            double n = 0;
+            double k = 1;
+            double x = _colorSpectrum.ColorBrightness;
+            if (_colorSpectrum.ReverseColors)
+            {
+                n = 1;
+                k = -1;
+            }
+
+            //
+            foreach (var rgbPoint in rgbPoints)
+                ctf.AddRGBPoint(k * rgbPoint[0] + n, rgbPoint[1] + x * (1 - rgbPoint[1]),
+                                                     rgbPoint[2] + x * (1 - rgbPoint[2]),
+                                                     rgbPoint[3] + x * (1 - rgbPoint[3]));
+            //
             return ctf;
         }
         private void ReverseLookupTable(vtkLookupTable lookupTable)
@@ -4723,18 +4756,16 @@ namespace vtkControl
             vtkMaxActor actor;
             vtkMapper mapper;
             vtkPointData pointData;
-
             // Legend
             _scalarBarWidget.VisibilityOff();
-
+            //
             bool minVisible = _minValueWidget.GetVisibility() == 1;
             bool maxVisible = _maxValueWidget.GetVisibility() == 1;
             _minValueWidget.VisibilityOff();
             _maxValueWidget.VisibilityOff();
-
+            //
             vtkMaxExtreemeNode minNode = null;
             vtkMaxExtreemeNode maxNode = null;
-
             // Find min and max value on actors
             foreach (var entry in _actors)
             {
@@ -4742,10 +4773,9 @@ namespace vtkControl
                 if (entry.Value == null) throw new ArgumentNullException("_actors.Actor", "The actor does not exist.");
                 mapper = actor.Geometry.GetMapper();
                 pointData = mapper.GetInput().GetPointData();
-
                 // if the part does not have scalar data
                 if (actor.MinNode == null || actor.MaxNode == null) continue;
-
+                //
                 if (actor.ColorContours)
                 {
                     if (pointData.GetAttribute(0) == null || pointData.GetAttribute(0).GetName() != Globals.ScalarArrayName)
@@ -4761,9 +4791,10 @@ namespace vtkControl
                         mapper.SetInterpolateScalarsBeforeMapping(0); // discrete colors must be turned off
                     actor.UpdateColor();
                 }
-
+                //mapper.SetInterpolateScalarsBeforeMapping(0);
+                //
                 if (!actor.VtkMaxActorVisible || !actor.ColorContours) continue;
-
+                //
                 if (minNode == null || maxNode == null)     // the first time through
                 {
                     minNode = actor.MinNode;
@@ -4776,7 +4807,6 @@ namespace vtkControl
                 }
             }
             if (minNode == null || maxNode == null) return;
-            
             // Scalar bar and min/max values of actor scalar range
             if (_colorSpectrum.MinMaxType == vtkColorSpectrumMinMaxType.Automatic)
             {
@@ -4798,7 +4828,6 @@ namespace vtkControl
                                                    _colorSpectrum.MinUserValue, _colorSpectrum.MaxUserValue);
                 PrepareActorLookupTable(minNode.Value, maxNode.Value);
             }
-            
             // Edit actors mapper
             double[] actorRange = _lookupTable.GetTableRange();
             vtkLookupTable lookup = vtkLookupTable.New();
@@ -4815,13 +4844,10 @@ namespace vtkControl
                     mapper.SetLookupTable(lookup);
                 }
             }
-
             // Scalar bar
             _scalarBarWidget.VisibilityOn();
-           
             // Min Max widgets
             string format = _scalarBarWidget.GetLabelFormat();
-           
             //
             double[] coor;
             if (minVisible)

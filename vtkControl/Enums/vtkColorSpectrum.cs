@@ -13,12 +13,14 @@ namespace vtkControl
         CoolWarm,
         Rainbow,
         Warm,
-        Cold,
+        Cool,
         Cividis,
         Viridis,
         Plasma,
         BlackBody,
-        Kindlmann
+        Inferno,
+        Kindlmann,
+        Grayscale
 
     }
 }
