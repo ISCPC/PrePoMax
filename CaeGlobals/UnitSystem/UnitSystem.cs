@@ -43,29 +43,29 @@ namespace CaeGlobals
         // Variables                                                                                                                
         private UnitSystemType _unitSystemType;                             //ISerializable
         // Base units
-        private LengthUnit _lengthUnit;                                     //ISerializable
-        private AngleUnit _angleUnit;                                       //ISerializable
-        private MassUnit _massUnit;                                         //ISerializable
-        private DurationUnit _timeUnit;                                     //ISerializable
-        private TemperatureUnit _temperatureUnit;                           //ISerializable
-        private TemperatureDeltaUnit _temperatureDeltaUnit;                 //ISerializable
+        private LengthUnit _lengthUnit;
+        private AngleUnit _angleUnit;
+        private MassUnit _massUnit;
+        private DurationUnit _timeUnit;
+        private TemperatureUnit _temperatureUnit;
+        private TemperatureDeltaUnit _temperatureDeltaUnit;
         // Derived units
-        private AreaUnit _areaUnit;                                         //ISerializable
-        private VolumeUnit _volumeUnit;                                     //ISerializable
-        private SpeedUnit _speedUnit;                                       //ISerializable
-        private RotationalSpeedUnit _rotationalSpeedUnit;                   //ISerializable
-        private AccelerationUnit _accelerationUnit;                         //ISerializable
-        private ForceUnit _forceUnit;                                       //ISerializable
-        private ForcePerLengthUnit _forcePerLengthUnit;                     //ISerializable
-        private TorqueUnit _momentUnit;                                     //ISerializable
-        private PressureUnit _pressureUnit;                                 //ISerializable
-        private DensityUnit _densityUnit;                                   //ISerializable
-        private EnergyUnit _energyUnit;                                     //ISerializable
-        private PowerUnit _powerUnit;                                       //ISerializable
-        private FrequencyUnit _frequencyUnit;                               //ISerializable
+        private AreaUnit _areaUnit;
+        private VolumeUnit _volumeUnit;
+        private SpeedUnit _speedUnit;
+        private RotationalSpeedUnit _rotationalSpeedUnit;
+        private AccelerationUnit _accelerationUnit;
+        private ForceUnit _forceUnit;
+        private ForcePerLengthUnit _forcePerLengthUnit;
+        private TorqueUnit _momentUnit;
+        private PressureUnit _pressureUnit;
+        private DensityUnit _densityUnit;
+        private EnergyUnit _energyUnit;
+        private PowerUnit _powerUnit;
+        private FrequencyUnit _frequencyUnit;
         // Thermal units
-        private CoefficientOfThermalExpansionUnit _thermalExpansionUnit;    //ISerializable
-        private ThermalConductivityUnit _thermalConductivityUnit;           //ISerializable
+        private CoefficientOfThermalExpansionUnit _thermalExpansionUnit;
+        private ThermalConductivityUnit _thermalConductivityUnit;
 
 
         // Properties                                                                                                               
@@ -265,6 +265,34 @@ namespace CaeGlobals
         }
         public UnitSystem(UnitSystemType unitSystemType)
         {
+            SetUnits(unitSystemType);
+        }
+        // ISerialization
+        public UnitSystem(SerializationInfo info, StreamingContext context)
+            : this()
+        {
+            UnitSystemType unitSystemType = UnitSystemType.Undefined;
+            //
+            foreach (SerializationEntry entry in info)
+            {
+                switch (entry.Name)
+                {
+                    // Base units
+                    case "_unitSystemType":
+                        unitSystemType = (UnitSystemType)entry.Value; break;
+                    default:
+                        break;
+                }
+                
+            }
+            //
+            SetUnits(unitSystemType);
+        }
+
+
+        // Methods                                                                                                                  
+        private void SetUnits(UnitSystemType unitSystemType)
+        {
             _unitSystemType = unitSystemType;
             //
             switch (_unitSystemType)
@@ -400,108 +428,8 @@ namespace CaeGlobals
             }
             //
             SetConverterUnits();
-        }
-        // ISerialization
-        public UnitSystem(SerializationInfo info, StreamingContext context)
-            : this()
-        {
-            foreach (SerializationEntry entry in info)
-            {
-                bool isTemperatureDelataUnitDefined = false;    // compatibility for version 1.0.0
-                bool isForcePerLengtUnitDefined = false;        // compatibility for version 0.9.0
-                bool isPowerUnitDefined = false;                // compatibility for version 1.0.0
-                bool isThermalExpansionUnitDefined = false;     // compatibility for version 1.0.0
-                bool isThermalConductivityUnitDefined = false;  // compatibility for version 1.0.0
-                switch (entry.Name)
-                {
-                    // Base units
-                    case "_unitSystemType":
-                        _unitSystemType = (UnitSystemType)entry.Value; break;
-                    case "_lengthUnit":
-                        _lengthUnit = (LengthUnit)entry.Value; break;
-                    case "_angleUnit":
-                        _angleUnit = (AngleUnit)entry.Value; break;
-                    case "_massUnit":
-                        _massUnit = (MassUnit)entry.Value; break;
-                    case "_timeUnit":
-                        _timeUnit = (DurationUnit)entry.Value; break;
-                    case "_temperatureUnit":
-                        _temperatureUnit = (TemperatureUnit)entry.Value; break;
-                    case "_temperatureDeltaUnit":
-                        _temperatureDeltaUnit = (TemperatureDeltaUnit)entry.Value;
-                        isTemperatureDelataUnitDefined = true; break;
-                    // Derived units
-                    case "_areaUnit":
-                        _areaUnit = (AreaUnit)entry.Value; break;
-                    case "_volumeUnit":
-                        _volumeUnit = (VolumeUnit)entry.Value; break;
-                    case "_speedUnit":
-                        _speedUnit = (SpeedUnit)entry.Value; break;
-                    case "_rotationalSpeedUnit":
-                        _rotationalSpeedUnit = (RotationalSpeedUnit)entry.Value; break;
-                    case "_accelerationUnit":
-                        _accelerationUnit = (AccelerationUnit)entry.Value; break;
-                    case "_forceUnit":
-                        _forceUnit = (ForceUnit)entry.Value; break;
-                    case "_forcePerLengthUnit":
-                        _forcePerLengthUnit = (ForcePerLengthUnit)entry.Value;
-                        isForcePerLengtUnitDefined = true; break;
-                    case "_momentUnit":
-                        _momentUnit = (TorqueUnit)entry.Value; break;
-                    case "_pressureUnit":
-                        _pressureUnit = (PressureUnit)entry.Value; break;
-                    case "_densityUnit":
-                        _densityUnit = (DensityUnit)entry.Value; break;
-                    case "_energyUnit":
-                        _energyUnit = (EnergyUnit)entry.Value; break;
-                    case "_powerUnit":
-                        _powerUnit = (PowerUnit)entry.Value;
-                        isPowerUnitDefined = true; break;
-                    case "_frequencyUnit":
-                        _frequencyUnit = (FrequencyUnit)entry.Value; break;
-                    // Thermal units
-                    case "_thermalExpansionUnit":
-                        _thermalExpansionUnit = (CoefficientOfThermalExpansionUnit)entry.Value;
-                        isThermalExpansionUnitDefined = true; break;
-                    case "_thermalConductivityUnit":
-                        _thermalConductivityUnit = (ThermalConductivityUnit)entry.Value;
-                        isThermalConductivityUnitDefined = true; break;
-                    default:
-                        throw new NotSupportedException();
-                }
-                // Compatibility
-                if (!isTemperatureDelataUnitDefined)
-                {
-                    UnitSystem system = new UnitSystem(_unitSystemType);
-                    _temperatureDeltaUnit = system._temperatureDeltaUnit;
-                }
-                if (!isForcePerLengtUnitDefined)
-                {
-                    UnitSystem system = new UnitSystem(_unitSystemType);
-                    _forcePerLengthUnit = system._forcePerLengthUnit;
-                }
-                if (!isPowerUnitDefined)
-                {
-                    UnitSystem system = new UnitSystem(_unitSystemType);
-                    _powerUnit = system._powerUnit;
-                }
-                if (!isThermalExpansionUnitDefined)
-                {
-                    UnitSystem system = new UnitSystem(_unitSystemType);
-                    _thermalExpansionUnit = system._thermalExpansionUnit;
-                }
-                if (!isThermalConductivityUnitDefined)
-                {
-                    UnitSystem system = new UnitSystem(_unitSystemType);
-                    _thermalConductivityUnit = system._thermalConductivityUnit;
-                }
-            }
-            //
-            SetConverterUnits();
-        }
 
-
-        // Methods                                                                                                                  
+        }
         public void SetConverterUnits()
         {
             // Base units
@@ -563,30 +491,6 @@ namespace CaeGlobals
         {
             // using typeof() works also for null fields
             info.AddValue("_unitSystemType", _unitSystemType, typeof(UnitSystemType));
-            // Base units
-            info.AddValue("_lengthUnit", _lengthUnit, typeof(LengthUnit));
-            info.AddValue("_angleUnit", _angleUnit, typeof(AngleUnit));
-            info.AddValue("_massUnit", _massUnit, typeof(MassUnit));
-            info.AddValue("_timeUnit", _timeUnit, typeof(DurationUnit));
-            info.AddValue("_temperatureUnit", _temperatureUnit, typeof(TemperatureUnit));
-            info.AddValue("_temperatureDeltaUnit", _temperatureDeltaUnit, typeof(TemperatureDeltaUnit));
-            // Derived units
-            info.AddValue("_areaUnit", _areaUnit, typeof(AreaUnit));
-            info.AddValue("_volumeUnit", _volumeUnit, typeof(VolumeUnit));
-            info.AddValue("_speedUnit", _speedUnit, typeof(SpeedUnit));
-            info.AddValue("_rotationalSpeedUnit", _rotationalSpeedUnit, typeof(RotationalSpeedUnit));
-            info.AddValue("_accelerationUnit", _accelerationUnit, typeof(AccelerationUnit));
-            info.AddValue("_forceUnit", _forceUnit, typeof(ForceUnit));
-            info.AddValue("_forcePerLengthUnit", _forcePerLengthUnit, typeof(ForcePerLengthUnit));
-            info.AddValue("_momentUnit", _momentUnit, typeof(TorqueUnit));
-            info.AddValue("_pressureUnit", _pressureUnit, typeof(PressureUnit));
-            info.AddValue("_densityUnit", _densityUnit, typeof(DensityUnit));
-            info.AddValue("_energyUnit", _energyUnit, typeof(EnergyUnit));
-            info.AddValue("_powerUnit", _powerUnit, typeof(EnergyUnit));
-            info.AddValue("_frequencyUnit", _frequencyUnit, typeof(FrequencyUnit));
-            // thermal units
-            info.AddValue("_thermalExpansionUnit", _thermalExpansionUnit, typeof(CoefficientOfThermalExpansionUnit));
-            info.AddValue("_thermalConductivityUnit", _thermalConductivityUnit, typeof(ThermalConductivityUnit));
         }
     }
 }
