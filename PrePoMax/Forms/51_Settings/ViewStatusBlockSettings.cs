@@ -11,7 +11,7 @@ using System.Drawing.Design;
 namespace PrePoMax.Settings
 {
     [Serializable]
-    public class ViewStatusBlockSettings : ViewSettings, IReset
+    public class ViewStatusBlockSettings : IViewSettings, IReset
     {
         // Variables                                                                                                                
         private StatusBlockSettings _statusBlockSettings;
@@ -49,7 +49,7 @@ namespace PrePoMax.Settings
 
 
         // Methods                                                                               
-        public override ISettings GetBase()
+        public ISettings GetBase()
         {
             return _statusBlockSettings;
         }

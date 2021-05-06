@@ -29,7 +29,7 @@ namespace PrePoMax
         //
         [CategoryAttribute("Pressure magnitude")]
         [OrderedDisplayName(0, 10, "Magnitude")]
-        [DescriptionAttribute("The magnitude of the pressure load.")]
+        [DescriptionAttribute("Value of the pressure load magnitude.")]
         [TypeConverter(typeof(CaeGlobals.StringPressureConverter))]
         [Id(1, 3)]
         public double Magnitude { get { return _dLoad.Magnitude; } set { _dLoad.Magnitude = value; } }

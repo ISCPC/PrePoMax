@@ -34,6 +34,7 @@ namespace PrePoMax
         public static string GeneralSettingsName = "General";
         public static string GraphicsSettingsName = "Graphics";
         public static string ColorSettingsName = "Default Colors";
+        public static string MeshingSettingsName = "Meshing";
         public static string PreSettingsName = "Pre-processing";
         public static string CalculixSettingsName = "Calculix";
         public static string PostSettingsName = "Post-processing";

@@ -27,6 +27,7 @@ namespace PrePoMax.Forms
                 if (value is FixedBC fix) _viewBc = new ViewFixedBC(fix.DeepClone());
                 else if (value is DisplacementRotation dr) _viewBc = new ViewDisplacementRotation(dr.DeepClone());
                 else if (value is SubmodelBC sm) _viewBc = new ViewSubmodelBC(sm.DeepClone());
+                else if (value is TemperatureBC tmp) _viewBc = new ViewTemperatureBC(tmp.DeepClone());
                 else throw new NotImplementedException();
             }
         }
@@ -98,6 +99,7 @@ namespace PrePoMax.Forms
                 else if (itemTag is ViewFixedBC fix) _viewBc = fix;
                 else if (itemTag is ViewDisplacementRotation vdr) _viewBc = vdr;
                 else if (itemTag is ViewSubmodelBC vsm) _viewBc = vsm;
+                else if (itemTag is ViewTemperatureBC vtmp) _viewBc = vtmp;
                 else throw new NotImplementedException();
                 //
                 ShowHideSelectionForm();
@@ -135,6 +137,12 @@ namespace PrePoMax.Forms
             else if (_viewBc is ViewSubmodelBC vsm && 
                     (property == nameof(vsm.NodeSetName) ||
                      property == nameof(vsm.SurfaceName)))
+            {
+                HighlightBoundaryCondition();
+            }
+            else if (_viewBc is ViewTemperatureBC vtmp &&
+                    (property == nameof(vtmp.NodeSetName) ||
+                     property == nameof(vtmp.SurfaceName)))
             {
                 HighlightBoundaryCondition();
             }
@@ -284,6 +292,19 @@ namespace PrePoMax.Forms
                     //
                     vsm.PopululateDropDownLists(nodeSetNames, surfaceNames);
                 }
+                else if (_viewBc is ViewTemperatureBC vtmp)
+                {
+                    selectedId = 3;
+                    // Check for deleted entities
+                    if (vtmp.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
+                    else if (vtmp.RegionType == RegionTypeEnum.NodeSetName.ToFriendlyString())
+                        CheckMissingValueRef(ref nodeSetNames, vtmp.NodeSetName, s => { vtmp.NodeSetName = s; });
+                    else if (vtmp.RegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
+                        CheckMissingValueRef(ref surfaceNames, vtmp.SurfaceName, s => { vtmp.SurfaceName = s; });
+                    else throw new NotSupportedException();
+                    //
+                    vtmp.PopululateDropDownLists(nodeSetNames, surfaceNames);
+                }
                 else throw new NotSupportedException();
                 //
                 lvTypes.Items[selectedId].Tag = _viewBc;
@@ -325,6 +346,14 @@ namespace PrePoMax.Forms
             vsm.Color = color;
             item.Tag = vsm;
             lvTypes.Items.Add(item);
+            // Temperature
+            item = new ListViewItem("Temperature");
+            TemperatureBC tmp = new TemperatureBC(GetBoundaryConditionName("Temperature"), "", RegionTypeEnum.Selection, 0);
+            ViewTemperatureBC vtmp = new ViewTemperatureBC(tmp);
+            vtmp.PopululateDropDownLists(nodeSetNames, surfaceNames);
+            vtmp.Color = color;
+            item.Tag = vtmp;
+            lvTypes.Items.Add(item);
         }
         private string GetBoundaryConditionName(string baseName)
         {
@@ -338,7 +367,7 @@ namespace PrePoMax.Forms
                 //
                 if (_viewBc == null) { }
                 else if (BoundaryCondition is FixedBC || BoundaryCondition is DisplacementRotation ||
-                         BoundaryCondition is SubmodelBC)
+                         BoundaryCondition is SubmodelBC || BoundaryCondition is TemperatureBC)
                 {
                     if (BoundaryCondition.RegionType == RegionTypeEnum.NodeSetName ||
                         BoundaryCondition.RegionType == RegionTypeEnum.ReferencePointName ||
@@ -379,6 +408,7 @@ namespace PrePoMax.Forms
                 else if (BoundaryCondition is FixedBC) _controller.SetSelectItemToGeometry();
                 else if (BoundaryCondition is DisplacementRotation) _controller.SetSelectItemToGeometry();
                 else if (BoundaryCondition is SubmodelBC) _controller.SetSelectItemToGeometry();
+                else if (BoundaryCondition is TemperatureBC) _controller.SetSelectItemToGeometry();
                 else throw new NotSupportedException();
             }
             else _controller.SetSelectByToOff();
@@ -397,8 +427,8 @@ namespace PrePoMax.Forms
         {
             if (BoundaryCondition != null && BoundaryCondition.RegionType == RegionTypeEnum.Selection)
             {
-                if (BoundaryCondition is FixedBC || BoundaryCondition is DisplacementRotation ||
-                    BoundaryCondition is SubmodelBC)
+                if (BoundaryCondition is FixedBC || BoundaryCondition is DisplacementRotation
+                    || BoundaryCondition is SubmodelBC || BoundaryCondition is TemperatureBC)
                 {
                     BoundaryCondition.CreationIds = ids;
                     BoundaryCondition.CreationData = _controller.Selection.DeepClone();

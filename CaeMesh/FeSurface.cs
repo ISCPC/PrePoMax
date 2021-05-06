@@ -95,6 +95,7 @@ namespace CaeMesh
         public FeSurface(string name, string nodeSetName)
             : this(name)
         {
+            _createdFrom = FeSurfaceCreatedFrom.NodeSet;
             _createdFromNodeSetName = nodeSetName;
         }
         public FeSurface(string name, int[] faceIds, Selection creationDataClone)

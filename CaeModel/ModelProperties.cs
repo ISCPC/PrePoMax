@@ -16,9 +16,22 @@ namespace CaeModel
     }
 
     [Serializable]
-    public struct ModelProperties
+    public class ModelProperties
     {
         public ModelType ModelType;
         public string GlobalResultsFileName;
+        public double AbsoluteZero;
+        public double StefanBoltzmann;
+        public double NewtonGravity;
+
+        // Constructor
+        public ModelProperties()
+        {
+            ModelType = ModelType.General;
+            GlobalResultsFileName = null;
+            AbsoluteZero = double.PositiveInfinity;
+            StefanBoltzmann = double.PositiveInfinity;
+            NewtonGravity = double.PositiveInfinity;
+        }
     }
 }

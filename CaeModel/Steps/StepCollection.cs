@@ -184,8 +184,11 @@ namespace CaeModel
             {
                 foreach (var entry in step.HistoryOutputs)
                 {
-                    if (regionsCount.ContainsKey(entry.Value.RegionName)) regionsCount[entry.Value.RegionName]++;
-                    else regionsCount.Add(entry.Value.RegionName, 1);
+                    if (entry.Value.RegionName != null)
+                    {
+                        if (regionsCount.ContainsKey(entry.Value.RegionName)) regionsCount[entry.Value.RegionName]++;
+                        else regionsCount.Add(entry.Value.RegionName, 1);
+                    }
                 }
             }
             return regionsCount;
@@ -219,8 +222,11 @@ namespace CaeModel
             {
                 foreach (var entry in step.BoundaryConditions)
                 {
-                    if (regionsCount.ContainsKey(entry.Value.RegionName)) regionsCount[entry.Value.RegionName]++;
-                    else regionsCount.Add(entry.Value.RegionName, 1);
+                    if (entry.Value.RegionName != null)
+                    {
+                        if (regionsCount.ContainsKey(entry.Value.RegionName)) regionsCount[entry.Value.RegionName]++;
+                        else regionsCount.Add(entry.Value.RegionName, 1);
+                    }
                 }
             }
             return regionsCount;
@@ -256,8 +262,11 @@ namespace CaeModel
             {
                 foreach (var entry in step.Loads)
                 {
-                    if (regionsCount.ContainsKey(entry.Value.RegionName)) regionsCount[entry.Value.RegionName]++;
-                    else regionsCount.Add(entry.Value.RegionName, 1);
+                    if (entry.Value.RegionName != null)
+                    {
+                        if (regionsCount.ContainsKey(entry.Value.RegionName)) regionsCount[entry.Value.RegionName]++;
+                        else regionsCount.Add(entry.Value.RegionName, 1);
+                    }
                 }
             }
             return regionsCount;
@@ -293,8 +302,11 @@ namespace CaeModel
             {
                 foreach (var entry in step.DefinedFields)
                 {
-                    if (regionsCount.ContainsKey(entry.Value.RegionName)) regionsCount[entry.Value.RegionName]++;
-                    else regionsCount.Add(entry.Value.RegionName, 1);
+                    if (entry.Value.RegionName != null)
+                    {
+                        if (regionsCount.ContainsKey(entry.Value.RegionName)) regionsCount[entry.Value.RegionName]++;
+                        else regionsCount.Add(entry.Value.RegionName, 1);
+                    }
                 }
             }
             return regionsCount;

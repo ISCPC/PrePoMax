@@ -71,7 +71,7 @@ namespace PrePoMax
         // Constructors                                                                                                             
         public ViewSubmodelBC(CaeModel.SubmodelBC submodel)
         {
-            // the order is important
+            // The order is important
             _submodel = submodel;
             //
             Dictionary<RegionTypeEnum, string> regionTypePropertyNamePairs = new Dictionary<RegionTypeEnum, string>();
@@ -85,7 +85,7 @@ namespace PrePoMax
             base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
             // 
             CustomPropertyDescriptor cpd;
-            // now lets display Unconstrained/From global model instead of True/False
+            // Now lets display Unconstrained/From global model instead of True/False
             for (int i = 1; i <= 3; i++)
             {
                 cpd = DynamicCustomTypeDescriptor.GetProperty("U" + i);
@@ -98,7 +98,7 @@ namespace PrePoMax
         // Methods                                                                                                                  
         public override CaeModel.BoundaryCondition GetBase()
         {
-            return (CaeModel.BoundaryCondition)_submodel;
+            return _submodel;
         }
         public void PopululateDropDownLists(string[] nodeSetNames, string[] surfaceNames)
         {

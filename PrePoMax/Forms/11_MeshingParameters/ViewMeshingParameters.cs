@@ -14,8 +14,8 @@ namespace PrePoMax.Forms
     public class ViewMeshingParameters
     {
         // Variables                                                                                                                
-        private MeshingParameters _parameters;
-        private readonly DynamicCustomTypeDescriptor _dctd;
+        protected MeshingParameters _parameters;
+        protected readonly DynamicCustomTypeDescriptor _dctd;
 
 
         // Properties                                                                                                               
@@ -24,14 +24,14 @@ namespace PrePoMax.Forms
         [Description("The value for the maximum element size.")]
         [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
         [Id(1, 1)]
-        public double MaxH { get { return _parameters.MaxH; } set { _parameters.MaxH = value; } }
+        public virtual double MaxH { get { return _parameters.MaxH; } set { _parameters.MaxH = value; } }
         //
         [Category("Mesh size")]
         [OrderedDisplayName(1, 10, "Min element size")]
         [Description("The value for the minimum element size.")]
         [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
         [Id(2, 1)]
-        public double MinH { get { return _parameters.MinH; } set { _parameters.MinH = value; } }
+        public virtual double MinH { get { return _parameters.MinH; } set { _parameters.MinH = value; } }
         //
         [Category("Mesh size")]
         [OrderedDisplayName(2, 10, "Grading")]
@@ -147,7 +147,7 @@ namespace PrePoMax.Forms
             _dctd.GetProperty(nameof(SplitCompoundMesh)).SetIsBrowsable(!_parameters.UseMmg);
             _dctd.GetProperty(nameof(KeepModelEdges)).SetIsBrowsable(_parameters.UseMmg);       // mmg only
             // To show/hide the MediumNodesOnGeometry property
-            SecondOrder = parameters.SecondOrder;
+            SecondOrder = _parameters.SecondOrder;
         }
 
 

@@ -12,13 +12,10 @@ namespace CaeModel
     public class SubmodelBC : BoundaryCondition
     {
         // Variables                                                                                                                
-        private RegionTypeEnum _regionType;
-        private string _regionName;
         private int _stepNumber;
 
+
         // Properties                                                                                                               
-        public override string RegionName { get { return _regionName; } set { _regionName = value; } }
-        public override RegionTypeEnum RegionType { get { return _regionType; } set { _regionType = value; } }
         public int StepNumber 
         { 
             get { return _stepNumber; } 
@@ -38,10 +35,8 @@ namespace CaeModel
 
         // Constructors                                                                                                             
         public SubmodelBC(string name, string regionName, RegionTypeEnum regionType)
-            : base(name) 
+            : base(name, regionName, regionType) 
         {
-            _regionName = regionName;
-            _regionType = regionType;
             _stepNumber = 1;
             U1 = false;
             U2 = false;

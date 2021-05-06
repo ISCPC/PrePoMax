@@ -32,6 +32,7 @@ namespace PrePoMax.Forms
 
         // Constructors                                                                                                             
         public FrmDefinedField(Controller controller)
+            : base (1.7)
         {
             InitializeComponent();
             //
@@ -216,7 +217,7 @@ namespace PrePoMax.Forms
         {
             ListViewItem item;
             // Defined temperature
-            string name = "Defined temperature";
+            string name = "Temperature";
             item = new ListViewItem(name);
             DefinedTemperature dt = new DefinedTemperature(GetDefinedFieldName(name), "", RegionTypeEnum.Selection);
             ViewDefinedTemperature vdt = new ViewDefinedTemperature(dt);

@@ -135,23 +135,7 @@ namespace CaeMesh
         // Constructors                                                                                                             
         public MeshingParameters()
         {
-            // defaults
-            _maxH = 1000;
-            _minH = 0;
-            _fineness = 0.5;        // has no effect
-            _grading = 0.3;
-            _elementsperedge = 2;
-            _elementspercurve = 2;
-            _optimizeSteps2D = 3;
-            _optimizeSteps3D = 3;
-            _secondOrder = true;
-            _quadDominated = false;
-            _midsideNodesOnGeometry = false;
-            _splitCompoundMesh = false;
-            //
-            _useMmg = false;
-            _hausdorff = 0.01;
-            _keepModelEdges = true;
+            Reset();   
         }
         public MeshingParameters(MeshingParameters meshingParameters)
         {
@@ -175,6 +159,26 @@ namespace CaeMesh
 
 
         // Methods                                                                                                                  
+        public void Reset()
+        {
+            // defaults
+            _maxH = 1000;
+            _minH = 0;
+            _fineness = 0.5;        // has no effect
+            _grading = 0.3;
+            _elementsperedge = 2;
+            _elementspercurve = 2;
+            _optimizeSteps2D = 3;
+            _optimizeSteps3D = 3;
+            _secondOrder = true;
+            _quadDominated = false;
+            _midsideNodesOnGeometry = false;
+            _splitCompoundMesh = false;
+            //
+            _useMmg = false;
+            _hausdorff = 0.01;
+            _keepModelEdges = true;
+        }
         public void WriteToFile(string fileName)
         {
             StringBuilder sb = new StringBuilder();

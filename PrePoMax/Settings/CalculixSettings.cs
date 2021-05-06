@@ -18,6 +18,7 @@ namespace PrePoMax
         private string _workDirectory;
         private bool _usePmxFolderAsWorkDirectory;
         private string _executable;
+        private CaeModel.SolverTypeEnum _solverTypeEnum;
         private int _numCPUs;
         private List<EnvironmentVariable> _environmentVariables;
 
@@ -52,6 +53,7 @@ namespace PrePoMax
                 _executable = Tools.GetLocalPath(path);
             }
         }
+        public CaeModel.SolverTypeEnum DefaultSolverType { get { return _solverTypeEnum; } set { _solverTypeEnum = value; } }
         public int NumCPUs
         {
             get { return _numCPUs; }
@@ -61,7 +63,11 @@ namespace PrePoMax
                 if (_numCPUs < 1) _numCPUs = 1;
             }
         }
-        public List<EnvironmentVariable> EnvironmentVariables { get { return _environmentVariables; } set { _environmentVariables = value; } }
+        public List<EnvironmentVariable> EnvironmentVariables
+        {
+            get { return _environmentVariables; }
+            set { _environmentVariables = value; }
+        }
 
 
         // Constructors                                                                                                             

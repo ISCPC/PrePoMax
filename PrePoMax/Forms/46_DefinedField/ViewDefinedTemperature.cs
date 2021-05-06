@@ -19,32 +19,26 @@ namespace PrePoMax
         // Properties                                                                                                               
         public override string Name { get { return _definedTemperature.Name; } set { _definedTemperature.Name = value; } }
         //
-        [OrderedDisplayName(1, 10, "Temperature")]
-        [CategoryAttribute("Data")]
-        [DescriptionAttribute("Set the value for the temperature.")]
+        [CategoryAttribute("Region")]
+        [OrderedDisplayName(2, 10, "Node set")]
+        [DescriptionAttribute("Select the node set for the creation of the defined temperature.")]
+        public string NodeSetName { get { return _definedTemperature.RegionName; } set { _definedTemperature.RegionName = value; } }
+        //
+        [CategoryAttribute("Region")]
+        [OrderedDisplayName(4, 10, "Surface")]
+        [DescriptionAttribute("Select the surface for the creation of the defined temperature.")]
+        public string SurfaceName { get { return _definedTemperature.RegionName; } set { _definedTemperature.RegionName = value; } }
+        //
+        [OrderedDisplayName(0, 10, "Temperature magnitude")]
+        [CategoryAttribute("Magnitude")]
+        [DescriptionAttribute("Value of the defined temperature magnitude.")]
         [TypeConverter(typeof(StringTemperatureConverter))]
         public double Temperature
         {
             get { return _definedTemperature.Temperature; }
             set { _definedTemperature.Temperature = value; }
         }
-        //
-        [CategoryAttribute("Region")]
-        [OrderedDisplayName(2, 10, "Node set")]
-        [DescriptionAttribute("Select the node set for the creation of the defined temperature.")]
-        public string NodeSetName { get { return _definedTemperature.RegionName; } set { _definedTemperature.RegionName = value; } }
-        ////
-        //[CategoryAttribute("Region")]
-        //[OrderedDisplayName(3, 10, "Reference point")]
-        //[DescriptionAttribute("Select the reference point for the creation of the defined temperature.")]
-        //public string ReferencePointName { get { return _initialTemperature.RegionName; } set { _initialTemperature.RegionName = value; } }
-        //
-        [CategoryAttribute("Region")]
-        [OrderedDisplayName(4, 10, "Surface")]
-        [DescriptionAttribute("Select the surface for the creation of the defined temperature.")]
-        public string SurfaceName { get { return _definedTemperature.RegionName; } set { _definedTemperature.RegionName = value; } }
 
-       
         // Constructors                                                                                                             
         public ViewDefinedTemperature(CaeModel.DefinedTemperature definedTemperature)
         {

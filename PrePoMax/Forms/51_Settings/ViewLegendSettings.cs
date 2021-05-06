@@ -48,7 +48,7 @@ namespace PrePoMax.Settings
     }
 
     [Serializable]
-    public class ViewLegendSettings : ViewSettings, IReset
+    public class ViewLegendSettings : IViewSettings, IReset
     {
         // Variables                                                                                                                
         private LegendSettings _legendSettings;
@@ -229,7 +229,7 @@ namespace PrePoMax.Settings
 
 
         // Methods                                                                               
-        public override ISettings GetBase()
+        public ISettings GetBase()
         {
             return _legendSettings;
         }

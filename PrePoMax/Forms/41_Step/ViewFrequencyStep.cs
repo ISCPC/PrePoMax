@@ -13,38 +13,39 @@ namespace PrePoMax
     public class ViewFrequencyStep : ViewStep
     {
         // Variables                                                                                                                
-        private CaeModel.FrequencyStep _step;
+        private CaeModel.FrequencyStep _frequencystep;
 
 
         // Properties                                                                                                               
-        public override string Name { get { return _step.Name; } set { _step.Name = value; } }
-
         [CategoryAttribute("Data")]
         [ReadOnly(false)]
-        [OrderedDisplayName(0, 10, "Perturbation")]
+        [OrderedDisplayName(2, 10, "Perturbation")]
         [DescriptionAttribute("Perturbation parameter set to On applies preloads from the previous step if it exists.")]
-        public bool Perturbation { get { return _step.Perturbation; } set { _step.Perturbation = value; } }
-
+        public bool Perturbation { get { return _frequencystep.Perturbation; } set { _frequencystep.Perturbation = value; } }
+        //
         [CategoryAttribute("Data")]
         [ReadOnly(false)]
-        [OrderedDisplayName(1, 10, "Storage")]
+        [OrderedDisplayName(3, 10, "Storage")]
         [DescriptionAttribute("Store eigenvalues, eigenmodes, mass and stiffness matrix in a binary form in file jobname.eig " +
                               "for further use.")]
-        public bool Storage { get { return _step.Storage; } set { _step.Storage = value; } }
-
+        public bool Storage { get { return _frequencystep.Storage; } set { _frequencystep.Storage = value; } }
+        //
         [CategoryAttribute("Data")]
         [ReadOnly(false)]
-        [OrderedDisplayName(2, 10, "Number of frequencies")]
+        [OrderedDisplayName(4, 10, "Number of frequencies")]
         [DescriptionAttribute("Number of eigenfrequencies to compute.")]
-        public double NumOfFrequencies { get { return _step.NumOfFrequencies; } set { _step.NumOfFrequencies = value; } }
-
-        public override CaeModel.Step Base { get { return _step; } set { _step = (CaeModel.FrequencyStep)value; } }
+        public double NumOfFrequencies
+        {
+            get { return _frequencystep.NumOfFrequencies; }
+            set { _frequencystep.NumOfFrequencies = value; }
+        }
 
 
         // Constructors                                                                                                             
         public ViewFrequencyStep(CaeModel.FrequencyStep step)
+            : base(step)
         {
-            _step = step;
+            _frequencystep = step;
             _dctd = ProviderInstaller.Install(this);
             //
             _dctd.RenameBooleanPropertyToOnOff("Perturbation");
@@ -55,9 +56,9 @@ namespace PrePoMax
 
 
         // Methods
-        public override void UpdateFieldView()
+        public override CaeModel.Step GetBase()
         {
+            return _frequencystep;
         }
-
     }
 }

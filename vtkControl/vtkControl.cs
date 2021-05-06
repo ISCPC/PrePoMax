@@ -20,7 +20,7 @@ namespace vtkControl
     /// The client area of this UserControl is completely filled with
     /// an instance of a vtkRenderWindow.
     /// </summary>
-    [System.Runtime.InteropServices.ComVisible(true), System.Runtime.InteropServices.ClassInterface(System.Runtime.InteropServices.ClassInterfaceType.AutoDual)]
+    [ComVisible(true), ClassInterface(ClassInterfaceType.AutoDual)]
     public partial class vtkControl : UserControl
     {
         int countError;
@@ -2018,14 +2018,18 @@ namespace vtkControl
             vtkColorTransferFunction ctf = vtkColorTransferFunction.New();
             List<double[]> rgbPoints = new List<double[]>();
             //
+            // https://colorbrewer2.org/
+            //
             if (_colorSpectrum.Type == vtkColorSpectrumType.CoolWarm)
             {
                 // Cool-Warm
                 //http://aplotnikov.com/2016/simple-visualization-of-unstructured-grid-quality/
                 //http://www.kennethmoreland.com/color-maps/
                 ctf.SetColorSpaceToDiverging();
-                rgbPoints.Add(new double[] { 0, 0.230, 0.299, 0.754 });
-                rgbPoints.Add(new double[] { 1, 0.706, 0.016, 0.150 });
+                //rgbPoints.Add(new double[] { 0, 0.230, 0.299, 0.754 });
+                //rgbPoints.Add(new double[] { 1, 0.706, 0.016, 0.150 });
+                rgbPoints.Add(new double[] { 0, 0.038, 0.124, 0.693 });
+                rgbPoints.Add(new double[] { 1, 0.632, 0.0, 0.0 });
             }
             else if (_colorSpectrum.Type == vtkColorSpectrumType.Rainbow)
             {
@@ -3077,20 +3081,20 @@ namespace vtkControl
             //
             double[][] points = data.Geometry.Nodes.Coor;
             double[][] normals = data.Geometry.Nodes.Normals;
-            // points
+            // Points
             vtkPoints pointData = vtkPoints.New();
             for (int i = 0; i < points.GetLength(0); i++)
             {
                 pointData.InsertNextPoint(points[i][0], points[i][1], points[i][2]);
             }
-            // normals
+            // Normals
             vtkDoubleArray pointNormalsArray = vtkDoubleArray.New();
             pointNormalsArray.SetNumberOfComponents(3);
             for (int i = 0; i < normals.GetLength(0); i++)
             {
                 pointNormalsArray.InsertNextTuple3(normals[i][0], normals[i][1], normals[i][2]);
             }
-            // polydata
+            // Polydata
             vtkPolyData polydata = vtkPolyData.New();
             polydata.SetPoints(pointData);
             polydata.GetPointData().SetNormals(pointNormalsArray);
@@ -3279,14 +3283,16 @@ namespace vtkControl
             vtkPoints pointData = vtkPoints.New();
             for (int i = 0; i < data.Geometry.Nodes.Coor.GetLength(0); i++)
             {
-                pointData.InsertNextPoint(data.Geometry.Nodes.Coor[i][0], data.Geometry.Nodes.Coor[i][1], data.Geometry.Nodes.Coor[i][2]);
+                pointData.InsertNextPoint(data.Geometry.Nodes.Coor[i][0], data.Geometry.Nodes.Coor[i][1],
+                                          data.Geometry.Nodes.Coor[i][2]);
             }
             // Normals
             vtkDoubleArray pointNormalsArray = vtkDoubleArray.New();
             pointNormalsArray.SetNumberOfComponents(3); //3d normals (ie x,y,z)
             for (int i = 0; i < data.Geometry.Nodes.Normals.GetLength(0); i++)
             {
-                pointNormalsArray.InsertNextTuple3(data.Geometry.Nodes.Normals[i][0], data.Geometry.Nodes.Normals[i][1], data.Geometry.Nodes.Normals[i][2]);
+                pointNormalsArray.InsertNextTuple3(data.Geometry.Nodes.Normals[i][0], data.Geometry.Nodes.Normals[i][1],
+                                                   data.Geometry.Nodes.Normals[i][2]);
             }
             // Polydata
             vtkPolyData polydata = vtkPolyData.New();
@@ -3401,6 +3407,94 @@ namespace vtkControl
             data.Name += Globals.NameSeparator + "doubleArrow";
             vtkMaxActor actor = new vtkMaxActor(data, mapper);
             //
+            ApplySymbolFormatingToActor(actor);
+            AddActorGeometry(actor, data.Layer);
+            //
+            if (_drawSymbolEdges) AddSymbolEdges(data, glyph.GetOutputPort());
+        }
+        public void AddOrientedThermoActor(vtkMaxActorData data, double symbolSize, bool invert)
+        {
+            if (symbolSize > _maxSymbolSize) _maxSymbolSize = symbolSize;
+            // Points
+            vtkPoints pointData = vtkPoints.New();
+            for (int i = 0; i < data.Geometry.Nodes.Coor.GetLength(0); i++)
+            {
+                pointData.InsertNextPoint(data.Geometry.Nodes.Coor[i][0], data.Geometry.Nodes.Coor[i][1],
+                                          data.Geometry.Nodes.Coor[i][2]);
+            }
+            // Normals
+            vtkDoubleArray pointNormalsArray = vtkDoubleArray.New();
+            pointNormalsArray.SetNumberOfComponents(3); //3d normals (ie x,y,z)
+            for (int i = 0; i < data.Geometry.Nodes.Normals.GetLength(0); i++)
+            {
+                pointNormalsArray.InsertNextTuple3(data.Geometry.Nodes.Normals[i][0], data.Geometry.Nodes.Normals[i][1],
+                                                   data.Geometry.Nodes.Normals[i][2]);
+            }
+            // Polydata
+            vtkPolyData polydata = vtkPolyData.New();
+            polydata.SetPoints(pointData);
+            polydata.GetPointData().SetNormals(pointNormalsArray);
+            // Calculate the distance to the camera of each point.
+            vtkDistanceToCamera distanceToCamera = vtkDistanceToCamera.New();
+            distanceToCamera.SetInput(polydata);
+            distanceToCamera.SetScreenSize(symbolSize);
+            distanceToCamera.SetRenderer(_renderer);
+            // Source for the glyph filter
+            // Sphere
+            double rs = 0.2;
+            double rc = 0.1;
+            vtkSphereSource sphereSource = vtkSphereSource.New();
+            sphereSource.SetRadius(rs);
+            sphereSource.SetPhiResolution(15);
+            sphereSource.SetThetaResolution(15);
+            sphereSource.SetCenter(rs, 0, 0);
+            // Cylinder
+            vtkCylinderSource cylinderSource = vtkCylinderSource.New();
+            cylinderSource.SetRadius(rc);
+            cylinderSource.SetHeight(1 - rs);
+            cylinderSource.SetResolution(15);
+            cylinderSource.SetCenter(0, 0.5 + rs, 0);
+            //Transform
+            vtkTransform transform = vtkTransform.New();
+            transform.Identity();
+            transform.RotateZ(-90);
+            // Transform filter
+            vtkTransformFilter transformFilter = vtkTransformFilter.New();
+            transformFilter.SetInput(cylinderSource.GetOutput());
+            transformFilter.SetTransform(transform);
+            // Combine
+            vtkAppendPolyData append = vtkAppendPolyData.New();
+            append.AddInput(sphereSource.GetOutput());
+            append.AddInput(transformFilter.GetOutput());
+            // Transform
+            transform = vtkTransform.New();
+            transform.Identity();
+            if (invert) transform.Translate(-1.05, 0, 0);
+            else transform.Translate(0.05, 0, 0);
+            // Transform filter
+            transformFilter = vtkTransformFilter.New();
+            transformFilter.SetInput(append.GetOutput());
+            transformFilter.SetTransform(transform);
+            // Glyph
+            vtkGlyph3D glyph = vtkGlyph3D.New();
+            glyph.SetSourceConnection(transformFilter.GetOutputPort());
+            glyph.SetInputConnection(distanceToCamera.GetOutputPort());
+            glyph.SetVectorModeToUseNormal();
+            // Scale
+            glyph.ScalingOn();
+            glyph.SetScaleModeToScaleByScalar();
+            glyph.SetInputArrayToProcess(0, 0, 0, "vtkDataObject::FIELD_ASSOCIATION_POINTS", "DistanceToCamera");
+            glyph.SetScaleFactor(0.5);
+            glyph.OrientOn();
+            glyph.Update();
+            // Mapper
+            vtkPolyDataMapper mapper = vtkPolyDataMapper.New();
+            mapper.SetInputConnection(0, glyph.GetOutputPort());
+            mapper.ScalarVisibilityOff();
+            // Actor
+            data.Name += Globals.NameSeparator + "thermo";
+            vtkMaxActor actor = new vtkMaxActor(data, mapper);
+            // Add
             ApplySymbolFormatingToActor(actor);
             AddActorGeometry(actor, data.Layer);
             //
@@ -3523,10 +3617,10 @@ namespace vtkControl
         public void HighlightActor(string actorName)
         {
             string sectionViewActorName = GetSectionViewActorName(actorName);
-            HighlightActorByName(actorName);
-            if (_sectionView) HighlightActorByName(sectionViewActorName);
+            HighlightAllActorsByName(actorName);
+            if (_sectionView) HighlightAllActorsByName(sectionViewActorName);
         }
-        private void HighlightActorByName(string actorName)
+        private void HighlightAllActorsByName(string actorName)
         {
             //vtkMaxActor actor = GetCopyOfActor(actorName);
             vtkMaxActor actorModelEdges = GetCopyOfModelEdgesActor(actorName);
@@ -3538,6 +3632,21 @@ namespace vtkControl
                 AddActorGeometry(actorModelEdges, vtkRendererLayer.Selection);
                 this.Invalidate();
             }
+            return;
+            // Silhouette
+            vtkMaxActor actor = _actors[actorName];
+            vtkPolyDataSilhouette silhouette = vtkPolyDataSilhouette.New();
+            silhouette.SetInput(actor.Geometry.GetMapper().GetInput());
+            silhouette.SetCamera(_renderer.GetActiveCamera());
+            silhouette.SetEnableFeatureAngle(0);
+            vtkPolyDataMapper mapper = vtkPolyDataMapper.New();
+            mapper.SetInputConnection(silhouette.GetOutputPort(0));
+            vtkActor outlineActor = vtkActor.New();
+            outlineActor.SetMapper(mapper);
+            outlineActor.GetProperty().SetColor(0, 0, 0);
+            outlineActor.GetProperty().SetLineWidth(0.8f);
+            //outlineActor.GetProperty().SetRepresentationToWireframe();
+            _renderer.AddActor(outlineActor);
         }
         private vtkMaxActor GetCopyOfModelEdgesActor(string actorName)
         {

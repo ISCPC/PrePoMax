@@ -209,7 +209,8 @@ namespace vtkControl
 
             // between range color
             double delta = (labelsRange[1] - labelsRange[0]) / (_numberOfLabels - 1);
-            for (int i = 0; i < _numberOfLabels; i++) _labels[labelCount++] = GetString(labelsRange[0] + delta * i);
+            for (int i = 0; i < _numberOfLabels - 1; i++) _labels[labelCount++] = GetString(labelsRange[0] + delta * i);
+            _labels[labelCount++] = GetString(labelsRange[1]);
 
             // below range color
             if (_addMinColor)

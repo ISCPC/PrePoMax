@@ -119,6 +119,10 @@ namespace FileInOut.Output
             title = new CalTitle("Surfaces", "");
             keywords.Add(title);
             AppendSurfaces(model, title);
+            // Physical constants
+            title = new CalTitle("Physical constants", "");
+            keywords.Add(title);
+            AppendPhysicalConstants(model, title);
             // Materials
             title = new CalTitle("Materials", "");
             keywords.Add(title);
@@ -598,6 +602,14 @@ namespace FileInOut.Output
                 }
             }
         }
+        static private void AppendPhysicalConstants(FeModel model, CalculixKeyword parent)
+        {
+            if (model != null)
+            {
+                CalPhysicalConstants calPhysicalConstants = new CalPhysicalConstants(model.Properties);
+                if (calPhysicalConstants.GetKeywordString().Length > 0) parent.AddKeyword(calPhysicalConstants);
+            }
+        }
         //
         static private void AppendSteps(FeModel model, Dictionary<string, int[]> referencePointsNodeIds, CalculixKeyword parent)
         {
@@ -703,7 +715,7 @@ namespace FileInOut.Output
                 if (boundaryCondition is FixedBC fix)
                 {
                     string nodeSetNameOfSurface = null;
-                    if (fix.RegionType == CaeGlobals.RegionTypeEnum.SurfaceName)
+                    if (fix.RegionType == RegionTypeEnum.SurfaceName)
                         nodeSetNameOfSurface = model.Mesh.Surfaces[fix.RegionName].NodeSetName;
                     CalFixedBC calFixedBC = new CalFixedBC(fix, referencePointsNodeIds, nodeSetNameOfSurface);
                     parent.AddKeyword(calFixedBC);
@@ -711,7 +723,7 @@ namespace FileInOut.Output
                 else if (boundaryCondition is DisplacementRotation dispRot)
                 {
                     string nodeSetNameOfSurface = null;
-                    if (dispRot.RegionType == CaeGlobals.RegionTypeEnum.SurfaceName)
+                    if (dispRot.RegionType == RegionTypeEnum.SurfaceName)
                         nodeSetNameOfSurface = model.Mesh.Surfaces[dispRot.RegionName].NodeSetName;
                     CalDisplacementRotation calDisplacementRotation = new CalDisplacementRotation(dispRot, referencePointsNodeIds, nodeSetNameOfSurface);
                     parent.AddKeyword(calDisplacementRotation);
@@ -719,10 +731,18 @@ namespace FileInOut.Output
                 else if (boundaryCondition is SubmodelBC sm)
                 {
                     string surfaceNodeSetName = null;
-                    if (sm.RegionType == CaeGlobals.RegionTypeEnum.SurfaceName)
+                    if (sm.RegionType == RegionTypeEnum.SurfaceName)
                         surfaceNodeSetName = model.Mesh.Surfaces[sm.RegionName].NodeSetName;
                     CalSubmodelBC calSubmodelBC = new CalSubmodelBC(sm, surfaceNodeSetName);
                     parent.AddKeyword(calSubmodelBC);
+                }
+                else if (boundaryCondition is TemperatureBC tmp)
+                {
+                    string surfaceNodeSetName = null;
+                    if (tmp.RegionType == RegionTypeEnum.SurfaceName)
+                        surfaceNodeSetName = model.Mesh.Surfaces[tmp.RegionName].NodeSetName;
+                    CalTemperatureBC calTemperatureBC = new CalTemperatureBC(tmp, surfaceNodeSetName);
+                    parent.AddKeyword(calTemperatureBC);
                 }
                 else throw new NotImplementedException();
             }

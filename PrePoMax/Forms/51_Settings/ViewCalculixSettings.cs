@@ -11,7 +11,7 @@ using System.Drawing.Design;
 namespace PrePoMax.Settings
 {
     [Serializable]
-    public class ViewCalculixSettings : ViewSettings, IReset
+    public class ViewCalculixSettings : IViewSettings, IReset
     {
         // Variables                                                                                                                
         private CalculixSettings _calculixSettings;
@@ -48,6 +48,15 @@ namespace PrePoMax.Settings
             set { _calculixSettings.CalculixExe = value; }
         }
         //
+        [CategoryAttribute("Calculix")]
+        [OrderedDisplayName(3, 10, "Default solver")]
+        [DescriptionAttribute("Select the default matrix solver type.")]
+        public CaeModel.SolverTypeEnum DefaultSolverType
+        {
+            get { return _calculixSettings.DefaultSolverType; }
+            set { _calculixSettings.DefaultSolverType = value; }
+        }
+        //
         [CategoryAttribute("Parallelization")]
         [OrderedDisplayName(0, 10, "Number of processors")]
         [DescriptionAttribute("Set the number of processors for the executable to use (OMP_NUM_THREADS = n).")]
@@ -78,7 +87,7 @@ namespace PrePoMax.Settings
         }
 
         // Methods                                                                                                                  
-        public override ISettings GetBase()
+        public ISettings GetBase()
         {
             return _calculixSettings;
         }

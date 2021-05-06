@@ -13,37 +13,38 @@ namespace PrePoMax
     public class ViewBuckleStep : ViewStep
     {
         // Variables                                                                                                                
-        private CaeModel.BuckleStep _step;
+        private CaeModel.BuckleStep _buckleStep;
 
 
         // Properties                                                                                                               
-        public override string Name { get { return _step.Name; } set { _step.Name = value; } }
-
         [CategoryAttribute("Data")]
         [ReadOnly(false)]
-        [OrderedDisplayName(0, 10, "Perturbation")]
+        [OrderedDisplayName(3, 10, "Perturbation")]
         [DescriptionAttribute("Perturbation parameter set to On applies preloads from the previous step if it exists.")]
-        public bool Perturbation { get { return _step.Perturbation; } set { _step.Perturbation = value; } }
-
+        public bool Perturbation { get { return _buckleStep.Perturbation; } set { _buckleStep.Perturbation = value; } }
+        //
         [CategoryAttribute("Data")]
         [ReadOnly(false)]
-        [OrderedDisplayName(0, 10, "Num. of buckling factors")]
+        [OrderedDisplayName(4, 10, "Num. of buckling factors")]
         [DescriptionAttribute("Number of buckling factors desired (default: 1).")]
-        public int NumBucklingFactors { get { return _step.NumOfBucklingFactors; } set { _step.NumOfBucklingFactors = value; } }
-
+        public int NumBucklingFactors
+        {
+            get { return _buckleStep.NumOfBucklingFactors; }
+            set { _buckleStep.NumOfBucklingFactors = value; }
+        }
+        //
         [CategoryAttribute("Data")]
         [ReadOnly(false)]
-        [OrderedDisplayName(1, 10, "Accuracy")]
+        [OrderedDisplayName(5, 10, "Accuracy")]
         [DescriptionAttribute("Accuracy desired (default: 0.01).")]
-        public double Accuracy { get { return _step.Accuracy; } set { _step.Accuracy = value; } }
-
-        public override CaeModel.Step Base { get { return _step; } set { _step = (CaeModel.BuckleStep)value; } }
+        public double Accuracy { get { return _buckleStep.Accuracy; } set { _buckleStep.Accuracy = value; } }
 
 
         // Constructors                                                                                                             
         public ViewBuckleStep(CaeModel.BuckleStep step)
+            : base(step)
         {
-            _step = step;
+            _buckleStep = step;
             _dctd = ProviderInstaller.Install(this);
             //
             _dctd.RenameBooleanPropertyToOnOff("Perturbation");
@@ -53,9 +54,9 @@ namespace PrePoMax
 
 
         // Methods
-        public override void UpdateFieldView()
+        public override CaeModel.Step GetBase()
         {
+            return _buckleStep;
         }
-
     }
 }

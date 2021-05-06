@@ -114,7 +114,6 @@ namespace CaeGlobals
                 double leftSideNumbers = Math.Floor(Math.Log10(Math.Abs(d))) + 1;
                 double scale = Math.Pow(10, leftSideNumbers);
                 double result = scale * Math.Round(d / scale, digits, MidpointRounding.AwayFromZero);
-
                 // Clean possible precision error.
                 if ((int)leftSideNumbers >= digits)
                 {

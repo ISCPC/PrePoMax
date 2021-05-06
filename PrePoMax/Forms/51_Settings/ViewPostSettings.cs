@@ -11,7 +11,7 @@ using System.Drawing.Design;
 namespace PrePoMax.Settings
 {
     [Serializable]
-    public class ViewPostSettings : ViewSettings, IReset
+    public class ViewPostSettings : IViewSettings, IReset
     {
         // Variables                                                                                                                
         private PostSettings _postSettings;
@@ -136,7 +136,7 @@ namespace PrePoMax.Settings
 
 
         // Methods                                                                                                                  
-        public override ISettings GetBase()
+        public ISettings GetBase()
         {
             return _postSettings;
         }

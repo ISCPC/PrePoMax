@@ -145,11 +145,13 @@ namespace QuantumConcepts.Formats.StereoLithography
 
             string[] tmp = data.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
 
+            if (tmp.Length > 0 && tmp[0].Length == 8 && tmp[0].ToLower() == "endsolid")
+                return null;
+
             int start;
             if (tmp.Length == 4) start = 1;
             else if (tmp.Length == 5) start = 2;
             else return null;
-
 
             //Parse the three coordinates.
             if (!float.TryParse(tmp[start + 0], numberStyle, CultureInfo.InvariantCulture, out x))

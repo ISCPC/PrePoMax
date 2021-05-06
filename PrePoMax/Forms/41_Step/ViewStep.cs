@@ -10,29 +10,46 @@ using DynamicTypeDescriptor;
 namespace PrePoMax
 {
     [Serializable]
-    public abstract class ViewStep
+    public class ViewStep
     {
         // Variables                                                                                                                
+        protected CaeModel.Step _step;
         protected DynamicCustomTypeDescriptor _dctd = null;
 
 
         // Properties                                                                                                               
 
         [CategoryAttribute("Data")]
-        [ReadOnly(false)]
         [OrderedDisplayName(0, 10, "Name")]
         [DescriptionAttribute("Name of the step.")]
-        public abstract string Name { get; set; }
+        public string Name { get { return _step.Name; } set { _step.Name = value; } }
+        //
+        [CategoryAttribute("Data")]
+        [OrderedDisplayName(1, 10, "Solver")]
+        [DescriptionAttribute("Select the matrix solver type.")]
+        public CaeModel.SolverTypeEnum SolverType
+        {
+            get { return _step.SolverType; }
+            set { _step.SolverType = value; }
+        }
 
-        [Browsable(false)]
-        public abstract CaeModel.Step Base { get; set; }
+
 
         // Constructors                                                                                                             
-
+        public ViewStep(CaeModel.Step step)
+        {
+            if (step == null)
+                throw new ArgumentNullException();
+            //
+            _step = step;
+        }
 
         // Methods
-        public abstract void UpdateFieldView();
-    
-     
+        public virtual CaeModel.Step GetBase()
+        {
+            return _step;
+        }
+        public virtual void UpdateFieldView()
+        { }
     }
 }

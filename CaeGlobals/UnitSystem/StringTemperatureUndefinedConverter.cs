@@ -6,18 +6,19 @@ using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Globalization;
-using UnitsNet.Units;
 using UnitsNet;
+using UnitsNet.Units;
 
 namespace CaeGlobals
 {
-    public class StringLengthFixedDOFConverter : TypeConverter
+    public class StringTemperatureUndefinedConverter : TypeConverter
     {
         // Variables                                                                                                                
-        protected static LengthUnit _lengthUnit = LengthUnit.Meter;
+        protected static TemperatureUnit _temperatureUnit = TemperatureUnit.DegreeCelsius;
         //
-        protected ArrayList values;
-        protected string _fixed = "Fixed";
+        protected static ArrayList values;
+        protected static double _initialValue = 0;      // use initial value for the constructor to work
+        protected static string _undefined = "Undefined";
 
 
         // Properties                                                                                                               
@@ -25,28 +26,37 @@ namespace CaeGlobals
         {
             set
             {
-                if (value == "") _lengthUnit = (LengthUnit)MyUnit.NoUnit;
-                else _lengthUnit = Length.ParseUnit(value);
+                if (value == "") _temperatureUnit = (TemperatureUnit)MyUnit.NoUnit;
+                else _temperatureUnit = Temperature.ParseUnit(value);
+            }
+        }
+        public static double SetInitialValue
+        {
+            set
+            {
+                _initialValue = value;
+                CreateListOfStandardValues();
             }
         }
 
 
         // Constructors                                                                                                             
-        public StringLengthFixedDOFConverter()
+        public StringTemperatureUndefinedConverter()
         {
-            // Initializes the standard values list with defaults.
-            values = new ArrayList(new double[] { double.PositiveInfinity, 0});
+            CreateListOfStandardValues();
         }
 
 
         // Methods                                                                                                                  
-
+        private static void CreateListOfStandardValues()
+        {
+            values = new ArrayList(new double[] { double.PositiveInfinity, _initialValue });
+        }
         // Indicates this converter provides a list of standard values.
         public override bool GetStandardValuesSupported(ITypeDescriptorContext context)
         {
             return true;
         }
-
         // Returns a StandardValuesCollection of standard value objects.
         public override TypeConverter.StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
         {
@@ -54,36 +64,26 @@ namespace CaeGlobals
             StandardValuesCollection svc = new StandardValuesCollection(values);
             return svc;
         }
-
-        // Returns true for a sourceType of string to indicate that 
-        // conversions from string to integer are supported. (The 
-        // GetStandardValues method requires a string to native type 
-        // conversion because the items in the drop-down list are 
-        // translated to string.)
         public override bool CanConvertFrom(ITypeDescriptorContext context, System.Type sourceType)
         {
             if (sourceType == typeof(string)) return true;
             else return base.CanConvertFrom(context, sourceType);
         }
-
-        // If the type of the value to convert is string, parses the string 
-        // and returns the integer to set the value of the property to. 
-        // This example first extends the integer array that supplies the 
-        // standard values collection if the user-entered value is not 
-        // already in the array.
+        //
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
             // Convert from string
             if (value is string valueString)
             {
                 double valueDouble;
-                if (string.Equals(valueString, _fixed)) valueDouble = double.PositiveInfinity;
+                if (string.Equals(valueString, _undefined)) valueDouble = double.PositiveInfinity;
                 else if (!double.TryParse(valueString, out valueDouble))
                 {
-                    Length length = Length.Parse(valueString);
-                    if ((int)_lengthUnit != MyUnit.NoUnit) length = length.ToUnit(_lengthUnit);
-                    valueDouble = length.Value;
+                    Temperature temperature = Temperature.Parse(valueString);
+                    if ((int)_temperatureUnit != MyUnit.NoUnit) temperature = temperature.ToUnit(_temperatureUnit);
+                    valueDouble = temperature.Value;
                 }
+                //
                 return valueDouble;
             }
             else return base.ConvertFrom(context, culture, value);
@@ -97,11 +97,12 @@ namespace CaeGlobals
                 {
                     if (value is double valueDouble)
                     {
-                        if (double.IsPositiveInfinity(valueDouble)) return _fixed;
+                        if (double.IsPositiveInfinity(valueDouble)) return _undefined;
                         else
                         {
                             string valueString = valueDouble.ToString();
-                            if ((int)_lengthUnit != MyUnit.NoUnit) valueString += " " + Length.GetAbbreviation(_lengthUnit);
+                            if ((int)_temperatureUnit != MyUnit.NoUnit)
+                                valueString += " " + Temperature.GetAbbreviation(_temperatureUnit);
                             return valueString;
                         }
                     }

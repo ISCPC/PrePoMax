@@ -51,7 +51,11 @@ namespace CaeModel
             } 
         }
         public ModelProperties Properties  { get { return _properties; } set { _properties = value; } }
-        public UnitSystem UnitSystem { get { return _unitSystem; } set { _unitSystem = value; } }
+        public UnitSystem UnitSystem
+        {
+            get { return _unitSystem; }
+            set { _unitSystem = value; }
+        }
 
 
         // Constructors                                                                                                             
@@ -66,6 +70,7 @@ namespace CaeModel
             _contactPairs = new OrderedDictionary<string, ContactPair>();
             _initialConditions = new OrderedDictionary<string, InitialCondition>();
             _stepCollection = new StepCollection();
+            _properties = new ModelProperties();
             _unitSystem = new UnitSystem();
         }
         
@@ -337,7 +342,13 @@ namespace CaeModel
                         valid = (sm.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(sm.RegionName))
                                 || (sm.RegionType == RegionTypeEnum.SurfaceName && (_mesh.Surfaces.ContainsValidKey(sm.RegionName)));
                     }
-                    else throw new NotSupportedException();
+                    else if (bc is TemperatureBC tmp)
+                    {
+                        valid = (tmp.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(tmp.RegionName))
+                                || (tmp.RegionType == RegionTypeEnum.SurfaceName && (_mesh.Surfaces.ContainsValidKey(tmp.RegionName)));
+                    }
+                    else 
+                        throw new NotSupportedException();
                     //
                     SetItemValidity(step.Name, bc, valid, items);
                     if (!valid && bc.Active) invalidItems.Add("Boundary condition: " + step.Name + ", " + bc.Name);

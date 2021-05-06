@@ -686,6 +686,7 @@ namespace PrePoMax
             {
                 if (namedClass is ResultPart || namedClass is GeometryPart) EditResultPart(namedClass.Name);
                 else if (namedClass is CaeResults.HistoryResultData hd) ShowHistoryOutput(hd);
+                else if (namedClass is CaeResults.FieldData fd) ShowLegendSettings();
             }
         }
         private void ModelTree_DuplicateEvent(NamedClass[] items)
@@ -1979,8 +1980,6 @@ namespace PrePoMax
         #endregion
 
         #region Geometry ###########################################################################################################
-        
-        //Geometry part
         internal void tsmiEditGeometryPart_Click(object sender, EventArgs e)
         {
             try
@@ -2525,7 +2524,7 @@ namespace PrePoMax
             //
             if (!_controller.MeshJobIdle) throw new Exception("The meshing is already in progress.");
             //
-            MeshingParameters defaultMeshingParameters = new MeshingParameters();
+            MeshingParameters defaultMeshingParameters = _controller.Settings.MeshingSettings.MeshingParameters.DeepClone();
             double factorMax = 20;
             double factorMin = 1000;
             double factorHausdorff = 500;
@@ -2680,7 +2679,6 @@ namespace PrePoMax
         #endregion  ################################################################################################################
 
         #region Model edit  ########################################################################################################
-
         private void tsmiEditModel_Click(object sender, EventArgs e)
         {
             try
@@ -2740,7 +2738,8 @@ namespace PrePoMax
         //                                                                                                                          
         private void EditModel()
         {
-            ShowForm(_frmModelProperties, "Edit Model", null);
+            if (_controller.Model.UnitSystem.UnitSystemType != UnitSystemType.Undefined)
+                ShowForm(_frmModelProperties, "Edit Model", null);
         }
         private void EditEditCalculiXKeywords()
         {
@@ -5939,8 +5938,11 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.AddOrientedDoubleArrowsActor, actorData, symbolSize);
         }
-
-
+        public void AddOrientedThermosActor(vtkControl.vtkMaxActorData actorData, double symbolSize, bool invert = false)
+        {
+            InvokeIfRequired(_vtk.AddOrientedThermoActor, actorData, symbolSize, invert);
+        }
+        //
         public bool ContainsActor(string actorName)
         {
             return _vtk.ContainsActor(actorName);

@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.ComponentModel;
 using CaeGlobals;
 using System.IO;
-using DynamicTypeDescriptor;
-using System.Drawing;
+using CaeMesh;
 
 namespace PrePoMax
 {
@@ -15,9 +11,12 @@ namespace PrePoMax
     public class SettingsContainer
     {
         // Variables                                                                                                                
+        [NonSerialized] private Dictionary<string, vtkControl.vtkMaxColorSpectrum> _colorSpectrums;
+        //
         private GeneralSettings _general;
         private GraphicsSettings _graphics;
         private ColorSettings _color;
+        private MeshingSettings _meshingSettings;
         private PreSettings _pre;
         private CalculixSettings _calculix;
         private PostSettings _post;
@@ -29,9 +28,10 @@ namespace PrePoMax
         public GeneralSettings General { get { return _general; } set { _general = value; } }
         public GraphicsSettings Graphics { get { return _graphics; } set { _graphics = value; } }
         public ColorSettings Color { get { return _color; } set { _color = value; } }
+        public MeshingSettings MeshingSettings { get { return _meshingSettings; } set { _meshingSettings = value; } }
         public PreSettings Pre { get { return _pre; } set { _pre = value; } }
         public CalculixSettings Calculix { get { return _calculix; } set { _calculix = value; } }
-        public PostSettings Post { get { return _post; } set { _post = value; } }
+        public PostSettings Post { get { return _post; } set { _post = value; } }       
         public LegendSettings Legend { get { return _legend; } set { _legend = value; } }
         public StatusBlockSettings StatusBlock { get { return _statusBlock; } set { _statusBlock = value; } }
 
@@ -51,9 +51,12 @@ namespace PrePoMax
         // Methods                                                                                                                          
         public void Initialize()
         {
+            _colorSpectrums = new Dictionary<string, vtkControl.vtkMaxColorSpectrum>();
+            //
             _general = new GeneralSettings();
             _graphics = new GraphicsSettings();
             _color = new ColorSettings();
+            _meshingSettings = new MeshingSettings();
             _pre = new PreSettings();
             _calculix = new CalculixSettings();
             _post = new PostSettings();
@@ -65,11 +68,69 @@ namespace PrePoMax
             _general.Reset();
             _graphics.Reset();
             _color.Reset();
+            _meshingSettings.Reset();
             _pre.Reset();
             _calculix.Reset();
             _post.Reset();
             _legend.Reset();
             _statusBlock.Reset();
+        }
+        public void ClearColorSpectrums()
+        {
+            _colorSpectrums.Clear();
+        }
+        public void Set(SettingsContainer settingsContainer, ViewGeometryModelResults currentView,
+                        CaeResults.FieldData currentFieldData)
+        {
+            Clone(settingsContainer);
+            //
+            if (currentView == ViewGeometryModelResults.Results && currentFieldData != null)
+            {
+                string key = currentFieldData.Name + "_" + currentFieldData.Component;
+                // Save individual Min/Max setting
+                if (_legend.ColorSpectrum.MinMaxType == vtkControl.vtkColorSpectrumMinMaxType.Manual)
+                {
+                    if (_colorSpectrums.ContainsKey(key)) _colorSpectrums[key] = _legend.ColorSpectrum.DeepClone();
+                    else _colorSpectrums.Add(key, _legend.ColorSpectrum.DeepClone());
+                }
+                // Remove individual Min/Max setting
+                else _colorSpectrums.Remove(key);
+            }
+            //
+            _legend.ColorSpectrum.MinMaxType = vtkControl.vtkColorSpectrumMinMaxType.Automatic;
+        }
+        public SettingsContainer Get(ViewGeometryModelResults currentView, CaeResults.FieldData currentFieldData)
+        {
+            SettingsContainer clone = new SettingsContainer();
+            clone.Clone(this);
+            //
+            if (currentView == ViewGeometryModelResults.Results && currentFieldData != null)
+            {
+                vtkControl.vtkMaxColorSpectrum colorSpectrum;
+                string key = currentFieldData.Name + "_" + currentFieldData.Component;
+                // Apply individual Min/Max setting if it exists
+                if (_colorSpectrums.TryGetValue(key, out colorSpectrum) &&
+                    colorSpectrum.MinMaxType == vtkControl.vtkColorSpectrumMinMaxType.Manual)
+                {
+                    clone._legend.ColorSpectrum.SetMinMax(colorSpectrum);
+                }
+            }
+            //
+            return clone;
+        }
+        private void Clone(SettingsContainer settingsContainer)
+        {
+            SettingsContainer clone = settingsContainer.DeepClone();
+            //
+            _general = clone._general;
+            _graphics = clone._graphics;
+            _color = clone._color;
+            _meshingSettings = clone._meshingSettings;
+            _pre = clone._pre;
+            _calculix = clone._calculix;
+            _post = clone._post;
+            _legend = clone._legend;
+            _statusBlock = clone._statusBlock;
         }
         public Dictionary<string, ISettings> ToDictionary()
         {
@@ -77,6 +138,7 @@ namespace PrePoMax
             items.Add(Globals.GeneralSettingsName, _general);
             items.Add(Globals.GraphicsSettingsName, _graphics);
             items.Add(Globals.ColorSettingsName, _color);
+            items.Add(Globals.MeshingSettingsName, _meshingSettings);
             items.Add(Globals.PreSettingsName, _pre);
             items.Add(Globals.CalculixSettingsName, _calculix);
             items.Add(Globals.PostSettingsName, _post);
@@ -91,6 +153,7 @@ namespace PrePoMax
                 _general = (GeneralSettings)items[Globals.GeneralSettingsName];
                 _graphics = (GraphicsSettings)items[Globals.GraphicsSettingsName];
                 _color = (ColorSettings)items[Globals.ColorSettingsName];
+                _meshingSettings = (MeshingSettings)items[Globals.MeshingSettingsName];
                 _pre = (PreSettings)items[Globals.PreSettingsName];
                 _calculix = (CalculixSettings)items[Globals.CalculixSettingsName];
                 _post = (PostSettings)items[Globals.PostSettingsName];
@@ -108,18 +171,20 @@ namespace PrePoMax
         }
         public void LoadFromFile()
         {
+            Initialize();
+            //
             string fileName = Path.Combine(System.Windows.Forms.Application.StartupPath, Globals.SettingsFileName);
             if (File.Exists(fileName))
             {
                 var t = Task.Run(() => LoadFromFile(fileName));
                 t.Wait();
             }
+
         }
         private void LoadFromFile(string fileName)
-        {
+        {            
             Dictionary<string, ISettings> items = CaeGlobals.Tools.LoadDumpFromFile<Dictionary<string, ISettings>>(fileName);
             FromDictionary(items);
-           
         }
         //
         public string GetWorkDirectory()

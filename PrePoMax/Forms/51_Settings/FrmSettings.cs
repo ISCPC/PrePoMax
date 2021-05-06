@@ -20,7 +20,7 @@ namespace PrePoMax.Forms
     {
         // Variables                                                                                                                
         private string _previousSettings;
-        private Dictionary<string, ViewSettings> _viewSettings;
+        private Dictionary<string, IViewSettings> _viewSettings;
         private double _labelRatio = 2.3;
 
 
@@ -39,12 +39,13 @@ namespace PrePoMax.Forms
             set 
             {
                 //create a clone
-                _viewSettings = new Dictionary<string, ViewSettings>();
+                _viewSettings = new Dictionary<string, IViewSettings>();
                 foreach (var entry in value)
                 {
                     if (entry.Value is GeneralSettings ges) _viewSettings.Add(entry.Key, new ViewGeneralSettings(ges.DeepClone()));
                     else if (entry.Value is GraphicsSettings grs) _viewSettings.Add(entry.Key, new ViewGraphicsSettings(grs.DeepClone()));
                     else if (entry.Value is ColorSettings cos) _viewSettings.Add(entry.Key, new ViewColorSettings(cos.DeepClone()));
+                    else if (entry.Value is MeshingSettings ms) _viewSettings.Add(entry.Key, new ViewMeshingSettings(ms.DeepClone()));
                     else if (entry.Value is PreSettings prs) _viewSettings.Add(entry.Key, new ViewPreSettings(prs.DeepClone()));
                     else if (entry.Value is CalculixSettings cas) _viewSettings.Add(entry.Key, new ViewCalculixSettings(cas.DeepClone()));
                     else if (entry.Value is PostSettings pos) _viewSettings.Add(entry.Key, new ViewPostSettings(pos.DeepClone()));
@@ -96,9 +97,9 @@ namespace PrePoMax.Forms
         }
         private void tsmiResetAll_Click(object sender, EventArgs e)
         {
-            if (propertyGrid.SelectedObject is IReset)
+            if (propertyGrid.SelectedObject is IReset resetObject)
             {
-                (propertyGrid.SelectedObject as IReset).Reset();
+                resetObject.Reset();
                 propertyGrid.Refresh();
                 _propertyItemChanged = true;
             }

@@ -125,7 +125,10 @@
     <Compile Include="UnitSystem\MyUnit.cs" />
     <Compile Include="UnitSystem\StringAccelerationConverter.cs" />
     <Compile Include="UnitSystem\StringPowerConverter.cs" />
+    <Compile Include="UnitSystem\StringNewtonGravityUndefinedConverter.cs" />
+    <Compile Include="UnitSystem\StringStefanBoltzmannUndefinedConverter.cs" />
     <Compile Include="UnitSystem\StringSpecificHeatConverter.cs" />
+    <Compile Include="UnitSystem\StringTemperatureUndefinedConverter.cs" />
     <Compile Include="UnitSystem\StringThermalConductivityConverter.cs" />
     <Compile Include="UnitSystem\StringThermalExpansionConverter.cs" />
     <Compile Include="UnitSystem\StringAngleConverter.cs" />

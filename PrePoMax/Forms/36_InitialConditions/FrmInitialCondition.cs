@@ -32,6 +32,7 @@ namespace PrePoMax.Forms
 
         // Constructors                                                                                                             
         public FrmInitialCondition(Controller controller)
+            : base(1.7)
         {
             InitializeComponent();
             //
@@ -216,7 +217,7 @@ namespace PrePoMax.Forms
         {
             ListViewItem item;
             // Initial temperature
-            string name = "Initial temperature";
+            string name = "Temperature";
             item = new ListViewItem(name);
             InitialTemperature it = new InitialTemperature(GetInitialConditionName(name), "", RegionTypeEnum.Selection);
             ViewInitialTemperature vit = new ViewInitialTemperature(it);

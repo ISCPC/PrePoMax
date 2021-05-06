@@ -289,10 +289,10 @@ namespace PrePoMax.Forms
             _form = form;
             _controller = controller;
             // This calls UpdateFrame
-            InitializeVariables();   
+            InitializeVariables();
             //
-            gbColorSpectrumLimits.Enabled =
-                _controller.Settings.Legend.ColorSpectrum.MinMaxType == vtkControl.vtkColorSpectrumMinMaxType.Automatic;
+            LegendSettings legend = _controller.Settings.Legend;
+            gbColorSpectrumLimits.Enabled = legend.ColorSpectrum.MinMaxType == vtkControl.vtkColorSpectrumMinMaxType.Automatic;
             //
             if (!gbColorSpectrumLimits.Enabled)
             {

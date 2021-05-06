@@ -6,59 +6,59 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using CaeGlobals;
 using DynamicTypeDescriptor;
+using System.Drawing;
 
 namespace PrePoMax
 {
     [Serializable]
-    public class ViewInitialTemperature : ViewInitialCondition
+    public class ViewTemperatureBC : ViewBoundaryCondition
     {
         // Variables                                                                                                                
-        private CaeModel.InitialTemperature _initialTemperature;
+        private CaeModel.TemperatureBC _temperatureBC;
 
 
         // Properties                                                                                                               
-        public override string Name { get { return _initialTemperature.Name; } set { _initialTemperature.Name = value; } }
-        //
-        [CategoryAttribute("Region")]
-        [OrderedDisplayName(2, 10, "Node set")]
-        [DescriptionAttribute("Select the node set for the creation of the initial temperature.")]
-        public string NodeSetName { get { return _initialTemperature.RegionName; } set { _initialTemperature.RegionName = value; } }
-        //
-        [CategoryAttribute("Region")]
-        [OrderedDisplayName(4, 10, "Surface")]
-        [DescriptionAttribute("Select the surface for the creation of the initial temperature.")]
-        public string SurfaceName { get { return _initialTemperature.RegionName; } set { _initialTemperature.RegionName = value; } }
-        //
-        [OrderedDisplayName(0, 10, "Temperature magnitude")]
-        [CategoryAttribute("Magnitude")]
-        [DescriptionAttribute("Value of the initial temperature magnitude.")]
-        [TypeConverter(typeof(StringTemperatureConverter))]
-        public double Temperature
+        public override string Name { get { return _temperatureBC.Name; } set { _temperatureBC.Name = value; } }
+        public override string NodeSetName { get { return _temperatureBC.RegionName; } set { _temperatureBC.RegionName = value; } }
+        public override string ReferencePointName
         {
-            get { return _initialTemperature.Temperature; }
-            set { _initialTemperature.Temperature = value; }
+            get { return _temperatureBC.RegionName; }
+            set { _temperatureBC.RegionName = value; }
         }
+        public override string SurfaceName { get { return _temperatureBC.RegionName; } set { _temperatureBC.RegionName = value; } }
+        //
+        [CategoryAttribute("Temperature magnitude")]
+        [OrderedDisplayName(0, 10, "Magnitude")]
+        [DescriptionAttribute("Value of the temperature.")]
+        [TypeConverter(typeof(StringTemperatureConverter))]
+        [Id(1, 3)]
+        public double Temperature { get { return _temperatureBC.Temperature; } set { _temperatureBC.Temperature = value; } }
+        //
+        public override Color Color { get { return _temperatureBC.Color; } set { _temperatureBC.Color = value; } }
+
 
         // Constructors                                                                                                             
-        public ViewInitialTemperature(CaeModel.InitialTemperature initialTemperature)
+        public ViewTemperatureBC(CaeModel.TemperatureBC temperatureBC)
         {
             // The order is important
-            _initialTemperature = initialTemperature;
+            _temperatureBC = temperatureBC;
             //
             Dictionary<RegionTypeEnum, string> regionTypePropertyNamePairs = new Dictionary<RegionTypeEnum, string>();
             regionTypePropertyNamePairs.Add(RegionTypeEnum.Selection, nameof(SelectionHidden));
             regionTypePropertyNamePairs.Add(RegionTypeEnum.NodeSetName, nameof(NodeSetName));
             regionTypePropertyNamePairs.Add(RegionTypeEnum.SurfaceName, nameof(SurfaceName));
+            // Must be here to correctly hide the RPs defined in base class
+            regionTypePropertyNamePairs.Add(RegionTypeEnum.ReferencePointName, nameof(ReferencePointName));
             //
-            base.SetBase(_initialTemperature, regionTypePropertyNamePairs);
+            base.SetBase(_temperatureBC, regionTypePropertyNamePairs);
             base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
         }
 
 
         // Methods                                                                                                                  
-        public override CaeModel.InitialCondition GetBase()
+        public override CaeModel.BoundaryCondition GetBase()
         {
-            return _initialTemperature;
+            return _temperatureBC;
         }
         public void PopululateDropDownLists(string[] nodeSetNames, string[] surfaceNames)
         {
@@ -70,7 +70,4 @@ namespace PrePoMax
         }
     }
 
-
-
-   
 }

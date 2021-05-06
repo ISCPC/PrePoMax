@@ -97,6 +97,24 @@ namespace vtkControl
             _reverseColors = source._reverseColors;
             _colorBrightness = source._colorBrightness;
         }
+        public void SetMinMax(vtkMaxColorSpectrum colorSpectrum)
+        {
+            _minMaxType = colorSpectrum._minMaxType;
+            _minUserValue = colorSpectrum._minUserValue;
+            _maxUserValue = colorSpectrum._maxUserValue;
+            _minColor = colorSpectrum._minColor;
+            _maxColor = colorSpectrum._maxColor;
+        }
+        public bool IsMinMaxEqual(vtkMaxColorSpectrum colorSpectrum)
+        {
+            if (_minMaxType != colorSpectrum._minMaxType) return false;
+            else if (_minUserValue != colorSpectrum._minUserValue) return false;
+            else if (_maxUserValue != colorSpectrum._maxUserValue) return false;
+            else if (_minColor != colorSpectrum._minColor) return false;
+            else if (_maxColor != colorSpectrum._maxColor) return false;
+
+            return false;
+        }
 
     }
 }

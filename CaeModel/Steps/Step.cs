@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CaeMesh;
 using System.Runtime.Serialization;
 using CaeGlobals;
+using DynamicTypeDescriptor;
 
 namespace CaeModel
 {
@@ -15,6 +16,21 @@ namespace CaeModel
         Default,
         Automatic,
         Direct
+    }
+    //
+    [Serializable]
+    public enum SolverTypeEnum
+    {
+        Default,
+        PaStiX,
+        Pardiso,
+        Spooles,
+        //
+        [StandardValue("IterativeScaling", DisplayName = "Iterative scaling")]
+        IterativeScaling,
+        //
+        [StandardValue("IterativeCholesky", DisplayName = "Iterative Cholesky")]
+        IterativeCholesky
     }
 
     [Serializable]
@@ -31,6 +47,7 @@ namespace CaeModel
         protected int _maxIncrements;                                                   //ISerializable
         protected bool _supportsLoads;                                                  //ISerializable
         protected IncrementationTypeEnum _incrementationType;                           //ISerializable
+        protected SolverTypeEnum _solverType;                                           //ISerializable
 
 
         // Properties                                                                                                               
@@ -44,6 +61,7 @@ namespace CaeModel
         public int MaxIncrements { get { return _maxIncrements; } set { _maxIncrements = Math.Max(value, 1); } }
         public bool SupportsLoads { get { return _supportsLoads; } }
         public IncrementationTypeEnum IncrementationType { get { return _incrementationType; } set { _incrementationType = value; } }
+        public SolverTypeEnum SolverType { get { return _solverType; } set { _solverType = value; } }
 
 
         // Constructors                                                                                                             
@@ -95,8 +113,10 @@ namespace CaeModel
                         _supportsLoads = (bool)entry.Value; break;
                     case "_incrementationType":
                         _incrementationType = (IncrementationTypeEnum)entry.Value; break;
-                    //default:
-                    //    throw new NotSupportedException();
+                    case "_solverType":
+                        _solverType = (SolverTypeEnum)entry.Value; break;
+                        //default:
+                        //    throw new NotSupportedException();
                 }
             }
             // Compatibility for version v.1.0.0
@@ -142,6 +162,7 @@ namespace CaeModel
             info.AddValue("_maxIncrements", _maxIncrements, typeof(int));
             info.AddValue("_supportsLoads", _supportsLoads, typeof(bool));
             info.AddValue("_incrementationType", _incrementationType, typeof(IncrementationTypeEnum));
+            info.AddValue("_solverType", _solverType, typeof(SolverTypeEnum));
         }
     }
 }

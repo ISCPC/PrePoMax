@@ -11,7 +11,7 @@ using System.Drawing;
 namespace PrePoMax.Settings
 {
     [Serializable]
-    public class ViewColorSettings : ViewSettings, IReset
+    public class ViewColorSettings : IViewSettings, IReset
     {
         // Variables                                                                                                                
         private ColorSettings _colorSettings;
@@ -137,7 +137,7 @@ namespace PrePoMax.Settings
 
 
         // Methods                                                                                                                  
-        public override ISettings GetBase()
+        public ISettings GetBase()
         {
             return _colorSettings;
         }

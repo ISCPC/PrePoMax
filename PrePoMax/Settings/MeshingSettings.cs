@@ -3,31 +3,45 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CaeMesh;
+using System.ComponentModel;
 using CaeGlobals;
+using System.IO;
+using DynamicTypeDescriptor;
+using System.Drawing;
+using CaeMesh;
 
-namespace CaeModel
+namespace PrePoMax
 {
     [Serializable]
-    public class FixedBC : BoundaryCondition
+    public class MeshingSettings : ISettings
     {
         // Variables                                                                                                                
+        private MeshingParameters _meshingParameters;
 
 
         // Properties                                                                                                               
+        public MeshingParameters MeshingParameters { get { return _meshingParameters; } set { _meshingParameters = value; } }
 
 
         // Constructors                                                                                                             
-        public FixedBC(string name, string regionName, RegionTypeEnum regionType)
-            : base(name, regionName, regionType) 
+        public MeshingSettings()
         {
+            _meshingParameters = new MeshingParameters();
+        }
+        public MeshingSettings(MeshingParameters meshingParameters)
+        {
+            _meshingParameters = meshingParameters;
         }
 
 
         // Methods                                                                                                                  
-        public int[] GetConstrainedDirections()
+        public void CheckValues()
         {
-            return new int[] { 1, 2, 3, 4, 5, 6 };
         }
+        public void Reset()
+        {
+            _meshingParameters.Reset();
+        }
+        
     }
 }

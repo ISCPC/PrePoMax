@@ -22,7 +22,7 @@ namespace PrePoMax.Forms
         public string[] StepNames { get { return _stepNames; } set { _stepNames = value; } }
         public Step Step
         {
-            get { return _viewStep.Base; }
+            get { return _viewStep.GetBase(); }
             set
             {
                 if (value is StaticStep ss) _viewStep = new ViewStaticStep(ss.DeepClone());
@@ -175,27 +175,29 @@ namespace PrePoMax.Forms
             bool addFrequency = false;
             bool addBuckle = false;
             bool cannotAdd = false;
-
+            //
             if (prevOrLastStep == null || prevOrLastStep is StaticStep) addStatic = true;
             if (!(prevOrLastStep is FrequencyStep)) addFrequency = true;
             if (!(prevOrLastStep is BuckleStep)) addBuckle = true;
-
+            //
             cannotAdd = !(addStatic || addFrequency || addBuckle);
-
+            //
             ListViewItem item;
             if (cannotAdd)
             {
-                item = new ListViewItem("No steps can be added after the last step.");
+                item = new ListViewItem("No steps can be added after the last step type.");
                 item.Tag = null;
                 lvTypes.Items.Add(item);
             }
             else
             {
+                CaeModel.SolverTypeEnum defaultSolverType = _controller.Settings.Calculix.DefaultSolverType;
                 if (addStatic)
                 {
                     // Static step
                     item = new ListViewItem("Static step");
                     newStep = CreateNewOrCloneLast(typeof(StaticStep));
+                    newStep.SolverType = defaultSolverType;
                     item.Tag = new ViewStaticStep(newStep as StaticStep);
                     lvTypes.Items.Add(item);
                 }
@@ -204,6 +206,7 @@ namespace PrePoMax.Forms
                     // Frequency step
                     item = new ListViewItem("Frequency step");
                     newStep = new FrequencyStep(GetStepName());
+                    newStep.SolverType = defaultSolverType;
                     item.Tag = new ViewFrequencyStep(newStep as FrequencyStep);
                     lvTypes.Items.Add(item);
                 }
@@ -212,6 +215,7 @@ namespace PrePoMax.Forms
                     // Frequency step
                     item = new ListViewItem("Buckle step");
                     newStep = new BuckleStep(GetStepName());
+                    newStep.SolverType = defaultSolverType;
                     item.Tag = new ViewBuckleStep(newStep as BuckleStep);
                     lvTypes.Items.Add(item);
                 }

@@ -190,6 +190,18 @@ Dependency nglib - added following files for c++ redistriburable compatibility:
 
 Done
 
+Version 1.1.0 Master branch
+
+Added suppoprt for selection of the matrix solver type
+Added suppoprt for seting default meshing settings
+Added additional color-maps for post-processing
+Added support for *Temperature keyword
+Added support for *Initial condition keyword for temperature
+Added support for temperature dependent material data for all supported material properties
+Added new material properties: thermal expansion, thermal conductivity and specific heat
+Added description property to all materials
+
+
 Version 1.0.0 Master branch
 Added support to swap geometry between parts
 Added support for exploded view

@@ -21,13 +21,9 @@ namespace CaeModel
     public class DisplacementRotation : BoundaryCondition
     {
         // Variables                                                                                                                
-        private RegionTypeEnum _regionType;
-        private string _regionName;
 
 
         // Properties                                                                                                               
-        public override string RegionName { get { return _regionName; } set { _regionName = value; } }
-        public override RegionTypeEnum RegionType { get { return _regionType; } set { _regionType = value; } }
         public double U1 { get; set; }
         public double U2 { get; set; }
         public double U3 { get; set; }
@@ -38,10 +34,8 @@ namespace CaeModel
 
         // Constructors                                                                                                             
         public DisplacementRotation(string name, string regionName, RegionTypeEnum regionType)
-            : base(name) 
+            : base(name, regionName, regionType) 
         {
-            _regionName = regionName;
-            _regionType = regionType;
             U1 = double.NaN;
             U2 = double.NaN;
             U3 = double.NaN;

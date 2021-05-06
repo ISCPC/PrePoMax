@@ -35,49 +35,49 @@ namespace PrePoMax
         [CategoryAttribute("Axis point")]
         [OrderedDisplayName(0, 10, "X")]
         [DescriptionAttribute("X coordinate of the axis point.")]
-        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(1, 3)]
         public double X { get { return _cenLoad.X; } set { _cenLoad.X = value; } }
         //
         [CategoryAttribute("Axis point")]
         [OrderedDisplayName(1, 10, "Y")]
         [DescriptionAttribute("X coordinate of the axis point.")]
-        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(2, 3)]
         public double Y { get { return _cenLoad.Y; } set { _cenLoad.Y = value; } }
         //
         [CategoryAttribute("Axis point")]
         [OrderedDisplayName(2, 10, "Z")]
         [DescriptionAttribute("X coordinate of the axis point.")]
-        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(3, 3)]
         public double Z { get { return _cenLoad.Z; } set { _cenLoad.Z = value; } }
         //
         [CategoryAttribute("Axis direction")]
         [OrderedDisplayName(0, 10, "N1")]
         [DescriptionAttribute("Axis component in the direction of the first axis.")]
-        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(1, 4)]
         public double N1 { get { return _cenLoad.N1; } set { _cenLoad.N1 = value; } }
         //
         [CategoryAttribute("Axis direction")]
         [OrderedDisplayName(1, 10, "N2")]
         [DescriptionAttribute("Axis component in the direction of the second axis.")]
-        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(2, 4)]
         public double N2 { get { return _cenLoad.N2; } set { _cenLoad.N2 = value; } }
         //
         [CategoryAttribute("Axis direction")]
         [OrderedDisplayName(2, 10, "N3")]
         [DescriptionAttribute("Axis component in the direction of the third axis.")]
-        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(3, 4)]
         public double N3 { get { return _cenLoad.N3; } set { _cenLoad.N3 = value; } }
         //
-        [CategoryAttribute("Magnitude")]
-        [OrderedDisplayName(0, 10, "Rotational speed")]
-        [DescriptionAttribute("The rotational speed around the axis defined by the point and direction.")]
-        [TypeConverter(typeof(CaeGlobals.StringRotationalSpeedConverter))]
+        [CategoryAttribute("Rotational speed magnitude")]
+        [OrderedDisplayName(0, 10, "Magnitude")]
+        [DescriptionAttribute("Value of the rotational speed magnitude around the axis defined by the point and direction.")]
+        [TypeConverter(typeof(StringRotationalSpeedConverter))]
         [Id(1, 5)]
         public double RotationalSpeed { get { return _cenLoad.RotationalSpeed; } set { _cenLoad.RotationalSpeed = value; } }
         //

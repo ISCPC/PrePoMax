@@ -33,28 +33,28 @@ namespace PrePoMax
         //
         [CategoryAttribute("Gravity components")]
         [OrderedDisplayName(0, 10, "F1")]
-        [DescriptionAttribute("Gravity component in the direction of the first axis.")]
+        [DescriptionAttribute("Value of the gravity component in the direction of the first axis.")]
         [TypeConverter(typeof(CaeGlobals.StringAccelerationConverter))]
         [Id(1, 3)]
         public double F1 { get { return _gLoad.F1; } set { _gLoad.F1 = value; } }
         //
         [CategoryAttribute("Gravity components")]
         [OrderedDisplayName(1, 10, "F2")]
-        [DescriptionAttribute("Gravity component in the direction of the second axis.")]
+        [DescriptionAttribute("Value of the gravity component in the direction of the second axis.")]
         [TypeConverter(typeof(CaeGlobals.StringAccelerationConverter))]
         [Id(2, 3)]
         public double F2 { get { return _gLoad.F2; } set { _gLoad.F2 = value; } }
         //
         [CategoryAttribute("Gravity components")]
         [OrderedDisplayName(2, 10, "F3")]
-        [DescriptionAttribute("Gravity component in the direction of the third axis.")]
+        [DescriptionAttribute("Value of the gravity component in the direction of the third axis.")]
         [TypeConverter(typeof(CaeGlobals.StringAccelerationConverter))]
         [Id(3, 3)]
         public double F3 { get { return _gLoad.F3; } set { _gLoad.F3 = value; } }
         //
         [CategoryAttribute("Gravity magnitude")]
         [OrderedDisplayName(0, 10, "Magnitude")]
-        [DescriptionAttribute("The magnitude of the gravity load.")]
+        [DescriptionAttribute("Value of the gravity load magnitude.")]
         [TypeConverter(typeof(CaeGlobals.StringAccelerationConverter))]
         [Id(1, 4)]
         public double Flength
@@ -63,7 +63,7 @@ namespace PrePoMax
             set
             {
                 if (value <= 0)
-                    throw new Exception("The magnitude of the force must be greater than 0.");
+                    throw new Exception("Value of the gravity load magnitude must be greater than 0.");
 
                 double len = Math.Sqrt(_gLoad.F1 * _gLoad.F1 + _gLoad.F2 * _gLoad.F2 + _gLoad.F3 * _gLoad.F3);
                 double r;

@@ -46,7 +46,7 @@ namespace PrePoMax
         // Methods                                                                                                                  
         public override CaeModel.BoundaryCondition GetBase()
         {
-            return (CaeModel.BoundaryCondition)_fixedBC;
+            return _fixedBC;
         }
         public void PopululateDropDownLists(string[] nodeSetNames, string[] surfaceNames, string[] referencePointNames)
         {

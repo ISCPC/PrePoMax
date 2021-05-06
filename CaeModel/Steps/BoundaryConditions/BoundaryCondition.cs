@@ -13,14 +13,16 @@ namespace CaeModel
     public class BoundaryCondition : NamedClass, IMultiRegion
     {
         // Variables                                                                                                                
+        private string _regionName;
+        private RegionTypeEnum _regionType;
         private int[] _creationIds;
         private Selection _creationData;
         protected Color _color;
 
 
         // Properties                                                                                                               
-        public virtual string RegionName {get; set;}
-        public virtual RegionTypeEnum RegionType { get; set; }
+        public string RegionName { get { return _regionName; } set { _regionName = value; } }
+        public RegionTypeEnum RegionType { get { return _regionType; } set { _regionType = value; } }
         public int[] CreationIds { get { return _creationIds; } set { _creationIds = value; } }
         public Selection CreationData { get { return _creationData; } set { _creationData = value; } }
         public Color Color
@@ -37,9 +39,11 @@ namespace CaeModel
 
 
         // Constructors                                                                                                             
-        public BoundaryCondition(string name)
+        public BoundaryCondition(string name, string regionName, RegionTypeEnum regionType)
             : base(name) 
         {
+            _regionName = regionName;
+            _regionType = regionType;
             _creationIds = null;
             _creationData = null;
             _color = Color.Lime;
