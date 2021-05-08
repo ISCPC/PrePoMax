@@ -25,9 +25,10 @@ namespace PrePoMax.Forms
             get { return _viewStep.GetBase(); }
             set
             {
-                if (value is StaticStep ss) _viewStep = new ViewStaticStep(ss.DeepClone());
+                if (value.GetType() == typeof(StaticStep)) _viewStep = new ViewStaticStep((value as StaticStep).DeepClone());
                 else if (value is FrequencyStep fs) _viewStep = new ViewFrequencyStep(fs.DeepClone());
                 else if (value is BuckleStep bs) _viewStep = new ViewBuckleStep(bs.DeepClone());
+                else if (value is HeatTransferStep hts) _viewStep = new ViewHeatTransfer(hts.DeepClone());
                 else throw new NotImplementedException();
             }
         }
@@ -37,9 +38,8 @@ namespace PrePoMax.Forms
         public FrmStep(Controller controller)
             : base(1.7)
         {
-
             InitializeComponent();
-
+            //
             _controller = controller;
             _viewStep = null;
         }
@@ -91,30 +91,28 @@ namespace PrePoMax.Forms
         protected override void OnPropertyGridPropertyValueChanged()
         {
             (propertyGrid.SelectedObject as ViewStep).UpdateFieldView();
-
-            //_viewStep.UpdateFieldView(); // update visibility of fields
+            //
             base.OnPropertyGridPropertyValueChanged();
         }
         protected override void OnApply(bool onOkAddNew)
         {
             _viewStep = (ViewStep)propertyGrid.SelectedObject;
-
-            if (_viewStep == null)
-                throw new CaeGlobals.CaeException("There is no step selected.");
-
-            if ((_stepToEditName == null && _stepNames.Contains(_viewStep.Name)) ||             // create
-                (_viewStep.Name != _stepToEditName && _stepNames.Contains(_viewStep.Name)))     // edit
-                throw new CaeGlobals.CaeException("The selected step name already exists.");
-
+            //
+            if (Step == null)
+                throw new CaeException("There is no step selected.");
+            //
+            if ((_stepToEditName == null && _stepNames.Contains(Step.Name)) ||              // create
+                (Step.Name != _stepToEditName && _stepNames.Contains(Step.Name)))           // edit
+                throw new CaeException("The selected step name already exists.");
+            // Create
             if (_stepToEditName == null)
             {
-                // Create
-                _controller.AddStepCommand(Step);
+                _controller.AddStepCommand(this.Step);
             }
+            // Replace
             else
             {
-                // Replace
-                if (_propertyItemChanged) _controller.ReplaceStepCommand(_stepToEditName, Step);
+                if (_propertyItemChanged) _controller.ReplaceStepCommand(_stepToEditName, this.Step);
             }
         }
         protected override bool OnPrepareForm(string stepName, string stepToEditName)
@@ -132,7 +130,7 @@ namespace PrePoMax.Forms
             _stepToEditName = stepToEditName;
             //
             if (_stepNames == null)
-                throw new CaeGlobals.CaeException("The step names must be defined first.");
+                throw new CaeException("The step names must be defined first.");
             //
             PopulateListOfSteps();
             //
@@ -169,18 +167,19 @@ namespace PrePoMax.Forms
         // Methods                                                                                                                          
         private void PopulateListOfSteps()
         {
-            Step newStep = null;
             Step prevOrLastStep = GetPreviousOrLastStep();
             bool addStatic = false;
             bool addFrequency = false;
             bool addBuckle = false;
-            bool cannotAdd = false;
+            bool addHeatTransfer = true;
+            bool cannotAdd;
             //
-            if (prevOrLastStep == null || prevOrLastStep is StaticStep) addStatic = true;
+            if (prevOrLastStep == null || prevOrLastStep.GetType() == typeof(StaticStep) ||
+                prevOrLastStep is HeatTransferStep) addStatic = true;
             if (!(prevOrLastStep is FrequencyStep)) addFrequency = true;
             if (!(prevOrLastStep is BuckleStep)) addBuckle = true;
             //
-            cannotAdd = !(addStatic || addFrequency || addBuckle);
+            cannotAdd = !(addStatic || addFrequency || addBuckle || addHeatTransfer);
             //
             ListViewItem item;
             if (cannotAdd)
@@ -191,32 +190,41 @@ namespace PrePoMax.Forms
             }
             else
             {
-                CaeModel.SolverTypeEnum defaultSolverType = _controller.Settings.Calculix.DefaultSolverType;
+                SolverTypeEnum defaultSolverType = _controller.Settings.Calculix.DefaultSolverType;
                 if (addStatic)
                 {
                     // Static step
                     item = new ListViewItem("Static step");
-                    newStep = CreateNewOrCloneLast(typeof(StaticStep));
-                    newStep.SolverType = defaultSolverType;
-                    item.Tag = new ViewStaticStep(newStep as StaticStep);
+                    StaticStep staticStep = (StaticStep)CreateNewOrCloneLast(typeof(StaticStep));
+                    staticStep.SolverType = defaultSolverType;
+                    item.Tag = new ViewStaticStep(staticStep);
                     lvTypes.Items.Add(item);
                 }
                 if (addFrequency)
                 {
                     // Frequency step
                     item = new ListViewItem("Frequency step");
-                    newStep = new FrequencyStep(GetStepName());
-                    newStep.SolverType = defaultSolverType;
-                    item.Tag = new ViewFrequencyStep(newStep as FrequencyStep);
+                    FrequencyStep frequencyStep = new FrequencyStep(GetStepName());
+                    frequencyStep.SolverType = defaultSolverType;
+                    item.Tag = new ViewFrequencyStep(frequencyStep);
                     lvTypes.Items.Add(item);
                 }
                 if (addBuckle)
                 {
                     // Frequency step
                     item = new ListViewItem("Buckle step");
-                    newStep = new BuckleStep(GetStepName());
-                    newStep.SolverType = defaultSolverType;
-                    item.Tag = new ViewBuckleStep(newStep as BuckleStep);
+                    BuckleStep buckleStep = new BuckleStep(GetStepName());
+                    buckleStep.SolverType = defaultSolverType;
+                    item.Tag = new ViewBuckleStep(buckleStep);
+                    lvTypes.Items.Add(item);
+                }
+                if (addHeatTransfer)
+                {
+                    // Heat transfer step
+                    item = new ListViewItem("Heat transfer");
+                    HeatTransferStep heatTransferStep = new HeatTransferStep(GetStepName());
+                    heatTransferStep.SolverType = defaultSolverType;
+                    item.Tag = new ViewHeatTransfer(heatTransferStep);
                     lvTypes.Items.Add(item);
                 }
             }
@@ -229,7 +237,7 @@ namespace PrePoMax.Forms
             Step newStep;
             Step prevOrLastStep = GetPreviousOrLastStep();
             //
-            if (prevOrLastStep == null)
+            if (prevOrLastStep == null || prevOrLastStep.GetType() != stepTypeToCreate)
             {
                 newStep = (Step)Activator.CreateInstance(stepTypeToCreate, new object[] { GetStepName() });
             }

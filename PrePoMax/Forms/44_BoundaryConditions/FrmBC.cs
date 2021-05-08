@@ -231,6 +231,8 @@ namespace PrePoMax.Forms
                 throw new CaeException("The boundary condition names must be defined first.");
             // Populate list view
             PopulateListOfBCs(nodeSetNames, surfaceNames, referencePointNames);
+            // Check if this step supports any boundary conditions
+            if (lvTypes.Items.Count == 0) return false;
             // Create new boundary condition
             if (_boundaryConditionToEditName == null)
             {
@@ -251,7 +253,7 @@ namespace PrePoMax.Forms
                 int selectedId;
                 if (_viewBc is ViewFixedBC fix)
                 {
-                    selectedId = 0;
+                    selectedId = lvTypes.FindItemWithText("Fixed").Index;
                     // Check for deleted entities
                     if (fix.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else if (fix.RegionType == RegionTypeEnum.NodeSetName.ToFriendlyString())
@@ -266,7 +268,7 @@ namespace PrePoMax.Forms
                 }
                 else if (_viewBc is ViewDisplacementRotation vdr)
                 {
-                    selectedId = 1;
+                    selectedId = lvTypes.FindItemWithText("Displacement/Rotation").Index;
                     // Check for deleted entities
                     if (vdr.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else if (vdr.RegionType == RegionTypeEnum.NodeSetName.ToFriendlyString())
@@ -281,7 +283,7 @@ namespace PrePoMax.Forms
                 }
                 else if (_viewBc is ViewSubmodelBC vsm)
                 {
-                    selectedId = 2;
+                    selectedId = lvTypes.FindItemWithText("Submodel").Index;
                     // Check for deleted entities
                     if (vsm.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else if (vsm.RegionType == RegionTypeEnum.NodeSetName.ToFriendlyString())
@@ -294,7 +296,7 @@ namespace PrePoMax.Forms
                 }
                 else if (_viewBc is ViewTemperatureBC vtmp)
                 {
-                    selectedId = 3;
+                    selectedId = lvTypes.FindItemWithText("Temperature").Index;
                     // Check for deleted entities
                     if (vtmp.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else if (vtmp.RegionType == RegionTypeEnum.NodeSetName.ToFriendlyString())
@@ -319,41 +321,56 @@ namespace PrePoMax.Forms
         // Methods                                                                                                                  
         private void PopulateListOfBCs(string[] nodeSetNames, string[] surfaceNames, string[] referencePointNames)
         {
+            Step step = _controller.GetStep(_stepName);
             System.Drawing.Color color = _controller.Settings.Pre.BoundaryConditionSymbolColor;
+            // Populate list view
             ListViewItem item;
             // Fixed
             item = new ListViewItem("Fixed");
-            FixedBC fix = new FixedBC(GetBoundaryConditionName("Fixed"), "", RegionTypeEnum.Selection);
-            ViewFixedBC vfix = new ViewFixedBC(fix);
-            vfix.PopululateDropDownLists(nodeSetNames, surfaceNames, referencePointNames);
-            vfix.Color = color;
-            item.Tag = vfix;
-            lvTypes.Items.Add(item);
+            FixedBC fixedBC = new FixedBC(GetBoundaryConditionName("Fixed"), "", RegionTypeEnum.Selection);
+            if (step.IsBoundaryConditionSupported(fixedBC))
+            {
+                ViewFixedBC vfix = new ViewFixedBC(fixedBC);
+                vfix.PopululateDropDownLists(nodeSetNames, surfaceNames, referencePointNames);
+                vfix.Color = color;
+                item.Tag = vfix;
+                lvTypes.Items.Add(item);
+            }
             // Displacement/Rotation
             item = new ListViewItem("Displacement/Rotation");
-            DisplacementRotation dr = new DisplacementRotation(GetBoundaryConditionName("Displacement_rotation"), 
-                                                               "", RegionTypeEnum.Selection);
-            ViewDisplacementRotation vdr = new ViewDisplacementRotation(dr);
-            vdr.PopululateDropDownLists(nodeSetNames, surfaceNames, referencePointNames);
-            vdr.Color = color;
-            item.Tag = vdr;
-            lvTypes.Items.Add(item);
+            DisplacementRotation displacementRotation = new DisplacementRotation(GetBoundaryConditionName("Displacement_rotation"),
+                                                                                 "", RegionTypeEnum.Selection);
+            if (step.IsBoundaryConditionSupported(displacementRotation))
+            {
+                ViewDisplacementRotation vdr = new ViewDisplacementRotation(displacementRotation);
+                vdr.PopululateDropDownLists(nodeSetNames, surfaceNames, referencePointNames);
+                vdr.Color = color;
+                item.Tag = vdr;
+                lvTypes.Items.Add(item);
+            }
             // Submodel
             item = new ListViewItem("Submodel");
-            SubmodelBC sm = new SubmodelBC(GetBoundaryConditionName("Submodel"), "", RegionTypeEnum.Selection);
-            ViewSubmodelBC vsm = new ViewSubmodelBC(sm);
-            vsm.PopululateDropDownLists(nodeSetNames, surfaceNames);
-            vsm.Color = color;
-            item.Tag = vsm;
-            lvTypes.Items.Add(item);
+            SubmodelBC submodelBC = new SubmodelBC(GetBoundaryConditionName("Submodel"), "", RegionTypeEnum.Selection);
+            if (step.IsBoundaryConditionSupported(submodelBC))
+            {
+                ViewSubmodelBC vsm = new ViewSubmodelBC(submodelBC);
+                vsm.PopululateDropDownLists(nodeSetNames, surfaceNames);
+                vsm.Color = color;
+                item.Tag = vsm;
+                lvTypes.Items.Add(item);
+            }
             // Temperature
             item = new ListViewItem("Temperature");
-            TemperatureBC tmp = new TemperatureBC(GetBoundaryConditionName("Temperature"), "", RegionTypeEnum.Selection, 0);
-            ViewTemperatureBC vtmp = new ViewTemperatureBC(tmp);
-            vtmp.PopululateDropDownLists(nodeSetNames, surfaceNames);
-            vtmp.Color = color;
-            item.Tag = vtmp;
-            lvTypes.Items.Add(item);
+            TemperatureBC temperatureBC = new TemperatureBC(GetBoundaryConditionName("Temperature"), "",
+                                                                                     RegionTypeEnum.Selection, 0);
+            if (step.IsBoundaryConditionSupported(temperatureBC))
+            {
+                ViewTemperatureBC vtmp = new ViewTemperatureBC(temperatureBC);
+                vtmp.PopululateDropDownLists(nodeSetNames, surfaceNames);
+                vtmp.Color = color;
+                item.Tag = vtmp;
+                lvTypes.Items.Add(item);
+            }
         }
         private string GetBoundaryConditionName(string baseName)
         {

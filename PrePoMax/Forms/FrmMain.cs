@@ -5585,7 +5585,7 @@ namespace PrePoMax
             catch
             { }
         }
-
+        //
         private void DisableEnableControlsForAnimation(bool enable)
         {
             // _modelTree.DisableMouse = !enable; this is done in the itemForm_VisibleChanged
@@ -6039,11 +6039,11 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.DrawStatusBlockBorder, drawBorder);
         }
-        public void SetStatusBlock(string name, DateTime dateTime, float analysisTime, string unit,
-                                   float scaleFactor, vtkControl.DataFieldType fieldType, int modeNumber)
+        public void SetStatusBlock(string name, DateTime dateTime, float analysisTime, string unit, float scaleFactor,
+                                   vtkControl.DataFieldType fieldType, int stepNumber, int incrementNumber)
         {
             InvokeIfRequired(_vtk.SetStatusBlock, name, dateTime, analysisTime, unit, scaleFactor,
-                             fieldType, modeNumber);
+                             fieldType, stepNumber, incrementNumber);
         }
         // General
         public void SetBackground(bool gradient, Color topColor, Color bottomColor, bool redraw)
@@ -6106,7 +6106,7 @@ namespace PrePoMax
             {
                 // stop and update animation data only if field data changed
                 if (_frmAnimation.Visible) _frmAnimation.Hide();
-
+                //
                 if (fieldData.Name == currentData.Name && fieldData.Component == currentData.Component)
                 {
                     // the step id or increment id changed                                              
@@ -6128,7 +6128,7 @@ namespace PrePoMax
                     // update controller field data; this is used for the SetStepAndIncrementIds to detect missing ids
                     _controller.CurrentFieldData = fieldData;
                     // find all step and step increments
-                    SetAllStepAndIncrementIds();
+                    //SetAllStepAndIncrementIds();
                     // find the existing choosen data; also contains info about type of step ...
                     fieldData = _controller.Results.GetFieldData(fieldData.Name,
                                                                  fieldData.Component,
@@ -6155,8 +6155,7 @@ namespace PrePoMax
                 // Set all increments
                 tscbStepAndIncrement.SelectedIndexChanged -= FieldOutput_SelectionChanged;  // detach event
                 tscbStepAndIncrement.Items.Clear();
-                Dictionary<int, int[]> allIds = _controller.GetResultExistingIncrementIds(_controller.CurrentFieldData.Name,
-                                                                                          _controller.CurrentFieldData.Component);
+                Dictionary<int, int[]> allIds = _controller.Results.GetAllExistingIncrementIds();
                 int lastStepId = 1;
                 int lastIncrementId = 0;
                 foreach (var entry in allIds)
@@ -6204,9 +6203,11 @@ namespace PrePoMax
         {
             string[] tmp;
             CaeResults.FieldData fieldData = _controller.CurrentFieldData;
-            SetStepAndIncrementIds(fieldData.StepId, fieldData.StepIncrementId);
+            if (fieldData.StepId == -1 && fieldData.StepIncrementId == -1) return;
+            else SetStepAndIncrementIds(fieldData.StepId, fieldData.StepIncrementId);
+            //
             return;
-
+            //
             if (_controller.CurrentFieldData.Type == CaeResults.StepType.Frequency)
             {
                 string firstStepIncrement = (string)tscbStepAndIncrement.Items[tscbStepAndIncrement.Items.Count - 1];
@@ -6234,9 +6235,10 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.SetAnimationAcceleration, animationAcceleration);
         }
-        public void SetAnimationFrameData(float[] time, float[] scale, double[] allFramesScalarRange)
+        public void SetAnimationFrameData(float[] time, int[] stepId, int[] stepIncrementId, float[] scale,
+                                          double[] allFramesScalarRange)
         {
-            InvokeIfRequired(_vtk.SetAnimationFrameData, time, scale, allFramesScalarRange);
+            InvokeIfRequired(_vtk.SetAnimationFrameData, time, stepId, stepIncrementId, scale, allFramesScalarRange);
         }
         public void SetAnimationFrame(int frameNum, bool scalarRangeFromAllFrames)
         {
@@ -6257,7 +6259,7 @@ namespace PrePoMax
         
         #region Tree  ##############################################################################################################
         // Tree
-        public void RegenerateTree(CaeModel.FeModel model, OrderedDictionary<string, CaeJob.AnalysisJob> jobs,
+        public void RegenerateTree(FeModel model, OrderedDictionary<string, AnalysisJob> jobs,
                                    CaeResults.FeResults results, CaeResults.HistoryResults history)
         {
             InvokeIfRequired(_modelTree.RegenerateTree, model, jobs, results, history);
@@ -6481,8 +6483,8 @@ namespace PrePoMax
                 action(parameter1, parameter2, parameter3, parameter4);
             }
         }
-        public void InvokeIfRequired<T1, T2, T3, T4, T5>(Action<T1, T2, T3, T4, T5> action, T1 parameter1, T2 parameter2, T3 parameter3,
-                                    T4 parameter4, T5 parameter5)
+        public void InvokeIfRequired<T1, T2, T3, T4, T5>(Action<T1, T2, T3, T4, T5> action, T1 parameter1, T2 parameter2,
+                                     T3 parameter3, T4 parameter4, T5 parameter5)
         {
             if (this.InvokeRequired)
             {
@@ -6517,6 +6519,22 @@ namespace PrePoMax
             else
             {
                 action(parameter1, parameter2, parameter3, parameter4, parameter5, parameter6, parameter7);
+            }
+        }
+        public void InvokeIfRequired<T1, T2, T3, T4, T5, T6, T7, T8>(Action<T1, T2, T3, T4, T5, T6, T7, T8> action, T1 parameter1,
+                                     T2 parameter2, T3 parameter3, T4 parameter4, T5 parameter5, T6 parameter6, T7 parameter7,
+                                     T8 parameter8)
+        {
+            if (this.InvokeRequired)
+            {
+                this.Invoke((MethodInvoker)delegate () {
+                    action(parameter1, parameter2, parameter3, parameter4, parameter5,
+                    parameter6, parameter7, parameter8);
+                });
+            }
+            else
+            {
+                action(parameter1, parameter2, parameter3, parameter4, parameter5, parameter6, parameter7, parameter8);
             }
         }
 

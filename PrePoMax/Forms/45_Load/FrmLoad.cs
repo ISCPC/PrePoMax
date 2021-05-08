@@ -295,8 +295,6 @@ namespace PrePoMax.Forms
             _loadNames = _controller.GetAllLoadNames();
             _loadToEditName = loadToEditName;
             //
-            if (!CheckIfStepSupportsLoads()) return false;
-            //
             string[] partNames = _controller.GetModelPartNames();
             string[] nodeSetNames = _controller.GetUserNodeSetNames();
             string[] elementSetNames = _controller.GetUserElementSetNames();
@@ -318,6 +316,8 @@ namespace PrePoMax.Forms
             string[] noEdgeSurfaceNames = elementBasedSurfaceNames.Except(shellEdgeSurfaceNames).ToArray();
             PopulateListOfLoads(partNames, nodeSetNames, elementSetNames, referencePointNames,
                                 elementBasedSurfaceNames, solidFaceSurfaceNames, noEdgeSurfaceNames, shellEdgeSurfaceNames);
+            // Check if this step supports any loads
+            if (lvTypes.Items.Count == 0) return false;
             // Create new load
             if (_loadToEditName == null)
             {
@@ -337,7 +337,7 @@ namespace PrePoMax.Forms
                 int selectedId;
                 if (_viewLoad is ViewCLoad vcl)
                 {
-                    selectedId = 0;
+                    selectedId = lvTypes.FindItemWithText("Concentrated force").Index;
                     // Check for deleted regions
                     if (vcl.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else if (vcl.RegionType == RegionTypeEnum.NodeSetName.ToFriendlyString())
@@ -350,7 +350,7 @@ namespace PrePoMax.Forms
                 }
                 else if (_viewLoad is ViewMomentLoad vml)
                 {
-                    selectedId = 1;
+                    selectedId = lvTypes.FindItemWithText("Moment").Index;
                     // Check for deleted regions
                     if (vml.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else if (vml.RegionType == RegionTypeEnum.NodeSetName.ToFriendlyString())
@@ -363,7 +363,7 @@ namespace PrePoMax.Forms
                 }
                 else if (_viewLoad is ViewDLoad vdl)
                 {
-                    selectedId = 2;
+                    selectedId = lvTypes.FindItemWithText("Pressure").Index;
                     // Check for deleted regions
                     if (vdl.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else if (vdl.RegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
@@ -374,7 +374,7 @@ namespace PrePoMax.Forms
                 }
                 else if (_viewLoad is ViewSTLoad vstl)
                 {
-                    selectedId = 3;
+                    selectedId = lvTypes.FindItemWithText("Surface traction").Index;
                     // Check for deleted regions
                     if (vstl.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else if (vstl.RegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
@@ -385,7 +385,7 @@ namespace PrePoMax.Forms
                 }
                 else if (_viewLoad is ViewShellEdgeLoad vsel)
                 {
-                    selectedId = 4;
+                    selectedId = lvTypes.FindItemWithText("Normal shell edge load").Index;
                     // Check for deleted regions
                     if (vsel.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else if (vsel.RegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
@@ -396,7 +396,7 @@ namespace PrePoMax.Forms
                 }
                 else if (_viewLoad is ViewGravityLoad vgl)
                 {
-                    selectedId = 5;
+                    selectedId = lvTypes.FindItemWithText("Gravity").Index;
                     // Check for deleted regions
                     if (vgl.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else if (vgl.RegionType == RegionTypeEnum.PartName.ToFriendlyString())
@@ -409,7 +409,7 @@ namespace PrePoMax.Forms
                 }
                 else if (_viewLoad is ViewCentrifLoad vcfl)
                 {
-                    selectedId = 6;
+                    selectedId = lvTypes.FindItemWithText("Centrifugal load").Index;
                     // Check for deleted regions
                     if (vcfl.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else if (vcfl.RegionType == RegionTypeEnum.PartName.ToFriendlyString())
@@ -422,7 +422,7 @@ namespace PrePoMax.Forms
                 }
                 else if (_viewLoad is ViewPreTensionLoad vptl)
                 {
-                    selectedId = 7;
+                    selectedId = lvTypes.FindItemWithText("Pre-tension").Index;
                     // Check for deleted regions
                     if (vptl.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else if (vptl.RegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
@@ -448,6 +448,7 @@ namespace PrePoMax.Forms
                                          string[] solidFaceSurfaceNames, string[] noEdgeSurfaceNames,
                                          string[] shellEdgeSurfaceNames)
         {
+            Step step = _controller.GetStep(_stepName);
             System.Drawing.Color color = _controller.Settings.Pre.LoadSymbolColor;
             // Populate list view
             ListViewItem item;
@@ -457,74 +458,106 @@ namespace PrePoMax.Forms
             name = "Concentrated force";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            ViewCLoad vcl = new ViewCLoad(new CLoad(loadName, "", RegionTypeEnum.Selection, 0, 0, 0));
-            vcl.PopululateDropDownLists(nodeSetNames, referencePointNames);
-            vcl.Color = color;
-            item.Tag = vcl;
-            lvTypes.Items.Add(item);
+            CLoad cLoad = new CLoad(loadName, "", RegionTypeEnum.Selection, 0, 0, 0);
+            if (step.IsLoadSupported(cLoad))
+            {
+                ViewCLoad vcl = new ViewCLoad(cLoad);
+                vcl.PopululateDropDownLists(nodeSetNames, referencePointNames);
+                vcl.Color = color;
+                item.Tag = vcl;
+                lvTypes.Items.Add(item);
+            }
             // Moment
             name = "Moment";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            ViewMomentLoad vml = new ViewMomentLoad(new MomentLoad(loadName, "", RegionTypeEnum.Selection, 0, 0, 0));
-            vml.PopululateDropDownLists(nodeSetNames, referencePointNames);
-            vml.Color = color;
-            item.Tag = vml;
-            lvTypes.Items.Add(item);
+            MomentLoad momentLoad = new MomentLoad(loadName, "", RegionTypeEnum.Selection, 0, 0, 0);
+            if (step.IsLoadSupported(cLoad))
+            {
+                ViewMomentLoad vml = new ViewMomentLoad(momentLoad);
+                vml.PopululateDropDownLists(nodeSetNames, referencePointNames);
+                vml.Color = color;
+                item.Tag = vml;
+                lvTypes.Items.Add(item);
+            }
             // Pressure
             name = "Pressure";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            ViewDLoad vdl = new ViewDLoad(new DLoad(loadName, "", RegionTypeEnum.Selection, 0));
-            vdl.PopululateDropDownLists(noEdgeSurfaceNames);
-            vdl.Color = color;
-            item.Tag = vdl;
-            lvTypes.Items.Add(item);
+            DLoad dLoad = new DLoad(loadName, "", RegionTypeEnum.Selection, 0);
+            if (step.IsLoadSupported(dLoad))
+            {
+                ViewDLoad vdl = new ViewDLoad(dLoad);
+                vdl.PopululateDropDownLists(noEdgeSurfaceNames);
+                vdl.Color = color;
+                item.Tag = vdl;
+                lvTypes.Items.Add(item);
+            }
             // Surface traction
             name = "Surface traction";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            ViewSTLoad vstl = new ViewSTLoad(new STLoad(loadName, "", RegionTypeEnum.Selection, 0, 0, 0));
-            vstl.PopululateDropDownLists(elementBasedSurfaceNames);
-            vstl.Color = color;
-            item.Tag = vstl;
-            lvTypes.Items.Add(item);
+            STLoad sTLoad = new STLoad(loadName, "", RegionTypeEnum.Selection, 0, 0, 0);
+            if (step.IsLoadSupported(sTLoad))
+            {
+                ViewSTLoad vstl = new ViewSTLoad(sTLoad);
+                vstl.PopululateDropDownLists(elementBasedSurfaceNames);
+                vstl.Color = color;
+                item.Tag = vstl;
+                lvTypes.Items.Add(item);
+            }
             // Shell edge load
             name = "Normal shell edge load";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            ViewShellEdgeLoad vsel = new ViewShellEdgeLoad(new ShellEdgeLoad(loadName, "", RegionTypeEnum.Selection, 0));
-            vsel.PopululateDropDownLists(shellEdgeSurfaceNames);
-            vsel.Color = color;
-            item.Tag = vsel;
-            lvTypes.Items.Add(item);
+            ShellEdgeLoad shellEdgeLoad = new ShellEdgeLoad(loadName, "", RegionTypeEnum.Selection, 0);
+            if (step.IsLoadSupported(shellEdgeLoad))
+            {
+                ViewShellEdgeLoad vsel = new ViewShellEdgeLoad(shellEdgeLoad);
+                vsel.PopululateDropDownLists(shellEdgeSurfaceNames);
+                vsel.Color = color;
+                item.Tag = vsel;
+                lvTypes.Items.Add(item);
+            }
             // Gravity load -  part, element sets
             name = "Gravity";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            ViewGravityLoad vgl = new ViewGravityLoad(new GravityLoad(loadName, "", RegionTypeEnum.Selection));
-            vgl.PopululateDropDownLists(partNames, elementSetNames);
-            vgl.Color = color;
-            item.Tag = vgl;
-            lvTypes.Items.Add(item);
+            GravityLoad gravityLoad = new GravityLoad(loadName, "", RegionTypeEnum.Selection);
+            if (step.IsLoadSupported(gravityLoad))
+            {
+                ViewGravityLoad vgl = new ViewGravityLoad(gravityLoad);
+                vgl.PopululateDropDownLists(partNames, elementSetNames);
+                vgl.Color = color;
+                item.Tag = vgl;
+                lvTypes.Items.Add(item);
+            }
             // Centrifugal load -  part, element sets
             name = "Centrifugal load";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            ViewCentrifLoad vcfl = new ViewCentrifLoad(new CentrifLoad(loadName, "", RegionTypeEnum.Selection));
-            vcfl.PopululateDropDownLists(partNames, elementSetNames);
-            vcfl.Color = color;
-            item.Tag = vcfl;
-            lvTypes.Items.Add(item);
+            CentrifLoad centrifLoad = new CentrifLoad(loadName, "", RegionTypeEnum.Selection);
+            ViewCentrifLoad vcfl = new ViewCentrifLoad(centrifLoad);
+            if (step.IsLoadSupported(gravityLoad))
+            {
+                vcfl.PopululateDropDownLists(partNames, elementSetNames);
+                vcfl.Color = color;
+                item.Tag = vcfl;
+                lvTypes.Items.Add(item);
+            }
             // Pre-tension load
             name = "Pre-tension";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            ViewPreTensionLoad vptl = new ViewPreTensionLoad(new PreTensionLoad(loadName, "", RegionTypeEnum.Selection, 0));
-            vptl.PopululateDropDownLists(solidFaceSurfaceNames);
-            vptl.Color = color;
-            item.Tag = vptl;
-            lvTypes.Items.Add(item);
+            PreTensionLoad preTensionLoad = new PreTensionLoad(loadName, "", RegionTypeEnum.Selection, 0);
+            if (step.IsLoadSupported(preTensionLoad))
+            {
+                ViewPreTensionLoad vptl = new ViewPreTensionLoad(preTensionLoad);
+                vptl.PopululateDropDownLists(solidFaceSurfaceNames);
+                vptl.Color = color;
+                item.Tag = vptl;
+                lvTypes.Items.Add(item);
+            }
         }
         private string GetLoadName(string name)
         {
@@ -535,16 +568,6 @@ namespace PrePoMax.Forms
             //
             return name;
         }
-        private bool CheckIfStepSupportsLoads()
-        {
-            Step step = _controller.GetStep(_stepName);
-            if (step.SupportsLoads) return true;
-            else
-            {
-                MessageBox.Show("The selected step does not support loads.", "Warning");
-                return false;
-            }
-        }
         private void HighlightLoad()
         {
             try
@@ -552,9 +575,9 @@ namespace PrePoMax.Forms
                 _controller.ClearSelectionHistory();
                 //
                 if (_viewLoad == null) { }
-                else if (FELoad is CLoad || FELoad is MomentLoad || FELoad is DLoad || FELoad is STLoad
-                         || FELoad is ShellEdgeLoad || FELoad is GravityLoad || FELoad is CentrifLoad
-                         || FELoad is PreTensionLoad)
+                else if (FELoad is CLoad || FELoad is MomentLoad || FELoad is DLoad || FELoad is STLoad ||
+                         FELoad is ShellEdgeLoad || FELoad is GravityLoad || FELoad is CentrifLoad ||
+                         FELoad is PreTensionLoad)
                 {
                     if (FELoad.RegionType == RegionTypeEnum.NodeSetName ||
                         FELoad.RegionType == RegionTypeEnum.ReferencePointName ||

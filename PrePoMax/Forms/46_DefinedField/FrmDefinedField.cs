@@ -171,6 +171,8 @@ namespace PrePoMax.Forms
                 throw new CaeException("The defined field names must be defined first.");
             // Populate list view
             PopulateListOfDefinedFields(nodeSetNames, surfaceNames);
+            // Check if this step supports any defined fields
+            if (lvTypes.Items.Count == 0) return false;
             // Create new defined field
             if (_definedFieldToEditName == null)
             {
@@ -190,7 +192,7 @@ namespace PrePoMax.Forms
                 int selectedId;
                 if (_viewDefinedField is ViewDefinedTemperature vdt)
                 {
-                    selectedId = 0;
+                    selectedId = lvTypes.FindItemWithText("Temperature").Index;
                     // Check for deleted entities
                     if (vdt.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else if (vdt.RegionType == RegionTypeEnum.NodeSetName.ToFriendlyString())
@@ -215,15 +217,20 @@ namespace PrePoMax.Forms
         // Methods                                                                                                                  
         private void PopulateListOfDefinedFields(string[] nodeSetNames, string[] surfaceNames)
         {
+            Step step = _controller.GetStep(_stepName);
+            // Populate list view
             ListViewItem item;
             // Defined temperature
             string name = "Temperature";
             item = new ListViewItem(name);
-            DefinedTemperature dt = new DefinedTemperature(GetDefinedFieldName(name), "", RegionTypeEnum.Selection);
-            ViewDefinedTemperature vdt = new ViewDefinedTemperature(dt);
-            vdt.PopululateDropDownLists(nodeSetNames, surfaceNames);
-            item.Tag = vdt;
-            lvTypes.Items.Add(item);
+            DefinedTemperature definedTemperature = new DefinedTemperature(GetDefinedFieldName(name), "", RegionTypeEnum.Selection);
+            if (step.IsDefinedFieldSupported(definedTemperature))
+            {
+                ViewDefinedTemperature vdt = new ViewDefinedTemperature(definedTemperature);
+                vdt.PopululateDropDownLists(nodeSetNames, surfaceNames);
+                item.Tag = vdt;
+                lvTypes.Items.Add(item);
+            }
         }
         private string GetDefinedFieldName(string name)
         {

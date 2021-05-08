@@ -22,7 +22,6 @@ namespace CaeModel
             :base(name)
         {
         }
-
         //ISerializable
         public InitialStep(SerializationInfo info, StreamingContext context)
             : base(info, context)
@@ -31,7 +30,18 @@ namespace CaeModel
 
 
         // Methods                                                                                                                  
-
+        public override bool IsBoundaryConditionSupported(BoundaryCondition boundaryCondition)
+        {
+            return true;
+        }
+        public override bool IsLoadSupported(Load load)
+        {
+            return true;
+        }
+        public override bool IsDefinedFieldSupported(DefinedField definedField)
+        {
+            return true;
+        }
         // ISerialization
         public new void GetObjectData(SerializationInfo info, StreamingContext context)
         {

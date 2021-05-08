@@ -9,64 +9,53 @@ using System.Runtime.Serialization;
 namespace CaeModel
 {
     [Serializable]
-    public class FrequencyStep : Step, ISerializable
+    public class HeatTransferStep : StaticStep, ISerializable
     {
         // Variables                                                                                                                
-        private double _numOfFrequencies;       //ISerializable
-        private bool _storage;                  //ISerializable
+        private bool _steadyState;                  //ISerializable
+        private double _deltmx;                     //ISerializable
 
 
         // Properties                                                                                                               
-        public double NumOfFrequencies
-        {
-            get { return _numOfFrequencies; }
-            set 
-            {
-                if (value <= 1) throw new Exception("The number of frequencies must be larger than 0.");
-                _numOfFrequencies = value;
-            }
-        }
-        public bool Storage { get { return _storage; } set { _storage = value; } }
+        public bool SteadyState { get { return _steadyState; } set { _steadyState = value; } }
+        public double Deltmx { get { return _deltmx; } set { _deltmx = value; } }
 
 
         // Constructors                                                                                                             
-        public FrequencyStep(string name)
-            :base(name)
+        public HeatTransferStep(string name)
+            :base(name, false)
         {
-            _perturbation = true;
+            _steadyState = false;
+            _deltmx = double.PositiveInfinity;
             //
-            _numOfFrequencies = 10;
-            _storage = false;
-            //
-            AddFieldOutput(new NodalFieldOutput("NF-Output-1", NodalFieldVariable.U | NodalFieldVariable.RF));
-            AddFieldOutput(new ElementFieldOutput("EF-Output-1", ElementFieldVariable.E | ElementFieldVariable.S));
+            AddFieldOutput(new NodalFieldOutput("NF-Output-1", NodalFieldVariable.NT));
         }
         //ISerializable
-        public FrequencyStep(SerializationInfo info, StreamingContext context)
+        public HeatTransferStep(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
-            int count = 0;
             foreach (SerializationEntry entry in info)
             {
                 switch (entry.Name)
                 {
-                    case "_numOfFrequencies":
-                        _numOfFrequencies = (double)entry.Value; count++; break;
-                    case "_storage":
-                        _storage = (bool)entry.Value; count++; break;
+                    case "_steadyState":
+                        _steadyState = (bool)entry.Value; break;
+                    case "_deltmx":
+                        _deltmx = (double)entry.Value; break;
+                    default:
+                        break;
                 }
             }
-            if (count != 2) throw new NotSupportedException();
         }
 
 
         // Methods                                                                                                                  
         public override bool IsBoundaryConditionSupported(BoundaryCondition boundaryCondition)
         {
-            if (boundaryCondition is FixedBC || boundaryCondition is DisplacementRotation)
-                return true;
-            else if (boundaryCondition is SubmodelBC || boundaryCondition is TemperatureBC)
+            if (boundaryCondition is FixedBC || boundaryCondition is DisplacementRotation || boundaryCondition is SubmodelBC)
                 return false;
+            else if (boundaryCondition is TemperatureBC)
+                return true;
             else throw new NotSupportedException();
         }
         public override bool IsLoadSupported(Load load)
@@ -87,8 +76,8 @@ namespace CaeModel
             // using typeof() works also for null fields
             base.GetObjectData(info, context);
             //
-            info.AddValue("_numOfFrequencies", _numOfFrequencies, typeof(double));
-            info.AddValue("_storage", _storage, typeof(bool));
+            info.AddValue("_steadyState", _steadyState, typeof(bool));
+            info.AddValue("_deltmx", _deltmx, typeof(double));
         }
     }
 }

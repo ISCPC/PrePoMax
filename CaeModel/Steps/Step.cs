@@ -45,7 +45,6 @@ namespace CaeModel
         protected bool _perturbation;                                                   //ISerializable
         protected bool _nlgeom;                                                         //ISerializable
         protected int _maxIncrements;                                                   //ISerializable
-        protected bool _supportsLoads;                                                  //ISerializable
         protected IncrementationTypeEnum _incrementationType;                           //ISerializable
         protected SolverTypeEnum _solverType;                                           //ISerializable
 
@@ -59,7 +58,6 @@ namespace CaeModel
         public bool Perturbation { get { return _perturbation; } set { _perturbation = value; } }
         public bool Nlgeom { get { return _nlgeom; } set { _nlgeom = value; } }
         public int MaxIncrements { get { return _maxIncrements; } set { _maxIncrements = Math.Max(value, 1); } }
-        public bool SupportsLoads { get { return _supportsLoads; } }
         public IncrementationTypeEnum IncrementationType { get { return _incrementationType; } set { _incrementationType = value; } }
         public SolverTypeEnum SolverType { get { return _solverType; } set { _solverType = value; } }
 
@@ -80,17 +78,15 @@ namespace CaeModel
             _perturbation = false;
             _nlgeom = false;
             _maxIncrements = 100;
-            _supportsLoads = true;
             _incrementationType = IncrementationTypeEnum.Default;
         }
         public Step(SerializationInfo info, StreamingContext context)
             :base(info, context)
         {
+            _incrementationType = IncrementationTypeEnum.Automatic;         // Compatibility for version v.0.9.0
+            //
             foreach (SerializationEntry entry in info)
             {
-                _incrementationType = IncrementationTypeEnum.Automatic;         // Compatibility for version v.0.9.0
-                
-                //
                 switch (entry.Name)
                 {
                     case "_historyOutputs":
@@ -109,8 +105,6 @@ namespace CaeModel
                         _nlgeom = (bool)entry.Value; break;
                     case "_maxIncrements":
                         _maxIncrements = (int)entry.Value; break;
-                    case "_supportsLoads":
-                        _supportsLoads = (bool)entry.Value; break;
                     case "_incrementationType":
                         _incrementationType = (IncrementationTypeEnum)entry.Value; break;
                     case "_solverType":
@@ -133,17 +127,21 @@ namespace CaeModel
         {
             _fieldOutputs.Add(fieldOutput.Name, fieldOutput);
         }
+        public abstract bool IsBoundaryConditionSupported(BoundaryCondition boundaryCondition);
         public void AddBoundaryCondition(BoundaryCondition boundaryCondition)
         {
-            _boundayConditions.Add(boundaryCondition.Name, boundaryCondition);
+            if (IsBoundaryConditionSupported(boundaryCondition))
+                _boundayConditions.Add(boundaryCondition.Name, boundaryCondition);
         }
+        public abstract bool IsLoadSupported(Load load);
         public void AddLoad(Load load)
         {
-            _loads.Add(load.Name, load);
+            if (IsLoadSupported(load)) _loads.Add(load.Name, load);
         }
+        public abstract bool IsDefinedFieldSupported(DefinedField definedField);
         public void AddDefinedField(DefinedField definedField)
         {
-            _definedFields.Add(definedField.Name, definedField);
+            if (IsDefinedFieldSupported(definedField)) _definedFields.Add(definedField.Name, definedField);
         }
 
         // ISerialization
@@ -160,7 +158,6 @@ namespace CaeModel
             info.AddValue("_perturbation", _perturbation, typeof(bool));
             info.AddValue("_nlgeom", _nlgeom, typeof(bool));
             info.AddValue("_maxIncrements", _maxIncrements, typeof(int));
-            info.AddValue("_supportsLoads", _supportsLoads, typeof(bool));
             info.AddValue("_incrementationType", _incrementationType, typeof(IncrementationTypeEnum));
             info.AddValue("_solverType", _solverType, typeof(SolverTypeEnum));
         }

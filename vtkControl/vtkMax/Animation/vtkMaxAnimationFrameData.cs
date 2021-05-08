@@ -13,6 +13,8 @@ namespace vtkControl
     {
         // Variables                                                                                                                
         public float[] Time;
+        public int[] StepId;
+        public int[] StepIncrementId;
         public float[] ScaleFactor;
         public double[] AllFramesScalarRange;
         public bool UseAllFrameData;
@@ -23,13 +25,15 @@ namespace vtkControl
 
         // Constructors                                                                                                             
         public vtkMaxAnimationFrameData()
-            : this(null, null, null)
+            : this(null, null, null, null, null)
         {
         }
 
-        public vtkMaxAnimationFrameData(float[] time, float[] scale, double[] scalarRange)
+        public vtkMaxAnimationFrameData(float[] time, int[] stepId, int[] stepIncrementId, float[] scale, double[] scalarRange)
         {
             Time = time;
+            StepId = stepId;
+            StepIncrementId = stepIncrementId;
             ScaleFactor = scale;
             AllFramesScalarRange = scalarRange;
             AnimatedActorNames = new List<Dictionary<int, string>>();

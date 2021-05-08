@@ -402,7 +402,7 @@ namespace FileInOut.Output
                 CalSurface surface;
                 foreach (var entry in model.Mesh.Surfaces)
                 {
-                    if (entry.Value.Active)
+                    if (entry.Value.Active && entry.Value.ElementFaces != null)
                     {
                         surface = new CalSurface(entry.Value);
                         parent.AddKeyword(surface);
@@ -628,8 +628,9 @@ namespace FileInOut.Output
                 // Step type
                 if (step.Active)
                 {
-                    if (step is StaticStep staticStep)
+                    if (step.GetType() == typeof(StaticStep))
                     {
+                        StaticStep staticStep = step as StaticStep;
                         CalStaticStep calStaticStep = new CalStaticStep(staticStep);
                         calStep.AddKeyword(calStaticStep);
                     }
@@ -642,6 +643,11 @@ namespace FileInOut.Output
                     {
                         CalBuckleStep calBuckleStep = new CalBuckleStep(buckleStep);
                         calStep.AddKeyword(calBuckleStep);
+                    }
+                    else if (step is HeatTransferStep heatTransferStep)
+                    {
+                        CalHeatTransferStep calHeatTransferStep = new CalHeatTransferStep(heatTransferStep);
+                        calStep.AddKeyword(calHeatTransferStep);
                     }
                     else throw new NotImplementedException();
                 }

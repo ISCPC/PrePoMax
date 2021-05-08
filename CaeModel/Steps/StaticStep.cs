@@ -60,8 +60,12 @@ namespace CaeModel
 
 
         // Constructors                                                                                                             
-        public StaticStep(string name)
-            :base(name)
+        public StaticStep(string name)                          // must be a separate constructor!
+            : this(name, true)
+        {
+        }
+        public StaticStep(string name, bool addFieldOutputs)    // must be a separate constructor!
+            : base(name)
         {
             _timePeriod = 1;
             _initialTimeIncrement = 1;
@@ -69,10 +73,13 @@ namespace CaeModel
             _maxTimeIncrement = 1E30;
             _direct = false;
             //
-            AddFieldOutput(new NodalFieldOutput("NF-Output-1", NodalFieldVariable.U | NodalFieldVariable.RF));
-            AddFieldOutput(new ElementFieldOutput("EF-Output-1", ElementFieldVariable.E | ElementFieldVariable.S));
+            if (addFieldOutputs)
+            {
+                AddFieldOutput(new NodalFieldOutput("NF-Output-1", NodalFieldVariable.U | NodalFieldVariable.RF));
+                AddFieldOutput(new ElementFieldOutput("EF-Output-1", ElementFieldVariable.E | ElementFieldVariable.S));
+            }
         }
-        
+
         //ISerializable
         public StaticStep(SerializationInfo info, StreamingContext context)
             :base(info, context)
@@ -102,7 +109,26 @@ namespace CaeModel
 
 
         // Methods                                                                                                                  
-
+        public override bool IsBoundaryConditionSupported(BoundaryCondition boundaryCondition)
+        {
+            if (boundaryCondition is FixedBC || boundaryCondition is DisplacementRotation || boundaryCondition is SubmodelBC)
+                return true;
+            else if (boundaryCondition is TemperatureBC)
+                return false;
+            else throw new NotSupportedException();
+        }
+        public override bool IsLoadSupported(Load load)
+        {
+            if (load is CLoad || load is MomentLoad || load is DLoad || load is STLoad || load is ShellEdgeLoad ||
+                load is GravityLoad || load is CentrifLoad || load is PreTensionLoad)
+                return true;
+            else throw new NotSupportedException();
+        }
+        public override bool IsDefinedFieldSupported(DefinedField definedField)
+        {
+            if (definedField is DefinedTemperature) return true;
+            else throw new NotSupportedException();
+        }
         // ISerialization
         public new void GetObjectData(SerializationInfo info, StreamingContext context)
         {

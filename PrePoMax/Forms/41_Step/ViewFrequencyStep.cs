@@ -18,20 +18,17 @@ namespace PrePoMax
 
         // Properties                                                                                                               
         [CategoryAttribute("Data")]
-        [ReadOnly(false)]
         [OrderedDisplayName(2, 10, "Perturbation")]
         [DescriptionAttribute("Perturbation parameter set to On applies preloads from the previous step if it exists.")]
         public bool Perturbation { get { return _frequencystep.Perturbation; } set { _frequencystep.Perturbation = value; } }
         //
         [CategoryAttribute("Data")]
-        [ReadOnly(false)]
         [OrderedDisplayName(3, 10, "Storage")]
         [DescriptionAttribute("Store eigenvalues, eigenmodes, mass and stiffness matrix in a binary form in file jobname.eig " +
                               "for further use.")]
         public bool Storage { get { return _frequencystep.Storage; } set { _frequencystep.Storage = value; } }
         //
         [CategoryAttribute("Data")]
-        [ReadOnly(false)]
         [OrderedDisplayName(4, 10, "Number of frequencies")]
         [DescriptionAttribute("Number of eigenfrequencies to compute.")]
         public double NumOfFrequencies

@@ -4614,7 +4614,7 @@ namespace vtkControl
             else _statusBlockWidget.BorderVisibilityOff();
         }
         public void SetStatusBlock(string name, DateTime dateTime, float analysisTimeOrFrequency, string unit,
-                                   float scaleFactor, DataFieldType fieldType, int incrementNumber)
+                                   float scaleFactor, DataFieldType fieldType, int stepNumber, int incrementNumber)
         {
             if (_statusBlockWidget == null) return;
             _statusBlockWidget.Name = name;
@@ -4624,6 +4624,7 @@ namespace vtkControl
             _statusBlockWidget.DeformationScaleFactor = scaleFactor;
             _statusBlockWidget.FieldType = fieldType;
             _statusBlockWidget.AnimationScaleFactor = -1;
+            _statusBlockWidget.StepNumber = stepNumber;
             _statusBlockWidget.IncrementNumber = incrementNumber;
             _statusBlockWidget.VisibilityOn();
         }
@@ -4729,19 +4730,15 @@ namespace vtkControl
         {
             // Create actor
             vtkMaxActor actor = new vtkMaxActor(data);
-
             // Add actor
             AddActorGeometry(actor, vtkRendererLayer.Base);
-
             // Add actorEdges
             if (data.CanHaveElementEdges && actor.ElementEdges != null) AddActorEdges(actor, false, vtkRendererLayer.Base);
-
             // Add modelEdges
             if (actor.ModelEdges != null) AddActorEdges(actor, true, data.Layer);
-
             // Update scalar field
             UpdateScalarFormatting();
-
+            //
             _style.AdjustCameraDistanceAndClipping();
             this.Invalidate();
         }
@@ -4755,29 +4752,24 @@ namespace vtkControl
         {
             //countError = 0;
             int n = data.Geometry.NodesAnimation.Length;
-
             // Create actor
             vtkMaxActor actor;
             vtkMaxActor baseActor = new vtkMaxActor(data);
-
             // Add actor
             AddActorGeometry(baseActor, data.Layer);
             _animationFrameData.MemMb += n * baseActor.Geometry.GetMapper().GetInput().GetActualMemorySize() / 1024.0;
-
             // Add actorElementEdges
             if (data.CanHaveElementEdges && baseActor.ElementEdges != null)
             {
                 AddActorEdges(baseActor, false, data.Layer);
                 _animationFrameData.MemMb += n * baseActor.ElementEdges.GetMapper().GetInput().GetActualMemorySize() / 1024.0;
             }
-
             // Add modelEdges
             if (baseActor.ModelEdges != null)
             {
                 AddActorEdges(baseActor, true, data.Layer);
                 _animationFrameData.MemMb += n * baseActor.ModelEdges.GetMapper().GetInput().GetActualMemorySize() / 1024.0;
             }
-
             string name;
             vtkMaxActor[] actors = new vtkMaxActor[n];
             for (int i = 0; i < n; i++)
@@ -4787,49 +4779,43 @@ namespace vtkControl
                 actor = new vtkMaxActor(baseActor);
                 actor.SetAnimationFrame(data, i);
                 actor.Name = name;
-
                 // Add actor
                 actors[i] = actor;
             }
-
+            //
             _animationActors.Add(baseActor.Name, actors);
-
+            //
             _style.AdjustCameraDistanceAndClipping();
             this.Invalidate();
-
+            //
             return true;
         }
         public bool AddAnimatedScalarFieldOnCellsAllActors(vtkMaxActorData data)
         {
             string name;
             Dictionary<int, string> animatedActorNames = new Dictionary<int, string>();
-
             vtkMaxActor actor;
             vtkMaxActor baseActor = new vtkMaxActor(data);
-
+            //
             int n = data.Geometry.NodesAnimation.Length;
             for (int i = 0; i < n; i++)
             {
                 // Animated actor names
                 name = data.Name + "_animation-frame-" + i;
                 animatedActorNames.Add(i, name);
-
                 // Create actor
                 actor = new vtkMaxActor(baseActor);
                 actor.Name = name;
                 actor.SetAnimationFrame(data, i);
-
                 // Add actor
                 AddActorGeometry(actor, vtkRendererLayer.Base);
                 _animationFrameData.MemMb += actor.Geometry.GetMapper().GetInput().GetActualMemorySize() / 1024.0;
-
                 // Add actorEdges
                 if (data.CanHaveElementEdges && actor.ElementEdges != null)
                 {
                     AddActorEdges(actor, false, vtkRendererLayer.Base);
                     _animationFrameData.MemMb += actor.ElementEdges.GetMapper().GetInput().GetActualMemorySize() / 1024.0;
                 }
-
                 // Add modelEdges
                 if (actor.ModelEdges != null)
                 {
@@ -4848,15 +4834,13 @@ namespace vtkControl
                     else return false;
                 }
             }
-
+            //
             _animationFrameData.ActorVisible.Add(data.Name, true);
             _animationFrameData.AnimatedActorNames.Add(animatedActorNames);
-
-            // UpdateScalarFormatting();   // this is called for the first time in the SetAnimationFrame
-
+            //
             _style.AdjustCameraDistanceAndClipping();
             this.Invalidate();
-
+            //
             return true;
         }
         //
@@ -4900,7 +4884,6 @@ namespace vtkControl
                         mapper.SetInterpolateScalarsBeforeMapping(0); // discrete colors must be turned off
                     actor.UpdateColor();
                 }
-                //mapper.SetInterpolateScalarsBeforeMapping(0);
                 //
                 if (!actor.VtkMaxActorVisible || !actor.ColorContours) continue;
                 //
@@ -4961,20 +4944,28 @@ namespace vtkControl
             double[] coor;
             if (minVisible)
             {
-                _minValueWidget.VisibilityOn();
                 coor = minNode.Coor;
-                _minValueWidget.SetText("Min: " + minNode.Value.ToString(format) + GetUnitAbbreviation() + Environment.NewLine +
-                                        "Node id: " + minNode.Id);
-                _minValueWidget.SetAnchorPoint(coor[0], coor[1], coor[2]);
+                if (coor != null)
+                {
+                    _minValueWidget.VisibilityOn();
+                    _minValueWidget.SetText("Min: " + minNode.Value.ToString(format) + GetUnitAbbreviation() + Environment.NewLine +
+                                            "Node id: " + minNode.Id);
+                    _minValueWidget.SetAnchorPoint(coor[0], coor[1], coor[2]);
+                }
+                else _minValueWidget.VisibilityOff();
             }
-
+            //
             if (maxVisible)
-            {
-                _maxValueWidget.VisibilityOn();
+            {                
                 coor = maxNode.Coor;
-                _maxValueWidget.SetText("Max: " + maxNode.Value.ToString(format) + GetUnitAbbreviation() + Environment.NewLine +
-                                        "Node id: " + maxNode.Id);
-                _maxValueWidget.SetAnchorPoint(coor[0], coor[1], coor[2]);
+                if (coor != null)
+                {
+                    _maxValueWidget.VisibilityOn();
+                    _maxValueWidget.SetText("Max: " + maxNode.Value.ToString(format) + GetUnitAbbreviation() + Environment.NewLine +
+                                            "Node id: " + maxNode.Id);
+                    _maxValueWidget.SetAnchorPoint(coor[0], coor[1], coor[2]);
+                }
+                else _maxValueWidget.VisibilityOff();
             }
         }
         public void UpdateActorScalarField(string actorName, float[] values, NodesExchangeData extremeNodes,
@@ -4985,7 +4976,6 @@ namespace vtkControl
                 Test(actorName, values, extremeNodes, frustumCellLocatorValues);
                 return;
             }
-            
             // Add scalars
             if (values != null)
             {
@@ -5000,11 +4990,15 @@ namespace vtkControl
                 for (int i = 0; i < frustumCellLocatorValues.Length; i++) frustumScalars.SetValue(i, frustumCellLocatorValues[i]);
                 //
                 UpdateActorScalarField(actorName, scalars, frustumScalars, extremeNodes);
-                //
-                UpdateScalarFormatting();
-                //
-                this.Invalidate();
             }
+            else
+            {
+                RemoveActorScalarField(actorName);
+            }
+            //
+            UpdateScalarFormatting();
+            //
+            this.Invalidate();
         }
         private void UpdateActorScalarField(string actorName, vtkFloatArray scalars, vtkFloatArray frustumScalars,
                                             NodesExchangeData extremeNodes)
@@ -5012,13 +5006,29 @@ namespace vtkControl
             vtkMaxActor actor = _actors[actorName];
             // Transformed copies
             foreach (var copy in actor.Copies) UpdateActorScalarField(copy.Name, scalars, frustumScalars, extremeNodes);
-            //
             // Set scalars
             actor.Geometry.GetMapper().GetInput().GetPointData().SetScalars(scalars);
             actor.MinNode = new vtkMaxExtreemeNode(extremeNodes.Ids[0], extremeNodes.Coor[0], extremeNodes.Values[0]);
             actor.MaxNode = new vtkMaxExtreemeNode(extremeNodes.Ids[1], extremeNodes.Coor[1], extremeNodes.Values[1]);
             // Set frustum scalars
             actor.FrustumCellLocator.GetDataSet().GetPointData().SetScalars(frustumScalars);
+        }
+
+        private void RemoveActorScalarField(string actorName)
+        {
+            vtkMaxActor actor = _actors[actorName];
+            // Transformed copies
+            foreach (var copy in actor.Copies) RemoveActorScalarField(copy.Name);
+            // Remove scalars
+            //actor.Geometry.GetMapper().GetInput().GetPointData().GetScalars().RemoveLastTuple();
+            actor.Geometry.GetMapper().GetInput().GetPointData().RemoveArray(Globals.ScalarArrayName);
+            actor.MinNode = null;
+            actor.MaxNode = null;
+            // Remove frustum scalars
+            actor.FrustumCellLocator.GetDataSet().GetPointData().RemoveArray(Globals.ScalarArrayName);
+            //
+            vtkMapper mapper = actor.Geometry.GetMapper();
+            if (mapper.GetInterpolateScalarsBeforeMapping() != 0) mapper.SetInterpolateScalarsBeforeMapping(0);
         }
         private void Test(string actorName, float[] values, CaeGlobals.NodesExchangeData extremeNodes,
                                             float[] frustumCellLocatorValues)
@@ -5168,13 +5178,16 @@ namespace vtkControl
         #endregion #################################################################################################################
 
         #region Animation ##########################################################################################################
-        public void SetAnimationFrameData(float[] time, float[] scale, double[] allFramesScalarRange)
+        public void SetAnimationFrameData(float[] time, int[] stepId, int[] stepIncrementId, float[] scale,
+                                          double[] allFramesScalarRange)
         {
             _animationFrameData.Time = time;
+            _animationFrameData.StepId = stepId;
+            _animationFrameData.StepIncrementId = stepIncrementId;
             _animationFrameData.ScaleFactor = scale;
             _animationFrameData.AllFramesScalarRange = allFramesScalarRange;
         }
-
+        //
         public void SetAnimationFrame(int frameNumber, bool scalarRangeFromAllFrames)
         {
             if (_animationAcceleration) SetAnimationFrameAllActors(frameNumber, scalarRangeFromAllFrames);
@@ -5186,6 +5199,8 @@ namespace vtkControl
             //
             if (_statusBlockWidget != null && _animationFrameData != null)
             {
+                _statusBlockWidget.StepNumber = _animationFrameData.StepId[frameNumber];
+                _statusBlockWidget.IncrementNumber = _animationFrameData.StepIncrementId[frameNumber];
                 _statusBlockWidget.AnalysisTime = _animationFrameData.Time[frameNumber];
                 _statusBlockWidget.AnimationScaleFactor = _animationFrameData.ScaleFactor[frameNumber];
             }
@@ -5245,13 +5260,15 @@ namespace vtkControl
             //countError++;
             //if (countError % 10 == 0) System.Diagnostics.Debug.WriteLine("Count: " + countError);
         }
-        
+        //
         private void SetAnimationFrameAllActors(int frameNumber, bool scalarRangeFromAllFrames)
         {
             _animationFrameData.UseAllFrameData = scalarRangeFromAllFrames;
             //
             if (_statusBlockWidget != null && _animationFrameData != null)
             {
+                _statusBlockWidget.StepNumber = _animationFrameData.StepId[frameNumber];
+                _statusBlockWidget.IncrementNumber = _animationFrameData.StepIncrementId[frameNumber];
                 _statusBlockWidget.AnalysisTime = _animationFrameData.Time[frameNumber];
                 _statusBlockWidget.AnimationScaleFactor = _animationFrameData.ScaleFactor[frameNumber];
             }
@@ -5286,7 +5303,7 @@ namespace vtkControl
             ApplyEdgesVisibilityAndBackfaceCulling();   // calls invalidate
             _style.AdjustCameraDistanceAndClipping();
         }
-
+        //
         public void SaveAnimationAsAVI(string fileName, int[] firstLastFrame, int step, int fps, bool scalarRangeFromAllFrames,
                                        bool swing, bool encoderOptions)
         {

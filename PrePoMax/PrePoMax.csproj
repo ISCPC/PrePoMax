@@ -304,6 +304,7 @@
     </Compile>
     <Compile Include="Forms\36_InitialConditions\ViewInitialCondition.cs" />
     <Compile Include="Forms\36_InitialConditions\ViewInitialTemperature.cs" />
+    <Compile Include="Forms\41_Step\ViewHeatTransfer.cs" />
     <Compile Include="Forms\42_HistoryOutput\ViewContactHistoryOutput.cs" />
     <Compile Include="Forms\43_FieldOutput\ViewContactFieldOutput.cs" />
     <Compile Include="Forms\44_BoundaryConditions\ViewTemperatureBC.cs" />

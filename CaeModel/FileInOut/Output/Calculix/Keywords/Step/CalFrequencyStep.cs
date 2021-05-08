@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CaeModel;
-using CaeMesh;
+using CaeGlobals;
 
 namespace FileInOut.Output.Calculix
 {
@@ -25,9 +25,9 @@ namespace FileInOut.Output.Calculix
         // Methods                                                                                                                  
         public override string GetKeywordString()
         {
+            string solver = _step.SolverType == SolverTypeEnum.Default ? "" : ", Solver=" + _step.SolverType.GetDisplayedName();
             string storage = _step.Storage ? ", Storage=Yes" : "";
-
-            return string.Format("*Frequency{0}{1}", storage, Environment.NewLine);
+            return string.Format("*Frequency{0}{1}{2}", solver, storage, Environment.NewLine);
         }
         public override string GetDataString()
         {

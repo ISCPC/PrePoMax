@@ -414,32 +414,38 @@ namespace CaeResults
         }
         public FieldData GetFieldData(string name, string component, int stepId, int stepIncrementId)
         {
-            // Empty resoults
+            FieldData result;
+            // Empty results
             if (stepId == -1 && stepIncrementId == -1)
             {
-                FieldData fieldData = new FieldData(name, component, stepId, stepIncrementId);
-                fieldData.Type = StepType.Static;
-                return fieldData;
+                result = new FieldData(name, component, stepId, stepIncrementId);
+                result.Type = StepType.Static;
+                result.Valid = false;
+                return result;
             }
             // Zero step
             else if (stepId == 1 && stepIncrementId == 0)
             {
-                FieldData fieldData = new FieldData(name, component, stepId, stepIncrementId);
-                fieldData.Type = StepType.Static;
-                return fieldData;
+                result = new FieldData(name, component, stepId, stepIncrementId);
+                result.Type = StepType.Static;
+                return result;
             }
-            //
+            // Find the result
             foreach (var entry in _fields)
             {
                 if (entry.Key.Name == name && entry.Key.StepId == stepId && entry.Key.StepIncrementId == stepIncrementId)
                 {
-                    FieldData result = new FieldData(entry.Key);
+                    result = new FieldData(entry.Key);
                     result.Component = component;
                     return result;
                 }
             }
-            //
-            return null;
+            // Nothing found
+            result = new FieldData(name, component, stepId, stepIncrementId);
+            result.Type = StepType.Static;
+            result.Valid = false;
+            return result;
+            //return null;
         }
         public FieldData GetFirstComponentOfTheFirstFieldAtLastIncrement()
         {
@@ -458,16 +464,22 @@ namespace CaeResults
             {
                 // There is no data
                 fieldData = GetFieldData("None", "None", -1, -1);
+                fieldData.Valid = false;
             }
             else
             {
-                string name = names[0];
-                string component = GetComponentNames(name)[0];
                 int stepId = GetAllStepIds().Last();
                 int stepIncrementId = GetIncrementIds(stepId).Last();
+                string name = GetStepFieldNames(stepId)[0];
+                string component = GetComponentNames(name)[0];
                 //
                 fieldData = GetFieldData(name, component, stepId, stepIncrementId);
-                if (fieldData.Type == StepType.Frequency)
+                if (fieldData == null)
+                {
+                    // There is no data
+                    fieldData = GetFieldData("None", "None", -1, -1);
+                }
+                else if (fieldData.Type == StepType.Frequency)
                 {
                     stepIncrementId = GetIncrementIds(stepId).First();
                     fieldData = GetFieldData(name, component, stepId, stepIncrementId);
@@ -481,6 +493,16 @@ namespace CaeResults
             foreach (var entry in _fields)
             {
                 if (!names.Contains(entry.Key.Name)) names.Add(entry.Key.Name);
+            }
+            return names.ToArray();
+        }
+        public string[] GetStepFieldNames(int stepId)
+        {
+            List<string> names = new List<string>();
+            foreach (var entry in _fields)
+            {
+                if (entry.Key.StepId == stepId && !names.Contains(entry.Key.Name))
+                    names.Add(entry.Key.Name);
             }
             return names.ToArray();
         }
@@ -536,6 +558,23 @@ namespace CaeResults
             }
             return existingIncrementIds;
         }
+        public Dictionary<int, int[]> GetAllExistingIncrementIds()
+        {
+            int[] stepIds = GetAllStepIds();
+            Dictionary<int, int[]> existingIncrementIds = new Dictionary<int, int[]>();
+            if (stepIds.Length == 0)
+            {
+                existingIncrementIds.Add(-1, new int[] { -1 });
+            }
+            else
+            {
+                foreach (int stepId in stepIds)
+                {
+                    existingIncrementIds.Add(stepId, GetIncrementIds(stepId));
+                }
+            }
+            return existingIncrementIds;
+        }
         public bool FieldExists(string fieldName, string component, int stepId, int stepIncrementId)
         {
             foreach (var entry in _fields)
@@ -565,12 +604,12 @@ namespace CaeResults
         }
 
 
-        public float GetIncrementTime(string fieldName, int stepId, int stepIncrementId)
+        public float GetIncrementTime(int stepId, int stepIncrementId)
         {
             if (stepIncrementId == 0) return 0; // zero increment
             foreach (var entry in _fields)
             {
-                if (entry.Key.Name.ToUpper() == fieldName.ToUpper() && entry.Key.StepId == stepId && entry.Key.StepIncrementId == stepIncrementId)
+                if (entry.Key.StepId == stepId && entry.Key.StepIncrementId == stepIncrementId)
                 {
                     return entry.Key.Time;
                 }
@@ -580,35 +619,38 @@ namespace CaeResults
         public float[] GetValues(FieldData fieldData, int[] globalNodeIds)
         {
             float[] values = null;
-
-            if (fieldData.StepIncrementId == 0)   // zero increment
+            //
+            if (fieldData.Valid)
             {
-                if (fieldData.StepId == 1)        // first step
+                if (fieldData.StepIncrementId == 0)   // zero increment
                 {
-                    values = new float[globalNodeIds.Length];
-                }
-            }
-            else
-            {
-                foreach (var entry in _fields)
-                {
-                    if (entry.Key.Name.ToUpper() == fieldData.Name.ToUpper() && 
-                        entry.Key.StepId == fieldData.StepId && 
-                        entry.Key.StepIncrementId == fieldData.StepIncrementId)
+                    if (fieldData.StepId == 1)        // first step
                     {
-                        float[] allValues = entry.Value.GetComponentValues(fieldData.Component);
                         values = new float[globalNodeIds.Length];
-                        int globalId;
-                        int localId;
-                        for (int i = 0; i < globalNodeIds.Length; i++)
+                    }
+                }
+                else
+                {
+                    foreach (var entry in _fields)
+                    {
+                        if (entry.Key.Name.ToUpper() == fieldData.Name.ToUpper() &&
+                            entry.Key.StepId == fieldData.StepId &&
+                            entry.Key.StepIncrementId == fieldData.StepIncrementId)
                         {
-                            globalId = globalNodeIds[i];
-                            if (_nodeIdsLookUp.TryGetValue(globalId, out localId) && localId >= 0 && localId < allValues.Length)
-                                values[i] = allValues[localId];
-                            else
-                                return null;
+                            float[] allValues = entry.Value.GetComponentValues(fieldData.Component);
+                            values = new float[globalNodeIds.Length];
+                            int globalId;
+                            int localId;
+                            for (int i = 0; i < globalNodeIds.Length; i++)
+                            {
+                                globalId = globalNodeIds[i];
+                                if (_nodeIdsLookUp.TryGetValue(globalId, out localId) && localId >= 0 && localId < allValues.Length)
+                                    values[i] = allValues[localId];
+                                else
+                                    return null;
+                            }
+                            break;
                         }
-                        break;
                     }
                 }
             }
@@ -639,8 +681,11 @@ namespace CaeResults
         {
             return GetScaledExtremeValues(partName, fieldData, 0, 0);
         }
-        public NodesExchangeData GetScaledExtremeValues(string partName, FieldData fieldData, float absoluteScale, float relativeScale)
+        public NodesExchangeData GetScaledExtremeValues(string partName, FieldData fieldData, float absoluteScale,
+                                                        float relativeScale)
         {
+            if (!fieldData.Valid) return null;
+            //
             NodesExchangeData nodesData = new NodesExchangeData();
             nodesData.Ids = new int[2];
             nodesData.Coor = new double[2][];
@@ -714,7 +759,8 @@ namespace CaeResults
             return nodesData;
         }
         // Scaled results
-        public void GetScaledNodesAndValues(FieldData fieldData, float scale, int[] nodeIds, out double[][] nodeCoor, out float[] values)
+        public void GetScaledNodesAndValues(FieldData fieldData, float scale, int[] nodeIds, out double[][] nodeCoor,
+                                            out float[] values)
         {
             nodeCoor = new double[nodeIds.Length][];
             for (int i = 0; i < nodeIds.Length; i++)
@@ -734,32 +780,46 @@ namespace CaeResults
         public PartExchangeData GetScaledAllNodesCellsAndValues(FeGroup elementSet, FieldData fData, float scale)
         {
             PartExchangeData pData = new PartExchangeData();
-            _mesh.GetAllNodesAndCells(elementSet, out pData.Nodes.Ids, out pData.Nodes.Coor, out pData.Cells.Ids, out pData.Cells.CellNodeIds, out pData.Cells.Types);
-            pData.Nodes.Values = GetValues(fData, pData.Nodes.Ids);
-            if (scale != 0) ScaleNodeCoordinates(scale, fData.StepId, fData.StepIncrementId, pData.Nodes.Ids, ref pData.Nodes.Coor);
+            _mesh.GetAllNodesAndCells(elementSet, out pData.Nodes.Ids, out pData.Nodes.Coor, out pData.Cells.Ids,
+                                      out pData.Cells.CellNodeIds, out pData.Cells.Types);
+            if (!fData.Valid) pData.Nodes.Values = null;
+            else pData.Nodes.Values = GetValues(fData, pData.Nodes.Ids);
+            if (scale != 0)
+                ScaleNodeCoordinates(scale, fData.StepId, fData.StepIncrementId, pData.Nodes.Ids, ref pData.Nodes.Coor);
             return pData;
         }
         public PartExchangeData GetScaledEdgesCells(int[][] edgeCells, FieldData fData, float scale)
         {
             PartExchangeData pData = new PartExchangeData();
-            _mesh.GetNodesAndCellsForEdges(edgeCells, out pData.Nodes.Ids, out pData.Nodes.Coor, out pData.Cells.CellNodeIds, out pData.Cells.Types);
-            if (scale != 0) ScaleNodeCoordinates(scale, fData.StepId, fData.StepIncrementId, pData.Nodes.Ids, ref pData.Nodes.Coor);
+            _mesh.GetNodesAndCellsForEdges(edgeCells, out pData.Nodes.Ids, out pData.Nodes.Coor,
+                                           out pData.Cells.CellNodeIds, out pData.Cells.Types);
+            if (scale != 0)
+                ScaleNodeCoordinates(scale, fData.StepId, fData.StepIncrementId, pData.Nodes.Ids,
+                                     ref pData.Nodes.Coor);
             return pData;
         }
         public PartExchangeData GetScaledVisualizationNodesCellsAndValues(BasePart part, FieldData fData, float scale)
         {
             PartExchangeData pData = new PartExchangeData();
-            _mesh.GetVisualizationNodesAndCells(part, out pData.Nodes.Ids, out pData.Nodes.Coor, out pData.Cells.Ids, out pData.Cells.CellNodeIds, out pData.Cells.Types);
-            pData.Nodes.Values = GetValues(fData, pData.Nodes.Ids);
-            if (scale != 0) ScaleNodeCoordinates(scale, fData.StepId, fData.StepIncrementId, pData.Nodes.Ids, ref pData.Nodes.Coor);
-            pData.ExtremeNodes = GetScaledExtremeValues(part.Name, fData, scale, 1);
+            _mesh.GetVisualizationNodesAndCells(part, out pData.Nodes.Ids, out pData.Nodes.Coor, out pData.Cells.Ids,
+                                                out pData.Cells.CellNodeIds, out pData.Cells.Types);
+            if (!fData.Valid) pData.Nodes.Values = null;
+            else
+            {
+                pData.Nodes.Values = GetValues(fData, pData.Nodes.Ids);
+                pData.ExtremeNodes = GetScaledExtremeValues(part.Name, fData, scale, 1);
+            }
+            if (scale != 0)
+                ScaleNodeCoordinates(scale, fData.StepId, fData.StepIncrementId, pData.Nodes.Ids, ref pData.Nodes.Coor);
             return pData;
         }
         public PartExchangeData GetScaledEdgesNodesAndCells(FeGroup elementSet, FieldData fData, float scale)
         {
             PartExchangeData resultData = new PartExchangeData();
-            _mesh.GetNodesAndCellsForModelEdges(elementSet, out resultData.Nodes.Ids, out resultData.Nodes.Coor, out resultData.Cells.CellNodeIds, out resultData.Cells.Types);
-            if (scale != 0) ScaleNodeCoordinates(scale, fData.StepId, fData.StepIncrementId, resultData.Nodes.Ids, ref resultData.Nodes.Coor);
+            _mesh.GetNodesAndCellsForModelEdges(elementSet, out resultData.Nodes.Ids, out resultData.Nodes.Coor,
+                                                out resultData.Cells.CellNodeIds, out resultData.Cells.Types);
+            if (scale != 0)
+                ScaleNodeCoordinates(scale, fData.StepId, fData.StepIncrementId, resultData.Nodes.Ids, ref resultData.Nodes.Coor);
             return resultData;
         }
         // Animation        
@@ -769,8 +829,12 @@ namespace CaeResults
             PartExchangeData pData = new PartExchangeData();
             _mesh.GetVisualizationNodesAndCells(part, out pData.Nodes.Ids, out pData.Nodes.Coor, out pData.Cells.Ids,
                                                 out pData.Cells.CellNodeIds, out pData.Cells.Types);
-            pData.Nodes.Values = GetValues(fData, pData.Nodes.Ids);
-            pData.ExtremeNodes = GetExtremeValues(part.Name, fData);
+            if (!fData.Valid) pData.Nodes.Values = null;
+            else
+            {
+                pData.Nodes.Values = GetValues(fData, pData.Nodes.Ids);
+                pData.ExtremeNodes = GetExtremeValues(part.Name, fData);
+            }
             //
             pData.NodesAnimation = new NodesExchangeData[numFrames];
             pData.ExtremeNodesAnimation = new NodesExchangeData[numFrames];
@@ -789,7 +853,8 @@ namespace CaeResults
                 absoluteScale = relativeScale * scale;
                 //
                 pData.NodesAnimation[i] = new NodesExchangeData();
-                ScaleNodeCoordinates(absoluteScale, fData.StepId, fData.StepIncrementId, pData.Nodes.Ids, pData.Nodes.Coor, out pData.NodesAnimation[i].Coor);
+                ScaleNodeCoordinates(absoluteScale, fData.StepId, fData.StepIncrementId, pData.Nodes.Ids, pData.Nodes.Coor,
+                                     out pData.NodesAnimation[i].Coor);
                 //
                 if (invariant) relativeScale = Math.Abs(relativeScale);
                 ScaleValues(relativeScale, pData.Nodes.Values, out pData.NodesAnimation[i].Values);
@@ -798,60 +863,67 @@ namespace CaeResults
             //
             return pData;
         }
-        public PartExchangeData GetScaleFactorAnimationDataEdgesNodesAndCells(BasePart part, FieldData fData, float scale, int numFrames)
+        public PartExchangeData GetScaleFactorAnimationDataEdgesNodesAndCells(BasePart part, FieldData fData, float scale,
+                                                                              int numFrames)
         {
             PartExchangeData pData = new PartExchangeData();
-            _mesh.GetNodesAndCellsForModelEdges(part, out pData.Nodes.Ids, out pData.Nodes.Coor, out pData.Cells.CellNodeIds, out pData.Cells.Types);
-
+            _mesh.GetNodesAndCellsForModelEdges(part, out pData.Nodes.Ids, out pData.Nodes.Coor, out pData.Cells.CellNodeIds,
+                                                out pData.Cells.Types);
             pData.NodesAnimation = new NodesExchangeData[numFrames];
-
+            //
             float[] ratios;
             if (fData.Type == StepType.Frequency || fData.Type == StepType.Buckling) ratios = GetRelativeModalScales(numFrames);
             else ratios = GetRelativeScales(numFrames);
-
+            //
             float absoluteScale;
             bool invariant = IsComponentInvariant(fData);
-
+            //
             for (int i = 0; i < numFrames; i++)
             {
                 absoluteScale = ratios[i] * scale;
-
+                //
                 pData.NodesAnimation[i] = new NodesExchangeData();
-                ScaleNodeCoordinates(absoluteScale, fData.StepId, fData.StepIncrementId, pData.Nodes.Ids, pData.Nodes.Coor, out pData.NodesAnimation[i].Coor);
+                ScaleNodeCoordinates(absoluteScale, fData.StepId, fData.StepIncrementId, pData.Nodes.Ids, pData.Nodes.Coor,
+                                     out pData.NodesAnimation[i].Coor);
             }
-            
+            //
             return pData;
         }
-        public PartExchangeData GetScaleFactorAnimationDataAllNodesCellsAndValues(FeGroup elementSet, FieldData fData, float scale, int numFrames)
+        public PartExchangeData GetScaleFactorAnimationDataAllNodesCellsAndValues(FeGroup elementSet, FieldData fData, float scale,
+                                                                                  int numFrames)
         {
             PartExchangeData pData = new PartExchangeData();
             _mesh.GetAllNodesAndCells(elementSet, out pData.Nodes.Ids, out pData.Nodes.Coor, out pData.Cells.Ids, out pData.Cells.CellNodeIds, out pData.Cells.Types);
-            pData.Nodes.Values = GetValues(fData, pData.Nodes.Ids);
-
+            if (!fData.Valid) pData.Nodes.Values = null;
+            else
+            {
+                pData.Nodes.Values = GetValues(fData, pData.Nodes.Ids);
+            }
+            //
             pData.NodesAnimation = new NodesExchangeData[numFrames];
             pData.ExtremeNodesAnimation = new NodesExchangeData[numFrames];
-
+            //
             float[] ratios;
             if (fData.Type == StepType.Frequency || fData.Type == StepType.Buckling) ratios = GetRelativeModalScales(numFrames);
             else ratios = GetRelativeScales(numFrames);
-
+            //
             float absoluteScale;
             float relativeScale;
             bool invariant = IsComponentInvariant(fData);
-
+            //
             for (int i = 0; i < numFrames; i++)
             {
                 relativeScale = ratios[i];
                 absoluteScale = relativeScale * scale;
-
+                //
                 pData.NodesAnimation[i] = new NodesExchangeData();
                 ScaleNodeCoordinates(absoluteScale, fData.StepId, fData.StepIncrementId, pData.Nodes.Ids, pData.Nodes.Coor, out pData.NodesAnimation[i].Coor);
-
+                //
                 if (invariant) relativeScale = Math.Abs(relativeScale);
                 ScaleValues(relativeScale, pData.Nodes.Values, out pData.NodesAnimation[i].Values);
                 pData.ExtremeNodesAnimation[i] = GetScaledExtremeValues(elementSet.Name, fData, absoluteScale, relativeScale);
             }
-            
+            //
             return pData;
         }
         //
@@ -872,11 +944,13 @@ namespace CaeResults
             }
             return ratios;
         }
-        public PartExchangeData GetTimeIncrementAnimationDataVisualizationNodesCellsAndValues(BasePart part, FieldData fData, float scale)
+        public PartExchangeData GetTimeIncrementAnimationDataVisualizationNodesCellsAndValues(BasePart part, FieldData fData,
+                                                                                              float scale)
         {
             return GetTimeIncrementAnimationData(part, fData, scale, GetScaledVisualizationNodesCellsAndValues);
         }
-        public PartExchangeData GetTimeIncrementAnimationDataVisualizationEdgesNodesAndCells(BasePart part, FieldData fData, float scale)
+        public PartExchangeData GetTimeIncrementAnimationDataVisualizationEdgesNodesAndCells(BasePart part, FieldData fData,
+                                                                                             float scale)
         {
             return GetTimeIncrementAnimationData(part, fData, scale, GetScaledEdgesNodesAndCells);
         }
@@ -884,8 +958,8 @@ namespace CaeResults
         {
             return GetTimeIncrementAnimationData(part, fData, scale, GetScaledAllNodesCellsAndValues);
         }
-        private PartExchangeData GetTimeIncrementAnimationData(BasePart part, FieldData fData, float scale, Func<BasePart, FieldData, float, 
-                                                               PartExchangeData> GetGeometryData)
+        private PartExchangeData GetTimeIncrementAnimationData(BasePart part, FieldData fData, float scale, Func<BasePart, FieldData,
+                                                               float, PartExchangeData> GetGeometryData)
         {
             PartExchangeData pData = GetGeometryData(part, fData, scale);
 
@@ -918,7 +992,8 @@ namespace CaeResults
             return pData;
         }
         //
-        public void ScaleNodeCoordinates(float scale, int stepId, int stepIncrementId, int[] globalNodeIds, double[][] nodes, out double[][] scaledNodes)
+        public void ScaleNodeCoordinates(float scale, int stepId, int stepIncrementId, int[] globalNodeIds, double[][] nodes,
+                                         out double[][] scaledNodes)
         {
             if (scale == 0)
             {
@@ -953,12 +1028,12 @@ namespace CaeResults
             if (scale != 0)
             {
                 string name = "DISP";
-
+                //
                 float[][] disp = new float[3][];
                 disp[0] = GetValues(new FieldData(name, "U1", stepId, stepIncrementId), globalNodeIds);
                 disp[1] = GetValues(new FieldData(name, "U2", stepId, stepIncrementId), globalNodeIds);
                 disp[2] = GetValues(new FieldData(name, "U3", stepId, stepIncrementId), globalNodeIds);
-
+                //
                 if (disp[0] != null && disp[1] != null && disp[2] != null)
                 {
                     for (int i = 0; i < nodes.GetLength(0); i++)
@@ -974,20 +1049,23 @@ namespace CaeResults
         //
         public void ScaleValues(float scale, float[] values, out float[] scaledValues)
         {
-            scaledValues = new float[values.Length];
-            //scale = Math.Abs(scale);    // modal animation
-            if (scale != 0)
+            if (values == null) scaledValues = null;
+            else
             {
-                for (int i = 0; i < values.Length; i++)
+                scaledValues = new float[values.Length];
+                if (scale != 0)
                 {
-                    scaledValues[i] = values[i] * scale;
+                    for (int i = 0; i < values.Length; i++)
+                    {
+                        scaledValues[i] = values[i] * scale;
+                    }
                 }
             }
         }
         //
         public float GetMaxDisplacement()
         {
-            float max = -1;
+            float max = -float.MaxValue;
             float fieldMax;
             foreach (var entry in _fields)
             {
@@ -1001,7 +1079,7 @@ namespace CaeResults
         }
         public float GetMaxDisplacement(int stepId, int stepIncrementId)
         {
-            float max = 0;
+            float max = -float.MaxValue;
             foreach (var entry in _fields)
             {
                 if (entry.Key.StepId == stepId && entry.Key.StepIncrementId == stepIncrementId && entry.Key.Name == "DISP")

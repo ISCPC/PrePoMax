@@ -279,31 +279,30 @@ namespace FileInOut.Output
             foreach (var step in model.StepCollection.StepsList)
             {
                 if (step is InitialStep) continue;
-
+                //
                 if (step.Active)
                 {
                     sb.Append("*Step");
                     if (step.Nlgeom) sb.Append(", Nlgeom");
                     sb.AppendLine();
-
-                    if (step is StaticStep)
+                    //
+                    if (step.GetType() == typeof(StaticStep))
                     {
                         StaticStep staticStep = (StaticStep)step;
                         sb.AppendLine("*Static");
                         sb.AppendFormat("{0}, {1}", staticStep.InitialTimeIncrement, staticStep.TimePeriod);
                         sb.AppendLine();
-
-                        // boundary conditions
+                        // Boundary conditions
                         foreach (var bcEntry in staticStep.BoundaryConditions)
                         {
                             AppendBoundaryCondition(sb, bcEntry.Value);
                         }
-                        // loads
+                        // Loads
                         foreach (var loadEntry in staticStep.Loads)
                         {
                             AppendLoad(sb, loadEntry.Value, model);
                         }
-                        // field outputs
+                        // Field outputs
                         foreach (var fieldOutputEntry in staticStep.FieldOutputs)
                         {
                             AppendFieldOutput(sb, fieldOutputEntry.Value);
@@ -311,7 +310,7 @@ namespace FileInOut.Output
 
                     }
                     else throw new NotImplementedException();
-
+                    //
                     sb.AppendLine("*End step");
                 }
             }

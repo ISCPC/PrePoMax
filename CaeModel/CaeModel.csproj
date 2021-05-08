@@ -71,6 +71,7 @@
     <Compile Include="FileInOut\Input\Mmg\MmgFileReader.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalPhysicalConstants.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\BC\CalTemperatureBC.cs" />
+    <Compile Include="FileInOut\Output\Calculix\Keywords\Step\CalHeatTransferStep.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\DefinedField\CalDefinedTemperature.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalInitialTemperature.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalPreTensionSection.cs" />
@@ -182,6 +183,7 @@
     <Compile Include="Steps\BuckleStep.cs" />
     <Compile Include="Steps\InitialStep.cs" />
     <Compile Include="Steps\FrequencyStep.cs" />
+    <Compile Include="Steps\HeatTransferStep.cs" />
     <Compile Include="Steps\StaticStep.cs" />
     <Compile Include="Steps\Step.cs">
       <SubType>Code</SubType>

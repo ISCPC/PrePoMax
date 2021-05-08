@@ -19,7 +19,6 @@ namespace PrePoMax
 
         // Properties                                                                                                               
         [CategoryAttribute("Data")]
-        [ReadOnly(false)]
         [OrderedDisplayName(2, 10, "Nlgeom")]
         [DescriptionAttribute("Enable/disable the nonlinear effects of large deformations and large displacements.")]
         public bool Nlgeom 
@@ -33,8 +32,7 @@ namespace PrePoMax
         }
         //
         [CategoryAttribute("Data")]
-        [ReadOnly(false)]
-        [OrderedDisplayName(3, 10, "Incrementation")]
+        [OrderedDisplayName(10, 10, "Incrementation")]
         [DescriptionAttribute("Select the incrementation type.")]
         public CaeModel.IncrementationTypeEnum IncrementationType
         { 
@@ -47,29 +45,25 @@ namespace PrePoMax
         }
         //
         [CategoryAttribute("Incrementation")]
-        [ReadOnly(false)]
         [OrderedDisplayName(0, 10, "Direct")]
         [DescriptionAttribute("By using the 'Direct' keyword automatic incrementation of nonlinear step is switched off.")]
         public bool Direct { get { return _staticStep.Direct; } set { _staticStep.Direct = value; } }
         //
         [CategoryAttribute("Incrementation")]
-        [ReadOnly(false)]
         [OrderedDisplayName(1, 10, "Max increments")]
         [DescriptionAttribute("The maximum number of increments in the step.")]
         public int MaxIncrements { get { return _staticStep.MaxIncrements; } set { _staticStep.MaxIncrements = value; } }
         //
         [CategoryAttribute("Incrementation")]
-        [ReadOnly(false)]
         [OrderedDisplayName(2, 10, "Time period")]
         [DescriptionAttribute("Time period of the step.")]
-        [TypeConverter(typeof(CaeGlobals.StringTimeConverter))]
+        [TypeConverter(typeof(StringTimeConverter))]
         public double TimePeriod { get { return _staticStep.TimePeriod; } set { _staticStep.TimePeriod = value; } }
         //
         [CategoryAttribute("Incrementation")]
-        [ReadOnly(false)]
         [OrderedDisplayName(3, 10, "Initial time increment")]
         [DescriptionAttribute("Initial time increment of the step.")]
-        [TypeConverter(typeof(CaeGlobals.StringTimeConverter))]
+        [TypeConverter(typeof(StringTimeConverter))]
         public double InitialTimeIncrement
         {
             get { return _staticStep.InitialTimeIncrement; }
@@ -77,10 +71,9 @@ namespace PrePoMax
         }
         //
         [CategoryAttribute("Incrementation")]
-        [ReadOnly(false)]
         [OrderedDisplayName(4, 10, "Min time increment")]
         [DescriptionAttribute("Minimum time increment allowed.")]
-        [TypeConverter(typeof(CaeGlobals.StringTimeConverter))]
+        [TypeConverter(typeof(StringTimeConverter))]
         public double MinTimeIncrement
         {
             get { return _staticStep.MinTimeIncrement; }
@@ -88,10 +81,9 @@ namespace PrePoMax
         }
         //
         [CategoryAttribute("Incrementation")]
-        [ReadOnly(false)]
         [OrderedDisplayName(5, 10, "Max time increment")]
         [DescriptionAttribute("Maximum time increment allowed.")]
-        [TypeConverter(typeof(CaeGlobals.StringTimeConverter))]
+        [TypeConverter(typeof(StringTimeConverter))]
         public double MaxTimeIncrement
         {
             get { return _staticStep.MaxTimeIncrement; }
@@ -100,16 +92,11 @@ namespace PrePoMax
 
 
         // Constructors                                                                                                             
-        public ViewStaticStep(CaeModel.StaticStep step)
+        public ViewStaticStep(CaeModel.StaticStep step, bool installProvider = true)
             : base(step)
         {
             _staticStep = step;
-            _dctd = ProviderInstaller.Install(this);
-            //
-            _dctd.RenameBooleanPropertyToOnOff(nameof(Nlgeom));
-            _dctd.RenameBooleanPropertyToOnOff(nameof(Direct));
-            //
-            UpdateFieldView();
+            if (installProvider) InstallProvider();
         }
 
 
@@ -117,6 +104,15 @@ namespace PrePoMax
         public override CaeModel.Step GetBase()
         {
             return _staticStep;
+        }
+        protected void InstallProvider()
+        {
+            _dctd = ProviderInstaller.Install(this);
+            //
+            _dctd.RenameBooleanPropertyToOnOff(nameof(Nlgeom));
+            _dctd.RenameBooleanPropertyToOnOff(nameof(Direct));
+            //
+            UpdateFieldView();
         }
         public override void UpdateFieldView()
         {

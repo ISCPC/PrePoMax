@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeModel;
 using CaeMesh;
+using CaeGlobals;
 
 namespace FileInOut.Output.Calculix
 {
@@ -25,7 +26,8 @@ namespace FileInOut.Output.Calculix
         // Methods                                                                                                                  
         public override string GetKeywordString()
         {
-            return string.Format("*Buckle{0}", Environment.NewLine);
+            string solver = _step.SolverType == SolverTypeEnum.Default ? "" : ", Solver=" + _step.SolverType.GetDisplayedName();
+            return string.Format("*Buckle{0}{1}", solver, Environment.NewLine);
         }
         public override string GetDataString()
         {

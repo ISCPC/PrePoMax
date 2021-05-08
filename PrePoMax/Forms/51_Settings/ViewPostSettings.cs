@@ -29,23 +29,15 @@ namespace PrePoMax.Settings
             set
             {
                 _postSettings.DeformationScaleFactorType = value;
-
-                if (value == PrePoMax.DeformationScaleFactorType.Automatic)
-                {
+                //
+                if (value == DeformationScaleFactorType.Automatic)
                     _dctd.GetProperty(nameof(DeformationScaleFactorValue)).SetIsBrowsable(false);
-                }
-                else if (value == PrePoMax.DeformationScaleFactorType.TrueScale)
-                {
+                else if (value == DeformationScaleFactorType.TrueScale)
                     _dctd.GetProperty(nameof(DeformationScaleFactorValue)).SetIsBrowsable(false);
-                }
-                else if (value == PrePoMax.DeformationScaleFactorType.Off)
-                {
+                else if (value == DeformationScaleFactorType.Off)
                     _dctd.GetProperty(nameof(DeformationScaleFactorValue)).SetIsBrowsable(false);
-                }
-                else if (value == PrePoMax.DeformationScaleFactorType.UserDefined)
-                {
+                else if (value == DeformationScaleFactorType.UserDefined)
                     _dctd.GetProperty(nameof(DeformationScaleFactorValue)).SetIsBrowsable(true);
-                }
                 else throw new NotSupportedException();
             }
         }
@@ -128,6 +120,7 @@ namespace PrePoMax.Settings
             _dctd = ProviderInstaller.Install(this);
             //
             DeformationScaleFactorType = _postSettings.DeformationScaleFactorType;  // add this also to Reset()
+            DrawUndeformedModel = _postSettings.DrawUndeformedModel;                // add this also to Reset()
             // Now lets display Yes/No instead of True/False
             _dctd.RenameBooleanPropertyToYesNo(nameof(ShowMinValueLocation));
             _dctd.RenameBooleanPropertyToYesNo(nameof(ShowMaxValueLocation));
@@ -145,6 +138,7 @@ namespace PrePoMax.Settings
             _postSettings.Reset();
             //
             DeformationScaleFactorType = _postSettings.DeformationScaleFactorType;
+            DrawUndeformedModel = _postSettings.DrawUndeformedModel;
         }
     }
 

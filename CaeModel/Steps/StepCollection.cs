@@ -100,6 +100,12 @@ namespace CaeModel
         // Methods                                                                                                                  
         public void AddStep(Step step, bool copyBCsAndLoads = true)
         {
+            if (_steps.Count > 0)
+            {
+                Step prevStep = _steps.Last();
+                // Disable copying of BCs and loads for different step types
+                //if (prevStep.GetType() != step.GetType()) copyBCsAndLoads = false;
+            }
             if (copyBCsAndLoads && _steps.Count >= 1)
             {
                 Step lastStep = _steps.Last();
@@ -110,11 +116,11 @@ namespace CaeModel
                 }
                 foreach (var entry in lastStep.Loads)
                 {
-                    if (step.SupportsLoads) step.AddLoad(entry.Value.DeepClone());
+                    step.AddLoad(entry.Value.DeepClone());
                 }
                 foreach (var entry in lastStep.DefinedFields)
                 {
-                    if (step.SupportsLoads) step.AddDefinedField(entry.Value.DeepClone());
+                    step.AddDefinedField(entry.Value.DeepClone());
                 }
             }
             _steps.Add(step);
