@@ -34,8 +34,8 @@ namespace CaeModel
 
 
         // Constructors                                                                                                             
-        public ContactHistoryOutput(string name, ContactHistoryVariable variables, string regionName)
-            : base(name, regionName, RegionTypeEnum.ContactPair)
+        public ContactHistoryOutput(string name, ContactHistoryVariable variables, string contactPairName)
+            : base(name, contactPairName, RegionTypeEnum.ContactPair)
         {
             _variables = variables;
         }

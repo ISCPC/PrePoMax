@@ -26,8 +26,8 @@ namespace FileInOut.Output.Calculix
         // Methods                                                                                                                  
         public override string GetKeywordString()
         {
-            string direct = _step.IncrementationType == IncrementationTypeEnum.Direct ? ", Direct" : "";
             string solver = _step.SolverType == SolverTypeEnum.Default ? "" : ", Solver=" + _step.SolverType.GetDisplayedName();
+            string direct = _step.IncrementationType == IncrementationTypeEnum.Direct ? ", Direct" : "";
             string steadyState = _step.SteadyState ? ", Steady state" : "";
             string deltmx = double.IsPositiveInfinity(_step.Deltmx) ? "" : ", Deltmx=" + _step.Deltmx;
             //

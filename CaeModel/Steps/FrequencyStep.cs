@@ -12,12 +12,12 @@ namespace CaeModel
     public class FrequencyStep : Step, ISerializable
     {
         // Variables                                                                                                                
-        private double _numOfFrequencies;       //ISerializable
+        private int _numOfFrequencies;          //ISerializable
         private bool _storage;                  //ISerializable
 
 
         // Properties                                                                                                               
-        public double NumOfFrequencies
+        public int NumOfFrequencies
         {
             get { return _numOfFrequencies; }
             set 
@@ -51,7 +51,7 @@ namespace CaeModel
                 switch (entry.Name)
                 {
                     case "_numOfFrequencies":
-                        _numOfFrequencies = (double)entry.Value; count++; break;
+                        _numOfFrequencies = (int)entry.Value; count++; break;
                     case "_storage":
                         _storage = (bool)entry.Value; count++; break;
                 }
@@ -87,7 +87,7 @@ namespace CaeModel
             // using typeof() works also for null fields
             base.GetObjectData(info, context);
             //
-            info.AddValue("_numOfFrequencies", _numOfFrequencies, typeof(double));
+            info.AddValue("_numOfFrequencies", _numOfFrequencies, typeof(int));
             info.AddValue("_storage", _storage, typeof(bool));
         }
     }

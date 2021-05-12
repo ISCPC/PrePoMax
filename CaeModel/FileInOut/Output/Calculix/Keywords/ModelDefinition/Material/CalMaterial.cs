@@ -15,6 +15,10 @@ namespace FileInOut.Output.Calculix
         private Material _material;
 
 
+        // Properties                                                                                                               
+        public Material GetBase { get { return _material; } }
+
+
         // Constructor                                                                                                              
         public CalMaterial(Material material)
         {

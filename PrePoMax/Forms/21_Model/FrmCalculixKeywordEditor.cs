@@ -78,7 +78,7 @@ namespace PrePoMax.Forms
 
             UpdateKeywordTextBox();
         }
-
+        //
         private void rtbKeyword_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Control && e.KeyCode == Keys.V)
@@ -95,15 +95,14 @@ namespace PrePoMax.Forms
         {
             if (btvKeywordsTree.SelectedNode != null)
             {
-                CalculixUserKeyword keyword = new CalculixUserKeyword("User keyword");
+                CalculixUserKeyword keyword = new CalculixUserKeyword("User keyword", null);
                 TreeNode node = btvKeywordsTree.SelectedNode.Nodes.Add("User keyword");
-
+                //
                 AddUserKeywordToTreeNode(keyword, node);
                 btvKeywordsTree.SelectedNode.Expand();
                 btvKeywordsTree.SelectedNode = node;
                 btvKeywordsTree.Focus();
             }
-
             UpdateKeywordTextBoxDelayed();
         }
         private void btnMoveUp_Click(object sender, EventArgs e)
@@ -192,13 +191,13 @@ namespace PrePoMax.Forms
 
             UpdateKeywordTextBox();
         }
-
+        //
         private void timerUpdate_Tick(object sender, EventArgs e)
         {
             UpdateKeywordTextBox();
             timerUpdate.Stop();
         }
-
+        //
         private void btnOK_Click(object sender, EventArgs e)
         {
             _userKeywords = new OrderedDictionary<int[], CalculixUserKeyword>();
@@ -227,7 +226,7 @@ namespace PrePoMax.Forms
             if (parent != null)
             {
                 GetNodeIdices(parent, indices);
-
+                //
                 indices.Add(parent.Nodes.IndexOf(node));
             }
         }
@@ -261,7 +260,6 @@ namespace PrePoMax.Forms
                 }
             }
         }
-
         // Add keywords to tree
         private void AddKeywordToTreeNode(CalculixKeyword keyword, TreeNode node)
         {
@@ -312,7 +310,6 @@ namespace PrePoMax.Forms
             node.NodeFont = font;
             node.ForeColor = Color.Red;
         }
-
         // Write keywords from tree to inp textbox
         private void WriteTreeToTextBox()
         {
@@ -347,7 +344,6 @@ namespace PrePoMax.Forms
             string text = FileInOut.Output.CalculixFileWriter.GetShortKeywordData(keyword);
             return text.Split(new string[] { "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
         }
-
         // Update keyword text box
         private void UpdateKeywordTextBoxDelayed(int interval = 200)
         {
@@ -436,7 +432,6 @@ namespace PrePoMax.Forms
                 rtbInpFile.ScrollToCaret();
             }
         }
-
         // Formatting
         private void FormatInp(RichTextBox rtb)
         {
@@ -509,7 +504,7 @@ namespace PrePoMax.Forms
             }
             
         }
-
+        //
         private string GetFirstLineFromMultiline(string multiLinedata)
         {
             string[] tmp = multiLinedata.Split(new string[] { "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);

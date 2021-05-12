@@ -15,6 +15,10 @@ namespace FileInOut.Output.Calculix
         private Step _step;
 
 
+        // Properties                                                                                                               
+        public Step GetBase { get { return _step; } }
+
+
         // Constructor                                                                                                              
         public CalStep(Step step)
         {

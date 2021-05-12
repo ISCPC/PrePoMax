@@ -813,8 +813,15 @@ namespace CaeModel
         }
         public List<string> ImportMeshFromInpFile(string fileName, Action<string> WriteDataToOutput)
         {
-            FileInOut.Input.InpFileReader.Read(fileName, FileInOut.Input.ElementsToImport.Solid 
-                                               | FileInOut.Input.ElementsToImport.Shell, this, WriteDataToOutput);
+            OrderedDictionary<int[], Calculix.CalculixUserKeyword> indexedUserKeywords;
+            FileInOut.Input.InpFileReader.Read(fileName,
+                                               FileInOut.Input.ElementsToImport.Solid | FileInOut.Input.ElementsToImport.Shell, 
+                                               this,
+                                               WriteDataToOutput,
+                                               out indexedUserKeywords);
+            //
+            CalculixUserKeywords = indexedUserKeywords;
+            //
             return FileInOut.Input.InpFileReader.Errors;
         }
         private string[] ImportGeometry(FeMesh mesh, ICollection<string> reservedPartNames)

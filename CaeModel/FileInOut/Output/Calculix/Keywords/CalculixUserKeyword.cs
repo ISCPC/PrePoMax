@@ -13,16 +13,19 @@ namespace FileInOut.Output.Calculix
     {
         // Variables                                                                                                                
         private string _data;
+        private object _parent;
 
 
         // Properties                                                                                                               
         public string Data { get { return _data; } set { _data = value; } }
-        
+        public object Parent { get { return _parent; } set { _parent = value; } }
+
 
         // Constructor                                                                                                              
-        public CalculixUserKeyword(string data)
+        public CalculixUserKeyword(string data, CaeGlobals.NamedClass parent)
         {
             _data = data;
+            _parent = parent;
         }
 
 

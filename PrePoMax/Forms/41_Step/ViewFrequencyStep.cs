@@ -31,7 +31,7 @@ namespace PrePoMax
         [CategoryAttribute("Data")]
         [OrderedDisplayName(4, 10, "Number of frequencies")]
         [DescriptionAttribute("Number of eigenfrequencies to compute.")]
-        public double NumOfFrequencies
+        public int NumOfFrequencies
         {
             get { return _frequencystep.NumOfFrequencies; }
             set { _frequencystep.NumOfFrequencies = value; }

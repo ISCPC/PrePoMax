@@ -26,8 +26,8 @@ namespace FileInOut.Output.Calculix
         // Methods                                                                                                                  
         public override string GetKeywordString()
         {
-            string direct = _step.IncrementationType == IncrementationTypeEnum.Direct ? ", Direct" : "";
             string solver = _step.SolverType == SolverTypeEnum.Default ? "" : ", Solver=" + _step.SolverType.GetDisplayedName();
+            string direct = _step.IncrementationType == IncrementationTypeEnum.Direct ? ", Direct" : "";
             return string.Format("*Static{0}{1}{2}", solver, direct, Environment.NewLine);
         }
         public override string GetDataString()

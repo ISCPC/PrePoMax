@@ -15,6 +15,10 @@ namespace FileInOut.Output.Calculix
         private SurfaceInteraction _surfaceInteraction;
 
 
+        // Properties                                                                                                               
+        public SurfaceInteraction GetBase { get { return _surfaceInteraction; } }
+
+
         // Constructor                                                                                                              
         public CalSurfaceInteraction(SurfaceInteraction surfaceInteraction)
         {

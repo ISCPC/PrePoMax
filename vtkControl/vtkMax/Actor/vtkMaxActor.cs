@@ -39,16 +39,39 @@ namespace vtkControl
         private bool _sectionViewPossible;
         private bool _drawOnGeometry;
         private bool _useSecondaryHighightColor;
-        
 
 
         // Properties                                                                                                               
         public string Name { get { return _name; } set { _name = value; } }
         public vtkMaxExtreemeNode MinNode { get { return _minNode; } set { _minNode = value; } }
         public vtkMaxExtreemeNode MaxNode { get { return _maxNode; } set { _maxNode = value; } }
-        public vtkActor Geometry { get { return _geometry; } set { _geometry = value; } }
-        public vtkActor ElementEdges { get { return _elementEdges; } set { _elementEdges = value; } }
-        public vtkActor ModelEdges { get { return _modelEdges; } set { _modelEdges = value; } }
+        public vtkActor Geometry
+        {
+            get { return _geometry; }
+            set
+            {
+                _geometry = value;
+                if (_geometry != null) _geometryProperty = _geometry.GetProperty();
+            }
+        }
+        public vtkActor ElementEdges
+        {
+            get { return _elementEdges; }
+            set
+            {
+                _elementEdges = value;
+                if (_elementEdges != null) _elementEdgesProperty = _elementEdges.GetProperty();
+            }
+        }
+        public vtkActor ModelEdges
+        {
+            get { return _modelEdges; }
+            set
+            {
+                _modelEdges = value;
+                if (_modelEdges != null) _modelEdgesProperty = _modelEdges.GetProperty();
+            }
+        }
         public vtkProperty GeometryProperty { get { return _geometryProperty; } set { _geometryProperty = value; } }
         public vtkProperty ElementEdgesProperty { get { return _elementEdgesProperty; } set { _elementEdgesProperty = value; } }
         public vtkProperty ModelEdgesProperty { get { return _modelEdgesProperty; } set { _modelEdgesProperty = value; } }
@@ -126,7 +149,6 @@ namespace vtkControl
             get { return _useSecondaryHighightColor; } 
             set { _useSecondaryHighightColor = value; } 
         }
-        
 
 
         // Constructors                                                                                                             

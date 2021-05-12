@@ -216,7 +216,7 @@ namespace PrePoMax
                 _modelTree.PreviewEdgeMesh += PreviewEdgeMeshes;
                 _modelTree.CreateMeshEvent += CreatePartMeshes;
                 _modelTree.CopyGeometryToResultsEvent += CopyGeometryPartsToResults;
-                _modelTree.EditCalculixKeywords += EditEditCalculiXKeywords;
+                _modelTree.EditCalculixKeywords += EditCalculiXKeywords;
                 _modelTree.MergeParts += MergeModelParts;
                 _modelTree.ConvertElementSetsToMeshParts += ConvertElementSetsToMeshParts;
                 _modelTree.MaterialLibrary += ShowMaterialLibrary;
@@ -2694,7 +2694,7 @@ namespace PrePoMax
         {
             try
             {
-                EditEditCalculiXKeywords();
+                EditCalculiXKeywords();
             }
             catch (Exception ex)
             {
@@ -2740,8 +2740,9 @@ namespace PrePoMax
         {
             if (_controller.Model.UnitSystem.UnitSystemType != UnitSystemType.Undefined)
                 ShowForm(_frmModelProperties, "Edit Model", null);
+
         }
-        private void EditEditCalculiXKeywords()
+        private void EditCalculiXKeywords()
         {
             // This is also called from the model tree - needs try, catch
             try

@@ -15,14 +15,66 @@ namespace FileInOut.Input
     static public class InpFileReader
     {
         // Variables                                                                                                                
-        static private List<string> _errors;
-        static string[] splitterComma = new string[] { "," };
-        static string[] splitterEqual = new string[] { "=" };
-        static string[] splitter = new string[] { " ", ",", "\t" };
-
+        private static List<string> _errors;
+        private static string[] _splitterComma = new string[] { "," };
+        private static string[] _splitterEqual = new string[] { "=" };
+        private static string[] _splitter = new string[] { " ", ",", "\t" };
+        private static HashSet<string> _knownKeywords = new HashSet<string> { "*HEADING",
+                                                                              "*INCLUDE",
+                                                                              "*NODE",
+                                                                              "*ELEMENT",
+                                                                              "*NSET",
+                                                                              "*ELSET",
+                                                                              "*SURFACE",
+                                                                              "*RIGID BODY",
+                                                                              "*MATERIAL",
+                                                                              "*DENSITY",
+                                                                              "*ELASTIC",
+                                                                              "*PLASTIC",
+                                                                              "*SOLID SECTION",
+                                                                              "*STEP",
+                                                                              "*STATIC",
+                                                                              "*FREQUENCY",
+                                                                              "*BUCKLE",
+                                                                              "*HEAT TRANSFER",
+                                                                              "*END STEP",
+                                                                              "*BOUNDARY",
+                                                                              "*CLOAD",
+                                                                              "*DLOAD",
+                                                                              "*NODE FILE",
+                                                                              "*EL FILE",
+                                                                              "*CONTACT FILE",
+                                                                              "*NODE PRINT",
+                                                                              "*EL PRINT",
+                                                                              "*CONTACT PRINT"
+        };
+        private static HashSet<string> _materialKeywords = new HashSet<string> { "*CONDUCTIVITY",
+                                                                                 "*CREEP",
+                                                                                 "*CYCLIC HARDENING",
+                                                                                 "*DAMPING",
+                                                                                 "*DEFORMATION PLASTICITY",
+                                                                                 "*DENSITY",
+                                                                                 "*DEPVAR",
+                                                                                 "*ELASTIC",
+                                                                                 "*ELECTRICAL CONDUCTIVITY",
+                                                                                 "*EXPANSION",
+                                                                                 "*FLUID CONSTANTS",
+                                                                                 "*HYPER ELASTIC",
+                                                                                 "*HYPERFOAM",
+                                                                                 "*MAGNETIC PERMEABILITY",
+                                                                                 "*PLASTIC",
+                                                                                 "*SPECIFIC GAS CONSTANT",
+                                                                                 "*SPECIFIC HEAT",
+                                                                                 "*USER MATERIAL"
+        };
+        private static HashSet<string> _surfaceInteractionKeywords = new HashSet<string> { "*FRICTION",
+                                                                                           "*GAP CONDUCTANCE",
+                                                                                           "*GAP HEAT GENERATION",
+                                                                                           "*SURFACE BEHAVIOR"
+        };
 
         // Callbacks                                                                                                                
-        static private Action<string> WriteDataToOutputStatic;
+        private static Action<string> WriteDataToOutputStatic;
 
 
         // Properties                                                                                                               
@@ -30,10 +82,13 @@ namespace FileInOut.Input
 
 
         // Methods                                                                                                                  
-        static public void Read(string fileName, ElementsToImport elementsToImport, FeModel model, Action<string> WriteDataToOutput)
+        static public void Read(string fileName, ElementsToImport elementsToImport, FeModel model,
+                                Action<string> WriteDataToOutput,
+                                out OrderedDictionary<int[], CalculixUserKeyword> indexedUserKeywords)
         {
             WriteDataToOutputStatic = WriteDataToOutput;
             _errors = new List<string>();
+            indexedUserKeywords = new OrderedDictionary<int[], CalculixUserKeyword>();
             //
             if (fileName != null && File.Exists(fileName))
             {
@@ -46,17 +101,15 @@ namespace FileInOut.Input
                 Dictionary<int, FeNode> nodes = null;
                 Dictionary<int, FeElement> elements = new Dictionary<int, FeElement>();
                 //
-                string name;
                 int[] ids;
-                List<InpElementSet> inpElementTypeSets = new List<InpElementSet>();
-                //
+                string name;
                 string keyword;
-                int lineNumber;
+                List<InpElementSet> inpElementTypeSets = new List<InpElementSet>();
                 // Nodes and elements
                 for (int i = 0; i < dataSets.Length; i++)
                 {
                     dataSet = dataSets[i];
-                    keyword = dataSet[0].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries)[0].Trim().ToUpper();
+                    keyword = dataSet[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries)[0].Trim().ToUpper();
                     //
                     if (keyword == "*NODE") // nodes
                     {
@@ -82,22 +135,20 @@ namespace FileInOut.Input
                         //mesh.AddNodeSetFromElementSet(inpElementTypeSet.Name);
                     }
                 }
-                // Node and element sets, surfaces, reference points
-                lineNumber = 0;
                 //
                 Dictionary<string, Constraint> constraints = new Dictionary<string, Constraint>();
                 Dictionary<string, FeReferencePoint> referencePoints = new Dictionary<string, FeReferencePoint>();
                 Dictionary<string, Material> materials = new Dictionary<string, Material>();
+                Dictionary<string, Section> sections = new Dictionary<string, Section>();
+                Dictionary<string, SurfaceInteraction> surfaceInteractions = new Dictionary<string, SurfaceInteraction>();
+                Dictionary<string, ContactPair> contactPairs = new Dictionary<string, ContactPair>();
                 Dictionary<string, Step> steps = new Dictionary<string, Step>();
-                // JAW 21 July 2020
-                // Create object for Sections within the input file
-                var sections = new Dictionary<string, SolidSection>();
-                var secCounter = 0; // section counter for Section name
-                // End of JAW Mods
+                List<CalculixUserKeyword> userKeywords = new List<CalculixUserKeyword>();
+                //
                 for (int i = 0; i < dataSets.Length; i++)
                 {
                     dataSet = dataSets[i];
-                    keyword = dataSet[0].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries)[0].Trim().ToUpper();
+                    keyword = dataSet[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries)[0].Trim().ToUpper();
                     //
                     if (keyword == "*NSET")
                     {
@@ -116,45 +167,47 @@ namespace FileInOut.Input
                     else if (keyword == "*SURFACE")
                     {
                         WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
-                        FeSurface surface = GetSurface(dataSet, lineNumber);
+                        FeSurface surface = GetSurface(dataSet);
                         if (surface != null) mesh.AddSurface(surface);
                     }
                     else if (keyword == "*RIGID BODY")
                     {
                         WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
-                        GetRigidBody(dataSet, lineNumber, nodes, constraints, referencePoints);
+                        GetRigidBody(dataSet, nodes, constraints, referencePoints);
                     }
                     else if (keyword == "*MATERIAL")
                     {
                         WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
-                        Material material = GetMaterial(dataSets, i, lineNumber);
+                        Material material = GetMaterial(dataSets, ref i, userKeywords);
                         if (material != null) materials.Add(material.Name, material);
                     }
-                    else if (keyword == "*SOLID SECTION") // JAW 21 July 2020 - Capture solid sections
+                    else if (keyword == "*SOLID SECTION")
                     {
                         WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
-                        SolidSection section = GetSection(dataSets, i, lineNumber);
-                        if (section != null)
-                        {
-                            secCounter++;
-                            section.Name += secCounter;
-                            sections.Add(section.Name, section);
-                        }
-                    } // End of JAW Mods
+                        SolidSection section = GetSection(dataSet, sections);
+                        if (section != null) sections.Add(section.Name, section);
+                    }
+                    else if (keyword == "*SURFACE INTERACTION")
+                    {
+                        WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
+                        SurfaceInteraction surfaceInteraction = GetSurfaceInteraction(dataSets, ref i, userKeywords);
+                        if (surfaceInteraction != null) surfaceInteractions.Add(surfaceInteraction.Name, surfaceInteraction);
+                    }
                     else if (keyword == "*STEP")
                     {
                         WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
-                        StaticStep step = GetStep(dataSets, i, lineNumber, mesh);
-                        if (step != null)
-                        {
-                            step.Name = NamedClass.GetNewValueName(steps.Keys, "Step-");
-                            steps.Add(step.Name, step);
-                        }
+                        Step step = GetStep(dataSets, ref i, mesh, steps, contactPairs, userKeywords);
+                        if (step != null) steps.Add(step.Name, step);
                     }
-                    lineNumber += dataSet.Length;
+                    else if (!_knownKeywords.Contains(keyword))
+                    {
+                        WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
+                        // User keyword
+                        CalculixUserKeyword userKeyword = new CalculixUserKeyword(dataSet.ToRows(dataSet.Length), null);
+                        userKeyword.Parent = "Model";
+                        userKeywords.Add(userKeyword);
+                    }
                 }
-                //
-                foreach (var entry in referencePoints) mesh.ReferencePoints.Add(entry.Key, entry.Value);
                 //
                 if (elementsToImport != ElementsToImport.All)
                 {
@@ -166,12 +219,30 @@ namespace FileInOut.Input
                 model.ImportMesh(mesh, null);
                 // Add model items
                 foreach (var entry in constraints) model.Constraints.Add(entry.Key, entry.Value);
+                foreach (var entry in referencePoints) mesh.ReferencePoints.Add(entry.Key, entry.Value);
                 foreach (var entry in materials) model.Materials.Add(entry.Key, entry.Value);
+                foreach (var entry in surfaceInteractions) model.SurfaceInteractions.Add(entry.Key, entry.Value);
+                foreach (var entry in contactPairs) model.ContactPairs.Add(entry.Key, entry.Value);
                 foreach (var entry in sections) model.Sections.Add(entry.Key, entry.Value);
                 foreach (var entry in steps) model.StepCollection.AddStep(entry.Value, false);
+                // Add indices of user keywords
+                int[] indices;
+                Stack<int> indexStack = new Stack<int>();
+                List<CalculixKeyword> keywords = Output.CalculixFileWriter.GetModelKeywords(model);
+                indexedUserKeywords = new OrderedDictionary<int[], CalculixUserKeyword>();
+                foreach (CalculixUserKeyword userKeyword in userKeywords)
+                {
+                    indexStack.Clear();
+                    indices = GetKeywordIndices(userKeyword, keywords, indexStack);
+                    if (indices != null)
+                    {
+                        Output.CalculixFileWriter.AddUserKeywordByIndices(keywords, indices, userKeyword);
+                        indexedUserKeywords.Add(indices, userKeyword);
+                    }
+                }
             }
         }
-        static private string[] ReadIncludes(string[] lines, int firstLine, string workDirectoryName)
+        private static string[] ReadIncludes(string[] lines, int firstLine, string workDirectoryName)
         {
             int includeRowNumber = -1;
             string[] includeLines = null;
@@ -182,7 +253,7 @@ namespace FileInOut.Input
                 {
                     if (lines[i].ToUpper().StartsWith("*INCLUDE"))
                     {
-                        string[] record1 = lines[i].Split(splitterEqual, StringSplitOptions.RemoveEmptyEntries);
+                        string[] record1 = lines[i].Split(_splitterEqual, StringSplitOptions.RemoveEmptyEntries);
                         if (record1.Length == 2)
                         {
                             string fileName = record1[1].Trim();
@@ -214,7 +285,7 @@ namespace FileInOut.Input
             }
             return lines;
         }
-        static private string[][] GetDataSets(string[] lines)
+        private static string[][] GetDataSets(string[] lines)
         {
             List<string> dataSet = null;
             List<string[]> dataSets = new List<string[]>();
@@ -237,8 +308,51 @@ namespace FileInOut.Input
             //
             return dataSets.ToArray();
         }
-
-        static private Dictionary<int, FeNode> GetNodes(string[] lines)
+        //
+        private static int[] GetKeywordIndices(CalculixUserKeyword userKeyword, List<CalculixKeyword> calculixKeywords,
+                                               Stack<int> stackIndices)
+        {
+            int i = 0;
+            int count;
+            int[] indices;
+            foreach (var keyword in calculixKeywords)
+            {
+                stackIndices.Push(i);
+                //
+                if (userKeyword.Parent.ToString() == "Model" && keyword is CalStep)
+                {
+                    userKeyword.Parent = null;
+                    return stackIndices.ToArray().Reverse().ToArray();
+                }
+                else if ((keyword is CalMaterial calMat && calMat.GetBase == userKeyword.Parent) ||
+                         (keyword is CalSurfaceInteraction calSI && calSI.GetBase == userKeyword.Parent))
+                {
+                    userKeyword.Parent = null;
+                    count = keyword.Keywords.Count();
+                    stackIndices.Push(count);
+                    return stackIndices.ToArray().Reverse().ToArray();
+                }
+                else if (keyword is CalStep calS && calS.GetBase == userKeyword.Parent)
+                {
+                    userKeyword.Parent = null;
+                    count = keyword.Keywords.Count();
+                    stackIndices.Push(count - 1);   // Last one in *End step
+                    return stackIndices.ToArray().Reverse().ToArray();
+                }
+                else
+                {
+                    indices = GetKeywordIndices(userKeyword, keyword.Keywords, stackIndices);
+                    if (indices != null) return indices;
+                }
+                //
+                stackIndices.Pop();
+                i++;
+            }
+            return null;
+        }
+       
+        //
+        private static Dictionary<int, FeNode> GetNodes(string[] lines)
         {
             Dictionary<int, FeNode> nodes = new Dictionary<int, FeNode>();
             int id;
@@ -265,7 +379,8 @@ namespace FileInOut.Input
 
             return nodes;
         }
-        static private void AddElements(string[] lines, ref Dictionary<int, FeElement> elements, ref List<InpElementSet> inpElementTypeSets)
+        private static void AddElements(string[] lines, ref Dictionary<int, FeElement> elements,
+                                        ref List<InpElementSet> inpElementTypeSets)
         {
             try
             {
@@ -276,11 +391,11 @@ namespace FileInOut.Input
                 string[] record1;
                 string[] record2;
                 // *Element, type=C3D4, ELSET=PART1
-                record1 = lines[0].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                record1 = lines[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
                 //
                 foreach (var rec in record1)
                 {
-                    record2 = rec.Split(splitterEqual, StringSplitOptions.RemoveEmptyEntries);
+                    record2 = rec.Split(_splitterEqual, StringSplitOptions.RemoveEmptyEntries);
                     if (record2.Length == 2)
                     {
                         if (record2[0].Trim().ToUpper() == "TYPE") elementType = record2[1].Trim().ToUpper();
@@ -300,49 +415,49 @@ namespace FileInOut.Input
                         // LINEAR ELEMENTS                                                                                          
                         // Linear triangle element
                         case "S3":
-                            element = GetLinearTriangleElement(lines[i].Split(splitter, StringSplitOptions.RemoveEmptyEntries));
+                            element = GetLinearTriangleElement(lines[i].Split(_splitter, StringSplitOptions.RemoveEmptyEntries));
                             break;
                         // Linear quadrilateral element
                         case "S4":
                         case "S4R":
-                            element = GetLinearQuadrilateralElement(lines[i].Split(splitter, StringSplitOptions.RemoveEmptyEntries));
+                            element = GetLinearQuadrilateralElement(lines[i].Split(_splitter, StringSplitOptions.RemoveEmptyEntries));
                             break;
                         // Linear tetrahedron element
                         case "C3D4":
-                            element = GetLinearTetraElement(lines[i].Split(splitter, StringSplitOptions.RemoveEmptyEntries));
+                            element = GetLinearTetraElement(lines[i].Split(_splitter, StringSplitOptions.RemoveEmptyEntries));
                             break;
                         // Linear wedge element
                         case "C3D6":
-                            element = GetLinearWedgeElement(lines[i].Split(splitter, StringSplitOptions.RemoveEmptyEntries));
+                            element = GetLinearWedgeElement(lines[i].Split(_splitter, StringSplitOptions.RemoveEmptyEntries));
                             break;
                         // Linear hexahedron element
                         case "C3D8":
                         case "C3D8R":
                         case "C3D8I":
-                            element = GetLinearHexaElement(lines[i].Split(splitter, StringSplitOptions.RemoveEmptyEntries));
+                            element = GetLinearHexaElement(lines[i].Split(_splitter, StringSplitOptions.RemoveEmptyEntries));
                             break;
                         // PARABOLIC ELEMENTS                                                                                       
                         // Parabolic triangle element
                         case "S6":
-                            element = GetParabolicTriangleElement(lines[i].Split(splitter, StringSplitOptions.RemoveEmptyEntries));
+                            element = GetParabolicTriangleElement(lines[i].Split(_splitter, StringSplitOptions.RemoveEmptyEntries));
                             break;
                         // Parabolic quadrilateral element
                         case "S8":
                         case "S8R":
-                            element = GetParabolicQuadrilateralElement(ref i, lines, splitter);
+                            element = GetParabolicQuadrilateralElement(ref i, lines, _splitter);
                             break;
                         // Parabolic tetrahedron element
                         case "C3D10":
-                            element = GetParabolicTetraElement(ref i, lines, splitter);
+                            element = GetParabolicTetraElement(ref i, lines, _splitter);
                             break;
                         // Parabolic wedge element
                         case "C3D15":
-                            element = GetParabolicWedgeElement(ref i, lines, splitter);
+                            element = GetParabolicWedgeElement(ref i, lines, _splitter);
                             break;
                         // Parabolic hexahedron element
                         case "C3D20":
                         case "C3D20R":
-                            element = GetParabolicHexaElement(ref i, lines, splitter);
+                            element = GetParabolicHexaElement(ref i, lines, _splitter);
                             break;
                         default:
                             //System.Windows.Forms.MessageBox.Show("The element type '" + elementType + "' is not supported.");
@@ -378,7 +493,8 @@ namespace FileInOut.Input
                 AddError(ex.Message);
             }
         }
-        static private void GetNodeOrElementSet(string keywordName, string[] lines, FeMesh mesh, out string name, out int[] ids)
+        // Node/Element set
+        private static void GetNodeOrElementSet(string keywordName, string[] lines, FeMesh mesh, out string name, out int[] ids)
         {
             name = null;
             ids = null;
@@ -389,11 +505,11 @@ namespace FileInOut.Input
                 string[] record1;
                 string[] record2;
                 // *NSET,NSET=SET1,GENERATE
-                record1 = lines[0].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                record1 = lines[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
                 //
                 foreach (var rec in record1)
                 {
-                    record2 = rec.Split(splitterEqual, StringSplitOptions.RemoveEmptyEntries);
+                    record2 = rec.Split(_splitterEqual, StringSplitOptions.RemoveEmptyEntries);
                     if (record2.Length == 1)
                     {
                         if (record2[0].Trim().ToUpper() == "GENERATE") generate = true;
@@ -411,7 +527,7 @@ namespace FileInOut.Input
                     // Line 0 is the line with the keyword
                     for (int i = 1; i < lines.Length; i++)
                     {
-                        record1 = lines[i].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                        record1 = lines[i].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
                         //
                         if (record1.Length <= 3)
                         {
@@ -436,7 +552,7 @@ namespace FileInOut.Input
                     //
                     for (int i = 1; i < lines.Length; i++)
                     {
-                        record1 = lines[i].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
+                        record1 = lines[i].Split(_splitter, StringSplitOptions.RemoveEmptyEntries);
                         foreach (string id in record1)
                         {
                             if (int.TryParse(id, out intId)) setIds.Add(intId);
@@ -468,29 +584,29 @@ namespace FileInOut.Input
                 WriteDataToOutputStatic(ex.Message);
             }
         }
-        static private FeSurface GetSurface(string[] lines, int firstLineNumber)
+        // Surface
+        private static FeSurface GetSurface(string[] lines)
         {
             // *Surface, name=Surface-2, type=Element
             // internal-2_Surface-2_S2, S2
             // internal-3_Surface-2_S6, S6
             // 15, S5
             // 81, S5
-
+            //
             // *Surface, type = NODE, name = _T0_Part - 1 - 1_SN, internal
             // _T0_Part-1-1_SN
-
             string name = null;
             FeSurfaceType type = FeSurfaceType.Element;
             string[] record1;
             string[] record2;
-
+            //
             try
             {
-                record1 = lines[0].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
-
+                record1 = lines[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                //
                 foreach (var rec in record1)
                 {
-                    record2 = rec.Split(splitterEqual, StringSplitOptions.RemoveEmptyEntries);
+                    record2 = rec.Split(_splitterEqual, StringSplitOptions.RemoveEmptyEntries);
                     if (record2.Length == 2)
                     {
                         if (record2[0].Trim().ToUpper() == "NAME") name = record2[1].Trim();
@@ -500,7 +616,7 @@ namespace FileInOut.Input
                             else if (record2[1].Trim().ToUpper() == "NODE") type = FeSurfaceType.Node;
                             else
                             {
-                                _errors.Add("Line " + firstLineNumber + ": Surface type '" + record2[1].Trim() + "' is not supported");
+                                _errors.Add("Surface type is not defined: " + lines[0]);
                                 return null;
                             }
                         }
@@ -508,24 +624,23 @@ namespace FileInOut.Input
                 }
                 if (name == null)
                 {
-                    _errors.Add("Line " + firstLineNumber + ": Surface name is not defined");
+                    _errors.Add("Surface name is not defined: " + lines[0]);
                     return null;
                 }
-
+                //
                 FeSurface surface = new FeSurface(name);
                 surface.Type = type;
-
+                //
                 if (type == FeSurfaceType.Element)
                 {
                     surface.CreatedFrom = FeSurfaceCreatedFrom.Faces;
-
-                    // line 0 is the line with the keyword
+                    // Line 0 is the line with the keyword
                     FeFaceName faceName;
                     string elementSetName;
                     for (int i = 1; i < lines.Length; i++)
                     {
-                        record1 = lines[i].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
-
+                        record1 = lines[i].Split(_splitter, StringSplitOptions.RemoveEmptyEntries);
+                        //
                         if (record1.Length == 2)
                         {
                             elementSetName = record1[0];
@@ -535,7 +650,7 @@ namespace FileInOut.Input
                         }
                         else
                         {
-                            _errors.Add("Line " + firstLineNumber + i + ": When surface face is defined an element set name and face type are expected");
+                            _errors.Add("When surface face is defined an element set name and face type are expected: " + lines[0]);
                             return null;
                         }
                     }
@@ -543,25 +658,23 @@ namespace FileInOut.Input
                 else if (type == FeSurfaceType.Node)
                 {
                     surface.CreatedFrom = FeSurfaceCreatedFrom.NodeSet;
-
+                    //
                     if (lines.Length != 2)
                     {
-                        _errors.Add("Line " + firstLineNumber + 2 + ": When surface with type NODE is defined one node set name is expected");
+                        _errors.Add("When surface with type NODE is defined one node set name is expected: " + lines[0]);
                         return null;
                     }
-
-                    // line 0 is the line with the keyword    
-                    record1 = lines[1].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
+                    // Line 0 is the line with the keyword    
+                    record1 = lines[1].Split(_splitter, StringSplitOptions.RemoveEmptyEntries);
                     if (record1.Length == 1)
                     {
                         surface.CreatedFromNodeSetName = record1[0];
                     }
                     else
                     {
-                        _errors.Add("Line " + firstLineNumber + 1 + ": When surface with type NODE is defined one node set name is expected");
+                        _errors.Add("When surface with type NODE is defined one node set name is expected: " + lines[0]);
                         return null;
                     }
-
                 }
                 return surface;
             }
@@ -569,12 +682,12 @@ namespace FileInOut.Input
             {
                 if (name != null) name = " " + name;
                 else name = "";
-                _errors.Add("Line " + firstLineNumber + ": Failed to import surface" + name);
+                _errors.Add("Failed to import surface " + name + ": " + lines[0]);
                 return null;
             }
         }
-
-        static private void GetRigidBody(string[] lines, int firstLineNumber, Dictionary<int, FeNode> nodes,
+        // Rigid body
+        private static void GetRigidBody(string[] lines, Dictionary<int, FeNode> nodes,
                                          Dictionary<string, Constraint> constraints,
                                          Dictionary<string, FeReferencePoint> referencePoints)
         {
@@ -582,34 +695,32 @@ namespace FileInOut.Input
             {
                 if (lines.Length > 1)
                 {
-                    _errors.Add("Line " + firstLineNumber + ": Only one line expected for the rigid body");
+                    _errors.Add("Only one line expected for the rigid body: " + lines[0]);
                     return;
                 }
-
+                //
                 string nodeSetName;
                 int nodeId1 = -1;
                 int nodeId2 = -1;
                 string[] record1;
                 string[] record2;
-
                 //*Rigid body, Nset=internal-2_Element-Selection, Ref node=57885, Rot node=57886
-                record1 = lines[0].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                record1 = lines[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
                 if (record1.Length != 4)
                 {
-                    _errors.Add("Line " + firstLineNumber + ": Unsupported line formatting for the rigid body");
+                    _errors.Add("Unsupported line formatting for the rigid body: " + lines[0]);
                     return;
                 }
-
-                record2 = record1[1].Split(splitterEqual, StringSplitOptions.RemoveEmptyEntries);
+                //
+                record2 = record1[1].Split(_splitterEqual, StringSplitOptions.RemoveEmptyEntries);
                 nodeSetName = record2[1];
-
-                record2 = record1[2].Split(splitterEqual, StringSplitOptions.RemoveEmptyEntries);
+                //
+                record2 = record1[2].Split(_splitterEqual, StringSplitOptions.RemoveEmptyEntries);
                 nodeId1 = int.Parse(record2[1]);
-
-                record2 = record1[3].Split(splitterEqual, StringSplitOptions.RemoveEmptyEntries);
+                //
+                record2 = record1[3].Split(_splitterEqual, StringSplitOptions.RemoveEmptyEntries);
                 nodeId2 = int.Parse(record2[1]);
-
-                // check for existing reference point
+                // Check for existing reference point
                 string referencePointName = null;
                 foreach (var entry in referencePoints)
                 {
@@ -619,7 +730,7 @@ namespace FileInOut.Input
                         break;
                     }
                 }
-                // create a new reference point if it was not found
+                // Create a new reference point if it was not found
                 if (referencePointName == null)
                 {
                     referencePointName = NamedClass.GetNewValueName(referencePoints.Keys, "RP-");
@@ -627,35 +738,34 @@ namespace FileInOut.Input
                     FeReferencePoint referencePoint = new FeReferencePoint(referencePointName, node, nodeId2);
                     referencePoints.Add(referencePointName, referencePoint);
                 }
-
+                //
                 string rigidBodyName = NamedClass.GetNewValueName(constraints.Keys, "Constraint-");
                 RigidBody rigidBody = new RigidBody(rigidBodyName, referencePointName, nodeSetName, RegionTypeEnum.NodeSetName);
                 constraints.Add(rigidBodyName, rigidBody);
             }
             catch
             {
-                _errors.Add("Line " + firstLineNumber + ": Failed to import rigid body");
+                _errors.Add("Failed to import rigid body: " + lines[0]);
             }
         }
-
-        static private Material GetMaterial(string[][] dataSets, int dataSetId, int firstLineNumber)
+        // Material
+        private static Material GetMaterial(string[][] dataSets, ref int dataSetId, List<CalculixUserKeyword> userKeywords)
         {
             // *Material, Name=S235
-
-
             Material material = null;
             string name = null;
             string[] record1;
             string[] record2;
-
+            string[] dataSet = null;
+            //
             try
             {
-                string[] dataSet = dataSets[dataSetId];
-                record1 = dataSet[0].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
-
+                dataSet = dataSets[dataSetId];
+                record1 = dataSet[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                //
                 foreach (var rec in record1)
                 {
-                    record2 = rec.Split(splitterEqual, StringSplitOptions.RemoveEmptyEntries);
+                    record2 = rec.Split(_splitterEqual, StringSplitOptions.RemoveEmptyEntries);
                     if (record2.Length == 2)
                     {
                         if (record2[0].Trim().ToUpper() == "NAME")
@@ -665,67 +775,70 @@ namespace FileInOut.Input
                         }
                     }
                 }
-                firstLineNumber += dataSet.Length;
                 dataSetId++;
-
+                //
                 if (name != null)
                 {
                     string keyword;
                     material = new Material(name);
-
+                    //
                     for (int i = dataSetId; i < dataSets.Length; i++)
                     {
-                        dataSet = dataSets[i];    // next keyword
-                        keyword = dataSet[0].Split(splitter, StringSplitOptions.RemoveEmptyEntries)[0].Trim().ToUpper();
-
+                        dataSetId = i;
+                        dataSet = dataSets[dataSetId];
+                        keyword = dataSet[0].Split(_splitter, StringSplitOptions.RemoveEmptyEntries)[0].Trim().ToUpper();
+                        //
                         if (keyword == "*DENSITY")
                         {
-                            Density density = GetMaterialDensity(dataSet, firstLineNumber);
+                            Density density = GetMaterialDensity(dataSet);
                             if (density != null) material.AddProperty(density);
                         }
                         else if (keyword == "*ELASTIC")
                         {
-                            Elastic elastic = GetMaterialElasticity(dataSet, firstLineNumber);
+                            Elastic elastic = GetMaterialElasticity(dataSet);
                             if (elastic != null) material.AddProperty(elastic);
                         }
                         else if (keyword == "*PLASTIC")
                         {
-                            Plastic plastic = GetMaterialPlasticity(dataSet, firstLineNumber);
+                            Plastic plastic = GetMaterialPlasticity(dataSet);
                             if (plastic != null) material.AddProperty(plastic);
+                        }
+                        else if (_materialKeywords.Contains(keyword))
+                        {
+                            // User keyword
+                            CalculixUserKeyword userKeyword = new CalculixUserKeyword(dataSet.ToRows(dataSet.Length), null);
+                            userKeyword.Parent = material;
+                            userKeywords.Add(userKeyword);
                         }
                         else
                         {
+                            dataSetId--;
                             break;
                         }
-
-                        firstLineNumber += dataSet.Length;
                     }
                 }
-                else _errors.Add("Line " + firstLineNumber + ": Material name not found");
+                else _errors.Add("Material name not found: " + dataSet[0]);
 
+                //
                 return material;
             }
             catch
             {
-                if (name != null) name = " " + name;
-                else name = "";
-                _errors.Add("Line " + firstLineNumber + ": Failed to import material" + name);
+                _errors.Add("Failed to import material: " + dataSet != null ? dataSet.ToRows() : "");
                 return null;
             }
         }
-        static private Density GetMaterialDensity(string[] lines, int firstLineNumber)
+        private static Density GetMaterialDensity(string[] lines)
         {
             // *Density
             // 7.85E-09
             // JAW 17 Jul 2020
             // Sometimes the density value keyword has a comma at the end (7.85e-09,)
             // so we read the line expecting a comma at the end of the density value
-
             string[] record1;
-
             try
             {
-                record1 = lines[1].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                record1 = lines[1].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
                 double rho = double.Parse(record1[0]);
                 // End of JAW Mods
                 Density density = new Density(new double[][] { new double[] { rho, 0 } });
@@ -733,11 +846,11 @@ namespace FileInOut.Input
             }
             catch
             {
-                _errors.Add("Line " + firstLineNumber + ": Failed to import density");
+                _errors.Add("Failed to import density: " + lines.ToRows());
                 return null;
             }
         }
-        static private Elastic GetMaterialElasticity(string[] lines, int firstLineNumber)
+        private static Elastic GetMaterialElasticity(string[] lines)
         {
             // *Elastic
             // 210000, 0.3
@@ -746,7 +859,7 @@ namespace FileInOut.Input
 
             try
             {
-                record1 = lines[1].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                record1 = lines[1].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
 
                 double E = double.Parse(record1[0]);
                 double v = double.Parse(record1[1]);
@@ -756,187 +869,378 @@ namespace FileInOut.Input
             }
             catch
             {
-                _errors.Add("Line " + firstLineNumber + ": Failed to import elasticity");
+                _errors.Add("Failed to import elasticity: " + lines.ToRows());
                 return null;
             }
         }
-        static private Plastic GetMaterialPlasticity(string[] lines, int firstLineNumber)
+        private static Plastic GetMaterialPlasticity(string[] lines)
         {
             // *Plastic, Hardening=Kinematic
             // 235, 0
             // 400, 0.2
-
             string[] record1;
-
             try
             {
                 PlasticHardening hardening = PlasticHardening.Isotropic;
                 double[] stressStrain;
                 List<double[]> stressStrains = new List<double[]>();
-
-                record1 = lines[0].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                //
+                record1 = lines[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
                 if (record1.Length > 1)
                 {
-                    record1 = record1[1].Split(splitterEqual, StringSplitOptions.RemoveEmptyEntries);
+                    record1 = record1[1].Split(_splitterEqual, StringSplitOptions.RemoveEmptyEntries);
                     hardening = (PlasticHardening)Enum.Parse(typeof(PlasticHardening), record1[1]);
                 }
-
+                //
                 for (int i = 1; i < lines.Length; i++)
                 {
                     stressStrain = new double[2];
-                    record1 = lines[i].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                    record1 = lines[i].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
                     stressStrain[0] = double.Parse(record1[0]);
                     stressStrain[1] = double.Parse(record1[1]);
                     stressStrains.Add(stressStrain);
                 }
-
+                //
                 Plastic plastic = new Plastic(stressStrains.ToArray());
                 plastic.Hardening = hardening;
                 return plastic;
             }
             catch
             {
-                _errors.Add("Line " + firstLineNumber + ": Failed to import plasticity");
+                _errors.Add("Failed to import plasticity: " + lines.ToRows());
                 return null;
             }
         }
-        // JAW 20 July 2020
-        // Get section is fashioned after GetMaterial
-        static private SolidSection GetSection(string[][] dataSets, int dataSetId, int firstLineNumber)
+        // Section
+        private static SolidSection GetSection(string[] dataSet, Dictionary<string, Section> sections)
         {
             // Solid section can exist in two (2) formats as shown below:
-
             // *Solid Section, ELSET=STEEL_A, MATERIAL=STEEL_A
-
             // *Solid Section, MATERIAL=STEEL_A, ELSET=STEEL_A
-
             string regionName = null;
             string materialName = null;
-
             try
             {
-                string[] dataSet = dataSets[dataSetId];
-                string[] record1 = dataSet[0].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
-
+                string[] record1 = dataSet[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                //
                 foreach (var rec in record1)
                 {
-                    string[] record2 = rec.Split(splitterEqual, StringSplitOptions.RemoveEmptyEntries);
+                    string[] record2 = rec.Split(_splitterEqual, StringSplitOptions.RemoveEmptyEntries);
                     if (record2.Length != 2) continue;
                     if (record2[0].Trim().ToUpper() == "ELSET") regionName = record2[1].Trim();
                     else if (record2[0].Trim().ToUpper() == "MATERIAL") materialName = record2[1].Trim();
                 }
-
-                var section = new SolidSection("Section-", materialName, regionName, RegionTypeEnum.ElementSetName);
-
+                //
+                string name = NamedClass.GetNewValueName(sections.Keys, "Section-");
+                var section = new SolidSection(name, materialName, regionName, RegionTypeEnum.ElementSetName);
+                //
                 return section;
             }
             catch
             {
-                _errors.Add("Line " + firstLineNumber + ": Failed to import section");
+                _errors.Add("Failed to import section: " + dataSet.ToRows());
                 return null;
             }
         }
-
-        // JAW 20 July 2020
-        // Get Step
-        static private StaticStep GetStep(string[][] dataSets, int dataSetId, int firstLineNumber, FeMesh mesh)
+        // Surface interaction
+        private static SurfaceInteraction GetSurfaceInteraction(string[][] dataSets, ref int dataSetId,
+                                                                List<CalculixUserKeyword> userKeywords)
         {
-            // *STEP, NAME=STEP-1, NLGEOM=NO, PERTURBATION -- ABAQUS
-
-            // *STEP,NLGEOM,INC = 1000 -- CALCULIX
-            
-            var step = new StaticStep("Step-");
-            var bCCounter = 0;
+            // *Surface interaction, Name=Surface_interaction-1
+            SurfaceInteraction surfaceInteraction = null;
+            string name = null;
+            string[] record1;
+            string[] record2;
+            string[] dataSet = null;
+            //
             try
             {
-                string[] dataSet = dataSets[dataSetId];
-                string[] record1 = dataSet[0].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
-                // Capture the options  on the step line
+                dataSet = dataSets[dataSetId];
+                record1 = dataSet[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                //
                 foreach (var rec in record1)
                 {
-                    string[] record2 = rec.Split(splitterEqual, StringSplitOptions.RemoveEmptyEntries);
-                    if (record2.Length == 2) // Look for ABAQUS Style "NLGEOM = YES"
+                    record2 = rec.Split(_splitterEqual, StringSplitOptions.RemoveEmptyEntries);
+                    if (record2.Length == 2)
                     {
-                        if (record2[0].Trim().ToUpper() == "NLGEOM")
+                        if (record2[0].Trim().ToUpper() == "NAME")
                         {
-                            if (record2[1].Trim() == "YES") step.Nlgeom = true;
+                            name = record2[1].Trim();
+                            break;
                         }
-
+                    }
+                }                
+                dataSetId++;
+                //
+                if (name != null)
+                {
+                    string keyword;
+                    surfaceInteraction = new SurfaceInteraction(name);
+                    //
+                    for (int i = dataSetId; i < dataSets.Length; i++)
+                    {
+                        dataSetId = i;
+                        dataSet = dataSets[i];
+                        keyword = dataSet[0].Split(_splitter, StringSplitOptions.RemoveEmptyEntries)[0].Trim().ToUpper();
+                        //
+                        if (_surfaceInteractionKeywords.Contains(keyword))
+                        {
+                            // User keyword
+                            CalculixUserKeyword userKeyword = new CalculixUserKeyword(dataSet.ToRows(dataSet.Length), null);
+                            userKeyword.Parent = surfaceInteraction;
+                            userKeywords.Add(userKeyword);
+                        }
+                        else
+                        {
+                            dataSetId--;
+                            break;
+                        }                        
+                    }
+                }
+                else _errors.Add("Surface interaction name not found: " + dataSet.ToRows());
+                //
+                return surfaceInteraction;
+            }
+            catch
+            {
+                _errors.Add("Failed to import surface interaction: " + dataSet != null ? dataSet.ToRows() : "");
+                return null;
+            }
+        }
+        // Step
+        private static Step GetStep(string[][] dataSets, ref int dataSetId, FeMesh mesh, Dictionary<string, Step> steps,
+                                    Dictionary<string, ContactPair> contactPairs, List<CalculixUserKeyword> userKeywords)
+        {
+            // *STEP, NAME=STEP-1, NLGEOM=NO, PERTURBATION -- ABAQUS
+            //
+            // *STEP, NLGEOM,INC = 1000 -- CALCULIX
+            bool nlgeom = false;
+            int? maxIncrements = null;
+            bool perturbation = false;
+            string[] dataSet = null;
+            try
+            {
+                dataSet = dataSets[dataSetId];
+                string[] record1 = dataSet[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                string[] record2;
+                // Capture the options on the step line
+                foreach (var rec in record1)
+                {
+                    record2 = rec.Split(_splitterEqual, StringSplitOptions.RemoveEmptyEntries);
+                    if (record2.Length == 2) 
+                    {
+                        if (record2[0].Trim().ToUpper() == "NLGEOM")    // Look for ABAQUS Style "NLGEOM = YES"
+                        {
+                            if (record2[1].Trim().ToUpper() == "YES") nlgeom = true;
+                        }
                         else if (record2[0].Trim().ToUpper() == "INC")
                         {
-                            step.MaxIncrements = int.Parse(record2[1].Trim());
+                            maxIncrements = int.Parse(record2[1].Trim());
                         }
                     }
-                    else if (record2.Length == 1) // Look for Calculix stye "NLGEOM"
+                    else if (record2.Length == 1) 
                     {
-                        if (record2[0] == "NLGEOM") step.Nlgeom = true;
-
+                        if (record2[0] == "NLGEOM") nlgeom = true;      // Look for Calculix stye "NLGEOM"
+                        else if (record2[0] == "PERTURBATION") perturbation = true;
                     }
                 }
-
-                // Determine other Keywords in Step
-                firstLineNumber += dataSet.Length;
+                // Go to the next keyword in Step
                 dataSetId++;
-
-                for (var i = dataSetId; i < dataSets.Length; i++)
+                // Get step type first
+                Step step = null;
+                int prevDataSetId = dataSetId;
+                while (dataSetId < dataSets.Length)
                 {
-                    dataSet = dataSets[i]; // next keyword
-                    var keyword = dataSet[0].Split(splitter, StringSplitOptions.RemoveEmptyEntries)[0].Trim().ToUpper();
-
-                    if ((keyword == "*STATIC") && (step.Nlgeom == true))
-                    {
-                        // Read NLGEOM incremental data
-                        string[] record3 = dataSet[1].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
-
-                        step.InitialTimeIncrement = double.Parse(record3[0]);
-                        step.TimePeriod = double.Parse(record3[1]);
-                        step.MinTimeIncrement = double.Parse(record3[2]);
-                        step.MaxTimeIncrement = double.Parse(record3[3]);
-                    }
+                    dataSet = dataSets[dataSetId];
                     //
-                    if (keyword == "*BOUNDARY")
-                    {
-                        AddStepBoundaryCondition(step, dataSet, firstLineNumber);
-                    }
-                    else if (keyword == "*CLOAD")
-                    {
-                        AddStepCLoad(step, mesh, dataSet, firstLineNumber);
-                    }
-                    else if (keyword == "*DLOAD")
-                    {
-                        AddStepDLoad(step, dataSet, firstLineNumber);
-                    }
-                    else if (keyword == "*NODE")
-                    {
-                        if (dataSet[0].ToUpper().StartsWith("*NODE PRINT")) AddStepNodalHistoryOutput(step, dataSet, firstLineNumber);
-                    }
-                    else if (keyword == "*END") break; // *END STEP
+                    record1 = dataSet[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                    string keyword = record1[0].Trim().ToUpper();
+                    // *Static, Solver=Spooles, Direct
+                    if (keyword == "*STATIC") step = GetStaticStep(dataSet);
+                    else if (keyword == "*FREQUENCY") step = GetFrequencyStep(dataSet);
+                    else if (keyword == "*BUCKLE") step = GetBuckleStep(dataSet);
+                    else if (keyword == "*HEAT TRANSFER") step = GetHeatTransferStep(dataSet);
+                    else if (keyword == "*END STEP") break;
                     //
-                    firstLineNumber += dataSet.Length;
+                    dataSetId++;
                 }
+                step.FieldOutputs.Clear();              // Clear default field outputs
+                step.Name = NamedClass.GetNewValueName(steps.Keys, "Step-");
+                // Get step features
+                dataSetId = prevDataSetId;              // Go back to the beginning of the step
+                dataSetId++;
+                //
+                while (dataSetId < dataSets.Length)
+                {
+                    dataSet = dataSets[dataSetId];      // Next keyword                    
+                    //
+                    record1 = dataSet[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                    string keyword = record1[0].Trim().ToUpper();
+                    //
+                    if (keyword == "*BOUNDARY") AddStepBoundaryCondition(step, dataSet);
+                    else if (keyword == "*CLOAD") AddStepCLoad(step, mesh, dataSet);
+                    else if (keyword == "*DLOAD") AddStepDLoad(step, dataSet);
+                    //
+                    else if (keyword == "*NODE FILE") AddStepNodalFieldOutput(step, dataSet);
+                    else if (keyword == "*EL FILE") AddStepElementFieldOutput(step, dataSet);
+                    else if (keyword == "*CONTACT FILE") AddStepContactFieldOutput(step, dataSet);
+                    //
+                    else if (keyword == "*NODE PRINT") AddStepNodalHistoryOutput(step, dataSet);
+                    else if (keyword == "*EL PRINT") AddStepElementHistoryOutput(step, dataSet);
+                    else if (keyword == "*CONTACT PRINT") AddStepContactHistoryOutput(step, dataSet, contactPairs);
+                    else if (keyword == "*END STEP") break;
+                    else
+                    {
+                        // User keyword
+                        CalculixUserKeyword userKeyword = new CalculixUserKeyword(dataSet.ToRows(dataSet.Length), null);
+                        userKeyword.Parent = step;
+                        userKeywords.Add(userKeyword);
+                    }
+                    //
+                    dataSetId++;
+                }
+                step.Nlgeom = nlgeom;
+                if (maxIncrements != null) step.MaxIncrements = (int)maxIncrements;
+                step.Perturbation = perturbation;
+                //
                 return step;
             }
             catch
             {
-                _errors.Add("Line " + firstLineNumber + ": Failed to import step");
+                _errors.Add("Failed to import step: " + dataSet != null ? dataSet.ToRows() : "");
                 return null;
             }
-
         }
-
-        static private StaticStep AddStepBoundaryCondition(StaticStep step, string[] lines, int firstLineNumber)
+        private static StaticStep GetStaticStep(string[] dataSet)
+        {
+            string[] record1 = dataSet[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+            string[] record2;
+            StaticStep staticStep = new StaticStep("Static");
+            //
+            for (int i = 1; i < record1.Length; i++)
+            {
+                record2 = record1[i].Split(_splitterEqual, StringSplitOptions.RemoveEmptyEntries);
+                if (record2.Length == 2)
+                {
+                    if (record2[0].Trim().ToUpper() == "SOLVER") staticStep.SolverType = GetSolverType(record2[1]);
+                }
+                else if (record2.Length == 1)
+                {
+                    if (record2[0].Trim().ToUpper() == "DIRECT") staticStep.Direct = true;
+                }
+            }
+            if (dataSet.Length == 2)
+            {
+                record2 = dataSet[1].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                //
+                if (record2.Length > 0) staticStep.InitialTimeIncrement = double.Parse(record2[0]);
+                if (record2.Length > 1) staticStep.TimePeriod = double.Parse(record2[1]);
+                if (record2.Length > 2) staticStep.MinTimeIncrement = double.Parse(record2[2]);
+                if (record2.Length > 3) staticStep.MaxTimeIncrement = double.Parse(record2[3]);
+            }
+            //
+            return staticStep;
+        }
+        private static FrequencyStep GetFrequencyStep(string[] dataSet)
+        {
+            string[] record1 = dataSet[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+            string[] record2;
+            FrequencyStep frequencyStep = new FrequencyStep("Frequency");
+            //
+            for (int i = 1; i < record1.Length; i++)
+            {
+                record2 = record1[i].Split(_splitterEqual, StringSplitOptions.RemoveEmptyEntries);
+                if (record2.Length == 2)
+                {
+                    if (record2[0].Trim().ToUpper() == "SOLVER")
+                        frequencyStep.SolverType = GetSolverType(record2[1]);
+                    else if (record2[0].Trim().ToUpper() == "STORAGE" && record2[1].Trim().ToUpper() == "YES")
+                        frequencyStep.Storage = true;
+                }
+            }
+            if (dataSet.Length == 2)
+            {
+                record2 = dataSet[1].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                //
+                if (record2.Length > 0) frequencyStep.NumOfFrequencies = int.Parse(record2[0]);
+            }
+            //
+            return frequencyStep;
+        }
+        private static BuckleStep GetBuckleStep(string[] dataSet)
+        {
+            string[] record1 = dataSet[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+            string[] record2;
+            BuckleStep buckleStep = new BuckleStep("Buckle");
+            //
+            for (int i = 1; i < record1.Length; i++)
+            {
+                record2 = record1[i].Split(_splitterEqual, StringSplitOptions.RemoveEmptyEntries);
+                if (record2.Length == 2)
+                {
+                    if (record2[0].Trim().ToUpper() == "SOLVER") buckleStep.SolverType = GetSolverType(record2[1]);
+                }
+            }
+            if (dataSet.Length == 2)
+            {
+                record2 = dataSet[1].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                //
+                if (record2.Length > 0) buckleStep.NumOfBucklingFactors = int.Parse(record2[0]);
+            }
+            //
+            return buckleStep;
+        }
+        private static HeatTransferStep GetHeatTransferStep(string[] dataSet)
+        {
+            string[] record1 = dataSet[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+            string[] record2;
+            HeatTransferStep heatTransferStep = new HeatTransferStep("Heat");
+            for (int i = 1; i < record1.Length; i++)
+            {
+                record2 = record1[i].Split(_splitterEqual, StringSplitOptions.RemoveEmptyEntries);
+                if (record2.Length == 2)
+                {
+                    if (record2[0].Trim().ToUpper() == "SOLVER")
+                        heatTransferStep.SolverType = GetSolverType(record2[1]);
+                    else if (record2[0].Trim().ToUpper() == "DELTMX")
+                        heatTransferStep.Deltmx = double.Parse(record2[1]);
+                }
+                else if (record2.Length == 1)
+                {
+                    if (record2[0].Trim().ToUpper() == "DIRECT") heatTransferStep.Direct = true;
+                    else if (record2[0].Trim().ToUpper() == "STEADY STATE") heatTransferStep.SteadyState = true;
+                }
+            }
+            if (dataSet.Length == 2)
+            {
+                record2 = dataSet[1].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                //
+                if (record2.Length > 0) heatTransferStep.InitialTimeIncrement = double.Parse(record2[0]);
+                if (record2.Length > 1) heatTransferStep.TimePeriod = double.Parse(record2[1]);
+                if (record2.Length > 2) heatTransferStep.MinTimeIncrement = double.Parse(record2[2]);
+                if (record2.Length > 3) heatTransferStep.MaxTimeIncrement = double.Parse(record2[3]);
+            }
+            //
+            return heatTransferStep;
+        }
+        private static SolverTypeEnum GetSolverType(string solverName)
+        {
+            SolverTypeEnum solverType = (SolverTypeEnum)Enum.Parse(typeof(SolverTypeEnum), solverName.Replace(" ", ""));
+            return solverType;
+        }
+        //
+        private static void AddStepBoundaryCondition(Step step, string[] lines)
         {
             // *Boundary
             // Set_1, 2, 2
             // Set_1, 3, 3, 0.001
-
             try
             {
                 string name;
                 //
                 for (var bci = 1; bci < lines.Length; bci++)
                 {
-                    string[] recordBC = lines[bci].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                    string[] recordBC = lines[bci].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
                     // Create DisplacementRotation BC
                     // Get regionName
                     var regionName = recordBC[0].Trim();
@@ -950,7 +1254,7 @@ namespace FileInOut.Input
                     for (var dofi = 1; dofi < 3; dofi++)
                     {
                         var dValue = int.Parse(recordBC[dofi]);
-
+                        //
                         switch (dValue)
                         {
                             case 1:
@@ -975,15 +1279,13 @@ namespace FileInOut.Input
                     }
                     step.AddBoundaryCondition(bCond);
                 }
-                return step;
             }
             catch
             {
-                _errors.Add("Line " + firstLineNumber + ": Failed to import boundary condition");
-                return null;
+                _errors.Add("Failed to import boundary condition: " + lines.ToRows());
             }
         }
-        static private StaticStep AddStepCLoad(StaticStep step, FeMesh mesh, string[] lines, int firstLineNumber)
+        private static void AddStepCLoad(Step step, FeMesh mesh, string[] lines)
         {
             // *CLoad
             // LD_BRTIP, 2, 10000 - Concentrated Force (f1,f2,f3)
@@ -1002,7 +1304,7 @@ namespace FileInOut.Input
                     nameCF = NamedClass.GetNewValueName(step.Loads.Keys, "Concentrated_force-");
                     nameMom = NamedClass.GetNewValueName(step.Loads.Keys, "Moment-1");
                     //
-                    string[] recordCL = lines[i].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                    string[] recordCL = lines[i].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
                     // Get regionName name or nodeId
                     nodeId = -1;
                     string regionName = recordCL[0].Trim();
@@ -1047,38 +1349,31 @@ namespace FileInOut.Input
                             break;
                     }
                 }
-                return step;
             }
             catch
             {
-                _errors.Add("Line " + firstLineNumber + ": Failed to import loading condition");
-                return null;
+                _errors.Add("Failed to import load: " + lines.ToRows());
             }
         }
-        static private StaticStep AddStepDLoad(StaticStep step, string[] lines, int firstLineNumber)
+        private static void AddStepDLoad(Step step, string[] lines)
         {
             // *DLoad
             // Eall, GRAV, 9.81, 0, 0, -1
-
             try
             {
                 // DLoad as gravity force is the only force covered at this point
                 var nameGrav = "Grav-";
-
+                //
                 for (var bci = 1; bci < lines.Length; bci++)
                 {
-                    string[] recordDL = lines[bci].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
-
+                    string[] recordDL = lines[bci].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
                     // Create Concentrated Force Object
-
                     // To avoid duplicate loading condition names for additional steps,
                     // a random letter is included in the numbering count.
                     // This option is used until a better solution is implemented
-
                     Random rand = new Random(Guid.NewGuid().GetHashCode());
                     var num = rand.Next(0, 26); // Zero to 25
                     char let = (char)('A' + num);
-
                     // Get regionName
                     var regionName = recordDL[0].Trim();
                     // Get loading type
@@ -1086,52 +1381,176 @@ namespace FileInOut.Input
                     // Get Gravity value
                     var gValue = double.Parse(recordDL[2]); ;
                     var gLoad = new GravityLoad(nameGrav, regionName, RegionTypeEnum.ElementSetName, 0.0, 0.0, 0.0);
-
+                    //
                     if (int.Parse(recordDL[3]) != 0)
                     {
                         gLoad.F1 = double.Parse(recordDL[3]) * gValue;
                         gLoad.Name += (step.Loads.Count + 1);
                         step.AddLoad(gLoad);
                     }
-
+                    //
                     if (int.Parse(recordDL[4]) != 0)
                     {
                         gLoad.F2 = double.Parse(recordDL[4]) * gValue;
                         step.AddLoad(gLoad);
                     }
-
+                    //
                     if (int.Parse(recordDL[5]) != 0)
                     {
                         gLoad.F3 = double.Parse(recordDL[5]) * gValue;
                         step.AddLoad(gLoad);
                     }
                 }
-                return step;
             }
             catch
             {
-                _errors.Add("Line " + firstLineNumber + ": Failed to import gravity loading");
-                return null;
+                _errors.Add("Failed to import gravity load: " + lines.ToRows());
             }
         }
-        static private void AddStepNodalHistoryOutput(Step step, string[] lines, int firstLineNumber)
+        // Field output
+        private static void AddStepNodalFieldOutput(Step step, string[] lines)
         {
-            //*Node print, Nset=Internal_Selection-7_Fz, Totals=Only
-            //U, RF
+            // *Node file, Frequency=2
+            // U, RF, NT
+            try
+            {
+                string name = NamedClass.GetNewValueName(step.FieldOutputs.Keys, "NF-Output-");
+                NodalFieldVariable variables;
+                int? frequency = null;
+                string[] record1;
+                string[] record2;
+                // Line 1
+                record1 = lines[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var rec in record1)
+                {
+                    record2 = rec.Trim().Split(_splitterEqual, StringSplitOptions.RemoveEmptyEntries);
+                    if (record2[0].ToUpper().StartsWith("FREQUENCY"))
+                    {
+                        frequency = int.Parse(record2[1]);
+                    }
+                }
+                // Line 2
+                record1 = lines[1].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                if (record1.Length > 0)
+                {
+                    variables = (NodalFieldVariable)Enum.Parse(typeof(NodalFieldVariable), record1[0].ToUpper());
+                    for (int i = 1; i < record1.Length; i++)
+                    {
+                        variables |= (NodalFieldVariable)Enum.Parse(typeof(NodalFieldVariable), record1[i].ToUpper());
+                    }
+                    NodalFieldOutput nodalFieldOutput = new NodalFieldOutput(name, variables);
+                    if (frequency != null) nodalFieldOutput.Frequency = (int)frequency;
+                    // Add to step
+                    step.FieldOutputs.Add(name, nodalFieldOutput);
+                }
+            }
+            catch
+            {
+                _errors.Add("Failed to import nodal field output: " + lines.ToRows());
+            }
+        }
+        private static void AddStepElementFieldOutput(Step step, string[] lines)
+        {
+            // *Element file, Frequency=2
+            // S, E
+            try
+            {
+                string name = NamedClass.GetNewValueName(step.FieldOutputs.Keys, "EF-Output-");
+                ElementFieldVariable variables;
+                int? frequency = null;
+                string[] record1;
+                string[] record2;
+                // Line 1
+                record1 = lines[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var rec in record1)
+                {
+                    record2 = rec.Trim().Split(_splitterEqual, StringSplitOptions.RemoveEmptyEntries);
+                    if (record2[0].ToUpper().StartsWith("FREQUENCY"))
+                    {
+                        frequency = int.Parse(record2[1]);
+                    }
+                }
+                // Line 2
+                record1 = lines[1].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                if (record1.Length > 0)
+                {
+                    variables = (ElementFieldVariable)Enum.Parse(typeof(ElementFieldVariable), record1[0].ToUpper());
+                    for (int i = 1; i < record1.Length; i++)
+                    {
+                        variables |= (ElementFieldVariable)Enum.Parse(typeof(ElementFieldVariable), record1[i].ToUpper());
+                    }
+                    ElementFieldOutput elementFieldOutput = new ElementFieldOutput(name, variables);
+                    if (frequency != null) elementFieldOutput.Frequency = (int)frequency;
+                    // Add to step
+                    step.FieldOutputs.Add(name, elementFieldOutput);
+                }
+            }
+            catch
+            {
+                _errors.Add("Failed to import element field output: " + lines.ToRows());
+            }
+        }
+        private static void AddStepContactFieldOutput(Step step, string[] lines)
+        {
+            // *Contact file, Frequency=2
+            // CDIS, CSTR
+            try
+            {
+                string name = NamedClass.GetNewValueName(step.FieldOutputs.Keys, "CF-Output-");
+                ContactFieldVariable variables;
+                int? frequency = null;
+                string[] record1;
+                string[] record2;
+                // Line 1
+                record1 = lines[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var rec in record1)
+                {
+                    record2 = rec.Trim().Split(_splitterEqual, StringSplitOptions.RemoveEmptyEntries);
+                    if (record2[0].ToUpper().StartsWith("FREQUENCY"))
+                    {
+                        frequency = int.Parse(record2[1]);
+                    }
+                }
+                // Line 2
+                record1 = lines[1].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                if (record1.Length > 0)
+                {
+                    variables = (ContactFieldVariable)Enum.Parse(typeof(ContactFieldVariable), record1[0].ToUpper());
+                    for (int i = 1; i < record1.Length; i++)
+                    {
+                        variables |= (ContactFieldVariable)Enum.Parse(typeof(ContactFieldVariable), record1[i].ToUpper());
+                    }
+                    ContactFieldOutput contactFieldOutput = new ContactFieldOutput(name, variables);
+                    if (frequency != null) contactFieldOutput.Frequency = (int)frequency;
+                    // Add to step
+                    step.FieldOutputs.Add(name, contactFieldOutput);
+                }
+            }
+            catch
+            {
+                _errors.Add("Failed to import contact field output: " + lines.ToRows());
+            }
+        }
+        // History output
+        private static void AddStepNodalHistoryOutput(Step step, string[] lines)
+        {
+            //*Node print, Nset=Internal_Selection-7_Fz, Totals=Only, Totals=Yes
+            // U, RF, NT
             try
             {
                 string name = NamedClass.GetNewValueName(step.HistoryOutputs.Keys, "NH-Output-");
                 NodalHistoryVariable variables;
                 string regionName = null;
+                int? frequency = null;
                 RegionTypeEnum regionType = RegionTypeEnum.None;
                 TotalsTypeEnum totalsType = TotalsTypeEnum.No;
                 string[] record1;
                 string[] record2;
                 // Line 1
-                record1 = lines[0].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                record1 = lines[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
                 foreach (var rec in record1)
                 {
-                    record2 = rec.Trim(). Split(splitterEqual, StringSplitOptions.RemoveEmptyEntries);
+                    record2 = rec.Trim().Split(_splitterEqual, StringSplitOptions.RemoveEmptyEntries);
                     if (record2[0].ToUpper().StartsWith("NSET"))
                     {
                         regionName = record2[1];
@@ -1141,19 +1560,24 @@ namespace FileInOut.Input
                     {
                         totalsType = (TotalsTypeEnum)Enum.Parse(typeof(TotalsTypeEnum), record2[1]);
                     }
+                    else if (record2[0].ToUpper().StartsWith("FREQUENCY"))
+                    {
+                        frequency = int.Parse(record2[1]);
+                    }
                 }
                 // Line 2
-                record1 = lines[1].Split(splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                record1 = lines[1].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
                 if (record1.Length > 0)
                 {
-                    variables = (NodalHistoryVariable)Enum.Parse(typeof(NodalHistoryVariable), record1[0]);
+                    variables = (NodalHistoryVariable)Enum.Parse(typeof(NodalHistoryVariable), record1[0].ToUpper());
                     for (int i = 1; i < record1.Length; i++)
                     {
-                        variables |= (NodalHistoryVariable)Enum.Parse(typeof(NodalHistoryVariable), record1[i]);
+                        variables |= (NodalHistoryVariable)Enum.Parse(typeof(NodalHistoryVariable), record1[i].ToUpper());
                     }
                     if (regionName != null)
                     {
                         NodalHistoryOutput nodalHistoryOutput = new NodalHistoryOutput(name, variables, regionName, regionType);
+                        if (frequency != null) nodalHistoryOutput.Frequency = (int)frequency;
                         if (totalsType != TotalsTypeEnum.No) nodalHistoryOutput.TotalsType = totalsType;
                         // Add to step
                         step.HistoryOutputs.Add(name, nodalHistoryOutput);
@@ -1162,12 +1586,145 @@ namespace FileInOut.Input
             }
             catch
             {
-                _errors.Add("Line " + firstLineNumber + ": Failed to import nodal history output.");
+                _errors.Add("Failed to import nodal history output: " + lines.ToRows());
+            }
+        }
+        private static void AddStepElementHistoryOutput(Step step, string[] lines)
+        {
+            //*El print, Elset=Internal_Selection-7_Fz, Totals=Only, Totals=Yes
+            // S, E, ME, PEEQ
+            try
+            {
+                string name = NamedClass.GetNewValueName(step.HistoryOutputs.Keys, "EH-Output-");
+                ElementHistoryVariable variables;
+                string regionName = null;
+                int? frequency = null;
+                RegionTypeEnum regionType = RegionTypeEnum.None;
+                TotalsTypeEnum totalsType = TotalsTypeEnum.No;
+                string[] record1;
+                string[] record2;
+                // Line 1
+                record1 = lines[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var rec in record1)
+                {
+                    record2 = rec.Trim().Split(_splitterEqual, StringSplitOptions.RemoveEmptyEntries);
+                    if (record2[0].ToUpper().StartsWith("ELSET"))
+                    {
+                        regionName = record2[1];
+                        regionType = RegionTypeEnum.ElementSetName;
+                    }
+                    else if (record2[0].ToUpper().StartsWith("TOTALS"))
+                    {
+                        totalsType = (TotalsTypeEnum)Enum.Parse(typeof(TotalsTypeEnum), record2[1]);
+                    }
+                    else if (record2[0].ToUpper().StartsWith("FREQUENCY"))
+                    {
+                        frequency = int.Parse(record2[1]);
+                    }
+                }
+                // Line 2
+                record1 = lines[1].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                if (record1.Length > 0)
+                {
+                    variables = (ElementHistoryVariable)Enum.Parse(typeof(ElementHistoryVariable), record1[0].ToUpper());
+                    for (int i = 1; i < record1.Length; i++)
+                    {
+                        variables |= (ElementHistoryVariable)Enum.Parse(typeof(ElementHistoryVariable), record1[i].ToUpper());
+                    }
+                    if (regionName != null)
+                    {
+                        ElementHistoryOutput elementHistoryOutput = new ElementHistoryOutput(name, variables, regionName,
+                                                                                             regionType);
+                        if (frequency != null) elementHistoryOutput.Frequency = (int)frequency;
+                        if (totalsType != TotalsTypeEnum.No) elementHistoryOutput.TotalsType = totalsType;
+                        // Add to step
+                        step.HistoryOutputs.Add(name, elementHistoryOutput);
+                    }
+                }
+            }
+            catch
+            {
+                _errors.Add("Failed to import element history output: " + lines.ToRows());
+            }
+        }
+        private static void AddStepContactHistoryOutput(Step step, string[] lines, Dictionary<string, ContactPair> contactPairs)
+        {
+            //*Contact print, Elset=Internal_Selection-7_Fz, Totals=Only, Totals=Yes
+            // S, E, ME, PEEQ
+            try
+            {
+                string name = NamedClass.GetNewValueName(step.HistoryOutputs.Keys, "CH-Output-");
+                ContactHistoryVariable variables;
+                string masterName = null;
+                string slaveName = null;
+                int? frequency = null;
+                TotalsTypeEnum totalsType = TotalsTypeEnum.No;
+                string[] record1;
+                string[] record2;
+                // Line 1
+                record1 = lines[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var rec in record1)
+                {
+                    record2 = rec.Trim().Split(_splitterEqual, StringSplitOptions.RemoveEmptyEntries);
+                    if (record2[0].ToUpper().StartsWith("MASTER"))
+                    {
+                        masterName = record2[1];
+                        //regionType = RegionTypeEnum.ElementSetName;
+                    }
+                    else if (record2[0].ToUpper().StartsWith("SLAVE"))
+                    {
+                        slaveName = record2[1];
+                        //regionType = RegionTypeEnum.ElementSetName;
+                    }
+                    else if (record2[0].ToUpper().StartsWith("TOTALS"))
+                    {
+                        totalsType = (TotalsTypeEnum)Enum.Parse(typeof(TotalsTypeEnum), record2[1]);
+                    }
+                    else if (record2[0].ToUpper().StartsWith("FREQUENCY"))
+                    {
+                        frequency = int.Parse(record2[1]);
+                    }
+                }
+                // Line 2
+                record1 = lines[1].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                if (record1.Length > 0)
+                {
+                    variables = (ContactHistoryVariable)Enum.Parse(typeof(ContactHistoryVariable), record1[0].ToUpper());
+                    for (int i = 1; i < record1.Length; i++)
+                    {
+                        variables |= (ContactHistoryVariable)Enum.Parse(typeof(ContactHistoryVariable), record1[i].ToUpper());
+                    }
+                    // Find the contact pair
+                    if (masterName != null && slaveName != null)
+                    {
+                        string contactPairName = null;
+                        foreach (var entry in contactPairs)
+                        {
+                            if (entry.Value.MasterRegionName == masterName && entry.Value.SlaveRegionName == slaveName)
+                            {
+                                contactPairName = entry.Key;
+                                break;
+                            }
+                        }
+                        if (contactPairName != null)
+                        {
+                            ContactHistoryOutput contactHistoryOutput = new ContactHistoryOutput(name, variables, contactPairName);
+                            if (frequency != null) contactHistoryOutput.Frequency = (int)frequency;
+                            if (totalsType != TotalsTypeEnum.No) contactHistoryOutput.TotalsType = totalsType;
+                            // Add to step
+                            step.HistoryOutputs.Add(name, contactHistoryOutput);
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                _errors.Add("Failed to import contact history output: " + lines.ToRows());
             }
         }
 
         //  LINEAR ELEMENTS                                                                                        
-        static private LinearTriangleElement GetLinearTriangleElement(string[] record)
+        private static LinearTriangleElement GetLinearTriangleElement(string[] record)
         {
             // 1, 598, 1368, 1306
             int id = int.Parse(record[0]);
@@ -1178,7 +1735,7 @@ namespace FileInOut.Input
             }
             return new LinearTriangleElement(id, nodes);
         }
-        static private LinearQuadrilateralElement GetLinearQuadrilateralElement(string[] record)
+        private static LinearQuadrilateralElement GetLinearQuadrilateralElement(string[] record)
         {
             // 1, 598, 1368, 1306, 16
             int id = int.Parse(record[0]);
@@ -1189,7 +1746,7 @@ namespace FileInOut.Input
             }
             return new LinearQuadrilateralElement(id, nodes);
         }
-        static private LinearTetraElement GetLinearTetraElement(string[] record)
+        private static LinearTetraElement GetLinearTetraElement(string[] record)
         {
             // 1, 598, 1368, 1306, 1291
             int id = int.Parse(record[0]);
@@ -1200,7 +1757,7 @@ namespace FileInOut.Input
             }
             return new LinearTetraElement(id, nodes);
         }
-        static private LinearWedgeElement GetLinearWedgeElement(string[] record)
+        private static LinearWedgeElement GetLinearWedgeElement(string[] record)
         {
             // 1,  132,  133,  495,  646,  647, 1009
             int id = int.Parse(record[0]);
@@ -1211,7 +1768,7 @@ namespace FileInOut.Input
             }
             return new LinearWedgeElement(id, nodes);
         }
-        static private LinearHexaElement GetLinearHexaElement(string[] record)
+        private static LinearHexaElement GetLinearHexaElement(string[] record)
         {
             // 1, 598, 1368, 1306, 1291, 3, 4, 5, 6
             int id = int.Parse(record[0]);
@@ -1225,7 +1782,7 @@ namespace FileInOut.Input
 
 
         //  PARABOLIC ELEMENTS                                                                                    
-        static private ParabolicTriangleElement GetParabolicTriangleElement(string[] record)
+        private static ParabolicTriangleElement GetParabolicTriangleElement(string[] record)
         {
             // 1, 598, 1368, 1306, 1291, 15 ,16
             int id = int.Parse(record[0]);
@@ -1236,7 +1793,8 @@ namespace FileInOut.Input
             }
             return new ParabolicTriangleElement(id, nodes);
         }
-        static private ParabolicQuadrilateralElement GetParabolicQuadrilateralElement(ref int lineId, string[] lines, string[] splitter)
+        private static ParabolicQuadrilateralElement GetParabolicQuadrilateralElement(ref int lineId, string[] lines,
+                                                                                      string[] splitter)
         {
             // 1, 5518, 5519, 4794, 5898, 19815, 19819, 19817, 
             // 19816
@@ -1266,7 +1824,7 @@ namespace FileInOut.Input
             //
             return new ParabolicQuadrilateralElement(id, nodes);
         }
-        static private ParabolicTetraElement GetParabolicTetraElement(ref int lineId, string[] lines, string[] splitter)
+        private static ParabolicTetraElement GetParabolicTetraElement(ref int lineId, string[] lines, string[] splitter)
         {
             // 1, 5518, 5519, 4794, 5898, 19815, 19819, 19817, 
             // 19816, 19818, 19820
@@ -1296,7 +1854,7 @@ namespace FileInOut.Input
             //
             return new ParabolicTetraElement(id, nodes);
         }
-        static private ParabolicWedgeElement GetParabolicWedgeElement(ref int lineId, string[] lines, string[] splitter)
+        private static ParabolicWedgeElement GetParabolicWedgeElement(ref int lineId, string[] lines, string[] splitter)
         {
             // 1, 5518, 5519, 4794, 5898, 19815, 19819, 19817, 
             // 19816, 19818, 19820, 1, 2, 3, 4, 5
@@ -1326,7 +1884,7 @@ namespace FileInOut.Input
             //
             return new ParabolicWedgeElement(id, nodes);
         }
-        static private ParabolicHexaElement GetParabolicHexaElement(ref int lineId, string[] lines, string[] splitter)
+        private static ParabolicHexaElement GetParabolicHexaElement(ref int lineId, string[] lines, string[] splitter)
         {
             // *ELEMENT, TYPE = C3D20R
             // 1,1,10,47,19,37,57,78,72,9,45,
@@ -1357,8 +1915,8 @@ namespace FileInOut.Input
             //
             return new ParabolicHexaElement(id, nodes);
         }
-
-        static private void AddError(string error)
+        //
+        private static void AddError(string error)
         {
             Errors.Add(error);
             WriteDataToOutputStatic(error);

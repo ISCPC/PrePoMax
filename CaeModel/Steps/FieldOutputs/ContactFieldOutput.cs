@@ -12,7 +12,7 @@ namespace CaeModel
     [Flags]
     public enum ContactFieldVariable
     {
-        // must start at 1 for the UI to work
+        // Must start at 1 for the UI to work
         CDIS = 1,
         CSTR = 2,
         //CELS = 4,

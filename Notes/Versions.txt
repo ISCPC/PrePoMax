@@ -72,6 +72,8 @@ By Emanuele:
 
 
 By Ihor:
+10.5.2021
+- feature to export nodal results together with their nodal coordinates
 30.5.2019
 - export for VTK
 

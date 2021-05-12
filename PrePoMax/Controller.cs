@@ -1378,7 +1378,8 @@ namespace PrePoMax
 
         #region Edit menu   ########################################################################################################
         // COMMANDS ********************************************************************************
-        public void SetCalculixUserKeywordsCommand(OrderedDictionary<int[], FileInOut.Output.Calculix.CalculixUserKeyword> userKeywords)
+        public void SetCalculixUserKeywordsCommand(OrderedDictionary<int[],
+                                                   FileInOut.Output.Calculix.CalculixUserKeyword> userKeywords)
         {
             Commands.CSetCalculixUserKeywords comm = new Commands.CSetCalculixUserKeywords(userKeywords);
             _commands.AddAndExecute(comm);

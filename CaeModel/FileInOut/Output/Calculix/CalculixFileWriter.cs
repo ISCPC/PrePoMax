@@ -32,16 +32,16 @@ namespace FileInOut.Output
         static public List<CalculixKeyword> GetAllKeywords(FeModel model)
         {
             List<CalculixKeyword> keywords = GetModelKeywords(model);
-
             // Add user keywords
             if (model.CalculixUserKeywords != null)
             {
                 foreach (var entry in model.CalculixUserKeywords)
                 {
-                    AddUserKeywordByIndices(keywords, entry.Key, entry.Value.DeepClone()); // deep clone to prevent the changes in user keywords
+                    // Deep clone to prevent the changes in user keywords
+                    AddUserKeywordByIndices(keywords, entry.Key, entry.Value.DeepClone());
                 }
             }
-
+            //
             return keywords;
         }
         static public List<CalculixKeyword> GetModelKeywords(FeModel model)
@@ -158,11 +158,11 @@ namespace FileInOut.Output
             //
             return keywords;
         }
-        static private bool AddUserKeywordByIndices(List<CalculixKeyword> keywords, int[] indices, CalculixKeyword keyword)
+        static public bool AddUserKeywordByIndices(List<CalculixKeyword> keywords, int[] indices, CalculixKeyword userKeyword)
         {
             if (indices.Length == 1)
             {
-                keywords.Insert(indices[0], keyword);
+                keywords.Insert(indices[0], userKeyword);
             }
             else
             {
@@ -183,7 +183,7 @@ namespace FileInOut.Output
                 // Add the keyword
                 if (keywordParent.Keywords.Count < indices[indices.Length - 1]) return false;
 
-                if (!deactivated) keywordParent.Keywords.Insert(indices[indices.Length - 1], keyword);
+                if (!deactivated) keywordParent.Keywords.Insert(indices[indices.Length - 1], userKeyword);
                 else keywordParent.Keywords.Insert(indices[indices.Length - 1], new CalDeactivated("User keyword"));
             }
             return true;

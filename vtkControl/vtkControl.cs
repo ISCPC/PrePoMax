@@ -3762,7 +3762,7 @@ namespace vtkControl
 
         #endregion  ################################################################################################################
 
-        #region Section/Exploded view  #############################################################################################
+        #region Section view  ######################################################################################################
         public void ApplySectionView(double[] point, double[] normal)
         {
             lock (myLock)
@@ -3872,8 +3872,6 @@ namespace vtkControl
         {
             try
             {
-                //if (!actor.VtkMaxActorVisible) return null;
-
                 if (actor.ActorRepresentation == vtkMaxActorRepresentation.Solid ||
                     actor.ActorRepresentation == vtkMaxActorRepresentation.Shell)
                 {
@@ -3881,7 +3879,6 @@ namespace vtkControl
                 }
                 else if (actor.ActorRepresentation == vtkMaxActorRepresentation.SolidAsShell)
                 {
-                    //return null;
                     return GetSectionViewActorFromSolidAsShell(actor);
                 }
                 else
@@ -3897,20 +3894,16 @@ namespace vtkControl
             vtkMaxActor sectionViewActor = new vtkMaxActor(actor);
             sectionViewActor.Name = GetSectionViewActorName(actor.Name);
             sectionViewActor.BackfaceCulling = false;
-
             // Get the unstructured grid
             vtkUnstructuredGrid grid = vtkUnstructuredGrid.New();
             grid.DeepCopy(actor.FrustumCellLocator.GetDataSet());
-
             // Create a cutter
             vtkCutter cutter = vtkCutter.New();
             cutter.SetCutFunction(_sectionViewPlane);
             cutter.SetInput(grid);
             cutter.GenerateCutScalarsOff();
             cutter.Update();
-
             // GEOMETRY  ##########################################################################
-
             // Create polydata for the geometry actor
             vtkGeometryFilter geometryFilter = vtkGeometryFilter.New();
             geometryFilter.SetInput(cutter.GetOutput());
@@ -3926,9 +3919,7 @@ namespace vtkControl
             sectionViewActor.GeometryProperty.DeepCopy(actor.GeometryProperty);
             sectionViewActor.Geometry.PickableOff();
             sectionViewActor.Geometry.SetVisibility(actor.Geometry.GetVisibility());
-
             // EDGES  #############################################################################
-
             // The best function would be:                                                          
             //  - vtkExtractEdges                                                                   
             // but vtkExtractEdges produces internal edges for quadratic cells                      
@@ -3941,13 +3932,13 @@ namespace vtkControl
             extract.ExtractOnlyBoundaryCellsOn();
             extract.SetInput(grid);
             extract.Update();
-
+            //
             vtkCell cell;
             vtkCell cellFace;
             vtkCellArray cellArray = vtkCellArray.New();
             vtkUnstructuredGrid cellGrid = vtkUnstructuredGrid.New();
             cellGrid.SetPoints(extract.GetOutput().GetPoints());
-
+            //
             for (int i = 0; i < extract.GetOutput().GetNumberOfCells(); i++)
             {
                 cell = extract.GetOutput().GetCell(i);
@@ -3958,32 +3949,31 @@ namespace vtkControl
                 }
             }
             cellGrid.Update();
-
             // Sometimes when cutting with a parallel plane, no section is found                                
             // The solution:                                                                                    
             //  - move the cutting plane to find some edges                                                     
-            //  - project the edges bacl to the plane to prevent them from hiding behind the section cut surface
+            //  - project the edges back to the plane to prevent them from hiding behind the section cut surface
             vtkPlane cutPlane = vtkPlane.New();
             double[] origin = _sectionViewPlane.GetOrigin();
             double[] normal = _sectionViewPlane.GetNormal();
             cutPlane.SetOrigin(origin[0], origin[1], origin[2]);
             cutPlane.SetNormal(normal[0], normal[1], normal[2]);
-
+            //
             cutter = vtkCutter.New();
             cutter.SetCutFunction(cutPlane);
             cutter.SetInput(cellGrid);
             cutter.GenerateCutScalarsOff();
             cutter.Update();
-
+            //
             int count = 0;
             int step = 0;
             double delta = 0.01;
             double[] b = GetBoundingBoxSize();
             double[] v = new double[] { b[0] * delta * normal[0], b[1] * delta * normal[1], b[2] * delta * normal[2] };
-
+            //
             if (cellGrid.GetNumberOfCells() > 0 && cutter.GetOutput().GetNumberOfCells() == 0)
             {
-                // try to move the cut plane forward and backward   
+                // Try to move the cut plane forward and backward   
                 while (count++ <= 4)
                 {
                     if (cutter.GetOutput().GetNumberOfCells() == 0)
@@ -3994,7 +3984,7 @@ namespace vtkControl
                     }
                     else
                     {
-                        // the section was found - move the points back to the plane
+                        // The section was found - move the points back to the plane
                         vtkPoints points = cutter.GetOutput().GetPoints();
                         double[] coor;
                         for (int i = 0; i < points.GetNumberOfPoints(); i++)
@@ -4009,7 +3999,6 @@ namespace vtkControl
                     }
                 }
             }
-
             // Create the mapper for the element edges actor
             polyMapper = vtkPolyDataMapper.New();
             polyMapper.SetInput(cutter.GetOutput());
@@ -4020,9 +4009,7 @@ namespace vtkControl
             sectionViewActor.ElementEdges.PickableOff();
             sectionViewActor.ElementEdges.SetVisibility(actor.ElementEdges.GetVisibility());
             sectionViewActor.ElementEdges.GetMapper().GetInput().GetPointData().RemoveArray(Globals.ScalarArrayName);
-
             // MODEL EDGES  #######################################################################
-
             vtkFeatureEdges featureEdges = vtkFeatureEdges.New();
             featureEdges.SetInput(polyData);
             featureEdges.BoundaryEdgesOn();
@@ -4041,7 +4028,7 @@ namespace vtkControl
             sectionViewActor.ModelEdges.PickableOff();
             sectionViewActor.ModelEdges.SetVisibility(actor.ModelEdges.GetVisibility());
             sectionViewActor.ModelEdges.GetMapper().GetInput().GetPointData().RemoveArray(Globals.ScalarArrayName);
-
+            //
             return sectionViewActor;
         }
         private vtkMaxActor GetSectionViewActorFromSolidAsShell(vtkMaxActor actor)
@@ -4275,7 +4262,10 @@ namespace vtkControl
             name = NamedClass.GetNewValueName(_actors.Keys, name, Globals.NameSeparator);
             return name;
         }
-        // Exploded view
+
+        #endregion  ################################################################################################################
+
+        #region Exploded view  #####################################################################################################
         public void PreviewExplodedView(Dictionary<string, double[]> partOffsets, bool animate)
         {
             vtkMaxActor actor;
