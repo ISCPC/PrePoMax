@@ -15,6 +15,10 @@ namespace FileInOut.Output.Calculix
         private FeSurface _surface;
 
 
+        // Properties                                                                                                               
+        public override object GetBase { get { return _surface; } }
+
+
         // Constructor                                                                                                              
         public CalSurface(FeSurface surface)
         {

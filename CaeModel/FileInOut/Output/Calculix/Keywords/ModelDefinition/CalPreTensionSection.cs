@@ -20,6 +20,10 @@ namespace FileInOut.Output.Calculix
         double _z;
 
 
+        // Properties                                                                                                               
+        public override object GetBase { get { return _surfaceName; } }
+
+
         // Constructor                                                                                                              
         public CalPreTensionSection(string surfaceName, int nodeId)
         {

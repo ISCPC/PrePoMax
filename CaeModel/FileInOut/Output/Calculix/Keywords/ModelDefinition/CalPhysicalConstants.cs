@@ -15,6 +15,10 @@ namespace FileInOut.Output.Calculix
         private ModelProperties _modelProperties;
 
 
+        // Properties                                                                                                               
+        public override object GetBase { get { return _modelProperties; } }
+
+
         // Constructor                                                                                                              
         public CalPhysicalConstants(ModelProperties modelProperties)
         {

@@ -15,6 +15,10 @@ namespace FileInOut.Output.Calculix
         private NodalFieldOutput _nodalFieldOutput;
 
 
+        // Properties                                                                                                               
+        public override object GetBase { get { return _nodalFieldOutput; } }
+
+
         // Constructor                                                                                                              
         public CalNodeFile(NodalFieldOutput nodalFieldOutput)
         {

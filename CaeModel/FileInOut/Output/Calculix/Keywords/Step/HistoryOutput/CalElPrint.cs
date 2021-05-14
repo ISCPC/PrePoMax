@@ -15,6 +15,10 @@ namespace FileInOut.Output.Calculix
         private readonly ElementHistoryOutput _elementHistoryOutput;
 
 
+        // Properties                                                                                                               
+        public override object GetBase { get { return _elementHistoryOutput; } }
+
+
         // Constructor                                                                                                              
         public CalElPrint(ElementHistoryOutput elementHistoryOutput)
         {

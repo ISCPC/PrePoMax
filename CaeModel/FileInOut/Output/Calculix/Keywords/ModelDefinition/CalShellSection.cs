@@ -15,6 +15,10 @@ namespace FileInOut.Output.Calculix
         private ShellSection _section;
 
 
+        // Properties                                                                                                               
+        public override object GetBase { get { return _section; } }
+
+
         // Constructor                                                                                                              
         public CalShellSection(ShellSection section)
         {

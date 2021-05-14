@@ -15,6 +15,10 @@ namespace FileInOut.Output.Calculix
         private ElementFieldOutput _elementFieldOutput;
 
 
+        // Properties                                                                                                               
+        public override object GetBase { get { return _elementFieldOutput; } }
+
+
         // Constructor                                                                                                              
         public CalElFile(ElementFieldOutput elementFieldOutput)
         {

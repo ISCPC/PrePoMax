@@ -16,6 +16,10 @@ namespace FileInOut.Output.Calculix
         private InitialTemperature _initialTemperature;
 
 
+        // Properties                                                                                                               
+        public override object GetBase { get { return _initialTemperature; } }
+
+
         // Constructor                                                                                                              
         public CalInitialTemperature(FeModel model, InitialTemperature initialTemperature)
         {

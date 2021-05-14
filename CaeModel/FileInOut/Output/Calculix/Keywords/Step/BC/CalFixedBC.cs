@@ -17,6 +17,10 @@ namespace FileInOut.Output.Calculix
         private string _nodeSetNameOfSurface;
 
 
+        // Properties                                                                                                               
+        public override object GetBase { get { return _fixedBC; } }
+
+
         // Constructor                                                                                                              
         public CalFixedBC(FixedBC fixedBC, Dictionary<string, int[]> referencePointsNodeIds,
                           string nodeSetNameOfSurface)

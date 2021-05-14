@@ -15,6 +15,10 @@ namespace FileInOut.Output.Calculix
         private SurfaceBehavior _surfaceBehavior;
 
 
+        // Properties                                                                                                               
+        public override object GetBase { get { return _surfaceBehavior; } }
+
+
         // Constructor                                                                                                              
         public CalSurfaceBehavior(SurfaceBehavior surfaceBehavior)
         {

@@ -15,6 +15,10 @@ namespace FileInOut.Output.Calculix
         private Tie _tie;
 
 
+        // Properties                                                                                                               
+        public override object GetBase { get { return _tie; } }
+
+
         // Constructor                                                                                                              
         public CalTie(Tie tie)
         {

@@ -17,6 +17,10 @@ namespace FileInOut.Output.Calculix
         private string _nodeSetNameOfSurface;
 
 
+        // Properties                                                                                                               
+        public override object GetBase { get { return _displacementRotation; } }
+
+
         // Constructor                                                                                                              
         public CalDisplacementRotation(DisplacementRotation displacementRotation, Dictionary<string, int[]> referencePointsNodeIds,
                                        string nodeSetNameOfSurface)

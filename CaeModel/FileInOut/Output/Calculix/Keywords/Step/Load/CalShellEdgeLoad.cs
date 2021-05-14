@@ -15,7 +15,11 @@ namespace FileInOut.Output.Calculix
         private ShellEdgeLoad _load;
         private IDictionary<string, FeSurface> _surfaces;
 
-        
+
+        // Properties                                                                                                               
+        public override object GetBase { get { return _load; } }
+
+
         // Constructor                                                                                                              
         public CalShellEdgeLoad(IDictionary<string, FeSurface> surfaces, ShellEdgeLoad load)
         {

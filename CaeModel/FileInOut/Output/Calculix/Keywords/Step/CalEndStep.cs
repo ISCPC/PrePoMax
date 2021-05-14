@@ -14,6 +14,10 @@ namespace FileInOut.Output.Calculix
         // Variables                                                                                                                
 
 
+        // Properties                                                                                                               
+        public override object GetBase { get { return null; } }
+
+
         // Constructor                                                                                                              
         public CalEndStep()
         {

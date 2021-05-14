@@ -14,18 +14,22 @@ namespace FileInOut.Output.Calculix
         // Variables                                                                                                                
         private string _data;
         private object _parent;
+        private object _previousKeyword;
 
 
         // Properties                                                                                                               
         public string Data { get { return _data; } set { _data = value; } }
         public object Parent { get { return _parent; } set { _parent = value; } }
+        public object PreviousKeyword { get { return _previousKeyword; } set { _previousKeyword = value; } }
+        public override object GetBase { get { return this; } }
 
 
         // Constructor                                                                                                              
-        public CalculixUserKeyword(string data, CaeGlobals.NamedClass parent)
+        public CalculixUserKeyword(string data)
         {
             _data = data;
-            _parent = parent;
+            _parent = null;
+            _previousKeyword = null;
         }
 
 

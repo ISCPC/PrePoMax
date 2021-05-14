@@ -17,6 +17,10 @@ namespace FileInOut.Output.Calculix
         private string _surfaceNodeSetName;
 
 
+        // Properties                                                                                                               
+        public override object GetBase { get { return _rigidBody; } }
+
+
         // Constructor                                                                                                              
         public CalRigidBody(RigidBody rigidBody, Dictionary<string, int[]> referencePointsNodeIds, string surfaceNodeSetName)
         {

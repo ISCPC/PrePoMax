@@ -16,6 +16,10 @@ namespace FileInOut.Output.Calculix
         private readonly NodalHistoryOutput _nodalHistoryOutput;
 
 
+        // Properties                                                                                                               
+        public override object GetBase { get { return _nodalHistoryOutput; } }
+
+
         // Constructors                                                                                                             
         public CalNodePrint(FeModel model, NodalHistoryOutput nodalHistoryOutput)
         {

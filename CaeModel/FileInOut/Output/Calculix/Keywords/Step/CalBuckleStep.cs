@@ -16,6 +16,10 @@ namespace FileInOut.Output.Calculix
         private BuckleStep _step;
 
 
+        // Properties                                                                                                               
+        public override object GetBase { get { return _step; } }
+
+
         // Constructor                                                                                                              
         public CalBuckleStep(BuckleStep step)
         {

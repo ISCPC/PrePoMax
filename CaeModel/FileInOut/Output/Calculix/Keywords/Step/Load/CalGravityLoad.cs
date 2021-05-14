@@ -15,6 +15,10 @@ namespace FileInOut.Output.Calculix
         private GravityLoad _load;
 
 
+        // Properties                                                                                                               
+        public override object GetBase { get { return _load; } }
+
+
         // Constructor                                                                                                              
         public CalGravityLoad(GravityLoad load)
         {
