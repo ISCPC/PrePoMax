@@ -15,6 +15,10 @@ namespace FileInOut.Output.Calculix
         private Friction _friction;
 
 
+        // Properties                                                                                                               
+        public override object GetBase { get { return _friction; } }
+
+
         // Constructor                                                                                                              
         public CalFriction(Friction friction)
         {

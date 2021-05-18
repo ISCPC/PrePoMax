@@ -15,7 +15,11 @@ namespace FileInOut.Output.Calculix
         private readonly ContactHistoryOutput _contactHistoryOutput;
         private string _masterName;
         private string _slaveName;
-        
+
+
+        // Properties                                                                                                               
+        public override object GetBase { get { return _contactHistoryOutput; } }
+
 
         // Constructor                                                                                                              
         public CalContactPrint(ContactHistoryOutput contactHistoryOutput, string masterName, string slaveName)

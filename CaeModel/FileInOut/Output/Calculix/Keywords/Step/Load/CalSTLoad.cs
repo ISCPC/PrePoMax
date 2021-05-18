@@ -15,7 +15,11 @@ namespace FileInOut.Output.Calculix
         private STLoad _load;
         private CLoad[] _cLoads;
         private Dictionary<string, int[]> _referencePointsNodeIds;
-      
+
+
+        // Properties                                                                                                               
+        public override object GetBase { get { return _load; } }
+
 
         // Constructor                                                                                                              
         public CalSTLoad(FeModel model, STLoad load, Dictionary<string, int[]> referencePointsNodeIds)

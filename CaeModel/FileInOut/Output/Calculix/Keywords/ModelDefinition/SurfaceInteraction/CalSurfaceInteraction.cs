@@ -16,7 +16,7 @@ namespace FileInOut.Output.Calculix
 
 
         // Properties                                                                                                               
-        public SurfaceInteraction GetBase { get { return _surfaceInteraction; } }
+        public override object GetBase { get { return _surfaceInteraction; } }
 
 
         // Constructor                                                                                                              

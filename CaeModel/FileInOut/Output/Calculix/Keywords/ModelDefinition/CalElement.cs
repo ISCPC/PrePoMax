@@ -18,6 +18,10 @@ namespace FileInOut.Output.Calculix
         private MeshPart _part;
 
 
+        // Properties                                                                                                               
+        public override object GetBase { get { return _elements; } }
+
+
         // Constructor                                                                                                              
         public CalElement(string elementType, string elementSetName, List<FeElement> elements, MeshPart part)
         {

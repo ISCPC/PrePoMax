@@ -16,6 +16,10 @@ namespace FileInOut.Output.Calculix
         private string _nodeSetNameOfSurface;
 
 
+        // Properties                                                                                                               
+        public override object GetBase { get { return _temperatureBC; } }
+
+
         // Constructor                                                                                                              
         public CalTemperatureBC(TemperatureBC temperatureBC, string nodeSetNameOfSurface)
         {

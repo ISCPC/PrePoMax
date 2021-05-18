@@ -16,6 +16,10 @@ namespace FileInOut.Output.Calculix
         private StaticStep _step;
 
 
+        // Properties                                                                                                               
+        public override object GetBase { get { return _step; } }
+
+
         // Constructor                                                                                                              
         public CalStaticStep(StaticStep step)
         {

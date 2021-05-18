@@ -16,6 +16,10 @@ namespace FileInOut.Output.Calculix
         private DefinedTemperature _definedTemperature;
 
 
+        // Properties                                                                                                               
+        public override object GetBase { get { return _definedTemperature; } }
+
+
         // Constructor                                                                                                              
         public CalDefinedTemperature(FeModel model, DefinedTemperature definedTemperature)
         {

@@ -15,6 +15,10 @@ namespace FileInOut.Output.Calculix
         private SolidSection _section;
 
 
+        // Properties                                                                                                               
+        public override object GetBase { get { return _section; } }
+
+
         // Constructor                                                                                                              
         public CalSolidSection(SolidSection section)
         {

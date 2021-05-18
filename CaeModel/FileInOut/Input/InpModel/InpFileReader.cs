@@ -19,35 +19,36 @@ namespace FileInOut.Input
         private static string[] _splitterComma = new string[] { "," };
         private static string[] _splitterEqual = new string[] { "=" };
         private static string[] _splitter = new string[] { " ", ",", "\t" };
-        private static HashSet<string> _knownKeywords = new HashSet<string> { "*HEADING",
-                                                                              "*INCLUDE",
-                                                                              "*NODE",
-                                                                              "*ELEMENT",
-                                                                              "*NSET",
-                                                                              "*ELSET",
-                                                                              "*SURFACE",
-                                                                              "*RIGID BODY",
-                                                                              "*MATERIAL",
-                                                                              "*DENSITY",
-                                                                              "*ELASTIC",
-                                                                              "*PLASTIC",
-                                                                              "*SOLID SECTION",
-                                                                              "*STEP",
-                                                                              "*STATIC",
-                                                                              "*FREQUENCY",
-                                                                              "*BUCKLE",
-                                                                              "*HEAT TRANSFER",
-                                                                              "*END STEP",
-                                                                              "*BOUNDARY",
-                                                                              "*CLOAD",
-                                                                              "*DLOAD",
-                                                                              "*NODE FILE",
-                                                                              "*EL FILE",
-                                                                              "*CONTACT FILE",
-                                                                              "*NODE PRINT",
-                                                                              "*EL PRINT",
-                                                                              "*CONTACT PRINT"
-        };
+        private static object _previousKeyword;
+        //private static HashSet<string> _knownKeywords = new HashSet<string> { "*HEADING",
+        //                                                                      "*INCLUDE",
+        //                                                                      "*NODE",
+        //                                                                      "*ELEMENT",
+        //                                                                      "*NSET",
+        //                                                                      "*ELSET",
+        //                                                                      "*SURFACE",
+        //                                                                      "*RIGID BODY",
+        //                                                                      "*MATERIAL",
+        //                                                                      "*DENSITY",
+        //                                                                      "*ELASTIC",
+        //                                                                      "*PLASTIC",
+        //                                                                      "*SOLID SECTION",
+        //                                                                      "*STEP",
+        //                                                                      "*STATIC",
+        //                                                                      "*FREQUENCY",
+        //                                                                      "*BUCKLE",
+        //                                                                      "*HEAT TRANSFER",
+        //                                                                      "*END STEP",
+        //                                                                      "*BOUNDARY",
+        //                                                                      "*CLOAD",
+        //                                                                      "*DLOAD",
+        //                                                                      "*NODE FILE",
+        //                                                                      "*EL FILE",
+        //                                                                      "*CONTACT FILE",
+        //                                                                      "*NODE PRINT",
+        //                                                                      "*EL PRINT",
+        //                                                                      "*CONTACT PRINT"
+        //};
         private static HashSet<string> _materialKeywords = new HashSet<string> { "*CONDUCTIVITY",
                                                                                  "*CREEP",
                                                                                  "*CYCLIC HARDENING",
@@ -149,37 +150,61 @@ namespace FileInOut.Input
                 {
                     dataSet = dataSets[i];
                     keyword = dataSet[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries)[0].Trim().ToUpper();
-                    //
-                    if (keyword == "*NSET")
+                    
+                    if (keyword == "*HEADING") { }
+                    else if (keyword == "*NODE") { }
+                    else if (keyword == "*ELEMENT") { }
+                    else if (keyword == "*NSET")
                     {
                         WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
                         GetNodeOrElementSet("NSET", dataSet, mesh, out name, out ids);
                         if (NamedClass.CheckNameError(name) != null) AddError(NamedClass.CheckNameError(name));
-                        else if (ids != null) mesh.AddNodeSet(new FeNodeSet(name, ids));
+                        else if (ids != null)
+                        {
+                            mesh.AddNodeSet(new FeNodeSet(name, ids));
+                            _previousKeyword = mesh.NodeSets.Last();
+                        }
                     }
                     else if (keyword == "*ELSET")
                     {
                         WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
                         GetNodeOrElementSet("ELSET", dataSet, mesh, out name, out ids);
                         if (NamedClass.CheckNameError(name) != null) AddError(NamedClass.CheckNameError(name));
-                        else if (ids != null) mesh.AddElementSet(new FeElementSet(name, ids));
+                        else if (ids != null)
+                        {
+                            mesh.AddElementSet(new FeElementSet(name, ids));
+                            _previousKeyword = mesh.ElementSets.Last();
+                        }
                     }
                     else if (keyword == "*SURFACE")
                     {
                         WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
                         FeSurface surface = GetSurface(dataSet);
-                        if (surface != null) mesh.AddSurface(surface);
+                        if (surface != null)
+                        {
+                            mesh.AddSurface(surface);
+                            _previousKeyword = surface;
+                        }
                     }
                     else if (keyword == "*RIGID BODY")
                     {
                         WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
-                        GetRigidBody(dataSet, nodes, constraints, referencePoints);
+                        Constraint constraint = GetRigidBody(dataSet, nodes, constraints, referencePoints);
+                        if (constraint != null)
+                        {
+                            constraints.Add(constraint.Name, constraint);
+                            _previousKeyword = constraint;
+                        }
                     }
                     else if (keyword == "*MATERIAL")
                     {
                         WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
                         Material material = GetMaterial(dataSets, ref i, userKeywords);
-                        if (material != null) materials.Add(material.Name, material);
+                        if (material != null)
+                        {
+                            materials.Add(material.Name, material);
+                            _previousKeyword = material;
+                        }
                     }
                     else if (keyword == "*SOLID SECTION")
                     {
@@ -197,21 +222,31 @@ namespace FileInOut.Input
                     {
                         WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
                         SurfaceInteraction surfaceInteraction = GetSurfaceInteraction(dataSets, ref i, userKeywords);
-                        if (surfaceInteraction != null) surfaceInteractions.Add(surfaceInteraction.Name, surfaceInteraction);
+                        if (surfaceInteraction != null)
+                        {
+                            surfaceInteractions.Add(surfaceInteraction.Name, surfaceInteraction);
+                            _previousKeyword = surfaceInteraction;
+                        }
                     }
                     else if (keyword == "*STEP")
                     {
                         WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
                         Step step = GetStep(dataSets, ref i, mesh, steps, contactPairs, userKeywords);
-                        if (step != null) steps.Add(step.Name, step);
+                        if (step != null)
+                        {
+                            steps.Add(step.Name, step);
+                            _previousKeyword = step;
+                        }
                     }
-                    else if (!_knownKeywords.Contains(keyword))
+                    else
                     {
                         WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
                         // User keyword
-                        CalculixUserKeyword userKeyword = new CalculixUserKeyword(dataSet.ToRows(dataSet.Length), null);
+                        CalculixUserKeyword userKeyword = new CalculixUserKeyword(dataSet.ToRows(dataSet.Length));
                         userKeyword.Parent = "Model";
+                        userKeyword.PreviousKeyword = _previousKeyword;
                         userKeywords.Add(userKeyword);
+                        _previousKeyword = userKeyword;
                     }
                 }
                 //
@@ -325,23 +360,29 @@ namespace FileInOut.Input
             {
                 stackIndices.Push(i);
                 //
-                if (userKeyword.Parent.ToString() == "Model" && keyword is CalStep)
+                if (userKeyword.Parent.ToString() == "Model" && keyword is CalStep) userKeyword.PreviousKeyword = null;
+                //
+                if (userKeyword.Parent.ToString() == "Model" &&
+                    (userKeyword.PreviousKeyword == null && keyword is CalStep) ||
+                    (userKeyword.PreviousKeyword != null && keyword.GetBase == userKeyword.PreviousKeyword))
                 {
                     userKeyword.Parent = null;
                     while (stackIndices.Peek() == 0) stackIndices.Pop();
                     return stackIndices.ToArray().Reverse().ToArray();
                 }
-                else if ((keyword is CalMaterial calMat && calMat.GetBase == userKeyword.Parent) ||
-                         (keyword is CalSurfaceInteraction calSI && calSI.GetBase == userKeyword.Parent))
+                else if ((keyword is CalMaterial && keyword.GetBase == userKeyword.Parent) ||
+                         (keyword is CalSurfaceInteraction && keyword.GetBase == userKeyword.Parent))
                 {
                     userKeyword.Parent = null;
+                    userKeyword.PreviousKeyword = null;
                     count = keyword.Keywords.Count();
                     stackIndices.Push(count);
                     return stackIndices.ToArray().Reverse().ToArray();
                 }
-                else if (keyword is CalStep calS && calS.GetBase == userKeyword.Parent)
+                else if (keyword is CalStep && keyword.GetBase == userKeyword.Parent)
                 {
                     userKeyword.Parent = null;
+                    userKeyword.PreviousKeyword = null;
                     count = keyword.Keywords.Count();
                     stackIndices.Push(count - 1);   // Last one in *End step
                     return stackIndices.ToArray().Reverse().ToArray();
@@ -694,16 +735,16 @@ namespace FileInOut.Input
             }
         }
         // Rigid body
-        private static void GetRigidBody(string[] lines, Dictionary<int, FeNode> nodes,
-                                         Dictionary<string, Constraint> constraints,
-                                         Dictionary<string, FeReferencePoint> referencePoints)
+        private static Constraint GetRigidBody(string[] lines, Dictionary<int, FeNode> nodes,
+                                               Dictionary<string, Constraint> constraints,
+                                               Dictionary<string, FeReferencePoint> referencePoints)
         {
             try
             {
                 if (lines.Length > 1)
                 {
                     _errors.Add("Only one line expected for the rigid body: " + lines[0]);
-                    return;
+                    return null;
                 }
                 //
                 string nodeSetName;
@@ -716,7 +757,7 @@ namespace FileInOut.Input
                 if (record1.Length != 4)
                 {
                     _errors.Add("Unsupported line formatting for the rigid body: " + lines[0]);
-                    return;
+                    return null;
                 }
                 //
                 record2 = record1[1].Split(_splitterEqual, StringSplitOptions.RemoveEmptyEntries);
@@ -748,11 +789,12 @@ namespace FileInOut.Input
                 //
                 string rigidBodyName = NamedClass.GetNewValueName(constraints.Keys, "Constraint-");
                 RigidBody rigidBody = new RigidBody(rigidBodyName, referencePointName, nodeSetName, RegionTypeEnum.NodeSetName);
-                constraints.Add(rigidBodyName, rigidBody);
+                return rigidBody;                
             }
             catch
             {
                 _errors.Add("Failed to import rigid body: " + lines[0]);
+                return null;
             }
         }
         // Material
@@ -798,24 +840,38 @@ namespace FileInOut.Input
                         if (keyword == "*DENSITY")
                         {
                             Density density = GetMaterialDensity(dataSet);
-                            if (density != null) material.AddProperty(density);
+                            if (density != null)
+                            {
+                                material.AddProperty(density);
+                                _previousKeyword = density;
+                            }
                         }
                         else if (keyword == "*ELASTIC")
                         {
                             Elastic elastic = GetMaterialElasticity(dataSet);
-                            if (elastic != null) material.AddProperty(elastic);
+                            if (elastic != null)
+                            {
+                                material.AddProperty(elastic);
+                                _previousKeyword = elastic;
+                            }
                         }
                         else if (keyword == "*PLASTIC")
                         {
                             Plastic plastic = GetMaterialPlasticity(dataSet);
-                            if (plastic != null) material.AddProperty(plastic);
+                            if (plastic != null)
+                            {
+                                material.AddProperty(plastic);
+                                _previousKeyword = plastic;
+                            }
                         }
                         else if (_materialKeywords.Contains(keyword))
                         {
                             // User keyword
-                            CalculixUserKeyword userKeyword = new CalculixUserKeyword(dataSet.ToRows(dataSet.Length), null);
+                            CalculixUserKeyword userKeyword = new CalculixUserKeyword(dataSet.ToRows(dataSet.Length));
                             userKeyword.Parent = material;
+                            userKeyword.PreviousKeyword = _previousKeyword;
                             userKeywords.Add(userKeyword);
+                            _previousKeyword = userKeyword;
                         }
                         else
                         {
@@ -1032,9 +1088,11 @@ namespace FileInOut.Input
                         if (_surfaceInteractionKeywords.Contains(keyword))
                         {
                             // User keyword
-                            CalculixUserKeyword userKeyword = new CalculixUserKeyword(dataSet.ToRows(dataSet.Length), null);
+                            CalculixUserKeyword userKeyword = new CalculixUserKeyword(dataSet.ToRows(dataSet.Length));
                             userKeyword.Parent = surfaceInteraction;
+                            userKeyword.PreviousKeyword = _previousKeyword;
                             userKeywords.Add(userKeyword);
+                            _previousKeyword = userKeyword;
                         }
                         else
                         {
@@ -1138,7 +1196,7 @@ namespace FileInOut.Input
                     else
                     {
                         // User keyword
-                        CalculixUserKeyword userKeyword = new CalculixUserKeyword(dataSet.ToRows(dataSet.Length), null);
+                        CalculixUserKeyword userKeyword = new CalculixUserKeyword(dataSet.ToRows(dataSet.Length));
                         userKeyword.Parent = step;
                         userKeywords.Add(userKeyword);
                     }
@@ -1384,33 +1442,17 @@ namespace FileInOut.Input
                     CLoad cfLoad = new CLoad(nameCF, regionName, RegionTypeEnum.NodeSetName, 0.0, 0.0, 0.0);
                     MomentLoad momentLoad = new MomentLoad(nameMom, regionName, RegionTypeEnum.NodeSetName, 0.0, 0.0, 0.0);
                     //
-                    switch (dof)
+                    if (dof == 1 || dof == 2 || dof == 3)
                     {
-                        case 1:
-                            cfLoad.F1 = dofValue;
-                            step.AddLoad(cfLoad);
-                            break;
-                        case 2:
-                            cfLoad.F2 = dofValue;
-                            step.AddLoad(cfLoad);
-                            break;
-                        case 3:
-                            cfLoad.F3 = dofValue;
-                            step.AddLoad(cfLoad);
-                            break;
-                        case 4:
-                            momentLoad.M1 = dofValue;
-                            step.AddLoad(momentLoad);
-                            break;
-                        case 5:
-                            momentLoad.M2 = dofValue;
-                            step.AddLoad(momentLoad);
-                            break;
-                        case 6:
-                            momentLoad.M3 = dofValue;
-                            step.AddLoad(momentLoad);
-                            break;
+                        step.AddLoad(cfLoad);
+                        _previousKeyword = cfLoad;
                     }
+                    else if (dof == 4 || dof == 5 || dof == 6)
+                    {
+                        step.AddLoad(momentLoad);
+                        _previousKeyword = momentLoad;
+                    }
+                    else _errors.Add("Failed to import load: " + lines.ToRows());
                 }
             }
             catch
@@ -1445,23 +1487,27 @@ namespace FileInOut.Input
                     var gValue = double.Parse(recordDL[2]); ;
                     var gLoad = new GravityLoad(nameGrav, regionName, RegionTypeEnum.ElementSetName, 0.0, 0.0, 0.0);
                     //
-                    if (int.Parse(recordDL[3]) != 0)
+                    if (gLoad != null)
                     {
-                        gLoad.F1 = double.Parse(recordDL[3]) * gValue;
-                        gLoad.Name += (step.Loads.Count + 1);
-                        step.AddLoad(gLoad);
-                    }
-                    //
-                    if (int.Parse(recordDL[4]) != 0)
-                    {
-                        gLoad.F2 = double.Parse(recordDL[4]) * gValue;
-                        step.AddLoad(gLoad);
-                    }
-                    //
-                    if (int.Parse(recordDL[5]) != 0)
-                    {
-                        gLoad.F3 = double.Parse(recordDL[5]) * gValue;
-                        step.AddLoad(gLoad);
+                        if (int.Parse(recordDL[3]) != 0)
+                        {
+                            gLoad.F1 = double.Parse(recordDL[3]) * gValue;
+                            gLoad.Name += (step.Loads.Count + 1);
+                            step.AddLoad(gLoad);
+                        }
+                        //
+                        if (int.Parse(recordDL[4]) != 0)
+                        {
+                            gLoad.F2 = double.Parse(recordDL[4]) * gValue;
+                            step.AddLoad(gLoad);
+                        }
+                        //
+                        if (int.Parse(recordDL[5]) != 0)
+                        {
+                            gLoad.F3 = double.Parse(recordDL[5]) * gValue;
+                            step.AddLoad(gLoad);
+                        }
+                        _previousKeyword = gLoad;
                     }
                 }
             }
@@ -1505,6 +1551,7 @@ namespace FileInOut.Input
                     if (frequency != null) nodalFieldOutput.Frequency = (int)frequency;
                     // Add to step
                     step.FieldOutputs.Add(name, nodalFieldOutput);
+                    _previousKeyword = nodalFieldOutput;
                 }
             }
             catch
@@ -1546,6 +1593,7 @@ namespace FileInOut.Input
                     if (frequency != null) elementFieldOutput.Frequency = (int)frequency;
                     // Add to step
                     step.FieldOutputs.Add(name, elementFieldOutput);
+                    _previousKeyword = elementFieldOutput;
                 }
             }
             catch
@@ -1587,6 +1635,7 @@ namespace FileInOut.Input
                     if (frequency != null) contactFieldOutput.Frequency = (int)frequency;
                     // Add to step
                     step.FieldOutputs.Add(name, contactFieldOutput);
+                    _previousKeyword = contactFieldOutput;
                 }
             }
             catch
@@ -1644,6 +1693,7 @@ namespace FileInOut.Input
                         if (totalsType != TotalsTypeEnum.No) nodalHistoryOutput.TotalsType = totalsType;
                         // Add to step
                         step.HistoryOutputs.Add(name, nodalHistoryOutput);
+                        _previousKeyword = nodalHistoryOutput;
                     }
                 }
             }
@@ -1702,6 +1752,7 @@ namespace FileInOut.Input
                         if (totalsType != TotalsTypeEnum.No) elementHistoryOutput.TotalsType = totalsType;
                         // Add to step
                         step.HistoryOutputs.Add(name, elementHistoryOutput);
+                        _previousKeyword = elementHistoryOutput;
                     }
                 }
             }
@@ -1776,6 +1827,7 @@ namespace FileInOut.Input
                             if (totalsType != TotalsTypeEnum.No) contactHistoryOutput.TotalsType = totalsType;
                             // Add to step
                             step.HistoryOutputs.Add(name, contactHistoryOutput);
+                            _previousKeyword = contactHistoryOutput;
                         }
                     }
                 }

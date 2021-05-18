@@ -16,7 +16,7 @@ namespace FileInOut.Output.Calculix
 
 
         // Properties                                                                                                               
-        public Material GetBase { get { return _material; } }
+        public override object GetBase { get { return _material; } }
 
 
         // Constructor                                                                                                              

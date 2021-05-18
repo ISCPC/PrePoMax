@@ -15,6 +15,10 @@ namespace FileInOut.Output.Calculix
         private ContactPair _contactPair;
 
 
+        // Properties                                                                                                               
+        public override object GetBase { get { return _contactPair; } }
+
+
         // Constructor                                                                                                              
         public CalContactPair(ContactPair contactPair)
         {

@@ -16,6 +16,10 @@ namespace FileInOut.Output.Calculix
         private string _surfaceNodeSetName;
 
 
+        // Properties                                                                                                               
+        public override object GetBase { get { return _submodel; } }
+
+
         // Constructor                                                                                                              
         public CalSubmodelBC(SubmodelBC submodel, string surfaceNodeSetName)
         {

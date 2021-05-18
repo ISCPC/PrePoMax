@@ -15,6 +15,10 @@ namespace FileInOut.Output.Calculix
         private FeNodeSet _nodeSet;
 
 
+        // Properties                                                                                                               
+        public override object GetBase { get { return _nodeSet; } }
+
+
         // Constructor                                                                                                              
         public CalNodeSet(FeNodeSet nodeSet)
         {

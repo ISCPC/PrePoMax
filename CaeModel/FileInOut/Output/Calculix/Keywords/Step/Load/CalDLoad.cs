@@ -15,7 +15,11 @@ namespace FileInOut.Output.Calculix
         private DLoad _load;
         private IDictionary<string, FeSurface> _surfaces;
 
-        
+
+        // Properties                                                                                                               
+        public override object GetBase { get { return _load; } }
+
+
         // Constructor                                                                                                              
         public CalDLoad(IDictionary<string, FeSurface> surfaces, DLoad load)
         {

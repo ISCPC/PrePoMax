@@ -26,6 +26,10 @@ namespace FileInOut.Output.Calculix
         }
 
 
+        // Properties                                                                                                               
+        public override object GetBase { get { return _nodes; } }
+
+
         // Methods                                                                                                                  
         public override string GetKeywordString()
         {

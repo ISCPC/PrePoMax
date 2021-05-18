@@ -16,6 +16,10 @@ namespace FileInOut.Output.Calculix
         private bool _temperatureDependent;
 
 
+        // Properties                                                                                                               
+        public override object GetBase { get { return _plastic; } }
+
+
         // Constructor                                                                                                              
         public CalPlastic(Plastic plastic, bool temperatureDependent)
         {

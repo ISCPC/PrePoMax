@@ -95,7 +95,7 @@ namespace PrePoMax.Forms
         {
             if (btvKeywordsTree.SelectedNode != null)
             {
-                CalculixUserKeyword keyword = new CalculixUserKeyword("User keyword", null);
+                CalculixUserKeyword keyword = new CalculixUserKeyword("User keyword");
                 TreeNode node = btvKeywordsTree.SelectedNode.Nodes.Add("User keyword");
                 //
                 AddUserKeywordToTreeNode(keyword, node);

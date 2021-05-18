@@ -16,6 +16,11 @@ namespace FileInOut.Output.Calculix
         string _hashName;
         UnitSystemType _unitSystemType;
 
+
+        // Properties                                                                                                               
+        public override object GetBase { get { return null; } }
+
+
         // Constructor                                                                                                              
         public CalHeading(string modelName, string hashName, UnitSystemType unitSystemType)
         {

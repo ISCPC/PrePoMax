@@ -16,6 +16,10 @@ namespace FileInOut.Output.Calculix
         private Dictionary<string, int[]> _referencePointsNodeIds;
 
 
+        // Properties                                                                                                               
+        public override object GetBase { get { return _load; } }
+
+
         // Constructor                                                                                                              
         public CalCLoad(CLoad load, Dictionary<string, int[]> referencePointsNodeIds)
         {

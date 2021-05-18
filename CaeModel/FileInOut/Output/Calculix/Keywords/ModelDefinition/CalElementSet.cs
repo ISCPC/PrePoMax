@@ -16,6 +16,10 @@ namespace FileInOut.Output.Calculix
         private string[] _partNames;
 
 
+        // Properties                                                                                                               
+        public override object GetBase { get { return _elementSet; } }
+
+
         // Constructor                                                                                                              
         public CalElementSet(FeGroup elementSet, FeModel model)
         {

@@ -16,7 +16,7 @@ namespace FileInOut.Output.Calculix
 
 
         // Properties                                                                                                               
-        public Step GetBase { get { return _step; } }
+        public override object GetBase { get { return _step; } }
 
 
         // Constructor                                                                                                              
