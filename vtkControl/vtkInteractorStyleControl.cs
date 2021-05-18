@@ -786,10 +786,9 @@ namespace vtkControl
         {
             vtkRenderer renderer = this.GetCurrentRenderer();
             vtkCamera camera = renderer.GetActiveCamera();
-
+            //
             AdjustCameraDistance(renderer, camera);
             ResetClippingRange();
-
             // Widgets - Modified
             foreach (vtkMaxBorderWidget widget in _widgets)
             {

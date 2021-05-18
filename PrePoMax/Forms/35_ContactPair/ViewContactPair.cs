@@ -152,14 +152,14 @@ namespace PrePoMax
             slaveRegionTypePropertyNamePairs.Add(RegionTypeEnum.Selection, nameof(SlaveSelectionHidden));
             slaveRegionTypePropertyNamePairs.Add(RegionTypeEnum.SurfaceName, nameof(SlaveSurfaceName));
             //
-            base.SetBase(contactPair, masterRegionTypePropertyNamePairs, slaveRegionTypePropertyNamePairs);
-            base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
+            SetBase(contactPair, masterRegionTypePropertyNamePairs, slaveRegionTypePropertyNamePairs);
+            DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
             //
             Method = _contactPair.Method;   // update visibility
             Adjust = _contactPair.Adjust;   // update visibility
             ApplyYesNo();
             //
-            CaeGlobals.StringLengthDefaultConverter.SetInitialValue = "0.01 mm";
+            StringLengthDefaultConverter.SetInitialValue = "0.01 mm";
         }
 
 
@@ -170,12 +170,12 @@ namespace PrePoMax
         }
         protected void ApplyYesNo()
         {
-            base.DynamicCustomTypeDescriptor.RenameBooleanPropertyToYesNo(nameof(SmallSliding));
-            base.DynamicCustomTypeDescriptor.RenameBooleanPropertyToYesNo(nameof(Adjust));
+            DynamicCustomTypeDescriptor.RenameBooleanPropertyToYesNo(nameof(SmallSliding));
+            DynamicCustomTypeDescriptor.RenameBooleanPropertyToYesNo(nameof(Adjust));
         }
         public void PopululateDropDownLists(string[] surfaceInteracionNames, string[] surfaceNames)
         {
-            base.DynamicCustomTypeDescriptor.PopulateProperty(nameof(SurfaceInteractionName), surfaceInteracionNames);
+            DynamicCustomTypeDescriptor.PopulateProperty(nameof(SurfaceInteractionName), surfaceInteracionNames);
             //
             Dictionary<RegionTypeEnum, string[]> masterRegionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
             masterRegionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
@@ -185,23 +185,23 @@ namespace PrePoMax
             slaveTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
             slaveTypeListItemsPairs.Add(RegionTypeEnum.SurfaceName, surfaceNames);
             //
-            base.PopululateDropDownLists(masterRegionTypeListItemsPairs, slaveTypeListItemsPairs);
+            PopululateDropDownLists(masterRegionTypeListItemsPairs, slaveTypeListItemsPairs);
         }
         public override void UpdateRegionVisibility()
         {
             base.UpdateRegionVisibility();
             // Hide SelectionHidden
-            DynamicTypeDescriptor.CustomPropertyDescriptor cpd;
+            CustomPropertyDescriptor cpd;
             // Master
             if (base.MasterRegionType == RegionTypeEnum.Selection.ToFriendlyString())
             {
-                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(MasterSelectionHidden));
+                cpd = DynamicCustomTypeDescriptor.GetProperty(nameof(MasterSelectionHidden));
                 cpd.SetIsBrowsable(false);
             }
             // Slave
             if (base.SlaveRegionType == RegionTypeEnum.Selection.ToFriendlyString())
             {
-                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(SlaveSelectionHidden));
+                cpd = DynamicCustomTypeDescriptor.GetProperty(nameof(SlaveSelectionHidden));
                 cpd.SetIsBrowsable(false);
             }
         }

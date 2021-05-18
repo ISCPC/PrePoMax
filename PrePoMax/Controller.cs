@@ -608,16 +608,15 @@ namespace PrePoMax
                 {
                     fs.Read(versionBuffer, 0, 32);
                     fileVersion = Encoding.ASCII.GetString(versionBuffer).TrimEnd(new char[] { '\0' });
-
+                    //
                     if (fileVersion != Globals.ProgramName)
                     {
                         _form.WriteDataToOutput("Warning: The opened file is from an uncompatible version: " + fileVersion);
                         _form.WriteDataToOutput("Some items might not be correctly loaded. Check the model.");
-
                         //MessageBox.Show("The selected file is from an uncompatible version: " + fileVersion, "Error", MessageBoxButtons.OK);
                         //throw new Exception("UncompatibleVersion");
                     }
-
+                    //
                     using (BinaryReader br = new BinaryReader(Decompress(fs)))
                     {
                         data = CaeGlobals.Tools.LoadDumpFromFile<object[]>(br);
@@ -1133,16 +1132,16 @@ namespace PrePoMax
         {
             if (OpenedFileName != null && Path.GetExtension(OpenedFileName) == ".pmx")
             {
-                SaveToFile(OpenedFileName);
+                SaveToPmx(OpenedFileName);
             }
             else SaveAs();
         }
         public void SaveAs()
         {
             string fileName = GetFileNameToSaveAs();
-            if (fileName != null) SaveToFile(fileName);
+            if (fileName != null) SaveToPmx(fileName);
         }
-        public void SaveToFile(string fileName)
+        public void SaveToPmx(string fileName)
         {
             try
             {
@@ -1347,12 +1346,12 @@ namespace PrePoMax
         private static Stream Decompress(Stream input)
         {
             var output = new MemoryStream();
-
+            //
             using (var decompressor = new DeflateStream(input, CompressionMode.Decompress))
             {
                 decompressor.CopyTo(output);
             }
-
+            //
             output.Position = 0;
             return output;
         }
@@ -5644,7 +5643,7 @@ namespace PrePoMax
                     load.RegionType = RegionTypeEnum.ElementSetName;
                 }
                 // Surface
-                else if (load is DLoad || load is STLoad || load is ShellEdgeLoad || load is PreTensionLoad)
+                else if (load is DLoad || load is STLoad || load is ShellEdgeLoad || load is PreTensionLoad || load is RadiateLoad)
                 {
                     name = FeMesh.GetNextFreeSelectionName(_model.Mesh.Surfaces) + load.Name;
                     FeSurface surface = new FeSurface(name, load.CreationIds, load.CreationData.DeepClone());
@@ -5675,7 +5674,7 @@ namespace PrePoMax
                     RemoveNodeSets(new string[] { load.RegionName });
                 else if (load is GravityLoad || load is CentrifLoad)
                     RemoveElementSets(new string[] { load.RegionName });
-                else if (load is DLoad || load is STLoad || load is ShellEdgeLoad || load is PreTensionLoad)
+                else if (load is DLoad || load is STLoad || load is ShellEdgeLoad || load is PreTensionLoad || load is RadiateLoad)
                     RemoveSurfaces(new string[] { load.RegionName }, false);
                 else throw new NotSupportedException();
             }
@@ -8824,7 +8823,7 @@ namespace PrePoMax
                 }
             }
             //
-            int[] distributedElementIds = GetSpatiallyEquallyDistributedCoor(allCoor.ToArray(), 2);
+            int[] distributedElementIds = GetSpatiallyEquallyDistributedCoor(allCoor.ToArray(), 3);
             // Front shell face which is a S2 POS face works in the same way as a solid face
             // Back shell face which is a S1 NEG must be inverted
             int id;
@@ -8864,45 +8863,6 @@ namespace PrePoMax
                 _form.AddOrientedThermosActor(data, symbolSize, translate);
             }
             return;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            {
-                // Thermos
-                List<double[]> allLoadNormals = new List<double[]>();
-                double[] normal = new double[] { 1, 0, 0 };
-                for (int i = 0; i < symbolCoor.GetLength(0); i++)
-                {
-                    allLoadNormals.Add(normal);
-                }
-                //
-                if (symbolCoor.GetLength(0) > 0)
-                {
-                    vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
-                    data.Name = prefixName;
-                    data.Color = color;
-                    data.Layer = layer;
-                    data.Geometry.Nodes.Coor = symbolCoor.ToArray();
-                    data.Geometry.Nodes.Normals = allLoadNormals.ToArray();
-                    ApplyLighting(data);
-                    _form.AddOrientedThermosActor(data, symbolSize);
-                }
-            }
         }
         // Loads
         private void DrawAllLoads(string stepName)
@@ -9098,6 +9058,16 @@ namespace PrePoMax
                         DrawSurfaceEdge(prefixName, ptLoad.SurfaceName, color, layer, true, false, onlyVisible);
                     //
                     if (count > 0) DrawPreTensionLoadSymbols(prefixName, ptLoad, coor, color, symbolSize, symbolLayer);
+                }
+                else if (load is RadiateLoad radiateLoad)
+                {
+                    if (!_model.Mesh.Surfaces.ContainsKey(radiateLoad.SurfaceName)) return;
+                    //
+                    count += DrawSurface(prefixName, radiateLoad.SurfaceName, color, layer, true, false, onlyVisible);
+                    if (layer == vtkControl.vtkRendererLayer.Selection)
+                        DrawSurfaceEdge(prefixName, radiateLoad.SurfaceName, color, layer, true, false, onlyVisible);
+                    //
+                    if (count > 0) DrawRadiateSymbols(prefixName, radiateLoad, color, symbolSize, layer);
                 }
                 else throw new NotSupportedException();
             }
@@ -9348,7 +9318,68 @@ namespace PrePoMax
                 _form.AddOrientedArrowsActor(data, symbolSize);
             }
         }
-        private int[] GetSpatiallyEquallyDistributedCoor(double[][] coor, int n)
+        public void DrawRadiateSymbols(string prefixName, RadiateLoad radiateLoad, Color color, int symbolSize,
+                                       vtkControl.vtkRendererLayer layer)
+        {
+            FeSurface surface = _model.Mesh.Surfaces[radiateLoad.SurfaceName];
+            //
+            List<int> allElementIds = new List<int>();
+            List<FeFaceName> allElementFaceNames = new List<FeFaceName>();
+            List<double[]> allCoor = new List<double[]>();
+            double[] faceCenter;
+            FeElementSet elementSet;
+            foreach (var entry in surface.ElementFaces)     // entry:  S3; elementSetName
+            {
+                elementSet = _model.Mesh.ElementSets[entry.Value];
+                foreach (var elementId in elementSet.Labels)
+                {
+                    allElementIds.Add(elementId);
+                    allElementFaceNames.Add(entry.Key);
+                    _model.Mesh.GetElementFaceCenter(elementId, entry.Key, out faceCenter);
+                    allCoor.Add(faceCenter);
+                }
+            }
+            //
+            int[] distributedElementIds = GetSpatiallyEquallyDistributedCoor(allCoor.ToArray(), 3);
+            // Front shell face which is a S2 POS face works in the same way as a solid face
+            // Back shell face which is a S1 NEG must be inverted
+            int id;
+            double[] faceNormal;
+            bool shellElement;
+            double[][] distributedCoor = new double[distributedElementIds.Length][];
+            double[][] distributedLoadNormals = new double[distributedElementIds.Length][];
+            for (int i = 0; i < distributedElementIds.Length; i++)
+            {
+                id = distributedElementIds[i];
+                _model.Mesh.GetElementFaceCenterAndNormal(allElementIds[id], allElementFaceNames[id], out faceCenter,
+                                                          out faceNormal, out shellElement);
+                //
+                if (!shellElement)
+                {
+                    faceNormal[0] *= -1;
+                    faceNormal[1] *= -1;
+                    faceNormal[2] *= -1;
+                }
+                //
+                distributedCoor[i] = faceCenter;
+                distributedLoadNormals[i] = faceNormal;
+            }
+            // Arrows
+            if (allCoor.Count > 0)
+            {
+                vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
+                data.Name = prefixName;
+                data.Color = color;
+                data.Layer = layer;
+                data.Geometry.Nodes.Coor = distributedCoor.ToArray();
+                data.Geometry.Nodes.Normals = distributedLoadNormals.ToArray();
+                data.SectionViewPossible = false;
+                ApplyLighting(data);
+                bool translate = false;
+                _form.AddOrientedRadiateActor(data, symbolSize, translate);
+            }
+        }
+        private int[] GetSpatiallyEquallyDistributedCoor(double[][] coor, int maxN)
         {
             // Divide space into boxes and then find the coor closest to the box center
             if (coor.Length <= 0) return null;
@@ -9358,31 +9389,36 @@ namespace PrePoMax
             //
             double max = Math.Max(box.MaxX - box.MinX, box.MaxY - box.MinY);
             max = Math.Max(max, box.MaxZ - box.MinZ);
-            double delta = max / n;
+            double maxDelta = max / maxN;
             //
-            return GetSpatiallyEquallyDistributedCoor(coor, box, delta);
-        }
-        private int[] GetSpatiallyEquallyDistributedCoor(double[][] coor, double delta)
-        {
-            // Divide space into boxes and then find the coor closest to the box center
-            if (coor.Length <= 0) return null;
-            // Bounding box
-            BoundingBox box = new BoundingBox();
-            box.IncludeCoors(coor);
+            double n;
+            int[] nxyz = new int[3];
             //
-            return GetSpatiallyEquallyDistributedCoor(coor, box, delta);
+            n = (box.MaxX - box.MinX) / maxDelta;
+            if (n < 1E-2) nxyz[0] = 1;      // tiny
+            else if (n < 2) nxyz[0] = 2;    // small
+            else nxyz[0] = (int)n;          // normal
+            //
+            n = (box.MaxY - box.MinY) / maxDelta;
+            if (n < 1E-2) nxyz[1] = 1;      // tiny
+            else if (n < 2) nxyz[1] = 2;    // small
+            else nxyz[1] = (int)n;          // normal
+            //
+            n = (box.MaxZ - box.MinZ) / maxDelta;
+            if (n < 1E-2) nxyz[2] = 1;      // tiny
+            else if (n < 2) nxyz[2] = 2;    // small
+            else nxyz[2] = (int)n;          // normal
+            //
+            return GetSpatiallyEquallyDistributedCoor(coor, box, nxyz);
         }
-        private int[] GetSpatiallyEquallyDistributedCoor(double[][] coor, BoundingBox box, double delta)
+        private int[] GetSpatiallyEquallyDistributedCoor(double[][] coor, BoundingBox box, int[] n)
         {
             // Divide space into boxes and then find the coor closest to the box center
             if (coor.Length <= 0) return null;
             // Divide space into hexahedrons
-            int nX = 1;
-            int nY = 1;
-            int nZ = 1;
-            if (box.MaxX - box.MinX != 0) nX = (int)Math.Ceiling((box.MaxX - box.MinX) / delta);
-            if (box.MaxY - box.MinY != 0) nY = (int)Math.Ceiling((box.MaxY - box.MinY) / delta);
-            if (box.MaxZ - box.MinZ != 0) nZ = (int)Math.Ceiling((box.MaxZ - box.MinZ) / delta);
+            int nX = n[0];
+            int nY = n[1];
+            int nZ = n[2];
             //
             double deltaX = 1;
             double deltaY = 1;

@@ -72,7 +72,7 @@ namespace CaeModel
         public override bool IsLoadSupported(Load load)
         {
             if (load is CLoad || load is MomentLoad || load is DLoad || load is STLoad || load is ShellEdgeLoad ||
-                load is GravityLoad || load is CentrifLoad || load is PreTensionLoad)
+                load is GravityLoad || load is CentrifLoad || load is PreTensionLoad || load is RadiateLoad)
                 return false;
             else throw new NotSupportedException();
         }

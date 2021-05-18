@@ -89,16 +89,16 @@ namespace PrePoMax
         [Id(4, 3)]
         public double Z { get { return _preTenLoad.Z; } set { _preTenLoad.Z = value; } }
         //
-        [CategoryAttribute("Force magnitude")]
-        [OrderedDisplayName(0, 10, "Magnitude")]
-        [DescriptionAttribute("Value of the force magnitude for the pre-tension load.")]
+        [CategoryAttribute("Magnitude")]
+        [OrderedDisplayName(0, 10, "Force")]
+        [DescriptionAttribute("Value of the force for the pre-tension load.")]
         [TypeConverter(typeof(StringForceConverter))]
         [Id(1, 4)]
         public double ForceMagnitude { get { return _preTenLoad.Magnitude; } set { _preTenLoad.Magnitude = value; } }
         //
-        [CategoryAttribute("Displacement magnitude")]
-        [OrderedDisplayName(0, 10, "Magnitude")]
-        [DescriptionAttribute("Value of the displacement magnitude for the pre-tension load.")]
+        [CategoryAttribute("Magnitude")]
+        [OrderedDisplayName(0, 10, "Displacement")]
+        [DescriptionAttribute("Value of the displacement for the pre-tension load.")]
         [TypeConverter(typeof(StringLengthFixedDOFConverter))]
         [Id(1, 5)]
         public double DisplacementMagnitude { get { return _preTenLoad.Magnitude; } set { _preTenLoad.Magnitude = value; } }

@@ -27,9 +27,9 @@ namespace PrePoMax
         [Id(3, 2)]
         public string SurfaceName { get { return _shellEdgeLoad.SurfaceName; } set {_shellEdgeLoad.SurfaceName = value;} }
         //
-        [CategoryAttribute("Edge load magnitude")]
-        [OrderedDisplayName(0, 10, "Magnitude")]
-        [DescriptionAttribute("Value of the pressure load magnitude.")]
+        [CategoryAttribute("Magnitude")]
+        [OrderedDisplayName(0, 10, "Edge load")]
+        [DescriptionAttribute("Value of the edge load.")]
         [TypeConverter(typeof(StringForcePerLenghtConverter))]
         [Id(1, 3)]
         public double Magnitude { get { return _shellEdgeLoad.Magnitude; } set { _shellEdgeLoad.Magnitude = value; } }

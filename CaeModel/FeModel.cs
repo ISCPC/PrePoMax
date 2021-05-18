@@ -401,6 +401,10 @@ namespace CaeModel
                     {
                         valid = (_mesh.Surfaces.TryGetValue(ptl.SurfaceName, out s) && s.Valid && s.Type == FeSurfaceType.Element);
                     }
+                    else if (load is RadiateLoad rl)
+                    {
+                        valid = (_mesh.Surfaces.TryGetValue(rl.SurfaceName, out s) && s.Valid);
+                    }
                     else throw new NotSupportedException();
                     //
                     SetItemValidity(step.Name, load, valid, items);

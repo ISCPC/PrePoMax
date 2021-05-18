@@ -309,6 +309,7 @@
     <Compile Include="Forms\43_FieldOutput\ViewContactFieldOutput.cs" />
     <Compile Include="Forms\44_BoundaryConditions\ViewTemperatureBC.cs" />
     <Compile Include="Forms\44_BoundaryConditions\ViewFixedBC.cs" />
+    <Compile Include="Forms\45_Load\ViewRadiateLoad.cs" />
     <Compile Include="Forms\45_Load\ViewShellEdgeLoad.cs" />
     <Compile Include="Forms\46_DefinedField\FrmDefinedField.cs">
       <SubType>Form</SubType>
@@ -331,6 +332,7 @@
     <Compile Include="Forms\73_Transformation\ViewLinearPattern.cs" />
     <Compile Include="Forms\73_Transformation\ViewTransformation.cs" />
     <Compile Include="Forms\73_Transformation\ViewSymetry.cs" />
+    <Compile Include="Forms\StringDefaultStringConverter.cs" />
     <Compile Include="Forms\StringDefaultDoubleConverter.cs" />
     <Compile Include="Forms\34_SurfaceInteraction\ViewFriction.cs" />
     <Compile Include="Forms\34_SurfaceInteraction\ViewSurfaceInteractionProperty.cs" />

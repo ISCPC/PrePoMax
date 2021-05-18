@@ -184,7 +184,13 @@ namespace FileInOut.Input
                     else if (keyword == "*SOLID SECTION")
                     {
                         WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
-                        SolidSection section = GetSection(dataSet, sections);
+                        SolidSection section = GetSolidSection(dataSet, sections);
+                        if (section != null) sections.Add(section.Name, section);
+                    }
+                    else if (keyword == "*SHELL SECTION")
+                    {
+                        WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
+                        ShellSection section = GetShellSection(dataSet, sections);
                         if (section != null) sections.Add(section.Name, section);
                     }
                     else if (keyword == "*SURFACE INTERACTION")
@@ -322,6 +328,7 @@ namespace FileInOut.Input
                 if (userKeyword.Parent.ToString() == "Model" && keyword is CalStep)
                 {
                     userKeyword.Parent = null;
+                    while (stackIndices.Peek() == 0) stackIndices.Pop();
                     return stackIndices.ToArray().Reverse().ToArray();
                 }
                 else if ((keyword is CalMaterial calMat && calMat.GetBase == userKeyword.Parent) ||
@@ -912,7 +919,7 @@ namespace FileInOut.Input
             }
         }
         // Section
-        private static SolidSection GetSection(string[] dataSet, Dictionary<string, Section> sections)
+        private static SolidSection GetSolidSection(string[] dataSet, Dictionary<string, Section> sections)
         {
             // Solid section can exist in two (2) formats as shown below:
             // *Solid Section, ELSET=STEEL_A, MATERIAL=STEEL_A
@@ -927,7 +934,7 @@ namespace FileInOut.Input
                 {
                     string[] record2 = rec.Split(_splitterEqual, StringSplitOptions.RemoveEmptyEntries);
                     if (record2.Length != 2) continue;
-                    if (record2[0].Trim().ToUpper() == "ELSET") regionName = record2[1].Trim();
+                    else if (record2[0].Trim().ToUpper() == "ELSET") regionName = record2[1].Trim();
                     else if (record2[0].Trim().ToUpper() == "MATERIAL") materialName = record2[1].Trim();
                 }
                 //
@@ -935,6 +942,45 @@ namespace FileInOut.Input
                 var section = new SolidSection(name, materialName, regionName, RegionTypeEnum.ElementSetName);
                 //
                 return section;
+            }
+            catch
+            {
+                _errors.Add("Failed to import section: " + dataSet.ToRows());
+                return null;
+            }
+        }
+        private static ShellSection GetShellSection(string[] dataSet, Dictionary<string, Section> sections)
+        {
+            // *Shell section, Elset=S4R, Material=Material-1, Offset=0
+            // 5
+            string regionName = null;
+            string materialName = null;
+            double offset = 0;
+            try
+            {
+                string[] record1 = dataSet[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                //
+                foreach (var rec in record1)
+                {
+                    string[] record2 = rec.Split(_splitterEqual, StringSplitOptions.RemoveEmptyEntries);
+                    if (record2.Length != 2) continue;
+                    else if (record2[0].Trim().ToUpper() == "ELSET") regionName = record2[1].Trim();
+                    else if (record2[0].Trim().ToUpper() == "MATERIAL") materialName = record2[1].Trim();
+                    else if (record2[0].Trim().ToUpper() == "OFFSET") offset = double.Parse(record2[1]);
+                }
+                //
+                if (dataSet.Length == 2)
+                {
+                    double thickness = double.Parse(dataSet[1]);
+                    //
+                    string name = NamedClass.GetNewValueName(sections.Keys, "Section-");
+                    ShellSection section = new ShellSection(name, materialName, regionName, RegionTypeEnum.ElementSetName,
+                                                            thickness);
+                    section.Offset = offset;
+                    //
+                    return section;
+                }
+                else throw new Exception();
             }
             catch
             {
@@ -1131,6 +1177,9 @@ namespace FileInOut.Input
             }
             if (dataSet.Length == 2)
             {
+                // If the second line exists the incrementation is Direct or Automatic
+                if (!staticStep.Direct) staticStep.IncrementationType = IncrementationTypeEnum.Automatic;
+                //
                 record2 = dataSet[1].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
                 //
                 if (record2.Length > 0) staticStep.InitialTimeIncrement = double.Parse(record2[0]);
@@ -1213,6 +1262,9 @@ namespace FileInOut.Input
             }
             if (dataSet.Length == 2)
             {
+                // If the second line exists the incrementation is Direct or Automatic
+                if (!heatTransferStep.Direct) heatTransferStep.IncrementationType = IncrementationTypeEnum.Automatic;
+                //
                 record2 = dataSet[1].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
                 //
                 if (record2.Length > 0) heatTransferStep.InitialTimeIncrement = double.Parse(record2[0]);
@@ -1234,50 +1286,61 @@ namespace FileInOut.Input
             // *Boundary
             // Set_1, 2, 2
             // Set_1, 3, 3, 0.001
+            // Set_1, 1, 3, 0
             try
             {
                 string name;
                 //
-                for (var bci = 1; bci < lines.Length; bci++)
+                for (var i = 1; i < lines.Length; i++)
                 {
-                    string[] recordBC = lines[bci].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
-                    // Create DisplacementRotation BC
+                    string[] recordBC = lines[i].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                    // Create Boundary Condition
                     // Get regionName
+                    BoundaryCondition bc;
                     var regionName = recordBC[0].Trim();
-                    //var bCond = new DisplacementRotation(name + let, regionName, RegionTypeEnum.NodeSetName); // Changed by Matej
                     name = NamedClass.GetNewValueName(step.BoundaryConditions.Keys, "Disp_rot-");
-                    var bCond = new DisplacementRotation(name, regionName, RegionTypeEnum.NodeSetName);
+                    
                     // Get the prescribed displacement
+                    int dofStart = int.Parse(recordBC[1]);
+                    int dofEnd = int.Parse(recordBC[2]);
                     double dofValue = 0;
                     if (recordBC.Length == 4) dofValue = double.Parse(recordBC[3]);
-                    // Assign DOF prescribed displacement
-                    for (var dofi = 1; dofi < 3; dofi++)
+                    //
+                    if (dofStart == 11)
                     {
-                        var dValue = int.Parse(recordBC[dofi]);
-                        //
-                        switch (dValue)
-                        {
-                            case 1:
-                                bCond.U1 = dofValue;
-                                break;
-                            case 2:
-                                bCond.U2 = dofValue;
-                                break;
-                            case 3:
-                                bCond.U3 = dofValue;
-                                break;
-                            case 4:
-                                bCond.UR1 = dofValue;
-                                break;
-                            case 5:
-                                bCond.UR2 = dofValue;
-                                break;
-                            case 6:
-                                bCond.UR3 = dofValue;
-                                break;
-                        }
+                        TemperatureBC tmpBC = new TemperatureBC(name, regionName, RegionTypeEnum.NodeSetName, dofValue);
+                        step.AddBoundaryCondition(tmpBC);
                     }
-                    step.AddBoundaryCondition(bCond);
+                    else
+                    {
+                        DisplacementRotation dispRot = new DisplacementRotation(name, regionName, RegionTypeEnum.NodeSetName);
+                        // Assign DOF prescribed displacement
+                        for (var j = dofStart; j <= dofEnd; j++)
+                        {
+                            switch (j)
+                            {
+                                case 1:
+                                    dispRot.U1 = dofValue;
+                                    break;
+                                case 2:
+                                    dispRot.U2 = dofValue;
+                                    break;
+                                case 3:
+                                    dispRot.U3 = dofValue;
+                                    break;
+                                case 4:
+                                    dispRot.UR1 = dofValue;
+                                    break;
+                                case 5:
+                                    dispRot.UR2 = dofValue;
+                                    break;
+                                case 6:
+                                    dispRot.UR3 = dofValue;
+                                    break;
+                            }
+                        }
+                        step.AddBoundaryCondition(dispRot);
+                    }
                 }
             }
             catch

@@ -22,17 +22,20 @@ namespace PrePoMax
         [CategoryAttribute("Region")]
         [OrderedDisplayName(2, 10, "Node set")]
         [DescriptionAttribute("Select the node set for the creation of the defined temperature.")]
+        [Id(3, 2)]
         public string NodeSetName { get { return _definedTemperature.RegionName; } set { _definedTemperature.RegionName = value; } }
         //
         [CategoryAttribute("Region")]
         [OrderedDisplayName(4, 10, "Surface")]
         [DescriptionAttribute("Select the surface for the creation of the defined temperature.")]
+        [Id(4, 2)]
         public string SurfaceName { get { return _definedTemperature.RegionName; } set { _definedTemperature.RegionName = value; } }
         //
-        [OrderedDisplayName(0, 10, "Temperature magnitude")]
         [CategoryAttribute("Magnitude")]
-        [DescriptionAttribute("Value of the defined temperature magnitude.")]
+        [OrderedDisplayName(0, 10, "Temperature")]
+        [DescriptionAttribute("Value of the defined temperature.")]
         [TypeConverter(typeof(StringTemperatureConverter))]
+        [Id(1, 3)]
         public double Temperature
         {
             get { return _definedTemperature.Temperature; }

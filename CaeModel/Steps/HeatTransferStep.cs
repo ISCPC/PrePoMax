@@ -63,6 +63,8 @@ namespace CaeModel
             if (load is CLoad || load is MomentLoad || load is DLoad || load is STLoad || load is ShellEdgeLoad ||
                 load is GravityLoad || load is CentrifLoad || load is PreTensionLoad)
                 return false;
+            else if (load is RadiateLoad)
+                return true;
             else throw new NotSupportedException();
         }
         public override bool IsDefinedFieldSupported(DefinedField definedField)

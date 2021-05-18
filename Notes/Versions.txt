@@ -4,6 +4,18 @@ Selection - UNDO after empty click
 By Students
 Add the possibility ot output the Query command as General text formating
 
+By Naldo
+17. 5. 2021
+1) To zoom in - mouse right button: click, hold and drag top left to bottom right; to zoom out - mouse right button: click,
+   hold and drag bottom righ to top left
+2) model orientation - click on any of the triad axes to change the view to that orientation; create a isometric 'ball' on the
+   triad to click on for the Isometric view
+3) connectivity - show free edges and connected edges in different colours - in geometry and mesh
+4) result plots - have an option to show the midsurfaces result plots too (i.e. withoutt the shell thickness)
+5) option to plot underformed body as a wire plot
+6) option to show reference points and rigid body elements in the results plots
+
+
 By Silvio
 15. 12. 2020
 add support for automatic mesh convergance on a single face, edga or vertex

@@ -3500,6 +3500,75 @@ namespace vtkControl
             //
             if (_drawSymbolEdges) AddSymbolEdges(data, glyph.GetOutputPort());
         }
+        public void AddOrientedRadiateActor(vtkMaxActorData data, double symbolSize, bool invert)
+        {
+            if (symbolSize > _maxSymbolSize) _maxSymbolSize = symbolSize;
+            // Points
+            vtkPoints pointData = vtkPoints.New();
+            for (int i = 0; i < data.Geometry.Nodes.Coor.GetLength(0); i++)
+            {
+                pointData.InsertNextPoint(data.Geometry.Nodes.Coor[i][0], data.Geometry.Nodes.Coor[i][1],
+                                          data.Geometry.Nodes.Coor[i][2]);
+            }
+            // Normals
+            vtkDoubleArray pointNormalsArray = vtkDoubleArray.New();
+            pointNormalsArray.SetNumberOfComponents(3); //3d normals (ie x,y,z)
+            for (int i = 0; i < data.Geometry.Nodes.Normals.GetLength(0); i++)
+            {
+                pointNormalsArray.InsertNextTuple3(data.Geometry.Nodes.Normals[i][0], data.Geometry.Nodes.Normals[i][1],
+                                                   data.Geometry.Nodes.Normals[i][2]);
+            }
+            // Polydata
+            vtkPolyData polydata = vtkPolyData.New();
+            polydata.SetPoints(pointData);
+            polydata.GetPointData().SetNormals(pointNormalsArray);
+            // Calculate the distance to the camera of each point.
+            vtkDistanceToCamera distanceToCamera = vtkDistanceToCamera.New();
+            distanceToCamera.SetInput(polydata);
+            distanceToCamera.SetScreenSize(symbolSize);
+            distanceToCamera.SetRenderer(_renderer);
+            // Source for the glyph filter
+            // Sphere
+            double rs = 0.2;
+            vtkSphereSource sphereSource = vtkSphereSource.New();
+            sphereSource.SetRadius(rs);
+            sphereSource.SetPhiResolution(15);
+            sphereSource.SetThetaResolution(15);
+            sphereSource.SetCenter(rs, 0, 0);
+            // Transform
+            vtkTransform transform = vtkTransform.New();
+            transform.Identity();
+            if (invert) transform.Translate(-1.05, 0, 0);
+            else transform.Translate(0.05, 0, 0);
+            // Transform filter
+            vtkTransformFilter transformFilter = vtkTransformFilter.New();
+            transformFilter.SetInput(sphereSource.GetOutput());
+            transformFilter.SetTransform(transform);
+            // Glyph
+            vtkGlyph3D glyph = vtkGlyph3D.New();
+            glyph.SetSourceConnection(transformFilter.GetOutputPort());
+            glyph.SetInputConnection(distanceToCamera.GetOutputPort());
+            glyph.SetVectorModeToUseNormal();
+            // Scale
+            glyph.ScalingOn();
+            glyph.SetScaleModeToScaleByScalar();
+            glyph.SetInputArrayToProcess(0, 0, 0, "vtkDataObject::FIELD_ASSOCIATION_POINTS", "DistanceToCamera");
+            glyph.SetScaleFactor(0.5);
+            glyph.OrientOn();
+            glyph.Update();
+            // Mapper
+            vtkPolyDataMapper mapper = vtkPolyDataMapper.New();
+            mapper.SetInputConnection(0, glyph.GetOutputPort());
+            mapper.ScalarVisibilityOff();
+            // Actor
+            data.Name += Globals.NameSeparator + "radiate";
+            vtkMaxActor actor = new vtkMaxActor(data, mapper);
+            // Add
+            ApplySymbolFormatingToActor(actor);
+            AddActorGeometry(actor, data.Layer);
+            //
+            if (_drawSymbolEdges) AddSymbolEdges(data, glyph.GetOutputPort());
+        }
         private void AddSymbolEdges(vtkMaxActorData data, vtkAlgorithmOutput output)
         {
             // Compute the silhouette                                                        

@@ -30,7 +30,14 @@ namespace CaeGlobals
                 else _lengthUnit = Length.ParseUnit(value);
             }
         }
-        public static string SetInitialValue { set { _initialValue = Length.Parse(value).ToUnit(_lengthUnit).Value; } }
+        public static string SetInitialValue
+        {
+            set
+            {
+                if (_lengthUnit == (LengthUnit)MyUnit.NoUnit) _initialValue = Length.Parse(value).Value;
+                else _initialValue = Length.Parse(value).ToUnit(_lengthUnit).Value;
+            }
+        }
 
 
         // Constructors                                                                                                             

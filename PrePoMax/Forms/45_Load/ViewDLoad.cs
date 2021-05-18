@@ -27,9 +27,9 @@ namespace PrePoMax
         [Id(3, 2)]
         public string SurfaceName { get { return _dLoad.SurfaceName; } set {_dLoad.SurfaceName = value;} }
         //
-        [CategoryAttribute("Pressure magnitude")]
-        [OrderedDisplayName(0, 10, "Magnitude")]
-        [DescriptionAttribute("Value of the pressure load magnitude.")]
+        [CategoryAttribute("Magnitude")]
+        [OrderedDisplayName(0, 10, "Pressure")]
+        [DescriptionAttribute("Value of the pressure load.")]
         [TypeConverter(typeof(CaeGlobals.StringPressureConverter))]
         [Id(1, 3)]
         public double Magnitude { get { return _dLoad.Magnitude; } set { _dLoad.Magnitude = value; } }

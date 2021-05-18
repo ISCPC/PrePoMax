@@ -34,6 +34,7 @@ namespace PrePoMax.Forms
                 else if (clone is GravityLoad gl) _viewLoad = new ViewGravityLoad(gl);
                 else if (clone is CentrifLoad cfl) _viewLoad = new ViewCentrifLoad(cfl);
                 else if (clone is PreTensionLoad ptl) _viewLoad = new ViewPreTensionLoad(ptl);
+                else if (clone is RadiateLoad rl) _viewLoad = new ViewRadiateLoad(rl);
                 else throw new NotImplementedException();
             }
         }
@@ -47,7 +48,7 @@ namespace PrePoMax.Forms
             _controller = controller;
             _viewLoad = null;
             //
-            this.Height = 640 + 3 * 19;
+            this.Height = 560 + 3 * 19;
         }
         private void InitializeComponent()
         {
@@ -57,37 +58,37 @@ namespace PrePoMax.Forms
             // 
             // gbType
             // 
-            this.gbType.Size = new System.Drawing.Size(310, 177);
+            this.gbType.Size = new System.Drawing.Size(310, 115);
             // 
             // lvTypes
             // 
-            this.lvTypes.Size = new System.Drawing.Size(298, 149);
+            this.lvTypes.Size = new System.Drawing.Size(298, 87);
             // 
             // gbProperties
             // 
-            this.gbProperties.Location = new System.Drawing.Point(12, 195);
-            this.gbProperties.Size = new System.Drawing.Size(310, 363);
+            this.gbProperties.Location = new System.Drawing.Point(12, 133);
+            this.gbProperties.Size = new System.Drawing.Size(310, 360);
             // 
             // propertyGrid
             // 
-            this.propertyGrid.Size = new System.Drawing.Size(298, 335);
+            this.propertyGrid.Size = new System.Drawing.Size(298, 332);
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(160, 564);
+            this.btnOK.Location = new System.Drawing.Point(160, 499);
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(241, 564);
+            this.btnCancel.Location = new System.Drawing.Point(241, 499);
             // 
             // btnOkAddNew
             // 
-            this.btnOkAddNew.Location = new System.Drawing.Point(79, 564);
+            this.btnOkAddNew.Location = new System.Drawing.Point(79, 499);
             // 
             // FrmLoad
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.ClientSize = new System.Drawing.Size(334, 599);
+            this.ClientSize = new System.Drawing.Size(334, 534);
             this.Name = "FrmLoad";
             this.Text = "Edit Load";
             this.gbType.ResumeLayout(false);
@@ -127,6 +128,11 @@ namespace PrePoMax.Forms
                 else if (itemTag is ViewGravityLoad vgl) _viewLoad = vgl;
                 else if (itemTag is ViewCentrifLoad vcfl) _viewLoad = vcfl;
                 else if (itemTag is ViewPreTensionLoad vprl) _viewLoad = vprl;
+                else if (itemTag is ViewRadiateLoad rl)  // in order for S1, S2,... to include the same element types
+                {
+                    _viewLoad = rl;
+                    _controller.Selection.LimitSelectionToFirstGeometryType = true;
+                }
                 else throw new NotImplementedException();
                 //
                 ShowHideSelectionForm();
@@ -180,6 +186,10 @@ namespace PrePoMax.Forms
                 HighlightLoad();
             }
             else if (_viewLoad is ViewPreTensionLoad vptl && property == nameof(vptl.SurfaceName))
+            {
+                HighlightLoad();
+            }
+            else if (_viewLoad is ViewRadiateLoad vrl && property == nameof(vrl.SurfaceName))
             {
                 HighlightLoad();
             }
@@ -246,6 +256,11 @@ namespace PrePoMax.Forms
                     throw new CaeException("At least one pre-tension direction component must not be equal to 0.");
                 if (ptl.Type == PreTensionLoadType.Force && ptl.Magnitude == 0)
                     throw new CaeException("Pre-tension magnitude must not be equal to 0.");
+            }
+            else if (FELoad is RadiateLoad rl)
+            {
+                if (rl.CavityRadiation && (rl.CavityName == null || rl.CavityName == ""))
+                    throw new CaeException("For cavity radiation a cavity name must be specified.");
             }
             // Create
             if (_loadToEditName == null)
@@ -431,6 +446,17 @@ namespace PrePoMax.Forms
                     //
                     vptl.PopululateDropDownLists(solidFaceSurfaceNames);
                 }
+                else if (_viewLoad is ViewRadiateLoad vrl)
+                {
+                    selectedId = lvTypes.FindItemWithText("Radiate").Index;
+                    // Check for deleted regions
+                    if (vrl.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
+                    else if (vrl.RegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
+                        CheckMissingValueRef(ref noEdgeSurfaceNames, vrl.SurfaceName, s => { vrl.SurfaceName = s; });
+                    else throw new NotSupportedException();
+                    //
+                    vrl.PopululateDropDownLists(noEdgeSurfaceNames);
+                }
                 else throw new NotSupportedException();
                 //
                 lvTypes.Items[selectedId].Tag = _viewLoad;
@@ -558,6 +584,19 @@ namespace PrePoMax.Forms
                 item.Tag = vptl;
                 lvTypes.Items.Add(item);
             }
+            // Radiate load
+            name = "Radiate";
+            loadName = GetLoadName(name);
+            item = new ListViewItem(name);
+            RadiateLoad radiateLoad = new RadiateLoad(loadName, "", RegionTypeEnum.Selection, 0, 0.5);
+            if (step.IsLoadSupported(radiateLoad))
+            {
+                ViewRadiateLoad vrl = new ViewRadiateLoad(radiateLoad);
+                vrl.PopululateDropDownLists(noEdgeSurfaceNames);
+                vrl.Color = color;
+                item.Tag = vrl;
+                lvTypes.Items.Add(item);
+            }
         }
         private string GetLoadName(string name)
         {
@@ -577,7 +616,7 @@ namespace PrePoMax.Forms
                 if (_viewLoad == null) { }
                 else if (FELoad is CLoad || FELoad is MomentLoad || FELoad is DLoad || FELoad is STLoad ||
                          FELoad is ShellEdgeLoad || FELoad is GravityLoad || FELoad is CentrifLoad ||
-                         FELoad is PreTensionLoad)
+                         FELoad is PreTensionLoad || FELoad is RadiateLoad)
                 {
                     if (FELoad.RegionType == RegionTypeEnum.NodeSetName ||
                         FELoad.RegionType == RegionTypeEnum.ReferencePointName ||
@@ -625,6 +664,7 @@ namespace PrePoMax.Forms
                 else if (FELoad is GravityLoad) _controller.SetSelectItemToPart();
                 else if (FELoad is CentrifLoad) _controller.SetSelectItemToPart();
                 else if (FELoad is PreTensionLoad) _controller.SetSelectItemToSurface();
+                else if (FELoad is RadiateLoad) _controller.SetSelectItemToSurface();
                 else throw new NotSupportedException();
             }
             else _controller.SetSelectByToOff();
@@ -643,8 +683,8 @@ namespace PrePoMax.Forms
         {
             if (FELoad != null && FELoad.RegionType == RegionTypeEnum.Selection)
             {
-                if (FELoad is CLoad || FELoad is MomentLoad || FELoad is DLoad || FELoad is STLoad ||
-                    FELoad is ShellEdgeLoad || FELoad is GravityLoad || FELoad is CentrifLoad || FELoad is PreTensionLoad)
+                if (FELoad is CLoad || FELoad is MomentLoad || FELoad is DLoad || FELoad is STLoad || FELoad is ShellEdgeLoad ||
+                    FELoad is GravityLoad || FELoad is CentrifLoad || FELoad is PreTensionLoad || FELoad is RadiateLoad)
                 {
                     FELoad.CreationIds = ids;
                     FELoad.CreationData = _controller.Selection.DeepClone();

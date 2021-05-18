@@ -665,7 +665,12 @@ namespace FileInOut.Output
                     else title.AddKeyword(new CalDeactivated(bcEntry.Value.Name));
                 }
                 // Loads
-                if (step.Active) title = new CalTitle("Loads", "*Dload, op=New" + Environment.NewLine + "*Cload, op=New");
+                if (step.Active)
+                {
+                    title = new CalTitle("Loads", "*Dload, op=New" + Environment.NewLine +
+                                                  "*Cload, op=New" + Environment.NewLine +
+                                                  "*Radiate, op=New");
+                }
                 else title = new CalTitle("Loads", "");
                 calStep.AddKeyword(title);
                 //
@@ -814,6 +819,11 @@ namespace FileInOut.Output
                     else throw new NotSupportedException();
                     //
                     parent.AddKeyword(calKey);
+                }
+                else if (load is RadiateLoad rl)
+                {
+                    CalRadiateLoad rload = new CalRadiateLoad(model.Mesh.Surfaces, rl);
+                    parent.AddKeyword(rload);
                 }
                 else throw new NotImplementedException();
             }

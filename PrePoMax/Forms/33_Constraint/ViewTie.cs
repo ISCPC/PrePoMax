@@ -101,12 +101,12 @@ namespace PrePoMax
             slaveRegionTypePropertyNamePairs.Add(RegionTypeEnum.Selection, nameof(SlaveSelectionHidden));
             slaveRegionTypePropertyNamePairs.Add(RegionTypeEnum.SurfaceName, nameof(SlaveSurfaceName));
             //
-            base.SetBase(tie, masterRegionTypePropertyNamePairs, slaveRegionTypePropertyNamePairs);
-            base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
+            SetBase(tie, masterRegionTypePropertyNamePairs, slaveRegionTypePropertyNamePairs);
+            DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
             //
             DynamicCustomTypeDescriptor.RenameBooleanPropertyToYesNo(nameof(Adjust));
             //
-            CaeGlobals.StringLengthDefaultConverter.SetInitialValue = "0.05 mm";
+            StringLengthDefaultConverter.SetInitialValue = "0.05 mm";
         }
 
 
@@ -125,23 +125,23 @@ namespace PrePoMax
             slaveTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
             slaveTypeListItemsPairs.Add(RegionTypeEnum.SurfaceName, surfaceNames);
             //
-            base.PopululateDropDownLists(masterRegionTypeListItemsPairs, slaveTypeListItemsPairs);
+            PopululateDropDownLists(masterRegionTypeListItemsPairs, slaveTypeListItemsPairs);
         }
         public override void UpdateRegionVisibility()
         {
             base.UpdateRegionVisibility();
             // Hide SelectionHidden
-            DynamicTypeDescriptor.CustomPropertyDescriptor cpd;
+            CustomPropertyDescriptor cpd;
             // Master
             if (base.MasterRegionType == RegionTypeEnum.Selection.ToFriendlyString())
             {
-                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(MasterSelectionHidden));
+                cpd = DynamicCustomTypeDescriptor.GetProperty(nameof(MasterSelectionHidden));
                 cpd.SetIsBrowsable(false);
             }
             // Slave
             if (base.SlaveRegionType == RegionTypeEnum.Selection.ToFriendlyString())
             {
-                cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(SlaveSelectionHidden));
+                cpd = DynamicCustomTypeDescriptor.GetProperty(nameof(SlaveSelectionHidden));
                 cpd.SetIsBrowsable(false);
             }
         }
