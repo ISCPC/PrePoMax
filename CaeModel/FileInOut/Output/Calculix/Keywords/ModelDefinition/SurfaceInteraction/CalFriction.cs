@@ -16,7 +16,6 @@ namespace FileInOut.Output.Calculix
 
 
         // Properties                                                                                                               
-        public override object GetBase { get { return _friction; } }
 
 
         // Constructor                                                                                                              

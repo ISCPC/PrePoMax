@@ -20,8 +20,6 @@ namespace FileInOut.Output.Calculix
         // Properties                                                                                                               
         public string Data { get { return _data; } set { _data = value; } }
         public object Parent { get { return _parent; } set { _parent = value; } }
-        public object PreviousKeyword { get { return _previousKeyword; } set { _previousKeyword = value; } }
-        public override object GetBase { get { return this; } }
 
 
         // Constructor                                                                                                              

@@ -16,7 +16,6 @@ namespace FileInOut.Output.Calculix
 
         // Properties                                                                                                               
         public List<CalculixKeyword> Keywords { get { return _keywords; } }
-        public abstract object GetBase { get; }
 
 
         // Constructor                                                                                                              

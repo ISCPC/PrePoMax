@@ -17,7 +17,6 @@ namespace FileInOut.Output.Calculix
 
         // Properties                                                                                                               
         public string Name { get { return _name; } }
-        public override object GetBase { get { return _name; } }
 
 
         // Constructor                                                                                                              
