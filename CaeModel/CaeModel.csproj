@@ -165,6 +165,7 @@
     <Compile Include="Steps\HistoryOutputs\ContactHistoryOutput.cs" />
     <Compile Include="Steps\HistoryOutputs\NodalHistoryOutput.cs" />
     <Compile Include="Steps\Loads\CentrifLoad.cs" />
+    <Compile Include="Steps\Loads\CFlux.cs" />
     <Compile Include="Steps\Loads\RadiateLoad.cs" />
     <Compile Include="Steps\Loads\ShellEdgeLoad.cs" />
     <Compile Include="Steps\Loads\GravityLoad.cs" />

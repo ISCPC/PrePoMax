@@ -614,6 +614,8 @@ namespace FileInOut.Output
         static private void AppendSteps(FeModel model, Dictionary<string, int[]> referencePointsNodeIds, CalculixKeyword parent)
         {
             CalTitle title;
+            HashSet<Type> loadTypes = model.StepCollection.GetAllLoadTypes();
+            //
             foreach (var step in model.StepCollection.StepsList)
             {
                 if (step is InitialStep) continue;
@@ -667,9 +669,35 @@ namespace FileInOut.Output
                 // Loads
                 if (step.Active)
                 {
-                    title = new CalTitle("Loads", "*Dload, op=New" + Environment.NewLine +
-                                                  "*Cload, op=New" + Environment.NewLine +
-                                                  "*Radiate, op=New");
+                    string data = "";
+                    //if (loadTypes.Contains(typeof(CLoad)) ||
+                    //    loadTypes.Contains(typeof(MomentLoad)) ||
+                    //    loadTypes.Contains(typeof(STLoad)))
+                    //{
+                    if (step.IsLoadTypeSupported(typeof(CLoad))) data += "*Cload, op=New";
+                    //}
+                    //else if (loadTypes.Contains(typeof(DLoad)) ||
+                    //         loadTypes.Contains(typeof(ShellEdgeLoad)) ||
+                    //         loadTypes.Contains(typeof(CentrifLoad)) ||
+                    //         loadTypes.Contains(typeof(GravityLoad)))
+                    //{
+                    if (step.IsLoadTypeSupported(typeof(DLoad)))
+                    {
+                        if (data.Length > 0) data += Environment.NewLine;
+                        data += "*Dload, op=New";
+                    }
+                    //}
+                    //else if (loadTypes.Contains(typeof(RadiateLoad)))
+                    //{
+                    if (step.IsLoadTypeSupported(typeof(RadiateLoad)))
+                    {
+                        if (data.Length > 0) data += Environment.NewLine;
+                        data += "*Radiate, op=New";
+                    }
+                    //}
+                    //else throw new NotSupportedException();
+                    //
+                    title = new CalTitle("Loads", data);
                 }
                 else title = new CalTitle("Loads", "");
                 calStep.AddKeyword(title);

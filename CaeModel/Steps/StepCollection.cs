@@ -287,6 +287,15 @@ namespace CaeModel
             }
             return null;
         }
+        public HashSet<Type> GetAllLoadTypes()
+        {
+            HashSet<Type> loadTypes = new HashSet<Type>();
+            foreach (var _entry in _steps)
+            {
+                foreach (var loadEntry in _entry.Loads) loadTypes.Add(loadEntry.Value.GetType());
+            }
+            return loadTypes;
+        }
         // Defined field
         public string[] GetAllDefinedFieldNames()
         {

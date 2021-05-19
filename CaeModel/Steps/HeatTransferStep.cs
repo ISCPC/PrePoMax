@@ -58,13 +58,23 @@ namespace CaeModel
                 return true;
             else throw new NotSupportedException();
         }
-        public override bool IsLoadSupported(Load load)
+        public override bool IsLoadTypeSupported(Type loadType)
         {
-            if (load is CLoad || load is MomentLoad || load is DLoad || load is STLoad || load is ShellEdgeLoad ||
-                load is GravityLoad || load is CentrifLoad || load is PreTensionLoad)
+            if (loadType == typeof(CLoad) ||
+                loadType == typeof(MomentLoad) ||
+                loadType == typeof(DLoad) ||
+                loadType == typeof(STLoad) ||
+                loadType == typeof(ShellEdgeLoad) ||
+                loadType == typeof(GravityLoad) ||
+                loadType == typeof(CentrifLoad) ||
+                loadType == typeof(PreTensionLoad))
+            {
                 return false;
-            else if (load is RadiateLoad)
+            }
+            else if (loadType == typeof(RadiateLoad))
+            {
                 return true;
+            }
             else throw new NotSupportedException();
         }
         public override bool IsDefinedFieldSupported(DefinedField definedField)

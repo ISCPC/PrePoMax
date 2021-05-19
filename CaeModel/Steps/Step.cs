@@ -133,7 +133,11 @@ namespace CaeModel
             if (IsBoundaryConditionSupported(boundaryCondition))
                 _boundayConditions.Add(boundaryCondition.Name, boundaryCondition);
         }
-        public abstract bool IsLoadSupported(Load load);
+        public bool IsLoadSupported(Load load)
+        {
+            return IsLoadTypeSupported(load.GetType());
+        }
+        public abstract bool IsLoadTypeSupported(Type loadType);
         public void AddLoad(Load load)
         {
             if (IsLoadSupported(load)) _loads.Add(load.Name, load);

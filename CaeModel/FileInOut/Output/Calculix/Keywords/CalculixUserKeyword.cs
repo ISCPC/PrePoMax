@@ -14,7 +14,6 @@ namespace FileInOut.Output.Calculix
         // Variables                                                                                                                
         private string _data;
         private object _parent;
-        private object _previousKeyword;
 
 
         // Properties                                                                                                               
@@ -27,7 +26,6 @@ namespace FileInOut.Output.Calculix
         {
             _data = data;
             _parent = null;
-            _previousKeyword = null;
         }
 
 

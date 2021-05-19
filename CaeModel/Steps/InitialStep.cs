@@ -34,7 +34,7 @@ namespace CaeModel
         {
             return true;
         }
-        public override bool IsLoadSupported(Load load)
+        public override bool IsLoadTypeSupported(Type loadType)
         {
             return true;
         }
