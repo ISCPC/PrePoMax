@@ -5943,9 +5943,9 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.AddOrientedThermoActor, actorData, symbolSize, invert);
         }
-        public void AddOrientedRadiateActor(vtkControl.vtkMaxActorData actorData, double symbolSize, bool invert = false)
+        public void AddOrientedFluxActor(vtkControl.vtkMaxActorData actorData, double symbolSize, bool center, bool invert)
         {
-            InvokeIfRequired(_vtk.AddOrientedRadiateActor, actorData, symbolSize, invert);
+            InvokeIfRequired(_vtk.AddOrientedFluxActor, actorData, symbolSize, center, invert);
         }
         //
         public bool ContainsActor(string actorName)

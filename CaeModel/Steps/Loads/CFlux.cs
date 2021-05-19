@@ -20,7 +20,7 @@ namespace CaeModel
         // Properties                                                                                                               
         public override string RegionName { get { return _regionName; } set { _regionName = value; } }
         public override RegionTypeEnum RegionType { get { return _regionType; } set { _regionType = value; } }
-        public bool Add { get; set; }
+        public bool AddFlux { get; set; }
         public double Magnitude { get; set; }
 
 
@@ -31,7 +31,7 @@ namespace CaeModel
             _regionName = regionName;
             RegionType = regionType;
             //
-            Add = false;
+            AddFlux = false;
             Magnitude = magnitude;
         }
 

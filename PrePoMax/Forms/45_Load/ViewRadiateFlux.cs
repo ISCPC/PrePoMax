@@ -12,14 +12,14 @@ using CaeModel;
 namespace PrePoMax
 {
     [Serializable]
-    public class ViewRadiateLoad : ViewLoad
+    public class ViewRadiateFlux : ViewLoad
     {
         // Variables                                                                                                                
-        private RadiateLoad _radiateLoad;
+        private RadiateFlux _radiateFlux;
 
 
         // Properties                                                                                                               
-        public override string Name { get { return _radiateLoad.Name; } set { _radiateLoad.Name = value; } }
+        public override string Name { get { return _radiateFlux.Name; } set { _radiateFlux.Name = value; } }
         //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(1, 10, "Cavity radiation")]
@@ -27,11 +27,11 @@ namespace PrePoMax
         [Id(2, 1)]
         public bool CavityRadiation
         {
-            get { return _radiateLoad.CavityRadiation; }
+            get { return _radiateFlux.CavityRadiation; }
             set
             {
-                _radiateLoad.CavityRadiation = value;
-                DynamicCustomTypeDescriptor.GetProperty(nameof(CavityName)).SetIsBrowsable(_radiateLoad.CavityRadiation);
+                _radiateFlux.CavityRadiation = value;
+                DynamicCustomTypeDescriptor.GetProperty(nameof(CavityName)).SetIsBrowsable(_radiateFlux.CavityRadiation);
             }
         }
         //
@@ -39,52 +39,52 @@ namespace PrePoMax
         [OrderedDisplayName(2, 10, "Cavity name")]
         [DescriptionAttribute("To separate cavities enter the cavity name (at most 3 characters).")]
         [Id(3, 1)]
-        public string CavityName { get { return _radiateLoad.CavityName; } set { _radiateLoad.CavityName = value; } }
+        public string CavityName { get { return _radiateFlux.CavityName; } set { _radiateFlux.CavityName = value; } }
         //
         [CategoryAttribute("Region")]
         [OrderedDisplayName(2, 10, "Surface")]
         [DescriptionAttribute("Select the surface for the creation of the load.")]
         [Id(3, 2)]
-        public string SurfaceName { get { return _radiateLoad.SurfaceName; } set {_radiateLoad.SurfaceName = value;} }
+        public string SurfaceName { get { return _radiateFlux.SurfaceName; } set {_radiateFlux.SurfaceName = value;} }
         //
         [CategoryAttribute("Parameters")]
         [OrderedDisplayName(2, 10, "Sink temperature")]
         [DescriptionAttribute("Value of the sink temperature.")]
         [TypeConverter(typeof(StringTemperatureConverter))]
         [Id(3, 3)]
-        public double SinkTemperature { get { return _radiateLoad.SinkTemperature; } set { _radiateLoad.SinkTemperature = value; } }
+        public double SinkTemperature { get { return _radiateFlux.SinkTemperature; } set { _radiateFlux.SinkTemperature = value; } }
         //
         [CategoryAttribute("Parameters")]
         [OrderedDisplayName(3, 10, "Emissivity")]
         [DescriptionAttribute("Value of the surface emissivity.")]
         [Id(4, 3)]
-        public double Emissivity { get { return _radiateLoad.Emissivity; } set { _radiateLoad.Emissivity = value; } }
+        public double Emissivity { get { return _radiateFlux.Emissivity; } set { _radiateFlux.Emissivity = value; } }
         //
-        public override System.Drawing.Color Color { get { return _radiateLoad.Color; } set { _radiateLoad.Color = value; } }
+        public override System.Drawing.Color Color { get { return _radiateFlux.Color; } set { _radiateFlux.Color = value; } }
 
 
         // Constructors                                                                                                             
-        public ViewRadiateLoad(RadiateLoad radiateLoad)
+        public ViewRadiateFlux(RadiateFlux radiateFlux)
         {
-            _radiateLoad = radiateLoad;
+            _radiateFlux = radiateFlux;
             //
             Dictionary<RegionTypeEnum, string> regionTypePropertyNamePairs = new Dictionary<RegionTypeEnum, string>();
             regionTypePropertyNamePairs.Add(RegionTypeEnum.Selection, nameof(SelectionHidden));
             regionTypePropertyNamePairs.Add(RegionTypeEnum.SurfaceName, nameof(SurfaceName));
             //
-            SetBase(_radiateLoad, regionTypePropertyNamePairs);
+            SetBase(_radiateFlux, regionTypePropertyNamePairs);
             DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
             // Now lets display Yes/No instead of True/False
             DynamicCustomTypeDescriptor.RenameBooleanPropertyToYesNo(nameof(CavityRadiation));
             //
-            CavityRadiation = _radiateLoad.CavityRadiation; // update CavityName visibility
+            CavityRadiation = _radiateFlux.CavityRadiation; // update CavityName visibility
         }
 
 
         // Methods                                                                                                                  
         public override Load GetBase()
         {
-            return _radiateLoad;
+            return _radiateFlux;
         }
         public void PopululateDropDownLists(string[] surfaceNames)
         {

@@ -5619,7 +5619,7 @@ namespace PrePoMax
             {
                 string name;
                 // Node set
-                if (load is CLoad || load is MomentLoad)
+                if (load is CLoad || load is MomentLoad || load is CFlux)
                 {
                     name = FeMesh.GetNextFreeSelectionName(_model.Mesh.NodeSets) + load.Name;
                     FeNodeSet nodeSet = new FeNodeSet(name, load.CreationIds);
@@ -5643,7 +5643,7 @@ namespace PrePoMax
                     load.RegionType = RegionTypeEnum.ElementSetName;
                 }
                 // Surface
-                else if (load is DLoad || load is STLoad || load is ShellEdgeLoad || load is PreTensionLoad || load is RadiateLoad)
+                else if (load is DLoad || load is STLoad || load is ShellEdgeLoad || load is PreTensionLoad || load is RadiateFlux)
                 {
                     name = FeMesh.GetNextFreeSelectionName(_model.Mesh.Surfaces) + load.Name;
                     FeSurface surface = new FeSurface(name, load.CreationIds, load.CreationData.DeepClone());
@@ -5670,11 +5670,11 @@ namespace PrePoMax
             // Delete previously created sets
             if (load.CreationData != null && load.RegionName != null && regionsCount[load.RegionName] == 1)
             {
-                if (load is CLoad || load is MomentLoad)
+                if (load is CLoad || load is MomentLoad || load is CFlux)
                     RemoveNodeSets(new string[] { load.RegionName });
                 else if (load is GravityLoad || load is CentrifLoad)
                     RemoveElementSets(new string[] { load.RegionName });
-                else if (load is DLoad || load is STLoad || load is ShellEdgeLoad || load is PreTensionLoad || load is RadiateLoad)
+                else if (load is DLoad || load is STLoad || load is ShellEdgeLoad || load is PreTensionLoad || load is RadiateFlux)
                     RemoveSurfaces(new string[] { load.RegionName }, false);
                 else throw new NotSupportedException();
             }
@@ -9059,15 +9059,30 @@ namespace PrePoMax
                     //
                     if (count > 0) DrawPreTensionLoadSymbols(prefixName, ptLoad, coor, color, symbolSize, symbolLayer);
                 }
-                else if (load is RadiateLoad radiateLoad)
+                // Thermal
+                else if (load is CFlux cFlux)
                 {
-                    if (!_model.Mesh.Surfaces.ContainsKey(radiateLoad.SurfaceName)) return;
+                    if (cFlux.RegionType == RegionTypeEnum.NodeSetName)
+                    {
+                        if (!_model.Mesh.NodeSets.ContainsKey(cFlux.RegionName)) return;
+                        FeNodeSet nodeSet = _model.Mesh.NodeSets[cFlux.RegionName];
+                        coor = new double[nodeSet.Labels.Length][];
+                        for (int i = 0; i < nodeSet.Labels.Length; i++) coor[i] = _model.Mesh.Nodes[nodeSet.Labels[i]].Coor;
+                        //
+                        count += DrawNodeSet(prefixName, nodeSet.Name, color, layer, true, nodeSymbolSize, false, onlyVisible);
+                    }
+                    else throw new NotSupportedException();
+                    if (count > 0) DrawCFluxSymbols(prefixName, cFlux, coor, color, symbolSize, symbolLayer);
+                }
+                else if (load is RadiateFlux radiateFlux)
+                {
+                    if (!_model.Mesh.Surfaces.ContainsKey(radiateFlux.SurfaceName)) return;
                     //
-                    count += DrawSurface(prefixName, radiateLoad.SurfaceName, color, layer, true, false, onlyVisible);
+                    count += DrawSurface(prefixName, radiateFlux.SurfaceName, color, layer, true, false, onlyVisible);
                     if (layer == vtkControl.vtkRendererLayer.Selection)
-                        DrawSurfaceEdge(prefixName, radiateLoad.SurfaceName, color, layer, true, false, onlyVisible);
+                        DrawSurfaceEdge(prefixName, radiateFlux.SurfaceName, color, layer, true, false, onlyVisible);
                     //
-                    if (count > 0) DrawRadiateSymbols(prefixName, radiateLoad, color, symbolSize, layer);
+                    if (count > 0) DrawRadiateSymbols(prefixName, radiateFlux, color, symbolSize, layer);
                 }
                 else throw new NotSupportedException();
             }
@@ -9318,10 +9333,32 @@ namespace PrePoMax
                 _form.AddOrientedArrowsActor(data, symbolSize);
             }
         }
-        public void DrawRadiateSymbols(string prefixName, RadiateLoad radiateLoad, Color color, int symbolSize,
+        public void DrawCFluxSymbols(string prefixName, CFlux cFlux, double[][] symbolCoor, Color color,
+                                     int symbolSize, vtkControl.vtkRendererLayer layer)
+        {
+            // Spheres
+            if (symbolCoor.Length > 0)
+            {
+                double[][] normals = new double[symbolCoor.Length][];
+                for (int i = 0; i < symbolCoor.Length; i++) normals[i] = new double[3];
+                //
+                vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
+                data.Name = prefixName;
+                data.Color = color;
+                data.Layer = layer;
+                data.Geometry.Nodes.Coor = symbolCoor.ToArray();
+                data.Geometry.Nodes.Normals = normals.ToArray();
+                data.SectionViewPossible = false;
+                ApplyLighting(data);
+                bool translate = false;
+                _form.AddOrientedFluxActor(data, symbolSize, true, translate);
+            }
+            return;
+        }
+        public void DrawRadiateSymbols(string prefixName, RadiateFlux radiateFlux, Color color, int symbolSize,
                                        vtkControl.vtkRendererLayer layer)
         {
-            FeSurface surface = _model.Mesh.Surfaces[radiateLoad.SurfaceName];
+            FeSurface surface = _model.Mesh.Surfaces[radiateFlux.SurfaceName];
             //
             List<int> allElementIds = new List<int>();
             List<FeFaceName> allElementFaceNames = new List<FeFaceName>();
@@ -9376,7 +9413,7 @@ namespace PrePoMax
                 data.SectionViewPossible = false;
                 ApplyLighting(data);
                 bool translate = false;
-                _form.AddOrientedRadiateActor(data, symbolSize, translate);
+                _form.AddOrientedFluxActor(data, symbolSize, false, translate);
             }
         }
         private int[] GetSpatiallyEquallyDistributedCoor(double[][] coor, int maxN)

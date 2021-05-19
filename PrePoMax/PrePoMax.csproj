@@ -310,7 +310,7 @@
     <Compile Include="Forms\44_BoundaryConditions\ViewTemperatureBC.cs" />
     <Compile Include="Forms\44_BoundaryConditions\ViewFixedBC.cs" />
     <Compile Include="Forms\45_Load\ViewCFlux.cs" />
-    <Compile Include="Forms\45_Load\ViewRadiateLoad.cs" />
+    <Compile Include="Forms\45_Load\ViewRadiateFlux.cs" />
     <Compile Include="Forms\45_Load\ViewShellEdgeLoad.cs" />
     <Compile Include="Forms\46_DefinedField\FrmDefinedField.cs">
       <SubType>Form</SubType>

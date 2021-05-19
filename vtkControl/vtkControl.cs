@@ -3500,7 +3500,7 @@ namespace vtkControl
             //
             if (_drawSymbolEdges) AddSymbolEdges(data, glyph.GetOutputPort());
         }
-        public void AddOrientedRadiateActor(vtkMaxActorData data, double symbolSize, bool invert)
+        public void AddOrientedFluxActor(vtkMaxActorData data, double symbolSize, bool center, bool invert)
         {
             if (symbolSize > _maxSymbolSize) _maxSymbolSize = symbolSize;
             // Points
@@ -3534,6 +3534,7 @@ namespace vtkControl
             sphereSource.SetRadius(rs);
             sphereSource.SetPhiResolution(15);
             sphereSource.SetThetaResolution(15);
+            if (center) rs = 0;
             sphereSource.SetCenter(rs, 0, 0);
             // Transform
             vtkTransform transform = vtkTransform.New();

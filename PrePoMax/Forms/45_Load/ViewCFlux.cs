@@ -20,6 +20,12 @@ namespace PrePoMax
         // Properties                                                                                                               
         public override string Name { get { return _cFlux.Name; } set { _cFlux.Name = value; } }
         //
+        [CategoryAttribute("Data")]
+        [OrderedDisplayName(2, 10, "Add flux")]
+        [DescriptionAttribute("Add the flux to the previously defined fluxes in the selected nodes.")]
+        [Id(3, 1)]
+        public bool AddFlux { get { return _cFlux.AddFlux; } set { _cFlux.AddFlux = value; } }
+        //
         [CategoryAttribute("Region")]
         [OrderedDisplayName(2, 10, "Node set")]
         [DescriptionAttribute("Select the node set for the creation of the load.")]
@@ -27,7 +33,7 @@ namespace PrePoMax
         public string NodeSetName { get { return _cFlux.RegionName; } set { _cFlux.RegionName = value; } }
         //
         [CategoryAttribute("Magnitude")]
-        [OrderedDisplayName(0, 10, "Power")]
+        [OrderedDisplayName(0, 10, "Flux")]
         [DescriptionAttribute("Value of the flux power per node.")]
         [TypeConverter(typeof(StringPowerConverter))]
         [Id(1, 3)]
@@ -48,6 +54,8 @@ namespace PrePoMax
             SetBase(cFlux, regionTypePropertyNamePairs);
             //
             DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
+            //
+            DynamicCustomTypeDescriptor.RenameBooleanPropertyToYesNo(nameof(AddFlux));
         }
 
 

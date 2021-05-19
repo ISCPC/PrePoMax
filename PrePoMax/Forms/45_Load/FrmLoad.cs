@@ -34,7 +34,10 @@ namespace PrePoMax.Forms
                 else if (clone is GravityLoad gl) _viewLoad = new ViewGravityLoad(gl);
                 else if (clone is CentrifLoad cfl) _viewLoad = new ViewCentrifLoad(cfl);
                 else if (clone is PreTensionLoad ptl) _viewLoad = new ViewPreTensionLoad(ptl);
-                else if (clone is RadiateLoad rl) _viewLoad = new ViewRadiateLoad(rl);
+                // Thermal
+                else if (clone is CFlux cf) _viewLoad = new ViewCFlux(cf);
+                else if (clone is RadiateFlux rf) _viewLoad = new ViewRadiateFlux(rf);
+                //
                 else throw new NotImplementedException();
             }
         }
@@ -128,9 +131,11 @@ namespace PrePoMax.Forms
                 else if (itemTag is ViewGravityLoad vgl) _viewLoad = vgl;
                 else if (itemTag is ViewCentrifLoad vcfl) _viewLoad = vcfl;
                 else if (itemTag is ViewPreTensionLoad vprl) _viewLoad = vprl;
-                else if (itemTag is ViewRadiateLoad rl)  // in order for S1, S2,... to include the same element types
+                // Thermal
+                else if (itemTag is ViewCFlux vcf) _viewLoad = vcf;
+                else if (itemTag is ViewRadiateFlux vrf)  // in order for S1, S2,... to include the same element types
                 {
-                    _viewLoad = rl;
+                    _viewLoad = vrf;
                     _controller.Selection.LimitSelectionToFirstGeometryType = true;
                 }
                 else throw new NotImplementedException();
@@ -189,7 +194,12 @@ namespace PrePoMax.Forms
             {
                 HighlightLoad();
             }
-            else if (_viewLoad is ViewRadiateLoad vrl && property == nameof(vrl.SurfaceName))
+            // Thermal
+            else if (_viewLoad is ViewCFlux vcf && property == nameof(vcl.NodeSetName))
+            {
+                HighlightLoad();
+            }
+            else if (_viewLoad is ViewRadiateFlux vrf && property == nameof(vrf.SurfaceName))
             {
                 HighlightLoad();
             }
@@ -257,9 +267,11 @@ namespace PrePoMax.Forms
                 if (ptl.Type == PreTensionLoadType.Force && ptl.Magnitude == 0)
                     throw new CaeException("Pre-tension magnitude must not be equal to 0.");
             }
-            else if (FELoad is RadiateLoad rl)
+            // Thermal
+            else if (FELoad is CFlux cf) {}
+            else if (FELoad is RadiateFlux rf)
             {
-                if (rl.CavityRadiation && (rl.CavityName == null || rl.CavityName == ""))
+                if (rf.CavityRadiation && (rf.CavityName == null || rf.CavityName == ""))
                     throw new CaeException("For cavity radiation a cavity name must be specified.");
             }
             // Create
@@ -446,16 +458,28 @@ namespace PrePoMax.Forms
                     //
                     vptl.PopululateDropDownLists(solidFaceSurfaceNames);
                 }
-                else if (_viewLoad is ViewRadiateLoad vrl)
+                // Thermal
+                if (_viewLoad is ViewCFlux vcf)
                 {
-                    selectedId = lvTypes.FindItemWithText("Radiate").Index;
+                    selectedId = lvTypes.FindItemWithText("Concentrated flux").Index;
                     // Check for deleted regions
-                    if (vrl.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
-                    else if (vrl.RegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
-                        CheckMissingValueRef(ref noEdgeSurfaceNames, vrl.SurfaceName, s => { vrl.SurfaceName = s; });
+                    if (vcf.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
+                    else if (vcf.RegionType == RegionTypeEnum.NodeSetName.ToFriendlyString())
+                        CheckMissingValueRef(ref nodeSetNames, vcf.NodeSetName, s => { vcf.NodeSetName = s; });
                     else throw new NotSupportedException();
                     //
-                    vrl.PopululateDropDownLists(noEdgeSurfaceNames);
+                    vcf.PopululateDropDownLists(nodeSetNames);
+                }
+                else if (_viewLoad is ViewRadiateFlux vrf)
+                {
+                    selectedId = lvTypes.FindItemWithText("Radiation").Index;
+                    // Check for deleted regions
+                    if (vrf.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
+                    else if (vrf.RegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
+                        CheckMissingValueRef(ref noEdgeSurfaceNames, vrf.SurfaceName, s => { vrf.SurfaceName = s; });
+                    else throw new NotSupportedException();
+                    //
+                    vrf.PopululateDropDownLists(noEdgeSurfaceNames);
                 }
                 else throw new NotSupportedException();
                 //
@@ -584,14 +608,28 @@ namespace PrePoMax.Forms
                 item.Tag = vptl;
                 lvTypes.Items.Add(item);
             }
-            // Radiate load
-            name = "Radiate";
+            // Thermal
+            // Concentrated flux -  node set
+            name = "Concentrated flux";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            RadiateLoad radiateLoad = new RadiateLoad(loadName, "", RegionTypeEnum.Selection, 0, 0.5);
-            if (step.IsLoadSupported(radiateLoad))
+            CFlux cFlux = new CFlux(loadName, "", RegionTypeEnum.Selection, 0);
+            if (step.IsLoadSupported(cFlux))
             {
-                ViewRadiateLoad vrl = new ViewRadiateLoad(radiateLoad);
+                ViewCFlux vcf = new ViewCFlux(cFlux);
+                vcf.PopululateDropDownLists(nodeSetNames);
+                vcf.Color = color;
+                item.Tag = vcf;
+                lvTypes.Items.Add(item);
+            }
+            // Radiate flux
+            name = "Radiation";
+            loadName = GetLoadName(name);
+            item = new ListViewItem(name);
+            RadiateFlux radiateFlux = new RadiateFlux(loadName, "", RegionTypeEnum.Selection, 0, 0.5);
+            if (step.IsLoadSupported(radiateFlux))
+            {
+                ViewRadiateFlux vrl = new ViewRadiateFlux(radiateFlux);
                 vrl.PopululateDropDownLists(noEdgeSurfaceNames);
                 vrl.Color = color;
                 item.Tag = vrl;
@@ -614,9 +652,17 @@ namespace PrePoMax.Forms
                 _controller.ClearSelectionHistory();
                 //
                 if (_viewLoad == null) { }
-                else if (FELoad is CLoad || FELoad is MomentLoad || FELoad is DLoad || FELoad is STLoad ||
-                         FELoad is ShellEdgeLoad || FELoad is GravityLoad || FELoad is CentrifLoad ||
-                         FELoad is PreTensionLoad || FELoad is RadiateLoad)
+                else if (FELoad is CLoad ||
+                         FELoad is MomentLoad ||
+                         FELoad is DLoad ||
+                         FELoad is STLoad ||
+                         FELoad is ShellEdgeLoad ||
+                         FELoad is GravityLoad ||
+                         FELoad is CentrifLoad ||
+                         FELoad is PreTensionLoad ||
+                         // Thermal
+                         FELoad is CFlux ||
+                         FELoad is RadiateFlux)
                 {
                     if (FELoad.RegionType == RegionTypeEnum.NodeSetName ||
                         FELoad.RegionType == RegionTypeEnum.ReferencePointName ||
@@ -664,7 +710,10 @@ namespace PrePoMax.Forms
                 else if (FELoad is GravityLoad) _controller.SetSelectItemToPart();
                 else if (FELoad is CentrifLoad) _controller.SetSelectItemToPart();
                 else if (FELoad is PreTensionLoad) _controller.SetSelectItemToSurface();
-                else if (FELoad is RadiateLoad) _controller.SetSelectItemToSurface();
+                // Thermal
+                else if (FELoad is CFlux) _controller.SetSelectItemToNode();
+                else if (FELoad is RadiateFlux) _controller.SetSelectItemToSurface();
+                //
                 else throw new NotSupportedException();
             }
             else _controller.SetSelectByToOff();
@@ -683,8 +732,16 @@ namespace PrePoMax.Forms
         {
             if (FELoad != null && FELoad.RegionType == RegionTypeEnum.Selection)
             {
-                if (FELoad is CLoad || FELoad is MomentLoad || FELoad is DLoad || FELoad is STLoad || FELoad is ShellEdgeLoad ||
-                    FELoad is GravityLoad || FELoad is CentrifLoad || FELoad is PreTensionLoad || FELoad is RadiateLoad)
+                if (FELoad is CLoad ||
+                    FELoad is MomentLoad ||
+                    FELoad is DLoad ||
+                    FELoad is STLoad ||
+                    FELoad is ShellEdgeLoad ||
+                    FELoad is GravityLoad ||
+                    FELoad is CentrifLoad ||
+                    FELoad is PreTensionLoad ||
+                    FELoad is CFlux ||
+                    FELoad is RadiateFlux)
                 {
                     FELoad.CreationIds = ids;
                     FELoad.CreationData = _controller.Selection.DeepClone();

@@ -401,9 +401,14 @@ namespace CaeModel
                     {
                         valid = (_mesh.Surfaces.TryGetValue(ptl.SurfaceName, out s) && s.Valid && s.Type == FeSurfaceType.Element);
                     }
-                    else if (load is RadiateLoad rl)
+                    // Thermal
+                    else if (load is CFlux cfl)
                     {
-                        valid = (_mesh.Surfaces.TryGetValue(rl.SurfaceName, out s) && s.Valid);
+                        valid = (cfl.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(cfl.RegionName));
+                    }
+                    else if (load is RadiateFlux rf)
+                    {
+                        valid = (_mesh.Surfaces.TryGetValue(rf.SurfaceName, out s) && s.Valid);
                     }
                     else throw new NotSupportedException();
                     //

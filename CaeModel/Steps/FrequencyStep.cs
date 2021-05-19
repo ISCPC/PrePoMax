@@ -79,7 +79,8 @@ namespace CaeModel
                 loadType == typeof(GravityLoad) ||
                 loadType == typeof(CentrifLoad) ||
                 loadType == typeof(PreTensionLoad) ||
-                loadType == typeof(RadiateLoad))
+                loadType == typeof(CFlux) ||
+                loadType == typeof(RadiateFlux))
             {
                 return false;
             }

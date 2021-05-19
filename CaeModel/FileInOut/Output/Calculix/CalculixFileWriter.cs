@@ -689,7 +689,12 @@ namespace FileInOut.Output
                     //}
                     //else if (loadTypes.Contains(typeof(RadiateLoad)))
                     //{
-                    if (step.IsLoadTypeSupported(typeof(RadiateLoad)))
+                    if (step.IsLoadTypeSupported(typeof(CFlux)))
+                    {
+                        if (data.Length > 0) data += Environment.NewLine;
+                        data += "*Cflux, op=New";
+                    }
+                    if (step.IsLoadTypeSupported(typeof(RadiateFlux)) && loadTypes.Contains(typeof(RadiateFlux)))
                     {
                         if (data.Length > 0) data += Environment.NewLine;
                         data += "*Radiate, op=New";
@@ -848,10 +853,16 @@ namespace FileInOut.Output
                     //
                     parent.AddKeyword(calKey);
                 }
-                else if (load is RadiateLoad rl)
+                // Thermo
+                else if (load is CFlux cf)
                 {
-                    CalRadiateLoad rload = new CalRadiateLoad(model.Mesh.Surfaces, rl);
-                    parent.AddKeyword(rload);
+                    CalCFlux cFlux = new CalCFlux(cf);
+                    parent.AddKeyword(cFlux);
+                }
+                else if (load is RadiateFlux rf)
+                {
+                    CalRadiateFlux rFlux = new CalRadiateFlux(model.Mesh.Surfaces, rf);
+                    parent.AddKeyword(rFlux);
                 }
                 else throw new NotImplementedException();
             }
