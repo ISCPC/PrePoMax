@@ -4,6 +4,18 @@ Selection - UNDO after empty click
 By Students
 Add the possibility ot output the Query command as General text formating
 
+By Jakub
+25. 5. 2021
+1) frequency step - specify a range of frequencies
+2) a replace step feature: Buckling for Static
+
+21. 5. 2021
+1) possibility to edit existing keywords in the keywords editor
+2) possibility to define local mesh refinements based on the number of elements, not just their size; biased distribution
+3) user-defined field output based on the available variables - equations
+4) hyperelastic materials
+
+
 By Naldo
 17. 5. 2021
 1) To zoom in - mouse right button: click, hold and drag top left to bottom right; to zoom out - mouse right button: click,
@@ -84,10 +96,15 @@ By Emanuele:
 
 
 By Ihor:
+25. 5. 2021
+1) user defind tooltips as for Min and Max values
+2) add the possibility for command line parameters to use PPM as .step viewer
+
 10.5.2021
-- feature to export nodal results together with their nodal coordinates
+1) feature to export nodal results together with their nodal coordinates
+
 30.5.2019
-- export for VTK
+1) export for VTK
 
 Old
 - add support for importing inp files

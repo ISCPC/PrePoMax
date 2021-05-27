@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CaeResults</RootNamespace>
     <AssemblyName>CaeResults</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -75,7 +75,7 @@
     <Compile Include="FieldOutput\Field.cs" />
     <Compile Include="Transformations\CircularPattern.cs" />
     <Compile Include="Transformations\LinearPattern.cs" />
-    <Compile Include="Transformations\Symetry.cs" />
+    <Compile Include="Transformations\Symmetry.cs" />
     <Compile Include="Transformations\Transformation.cs" />
   </ItemGroup>
   <ItemGroup>

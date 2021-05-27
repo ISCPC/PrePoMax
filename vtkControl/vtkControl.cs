@@ -59,7 +59,7 @@ namespace vtkControl
         private vtkMaxAnimationFrameData _animationFrameData;
         private bool _animationAcceleration;
         private Color _primaryHighlightColor;
-        private Color _secundaryHighlightColor;
+        private Color _secondaryHighlightColor;
         private double _maxSymbolSize;
         private bool _drawSymbolEdges;
         //
@@ -255,7 +255,7 @@ namespace vtkControl
             _animationActors = new Dictionary<string, vtkMaxActor[]>();
             _animationFrameData = null;
             _primaryHighlightColor = Color.Red;
-            _secundaryHighlightColor = Color.Violet;
+            _secondaryHighlightColor = Color.Violet;
             _drawSymbolEdges = true;
             //
             _animating = false;
@@ -1893,7 +1893,7 @@ namespace vtkControl
             if (actor.GeometryProperty.GetPointSize() <= 1) actor.GeometryProperty.SetPointSize(7);
             //
             Color highlightColor;
-            if (actor.UseSecondaryHighightColor) highlightColor = _secundaryHighlightColor;
+            if (actor.UseSecondaryHighightColor) highlightColor = _secondaryHighlightColor;
             else highlightColor = _primaryHighlightColor;
             //
             actor.GeometryProperty.SetColor(highlightColor.R / 255d * k,
@@ -1908,12 +1908,12 @@ namespace vtkControl
         }
         private void ApplySymbolFormatingToActor(vtkMaxActor actor)
         {
-            actor.GeometryProperty.BackfaceCullingOn();
-            actor.GeometryProperty.SetAmbient(0.4);
-            actor.GeometryProperty.SetDiffuse(0.6);
+            actor.BackfaceCulling = true;
+            actor.Ambient = 0.8;
+            actor.Diffuse = 0.4;
         }
 
-        private void PrepareActorLookupTable(double scalarRangeMin, double scalarRangeMax)
+        private void PrepareActorLookupTable_(double scalarRangeMin, double scalarRangeMax)
         {
             vtkColorTransferFunction ctf = GetColorTransferFunction();
             //
@@ -1953,7 +1953,7 @@ namespace vtkControl
                 int countEnd;
                 // This sets the precision with which the colors are drawn on the actor: 5 is arbitrary factor
                 int numOfAllColors = (int)Math.Ceiling(10 * _colorSpectrum.NumberOfColors / (maxNormalized - minNormalized));
-                numOfAllColors = Math.Max(128, numOfAllColors);
+                numOfAllColors = Math.Max(1024, numOfAllColors);
                 _lookupTable.SetNumberOfColors(numOfAllColors);
                 // Below range color
                 if (addMinColor)
@@ -1962,11 +1962,8 @@ namespace vtkControl
                                            _colorSpectrum.MinColor.G / 256.0,
                                            _colorSpectrum.MinColor.B / 256.0 };
                     countEnd = (int)Math.Round(minNormalized * numOfAllColors, 0);
-                    for (int i = countStart; i < countEnd; i++) _lookupTable.SetTableValue(colorCount++, 
-                                                                                           color[0],
-                                                                                           color[1],
-                                                                                           color[2],
-                                                                                           1.0); //R,G,B,A
+                    for (int i = countStart; i < countEnd; i++)
+                        _lookupTable.SetTableValue(colorCount++, color[0], color[1], color[2], 1.0);    //R,G,B,A
                     countStart = countEnd;
                 }
                 // Between range color
@@ -1979,12 +1976,8 @@ namespace vtkControl
                     color = ctf.GetColor(i * delta);
                     endValue = minNormalized + (i + 1) * deltaNormalized;
                     countEnd = (int)Math.Round(endValue * numOfAllColors, 0);
-
-                    for (int j = countStart; j < countEnd; j++) _lookupTable.SetTableValue(colorCount++,
-                                                                                           color[0],
-                                                                                           color[1],
-                                                                                           color[2],
-                                                                                           1.0); //R,G,B,A
+                    for (int j = countStart; j < countEnd; j++)
+                        _lookupTable.SetTableValue(colorCount++, color[0], color[1], color[2], 1.0);    //R,G,B,A
                     countStart = countEnd;
                 }
                 // Above range color
@@ -2012,6 +2005,96 @@ namespace vtkControl
                     _lookupTable.SetTableValue(i, color[0], color[1], color[2], 1.0); //R,G,B,A
                 }
             }            
+        }
+        private void PrepareActorLookupTable(double scalarRangeMin, double scalarRangeMax)
+        {
+            double min = scalarRangeMin;
+            double max = scalarRangeMax;
+            double minSpectrumValue = min;
+            double maxSpectrumValue = max;
+            bool addMinColor = false;
+            bool addMaxColor = false;
+            //
+            vtkColorTransferFunction ctf = GetColorTransferFunction();
+            // Determine the need for min max color
+            if (_colorSpectrum.MinMaxType == vtkColorSpectrumMinMaxType.Manual)
+            {
+                min = Math.Min(scalarRangeMin, _colorSpectrum.MinUserValue);
+                max = Math.Max(scalarRangeMax, _colorSpectrum.MaxUserValue);
+                //
+                if (_colorSpectrum.MinUserValue > min && max != min)
+                {
+                    addMinColor = true;
+                    minSpectrumValue = _colorSpectrum.MinUserValue;
+                }
+                if (_colorSpectrum.MaxUserValue < max && max != min)
+                {
+                    addMaxColor = true;
+                    maxSpectrumValue = _colorSpectrum.MaxUserValue;
+                }
+            }
+            //
+            double[] color;
+            double delta;
+            _lookupTable = vtkLookupTable.New(); // this is a fix for a _lookupTable.DeepCopy later on
+            //
+            if (addMinColor || addMaxColor)
+            {
+                int numMinColors = 0;
+                int numMaxColors = 0;
+                delta = (maxSpectrumValue - minSpectrumValue) / _colorSpectrum.NumberOfColors;
+                //
+                if (addMinColor)
+                {
+                    numMinColors = (int)Math.Ceiling((_colorSpectrum.MinUserValue - min) / delta);
+                    min = _colorSpectrum.MinUserValue - numMinColors * delta;
+                }
+                if (addMaxColor)
+                {
+                    numMaxColors = (int)Math.Ceiling((max - _colorSpectrum.MaxUserValue) / delta);
+                    max = _colorSpectrum.MaxUserValue + numMaxColors * delta;
+                }
+                int numOfAllColors = _colorSpectrum.NumberOfColors + numMinColors + numMaxColors;
+                //
+                _lookupTable.SetTableRange(min, max);
+                _lookupTable.SetNumberOfColors(numOfAllColors);
+                // Below range color
+                int count = 0;
+                for (int i = 0; i < numMinColors; i++)
+                {
+                    _lookupTable.SetTableValue(count++, _colorSpectrum.MinColor.R / 256.0,
+                                                        _colorSpectrum.MinColor.G / 256.0,
+                                                        _colorSpectrum.MinColor.B / 256.0, 1.0);        //R,G,B,A
+                }
+                // Between range color
+                double rangeDelta = 1.0 / (_colorSpectrum.NumberOfColors - 1);
+                for (int i = 0; i < _colorSpectrum.NumberOfColors; i++)
+                {
+                    color = ctf.GetColor(i * rangeDelta);
+                    _lookupTable.SetTableValue(count++, color[0], color[1], color[2], 1.0);             //R,G,B,A
+                }
+                // Above range color
+                if (addMaxColor)
+                {
+                    for (int i = 0; i < numMaxColors; i++)
+                    {
+                        _lookupTable.SetTableValue(count++, _colorSpectrum.MaxColor.R / 256.0,
+                                                            _colorSpectrum.MaxColor.G / 256.0,
+                                                            _colorSpectrum.MaxColor.B / 256.0, 1.0);    //R,G,B,A
+                    }
+                }
+            }
+            else
+            {
+                _lookupTable.SetTableRange(min, max);
+                _lookupTable.SetNumberOfColors(_colorSpectrum.NumberOfColors);
+                delta = 1.0 / (_lookupTable.GetNumberOfColors() - 1);
+                for (int i = 0; i < _lookupTable.GetNumberOfColors(); i++)
+                {
+                    color = ctf.GetColor(i * delta);
+                    _lookupTable.SetTableValue(i, color[0], color[1], color[2], 1.0);                   //R,G,B,A
+                }
+            }
         }
         private vtkColorTransferFunction GetColorTransferFunction()
         {
@@ -3445,14 +3528,14 @@ namespace vtkControl
             double rc = 0.1;
             vtkSphereSource sphereSource = vtkSphereSource.New();
             sphereSource.SetRadius(rs);
-            sphereSource.SetPhiResolution(15);
-            sphereSource.SetThetaResolution(15);
+            sphereSource.SetPhiResolution(7);
+            sphereSource.SetThetaResolution(7);
             sphereSource.SetCenter(rs, 0, 0);
             // Cylinder
             vtkCylinderSource cylinderSource = vtkCylinderSource.New();
             cylinderSource.SetRadius(rc);
             cylinderSource.SetHeight(1 - rs);
-            cylinderSource.SetResolution(15);
+            cylinderSource.SetResolution(7);
             cylinderSource.SetCenter(0, 0.5 + rs, 0);
             //Transform
             vtkTransform transform = vtkTransform.New();
@@ -3493,7 +3576,7 @@ namespace vtkControl
             mapper.ScalarVisibilityOff();
             // Actor
             data.Name += Globals.NameSeparator + "thermo";
-            vtkMaxActor actor = new vtkMaxActor(data, mapper);
+            vtkMaxActor actor = new vtkMaxActor(data, mapper);            
             // Add
             ApplySymbolFormatingToActor(actor);
             AddActorGeometry(actor, data.Layer);
@@ -3532,8 +3615,8 @@ namespace vtkControl
             double rs = 0.2;
             vtkSphereSource sphereSource = vtkSphereSource.New();
             sphereSource.SetRadius(rs);
-            sphereSource.SetPhiResolution(15);
-            sphereSource.SetThetaResolution(15);
+            sphereSource.SetPhiResolution(7);
+            sphereSource.SetThetaResolution(7);
             if (center) rs = 0;
             sphereSource.SetCenter(rs, 0, 0);
             // Transform
@@ -4411,15 +4494,15 @@ namespace vtkControl
         #endregion  ################################################################################################################
 
         #region Transformations  ###################################################################################################
-        public void AddSymetry(int symetryPlane, double[] symetryPoint)
+        public void AddSymmetry(int symmetryPlane, double[] symmetryPoint)
         {
             vtkTransform transform = vtkTransform.New();
-            transform.Translate(symetryPoint[0], symetryPoint[1], symetryPoint[2]);
-            if (symetryPlane == 0) transform.Scale(-1.0, 1.0, 1.0);
-            else if (symetryPlane == 1) transform.Scale(1.0, -1.0, 1.0);
-            else if (symetryPlane == 2) transform.Scale(1.0, 1.0, -1.0);
+            transform.Translate(symmetryPoint[0], symmetryPoint[1], symmetryPoint[2]);
+            if (symmetryPlane == 0) transform.Scale(-1.0, 1.0, 1.0);
+            else if (symmetryPlane == 1) transform.Scale(1.0, -1.0, 1.0);
+            else if (symmetryPlane == 2) transform.Scale(1.0, 1.0, -1.0);
             else throw new NotSupportedException();
-            transform.Translate(-symetryPoint[0], -symetryPoint[1], -symetryPoint[2]);
+            transform.Translate(-symmetryPoint[0], -symmetryPoint[1], -symmetryPoint[2]);
             //
             _transforms.Add(transform, 2);  // must be 2 for 1 loop
         }
@@ -4756,15 +4839,15 @@ namespace vtkControl
             if (redraw) this.Invalidate();
         }
         // Highlight
-        public void SetHighlightColor(Color primaryHighlightColor, Color secundaryHighlightColor)
+        public void SetHighlightColor(Color primaryHighlightColor, Color secondaryHighlightColor)
         {
             _primaryHighlightColor = primaryHighlightColor;
-            _secundaryHighlightColor = secundaryHighlightColor;
+            _secondaryHighlightColor = secondaryHighlightColor;
             //
             Color highlightColor;
             foreach (var actor in _selectedActors)
             {
-                if (actor.UseSecondaryHighightColor) highlightColor = secundaryHighlightColor;
+                if (actor.UseSecondaryHighightColor) highlightColor = secondaryHighlightColor;
                 else highlightColor = primaryHighlightColor;
                 //
                 actor.GeometryProperty.SetColor(highlightColor.R / 255.0, highlightColor.G / 255.0, highlightColor.B / 255.0);

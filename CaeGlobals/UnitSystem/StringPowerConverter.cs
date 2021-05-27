@@ -23,7 +23,7 @@ namespace CaeGlobals
             set
             {
                 if (value == "") _powerUnit = (PowerUnit)MyUnit.NoUnit;
-                else if (value == MyUnit.InchPoundPerSecondAbbreviation) _powerUnit = MyUnit.InchPoundPerSecond;
+                else if (value == MyUnit.PoundForceInchPerSecondAbbreviation) _powerUnit = MyUnit.PoundForceInchPerSecond;
                 else { _powerUnit = Power.ParseUnit(value); }
             }
         }
@@ -31,7 +31,7 @@ namespace CaeGlobals
         {
             string unit;
             if ((int)powerUnit == MyUnit.NoUnit) unit = "";
-            else if (powerUnit == MyUnit.InchPoundPerSecond) return MyUnit.InchPoundPerSecondAbbreviation;
+            else if (powerUnit == MyUnit.PoundForceInchPerSecond) return MyUnit.PoundForceInchPerSecondAbbreviation;
             else unit = Power.GetAbbreviation(powerUnit);
             return unit;
         }
@@ -58,36 +58,7 @@ namespace CaeGlobals
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    // 1 inch = 0.0254 meters
-                    // 1 pound force = 4.44822162 newtons
-                    // 1 pound force inch = 0.112984829 joules
-                    // 1 pound force inch per second = 0.112984829 watts
-                    double conversion = 0.112984829;
-                    double scale = 1;
-                    valueString = valueString.Trim().Replace(" ", "");
-                    // Check if it is given in unsupported units
-                    if (valueString.Contains(MyUnit.InchPoundPerSecondAbbreviation))
-                    {
-                        valueString = valueString.Replace(MyUnit.InchPoundPerSecondAbbreviation, "W");
-                        scale = 0.112984829;
-                    }
-                    // Check if it must be converted to unsupported units
-                    if ((int)_powerUnit == MyUnit.NoUnit)
-                    {
-                        Power power = Power.Parse(valueString);
-                        valueDouble = (double)power.Value;
-                    }
-                    else if (_powerUnit == MyUnit.InchPoundPerSecond)
-                    {
-                        Power power = Power.Parse(valueString).ToUnit(PowerUnit.Watt);
-                        if (scale == conversion) valueDouble = (double)power.Value;
-                        else valueDouble = scale * (double)power.Value / conversion;
-                    }
-                    else
-                    {
-                        Power power = Power.Parse(valueString).ToUnit(_powerUnit);
-                        valueDouble = scale * (double)power.Value;
-                    }
+                    valueDouble = ConvertToUnits(valueString);
                 }
                 //
                 return valueDouble;
@@ -115,6 +86,41 @@ namespace CaeGlobals
             {
                 return base.ConvertTo(context, culture, value, destinationType);
             }
+        }
+        private static double ConvertToUnits(string valueString)
+        {
+            // 1 inch = 0.0254 meters
+            // 1 pound force = 4.44822162 newtons
+            // 1 pound force inch = 0.112984829 joules
+            // 1 pound force inch per second = 0.112984829 watts
+            double conversion = 0.112984829;
+            double scale = 1;
+            valueString = valueString.Trim().Replace(" ", "");
+            // Check if it is given in unsupported units
+            if (valueString.Contains(MyUnit.PoundForceInchPerSecondAbbreviation))
+            {
+                valueString = valueString.Replace(MyUnit.PoundForceInchPerSecondAbbreviation, "W");
+                scale = conversion;
+            }
+            // Check if it must be converted to unsupported units
+            double value;
+            if ((int)_powerUnit == MyUnit.NoUnit)
+            {
+                Power power = Power.Parse(valueString);
+                value = (double)power.Value;
+            }
+            else if (_powerUnit == MyUnit.PoundForceInchPerSecond)
+            {
+                Power power = Power.Parse(valueString).ToUnit(PowerUnit.Watt);
+                if (scale == conversion) value = (double)power.Value;
+                else value = scale * (double)power.Value / conversion;
+            }
+            else
+            {
+                Power power = Power.Parse(valueString).ToUnit(_powerUnit);
+                value = scale * (double)power.Value;
+            }
+            return value;
         }
 
     }

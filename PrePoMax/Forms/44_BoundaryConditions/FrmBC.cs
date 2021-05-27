@@ -91,7 +91,10 @@ namespace PrePoMax.Forms
 
         // Overrides                                                                                                                
         protected override void OnListViewTypeSelectedIndexChanged()
-        {            
+        {
+            // Deactivate selection limits
+            _controller.Selection.LimitSelectionToFirstGeometryType = false;
+            //
             if (lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count > 0)
             {
                 object itemTag = lvTypes.SelectedItems[0].Tag;
@@ -99,7 +102,12 @@ namespace PrePoMax.Forms
                 else if (itemTag is ViewFixedBC fix) _viewBc = fix;
                 else if (itemTag is ViewDisplacementRotation vdr) _viewBc = vdr;
                 else if (itemTag is ViewSubmodelBC vsm) _viewBc = vsm;
-                else if (itemTag is ViewTemperatureBC vtmp) _viewBc = vtmp;
+                else if (itemTag is ViewTemperatureBC vtmp)
+                {
+                    // Activate selection limit
+                    _controller.Selection.LimitSelectionToFirstGeometryType = true;
+                    _viewBc = vtmp;
+                }
                 else throw new NotImplementedException();
                 //
                 ShowHideSelectionForm();
@@ -199,6 +207,8 @@ namespace PrePoMax.Forms
         {
             // Close the ItemSetSelectionForm
             ItemSetDataEditor.SelectionForm.Hide();
+            // Deactivate selection limits
+            _controller.Selection.LimitSelectionToFirstGeometryType = false;
             // Convert the boundary condition from internal to show it
             BoundaryConditionInternal(false);
             //

@@ -13,59 +13,59 @@ using CaeResults;
 namespace PrePoMax.Forms
 {
     [Serializable]
-    public class ViewSymetry : ViewTransformation
+    public class ViewSymmetry : ViewTransformation
     {
         // Variables                                                                                                                      
-        private Symetry _symetry;
+        private Symmetry _symmetry;
 
 
         // Properties                                                                                                               
-        public override string Name { get { return _symetry.Name; } set { _symetry.Name = value; } }
+        public override string Name { get { return _symmetry.Name; } set { _symmetry.Name = value; } }
         [Browsable(false)]
         [Category("Data")]
-        [OrderedDisplayName(1, 10, "Symetry plane")]
-        [DescriptionAttribute("Select the symetry plane.")]
+        [OrderedDisplayName(1, 10, "Symmetry plane")]
+        [DescriptionAttribute("Select the symmetry plane.")]
         [Id(2, 1)]
-        public SymetryPlaneEnum SymetryPlane { get { return _symetry.SymetryPlane; } set { _symetry.SymetryPlane = value; } }
+        public SymmetryPlaneEnum SymmetryPlane { get { return _symmetry.SymmetryPlane; } set { _symmetry.SymmetryPlane = value; } }
         //
-        [Category("Symetry point coordinates")]
-        [OrderedDisplayName(0, 10, "Select the symetry point")]
-        [DescriptionAttribute("Select the symetry point.")]
+        [Category("Symmetry point coordinates")]
+        [OrderedDisplayName(0, 10, "Select the symmetry point")]
+        [DescriptionAttribute("Select the symmetry point.")]
         [EditorAttribute(typeof(SinglePointDataEditor), typeof(UITypeEditor))]
         [Id(1, 2)]
-        public ItemSetData SymetryPointItemSet
+        public ItemSetData SymmetryPointItemSet
         {
             get { return _startPointItemSetData; }
             set { _startPointItemSetData = value; }
         }
         //
-        [Category("Symetry point coordinates")]
+        [Category("Symmetry point coordinates")]
         [OrderedDisplayName(1, 10, "X")]
-        [Description("X coordinate of the symetry point.")]
+        [Description("X coordinate of the symmetry point.")]
         [TypeConverter(typeof(StringLengthConverter))]
         [Id(2, 2)]
-        public double SymetryPointX { get { return _symetry.PointCoor[0]; } set { _symetry.PointCoor[0] = value; } }
+        public double SymmetryPointX { get { return _symmetry.PointCoor[0]; } set { _symmetry.PointCoor[0] = value; } }
         //
-        [Category("Symetry point coordinates")]
+        [Category("Symmetry point coordinates")]
         [OrderedDisplayName(2, 10, "Y")]
-        [Description("Y coordinate of the symetry point.")]
+        [Description("Y coordinate of the symmetry point.")]
         [TypeConverter(typeof(StringLengthConverter))]
         [Id(3, 2)]
-        public double SymetryPointY { get { return _symetry.PointCoor[1]; } set { _symetry.PointCoor[1] = value; } }
+        public double SymmetryPointY { get { return _symmetry.PointCoor[1]; } set { _symmetry.PointCoor[1] = value; } }
         //
-        [Category("Symetry point coordinates")]
+        [Category("Symmetry point coordinates")]
         [OrderedDisplayName(3, 10, "Z")]
-        [Description("Z coordinate of the symetry point.")]
+        [Description("Z coordinate of the symmetry point.")]
         [TypeConverter(typeof(StringLengthConverter))]
         [Id(4, 2)]
-        public double SymetryPointZ { get { return _symetry.PointCoor[2]; } set { _symetry.PointCoor[2] = value; } }
+        public double SymmetryPointZ { get { return _symmetry.PointCoor[2]; } set { _symmetry.PointCoor[2] = value; } }
         
 
 
         // Constructors                                                                                                             
-        public ViewSymetry(Symetry symetry)
+        public ViewSymmetry(Symmetry symmetry)
         {
-            _symetry = symetry;
+            _symmetry = symmetry;
             //
             _dctd = ProviderInstaller.Install(this);
             _dctd.CategorySortOrder = CustomSortOrder.AscendingById;
@@ -77,6 +77,6 @@ namespace PrePoMax.Forms
 
 
         // Methods                                                                                                                  
-        public override Transformation Base { get { return _symetry; } }
+        public override Transformation Base { get { return _symmetry; } }
     }
 }

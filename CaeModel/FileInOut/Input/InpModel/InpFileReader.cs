@@ -685,6 +685,7 @@ namespace FileInOut.Input
                         return null;
                     }
                 }
+                //
                 return surface;
             }
             catch
@@ -790,28 +791,52 @@ namespace FileInOut.Input
                 if (name != null)
                 {
                     string keyword;
+                    bool temperatureDependent;
                     material = new Material(name);
                     //
                     for (int i = dataSetId; i < dataSets.Length; i++)
                     {
                         dataSetId = i;
                         dataSet = dataSets[dataSetId];
-                        keyword = dataSet[0].Split(_splitter, StringSplitOptions.RemoveEmptyEntries)[0].Trim().ToUpper();
+                        keyword = dataSet[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries)[0].Trim().ToUpper();
                         //
                         if (keyword == "*DENSITY")
                         {
-                            Density density = GetMaterialDensity(dataSet);
+                            Density density = GetMaterialDensity(dataSet, out temperatureDependent);
                             if (density != null) material.AddProperty(density);
+                            if (temperatureDependent) material.TemperatureDependent = true;
                         }
                         else if (keyword == "*ELASTIC")
                         {
-                            Elastic elastic = GetMaterialElasticity(dataSet);
+                            Elastic elastic = GetMaterialElasticity(dataSet, out temperatureDependent);
                             if (elastic != null) material.AddProperty(elastic);
+                            if (temperatureDependent) material.TemperatureDependent = true;
                         }
                         else if (keyword == "*PLASTIC")
                         {
-                            Plastic plastic = GetMaterialPlasticity(dataSet);
+                            Plastic plastic = GetMaterialPlasticity(dataSet, out temperatureDependent);
                             if (plastic != null) material.AddProperty(plastic);
+                            if (temperatureDependent) material.TemperatureDependent = true;
+                        }
+                        // Thermal
+                        else if (keyword == "*EXPANSION")
+                        {
+                            ThermalExpansion thermalExpansion = GetMaterialThermalExpansion(dataSet, out temperatureDependent);
+                            if (thermalExpansion != null) material.AddProperty(thermalExpansion);
+                            if (temperatureDependent) material.TemperatureDependent = true;
+                        }
+                        else if (keyword == "*CONDUCTIVITY")
+                        {
+                            ThermalConductivity thermalConductivity =
+                                GetMaterialThermalConductivity(dataSet, out temperatureDependent);
+                            if (thermalConductivity != null) material.AddProperty(thermalConductivity);
+                            if (temperatureDependent) material.TemperatureDependent = true;
+                        }
+                        else if (keyword == "*SPECIFIC HEAT")
+                        {
+                            SpecificHeat specificHeat = GetMaterialSpecificHeat(dataSet, out temperatureDependent);
+                            if (specificHeat != null) material.AddProperty(specificHeat);
+                            if (temperatureDependent) material.TemperatureDependent = true;
                         }
                         else if (_materialKeywords.Contains(keyword))
                         {
@@ -838,20 +863,32 @@ namespace FileInOut.Input
                 return null;
             }
         }
-        private static Density GetMaterialDensity(string[] lines)
+        private static Density GetMaterialDensity(string[] lines, out bool temperatureDependent)
         {
-            // *Density
-            // 7.85E-09
-            // JAW 17 Jul 2020
-            // Sometimes the density value keyword has a comma at the end (7.85e-09,)
-            // so we read the line expecting a comma at the end of the density value
+            // *Density     
+            // 7.85E-09, 0  
+            // 7.80E-09, 100
             string[] record1;
+            temperatureDependent = false;
             try
             {
-                record1 = lines[1].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
-                double rho = double.Parse(record1[0]);
-                // End of JAW Mods
-                Density density = new Density(new double[][] { new double[] { rho, 0 } });
+                double rho;
+                double T;
+                double[][] densityTemp = new double[lines.Length - 1][];
+                for (int i = 1; i < lines.Length; i++)
+                {
+                    record1 = lines[i].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                    rho = double.Parse(record1[0]);
+                    T = 0;
+                    if (record1.Length == 2)
+                    {
+                        T = double.Parse(record1[1]);
+                        temperatureDependent = true;
+                    }
+                    densityTemp[i - 1] = new double[] { rho, T };
+                }
+                //
+                Density density = new Density(densityTemp);
                 return density;
             }
             catch
@@ -860,21 +897,37 @@ namespace FileInOut.Input
                 return null;
             }
         }
-        private static Elastic GetMaterialElasticity(string[] lines)
+        private static Elastic GetMaterialElasticity(string[] lines, out bool temperatureDependent)
         {
-            // *Elastic
-            // 210000, 0.3
-
+            // *Elastic        
+            // 210000, 0.3, 0  
+            // 180000, 0.3, 100
             string[] record1;
-
+            temperatureDependent = false;
             try
             {
-                record1 = lines[1].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
-
-                double E = double.Parse(record1[0]);
-                double v = double.Parse(record1[1]);
-
-                Elastic elastic = new Elastic(new double[][] { new double[] { E, v, 0 } });
+                double E;
+                double v;
+                double T;
+                double[][] youngsPoissonsTemp = new double[lines.Length - 1][];
+                //
+                for (int i = 1; i < lines.Length; i++)
+                {
+                    record1 = lines[i].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                    //
+                    E = double.Parse(record1[0]);
+                    v = double.Parse(record1[1]);
+                    T = 0;
+                    if (record1.Length == 3)
+                    {
+                        T = double.Parse(record1[2]);
+                        temperatureDependent = true;
+                    }
+                    //
+                    youngsPoissonsTemp[i - 1] = new double[] { E, v, T };
+                }
+                //
+                Elastic elastic = new Elastic(youngsPoissonsTemp);
                 return elastic;
             }
             catch
@@ -883,17 +936,22 @@ namespace FileInOut.Input
                 return null;
             }
         }
-        private static Plastic GetMaterialPlasticity(string[] lines)
+        private static Plastic GetMaterialPlasticity(string[] lines, out bool temperatureDependent)
         {
             // *Plastic, Hardening=Kinematic
-            // 235, 0
-            // 400, 0.2
+            // 235, 0,   0  
+            // 400, 0.2, 0  
+            // 200, 0,   100
+            // 350, 0.2, 100
             string[] record1;
+            temperatureDependent = false;
             try
             {
                 PlasticHardening hardening = PlasticHardening.Isotropic;
-                double[] stressStrain;
-                List<double[]> stressStrains = new List<double[]>();
+                double stress;
+                double strain;
+                double T;
+                double[][] stressStrainTemp = new double[lines.Length - 1][];
                 //
                 record1 = lines[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
                 if (record1.Length > 1)
@@ -904,20 +962,130 @@ namespace FileInOut.Input
                 //
                 for (int i = 1; i < lines.Length; i++)
                 {
-                    stressStrain = new double[2];
                     record1 = lines[i].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
-                    stressStrain[0] = double.Parse(record1[0]);
-                    stressStrain[1] = double.Parse(record1[1]);
-                    stressStrains.Add(stressStrain);
+                    stress = double.Parse(record1[0]);
+                    strain = double.Parse(record1[1]);
+                    T = 0;
+                    if (record1.Length == 3)
+                    {
+                        T = double.Parse(record1[2]);
+                        temperatureDependent = true;
+                    }
+                    stressStrainTemp[i - 1] = new double[] { stress, strain, T };
                 }
                 //
-                Plastic plastic = new Plastic(stressStrains.ToArray());
+                Plastic plastic = new Plastic(stressStrainTemp);
                 plastic.Hardening = hardening;
                 return plastic;
             }
             catch
             {
                 _errors.Add("Failed to import plasticity: " + lines.ToRows());
+                return null;
+            }
+        }
+        // Thermal
+        private static ThermalExpansion GetMaterialThermalExpansion(string[] lines, out bool temperatureDependent)
+        {
+            // *Expansion   
+            // 4.E-6,-1300
+            // 12.E-6,-100
+            // 20.E-6,1100
+            // 28.E-6,2300
+            string[] record1;
+            temperatureDependent = false;
+            try
+            {
+                double exp;
+                double T;
+                double[][] thermalExpansionTemp = new double[lines.Length - 1][];
+                for (int i = 1; i < lines.Length; i++)
+                {
+                    record1 = lines[i].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                    exp = double.Parse(record1[0]);
+                    T = 0;
+                    if (record1.Length == 2)
+                    {
+                        T = double.Parse(record1[1]);
+                        temperatureDependent = true;
+                    }
+                    thermalExpansionTemp[i - 1] = new double[] { exp, T };
+                }
+                //
+                ThermalExpansion thermalExpansion = new ThermalExpansion(thermalExpansionTemp);
+                return thermalExpansion;
+            }
+            catch
+            {
+                _errors.Add("Failed to import thermal expansion: " + lines.ToRows());
+                return null;
+            }
+        }
+        private static ThermalConductivity GetMaterialThermalConductivity(string[] lines, out bool temperatureDependent)
+        {
+            // *Conductivity
+            // 14, 0
+            // 20, 100
+            string[] record1;
+            temperatureDependent = false;
+            try
+            {
+                double con;
+                double T;
+                double[][] thermalConductivityTemp = new double[lines.Length - 1][];
+                for (int i = 1; i < lines.Length; i++)
+                {
+                    record1 = lines[i].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                    con = double.Parse(record1[0]);
+                    T = 0;
+                    if (record1.Length == 2)
+                    {
+                        T = double.Parse(record1[1]);
+                        temperatureDependent = true;
+                    }
+                    thermalConductivityTemp[i - 1] = new double[] { con, T };
+                }
+                //
+                ThermalConductivity thermalConductivity = new ThermalConductivity(thermalConductivityTemp);
+                return thermalConductivity;
+            }
+            catch
+            {
+                _errors.Add("Failed to import thermal conductivity: " + lines.ToRows());
+                return null;
+            }
+        }
+        private static SpecificHeat GetMaterialSpecificHeat(string[] lines, out bool temperatureDependent)
+        {
+            // *Specific heat
+            // 440000000, 0
+            // 460000000, 100
+            string[] record1;
+            temperatureDependent = false;
+            try
+            {
+                double sh;
+                double T;
+                double[][] specificHeatTemp = new double[lines.Length - 1][];
+                for (int i = 1; i < lines.Length; i++)
+                {
+                    record1 = lines[i].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
+                    sh = double.Parse(record1[0]);
+                    T = 0;
+                    if (record1.Length == 2)
+                    {
+                        T = double.Parse(record1[1]);
+                        temperatureDependent = true;
+                    }
+                    specificHeatTemp[i - 1] = new double[] { sh, T };
+                }
+                //
+                SpecificHeat specificHeat = new SpecificHeat(specificHeatTemp);
+                return specificHeat;
+            }
+            catch
+            {
+                _errors.Add("Failed to import specific heat: " + lines.ToRows());
                 return null;
             }
         }
@@ -1299,8 +1467,7 @@ namespace FileInOut.Input
                     string[] recordBC = lines[i].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
                     // Create Boundary Condition
                     // Get regionName
-                    var regionName = recordBC[0].Trim();
-                    name = NamedClass.GetNewValueName(step.BoundaryConditions.Keys, "Disp_rot-");
+                    var regionName = recordBC[0].Trim();                    
                     // Get the prescribed displacement
                     int dofStart = int.Parse(recordBC[1]);
                     int dofEnd = int.Parse(recordBC[2]);
@@ -1309,11 +1476,13 @@ namespace FileInOut.Input
                     //
                     if (dofStart == 11)
                     {
+                        name = NamedClass.GetNewValueName(step.BoundaryConditions.Keys, "Temperature-");
                         TemperatureBC tmpBC = new TemperatureBC(name, regionName, RegionTypeEnum.NodeSetName, dofValue);
                         step.AddBoundaryCondition(tmpBC);
                     }
                     else
                     {
+                        name = NamedClass.GetNewValueName(step.BoundaryConditions.Keys, "Displacement_rotation-");
                         DisplacementRotation dispRot = new DisplacementRotation(name, regionName, RegionTypeEnum.NodeSetName);
                         // Assign DOF prescribed displacement
                         for (var j = dofStart; j <= dofEnd; j++)

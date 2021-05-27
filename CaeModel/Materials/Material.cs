@@ -45,6 +45,10 @@ namespace CaeModel
                 StringPressureConverter spc = new StringPressureConverter();
                 StringTemperatureConverter stc = new StringTemperatureConverter();
                 //
+                StringThermalExpansionConverter stec = new StringThermalExpansionConverter();
+                StringThermalConductivityConverter stcc = new StringThermalConductivityConverter();
+                StringSpecificHeatConverter sshc = new StringSpecificHeatConverter();
+                //
                 foreach (var property in _properties)
                 {
                     if (property is Density den)
@@ -80,6 +84,36 @@ namespace CaeModel
                             pl.StressStrainTemp[i][0] = fromSystem.Convert(pl.StressStrainTemp[i][0], spc, toSystem);
                             // Temp
                             pl.StressStrainTemp[i][2] = fromSystem.Convert(pl.StressStrainTemp[i][2], stc, toSystem);
+                        }
+                    }
+                    else if (property is ThermalExpansion te)
+                    {
+                        for (int i = 0; i < te.ThermalExpansionTemp.Length; i++)
+                        {
+                            // Expansion
+                            te.ThermalExpansionTemp[i][0] = fromSystem.Convert(te.ThermalExpansionTemp[i][0], stec, toSystem);
+                            // Temp
+                            te.ThermalExpansionTemp[i][1] = fromSystem.Convert(te.ThermalExpansionTemp[i][1], stc, toSystem);
+                        }
+                    }
+                    else if (property is ThermalConductivity tc)
+                    { 
+                        for (int i = 0; i < tc.ThermalConductivityTemp.Length; i++)
+                        {
+                            // Conductivity
+                            tc.ThermalConductivityTemp[i][0] = fromSystem.Convert(tc.ThermalConductivityTemp[i][0], stcc, toSystem);
+                            // Temp
+                            tc.ThermalConductivityTemp[i][1] = fromSystem.Convert(tc.ThermalConductivityTemp[i][1], stc, toSystem);
+                        }
+                    }
+                    else if (property is SpecificHeat sh)
+                    {
+                        for (int i = 0; i < sh.SpecificHeatTemp.Length; i++)
+                        {
+                            // Conductivity
+                            sh.SpecificHeatTemp[i][0] = fromSystem.Convert(sh.SpecificHeatTemp[i][0], sshc, toSystem);
+                            // Temp
+                            sh.SpecificHeatTemp[i][1] = fromSystem.Convert(sh.SpecificHeatTemp[i][1], stc, toSystem);
                         }
                     }
                     else throw new NotSupportedException();

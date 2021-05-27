@@ -34,7 +34,7 @@ namespace PrePoMax
         //
         [CategoryAttribute("Magnitude")]
         [OrderedDisplayName(0, 10, "Flux")]
-        [DescriptionAttribute("Value of the flux power per node.")]
+        [DescriptionAttribute("Value of the flux per node.")]
         [TypeConverter(typeof(StringPowerConverter))]
         [Id(1, 3)]
         public double Magnitude { get { return _cFlux.Magnitude; } set { _cFlux.Magnitude = value; } }

@@ -474,12 +474,6 @@ namespace PrePoMax
             try
             {
                 DialogResult response = DialogResult.None;
-                // Save form size and location
-                if (_controller != null)
-                {
-                    _controller.Settings.General.SaveFormSize(this);
-                    _controller.Settings = _controller.Settings;    // to save the settings
-                }
                 //
                 if (tsslState.Text != Globals.ReadyText)
                 {
@@ -495,11 +489,21 @@ namespace PrePoMax
                     response = MessageBox.Show("Save file before closing?", "Warning", MessageBoxButtons.YesNoCancel);
                     if (response == DialogResult.Yes)
                     {
-                        e.Cancel = true;                                // stop the form from closing before saving
-                        await Task.Run(() => _controller.Save());       // save                        
-                        this.Close();                                   // close the control
+                        e.Cancel = true;                                // Stop the form from closing before saving
+                        await Task.Run(() => _controller.Save());       // Save                        
+                        this.Close();                                   // Close the control
                     }
                     else if (response == DialogResult.Cancel) e.Cancel = true;
+                }
+                // Save form size and location
+                if (e.Cancel == false && _controller != null)
+                {
+                    _controller.Settings.General.SaveFormSize(this);
+                    _controller.Settings.SaveToFile();
+                    //
+                    _vtk.Clear();
+                    _vtk.Dispose();
+                    _vtk = null;
                 }
             }
             catch
@@ -5877,9 +5881,9 @@ namespace PrePoMax
             InvokeIfRequired(_vtk.RemovePreviewedExplodedView, partNames);
         }        
         // Transforms
-        public void AddSymetry(int symetryPlane, double[] symetryPoint)
+        public void AddSymmetry(int symmetryPlane, double[] symmetryPoint)
         {
-            InvokeIfRequired(_vtk.AddSymetry, symetryPlane, symetryPoint);
+            InvokeIfRequired(_vtk.AddSymmetry, symmetryPlane, symmetryPoint);
         }
         public void AddLinearPattern(double[] displacement, int numOfItems)
         {
@@ -6064,9 +6068,9 @@ namespace PrePoMax
             InvokeIfRequired(_vtk.SetSmoothing, pointSmoothing, lineSmoothing, redraw);
         }
         // Highlight
-        public void SetHighlightColor(Color primaryHighlightColor, Color secundaryHighlightColor)
+        public void SetHighlightColor(Color primaryHighlightColor, Color secondaryHighlightColor)
         {
-            InvokeIfRequired(_vtk.SetHighlightColor, primaryHighlightColor, secundaryHighlightColor);
+            InvokeIfRequired(_vtk.SetHighlightColor, primaryHighlightColor, secondaryHighlightColor);
         }
         public void SetMouseHighlightColor(Color mousehighlightColor)
         {

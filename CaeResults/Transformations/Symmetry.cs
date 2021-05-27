@@ -10,7 +10,7 @@ using Octree;
 namespace CaeResults
 {
     [Serializable]
-    public enum SymetryPlaneEnum
+    public enum SymmetryPlaneEnum
     {
         X,
         Y,
@@ -18,24 +18,24 @@ namespace CaeResults
     }
 
     [Serializable]
-    public class Symetry : Transformation
+    public class Symmetry : Transformation
     {
         // Variables                                                                                                                
         protected double[] _pointCoor;
-        protected SymetryPlaneEnum _symetryPlane;
+        protected SymmetryPlaneEnum _symmetryPlane;
 
 
         // Properties                                                                                                               
         public double[] PointCoor { get { return _pointCoor; } set { _pointCoor = value; } }
-        public SymetryPlaneEnum SymetryPlane { get { return _symetryPlane; } set { _symetryPlane = value; } }
+        public SymmetryPlaneEnum SymmetryPlane { get { return _symmetryPlane; } set { _symmetryPlane = value; } }
 
 
         // Constructor                                                                                                              
-        public Symetry(string name, double[] pointCoor, SymetryPlaneEnum symetryPlane)
+        public Symmetry(string name, double[] pointCoor, SymmetryPlaneEnum symmetryPlane)
             : base(name)
         {
             _pointCoor = pointCoor;
-            _symetryPlane = symetryPlane;
+            _symmetryPlane = symmetryPlane;
         }
 
 

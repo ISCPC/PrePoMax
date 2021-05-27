@@ -3172,9 +3172,13 @@ namespace CaeMesh
                     {
                         if (node is SelectionNodeIds snids)
                         {
-                            for (int i = 0; i < snids.ItemIds.Length; i++)
+                            if (snids.GeometryIds) {}
+                            else
                             {
-                                snids.ItemIds[i] = newIds[snids.ItemIds[i]];
+                                for (int i = 0; i < snids.ItemIds.Length; i++)
+                                {
+                                    snids.ItemIds[i] = newIds[snids.ItemIds[i]];
+                                }
                             }
                         }
                     }
@@ -3561,13 +3565,18 @@ namespace CaeMesh
             }
             nodeIds = allNodeIds.ToArray();
             //
-            surfaceFaceTypes = FeSurfaceFaceTypes.Unknown;
-            if (surfaceFaceIds.Length > 0)
+            surfaceFaceTypes = GetSurfaceTypeFromFaceIds(surfaceFaceIds);
+        }
+        private FeSurfaceFaceTypes GetSurfaceTypeFromFaceIds(IEnumerable<int> surfaceFaceIds)
+        {
+            FeSurfaceFaceTypes surfaceFaceTypes = FeSurfaceFaceTypes.Unknown;
+            if (surfaceFaceIds.Count() > 0)
             {
                 HashSet<FeSurfaceFaceTypes> allSurfaceFaceTypes = GetSurfaceFaceTypesFromFaceIds(surfaceFaceIds);
                 if (allSurfaceFaceTypes.Count == 1) surfaceFaceTypes = allSurfaceFaceTypes.First();
                 else throw new NotSupportedException();
             }
+            return surfaceFaceTypes;
         }
         private void CreateSurfaceFacesFromNodeSet(FeSurface surface, out int[] nodeIds,
                                                    out Dictionary<FeFaceName, List<int>> elementSets,
@@ -5656,15 +5665,15 @@ namespace CaeMesh
                 AddSurfaceFromNodeSet(surface);
             }
             else throw new CaeException("Function 'Add surface' only usable for surfaces created from faces.");
-
+            //
             _surfaces.Add(surface.Name, surface);
         }
         private void AddSurfaceFromFaces(ref FeSurface surface)
         {
             FeElementSet elementSet;
-            List<FeFaceName> tmpFaces = new List<FeFaceName>();
+            List<FeFaceName> tmpFaces;
             Dictionary<int, List<FeFaceName>> allElementIdsFaces = new Dictionary<int, List<FeFaceName>>();
-
+            //
             foreach (var entry in surface.ElementFaces)
             {
                 if (_elementSets.TryGetValue(entry.Value, out elementSet))
@@ -5678,12 +5687,12 @@ namespace CaeMesh
                 }
                 else surface.Valid = false;
             }
-
+            //
             FeElement element;
             List<int> faceIds = new List<int>();
             HashSet<int> allNodeIds = new HashSet<int>();
             CompareIntArray comparer = new CompareIntArray();
-
+            //
             int vtkCellId;
             int[] cell;
             foreach (var entry in allElementIdsFaces)
@@ -5702,21 +5711,36 @@ namespace CaeMesh
                         }
                     }
                 }
+                else if (element is FeElement2D element2D)
+                {
+                    foreach (var faceName in entry.Value)
+                    {
+                        cell = element2D.GetVtkCellFromFaceName(faceName);
+                        vtkCellId = element2D.GetVtkCellIdFromCell(cell);
+                        if (vtkCellId != -1)
+                        {
+                            allNodeIds.UnionWith(cell);
+                            faceIds.Add(10 * element.Id + vtkCellId);
+                        }
+                    }
+                }
+                else throw new NotSupportedException();
             }
-
+            //
             FeSurface surfaceFromFaceIds = new FeSurface(surface.Name, faceIds.ToArray(), null);
             foreach (var entry in surface.ElementFaces) surfaceFromFaceIds.AddElementFace(entry.Key, entry.Value);
-
-            // node set
+            // Get the surface face type
+            surfaceFromFaceIds.SurfaceFaceTypes = GetSurfaceTypeFromFaceIds(surfaceFromFaceIds.FaceIds);
+            // Node set
             string nodeSetName = GetNextFreeInternalName(_nodeSets) + surfaceFromFaceIds.Name;
             FeNodeSet nodeSet = new FeNodeSet(nodeSetName, allNodeIds.ToArray());
             nodeSet.Internal = true;
             UpdateNodeSetCenterOfGravity(nodeSet);
             _nodeSets.Add(nodeSetName, nodeSet);
             surfaceFromFaceIds.NodeSetName = nodeSetName;
-
+            //
             UpdateSurfaceArea(surfaceFromFaceIds);
-
+            //
             surface = surfaceFromFaceIds;
         }
         private void AddSurfaceFromNodeSet(FeSurface surface)
@@ -5774,6 +5798,20 @@ namespace CaeMesh
                     entry.Value.Name = entryName;
                 }
                 _elementSets.Add(entry.Value.Name, entry.Value);
+            }
+            // Add and rename surfaces
+            count = 1;
+            foreach (var entry in mesh.Surfaces)
+            {
+                entryName = entry.Key;
+                if (_surfaces.ContainsKey(entryName))
+                {
+                    entryName += "_Im-";
+                    while (_surfaces.ContainsKey(entryName + count.ToString())) count++;
+                    entryName += count.ToString();
+                    entry.Value.Name = entryName;
+                }
+                _surfaces.Add(entry.Value.Name, entry.Value);
             }
             // Renumber parts
             int maxPartID = 0;

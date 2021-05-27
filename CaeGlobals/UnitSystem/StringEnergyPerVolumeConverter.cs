@@ -16,7 +16,6 @@ namespace CaeGlobals
         // Variables                                                                                                                
         protected static EnergyUnit _energyUnit = EnergyUnit.Joule;
         protected static VolumeUnit _volumeUnit = VolumeUnit.CubicMeter;
-        protected static string _inlb = "in·lb";
         protected static string error = "Unable to parse quantity. Expected the form \"{value} {unit abbreviation}" +
                                         "\", such as \"5.5 m\". The spacing is optional.";
 
@@ -31,7 +30,7 @@ namespace CaeGlobals
                     _energyUnit = (EnergyUnit)MyUnit.NoUnit;
                     _volumeUnit = (VolumeUnit)MyUnit.NoUnit;
                 }
-                else if (value == _inlb) _energyUnit = MyUnit.InchPound;
+                else if (value == MyUnit.PoundForceInchAbbreviation) _energyUnit = MyUnit.PoundForceInch;
                 else { _energyUnit = Energy.ParseUnit(value); }
             }
         }
@@ -51,7 +50,12 @@ namespace CaeGlobals
         {
             string unit;
             if ((int)energyUnit == MyUnit.NoUnit || (int)volumeUnit == MyUnit.NoUnit) unit = "";
-            else unit = Energy.GetAbbreviation(energyUnit) + "/" + Volume.GetAbbreviation(volumeUnit);
+            else
+            {
+                if (energyUnit == MyUnit.PoundForceInch) unit = MyUnit.PoundForceInchAbbreviation;
+                else unit = Energy.GetAbbreviation(energyUnit);
+                unit += "/" + Volume.GetAbbreviation(volumeUnit);
+            }
             return unit;
         }
 
@@ -76,7 +80,7 @@ namespace CaeGlobals
                 double valueDouble;
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    valueDouble = ConvertEnergyPerVolume(valueString);
+                    valueDouble = ConvertToUnits(valueString);
                 }
                 return valueDouble;
             }
@@ -104,7 +108,7 @@ namespace CaeGlobals
             }
         }
         //
-        private static double ConvertEnergyPerVolume(string valueWithUnitString)
+        private static double ConvertToUnits(string valueWithUnitString)
         {
             valueWithUnitString = valueWithUnitString.Trim().Replace(" ", "");
             //
@@ -112,13 +116,13 @@ namespace CaeGlobals
             if (tmp.Length != 2) throw new FormatException(error);
             //
             StringEnergyConverter converter = new StringEnergyConverter();  // this includes conversion to NoUnit
-            double energy = (double)converter.ConvertFromString(tmp[0]);
+            double energyValue = (double)converter.ConvertFromString(tmp[0]);
             // NoUnit
-            if ((int)_energyUnit == MyUnit.NoUnit || (int)_volumeUnit == MyUnit.NoUnit) return energy;
+            if ((int)_energyUnit == MyUnit.NoUnit || (int)_volumeUnit == MyUnit.NoUnit) return energyValue;
             //
             VolumeUnit volumeUnit = Volume.ParseUnit(tmp[1]);
             Volume volume = Volume.From(1, volumeUnit).ToUnit(_volumeUnit);
-            double value = energy / volume.Value;
+            double value = energyValue / volume.Value;
             //
             return value;
         }

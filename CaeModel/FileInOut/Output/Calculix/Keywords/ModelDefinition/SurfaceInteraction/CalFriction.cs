@@ -34,7 +34,7 @@ namespace FileInOut.Output.Calculix
         {
             StringBuilder sb = new StringBuilder();
             sb.Append(_friction.Coefficient);
-            if (!double.IsNaN(_friction.StikSlope)) sb.AppendFormat(", {0}", _friction.StikSlope);
+            if (!double.IsNaN(_friction.StickSlope)) sb.AppendFormat(", {0}", _friction.StickSlope);
             sb.AppendLine();
             return sb.ToString();
         }

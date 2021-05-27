@@ -16,7 +16,7 @@ namespace PrePoMax
     {
         // Variables                                                                                                                
         private Color _primaryHighlightColor;
-        private Color _secundaryHighlightColor;
+        private Color _secondaryHighlightColor;
         private Color _mouseHighlightColor;
         private Color _constraintSymbolColor;
         private Color _boundaryConditionSymbolColor;
@@ -35,10 +35,10 @@ namespace PrePoMax
             get { return _primaryHighlightColor; }
             set { _primaryHighlightColor = value; }
         }
-        public Color SecundaryHighlightColor
+        public Color SecondaryHighlightColor
         {
-            get { return _secundaryHighlightColor; }
-            set { _secundaryHighlightColor = value; }
+            get { return _secondaryHighlightColor; }
+            set { _secondaryHighlightColor = value; }
         }
         public Color MouseHighlightColor
         {
@@ -113,7 +113,7 @@ namespace PrePoMax
         public void Reset()
         {
             _primaryHighlightColor = Color.Red;
-            _secundaryHighlightColor = Color.Violet;
+            _secondaryHighlightColor = Color.Violet;
             _mouseHighlightColor = Color.Orange;
             _constraintSymbolColor = Color.Yellow;
             _boundaryConditionSymbolColor = Color.Lime;

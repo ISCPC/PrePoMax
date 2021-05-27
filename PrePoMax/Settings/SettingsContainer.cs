@@ -78,6 +78,7 @@ namespace PrePoMax
         public void ClearColorSpectrums()
         {
             _colorSpectrums.Clear();
+            _legend.ColorSpectrum.MinMaxType = vtkControl.vtkColorSpectrumMinMaxType.Automatic;
         }
         public void Set(SettingsContainer settingsContainer, ViewGeometryModelResults currentView,
                         CaeResults.FieldData currentFieldData)
@@ -165,8 +166,15 @@ namespace PrePoMax
 
             }
         }
+        public void SaveToFile()
+        {
+            SaveToFile(Path.Combine(System.Windows.Forms.Application.StartupPath, Globals.SettingsFileName));
+        }
         public void SaveToFile(string fileName)
         {
+            // Reset the color limits
+            ClearColorSpectrums();
+            //
             ToDictionary().DumpToFile(fileName);
         }
         public void LoadFromFile()
@@ -179,7 +187,6 @@ namespace PrePoMax
                 var t = Task.Run(() => LoadFromFile(fileName));
                 t.Wait();
             }
-
         }
         private void LoadFromFile(string fileName)
         {            

@@ -406,6 +406,18 @@ namespace CaeModel
                     {
                         valid = (cfl.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(cfl.RegionName));
                     }
+                    else if (load is DFlux df)
+                    {
+                        valid = (_mesh.Surfaces.TryGetValue(df.SurfaceName, out s) && s.Valid);
+                    }
+                    else if (load is BodyFlux bf)
+                    {
+                        valid = (bf.RegionType == RegionTypeEnum.PartName && _mesh.Parts.ContainsValidKey(bf.RegionName))
+                                || (bf.RegionType == RegionTypeEnum.ElementSetName
+                                && _mesh.ElementSets.ContainsValidKey(bf.RegionName)
+                                || (bf.RegionType == RegionTypeEnum.Selection && _mesh.GetPartNamesByIds(bf.CreationIds) != null &&
+                                   _mesh.GetPartNamesByIds(bf.CreationIds).Length == bf.CreationIds.Length));
+                    }
                     else if (load is RadiateFlux rf)
                     {
                         valid = (_mesh.Surfaces.TryGetValue(rf.SurfaceName, out s) && s.Valid);

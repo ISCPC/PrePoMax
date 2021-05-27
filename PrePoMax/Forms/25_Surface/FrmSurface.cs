@@ -129,6 +129,10 @@ namespace PrePoMax.Forms
         }
         protected override bool OnPrepareForm(string stepName, string surfaceToEditName)
         {
+            // Selection limits must precede _controller.CreateNewSelection to work properly
+            _controller.Selection.LimitSelectionToFirstGeometryType = true;
+            _controller.Selection.EnableShellEdgeFaceSelection = true;
+            //
             this.btnOkAddNew.Visible = surfaceToEditName == null;
             //
             _propertyItemChanged = false;
@@ -153,16 +157,19 @@ namespace PrePoMax.Forms
             else
             {
                 Surface = _controller.GetSurface(_surfaceToEditName);   // to clone
-                //
-                if (Surface.FaceIds != null)
+                int[] ids = Surface.FaceIds;
+                if (Surface.CreationData == null && ids != null)        // from .inp
                 {
-                    // Change node selection history to ids to speed up
-                    int[] ids = Surface.FaceIds;
-                    _selectionNodeIds = new SelectionNodeIds(vtkSelectOperation.None, false, ids);
-                    _prevSelectionNodes = Surface.CreationData.Nodes;
-                    _controller.CreateNewSelection(Surface.CreationData.CurrentView, vtkSelectItem.Surface, _selectionNodeIds, true);
-                    Surface.CreationData = _controller.Selection.DeepClone();
+                    // Add creation data
+                    Surface.CreationData = new Selection();
+                    Surface.CreationData.SelectItem = vtkSelectItem.Surface;
+                    Surface.CreationData.Add(new SelectionNodeIds(vtkSelectOperation.Add, false, ids));
                 }
+                // Change node selection history to ids to speed up
+                _selectionNodeIds = new SelectionNodeIds(vtkSelectOperation.None, false, ids);
+                _prevSelectionNodes = Surface.CreationData.Nodes;
+                _controller.CreateNewSelection(Surface.CreationData.CurrentView, vtkSelectItem.Surface, _selectionNodeIds, true);
+                Surface.CreationData = _controller.Selection.DeepClone();
                 //
                 if (Surface.CreatedFrom == FeSurfaceCreatedFrom.Selection) { }
                 else if (Surface.CreatedFrom == FeSurfaceCreatedFrom.NodeSet)
@@ -182,9 +189,6 @@ namespace PrePoMax.Forms
             }
             //
             SetSelectItem();
-            //
-            _controller.Selection.LimitSelectionToFirstGeometryType = true;
-            _controller.Selection.EnableShellEdgeFaceSelection = true;
             //
             HighlightSurface();
             //

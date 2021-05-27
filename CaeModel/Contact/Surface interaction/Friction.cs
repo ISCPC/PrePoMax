@@ -14,7 +14,7 @@ namespace CaeModel
         private static string _positive = "The value must be larger than 0.";
         //
         private double _coefficient;
-        private double _stikSlope;
+        private double _stickSlope;
 
         // Properties                                                                                                               
         public double Coefficient 
@@ -22,12 +22,12 @@ namespace CaeModel
             get { return _coefficient; } 
             set { if (value > 0) _coefficient = value; else throw new CaeException(_positive); } 
         }
-        public double StikSlope
+        public double StickSlope
         {
-            get { return _stikSlope; }
+            get { return _stickSlope; }
             set
             {
-                if (double.IsNaN(value) || value > 0) _stikSlope = value;
+                if (double.IsNaN(value) || value > 0) _stickSlope = value;
                 else throw new CaeException(_positive);
             }
         }
@@ -42,10 +42,10 @@ namespace CaeModel
             : this(coefficient, double.NaN)
         {
         }
-        public Friction(double coefficient, double stikSlope)
+        public Friction(double coefficient, double stickSlope)
         {
             Coefficient = coefficient;
-            StikSlope = stikSlope;
+            StickSlope = stickSlope;
         }
 
 

@@ -9,19 +9,16 @@ using CaeMesh;
 namespace FileInOut.Output.Calculix
 {
     [Serializable]
-    internal class CalGravityLoad : CalculixKeyword
+    internal class CalBodyFlux : CalculixKeyword
     {
         // Variables                                                                                                                
-        private GravityLoad _load;
+        private BodyFlux _flux;
 
-
-        // Properties                                                                                                               
-
-
+        
         // Constructor                                                                                                              
-        public CalGravityLoad(GravityLoad load)
+        public CalBodyFlux(BodyFlux flux)
         {
-            _load = load;
+            _flux = flux;
         }
 
 
@@ -29,26 +26,16 @@ namespace FileInOut.Output.Calculix
         public override string GetKeywordString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine("** Name: " + _load.Name);
-            sb.AppendLine("*Dload");
+            sb.AppendLine("** Name: " + _flux.Name);
+            sb.AppendLine("*Dflux");
             return sb.ToString();
         }
         public override string GetDataString()
         {
+            //*Dflux
+            //ElementSet-1, BF, 10
             StringBuilder sb = new StringBuilder();
-
-            double f1, f2, f3;
-            double len = Math.Sqrt(_load.F1 * _load.F1 + _load.F2 * _load.F2 + _load.F3 * _load.F3);
-            if (len != 0)
-            {
-                f1 = _load.F1 / len;
-                f2 = _load.F2 / len;
-                f3 = _load.F3 / len;
-            }
-            else f1 = f2 = f3 = 0;
-
-            sb.AppendFormat("{0}, Grav, {1}, {2}, {3}, {4}", _load.RegionName, len, f1, f2, f3);
-            sb.AppendLine();
+            sb.AppendFormat("{0}, BF, {1}{2}", _flux.RegionName, _flux.Magnitude, Environment.NewLine);
             return sb.ToString();
         }
     }

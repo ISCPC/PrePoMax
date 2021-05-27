@@ -23,7 +23,7 @@ namespace CaeGlobals
             set
             {
                 if (value == "") _energyUnit = (EnergyUnit)MyUnit.NoUnit;
-                else if (value == MyUnit.InchPoundAbbreviation) _energyUnit = MyUnit.InchPound;
+                else if (value == MyUnit.PoundForceInchAbbreviation) _energyUnit = MyUnit.PoundForceInch;
                 else { _energyUnit = Energy.ParseUnit(value); }
             }
         }
@@ -31,7 +31,7 @@ namespace CaeGlobals
         {
             string unit;
             if ((int)energyUnit == MyUnit.NoUnit) unit = "";
-            else if (energyUnit == MyUnit.InchPound) return MyUnit.InchPoundAbbreviation;
+            else if (energyUnit == MyUnit.PoundForceInch) return MyUnit.PoundForceInchAbbreviation;
             else unit = Energy.GetAbbreviation(energyUnit);
             return unit;
         }
@@ -58,33 +58,7 @@ namespace CaeGlobals
                 //
                 if (!double.TryParse(valueString, out valueDouble))
                 {
-                    // 1 inch = 1/12 foot
-                    double conversion = 1.0 / 12.0;
-                    double scale = 1;
-                    valueString = valueString.Trim().Replace(" ", "");
-                    // Check if it is given in unsupported units
-                    if (valueString.Contains(MyUnit.InchPoundAbbreviation))
-                    {
-                        valueString = valueString.Replace(MyUnit.InchPoundAbbreviation, "ft·lb");
-                        scale = conversion;
-                    }
-                    // Check if it must be converted to unsupported units
-                    if ((int)_energyUnit == MyUnit.NoUnit)
-                    {
-                        Energy energy = Energy.Parse(valueString);
-                        valueDouble = energy.Value;
-                    }
-                    else if (_energyUnit == MyUnit.InchPound)
-                    {                        
-                        Energy energy = Energy.Parse(valueString).ToUnit(EnergyUnit.FootPound);
-                        if (scale == conversion) valueDouble = energy.Value;
-                        else valueDouble = scale * energy.Value / conversion;
-                    }
-                    else
-                    {
-                        Energy energy = Energy.Parse(valueString).ToUnit(_energyUnit);
-                        valueDouble = scale * energy.Value;
-                    }
+                    valueDouble = ConvertToUnits(valueString);
                 }
                 //
                 return valueDouble;
@@ -112,6 +86,39 @@ namespace CaeGlobals
             {
                 return base.ConvertTo(context, culture, value, destinationType);
             }
+        }
+        //
+        private static double ConvertToUnits(string valueWithUnitString)
+        {
+            // 1 inch = 1/12 foot
+            double conversion = 1.0 / 12.0;
+            double scale = 1;
+            valueWithUnitString = valueWithUnitString.Trim().Replace(" ", "");
+            // Check if it is given in unsupported units
+            if (valueWithUnitString.Contains(MyUnit.PoundForceInchAbbreviation))
+            {
+                valueWithUnitString = valueWithUnitString.Replace(MyUnit.PoundForceInchAbbreviation, "ft·lb");
+                scale = conversion;
+            }
+            // Check if it must be converted to unsupported units
+            double value;
+            if ((int)_energyUnit == MyUnit.NoUnit)
+            {
+                Energy energy = Energy.Parse(valueWithUnitString);
+                value = energy.Value;
+            }
+            else if (_energyUnit == MyUnit.PoundForceInch)
+            {
+                Energy energy = Energy.Parse(valueWithUnitString).ToUnit(EnergyUnit.FootPound);
+                if (scale == conversion) value = energy.Value;
+                else value = scale * energy.Value / conversion;
+            }
+            else
+            {
+                Energy energy = Energy.Parse(valueWithUnitString).ToUnit(_energyUnit);
+                value = scale * energy.Value;
+            }
+            return value;
         }
 
     }

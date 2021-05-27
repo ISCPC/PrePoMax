@@ -29,12 +29,12 @@ namespace PrePoMax.Settings
         }
         //
         [CategoryAttribute("Selection")]
-        [OrderedDisplayName(1, 10, "Secundary highlight color")]
-        [DescriptionAttribute("Select the secundary highlight color.")]
-        public Color SecundaryHighlightColor
+        [OrderedDisplayName(1, 10, "Secondary highlight color")]
+        [DescriptionAttribute("Select the secondary highlight color.")]
+        public Color SecondaryHighlightColor
         {
-            get { return _preSettings.SecundaryHighlightColor; }
-            set { _preSettings.SecundaryHighlightColor = value; }
+            get { return _preSettings.SecondaryHighlightColor; }
+            set { _preSettings.SecondaryHighlightColor = value; }
         }
         //
         [CategoryAttribute("Selection")]

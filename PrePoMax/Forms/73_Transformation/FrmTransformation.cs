@@ -54,7 +54,7 @@ namespace PrePoMax.Forms
                 ListViewItem item = new ListViewItem(propertyName);
                 if (tvTransformations.SelectedNode.Tag is Transformation tr)
                 {
-                    if (tr is Symetry sym) item.Tag = new ViewSymetry(sym.DeepClone());
+                    if (tr is Symmetry sym) item.Tag = new ViewSymmetry(sym.DeepClone());
                     else if (tr is LinearPattern lp) item.Tag = new ViewLinearPattern(lp.DeepClone());
                     else if (tr is CircularPattern cp) item.Tag = new ViewCircularPattern(cp.DeepClone());
                     else throw new NotSupportedException();
@@ -174,9 +174,9 @@ namespace PrePoMax.Forms
             if (_controller.GetTransformations() != null) transformations = _controller.GetTransformations().DeepClone();
             else transformations = new List<Transformation>();
             // Initialize transformations
-            tvTransformations.Nodes.Find("X", true)[0].Tag = new Symetry("Symetry-X", new double[3], SymetryPlaneEnum.X);
-            tvTransformations.Nodes.Find("Y", true)[0].Tag = new Symetry("Symetry-Y", new double[3], SymetryPlaneEnum.Y);
-            tvTransformations.Nodes.Find("Z", true)[0].Tag = new Symetry("Symetry-Z", new double[3], SymetryPlaneEnum.Z);
+            tvTransformations.Nodes.Find("X", true)[0].Tag = new Symmetry("Symmetry-X", new double[3], SymmetryPlaneEnum.X);
+            tvTransformations.Nodes.Find("Y", true)[0].Tag = new Symmetry("Symmetry-Y", new double[3], SymmetryPlaneEnum.Y);
+            tvTransformations.Nodes.Find("Z", true)[0].Tag = new Symmetry("Symmetry-Z", new double[3], SymmetryPlaneEnum.Z);
             tvTransformations.Nodes.Find("Linear", true)[0].Tag = new LinearPattern("Linear", new double[3],
                                                                                     new double[] { 1, 0, 0 }, 2);
             tvTransformations.Nodes.Find("Circular", true)[0].Tag = new CircularPattern("Circular", new double[3],
@@ -190,7 +190,7 @@ namespace PrePoMax.Forms
                 //
                 foreach (var transformation in transformations)
                 {
-                    if (transformation is Symetry sym) view = new ViewSymetry(sym);
+                    if (transformation is Symmetry sym) view = new ViewSymmetry(sym);
                     else if (transformation is LinearPattern lp) view = new ViewLinearPattern(lp);
                     else if (transformation is CircularPattern cp) view = new ViewCircularPattern(cp);
                     else throw new NotSupportedException();
@@ -225,7 +225,7 @@ namespace PrePoMax.Forms
                         viewTransformation = (ViewTransformation)item.Tag;
                         transformation = viewTransformation.Base;
                         //
-                        if (transformation is Symetry sym)
+                        if (transformation is Symmetry sym)
                         { }
                         else if (transformation is LinearPattern lp)
                         {
@@ -263,11 +263,11 @@ namespace PrePoMax.Forms
                 float scale = _controller.GetScale();
                 Vec3D deformed = new Vec3D(_controller.GetScaledNode(scale, ids[0]).Coor);
                 //
-                if (propertyGrid.SelectedObject is ViewSymetry vs)
+                if (propertyGrid.SelectedObject is ViewSymmetry vs)
                 {
-                    vs.SymetryPointX = deformed.X;
-                    vs.SymetryPointY = deformed.Y;
-                    vs.SymetryPointZ = deformed.Z;
+                    vs.SymmetryPointX = deformed.X;
+                    vs.SymmetryPointY = deformed.Y;
+                    vs.SymmetryPointZ = deformed.Z;
                 }
                 else if (propertyGrid.SelectedObject is ViewLinearPattern vlp)
                 {
@@ -323,11 +323,11 @@ namespace PrePoMax.Forms
             _coorLinesToDraw = new double[2][];
             _coorLinesToDraw[0] = new double[3];
             //
-            if (propertyGrid.SelectedObject is ViewSymetry vs)
+            if (propertyGrid.SelectedObject is ViewSymmetry vs)
             {
-                _coorNodesToDraw[0][0] = vs.SymetryPointX;
-                _coorNodesToDraw[0][1] = vs.SymetryPointY;
-                _coorNodesToDraw[0][2] = vs.SymetryPointZ;
+                _coorNodesToDraw[0][0] = vs.SymmetryPointX;
+                _coorNodesToDraw[0][1] = vs.SymmetryPointY;
+                _coorNodesToDraw[0][2] = vs.SymmetryPointZ;
             }
             else if (propertyGrid.SelectedObject is ViewLinearPattern vlp)
             {

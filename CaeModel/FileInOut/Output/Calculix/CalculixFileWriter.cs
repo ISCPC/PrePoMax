@@ -670,38 +670,27 @@ namespace FileInOut.Output
                 if (step.Active)
                 {
                     string data = "";
-                    //if (loadTypes.Contains(typeof(CLoad)) ||
-                    //    loadTypes.Contains(typeof(MomentLoad)) ||
-                    //    loadTypes.Contains(typeof(STLoad)))
-                    //{
                     if (step.IsLoadTypeSupported(typeof(CLoad))) data += "*Cload, op=New";
-                    //}
-                    //else if (loadTypes.Contains(typeof(DLoad)) ||
-                    //         loadTypes.Contains(typeof(ShellEdgeLoad)) ||
-                    //         loadTypes.Contains(typeof(CentrifLoad)) ||
-                    //         loadTypes.Contains(typeof(GravityLoad)))
-                    //{
                     if (step.IsLoadTypeSupported(typeof(DLoad)))
                     {
                         if (data.Length > 0) data += Environment.NewLine;
                         data += "*Dload, op=New";
                     }
-                    //}
-                    //else if (loadTypes.Contains(typeof(RadiateLoad)))
-                    //{
                     if (step.IsLoadTypeSupported(typeof(CFlux)))
                     {
                         if (data.Length > 0) data += Environment.NewLine;
                         data += "*Cflux, op=New";
+                    }
+                    if (step.IsLoadTypeSupported(typeof(DFlux)) && loadTypes.Contains(typeof(DFlux)))
+                    {
+                        if (data.Length > 0) data += Environment.NewLine;
+                        data += "*Dflux, op=New";
                     }
                     if (step.IsLoadTypeSupported(typeof(RadiateFlux)) && loadTypes.Contains(typeof(RadiateFlux)))
                     {
                         if (data.Length > 0) data += Environment.NewLine;
                         data += "*Radiate, op=New";
                     }
-                    //}
-                    //else throw new NotSupportedException();
-                    //
                     title = new CalTitle("Loads", data);
                 }
                 else title = new CalTitle("Loads", "");
@@ -858,6 +847,16 @@ namespace FileInOut.Output
                 {
                     CalCFlux cFlux = new CalCFlux(cf);
                     parent.AddKeyword(cFlux);
+                }
+                else if (load is DFlux df)
+                {
+                    CalDFlux dFlux = new CalDFlux(model.Mesh.Surfaces, df);
+                    parent.AddKeyword(dFlux);
+                }
+                else if (load is BodyFlux bf)
+                {
+                    CalBodyFlux bFlux = new CalBodyFlux(bf);
+                    parent.AddKeyword(bFlux);
                 }
                 else if (load is RadiateFlux rf)
                 {

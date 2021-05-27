@@ -51,11 +51,13 @@ namespace FileInOut.Output.Calculix
             }
             else
             {
-
-                foreach (var elementId in _elementSet.Labels)
+                int[] sorted = _elementSet.Labels.ToArray();
+                Array.Sort(sorted);
+                //
+                foreach (var elementId in sorted)
                 {
                     sb.Append(elementId);
-                    if (count < _elementSet.Labels.Length - 1)
+                    if (count < sorted.Length - 1)
                     {
                         sb.Append(", ");
                         if (++count % 16 == 0) sb.AppendLine();

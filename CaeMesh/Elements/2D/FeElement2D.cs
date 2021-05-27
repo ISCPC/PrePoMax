@@ -50,5 +50,19 @@ namespace CaeMesh
             }
             return vtkCellIds.ToArray();
         }
+        public int GetVtkCellIdFromCell(int[] cell)
+        {
+            int vtkCellId = -1;
+            int[][] cells = GetAllVtkCells();
+            for (int i = 0; i < cells.Length; i++)
+            {
+                if (_comparer.Equals(cell, cells[i]))
+                {
+                    vtkCellId = i;
+                    break;
+                }
+            }
+            return vtkCellId;
+        }
     }
 }

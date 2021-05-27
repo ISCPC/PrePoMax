@@ -114,28 +114,52 @@ namespace PrePoMax
         public string EnergyUnitAbbreviation { get { return _unitSystem.EnergyUnitAbbreviation; } }
         //
         [CategoryAttribute("Derived units")]
-        [OrderedDisplayName(11, 20, "Power unit")]
-        [DescriptionAttribute("Default power unit.")]
+        [OrderedDisplayName(11, 20, "Energy per volume unit")]
+        [DescriptionAttribute("Default energy per volume unit.")]
         [Id(12, 1)]
+        public string EnergyPerVolumeUnitAbbreviation { get { return _unitSystem.EnergyPerVolumeUnitAbbreviation; } }
+        //
+        [CategoryAttribute("Derived units")]
+        [OrderedDisplayName(12, 20, "Power unit")]
+        [DescriptionAttribute("Default power unit.")]
+        [Id(13, 1)]
         public string PowerUnitAbbreviation { get { return _unitSystem.PowerUnitAbbreviation; } }
         //
         [CategoryAttribute("Derived units")]
-        [OrderedDisplayName(12, 20, "Frequency")]
+        [OrderedDisplayName(13, 20, "Power per area unit")]
+        [DescriptionAttribute("Default power per ara unit.")]
+        [Id(14, 1)]
+        public string PowerPerAreaUnitAbbreviation { get { return _unitSystem.PowerPerAreaUnitAbbreviation; } }
+        //
+        [CategoryAttribute("Derived units")]
+        [OrderedDisplayName(14, 20, "Power per volume unit")]
+        [DescriptionAttribute("Default power per volume unit.")]
+        [Id(15, 1)]
+        public string PowerPerVolumeUnitAbbreviation { get { return _unitSystem.PowerPerVolumeUnitAbbreviation; } }
+        //
+        [CategoryAttribute("Derived units")]
+        [OrderedDisplayName(15, 20, "Frequency")]
         [DescriptionAttribute("Default frequency unit.")]
-        [Id(13, 1)]
+        [Id(16, 1)]
         public string FrequencyUnitAbbreviation { get { return _unitSystem.FrequencyUnitAbbreviation; } }
         //
         [CategoryAttribute("Derived units")]
-        [OrderedDisplayName(13, 20, "Thermal expansion")]
+        [OrderedDisplayName(16, 20, "Thermal expansion")]
         [DescriptionAttribute("Default thermal expansion unit.")]
-        [Id(14, 1)]
+        [Id(17, 1)]
         public string ThermalExpansion { get { return _unitSystem.ThermalExpansionUnitAbbreviation; } }
         //
         [CategoryAttribute("Derived units")]
-        [OrderedDisplayName(14, 20, "Thermal conductivity")]
+        [OrderedDisplayName(17, 20, "Thermal conductivity")]
         [DescriptionAttribute("Default thermal conductivity unit.")]
-        [Id(15, 1)]
+        [Id(18, 1)]
         public string ThermalConductivity { get { return _unitSystem.ThermalConductivityUnitAbbreviation; } }
+        //
+        [CategoryAttribute("Derived units")]
+        [OrderedDisplayName(18, 20, "Specific heat")]
+        [DescriptionAttribute("Default specific heat unit.")]
+        [Id(19, 1)]
+        public string SpecificHeat { get { return _unitSystem.SpecificHeatUnitAbbreviation; } }
 
 
         // Constructors                                                                                                             

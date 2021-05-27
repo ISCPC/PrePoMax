@@ -120,9 +120,9 @@ namespace PrePoMax.Forms
             {
                 NodeSet = _controller.GetNodeSet(_nodeSetToEditName);   // to clone
                 int[] ids = NodeSet.Labels;
-                if (NodeSet.CreationData == null && ids != null)
+                if (NodeSet.CreationData == null && ids != null)        // from .inp
                 {
-                    // Add creation data                    
+                    // Add creation data
                     NodeSet.CreationData = new Selection();
                     NodeSet.CreationData.SelectItem = vtkSelectItem.Node;
                     NodeSet.CreationData.Add(new SelectionNodeIds(vtkSelectOperation.Add, false, ids));

@@ -31,7 +31,7 @@
             System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("X");
             System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("Y");
             System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("Z");
-            System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("Symetry", new System.Windows.Forms.TreeNode[] {
+            System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("Symmetry", new System.Windows.Forms.TreeNode[] {
             treeNode1,
             treeNode2,
             treeNode3});
@@ -68,8 +68,8 @@
             treeNode2.Text = "Y";
             treeNode3.Name = "Z";
             treeNode3.Text = "Z";
-            treeNode4.Name = "Symetry";
-            treeNode4.Text = "Symetry";
+            treeNode4.Name = "Symmetry";
+            treeNode4.Text = "Symmetry";
             treeNode5.Name = "Linear";
             treeNode5.Text = "Linear";
             treeNode6.Name = "Circular";

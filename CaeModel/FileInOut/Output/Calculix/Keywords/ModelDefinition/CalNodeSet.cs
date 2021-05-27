@@ -34,12 +34,17 @@ namespace FileInOut.Output.Calculix
         {
             StringBuilder sb = new StringBuilder();
             int count = 0;
-            foreach (var nodeId in _nodeSet.Labels)
+            int[] sorted = _nodeSet.Labels.ToArray();
+            Array.Sort(sorted);
+            //
+            foreach (var nodeId in sorted)
             {
                 sb.Append(nodeId);
-                if (count < _nodeSet.Labels.Length - 1)
+                if (count < sorted.Length - 1)
+                {
                     sb.Append(", ");
-                if (++count % 16 == 0) sb.AppendLine();
+                    if (++count % 16 == 0) sb.AppendLine();
+                }
             }
             sb.AppendLine();
             return sb.ToString();

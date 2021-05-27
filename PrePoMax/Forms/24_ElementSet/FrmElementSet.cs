@@ -122,12 +122,11 @@ namespace PrePoMax.Forms
             {
                 ElementSet = _controller.GetElementSet(_elementSetToEditName);  // to clone
                 int[] ids = ElementSet.Labels;
-                if (ElementSet.CreationData == null && ids != null)
+                if (ElementSet.CreationData == null && ids != null)             // from .inp
                 {
-                    // Add creation data                    
+                    // Add creation data
                     ElementSet.CreationData = new Selection();
                     ElementSet.CreationData.SelectItem = vtkSelectItem.Element;
-                    //ElementSet.CreationData.CurrentView = 1;
                     ElementSet.CreationData.Add(new SelectionNodeIds(vtkSelectOperation.Add, false, ids));
                 }
                 // Change node selection history to ids to speed up

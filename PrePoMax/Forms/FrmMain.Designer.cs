@@ -1478,7 +1478,7 @@
             // 
             this.tsmiConvertElementSetsToMeshParts.Name = "tsmiConvertElementSetsToMeshParts";
             this.tsmiConvertElementSetsToMeshParts.Size = new System.Drawing.Size(147, 22);
-            this.tsmiConvertElementSetsToMeshParts.Text = "Covert to Part";
+            this.tsmiConvertElementSetsToMeshParts.Text = "Convert to Part";
             this.tsmiConvertElementSetsToMeshParts.Click += new System.EventHandler(this.tsmiConvertElementSetsToMeshParts_Click);
             // 
             // tsmiDividerElementSet1

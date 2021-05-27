@@ -49,7 +49,7 @@ namespace CaeGlobals
                 else _volumeUnit = Volume.ParseUnit(value);
             }
         }
-        public static string SetInitialValue { set { _initialValue = ConvertForcePerVolume(value); } }
+        public static string SetInitialValue { set { _initialValue = ConvertToUnits(value); } }
 
 
         // Constructors                                                                                                             
@@ -99,7 +99,7 @@ namespace CaeGlobals
                 if (String.Equals(value, _default)) valueDouble = double.NaN;
                 else if (!double.TryParse(valueString, out valueDouble))
                 {
-                    valueDouble = ConvertForcePerVolume(valueString);
+                    valueDouble = ConvertToUnits(valueString);
                 }
                 return valueDouble;
             }
@@ -132,7 +132,7 @@ namespace CaeGlobals
             }
         }
         //
-        private static double ConvertForcePerVolume(string valueWithUnitString)
+        private static double ConvertToUnits(string valueWithUnitString)
         {
             valueWithUnitString = valueWithUnitString.Trim().Replace(" ", "");
             //

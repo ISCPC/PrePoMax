@@ -29,10 +29,10 @@ namespace PrePoMax.PropertyViews
         public double Coefficient { get { return _friction.Coefficient; } set { _friction.Coefficient = value; } }
         //
         [CategoryAttribute("Data")]
-        [OrderedDisplayName(1, 10, "Stik slope")]
+        [OrderedDisplayName(1, 10, "Stick slope")]
         [DescriptionAttribute("The ratio between the shear stress and the relative tangential displacement in contact (λ > 0).")]
         [TypeConverter(typeof(StringForcePerVolumeDefaultConverter))]
-        public double StikSlope { get { return _friction.StikSlope; } set { _friction.StikSlope = value; } }
+        public double StickSlope { get { return _friction.StickSlope; } set { _friction.StickSlope = value; } }
         //
         [Browsable(false)]
         public override CaeModel.SurfaceInteractionProperty Base

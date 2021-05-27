@@ -214,9 +214,12 @@ namespace vtkControl
             int x = rwi.GetEventPosition()[0];
             int y = rwi.GetEventPosition()[1];
             // Widgets
-            foreach (vtkMaxBorderWidget widget in _widgets)
+            if (!_rubberBandSelection)
             {
-                if (widget.LeftButtonRelease(x, y)) return;
+                foreach (vtkMaxBorderWidget widget in _widgets)
+                {
+                    if (widget.LeftButtonRelease(x, y)) return;
+                }
             }
             //if (_selection)
             {

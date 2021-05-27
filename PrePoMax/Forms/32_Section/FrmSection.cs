@@ -153,7 +153,7 @@ namespace PrePoMax.Forms
             string[] elementSetNames = _controller.GetUserElementSetNames();
             //
             if (_sectionNames == null)
-                throw new CaeGlobals.CaeException("The section names must be defined first.");
+                throw new CaeException("The section names must be defined first.");
             //
             PopulateListOfSections(materialNames, partNames, elementSetNames);
             // Create new section

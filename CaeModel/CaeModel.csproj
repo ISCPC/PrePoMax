@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CaeModel</RootNamespace>
     <AssemblyName>CaeModel</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -92,6 +92,8 @@
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\HistoryOutput\CalNodePrint.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalSubmodel.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\Load\CalCFlux.cs" />
+    <Compile Include="FileInOut\Output\Calculix\Keywords\Step\Load\CalBodyFlux.cs" />
+    <Compile Include="FileInOut\Output\Calculix\Keywords\Step\Load\CalDFlux.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\Load\CalRadiateFlux.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\Load\CalShellEdgeLoad.cs" />
     <Compile Include="FileInOut\Output\Mmg\MmgFileWriter.cs" />
@@ -167,6 +169,8 @@
     <Compile Include="Steps\HistoryOutputs\NodalHistoryOutput.cs" />
     <Compile Include="Steps\Loads\CentrifLoad.cs" />
     <Compile Include="Steps\Loads\CFlux.cs" />
+    <Compile Include="Steps\Loads\BodyFlux.cs" />
+    <Compile Include="Steps\Loads\DFlux.cs" />
     <Compile Include="Steps\Loads\RadiateFlux.cs" />
     <Compile Include="Steps\Loads\ShellEdgeLoad.cs" />
     <Compile Include="Steps\Loads\GravityLoad.cs" />

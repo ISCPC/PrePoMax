@@ -66,7 +66,7 @@ namespace PrePoMax
                 try
                 {
                     _settings.Set(value, _currentView, _currentFieldData);
-                    _settings.SaveToFile(Path.Combine(Application.StartupPath, Globals.SettingsFileName));
+                    _settings.SaveToFile();
                     //
                     ApplySettings();
                     // Redraw model with new settings
@@ -234,14 +234,14 @@ namespace PrePoMax
                     if (value != _settings.General.LastFileName)
                     {
                         _settings.General.LastFileName = value;
-                        _settings.SaveToFile(Path.Combine(System.Windows.Forms.Application.StartupPath, Globals.SettingsFileName));
+                        _settings.SaveToFile();
                     }
                     //
                     if (_settings.General.LastFileName != null)
                         _form.SetTitle(Globals.ProgramName + "   " + _settings.General.LastFileName);
                     else _form.SetTitle(Globals.ProgramName);
                     //
-                    ApplySettings();
+                    // ApplySettings();
                 }
             }
         }
@@ -1360,7 +1360,7 @@ namespace PrePoMax
         {
             // Settings
             _settings.General.AddRecentFile(fileName);
-            Settings = _settings;   // save to file
+            _settings.SaveToFile();
             //
             _form.UpdateRecentFilesThreadSafe(_settings.General.GetRecentFiles());
         }
@@ -1546,7 +1546,7 @@ namespace PrePoMax
             // Suppress symbols
             string drawSymbolsForStep = GetDrawSymbolsForStep();
             DrawSymbolsForStep("None", false);
-            //
+            // Deactivate exploded view
             if (IsExplodedViewActive())
             {
                 ExplodedViewParameters parameters = _explodedViewScaleFactors[CurrentView].DeepClone();
@@ -1556,13 +1556,18 @@ namespace PrePoMax
                 parameters.ScaleFactor = 0;
                 PreviewExplodedView(parameters, animate);
             }
+            // Activate exploded view
             else
             {
-                _form.Clear3DSelection();
-                ExplodedViewParameters parameters = _explodedViewScaleFactors[CurrentView].DeepClone();
-                parameters.ScaleFactor = 0.5;
-                PreviewExplodedView(parameters, animate);
-                ApplyExplodedView(parameters);  // Highlight
+                FeMesh mesh = DisplayedMesh;
+                if (mesh != null && mesh.Parts.Count > 1)
+                {
+                    _form.Clear3DSelection();
+                    ExplodedViewParameters parameters = _explodedViewScaleFactors[CurrentView].DeepClone();
+                    parameters.ScaleFactor = 0.5;
+                    PreviewExplodedView(parameters, animate);
+                    ApplyExplodedView(parameters);  // Highlight
+                }
             }
             // Resume section view
             if (sectionViewPlane != null) ApplySectionView(sectionViewPlane.Point.Coor, sectionViewPlane.Normal.Coor);
@@ -5631,7 +5636,7 @@ namespace PrePoMax
                     load.RegionType = RegionTypeEnum.NodeSetName;
                 }
                 // Element set from parts
-                else if (load is GravityLoad || load is CentrifLoad)
+                else if (load is GravityLoad || load is CentrifLoad || load is BodyFlux)
                 {
                     name = FeMesh.GetNextFreeSelectionName(_model.Mesh.ElementSets) + load.Name;
                     FeElementSet elementSet = new FeElementSet(name, load.CreationIds, true);
@@ -5643,7 +5648,8 @@ namespace PrePoMax
                     load.RegionType = RegionTypeEnum.ElementSetName;
                 }
                 // Surface
-                else if (load is DLoad || load is STLoad || load is ShellEdgeLoad || load is PreTensionLoad || load is RadiateFlux)
+                else if (load is DLoad || load is STLoad || load is ShellEdgeLoad || load is PreTensionLoad || load is DFlux ||
+                         load is RadiateFlux)
                 {
                     name = FeMesh.GetNextFreeSelectionName(_model.Mesh.Surfaces) + load.Name;
                     FeSurface surface = new FeSurface(name, load.CreationIds, load.CreationData.DeepClone());
@@ -5672,9 +5678,10 @@ namespace PrePoMax
             {
                 if (load is CLoad || load is MomentLoad || load is CFlux)
                     RemoveNodeSets(new string[] { load.RegionName });
-                else if (load is GravityLoad || load is CentrifLoad)
+                else if (load is GravityLoad || load is CentrifLoad || load is BodyFlux)
                     RemoveElementSets(new string[] { load.RegionName });
-                else if (load is DLoad || load is STLoad || load is ShellEdgeLoad || load is PreTensionLoad || load is RadiateFlux)
+                else if (load is DLoad || load is STLoad || load is ShellEdgeLoad || load is PreTensionLoad || load is DFlux ||
+                         load is RadiateFlux)
                     RemoveSurfaces(new string[] { load.RegionName }, false);
                 else throw new NotSupportedException();
             }
@@ -5872,7 +5879,7 @@ namespace PrePoMax
             CaeMesh.Globals.ColorTable = _settings.Color.ColorTable;
             // Pre-processing settings
             PreSettings ps = _settings.Pre;
-            _form.SetHighlightColor(ps.PrimaryHighlightColor, ps.SecundaryHighlightColor);
+            _form.SetHighlightColor(ps.PrimaryHighlightColor, ps.SecondaryHighlightColor);
             _form.SetMouseHighlightColor(ps.MouseHighlightColor);
             _form.SetDrawSymbolEdges(ps.DrawSymbolEdges);
             //
@@ -5968,7 +5975,6 @@ namespace PrePoMax
                     string elementSetName = NamedClass.GetNewValueName(_model.Mesh.ElementSets.Keys, Globals.MissingSectionName);
                     AddElementSetCommand(new FeElementSet(elementSetName, unAssignedElementIds));
                     //
-                    //DrawElements("MissingSection", unAssignedElementIds, Color.Red, vtkControl.vtkRendererLayer.Selection);
                     string msg = unAssignedElementIds.Length + " finite elements are missing a section assignment. Continue?";
                     if (MessageBox.Show(msg, "Warning", MessageBoxButtons.OKCancel) == DialogResult.Cancel) return false;
                 }
@@ -6464,7 +6470,9 @@ namespace PrePoMax
             // Execute selection
             foreach (SelectionNode node in selectionCopy.Nodes) GetIdsFromSelectionNode(node, selectedIds);
             // Return
-            return selectedIds.ToArray();
+            int[] sorted = selectedIds.ToArray();
+            Array.Sort(sorted);
+            return sorted;
         }
         private int[] GetIdsFromSelectionNode(SelectionNode selectionNode, HashSet<int> selectedIds)
         {
@@ -8797,8 +8805,13 @@ namespace PrePoMax
                 surface = new FeSurface(name, temperature.RegionName);
                 surface.Internal = true;
                 _model.Mesh.CreateSurfaceItems(surface);
+                _model.Mesh.Surfaces.Add(surface.Name, surface);    // Must add here for the remove to work properly 
                 //
-                if (surface.ElementFaces == null) return; // after meshing/update the node set in not yet updated
+                if (surface.ElementFaces == null) // after meshing/update the node set in not yet updated
+                {
+                    RemoveSurfaceAndElementFacesFromModel(new string[] { surface.Name });
+                    return;
+                }
             }
             else if (temperature.RegionType == RegionTypeEnum.SurfaceName)
             {
@@ -8821,6 +8834,11 @@ namespace PrePoMax
                     _model.Mesh.GetElementFaceCenter(elementId, entry.Key, out faceCenter);
                     allCoor.Add(faceCenter);
                 }
+            }
+            // Remove created surface
+            if (temperature.RegionType == RegionTypeEnum.NodeSetName)
+            {
+                RemoveSurfaceAndElementFacesFromModel(new string[] { surface.Name });
             }
             //
             int[] distributedElementIds = GetSpatiallyEquallyDistributedCoor(allCoor.ToArray(), 3);
@@ -9074,6 +9092,48 @@ namespace PrePoMax
                     else throw new NotSupportedException();
                     if (count > 0) DrawCFluxSymbols(prefixName, cFlux, coor, color, symbolSize, symbolLayer);
                 }
+                else if (load is DFlux dFlux)
+                {
+                    if (!_model.Mesh.Surfaces.ContainsKey(dFlux.SurfaceName)) return;
+                    //
+                    count += DrawSurface(prefixName, dFlux.SurfaceName, color, layer, true, false, onlyVisible);
+                    if (layer == vtkControl.vtkRendererLayer.Selection)
+                        DrawSurfaceEdge(prefixName, dFlux.SurfaceName, color, layer, true, false, onlyVisible);
+                    if (count > 0) DrawDFluxSymbols(prefixName, dFlux, color, symbolSize, layer);
+                }
+                else if (load is BodyFlux bFlux)
+                {
+                    string[] partNames = null;
+                    FeElementSet elementSet = null;
+                    if (layer == vtkControl.vtkRendererLayer.Selection)
+                    {
+                        if (bFlux.RegionType == RegionTypeEnum.PartName)
+                            count += HighlightModelParts(new string[] { bFlux.RegionName });
+                        else if (bFlux.RegionType == RegionTypeEnum.ElementSetName)
+                        {
+                            if (!_model.Mesh.ElementSets.ContainsKey(bFlux.RegionName)) return;
+                            elementSet = _model.Mesh.ElementSets[bFlux.RegionName];
+                            count += HighlightElementSets(new string[] { elementSet.Name });
+                        }
+                        else throw new NotSupportedException();
+                    }
+                    FeNodeSet nodeSet = null;
+                    if (bFlux.RegionType == RegionTypeEnum.ElementSetName)
+                    {
+                        if (!_model.Mesh.ElementSets.ContainsKey(bFlux.RegionName)) return;
+                        elementSet = _model.Mesh.ElementSets[bFlux.RegionName];
+                        if (elementSet != null && elementSet.CreatedFromParts)
+                        {
+                            partNames = _model.Mesh.GetPartNamesByIds(elementSet.Labels);
+                            if (partNames != null) nodeSet = _model.Mesh.GetNodeSetFromPartNames(partNames, onlyVisible);
+                            else throw new NotSupportedException();
+                        }
+                    }
+                    if (nodeSet == null) nodeSet = _model.Mesh.GetNodeSetFromPartOrElementSetName(bFlux.RegionName, false);
+                    //
+                    if (nodeSet.Labels.Length > 0)
+                        DrawBodyFluxymbol(prefixName, bFlux, nodeSet.CenterOfGravity, color, symbolSize, symbolLayer);
+                }
                 else if (load is RadiateFlux radiateFlux)
                 {
                     if (!_model.Mesh.Surfaces.ContainsKey(radiateFlux.SurfaceName)) return;
@@ -9081,7 +9141,6 @@ namespace PrePoMax
                     count += DrawSurface(prefixName, radiateFlux.SurfaceName, color, layer, true, false, onlyVisible);
                     if (layer == vtkControl.vtkRendererLayer.Selection)
                         DrawSurfaceEdge(prefixName, radiateFlux.SurfaceName, color, layer, true, false, onlyVisible);
-                    //
                     if (count > 0) DrawRadiateSymbols(prefixName, radiateFlux, color, symbolSize, layer);
                 }
                 else throw new NotSupportedException();
@@ -9336,11 +9395,11 @@ namespace PrePoMax
         public void DrawCFluxSymbols(string prefixName, CFlux cFlux, double[][] symbolCoor, Color color,
                                      int symbolSize, vtkControl.vtkRendererLayer layer)
         {
-            // Spheres
+            // Flux symbols
             if (symbolCoor.Length > 0)
             {
                 double[][] normals = new double[symbolCoor.Length][];
-                for (int i = 0; i < symbolCoor.Length; i++) normals[i] = new double[3];
+                for (int i = 0; i < symbolCoor.Length; i++) normals[i] = new double[] { 1 ,0, 0};
                 //
                 vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
                 data.Name = prefixName;
@@ -9354,6 +9413,99 @@ namespace PrePoMax
                 _form.AddOrientedFluxActor(data, symbolSize, true, translate);
             }
             return;
+        }
+        public void DrawDFluxSymbols(string prefixName, DFlux dFlux, Color color, int symbolSize,
+                                     vtkControl.vtkRendererLayer layer)
+        {
+            FeSurface surface = _model.Mesh.Surfaces[dFlux.SurfaceName];
+            //
+            List<int> allElementIds = new List<int>();
+            List<FeFaceName> allElementFaceNames = new List<FeFaceName>();
+            List<double[]> allCoor = new List<double[]>();
+            double[] faceCenter;
+            FeElementSet elementSet;
+            foreach (var entry in surface.ElementFaces)     // entry:  S3; elementSetName
+            {
+                elementSet = _model.Mesh.ElementSets[entry.Value];
+                foreach (var elementId in elementSet.Labels)
+                {
+                    allElementIds.Add(elementId);
+                    allElementFaceNames.Add(entry.Key);
+                    _model.Mesh.GetElementFaceCenter(elementId, entry.Key, out faceCenter);
+                    allCoor.Add(faceCenter);
+                }
+            }
+            //
+            int[] distributedElementIds = GetSpatiallyEquallyDistributedCoor(allCoor.ToArray(), 6);
+            // Front shell face which is a S2 POS face works in the same way as a solid face
+            // Back shell face which is a S1 NEG must be inverted
+            int id;
+            double[] faceNormal;
+            bool shellElement;
+            double[][] distributedCoor = new double[distributedElementIds.Length][];
+            double[][] distributedLoadNormals = new double[distributedElementIds.Length][];
+            for (int i = 0; i < distributedElementIds.Length; i++)
+            {
+                id = distributedElementIds[i];
+                _model.Mesh.GetElementFaceCenterAndNormal(allElementIds[id], allElementFaceNames[id], out faceCenter,
+                                                          out faceNormal, out shellElement);
+                //
+                if ((surface.SurfaceFaceTypes == FeSurfaceFaceTypes.ShellEdgeFaces && dFlux.Magnitude < 0) ||
+                    (surface.SurfaceFaceTypes != FeSurfaceFaceTypes.ShellEdgeFaces && (dFlux.Magnitude < 0) != shellElement))
+                {
+                    faceNormal[0] *= -1;
+                    faceNormal[1] *= -1;
+                    faceNormal[2] *= -1;
+                }
+                //
+                distributedCoor[i] = faceCenter;
+                distributedLoadNormals[i] = faceNormal;
+            }
+            // Arrows
+            if (allCoor.Count > 0)
+            {
+                vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
+                data.Name = prefixName;
+                data.Color = color;
+                data.Layer = layer;
+                data.Geometry.Nodes.Coor = distributedCoor.ToArray();
+                data.Geometry.Nodes.Normals = distributedLoadNormals.ToArray();
+                data.SectionViewPossible = false;
+                ApplyLighting(data);
+                bool translate = dFlux.Magnitude > 0;
+                _form.AddOrientedArrowsActor(data, symbolSize, translate);
+            }
+        }
+        public void DrawBodyFluxymbol(string prefixName, BodyFlux bFlux, double[] symbolCoor, Color color,
+                                      int symbolSize, vtkControl.vtkRendererLayer layer)
+        {
+            double[][] normals = new double[][] { new double[] { 1, 0, 0 } };
+            //
+            vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
+            data.Name = prefixName;
+            data.Color = color;
+            data.Layer = layer;
+            data.Geometry.Nodes.Coor = new double[][] { symbolCoor };
+            data.Geometry.Nodes.Normals = normals;
+            ApplyLighting(data);            
+            _form.AddSphereActor(data, symbolSize * 0.8);
+            //
+            data.Geometry.Nodes.Coor = new double[6][];
+            for (int i = 0; i < 6; i++)
+            {
+                data.Geometry.Nodes.Coor[i] = symbolCoor;
+            }
+            normals = new double[][] {
+                new double[] { 1, 0, 0 },
+                new double[] { -1, 0, 0 },
+                new double[] { 0, 1, 0 },
+                new double[] { 0, -1, 0 },
+                new double[] { 0, 0, 1 },
+                new double[] { 0, 0, -1 },
+            };
+            data.Geometry.Nodes.Normals = normals;
+            _form.AddOrientedArrowsActor(data, symbolSize * 0.5);
+
         }
         public void DrawRadiateSymbols(string prefixName, RadiateFlux radiateFlux, Color color, int symbolSize,
                                        vtkControl.vtkRendererLayer layer)
@@ -9391,7 +9543,7 @@ namespace PrePoMax
                 _model.Mesh.GetElementFaceCenterAndNormal(allElementIds[id], allElementFaceNames[id], out faceCenter,
                                                           out faceNormal, out shellElement);
                 //
-                if (!shellElement)
+                if (surface.SurfaceFaceTypes == FeSurfaceFaceTypes.ShellEdgeFaces || !shellElement)
                 {
                     faceNormal[0] *= -1;
                     faceNormal[1] *= -1;
@@ -9401,7 +9553,7 @@ namespace PrePoMax
                 distributedCoor[i] = faceCenter;
                 distributedLoadNormals[i] = faceNormal;
             }
-            // Arrows
+            // Flux symbol
             if (allCoor.Count > 0)
             {
                 vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
@@ -9431,16 +9583,18 @@ namespace PrePoMax
             double n;
             int[] nxyz = new int[3];
             //
+            if (maxDelta < 1) maxDelta = 1;
+            //
             n = (box.MaxX - box.MinX) / maxDelta;
             if (n < 1E-2) nxyz[0] = 1;      // tiny
             else if (n < 2) nxyz[0] = 2;    // small
             else nxyz[0] = (int)n;          // normal
-            //
+                                            //
             n = (box.MaxY - box.MinY) / maxDelta;
             if (n < 1E-2) nxyz[1] = 1;      // tiny
             else if (n < 2) nxyz[1] = 2;    // small
             else nxyz[1] = (int)n;          // normal
-            //
+                                            //
             n = (box.MaxZ - box.MinZ) / maxDelta;
             if (n < 1E-2) nxyz[2] = 1;      // tiny
             else if (n < 2) nxyz[2] = 2;    // small
@@ -10848,9 +11002,9 @@ namespace PrePoMax
             {
                 foreach (var transformation in _transformations)
                 {
-                    if (transformation is Symetry sym)
+                    if (transformation is Symmetry sym)
                     {
-                        _form.AddSymetry((int)sym.SymetryPlane, sym.PointCoor);
+                        _form.AddSymmetry((int)sym.SymmetryPlane, sym.PointCoor);
                     }
                     else if (transformation is LinearPattern lp)
                     {

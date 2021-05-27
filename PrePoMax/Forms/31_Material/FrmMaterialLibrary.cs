@@ -197,6 +197,8 @@ namespace PrePoMax.Forms
             {
                 lvModelMaterials.Items.Remove(lvModelMaterials.SelectedItems[0]);
                 _modelChanged = true;
+                //
+                if (lvModelMaterials.Items.Count > 0) lvModelMaterials.Items[0].Selected = true;
             }
         }
         //

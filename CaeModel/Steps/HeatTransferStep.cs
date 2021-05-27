@@ -72,6 +72,8 @@ namespace CaeModel
                 return false;
             }
             else if (loadType == typeof(CFlux) ||
+                     loadType == typeof(DFlux) ||
+                     loadType == typeof(BodyFlux) ||
                      loadType == typeof(RadiateFlux))
             {
                 return true;

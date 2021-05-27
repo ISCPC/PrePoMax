@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CaeGlobals</RootNamespace>
     <AssemblyName>CaeGlobals</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -126,9 +126,11 @@
     <Compile Include="UnitSystem\StringAccelerationConverter.cs" />
     <Compile Include="UnitSystem\StringPowerConverter.cs" />
     <Compile Include="UnitSystem\StringNewtonGravityUndefinedConverter.cs" />
+    <Compile Include="UnitSystem\StringPowerPerVolumeConverter.cs" />
     <Compile Include="UnitSystem\StringStefanBoltzmannUndefinedConverter.cs" />
     <Compile Include="UnitSystem\StringSpecificHeatConverter.cs" />
     <Compile Include="UnitSystem\StringTemperatureUndefinedConverter.cs" />
+    <Compile Include="UnitSystem\StringPowerPerAreaConverter.cs" />
     <Compile Include="UnitSystem\StringThermalConductivityConverter.cs" />
     <Compile Include="UnitSystem\StringThermalExpansionConverter.cs" />
     <Compile Include="UnitSystem\StringAngleConverter.cs" />
