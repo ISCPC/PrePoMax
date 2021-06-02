@@ -418,9 +418,13 @@ namespace CaeModel
                                 || (bf.RegionType == RegionTypeEnum.Selection && _mesh.GetPartNamesByIds(bf.CreationIds) != null &&
                                    _mesh.GetPartNamesByIds(bf.CreationIds).Length == bf.CreationIds.Length));
                     }
-                    else if (load is RadiateFlux rf)
+                    else if (load is FilmHeatTransfer fht)
                     {
-                        valid = (_mesh.Surfaces.TryGetValue(rf.SurfaceName, out s) && s.Valid);
+                        valid = (_mesh.Surfaces.TryGetValue(fht.SurfaceName, out s) && s.Valid);
+                    }
+                    else if (load is RadiationHeatTransfer rht)
+                    {
+                        valid = (_mesh.Surfaces.TryGetValue(rht.SurfaceName, out s) && s.Valid);
                     }
                     else throw new NotSupportedException();
                     //

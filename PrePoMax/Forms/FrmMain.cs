@@ -45,6 +45,7 @@ namespace PrePoMax
         private string[] outputLines;
         private Dictionary<ViewGeometryModelResults, Action<object, EventArgs>> _edgeVisibilities; // save display style
         private AdvisorControl _advisorControl;
+        KeyboardHook _keyboardHook;
         //
         private Point _formLocation;
         private List<Form> _allForms;
@@ -238,7 +239,6 @@ namespace PrePoMax
                 _controller = new PrePoMax.Controller(this);
                 // Vtk
                 _vtk.OnMouseLeftButtonUpSelection += SelectPointOrArea;
-                _vtk.KeyPressEvent += Vtk_KeyPressEvent;
                 _vtk.Controller_GetNodeActorData = _controller.GetNodeActorData;
                 _vtk.Controller_GetCellActorData = _controller.GetCellActorData;
                 _vtk.Controller_GetCellFaceActorData = _controller.GetCellFaceActorData;
@@ -381,6 +381,13 @@ namespace PrePoMax
                 //
                 _vtk.Hide();
                 _vtk.Enabled = false;
+                //
+                // Create the Keyboard Hook
+                _keyboardHook = new KeyboardHook();
+                // Capture the events
+                _keyboardHook.KeyDown += KeyboardHook_Keydown;
+                // Install the hook
+                _keyboardHook.Install();
             }
             catch
             {
@@ -399,6 +406,8 @@ namespace PrePoMax
                 tsmiCropWithCylinder.Visible = false;
             }
         }
+
+        
         //
         private void FrmMain_Shown(object sender, EventArgs e)
         {
@@ -573,10 +582,22 @@ namespace PrePoMax
             GetFormLoaction(form);
         }
         //
-        private void Vtk_KeyPressEvent(Keys key)
+        private void KeyboardHook_Keydown(KeyboardHook.VKeys vKey)
         {
+            //System.Diagnostics.Debug.WriteLine(_modelTree.ActiveControl.Focused.ToString());
+            Keys key = (Keys)vKey;
+            //
             if (key == Keys.Escape) CloseAllForms();
-            else _modelTree.cltv_KeyDown(this, new KeyEventArgs(key));
+            else if (Control.ModifierKeys == Keys.Control)
+            {
+                if (key == Keys.I) tsmiImportFile_Click(null, null);
+                else if (key == Keys.N) tsmiNew_Click(null, null);
+                else if (key == Keys.O) tsmiOpen_Click(null, null);
+                else if (key == Keys.S) tsmiSave_Click(null, null);
+                else if (key == Keys.X) tsmiExit_Click(null, null);
+            }
+            else if (_modelTree.ActiveControl == null || !_modelTree.ActiveControl.Focused)
+                _modelTree.cltv_KeyDown(this, new KeyEventArgs(key));
         }
         //
         private void timerOutput_Tick(object sender, EventArgs e)
@@ -2127,11 +2148,21 @@ namespace PrePoMax
         }
         private void DeleteGeometryParts(string[] partNames)
         {
-            if (MessageBox.Show("OK to delete selected parts?" + Environment.NewLine + partNames.ToRows(),
-                                Globals.ProgramName, MessageBoxButtons.OKCancel) == DialogResult.OK)
+            GeometryPart[] parts = _controller.GetGeometryPartsWithoutSubParts();
+            HashSet<string> deletablePartNames = new HashSet<string>();
+            foreach (GeometryPart part in parts) deletablePartNames.Add(part.Name);
+            deletablePartNames.IntersectWith(partNames);
+            if (deletablePartNames.Count > 0)
             {
-                _controller.RemoveGeometryPartsCommand(partNames);
+                partNames = deletablePartNames.ToArray();
+                if (MessageBox.Show("OK to delete selected parts?" + Environment.NewLine + partNames.ToRows(),
+                                    Globals.ProgramName, MessageBoxButtons.OKCancel) == DialogResult.OK)
+                {
+                    _controller.RemoveGeometryPartsCommand(partNames.ToArray());
+                }
             }
+            else MessageBox.Show("Selected parts belong to a compound part and cannot be deleted:" + Environment.NewLine +
+                                  partNames.ToRows(), Globals.ProgramName, MessageBoxButtons.OK);
         }
         //
         private void tsmiCreateAndImportCompoundPart_Click(object sender, EventArgs e)
@@ -5732,12 +5763,12 @@ namespace PrePoMax
             InvokeIfRequired(() =>
             {
                 // create new dialog to enable multiFilter
-                using (System.Windows.Forms.OpenFileDialog openFileDialog = new System.Windows.Forms.OpenFileDialog())
+                using (OpenFileDialog openFileDialog = new OpenFileDialog())
                 {
                     openFileDialog.Multiselect = true;
                     openFileDialog.Filter = GetFileImportFilter();
                     openFileDialog.FileName = "";
-                    if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                    if (openFileDialog.ShowDialog() == DialogResult.OK)
                     {
                         fileNames = openFileDialog.FileNames;
                     }
@@ -6721,6 +6752,9 @@ namespace PrePoMax
             }
         }
 
-       
+        private void FrmMain_KeyUp(object sender, KeyEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("Key pressed");
+        }
     }
 }

@@ -9,7 +9,7 @@ using CaeGlobals;
 namespace CaeModel
 {
     [Serializable]
-    public class RadiateFlux : Load
+    public class RadiationHeatTransfer : Load
     {
         // Variables                                                                                                                
         private string _surfaceName;
@@ -50,7 +50,7 @@ namespace CaeModel
 
 
         // Constructors                                                                                                             
-        public RadiateFlux(string name, string surfaceName, RegionTypeEnum regionType, double sinkTemperature, double emissivity)
+        public RadiationHeatTransfer(string name, string surfaceName, RegionTypeEnum regionType, double sinkTemperature, double emissivity)
             : base(name) 
         {
             _surfaceName = surfaceName;

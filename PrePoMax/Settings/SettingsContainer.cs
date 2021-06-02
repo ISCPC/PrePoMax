@@ -172,9 +172,6 @@ namespace PrePoMax
         }
         public void SaveToFile(string fileName)
         {
-            // Reset the color limits
-            ClearColorSpectrums();
-            //
             ToDictionary().DumpToFile(fileName);
         }
         public void LoadFromFile()
@@ -187,6 +184,9 @@ namespace PrePoMax
                 var t = Task.Run(() => LoadFromFile(fileName));
                 t.Wait();
             }
+            // Reset the color limits
+            ClearColorSpectrums();
+
         }
         private void LoadFromFile(string fileName)
         {            

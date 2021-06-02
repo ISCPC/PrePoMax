@@ -38,7 +38,8 @@ namespace PrePoMax.Forms
                 else if (clone is CFlux cf) _viewLoad = new ViewCFlux(cf);
                 else if (clone is DFlux df) _viewLoad = new ViewDFlux(df);
                 else if (clone is BodyFlux bf) _viewLoad = new ViewBodyFlux(bf);
-                else if (clone is RadiateFlux rf) _viewLoad = new ViewRadiateFlux(rf);
+                else if (clone is FilmHeatTransfer fht) _viewLoad = new ViewFilmHeatTransfer(fht);
+                else if (clone is RadiationHeatTransfer rht) _viewLoad = new ViewRadiationHeatTransfer(rht);
                 //
                 else throw new NotImplementedException();
             }
@@ -116,9 +117,10 @@ namespace PrePoMax.Forms
                 if (itemTag is ViewError) _viewLoad = null;
                 else if (itemTag is ViewCLoad vcl) _viewLoad = vcl;
                 else if (itemTag is ViewMomentLoad vml) _viewLoad = vml;
-                else if (itemTag is ViewDLoad vdl)  // in order for S1, S2,... to include the same element types
+                else if (itemTag is ViewDLoad vdl)
                 {
                     _viewLoad = vdl;
+                    // Set a filter in order for S1, S2,... to include the same element types
                     _controller.Selection.LimitSelectionToFirstGeometryType = true;
                 }
                 else if (itemTag is ViewSTLoad vstl)
@@ -136,16 +138,25 @@ namespace PrePoMax.Forms
                 else if (itemTag is ViewPreTensionLoad vprl) _viewLoad = vprl;
                 // Thermal
                 else if (itemTag is ViewCFlux vcf) _viewLoad = vcf;
-                else if (itemTag is ViewDFlux vdf)  // in order for S1, S2,... to include the same element types
+                else if (itemTag is ViewDFlux vdf)
                 {
                     _viewLoad = vdf;
+                    // Set a filter in order for S1, S2,... to include the same element types
                     _controller.Selection.LimitSelectionToFirstGeometryType = true;
                     _controller.Selection.EnableShellEdgeFaceSelection = true;
                 }
                 else if (itemTag is ViewBodyFlux vbf) _viewLoad = vbf;
-                else if (itemTag is ViewRadiateFlux vrf)  // in order for S1, S2,... to include the same element types
+                else if (itemTag is ViewFilmHeatTransfer vfht)
                 {
-                    _viewLoad = vrf;
+                    _viewLoad = vfht;
+                    // Set a filter in order for S1, S2,... to include the same element types
+                    _controller.Selection.LimitSelectionToFirstGeometryType = true;
+                    _controller.Selection.EnableShellEdgeFaceSelection = true;
+                }
+                else if (itemTag is ViewRadiationHeatTransfer vrht)
+                {
+                    _viewLoad = vrht;
+                    // Set a filter in order for S1, S2,... to include the same element types
                     _controller.Selection.LimitSelectionToFirstGeometryType = true;
                     _controller.Selection.EnableShellEdgeFaceSelection = true;
                 }
@@ -219,7 +230,11 @@ namespace PrePoMax.Forms
             {
                 HighlightLoad();
             }
-            else if (_viewLoad is ViewRadiateFlux vrf && property == nameof(vrf.SurfaceName))
+            else if (_viewLoad is ViewFilmHeatTransfer vfht && property == nameof(vfht.SurfaceName))
+            {
+                HighlightLoad();
+            }
+            else if (_viewLoad is ViewRadiationHeatTransfer vrht && property == nameof(vrht.SurfaceName))
             {
                 HighlightLoad();
             }
@@ -291,9 +306,10 @@ namespace PrePoMax.Forms
             else if (FELoad is CFlux cf) {}
             else if (FELoad is DFlux df) { }
             else if (FELoad is BodyFlux bf) { }
-            else if (FELoad is RadiateFlux rf)
+            else if (FELoad is FilmHeatTransfer fht) { }
+            else if (FELoad is RadiationHeatTransfer rht)
             {
-                if (rf.CavityRadiation && (rf.CavityName == null || rf.CavityName == ""))
+                if (rht.CavityRadiation && (rht.CavityName == null || rht.CavityName == ""))
                     throw new CaeException("For cavity radiation a cavity name must be specified.");
             }
             // Create
@@ -516,16 +532,27 @@ namespace PrePoMax.Forms
                     //
                     vbf.PopululateDropDownLists(partNames, elementSetNames);
                 }
-                else if (_viewLoad is ViewRadiateFlux vrf)
+                else if (_viewLoad is ViewFilmHeatTransfer vfht)
+                {
+                    selectedId = lvTypes.FindItemWithText("Film").Index;
+                    // Check for deleted regions
+                    if (vfht.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
+                    else if (vfht.RegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
+                        CheckMissingValueRef(ref noEdgeSurfaceNames, vfht.SurfaceName, s => { vfht.SurfaceName = s; });
+                    else throw new NotSupportedException();
+                    //
+                    vfht.PopululateDropDownLists(noEdgeSurfaceNames);
+                }
+                else if (_viewLoad is ViewRadiationHeatTransfer vrht)
                 {
                     selectedId = lvTypes.FindItemWithText("Radiation").Index;
                     // Check for deleted regions
-                    if (vrf.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
-                    else if (vrf.RegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
-                        CheckMissingValueRef(ref noEdgeSurfaceNames, vrf.SurfaceName, s => { vrf.SurfaceName = s; });
+                    if (vrht.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
+                    else if (vrht.RegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
+                        CheckMissingValueRef(ref noEdgeSurfaceNames, vrht.SurfaceName, s => { vrht.SurfaceName = s; });
                     else throw new NotSupportedException();
                     //
-                    vrf.PopululateDropDownLists(noEdgeSurfaceNames);
+                    vrht.PopululateDropDownLists(noEdgeSurfaceNames);
                 }
                 else throw new NotSupportedException();
                 //
@@ -694,17 +721,30 @@ namespace PrePoMax.Forms
                 item.Tag = vbf;
                 lvTypes.Items.Add(item);
             }
-            // Radiate flux
+            // Film heat transfer
+            name = "Film";
+            loadName = GetLoadName(name);
+            item = new ListViewItem(name);
+            FilmHeatTransfer filmHeatTransfer = new FilmHeatTransfer(loadName, "", RegionTypeEnum.Selection, 0, 0);
+            if (step.IsLoadSupported(filmHeatTransfer))
+            {
+                ViewFilmHeatTransfer vfht = new ViewFilmHeatTransfer(filmHeatTransfer);
+                vfht.PopululateDropDownLists(noEdgeSurfaceNames);
+                vfht.Color = color;
+                item.Tag = vfht;
+                lvTypes.Items.Add(item);
+            }
+            // Radiation heat transfer
             name = "Radiation";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
-            RadiateFlux radiateFlux = new RadiateFlux(loadName, "", RegionTypeEnum.Selection, 0, 0.5);
-            if (step.IsLoadSupported(radiateFlux))
+            RadiationHeatTransfer radiationHeatTransfer = new RadiationHeatTransfer(loadName, "", RegionTypeEnum.Selection, 0, 1);
+            if (step.IsLoadSupported(radiationHeatTransfer))
             {
-                ViewRadiateFlux vrl = new ViewRadiateFlux(radiateFlux);
-                vrl.PopululateDropDownLists(noEdgeSurfaceNames);
-                vrl.Color = color;
-                item.Tag = vrl;
+                ViewRadiationHeatTransfer vrht = new ViewRadiationHeatTransfer(radiationHeatTransfer);
+                vrht.PopululateDropDownLists(noEdgeSurfaceNames);
+                vrht.Color = color;
+                item.Tag = vrht;
                 lvTypes.Items.Add(item);
             }
         }
@@ -736,7 +776,8 @@ namespace PrePoMax.Forms
                          FELoad is CFlux ||
                          FELoad is DFlux ||
                          FELoad is BodyFlux ||
-                         FELoad is RadiateFlux)
+                         FELoad is FilmHeatTransfer ||
+                         FELoad is RadiationHeatTransfer)
                 {
                     if (FELoad.RegionType == RegionTypeEnum.NodeSetName ||
                         FELoad.RegionType == RegionTypeEnum.ReferencePointName ||
@@ -788,7 +829,8 @@ namespace PrePoMax.Forms
                 else if (FELoad is CFlux) _controller.SetSelectItemToNode();
                 else if (FELoad is DFlux) _controller.SetSelectItemToSurface();
                 else if (FELoad is BodyFlux) _controller.SetSelectItemToPart();
-                else if (FELoad is RadiateFlux) _controller.SetSelectItemToSurface();
+                else if (FELoad is FilmHeatTransfer) _controller.SetSelectItemToSurface();
+                else if (FELoad is RadiationHeatTransfer) _controller.SetSelectItemToSurface();
                 //
                 else throw new NotSupportedException();
             }
@@ -819,7 +861,8 @@ namespace PrePoMax.Forms
                     FELoad is CFlux ||
                     FELoad is DFlux ||
                     FELoad is BodyFlux ||
-                    FELoad is RadiateFlux)
+                    FELoad is FilmHeatTransfer ||
+                    FELoad is RadiationHeatTransfer)
                 {
                     FELoad.CreationIds = ids;
                     FELoad.CreationData = _controller.Selection.DeepClone();

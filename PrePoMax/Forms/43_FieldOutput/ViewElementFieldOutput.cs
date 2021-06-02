@@ -31,10 +31,10 @@ namespace PrePoMax
         [StandardValue("ENER", Description = "Energy density.")]
         ENER = 16,
         //
-        [StandardValue("ERR", Description = "Extrapolation error estimator for stress calculations. ZZS and ERR are mutually exclusive.")]
+        [StandardValue("ERR", Description = "Extrapolation error estimator for stress calculations. ERR and ZZS are mutually exclusive.")]
         ERR = 32,
         //
-        [StandardValue("ZZS", Description = "Zienkiewicz-Zhu improved stress. ZZS and ERR are mutually exclusive.")]
+        [StandardValue("ZZS", Description = "Zienkiewicz-Zhu improved stress. ERR and ZZS are mutually exclusive.")]
         ZZS = 64
     }
 
@@ -61,6 +61,12 @@ namespace PrePoMax
             }
             set
             {
+                if (((value & ViewElementFieldVariable.ERR) == ViewElementFieldVariable.ERR) &&
+                    ((value & ViewElementFieldVariable.ZZS) == ViewElementFieldVariable.ZZS))
+                {
+                    throw new Exception("ERR and ZZS are mutually exclusive.");
+                }
+                //
                 _fieldOutput.Variables = (CaeModel.ElementFieldVariable)value;
             }
         }

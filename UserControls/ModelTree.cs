@@ -690,9 +690,12 @@ namespace UserControls
             }
             else if (e.KeyCode == Keys.Enter)
             {
-                e.SuppressKeyPress = true;
-                tsmiEdit_Click(null, null);
+                CodersLabTreeView tree = GetActiveTree();
+                if (tree.SelectedNodes.Count == 1 && tree.SelectedNodes[0].Tag == null) tsmiCreate_Click(null, null);
+                else tsmiEdit_Click(null, null);
             }
+            // No beep
+            e.SuppressKeyPress = true;
         }
 
         #endregion

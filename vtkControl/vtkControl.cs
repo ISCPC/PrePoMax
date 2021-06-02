@@ -231,7 +231,6 @@ namespace vtkControl
 
         // Events                                                                                                                   
         public event Action<double[], double[], double[][], vtkSelectOperation, string[]> OnMouseLeftButtonUpSelection;
-        public event Action<Keys> KeyPressEvent;
 
 
         // Constructors                                                                                                             
@@ -1798,14 +1797,6 @@ namespace vtkControl
         private void _style_KeyPressEvt(vtkObject sender, vtkObjectEventArgs e)
         {
             if (_scalarBarWidget.GetVisibility() == 1) _scalarBarWidget.OnRenderWindowModified();
-            //
-            Keys key = (Keys)_renderWindowInteractor.GetKeyCode();
-            // Test for the delete key
-            if (key == Keys.None)
-            {
-                if (_renderWindowInteractor.GetKeySym() == "Delete") key = Keys.Delete;
-            }
-            if (!_style.RubberBandCanceledByEsc) KeyPressEvent?.Invoke(key);
         }
 
         private vtkTextProperty CreateNewTextProperty()

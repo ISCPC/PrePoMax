@@ -118,6 +118,7 @@
             this.Text = "FrmProperties";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmProperties_FormClosing);
             this.EnabledChanged += new System.EventHandler(this.FrmProperties_EnabledChanged);
+            this.VisibleChanged += new System.EventHandler(this.FrmProperties_VisibleChanged);
             this.gbProperties.ResumeLayout(false);
             this.ResumeLayout(false);
 

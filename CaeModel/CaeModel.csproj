@@ -94,7 +94,8 @@
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\Load\CalCFlux.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\Load\CalBodyFlux.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\Load\CalDFlux.cs" />
-    <Compile Include="FileInOut\Output\Calculix\Keywords\Step\Load\CalRadiateFlux.cs" />
+    <Compile Include="FileInOut\Output\Calculix\Keywords\Step\Load\CalFilmHeatTransfer.cs" />
+    <Compile Include="FileInOut\Output\Calculix\Keywords\Step\Load\CalRadiationHeatTransfer.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\Load\CalShellEdgeLoad.cs" />
     <Compile Include="FileInOut\Output\Mmg\MmgFileWriter.cs" />
     <Compile Include="InitialConditions\InitialTemperature.cs" />
@@ -170,8 +171,9 @@
     <Compile Include="Steps\Loads\CentrifLoad.cs" />
     <Compile Include="Steps\Loads\CFlux.cs" />
     <Compile Include="Steps\Loads\BodyFlux.cs" />
+    <Compile Include="Steps\Loads\FilmHeatTransfer.cs" />
     <Compile Include="Steps\Loads\DFlux.cs" />
-    <Compile Include="Steps\Loads\RadiateFlux.cs" />
+    <Compile Include="Steps\Loads\RadiationHeatTransfer.cs" />
     <Compile Include="Steps\Loads\ShellEdgeLoad.cs" />
     <Compile Include="Steps\Loads\GravityLoad.cs" />
     <Compile Include="Steps\Loads\MomentLoad.cs" />

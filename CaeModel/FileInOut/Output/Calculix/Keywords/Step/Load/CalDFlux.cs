@@ -13,13 +13,11 @@ namespace FileInOut.Output.Calculix
     {
         // Variables                                                                                                                
         private DFlux _flux;
-        private IDictionary<string, FeSurface> _surfaces;
 
         
         // Constructor                                                                                                              
-        public CalDFlux(IDictionary<string, FeSurface> surfaces, DFlux flux)
+        public CalDFlux(DFlux flux)
         {
-            _surfaces = surfaces;
             _flux = flux;
         }
 
@@ -34,8 +32,8 @@ namespace FileInOut.Output.Calculix
         }
         public override string GetDataString()
         {
-            //*Dflux
-            //Surface-1, S, 10
+            // *Dflux
+            // Surface-1, S, 10
             StringBuilder sb = new StringBuilder();
             sb.AppendFormat("{0}, S, {1}{2}", _flux.SurfaceName, _flux.Magnitude, Environment.NewLine);
             return sb.ToString();

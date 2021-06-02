@@ -94,7 +94,8 @@ namespace CaeModel
             else if (loadType == typeof(CFlux) ||
                      loadType == typeof(DFlux) ||
                      loadType == typeof(BodyFlux) ||
-                     loadType == typeof(RadiateFlux))
+                     loadType == typeof(FilmHeatTransfer) ||
+                     loadType == typeof(RadiationHeatTransfer))
             {
                 return false;
             }

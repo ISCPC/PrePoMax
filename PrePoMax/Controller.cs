@@ -5649,7 +5649,7 @@ namespace PrePoMax
                 }
                 // Surface
                 else if (load is DLoad || load is STLoad || load is ShellEdgeLoad || load is PreTensionLoad || load is DFlux ||
-                         load is RadiateFlux)
+                         load is FilmHeatTransfer || load is RadiationHeatTransfer)
                 {
                     name = FeMesh.GetNextFreeSelectionName(_model.Mesh.Surfaces) + load.Name;
                     FeSurface surface = new FeSurface(name, load.CreationIds, load.CreationData.DeepClone());
@@ -5681,7 +5681,7 @@ namespace PrePoMax
                 else if (load is GravityLoad || load is CentrifLoad || load is BodyFlux)
                     RemoveElementSets(new string[] { load.RegionName });
                 else if (load is DLoad || load is STLoad || load is ShellEdgeLoad || load is PreTensionLoad || load is DFlux ||
-                         load is RadiateFlux)
+                         load is FilmHeatTransfer || load is RadiationHeatTransfer)
                     RemoveSurfaces(new string[] { load.RegionName }, false);
                 else throw new NotSupportedException();
             }
@@ -9134,14 +9134,23 @@ namespace PrePoMax
                     if (nodeSet.Labels.Length > 0)
                         DrawBodyFluxymbol(prefixName, bFlux, nodeSet.CenterOfGravity, color, symbolSize, symbolLayer);
                 }
-                else if (load is RadiateFlux radiateFlux)
+                else if (load is FilmHeatTransfer filmHeatTransfer)
                 {
-                    if (!_model.Mesh.Surfaces.ContainsKey(radiateFlux.SurfaceName)) return;
+                    if (!_model.Mesh.Surfaces.ContainsKey(filmHeatTransfer.SurfaceName)) return;
                     //
-                    count += DrawSurface(prefixName, radiateFlux.SurfaceName, color, layer, true, false, onlyVisible);
+                    count += DrawSurface(prefixName, filmHeatTransfer.SurfaceName, color, layer, true, false, onlyVisible);
                     if (layer == vtkControl.vtkRendererLayer.Selection)
-                        DrawSurfaceEdge(prefixName, radiateFlux.SurfaceName, color, layer, true, false, onlyVisible);
-                    if (count > 0) DrawRadiateSymbols(prefixName, radiateFlux, color, symbolSize, layer);
+                        DrawSurfaceEdge(prefixName, filmHeatTransfer.SurfaceName, color, layer, true, false, onlyVisible);
+                    if (count > 0) DrawFilmSymbols(prefixName, filmHeatTransfer, color, symbolSize, layer);
+                }
+                else if (load is RadiationHeatTransfer radiationHeatTransfer)
+                {
+                    if (!_model.Mesh.Surfaces.ContainsKey(radiationHeatTransfer.SurfaceName)) return;
+                    //
+                    count += DrawSurface(prefixName, radiationHeatTransfer.SurfaceName, color, layer, true, false, onlyVisible);
+                    if (layer == vtkControl.vtkRendererLayer.Selection)
+                        DrawSurfaceEdge(prefixName, radiationHeatTransfer.SurfaceName, color, layer, true, false, onlyVisible);
+                    if (count > 0) DrawRadiateSymbols(prefixName, radiationHeatTransfer, color, symbolSize, layer);
                 }
                 else throw new NotSupportedException();
             }
@@ -9507,10 +9516,71 @@ namespace PrePoMax
             _form.AddOrientedArrowsActor(data, symbolSize * 0.5);
 
         }
-        public void DrawRadiateSymbols(string prefixName, RadiateFlux radiateFlux, Color color, int symbolSize,
+        public void DrawFilmSymbols(string prefixName, FilmHeatTransfer filmHeatTransfer, Color color, int symbolSize,
+                                    vtkControl.vtkRendererLayer layer)
+        {
+            FeSurface surface = _model.Mesh.Surfaces[filmHeatTransfer.SurfaceName];
+            //
+            List<int> allElementIds = new List<int>();
+            List<FeFaceName> allElementFaceNames = new List<FeFaceName>();
+            List<double[]> allCoor = new List<double[]>();
+            double[] faceCenter;
+            FeElementSet elementSet;
+            foreach (var entry in surface.ElementFaces)     // entry:  S3; elementSetName
+            {
+                elementSet = _model.Mesh.ElementSets[entry.Value];
+                foreach (var elementId in elementSet.Labels)
+                {
+                    allElementIds.Add(elementId);
+                    allElementFaceNames.Add(entry.Key);
+                    _model.Mesh.GetElementFaceCenter(elementId, entry.Key, out faceCenter);
+                    allCoor.Add(faceCenter);
+                }
+            }
+            //
+            int[] distributedElementIds = GetSpatiallyEquallyDistributedCoor(allCoor.ToArray(), 3);
+            // Front shell face which is a S2 POS face works in the same way as a solid face
+            // Back shell face which is a S1 NEG must be inverted
+            int id;
+            double[] faceNormal;
+            bool shellElement;
+            double[][] distributedCoor = new double[distributedElementIds.Length][];
+            double[][] distributedLoadNormals = new double[distributedElementIds.Length][];
+            for (int i = 0; i < distributedElementIds.Length; i++)
+            {
+                id = distributedElementIds[i];
+                _model.Mesh.GetElementFaceCenterAndNormal(allElementIds[id], allElementFaceNames[id], out faceCenter,
+                                                          out faceNormal, out shellElement);
+                //
+                if (surface.SurfaceFaceTypes == FeSurfaceFaceTypes.ShellEdgeFaces || !shellElement)
+                {
+                    faceNormal[0] *= -1;
+                    faceNormal[1] *= -1;
+                    faceNormal[2] *= -1;
+                }
+                //
+                distributedCoor[i] = faceCenter;
+                distributedLoadNormals[i] = faceNormal;
+            }
+            // Flux symbol
+            if (allCoor.Count > 0)
+            {
+                vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
+                data.Name = prefixName;
+                data.Color = color;
+                data.Layer = layer;
+                data.Geometry.Nodes.Coor = distributedCoor.ToArray();
+                data.Geometry.Nodes.Normals = distributedLoadNormals.ToArray();
+                data.SectionViewPossible = false;
+                ApplyLighting(data);
+                bool translate = false;
+                _form.AddOrientedFluxActor(data, symbolSize, false, translate);
+            }
+        }
+        public void DrawRadiateSymbols(string prefixName, RadiationHeatTransfer radiationHeatTransfer, Color color, int symbolSize,
                                        vtkControl.vtkRendererLayer layer)
         {
-            FeSurface surface = _model.Mesh.Surfaces[radiateFlux.SurfaceName];
+            FeSurface surface = _model.Mesh.Surfaces[radiationHeatTransfer.SurfaceName];
             //
             List<int> allElementIds = new List<int>();
             List<FeFaceName> allElementFaceNames = new List<FeFaceName>();

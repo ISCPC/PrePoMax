@@ -40,7 +40,7 @@ namespace PrePoMax.Forms
             _controller = controller;
             _viewUnitSystem = null;
             //
-            this.Height = 340 + 21 * 19;
+            this.Height = 340 + 15 * 19;
             //
             btnOkAddNew.Visible = false;
             btnCancel.Visible = false;

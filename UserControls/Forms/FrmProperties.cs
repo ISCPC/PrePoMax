@@ -70,6 +70,10 @@ namespace UserControls
                 ExceptionTools.Show(this, ex);
             }
         }
+        private void FrmProperties_VisibleChanged(object sender, EventArgs e)
+        {
+            if (!Visible) OnHideOrClose();
+        }
         private void btnOK_Click(object sender, EventArgs e)
         {
             try
@@ -161,5 +165,6 @@ namespace UserControls
         protected virtual void OnEnabledChanged() { }
         protected virtual void OnApply(bool onOkAddNew) { }
 
+        
     }
 }
