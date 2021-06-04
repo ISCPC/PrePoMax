@@ -39,14 +39,21 @@ namespace FileInOut.Output.Calculix
         public override string GetKeywordString()
         {
             StringBuilder sb = new StringBuilder();
+            string fileData = "";
+            if (_definedTemperature.Type == DefinedTemperatureTypeEnum.FromFile)
+                fileData = string.Format(", File={0}, Step={1}", _definedTemperature.FileName, _definedTemperature.StepNumber);
+            //
             sb.AppendLine("** Name: " + _definedTemperature.Name);
-            sb.AppendLine("*Temperature");
+            sb.AppendFormat("*Temperature{0}{1}", fileData, Environment.NewLine);
             return sb.ToString();
         }
         public override string GetDataString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendFormat("{0}, {1}{2}", _regionName, _definedTemperature.Temperature, Environment.NewLine);
+            if (_definedTemperature.Type == DefinedTemperatureTypeEnum.ByValue)
+            {
+                sb.AppendFormat("{0}, {1}{2}", _regionName, _definedTemperature.Temperature, Environment.NewLine);
+            }
             return sb.ToString();
         }
     }

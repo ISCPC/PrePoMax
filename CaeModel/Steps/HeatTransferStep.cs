@@ -28,7 +28,8 @@ namespace CaeModel
             _steadyState = false;
             _deltmx = double.PositiveInfinity;
             //
-            AddFieldOutput(new NodalFieldOutput("NF-Output-1", NodalFieldVariable.NT));
+            AddFieldOutput(new NodalFieldOutput("NF-Output-1", NodalFieldVariable.NT | NodalFieldVariable.RFL));
+            AddFieldOutput(new ElementFieldOutput("EF-Output-1", ElementFieldVariable.HFL));
         }
         //ISerializable
         public HeatTransferStep(SerializationInfo info, StreamingContext context)

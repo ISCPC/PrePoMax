@@ -27,7 +27,7 @@ namespace CaeGlobals
             get { return _name; }
             set
             {
-                if (_checkName) CheckNameForErrors(value);
+                if (_checkName) CheckNameForErrors(ref value);
                 _name = value;
             }
         }
@@ -132,7 +132,7 @@ namespace CaeGlobals
         {
             try
             {
-                CheckNameForErrors(name);
+                CheckNameForErrors(ref name);
                 return true;
             }
             catch
@@ -144,7 +144,7 @@ namespace CaeGlobals
         {
             try
             {
-                CheckNameForErrors(name);
+                CheckNameForErrors(ref name);
                 return null;
             }
             catch (Exception ex)
@@ -152,29 +152,30 @@ namespace CaeGlobals
                 return ex.Message;
             }
         }
-        private static void CheckNameForErrors(string name)
+        private static void CheckNameForErrors(ref string name)
         {
-            if (name == null) throw new CaeGlobals.CaeException("The name can not be null.");
-            if (name == "") throw new CaeGlobals.CaeException("The name can not be an empty string.");
-            if (name.Contains(' ')) throw new CaeGlobals.CaeException("The name can not contain space characters: '" + name + "'.");
-            //if (Char.IsDigit(name[0])) throw new CaeGlobals.CaeException("The name can not start with a digit: '" + name + "'.");
-            if (name == "Missing") throw new CaeGlobals.CaeException("The name 'Missing' is a reserved name.");
-
+            if (name == null) throw new CaeException("The name can not be null.");
+            if (name == "") throw new CaeException("The name can not be an empty string.");
+            name = name.Trim();
+            if (name.Contains(' ')) throw new CaeException("The name can not contain space characters: '" + name + "'.");
+            if (name == "Missing") throw new CaeException("The name 'Missing' is a reserved name.");
+            //
             char c;
             int letterCount = 0;
             int digitCount = 0;
-
+            //
             for (int i = 0; i < name.Length; i++)
             {
-                c = (char)name[i];
-                if (Char.IsLetter(c)) letterCount++;
-                else if (Char.IsDigit(c)) digitCount++;
+                c = name[i];
+                if (char.IsLetter(c)) letterCount++;
+                else if (char.IsDigit(c)) digitCount++;
                 else if (c != '_' && c != '-' && c != '(' && c != ')')
-                    throw new CaeGlobals.CaeException("The name can only contain a letter, a digit or characters: minus, underscore and parenthesis: '" + name + "'.");
+                    throw new CaeException("The name can only contain a letter, a digit or characters: minus, " + 
+                                           "underscore and parenthesis: '" + name + "'.");
             }
-
+            //
             if (letterCount <= 0)
-                throw new CaeGlobals.CaeException("The name must contain at least one letter: '" + name + "'.");
+                throw new CaeException("The name must contain at least one letter: '" + name + "'.");
         }
         //
         public override string ToString()

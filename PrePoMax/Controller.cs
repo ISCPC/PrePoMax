@@ -5789,16 +5789,19 @@ namespace PrePoMax
             {
                 string name;
                 // Node output
-                if (definedField is DefinedTemperature)
+                if (definedField is DefinedTemperature dt)
                 {
-                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.NodeSets) + definedField.Name;
-                    FeNodeSet nodeSet = new FeNodeSet(name, definedField.CreationIds);
-                    nodeSet.CreationData = definedField.CreationData.DeepClone();
-                    nodeSet.Internal = true;
-                    AddNodeSet(nodeSet);
-                    //
-                    definedField.RegionName = name;
-                    definedField.RegionType = RegionTypeEnum.NodeSetName;
+                    if (dt.Type == DefinedTemperatureTypeEnum.ByValue)
+                    {
+                        name = FeMesh.GetNextFreeSelectionName(_model.Mesh.NodeSets) + definedField.Name;
+                        FeNodeSet nodeSet = new FeNodeSet(name, definedField.CreationIds);
+                        nodeSet.CreationData = definedField.CreationData.DeepClone();
+                        nodeSet.Internal = true;
+                        AddNodeSet(nodeSet);
+                        //
+                        definedField.RegionName = name;
+                        definedField.RegionType = RegionTypeEnum.NodeSetName;
+                    }
                 }
                 else throw new NotSupportedException();
             }
@@ -10210,7 +10213,8 @@ namespace PrePoMax
                     }
                     else if (obj is DefinedField df)
                     {
-                        if (df.RegionType == RegionTypeEnum.NodeSetName) HighlightNodeSets(new string[] { df.RegionName });
+                        if (df is DefinedTemperature dt && dt.Type == DefinedTemperatureTypeEnum.FromFile) { }
+                        else if (df.RegionType == RegionTypeEnum.NodeSetName) HighlightNodeSets(new string[] { df.RegionName });
                         else if (df.RegionType == RegionTypeEnum.SurfaceName) HighlightSurfaces(new string[] { df.RegionName });
                         else if (df.RegionType == RegionTypeEnum.Selection) { }
                         else throw new NotSupportedException();

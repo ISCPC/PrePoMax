@@ -18,24 +18,24 @@ namespace PrePoMax
         // must start at 1 for the UI to work
         [StandardValue("S", Description = "True (Cauchy) stresses.")]
         S = 1,
-
         [StandardValue("E", Description = "Total Lagrangian strain or total Eulerian strain.")]
         E = 2,
-
         [StandardValue("ME", Description = "Mechanical Lagrangian strain or mechanical Eulerian strain.")]
         ME = 4,
-
         [StandardValue("PEEQ", Description = "Equivalent plastic strain.")]
         PEEQ = 8,
-
+        // Thermal
+        [StandardValue("HFL", Description = "Heat flux.")]
+        HFL = 16,
+        // Whole element
         [StandardValue("ENER", Description = "Energy density.")]
-        ENER = 16,
-
+        ENER = 32,
         [StandardValue("ELSE", Description = "Internal energy.")]
-        ELSE = 32,
-
+        ELSE = 64,
         [StandardValue("EVOL", Description = "Volume.")]
-        EVOL = 64
+        EVOL = 128,
+        [StandardValue("EBHE", Description = "Heating power.")]
+        EBHE = 256
     }
 
     [Serializable]

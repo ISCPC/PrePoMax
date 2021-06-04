@@ -22,7 +22,7 @@ namespace PrePoMax.Settings
         [CategoryAttribute("Calculix")]
         [OrderedDisplayName(0, 10, "Work directory")]
         [DescriptionAttribute("Select the work directory.")]
-        [EditorAttribute(typeof(System.Windows.Forms.Design.FolderNameEditor), typeof(System.Drawing.Design.UITypeEditor))]
+        [EditorAttribute(typeof(System.Windows.Forms.Design.FolderNameEditor), typeof(UITypeEditor))]
         public string WorkDirectory
         {
             get { return _calculixSettings.WorkDirectory; }
@@ -41,7 +41,7 @@ namespace PrePoMax.Settings
         [CategoryAttribute("Calculix")]
         [OrderedDisplayName(2, 10, "Executable")]
         [DescriptionAttribute("Select the calculix executable file (ccx.exe).")]
-        [EditorAttribute(typeof(System.Windows.Forms.Design.FileNameEditor), typeof(System.Drawing.Design.UITypeEditor))]
+        [EditorAttribute(typeof(System.Windows.Forms.Design.FileNameEditor), typeof(UITypeEditor))]
         public string CalculixExe
         {
             get { return _calculixSettings.CalculixExe; }
@@ -69,7 +69,7 @@ namespace PrePoMax.Settings
         [CategoryAttribute("Parallelization")]
         [OrderedDisplayName(1, 10, "Environment variables")]
         [DescriptionAttribute("Add additional environment variables needed for the executable to run.")]
-        [Editor(typeof(Forms.EnvVarsUIEditor), typeof(System.Drawing.Design.UITypeEditor))]
+        [Editor(typeof(Forms.EnvVarsUIEditor), typeof(UITypeEditor))]
         public List<CaeJob.EnvironmentVariable> EnvironmentVariables
         {
             get { return _calculixSettings.EnvironmentVariables; }

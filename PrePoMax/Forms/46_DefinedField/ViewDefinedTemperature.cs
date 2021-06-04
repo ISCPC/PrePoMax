@@ -19,6 +19,16 @@ namespace PrePoMax
         // Properties                                                                                                               
         public override string Name { get { return _definedTemperature.Name; } set { _definedTemperature.Name = value; } }
         //
+        [CategoryAttribute("Data")]
+        [OrderedDisplayName(1, 10, "Define temperature")]
+        [DescriptionAttribute("Define the temperature by a constant value or read the temperature from a file.")]
+        [Id(2, 1)]
+        public CaeModel.DefinedTemperatureTypeEnum DefinedTemperatureType
+        {
+            get { return _definedTemperature.Type; }
+            set { _definedTemperature.Type = value; UpdateFieldView(); }
+        }
+        //
         [CategoryAttribute("Region")]
         [OrderedDisplayName(2, 10, "Node set")]
         [DescriptionAttribute("Select the node set for the creation of the defined temperature.")]
@@ -41,6 +51,37 @@ namespace PrePoMax
             get { return _definedTemperature.Temperature; }
             set { _definedTemperature.Temperature = value; }
         }
+        //
+        [CategoryAttribute("Magnitude")]
+        [OrderedDisplayName(1, 10, "Results file .frd")]
+        [DescriptionAttribute("Results file name (.frd) without path.")]
+        [EditorAttribute(typeof(FrdFileNameEditor), typeof(System.Drawing.Design.UITypeEditor))]
+        [Id(2, 3)]
+        public string FileName
+        {
+            get { return _definedTemperature.FileName; }
+            set
+            {
+                value = System.IO.Path.GetFileName(value);
+                //
+                if (value.Contains(" ") || value.Contains(":") || value.Contains("\\") || value.Contains("/")
+                    || value.ToUTF8() != value)
+                    throw new Exception("Enter the results file name (.frd) without path. " +
+                                        "The results file name must not contain any special characters.");
+                _definedTemperature.FileName = value;
+            }
+        }
+        //
+        [CategoryAttribute("Magnitude")]
+        [OrderedDisplayName(2, 10, "Step number")]
+        [DescriptionAttribute("Enter the results step number from which to read the temperatures.")]
+        [Id(3, 3)]
+        public int StepNumber
+        {
+            get { return _definedTemperature.StepNumber; }
+            set { _definedTemperature.StepNumber = value; }
+        }
+
 
         // Constructors                                                                                                             
         public ViewDefinedTemperature(CaeModel.DefinedTemperature definedTemperature)
@@ -53,8 +94,8 @@ namespace PrePoMax
             regionTypePropertyNamePairs.Add(RegionTypeEnum.NodeSetName, nameof(NodeSetName));
             regionTypePropertyNamePairs.Add(RegionTypeEnum.SurfaceName, nameof(SurfaceName));
             //
-            base.SetBase(_definedTemperature, regionTypePropertyNamePairs);
-            base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
+            SetBase(_definedTemperature, regionTypePropertyNamePairs);
+            DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
         }
 
 
@@ -70,6 +111,27 @@ namespace PrePoMax
             regionTypeListItemsPairs.Add(RegionTypeEnum.NodeSetName, nodeSetNames);
             regionTypeListItemsPairs.Add(RegionTypeEnum.SurfaceName, surfaceNames);
             base.PopululateDropDownLists(regionTypeListItemsPairs);
+            //
+            UpdateFieldView();
+        }
+        private void UpdateFieldView()
+        {
+            bool byValue = _definedTemperature.Type == CaeModel.DefinedTemperatureTypeEnum.ByValue;
+            //
+            DynamicCustomTypeDescriptor.GetProperty(nameof(Temperature)).SetIsBrowsable(byValue);
+            DynamicCustomTypeDescriptor.GetProperty(nameof(FileName)).SetIsBrowsable(!byValue);
+            DynamicCustomTypeDescriptor.GetProperty(nameof(StepNumber)).SetIsBrowsable(!byValue);
+            //
+            DynamicCustomTypeDescriptor.GetProperty(nameof(RegionType)).SetIsBrowsable(byValue);
+            if (byValue)
+            {
+                RegionType = RegionType;
+            }
+            else
+            {
+                DynamicCustomTypeDescriptor.GetProperty(nameof(NodeSetName)).SetIsBrowsable(byValue);
+                DynamicCustomTypeDescriptor.GetProperty(nameof(SurfaceName)).SetIsBrowsable(byValue);
+            }
         }
     }
 

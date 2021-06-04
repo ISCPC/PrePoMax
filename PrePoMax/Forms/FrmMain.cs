@@ -403,7 +403,7 @@ namespace PrePoMax
             {
                 tsmiTest.Visible = false;
                 tsmiCropWithCylinder.Visible = false;
-                tsmiCropWithCylinder.Visible = false;
+                tsmiCropWithCube.Visible = false;
             }
         }
 
@@ -584,20 +584,22 @@ namespace PrePoMax
         //
         private void KeyboardHook_Keydown(KeyboardHook.VKeys vKey)
         {
-            //System.Diagnostics.Debug.WriteLine(_modelTree.ActiveControl.Focused.ToString());
-            Keys key = (Keys)vKey;
-            //
-            if (key == Keys.Escape) CloseAllForms();
-            else if (Control.ModifierKeys == Keys.Control)
+            if (this == ActiveForm)
             {
-                if (key == Keys.I) tsmiImportFile_Click(null, null);
-                else if (key == Keys.N) tsmiNew_Click(null, null);
-                else if (key == Keys.O) tsmiOpen_Click(null, null);
-                else if (key == Keys.S) tsmiSave_Click(null, null);
-                else if (key == Keys.X) tsmiExit_Click(null, null);
+                Keys key = (Keys)vKey;
+                //
+                if (key == Keys.Escape) CloseAllForms();
+                else if (Control.ModifierKeys == Keys.Control)
+                {
+                    if (key == Keys.I) tsmiImportFile_Click(null, null);
+                    else if (key == Keys.N) tsmiNew_Click(null, null);
+                    else if (key == Keys.O) tsmiOpen_Click(null, null);
+                    else if (key == Keys.S) tsmiSave_Click(null, null);
+                    else if (key == Keys.X) tsmiExit_Click(null, null);
+                }
+                else if (_modelTree.ActiveControl == null || !_modelTree.ActiveControl.Focused)
+                    _modelTree.cltv_KeyDown(this, new KeyEventArgs(key));
             }
-            else if (_modelTree.ActiveControl == null || !_modelTree.ActiveControl.Focused)
-                _modelTree.cltv_KeyDown(this, new KeyEventArgs(key));
         }
         //
         private void timerOutput_Tick(object sender, EventArgs e)
@@ -6755,6 +6757,16 @@ namespace PrePoMax
         private void FrmMain_KeyUp(object sender, KeyEventArgs e)
         {
             System.Diagnostics.Debug.WriteLine("Key pressed");
+        }
+
+        private void FrmMain_Deactivate(object sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("Deactivate");
+        }
+
+        private void FrmMain_Activated(object sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("Activated");
         }
     }
 }

@@ -17,9 +17,13 @@ namespace CaeModel
         E = 2,
         ME = 4,
         PEEQ = 8,
-        ENER = 16,
-        ELSE = 32,
-        EVOL = 64
+        // Thermal
+        HFL = 16,
+        // Whole element
+        ENER = 32,
+        ELSE = 64,
+        EVOL = 128,
+        EBHE = 256
     }
 
     [Serializable]

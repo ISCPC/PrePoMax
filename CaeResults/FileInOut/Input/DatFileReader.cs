@@ -13,7 +13,7 @@ namespace CaeResults
     [Serializable]
     public static class DatFileReader
     {
-        // Nodal
+        // Nodal                                                                                                        
         private static readonly string nameDisplacements = "Displacements";
         private static readonly string nameForces = "Forces";
         private static readonly string nameTotalForce = "Total force";
@@ -24,7 +24,9 @@ namespace CaeResults
         private static readonly string nameInternalEnergyDensity = "Internal energy density";
         // Thermal
         private static readonly string nameTemperatures = "Temperatures";
-        // Contact
+        private static readonly string nameHeatGeneration = "Heat generation";
+        private static readonly string nameTotalHeatGeneration = "Total heat generation";
+        // Contact                                                                                                      
         private static readonly string nameRelativeContactDisplacement = "Relative contact displacement";
         private static readonly string nameContactStress = "Contact stress";
         private static readonly string nameContactPrintEnergy = "Contact print energy";
@@ -38,12 +40,16 @@ namespace CaeResults
         private static readonly string nameSurfaceArea = "Surface area";
         private static readonly string nameNormalSurfaceForce = "Normal surface force";
         private static readonly string nameShearSurfaceForce = "Shear surface force";
-        // Element
+        // Element                                                                                                      
         private static readonly string nameVolume = "Volume";
         private static readonly string nameTotalVolume = "Total volume";
         private static readonly string nameInternalEnergy = "Internal energy";
         private static readonly string nameTotalInternalEnergy = "Total internal energy";
-        // Error
+        // Thermal
+        private static readonly string nameHeatFlux = "Heat flux";
+        private static readonly string nameBodyHeating = "Body heating";
+        private static readonly string nameTotalBodyHeating = "Total body heating";
+        // Error                                                                                                        
         private static readonly string nameError = "Error";
         //
         private static readonly string[] spaceSplitter = new string[] { " " };
@@ -89,7 +95,7 @@ namespace CaeResults
                 }
                 //
                 List<string> dataSetNames = new List<string>();
-                // Nodal
+                // Nodal                                                                
                 dataSetNames.Add(nameDisplacements);                
                 dataSetNames.Add(nameForces);
                 dataSetNames.Add(nameTotalForce);
@@ -97,10 +103,12 @@ namespace CaeResults
                 dataSetNames.Add(nameStrains);
                 dataSetNames.Add(nameMechanicalStrains);
                 dataSetNames.Add(nameEquivalentPlasticStrains);
-                dataSetNames.Add(nameInternalEnergyDensity);
+                dataSetNames.Add(nameInternalEnergyDensity);                
                 // Thermal
                 dataSetNames.Add(nameTemperatures);
-                // Contact
+                dataSetNames.Add(nameHeatGeneration);
+                dataSetNames.Add(nameTotalHeatGeneration);
+                // Contact                                                              
                 dataSetNames.Add(nameRelativeContactDisplacement);
                 dataSetNames.Add(nameContactStress);
                 dataSetNames.Add(nameContactPrintEnergy);
@@ -114,12 +122,16 @@ namespace CaeResults
                 dataSetNames.Add(nameSurfaceArea);
                 dataSetNames.Add(nameNormalSurfaceForce);
                 dataSetNames.Add(nameShearSurfaceForce);
-                // Element
+                // Element                                                              
                 dataSetNames.Add(nameVolume);
                 dataSetNames.Add(nameTotalVolume);
                 dataSetNames.Add(nameInternalEnergy);
                 dataSetNames.Add(nameTotalInternalEnergy);
-                //
+                // Thermal
+                dataSetNames.Add(nameHeatFlux);
+                dataSetNames.Add(nameBodyHeating);
+                dataSetNames.Add(nameTotalBodyHeating);
+                //                                                                      
                 Dictionary<string, string> repairedSetNames = new Dictionary<string, string>();
                 //
                 List<string[]> dataSetLinesList = SplitToDataSetLinesList(dataSetNames, lines.ToArray(), repairedSetNames);
@@ -194,7 +206,7 @@ namespace CaeResults
                     //
                     while (i < lines.Length)
                     {
-                        if (lines[i].Trim().Length == 0) break;                     // last line is empty
+                        if (lines[i].Trim().Length == 0 || lines[i].Contains("time")) break;    // last line is empty
                         else dataSet.Add(lines[i]);
                         i++;
                     }
@@ -350,46 +362,28 @@ namespace CaeResults
                                                             "(Id,Int.Pnt.,PEEQ)");
                                 lines[0] = lines[0].Replace(")for set ", ") for set ");
                             }
-                            else if (name == nameInternalEnergyDensity)
-                            {
-                                // internal energy density (elem, integ.pnt.,eneset ELEMENTSET-1 and time  0.6250000E-01
-                                //      3068   1  4.313000E-01
-                                lines[0] = lines[0].Replace("(elem, integ.pnt.,eneset ",
-                                                            "(Id,Int.Pnt.,ENER) for set ");
-                            }
-
+                            // Thermal                                                                                              
                             else if (name == nameTemperatures)
                             {
                                 // temperatures for set INTERNAL_SELECTION-1_NH_OUTPUT-1 and time  0.1000000E+01
                                 //      3450  1.000000E+02
                                 lines[0] = lines[0].Replace("temperatures for set", "temperatures (Id,T) for set");
                             }
-
-                            else if (name == nameInternalEnergy)
+                            else if (name == nameHeatGeneration)
                             {
-                                //internal energy (element, energy) for set SOLID_PART-1 and time  0.1000000E+01
-                                //      1655  9.342906E-09
-                                lines[0] = lines[0].Replace("(element, energy)", "(Id,ELSE)");
+                                // heat generation for set INTERNAL_SELECTION-4_NH_OUTPUT-1 and time  0.1000000E+01
+                                //       793  6.764684E+02
+                                lines[0] = lines[0].Replace("heat generation for set", "heat generation (Id,RFL) for set");
                             }
-                            else if (name == nameTotalInternalEnergy)
+                            else if (name == nameTotalHeatGeneration)
                             {
-                                //total internal energy for set SOLID_PART-1 and time  0.1000000E+01
-                                //        3.249095E-04
-                                lines[0] = lines[0].Replace("total internal energy for set",
-                                                            "total internal energy (SE) for set");
+                                // total heat generation for set INTERNAL_SELECTION-4_NH_OUTPUT-1 and time  0.5750000E+01
+                                //        9.890290E+02
+                                lines[0] = lines[0].Replace("total heat generation for set", "total heat generation (RFL) for set");
                             }
-                            else if (name == nameVolume)
-                            {
-                                //volume (element, volume) for set SOLID_PART-1 and time  0.1000000E+01
-                                //      1655  1.538557E+00
-                                lines[0] = lines[0].Replace("(element, volume)", "(Id,EVOL)");
-                            }
-                            else if (name == nameTotalVolume)
-                            {
-                                //total volume for set SOLID_PART-1 and time  0.1000000E+01
-                                //        2.322033E+03
-                                lines[0] = lines[0].Replace("total volume for set", "total volume (VOL) for set");
-                            }
+                            //                                                                                                      
+                            // Contact                                                                                              
+                            //                                                                                                      
                             else if (name == nameRelativeContactDisplacement)
                             {
                                 // relative contact displacement (slave element+face,normal,tang1,tang2) for all contact elements and time 0.1000000E+01
@@ -418,6 +412,60 @@ namespace CaeResults
                                 // total number of contact elements for time  0.5000000E+00
                                 // 560
                                 lines[0] = lines[0].Replace("elements for time", "elements (NUM) for set ALL_CONTACT_ELEMENTS and time");
+                            }
+                            //                                                                                                      
+                            // Element                                                                                              
+                            //                                                                                                      
+                            else if (name == nameInternalEnergyDensity)
+                            {
+                                // internal energy density (elem, integ.pnt.,eneset ELEMENTSET-1 and time  0.6250000E-01
+                                //      3068   1  4.313000E-01
+                                lines[0] = lines[0].Replace("(elem, integ.pnt.,eneset ",
+                                                            "(Id,Int.Pnt.,ENER) for set ");
+                            }
+                            else if (name == nameInternalEnergy)
+                            {
+                                //internal energy (element, energy) for set SOLID_PART-1 and time  0.1000000E+01
+                                //      1655  9.342906E-09
+                                lines[0] = lines[0].Replace("(element, energy)", "(Id,ELSE)");
+                            }
+                            else if (name == nameTotalInternalEnergy)
+                            {
+                                //total internal energy for set SOLID_PART-1 and time  0.1000000E+01
+                                //        3.249095E-04
+                                lines[0] = lines[0].Replace("total internal energy for set",
+                                                            "total internal energy (SE) for set");
+                            }
+                            else if (name == nameVolume)
+                            {
+                                //volume (element, volume) for set SOLID_PART-1 and time  0.1000000E+01
+                                //      1655  1.538557E+00
+                                lines[0] = lines[0].Replace("(element, volume)", "(Id,EVOL)");
+                            }
+                            else if (name == nameTotalVolume)
+                            {
+                                //total volume for set SOLID_PART-1 and time  0.1000000E+01
+                                //        2.322033E+03
+                                lines[0] = lines[0].Replace("total volume for set", "total volume (VOL) for set");
+                            }
+                            // Thermal                                                                                              
+                            else if (name == nameHeatFlux)
+                            {
+                                // heat flux (elem, integ.pnt.,qx,qy,qz) for set INTERNAL_SELECTION-3_EH_OUTPUT-1 and time  0.1000000E+01
+                                //       477   1 -6.733427E+00  1.076158E+01 -1.030648E+01
+                                lines[0] = lines[0].Replace("(elem, integ.pnt.,qx,qy,qz)", "(Id,Int.Pnt.,Q1,Q2,Q3)");
+                            }
+                            else if (name == nameBodyHeating)
+                            {
+                                // body heating (element, volume) for set INTERNAL_SELECTION-3_EH_OUTPUT-1 and time  0.1000000E+01
+                                //       477  0.000000E+00
+                                lines[0] = lines[0].Replace("(element, volume)", "(Id,EBHE)");
+                            }
+                            else if (name == nameTotalBodyHeating)
+                            {
+                                // total body heating for set INTERNAL_SELECTION-3_EH_OUTPUT-1 and time  0.1000000E+01
+                                //        0.126000E+00
+                                lines[0] = lines[0].Replace("total body heating for set", "total body heating (BHE) for set");
                             }
                         }
                     }

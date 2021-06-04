@@ -89,6 +89,7 @@
     </Compile>
     <Compile Include="ExceptionTools.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="FrdFileNameEditor.cs" />
     <Compile Include="IMasterSlaveMultiRegion.cs" />
     <Compile Include="IMultiRegion.cs" />
     <Compile Include="KeyboardHook.cs" />

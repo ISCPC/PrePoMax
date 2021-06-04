@@ -15,13 +15,16 @@ namespace PrePoMax
     [Flags]
     public enum ViewNodalFieldVariable
     {
-        // must start at 1 for the UI to work
+        // Must start at 1 for the UI to work
         [StandardValue("RF", Description = "Reaction forces.")]
         RF = 1,
         [StandardValue("U", Description = "Displacements.")]
         U = 2,
+        // Thermal
         [StandardValue("NT", Description = "Temperatures.")]
-        NT = 4
+        NT = 4,
+        [StandardValue("RFL", Description = "External concentrated heat sources.")]
+        RFL = 8
     }
 
     [Serializable]

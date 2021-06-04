@@ -209,12 +209,29 @@ namespace CaeResults
                             }
                         }
                         break;
+                    // Thermal
                     case "NDTEMP":
                         unitConverter = new StringTemperatureConverter();
                         unitAbbreviation = _unitSystem.TemperatureUnitAbbreviation;
                         break;
+                    case "FLUX":
+                        unitConverter = new StringPowerPerAreaConverter();
+                        unitAbbreviation = _unitSystem.PowerPerAreaUnitAbbreviation;
+                        break;
+                    case "RFL":
+                        unitConverter = new StringPowerConverter();
+                        unitAbbreviation = _unitSystem.PowerUnitAbbreviation;
+                        break;
+                    case "HERROR":
+                        unitConverter = new DoubleConverter();
+                        unitAbbreviation = "%";
+                        break;
                     default:
-                        throw new NotSupportedException();
+                        if (System.Diagnostics.Debugger.IsAttached) throw new NotSupportedException();
+                        //
+                        unitConverter = new DoubleConverter();
+                        unitAbbreviation = "?";
+                        break;
                 }
             }
             catch
@@ -322,12 +339,24 @@ namespace CaeResults
                         unitConverter = new StringTemperatureConverter();
                         unitAbbreviation = _unitSystem.TemperatureUnitAbbreviation;
                         break;
+                    case "HEAT GENERATION":
+                    case "TOTAL HEAT GENERATION":
+                    case "BODY HEATING":
+                    case "TOTAL BODY HEATING":
+                        unitConverter = new StringPowerConverter();
+                        unitAbbreviation = _unitSystem.PowerUnitAbbreviation;
+                        break;
+                    case "HEAT FLUX":
+                        unitConverter = new StringPowerPerAreaConverter();
+                        unitAbbreviation = _unitSystem.PowerPerAreaUnitAbbreviation;
+                        break;
                     // Error
                     case "ERROR":
+                    default:
+                        if (System.Diagnostics.Debugger.IsAttached) throw new NotSupportedException();
+                        //
                         unitConverter = new DoubleConverter();
                         unitAbbreviation = "?";
-                        break;
-                    default:
                         break;
                 }
             }

@@ -17,8 +17,12 @@ namespace CaeModel
         ME = 4,
         PEEQ = 8,
         ENER = 16,
-        ERR = 32,
-        ZZS = 64
+        // Thermal
+        HFL = 32,
+        // Error
+        ERR = 64,
+        HER = 128,
+        ZZS = 256
     }
 
     [Serializable]

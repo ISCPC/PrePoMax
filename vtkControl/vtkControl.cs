@@ -5150,19 +5150,21 @@ namespace vtkControl
 
         private void RemoveActorScalarField(string actorName)
         {
-            vtkMaxActor actor = _actors[actorName];
-            // Transformed copies
-            foreach (var copy in actor.Copies) RemoveActorScalarField(copy.Name);
-            // Remove scalars
-            //actor.Geometry.GetMapper().GetInput().GetPointData().GetScalars().RemoveLastTuple();
-            actor.Geometry.GetMapper().GetInput().GetPointData().RemoveArray(Globals.ScalarArrayName);
-            actor.MinNode = null;
-            actor.MaxNode = null;
-            // Remove frustum scalars
-            actor.FrustumCellLocator.GetDataSet().GetPointData().RemoveArray(Globals.ScalarArrayName);
-            //
-            vtkMapper mapper = actor.Geometry.GetMapper();
-            if (mapper.GetInterpolateScalarsBeforeMapping() != 0) mapper.SetInterpolateScalarsBeforeMapping(0);
+            if (_actors.TryGetValue(actorName, out vtkMaxActor actor))
+            {
+                // Transformed copies
+                foreach (var copy in actor.Copies) RemoveActorScalarField(copy.Name);
+                // Remove scalars
+                //actor.Geometry.GetMapper().GetInput().GetPointData().GetScalars().RemoveLastTuple();
+                actor.Geometry.GetMapper().GetInput().GetPointData().RemoveArray(Globals.ScalarArrayName);
+                actor.MinNode = null;
+                actor.MaxNode = null;
+                // Remove frustum scalars
+                actor.FrustumCellLocator.GetDataSet().GetPointData().RemoveArray(Globals.ScalarArrayName);
+                //
+                vtkMapper mapper = actor.Geometry.GetMapper();
+                if (mapper.GetInterpolateScalarsBeforeMapping() != 0) mapper.SetInterpolateScalarsBeforeMapping(0);
+            }
         }
         private void Test(string actorName, float[] values, CaeGlobals.NodesExchangeData extremeNodes,
                                             float[] frustumCellLocatorValues)

@@ -47,6 +47,7 @@ namespace PrePoMax.Forms
         [Category("Submodel")]
         [OrderedDisplayName(0, 10, "Global results .frd")]
         [Description("Global results file name (.frd) without path.")]
+        [EditorAttribute(typeof(FrdFileNameEditor), typeof(System.Drawing.Design.UITypeEditor))]
         [Id(1, 2)]
         public string GlobalResultsFileName
         {

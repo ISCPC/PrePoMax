@@ -33,13 +33,15 @@ namespace CaeResults
             { "MEYZ", "ME23"},
             { "MEZX", "ME13"},
             //
-            //
             { "EXX", "E11"},
             { "EYY", "E22"},
             { "EZZ", "E33"},
             { "EXY", "E12"},
             { "EYZ", "E23"},
-            { "EZX", "E13"}
+            { "EZX", "E13"},
+            //
+            { "TEM(%)", "TEM"},
+            { "STR(%)", "STR"}
         };
         // Methods                                                                                                                  
         static public FeResults Read(string fileName)
@@ -401,10 +403,10 @@ namespace CaeResults
             int lineNum = 0;
             int numOfVal;
             List<string> components;
-
+            //
             GetFieldHeaderData(lines, ref lineNum, prevFieldData, out fieldData, out numOfVal);
             float[][] values = GetFieldValuesData(lines, ref lineNum, constantWidth, numOfVal, out components);
-
+            //
             switch (fieldData.Name)
             {
                 case "DISP":
@@ -416,6 +418,11 @@ namespace CaeResults
                 case "STRESS":
                     field = CreateStressField(fieldData.Name, components, values);
                     break;
+                // Thermal
+                case "FLUX":
+                    field = CreateVectorField(fieldData.Name, components, values);
+                    break;
+                // Error
                 case "ZZSTR":
                     field = CreateStressField(fieldData.Name, components, values);
                     break;

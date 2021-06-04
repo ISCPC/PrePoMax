@@ -100,14 +100,19 @@ namespace PrePoMax.Forms
             if (property == nameof(_viewDefinedField.RegionType))
             {
                 ShowHideSelectionForm();
-                //
                 HighlightDefinedField();
             }
-            else if (_viewDefinedField is ViewDefinedTemperature vdt &&
-                     (property == nameof(vdt.NodeSetName) ||
-                      property == nameof(vdt.SurfaceName)))
+            else if (_viewDefinedField is ViewDefinedTemperature vdt)
             {
-                HighlightDefinedField();
+                if (property == nameof(vdt.DefinedTemperatureType))
+                {
+                    ShowHideSelectionForm();
+                    HighlightDefinedField();
+                }
+                else if (property == nameof(vdt.NodeSetName) || property == nameof(vdt.SurfaceName))
+                {
+                    HighlightDefinedField();
+                }
             }
             //
             base.OnPropertyGridPropertyValueChanged();
@@ -120,9 +125,16 @@ namespace PrePoMax.Forms
             //
             if (DefinedField == null) throw new CaeException("No defined field was selected.");
             //
-            if (DefinedField.RegionType == RegionTypeEnum.Selection &&
-                (DefinedField.CreationIds == null || DefinedField.CreationIds.Length == 0))
-                throw new CaeException("The defined field must contain at least one item.");
+            if (DefinedField is DefinedTemperature dt)
+            {
+                // Empty selection
+                if (dt.Type == DefinedTemperatureTypeEnum.ByValue && DefinedField.RegionType == RegionTypeEnum.Selection &&
+                    (DefinedField.CreationIds == null || DefinedField.CreationIds.Length == 0))
+                    throw new CaeException("The defined field must contain at least one item.");
+                // Empty file name
+                else if (dt.Type == DefinedTemperatureTypeEnum.FromFile && dt.FileName == null || dt.FileName.Length == 0)
+                    throw new CaeException("The file name to read the temperature from is missing.");
+            }
             //
             if ((_definedFieldToEditName == null &&
                  _definedFieldNames.Contains(DefinedField.Name)) ||   // named to existing name
@@ -223,7 +235,8 @@ namespace PrePoMax.Forms
             // Defined temperature
             string name = "Temperature";
             item = new ListViewItem(name);
-            DefinedTemperature definedTemperature = new DefinedTemperature(GetDefinedFieldName(name), "", RegionTypeEnum.Selection);
+            DefinedTemperature definedTemperature = new DefinedTemperature(GetDefinedFieldName(name), "",
+                                                                           RegionTypeEnum.Selection, 0);
             if (step.IsDefinedFieldSupported(definedTemperature))
             {
                 ViewDefinedTemperature vdt = new ViewDefinedTemperature(definedTemperature);
@@ -248,24 +261,27 @@ namespace PrePoMax.Forms
                 _controller.ClearSelectionHistory();
                 //
                 if (_viewDefinedField == null) { }
-                else if (DefinedField is DefinedTemperature)
+                else if (DefinedField is DefinedTemperature dt)
                 {
-                    if (DefinedField.RegionType == RegionTypeEnum.NodeSetName ||
-                        DefinedField.RegionType == RegionTypeEnum.SurfaceName)
+                    if (dt.Type == DefinedTemperatureTypeEnum.ByValue)
                     {
-                        _controller.Highlight3DObjects(new object[] { DefinedField.RegionName });
-                    }
-                    else if (DefinedField.RegionType == RegionTypeEnum.Selection)
-                    {
-                        SetSelectItem();
-                        //
-                        if (DefinedField.CreationData != null)
+                        if (DefinedField.RegionType == RegionTypeEnum.NodeSetName ||
+                            DefinedField.RegionType == RegionTypeEnum.SurfaceName)
                         {
-                            _controller.Selection = DefinedField.CreationData.DeepClone();
-                            _controller.HighlightSelection();
+                            _controller.Highlight3DObjects(new object[] { DefinedField.RegionName });
                         }
+                        else if (DefinedField.RegionType == RegionTypeEnum.Selection)
+                        {
+                            SetSelectItem();
+                            //
+                            if (DefinedField.CreationData != null)
+                            {
+                                _controller.Selection = DefinedField.CreationData.DeepClone();
+                                _controller.HighlightSelection();
+                            }
+                        }
+                        else throw new NotImplementedException();
                     }
-                    else throw new NotImplementedException();
                 }
                 else throw new NotSupportedException();
             }
@@ -274,7 +290,12 @@ namespace PrePoMax.Forms
         private void ShowHideSelectionForm()
         {
             if (DefinedField != null && DefinedField.RegionType == RegionTypeEnum.Selection)
-                ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
+            {
+                if (DefinedField is DefinedTemperature dt && dt.Type == DefinedTemperatureTypeEnum.FromFile)
+                    ItemSetDataEditor.SelectionForm.Hide();
+                else
+                    ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
+            }
             else
                 ItemSetDataEditor.SelectionForm.Hide();
             //
@@ -288,6 +309,11 @@ namespace PrePoMax.Forms
                 else if (DefinedField is DefinedTemperature) _controller.SetSelectItemToNode();
             }
             else _controller.SetSelectByToOff();
+            //
+            if (DefinedField is DefinedTemperature dt)
+            {
+                if (dt.Type == DefinedTemperatureTypeEnum.FromFile) _controller.SetSelectByToOff();
+            }
         }
         //
         public void SelectionChanged(int[] ids)
