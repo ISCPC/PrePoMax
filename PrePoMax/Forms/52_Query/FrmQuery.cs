@@ -158,7 +158,9 @@ namespace PrePoMax.Forms
                     SelectionNodeMouse selectionNodeMouse = _controller.Selection.Nodes[0] as SelectionNodeMouse;
                     if (selectionNodeMouse != null)
                     {
-                        ids = _controller.GetGeometryIdsAtPoint(selectionNodeMouse);
+                        // Clear - to remove this mouseSelectionNode from the history which is used for speed optimization
+                        _controller.Selection.Clear();  
+                        ids = _controller.GetIdsFromSelectionNodeMouse(selectionNodeMouse, true);
                         OneSurfacePicked(ids[0]);
                     }
                 }

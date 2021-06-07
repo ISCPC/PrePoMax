@@ -11,16 +11,13 @@ using UnitsNet;
 
 namespace CaeGlobals
 {
-    public enum PowerPerAreaUnit
-    {
-
-    }
+    public enum PowerPerAreaUnit { }
     public class StringPowerPerAreaConverter : TypeConverter
     {
         // Variables                                                                                                                
         protected static PowerUnit _powerUnit = PowerUnit.Watt;
         protected static AreaUnit _areaUnit = AreaUnit.SquareMeter;
-        protected static PowerPerAreaUnit _powerPerAreaUnit = MyUnit.PoundForcePerInchPerSecond;
+        protected static PowerPerAreaUnit _powerPerAreaUnit = MyUnit.PoundForcePerInchSecond;
         protected static string error = "Unable to parse quantity. Expected the form \"{value} {unit abbreviation}" +
                                         "\", such as \"5.5 m\". The spacing is optional.";
 
@@ -62,8 +59,8 @@ namespace CaeGlobals
         {
             set
             {
-                if (value == MyUnit.PoundForcePerInchPerSecondAbbreviation)
-                    _powerPerAreaUnit = MyUnit.PoundForcePerInchPerSecond;
+                if (value == MyUnit.PoundForcePerInchSecondAbbreviation)
+                    _powerPerAreaUnit = MyUnit.PoundForcePerInchSecond;
                 else throw new NotSupportedException();
             }
         }
@@ -71,8 +68,8 @@ namespace CaeGlobals
                                                  PowerPerAreaUnit powerPerAreaUnit)
         {
             string unit;
-            if (powerPerAreaUnit == MyUnit.PoundForcePerInchPerSecond)
-                unit = MyUnit.PoundForcePerInchPerSecondAbbreviation;
+            if (powerPerAreaUnit == MyUnit.PoundForcePerInchSecond)
+                unit = MyUnit.PoundForcePerInchSecondAbbreviation;
             else if ((int)powerUnit == MyUnit.NoUnit || (int)areaUnit == MyUnit.NoUnit)
                 unit = "";
             else unit = Power.GetAbbreviation(powerUnit) + "/" + Area.GetAbbreviation(areaUnit);
@@ -138,9 +135,9 @@ namespace CaeGlobals
         {
             valueWithUnitString = valueWithUnitString.Trim().Replace(" ", "");
             // From my unit
-            if (valueWithUnitString.Contains(MyUnit.PoundForcePerInchPerSecondAbbreviation))
+            if (valueWithUnitString.Contains(MyUnit.PoundForcePerInchSecondAbbreviation))
             {
-                valueWithUnitString = valueWithUnitString.Replace(MyUnit.PoundForcePerInchPerSecondAbbreviation, "");
+                valueWithUnitString = valueWithUnitString.Replace(MyUnit.PoundForcePerInchSecondAbbreviation, "");
                 if (double.TryParse(valueWithUnitString, out value))
                 {
                     // 1 pound force = 4.44822162 newtons
@@ -175,7 +172,7 @@ namespace CaeGlobals
         private static void GetConversionFromSI(out double conversionFromSI)
         {
             // To my unit
-            if (_powerPerAreaUnit == MyUnit.PoundForcePerInchPerSecond)
+            if (_powerPerAreaUnit == MyUnit.PoundForcePerInchSecond)
             {
                 // 1 pound force = 4.44822162 newtons
                 // 1 inch = 0.0254 meters

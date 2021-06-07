@@ -563,6 +563,7 @@ namespace FileInOut.Output
                     {
                         if (property is SurfaceBehavior sb) surfaceInteraction.AddKeyword(new CalSurfaceBehavior(sb));
                         else if (property is Friction fr) surfaceInteraction.AddKeyword(new CalFriction(fr));
+                        else if (property is GapConductance gc) surfaceInteraction.AddKeyword(new CalGapConductance(gc));
                         else throw new NotImplementedException();
                     }
                 }

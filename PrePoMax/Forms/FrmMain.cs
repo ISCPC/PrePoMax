@@ -588,7 +588,10 @@ namespace PrePoMax
             {
                 Keys key = (Keys)vKey;
                 //
-                if (key == Keys.Escape) CloseAllForms();
+                if (key == Keys.Escape)
+                {
+                    if (!_vtk.IsRubberBandActive) CloseAllForms();
+                }
                 else if (Control.ModifierKeys == Keys.Control)
                 {
                     if (key == Keys.I) tsmiImportFile_Click(null, null);
@@ -5319,6 +5322,14 @@ namespace PrePoMax
                 form.Text = text;
                 if (itemToEditName != null) form.Text += ": " + itemToEditName;
                 if (form.PrepareForm(stepName, itemToEditName)) form.Show();
+                else
+                {
+                    if (stepName != null)
+                    {
+                        string itemName = text.Replace("Create ", "").ToLower();
+                        MessageBox.Show("Creation of a " + itemName + " in the step: " + stepName + " is not supported.", "Warning");
+                    }
+                }
             }
         }
         private void SetFormLoaction(Form form)

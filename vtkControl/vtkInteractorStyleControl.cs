@@ -8,22 +8,7 @@ namespace vtkControl
     public delegate double[] GetPickPointDelegate(out vtkActor pickedActor, int x, int y);
     class vtkInteractorStyleControl : vtkInteractorStyleTrackballCamera
     {
-        // Variables                                                                                                                
-        public const int VTKIS_START = 0;
-        public const int VTKIS_NONE = 0;
-        public const int VTKIS_ROTATE = 1;
-        public const int VTKIS_PAN = 2;
-        public const int VTKIS_SPIN = 3;
-        public const int VTKIS_DOLLY = 4;
-        public const int VTKIS_ZOOM = 5;
-        public const int VTKIS_USCALE = 6;
-        public const int VTKIS_TIMER = 7;
-        public const int VTKIS_FORWARDFLY = 8;
-        public const int VTKIS_REVERSEFLY = 9;
-        public const int VTKIS_SELECTION = 10;
-        public const int VTKIS_ANIM_OFF = 0;
-        public const int VTKIS_ANIM_ON = 1;
-       
+        // Enum
         private enum EventIds
         {
             NoEvent = 0,
@@ -90,8 +75,22 @@ namespace vtkControl
             WidgetActivateEvent,
             UserEvent = 1000
         }
-
-
+        // Variables                                                                                                                
+        public const int VTKIS_START = 0;
+        public const int VTKIS_NONE = 0;
+        public const int VTKIS_ROTATE = 1;
+        public const int VTKIS_PAN = 2;
+        public const int VTKIS_SPIN = 3;
+        public const int VTKIS_DOLLY = 4;
+        public const int VTKIS_ZOOM = 5;
+        public const int VTKIS_USCALE = 6;
+        public const int VTKIS_TIMER = 7;
+        public const int VTKIS_FORWARDFLY = 8;
+        public const int VTKIS_REVERSEFLY = 9;
+        public const int VTKIS_SELECTION = 10;
+        public const int VTKIS_ANIM_OFF = 0;
+        public const int VTKIS_ANIM_ON = 1;
+        //
         private double _motionFactor;
         private double[] _rotationCenterWorld;
         private double[] _rotationCenterDisplay;
@@ -103,7 +102,7 @@ namespace vtkControl
         private System.Windows.Threading.DispatcherTimer _timer;
         private int _x;
         private int _y;
-
+        //
         protected bool _leftMouseButtonPressed;
         protected bool _rubberBandCanceledByEsc;
         protected bool _rubberBandSelection;
@@ -113,16 +112,19 @@ namespace vtkControl
         protected vtkPolyDataMapper2D _selectionBackgroundMapper;
         protected vtkActor2D _selectionBackgroundActor;
         protected vtkActor2D _selectionBorderActor;
-
+        //
         protected List<vtkMaxBorderWidget> _widgets;
 
         
         // Properties                                                                                                               
         public new const string MRFullTypeName = "Kitware.VTK.vtkInteractorStyleControl";
         public bool Selection { get { return _selection; } set { _selection = value; } }
-        public bool RubberBandEnabled { get { return _rubberBandEnabled; } set { _rubberBandEnabled = value; } }
-        public bool RubberBandCanceledByEsc { get { return _rubberBandCanceledByEsc; } set { _rubberBandCanceledByEsc = value; } }
+        public bool RubberBandEnabled { get { return _rubberBandEnabled; } set { _rubberBandEnabled = value; } }        
         public bool Animating { get { return _animating; } set { _animating = value; } }
+
+
+        // Getters
+        public bool IsRubberBandActive { get { return _rubberBandSelection; } }
 
 
         // Callbacks

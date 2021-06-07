@@ -68,6 +68,7 @@ namespace CaeGlobals
         // Thermal units
         private CoefficientOfThermalExpansionUnit _thermalExpansionUnit;
         private ThermalConductivityUnit _thermalConductivityUnit;
+        private HeatTransferCoefficientUnit _heatTransferCoefficientUnit;
         // Constants
         private string _absoluteZero = "0 K";
         private string _stefanBoltzmann = "5.67038E-8 kg/(s^3*°C^4)";
@@ -276,6 +277,14 @@ namespace CaeGlobals
                 return StringSpecificHeatConverter.GetUnitAbbreviation(_energyUnit, _massUnit, _temperatureDeltaUnit);
             }
         }
+        public string HeatTransferCoefficientUnitAbbreviation
+        {
+            get
+            {
+                return StringHeatTransferCoefficientConverter.GetUnitAbbreviation(_powerUnit, _areaUnit, _temperatureDeltaUnit,
+                                                                                  _heatTransferCoefficientUnit);
+            }
+        }
         // Constants
         public double AbsoluteZero
         {
@@ -375,6 +384,7 @@ namespace CaeGlobals
                     // Thermal
                     _thermalExpansionUnit = (CoefficientOfThermalExpansionUnit)MyUnit.NoUnit;
                     _thermalConductivityUnit = (ThermalConductivityUnit)MyUnit.NoUnit;
+                    _heatTransferCoefficientUnit = (HeatTransferCoefficientUnit)MyUnit.NoUnit;
                     break;
                 case UnitSystemType.Undefined:
                 case UnitSystemType.M_KG_S_C:
@@ -402,7 +412,8 @@ namespace CaeGlobals
                     _frequencyUnit = FrequencyUnit.Hertz;
                     // Thermal
                     _thermalExpansionUnit = CoefficientOfThermalExpansionUnit.InverseDegreeCelsius;
-                    _thermalConductivityUnit = (ThermalConductivityUnit)MyUnit.NoUnit; ;
+                    _thermalConductivityUnit = (ThermalConductivityUnit)MyUnit.NoUnit;
+                    _heatTransferCoefficientUnit = (HeatTransferCoefficientUnit)MyUnit.NoUnit;
                     break;
                 case UnitSystemType.MM_TON_S_C:
                     _lengthUnit = LengthUnit.Millimeter;
@@ -429,7 +440,8 @@ namespace CaeGlobals
                     _frequencyUnit = FrequencyUnit.Hertz;
                     // Thermal
                     _thermalExpansionUnit = CoefficientOfThermalExpansionUnit.InverseDegreeCelsius;
-                    _thermalConductivityUnit = (ThermalConductivityUnit)MyUnit.NoUnit; ;
+                    _thermalConductivityUnit = (ThermalConductivityUnit)MyUnit.NoUnit;
+                    _heatTransferCoefficientUnit = (HeatTransferCoefficientUnit)MyUnit.NoUnit;
                     break;
                 case UnitSystemType.M_TON_S_C:
                     _lengthUnit = LengthUnit.Meter;
@@ -457,6 +469,7 @@ namespace CaeGlobals
                     // Thermal
                     _thermalExpansionUnit = CoefficientOfThermalExpansionUnit.InverseDegreeCelsius;
                     _thermalConductivityUnit = (ThermalConductivityUnit)MyUnit.NoUnit;
+                    _heatTransferCoefficientUnit = (HeatTransferCoefficientUnit)MyUnit.NoUnit;
                     break;
                 case UnitSystemType.IN_LB_S_F:
                     _lengthUnit = LengthUnit.Inch;
@@ -478,12 +491,13 @@ namespace CaeGlobals
                     _densityUnit = DensityUnit.PoundPerCubicInch;
                     _energyUnit = MyUnit.PoundForceInch; // EnergyUnit.InchPound;
                     _powerUnit = MyUnit.PoundForceInchPerSecond;
-                    _powerPerAreaUnit = MyUnit.PoundForcePerInchPerSecond;
-                    _powerPerVolumeUnit = MyUnit.PoundForcePerSquareInchPerSecond;
+                    _powerPerAreaUnit = MyUnit.PoundForcePerInchSecond;
+                    _powerPerVolumeUnit = MyUnit.PoundForcePerSquareInchSecond;
                     _frequencyUnit = FrequencyUnit.Hertz;
                     // Thermal
                     _thermalExpansionUnit = CoefficientOfThermalExpansionUnit.InverseDegreeFahrenheit;
-                    _thermalConductivityUnit = MyUnit.PoundForcePerSecondPerFahrenheit;
+                    _thermalConductivityUnit = MyUnit.PoundForcePerSecondFahrenheit;
+                    _heatTransferCoefficientUnit = MyUnit.PoundForcePerInchSecondFahrenheit;
                     break;
                 default:
                     break;
@@ -519,18 +533,18 @@ namespace CaeGlobals
             StringEnergyPerVolumeConverter.SetEnergyUnit = EnergyUnitAbbreviation;
             StringEnergyPerVolumeConverter.SetVolumeUnit = VolumeUnitAbbreviation;
             StringPowerConverter.SetUnit = PowerUnitAbbreviation;
-            if (_powerPerAreaUnit == MyUnit.PoundForcePerInchPerSecond)
+            if (_powerPerAreaUnit == MyUnit.PoundForcePerInchSecond)
             {
-                StringPowerPerAreaConverter.SetUnit = MyUnit.PoundForcePerInchPerSecondAbbreviation;
+                StringPowerPerAreaConverter.SetUnit = MyUnit.PoundForcePerInchSecondAbbreviation;
             }
             else
             {
                 StringPowerPerAreaConverter.SetPowerUnit = PowerUnitAbbreviation;
                 StringPowerPerAreaConverter.SetAreaUnit = AreaUnitAbbreviation;
             }
-            if (_powerPerVolumeUnit == MyUnit.PoundForcePerSquareInchPerSecond)
+            if (_powerPerVolumeUnit == MyUnit.PoundForcePerSquareInchSecond)
             {
-                StringPowerPerVolumeConverter.SetUnit = MyUnit.PoundForcePerSquareInchPerSecondAbbreviation;
+                StringPowerPerVolumeConverter.SetUnit = MyUnit.PoundForcePerSquareInchSecondAbbreviation;
             }
             else
             {
@@ -552,9 +566,10 @@ namespace CaeGlobals
             StringStefanBoltzmannUndefinedConverter.SetTemperatureDeltaUnit = TemperatureDeltaUnitAbbreviation;
             // Thermal
             StringThermalExpansionConverter.SetUnit = ThermalExpansionUnitAbbreviation;
-            if (_thermalConductivityUnit == MyUnit.PoundForcePerSecondPerFahrenheit)
+            //
+            if (_thermalConductivityUnit == MyUnit.PoundForcePerSecondFahrenheit)
             {
-                StringThermalConductivityConverter.SetUnit = MyUnit.PoundForcePerSecondPerFahrenheitAbbreviation;
+                StringThermalConductivityConverter.SetUnit = MyUnit.PoundForcePerSecondFahrenheitAbbreviation;
             }
             else
             {
@@ -562,9 +577,21 @@ namespace CaeGlobals
                 StringThermalConductivityConverter.SetLengthUnit = LengthUnitAbbreviation;
                 StringThermalConductivityConverter.SetTemperatureDeltaUnit = TemperatureDeltaUnitAbbreviation;
             }
+            //
             StringSpecificHeatConverter.SetEnergyUnit = EnergyUnitAbbreviation;
             StringSpecificHeatConverter.SetMassUnit = MassUnitAbbreviation;
             StringSpecificHeatConverter.SetTemperatureDeltaUnit = TemperatureDeltaUnitAbbreviation;
+            //
+            if (_heatTransferCoefficientUnit == MyUnit.PoundForcePerInchSecondFahrenheit)
+            {
+                StringHeatTransferCoefficientConverter.SetUnit = MyUnit.PoundForcePerInchSecondFahrenheitAbbreviation;
+            }
+            else
+            {
+                StringHeatTransferCoefficientConverter.SetPowerUnit = PowerUnitAbbreviation;
+                StringHeatTransferCoefficientConverter.SetAreaUnit = AreaUnitAbbreviation;
+                StringHeatTransferCoefficientConverter.SetTemperatureDeltaUnit = TemperatureDeltaUnitAbbreviation;
+            }
             // Initial values of constants
             StringTemperatureUndefinedConverter.SetInitialValue = Tools.RoundToSignificantDigits(AbsoluteZero, 6);
             StringStefanBoltzmannUndefinedConverter.SetInitialValue = Tools.RoundToSignificantDigits(StefanBoltzmann, 6);

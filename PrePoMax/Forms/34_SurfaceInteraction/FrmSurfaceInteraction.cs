@@ -17,7 +17,6 @@ namespace PrePoMax.Forms
     public partial class FrmSurfaceInteraction : UserControls.PrePoMaxChildForm, IFormBase
     {
         // Variables                                                                                                                
-        private bool _propertyChanged;
         private string[] _surfraceInteractionNames;
         private string _surfaceInteractionToEditName;
         private SurfaceInteraction _surfaceInteraction;
@@ -92,6 +91,7 @@ namespace PrePoMax.Forms
                     {
                         if (sip is SurfaceBehavior sb) item.Tag = new ViewSurfaceBehavior(sb.DeepClone());
                         else if (sip is Friction fr) item.Tag = new ViewFriction(fr.DeepClone());
+                        else if (sip is GapConductance gp) item.Tag = new ViewGapConductance(gp.DeepClone());
                         else throw new NotSupportedException();
                     }
                     else throw new NotSupportedException();
@@ -102,71 +102,62 @@ namespace PrePoMax.Forms
                     lvAddedProperties.Select();
                 }
             }
-            _propertyChanged = true;
+            _propertyItemChanged = true;
         }
         private void btnRemove_Click(object sender, EventArgs e)
         {
             if (lvAddedProperties.SelectedItems.Count == 1)
             {
-                lvAddedProperties.SelectedItems[0].Remove();
-                if (lvAddedProperties.Items.Count > 0) lvAddedProperties.Items[0].Selected = true;
+                ListViewItem item = lvAddedProperties.SelectedItems[0];
+                int index = item.Index;
+                if (index == lvAddedProperties.Items.Count - 1) index--;
+                item.Remove();
+                //
+                if (lvAddedProperties.Items.Count > 0) lvAddedProperties.Items[index].Selected = true;
                 else ClearControls();
             }
-            //
-            _propertyChanged = true;
+            _propertyItemChanged = true;
         }
         private void lvAddedProperties_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (lvAddedProperties.SelectedItems.Count == 1)
             {
+                // Clear
+                dgvData.DataSource = null;
+                dgvData.Columns.Clear();
+                tcProperties.TabPages.Clear();
+                //
                 if (lvAddedProperties.SelectedItems[0].Tag is ViewSurfaceBehavior vsb)
                 {
-                    tcProperties.TabPages.Clear();
-                    tcProperties.TabPages.Add(_pages[0]);
-                    tcProperties.TabPages.Add(_pages[1]);
+                    tcProperties.TabPages.Add(_pages[0]);   // properties
+                    tcProperties.TabPages.Add(_pages[1]);   // data points
                     //
-                    BindingSource binding = new BindingSource();
-                    binding.DataSource = vsb.DataPoints;
-                    dgvData.DataSource = binding; // bind datagridview to binding source - enables adding of new lines
-                    binding.ListChanged += Binding_ListChanged;
-
-                    if (true)
-                    {
-                        // Unit
-                        string unitPressure = _controller.Model.UnitSystem.PressureUnitAbbreviation;
-                        string unitLength = _controller.Model.UnitSystem.LengthUnitAbbreviation;
-                        // HeaderText
-                        string headerText;
-                        string pressureName = nameof(PressureOverclosureDataPoint.Pressure);
-                        string overclosureName = nameof(PressureOverclosureDataPoint.Overclosure);
-                        //
-                        headerText = dgvData.Columns[pressureName].HeaderText;
-                        if (headerText != null) dgvData.Columns[pressureName].HeaderText = headerText.Replace("?", unitPressure);
-                        headerText = dgvData.Columns[overclosureName].HeaderText;
-                        if (headerText != null) dgvData.Columns[overclosureName].HeaderText = headerText.Replace("?", unitLength);
-                        // Alignment
-                        dgvData.Columns[pressureName].HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
-                        dgvData.Columns[overclosureName].HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
-                        //
-                    }
-                    propertyGrid.SelectedObject = vsb;
-                    //
-                    propertyGrid_PropertyValueChanged(null, null);
+                    SetDataGridViewBinding(vsb.DataPoints);                    
                 }
                 else if (lvAddedProperties.SelectedItems[0].Tag is ViewFriction vf)
                 {
-                    tcProperties.TabPages.Clear();
-                    tcProperties.TabPages.Add(_pages[0]);
+                    tcProperties.TabPages.Add(_pages[0]);   // properties
+                }
+                else if (lvAddedProperties.SelectedItems[0].Tag is ViewGapConductance vgc)
+                {
+                    tcProperties.TabPages.Add(_pages[0]);   // properties
+                    tcProperties.TabPages.Add(_pages[1]);   // data points
                     //
-                    propertyGrid.SelectedObject = vf;
+                    SetDataGridViewBinding(vgc.DataPoints);
                 }
                 else throw new NotSupportedException();
+                //
+                propertyGrid.SelectedObject = lvAddedProperties.SelectedItems[0].Tag;
+                //
+                SetAllGridViewUnits();
+                //
+                propertyGrid_PropertyValueChanged(null, null);
             }
             lvAddedProperties.Select();
         }
         private void Binding_ListChanged(object sender, ListChangedEventArgs e)
         {
-            _propertyChanged = true;
+            _propertyItemChanged = true;
         }
         private void propertyGrid_PropertyValueChanged(object s, PropertyValueChangedEventArgs e)
         {
@@ -175,6 +166,13 @@ namespace PrePoMax.Forms
                 if (vsb.PressureOverclosureType == PressureOverclosureEnum.Tabular && tcProperties.TabPages.Count == 1)
                     tcProperties.TabPages.Add(_pages[1]);
                 else if (vsb.PressureOverclosureType != PressureOverclosureEnum.Tabular && tcProperties.TabPages.Count == 2)
+                    tcProperties.TabPages.Remove(_pages[1]);
+            }
+            else if (propertyGrid.SelectedObject != null && propertyGrid.SelectedObject is ViewGapConductance vgc)
+            {
+                if (vgc.GapConductanceType == GapConductanceEnum.Tabular && tcProperties.TabPages.Count == 1)
+                    tcProperties.TabPages.Add(_pages[1]);
+                else if (vgc.GapConductanceType != GapConductanceEnum.Tabular && tcProperties.TabPages.Count == 2)
                     tcProperties.TabPages.Remove(_pages[1]);
             }
             //
@@ -231,7 +229,7 @@ namespace PrePoMax.Forms
         {
             this.btnOKAddNew.Visible = surfaceInteractionToEditName == null;
             //
-            _propertyChanged = false;
+            _propertyItemChanged = false;
             _propertyItemChanged = false;
             _surfraceInteractionNames = null;
             _surfaceInteractionToEditName = null;
@@ -244,6 +242,7 @@ namespace PrePoMax.Forms
             // Initialize surface interaction properties
             tvProperties.Nodes.Find("Surface behavior", true)[0].Tag = new SurfaceBehavior();
             tvProperties.Nodes.Find("Friction", true)[0].Tag = new Friction();
+            tvProperties.Nodes.Find("Gap conductance", true)[0].Tag = new GapConductance();
             tvProperties.ExpandAll();
             //
             if (_surfaceInteractionToEditName == null)
@@ -264,6 +263,7 @@ namespace PrePoMax.Forms
                     {
                         if (property is SurfaceBehavior sb) view = new ViewSurfaceBehavior(sb);
                         else if (property is Friction fr) view = new ViewFriction(fr);
+                        else if (property is GapConductance gc) view = new ViewGapConductance(gc);
                         else throw new NotSupportedException();
                         //
                         item = new ListViewItem(view.Name);
@@ -292,13 +292,17 @@ namespace PrePoMax.Forms
         {
             if ((_surfaceInteractionToEditName == null && _surfraceInteractionNames.Contains(tbName.Text)) ||           // Create
                     (tbName.Text != _surfaceInteractionToEditName && _surfraceInteractionNames.Contains(tbName.Text)))  // Edit
-                throw new CaeGlobals.CaeException("The selected surface interaction name already exists.");
+                throw new CaeException("The selected surface interaction name already exists.");
             //
-            _surfaceInteraction = new CaeModel.SurfaceInteraction(tbName.Text);
+            bool containsSurfaceBehavior = false;
+            _surfaceInteraction = new SurfaceInteraction(tbName.Text);
             foreach (ListViewItem item in lvAddedProperties.Items)
             {
                 _surfaceInteraction.AddProperty(((ViewSurfaceInteractionProperty)(item.Tag)).Base);
+                if (item.Tag is ViewSurfaceBehavior) containsSurfaceBehavior = true;
             }
+            if (!containsSurfaceBehavior)
+                throw new CaeException("Surface interaction must define a surface behavior.");
             //
             if (_surfaceInteractionToEditName == null)
             {
@@ -308,19 +312,48 @@ namespace PrePoMax.Forms
             else
             {
                 // Replace
-                if (_surfaceInteractionToEditName != SurfaceInteraction.Name || _propertyChanged || _propertyItemChanged)
+                if (_surfaceInteractionToEditName != SurfaceInteraction.Name || _propertyItemChanged)
                 {
                     _controller.ReplaceSurfaceInteractionCommand(_surfaceInteractionToEditName, SurfaceInteraction);
                 }
+            }
+        }
+        private void SetAllGridViewUnits()
+        {
+            // Surface behavior
+            SetGridViewUnit(nameof(PressureOverclosureDataPoint.Pressure), _controller.Model.UnitSystem.PressureUnitAbbreviation);
+            SetGridViewUnit(nameof(PressureOverclosureDataPoint.Overclosure), _controller.Model.UnitSystem.LengthUnitAbbreviation);
+            // Gap conductance
+            SetGridViewUnit(nameof(GapConductanceDataPoint.Conductance),
+                            _controller.Model.UnitSystem.HeatTransferCoefficientUnitAbbreviation);
+            SetGridViewUnit(nameof(GapConductanceDataPoint.Pressure), _controller.Model.UnitSystem.PressureUnitAbbreviation);
+            SetGridViewUnit(nameof(GapConductanceDataPoint.Temperature), _controller.Model.UnitSystem.TemperatureUnitAbbreviation);
+            //
+            dgvData.XColIndex = 1;
+            dgvData.StartPlotAtZero = true;
+        }
+        private void SetGridViewUnit(string columnName, string unit)
+        {
+            DataGridViewColumn col = dgvData.Columns[columnName];
+            if (col != null)
+            {
+                // Unit
+                if (col.HeaderText != null) col.HeaderText = col.HeaderText.Replace("?", unit);
+                // Alignment
+                col.HeaderCell.Style.Alignment = DataGridViewContentAlignment.BottomCenter;
             }
         }
         private string GetSurfaceInteractionName()
         {
             return NamedClass.GetNewValueName(_surfraceInteractionNames, "Surface_interaction-");
         }
-
-       
-        //
+        private void SetDataGridViewBinding(object data)
+        {
+            BindingSource binding = new BindingSource();
+            binding.DataSource = data;
+            dgvData.DataSource = binding; // bind datagridview to binding source - enables adding of new lines
+            binding.ListChanged += Binding_ListChanged;
+        }
 
     }
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using DynamicTypeDescriptor;
 
-namespace CaeModel
+namespace PrePoMax
 {
     [Serializable]
     public class SpecificHeatDataPoint : TempDataPoint

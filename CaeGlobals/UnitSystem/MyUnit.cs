@@ -13,16 +13,18 @@ namespace CaeGlobals
         static public readonly int NoUnit = 255;
         static public readonly EnergyUnit PoundForceInch = (EnergyUnit)100;
         static public readonly PowerUnit PoundForceInchPerSecond = (PowerUnit)101;
-        static public readonly ThermalConductivityUnit PoundForcePerSecondPerFahrenheit = (ThermalConductivityUnit)102;
-        static public readonly PowerPerAreaUnit PoundForcePerInchPerSecond = (PowerPerAreaUnit)103;
-        static public readonly PowerPerVolumeUnit PoundForcePerSquareInchPerSecond = (PowerPerVolumeUnit)104;
+        static public readonly ThermalConductivityUnit PoundForcePerSecondFahrenheit = (ThermalConductivityUnit)102;
+        static public readonly HeatTransferCoefficientUnit PoundForcePerInchSecondFahrenheit = (HeatTransferCoefficientUnit)103;
+        static public readonly PowerPerAreaUnit PoundForcePerInchSecond = (PowerPerAreaUnit)104;
+        static public readonly PowerPerVolumeUnit PoundForcePerSquareInchSecond = (PowerPerVolumeUnit)105;
         //
         //http://www2.me.rochester.edu/courses/ME204/nx_help/index.html#uid:id1246862
         //
         static public string PoundForceInchAbbreviation = "lbf·in";                             // Energy
         static public string PoundForceInchPerSecondAbbreviation = "lbf·in/s";                  // Power
-        static public string PoundForcePerSecondPerFahrenheitAbbreviation = "lbf/(s·°F)";       // Thermal conductivity
-        static public string PoundForcePerInchPerSecondAbbreviation = "lbf/(in·s)";             // Power per area
-        static public string PoundForcePerSquareInchPerSecondAbbreviation = "lbf/(in²·s)";      // Power per volume
+        static public string PoundForcePerSecondFahrenheitAbbreviation = "lbf/(s·°F)";          // Thermal conductivity
+        static public string PoundForcePerInchSecondFahrenheitAbbreviation = "lbf/(in·s·°F)";   // Heat transfer coefficient
+        static public string PoundForcePerInchSecondAbbreviation = "lbf/(in·s)";                // Power per area
+        static public string PoundForcePerSquareInchSecondAbbreviation = "lbf/(in²·s)";         // Power per volume
     }
 }

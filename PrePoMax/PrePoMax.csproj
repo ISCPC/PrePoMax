@@ -303,6 +303,8 @@
     <Compile Include="Forms\31_Material\ViewThermalExpansion.cs" />
     <Compile Include="Forms\31_Material\ViewElasticWithDensity.cs" />
     <Compile Include="Forms\32_Section\ViewShellSection.cs" />
+    <Compile Include="Forms\34_SurfaceInteraction\DataPoints\GapConductanceDataPoint.cs" />
+    <Compile Include="Forms\34_SurfaceInteraction\DataPoints\PressureOverclosureDataPoint.cs" />
     <Compile Include="Forms\34_SurfaceInteraction\ListViewItemComparer.cs" />
     <Compile Include="Forms\34_SurfaceInteraction\FrmSurfaceInteraction.cs">
       <SubType>Form</SubType>
@@ -310,6 +312,7 @@
     <Compile Include="Forms\34_SurfaceInteraction\FrmSurfaceInteraction.Designer.cs">
       <DependentUpon>FrmSurfaceInteraction.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\34_SurfaceInteraction\ViewGapConductance.cs" />
     <Compile Include="Forms\35_ContactPair\FrmContactPair.cs">
       <SubType>Form</SubType>
     </Compile>

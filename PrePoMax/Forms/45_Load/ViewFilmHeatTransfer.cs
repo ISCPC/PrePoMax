@@ -41,6 +41,7 @@ namespace PrePoMax
         [CategoryAttribute("Parameters")]
         [OrderedDisplayName(1, 10, "Film coefficient")]
         [DescriptionAttribute("Value of the film coefficient.")]
+        [TypeConverter(typeof(StringHeatTransferCoefficientConverter))]
         [Id(2, 3)]
         public double FilmCoefficient
         {

@@ -52,9 +52,9 @@ namespace CaeGlobals
             double n = Math.Sqrt(X * X + Y * Y + Z * Z);
             if (n > 0)
             {
-                X = X / n;
-                Y = Y / n;
-                Z = Z / n;
+                X /= n;
+                Y /= n;
+                Z /= n;
             }
             return n;
         }

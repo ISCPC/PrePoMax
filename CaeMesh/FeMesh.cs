@@ -3699,7 +3699,7 @@ namespace CaeMesh
         {
             int[] itemTypePartIds = GetItemTypePartIdsFromGeometryId(geometrySurfaceId);
             BasePart part = GetPartById(itemTypePartIds[2]);
-            GeometryType geomType = (GeometryType)itemTypePartIds[0];
+            GeometryType geomType = (GeometryType)itemTypePartIds[1];
             int[] cellIds = part.Visualization.CellIdsByFace[itemTypePartIds[0]];
             int[][] cells = new int[cellIds.Length][];
             elementFaceTypes = new ElementFaceType[cellIds.Length];
@@ -3707,7 +3707,6 @@ namespace CaeMesh
             ElementFaceType elementFaceType = ElementFaceType.Face;
             if (geomType == GeometryType.ShellEdgeSurface) elementFaceType = ElementFaceType.Edge;
             else if (geomType == GeometryType.Vertex) elementFaceType = ElementFaceType.Vertex;
-            else throw new NotSupportedException();
             //
             for (int i = 0; i < cells.Length; i++)
             {
@@ -4666,7 +4665,7 @@ namespace CaeMesh
             int itemId = -1;
             int typeId = (int)GeometryType.Unknown;
             int partId = -1;
-            List<int> geometryIds = new List<int>();
+            HashSet<int> geometryIds = new HashSet<int>();
             VisualizationData visualization;
             HashSet<int> selectedElements = new HashSet<int>(elementIds);
             Dictionary<int, HashSet<int>> elementIdsBySurfaces;
@@ -4692,6 +4691,11 @@ namespace CaeMesh
                     {
                         itemId = elementIdsEntry.Key;
                         geometryIds.Add(itemId * 100000 + typeId * 10000 + partId);
+                        // Add faces of the shell back face
+                        if (entry.Value.PartType == PartType.Shell && typeId == (int)GeometryType.ShellFrontSurface)
+                        {
+                            geometryIds.Add(itemId * 100000 + (int)GeometryType.ShellBackSurface * 10000 + partId);
+                        }
                     }
                 }
             }
@@ -5028,7 +5032,9 @@ namespace CaeMesh
                 }
                 else if (geomType == GeometryType.Part)
                 {
-                    return GetVisualizationFaceIds(part.Name, true);
+                    List<int> faceIds = new List<int>(GetVisualizationFaceIds(part.Name, true));
+                    faceIds.AddRange(GetVisualizationFaceIds(part.Name, false));
+                    return faceIds.ToArray();
                 }
                 else return new int[] { };
             }
@@ -6335,6 +6341,37 @@ namespace CaeMesh
                 if (entry.Value.Visible) ids.UnionWith(entry.Value.NodeLabels);
             }
             return ids.ToArray();
+        }
+        public double[][] GetNodeNormals(int[] nodeIds)
+        {
+            VisualizationData vis;
+            Vec3D normal;
+            List<Vec3D> nodeNornals;
+            Dictionary<int, List<Vec3D>> nodeIdNormals = new Dictionary<int, List<Vec3D>>();
+            foreach (var entry in _parts)
+            {
+                vis = entry.Value.Visualization;
+                for (int i = 0; i < vis.Cells.Length; i++)
+                {
+                    normal = new Vec3D(ComputeNormalFromFaceCellIndices(vis.Cells[i]).Coor);
+                    for (int j = 0; j < vis.Cells[i].Length; j++)
+                    {
+                        if (nodeIdNormals.TryGetValue(vis.Cells[i][j], out nodeNornals)) nodeNornals.Add(normal);
+                        else nodeIdNormals.Add(vis.Cells[i][j], new List<Vec3D> { normal });
+                    }
+                }
+            }
+            //
+            double[][] normals = new double[nodeIds.Length][];
+            for (int i = 0; i < nodeIds.Length; i++)
+            {
+                nodeNornals = nodeIdNormals[nodeIds[i]];
+                normal = new Vec3D();
+                foreach(Vec3D n in nodeNornals) normal += n;
+                normal.Normalize();
+                normals[i] = normal.Coor;
+            }
+            return normals;
         }
 
         // Elements 

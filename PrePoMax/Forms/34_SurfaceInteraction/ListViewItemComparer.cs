@@ -25,6 +25,7 @@ namespace PrePoMax.Forms
             //
             namePosition.Add("Surface behavior", 0);
             namePosition.Add("Friction", 1);
+            namePosition.Add("Gap conductance", 2);
         }
         public int Compare(object x, object y)
         {

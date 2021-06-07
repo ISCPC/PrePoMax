@@ -3621,7 +3621,11 @@ namespace PrePoMax
                     geometryIds.Clear();
                     foreach (var node in nodeSet.CreationData.Nodes)
                     {
-                        if (node is SelectionNodeMouse snm) geometryIds.AddRange(GetGeometryIdsAtPoint(snm));
+                        if (node is SelectionNodeMouse snm)
+                        {
+                            _selection.SelectItem = nodeSet.CreationData.SelectItem;
+                            geometryIds.AddRange(GetIdsFromSelectionNodeMouse(snm, true));
+                        }
                         else if (node is SelectionNodeIds sni) geometryIds.AddRange(sni.ItemIds);
                     }
                     string[] nodeSetPartNames = _model.Mesh.GetPartNamesFromGeometryIds(geometryIds.ToArray());
@@ -3861,7 +3865,11 @@ namespace PrePoMax
                     geometryIds.Clear();
                     foreach (var node in elementSet.CreationData.Nodes)
                     {
-                        if (node is SelectionNodeMouse snm) geometryIds.AddRange(GetGeometryIdsAtPoint(snm));
+                        if (node is SelectionNodeMouse snm)
+                        {
+                            _selection.SelectItem = elementSet.CreationData.SelectItem;
+                            geometryIds.AddRange(GetIdsFromSelectionNodeMouse(snm, true));
+                        }
                         else if (node is SelectionNodeIds sni) geometryIds.AddRange(sni.ItemIds);
                     }
                     string[] elementSetPartNames = _model.Mesh.GetPartNamesFromGeometryIds(geometryIds.ToArray());
@@ -4111,7 +4119,11 @@ namespace PrePoMax
                     geometryIds.Clear();
                     foreach (var node in surface.CreationData.Nodes)
                     {
-                        if (node is SelectionNodeMouse snm) geometryIds.AddRange(GetGeometryIdsAtPoint(snm));
+                        if (node is SelectionNodeMouse snm)
+                        {
+                            _selection.SelectItem = surface.CreationData.SelectItem;
+                            geometryIds.AddRange(GetIdsFromSelectionNodeMouse(snm, true));
+                        }
                         else if (node is SelectionNodeIds sni) geometryIds.AddRange(sni.ItemIds);
                     }
                     string[] surfacePartNames = _model.Mesh.GetPartNamesFromGeometryIds(geometryIds.ToArray());
@@ -4433,7 +4445,7 @@ namespace PrePoMax
                 {
                     name = FeMesh.GetNextFreeSelectionName(_model.Mesh.ElementSets) + section.Name;
                     // For
-                    bool createdByPart = section.CreationData != null && section.CreationData.SelectItem == vtkSelectItem.Part;
+                    bool createdByPart = section.CreationData != null && (section.CreationData.SelectItem == vtkSelectItem.Part);
                     FeElementSet elementSet = new FeElementSet(name, section.CreationIds, createdByPart);
                     elementSet.CreationData = section.CreationData.DeepClone();
                     elementSet.Internal = true;
@@ -6324,7 +6336,7 @@ namespace PrePoMax
         }
         public void AddSelectionNode(SelectionNode node, bool highlight, bool callSelectionChenged)
         {
-            // Ger selected ids
+            // Get selected ids
             int[] ids = GetIdsFromSelectionNode(node, new HashSet<int>());
             int[] afterIds = null;
             FeMesh mesh = DisplayedMesh;
@@ -6491,7 +6503,7 @@ namespace PrePoMax
             }
             else if (selectionNode is SelectionNodeMouse selectionNodeMouse)
             {
-                ids = GetIdsFromSelectionNodeMouse(selectionNodeMouse);
+                ids = GetIdsFromSelectionNodeMouse(selectionNodeMouse, false);
             }
             else throw new NotSupportedException();
             //
@@ -6582,7 +6594,7 @@ namespace PrePoMax
             //
             return ids;
         }
-        private int[] GetIdsFromSelectionNodeMouse(SelectionNodeMouse selectionNodeMouse)
+        public int[] GetIdsFromSelectionNodeMouse(SelectionNodeMouse selectionNodeMouse, bool keepGeometryIds)
         {
             int[] ids;
             // Get offset
@@ -6598,7 +6610,7 @@ namespace PrePoMax
                 { }
                 else if (selectionNodeMouse.IsGeometryBased)
                 {
-                    ids = GetIdsAtPointFromGeometrySelection(selectionNodeMouse);
+                    ids = GetIdsAtPointFromGeometrySelection(selectionNodeMouse, keepGeometryIds);
                 }
                 else if (_selection.SelectItem == vtkSelectItem.None)
                 { }
@@ -6629,7 +6641,7 @@ namespace PrePoMax
                 string[] partNames = mesh.GetPartNamesByIds(selectionNodeMouse.PartIds);
                 if (offsets == null || allZero)
                 {
-                    ids = GetIdsFromSelectionInArea(selectionNodeMouse, partNames);
+                    ids = GetIdsFromSelectionInArea(selectionNodeMouse, partNames, keepGeometryIds);
                 }
                 else
                 {
@@ -6637,7 +6649,7 @@ namespace PrePoMax
                     for (int i = 0; i < partNames.Length; i++)
                     {
                         selectionNodeMouse.AddOffset(offsets[i]);
-                        ids = GetIdsFromSelectionInArea(selectionNodeMouse, new string[] { partNames[i] });
+                        ids = GetIdsFromSelectionInArea(selectionNodeMouse, new string[] { partNames[i] }, keepGeometryIds);
                         selectionNodeMouse.RemoveOffset(offsets[i]);
                         //
                         idsHash.UnionWith(ids);
@@ -6648,11 +6660,16 @@ namespace PrePoMax
             //
             return ids;
         }
-        private int[] GetIdsFromSelectionInArea(SelectionNodeMouse selectionNodeMouse, string[] partNames)
+        private int[] GetIdsFromSelectionInArea(SelectionNodeMouse selectionNodeMouse, string[] partNames, bool keepGeometryIds)
         {
             int[] ids;
             //
-            if (_selection.SelectItem == vtkSelectItem.Node)
+            if (selectionNodeMouse.IsGeometryBased) // vtkSelctBy = Geometry, ...
+            {
+                ids = GetIdsFromFrustumFromGeometrySelection(selectionNodeMouse.PlaneParameters, partNames,
+                                                             selectionNodeMouse.SelectBy, keepGeometryIds);
+            }
+            else if (_selection.SelectItem == vtkSelectItem.Node)
             {
                 ids = GetNodeIdsFromFrustum(selectionNodeMouse.PlaneParameters, partNames,
                                             selectionNodeMouse.SelectBy);
@@ -6672,30 +6689,69 @@ namespace PrePoMax
                 ids = GetPartIdsFromFrustum(selectionNodeMouse.PlaneParameters, partNames,
                                             selectionNodeMouse.SelectBy);
             }
-            else if (_selection.SelectItem == vtkSelectItem.Geometry)
-            {
-                ids = GetIdsFromFrustumFromGeometrySelection(selectionNodeMouse.PlaneParameters, partNames);
-                if (selectionNodeMouse.SelectBy == vtkSelectBy.GeometryPart)
-                {
-                    // Convert any geometry id to geometry part id
-                    for (int i = 0; i < ids.Length; i++) ids[i] = FeMesh.GetGeometryPartIdFromGeometryId(ids[i]);
-                }
-            }
             else throw new NotSupportedException();
             //
             return ids;
         }
         // At point
-        private int[] GetIdsAtPointFromGeometrySelection(SelectionNodeMouse selectionNodeMouse)
+
+        private int[] GetIdsAtPointFromGeometrySelection(SelectionNodeMouse selectionNodeMouse, bool keepGeometryIds)
         {
             // Geometry selection - get geometry Ids
             // The first time the selectionNodeMouse.Precision equals -1; if so set the Precision for all future queries
             double precision = _form.GetSelectionPrecision();
             if (selectionNodeMouse.Precision == -1) selectionNodeMouse.Precision = precision;
             //
-            int[] ids = GetGeometryIdsAtPoint(selectionNodeMouse);
+            double[] pickedPoint = selectionNodeMouse.PickedPoint;
+            double[] selectionDirection = selectionNodeMouse.SelectionDirection;
+            vtkSelectBy selectBy = selectionNodeMouse.SelectBy;
+            double angle = selectionNodeMouse.Angle;
+            int selectionOnPartId = selectionNodeMouse.PartIds[0];
+            precision = selectionNodeMouse.Precision;
+            //
+            int[] ids;
+            if (selectBy == vtkSelectBy.Geometry)
+            {
+                ids = new int[] { GetGeometryId(pickedPoint, selectionDirection, selectionOnPartId, precision) };
+            }
+            else if (selectBy == vtkSelectBy.GeometryVertex)
+            {
+                int id = GetGeometryVertexId(pickedPoint, selectionOnPartId, precision);
+                if (id > 0) ids = new int[] { id };
+                else ids = new int[0];
+            }
+            else if (selectBy == vtkSelectBy.GeometryEdge || selectBy == vtkSelectBy.QueryEdge)
+            {
+                // GeometryEdge - from form FrmSelectGeometry
+                ids = GetGeometryEdgeIdsByAngle(pickedPoint, -1, selectionOnPartId, false);
+            }
+            else if (selectBy == vtkSelectBy.GeometrySurface || selectBy == vtkSelectBy.QuerySurface)
+            {
+                // GeometrySurface - from form FrmSelectGeometry
+                ids = GetGeometrySurfaceIdsByAngle(pickedPoint, selectionDirection, -1, selectionOnPartId);
+            }
+            else if (selectBy == vtkSelectBy.GeometryEdgeAngle)
+            {
+                bool shellEdgeFace = false;
+                if (DisplayedMesh.GetPartById(selectionOnPartId).PartType == PartType.Shell &&
+                    _selection.SelectItem == vtkSelectItem.Surface) shellEdgeFace = true;
+                //
+                ids = GetGeometryEdgeIdsByAngle(pickedPoint, angle, selectionOnPartId, shellEdgeFace);
+            }
+            else if (selectBy == vtkSelectBy.GeometrySurfaceAngle)
+            {
+                ids = GetGeometrySurfaceIdsByAngle(pickedPoint, selectionDirection, angle, selectionOnPartId);
+            }
+            else if (selectBy == vtkSelectBy.GeometryPart)
+            {
+                int selectedGeomId = GetGeometryId(pickedPoint, selectionDirection, selectionOnPartId, precision);
+                // Convert any geometry id to geometry part id
+                ids = new int[] { FeMesh.GetGeometryPartIdFromGeometryId(selectedGeomId) };
+            }
+            else throw new NotSupportedException();
+            //
             // Change geometry ids to node, elemet or cell ids if necessary
-            ids = DisplayedMesh.GetIdsFromGeometryIds(ids, _selection.SelectItem);
+            if (!keepGeometryIds) ids = DisplayedMesh.GetIdsFromGeometryIds(ids, _selection.SelectItem);
             return ids;
         }
         private int[] GetNodeIdsAtPoint(SelectionNodeMouse selectionNodeMouse, out int elementId)
@@ -6851,59 +6907,90 @@ namespace PrePoMax
             if (DisplayedMesh.Elements.TryGetValue(elementId, out element)) return new int[] { element.PartId };
             else return null;
         }
-        public int[] GetGeometryIdsAtPoint(SelectionNodeMouse selectionNodeMouse)
+        
+        // Inside frustum
+        private int[] GetIdsFromFrustumFromGeometrySelection(double[][] planeParameters, string[] selectionPartNames,
+                                                             vtkSelectBy selectBy, bool keepGeometryIds)
         {
-            double[] pickedPoint = selectionNodeMouse.PickedPoint;
-            double[] selectionDirection = selectionNodeMouse.SelectionDirection;
-            vtkSelectBy selectBy = selectionNodeMouse.SelectBy;
-            double angle = selectionNodeMouse.Angle;
-            int selectionOnPartId = selectionNodeMouse.PartIds[0];
-            double precision = selectionNodeMouse.Precision;
+            int[] nodeIds;
+            int[] elementIds;
+            FeMesh mesh = DisplayedMesh;
+            _form.GetPointAndCellIdsInsideFrustum(planeParameters, selectionPartNames, out nodeIds, out elementIds);
             //
-            int[] ids;
+            int[] ids = null;
+            if (elementIds == null || elementIds.Length == 0) return ids;
+            // Get geometry ids
+            ids = mesh.GetGeometryIds(elementIds);
+            if (keepGeometryIds) return ids;
+            // Change geometry ids to node, element, ... ids
             if (selectBy == vtkSelectBy.Geometry)
             {
-                ids = new int[] { GetGeometryId(pickedPoint, selectionDirection, selectionOnPartId, precision) };
+                if (_selection.SelectItem == vtkSelectItem.Node || _selection.SelectItem == vtkSelectItem.Element ||
+                    _selection.SelectItem == vtkSelectItem.Surface || _selection.SelectItem == vtkSelectItem.Part ||
+                    _selection.SelectItem == vtkSelectItem.Geometry)
+                {
+                    ids = mesh.GetIdsFromGeometryIds(ids, _selection.SelectItem);
+                }
+                else throw new NotSupportedException();
             }
             else if (selectBy == vtkSelectBy.GeometryVertex)
             {
-                int id = GetGeometryVertexId(pickedPoint, selectionOnPartId, precision);
-                if (id > 0) ids = new int[] { id };
-                else ids = new int[0];
+                throw new NotSupportedException();
             }
             else if (selectBy == vtkSelectBy.GeometryEdge || selectBy == vtkSelectBy.QueryEdge)
             {
-                // GeometryEdge - from form FrmSelectGeometry
-                ids = GetGeometryEdgeIdsByAngle(pickedPoint, -1, selectionOnPartId, false);
+                throw new NotSupportedException();
             }
             else if (selectBy == vtkSelectBy.GeometrySurface || selectBy == vtkSelectBy.QuerySurface)
             {
-                // GeometrySurface - from form FrmSelectGeometry
-                ids = GetGeometrySurfaceIdsByAngle(pickedPoint, selectionDirection, -1, selectionOnPartId);
+                throw new NotSupportedException();
             }
             else if (selectBy == vtkSelectBy.GeometryEdgeAngle)
             {
-                bool shellEdgeFace = false;
-                if (DisplayedMesh.GetPartById(selectionOnPartId).PartType == PartType.Shell &&
-                    _selection.SelectItem == vtkSelectItem.Surface) shellEdgeFace = true;
-                //
-                ids = GetGeometryEdgeIdsByAngle(pickedPoint, angle, selectionOnPartId, shellEdgeFace);
+                throw new NotSupportedException();
             }
             else if (selectBy == vtkSelectBy.GeometrySurfaceAngle)
             {
-                ids = GetGeometrySurfaceIdsByAngle(pickedPoint, selectionDirection, angle, selectionOnPartId);
+                throw new NotSupportedException();
             }
             else if (selectBy == vtkSelectBy.GeometryPart)
             {
-                int selectedGeomId = GetGeometryId(pickedPoint, selectionDirection, selectionOnPartId, precision);
-                // Convert any geometry id to geometry part id
-                return new int[] { FeMesh.GetGeometryPartIdFromGeometryId(selectedGeomId) };
+                if (_selection.SelectItem == vtkSelectItem.Node)
+                {
+                    string[] partNamesByElementId = mesh.GetPartNamesByElementIds(elementIds);
+                    HashSet<int> partNodeIds = new HashSet<int>();
+                    foreach (var partName in partNamesByElementId) partNodeIds.UnionWith(mesh.Parts[partName].NodeLabels);
+                    ids = partNodeIds.ToArray();
+                }
+                else if (_selection.SelectItem == vtkSelectItem.Element)
+                {
+                    string[] partNamesByElementId = mesh.GetPartNamesByElementIds(elementIds);
+                    HashSet<int> partElementIds = new HashSet<int>();
+                    foreach (var partName in partNamesByElementId) partElementIds.UnionWith(mesh.Parts[partName].Labels);
+                    return partElementIds.ToArray();
+                }
+                else if (_selection.SelectItem == vtkSelectItem.Surface)
+                {
+                    string[] partNamesByElementId = mesh.GetPartNamesByElementIds(elementIds);
+                    HashSet<int> partVisualizationFaceIds = new HashSet<int>();
+                    foreach (var partName in partNamesByElementId)
+                        partVisualizationFaceIds.UnionWith(mesh.GetVisualizationFaceIds(partName, true));
+                    ids = partVisualizationFaceIds.ToArray();
+                }
+                else if (_selection.SelectItem == vtkSelectItem.Part)
+                {
+                    return mesh.GetPartIdsByElementIds(elementIds);
+                }
+                else if (_selection.SelectItem == vtkSelectItem.Geometry)
+                {
+                    for (int i = 0; i < ids.Length; i++) ids[i] = FeMesh.GetGeometryPartIdFromGeometryId(ids[i]);
+                }
+                else throw new NotSupportedException();
             }
             else throw new NotSupportedException();
             //
             return ids;
         }
-        // Inside frustum
         private int[] GetNodeIdsFromFrustum(double[][] planeParameters, string[] selectionPartNames, vtkSelectBy selectBy)
         {
             int[] nodeIds;
@@ -6925,7 +7012,7 @@ namespace PrePoMax
                     return data.Geometry.Nodes.Ids;
                 }
             }
-            else if (selectBy == vtkSelectBy.Part || selectBy == vtkSelectBy.GeometryPart)
+            else if (selectBy == vtkSelectBy.Part)
             {
                 if (elementIds.Length > 0)
                 {
@@ -6933,15 +7020,6 @@ namespace PrePoMax
                     HashSet<int> partNodeIds = new HashSet<int>();
                     foreach (var partName in partNamesByElementId) partNodeIds.UnionWith(mesh.Parts[partName].NodeLabels);
                     return partNodeIds.ToArray();
-                }
-            }
-            else if (selectBy == vtkSelectBy.Geometry)
-            {
-                if (elementIds.Length > 0)
-                {
-                    int[] ids = mesh.GetGeometryIds(elementIds);
-                    ids = mesh.GetIdsFromGeometryIds(ids, vtkSelectItem.Node);
-                    return ids;
                 }
             }
             else throw new NotSupportedException();
@@ -6966,7 +7044,7 @@ namespace PrePoMax
                 vtkControl.vtkMaxActorData data = GetCellActorData(elementIds, nodeIds);
                 return data.Geometry.Cells.Ids;
             }
-            else if (selectBy == vtkSelectBy.Part || selectBy == vtkSelectBy.GeometryPart)
+            else if (selectBy == vtkSelectBy.Part)
             {
                 if (elementIds.Length > 0)
                 {
@@ -6974,15 +7052,6 @@ namespace PrePoMax
                     HashSet<int> partElementIds = new HashSet<int>();
                     foreach (var partName in partNamesByElementId) partElementIds.UnionWith(mesh.Parts[partName].Labels);
                     return partElementIds.ToArray();
-                }
-            }
-            else if (selectBy == vtkSelectBy.Geometry)
-            {
-                if (elementIds.Length > 0)
-                {
-                    int[] ids = mesh.GetGeometryIds(elementIds);
-                    ids = mesh.GetIdsFromGeometryIds(ids, vtkSelectItem.Element);
-                    return ids;
                 }
             }
             else throw new NotSupportedException();
@@ -7004,7 +7073,7 @@ namespace PrePoMax
                 elementIds = GetElementIdsFromFrustum(planeParameters, selectionPartNames, selectBy);
                 ids = DisplayedMesh.GetVisualizationFaceIds(nodeIds, elementIds, false, true, true);
             }
-            else if (selectBy == vtkSelectBy.Part || selectBy == vtkSelectBy.GeometryPart)
+            else if (selectBy == vtkSelectBy.Part)
             {
                 FeMesh mesh = DisplayedMesh;
                 _form.GetPointAndCellIdsInsideFrustum(planeParameters, selectionPartNames, out nodeIds, out elementIds);
@@ -7013,13 +7082,6 @@ namespace PrePoMax
                 foreach (var partName in partNamesByElementId)
                     partVisualizationFaceIds.UnionWith(mesh.GetVisualizationFaceIds(partName, true));
                 ids = partVisualizationFaceIds.ToArray();
-            }
-            else if (selectBy == vtkSelectBy.Geometry)
-            {
-                FeMesh mesh = DisplayedMesh;
-                _form.GetPointAndCellIdsInsideFrustum(planeParameters, selectionPartNames, out nodeIds, out elementIds);
-                geomIds = mesh.GetGeometryIds(elementIds);
-                ids = mesh.GetIdsFromGeometryIds(geomIds, vtkSelectItem.Surface);
             }
             else throw new NotSupportedException();
             //
@@ -7041,12 +7103,7 @@ namespace PrePoMax
             {
                 if (elementIds.Length > 0) return mesh.GetPartIdsByElementIds(elementIds);
             }
-            else if (selectBy == vtkSelectBy.Part ||selectBy == vtkSelectBy.GeometryPart)
-            {
-                if (nodeIds.Length > 0) return mesh.GetPartIdsByNodeIds(nodeIds);
-                else if (elementIds.Length > 0) return mesh.GetPartIdsByElementIds(elementIds);
-            }
-            else if (selectBy == vtkSelectBy.Geometry)
+            else if (selectBy == vtkSelectBy.Part)
             {
                 if (nodeIds.Length > 0) return mesh.GetPartIdsByNodeIds(nodeIds);
                 else if (elementIds.Length > 0) return mesh.GetPartIdsByElementIds(elementIds);
@@ -7054,18 +7111,6 @@ namespace PrePoMax
             else throw new NotSupportedException();
             //
             return new int[0];
-        }
-        public int[] GetIdsFromFrustumFromGeometrySelection(double[][] planeParameters, string[] selectionPartNames)
-        {
-            int[] nodeIds;
-            int[] elementIds;
-            FeMesh mesh = DisplayedMesh;
-            //
-            _form.GetPointAndCellIdsInsideFrustum(planeParameters, selectionPartNames, out nodeIds, out elementIds);
-            //
-            int[] ids = mesh.GetGeometryIds(elementIds);
-            ids = mesh.GetIdsFromGeometryIds(ids, _selection.SelectItem);
-            return ids;
         }
         public double[][] GetRelativePartOffsets(SelectionNodeMouse selectionNodeMouse, out bool allZero)
         {
@@ -7177,7 +7222,7 @@ namespace PrePoMax
         {
             vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
             data.Geometry.Nodes.Coor = new double[nodeIds.Length][];
-
+            //
             if (_currentView == ViewGeometryModelResults.Geometry && _model.Geometry != null)
             {
                 for (int i = 0; i < nodeIds.Length; i++)
@@ -7197,7 +7242,7 @@ namespace PrePoMax
                 float scale = GetScale();
                 Results.GetScaledNodesAndValues(_currentFieldData, scale, nodeIds, out data.Geometry.Nodes.Coor, out data.Geometry.Nodes.Values);
             }
-
+            //
             return data;
         }
         //
@@ -8194,6 +8239,10 @@ namespace PrePoMax
                     _form.AddColorBarColorsAndLabels(itemColors.ToArray(), itemNames.ToArray());
                 }
             }
+            // Pre-processing settings
+            PreSettings ps = _settings.Pre;
+            _form.DrawColorBarBackground(ps.ColorBarBackgroundType == WidgetBackgroundType.White);
+            _form.DrawColorBarBorder(ps.ColorBarDrawBorder);
             //
         }
         // Reference points
@@ -9083,10 +9132,11 @@ namespace PrePoMax
                 // Thermal
                 else if (load is CFlux cFlux)
                 {
+                    FeNodeSet nodeSet;
                     if (cFlux.RegionType == RegionTypeEnum.NodeSetName)
                     {
                         if (!_model.Mesh.NodeSets.ContainsKey(cFlux.RegionName)) return;
-                        FeNodeSet nodeSet = _model.Mesh.NodeSets[cFlux.RegionName];
+                        nodeSet = _model.Mesh.NodeSets[cFlux.RegionName];
                         coor = new double[nodeSet.Labels.Length][];
                         for (int i = 0; i < nodeSet.Labels.Length; i++) coor[i] = _model.Mesh.Nodes[nodeSet.Labels[i]].Coor;
                         //
@@ -9423,6 +9473,26 @@ namespace PrePoMax
                 ApplyLighting(data);
                 bool translate = false;
                 _form.AddOrientedFluxActor(data, symbolSize, true, translate);
+            }
+            return;
+        }
+        public void DrawCFluxSymbols_(string prefixName, CFlux cFlux, int[] nodeIds, double[][] symbolCoor, Color color,
+                                     int symbolSize, vtkControl.vtkRendererLayer layer)
+        {
+            // Flux symbols
+            if (symbolCoor.Length > 0)
+            {
+                double[][] normals = _model.Mesh.GetNodeNormals(nodeIds);
+                //
+                vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
+                data.Name = prefixName;
+                data.Color = color;
+                data.Layer = layer;
+                data.Geometry.Nodes.Coor = symbolCoor.ToArray();
+                data.Geometry.Nodes.Normals = normals.ToArray();
+                data.SectionViewPossible = false;
+                ApplyLighting(data);
+                _form.AddOrientedArrowsActor(data, symbolSize);
             }
             return;
         }
@@ -10617,7 +10687,7 @@ namespace PrePoMax
             int[] ids = GetSelectionIds();
             HashSet<int> idsHash = new HashSet<int>(ids);
             if (ids.Length == 0) return;
-
+            //
             if (_selection.SelectItem == vtkSelectItem.Node)
                 HighlightItemsByNodeIds(ids, useSecondaryHighlightColor);
             else if (_selection.SelectItem == vtkSelectItem.Element)

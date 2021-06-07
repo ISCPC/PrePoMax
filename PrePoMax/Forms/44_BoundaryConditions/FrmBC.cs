@@ -246,8 +246,13 @@ namespace PrePoMax.Forms
             // Create new boundary condition
             if (_boundaryConditionToEditName == null)
             {
-                lvTypes.Enabled = true;
-                _viewBc = null;
+                // Different steps support different boundary conditoins
+                if (lvTypes.Items.Count == 1) _preselectIndex = 0;
+                else
+                {
+                    lvTypes.Enabled = true;
+                    _viewBc = null;
+                }
                 //
                 HighlightBoundaryCondition(); // must be here if called from the menu
             }

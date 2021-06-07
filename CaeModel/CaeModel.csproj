@@ -64,12 +64,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Contact\ContactPair.cs" />
+    <Compile Include="Contact\Surface interaction\GapConductance.cs" />
     <Compile Include="Contact\Surface interaction\Friction.cs" />
     <Compile Include="Contact\Surface interaction\SurfaceBehavior.cs" />
     <Compile Include="Contact\Surface interaction\SurfaceInteraction.cs" />
     <Compile Include="Contact\Surface interaction\SurfaceInteractionProperty.cs" />
     <Compile Include="FileInOut\Input\Mmg\MmgFileReader.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalPhysicalConstants.cs" />
+    <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\SurfaceInteraction\CalGapConductance.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\BC\CalTemperatureBC.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\CalHeatTransferStep.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\DefinedField\CalDefinedTemperature.cs" />

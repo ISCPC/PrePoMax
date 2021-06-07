@@ -100,7 +100,6 @@ namespace vtkControl
                 }
             }
         }
-       
         public vtkEdgesVisibility EdgesVisibility
         {
             get { return _edgesVisibility; }
@@ -211,6 +210,18 @@ namespace vtkControl
             if (selectableActors != null) _selectableActorsFilter = new HashSet<string>(selectableActors);
             else _selectableActorsFilter = null;
         }
+
+
+        // Getters
+        public bool IsRubberBandActive
+        {
+            get
+            {
+                vtkInteractorStyleControl style = (vtkInteractorStyleControl)(_renderWindowInteractor.GetInteractorStyle());
+                return style.IsRubberBandActive;
+            } 
+        }
+
 
 
         // Callbacks                                                                                                                
@@ -4719,14 +4730,20 @@ namespace vtkControl
         }
         public void DrawColorBarBackground(bool drawBackground)
         {
-            _colorBarWidget.SetBackgroundColor(1, 1, 1);
-            if (drawBackground) _colorBarWidget.BackgroundVisibilityOn();
-            else _colorBarWidget.BackgroundVisibilityOff();
+            if (_colorBarWidget.GetVisibility() == 1)
+            {
+                _colorBarWidget.SetBackgroundColor(1, 1, 1);
+                if (drawBackground) _colorBarWidget.BackgroundVisibilityOn();
+                else _colorBarWidget.BackgroundVisibilityOff();
+            }
         }
         public void DrawColorBarBorder(bool drawBorder)
         {
-            if (drawBorder) _colorBarWidget.BorderVisibilityOn();
-            else _colorBarWidget.BorderVisibilityOff();
+            if (_colorBarWidget.GetVisibility() == 1)
+            {
+                if (drawBorder) _colorBarWidget.BorderVisibilityOn();
+                else _colorBarWidget.BorderVisibilityOff();
+            }
         }
         public void HideColorBar()
         {

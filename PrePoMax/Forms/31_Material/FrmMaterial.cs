@@ -25,6 +25,7 @@ namespace PrePoMax.Forms
         private TabPage[] _pages;
         private bool _useSimpleEditor;
         
+
         // Properties                                                                                                               
         public Material Material { get { return _material; } set { _material = value.DeepClone(); } }
         public bool UseSimpleEditor { get { return _useSimpleEditor; } set { _useSimpleEditor = value.DeepClone(); } }

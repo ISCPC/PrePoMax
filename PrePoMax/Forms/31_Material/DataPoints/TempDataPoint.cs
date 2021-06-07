@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel;
 
-namespace CaeModel
+namespace PrePoMax
 {
     [Serializable]
     public class TempDataPoint

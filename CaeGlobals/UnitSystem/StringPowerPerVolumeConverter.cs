@@ -11,16 +11,13 @@ using UnitsNet;
 
 namespace CaeGlobals
 {
-    public enum PowerPerVolumeUnit
-    {
-
-    }
+    public enum PowerPerVolumeUnit { }
     public class StringPowerPerVolumeConverter : TypeConverter
     {
         // Variables                                                                                                                
         protected static PowerUnit _powerUnit = PowerUnit.Watt;
         protected static VolumeUnit _volumeUnit = VolumeUnit.CubicMeter;
-        protected static PowerPerVolumeUnit _powerPerVolumeUnit = MyUnit.PoundForcePerSquareInchPerSecond;
+        protected static PowerPerVolumeUnit _powerPerVolumeUnit = MyUnit.PoundForcePerSquareInchSecond;
         protected static string error = "Unable to parse quantity. Expected the form \"{value} {unit abbreviation}" +
                                         "\", such as \"5.5 m\". The spacing is optional.";
 
@@ -62,8 +59,8 @@ namespace CaeGlobals
         {
             set
             {
-                if (value == MyUnit.PoundForcePerSquareInchPerSecondAbbreviation)
-                    _powerPerVolumeUnit = MyUnit.PoundForcePerSquareInchPerSecond;
+                if (value == MyUnit.PoundForcePerSquareInchSecondAbbreviation)
+                    _powerPerVolumeUnit = MyUnit.PoundForcePerSquareInchSecond;
                 else throw new NotSupportedException();
             }
         }
@@ -71,8 +68,8 @@ namespace CaeGlobals
                                                  PowerPerVolumeUnit powerPerVolumeUnit)
         {
             string unit;
-            if (powerPerVolumeUnit == MyUnit.PoundForcePerSquareInchPerSecond)
-                unit = MyUnit.PoundForcePerSquareInchPerSecondAbbreviation;
+            if (powerPerVolumeUnit == MyUnit.PoundForcePerSquareInchSecond)
+                unit = MyUnit.PoundForcePerSquareInchSecondAbbreviation;
             else if ((int)powerUnit == MyUnit.NoUnit || (int)volumeUnit == MyUnit.NoUnit)
                 unit = "";
             else unit = Power.GetAbbreviation(powerUnit) + "/" + Volume.GetAbbreviation(volumeUnit);
@@ -138,9 +135,9 @@ namespace CaeGlobals
         {
             valueWithUnitString = valueWithUnitString.Trim().Replace(" ", "");
             // From my unit
-            if (valueWithUnitString.Contains(MyUnit.PoundForcePerSquareInchPerSecondAbbreviation))
+            if (valueWithUnitString.Contains(MyUnit.PoundForcePerSquareInchSecondAbbreviation))
             {
-                valueWithUnitString = valueWithUnitString.Replace(MyUnit.PoundForcePerSquareInchPerSecondAbbreviation, "");
+                valueWithUnitString = valueWithUnitString.Replace(MyUnit.PoundForcePerSquareInchSecondAbbreviation, "");
                 if (double.TryParse(valueWithUnitString, out value))
                 {
                     // 1 pound force = 4.44822162 newtons
@@ -175,7 +172,7 @@ namespace CaeGlobals
         private static void GetConversionFromSI(out double conversionFromSI)
         {
             // To my unit
-            if (_powerPerVolumeUnit == MyUnit.PoundForcePerSquareInchPerSecond)
+            if (_powerPerVolumeUnit == MyUnit.PoundForcePerSquareInchSecond)
             {
                 // 1 pound force = 4.44822162 newtons
                 // 1 inch = 0.0254 meters
