@@ -25,7 +25,7 @@ namespace CaeModel
         public HeatTransferStep(string name)
             :base(name, false)
         {
-            _steadyState = false;
+            _steadyState = true;
             _deltmx = double.PositiveInfinity;
             //
             AddFieldOutput(new NodalFieldOutput("NF-Output-1", NodalFieldVariable.NT | NodalFieldVariable.RFL));

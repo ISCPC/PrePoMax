@@ -424,56 +424,60 @@
             // 
             this.tsmiNew.Image = ((System.Drawing.Image)(resources.GetObject("tsmiNew.Image")));
             this.tsmiNew.Name = "tsmiNew";
-            this.tsmiNew.Size = new System.Drawing.Size(143, 22);
-            this.tsmiNew.Text = "New";
+            this.tsmiNew.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
+            this.tsmiNew.Size = new System.Drawing.Size(219, 22);
+            this.tsmiNew.Text = "New                          ";
             this.tsmiNew.Click += new System.EventHandler(this.tsmiNew_Click);
             // 
             // tsmiOpen
             // 
             this.tsmiOpen.Image = ((System.Drawing.Image)(resources.GetObject("tsmiOpen.Image")));
             this.tsmiOpen.Name = "tsmiOpen";
-            this.tsmiOpen.Size = new System.Drawing.Size(143, 22);
+            this.tsmiOpen.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
+            this.tsmiOpen.Size = new System.Drawing.Size(219, 22);
             this.tsmiOpen.Text = "Open";
             this.tsmiOpen.Click += new System.EventHandler(this.tsmiOpen_Click);
             // 
             // tsmiOpenRecent
             // 
             this.tsmiOpenRecent.Name = "tsmiOpenRecent";
-            this.tsmiOpenRecent.Size = new System.Drawing.Size(143, 22);
+            this.tsmiOpenRecent.Size = new System.Drawing.Size(219, 22);
             this.tsmiOpenRecent.Text = "Open Recent";
             // 
             // tsmiImportFile
             // 
             this.tsmiImportFile.Image = ((System.Drawing.Image)(resources.GetObject("tsmiImportFile.Image")));
             this.tsmiImportFile.Name = "tsmiImportFile";
-            this.tsmiImportFile.Size = new System.Drawing.Size(143, 22);
+            this.tsmiImportFile.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.I)));
+            this.tsmiImportFile.Size = new System.Drawing.Size(219, 22);
             this.tsmiImportFile.Text = "Import";
             this.tsmiImportFile.Click += new System.EventHandler(this.tsmiImportFile_Click);
             // 
             // tsmiDividerFile1
             // 
             this.tsmiDividerFile1.Name = "tsmiDividerFile1";
-            this.tsmiDividerFile1.Size = new System.Drawing.Size(140, 6);
+            this.tsmiDividerFile1.Size = new System.Drawing.Size(216, 6);
             // 
             // tsmiSave
             // 
             this.tsmiSave.Image = ((System.Drawing.Image)(resources.GetObject("tsmiSave.Image")));
             this.tsmiSave.Name = "tsmiSave";
-            this.tsmiSave.Size = new System.Drawing.Size(143, 22);
+            this.tsmiSave.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
+            this.tsmiSave.Size = new System.Drawing.Size(219, 22);
             this.tsmiSave.Text = "Save";
             this.tsmiSave.Click += new System.EventHandler(this.tsmiSave_Click);
             // 
             // tsmiSaveAs
             // 
             this.tsmiSaveAs.Name = "tsmiSaveAs";
-            this.tsmiSaveAs.Size = new System.Drawing.Size(143, 22);
+            this.tsmiSaveAs.Size = new System.Drawing.Size(219, 22);
             this.tsmiSaveAs.Text = "Save As";
             this.tsmiSaveAs.Click += new System.EventHandler(this.tsmiSaveAs_Click);
             // 
             // tsmiDividerFile2
             // 
             this.tsmiDividerFile2.Name = "tsmiDividerFile2";
-            this.tsmiDividerFile2.Size = new System.Drawing.Size(140, 6);
+            this.tsmiDividerFile2.Size = new System.Drawing.Size(216, 6);
             // 
             // tsmiExport
             // 
@@ -486,7 +490,7 @@
             this.tsmiExportToStereolitography});
             this.tsmiExport.Image = ((System.Drawing.Image)(resources.GetObject("tsmiExport.Image")));
             this.tsmiExport.Name = "tsmiExport";
-            this.tsmiExport.Size = new System.Drawing.Size(143, 22);
+            this.tsmiExport.Size = new System.Drawing.Size(219, 22);
             this.tsmiExport.Text = "Export";
             // 
             // tsmiExportToCalculix
@@ -534,19 +538,20 @@
             // tsmiDividerFile3
             // 
             this.tsmiDividerFile3.Name = "tsmiDividerFile3";
-            this.tsmiDividerFile3.Size = new System.Drawing.Size(140, 6);
+            this.tsmiDividerFile3.Size = new System.Drawing.Size(216, 6);
             // 
             // tsmiCloseResults
             // 
             this.tsmiCloseResults.Name = "tsmiCloseResults";
-            this.tsmiCloseResults.Size = new System.Drawing.Size(143, 22);
+            this.tsmiCloseResults.Size = new System.Drawing.Size(219, 22);
             this.tsmiCloseResults.Text = "Close Results";
             this.tsmiCloseResults.Click += new System.EventHandler(this.tsmiCloseResults_Click);
             // 
             // tsmiExit
             // 
             this.tsmiExit.Name = "tsmiExit";
-            this.tsmiExit.Size = new System.Drawing.Size(143, 22);
+            this.tsmiExit.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
+            this.tsmiExit.Size = new System.Drawing.Size(219, 22);
             this.tsmiExit.Text = "Exit";
             this.tsmiExit.Click += new System.EventHandler(this.tsmiExit_Click);
             // 
@@ -3131,12 +3136,9 @@
             this.Name = "FrmMain";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "PrePoMax";
-            this.Activated += new System.EventHandler(this.FrmMain_Activated);
-            this.Deactivate += new System.EventHandler(this.FrmMain_Deactivate);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmMain_FormClosing);
             this.Load += new System.EventHandler(this.FrmMain_Load);
             this.Shown += new System.EventHandler(this.FrmMain_Shown);
-            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.FrmMain_KeyUp);
             this.Move += new System.EventHandler(this.FrmMain_Move);
             this.Resize += new System.EventHandler(this.FrmMain_Resize);
             this.menuStripMain.ResumeLayout(false);

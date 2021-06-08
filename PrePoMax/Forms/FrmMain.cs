@@ -406,8 +406,6 @@ namespace PrePoMax
                 tsmiCropWithCube.Visible = false;
             }
         }
-
-        
         //
         private void FrmMain_Shown(object sender, EventArgs e)
         {
@@ -594,11 +592,11 @@ namespace PrePoMax
                 }
                 else if (Control.ModifierKeys == Keys.Control)
                 {
-                    if (key == Keys.I) tsmiImportFile_Click(null, null);
-                    else if (key == Keys.N) tsmiNew_Click(null, null);
-                    else if (key == Keys.O) tsmiOpen_Click(null, null);
-                    else if (key == Keys.S) tsmiSave_Click(null, null);
-                    else if (key == Keys.X) tsmiExit_Click(null, null);
+                    //if (key == Keys.I) tsmiImportFile_Click(null, null);
+                    //else if (key == Keys.N) tsmiNew_Click(null, null);
+                    //else if (key == Keys.O) tsmiOpen_Click(null, null);
+                    //else if (key == Keys.S) tsmiSave_Click(null, null);
+                    //else if (key == Keys.X) tsmiExit_Click(null, null);
                 }
                 else if (_modelTree.ActiveControl == null || !_modelTree.ActiveControl.Focused)
                     _modelTree.cltv_KeyDown(this, new KeyEventArgs(key));
@@ -1173,6 +1171,9 @@ namespace PrePoMax
         {
             try
             {
+                if (sender == null) System.Diagnostics.Debug.WriteLine("null");
+                else System.Diagnostics.Debug.WriteLine(sender.ToString());
+                //
                 SetStateWorking(Globals.SavingText);
                 await Task.Run(() => _controller.Save());
             }
@@ -6763,21 +6764,6 @@ namespace PrePoMax
                     UpdateVtkControlSize();
                 }
             }
-        }
-
-        private void FrmMain_KeyUp(object sender, KeyEventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine("Key pressed");
-        }
-
-        private void FrmMain_Deactivate(object sender, EventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine("Deactivate");
-        }
-
-        private void FrmMain_Activated(object sender, EventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine("Activated");
         }
     }
 }

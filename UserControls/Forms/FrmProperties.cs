@@ -94,7 +94,7 @@ namespace UserControls
             {
                 OnApply(true);
                 //
-                if (_addNew) OnPrepareForm(_stepName, null);
+                if (_addNew) PrepareForm(_stepName, null);
             }
             catch (Exception ex)
             {

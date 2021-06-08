@@ -534,7 +534,7 @@ namespace PrePoMax.Forms
                 }
                 else if (_viewLoad is ViewFilmHeatTransfer vfht)
                 {
-                    selectedId = lvTypes.FindItemWithText("Film").Index;
+                    selectedId = lvTypes.FindItemWithText("Convective film").Index;
                     // Check for deleted regions
                     if (vfht.RegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
                     else if (vfht.RegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
@@ -722,7 +722,7 @@ namespace PrePoMax.Forms
                 lvTypes.Items.Add(item);
             }
             // Film heat transfer
-            name = "Film";
+            name = "Convective film";
             loadName = GetLoadName(name);
             item = new ListViewItem(name);
             FilmHeatTransfer filmHeatTransfer = new FilmHeatTransfer(loadName, "", RegionTypeEnum.Selection, 0, 0);
