@@ -64,37 +64,38 @@ namespace PrePoMax.Forms
             // 
             // gbType
             // 
-            this.gbType.Size = new System.Drawing.Size(310, 115);
+            this.gbType.Size = new System.Drawing.Size(310, 127);
             // 
             // lvTypes
             // 
-            this.lvTypes.Size = new System.Drawing.Size(298, 87);
+            this.lvTypes.Size = new System.Drawing.Size(298, 99);
             // 
             // gbProperties
             // 
-            this.gbProperties.Location = new System.Drawing.Point(12, 133);
-            this.gbProperties.Size = new System.Drawing.Size(310, 360);
+            this.gbProperties.Location = new System.Drawing.Point(12, 145);
+            this.gbProperties.Size = new System.Drawing.Size(310, 375);
             // 
             // propertyGrid
             // 
-            this.propertyGrid.Size = new System.Drawing.Size(298, 332);
+            this.propertyGrid.Size = new System.Drawing.Size(298, 347);
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(160, 499);
+            this.btnOK.Location = new System.Drawing.Point(160, 526);
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(241, 499);
+            this.btnCancel.Location = new System.Drawing.Point(241, 526);
             // 
             // btnOkAddNew
             // 
-            this.btnOkAddNew.Location = new System.Drawing.Point(79, 499);
+            this.btnOkAddNew.Location = new System.Drawing.Point(79, 526);
             // 
             // FrmLoad
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.ClientSize = new System.Drawing.Size(334, 534);
+            this.ClientSize = new System.Drawing.Size(334, 561);
+            this.MinimumSize = new System.Drawing.Size(350, 550);
             this.Name = "FrmLoad";
             this.Text = "Edit Load";
             this.gbType.ResumeLayout(false);

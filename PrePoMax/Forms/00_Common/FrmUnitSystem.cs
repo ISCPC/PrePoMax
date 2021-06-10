@@ -40,8 +40,6 @@ namespace PrePoMax.Forms
             _controller = controller;
             _viewUnitSystem = null;
             //
-            this.Height = 340 + 15 * 19;
-            //
             btnOkAddNew.Visible = false;
             btnCancel.Visible = false;
             btnOK.Location = btnCancel.Location;
@@ -55,38 +53,26 @@ namespace PrePoMax.Forms
             // 
             // gbType
             // 
-            this.gbType.Size = new System.Drawing.Size(310, 129);
+            this.gbType.Size = new System.Drawing.Size(310, 128);
             // 
             // lvTypes
             // 
-            this.lvTypes.Size = new System.Drawing.Size(298, 101);
+            this.lvTypes.Size = new System.Drawing.Size(298, 100);
             this.lvTypes.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.lvTypes_MouseDoubleClick);
             // 
             // gbProperties
             // 
-            this.gbProperties.Location = new System.Drawing.Point(12, 147);
-            this.gbProperties.Size = new System.Drawing.Size(310, 438);
+            this.gbProperties.Location = new System.Drawing.Point(12, 146);
+            this.gbProperties.Size = new System.Drawing.Size(310, 274);
             // 
             // propertyGrid
             // 
-            this.propertyGrid.Size = new System.Drawing.Size(298, 410);
-            // 
-            // btnOK
-            // 
-            this.btnOK.Location = new System.Drawing.Point(160, 591);
-            // 
-            // btnCancel
-            // 
-            this.btnCancel.Location = new System.Drawing.Point(241, 591);
-            // 
-            // btnOkAddNew
-            // 
-            this.btnOkAddNew.Location = new System.Drawing.Point(79, 591);
+            this.propertyGrid.Size = new System.Drawing.Size(298, 246);
             // 
             // FrmUnitSystem
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.ClientSize = new System.Drawing.Size(334, 626);
+            this.ClientSize = new System.Drawing.Size(334, 461);
             this.Name = "FrmUnitSystem";
             this.Text = "Edit Unit System";
             this.gbType.ResumeLayout(false);

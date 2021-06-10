@@ -20,6 +20,8 @@ namespace PrePoMax.Forms
         private Button btnPreview;
         private Controller _controller;
         private int _previewBtnDx;
+        private ToolTip ttText;
+        private System.ComponentModel.IContainer components;
         private string _defaultName;
 
 
@@ -49,47 +51,28 @@ namespace PrePoMax.Forms
         }
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.btnPreview = new System.Windows.Forms.Button();
+            this.ttText = new System.Windows.Forms.ToolTip(this.components);
             this.gbProperties.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // gbProperties
-            // 
-            this.gbProperties.Size = new System.Drawing.Size(329, 364);
-            // 
-            // propertyGrid
-            // 
-            this.propertyGrid.Size = new System.Drawing.Size(317, 336);
-            // 
-            // btnOK
-            // 
-            this.btnOK.Location = new System.Drawing.Point(179, 376);
-            // 
-            // btnCancel
-            // 
-            this.btnCancel.Location = new System.Drawing.Point(260, 376);
-            // 
-            // btnOkAddNew
-            // 
-            this.btnOkAddNew.Location = new System.Drawing.Point(98, 376);
             // 
             // btnPreview
             // 
             this.btnPreview.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnPreview.Location = new System.Drawing.Point(17, 376);
+            this.btnPreview.Image = global::PrePoMax.Properties.Resources.Show;
+            this.btnPreview.Location = new System.Drawing.Point(45, 376);
             this.btnPreview.Name = "btnPreview";
-            this.btnPreview.Size = new System.Drawing.Size(75, 23);
+            this.btnPreview.Size = new System.Drawing.Size(28, 23);
             this.btnPreview.TabIndex = 17;
-            this.btnPreview.Text = "Preview";
+            this.ttText.SetToolTip(this.btnPreview, "Preview");
             this.btnPreview.UseVisualStyleBackColor = true;
             this.btnPreview.Click += new System.EventHandler(this.btnPreview_Click);
             // 
             // FrmMeshRefinement
             // 
-            this.ClientSize = new System.Drawing.Size(353, 411);
+            this.ClientSize = new System.Drawing.Size(334, 411);
             this.Controls.Add(this.btnPreview);
-            this.MaximumSize = new System.Drawing.Size(369, 450);
-            this.MinimumSize = new System.Drawing.Size(369, 450);
             this.Name = "FrmMeshRefinement";
             this.Text = "Edit Mesh Refinement";
             this.VisibleChanged += new System.EventHandler(this.FrmMeshRefinement_VisibleChanged);

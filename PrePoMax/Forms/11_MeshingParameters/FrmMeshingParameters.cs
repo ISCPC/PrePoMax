@@ -19,6 +19,7 @@ namespace PrePoMax.Forms
         private System.Windows.Forms.ToolStripMenuItem tsmiResetAll;
         private System.Windows.Forms.Button btnPreview;
         private ViewMeshingParameters _viewMeshingParameters;
+        private System.Windows.Forms.ToolTip ttText;
 
 
         // Callbacks                                                                                                                
@@ -67,30 +68,31 @@ namespace PrePoMax.Forms
             this.cmsPropertyGrid = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.tsmiResetAll = new System.Windows.Forms.ToolStripMenuItem();
             this.btnPreview = new System.Windows.Forms.Button();
+            this.ttText = new System.Windows.Forms.ToolTip(this.components);
             this.gbProperties.SuspendLayout();
             this.cmsPropertyGrid.SuspendLayout();
             this.SuspendLayout();
             // 
             // gbProperties
             // 
-            this.gbProperties.Size = new System.Drawing.Size(310, 384);
+            this.gbProperties.Size = new System.Drawing.Size(310, 414);
             // 
             // propertyGrid
             // 
             this.propertyGrid.ContextMenuStrip = this.cmsPropertyGrid;
-            this.propertyGrid.Size = new System.Drawing.Size(298, 356);
+            this.propertyGrid.Size = new System.Drawing.Size(298, 386);
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(160, 396);
+            this.btnOK.Location = new System.Drawing.Point(160, 426);
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(241, 396);
+            this.btnCancel.Location = new System.Drawing.Point(241, 426);
             // 
             // btnOkAddNew
             // 
-            this.btnOkAddNew.Location = new System.Drawing.Point(79, 396);
+            this.btnOkAddNew.Location = new System.Drawing.Point(79, 426);
             // 
             // cmsPropertyGrid
             // 
@@ -109,19 +111,20 @@ namespace PrePoMax.Forms
             // btnPreview
             // 
             this.btnPreview.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnPreview.Location = new System.Drawing.Point(79, 396);
+            this.btnPreview.Image = global::PrePoMax.Properties.Resources.Show;
+            this.btnPreview.Location = new System.Drawing.Point(126, 426);
             this.btnPreview.Name = "btnPreview";
-            this.btnPreview.Size = new System.Drawing.Size(75, 23);
+            this.btnPreview.Size = new System.Drawing.Size(28, 23);
             this.btnPreview.TabIndex = 16;
-            this.btnPreview.Text = "Preview";
+            this.ttText.SetToolTip(this.btnPreview, "Preview");
             this.btnPreview.UseVisualStyleBackColor = true;
             this.btnPreview.Click += new System.EventHandler(this.btnPreview_Click);
             // 
             // FrmMeshingParameters
             // 
-            this.ClientSize = new System.Drawing.Size(334, 431);
+            this.ClientSize = new System.Drawing.Size(334, 461);
             this.Controls.Add(this.btnPreview);
-            this.MinimumSize = new System.Drawing.Size(350, 470);
+            this.MinimumSize = new System.Drawing.Size(350, 500);
             this.Name = "FrmMeshingParameters";
             this.Text = "Edit Meshing Parameters";
             this.VisibleChanged += new System.EventHandler(this.FrmMeshingParameters_VisibleChanged);

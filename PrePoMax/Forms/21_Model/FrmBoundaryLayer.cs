@@ -54,7 +54,6 @@ namespace PrePoMax.Forms
             // FrmBoundaryLayer
             // 
             this.ClientSize = new System.Drawing.Size(334, 311);
-            this.MaximumSize = new System.Drawing.Size(350, 350);
             this.MinimumSize = new System.Drawing.Size(350, 350);
             this.Name = "FrmBoundaryLayer";
             this.Text = "Create Boundary Layer";

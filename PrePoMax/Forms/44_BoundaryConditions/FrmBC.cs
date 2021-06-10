@@ -49,20 +49,20 @@ namespace PrePoMax.Forms
             // 
             // gbType
             // 
-            this.gbType.Size = new System.Drawing.Size(310, 100);
+            this.gbType.Size = new System.Drawing.Size(310, 89);
             // 
             // lvTypes
             // 
-            this.lvTypes.Size = new System.Drawing.Size(298, 72);
+            this.lvTypes.Size = new System.Drawing.Size(298, 61);
             // 
             // gbProperties
             // 
-            this.gbProperties.Location = new System.Drawing.Point(12, 118);
-            this.gbProperties.Size = new System.Drawing.Size(310, 402);
+            this.gbProperties.Location = new System.Drawing.Point(12, 107);
+            this.gbProperties.Size = new System.Drawing.Size(310, 413);
             // 
             // propertyGrid
             // 
-            this.propertyGrid.Size = new System.Drawing.Size(298, 374);
+            this.propertyGrid.Size = new System.Drawing.Size(298, 385);
             // 
             // btnOK
             // 

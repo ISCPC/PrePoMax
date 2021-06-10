@@ -39,7 +39,8 @@
             System.Windows.Forms.ListViewItem listViewItem9 = new System.Windows.Forms.ListViewItem("9");
             System.Windows.Forms.ListViewItem listViewItem10 = new System.Windows.Forms.ListViewItem("10");
             this.gbType = new System.Windows.Forms.GroupBox();
-            this.lvTypes = new MyListView();
+            this.lvTypes = new UserControls.ListViewWithSelection();
+            this.colName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.gbProperties.SuspendLayout();
             this.gbType.SuspendLayout();
             this.SuspendLayout();
@@ -82,6 +83,9 @@
             this.lvTypes.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.lvTypes.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.colName});
+            this.lvTypes.DisableMouse = false;
             this.lvTypes.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.lvTypes.FullRowSelect = true;
             this.lvTypes.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
@@ -104,7 +108,7 @@
             this.lvTypes.Size = new System.Drawing.Size(298, 62);
             this.lvTypes.TabIndex = 0;
             this.lvTypes.UseCompatibleStateImageBehavior = false;
-            this.lvTypes.View = System.Windows.Forms.View.List;
+            this.lvTypes.View = System.Windows.Forms.View.Details;
             this.lvTypes.SelectedIndexChanged += new System.EventHandler(this.lvTypes_SelectedIndexChanged);
             this.lvTypes.MouseUp += new System.Windows.Forms.MouseEventHandler(this.lvTypes_MouseUp);
             // 
@@ -132,6 +136,7 @@
         #endregion
 
         protected System.Windows.Forms.GroupBox gbType;
-        protected MyListView lvTypes;
+        protected ListViewWithSelection lvTypes;
+        private System.Windows.Forms.ColumnHeader colName;
     }
 }

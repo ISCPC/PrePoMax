@@ -75,11 +75,14 @@ namespace PrePoMax.Forms
         {
             if (lvActiveTransformations.SelectedItems.Count == 1)
             {
-                lvActiveTransformations.SelectedItems[0].Remove();
-                if (lvActiveTransformations.Items.Count > 0) lvActiveTransformations.Items[0].Selected = true;
+                ListViewItem item = lvActiveTransformations.SelectedItems[0];
+                int index = item.Index;
+                if (index == lvActiveTransformations.Items.Count - 1) index--;
+                lvActiveTransformations.Items.Remove(item);
+                //
+                if (lvActiveTransformations.Items.Count > 0) lvActiveTransformations.Items[index].Selected = true;
                 else propertyGrid.SelectedObject = null;
             }
-            _propertyItemChanged = true;
         }
         private void lvActiveTransformations_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -167,7 +170,7 @@ namespace PrePoMax.Forms
         public bool PrepareForm(string stepName, string materialToEditName)
         {
             _propertyItemChanged = false;            
-            lvActiveTransformations.Clear();
+            lvActiveTransformations.Items.Clear();
             propertyGrid.SelectedObject = null;
             //
             List<Transformation> transformations;

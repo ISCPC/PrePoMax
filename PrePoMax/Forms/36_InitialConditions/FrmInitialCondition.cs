@@ -47,26 +47,26 @@ namespace PrePoMax.Forms
             // 
             // gbType
             // 
-            this.gbType.Size = new System.Drawing.Size(310, 97);
+            this.gbType.Size = new System.Drawing.Size(310, 88);
             // 
             // lvTypes
             // 
-            this.lvTypes.Size = new System.Drawing.Size(298, 69);
+            this.lvTypes.Size = new System.Drawing.Size(298, 60);
             // 
             // gbProperties
             // 
-            this.gbProperties.Location = new System.Drawing.Point(12, 115);
-            this.gbProperties.Size = new System.Drawing.Size(310, 305);
+            this.gbProperties.Location = new System.Drawing.Point(12, 106);
+            this.gbProperties.Size = new System.Drawing.Size(310, 314);
             // 
             // propertyGrid
             // 
-            this.propertyGrid.Size = new System.Drawing.Size(298, 277);
+            this.propertyGrid.Size = new System.Drawing.Size(298, 286);
             // 
-            // FrmInitialConditions
+            // FrmInitialCondition
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.ClientSize = new System.Drawing.Size(334, 461);
-            this.Name = "FrmInitialConditions";
+            this.Name = "FrmInitialCondition";
             this.Text = "Edit Initial Condition";
             this.gbType.ResumeLayout(false);
             this.gbProperties.ResumeLayout(false);

@@ -48,7 +48,7 @@ namespace UserControls
         {
             OnListViewTypeMouseUp();
         }
-
+       
 
         // Methods                                                                                                                  
         public override bool PrepareForm(string stepName, string itemToEditName)
@@ -60,6 +60,7 @@ namespace UserControls
             if (_preselectIndex >= 0 && _preselectIndex < lvTypes.Items.Count)
             {
                 lvTypes.Items[_preselectIndex].Selected = true;
+                lvTypes.EnsureVisible(_preselectIndex);
                 lvTypes.Enabled = false;
                 _preselectIndex = -1;
             }

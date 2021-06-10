@@ -40,6 +40,9 @@
             System.Windows.Forms.TreeNode treeNode7 = new System.Windows.Forms.TreeNode("Pattern", new System.Windows.Forms.TreeNode[] {
             treeNode5,
             treeNode6});
+            System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem("1");
+            System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem("2");
+            System.Windows.Forms.ListViewItem listViewItem3 = new System.Windows.Forms.ListViewItem("3");
             this.tvTransformations = new System.Windows.Forms.TreeView();
             this.propertyGrid = new UserControls.TabbedPropertyGrid();
             this.btnOK = new System.Windows.Forms.Button();
@@ -47,12 +50,13 @@
             this.gbTypes = new System.Windows.Forms.GroupBox();
             this.labSelected = new System.Windows.Forms.Label();
             this.labAvailable = new System.Windows.Forms.Label();
-            this.lvActiveTransformations = new System.Windows.Forms.ListView();
+            this.lvActiveTransformations = new UserControls.ListViewWithSelection();
             this.btnAdd = new System.Windows.Forms.Button();
             this.btnRemove = new System.Windows.Forms.Button();
             this.btnClear = new System.Windows.Forms.Button();
             this.bntApply = new System.Windows.Forms.Button();
             this.gbProperties = new System.Windows.Forms.GroupBox();
+            this.colName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.gbTypes.SuspendLayout();
             this.gbProperties.SuspendLayout();
             this.SuspendLayout();
@@ -91,7 +95,7 @@
             this.propertyGrid.LineColor = System.Drawing.SystemColors.Control;
             this.propertyGrid.Location = new System.Drawing.Point(3, 19);
             this.propertyGrid.Name = "propertyGrid";
-            this.propertyGrid.Size = new System.Drawing.Size(312, 334);
+            this.propertyGrid.Size = new System.Drawing.Size(354, 354);
             this.propertyGrid.TabIndex = 6;
             this.propertyGrid.ToolbarVisible = false;
             this.propertyGrid.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.propertyGrid_PropertyValueChanged);
@@ -99,7 +103,7 @@
             // btnOK
             // 
             this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOK.Location = new System.Drawing.Point(12, 556);
+            this.btnOK.Location = new System.Drawing.Point(54, 576);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 8;
@@ -111,7 +115,7 @@
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(255, 556);
+            this.btnCancel.Location = new System.Drawing.Point(297, 576);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 7;
@@ -132,7 +136,7 @@
             this.gbTypes.Controls.Add(this.tvTransformations);
             this.gbTypes.Location = new System.Drawing.Point(12, 12);
             this.gbTypes.Name = "gbTypes";
-            this.gbTypes.Size = new System.Drawing.Size(318, 276);
+            this.gbTypes.Size = new System.Drawing.Size(360, 296);
             this.gbTypes.TabIndex = 0;
             this.gbTypes.TabStop = false;
             this.gbTypes.Text = "Transformation types";
@@ -159,16 +163,25 @@
             // 
             this.lvActiveTransformations.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.lvActiveTransformations.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.colName});
+            this.lvActiveTransformations.DisableMouse = false;
             this.lvActiveTransformations.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.lvActiveTransformations.FullRowSelect = true;
+            this.lvActiveTransformations.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
             this.lvActiveTransformations.HideSelection = false;
+            this.lvActiveTransformations.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
+            listViewItem1,
+            listViewItem2,
+            listViewItem3});
             this.lvActiveTransformations.Location = new System.Drawing.Point(176, 38);
             this.lvActiveTransformations.MultiSelect = false;
             this.lvActiveTransformations.Name = "lvActiveTransformations";
-            this.lvActiveTransformations.Size = new System.Drawing.Size(137, 133);
+            this.lvActiveTransformations.ShowGroups = false;
+            this.lvActiveTransformations.Size = new System.Drawing.Size(179, 133);
             this.lvActiveTransformations.TabIndex = 5;
             this.lvActiveTransformations.UseCompatibleStateImageBehavior = false;
-            this.lvActiveTransformations.View = System.Windows.Forms.View.List;
+            this.lvActiveTransformations.View = System.Windows.Forms.View.Details;
             this.lvActiveTransformations.SelectedIndexChanged += new System.EventHandler(this.lvActiveTransformations_SelectedIndexChanged);
             // 
             // btnAdd
@@ -194,7 +207,7 @@
             // btnClear
             // 
             this.btnClear.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnClear.Location = new System.Drawing.Point(174, 556);
+            this.btnClear.Location = new System.Drawing.Point(216, 576);
             this.btnClear.Name = "btnClear";
             this.btnClear.Size = new System.Drawing.Size(75, 23);
             this.btnClear.TabIndex = 17;
@@ -205,7 +218,7 @@
             // bntApply
             // 
             this.bntApply.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.bntApply.Location = new System.Drawing.Point(93, 556);
+            this.bntApply.Location = new System.Drawing.Point(135, 576);
             this.bntApply.Name = "bntApply";
             this.bntApply.Size = new System.Drawing.Size(75, 23);
             this.bntApply.TabIndex = 18;
@@ -221,7 +234,7 @@
             this.gbProperties.Controls.Add(this.propertyGrid);
             this.gbProperties.Location = new System.Drawing.Point(12, 194);
             this.gbProperties.Name = "gbProperties";
-            this.gbProperties.Size = new System.Drawing.Size(318, 356);
+            this.gbProperties.Size = new System.Drawing.Size(360, 376);
             this.gbProperties.TabIndex = 19;
             this.gbProperties.TabStop = false;
             this.gbProperties.Text = "Properties";
@@ -230,7 +243,7 @@
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(342, 591);
+            this.ClientSize = new System.Drawing.Size(384, 611);
             this.Controls.Add(this.gbProperties);
             this.Controls.Add(this.bntApply);
             this.Controls.Add(this.btnClear);
@@ -240,7 +253,7 @@
             this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.MinimumSize = new System.Drawing.Size(358, 530);
+            this.MinimumSize = new System.Drawing.Size(375, 550);
             this.Name = "FrmTransformation";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
@@ -262,11 +275,12 @@
         private System.Windows.Forms.GroupBox gbTypes;
         private System.Windows.Forms.Button btnAdd;
         private System.Windows.Forms.Button btnRemove;
-        private System.Windows.Forms.ListView lvActiveTransformations;
+        private UserControls.ListViewWithSelection lvActiveTransformations;
         private System.Windows.Forms.Label labSelected;
         private System.Windows.Forms.Label labAvailable;
         private System.Windows.Forms.Button btnClear;
         private System.Windows.Forms.Button bntApply;
         private System.Windows.Forms.GroupBox gbProperties;
+        private System.Windows.Forms.ColumnHeader colName;
     }
 }

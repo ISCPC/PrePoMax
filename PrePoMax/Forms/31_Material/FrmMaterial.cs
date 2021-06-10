@@ -133,10 +133,10 @@ namespace PrePoMax.Forms
         {
             if (lvAddedProperties.SelectedItems.Count == 1)
             {
-                ListViewItem item = lvAddedProperties.SelectedItems[0];
+                ListViewItem item = lvAddedProperties.SelectedItems[0];                
                 int index = item.Index;
                 if (index == lvAddedProperties.Items.Count - 1) index--;
-                item.Remove();
+                lvAddedProperties.Items.Remove(item);
                 //
                 if (lvAddedProperties.Items.Count > 0) lvAddedProperties.Items[index].Selected = true;
                 else ClearControls();
@@ -308,7 +308,7 @@ namespace PrePoMax.Forms
             _materialNames = null;
             _materialToEditName = null;
             _material = null;
-            lvAddedProperties.Clear();
+            lvAddedProperties.Items.Clear();
             ClearControls();
             //
             _materialNames = _controller.GetMaterialNames();
@@ -365,7 +365,7 @@ namespace PrePoMax.Forms
                         //
                         item = new ListViewItem(view.Name);
                         item.Tag = view;
-                        lvAddedProperties.Items.Add(item);
+                        item = lvAddedProperties.Items.Add(item);
                     }
                     //
                     lvAddedProperties.Items[0].Selected = true;

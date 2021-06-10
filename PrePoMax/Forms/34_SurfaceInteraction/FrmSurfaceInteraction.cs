@@ -111,7 +111,7 @@ namespace PrePoMax.Forms
                 ListViewItem item = lvAddedProperties.SelectedItems[0];
                 int index = item.Index;
                 if (index == lvAddedProperties.Items.Count - 1) index--;
-                item.Remove();
+                lvAddedProperties.Items.Remove(item);
                 //
                 if (lvAddedProperties.Items.Count > 0) lvAddedProperties.Items[index].Selected = true;
                 else ClearControls();
@@ -234,7 +234,7 @@ namespace PrePoMax.Forms
             _surfraceInteractionNames = null;
             _surfaceInteractionToEditName = null;
             _surfaceInteraction = null;
-            lvAddedProperties.Clear();
+            lvAddedProperties.Items.Clear();
             ClearControls();
             //
             _surfraceInteractionNames = _controller.GetSurfaceInteractionNames();

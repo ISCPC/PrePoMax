@@ -47,10 +47,11 @@
             this.dgvData = new UserControls.DataGridViewCopyPaste();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
-            this.lvAddedProperties = new System.Windows.Forms.ListView();
+            this.lvAddedProperties = new UserControls.ListViewWithSelection();
             this.btnAdd = new System.Windows.Forms.Button();
             this.btnRemove = new System.Windows.Forms.Button();
             this.btnOKAddNew = new System.Windows.Forms.Button();
+            this.colName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.gbData.SuspendLayout();
             this.gbProperties.SuspendLayout();
             this.tcProperties.SuspendLayout();
@@ -200,7 +201,7 @@
             this.tpDataPoints.Location = new System.Drawing.Point(4, 24);
             this.tpDataPoints.Name = "tpDataPoints";
             this.tpDataPoints.Padding = new System.Windows.Forms.Padding(3);
-            this.tpDataPoints.Size = new System.Drawing.Size(345, 258);
+            this.tpDataPoints.Size = new System.Drawing.Size(350, 258);
             this.tpDataPoints.TabIndex = 1;
             this.tpDataPoints.Text = "Data points";
             // 
@@ -220,7 +221,7 @@
             this.dgvData.EnablePasteMenu = true;
             this.dgvData.Location = new System.Drawing.Point(3, 3);
             this.dgvData.Name = "dgvData";
-            this.dgvData.Size = new System.Drawing.Size(339, 252);
+            this.dgvData.Size = new System.Drawing.Size(344, 252);
             this.dgvData.StartPlotAtZero = false;
             this.dgvData.TabIndex = 0;
             this.dgvData.XColIndex = 0;
@@ -248,16 +249,21 @@
             // 
             this.lvAddedProperties.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.lvAddedProperties.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.colName});
+            this.lvAddedProperties.DisableMouse = false;
             this.lvAddedProperties.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.lvAddedProperties.FullRowSelect = true;
+            this.lvAddedProperties.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
             this.lvAddedProperties.HideSelection = false;
             this.lvAddedProperties.Location = new System.Drawing.Point(177, 38);
             this.lvAddedProperties.MultiSelect = false;
             this.lvAddedProperties.Name = "lvAddedProperties";
+            this.lvAddedProperties.ShowGroups = false;
             this.lvAddedProperties.Size = new System.Drawing.Size(183, 101);
             this.lvAddedProperties.TabIndex = 5;
             this.lvAddedProperties.UseCompatibleStateImageBehavior = false;
-            this.lvAddedProperties.View = System.Windows.Forms.View.List;
+            this.lvAddedProperties.View = System.Windows.Forms.View.Details;
             this.lvAddedProperties.SelectedIndexChanged += new System.EventHandler(this.lvAddedProperties_SelectedIndexChanged);
             // 
             // btnAdd
@@ -334,7 +340,7 @@
         private System.Windows.Forms.GroupBox gbProperties;
         private System.Windows.Forms.Button btnAdd;
         private System.Windows.Forms.Button btnRemove;
-        private System.Windows.Forms.ListView lvAddedProperties;
+        private UserControls.ListViewWithSelection lvAddedProperties;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TabControl tcProperties;
@@ -342,5 +348,6 @@
         private System.Windows.Forms.TabPage tpDataPoints;
         private UserControls.DataGridViewCopyPaste dgvData;
         private System.Windows.Forms.Button btnOKAddNew;
+        private System.Windows.Forms.ColumnHeader colName;
     }
 }

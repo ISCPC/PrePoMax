@@ -113,9 +113,7 @@
     <Compile Include="Forms\PrePoMaxChildForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ListView\ListViewWithSelection.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="ListView\ListViewWithSelection.cs" />
     <Compile Include="ListView\ListViewWithSelection.Designer.cs">
       <DependentUpon>ListViewWithSelection.cs</DependentUpon>
     </Compile>
@@ -208,6 +206,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FrmPropertyListView.resx">
       <DependentUpon>FrmPropertyListView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ListView\ListViewWithSelection.resx">
+      <DependentUpon>ListViewWithSelection.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ListView\MyListView.resx">
       <DependentUpon>MyListView.cs</DependentUpon>

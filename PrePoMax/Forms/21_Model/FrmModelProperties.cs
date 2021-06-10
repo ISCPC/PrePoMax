@@ -37,31 +37,13 @@ namespace PrePoMax.Forms
             this.gbProperties.SuspendLayout();
             this.SuspendLayout();
             // 
-            // gbProperties
-            // 
-            this.gbProperties.Size = new System.Drawing.Size(340, 364);
-            // 
-            // propertyGrid
-            // 
-            this.propertyGrid.Size = new System.Drawing.Size(328, 336);
-            // 
-            // btnOK
-            // 
-            this.btnOK.Location = new System.Drawing.Point(190, 376);
-            // 
-            // btnCancel
-            // 
-            this.btnCancel.Location = new System.Drawing.Point(271, 376);
-            // 
             // btnOkAddNew
             // 
-            this.btnOkAddNew.Location = new System.Drawing.Point(109, 376);
             this.btnOkAddNew.Text = "Apply";
             // 
             // FrmModelProperties
             // 
-            this.ClientSize = new System.Drawing.Size(364, 411);
-            this.MinimumSize = new System.Drawing.Size(380, 450);
+            this.ClientSize = new System.Drawing.Size(334, 411);
             this.Name = "FrmModelProperties";
             this.Text = "Edit Part";
             this.gbProperties.ResumeLayout(false);

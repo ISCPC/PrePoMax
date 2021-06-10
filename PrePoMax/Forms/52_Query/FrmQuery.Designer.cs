@@ -40,7 +40,8 @@
             System.Windows.Forms.ListViewItem listViewItem10 = new System.Windows.Forms.ListViewItem("Circle");
             this.btnClose = new System.Windows.Forms.Button();
             this.gbQueries = new System.Windows.Forms.GroupBox();
-            this.lvQueries = new System.Windows.Forms.ListView();
+            this.lvQueries = new UserControls.ListViewWithSelection();
+            this.colName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.gbQueries.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -48,7 +49,7 @@
             // 
             this.btnClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnClose.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnClose.Location = new System.Drawing.Point(107, 270);
+            this.btnClose.Location = new System.Drawing.Point(107, 276);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(75, 23);
             this.btnClose.TabIndex = 9;
@@ -64,7 +65,7 @@
             this.gbQueries.Controls.Add(this.lvQueries);
             this.gbQueries.Location = new System.Drawing.Point(12, 12);
             this.gbQueries.Name = "gbQueries";
-            this.gbQueries.Size = new System.Drawing.Size(170, 252);
+            this.gbQueries.Size = new System.Drawing.Size(170, 258);
             this.gbQueries.TabIndex = 10;
             this.gbQueries.TabStop = false;
             this.gbQueries.Text = "Queries";
@@ -74,6 +75,9 @@
             this.lvQueries.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.lvQueries.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.colName});
+            this.lvQueries.DisableMouse = false;
             this.lvQueries.FullRowSelect = true;
             this.lvQueries.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
             this.lvQueries.HideSelection = false;
@@ -102,10 +106,10 @@
             this.lvQueries.MultiSelect = false;
             this.lvQueries.Name = "lvQueries";
             this.lvQueries.ShowGroups = false;
-            this.lvQueries.Size = new System.Drawing.Size(158, 224);
+            this.lvQueries.Size = new System.Drawing.Size(158, 230);
             this.lvQueries.TabIndex = 11;
             this.lvQueries.UseCompatibleStateImageBehavior = false;
-            this.lvQueries.View = System.Windows.Forms.View.List;
+            this.lvQueries.View = System.Windows.Forms.View.Details;
             this.lvQueries.SelectedIndexChanged += new System.EventHandler(this.lvQueries_SelectedIndexChanged);
             this.lvQueries.MouseDown += new System.Windows.Forms.MouseEventHandler(this.lvQueries_MouseDown);
             this.lvQueries.MouseUp += new System.Windows.Forms.MouseEventHandler(this.lvQueries_MouseUp);
@@ -115,7 +119,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnClose;
-            this.ClientSize = new System.Drawing.Size(194, 305);
+            this.ClientSize = new System.Drawing.Size(194, 311);
             this.Controls.Add(this.gbQueries);
             this.Controls.Add(this.btnClose);
             this.Font = new System.Drawing.Font("Segoe UI", 9F);
@@ -136,6 +140,7 @@
 
         private System.Windows.Forms.Button btnClose;
         private System.Windows.Forms.GroupBox gbQueries;
-        private System.Windows.Forms.ListView lvQueries;
+        private UserControls.ListViewWithSelection lvQueries;
+        private System.Windows.Forms.ColumnHeader colName;
     }
 }

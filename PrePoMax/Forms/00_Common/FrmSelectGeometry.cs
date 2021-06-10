@@ -136,8 +136,6 @@ namespace PrePoMax.Forms
         private void OnShow()
         {
             _controller.ClearAllSelection();
-            //
-            lvItems.ResizeColumnHeaders();
         }
         private void OnHide()
         {
