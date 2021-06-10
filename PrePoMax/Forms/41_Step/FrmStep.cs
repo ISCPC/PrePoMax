@@ -28,7 +28,9 @@ namespace PrePoMax.Forms
                 if (value.GetType() == typeof(StaticStep)) _viewStep = new ViewStaticStep((value as StaticStep).DeepClone());
                 else if (value is FrequencyStep fs) _viewStep = new ViewFrequencyStep(fs.DeepClone());
                 else if (value is BuckleStep bs) _viewStep = new ViewBuckleStep(bs.DeepClone());
-                else if (value is HeatTransferStep hts) _viewStep = new ViewHeatTransfer(hts.DeepClone());
+                else if (value.GetType() == typeof(HeatTransferStep)) _viewStep =
+                        new ViewHeatTransferStep((value as HeatTransferStep).DeepClone());
+                else if (value is UncoupledTempDispStep utds) _viewStep = new ViewUncoupledTempDispStep(utds.DeepClone());
                 else throw new NotImplementedException();
             }
         }
@@ -51,25 +53,37 @@ namespace PrePoMax.Forms
             // 
             // gbType
             // 
-            this.gbType.Size = new System.Drawing.Size(310, 97);
+            this.gbType.Size = new System.Drawing.Size(310, 138);
             // 
             // lvTypes
             // 
-            this.lvTypes.Size = new System.Drawing.Size(298, 69);
+            this.lvTypes.Size = new System.Drawing.Size(298, 110);
             // 
             // gbProperties
             // 
-            this.gbProperties.Location = new System.Drawing.Point(12, 115);
-            this.gbProperties.Size = new System.Drawing.Size(310, 305);
+            this.gbProperties.Location = new System.Drawing.Point(12, 156);
+            this.gbProperties.Size = new System.Drawing.Size(310, 324);
             // 
             // propertyGrid
             // 
-            this.propertyGrid.Size = new System.Drawing.Size(298, 277);
+            this.propertyGrid.Size = new System.Drawing.Size(298, 296);
+            // 
+            // btnOK
+            // 
+            this.btnOK.Location = new System.Drawing.Point(160, 486);
+            // 
+            // btnCancel
+            // 
+            this.btnCancel.Location = new System.Drawing.Point(241, 486);
+            // 
+            // btnOkAddNew
+            // 
+            this.btnOkAddNew.Location = new System.Drawing.Point(79, 486);
             // 
             // FrmStep
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.ClientSize = new System.Drawing.Size(334, 461);
+            this.ClientSize = new System.Drawing.Size(334, 521);
             this.Name = "FrmStep";
             this.Text = "Edit Step";
             this.gbType.ResumeLayout(false);
@@ -172,6 +186,7 @@ namespace PrePoMax.Forms
             bool addFrequency = false;
             bool addBuckle = false;
             bool addHeatTransfer = true;
+            bool addUncoupledTemDisp = true;
             bool cannotAdd;
             //
             if (prevOrLastStep == null || prevOrLastStep.GetType() == typeof(StaticStep) ||
@@ -179,7 +194,7 @@ namespace PrePoMax.Forms
             if (!(prevOrLastStep is FrequencyStep)) addFrequency = true;
             if (!(prevOrLastStep is BuckleStep)) addBuckle = true;
             //
-            cannotAdd = !(addStatic || addFrequency || addBuckle || addHeatTransfer);
+            cannotAdd = !(addStatic || addFrequency || addBuckle || addHeatTransfer || addUncoupledTemDisp);
             //
             ListViewItem item;
             if (cannotAdd)
@@ -221,10 +236,19 @@ namespace PrePoMax.Forms
                 if (addHeatTransfer)
                 {
                     // Heat transfer step
-                    item = new ListViewItem("Heat transfer");
+                    item = new ListViewItem("Heat transfer step");
                     HeatTransferStep heatTransferStep = new HeatTransferStep(GetStepName());
                     heatTransferStep.SolverType = defaultSolverType;
-                    item.Tag = new ViewHeatTransfer(heatTransferStep);
+                    item.Tag = new ViewHeatTransferStep(heatTransferStep);
+                    lvTypes.Items.Add(item);
+                }
+                if (addUncoupledTemDisp)
+                {
+                    // Heat transfer step
+                    item = new ListViewItem("Uncoupled temperature displacement step");
+                    UncoupledTempDispStep uncoupledTempDispStep = new UncoupledTempDispStep(GetStepName());
+                    uncoupledTempDispStep.SolverType = defaultSolverType;
+                    item.Tag = new ViewUncoupledTempDispStep(uncoupledTempDispStep);
                     lvTypes.Items.Add(item);
                 }
             }
@@ -256,8 +280,7 @@ namespace PrePoMax.Forms
         private Step GetPreviousOrLastStep()
         {
             Step prevOrLastStep = null;
-
-            // find previous step
+            // Find previous step
             if (_stepToEditName != null)
             {
                 Step[] steps = _controller.GetAllSteps();
@@ -272,12 +295,12 @@ namespace PrePoMax.Forms
                 }
                 if (prevStepId >= 0) prevOrLastStep = steps[prevStepId];
             }
-            // find last step
+            // Find last step
             else if (_stepNames.Length > 0)
             {
                 prevOrLastStep = _controller.GetAllSteps().Last();
             }
-
+            //
             return prevOrLastStep;
         }
         private string GetStepName()

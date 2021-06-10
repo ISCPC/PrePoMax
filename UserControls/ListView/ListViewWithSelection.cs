@@ -12,11 +12,26 @@ namespace UserControls
 {
     public partial class ListViewWithSelection : ListView
     {
+        // Variables                                                                                                                
         private bool _disableMouse;
 
 
+        // Properties                                                                                                               
         public bool DisableMouse { get { return _disableMouse; } set { _disableMouse = value; } }
 
+        
+        // Constructor                                                                                                              
+        public ListViewWithSelection()
+        {
+            InitializeComponent();
+            //
+            DoubleBuffered = true;
+            //
+            _disableMouse = false
+        }
+
+
+        // Methods                                                                                                                  
 
         // Keeps the selection at all times - even if clicked outside client area
         protected override void WndProc(ref Message m)
@@ -40,15 +55,6 @@ namespace UserControls
                 }
             }
             base.WndProc(ref m);
-        }
-
-        public ListViewWithSelection()
-        {
-            InitializeComponent();
-            //
-            DoubleBuffered = true;
-            //
-            _disableMouse = false;
         }
 
         public void ResizeColumnHeaders()

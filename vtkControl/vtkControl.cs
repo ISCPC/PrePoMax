@@ -234,8 +234,9 @@ namespace vtkControl
         public Func<int[], vtkMaxActorData> Controller_GetPartActorData;
         public Func<double[], int, int[], int[], vtkMaxActorData> Controller_GetGeometryActorData;
         public Func<double[], int, int[], int[], vtkMaxActorData> Controller_GetGeometryVertexActorData;
-
+        //
         public Action<MouseEventArgs, Keys, string[]> Controller_ActorsPicked;
+        public Action Controller_ShowColorBarSettings;
         public Action Controller_ShowLegendSettings;
         public Action Controller_ShowStatusBlockSettings;
 
@@ -345,9 +346,10 @@ namespace vtkControl
             _renderWindow.SetCurrentCursor(0);  // Default
         }
         //
-        private void widget_ShowPostSettings(object sender)
+        private void widget_ShowSettings(object sender)
         {
-            if (sender is vtkMaxScalarBarWidget) Controller_ShowLegendSettings?.Invoke();
+            if (sender is vtkMaxColorBarWidget) Controller_ShowColorBarSettings?.Invoke();
+            else if (sender is vtkMaxScalarBarWidget) Controller_ShowLegendSettings?.Invoke();
             else if (sender is vtkMaxStatusBlockWidget) Controller_ShowStatusBlockSettings?.Invoke();
         }
 
@@ -1720,6 +1722,7 @@ namespace vtkControl
             _colorBarWidget.BackgroundVisibilityOn();
             _colorBarWidget.BorderVisibilityOn();
             _colorBarWidget.SetBackgroundColor(1, 1, 1);
+            _colorBarWidget.MouseDoubleClick += widget_ShowSettings;
 
 
             // Status block
@@ -1731,7 +1734,7 @@ namespace vtkControl
             _statusBlockWidget.GetBackgroundProperty().SetColor(1, 1, 1);
             _statusBlockWidget.BackgroundVisibilityOff();
             _statusBlockWidget.VisibilityOff();
-            _statusBlockWidget.MouseDoubleClick += widget_ShowPostSettings;
+            _statusBlockWidget.MouseDoubleClick += widget_ShowSettings;
 
 
             // Max widget
@@ -1796,7 +1799,7 @@ namespace vtkControl
             _scalarBarWidget.BorderVisibilityOn();
             _scalarBarWidget.SetBackgroundColor(1, 1, 1);
             //
-            _scalarBarWidget.MouseDoubleClick += widget_ShowPostSettings;
+            _scalarBarWidget.MouseDoubleClick += widget_ShowSettings;
         }
 
         private void Timer_Tick(object sender, EventArgs e)

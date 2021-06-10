@@ -647,10 +647,17 @@ namespace FileInOut.Output
                         CalBuckleStep calBuckleStep = new CalBuckleStep(buckleStep);
                         calStep.AddKeyword(calBuckleStep);
                     }
-                    else if (step is HeatTransferStep heatTransferStep)
+                    else if (step.GetType() == typeof(HeatTransferStep))
                     {
+                        HeatTransferStep heatTransferStep = step as HeatTransferStep;
                         CalHeatTransferStep calHeatTransferStep = new CalHeatTransferStep(heatTransferStep);
                         calStep.AddKeyword(calHeatTransferStep);
+                    }
+                    else if (step.GetType() == typeof(UncoupledTempDispStep))
+                    {
+                        UncoupledTempDispStep uncoupledTempDispStep = step as UncoupledTempDispStep;
+                        CalUncoupledTempDispStep calUncoupledTempDispStep = new CalUncoupledTempDispStep(uncoupledTempDispStep);
+                        calStep.AddKeyword(calUncoupledTempDispStep);
                     }
                     else throw new NotImplementedException();
                 }

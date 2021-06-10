@@ -249,6 +249,7 @@ namespace PrePoMax
                 _vtk.Controller_GetGeometryActorData = _controller.GetGeometryActorData;
                 _vtk.Controller_GetGeometryVertexActorData = _controller.GetGeometryVertexActorData;
                 _vtk.Controller_ActorsPicked = SelectBaseParts;
+                _vtk.Controller_ShowColorBarSettings = ShowColorBarSettings;
                 _vtk.Controller_ShowLegendSettings = ShowLegendSettings;
                 _vtk.Controller_ShowStatusBlockSettings = ShowStatusBlockSettings;
                 // Forms
@@ -4639,6 +4640,11 @@ namespace PrePoMax
             }
         }
         //
+        private void ShowColorBarSettings()
+        {
+            _frmSettings.SetSettingsToShow(Globals.PreSettingsName);
+            tsmiSettings_Click(null, null);
+        }
         private void ShowLegendSettings()
         {
             _frmSettings.SetSettingsToShow(Globals.LegendSettingsName);

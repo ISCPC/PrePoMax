@@ -9,48 +9,31 @@ using System.Runtime.Serialization;
 namespace CaeModel
 {
     [Serializable]
-    public class HeatTransferStep : StaticStep, ISerializable
+    public class UncoupledTempDispStep : HeatTransferStep, ISerializable
     {
         // Variables                                                                                                                
-        private bool _steadyState;                  //ISerializable
-        private double _deltmx;                     //ISerializable
 
 
         // Properties                                                                                                               
-        public bool SteadyState { get { return _steadyState; } set { _steadyState = value; } }
-        public double Deltmx { get { return _deltmx; } set { _deltmx = value; } }
 
 
         // Constructors                                                                                                             
-        public HeatTransferStep(string name)
-            :this(name, true)
+        public UncoupledTempDispStep(string name)
+            :base(name, false)
         {
-           
-        }
-        public HeatTransferStep(string name, bool addFieldOutputs)
-            : base(name, false)
-        {
-            _steadyState = true;
-            _deltmx = double.PositiveInfinity;
-            //
-            if (addFieldOutputs)
-            {
-                AddFieldOutput(new NodalFieldOutput("NF-Output-1", NodalFieldVariable.NT | NodalFieldVariable.RFL));
-                AddFieldOutput(new ElementFieldOutput("EF-Output-1", ElementFieldVariable.HFL));
-            }
+            AddFieldOutput(new NodalFieldOutput("NF-Output-1", NodalFieldVariable.U | NodalFieldVariable.RF |
+                                                NodalFieldVariable.NT | NodalFieldVariable.RFL));
+            AddFieldOutput(new ElementFieldOutput("EF-Output-1", ElementFieldVariable.E | ElementFieldVariable.S | 
+                                                  ElementFieldVariable.HFL));
         }
         //ISerializable
-        public HeatTransferStep(SerializationInfo info, StreamingContext context)
+        public UncoupledTempDispStep(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
             foreach (SerializationEntry entry in info)
             {
                 switch (entry.Name)
                 {
-                    case "_steadyState":
-                        _steadyState = (bool)entry.Value; break;
-                    case "_deltmx":
-                        _deltmx = (double)entry.Value; break;
                     default:
                         break;
                 }
@@ -61,9 +44,8 @@ namespace CaeModel
         // Methods                                                                                                                  
         public override bool IsBoundaryConditionSupported(BoundaryCondition boundaryCondition)
         {
-            if (boundaryCondition is FixedBC || boundaryCondition is DisplacementRotation || boundaryCondition is SubmodelBC)
-                return false;
-            else if (boundaryCondition is TemperatureBC)
+            if (boundaryCondition is FixedBC || boundaryCondition is DisplacementRotation || boundaryCondition is SubmodelBC ||
+                boundaryCondition is TemperatureBC)
                 return true;
             else throw new NotSupportedException();
         }
@@ -76,15 +58,12 @@ namespace CaeModel
                 loadType == typeof(ShellEdgeLoad) ||
                 loadType == typeof(GravityLoad) ||
                 loadType == typeof(CentrifLoad) ||
-                loadType == typeof(PreTensionLoad))
-            {
-                return false;
-            }
-            else if (loadType == typeof(CFlux) ||
-                     loadType == typeof(DFlux) ||
-                     loadType == typeof(BodyFlux) ||
-                     loadType == typeof(FilmHeatTransfer) ||
-                     loadType == typeof(RadiationHeatTransfer))
+                loadType == typeof(PreTensionLoad) ||
+                loadType == typeof(CFlux) ||
+                loadType == typeof(DFlux) ||
+                loadType == typeof(BodyFlux) ||
+                loadType == typeof(FilmHeatTransfer) ||
+                loadType == typeof(RadiationHeatTransfer))
             {
                 return true;
             }
@@ -98,11 +77,7 @@ namespace CaeModel
         // ISerialization
         public new void GetObjectData(SerializationInfo info, StreamingContext context)
         {
-            // using typeof() works also for null fields
             base.GetObjectData(info, context);
-            //
-            info.AddValue("_steadyState", _steadyState, typeof(bool));
-            info.AddValue("_deltmx", _deltmx, typeof(double));
         }
     }
 }

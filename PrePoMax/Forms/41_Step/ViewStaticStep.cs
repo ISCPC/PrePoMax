@@ -21,15 +21,7 @@ namespace PrePoMax
         [CategoryAttribute("Data")]
         [OrderedDisplayName(2, 10, "Nlgeom")]
         [DescriptionAttribute("Enable/disable the nonlinear effects of large deformations and large displacements.")]
-        public bool Nlgeom 
-        { 
-            get { return _staticStep.Nlgeom; } 
-            set 
-            { 
-                _staticStep.Nlgeom = value;
-                //if (!_step.Nlgeom) _step.Direct = false;
-            } 
-        }
+        public bool Nlgeom { get { return _staticStep.Nlgeom; } set { _staticStep.Nlgeom = value; } }
         //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(10, 10, "Incrementation")]

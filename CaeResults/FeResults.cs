@@ -742,43 +742,47 @@ namespace CaeResults
                 {
                     if (fieldEntry.Key.Name == fieldData.Name && fieldEntry.Key.StepId == fieldData.StepId && fieldEntry.Key.StepIncrementId == fieldData.StepIncrementId)
                     {
+                        int id;
                         float value;
                         float[] values = fieldEntry.Value.GetComponentValues(fieldData.Component);
-
+                        //
                         nodesData.Values[0] = float.MaxValue;
                         nodesData.Values[1] = -float.MaxValue;
-
+                        //
                         foreach (var nodeId in _mesh.Parts[partName].NodeLabels)
                         {
-                            value = values[_nodeIdsLookUp[nodeId]];
-                            if (value < nodesData.Values[0])
+                            if (_nodeIdsLookUp.TryGetValue(nodeId, out id) && id < values.Length)
                             {
-                                nodesData.Values[0] = value;
-                                minId = nodeId;
-                            }
-                            else if (value > nodesData.Values[1])
-                            {
-                                nodesData.Values[1] = value;
-                                maxId = nodeId;
+                                value = values[id];
+                                if (value < nodesData.Values[0])
+                                {
+                                    nodesData.Values[0] = value;
+                                    minId = nodeId;
+                                }
+                                else if (value > nodesData.Values[1])
+                                {
+                                    nodesData.Values[1] = value;
+                                    maxId = nodeId;
+                                }
                             }
                         }
-
+                        //
                         if (relativeScale < 0)  // swap min and max
                         {
                             int tmp = minId; minId = maxId; maxId = tmp;
                             float tmpD = nodesData.Values[0]; nodesData.Values[0] = nodesData.Values[1]; nodesData.Values[1] = tmpD;
                         }
-
+                        //
                         nodesData.Ids[0] = minId;
                         nodesData.Ids[1] = maxId;
-
+                        //
                         nodesData.Coor[0] = _mesh.Nodes[minId].Coor;
                         nodesData.Coor[1] = _mesh.Nodes[maxId].Coor;
                         ScaleNodeCoordinates(absoluteScale, fieldEntry.Key.StepId, fieldEntry.Key.StepIncrementId, nodesData.Ids, ref nodesData.Coor);
-
+                        //
                         nodesData.Values[0] *= relativeScale;
                         nodesData.Values[1] *= relativeScale;
-
+                        //
                         //nodesData.Values[0] = fieldEntry.Value.GetComponentMin(fieldData.Component) * relativeScale;
                         //nodesData.Values[1] = fieldEntry.Value.GetComponentMax(fieldData.Component) * relativeScale;
                         break;

@@ -10,16 +10,16 @@ using DynamicTypeDescriptor;
 namespace PrePoMax
 {
     [Serializable]
-    public class ViewHeatTransfer : ViewStaticStep
+    public class ViewHeatTransferStep : ViewStaticStep
     {
         // Variables                                                                                                                
-        private CaeModel.HeatTransferStep _heatTransferStep;
+        protected CaeModel.HeatTransferStep _heatTransferStep;
 
 
 
         // Properties                                                                                                               
         [CategoryAttribute("Data")]
-        [OrderedDisplayName(2, 10, "Steady state")]
+        [OrderedDisplayName(9, 10, "Steady state")]
         [DescriptionAttribute("Enable/disable the steady state heat transfer solution.")]
         public bool SteadyState { get { return _heatTransferStep.SteadyState; } set { _heatTransferStep.SteadyState = value; } }
         //
@@ -32,7 +32,7 @@ namespace PrePoMax
 
 
         // Constructors                                                                                                             
-        public ViewHeatTransfer(CaeModel.HeatTransferStep step)
+        public ViewHeatTransferStep(CaeModel.HeatTransferStep step)
             : base(step, false)
         {
             _heatTransferStep = step;
