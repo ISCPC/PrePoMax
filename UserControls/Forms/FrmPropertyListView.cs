@@ -43,6 +43,12 @@ namespace UserControls
         private void lvTypes_SelectedIndexChanged(object sender, EventArgs e)
         {
             OnListViewTypeSelectedIndexChanged();
+            //
+            if (lvTypes.SelectedItems != null && lvTypes.SelectedItems.Count == 1)
+            {
+                ListViewItem listViewItem = lvTypes.SelectedItems[0];
+                lvTypes.EnsureVisible(listViewItem.Index);
+            }
         }
         private void lvTypes_MouseUp(object sender, MouseEventArgs e)
         {
@@ -60,7 +66,6 @@ namespace UserControls
             if (_preselectIndex >= 0 && _preselectIndex < lvTypes.Items.Count)
             {
                 lvTypes.Items[_preselectIndex].Selected = true;
-                lvTypes.EnsureVisible(_preselectIndex);
                 lvTypes.Enabled = false;
                 _preselectIndex = -1;
             }

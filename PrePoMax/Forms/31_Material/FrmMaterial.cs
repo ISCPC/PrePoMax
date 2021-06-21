@@ -108,12 +108,18 @@ namespace PrePoMax.Forms
                             ListViewItem item = new ListViewItem(propertyText);
                             if (treeNode.Tag is MaterialProperty mp)
                             {
-                                if (mp is Density de) item.Tag = new ViewDensity(de.DeepClone());
-                                else if (mp is Elastic el) item.Tag = new ViewElastic(el.DeepClone());
-                                else if (mp is Plastic pl) item.Tag = new ViewPlastic(pl.DeepClone());
-                                else if (mp is ThermalExpansion te) item.Tag = new ViewThermalExpansion(te.DeepClone());
-                                else if (mp is ThermalConductivity tc) item.Tag = new ViewThermalConductivity(tc.DeepClone());
-                                else if (mp is SpecificHeat sh) item.Tag = new ViewSpecificHeat(sh.DeepClone());
+                                if (mp is Density de)
+                                    item.Tag = new ViewDensity(de.DeepClone());
+                                else if (mp is Elastic el)
+                                    item.Tag = new ViewElastic(el.DeepClone());
+                                else if (mp is Plastic pl)
+                                    item.Tag = new ViewPlastic(pl.DeepClone());
+                                else if (mp is ThermalExpansion te)
+                                    item.Tag = new ViewThermalExpansion(te.DeepClone(), cbTemperatureDependent.Checked);
+                                else if (mp is ThermalConductivity tc)
+                                    item.Tag = new ViewThermalConductivity(tc.DeepClone());
+                                else if (mp is SpecificHeat sh)
+                                    item.Tag = new ViewSpecificHeat(sh.DeepClone());
                                 else throw new NotSupportedException();
                             }
                             else throw new NotSupportedException();
@@ -358,7 +364,8 @@ namespace PrePoMax.Forms
                             _useSimpleEditor = true;
                         }
                         else if (property is Plastic pl) view = new ViewPlastic(pl);
-                        else if (property is ThermalExpansion te) view = new ViewThermalExpansion(te);
+                        else if (property is ThermalExpansion te)
+                            view = new ViewThermalExpansion(te, cbTemperatureDependent.Checked);
                         else if (property is ThermalConductivity tc) view = new ViewThermalConductivity(tc);
                         else if (property is SpecificHeat sh) view = new ViewSpecificHeat(sh);
                         else throw new NotSupportedException();
@@ -532,18 +539,30 @@ namespace PrePoMax.Forms
         }
         private void HideShowTemperature()
         {
-            if (lvAddedProperties.SelectedItems.Count > 0 &&
-                (lvAddedProperties.SelectedItems[0].Tag is ViewDensity ||
-                 lvAddedProperties.SelectedItems[0].Tag is ViewElastic ||
-                 lvAddedProperties.SelectedItems[0].Tag is ViewThermalExpansion ||
-                 lvAddedProperties.SelectedItems[0].Tag is ViewThermalConductivity ||
-                 lvAddedProperties.SelectedItems[0].Tag is ViewSpecificHeat))
+            if (lvAddedProperties.SelectedItems.Count > 0)
             {
-                tcProperties.TabPages.Clear();
-                // Data points
-                if (cbTemperatureDependent.Checked) tcProperties.TabPages.Add(_pages[1]);
-                // Properites
-                if (!cbTemperatureDependent.Checked) tcProperties.TabPages.Add(_pages[0]);
+                if (lvAddedProperties.SelectedItems[0].Tag is ViewDensity ||
+                    lvAddedProperties.SelectedItems[0].Tag is ViewElastic ||
+                    lvAddedProperties.SelectedItems[0].Tag is ViewThermalConductivity ||
+                    lvAddedProperties.SelectedItems[0].Tag is ViewSpecificHeat)
+                {
+                    tcProperties.TabPages.Clear();
+                    // Properites
+                    if (!cbTemperatureDependent.Checked) tcProperties.TabPages.Add(_pages[0]);
+                    // Data points
+                    if (cbTemperatureDependent.Checked) tcProperties.TabPages.Add(_pages[1]);
+                }
+                else if (lvAddedProperties.SelectedItems[0].Tag is ViewThermalExpansion vte)
+                {
+                    tcProperties.TabPages.Clear();
+                    // Properites
+                    tcProperties.TabPages.Add(_pages[0]);
+                    // Data points
+                    if (cbTemperatureDependent.Checked) tcProperties.TabPages.Add(_pages[1]);
+                    //
+                    vte.SetTemperatureDependence(cbTemperatureDependent.Checked);
+                    propertyGrid.Refresh();
+                }
             }
             //
             string temperatureName = nameof(TempDataPoint.Temperature);

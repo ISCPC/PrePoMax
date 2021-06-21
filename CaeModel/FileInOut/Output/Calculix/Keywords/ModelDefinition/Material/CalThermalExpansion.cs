@@ -30,7 +30,9 @@ namespace FileInOut.Output.Calculix
         // Methods                                                                                                                  
         public override string GetKeywordString()
         {
-            return string.Format("*Expansion{0}", Environment.NewLine);
+            string zeroTemperature = "";
+            if (_thermalExpansion.ZeroTemperature != 0) zeroTemperature = ", Zero=" + _thermalExpansion.ZeroTemperature;
+            return string.Format("*Expansion{0}{1}", zeroTemperature, Environment.NewLine);
         }
         public override string GetDataString()
         {

@@ -25,12 +25,18 @@ namespace PrePoMax.Forms
             get { return _viewStep.GetBase(); }
             set
             {
-                if (value.GetType() == typeof(StaticStep)) _viewStep = new ViewStaticStep((value as StaticStep).DeepClone());
-                else if (value is FrequencyStep fs) _viewStep = new ViewFrequencyStep(fs.DeepClone());
-                else if (value is BuckleStep bs) _viewStep = new ViewBuckleStep(bs.DeepClone());
-                else if (value.GetType() == typeof(HeatTransferStep)) _viewStep =
-                        new ViewHeatTransferStep((value as HeatTransferStep).DeepClone());
-                else if (value is UncoupledTempDispStep utds) _viewStep = new ViewUncoupledTempDispStep(utds.DeepClone());
+                if (value.GetType() == typeof(StaticStep))
+                    _viewStep = new ViewStaticStep((value as StaticStep).DeepClone());  // use this form due to inheritance
+                else if (value is FrequencyStep fs)
+                    _viewStep = new ViewFrequencyStep(fs.DeepClone());
+                else if (value is BuckleStep bs)
+                    _viewStep = new ViewBuckleStep(bs.DeepClone());
+                else if (value.GetType() == typeof(HeatTransferStep))
+                    _viewStep = new ViewHeatTransferStep((value as HeatTransferStep).DeepClone());
+                else if (value.GetType() == typeof(UncoupledTempDispStep))
+                    _viewStep = new ViewUncoupledTempDispStep((value as UncoupledTempDispStep).DeepClone());
+                else if (value.GetType() == typeof(CoupledTempDispStep))
+                    _viewStep = new ViewCoupledTempDispStep((value as CoupledTempDispStep).DeepClone());
                 else throw new NotImplementedException();
             }
         }
@@ -53,20 +59,20 @@ namespace PrePoMax.Forms
             // 
             // gbType
             // 
-            this.gbType.Size = new System.Drawing.Size(310, 107);
+            this.gbType.Size = new System.Drawing.Size(310, 108);
             // 
             // lvTypes
             // 
-            this.lvTypes.Size = new System.Drawing.Size(298, 79);
+            this.lvTypes.Size = new System.Drawing.Size(298, 80);
             // 
             // gbProperties
             // 
-            this.gbProperties.Location = new System.Drawing.Point(12, 125);
-            this.gbProperties.Size = new System.Drawing.Size(310, 355);
+            this.gbProperties.Location = new System.Drawing.Point(12, 126);
+            this.gbProperties.Size = new System.Drawing.Size(310, 354);
             // 
             // propertyGrid
             // 
-            this.propertyGrid.Size = new System.Drawing.Size(298, 327);
+            this.propertyGrid.Size = new System.Drawing.Size(298, 326);
             // 
             // btnOK
             // 
@@ -89,7 +95,6 @@ namespace PrePoMax.Forms
             this.gbType.ResumeLayout(false);
             this.gbProperties.ResumeLayout(false);
             this.ResumeLayout(false);
-
         }
 
 
@@ -187,6 +192,7 @@ namespace PrePoMax.Forms
             bool addBuckle = false;
             bool addHeatTransfer = true;
             bool addUncoupledTemDisp = true;
+            bool addCoupledTemDisp = true;
             bool cannotAdd;
             //
             if (prevOrLastStep == null || prevOrLastStep.GetType() == typeof(StaticStep) ||
@@ -244,11 +250,20 @@ namespace PrePoMax.Forms
                 }
                 if (addUncoupledTemDisp)
                 {
-                    // Heat transfer step
-                    item = new ListViewItem("Uncoupled temperature displacement step");
+                    // Uncoupled temperature-displacement step
+                    item = new ListViewItem("Uncoupled temperature-displacement step");
                     UncoupledTempDispStep uncoupledTempDispStep = new UncoupledTempDispStep(GetStepName());
                     uncoupledTempDispStep.SolverType = defaultSolverType;
                     item.Tag = new ViewUncoupledTempDispStep(uncoupledTempDispStep);
+                    lvTypes.Items.Add(item);
+                }
+                if (addUncoupledTemDisp)
+                {
+                    // Coupled temperature-displacement step
+                    item = new ListViewItem("Coupled temperature-displacement step");
+                    CoupledTempDispStep coupledTempDispStep = new CoupledTempDispStep(GetStepName());
+                    coupledTempDispStep.SolverType = defaultSolverType;
+                    item.Tag = new ViewCoupledTempDispStep(coupledTempDispStep);
                     lvTypes.Items.Add(item);
                 }
             }

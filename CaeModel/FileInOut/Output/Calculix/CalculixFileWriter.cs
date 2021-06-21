@@ -659,6 +659,12 @@ namespace FileInOut.Output
                         CalUncoupledTempDispStep calUncoupledTempDispStep = new CalUncoupledTempDispStep(uncoupledTempDispStep);
                         calStep.AddKeyword(calUncoupledTempDispStep);
                     }
+                    else if (step.GetType() == typeof(CoupledTempDispStep))
+                    {
+                        CoupledTempDispStep coupledTempDispStep = step as CoupledTempDispStep;
+                        CalCoupledTempDispStep calCoupledTempDispStep = new CalCoupledTempDispStep(coupledTempDispStep);
+                        calStep.AddKeyword(calCoupledTempDispStep);
+                    }
                     else throw new NotImplementedException();
                 }
                 else calStep.AddKeyword(new CalDeactivated(step.GetType().ToString()));

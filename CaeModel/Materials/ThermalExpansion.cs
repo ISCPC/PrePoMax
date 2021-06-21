@@ -14,7 +14,7 @@ namespace CaeModel
         private static string _positive = "The value must be larger than 0.";
         //
         private double[][] _thermalExpansionTemp;
-
+        private double _zeroTemperature;
 
         // Properties                                                                                                               
         public double[][] ThermalExpansionTemp
@@ -32,12 +32,14 @@ namespace CaeModel
                 }
             }
         }
+        public double ZeroTemperature { get { return _zeroTemperature; } set { _zeroTemperature = value; } }
 
 
         // Constructors                                                                                                             
         public ThermalExpansion(double[][] thermalExpansionTemp)
         {
             _thermalExpansionTemp = thermalExpansionTemp;
+            _zeroTemperature = 20;
         }
 
 

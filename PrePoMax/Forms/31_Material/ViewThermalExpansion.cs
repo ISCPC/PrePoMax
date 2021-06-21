@@ -14,6 +14,7 @@ namespace PrePoMax
     {
         // Variables                                                                                                                
         private List<ThermalExpansionDataPoint> _points;
+        private double _zeroTemperature;
 
 
         // Properties                                                                                                               
@@ -38,6 +39,7 @@ namespace PrePoMax
                     i++;
                 }
                 ThermalExpansion thermalExpansion = new ThermalExpansion(thermalExpansionTemp);
+                thermalExpansion.ZeroTemperature = _zeroTemperature;
                 //
                 return thermalExpansion;
             }
@@ -62,9 +64,16 @@ namespace PrePoMax
                 if (_points != null && _points.Count > 0) _points[0].ThermalExpansion = value;
             }
         }
+        //
+        [CategoryAttribute("Data"),
+        DisplayName("Zero temperature"),
+        DescriptionAttribute("The value of the zero temperature after which the thermal expansion will start.")]
+        [TypeConverter(typeof(CaeGlobals.StringTemperatureConverter))]
+        public double ZeroTemperature { get { return _zeroTemperature; } set { _zeroTemperature = value; } }
+
 
         // Constructors                                                                                                             
-        public ViewThermalExpansion(ThermalExpansion thermalExpansion)
+        public ViewThermalExpansion(ThermalExpansion thermalExpansion, bool temperatureDependent)
         {
             _points = new List<ThermalExpansionDataPoint>();
             for (int i = 0; i < thermalExpansion.ThermalExpansionTemp.Length; i++)
@@ -72,12 +81,18 @@ namespace PrePoMax
                 _points.Add(new ThermalExpansionDataPoint(thermalExpansion.ThermalExpansionTemp[i][0],
                                                    thermalExpansion.ThermalExpansionTemp[i][1]));
             }
+            _zeroTemperature = thermalExpansion.ZeroTemperature;
             //
             base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
+            //
+            SetTemperatureDependence(temperatureDependent);
         }
 
 
         // Methods                                                                                                                  
-
+        public void SetTemperatureDependence(bool temperatureDependent)
+        {
+             DynamicCustomTypeDescriptor.GetProperty(nameof(ThermalExpansion)).SetIsBrowsable(!temperatureDependent);
+        }
     }
 }
