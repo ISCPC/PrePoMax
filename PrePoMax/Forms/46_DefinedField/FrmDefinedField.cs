@@ -132,7 +132,7 @@ namespace PrePoMax.Forms
                     (DefinedField.CreationIds == null || DefinedField.CreationIds.Length == 0))
                     throw new CaeException("The defined field must contain at least one item.");
                 // Empty file name
-                else if (dt.Type == DefinedTemperatureTypeEnum.FromFile && dt.FileName == null || dt.FileName.Length == 0)
+                else if (dt.Type == DefinedTemperatureTypeEnum.FromFile && dt.FileName == null && dt.FileName.Length == 0)
                     throw new CaeException("The file name to read the temperature from is missing.");
             }
             //
