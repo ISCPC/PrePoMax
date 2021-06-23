@@ -112,6 +112,12 @@ namespace PrePoMax.Forms
             else if (_geometryAndModelOrResults == "Results")
                 _controller.SetResultsUnitSystem(UnitSystem.UnitSystemType);
             else throw new NotSupportedException();
+            //
+            Hide();
+        }
+        protected override void OnHideOrClose()
+        {
+            // This prevents hiding of the form by closing it using X
         }
         protected override bool OnPrepareForm(string stepName, string geometryAndModelOrResults)
         {
@@ -159,10 +165,10 @@ namespace PrePoMax.Forms
         private void lvTypes_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             OnApply(false);
-            Hide();
         }
 
-        // Methods                                                                                                                  
 
+        // Methods                                                                                                                  
+        
     }
 }
