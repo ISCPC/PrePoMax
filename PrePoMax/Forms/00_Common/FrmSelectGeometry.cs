@@ -72,16 +72,15 @@ namespace PrePoMax.Forms
                                                Environment.NewLine + 
                                                "Number of required items: " + _controller.Selection.MaxNumberOfIds);
                     //
-                    OnOKCallback?.Invoke(GeometrySelection);
-                }
-                // Clear items
-                _controller.ClearAllSelection();
-                //
-                DialogResult = DialogResult.OK;
-                //
-                if (_hideFormOnOK)
-                {
-                    Hide();
+                    if (OnOKCallback != null)
+                    {
+                        OnOKCallback(GeometrySelection);
+                        // Clear items - calls SelectionChanged which clears the GeometrySelection
+                        _controller.ClearAllSelection();
+                    }
+                    DialogResult = DialogResult.OK;
+                    //
+                    if (_hideFormOnOK) Hide();
                 }
             }
             catch (Exception ex)
@@ -135,6 +134,7 @@ namespace PrePoMax.Forms
         //
         private void OnShow()
         {
+            // Clear items - calls SelectionChanged which clears the GeometrySelection
             _controller.ClearAllSelection();
         }
         private void OnHide()
@@ -150,6 +150,9 @@ namespace PrePoMax.Forms
         public void SelectionChanged(int[] ids)
         {
             lvItems.Items.Clear();
+            // Clear previously selected ids - must be here
+            GeometrySelection.GeometryIds = null;
+            GeometrySelection.CreationData = null;
             //
             if (ids != null && ids.Length > 0)
             {
