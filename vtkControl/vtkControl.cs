@@ -1917,101 +1917,8 @@ namespace vtkControl
             actor.Ambient = 0.8;
             actor.Diffuse = 0.4;
         }
-
+        //
         private void PrepareActorLookupTable_(double scalarRangeMin, double scalarRangeMax)
-        {
-            vtkColorTransferFunction ctf = GetColorTransferFunction();
-            //
-            double min = scalarRangeMin;
-            double max = scalarRangeMax;
-            double minNormalized = 0;
-            double maxNormalized = 1;
-            bool addMinColor = false;
-            bool addMaxColor = false;
-            // Determine the need for min max color
-            if (_colorSpectrum.MinMaxType == vtkColorSpectrumMinMaxType.Manual)
-            {
-                min = Math.Min(scalarRangeMin, _colorSpectrum.MinUserValue);
-                max = Math.Max(scalarRangeMax, _colorSpectrum.MaxUserValue);
-                //
-                if (_colorSpectrum.MinUserValue > min && max != min)
-                {
-                    addMinColor = true;
-                    minNormalized = (_colorSpectrum.MinUserValue - min) / (max - min);
-                }
-                if (_colorSpectrum.MaxUserValue < max && max != min)
-                {
-                    addMaxColor = true;
-                    maxNormalized = (_colorSpectrum.MaxUserValue - min) / (max - min);
-                }
-            }
-            //
-            double[] color;
-            double delta;
-            _lookupTable = vtkLookupTable.New(); // this is a fix for a _lookupTable.DeepCopy later on
-            _lookupTable.SetTableRange(min, max);
-            // Create numOfAllColors discrete colors in the lookup table and then apply it to the actor
-            if (addMinColor || addMaxColor)
-            {
-                int colorCount = 0;
-                int countStart = 0;
-                int countEnd;
-                // This sets the precision with which the colors are drawn on the actor: 5 is arbitrary factor
-                int numOfAllColors = (int)Math.Ceiling(10 * _colorSpectrum.NumberOfColors / (maxNormalized - minNormalized));
-                numOfAllColors = Math.Max(1024, numOfAllColors);
-                _lookupTable.SetNumberOfColors(numOfAllColors);
-                // Below range color
-                if (addMinColor)
-                {
-                    color = new double[] { _colorSpectrum.MinColor.R / 256.0,
-                                           _colorSpectrum.MinColor.G / 256.0,
-                                           _colorSpectrum.MinColor.B / 256.0 };
-                    countEnd = (int)Math.Round(minNormalized * numOfAllColors, 0);
-                    for (int i = countStart; i < countEnd; i++)
-                        _lookupTable.SetTableValue(colorCount++, color[0], color[1], color[2], 1.0);    //R,G,B,A
-                    countStart = countEnd;
-                }
-                // Between range color
-                double endValue;
-                delta = 1.0 / (_colorSpectrum.NumberOfColors - 1);
-                double deltaNormalized = (maxNormalized - minNormalized) / (_colorSpectrum.NumberOfColors);
-                //
-                for (int i = 0; i < _colorSpectrum.NumberOfColors; i++)
-                {
-                    color = ctf.GetColor(i * delta);
-                    endValue = minNormalized + (i + 1) * deltaNormalized;
-                    countEnd = (int)Math.Round(endValue * numOfAllColors, 0);
-                    for (int j = countStart; j < countEnd; j++)
-                        _lookupTable.SetTableValue(colorCount++, color[0], color[1], color[2], 1.0);    //R,G,B,A
-                    countStart = countEnd;
-                }
-                // Above range color
-                if (addMaxColor)
-                {
-                    color = new double[] { _colorSpectrum.MaxColor.R / 256.0,
-                                           _colorSpectrum.MaxColor.G / 256.0,
-                                           _colorSpectrum.MaxColor.B / 256.0 };
-                    countEnd = (int)numOfAllColors;
-                    for (int i = countStart; i < countEnd; i++) _lookupTable.SetTableValue(colorCount++,
-                                                                                           color[0],
-                                                                                           color[1],
-                                                                                           color[2],
-                                                                                           1.0); //R,G,B,A
-                    countStart = countEnd;
-                }
-            }
-            else
-            {
-                _lookupTable.SetNumberOfColors(_colorSpectrum.NumberOfColors);
-                delta = 1.0 / (_lookupTable.GetNumberOfColors() - 1);
-                for (int i = 0; i < _lookupTable.GetNumberOfColors(); i++)
-                {
-                    color = ctf.GetColor(i * delta);
-                    _lookupTable.SetTableValue(i, color[0], color[1], color[2], 1.0); //R,G,B,A
-                }
-            }            
-        }
-        private void PrepareActorLookupTable(double scalarRangeMin, double scalarRangeMax)
         {
             double min = scalarRangeMin;
             double max = scalarRangeMax;
@@ -2053,6 +1960,7 @@ namespace vtkControl
                 {
                     numMinColors = (int)Math.Ceiling((_colorSpectrum.MinUserValue - min) / delta);
                     min = _colorSpectrum.MinUserValue - numMinColors * delta;
+                    //
                 }
                 if (addMaxColor)
                 {
@@ -2087,6 +1995,89 @@ namespace vtkControl
                                                             _colorSpectrum.MaxColor.G / 256.0,
                                                             _colorSpectrum.MaxColor.B / 256.0, 1.0);    //R,G,B,A
                     }
+                }
+            }
+            else
+            {
+                _lookupTable.SetTableRange(min, max);
+                _lookupTable.SetNumberOfColors(_colorSpectrum.NumberOfColors);
+                delta = 1.0 / (_lookupTable.GetNumberOfColors() - 1);
+                for (int i = 0; i < _lookupTable.GetNumberOfColors(); i++)
+                {
+                    color = ctf.GetColor(i * delta);
+                    _lookupTable.SetTableValue(i, color[0], color[1], color[2], 1.0);                   //R,G,B,A
+                }
+            }
+        }
+        private void PrepareActorLookupTable(double scalarRangeMin, double scalarRangeMax)
+        {
+            double min = scalarRangeMin;
+            double max = scalarRangeMax;
+            bool addMinColor = false;
+            bool addMaxColor = false;
+            //
+            vtkColorTransferFunction ctf = GetColorTransferFunction();
+            // Determine the need for min/max color
+            if (_colorSpectrum.MinMaxType == vtkColorSpectrumMinMaxType.Manual)
+            {
+                min = Math.Min(scalarRangeMin, _colorSpectrum.MinUserValue);
+                max = Math.Max(scalarRangeMax, _colorSpectrum.MaxUserValue);
+                //
+                if (_colorSpectrum.MinUserValue > min && max != min)
+                {
+                    addMinColor = true;
+                    min = _colorSpectrum.MinUserValue;
+                }
+                if (_colorSpectrum.MaxUserValue < max && max != min)
+                {
+                    addMaxColor = true;
+                    max = _colorSpectrum.MaxUserValue;
+                }
+            }
+            //
+            double[] color;
+            double delta;
+            _lookupTable = vtkLookupTable.New(); // this is a fix for a _lookupTable.DeepCopy later on
+            //
+            if (addMinColor || addMaxColor)
+            {
+                int numOfAllColors = _colorSpectrum.NumberOfColors;
+                delta = (max - min) / _colorSpectrum.NumberOfColors;
+                //
+                if (addMinColor)
+                {
+                    numOfAllColors++;
+                    min -= delta;
+                }
+                if (addMaxColor)
+                {
+                    numOfAllColors++;
+                    max += delta;
+                }
+                //
+                _lookupTable.SetTableRange(min, max);
+                _lookupTable.SetNumberOfColors(numOfAllColors);
+                // Below range color
+                int count = 0;
+                if (addMinColor)
+                {
+                    _lookupTable.SetTableValue(count++, _colorSpectrum.MinColor.R / 255.0,
+                                                        _colorSpectrum.MinColor.G / 255.0,
+                                                        _colorSpectrum.MinColor.B / 255.0, 1.0);        //R,G,B,A
+                }
+                // Between range color
+                double rangeDelta = 1.0 / (_colorSpectrum.NumberOfColors - 1);
+                for (int i = 0; i < _colorSpectrum.NumberOfColors; i++)
+                {
+                    color = ctf.GetColor(i * rangeDelta);
+                    _lookupTable.SetTableValue(count++, color[0], color[1], color[2], 1.0);             //R,G,B,A
+                }
+                // Above range color
+                if (addMaxColor)
+                {
+                    _lookupTable.SetTableValue(count++, _colorSpectrum.MaxColor.R / 255.0,
+                                                        _colorSpectrum.MaxColor.G / 255.0,
+                                                        _colorSpectrum.MaxColor.B / 255.0, 1.0);        //R,G,B,A
                 }
             }
             else
@@ -2229,6 +2220,7 @@ namespace vtkControl
             else if (_colorSpectrum.Type == vtkColorSpectrumType.Grayscale)
             {
                 ctf.SetColorSpaceToLab();
+                //rgbPoints.Add(new double[] { 0, 0, 0, 0 });
                 rgbPoints.Add(new double[] { 0, 0.2, 0.2, 0.2 });
                 rgbPoints.Add(new double[] { 1, 1.0, 1.0, 1.0 });
             }
