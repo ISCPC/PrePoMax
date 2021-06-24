@@ -1,6 +1,6 @@
 # Prerequisites
 *  Visual Studio 2019 Community (development environment) - https://www.visualstudio.com/downloads/
-*  ActiViz OpenSource Edition 5.8.0 (64-bit Windows XP or later) (3D library used for graphics - must be installed only on the development PC; users do not need it) - http://www.kitware.eu/product/activiz
+*  ActiViz OpenSource Edition 5.8.0 (64-bit Windows XP or later) (3D library used for graphics - must be installed only on the development PC; users do not need it) - https://www.kitware.fr/activiz-dotnet/
 
 # PrePoMax Visual Studio setup
 *  Download a Master branch of the PrePoMax package and extract it to a PrePoMax folder
@@ -37,6 +37,6 @@ The PrePoMax is a solution which consists of 9 projects:
 
 PrePoMax is compiled in an exe file all the other projects are compiled in dll files.
 
-The internal structure of the program is quite complex and there are almost no comments in the code (no time to write them) but I am using very descriptive names. But there are also some simple classes. Each class has its own file with .cs extension. You can browse the files in the Solution Explorer.
+The internal structure of the program is quite complex and there are almost no comments in the code (no time to write them) but I am using very descriptive names. There are also some simple classes. Each class has its own file with .cs extension. You can browse the files in the Solution Explorer.
 
 The PrePoMax project has a Forms folder and inside it is a FrmMain.sc file/class. This is the main form. The form communicates exclusively with the Controller.sc file/class which holds all data about the model. The program records all user actions in order to be able to repeat them later (while running PrePoMax select Edit -> Regenerate) so all needed user functions/subroutines are not called directly but via Commands. There is a special Command class for each user action...
