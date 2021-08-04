@@ -108,6 +108,8 @@ namespace PrePoMax.Forms
         {
             // Close the ItemSetSelectionForm
             ItemSetDataEditor.SelectionForm.Hide();
+            // Deactivate selection limits
+            _controller.Selection.EnableShellEdgeFaceSelection = false;
             // Convert the contact pair from internal to show it
             ContactPairInternal(false);
             //
@@ -116,6 +118,7 @@ namespace PrePoMax.Forms
         protected override bool OnPrepareForm(string stepName, string contactPairToEditName)
         {
             this.btnOkAddNew.Visible = contactPairToEditName == null;
+            _controller.Selection.EnableShellEdgeFaceSelection = true;
             //
             _propertyItemChanged = false;
             _contactPairNames = null;

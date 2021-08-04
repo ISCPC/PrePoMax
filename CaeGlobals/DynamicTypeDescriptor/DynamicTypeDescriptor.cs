@@ -2140,7 +2140,6 @@ namespace DynamicTypeDescriptor
             {
                 m_pd.SetValue(component, m_value);
                 this.OnValueChanged(this, new EventArgs());
-
             }
             else
             {

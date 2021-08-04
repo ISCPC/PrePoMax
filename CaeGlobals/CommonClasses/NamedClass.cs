@@ -152,11 +152,13 @@ namespace CaeGlobals
                 return ex.Message;
             }
         }
-        private static void CheckNameForErrors(ref string name)
+        public static void CheckNameForErrors(ref string name)
         {
             if (name == null) throw new CaeException("The name can not be null.");
             if (name == "") throw new CaeException("The name can not be an empty string.");
+            // Trim spaces
             name = name.Trim();
+            //
             if (name.Contains(' ')) throw new CaeException("The name can not contain space characters: '" + name + "'.");
             if (name == "Missing") throw new CaeException("The name 'Missing' is a reserved name.");
             //

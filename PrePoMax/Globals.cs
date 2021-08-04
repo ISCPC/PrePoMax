@@ -9,9 +9,9 @@ namespace PrePoMax
 {
     public class Globals
     {
-        public static string HomePage = "http://lace.fs.uni-mb.si/wordpress/borovinsek/?page_id=41";
+        public static string HomePage = "https://prepomax.fs.um.si/";
         //
-        public static string ProgramName = "PrePoMax v1.1.0";
+        public static string ProgramName = "PrePoMax v1.1.1";
         //
         public static string ReadyText = "Ready";
         public static string OpeningText = "Opening...";

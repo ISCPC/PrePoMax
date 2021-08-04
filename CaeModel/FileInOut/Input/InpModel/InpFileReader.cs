@@ -289,7 +289,7 @@ namespace FileInOut.Input
                 for (int i = includeRowNumber + 1; i < lines.Length; i++) allLines[count++] = lines[i];
                 lines = allLines;
                 //
-                ReadIncludes(lines, includeRowNumber + 1, workDirectoryName);
+                lines = ReadIncludes(lines, includeRowNumber + 1, workDirectoryName);
             }
             return lines;
         }
@@ -1294,7 +1294,7 @@ namespace FileInOut.Input
                     record1 = dataSet[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
                     string keyword = record1[0].Trim().ToUpper();
                     //
-                    if (keyword == "*BOUNDARY") AddStepBoundaryCondition(step, dataSet);
+                    if (keyword == "*BOUNDARY") AddStepBoundaryCondition(step, dataSet, mesh);
                     else if (keyword == "*CLOAD") AddStepCLoad(step, mesh, dataSet);
                     else if (keyword == "*DLOAD") AddStepDLoad(step, dataSet);
                     //
@@ -1452,7 +1452,7 @@ namespace FileInOut.Input
             return solverType;
         }
         //
-        private static void AddStepBoundaryCondition(Step step, string[] lines)
+        private static void AddStepBoundaryCondition(Step step, string[] lines, FeMesh mesh)
         {
             // *Boundary
             // Set_1, 2, 2
@@ -1461,61 +1461,161 @@ namespace FileInOut.Input
             try
             {
                 string name;
+                string nodeSetName;
+                int dof;
+                int nodeId;
+                double value;
+                Dictionary<string, FeNodeSet> nodeSets = new Dictionary<string, FeNodeSet>();
+                Dictionary<string, BoundaryCondition> boundaryConditions = new Dictionary<string, BoundaryCondition>();
                 //
                 for (var i = 1; i < lines.Length; i++)
                 {
                     string[] recordBC = lines[i].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
                     // Create Boundary Condition
                     // Get regionName
-                    var regionName = recordBC[0].Trim();                    
+                    string regionName = recordBC[0].Trim();
+                    // Create new internal node set if it does not exist
+                    if (!mesh.NodeSets.Keys.Contains(regionName) && int.TryParse(regionName, out nodeId))
+                    {
+                        nodeSetName = NamedClass.GetNewValueName(nodeSets.Keys, Globals.InternalName + "_" + regionName + "-");
+                        FeNodeSet nodeSet = new FeNodeSet(nodeSetName, new int[] { nodeId });
+                        nodeSets.Add(nodeSet.Name, nodeSet);
+                        //
+                        regionName = nodeSetName;
+                    }
                     // Get the prescribed displacement
                     int dofStart = int.Parse(recordBC[1]);
-                    int dofEnd = int.Parse(recordBC[2]);
+                    int dofEnd = dofStart;
+                    if (int.TryParse(recordBC[2], out dof)) dofEnd = dof;
                     double dofValue = 0;
-                    if (recordBC.Length == 4) dofValue = double.Parse(recordBC[3]);
+                    if (recordBC.Length == 4 && double.TryParse(recordBC[3], out value)) dofValue = value;
                     //
                     if (dofStart == 11)
                     {
-                        name = NamedClass.GetNewValueName(step.BoundaryConditions.Keys, "Temperature-");
-                        TemperatureBC tmpBC = new TemperatureBC(name, regionName, RegionTypeEnum.NodeSetName, dofValue);
-                        step.AddBoundaryCondition(tmpBC);
+                        name = NamedClass.GetNewValueName(boundaryConditions.Keys, "Temperature-");
+                        TemperatureBC tempBC = new TemperatureBC(name, regionName, RegionTypeEnum. NodeSetName, dofValue);
+                        boundaryConditions.Add(name, tempBC);
                     }
                     else
                     {
-                        name = NamedClass.GetNewValueName(step.BoundaryConditions.Keys, "Displacement_rotation-");
-                        DisplacementRotation dispRot = new DisplacementRotation(name, regionName, RegionTypeEnum.NodeSetName);
+                        name = NamedClass.GetNewValueName(boundaryConditions.Keys, "Displacement_rotation-");
+                        DisplacementRotation dispRotBC = new DisplacementRotation(name, regionName, RegionTypeEnum.NodeSetName);
                         // Assign DOF prescribed displacement
                         for (var j = dofStart; j <= dofEnd; j++)
                         {
                             switch (j)
                             {
                                 case 1:
-                                    dispRot.U1 = dofValue;
+                                    dispRotBC.U1 = dofValue;
                                     break;
                                 case 2:
-                                    dispRot.U2 = dofValue;
+                                    dispRotBC.U2 = dofValue;
                                     break;
                                 case 3:
-                                    dispRot.U3 = dofValue;
+                                    dispRotBC.U3 = dofValue;
                                     break;
                                 case 4:
-                                    dispRot.UR1 = dofValue;
+                                    dispRotBC.UR1 = dofValue;
                                     break;
                                 case 5:
-                                    dispRot.UR2 = dofValue;
+                                    dispRotBC.UR2 = dofValue;
                                     break;
                                 case 6:
-                                    dispRot.UR3 = dofValue;
+                                    dispRotBC.UR3 = dofValue;
                                     break;
                             }
                         }
-                        step.AddBoundaryCondition(dispRot);
+                        boundaryConditions.Add(name, dispRotBC);
                     }
                 }
+                //
+                MergestepBoudaryConditions(boundaryConditions, nodeSets, step, mesh);
+                //
+                foreach (var entry in boundaryConditions) step.AddBoundaryCondition(entry.Value);
+                foreach (var entry in nodeSets) mesh.AddNodeSet(entry.Value);
             }
             catch
             {
                 _errors.Add("Failed to import boundary condition: " + lines.ToRows());
+            }
+        }
+        private static void MergestepBoudaryConditions(Dictionary<string, BoundaryCondition> boundaryConditions,
+                                                       Dictionary<string, FeNodeSet> nodeSets,
+                                                       Step step, FeMesh mesh)
+        {
+            try
+            {
+                double[] key;
+                CompareDoubleArray coparer = new CompareDoubleArray();
+                List<BoundaryCondition> groupedBoundaryConditions;
+                Dictionary<double[], List<BoundaryCondition>> keyBoundaryConditions = 
+                    new Dictionary<double[], List<BoundaryCondition>>(coparer);
+                //
+                foreach (var bc in boundaryConditions.Values)
+                {
+                    key = new double[2];
+                    if (bc is TemperatureBC tempBC)
+                    {
+                        key[0] = 11;
+                        key[1] = tempBC.Temperature;
+                    }
+                    else if (bc is DisplacementRotation dispRotBC)
+                    {
+                        key[0] = dispRotBC.GetConstraintHash();
+                        if (key[0] > 0) key[1] = dispRotBC.GetConstrainValues()[0]; // at least one direction is prescribed
+                    }
+                    else throw new NotSupportedException();
+                    //
+                    if (keyBoundaryConditions.TryGetValue(key, out groupedBoundaryConditions)) groupedBoundaryConditions.Add(bc);
+                    else keyBoundaryConditions.Add(key, new List<BoundaryCondition>() { bc });
+                }
+                //
+                boundaryConditions.Clear();
+                // Merge
+                string nodeSetName;
+                BoundaryCondition boundaryCondition;
+                HashSet<int> nodeIds = new HashSet<int>();
+                FeNodeSet mergedNodeSet;
+                Dictionary<string, FeNodeSet> mergedNodeSets = new Dictionary<string, FeNodeSet>();
+                HashSet<string> allNodeSetNames = new HashSet<string>(mesh.NodeSets.Keys);
+                HashSet<string> allBCNames = new HashSet<string>(step.BoundaryConditions.Keys);
+                //
+                foreach (var keyBcEntry in keyBoundaryConditions)
+                {
+                    boundaryCondition = null;
+                    nodeIds.Clear();
+                    //
+                    foreach (var bcEntry in keyBcEntry.Value)
+                    {
+                        // Get first boundary condition
+                        if (boundaryCondition == null) boundaryCondition = bcEntry;
+                        nodeIds.UnionWith(nodeSets[bcEntry.RegionName].Labels);
+                    }
+                    // Node set
+                    mergedNodeSet = new FeNodeSet(boundaryCondition.RegionName, nodeIds.ToArray());
+                    mergedNodeSet.Internal = true;
+                    // Rename
+                    if (keyBcEntry.Value.Count > 1)
+                        mergedNodeSet.Name = NamedClass.GetNewValueName(allNodeSetNames, Globals.InternalName + "_merged-");
+                    // Add
+                    allNodeSetNames.Add(mergedNodeSet.Name);
+                    mergedNodeSets.Add(mergedNodeSet.Name, mergedNodeSet);
+                    // Boundary condition
+                    boundaryCondition.RegionName = mergedNodeSet.Name;
+                    // Rename
+                    if (keyBcEntry.Value.Count > 1)
+                        boundaryCondition.Name = NamedClass.GetNewValueName(allBCNames, "BC_merged-");
+                    // Add
+                    allBCNames.Add(boundaryCondition.Name);
+                    boundaryConditions.Add(boundaryCondition.Name, boundaryCondition);
+                }
+                //
+                nodeSets.Clear();
+                nodeSets.AddRange(mergedNodeSets);
+            }
+            catch
+            {
+                _errors.Add("Failed to merge boundary conditions.");
             }
         }
         private static void AddStepCLoad(Step step, FeMesh mesh, string[] lines)

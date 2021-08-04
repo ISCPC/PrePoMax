@@ -76,11 +76,12 @@ namespace PrePoMax.Forms
         protected override void OnApply(bool onOkAddNew)
         {
             _viewPartProperties = (ViewPartProperties)propertyGrid.SelectedObject;
-
-            if ((_partToEditName == null && _allExistingNames.Contains(_viewPartProperties.Name)) ||                     // named to existing name
-                (_viewPartProperties.Name != _partToEditName && _allExistingNames.Contains(_viewPartProperties.Name)))   // renamed to existing name
+            // Check if the name exists
+            if ((_partToEditName == null && _allExistingNames.Contains(_viewPartProperties.Name)) ||    // named to existing name
+                (_viewPartProperties.Name != _partToEditName &&                                         // renamed to existing name
+                _allExistingNames.Contains(_viewPartProperties.Name)))
                 throw new CaeGlobals.CaeException("The name '" + _viewPartProperties.Name + "' already exists.");
-
+            //
             if (_partToEditName == null)
             {
                 // Create
@@ -95,7 +96,7 @@ namespace PrePoMax.Forms
                     else if (_currentView == ViewGeometryModelResults.Model) _controller.ReplaceModelPartPropertiesCommand(_partToEditName, PartProperties);
                     else if (_currentView == ViewGeometryModelResults.Results) _controller.ReplaceResultPartProperties(_partToEditName, PartProperties);
                     else throw new NotSupportedException();
-
+                    //
                     _partToEditName = PartProperties.Name;    // to enable next apply
                 }
             }

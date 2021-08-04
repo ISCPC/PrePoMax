@@ -199,7 +199,7 @@ namespace PrePoMax.Forms
             // Close the ItemSetSelectionForm
             ItemSetDataEditor.SelectionForm.Hide();
             // Deactivate selection limits
-            _controller.Selection.LimitSelectionToFirstGeometryType = false;
+            _controller.Selection.EnableShellEdgeFaceSelection = false;
             // Convert the constraint from internal to show it
             ConstraintInternal(false);
             //

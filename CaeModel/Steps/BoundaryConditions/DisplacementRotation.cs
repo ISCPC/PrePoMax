@@ -57,6 +57,13 @@ namespace CaeModel
             if (!double.IsNaN(UR3)) directions.Add(6);
             return directions.ToArray();
         }
+        public int GetConstraintHash()
+        {
+            int[] dir = GetConstrainedDirections();
+            int hash = 0;
+            for (int i = 0; i < dir.Length; i++) hash += (int)Math.Pow(2, dir[i]);
+            return hash;
+        }
         public double[] GetConstrainValues()
         {
             List<double> values = new List<double>();
