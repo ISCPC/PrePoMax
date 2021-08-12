@@ -271,7 +271,7 @@ namespace PrePoMax
                 }
                 else
                 {
-                    MessageBox.Show("The item id is not a valid integer number.");
+                    MessageBoxes.ShowError("The item id is not a valid integer number.");
                 }
             }
             catch (Exception ex)
@@ -291,7 +291,7 @@ namespace PrePoMax
                 }
                 else
                 {
-                    MessageBox.Show("The item id is not a valid integer number.");
+                    MessageBoxes.ShowError("The item id is not a valid integer number.");
                 }
             }
             catch (Exception ex)

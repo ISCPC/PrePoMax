@@ -469,8 +469,6 @@ namespace FileInOut.Input
                             element = GetParabolicHexaElement(ref i, lines, _splitter);
                             break;
                         default:
-                            //System.Windows.Forms.MessageBox.Show("The element type '" + elementType + "' is not supported.");
-                            //break;
                             throw new Exception("The element type '" + elementType + "' is not supported.");
                     }
                     elementIds.Add(element.Id);

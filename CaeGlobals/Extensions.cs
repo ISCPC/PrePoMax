@@ -273,6 +273,6 @@ namespace CaeGlobals
             List<string> names = new List<string>();
             foreach (var namedClass in namedClasses) names.Add(namedClass.Name);
             return names.ToArray();
-        }
+        }       
     }
 }

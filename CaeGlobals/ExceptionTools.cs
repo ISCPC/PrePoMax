@@ -29,7 +29,7 @@ namespace CaeGlobals
     {
         public static void Show(object obj, Exception ex)
         {
-            System.Windows.Forms.MessageBox.Show(ExceptionTools.FormatException(obj, ex), "Error", System.Windows.Forms.MessageBoxButtons.OK);
+            MessageBoxes.ShowError(FormatException(obj, ex));
         }
 
         public static string FormatException(object obj, Exception ex)

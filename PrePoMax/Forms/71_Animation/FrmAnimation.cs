@@ -410,7 +410,7 @@ namespace PrePoMax.Forms
 
                     UpdateFrame();
 
-                    UserControls.AutoClosingMessageBox.Show("The file was successfully created.", "Done", 2000);
+                    UserControls.AutoClosingMessageBox.ShowInfo("Done", "The file was successfully created.", 2000);
                 }
             }
             catch (Exception ex)
@@ -444,10 +444,10 @@ namespace PrePoMax.Forms
                     bool scalarRangeFromAllFrames = _colorSpectrumLimitsType == ColorSpectrumLimitsType.AllFrames;
                     _form.SaveAnimationAsImages(fileName, new int[] { (int)numFirstFrame.Value - 1, (int)numLastFrame.Value - 1 }, _frameDelta,
                                                 scalarRangeFromAllFrames, _animationStyle == AnimationStyle.Swing);
-
+                    //
                     UpdateFrame();
-
-                    UserControls.AutoClosingMessageBox.Show("The file was successfully created.", "Done", 2000);
+                    //
+                    UserControls.AutoClosingMessageBox.ShowInfo("Done", "The file was successfully created.", 2000);
                 }
             }
             catch (Exception ex)

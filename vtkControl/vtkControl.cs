@@ -4971,9 +4971,9 @@ namespace vtkControl
                 int memLimit = 1000;
                 if (_animationFrameData.MemMb > memLimit)
                 {
-                    if (MessageBox.Show("The size of the problem requires more than " + memLimit + " MB of RAM." +
-                                        "This might cause the application to shut down unexpectedly. Continue?",
-                                        "Warning", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    if (MessageBoxes.ShowWarningQuestion("The size of the problem requires more than " + memLimit + " MB of RAM." +
+                                                         "This might cause the application to close down unexpectedly. Continue?")
+                                                         == DialogResult.OK)
                     {
                         _animationFrameData.MemMb = -1000000;   // prevet the messagebox from reappearing
                     }
@@ -5461,7 +5461,7 @@ namespace vtkControl
             {
                 if (CaeGlobals.Tools.IsFileLocked(fileName))
                 {
-                    MessageBox.Show("The selected file can not be replaced.", "Error", MessageBoxButtons.OK);
+                    MessageBoxes.ShowWarning("The selected file can not be replaced.");
                     return;
                 }
             }
@@ -5522,7 +5522,7 @@ namespace vtkControl
                 {
                     if (CaeGlobals.Tools.IsFileLocked(fileNames[i]))
                     {
-                        MessageBox.Show("The file '" + fileNames[i] + "' can not be replaced.", "Error", MessageBoxButtons.OK);
+                        MessageBoxes.ShowError("The file '" + fileNames[i] + "' can not be replaced.");
                         return;
                     }
                 }

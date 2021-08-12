@@ -103,7 +103,8 @@ namespace UserControls
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Entered value: " + this.Text + Environment.NewLine + Environment.NewLine + ex.Message, "Error");
+                CaeGlobals.MessageBoxes.ShowError("Entered value: " + this.Text + Environment.NewLine + Environment.NewLine
+                                                  + ex.Message);
                 this.Focus();
             }
         }

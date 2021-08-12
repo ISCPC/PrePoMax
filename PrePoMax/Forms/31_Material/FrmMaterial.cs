@@ -256,7 +256,7 @@ namespace PrePoMax.Forms
         }
         private void dgvData_DataError(object sender, DataGridViewDataErrorEventArgs e)
         {
-            MessageBox.Show("Entered value is not a valid/numeric value.", "Error", MessageBoxButtons.OK);
+            MessageBoxes.ShowError("Entered value is not a valid/numeric value.");
         }
         private void btnOK_Click(object sender, EventArgs e)
         {

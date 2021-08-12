@@ -340,8 +340,7 @@ namespace UserControls
             // Show Error if no cell is selected
             if (SelectedCells.Count == 0)
             {
-                MessageBox.Show("Please select a cell", "Paste",
-                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBoxes.ShowWarning("Please select a cell");
                 return;
             }
             // Get the starting Cell

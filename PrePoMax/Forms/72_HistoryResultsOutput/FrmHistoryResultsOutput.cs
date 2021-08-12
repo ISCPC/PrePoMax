@@ -65,8 +65,8 @@ namespace PrePoMax
             //
             if (columnNames.Length > maxNumCol + 1)
             {
-                MessageBox.Show("Only first " + maxNumCol + " columns of " + columnNames.Length
-                                + " will be displayed.", "Warning", MessageBoxButtons.OK);
+                CaeGlobals.MessageBoxes.ShowWarning("Only first " + maxNumCol + " columns of " + columnNames.Length
+                                                    + " will be displayed.");
             }
             //
             for (int i = 0; i < Math.Min(columnNames.Length, maxNumCol + 1); i++)

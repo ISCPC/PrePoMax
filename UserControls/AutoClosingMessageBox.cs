@@ -10,17 +10,27 @@ namespace UserControls
     {
         System.Threading.Timer _timeoutTimer;
         string _caption;
-        AutoClosingMessageBox(string text, string caption, int timeout)
+        AutoClosingMessageBox(string text, string caption, MessageBoxButtons buttons, MessageBoxIcon icon, int timeout)
         {
             _caption = caption;
             _timeoutTimer = new System.Threading.Timer(OnTimerElapsed,
                 null, timeout, System.Threading.Timeout.Infinite);
             using (_timeoutTimer)
-                MessageBox.Show(text, caption);
+            {
+                MessageBox.Show(text, caption, buttons, icon);
+            }
         }
-        public static void Show(string text, string caption, int timeout)
+        public static void ShowWarning(string text, int timeout)
         {
-            new AutoClosingMessageBox(text, caption, timeout);
+            new AutoClosingMessageBox(text, "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning, timeout);
+        }
+        public static void ShowError(string text, int timeout)
+        {
+            new AutoClosingMessageBox(text, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error, timeout);
+        }
+        public static void ShowInfo(string caption, string text, int timeout)
+        {
+            new AutoClosingMessageBox(text, caption, MessageBoxButtons.OK, MessageBoxIcon.Information, timeout);
         }
         void OnTimerElapsed(object state)
         {

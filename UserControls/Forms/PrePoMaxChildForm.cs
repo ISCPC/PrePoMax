@@ -50,8 +50,8 @@ namespace UserControls
 
         private void ShowProperyMissingBox(string missingValue, string newValue)
         {
-            System.Windows.Forms.MessageBox.Show("The property value '" + missingValue + "' no longer exists.\r\n" +
-                                                 "The value was changed to '" + newValue + "'.", "Error", System.Windows.Forms.MessageBoxButtons.OK);
+            CaeGlobals.MessageBoxes.ShowError("The property value '" + missingValue + "' no longer exists." + Environment.NewLine
+                                              + "The value was changed to '" + newValue + "'.");
         }        
     }
 }

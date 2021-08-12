@@ -329,7 +329,8 @@ namespace PrePoMax.Forms
             {
                 if (e.CloseReason == CloseReason.UserClosing && _libraryChanged)
                 {
-                    DialogResult response = MessageBox.Show("Save material library before closing?", "Warning", MessageBoxButtons.YesNoCancel);
+                    DialogResult response = MessageBox.Show("Save material library before closing?", "Warning",
+                                                            MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
                     if (response == DialogResult.Yes) SaveLibraryToFile();
                     else if (response == DialogResult.Cancel) e.Cancel = true;
                 }

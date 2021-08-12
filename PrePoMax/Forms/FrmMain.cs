@@ -451,7 +451,7 @@ namespace PrePoMax
                             await _controller.ImportFileAsync(fileName);
                             _controller.OpenedFileName = null; // otherwise the previous OpenedFileName gets overwriten on Save
                         }
-                        else MessageBox.Show("The file name extension is not supported.", "Error", MessageBoxButtons.OK);
+                        else MessageBoxes.ShowError("The file name extension is not supported.");
                         //
                         _vtk.SetFrontBackView(false, true);
                     }
@@ -485,16 +485,19 @@ namespace PrePoMax
                 //
                 if (tsslState.Text != Globals.ReadyText)
                 {
-                    response = MessageBox.Show("There is a task running. Close anyway?", "Warning", MessageBoxButtons.YesNo);
-                    if (response == DialogResult.No) e.Cancel = true;
-                    else if (response == DialogResult.Yes && _controller.SavingFile)
+                    response = MessageBoxes.ShowWarningQuestion("There is a task running. Close anyway?");
+                    if (response == DialogResult.Cancel) e.Cancel = true;
+                    else if (response == DialogResult.OK && _controller.SavingFile)
                     {
                         while (_controller.SavingFile) System.Threading.Thread.Sleep(100);
                     }
                 }
                 else if (_controller.ModelChanged)
                 {
-                    response = MessageBox.Show("Save file before closing?", "Warning", MessageBoxButtons.YesNoCancel);
+                    response = MessageBox.Show("Save file before closing?",
+                                               "Warning",
+                                               MessageBoxButtons.YesNoCancel,
+                                               MessageBoxIcon.Warning);
                     if (response == DialogResult.Yes)
                     {
                         e.Cancel = true;                                // Stop the form from closing before saving
@@ -1018,8 +1021,7 @@ namespace PrePoMax
         {
             try
             {
-                if (_controller.ModelChanged && MessageBox.Show("OK to close current model?", Globals.ProgramName,
-                    MessageBoxButtons.OKCancel) != DialogResult.OK) return;
+                if (_controller.ModelChanged && MessageBoxes.ShowWarningQuestion("OK to close the current model?") !=DialogResult.OK) return;
                 //
                 _controller.New();
                 //
@@ -1073,15 +1075,13 @@ namespace PrePoMax
             {
                 if (Path.GetExtension(fileName).ToLower() == ".pmx")
                 {
-                    if (MessageBox.Show("OK to close current model?",
-                        Globals.ProgramName,
-                        MessageBoxButtons.OKCancel) != DialogResult.OK) return false;
+                    if (MessageBoxes.ShowWarningQuestion("OK to close the current model?") != DialogResult.OK)
+                        return false;
                 }
                 else if (Path.GetExtension(fileName).ToLower() == ".frd" && _controller.Results != null)
                 {
-                    if (MessageBox.Show("OK to overwrite current results?",
-                        Globals.ProgramName,
-                        MessageBoxButtons.OKCancel) != DialogResult.OK) return false;
+                    if (MessageBoxes.ShowWarningQuestion("OK to overwrite the current results?") != DialogResult.OK)
+                        return false;
                 }
             }
             return true;
@@ -1097,7 +1097,7 @@ namespace PrePoMax
                     await Task.Run(() => Open(fileName, resetCamera));
                     callback?.Invoke();                    
                 }
-                else MessageBox.Show("Another task is already running.");
+                else MessageBoxes.ShowWarning("Another task is already running.");
             }
             catch (Exception ex)
             {
@@ -1155,7 +1155,7 @@ namespace PrePoMax
                         _controller.OutputErrors();
                         string message = "There were errors while importing the file/files.";
                         WriteDataToOutput(message);
-                        AutoClosingMessageBox.Show(message, "Error", 3000);
+                        AutoClosingMessageBox.ShowError(message, 3000);
                     }
                 }
             }
@@ -2162,14 +2162,13 @@ namespace PrePoMax
             if (deletablePartNames.Count > 0)
             {
                 partNames = deletablePartNames.ToArray();
-                if (MessageBox.Show("OK to delete selected parts?" + Environment.NewLine + partNames.ToRows(),
-                                    Globals.ProgramName, MessageBoxButtons.OKCancel) == DialogResult.OK)
+                if (MessageBoxes.ShowWarningQuestion("OK to delete selected parts?") == DialogResult.OK)
                 {
                     _controller.RemoveGeometryPartsCommand(partNames.ToArray());
                 }
             }
-            else MessageBox.Show("Selected parts belong to a compound part and cannot be deleted:" + Environment.NewLine +
-                                  partNames.ToRows(), Globals.ProgramName, MessageBoxButtons.OK);
+            else MessageBoxes.ShowError("Selected parts belong to a compound part and cannot be deleted:" + Environment.NewLine +
+                                        partNames.ToRows());
         }
         //
         private void tsmiCreateAndImportCompoundPart_Click(object sender, EventArgs e)
@@ -2229,11 +2228,11 @@ namespace PrePoMax
             if (parts.Contains(part1) && parts.Contains(part2))
             {
                 if (part1 is CompoundGeometryPart || part2 is CompoundGeometryPart)
-                    MessageBox.Show("Compound parts cannot be swaped.", Globals.ProgramName);
+                    MessageBoxes.ShowError("Compound parts cannot be swaped.");
                 else
                     _controller.SwapGeometryPartgeometries(partNames[0], partNames[1]);
             }
-            else MessageBox.Show("Compound subparts cannot be swaped.", Globals.ProgramName);
+            else MessageBoxes.ShowError("Compound subparts cannot be swaped.");
         }
         private void tsmiGeometryAnalyze_Click(object sender, EventArgs e)
         {
@@ -2637,9 +2636,8 @@ namespace PrePoMax
         }
         private void DeleteMeshRefinements(string[] meshRefinementNames)
         {
-            if (MessageBox.Show("OK to delete selected mesh refinements?" + Environment.NewLine + meshRefinementNames.ToRows(),
-                                Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == DialogResult.OK)
+            if (MessageBoxes.ShowWarningQuestion("OK to delete selected mesh refinements?" + Environment.NewLine
+                                                 + meshRefinementNames.ToRows()) == DialogResult.OK)
             {
                 _controller.RemoveMeshRefinementsCommand(meshRefinementNames);
             }
@@ -2648,6 +2646,7 @@ namespace PrePoMax
         {
             try
             {
+                List<string> errors = new List<string>();
                 SetStateWorking(Globals.MeshingText, true);
                 MouseEventArgs e = new MouseEventArgs(MouseButtons.Left, 0, 0, 0, 0);
                 Keys modifierKeys = Keys.Control;
@@ -2655,22 +2654,35 @@ namespace PrePoMax
                 //
                 foreach (var partName in partNames)
                 {
-                    GeometryPart part = _controller.GetGeometryPart(partName);
-                    if (part.MeshingParameters == null) SetDefaultMeshingParameters(partName);
-                    //
-                    CloseAllForms();
-                    await Task.Run(() => _controller.CreateMeshCommand(partName));
-                    //
-                    _modelTree.SelectBasePart(e, modifierKeys, part, true);
+                    try
+                    {
+                        GeometryPart part = _controller.GetGeometryPart(partName);
+                        if (part.MeshingParameters == null) SetDefaultMeshingParameters(partName);
+                        //
+                        CloseAllForms();
+                        await Task.Run(() => _controller.CreateMeshCommand(partName));
+                        //
+                        _modelTree.SelectBasePart(e, modifierKeys, part, true);
+                    }
+                    catch
+                    {
+                        errors.Add("Mesh generation failed for part " + partName +
+                                   ". Check the geometry and/or adjust the meshing parameters.");
+                    }
                 }
                 //
                 _controller.UpdateExplodedView(true);
+                //
+                if (errors.Count > 0)
+                {
+                    WriteDataToOutput("");
+                    foreach (var error in errors) WriteDataToOutput(error);
+                    MessageBoxes.ShowError("Errors occurred during meshing. Please check the output window.");
+                }
             }
             catch (Exception ex)
             {
                 ExceptionTools.Show(this, ex);
-                WriteDataToOutput("");
-                WriteDataToOutput("Mesh generation failed. Check the geometry and adjust the meshing parameters.");
             }
             finally
             {
@@ -3024,9 +3036,7 @@ namespace PrePoMax
         //
         private void MergeModelParts(string[] partNames)
         {
-            if (MessageBox.Show("OK to merge selected parts?",
-                                Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == DialogResult.OK)
+            if (MessageBoxes.ShowWarningQuestion("OK to merge selected parts?") == DialogResult.OK)
             {
                 _controller.MergeModelPartsCommand(partNames);
             }
@@ -3070,9 +3080,8 @@ namespace PrePoMax
         }
         private void DeleteModelParts(string[] partNames)
         {
-            if (MessageBox.Show("OK to delete selected parts?" + Environment.NewLine + partNames.ToRows(),
-                                Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+            if (MessageBoxes.ShowWarningQuestion("OK to delete selected parts?" + Environment.NewLine
+                                                 + partNames.ToRows()) == DialogResult.OK)
             {
                 _controller.RemoveModelPartsCommand(partNames);
             }
@@ -3146,9 +3155,8 @@ namespace PrePoMax
         }
         private void DeleteNodeSets(string[] nodeSetNames)
         {
-            if (MessageBox.Show("OK to delete selected node sets?" + Environment.NewLine + nodeSetNames.ToRows(),
-                                Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == DialogResult.OK)
+            if (MessageBoxes.ShowWarningQuestion("OK to delete selected node sets?" + Environment.NewLine
+                                                 + nodeSetNames.ToRows()) == DialogResult.OK)
             {
                 _controller.RemoveNodeSetsCommand(nodeSetNames);
             }
@@ -3237,9 +3245,8 @@ namespace PrePoMax
         }
         private void DeleteElementSets(string[] elementSetNames)
         {
-            if (MessageBox.Show("OK to delete selected element sets?" + Environment.NewLine + elementSetNames.ToRows(),
-                                Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == DialogResult.OK)
+            if (MessageBoxes.ShowWarningQuestion("OK to delete selected element sets?" + Environment.NewLine
+                                                 + elementSetNames.ToRows()) == DialogResult.OK)
             {
                 _controller.RemoveElementSetsCommand(elementSetNames);
             }
@@ -3297,9 +3304,8 @@ namespace PrePoMax
         }
         private void DeleteSurfaces(string[] surfaceNames)
         {
-            if (MessageBox.Show("OK to delete selected surfaces?" + Environment.NewLine + surfaceNames.ToRows(),
-                                Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == DialogResult.OK)
+            if (MessageBoxes.ShowWarningQuestion("OK to delete selected surfaces?" + Environment.NewLine
+                                                 + surfaceNames.ToRows()) == DialogResult.OK)
             {
                 _controller.RemoveSurfacesCommand(surfaceNames);
             }
@@ -3366,9 +3372,8 @@ namespace PrePoMax
         }
         private void DeleteRPs(string[] referencePointNames)
         {
-            if (MessageBox.Show("OK to delete selected reference points?" + Environment.NewLine + referencePointNames.ToRows(),
-                                Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == DialogResult.OK)
+            if (MessageBoxes.ShowWarningQuestion("OK to delete selected reference points?" + Environment.NewLine
+                                                 + referencePointNames.ToRows()) == DialogResult.OK)
             {
                 _controller.RemoveReferencePointsCommand(referencePointNames);
             }
@@ -3440,9 +3445,8 @@ namespace PrePoMax
         }
         private void DeleteMaterials(string[] materialNames)
         {
-            if (MessageBox.Show("OK to delete selected materials?" + Environment.NewLine + materialNames.ToRows(),
-                                Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == DialogResult.OK)
+            if (MessageBoxes.ShowWarningQuestion("OK to delete selected materials?" + Environment.NewLine
+                                                 + materialNames.ToRows()) == DialogResult.OK)
             {
                 _controller.RemoveMaterialsCommand(materialNames);
             }
@@ -3526,9 +3530,8 @@ namespace PrePoMax
         }
         private void DeleteSections(string[] sectionNames)
         {
-            if (MessageBox.Show("OK to delete selected sections?" + Environment.NewLine + sectionNames.ToRows(),
-                                Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == DialogResult.OK)
+            if (MessageBoxes.ShowWarningQuestion("OK to delete selected sections?" + Environment.NewLine
+                                                 + sectionNames.ToRows()) == DialogResult.OK)
             {
                 _controller.RemoveSectionsCommand(sectionNames);
             }
@@ -3623,9 +3626,8 @@ namespace PrePoMax
         }
         private void DeleteConstraints(string[] constraintNames)
         {
-            if (MessageBox.Show("OK to delete selected constraints?" + Environment.NewLine + constraintNames.ToRows(),
-                                Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == DialogResult.OK)
+            if (MessageBoxes.ShowWarningQuestion("OK to delete selected constraints?" + Environment.NewLine
+                                                 + constraintNames.ToRows()) == DialogResult.OK)
             {
                 _controller.RemoveConstraintsCommand(constraintNames);
             }
@@ -3693,10 +3695,8 @@ namespace PrePoMax
         }
         private void DeleteSurfaceInteractions(string[] surfaceInteractionNames)
         {
-            if (MessageBox.Show("OK to delete selected surface interactions?" + Environment.NewLine +
-                                surfaceInteractionNames.ToRows(),
-                                Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == DialogResult.OK)
+            if (MessageBoxes.ShowWarningQuestion("OK to delete selected surface interactions?" + Environment.NewLine
+                                                 + surfaceInteractionNames.ToRows()) == DialogResult.OK)
             {
                 _controller.RemoveSurfaceInteractionsCommand(surfaceInteractionNames);
             }
@@ -3793,9 +3793,8 @@ namespace PrePoMax
         }
         private void DeleteContactPairs(string[] contactPairNames)
         {
-            if (MessageBox.Show("OK to delete selected contact pairs?" + Environment.NewLine + contactPairNames.ToRows(),
-                                Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == DialogResult.OK)
+            if (MessageBoxes.ShowWarningQuestion("OK to delete selected contact pairs?" + Environment.NewLine
+                                                 + contactPairNames.ToRows()) == DialogResult.OK)
             {
                 _controller.RemoveContactPairsCommand(contactPairNames);
             }
@@ -3856,9 +3855,8 @@ namespace PrePoMax
         }
         private void DeleteInitialConditions(string[] initialConditionNames)
         {
-            if (MessageBox.Show("OK to delete selected initial conditions?" + Environment.NewLine + initialConditionNames.ToRows(),
-                                Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == DialogResult.OK)
+            if (MessageBoxes.ShowWarningQuestion("OK to delete selected initial conditions?" + Environment.NewLine
+                                                 + initialConditionNames.ToRows()) == DialogResult.OK)
             {
                 _controller.RemoveInitialConditionsCommand(initialConditionNames);
             }
@@ -3929,9 +3927,8 @@ namespace PrePoMax
         }
         private void DeleteSteps(string[] stepNames)
         {
-            if (MessageBox.Show("OK to delete selected steps?" + Environment.NewLine + stepNames.ToRows(),
-                                Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == DialogResult.OK)
+            if (MessageBoxes.ShowWarningQuestion("OK to delete selected steps?" + Environment.NewLine
+                                                 + stepNames.ToRows()) == DialogResult.OK)
             {
                 _controller.RemoveStepsCommnad(stepNames);
             }
@@ -4033,18 +4030,15 @@ namespace PrePoMax
             bool propagate = true;
             if (exists)
             {
-                if (MessageBox.Show("OK to overwrite the existing history output " + historyOutputName + "?",
-                                    Globals.ProgramName,
-                                    MessageBoxButtons.OKCancel) == DialogResult.Cancel) propagate = false;
+                if (MessageBoxes.ShowWarningQuestion("OK to overwrite the existing history output " + historyOutputName
+                                                     + "?") == DialogResult.Cancel) propagate = false;
             }
             if (propagate) _controller.PropagateHistoryOutputCommand(stepName, historyOutputName);
         }
         private void DeleteHistoryOutputs(string stepName, string[] historyOutputNames)
         {
-            if (MessageBox.Show("OK to delete selected history outputs from step " + stepName + "?" + Environment.NewLine +
-                                historyOutputNames.ToRows(),
-                                Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == DialogResult.OK)
+            if (MessageBoxes.ShowWarningQuestion("OK to delete selected history outputs from step " + stepName + "?"
+                                                 + Environment.NewLine + historyOutputNames.ToRows()) == DialogResult.OK)
             {
                 _controller.RemoveHistoryOutputsForStepCommand(stepName, historyOutputNames);
             }
@@ -4137,18 +4131,15 @@ namespace PrePoMax
             bool propagate = true;
             if (exists)
             {
-                if (MessageBox.Show("OK to overwrite the existing filed output " + fieldOutputName + "?",
-                                    Globals.ProgramName,
-                                    MessageBoxButtons.OKCancel) == DialogResult.Cancel) propagate = false;
+                if (MessageBoxes.ShowWarningQuestion("OK to overwrite the existing filed output " + fieldOutputName
+                                                     + "?") == DialogResult.Cancel) propagate = false;
             }
             if (propagate) _controller.PropagateFieldOutputCommand(stepName, fieldOutputName);
         }
         private void DeleteFieldOutputs(string stepName, string[] fieldOutputNames)
         {
-            if (MessageBox.Show("OK to delete selected field outputs from step " + stepName + "?" + Environment.NewLine +
-                                fieldOutputNames.ToRows(),
-                                Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == DialogResult.OK)
+            if (MessageBoxes.ShowWarningQuestion("OK to delete selected field outputs from step " + stepName + "?"
+                                                 + Environment.NewLine + fieldOutputNames.ToRows()) == DialogResult.OK)
             {
                 _controller.RemoveFieldOutputsForStepCommand(stepName, fieldOutputNames);
             }
@@ -4288,9 +4279,8 @@ namespace PrePoMax
             bool propagate = true;
             if (exists)
             {
-                if (MessageBox.Show("OK to overwrite the existing boundary condition " + boundaryConditionName + "?",
-                                    Globals.ProgramName,
-                                    MessageBoxButtons.OKCancel) == DialogResult.Cancel) propagate = false;
+                if (MessageBoxes.ShowWarningQuestion("OK to overwrite the existing boundary condition " + boundaryConditionName
+                                                     + "?") == DialogResult.Cancel) propagate = false;
             }
             if (propagate) _controller.PropagateBoundaryConditionCommand(stepName, boundaryConditionName);
         }
@@ -4312,10 +4302,8 @@ namespace PrePoMax
         }
         private void DeleteBoundaryConditions(string stepName, string[] boundaryConditionNames)
         {
-            if (MessageBox.Show("OK to delete selected boundary conditions from step " + stepName + "?" + Environment.NewLine +
-                                boundaryConditionNames.ToRows(),
-                                Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == DialogResult.OK)
+            if (MessageBoxes.ShowWarningQuestion("OK to delete selected boundary conditions from step " + stepName + "?"
+                                                 + Environment.NewLine + boundaryConditionNames.ToRows()) == DialogResult.OK)
             {
                 _controller.RemoveBoundaryConditionsCommand(stepName, boundaryConditionNames);
             }
@@ -4451,9 +4439,8 @@ namespace PrePoMax
             bool propagate = true;
             if (exists)
             {
-                if (MessageBox.Show("OK to overwrite the existing load " + loadName + "?",
-                                    Globals.ProgramName,
-                                    MessageBoxButtons.OKCancel) == DialogResult.Cancel) propagate = false;
+                if (MessageBoxes.ShowWarningQuestion("OK to overwrite the existing load " + loadName
+                                                     + "?") == DialogResult.Cancel) propagate = false;
             }
             if (propagate) _controller.PropagateLoadCommand(stepName, loadName);
         }
@@ -4474,10 +4461,8 @@ namespace PrePoMax
         }
         private void DeleteLoads(string stepName, string[] loadNames)
         {
-            if (MessageBox.Show("OK to delete selected loads from step " + stepName + "?" + Environment.NewLine +
-                                loadNames.ToRows(),
-                                Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == DialogResult.OK)
+            if (MessageBoxes.ShowWarningQuestion("OK to delete selected loads from step " + stepName + "?"
+                                                 + Environment.NewLine + loadNames.ToRows()) == DialogResult.OK)
             {
                 _controller.RemoveLoadsCommand(stepName, loadNames);
             }
@@ -4579,18 +4564,15 @@ namespace PrePoMax
             bool propagate = true;
             if (exists)
             {
-                if (MessageBox.Show("OK to overwrite the existing defined field " + definedFieldName + "?",
-                                    Globals.ProgramName,
-                                    MessageBoxButtons.OKCancel) == DialogResult.Cancel) propagate = false;
+                if (MessageBoxes.ShowWarningQuestion("OK to overwrite the existing defined field " + definedFieldName
+                                                     + "?") == DialogResult.Cancel) propagate = false;
             }
             if (propagate) _controller.PropagateDefinedFieldCommand(stepName, definedFieldName);
         }
         private void DeleteDefinedFields(string stepName, string[] definedFieldNames)
         {
-            if (MessageBox.Show("OK to delete selected defined fields from step " + stepName + "?" + Environment.NewLine +
-                                definedFieldNames.ToRows(),
-                                Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == DialogResult.OK)
+            if (MessageBoxes.ShowWarningQuestion("OK to delete selected defined fields from step " + stepName + "?"
+                                                 + Environment.NewLine + definedFieldNames.ToRows()) == DialogResult.OK)
             {
                 _controller.RemoveDefinedFieldsForStepCommand(stepName, definedFieldNames);
             }
@@ -4823,14 +4805,12 @@ namespace PrePoMax
                     string inputFileName = Path.Combine(workDirectory, jobName + ".inp");
                     if (File.Exists(inputFileName))
                     {
-                        if (MessageBox.Show("Overwrite existing analysis files?",
-                                            "Warning",
-                                            MessageBoxButtons.OKCancel) != DialogResult.OK) return;
+                        if (MessageBoxes.ShowWarningQuestion("Overwrite existing analysis files?") != DialogResult.OK) return;
                     }
                     //
                     if (_controller.RunJob(inputFileName, job)) MonitorAnalysis(jobName);
                 }
-                else MessageBox.Show("The analysis is already running or in queue.", "Error", MessageBoxButtons.OK);
+                else MessageBoxes.ShowError("The analysis is already running or in queue.");
             }
         }
         private void MonitorAnalysis(string jobName)
@@ -4864,30 +4844,27 @@ namespace PrePoMax
             }
             else
             {
-                MessageBox.Show("The analysis did not complete.", "Error", MessageBoxButtons.OK);
+                MessageBoxes.ShowError("The analysis did not complete.");
             }
         }
         private void KillAnalysis(string jobName)
         {
             if (_controller.GetJob(jobName).JobStatus == JobStatus.Running)
             {
-                if (MessageBox.Show("OK to kill selected analysis?",
-                                    Globals.ProgramName,
-                                    MessageBoxButtons.OKCancel) == DialogResult.OK)
+                if (MessageBoxes.ShowWarningQuestion("OK to kill selected analysis?") == DialogResult.OK)
                 {
                     _controller.KillJob(jobName);
                 }
             }
             else
             {
-                MessageBox.Show("The analysis is not running.", "Error", MessageBoxButtons.OK);
+                MessageBoxes.ShowError("The analysis is not running.");
             }
         }
         private void DeleteAnalyses(string[] jobNames)
         {
-            if (MessageBox.Show("OK to delete selected analyses?" + Environment.NewLine + jobNames.ToRows(),
-                                Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == DialogResult.OK)
+            if (MessageBoxes.ShowWarningQuestion("OK to delete selected analyses?" + Environment.NewLine
+                                                 + jobNames.ToRows()) == DialogResult.OK)
             {
                 _controller.RemoveJobsCommand(jobNames);
             }
@@ -5082,9 +5059,8 @@ namespace PrePoMax
         }
         private void DeleteResultParts(string[] partNames)
         {
-            if (MessageBox.Show("OK to delete selected parts?" + Environment.NewLine + partNames.ToRows(),
-                                Globals.ProgramName,
-                                MessageBoxButtons.OKCancel) == DialogResult.OK)
+            if (MessageBoxes.ShowWarningQuestion("OK to delete selected parts?" + Environment.NewLine
+                                                 + partNames.ToRows()) == DialogResult.OK)
             {
                 _controller.RemoveResultParts(partNames);
             }
@@ -5334,7 +5310,8 @@ namespace PrePoMax
                     if (stepName != null)
                     {
                         string itemName = text.Replace("Create ", "").ToLower();
-                        MessageBox.Show("Creation of a " + itemName + " in the step: " + stepName + " is not supported.", "Warning");
+                        MessageBoxes.ShowWarning("Creation of a " + itemName + " in the step: "
+                                                 + stepName + " is not supported.");
                     }
                 }
             }
@@ -5731,7 +5708,7 @@ namespace PrePoMax
                 string text = "The model contains active invlaid items:" + Environment.NewLine;
                 foreach (var item in invalidItems) text += Environment.NewLine + item;
                 text += Environment.NewLine + Environment.NewLine + "Continue?";
-                return MessageBox.Show(text, "Warning", MessageBoxButtons.YesNo) == DialogResult.Yes;
+                return MessageBoxes.ShowWarningQuestion(text) == DialogResult.OK;
             }
             return true;
         }

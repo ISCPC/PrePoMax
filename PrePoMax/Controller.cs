@@ -527,7 +527,7 @@ namespace PrePoMax
             //
             if (_results == null)
             {
-                MessageBox.Show("The results file does not exist or is empty.", "Error");
+                MessageBoxes.ShowError("The results file does not exist or is empty.");
                 return;
             }
             else
@@ -547,7 +547,8 @@ namespace PrePoMax
                             if (MessageBox.Show("Some node coordinates in the result .frd file are different from the coordinates in the model mesh." +
                                                 Environment.NewLine + Environment.NewLine +
                                                 "Apply model mesh properties (part names, geomery...) to the result mesh?", "Warning",
-                                                MessageBoxButtons.YesNo) == DialogResult.Yes) similarity = 1;
+                                                MessageBoxButtons.YesNo,
+                                                MessageBoxIcon.Warning) == DialogResult.Yes) similarity = 1;
                         }
                         //
                         if (similarity == 1) _results.CopyPartsFromMesh(_model.Mesh);
@@ -578,7 +579,7 @@ namespace PrePoMax
             //
             if (_history == null)
             {
-                MessageBox.Show("The dat file does not exist or is empty.", "Error");
+                MessageBoxes.ShowError("The dat file does not exist or is empty.");
                 return;
             }
             else
@@ -613,8 +614,6 @@ namespace PrePoMax
                     {
                         _form.WriteDataToOutput("Warning: The opened file is from an uncompatible version: " + fileVersion);
                         _form.WriteDataToOutput("Some items might not be correctly loaded. Check the model.");
-                        //MessageBox.Show("The selected file is from an uncompatible version: " + fileVersion, "Error", MessageBoxButtons.OK);
-                        //throw new Exception("UncompatibleVersion");
                     }
                     //
                     using (BinaryReader br = new BinaryReader(Decompress(fs)))
@@ -688,8 +687,7 @@ namespace PrePoMax
                 string[] addedPartNames = _model.ImportGeometryFromStlFile(fileName);
                 if (addedPartNames == null)
                 {
-                    string message = "There are errors in the imported geometry.";
-                    UserControls.AutoClosingMessageBox.Show(message, "Error", 3000);
+                    UserControls.AutoClosingMessageBox.ShowError("There are errors in the imported geometry.", 3000);
                 }
                 else
                 {
@@ -795,7 +793,7 @@ namespace PrePoMax
             CalculixSettings settings = _settings.Calculix;
             if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
             {
-                MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
+                MessageBoxes.ShowWorkDirectoryError();
                 return null;
             }
             //
@@ -846,7 +844,7 @@ namespace PrePoMax
             string workDirectory = _settings.Calculix.WorkDirectory;
             if (workDirectory == null || !Directory.Exists(workDirectory))
             {
-                MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
+                MessageBoxes.ShowWorkDirectoryError();
                 return null;
             }
             //
@@ -913,7 +911,7 @@ namespace PrePoMax
             //
             if (calculixSettings.WorkDirectory == null || !Directory.Exists(calculixSettings.WorkDirectory))
             {
-                MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
+                MessageBoxes.ShowWorkDirectoryError();
                 return null;
             }
             //
@@ -936,14 +934,14 @@ namespace PrePoMax
                 string[] addedPartNames = _model.ImportGeometryFromBrepFile(visFileName, brepFileName);
                 if (addedPartNames.Length == 0)
                 {
-                    if (showError) MessageBox.Show("No geometry to import.", "Error", MessageBoxButtons.OK);
+                    if (showError) MessageBoxes.ShowError("No geometry to import.");
                     return null;
                 }
                 return addedPartNames;
             }
             else
             {
-                if (showError) MessageBox.Show("Importing brep file failed.", "Error", MessageBoxButtons.OK);
+                if (showError) MessageBoxes.ShowError("Importing brep file failed.");
                 return null;
             }
         }
@@ -1272,7 +1270,7 @@ namespace PrePoMax
             CalculixSettings settings = _settings.Calculix;
             if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
             {
-                MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
+                MessageBoxes.ShowWorkDirectoryError();
                 return;
             }
             //
@@ -1411,7 +1409,7 @@ namespace PrePoMax
         {
             if (_model == null)
             {
-                MessageBox.Show("There is no model.", "Error", System.Windows.Forms.MessageBoxButtons.OK);
+                MessageBoxes.ShowError("There is no model.");
                 return null;
             }
             else return FileInOut.Output.CalculixFileWriter.GetModelKeywords(_model);
@@ -1420,7 +1418,7 @@ namespace PrePoMax
         {
             if (_model == null)
             {
-                MessageBox.Show("There is no model.", "Error", System.Windows.Forms.MessageBoxButtons.OK);
+                MessageBoxes.ShowError("There is no model.");
                 return null;
             }
             else return _model.CalculixUserKeywords;
@@ -2069,10 +2067,9 @@ namespace PrePoMax
                 //
                 string warning = "Face orientations on solid parts or non-CAD parts cannot be fliped.";
                 if (numOfShellParts <= 0)
-                    MessageBox.Show(warning, "Warning", MessageBoxButtons.OK);
+                    MessageBoxes.ShowWarning(warning);
                 else if (countSolidFaces > 0)
-                    MessageBox.Show(warning + Environment.NewLine +
-                                    "Only face orientations on CAD shell parts were fliped.", "Warning", MessageBoxButtons.OK);
+                    MessageBoxes.ShowWarning(warning + Environment.NewLine + "Only face orientations on CAD shell parts were fliped.");
             }
         }
         private string FlipPartFaceOrientations(GeometryPart part, int[] faceIds)
@@ -2080,7 +2077,7 @@ namespace PrePoMax
             CalculixSettings settings = _settings.Calculix;
             if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
             {
-                MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
+                MessageBoxes.ShowWorkDirectoryError();
                 return null;
             }
             //
@@ -2201,14 +2198,14 @@ namespace PrePoMax
                 if (brepFileName != null) ReplacePartGeometryFromFile(gp, brepFileName);
                 else ClearAllSelection();
             }
-            else MessageBox.Show("Faces on non-CAD parts cannot be split.", "Warning", MessageBoxButtons.OK);
+            else MessageBoxes.ShowWarning("Faces on non-CAD parts cannot be split.");
         }
         private string SplitAFaceUsingTwoPoints(GeometryPart part, int faceId, FeNode node1, FeNode node2)
         {
             CalculixSettings settings = _settings.Calculix;
             if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
             {
-                MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
+                MessageBoxes.ShowError("The work directory does not exist.");
                 return null;
             }
             //
@@ -2347,7 +2344,7 @@ namespace PrePoMax
             CalculixSettings settings = _settings.Calculix;
             if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
             {
-                MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
+                MessageBoxes.ShowWorkDirectoryError();
                 return false;
             }
             //
@@ -2392,7 +2389,7 @@ namespace PrePoMax
             CalculixSettings settings = _settings.Calculix;
             if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
             {
-                MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
+                MessageBoxes.ShowWorkDirectoryError();
                 return false;
             }
             //
@@ -2554,7 +2551,7 @@ namespace PrePoMax
             CalculixSettings settings = _settings.Calculix;
             if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
             {
-                MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
+                MessageBoxes.ShowWorkDirectoryError();
                 return false;
             }
             //
@@ -2602,7 +2599,7 @@ namespace PrePoMax
             CalculixSettings settings = _settings.Calculix;
             if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
             {
-                MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
+                MessageBoxes.ShowWorkDirectoryError();
                 return false;
             }
             //
@@ -2678,7 +2675,7 @@ namespace PrePoMax
             CalculixSettings settings = _settings.Calculix;
             if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
             {
-                MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
+                MessageBoxes.ShowWorkDirectoryError();
                 return false;
             }
             //
@@ -3056,7 +3053,7 @@ namespace PrePoMax
             CalculixSettings settings = _settings.Calculix;
             if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
             {
-                MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
+                MessageBoxes.ShowWorkDirectoryError();
                 return false;
             }
             //
@@ -3111,7 +3108,7 @@ namespace PrePoMax
             CalculixSettings settings = _settings.Calculix;
             if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
             {
-                MessageBox.Show("The work directory does not exist.", "Error", MessageBoxButtons.OK);
+                MessageBoxes.ShowWorkDirectoryError();
                 return false;
             }
             //
@@ -5991,7 +5988,10 @@ namespace PrePoMax
                     AddElementSetCommand(new FeElementSet(elementSetName, unAssignedElementIds));
                     //
                     string msg = unAssignedElementIds.Length + " finite elements are missing a section assignment. Continue?";
-                    if (MessageBox.Show(msg, "Warning", MessageBoxButtons.OKCancel) == DialogResult.Cancel) return false;
+                    if (MessageBox.Show(msg,
+                                        "Warning",
+                                        MessageBoxButtons.OKCancel,
+                                        MessageBoxIcon.Warning) == DialogResult.Cancel) return false;
                 }
                 ExportToCalculix(inputFileName);
                 job.JobStatusChanged = JobStatusChanged;
@@ -7651,7 +7651,7 @@ namespace PrePoMax
                 int num = _model.CalculixUserKeywords.Count;
                 _model.RemoveLostUserKeywords(_form.SetNumberOfModelUserKeywords);
                 int delta = num - _model.CalculixUserKeywords.Count;
-                if (delta > 0) MessageBox.Show("Number of removed CalculiX user keywords: " + delta, "Warning", MessageBoxButtons.OK);
+                if (delta > 0) MessageBoxes.ShowWarning("Number of removed CalculiX user keywords: " + delta + ".");
             }
             // Tuple<NamedClass, string>   ...   Tuple<invalidItem, stepName>
             List<Tuple<NamedClass, string>> items = new List<Tuple<NamedClass, string>>();
