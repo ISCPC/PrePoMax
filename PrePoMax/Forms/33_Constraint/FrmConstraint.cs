@@ -474,7 +474,7 @@ namespace PrePoMax.Forms
                         changed = true;
                     }
                 }
-                else if (Constraint is Tie tie) 
+                else if (Constraint is Tie tie)
                 {
                     if (property == nameof(ViewTie.MasterRegionType) && tie.MasterRegionType == RegionTypeEnum.Selection)
                     {

@@ -68,6 +68,7 @@
     <Compile Include="Enums\GeometryType.cs" />
     <Compile Include="Enums\ElementFaceType.cs" />
     <Compile Include="Enums\MeshRepresentation.cs" />
+    <Compile Include="ContactSearch.cs" />
     <Compile Include="FeReferencePoint.cs" />
     <Compile Include="Elements\3D\FeElement3D.cs" />
     <Compile Include="Elements\2D\FeElement2D.cs" />
