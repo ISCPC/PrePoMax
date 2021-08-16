@@ -4659,6 +4659,37 @@ namespace PrePoMax
                     RemoveSurfaces(new string[] { tie.SlaveRegionName }, false);
             }
         }
+        // Auto create
+        public void AutoCreateTiedPairs(double distance, double angleDeg)
+        {
+            SuppressExplodedViews();
+            ContactSearch contactSearch = new ContactSearch(_model.Mesh);
+            List<ContactSurface[]> contactPairs = contactSearch.FindContactPairs(distance, angleDeg);
+            ResumeExplodedViews(false);
+            //
+            int geometryId;
+            string name;
+            Tie tie;
+            foreach (var contactPair in contactPairs)
+            {
+                name = _model.Constraints.GetNextNumberedKey("Tie");
+                tie = new Tie(name, distance, false, "", RegionTypeEnum.Selection, "", RegionTypeEnum.Selection);
+                //
+                geometryId = contactPair[0].Id * 100000 + 3 * 10000 + contactPair[0].Part.PartId;
+                tie.MasterCreationData = new Selection();
+                tie.MasterCreationData.SelectItem = vtkSelectItem.Surface;
+                tie.MasterCreationData.Add(new SelectionNodeIds(vtkSelectOperation.Add, false, new int[] { geometryId }, true));
+                tie.MasterCreationIds = new int[] { 1 };
+                //
+                geometryId = contactPair[1].Id * 100000 + 3 * 10000 + contactPair[1].Part.PartId;
+                tie.SlaveCreationData = new Selection();
+                tie.SlaveCreationData.SelectItem = vtkSelectItem.Surface;
+                tie.SlaveCreationData.Add(new SelectionNodeIds(vtkSelectOperation.Add, false, new int[] { geometryId }, true));
+                tie.SlaveCreationIds = new int[] { 1 };
+                //
+                AddConstraint(tie);
+            }
+        }
 
         #endregion #################################################################################################################
 

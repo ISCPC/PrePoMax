@@ -6638,12 +6638,9 @@ namespace PrePoMax
 
         private void tsmiTest_Click(object sender, EventArgs e)
         {
-            if (timerTest.Enabled) timerTest.Stop();
-            else timerTest.Start();
-
-            //_vtk.SwithchLights();
-
-            //_controller.SwapGeometryPartgeometries("Nosilec", "Nosilec_r");
+            _controller.AutoCreateTiedPairs(2.2, 135);
+            //if (timerTest.Enabled) timerTest.Stop();
+            //else timerTest.Start();
         }
 
         private void timerTest_Tick(object sender, EventArgs e)
