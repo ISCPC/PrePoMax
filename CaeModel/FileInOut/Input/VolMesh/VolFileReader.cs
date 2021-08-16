@@ -30,6 +30,7 @@ namespace FileInOut.Input
                 // Geometry: itemId, allNodeIds
                 Dictionary<int, HashSet<int>> surfaceIdNodeIds = new Dictionary<int, HashSet<int>>();
                 Dictionary<int, HashSet<int>> edgeIdNodeIds = new Dictionary<int, HashSet<int>>();
+                HashSet<int> vertexNodeIds = new HashSet<int>();
                 //
                 foreach (List<string> dataSet in dataSets)
                 {
@@ -48,14 +49,14 @@ namespace FileInOut.Input
                     }
                     else if (dataSet[0] == VolKeywords.edgesegmentsgi2.ToString()) // 1D Elements
                     {
-                        AddLineElements(dataSet.ToArray(), elements, ref elementStartId, edgeIdNodeIds);
+                        AddLineElements(dataSet.ToArray(), elements, ref elementStartId, edgeIdNodeIds, vertexNodeIds);
                     }
                 }
                 //
                 FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Mesh, null, null, convertToSecondOrder,
                                          ImportOptions.DetectEdges);
                 //
-                mesh.ConvertLineFeElementsToEdges(null, true);
+                mesh.ConvertLineFeElementsToEdges(vertexNodeIds, true);
                 //
                 mesh.RenumberVisualizationSurfaces(surfaceIdNodeIds);
                 mesh.RenumberVisualizationEdges(edgeIdNodeIds);
@@ -72,7 +73,7 @@ namespace FileInOut.Input
             //
             return null;
         }
-
+        //
         static private List<List<string>> GetDataSets(string[] lines)
         {
             int count = 0;
@@ -209,22 +210,27 @@ namespace FileInOut.Input
             }
         }
         static private void AddLineElements(string[] lines, Dictionary<int, FeElement> elements, ref int startId,
-                                            Dictionary<int, HashSet<int>> edges)
+                                            Dictionary<int, HashSet<int>> edges, HashSet<int> vertexNodeIds)
         {
             //# surfid  0   p1   p2   trignum1    trignum2   domin/surfnr1    domout/surfnr2   ednr1   dist1   ednr2   dist2  
             //edgesegmentsgi2                                                                                                 
             //170                                                                                                             
-            //       1       0       1       9       -1       -1        0        0        1         -100        1        -49.9
-            //       1       0       9       2       -1       -1        0        0        2        -49.9        1           -0
-            //       1       0      10       3       -1       -1        0        0        3         50.1        2           -0
+            //       1       0       1      10       -1       -1        0        0        7           -0        2          5.3
+            //       1       0      10      11       -1       -1        0        0        8          5.3        2         10.6
+            //       1       0      11      12       -1       -1        0        0        9         10.6        2         15.8
+            //       1       0      12      13       -1       -1        0        0       10         15.8        2         21.1
             //     [0]     [1]     [2]     [3]      [4]      [5]      [6]      [7]      [8]          [9]     [10]         [11]
             int N = int.Parse(lines[1]);
+            double value1;
+            double value2;
             int edgeId;
             int surfceId;
             string[] record;
             string[] splitter = new string[] { " " };
             HashSet<int> edge;
             FeElement1D element;
+            Dictionary<int, Dictionary<int, double>> edgeIdNodeIdValue = new Dictionary<int, Dictionary<int, double>>();
+            Dictionary<int, double> nodeIdValue;
             // Line 0 is the line with the Keyword
             for (int i = 2; i < N + 2; i++)
             {
@@ -239,13 +245,57 @@ namespace FileInOut.Input
                 // Add nodes to an edge
                 if (edges.TryGetValue(edgeId, out edge)) edge.UnionWith(element.NodeIds);
                 else edges.Add(edgeId, new HashSet<int>(element.NodeIds)); // create a copy!!!
+                // Collect node values
+                value1 = double.Parse(record[9]);
+                value2 = double.Parse(record[11]);
+                if (edgeIdNodeIdValue.TryGetValue(edgeId, out nodeIdValue))
+                {
+                    if (!nodeIdValue.ContainsKey(element.NodeIds[0])) nodeIdValue.Add(element.NodeIds[0], value1);
+                    if (!nodeIdValue.ContainsKey(element.NodeIds[1])) nodeIdValue.Add(element.NodeIds[1], value2);
+                }
+                else
+                {
+                    nodeIdValue = new Dictionary<int, double>();
+                    nodeIdValue.Add(element.NodeIds[0], value1);
+                    nodeIdValue.Add(element.NodeIds[1], value2);
+                    edgeIdNodeIdValue.Add(edgeId, nodeIdValue);
+                }
                 //
                 startId++;
+            }
+            // Get vertices
+            double min;
+            double max;
+            int minId;
+            int maxId;
+            //
+            foreach (var edgeEntry in edgeIdNodeIdValue)
+            {
+                min = double.MaxValue;
+                max = -double.MaxValue;
+                minId = -1;
+                maxId = -1;
+                foreach (var nodeEnty in edgeEntry.Value)
+                {
+                    if (nodeEnty.Value < min)
+                    {
+                        min = nodeEnty.Value;
+                        minId = nodeEnty.Key;
+                    }
+                    else if (nodeEnty.Value > max)
+                    {
+                        max = nodeEnty.Value;
+                        maxId = nodeEnty.Key;
+                    }
+
+                }
+                vertexNodeIds.Add(minId);
+                vertexNodeIds.Add(maxId);
             }
         }
       
 
-        //  LINEAR ELEMENTS                                                                                        
+        // Linear elements                                                                                                          
         static private LinearBeamElement GetLinearBeamElement(int id, string[] record)
         {
             int n = 2;
@@ -311,7 +361,7 @@ namespace FileInOut.Input
         }
 
 
-        //  PARABOLIC ELEMENTS                                                                                           
+        // Parabolic elements                                                                                                       
         static private ParabolicTriangleElement GetParabolicTriangleElement(int id, string[] record)
         {
             int n = 6;
