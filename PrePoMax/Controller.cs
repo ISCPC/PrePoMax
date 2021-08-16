@@ -4663,6 +4663,7 @@ namespace PrePoMax
             ContactSearch contactSearch = new ContactSearch(_model.Mesh);
             List<ContactSurface[]> contactPairs = contactSearch.FindContactPairs(distance, angleDeg);
             ResumeExplodedViews(false);
+            if (contactPairs == null) return;
             //
             int geometryId;
             string name;

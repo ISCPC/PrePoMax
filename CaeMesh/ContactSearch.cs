@@ -50,6 +50,7 @@ namespace CaeMesh
                 for (int i = 0; i < partEntry.Value.Visualization.FaceAreas.Length; i++)
                 {
                     contactSurfaces[count++] = new ContactSurface(_mesh, partEntry.Value, i);
+                    compute surface bounding box !!!
                 }
             }
             //
@@ -59,10 +60,13 @@ namespace CaeMesh
             {
                 for (int j = i + 1; j < contactSurfaces.Length; j++)
                 {
-                    if (CheckSurfaceToSurfaceContact(contactSurfaces[i], contactSurfaces[j], distance, angleRad))
+                    if (contactSurfaces[i].Part != contactSurfaces[j].Part &&
+                        contactSurfaces[i].Part.BoundingBox.Intesects(contactSurfaces[j].Part.BoundingBox) &&
+                        CheckSurfaceToSurfaceContact(contactSurfaces[i], contactSurfaces[j], distance, angleRad))
                     {
                         contactPairs.Add(new ContactSurface[] { contactSurfaces[i], contactSurfaces[j] });
                     }
+                    if (contactPairs.Count > 50) return contactPairs;
                 }
             }
             //
