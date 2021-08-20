@@ -247,7 +247,7 @@ namespace PrePoMax.Forms
         }
         private string GetSectionName(string name)
         {
-            return NamedClass.GetNewValueName(_sectionNames, name + "_section-");
+            return _sectionNames.GetNextNumberedKey(name + "_section");
         }
         private bool CheckSectionElementTypes()
         {

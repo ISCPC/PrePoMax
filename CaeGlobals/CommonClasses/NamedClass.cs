@@ -88,7 +88,7 @@ namespace CaeGlobals
 
 
         // Static methods
-        public static string GetNewValueName(ICollection<string> existingNames, string nameRoot, char splitter = '-')
+        public static string GetNewValueName1(ICollection<string> existingNames, string nameRoot, char splitter = '-')
         {
             int max = 0;
             int tmp;
@@ -121,7 +121,8 @@ namespace CaeGlobals
             string newName = "";
             for (int i = 0; i < numOfParts; i++)
             {
-                newName += parts[i] + splitter;
+                newName += parts[i];
+                if (i < numOfParts - 1) newName += splitter;
             }
             return newName;
         }

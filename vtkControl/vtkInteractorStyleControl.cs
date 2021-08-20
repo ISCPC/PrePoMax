@@ -223,19 +223,15 @@ namespace vtkControl
                     if (widget.LeftButtonRelease(x, y)) return;
                 }
             }
-            //if (_selection)
+            if (!_selectionCanceled)
             {
-                if (!_selectionCanceled)
-                {
-                    int[] mousePos = rwi.GetEventPosition();
-                    //
-                    if (PointPickedOnLeftUpEvt != null)
-                    {
-                        if (_clickPos == null) PointPickedOnLeftUpEvt(mousePos[0], mousePos[1], _rubberBandSelection, 0, 0);
-                        else PointPickedOnLeftUpEvt(mousePos[0], mousePos[1], _rubberBandSelection, _clickPos[0], _clickPos[1]);
-                    }
-                }
+                int[] mousePos = rwi.GetEventPosition();
                 //
+                if (PointPickedOnLeftUpEvt != null)
+                {
+                    if (_clickPos == null) PointPickedOnLeftUpEvt(mousePos[0], mousePos[1], _rubberBandSelection, 0, 0);
+                    else PointPickedOnLeftUpEvt(mousePos[0], mousePos[1], _rubberBandSelection, _clickPos[0], _clickPos[1]);
+                }
             }
             //
             _clickPos = null;
@@ -245,7 +241,7 @@ namespace vtkControl
             _selectionBackgroundActor.VisibilityOff();
             _selectionBorderActor.VisibilityOff();
             //
-            this.GetInteractor().Render();
+            rwi.Render();
         }
         //
         void vtkInteractorStyleControl_MiddleButtonPressEvt(vtkObject sender, vtkObjectEventArgs e)

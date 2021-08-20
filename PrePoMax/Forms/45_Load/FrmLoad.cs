@@ -753,8 +753,7 @@ namespace PrePoMax.Forms
         {
             if (name == null || name == "") name = "Load";
             name = name.Replace(' ', '_');
-            if (name[name.Length - 1] != '-') name += '-';
-            name = NamedClass.GetNewValueName(_loadNames, name);
+            name = _loadNames.GetNextNumberedKey(name);
             //
             return name;
         }

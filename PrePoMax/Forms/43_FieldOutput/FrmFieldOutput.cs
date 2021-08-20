@@ -181,7 +181,7 @@ namespace PrePoMax.Forms
         }
         private string GetFieldOutputName(string prefix)
         {
-            return NamedClass.GetNewValueName(_fieldOutputNames, prefix + "F_output-");
+            return _fieldOutputNames.GetNextNumberedKey(prefix + "F_output");
         }
     }
 }

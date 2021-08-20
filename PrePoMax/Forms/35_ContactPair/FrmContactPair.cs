@@ -194,7 +194,7 @@ namespace PrePoMax.Forms
         // Methods                                                                                                                  
         private string GetContactPairName()
         {
-            return NamedClass.GetNewValueName(_contactPairNames, "Contact_pair-");
+            return _contactPairNames.GetNextNumberedKey("Contact_pair");
         }
         private void HighlightContactPair()
         {

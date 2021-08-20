@@ -142,7 +142,11 @@ namespace PrePoMax
             });
         }
         public bool ScreenUpdating { get { return _modelTree.ScreenUpdating; } set { _modelTree.ScreenUpdating = value; } }
-
+        public bool DisableSelectionsChanged
+        {
+            get { return _modelTree.DisableSelectionsChanged; }
+            set { _modelTree.DisableSelectionsChanged = value; }
+        }
         #endregion  ################################################################################################################
 
 
@@ -6615,7 +6619,7 @@ namespace PrePoMax
 
         private void tsmiTest_Click(object sender, EventArgs e)
         {
-            _controller.AutoCreateTiedPairs(2.2, 135);
+            _controller.AutoCreateTiedPairs(0.5, 135);
             //if (timerTest.Enabled) timerTest.Stop();
             //else timerTest.Start();
         }

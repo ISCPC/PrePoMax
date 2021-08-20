@@ -492,7 +492,7 @@ namespace CaeResults
                     if (repairedSetNames.Values.Contains(newName))
                     {
                         newName = NamedClass.GetNameWithoutLastValue(newName);
-                        newName = NamedClass.GetNewValueName(repairedSetNames.Values, newName);
+                        newName = new HashSet<string>(repairedSetNames.Values).GetNextNumberedKey(newName);
                     }
                     repairedSetNames.Add(setName, newName);
                 }
@@ -512,7 +512,7 @@ namespace CaeResults
                     if (repairedSetNames.Values.Contains(newName))
                     {
                         newName = NamedClass.GetNameWithoutLastValue(newName);
-                        newName = NamedClass.GetNewValueName(repairedSetNames.Values, newName);
+                        newName = new HashSet<string>(repairedSetNames.Values).GetNextNumberedKey(newName);
                     }
                     repairedSetNames.Add(setName, newName);
                 }

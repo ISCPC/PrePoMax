@@ -345,7 +345,7 @@ namespace PrePoMax.Forms
         }
         private string GetSurfaceInteractionName()
         {
-            return NamedClass.GetNewValueName(_surfraceInteractionNames, "Surface_interaction-");
+            return _surfraceInteractionNames.GetNextNumberedKey("Surface_interaction");
         }
         private void SetDataGridViewBinding(object data)
         {

@@ -54,6 +54,6 @@ namespace PrePoMax
         public static string EdgeNodesFileName = "edgeNodes";
         // Names
         public static string NameSeparator = ":";
-        public static string MissingSectionName = "Missing_section-";
+        public static string MissingSectionName = "Missing_section";
     }
 }

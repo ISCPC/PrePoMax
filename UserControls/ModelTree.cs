@@ -122,11 +122,13 @@ namespace UserControls
         // Properties                                                                                                               
         public bool ScreenUpdating 
         { 
-            get { return _screenUpdating; } 
-            set
-            {
-                _screenUpdating = value;
-            }
+            get { return _screenUpdating; }
+            set { _screenUpdating = value; }
+        }
+        public bool DisableSelectionsChanged
+        {
+            get { return _disableSelectionsChanged; }
+            set { _disableSelectionsChanged = value; }
         }
         public bool DisableMouse
         {

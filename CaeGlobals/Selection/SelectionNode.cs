@@ -12,16 +12,19 @@ namespace CaeGlobals
     {
         // Variables                                                                                                                
         protected vtkSelectOperation _selectOpreation;      //ISerializable
+        protected double _hash;
 
 
         // Properties                                                                                                               
         public vtkSelectOperation SelectOperation { get { return _selectOpreation; } }
+        public double Hash { get { return _hash; } set { _hash = value; } }
 
 
         // Constructors                                                                                                             
         public SelectionNode(vtkSelectOperation selectOpreation)
         {
             _selectOpreation = selectOpreation;
+            _hash = -1;
         }
         public SelectionNode(SerializationInfo info, StreamingContext context)
         {
@@ -32,11 +35,15 @@ namespace CaeGlobals
                     case "_selectOpreation":
                         _selectOpreation = (vtkSelectOperation)entry.Value;
                         break;
+                    case "_hash":
+                        _hash = (double)entry.Value;
+                        break;
                     default:
                         break;
                 }
             }
         }
+
 
         // Methods                                                                                                                  
 
@@ -45,6 +52,7 @@ namespace CaeGlobals
         {
             // using typeof() works also for null fields
             info.AddValue("_selectOpreation", _selectOpreation, typeof(vtkSelectOperation));
+            info.AddValue("_hash", _hash, typeof(double));
         }
     }
 }

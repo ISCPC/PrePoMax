@@ -203,7 +203,7 @@ namespace PrePoMax.Forms
                         tmp = sets[i].Split(new string[] { "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
                         errorElementIds.Add(int.Parse(tmp[0]));
                     }
-                    string elementSetName = NamedClass.GetNewValueName(_controller.Model.Mesh.ElementSets.Keys, "Nonpositive_jacobian-");
+                    string elementSetName = _controller.Model.Mesh.ElementSets.GetNextNumberedKey("Nonpositive_jacobian");
                     _controller.AddElementSetCommand(new CaeMesh.FeElementSet(elementSetName, errorElementIds.ToArray()));
                     //
                     tbOutput.AppendText(Environment.NewLine);

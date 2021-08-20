@@ -109,39 +109,50 @@ namespace CaeGlobals
         {
             foreach (var item in dicToAdd) dic.Add(item.Key, item.Value);
         }
-        public static string GetNextNumberedKey<T>(this IDictionary<string, T> dictionary, string keyBase)
+        public static string GetNextNumberedKey<T>(this IDictionary<string, T> dictionary, string key, string postFix = "")
         {
             int n = 0;
-            bool contains = true;
-            while (contains)
+            string newKey;
+            while (true)
             {
                 n++;
-                contains = false;
-                foreach (var entry in dictionary)
-                {
-                    if (entry.Key.StartsWith(keyBase + "-" + n + "_"))
-                    {
-                        contains = true;
-                        break;
-                    }
-                }
+                newKey = key + "-" + n + postFix;
+                if (!dictionary.ContainsKey(newKey)) break;
             }
-            return keyBase + "-" + n + "_";
+            return newKey;
+        }
+        public static string GetNextNumberedKey(this HashSet<string> hashSet, string key, string postFix = "")
+        {
+            int n = 0;
+            string newKey;
+            while (true)
+            {
+                n++;
+                newKey = key + "-" + n + postFix;
+                if (!hashSet.Contains(newKey)) break;
+            }
+            return newKey;
+        }
+        public static string GetNextNumberedKey(this List<string> list, string key, string postFix = "")
+        {
+            return new HashSet<string>(list).GetNextNumberedKey(key, postFix);
+        }
+        public static string GetNextNumberedKey(this string[] array, string key, string postFix = "")
+        {
+            return new HashSet<string>(array).GetNextNumberedKey(key, postFix);
         }
 
         // Property grid items
         public static IEnumerable<GridItem> EnumerateAllItems(this PropertyGrid grid)
         {
-            if (grid == null)
-                yield break;
-
-            // get to root item
+            if (grid == null) yield break;
+            // Get to root item
             GridItem start = grid.SelectedGridItem;
             while (start.Parent != null)
             {
                 start = start.Parent;
             }
-
+            //
             foreach (GridItem item in start.EnumerateAllItems())
             {
                 yield return item;
@@ -149,9 +160,8 @@ namespace CaeGlobals
         }
         public static IEnumerable<GridItem> EnumerateAllItems(this GridItem item)
         {
-            if (item == null)
-                yield break;
-
+            if (item == null) yield break;
+            //
             yield return item;
             foreach (GridItem child in item.GridItems)
             {

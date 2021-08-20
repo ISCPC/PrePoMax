@@ -249,9 +249,7 @@ namespace PrePoMax.Forms
         {
             if (name == null || name == "") name = "Defined field";
             name = name.Replace(' ', '_');
-            if (name[name.Length - 1] != '-') name += '-';
-            name = NamedClass.GetNewValueName(_definedFieldNames, name);
-            //
+            name = _definedFieldNames.GetNextNumberedKey(name);
             return name;
         }
         private void HighlightDefinedField()

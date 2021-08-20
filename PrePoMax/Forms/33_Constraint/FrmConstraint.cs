@@ -304,7 +304,7 @@ namespace PrePoMax.Forms
             item = new ListViewItem("Rigid body");
             if (referencePointNames.Length > 0)
             {
-                RigidBody rb = new RigidBody(GetConstraintName("Rigid_body-"), referencePointNames[0], "", RegionTypeEnum.Selection);
+                RigidBody rb = new RigidBody(GetConstraintName("Rigid_body"), referencePointNames[0], "", RegionTypeEnum.Selection);
                 ViewRigidBody vrb = new ViewRigidBody(rb);
                 vrb.PopululateDropDownLists(referencePointNames, nodeSetNames, surfaceNames);
                 vrb.Color = color;
@@ -314,7 +314,7 @@ namespace PrePoMax.Forms
             lvTypes.Items.Add(item);
             // Tie          
             item = new ListViewItem("Tie");
-            Tie tie = new Tie(GetConstraintName("Tie-"), "", RegionTypeEnum.Selection, "", RegionTypeEnum.Selection);
+            Tie tie = new Tie(GetConstraintName("Tie"), "", RegionTypeEnum.Selection, "", RegionTypeEnum.Selection);
             ViewTie vt = new ViewTie(tie);
             vt.PopululateDropDownLists(surfaceNames);
             item.Tag = vt;
@@ -324,7 +324,7 @@ namespace PrePoMax.Forms
         }
         private string GetConstraintName(string namePrefix)
         {
-            return NamedClass.GetNewValueName(_constraintNames, namePrefix);
+            return _constraintNames.GetNextNumberedKey(namePrefix);
         }
         private void tsmiSwapMasterSlave_Click(object sender, EventArgs e)
         {

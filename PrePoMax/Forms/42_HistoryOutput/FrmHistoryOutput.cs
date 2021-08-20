@@ -288,7 +288,7 @@ namespace PrePoMax.Forms
         }
         private string GetHistoryOutputName(string prefix)
         {
-            return NamedClass.GetNewValueName(_historyOutputNames, prefix + "H_output-");
+            return _historyOutputNames.GetNextNumberedKey(prefix + "H_output");
         }
         private void HighlightHistoryOutput()
         {

@@ -528,7 +528,7 @@ namespace PrePoMax.Forms
         }
         private string GetMaterialName()
         {
-            return NamedClass.GetNewValueName(_materialNames, "Material-");
+            return _materialNames.GetNextNumberedKey("Material");
         }
         private void SetDataGridViewBinding(object data)
         {

@@ -882,7 +882,7 @@ namespace PrePoMax
         }
         private string[] ImportCompoundPart(string brepFileName)
         {
-            string compoundPartName = NamedClass.GetNewValueName(_model.Geometry.Parts.Keys, "Compound-");
+            string compoundPartName = _model.Geometry.Parts.GetNextNumberedKey("Compound");
             string[] importedPartNames = ImportCADAssemblyFile(brepFileName, "BREP_ASSEMBLY_SPLIT_TO_PARTS");
             //
             if (importedPartNames.Length == 1)  // only one part was imported
@@ -2996,7 +2996,8 @@ namespace PrePoMax
         {
             bool result;
             // Create an element set to reselect the selection based items
-            string name = NamedClass.GetNewValueName(GetAllElementSetNames(), CaeMesh.Globals.InternalName + "_Remeshing-");
+            string name = GetAllElementSetNames().GetNextNumberedKey(CaeMesh.Globals.InternalName + "_Remeshing");
+
             FeElementSet elementSet;
             if (remeshingParameters.RegionType == RegionTypeEnum.ElementSetName)
             {
@@ -3475,7 +3476,7 @@ namespace PrePoMax
             }
             else return null;
         }
-        public void AddNodeSet(FeNodeSet nodeSet)
+        public void AddNodeSet(FeNodeSet nodeSet, bool update = true)
         {
             // In order for the Regenerate history to work perform the selection
             if (nodeSet.CreationData != null) ReselectNodeSet(nodeSet);
@@ -3489,7 +3490,7 @@ namespace PrePoMax
             UpdateSurfacesBasedOnNodeSet(nodeSet.Name);
             UpdateReferencePointsBasedOnNodeSet(nodeSet.Name);
             //
-            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
+            if (update) FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public FeNodeSet GetNodeSet(string nodeSetName)
         {
@@ -3533,7 +3534,7 @@ namespace PrePoMax
             {
                 newNodeSet = _model.Mesh.NodeSets[name].DeepClone();
                 newNodeSet.Name = NamedClass.GetNameWithoutLastValue(newNodeSet.Name);
-                newNodeSet.Name = NamedClass.GetNewValueName(_model.Mesh.NodeSets.Keys, newNodeSet.Name);
+                newNodeSet.Name = _model.Mesh.NodeSets.GetNextNumberedKey(newNodeSet.Name);
                 AddNodeSet(newNodeSet);
             }
         }
@@ -3760,7 +3761,7 @@ namespace PrePoMax
             {
                 newElementSet = _model.Mesh.ElementSets[name].DeepClone();
                 newElementSet.Name = NamedClass.GetNameWithoutLastValue(newElementSet.Name);
-                newElementSet.Name = NamedClass.GetNewValueName(_model.Mesh.ElementSets.Keys, newElementSet.Name);
+                newElementSet.Name = _model.Mesh.ElementSets.GetNextNumberedKey(newElementSet.Name);
                 AddElementSet(newElementSet);
             }
         }
@@ -3959,7 +3960,7 @@ namespace PrePoMax
             }
             else return null;
         }
-        public void AddSurface(FeSurface surface)
+        public void AddSurface(FeSurface surface, bool update = true)
         {
             if (surface.CreatedFrom == FeSurfaceCreatedFrom.Selection)
             {
@@ -3975,7 +3976,7 @@ namespace PrePoMax
             //
             UpdateReferencePointsBasedOnSurface(surface.Name);
             //
-            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
+            if (update) FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public FeSurface GetSurface(string surfaceName)
         {
@@ -4335,7 +4336,7 @@ namespace PrePoMax
             {
                 newMaterial = _model.Materials[name].DeepClone();
                 newMaterial.Name = NamedClass.GetNameWithoutLastValue(newMaterial.Name);
-                newMaterial.Name = NamedClass.GetNewValueName(_model.Materials.Keys, newMaterial.Name);
+                newMaterial.Name = _model.Materials.GetNextNumberedKey(newMaterial.Name);
                 AddMaterial(newMaterial);
             }
         }
@@ -4440,7 +4441,7 @@ namespace PrePoMax
                 // Element set output
                 if (section is SolidSection || section is ShellSection)
                 {
-                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.ElementSets) + section.Name;
+                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.ElementSets, section.Name);
                     // For
                     bool createdByPart = section.CreationData != null && (section.CreationData.SelectItem == vtkSelectItem.Part);
                     FeElementSet elementSet = new FeElementSet(name, section.CreationIds, createdByPart);
@@ -4505,15 +4506,15 @@ namespace PrePoMax
         {
             return _model.Constraints.Keys.ToArray();
         }
-        public void AddConstraint(Constraint constraint)
+        public void AddConstraint(Constraint constraint, bool update = true)
         {
-            ConvertSelectionBasedConstraint(constraint);
+            ConvertSelectionBasedConstraint(constraint, update);
             //
             _model.Constraints.Add(constraint.Name, constraint);
             //
             _form.AddTreeNode(ViewGeometryModelResults.Model, constraint, null);
             //
-            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
+            if (update) FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public Constraint GetConstraint(string constraintName)
         {
@@ -4565,6 +4566,8 @@ namespace PrePoMax
         }
         public void RemoveConstraints(string[] constraintNames)
         {
+            _form.DisableSelectionsChanged = true;
+            //
             foreach (var name in constraintNames)
             {
                 DeleteSelectionBasedConstraintSets(name);
@@ -4572,10 +4575,12 @@ namespace PrePoMax
                 _form.RemoveTreeNode<Constraint>(ViewGeometryModelResults.Model, name, null);
             }
             //
+            _form.DisableSelectionsChanged = false;
+            //
             FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         //
-        private void ConvertSelectionBasedConstraint(Constraint constraint)
+        private void ConvertSelectionBasedConstraint(Constraint constraint, bool update = true)
         {
             // Create a named set and convert a selection to a named set
             if (constraint is RigidBody rb)
@@ -4584,11 +4589,11 @@ namespace PrePoMax
                 // Surface
                 if (rb.RegionType == RegionTypeEnum.Selection)
                 {
-                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.NodeSets) + constraint.Name;
+                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.NodeSets, constraint.Name);
                     FeNodeSet nodeSet = new FeNodeSet(name, rb.CreationIds);
                     nodeSet.CreationData = rb.CreationData.DeepClone();
                     nodeSet.Internal = true;
-                    AddNodeSet(nodeSet);
+                    AddNodeSet(nodeSet, update);
                     //
                     rb.RegionName = name;
                     rb.RegionType = RegionTypeEnum.NodeSetName;
@@ -4606,10 +4611,10 @@ namespace PrePoMax
                 // Master Surface
                 if (tie.MasterRegionType == RegionTypeEnum.Selection)
                 {
-                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.Surfaces) + constraint.Name + CaeMesh.Globals.MasterNameSuffix;
+                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.Surfaces, constraint.Name + CaeMesh.Globals.MasterNameSuffix);
                     FeSurface surface = new FeSurface(name, tie.MasterCreationIds, tie.MasterCreationData.DeepClone());
                     surface.Internal = true;
-                    AddSurface(surface);
+                    AddSurface(surface, update);
                     //
                     tie.MasterRegionName = name;
                     tie.MasterRegionType = RegionTypeEnum.SurfaceName;
@@ -4623,10 +4628,10 @@ namespace PrePoMax
                 // Slave Surface
                 if (tie.SlaveRegionType == RegionTypeEnum.Selection)
                 {
-                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.Surfaces) + constraint.Name + CaeMesh.Globals.SlaveNameSuffix;
+                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.Surfaces, constraint.Name + CaeMesh.Globals.SlaveNameSuffix);
                     FeSurface surface = new FeSurface(name, tie.SlaveCreationIds, tie.SlaveCreationData.DeepClone());
                     surface.Internal = true;
-                    AddSurface(surface);
+                    AddSurface(surface, update);
                     //
                     tie.SlaveRegionName = name;
                     tie.SlaveRegionType = RegionTypeEnum.SurfaceName;
@@ -4661,32 +4666,41 @@ namespace PrePoMax
         {
             SuppressExplodedViews();
             ContactSearch contactSearch = new ContactSearch(_model.Mesh);
-            List<ContactSurface[]> contactPairs = contactSearch.FindContactPairs(distance, angleDeg);
+            contactSearch.GroupContactPairsBy = GroupContactPairsByEnum.ByParts;
+            List<MasterSlaveItem> masterSlaveItems = contactSearch.FindContactPairs(distance, angleDeg);
             ResumeExplodedViews(false);
-            if (contactPairs == null) return;
             //
-            int geometryId;
             string name;
             Tie tie;
-            foreach (var contactPair in contactPairs)
+            Dictionary<string, int> nameCounter = new Dictionary<string, int>();
+            foreach (var masterSlaveItem in masterSlaveItems)
             {
-                name = _model.Constraints.GetNextNumberedKey("Tie");
+                if (nameCounter.ContainsKey(masterSlaveItem.Name)) nameCounter[masterSlaveItem.Name]++;
+                else nameCounter.Add(masterSlaveItem.Name, 1);
+            }
+            foreach (var masterSlaveItem in masterSlaveItems)
+            {
+                name = masterSlaveItem.Name;
+                if (nameCounter[name] > 1 || _model.Constraints.ContainsKey(name))
+                    name = _model.Constraints.GetNextNumberedKey(name);
                 tie = new Tie(name, distance, false, "", RegionTypeEnum.Selection, "", RegionTypeEnum.Selection);
                 //
-                geometryId = contactPair[0].Id * 100000 + 3 * 10000 + contactPair[0].Part.PartId;
                 tie.MasterCreationData = new Selection();
                 tie.MasterCreationData.SelectItem = vtkSelectItem.Surface;
-                tie.MasterCreationData.Add(new SelectionNodeIds(vtkSelectOperation.Add, false, new int[] { geometryId }, true));
+                tie.MasterCreationData.Add(new SelectionNodeIds(vtkSelectOperation.Add, false,
+                                                                masterSlaveItem.MasterGeometryIds.ToArray(), true));
                 tie.MasterCreationIds = new int[] { 1 };
                 //
-                geometryId = contactPair[1].Id * 100000 + 3 * 10000 + contactPair[1].Part.PartId;
                 tie.SlaveCreationData = new Selection();
                 tie.SlaveCreationData.SelectItem = vtkSelectItem.Surface;
-                tie.SlaveCreationData.Add(new SelectionNodeIds(vtkSelectOperation.Add, false, new int[] { geometryId }, true));
+                tie.SlaveCreationData.Add(new SelectionNodeIds(vtkSelectOperation.Add, false,
+                                                               masterSlaveItem.SlaveGeometryIds.ToArray(), true));
                 tie.SlaveCreationIds = new int[] { 1 };
                 //
-                AddConstraint(tie);
+                AddConstraint(tie, false);
             }
+            //
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
 
         #endregion #################################################################################################################
@@ -4749,7 +4763,7 @@ namespace PrePoMax
             {
                 newSurfaceInteraction = _model.SurfaceInteractions[name].DeepClone();
                 newSurfaceInteraction.Name = NamedClass.GetNameWithoutLastValue(newSurfaceInteraction.Name);
-                newSurfaceInteraction.Name = NamedClass.GetNewValueName(_model.SurfaceInteractions.Keys, newSurfaceInteraction.Name);
+                newSurfaceInteraction.Name = _model.SurfaceInteractions.GetNextNumberedKey(newSurfaceInteraction.Name);
                 AddSurfaceInteraction(newSurfaceInteraction);
             }
         }
@@ -4875,7 +4889,7 @@ namespace PrePoMax
             // Master Surface
             if (contactPair.MasterRegionType == RegionTypeEnum.Selection)
             {
-                name = FeMesh.GetNextFreeSelectionName(_model.Mesh.Surfaces) + contactPair.Name + CaeMesh.Globals.MasterNameSuffix;
+                name = FeMesh.GetNextFreeSelectionName(_model.Mesh.Surfaces, contactPair.Name + CaeMesh.Globals.MasterNameSuffix);
                 FeSurface surface = new FeSurface(name, contactPair.MasterCreationIds, contactPair.MasterCreationData.DeepClone());
                 surface.Internal = true;
                 AddSurface(surface);
@@ -4892,7 +4906,7 @@ namespace PrePoMax
             // Slave Surface
             if (contactPair.SlaveRegionType == RegionTypeEnum.Selection)
             {
-                name = FeMesh.GetNextFreeSelectionName(_model.Mesh.Surfaces) + contactPair.Name + CaeMesh.Globals.SlaveNameSuffix;
+                name = FeMesh.GetNextFreeSelectionName(_model.Mesh.Surfaces, contactPair.Name + CaeMesh.Globals.SlaveNameSuffix);
                 FeSurface surface = new FeSurface(name, contactPair.SlaveCreationIds, contactPair.SlaveCreationData.DeepClone());
                 surface.Internal = true;
                 AddSurface(surface);
@@ -5002,7 +5016,7 @@ namespace PrePoMax
                 // Initial temperature
                 if (initialCondition is InitialTemperature)
                 {
-                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.NodeSets) + initialCondition.Name;
+                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.NodeSets, initialCondition.Name);
                     FeNodeSet nodeSet = new FeNodeSet(name, initialCondition.CreationIds);
                     nodeSet.CreationData = initialCondition.CreationData.DeepClone();
                     nodeSet.Internal = true;
@@ -5096,7 +5110,7 @@ namespace PrePoMax
             {
                 newStep = GetStep(stepName).DeepClone();
                 newStep.Name = NamedClass.GetNameWithoutLastValue(newStep.Name);
-                newStep.Name = NamedClass.GetNewValueName(GetStepNames(), newStep.Name);
+                newStep.Name = GetStepNames().GetNextNumberedKey(newStep.Name);
                 AddStep(newStep, false);
             }
         }
@@ -5230,7 +5244,7 @@ namespace PrePoMax
                 // Node output
                 if (historyOutput is NodalHistoryOutput)
                 {
-                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.NodeSets) + historyOutput.Name;
+                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.NodeSets, historyOutput.Name);
                     FeNodeSet nodeSet = new FeNodeSet(name, historyOutput.CreationIds);
                     nodeSet.CreationData = historyOutput.CreationData.DeepClone();
                     nodeSet.Internal = true;
@@ -5242,7 +5256,7 @@ namespace PrePoMax
                 // Element output
                 else if (historyOutput is ElementHistoryOutput)
                 {
-                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.ElementSets) + historyOutput.Name;
+                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.ElementSets, historyOutput.Name);
                     FeElementSet elementSet = new FeElementSet(name, historyOutput.CreationIds);
                     elementSet.CreationData = historyOutput.CreationData.DeepClone();
                     elementSet.Internal = true;
@@ -5498,7 +5512,7 @@ namespace PrePoMax
                 if (boundaryCondition is FixedBC || boundaryCondition is DisplacementRotation ||
                     boundaryCondition is SubmodelBC || boundaryCondition is TemperatureBC)
                 {
-                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.NodeSets) + boundaryCondition.Name;
+                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.NodeSets, boundaryCondition.Name);
                     FeNodeSet nodeSet = new FeNodeSet(name, boundaryCondition.CreationIds);
                     nodeSet.CreationData = boundaryCondition.CreationData.DeepClone();
                     nodeSet.Internal = true;
@@ -5667,7 +5681,7 @@ namespace PrePoMax
                 // Node set
                 if (load is CLoad || load is MomentLoad || load is CFlux)
                 {
-                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.NodeSets) + load.Name;
+                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.NodeSets, load.Name);
                     FeNodeSet nodeSet = new FeNodeSet(name, load.CreationIds);
                     nodeSet.CreationData = load.CreationData.DeepClone();
                     nodeSet.Internal = true;
@@ -5679,7 +5693,7 @@ namespace PrePoMax
                 // Element set from parts
                 else if (load is GravityLoad || load is CentrifLoad || load is BodyFlux)
                 {
-                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.ElementSets) + load.Name;
+                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.ElementSets, load.Name);
                     FeElementSet elementSet = new FeElementSet(name, load.CreationIds, true);
                     elementSet.CreationData = load.CreationData.DeepClone();
                     elementSet.Internal = true;
@@ -5692,7 +5706,7 @@ namespace PrePoMax
                 else if (load is DLoad || load is STLoad || load is ShellEdgeLoad || load is PreTensionLoad || load is DFlux ||
                          load is FilmHeatTransfer || load is RadiationHeatTransfer)
                 {
-                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.Surfaces) + load.Name;
+                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.Surfaces, load.Name);
                     FeSurface surface = new FeSurface(name, load.CreationIds, load.CreationData.DeepClone());
                     surface.Internal = true;
                     AddSurface(surface);
@@ -5834,7 +5848,7 @@ namespace PrePoMax
                 {
                     if (dt.Type == DefinedTemperatureTypeEnum.ByValue)
                     {
-                        name = FeMesh.GetNextFreeSelectionName(_model.Mesh.NodeSets) + definedField.Name;
+                        name = FeMesh.GetNextFreeSelectionName(_model.Mesh.NodeSets, definedField.Name);
                         FeNodeSet nodeSet = new FeNodeSet(name, definedField.CreationIds);
                         nodeSet.CreationData = definedField.CreationData.DeepClone();
                         nodeSet.Internal = true;
@@ -6016,7 +6030,7 @@ namespace PrePoMax
                 int[] unAssignedElementIds = _model.GetSectionAssignments(out Dictionary<int, int> elementIdSectionId);
                 if (unAssignedElementIds.Length != 0)
                 {
-                    string elementSetName = NamedClass.GetNewValueName(_model.Mesh.ElementSets.Keys, Globals.MissingSectionName);
+                    string elementSetName = _model.Mesh.ElementSets.GetNextNumberedKey(Globals.MissingSectionName);
                     AddElementSetCommand(new FeElementSet(elementSetName, unAssignedElementIds));
                     //
                     string msg = unAssignedElementIds.Length + " finite elements are missing a section assignment. Continue?";
@@ -6696,7 +6710,10 @@ namespace PrePoMax
         {
             int[] ids;
             //
-            if (selectionNodeMouse.IsGeometryBased) // vtkSelctBy = Geometry, ...
+            // Are node ids allready recorded in this session - speed optimization
+            if (_selection.TryGetNodeIds(selectionNodeMouse, out ids))
+            { }
+            else if (selectionNodeMouse.IsGeometryBased) // vtkSelctBy = Geometry, ...
             {
                 ids = GetIdsFromFrustumFromGeometrySelection(selectionNodeMouse.PlaneParameters, partNames,
                                                              selectionNodeMouse.SelectBy, keepGeometryIds);
@@ -6952,7 +6969,7 @@ namespace PrePoMax
             int[] ids = null;
             if (elementIds == null || elementIds.Length == 0) return ids;
             // Get geometry ids
-            ids = mesh.GetGeometryIds(elementIds);
+            ids = mesh.GetGeometryIds2(elementIds);
             if (keepGeometryIds) return ids;
             // Change geometry ids to node, element, ... ids
             if (selectBy == vtkSelectBy.Geometry)
@@ -8885,7 +8902,7 @@ namespace PrePoMax
             FeSurface surface;
             if (temperature.RegionType == RegionTypeEnum.NodeSetName)
             {
-                string name = NamedClass.GetNewValueName(Model.Mesh.Surfaces.Keys, "Thermo-");
+                string name = Model.Mesh.Surfaces.GetNextNumberedKey("Thermo");
                 surface = new FeSurface(name, temperature.RegionName);
                 surface.Internal = true;
                 _model.Mesh.CreateSurfaceItems(surface);

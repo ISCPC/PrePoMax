@@ -741,13 +741,13 @@ namespace FileInOut.Input
                 // Create a new reference point if it was not found
                 if (referencePointName == null)
                 {
-                    referencePointName = NamedClass.GetNewValueName(referencePoints.Keys, "RP-");
+                    referencePointName = referencePoints.GetNextNumberedKey("RP");
                     FeNode node = nodes[nodeId1];
                     FeReferencePoint referencePoint = new FeReferencePoint(referencePointName, node, nodeId2);
                     referencePoints.Add(referencePointName, referencePoint);
                 }
                 //
-                string rigidBodyName = NamedClass.GetNewValueName(constraints.Keys, "Constraint-");
+                string rigidBodyName = constraints.GetNextNumberedKey("Constraint");
                 RigidBody rigidBody = new RigidBody(rigidBodyName, referencePointName, nodeSetName, RegionTypeEnum.NodeSetName);
                 return rigidBody;                
             }
@@ -1107,7 +1107,7 @@ namespace FileInOut.Input
                     else if (record2[0].Trim().ToUpper() == "MATERIAL") materialName = record2[1].Trim();
                 }
                 //
-                string name = NamedClass.GetNewValueName(sections.Keys, "Section-");
+                string name = sections.GetNextNumberedKey("Section");
                 var section = new SolidSection(name, materialName, regionName, RegionTypeEnum.ElementSetName);
                 //
                 return section;
@@ -1142,7 +1142,7 @@ namespace FileInOut.Input
                 {
                     double thickness = double.Parse(dataSet[1]);
                     //
-                    string name = NamedClass.GetNewValueName(sections.Keys, "Section-");
+                    string name = sections.GetNextNumberedKey("Section");
                     ShellSection section = new ShellSection(name, materialName, regionName, RegionTypeEnum.ElementSetName,
                                                             thickness);
                     section.Offset = offset;
@@ -1280,7 +1280,7 @@ namespace FileInOut.Input
                     dataSetId++;
                 }
                 step.FieldOutputs.Clear();              // Clear default field outputs
-                step.Name = NamedClass.GetNewValueName(steps.Keys, "Step-");
+                step.Name = steps.GetNextNumberedKey("Step");
                 // Get step features
                 dataSetId = prevDataSetId;              // Go back to the beginning of the step
                 dataSetId++;
@@ -1475,7 +1475,7 @@ namespace FileInOut.Input
                     // Create new internal node set if it does not exist
                     if (!mesh.NodeSets.Keys.Contains(regionName) && int.TryParse(regionName, out nodeId))
                     {
-                        nodeSetName = NamedClass.GetNewValueName(nodeSets.Keys, Globals.InternalName + "_" + regionName + "-");
+                        nodeSetName = nodeSets.GetNextNumberedKey(Globals.InternalName + "_" + regionName);
                         FeNodeSet nodeSet = new FeNodeSet(nodeSetName, new int[] { nodeId });
                         nodeSets.Add(nodeSet.Name, nodeSet);
                         //
@@ -1490,13 +1490,13 @@ namespace FileInOut.Input
                     //
                     if (dofStart == 11)
                     {
-                        name = NamedClass.GetNewValueName(boundaryConditions.Keys, "Temperature-");
+                        name = boundaryConditions.GetNextNumberedKey("Temperature");
                         TemperatureBC tempBC = new TemperatureBC(name, regionName, RegionTypeEnum. NodeSetName, dofValue);
                         boundaryConditions.Add(name, tempBC);
                     }
                     else
                     {
-                        name = NamedClass.GetNewValueName(boundaryConditions.Keys, "Displacement_rotation-");
+                        name = boundaryConditions.GetNextNumberedKey("Displacement_rotation");
                         DisplacementRotation dispRotBC = new DisplacementRotation(name, regionName, RegionTypeEnum.NodeSetName);
                         // Assign DOF prescribed displacement
                         for (var j = dofStart; j <= dofEnd; j++)
@@ -1594,7 +1594,7 @@ namespace FileInOut.Input
                     mergedNodeSet.Internal = true;
                     // Rename
                     if (keyBcEntry.Value.Count > 1)
-                        mergedNodeSet.Name = NamedClass.GetNewValueName(allNodeSetNames, Globals.InternalName + "_merged-");
+                        mergedNodeSet.Name = allNodeSetNames.GetNextNumberedKey(Globals.InternalName + "_merged");
                     // Add
                     allNodeSetNames.Add(mergedNodeSet.Name);
                     mergedNodeSets.Add(mergedNodeSet.Name, mergedNodeSet);
@@ -1602,7 +1602,7 @@ namespace FileInOut.Input
                     boundaryCondition.RegionName = mergedNodeSet.Name;
                     // Rename
                     if (keyBcEntry.Value.Count > 1)
-                        boundaryCondition.Name = NamedClass.GetNewValueName(allBCNames, "BC_merged-");
+                        boundaryCondition.Name = allBCNames.GetNextNumberedKey("BC_merged");
                     // Add
                     allBCNames.Add(boundaryCondition.Name);
                     boundaryConditions.Add(boundaryCondition.Name, boundaryCondition);
@@ -1632,8 +1632,8 @@ namespace FileInOut.Input
                 //
                 for (var i = 1; i < lines.Length; i++)
                 {
-                    nameCF = NamedClass.GetNewValueName(step.Loads.Keys, "Concentrated_force-");
-                    nameMom = NamedClass.GetNewValueName(step.Loads.Keys, "Moment-");
+                    nameCF = step.Loads.GetNextNumberedKey("Concentrated_force");
+                    nameMom = step.Loads.GetNextNumberedKey("Moment");
                     //
                     string[] recordCL = lines[i].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries);
                     // Get regionName name or nodeId
@@ -1642,7 +1642,7 @@ namespace FileInOut.Input
                     if (!mesh.NodeSets.ContainsKey(regionName)) int.TryParse(regionName, out nodeId);
                     if (nodeId != -1)
                     {
-                        regionName = NamedClass.GetNewValueName(mesh.NodeSets.Keys, "Auto_created-");
+                        regionName = mesh.NodeSets.GetNextNumberedKey("Auto_created");
                         nodeSet = new FeNodeSet(regionName, new int[] { nodeId });
                         mesh.NodeSets.Add(regionName, nodeSet);
                     }
@@ -1713,7 +1713,7 @@ namespace FileInOut.Input
                     {
                         // Get Gravity value
                         gValue = double.Parse(recordDL[2]);
-                        nameGrav = NamedClass.GetNewValueName(step.Loads.Keys, "Grav-");
+                        nameGrav = step.Loads.GetNextNumberedKey("Grav");
                         //
                         GravityLoad gLoad = new GravityLoad(nameGrav, regionName, RegionTypeEnum.ElementSetName, 0.0, 0.0, 0.0);
                         //
@@ -1738,7 +1738,7 @@ namespace FileInOut.Input
             // U, RF, NT
             try
             {
-                string name = NamedClass.GetNewValueName(step.FieldOutputs.Keys, "NF-Output-");
+                string name = step.FieldOutputs.GetNextNumberedKey("NF-Output");
                 NodalFieldVariable variables;
                 int? frequency = null;
                 string[] record1;
@@ -1779,7 +1779,7 @@ namespace FileInOut.Input
             // S, E
             try
             {
-                string name = NamedClass.GetNewValueName(step.FieldOutputs.Keys, "EF-Output-");
+                string name = step.FieldOutputs.GetNextNumberedKey("EF-Output");
                 ElementFieldVariable variables;
                 int? frequency = null;
                 string[] record1;
@@ -1820,7 +1820,7 @@ namespace FileInOut.Input
             // CDIS, CSTR
             try
             {
-                string name = NamedClass.GetNewValueName(step.FieldOutputs.Keys, "CF-Output-");
+                string name = step.FieldOutputs.GetNextNumberedKey("CF-Output");
                 ContactFieldVariable variables;
                 int? frequency = null;
                 string[] record1;
@@ -1862,7 +1862,7 @@ namespace FileInOut.Input
             // U, RF, NT
             try
             {
-                string name = NamedClass.GetNewValueName(step.HistoryOutputs.Keys, "NH-Output-");
+                string name = step.HistoryOutputs.GetNextNumberedKey("NH-Output");
                 NodalHistoryVariable variables;
                 string regionName = null;
                 int? frequency = null;
@@ -1919,7 +1919,7 @@ namespace FileInOut.Input
             // S, E, ME, PEEQ
             try
             {
-                string name = NamedClass.GetNewValueName(step.HistoryOutputs.Keys, "EH-Output-");
+                string name = step.HistoryOutputs.GetNextNumberedKey("EH-Output");
                 ElementHistoryVariable variables;
                 string regionName = null;
                 int? frequency = null;
@@ -1977,7 +1977,7 @@ namespace FileInOut.Input
             // S, E, ME, PEEQ
             try
             {
-                string name = NamedClass.GetNewValueName(step.HistoryOutputs.Keys, "CH-Output-");
+                string name = step.HistoryOutputs.GetNextNumberedKey("CH-Output");
                 ContactHistoryVariable variables;
                 string masterName = null;
                 string slaveName = null;

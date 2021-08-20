@@ -430,6 +430,15 @@ namespace CaeMesh
             //
             return allEdgeNodeIds.ToArray();
         }
+        public HashSet<int> GetNodeIdsBySurface(int surfaceId)
+        {
+            HashSet<int> surfaceNodeIds = new HashSet<int>();
+            for (int i = 0; i < _cellIdsByFace[surfaceId].Length; i++)
+            {
+                surfaceNodeIds.UnionWith(_cells[_cellIdsByFace[surfaceId][i]]);
+            }
+            return surfaceNodeIds;
+        }
         public Dictionary<int, HashSet<int>> GetNodeIdsBySurfaces()
         {
             HashSet<int> surfaceNodeIds;
@@ -478,6 +487,23 @@ namespace CaeMesh
                 }
             }
             return surfaceIdSurfaceNeighbourIds;
+        }
+        public Dictionary<int, HashSet<int>> GetSurfaceIdsForEachElement()
+        {
+            int elementId;
+            HashSet<int> elementSurfaceIds;
+            Dictionary<int, HashSet<int>> elementIdSurfaceIds = new Dictionary<int, HashSet<int>>();
+            for (int i = 0; i < _cellIdsByFace.Length; i++)
+            {
+                for (int j = 0; j < _cellIdsByFace[i].Length; j++)
+                {
+                    elementId = _cellIds[_cellIdsByFace[i][j]];
+                    //
+                    if (elementIdSurfaceIds.TryGetValue(elementId, out elementSurfaceIds)) elementSurfaceIds.Add(i);
+                    else elementIdSurfaceIds.Add(elementId, new HashSet<int>() { i });
+                }
+            }
+            return elementIdSurfaceIds;
         }
         // Free edges and nodes
         public HashSet<int> GetFreeEdgeIds()

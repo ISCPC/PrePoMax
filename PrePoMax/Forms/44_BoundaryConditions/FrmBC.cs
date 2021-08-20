@@ -389,7 +389,7 @@ namespace PrePoMax.Forms
         }
         private string GetBoundaryConditionName(string baseName)
         {
-            return NamedClass.GetNewValueName(_boundaryConditionNames, baseName + "-");
+            return _boundaryConditionNames.GetNextNumberedKey(baseName);
         }
         private void HighlightBoundaryCondition()
         {

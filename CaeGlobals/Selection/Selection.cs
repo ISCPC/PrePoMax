@@ -22,7 +22,7 @@ namespace CaeGlobals
         
 
         // Temporary storage for speed optimization: keep current ids; do not copy
-        [NonSerialized] private Dictionary<SelectionNode, int[]> _nodeIds;
+        [NonSerialized] private Dictionary<double, int[]> _nodeIds;
 
 
         // Properties                                                                                                               
@@ -115,21 +115,30 @@ namespace CaeGlobals
 
 
         // Methods                                                                                                                  
-        public void Add(SelectionNode node, int[] ids)
-        {
-            _nodes.Add(node);
-            if (_nodeIds == null) _nodeIds = new Dictionary<SelectionNode, int[]>();
-            _nodeIds.Add(node, ids);
-        }
         public void Add(SelectionNodeIds node)
         {
             Add(node, node.ItemIds);
+        }
+        public void Add(SelectionNode node, int[] ids)
+        {
+            _nodes.Add(node);
+            if (_nodeIds == null) _nodeIds = new Dictionary<double, int[]>();
+            //
+            double hash;
+            Random rnd = new Random((int)DateTime.Now.Ticks);
+            do
+            {
+                hash = rnd.NextDouble();
+            }
+            while (_nodeIds.ContainsKey(hash));
+            node.Hash = hash;
+            _nodeIds.Add(hash, ids);
         }
         public bool TryGetNodeIds(SelectionNode node, out int[] ids)
         {
             ids = null;
             if (_nodeIds == null) return false;
-            else if (_nodeIds.TryGetValue(node, out ids)) return true;
+            else if (_nodeIds.TryGetValue(node.Hash, out ids)) return true;
             else return false;
         }
         public void RemoveFirst()
@@ -137,7 +146,7 @@ namespace CaeGlobals
             if (_nodes.Count > 0)
             {
                 SelectionNode node = _nodes.First();
-                if (_nodeIds != null) _nodeIds.Remove(node);
+                if (_nodeIds != null) _nodeIds.Remove(node.Hash);
                 _nodes.Remove(node);
             }
         }
@@ -146,7 +155,7 @@ namespace CaeGlobals
             if (_nodes.Count > 0)
             {
                 SelectionNode node = _nodes.Last();
-                if (_nodeIds != null) _nodeIds.Remove(node);
+                if (_nodeIds != null) _nodeIds.Remove(node.Hash);
                 _nodes.Remove(node);
             }
         }

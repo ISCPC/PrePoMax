@@ -320,7 +320,7 @@ namespace PrePoMax.Forms
         }
         private string GetStepName()
         {
-            return NamedClass.GetNewValueName(_stepNames, "Step-");
+            return _stepNames.GetNextNumberedKey("Step");
         }
     }
 }

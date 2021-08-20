@@ -199,7 +199,7 @@ namespace PrePoMax.Forms
         // Methods                                                                                                                  
         private string GetSurfaceName()
         {
-            return NamedClass.GetNewValueName(_allExistingNames, "Surface-");
+            return _allExistingNames.GetNextNumberedKey("Surface");
         }
         private void HighlightSurface()
         {

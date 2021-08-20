@@ -1292,7 +1292,7 @@ namespace vtkControl
                     else entry.Value.Geometry.VisibilityOff();
                 }
                 // Set opacity for all visible actors to 1
-                entry.Value.GeometryProperty.SetOpacity(1);
+                if (entry.Value.GeometryProperty.GetOpacity() != 1) entry.Value.GeometryProperty.SetOpacity(1);
             }
             // Pick actor by hardware rendering - render the sceene before Pick
             _renderer.Render();
@@ -1307,7 +1307,7 @@ namespace vtkControl
             // Try some more picks
             if (cellId == -1)
             {
-                int numOfLoops = 1;
+                int numOfLoops = 0;
                 int stepSize = 5;
                 //
                 for (int i = 1; i <= numOfLoops; i++)   // try in a cross shape
@@ -4409,7 +4409,7 @@ namespace vtkControl
         private string GetSectionViewActorName(string actorName)
         {
             string name = actorName + Globals.NameSeparator + Globals.SectionViewSuffix + Globals.NameSeparator;
-            name = NamedClass.GetNewValueName(_actors.Keys, name, Globals.NameSeparator);
+            name = _actors.GetNextNumberedKey(name);
             return name;
         }
 
@@ -4627,8 +4627,8 @@ namespace vtkControl
         //
         private string GetTransformedActorName(string actorName)
         {
-            string name = actorName + Globals.NameSeparator + Globals.TransformationSuffix + Globals.NameSeparator;
-            name = NamedClass.GetNewValueName(_actors.Keys, name, Globals.NameSeparator);
+            string name = actorName + Globals.NameSeparator + Globals.TransformationSuffix;
+            name = _actors.GetNextNumberedKey(name);
             return name;
         }
 
@@ -5661,9 +5661,9 @@ namespace vtkControl
                 _selectedActors.Remove(_mouseSelectionActorCurrent);
                 _mouseSelectionActorCurrent = null;
             }
-
+            //
             _mouseSelectionCurrentIds = null;
-
+            //
             if (_probeWidget != null && _probeWidget.GetVisibility() == 1) _probeWidget.VisibilityOff();
             this.Invalidate();
         }

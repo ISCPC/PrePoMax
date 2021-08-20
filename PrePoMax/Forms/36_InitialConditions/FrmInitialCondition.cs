@@ -229,8 +229,7 @@ namespace PrePoMax.Forms
         {
             if (name == null || name == "") name = "Initial condition";
             name = name.Replace(' ', '_');
-            if (name[name.Length - 1] != '-') name += '-';
-            name = NamedClass.GetNewValueName(_initialConditionNames, name);
+            name = _initialConditionNames.GetNextNumberedKey(name);
             //
             return name;
         }

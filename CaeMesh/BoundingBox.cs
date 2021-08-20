@@ -92,6 +92,29 @@ namespace CaeMesh
             MinZ -= offset[2];
             MaxZ -= offset[2];
         }
+        public void Inflate(double offset)
+        {
+            MinX -= offset;
+            MaxX += offset;
+            MinY -= offset;
+            MaxY += offset;
+            MinZ -= offset;
+            MaxZ += offset;
+        }
+        public void Scale(double scaleFactor)
+        {
+            double delta = 0.5 * (MaxX - MinX) * (scaleFactor - 1);
+            MinX -= delta;
+            MaxX += delta;
+            //
+            delta = 0.5 * (MaxY - MinY) * (scaleFactor - 1);
+            MinY -= delta;
+            MaxY += delta;
+            //
+            delta = 0.5 * (MaxZ - MinZ) * (scaleFactor - 1);
+            MinZ -= delta;
+            MaxZ += delta;
+        }
         //
         public void IncludeCoor(double[] coor)
         {
@@ -104,12 +127,32 @@ namespace CaeMesh
             if (coor[2] > MaxZ) MaxZ = coor[2];
             if (coor[2] < MinZ) MinZ = coor[2];
         }
+        public void IncludeFirstCoor(double[] coor)
+        {
+            MaxX = coor[0];
+            MinX = coor[0];
+            //
+            MaxY = coor[1];
+            MinY = coor[1];
+            //
+            MaxZ = coor[2];
+            MinZ = coor[2];
+        }
+        public void IncludeCoorFast(double[] coor)
+        {
+            if (coor[0] > MaxX) MaxX = coor[0];
+            else if (coor[0] < MinX) MinX = coor[0];
+            //
+            if (coor[1] > MaxY) MaxY = coor[1];
+            else if (coor[1] < MinY) MinY = coor[1];
+            //
+            if (coor[2] > MaxZ) MaxZ = coor[2];
+            else if (coor[2] < MinZ) MinZ = coor[2];
+        }
         public void IncludeCoors(double[][] coors)
         {
-            for (int i = 0; i < coors.Length; i++)
-            {
-                IncludeCoor(coors[i]);
-            }
+            if (coors.Length > 0) IncludeFirstCoor(coors[0]);
+            for (int i = 0; i < coors.Length; i++) IncludeCoorFast(coors[i]);
         }
         public void IncludeNode(FeNode node)
         {
@@ -133,35 +176,39 @@ namespace CaeMesh
             if (box.MaxZ > MaxZ) MaxZ = box.MaxZ;
             if (box.MinZ < MinZ) MinZ = box.MinZ;
         }
-        public void Scale(double scaleFactor)
-        {
-            double delta = 0.5 * (MaxX - MinX) * (scaleFactor - 1);
-            MinX -= delta;
-            MaxX += delta;
-            //
-            delta = 0.5 * (MaxY - MinY) * (scaleFactor - 1);
-            MinY -= delta;
-            MaxY += delta;
-            //
-            delta = 0.5 * (MaxZ - MinZ) * (scaleFactor - 1);
-            MinZ -= delta;
-            MaxZ += delta;
-        }
         //
-        public bool Intesects(BoundingBox box)
+        public bool Intersects(BoundingBox box)
         {
-            if (box.MaxX < MinX || box.MinX > MaxX) return false;
-            else if (box.MaxY < MinY || box.MinY > MaxY) return false;
-            else if (box.MaxZ < MinZ || box.MinZ > MaxZ) return false;
+            if (box.MaxX < MinX) return false;
+            else if (box.MinX > MaxX) return false;
+            else if (box.MaxY < MinY) return false;
+            else if (box.MinY > MaxY) return false;
+            else if (box.MaxZ < MinZ) return false;
+            else if (box.MinZ > MaxZ) return false;
             else return true;
         }
-        public bool Intesects(List<BoundingBox> boxes)
+        public bool Intersects(List<BoundingBox> boxes)
         {
             foreach (var box in boxes)
             {
-                if (Intesects(box)) return true;
+                if (Intersects(box)) return true;
             }
             return false;
+        }
+        public BoundingBox GetIntersection(BoundingBox box)
+        {
+            BoundingBox intersection = new BoundingBox();
+            //
+            intersection.MinX = Math.Max(MinX, box.MinX);
+            intersection.MaxX = Math.Min(MaxX, box.MaxX);
+            //
+            intersection.MinY = Math.Max(MinY, box.MinY);
+            intersection.MaxY = Math.Min(MaxY, box.MaxY);
+            //
+            intersection.MinZ = Math.Max(MinZ, box.MinZ);
+            intersection.MaxZ = Math.Min(MaxZ, box.MaxZ);
+            //
+            return intersection;
         }
         //
         public double[] GetCenter()

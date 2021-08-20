@@ -257,7 +257,7 @@ namespace PrePoMax.Forms
         }
         private string GetReferencePointName()
         {
-            return NamedClass.GetNewValueName(_allExistingNames, "Reference_point-");
+            return _allExistingNames.GetNextNumberedKey("Reference_point");
         }
         private void HighlightReferencePoint()
         {
