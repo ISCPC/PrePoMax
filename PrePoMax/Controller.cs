@@ -4664,6 +4664,7 @@ namespace PrePoMax
         // Auto create
         public void AutoCreateTiedPairs(double distance, double angleDeg)
         {
+            distance = 3;
             SuppressExplodedViews();
             ContactSearch contactSearch = new ContactSearch(_model.Mesh);
             contactSearch.GroupContactPairsBy = GroupContactPairsByEnum.ByParts;

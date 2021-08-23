@@ -48,6 +48,9 @@ namespace CaeJob
         [NonSerialized] private string _outputFileName;
         [NonSerialized] private string _errorFileName;
         [NonSerialized] private object _myLock;
+        [NonSerialized] private long _peakPagedMem;
+        [NonSerialized] private long _peakVirtualMem;
+        [NonSerialized] private long _peakWorkingSet;
 
 
         // Properties                                                                                                               
@@ -227,6 +230,10 @@ namespace CaeJob
             if (File.Exists(_outputFileName)) File.Delete(_outputFileName);
             if (File.Exists(_errorFileName)) File.Delete(_errorFileName);
             //
+            _peakPagedMem = 0;
+            _peakVirtualMem = 0;
+            _peakWorkingSet = 0;
+            //
             if (CaeGlobals.Tools.IsWindows10orNewer()) Run_Win10();
             else Run_OldWin();
         }
@@ -268,7 +275,11 @@ namespace CaeJob
             }
             //
             AppendDataToOutput("");
-            AppendDataToOutput(" Elapsed time [s]: " + _watch.Elapsed.TotalSeconds.ToString());
+            AppendDataToOutput(" Process elapsed time:       " + Math.Round(_watch.Elapsed.TotalSeconds, 3).ToString() + " s");
+            AppendDataToOutput(" Peak physical memory usage: " + (Math.Round(_peakWorkingSet / 1048576.0, 3)).ToString() + " MB");
+            AppendDataToOutput(" Peak paged memory usage:    " + (Math.Round(_peakPagedMem / 1048576.0, 3)).ToString() + " MB");
+            //Console.WriteLine($"  Peak virtual memory usage  : {_peakVirtualMem / 1024 / 1024}");
+
             //
             Timer_Tick(null, null);
             //
@@ -325,7 +336,7 @@ namespace CaeJob
             SetEnvironmentVariables(psi);
 
             _exe = new Process();
-            _exe.StartInfo = psi;
+            _exe.StartInfo = psi;            
 
             using (AutoResetEvent outputWaitHandle = new AutoResetEvent(false))
             using (AutoResetEvent errorWaitHandle = new AutoResetEvent(false))
@@ -340,6 +351,10 @@ namespace CaeJob
                     else
                     {
                         AppendDataToOutput(e.Data);
+                        // Update the values for the overall peak memory statistics.
+                        _peakPagedMem = _exe.PeakPagedMemorySize64;
+                        _peakVirtualMem = _exe.PeakVirtualMemorySize64;
+                        _peakWorkingSet = _exe.PeakWorkingSet64;
                     }
                 };
 
@@ -374,9 +389,9 @@ namespace CaeJob
                     Kill("Time out.");
                     //Debug.WriteLine(DateTime.Now + "   Timeout proces: " + Name + " in: " + _workDirectory);
                     _jobStatus = CaeJob.JobStatus.TimedOut;
-                }
+                }               
                 _exe.Close();
-            }
+            }            
         }
 
         public void Kill(string message)
