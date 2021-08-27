@@ -263,8 +263,21 @@ namespace CaeMesh
         // Variables                                                                                                                
         private T _data;
         private NodeList<T> _neighbors = null;
-        
-        
+
+
+        // Propeties                                                                                                                  
+        public T Value { get { return _data; } set { _data = value; } }
+        public NodeList<T> Neighbors
+        {
+            get
+            {
+                if (_neighbors == null) _neighbors = new NodeList<T>();
+                return _neighbors;
+            }
+            set { _neighbors = value; }
+        }
+
+
         // Constructors                                                                                                             
         public Node()
         { }
@@ -273,14 +286,9 @@ namespace CaeMesh
         { }
         public Node(T data, NodeList<T> neighbors)
         {
-            this._data = data;
-            this._neighbors = neighbors;
+            _data = data;
+            _neighbors = neighbors;
         }
-
-
-        // Methods                                                                                                                  
-        public T Value { get { return _data; } set { _data = value; } }
-        protected NodeList<T> Neighbors { get { return _neighbors; } set { _neighbors = value; } }
     }
     public class NodeList<T> : System.Collections.ObjectModel.Collection<Node<T>>
     {
@@ -300,50 +308,11 @@ namespace CaeMesh
         {
             // Search the list for the value
             foreach (Node<T> node in Items)
-                if (node.Value.Equals(value))
-                    return node;
-
+            {
+                if (node.Value.Equals(value)) return node;
+            }
             // If we reached here, we didn't find a matching node
             return null;
-        }
-    }
-    public class GraphNode<T> : Node<T>
-    {
-        // Variables                                                                                                                
-        private int _id;
-
-
-        // Properties                                                                                                               
-        public int Id { get { return _id; } }
-
-
-        // Constructors                                                                                                             
-        public GraphNode()
-            : base()
-        { }
-        public GraphNode(T value)
-            : base(value)
-        { }
-        public GraphNode(T value, int id)
-            : base(value)
-        {
-            _id = id;
-        }
-        public GraphNode(T value, NodeList<T> neighbors)
-            : base(value, neighbors)
-        { }
-
-
-        // Methods                                                                                                                  
-        new public NodeList<T> Neighbors
-        {
-            get
-            {
-                if (base.Neighbors == null)
-                    base.Neighbors = new NodeList<T>();
-                //
-                return base.Neighbors;
-            }
         }
     }
     public class Graph<T>
@@ -369,21 +338,16 @@ namespace CaeMesh
 
 
         // Methods                                                                                                                  
-        public void AddNode(GraphNode<T> node)
+        public void AddNode(Node<T> node)
         {
             // Adds a node to the graph
             _nodeSet.Add(node);
         }
-        public void AddNode(T value)
-        {
-            // Adds a node to the graph
-            _nodeSet.Add(new GraphNode<T>(value, _nodeSet.Count() + 1));
-        }
-        public void AddDirectedEdge(GraphNode<T> from, GraphNode<T> to)
+        public void AddDirectedEdge(Node<T> from, Node<T> to)
         {
             from.Neighbors.Add(to);
         }
-        public void AddUndirectedEdge(GraphNode<T> from, GraphNode<T> to)
+        public void AddUndirectedEdge(Node<T> from, Node<T> to)
         {
             from.Neighbors.Add(to);
             to.Neighbors.Add(from);
@@ -395,16 +359,18 @@ namespace CaeMesh
         public bool Remove(T value)
         {
             // First remove the node from the nodeset
-            GraphNode<T> nodeToRemove = (GraphNode<T>)_nodeSet.FindByValue(value);
-            if (nodeToRemove == null)
-                // Node wasn't found
-                return false; 
-            // Otherwise, the node was found
-            _nodeSet.Remove(nodeToRemove);
+            Node<T> nodeToRemove = _nodeSet.FindByValue(value);
+            return Remove(nodeToRemove);
+        }
+        public bool Remove(Node<T> node)
+        {
+            if (node == null) return false;
+            // Remove the node
+            _nodeSet.Remove(node);
             // Enumerate through each node in the nodeSet, removing edges to this node
-            foreach (GraphNode<T> gnode in _nodeSet)
+            foreach (Node<T> gnode in _nodeSet)
             {
-                int index = gnode.Neighbors.IndexOf(nodeToRemove);
+                int index = gnode.Neighbors.IndexOf(node);
                 if (index != -1)
                 {
                     // Remove the reference to the node and associated cost
@@ -414,76 +380,168 @@ namespace CaeMesh
             //
             return true;
         }
+        public bool IsGraphSimple()
+        {
+            Node<T> currentNode;
+            Node<T> parentNode = null;
+            Queue<Node<T>> queue = new Queue<Node<T>>();
+            Queue<Node<T>> parentQueue = new Queue<Node<T>>();
+            HashSet<Node<T>> visitedNodes = new HashSet<Node<T>>();
+            //
+            queue.Enqueue(_nodeSet.First());
+            parentQueue.Enqueue(_nodeSet.First());
+            //
+            while (queue.Count() > 0)
+            {
+                currentNode = queue.Dequeue();
+                parentNode = parentQueue.Dequeue();
+                //
+                if (visitedNodes.Add(currentNode))
+                {
+                    // Add all neighbours to the queue
+                    foreach (var neighbour in currentNode.Neighbors)
+                    {
+                        if (neighbour != parentNode)
+                        {
+                            queue.Enqueue(neighbour);
+                            parentQueue.Enqueue(currentNode);
+                        }
+                    }
+                }
+                else return false;
+            }
+            return true;
+        }
+        public List<Graph<T>> GetConnectedGraphs()
+        {
+            Node<T> currentNode;
+            HashSet<Node<T>> visitedNodes = new HashSet<Node<T>>();
+            Queue<Node<T>> queue = new Queue<Node<T>>();
+            NodeList<T> connectedNodes;
+            List<Graph<T>> connectedGraphs = new List<Graph<T>>();
+            //
+            foreach (var node in _nodeSet)
+            {
+                // Check if the node was already added
+                if (!visitedNodes.Contains(node))
+                {
+                    // Create new set of connected nodes
+                    connectedNodes = new NodeList<T>();
+                    //
+                    queue.Enqueue(node);
+                    // Search for connected nodes
+                    while (queue.Count() > 0)
+                    {
+                        currentNode = queue.Dequeue();
+                        if (visitedNodes.Add(currentNode))
+                        {
+                            connectedNodes.Add(currentNode);
+                            // Add all neighbour to the queue
+                            foreach (var neighbour in currentNode.Neighbors)
+                                queue.Enqueue(neighbour);
+                        }
+                    }
+                    //
+                    connectedGraphs.Add(new Graph<T>(connectedNodes));
+                }
+            }
+            //
+            return connectedGraphs;
+        }
+    }
+    public class NodeData
+    {
+        // Variables                                                                                                                
+        private int _id;
+        private HashSet<int> _itemIds;
+
+
+        // Properties                                                                                                               
+        public int Id { get { return _id; } set { _id = value; } }
+        public HashSet<int> ItemIds { get { return _itemIds; } set { _itemIds = value; } }
+
+
+        // Constructors                                                                                                             
+        public NodeData(int id, HashSet<int> data)
+        {
+            _id = id;
+            _itemIds = data;
+        }
     }
     public class ContactGraph
     {
         // Variables                                                                                                                
-        private Graph<HashSet<int>> _graph;
+        private Graph<NodeData> _graph;
 
 
         // Constructors                                                                                                             
         public ContactGraph()
         {
-            _graph = new Graph<HashSet<int>>();
+            _graph = new Graph<NodeData>();
         }
 
 
         // Methods                                                                                                                  
         public void AddMasterSlaveItems(IEnumerable<MasterSlaveItem> masterSlaveItems)
         {
-            HashSet<int> mergedNode;
-            List<HashSet<int>> nodes = new List<HashSet<int>>();
-            List<HashSet<int>> nodesToRemove = new List<HashSet<int>>();
-            // Collect geometry ids into nodes
+            HashSet<int> mergedItemIds;
+            List<HashSet<int>> itemIdsList = new List<HashSet<int>>();
+            List<HashSet<int>> itemIdsListToRemove = new List<HashSet<int>>();
+            // Collect item ids
             foreach (var masterSlaveItem in masterSlaveItems)
             {
                 // Master side                                                          
-                mergedNode = new HashSet<int>(masterSlaveItem.MasterGeometryIds);
+                mergedItemIds = new HashSet<int>(masterSlaveItem.MasterGeometryIds);
                 // Find intersecting
-                foreach (var node in nodes)
+                foreach (var node in itemIdsList)
                 {
-                    if (node.Intersect(mergedNode).Count() > 0)
+                    if (node.Intersect(mergedItemIds).Count() > 0)
                     {
-                        mergedNode.UnionWith(node);
-                        nodesToRemove.Add(node);
+                        mergedItemIds.UnionWith(node);
+                        itemIdsListToRemove.Add(node);
                     }
                 }
                 // Remove merged
-                foreach (var node in nodesToRemove) nodes.Remove(node);
-                // Add new/merged node
-                nodes.Add(mergedNode);
+                foreach (var node in itemIdsListToRemove) itemIdsList.Remove(node);
+                // Add new/merged item
+                itemIdsList.Add(mergedItemIds);
                 // Slave side                                                           
-                nodesToRemove.Clear();
-                mergedNode = new HashSet<int>(masterSlaveItem.SlaveGeometryIds);
+                itemIdsListToRemove.Clear();
+                mergedItemIds = new HashSet<int>(masterSlaveItem.SlaveGeometryIds);
                 // Find intersecting
-                foreach (var node in nodes)
+                foreach (var node in itemIdsList)
                 {
-                    if (node.Intersect(mergedNode).Count() > 0)
+                    if (node.Intersect(mergedItemIds).Count() > 0)
                     {
-                        mergedNode.UnionWith(node);
-                        nodesToRemove.Add(node);
+                        mergedItemIds.UnionWith(node);
+                        itemIdsListToRemove.Add(node);
                     }
                 }
                 // Remove merged
-                foreach (var node in nodesToRemove) nodes.Remove(node);
-                // Add new/merged node
-                nodes.Add(mergedNode);
+                foreach (var node in itemIdsListToRemove) itemIdsList.Remove(node);
+                // Add new/merged item
+                itemIdsList.Add(mergedItemIds);
             }
-            // Add nodes to graph
-            foreach (var node in nodes) _graph.AddNode(node);
+            // Add items to graph
+            NodeData nodeData;
+            foreach (var itemIds in itemIdsList)
+            {
+                nodeData = new NodeData(_graph.Nodes.Count() + 1, itemIds);
+                _graph.AddNode(new Node<NodeData>(nodeData));
+            }
             //
-            GraphNode<HashSet<int>> masterNode;
-            GraphNode<HashSet<int>> slaveNode;
+            Node<NodeData> masterNode;
+            Node<NodeData> slaveNode;
             foreach (var masterSlaveItem in masterSlaveItems)
             {
                 masterNode = null;
                 slaveNode = null;
-                foreach (GraphNode<HashSet<int>> graphNode in _graph.Nodes)
+                foreach (Node<NodeData> node in _graph.Nodes)
                 {
-                    if (masterNode == null && graphNode.Value.Intersect(masterSlaveItem.MasterGeometryIds).Count() > 0)
-                        masterNode = graphNode;
-                    else if (slaveNode == null && graphNode.Value.Intersect(masterSlaveItem.SlaveGeometryIds).Count() > 0)
-                        slaveNode = graphNode;
+                    if (masterNode == null && node.Value.ItemIds.Intersect(masterSlaveItem.MasterGeometryIds).Count() > 0)
+                        masterNode = node;
+                    else if (slaveNode == null && node.Value.ItemIds.Intersect(masterSlaveItem.SlaveGeometryIds).Count() > 0)
+                        slaveNode = node;
                     if (masterNode != null && slaveNode != null) break;
                 }
                 //
@@ -492,12 +550,34 @@ namespace CaeMesh
         }
         public void Go()
         {
-            List<HashSet<int>> singleConnectedItems = new List<HashSet<int>>();
+            List<Graph<NodeData>> connectedGraphList = _graph.GetConnectedGraphs();
+            List<bool> isSimple = new List<bool>();
+            foreach (var conectedGraph in connectedGraphList)
+            {
+                isSimple.Add(conectedGraph.IsGraphSimple());
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            //
+            List<NodeData> singleConnectedItems = new List<NodeData>();
             do
             {
                 singleConnectedItems.Clear();
                 //
-                foreach (GraphNode<HashSet<int>> node in _graph.Nodes)
+                foreach (Node<NodeData> node in _graph.Nodes)
                 {
                     if (node.Neighbors.Count() <= 1) singleConnectedItems.Add(node.Value);
                 }
@@ -509,23 +589,23 @@ namespace CaeMesh
             }
             while (singleConnectedItems.Count > 0);
             //
-            HashSet<int> visited = new HashSet<int>();
-            HashSet<int> allValues = new HashSet<int>();
-            GraphNode<HashSet<int>> currentNode;
-            Graph<HashSet<int>> isolatedGraph = new Graph<HashSet<int>>();
-            Queue<GraphNode<HashSet<int>>> queue = new Queue<GraphNode<HashSet<int>>>();
+            HashSet<int> visitedIds = new HashSet<int>();
+            HashSet<int> allItemIds = new HashSet<int>();
+            Node<NodeData> currentNode;
+            Graph<NodeData> isolatedGraph = new Graph<NodeData>();
+            Queue<Node<NodeData>> queue = new Queue<Node<NodeData>>();
             //
             if (_graph.Nodes.Count() > 0)
             {
-                queue.Enqueue((GraphNode<HashSet<int>>)_graph.Nodes.First());
+                queue.Enqueue(_graph.Nodes.First());
                 while (queue.Count() > 0)
                 {
                     currentNode = queue.Dequeue();
-                    if (visited.Add(currentNode.Id))
+                    if (visitedIds.Add(currentNode.Value.Id))
                     {
                         isolatedGraph.AddNode(currentNode);
-                        allValues.UnionWith(currentNode.Value);
-                        foreach (var neighbour in currentNode.Neighbors) queue.Enqueue((GraphNode<HashSet<int>>)neighbour);
+                        allItemIds.UnionWith(currentNode.Value.ItemIds);
+                        foreach (var neighbour in currentNode.Neighbors) queue.Enqueue(neighbour);
                     }
                 }
             }
@@ -878,6 +958,6 @@ namespace CaeMesh
             partRegionCollection.SwitchMasterSlave();
 
             return partKeyMasterSlaveItems.Values.ToList();
-        }
+          }
     }
 }
