@@ -50,7 +50,7 @@ namespace CaeResults
             {
                 List<string> lines = new List<string>();
                 //
-                if (!CaeGlobals.Tools.WaitForFileToUnlock(fileName, 5000)) return null;
+                if (!Tools.WaitForFileToUnlock(fileName, 5000)) return null;
 
                 using (FileStream fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 using (StreamReader streamReader = new StreamReader(fileStream, Encoding.UTF8, true, 4096))
@@ -96,7 +96,7 @@ namespace CaeResults
                     }
                     else if (setID.StartsWith("    1PSTEP")) // Fields
                     {
-                        GetField(dataSet, constantWidth, prevFieldData, out fieldData, out field);
+                        GetField(dataSet, constantWidth, prevFieldData, nodeIdsLookUp, out fieldData, out field);
                         result.AddFiled(fieldData, field);
                         prevFieldData = fieldData.DeepClone();
                     }
@@ -398,14 +398,15 @@ namespace CaeResults
 
             return elements;
         }
-        static private void GetField(string[] lines, bool constantWidth, FieldData prevFieldData, out FieldData fieldData, out Field field)
+        static private void GetField(string[] lines, bool constantWidth, FieldData prevFieldData, Dictionary<int, int> nodeIdsLookUp,
+                                     out FieldData fieldData, out Field field)
         {
             int lineNum = 0;
             int numOfVal;
             List<string> components;
             //
             GetFieldHeaderData(lines, ref lineNum, prevFieldData, out fieldData, out numOfVal);
-            float[][] values = GetFieldValuesData(lines, ref lineNum, constantWidth, numOfVal, out components);
+            float[][] values = GetFieldValuesData(lines, ref lineNum, constantWidth, numOfVal, nodeIdsLookUp, out components);
             //
             switch (fieldData.Name)
             {
@@ -555,7 +556,7 @@ namespace CaeResults
             fieldData.StepIncrementId = stepIncrementId;
         }
         static private float[][] GetFieldValuesData(string[] lines, ref int lineNum, bool constantWidth, int numOfVal,
-                                                    out List<string> components)
+                                                    Dictionary<int, int> nodeIdsLookUp, out List<string> components)
         {
             string[] record;
             string[] splitter = new string[] { " " };
@@ -581,24 +582,40 @@ namespace CaeResults
             if (lines.Length - lineNum != numOfVal) numOfVal = lines.Length - lineNum;
             //
             float[][] values = new float[components.Count][];
-            for (int i = 0; i < values.Length; i++) values[i] = new float[numOfVal];
+            for (int i = 0; i < values.Length; i++) values[i] = new float[nodeIdsLookUp.Count];
             //
+            bool directIds = nodeIdsLookUp.Count == numOfVal;
+            int nodeId;
+            int nodeValueId;
             int start;
             int width;
             string line;
             //
             if (constantWidth)
             {
+                // -1         1-2.70834E-01-1.05325E-01-1.05325E-01 6.25207E-02 1.80015E-08-1.33740E-02
+                // -1         2-2.80622E-01-9.91633E-02-7.35318E-02-5.78751E-02-1.60376E-03-2.20396E-03
+                // -1         3 2.28310E-01 8.87877E-02 8.87877E-02 4.85675E-02-3.63429E-08-2.93555E-03
+                // -1         4 2.24848E-01 8.74410E-02 8.74410E-02-4.91735E-02 3.93390E-08-6.85921E-03
                 width = 12;
                 for (int i = 0; i < numOfVal; i++)
                 {
-                    start = 13;
                     line = lines[i + lineNum];
+                    // Node id
+                    if (directIds) nodeValueId = i;
+                    else
+                    {
+                        start = 3;
+                        nodeId = int.Parse(line.Substring(start, 10));
+                        nodeValueId = nodeIdsLookUp[nodeId];
+                    }
+                    // Values
+                    start = 13;
                     for (int j = 0; j < components.Count; j++)
                     {
                         if (start + width > line.Length) continue;
                         //
-                        values[j][i] = float.Parse(line.Substring(start, width));
+                        values[j][nodeValueId] = float.Parse(line.Substring(start, width));
                         start += width;
                     }
                 }
@@ -613,17 +630,28 @@ namespace CaeResults
                 // -1         6-1.16413E-0027.22403E-003-2.74940E-001
                 for (int i = 0; i < numOfVal; i++)
                 {
+                    line = lines[i + lineNum];
+                    // Node id
+                    // Node id
+                    if (directIds) nodeValueId = i;
+                    else
+                    {
+                        start = 3;
+                        nodeId = int.Parse(line.Substring(start, 10));
+                        nodeValueId = nodeIdsLookUp[nodeId];
+                    }
+                    // Values
                     start = 13;
                     for (int j = 0; j < components.Count; j++)
                     {
-                        if (start >= lines[i + lineNum].Length) continue;
+                        if (start >= line.Length) continue;
                         //
-                        if (lines[i + lineNum][start] == '-') width = 13;
+                        if (line[start] == '-') width = 13;
                         else width = 12;
                         //
-                        if (start + width > lines[i + lineNum].Length) continue;
+                        if (start + width > line.Length) continue;
                         //
-                        values[j][i] = float.Parse(lines[i + lineNum].Substring(start, width));
+                        values[j][nodeValueId] = float.Parse(line.Substring(start, width));
                         start += width;
                     }
                 }

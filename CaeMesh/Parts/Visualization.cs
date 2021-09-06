@@ -368,7 +368,6 @@ namespace CaeMesh
             }
             _edgeLengths = newEdgeLengths;
         }
-        //          
         /// <summary>
         /// Get node ids of all surface edges
         /// </summary>
@@ -899,6 +898,5 @@ namespace CaeMesh
             _edgeCellIdsByEdge = edgeCellIdsByEdge.ToArray();
             _faceEdgeIds = faceEdgeIds.ToArray();
         }
-
     }
 }
