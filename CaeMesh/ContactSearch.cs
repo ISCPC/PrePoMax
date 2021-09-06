@@ -58,8 +58,6 @@ namespace CaeMesh
         // Variables                                                                                                                
         private string _masterName;
         private string _slaveName;
-        private int _masterPartId;
-        private int _slavePartId;
         private HashSet<int> _masterGeometryIds;
         private HashSet<int> _slaveGeometryIds;
 
@@ -68,20 +66,16 @@ namespace CaeMesh
         public string Name { get { return _masterName + "_to_" + _slaveName; } }
         public string MasterName { get { return _masterName; } }
         public string SlaveName { get { return _slaveName; } }
-        public int MasterPartId { get { return _masterPartId; } }
-        public int SlavePartId { get { return _slavePartId; } }
         public HashSet<int> MasterGeometryIds { get { return _masterGeometryIds; } set { _masterGeometryIds = value; } }
         public HashSet<int> SlaveGeometryIds { get { return _slaveGeometryIds; } set { _slaveGeometryIds = value; } }
 
 
         // Constructors                                                                                                             
-        public MasterSlaveItem(string masterName, string slaveName, int masterPartId, int slavePartId,
+        public MasterSlaveItem(string masterName, string slaveName,
                                HashSet<int> masterGeometryIds, HashSet<int> slaveGeometryIds)
         {
             _masterName = masterName;
             _slaveName = slaveName;
-            _masterPartId = masterPartId;
-            _slavePartId = slavePartId;
             _masterGeometryIds = masterGeometryIds;
             _slaveGeometryIds = slaveGeometryIds;
         }
@@ -91,170 +85,11 @@ namespace CaeMesh
             _masterName = _slaveName;
             _slaveName = tmpName;
             //
-            int tmpId = _masterPartId;
-            _masterPartId = _slavePartId;
-            _slavePartId = tmpId;
-            //
             HashSet<int> tmpIds = _masterGeometryIds;
             _masterGeometryIds = _slaveGeometryIds;
             _slaveGeometryIds = tmpIds;
             //
 
-        }
-    }
-    public class PartRegion
-    {
-        // Variables                                                                                                                
-        private string _partName;
-        private int _partId;
-        private HashSet<int> _surfaceIds;
-        private HashSet<MasterSlaveItem> _masterSlaveItems;
-        private HashSet<MasterSlaveItem> _independentMasterSlaveItems;
-
-
-        // Properties                                                                                                               
-        public string PartName { get { return _partName; } }
-        public int PartId { get { return _partId; } }
-        public HashSet<int> SurfaceIds { get { return _surfaceIds; } }
-        public HashSet<MasterSlaveItem> MasterSlaveItems { get { return _masterSlaveItems; } }
-
-
-        // Constructors                                                                                                             
-        public PartRegion(string partName, int partId, MasterSlaveItem masterSlaveItem)
-        {
-            _partName = partName;
-            _partId = partId;
-            //
-            if (partId == masterSlaveItem.MasterPartId) _surfaceIds = new HashSet<int>(masterSlaveItem.MasterGeometryIds);
-            else _surfaceIds = new HashSet<int>(masterSlaveItem.SlaveGeometryIds);
-            //
-            _masterSlaveItems = new HashSet<MasterSlaveItem>() { masterSlaveItem };
-            _independentMasterSlaveItems = new HashSet<MasterSlaveItem>();
-        }
-
-
-        // Methods                                                                                                                  
-        public bool DoesMerge(PartRegion partRegion)
-        {
-            if (_partId == partRegion.PartId && _surfaceIds.Intersect(partRegion.SurfaceIds).Count() > 0) return true;
-            else return false;
-        }
-        public bool Merge(PartRegion partRegion)
-        {
-            if (_partId == partRegion.PartId && _surfaceIds.Intersect(partRegion.SurfaceIds).Count() > 0)
-            {
-                _surfaceIds.UnionWith(partRegion.SurfaceIds);
-                _masterSlaveItems.UnionWith(partRegion.MasterSlaveItems);
-                return true;
-            }
-            else return false;
-        }
-        public void MakeMasterSlaveItemsIndependent(HashSet<MasterSlaveItem> independentMasterSleveItems)
-        {
-            foreach (var independentMasterSleveItem in independentMasterSleveItems)
-            {
-                if (_masterSlaveItems.Contains(independentMasterSleveItem))
-                    _independentMasterSlaveItems.Add(independentMasterSleveItem);
-            }
-            // Remove independent master slave items
-            foreach (var independentMasterSleveItem in _independentMasterSlaveItems)
-            {
-                _masterSlaveItems.Remove(independentMasterSleveItem);
-            }
-        }
-    }
-    public class PartRegionCollection
-    {
-        // Variables                                                                                                                
-        private HashSet<PartRegion> _partRegions;
-
-
-        // Constructors                                                                                                             
-        public PartRegionCollection()
-        {
-            _partRegions = new HashSet<PartRegion>();
-        }
-
-
-        // Methods                                                                                                                  
-        public void Add(PartRegion partRegion)
-        {
-            List<PartRegion> regionsToRemove = new List<PartRegion>();
-            // Merge connected part regions
-            foreach (var existingPartRegion in _partRegions)
-            {
-                if (partRegion.Merge(existingPartRegion)) regionsToRemove.Add(existingPartRegion);
-            }
-            // Remove merged part regions
-            foreach (var regionToRemove in regionsToRemove)
-            {
-                _partRegions.Remove(regionToRemove);
-            }
-            // Add new/merged part region
-            _partRegions.Add(partRegion);
-        }
-        public void SwitchMasterSlave()
-        {
-            int loopCount = 0;
-            int switchCount = 1;
-            List<PartRegion> allPartRegions = new List<PartRegion>();
-            List<PartRegion> largePartRegions = new List<PartRegion>(_partRegions);
-            HashSet<MasterSlaveItem> independentMasterSlaveItems = new HashSet<MasterSlaveItem>();
-            do
-            {
-                allPartRegions.Clear();
-                allPartRegions.AddRange(largePartRegions);
-                largePartRegions.Clear();
-                independentMasterSlaveItems.Clear();
-                // Find independent master slave items
-                foreach (var partRegion in allPartRegions)
-                {
-                    if (partRegion.MasterSlaveItems.Count <= 1) independentMasterSlaveItems.UnionWith(partRegion.MasterSlaveItems);
-                }
-                // Make master slave items independent
-                foreach (var partRegion in allPartRegions)
-                {
-                    partRegion.MakeMasterSlaveItemsIndependent(independentMasterSlaveItems);
-                }
-                // Find multi-connected part regions
-                foreach (var partRegion in allPartRegions)
-                {
-                    if (partRegion.MasterSlaveItems.Count > 1) largePartRegions.Add(partRegion);
-                }
-                //
-                loopCount++;
-            }
-            while (allPartRegions.Count() != largePartRegions.Count() && loopCount < 10000);
-
-
-
-            //
-            loopCount = 0;
-            int masterCount;
-            while (switchCount > 0 && loopCount < 100000)
-            {
-                switchCount = 0;
-                foreach (var partRegion in largePartRegions)
-                {
-                    if (partRegion.MasterSlaveItems.Count > 1)
-                    {
-                        masterCount = 0;
-                        foreach (var masterSlaveItem in partRegion.MasterSlaveItems)
-                        {
-                            if (masterSlaveItem.MasterPartId == partRegion.PartId)
-                            {
-                                masterCount++;
-                                if (masterCount > 1)
-                                {
-                                    masterSlaveItem.SwitchMasterSlave();
-                                    switchCount++;
-                                }
-                            }
-                        }
-                    }
-                }
-                loopCount++;
-            }
         }
     }
     //
@@ -453,18 +288,21 @@ namespace CaeMesh
     {
         // Variables                                                                                                                
         private int _id;
+        private string _name;
         private HashSet<int> _itemIds;
 
 
         // Properties                                                                                                               
         public int Id { get { return _id; } set { _id = value; } }
+        public string Name { get { return _name; } set { _name = value; } }
         public HashSet<int> ItemIds { get { return _itemIds; } set { _itemIds = value; } }
 
 
         // Constructors                                                                                                             
-        public NodeData(int id, HashSet<int> data)
+        public NodeData(int id, string name, HashSet<int> data)
         {
             _id = id;
+            _name = name;
             _itemIds = data;
         }
     }
@@ -482,7 +320,7 @@ namespace CaeMesh
 
 
         // Methods                                                                                                                  
-        public void AddMasterSlaveItems(IEnumerable<MasterSlaveItem> masterSlaveItems)
+        public void AddMasterSlaveItems(IEnumerable<MasterSlaveItem> masterSlaveItems, FeMesh mesh)
         {
             HashSet<int> mergedItemIds;
             List<HashSet<int>> itemIdsList = new List<HashSet<int>>();
@@ -523,13 +361,20 @@ namespace CaeMesh
                 itemIdsList.Add(mergedItemIds);
             }
             // Add items to graph
+            int id;
+            string name;
+            List<string> allNames = new List<string>();
             NodeData nodeData;
             foreach (var itemIds in itemIdsList)
             {
-                nodeData = new NodeData(_graph.Nodes.Count() + 1, itemIds);
+                id = _graph.Nodes.Count() + 1;
+                name = GetNameFromItemIds(itemIds, allNames, mesh);
+                nodeData = new NodeData(id, name, itemIds);
+                //
                 _graph.AddNode(new Node<NodeData>(nodeData));
+                allNames.Add(name);
             }
-            //
+            // Add edges to graph
             Node<NodeData> masterNode;
             Node<NodeData> slaveNode;
             foreach (var masterSlaveItem in masterSlaveItems)
@@ -538,6 +383,7 @@ namespace CaeMesh
                 slaveNode = null;
                 foreach (Node<NodeData> node in _graph.Nodes)
                 {
+                    // Find the nodes
                     if (masterNode == null && node.Value.ItemIds.Intersect(masterSlaveItem.MasterGeometryIds).Count() > 0)
                         masterNode = node;
                     else if (slaveNode == null && node.Value.ItemIds.Intersect(masterSlaveItem.SlaveGeometryIds).Count() > 0)
@@ -548,15 +394,26 @@ namespace CaeMesh
                 _graph.AddUndirectedEdge(masterNode, slaveNode);
             }
         }
-        public void Go()
+        
+        public List<MasterSlaveItem> GetMasterSlaveItems()
         {
             List<Graph<NodeData>> connectedGraphList = _graph.GetConnectedGraphs();
             List<bool> isSimple = new List<bool>();
-            foreach (var conectedGraph in connectedGraphList)
+            List<MasterSlaveItem> masterSlaveItems = new List<MasterSlaveItem>();
+            foreach (var connectedGraph in connectedGraphList)
             {
-                isSimple.Add(conectedGraph.IsGraphSimple());
+                if (connectedGraph.IsGraphSimple())
+                {
+                    isSimple.Add(true);
+                    //
+                    masterSlaveItems.AddRange(GetMasterSlaveItemsFromSimpleGraph(connectedGraph));
+                }
+                else
+                {
+                    isSimple.Add(false);
+                }
             }
-
+            return masterSlaveItems;
 
 
 
@@ -609,6 +466,53 @@ namespace CaeMesh
                     }
                 }
             }
+        }
+        //
+        private static string GetNameFromItemIds(HashSet<int> itemIds, List<string> allNames, FeMesh mesh)
+        {
+            string name;
+            HashSet<int> partIds = new HashSet<int>();
+            foreach (var itemId in itemIds)
+            {
+                partIds.Add(FeMesh.GetPartIdFromGeometryId(itemId));
+            }
+            if (partIds.Count == 1) name = mesh.GetPartNamesByIds(partIds.ToArray())[0];
+            else name = allNames.GetNextNumberedKey("Mixed");
+            //
+            return name;
+        }
+        private static List<MasterSlaveItem> GetMasterSlaveItemsFromSimpleGraph(Graph<NodeData> graph)
+        {
+            Node<NodeData> neighbour;
+            List<Node<NodeData>> singleConnectedNodes = new List<Node<NodeData>>();
+            List<MasterSlaveItem> masterSlaveItems = new List<MasterSlaveItem>();
+            //
+            do
+            {
+                singleConnectedNodes.Clear();
+                //
+                foreach (Node<NodeData> node in graph.Nodes)
+                {
+                    if (node.Neighbors.Count() == 1)
+                    {
+                        neighbour = node.Neighbors[0];
+                        masterSlaveItems.Add(new MasterSlaveItem(node.Value.Name, neighbour.Value.Name,
+                                                                 node.Value.ItemIds, neighbour.Value.ItemIds));
+                        //
+                        singleConnectedNodes.Add(node);
+                        //
+                        break;  // this makes master slave parts more organized for the user
+                    }
+                }
+                //
+                foreach (var node in singleConnectedNodes)
+                {
+                    graph.Remove(node);
+                }
+            }
+            while (graph.Count > 1);
+            //
+            return masterSlaveItems;
         }
     }
     //
@@ -895,14 +799,13 @@ namespace CaeMesh
             foreach (var csp in contactSurfacePairs)
             {
                 masterSlaveItems.Add(new MasterSlaveItem(csp[0].Part.Name, csp[1].Part.Name,
-                                                         csp[0].Part.PartId, csp[1].Part.PartId,
                                                          new HashSet<int>() { csp[0].GetGeometryId() },
                                                          new HashSet<int>() { csp[1].GetGeometryId() }));
             }
             //
             ContactGraph contactGraph = new ContactGraph();
-            contactGraph.AddMasterSlaveItems(masterSlaveItems);
-            contactGraph.Go();
+            contactGraph.AddMasterSlaveItems(masterSlaveItems, _mesh);
+            masterSlaveItems = contactGraph.GetMasterSlaveItems();
             //
             return masterSlaveItems;
         }
@@ -937,7 +840,6 @@ namespace CaeMesh
                 else
                 {
                     masterSlaveItem = new MasterSlaveItem(csp[i].Part.Name, csp[j].Part.Name,
-                                                          csp[i].Part.PartId, csp[j].Part.PartId,
                                                           new HashSet<int>(), new HashSet<int>());
                     masterSlaveItem.MasterGeometryIds.Add(csp[i].GetGeometryId());
                     masterSlaveItem.SlaveGeometryIds.Add(csp[j].GetGeometryId());
@@ -946,18 +848,10 @@ namespace CaeMesh
             }
             //
             ContactGraph contactGraph = new ContactGraph();
-            contactGraph.AddMasterSlaveItems(partKeyMasterSlaveItems.Values);
-            contactGraph.Go();
+            contactGraph.AddMasterSlaveItems(partKeyMasterSlaveItems.Values, _mesh);
+            List<MasterSlaveItem> masterSlaveItems = contactGraph.GetMasterSlaveItems();
             //
-            PartRegionCollection partRegionCollection = new PartRegionCollection();
-            foreach (var entry in partKeyMasterSlaveItems)
-            {
-                partRegionCollection.Add(new PartRegion(entry.Value.MasterName, entry.Value.MasterPartId, entry.Value));
-                partRegionCollection.Add(new PartRegion(entry.Value.SlaveName, entry.Value.SlavePartId, entry.Value));
-            }
-            partRegionCollection.SwitchMasterSlave();
-
-            return partKeyMasterSlaveItems.Values.ToList();
+            return masterSlaveItems;
           }
     }
 }

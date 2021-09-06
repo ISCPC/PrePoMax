@@ -6619,7 +6619,25 @@ namespace PrePoMax
 
         private void tsmiTest_Click(object sender, EventArgs e)
         {
-            _controller.AutoCreateTiedPairs(0.5, 135);
+            if (false)
+            {
+                _controller.AutoCreateTiedPairs(0.5, 135);
+            }
+            else
+            {
+                SurfaceInteraction surfaceInteraction =
+                    new SurfaceInteraction(_controller.Model.SurfaceInteractions.GetNextNumberedKey("CI"));
+                SurfaceBehavior surfaceBehavior = new SurfaceBehavior();
+                surfaceBehavior.PressureOverclosureType = PressureOverclosureEnum.Tied;
+                surfaceInteraction.AddProperty(surfaceBehavior);
+                surfaceInteraction.AddProperty(new Friction());
+                _controller.AddSurfaceInteraction(surfaceInteraction);
+                //
+                _controller.AutoCreateContactPairs(0.5, 135, surfaceInteraction);
+            }
+
+
+            //
             //if (timerTest.Enabled) timerTest.Stop();
             //else timerTest.Start();
         }

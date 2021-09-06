@@ -15,6 +15,12 @@ By Jakub
 3) user-defined field output based on the available variables - equations
 4) hyperelastic materials
 
+30. 8. 2021
+1) displaying shell thickness in 3D
+2) hiding of single elements while postprocessing
+3) enabling continuous result colors
+
+
 
 By Naldo
 17. 5. 2021
