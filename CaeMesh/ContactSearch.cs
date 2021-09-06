@@ -56,23 +56,559 @@ namespace CaeMesh
     public class MasterSlaveItem
     {
         // Variables                                                                                                                
-        private string _name;
-        private List<int> _masterGeometryIds;
-        private List<int> _slaveGeometryIds;
+        private string _masterName;
+        private string _slaveName;
+        private int _masterPartId;
+        private int _slavePartId;
+        private HashSet<int> _masterGeometryIds;
+        private HashSet<int> _slaveGeometryIds;
 
 
         // Properties                                                                                                               
-        public string Name { get { return _name; } set { _name = value; } }
-        public List<int> MasterGeometryIds { get { return _masterGeometryIds; } set { _masterGeometryIds = value; } }
-        public List<int> SlaveGeometryIds { get { return _slaveGeometryIds; } set { _slaveGeometryIds = value; } }
+        public string Name { get { return _masterName + "_to_" + _slaveName; } }
+        public string MasterName { get { return _masterName; } }
+        public string SlaveName { get { return _slaveName; } }
+        public int MasterPartId { get { return _masterPartId; } }
+        public int SlavePartId { get { return _slavePartId; } }
+        public HashSet<int> MasterGeometryIds { get { return _masterGeometryIds; } set { _masterGeometryIds = value; } }
+        public HashSet<int> SlaveGeometryIds { get { return _slaveGeometryIds; } set { _slaveGeometryIds = value; } }
 
 
         // Constructors                                                                                                             
-        public MasterSlaveItem(string name, List<int> masterGeometryIds, List<int> slaveGeometryIds)
+        public MasterSlaveItem(string masterName, string slaveName, int masterPartId, int slavePartId,
+                               HashSet<int> masterGeometryIds, HashSet<int> slaveGeometryIds)
         {
-            _name = name;
+            _masterName = masterName;
+            _slaveName = slaveName;
+            _masterPartId = masterPartId;
+            _slavePartId = slavePartId;
             _masterGeometryIds = masterGeometryIds;
             _slaveGeometryIds = slaveGeometryIds;
+        }
+        public void SwitchMasterSlave()
+        {
+            string tmpName = _masterName;
+            _masterName = _slaveName;
+            _slaveName = tmpName;
+            //
+            int tmpId = _masterPartId;
+            _masterPartId = _slavePartId;
+            _slavePartId = tmpId;
+            //
+            HashSet<int> tmpIds = _masterGeometryIds;
+            _masterGeometryIds = _slaveGeometryIds;
+            _slaveGeometryIds = tmpIds;
+            //
+
+        }
+    }
+    public class PartRegion
+    {
+        // Variables                                                                                                                
+        private string _partName;
+        private int _partId;
+        private HashSet<int> _surfaceIds;
+        private HashSet<MasterSlaveItem> _masterSlaveItems;
+        private HashSet<MasterSlaveItem> _independentMasterSlaveItems;
+
+
+        // Properties                                                                                                               
+        public string PartName { get { return _partName; } }
+        public int PartId { get { return _partId; } }
+        public HashSet<int> SurfaceIds { get { return _surfaceIds; } }
+        public HashSet<MasterSlaveItem> MasterSlaveItems { get { return _masterSlaveItems; } }
+
+
+        // Constructors                                                                                                             
+        public PartRegion(string partName, int partId, MasterSlaveItem masterSlaveItem)
+        {
+            _partName = partName;
+            _partId = partId;
+            //
+            if (partId == masterSlaveItem.MasterPartId) _surfaceIds = new HashSet<int>(masterSlaveItem.MasterGeometryIds);
+            else _surfaceIds = new HashSet<int>(masterSlaveItem.SlaveGeometryIds);
+            //
+            _masterSlaveItems = new HashSet<MasterSlaveItem>() { masterSlaveItem };
+            _independentMasterSlaveItems = new HashSet<MasterSlaveItem>();
+        }
+
+
+        // Methods                                                                                                                  
+        public bool DoesMerge(PartRegion partRegion)
+        {
+            if (_partId == partRegion.PartId && _surfaceIds.Intersect(partRegion.SurfaceIds).Count() > 0) return true;
+            else return false;
+        }
+        public bool Merge(PartRegion partRegion)
+        {
+            if (_partId == partRegion.PartId && _surfaceIds.Intersect(partRegion.SurfaceIds).Count() > 0)
+            {
+                _surfaceIds.UnionWith(partRegion.SurfaceIds);
+                _masterSlaveItems.UnionWith(partRegion.MasterSlaveItems);
+                return true;
+            }
+            else return false;
+        }
+        public void MakeMasterSlaveItemsIndependent(HashSet<MasterSlaveItem> independentMasterSleveItems)
+        {
+            foreach (var independentMasterSleveItem in independentMasterSleveItems)
+            {
+                if (_masterSlaveItems.Contains(independentMasterSleveItem))
+                    _independentMasterSlaveItems.Add(independentMasterSleveItem);
+            }
+            // Remove independent master slave items
+            foreach (var independentMasterSleveItem in _independentMasterSlaveItems)
+            {
+                _masterSlaveItems.Remove(independentMasterSleveItem);
+            }
+        }
+    }
+    public class PartRegionCollection
+    {
+        // Variables                                                                                                                
+        private HashSet<PartRegion> _partRegions;
+
+
+        // Constructors                                                                                                             
+        public PartRegionCollection()
+        {
+            _partRegions = new HashSet<PartRegion>();
+        }
+
+
+        // Methods                                                                                                                  
+        public void Add(PartRegion partRegion)
+        {
+            List<PartRegion> regionsToRemove = new List<PartRegion>();
+            // Merge connected part regions
+            foreach (var existingPartRegion in _partRegions)
+            {
+                if (partRegion.Merge(existingPartRegion)) regionsToRemove.Add(existingPartRegion);
+            }
+            // Remove merged part regions
+            foreach (var regionToRemove in regionsToRemove)
+            {
+                _partRegions.Remove(regionToRemove);
+            }
+            // Add new/merged part region
+            _partRegions.Add(partRegion);
+        }
+        public void SwitchMasterSlave()
+        {
+            int loopCount = 0;
+            int switchCount = 1;
+            List<PartRegion> allPartRegions = new List<PartRegion>();
+            List<PartRegion> largePartRegions = new List<PartRegion>(_partRegions);
+            HashSet<MasterSlaveItem> independentMasterSlaveItems = new HashSet<MasterSlaveItem>();
+            do
+            {
+                allPartRegions.Clear();
+                allPartRegions.AddRange(largePartRegions);
+                largePartRegions.Clear();
+                independentMasterSlaveItems.Clear();
+                // Find independent master slave items
+                foreach (var partRegion in allPartRegions)
+                {
+                    if (partRegion.MasterSlaveItems.Count <= 1) independentMasterSlaveItems.UnionWith(partRegion.MasterSlaveItems);
+                }
+                // Make master slave items independent
+                foreach (var partRegion in allPartRegions)
+                {
+                    partRegion.MakeMasterSlaveItemsIndependent(independentMasterSlaveItems);
+                }
+                // Find multi-connected part regions
+                foreach (var partRegion in allPartRegions)
+                {
+                    if (partRegion.MasterSlaveItems.Count > 1) largePartRegions.Add(partRegion);
+                }
+                //
+                loopCount++;
+            }
+            while (allPartRegions.Count() != largePartRegions.Count() && loopCount < 10000);
+
+
+
+            //
+            loopCount = 0;
+            int masterCount;
+            while (switchCount > 0 && loopCount < 100000)
+            {
+                switchCount = 0;
+                foreach (var partRegion in largePartRegions)
+                {
+                    if (partRegion.MasterSlaveItems.Count > 1)
+                    {
+                        masterCount = 0;
+                        foreach (var masterSlaveItem in partRegion.MasterSlaveItems)
+                        {
+                            if (masterSlaveItem.MasterPartId == partRegion.PartId)
+                            {
+                                masterCount++;
+                                if (masterCount > 1)
+                                {
+                                    masterSlaveItem.SwitchMasterSlave();
+                                    switchCount++;
+                                }
+                            }
+                        }
+                    }
+                }
+                loopCount++;
+            }
+        }
+    }
+    //
+    public class Node<T>
+    {
+        // Variables                                                                                                                
+        private T _data;
+        private NodeList<T> _neighbors = null;
+
+
+        // Propeties                                                                                                                  
+        public T Value { get { return _data; } set { _data = value; } }
+        public NodeList<T> Neighbors
+        {
+            get
+            {
+                if (_neighbors == null) _neighbors = new NodeList<T>();
+                return _neighbors;
+            }
+            set { _neighbors = value; }
+        }
+
+
+        // Constructors                                                                                                             
+        public Node()
+        { }
+        public Node(T data)
+            : this(data, null)
+        { }
+        public Node(T data, NodeList<T> neighbors)
+        {
+            _data = data;
+            _neighbors = neighbors;
+        }
+    }
+    public class NodeList<T> : System.Collections.ObjectModel.Collection<Node<T>>
+    {
+        // Constructors                                                                                                             
+        public NodeList()
+            : base()
+        { }
+
+
+        // Methods                                                                                                                  
+        public NodeList(int initialSize)
+        {
+            // Add the specified number of items
+            for (int i = 0; i < initialSize; i++) base.Items.Add(default(Node<T>));
+        }
+        public Node<T> FindByValue(T value)
+        {
+            // Search the list for the value
+            foreach (Node<T> node in Items)
+            {
+                if (node.Value.Equals(value)) return node;
+            }
+            // If we reached here, we didn't find a matching node
+            return null;
+        }
+    }
+    public class Graph<T>
+    {
+        // Variables                                                                                                                
+        private NodeList<T> _nodeSet;
+
+
+        // Properties                                                                                                               
+        public NodeList<T> Nodes { get { return _nodeSet; } }
+        public int Count { get { return _nodeSet.Count; } }
+
+
+        // Constructors                                                                                                             
+        public Graph()
+            : this(null)
+        { }
+        public Graph(NodeList<T> nodeSet)
+        {
+            if (nodeSet == null) this._nodeSet = new NodeList<T>();
+            else this._nodeSet = nodeSet;
+        }
+
+
+        // Methods                                                                                                                  
+        public void AddNode(Node<T> node)
+        {
+            // Adds a node to the graph
+            _nodeSet.Add(node);
+        }
+        public void AddDirectedEdge(Node<T> from, Node<T> to)
+        {
+            from.Neighbors.Add(to);
+        }
+        public void AddUndirectedEdge(Node<T> from, Node<T> to)
+        {
+            from.Neighbors.Add(to);
+            to.Neighbors.Add(from);
+        }
+        public bool Contains(T value)
+        {
+            return _nodeSet.FindByValue(value) != null;
+        }
+        public bool Remove(T value)
+        {
+            // First remove the node from the nodeset
+            Node<T> nodeToRemove = _nodeSet.FindByValue(value);
+            return Remove(nodeToRemove);
+        }
+        public bool Remove(Node<T> node)
+        {
+            if (node == null) return false;
+            // Remove the node
+            _nodeSet.Remove(node);
+            // Enumerate through each node in the nodeSet, removing edges to this node
+            foreach (Node<T> gnode in _nodeSet)
+            {
+                int index = gnode.Neighbors.IndexOf(node);
+                if (index != -1)
+                {
+                    // Remove the reference to the node and associated cost
+                    gnode.Neighbors.RemoveAt(index);
+                }
+            }
+            //
+            return true;
+        }
+        public bool IsGraphSimple()
+        {
+            Node<T> currentNode;
+            Node<T> parentNode = null;
+            Queue<Node<T>> queue = new Queue<Node<T>>();
+            Queue<Node<T>> parentQueue = new Queue<Node<T>>();
+            HashSet<Node<T>> visitedNodes = new HashSet<Node<T>>();
+            //
+            queue.Enqueue(_nodeSet.First());
+            parentQueue.Enqueue(_nodeSet.First());
+            //
+            while (queue.Count() > 0)
+            {
+                currentNode = queue.Dequeue();
+                parentNode = parentQueue.Dequeue();
+                //
+                if (visitedNodes.Add(currentNode))
+                {
+                    // Add all neighbours to the queue
+                    foreach (var neighbour in currentNode.Neighbors)
+                    {
+                        if (neighbour != parentNode)
+                        {
+                            queue.Enqueue(neighbour);
+                            parentQueue.Enqueue(currentNode);
+                        }
+                    }
+                }
+                else return false;
+            }
+            return true;
+        }
+        public List<Graph<T>> GetConnectedGraphs()
+        {
+            Node<T> currentNode;
+            HashSet<Node<T>> visitedNodes = new HashSet<Node<T>>();
+            Queue<Node<T>> queue = new Queue<Node<T>>();
+            NodeList<T> connectedNodes;
+            List<Graph<T>> connectedGraphs = new List<Graph<T>>();
+            //
+            foreach (var node in _nodeSet)
+            {
+                // Check if the node was already added
+                if (!visitedNodes.Contains(node))
+                {
+                    // Create new set of connected nodes
+                    connectedNodes = new NodeList<T>();
+                    //
+                    queue.Enqueue(node);
+                    // Search for connected nodes
+                    while (queue.Count() > 0)
+                    {
+                        currentNode = queue.Dequeue();
+                        if (visitedNodes.Add(currentNode))
+                        {
+                            connectedNodes.Add(currentNode);
+                            // Add all neighbour to the queue
+                            foreach (var neighbour in currentNode.Neighbors)
+                                queue.Enqueue(neighbour);
+                        }
+                    }
+                    //
+                    connectedGraphs.Add(new Graph<T>(connectedNodes));
+                }
+            }
+            //
+            return connectedGraphs;
+        }
+    }
+    public class NodeData
+    {
+        // Variables                                                                                                                
+        private int _id;
+        private HashSet<int> _itemIds;
+
+
+        // Properties                                                                                                               
+        public int Id { get { return _id; } set { _id = value; } }
+        public HashSet<int> ItemIds { get { return _itemIds; } set { _itemIds = value; } }
+
+
+        // Constructors                                                                                                             
+        public NodeData(int id, HashSet<int> data)
+        {
+            _id = id;
+            _itemIds = data;
+        }
+    }
+    public class ContactGraph
+    {
+        // Variables                                                                                                                
+        private Graph<NodeData> _graph;
+
+
+        // Constructors                                                                                                             
+        public ContactGraph()
+        {
+            _graph = new Graph<NodeData>();
+        }
+
+
+        // Methods                                                                                                                  
+        public void AddMasterSlaveItems(IEnumerable<MasterSlaveItem> masterSlaveItems)
+        {
+            HashSet<int> mergedItemIds;
+            List<HashSet<int>> itemIdsList = new List<HashSet<int>>();
+            List<HashSet<int>> itemIdsListToRemove = new List<HashSet<int>>();
+            // Collect item ids
+            foreach (var masterSlaveItem in masterSlaveItems)
+            {
+                // Master side                                                          
+                mergedItemIds = new HashSet<int>(masterSlaveItem.MasterGeometryIds);
+                // Find intersecting
+                foreach (var node in itemIdsList)
+                {
+                    if (node.Intersect(mergedItemIds).Count() > 0)
+                    {
+                        mergedItemIds.UnionWith(node);
+                        itemIdsListToRemove.Add(node);
+                    }
+                }
+                // Remove merged
+                foreach (var node in itemIdsListToRemove) itemIdsList.Remove(node);
+                // Add new/merged item
+                itemIdsList.Add(mergedItemIds);
+                // Slave side                                                           
+                itemIdsListToRemove.Clear();
+                mergedItemIds = new HashSet<int>(masterSlaveItem.SlaveGeometryIds);
+                // Find intersecting
+                foreach (var node in itemIdsList)
+                {
+                    if (node.Intersect(mergedItemIds).Count() > 0)
+                    {
+                        mergedItemIds.UnionWith(node);
+                        itemIdsListToRemove.Add(node);
+                    }
+                }
+                // Remove merged
+                foreach (var node in itemIdsListToRemove) itemIdsList.Remove(node);
+                // Add new/merged item
+                itemIdsList.Add(mergedItemIds);
+            }
+            // Add items to graph
+            NodeData nodeData;
+            foreach (var itemIds in itemIdsList)
+            {
+                nodeData = new NodeData(_graph.Nodes.Count() + 1, itemIds);
+                _graph.AddNode(new Node<NodeData>(nodeData));
+            }
+            //
+            Node<NodeData> masterNode;
+            Node<NodeData> slaveNode;
+            foreach (var masterSlaveItem in masterSlaveItems)
+            {
+                masterNode = null;
+                slaveNode = null;
+                foreach (Node<NodeData> node in _graph.Nodes)
+                {
+                    if (masterNode == null && node.Value.ItemIds.Intersect(masterSlaveItem.MasterGeometryIds).Count() > 0)
+                        masterNode = node;
+                    else if (slaveNode == null && node.Value.ItemIds.Intersect(masterSlaveItem.SlaveGeometryIds).Count() > 0)
+                        slaveNode = node;
+                    if (masterNode != null && slaveNode != null) break;
+                }
+                //
+                _graph.AddUndirectedEdge(masterNode, slaveNode);
+            }
+        }
+        public void Go()
+        {
+            List<Graph<NodeData>> connectedGraphList = _graph.GetConnectedGraphs();
+            List<bool> isSimple = new List<bool>();
+            foreach (var conectedGraph in connectedGraphList)
+            {
+                isSimple.Add(conectedGraph.IsGraphSimple());
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            //
+            List<NodeData> singleConnectedItems = new List<NodeData>();
+            do
+            {
+                singleConnectedItems.Clear();
+                //
+                foreach (Node<NodeData> node in _graph.Nodes)
+                {
+                    if (node.Neighbors.Count() <= 1) singleConnectedItems.Add(node.Value);
+                }
+                //
+                foreach (var item in singleConnectedItems)
+                {
+                    _graph.Remove(item);
+                }
+            }
+            while (singleConnectedItems.Count > 0);
+            //
+            HashSet<int> visitedIds = new HashSet<int>();
+            HashSet<int> allItemIds = new HashSet<int>();
+            Node<NodeData> currentNode;
+            Graph<NodeData> isolatedGraph = new Graph<NodeData>();
+            Queue<Node<NodeData>> queue = new Queue<Node<NodeData>>();
+            //
+            if (_graph.Nodes.Count() > 0)
+            {
+                queue.Enqueue(_graph.Nodes.First());
+                while (queue.Count() > 0)
+                {
+                    currentNode = queue.Dequeue();
+                    if (visitedIds.Add(currentNode.Value.Id))
+                    {
+                        isolatedGraph.AddNode(currentNode);
+                        allItemIds.UnionWith(currentNode.Value.ItemIds);
+                        foreach (var neighbour in currentNode.Neighbors) queue.Enqueue(neighbour);
+                    }
+                }
+            }
         }
     }
     //
@@ -358,10 +894,15 @@ namespace CaeMesh
             //
             foreach (var csp in contactSurfacePairs)
             {
-                masterSlaveItems.Add(new MasterSlaveItem(csp[0].Part.Name + "_to_" + csp[1].Part.Name,
-                                                         new List<int>() { csp[0].GetGeometryId() },
-                                                         new List<int>() { csp[1].GetGeometryId() }));
+                masterSlaveItems.Add(new MasterSlaveItem(csp[0].Part.Name, csp[1].Part.Name,
+                                                         csp[0].Part.PartId, csp[1].Part.PartId,
+                                                         new HashSet<int>() { csp[0].GetGeometryId() },
+                                                         new HashSet<int>() { csp[1].GetGeometryId() }));
             }
+            //
+            ContactGraph contactGraph = new ContactGraph();
+            contactGraph.AddMasterSlaveItems(masterSlaveItems);
+            contactGraph.Go();
             //
             return masterSlaveItems;
         }
@@ -372,7 +913,7 @@ namespace CaeMesh
             int[] key;
             MasterSlaveItem masterSlaveItem;
             CompareIntArray comparer = new CompareIntArray();
-            Dictionary<int[], MasterSlaveItem> masterSlaveItems = new Dictionary<int[], MasterSlaveItem>(comparer);
+            Dictionary<int[], MasterSlaveItem> partKeyMasterSlaveItems = new Dictionary<int[], MasterSlaveItem>(comparer);
             //
             foreach (var csp in contactSurfacePairs)
             {
@@ -388,22 +929,35 @@ namespace CaeMesh
                 }
                 //
                 key = new int[] { csp[i].Part.PartId, csp[j].Part.PartId };
-                if (masterSlaveItems.TryGetValue(key, out masterSlaveItem))
+                if (partKeyMasterSlaveItems.TryGetValue(key, out masterSlaveItem))
                 {
                     masterSlaveItem.MasterGeometryIds.Add(csp[i].GetGeometryId());
                     masterSlaveItem.SlaveGeometryIds.Add(csp[j].GetGeometryId());
                 }
                 else
                 {
-                    masterSlaveItem = new MasterSlaveItem(csp[0].Part.Name + "_to_" + csp[1].Part.Name,
-                                                          new List<int>(), new List<int>());
+                    masterSlaveItem = new MasterSlaveItem(csp[i].Part.Name, csp[j].Part.Name,
+                                                          csp[i].Part.PartId, csp[j].Part.PartId,
+                                                          new HashSet<int>(), new HashSet<int>());
                     masterSlaveItem.MasterGeometryIds.Add(csp[i].GetGeometryId());
                     masterSlaveItem.SlaveGeometryIds.Add(csp[j].GetGeometryId());
-                    masterSlaveItems.Add(key, masterSlaveItem);
+                    partKeyMasterSlaveItems.Add(key, masterSlaveItem);
                 }
             }
             //
-            return masterSlaveItems.Values.ToList();
-        }
+            ContactGraph contactGraph = new ContactGraph();
+            contactGraph.AddMasterSlaveItems(partKeyMasterSlaveItems.Values);
+            contactGraph.Go();
+            //
+            PartRegionCollection partRegionCollection = new PartRegionCollection();
+            foreach (var entry in partKeyMasterSlaveItems)
+            {
+                partRegionCollection.Add(new PartRegion(entry.Value.MasterName, entry.Value.MasterPartId, entry.Value));
+                partRegionCollection.Add(new PartRegion(entry.Value.SlaveName, entry.Value.SlavePartId, entry.Value));
+            }
+            partRegionCollection.SwitchMasterSlave();
+
+            return partKeyMasterSlaveItems.Values.ToList();
+          }
     }
 }
