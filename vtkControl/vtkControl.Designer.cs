@@ -446,7 +446,6 @@ namespace vtkControl
                     //System.Console.WriteLine(System.DateTime.Now + ": OnPaint");
                 }
             }
-
             base.OnPaint(e);
         }
 

@@ -616,7 +616,7 @@ namespace vtkControl
             vtkMaxActorData actorData = Controller_GetCellActorData(_mouseSelectionCurrentIds, null);
 
             vtkMaxActor actor = new vtkMaxActor(actorData, true, false);
-            actor.Geometry.GetMapper().GetInput().GetPointData().RemoveArray(Globals.ScalarArrayName);
+            actor.GeometryMapper.GetInput().GetPointData().RemoveArray(Globals.ScalarArrayName);
             _mouseSelectionActorCurrent = actor;
             
             AddActorGeometry(_mouseSelectionActorCurrent, vtkRendererLayer.Selection);
@@ -1859,7 +1859,7 @@ namespace vtkControl
         {
             // Get actor cell type
             vtkCellTypes types = vtkCellTypes.New();
-            actor.Geometry.GetMapper().GetInput().GetCellTypes(types);
+            actor.GeometryMapper.GetInput().GetCellTypes(types);
             int num = types.GetNumberOfTypes();
             byte cellType;
             bool onlyEdges = true;
@@ -3786,7 +3786,7 @@ namespace vtkControl
             // Silhouette
             vtkMaxActor actor = _actors[actorName];
             vtkPolyDataSilhouette silhouette = vtkPolyDataSilhouette.New();
-            silhouette.SetInput(actor.Geometry.GetMapper().GetInput());
+            silhouette.SetInput(actor.GeometryMapper.GetInput());
             silhouette.SetCamera(_renderer.GetActiveCamera());
             silhouette.SetEnableFeatureAngle(0);
             vtkPolyDataMapper mapper = vtkPolyDataMapper.New();
@@ -3812,7 +3812,7 @@ namespace vtkControl
                 mapper.SetInput(data);
                 //
                 actor = new vtkMaxActor();
-                actor.Geometry.SetMapper(mapper);
+                actor.GeometryMapper = mapper;
                 actor.Geometry.PickableOff();
             }
             return actor;
@@ -3845,7 +3845,7 @@ namespace vtkControl
             mapper.SetInput(appendFilter.GetOutput());
             //
             actor = new vtkMaxActor();
-            actor.Geometry.SetMapper(mapper);
+            actor.GeometryMapper = mapper;
             actor.Geometry.PickableOff();
             //
             return actor;
@@ -4065,7 +4065,7 @@ namespace vtkControl
             polyMapper.SetInput(polyData);
             // Create actor
             sectionViewActor.Geometry = vtkActor.New();
-            sectionViewActor.Geometry.SetMapper(polyMapper);
+            sectionViewActor.GeometryMapper = polyMapper;
             sectionViewActor.GeometryProperty.DeepCopy(actor.GeometryProperty);
             sectionViewActor.Geometry.PickableOff();
             sectionViewActor.Geometry.SetVisibility(actor.Geometry.GetVisibility());
@@ -4195,7 +4195,7 @@ namespace vtkControl
             vtkCutter cutter = vtkCutter.New();
             cutter.SetCutFunction(_sectionViewPlane);
             //cutter.SetInput(grid);
-            cutter.SetInput(actor.Geometry.GetMapper().GetInput());
+            cutter.SetInput(actor.GeometryMapper.GetInput());
             cutter.Update();
 
             vtkStripper cutStrips = vtkStripper.New();
@@ -4210,7 +4210,7 @@ namespace vtkControl
             polyMapper.SetInput(polyData);
 
             sectionViewActor.Geometry = vtkActor.New();
-            sectionViewActor.Geometry.SetMapper(polyMapper);
+            sectionViewActor.GeometryMapper = polyMapper;
 
             polyData = vtkPolyData.New();
             polyData = cutStrips.GetOutput();
@@ -4353,7 +4353,7 @@ namespace vtkControl
 
             // Create Actor
             sectionViewActor.Geometry = vtkActor.New();
-            sectionViewActor.Geometry.SetMapper(polyMapper);
+            sectionViewActor.GeometryMapper = polyMapper;
             sectionViewActor.GeometryProperty.DeepCopy(actor.GeometryProperty);
             sectionViewActor.Geometry.PickableOff();
             sectionViewActor.Geometry.SetVisibility(actor.Geometry.GetVisibility());
@@ -4903,7 +4903,7 @@ namespace vtkControl
             vtkMaxActor baseActor = new vtkMaxActor(data);
             // Add actor
             AddActorGeometry(baseActor, data.Layer);
-            _animationFrameData.MemMb += n * baseActor.Geometry.GetMapper().GetInput().GetActualMemorySize() / 1024.0;
+            _animationFrameData.MemMb += n * baseActor.GeometryMapper.GetInput().GetActualMemorySize() / 1024.0;
             // Add actorElementEdges
             if (data.CanHaveElementEdges && baseActor.ElementEdges != null)
             {
@@ -4955,7 +4955,7 @@ namespace vtkControl
                 actor.SetAnimationFrame(data, i);
                 // Add actor
                 AddActorGeometry(actor, vtkRendererLayer.Base);
-                _animationFrameData.MemMb += actor.Geometry.GetMapper().GetInput().GetActualMemorySize() / 1024.0;
+                _animationFrameData.MemMb += actor.GeometryMapper.GetInput().GetActualMemorySize() / 1024.0;
                 // Add actorEdges
                 if (data.CanHaveElementEdges && actor.ElementEdges != null)
                 {
@@ -5010,7 +5010,7 @@ namespace vtkControl
             {
                 actor = entry.Value;
                 if (entry.Value == null) throw new ArgumentNullException("_actors.Actor", "The actor does not exist.");
-                mapper = actor.Geometry.GetMapper();
+                mapper = actor.GeometryMapper;
                 pointData = mapper.GetInput().GetPointData();
                 // if the part does not have scalar data
                 if (actor.MinNode == null || actor.MaxNode == null) continue;
@@ -5073,7 +5073,7 @@ namespace vtkControl
             foreach (var entry in _actors)
             {
                 actor = entry.Value;
-                mapper = actor.Geometry.GetMapper();
+                mapper = actor.GeometryMapper;
                 pointData = mapper.GetInput().GetPointData();
                 if (actor.ColorContours && actor.VtkMaxActorVisible && pointData.GetScalars() != null
                     && !_animationFrameData.InitializedActorNames.Contains(entry.Value.Name)) // animation speedup
@@ -5153,7 +5153,7 @@ namespace vtkControl
             // Transformed copies
             foreach (var copy in actor.Copies) UpdateActorScalarField(copy.Name, scalars, frustumScalars, extremeNodes);
             // Set scalars
-            actor.Geometry.GetMapper().GetInput().GetPointData().SetScalars(scalars);
+            actor.GeometryMapper.GetInput().GetPointData().SetScalars(scalars);
             actor.MinNode = new vtkMaxExtreemeNode(extremeNodes.Ids[0], extremeNodes.Coor[0], extremeNodes.Values[0]);
             actor.MaxNode = new vtkMaxExtreemeNode(extremeNodes.Ids[1], extremeNodes.Coor[1], extremeNodes.Values[1]);
             // Set frustum scalars
@@ -5167,14 +5167,14 @@ namespace vtkControl
                 // Transformed copies
                 foreach (var copy in actor.Copies) RemoveActorScalarField(copy.Name);
                 // Remove scalars
-                //actor.Geometry.GetMapper().GetInput().GetPointData().GetScalars().RemoveLastTuple();
-                actor.Geometry.GetMapper().GetInput().GetPointData().RemoveArray(Globals.ScalarArrayName);
+                //actor.GeometryMapper.GetInput().GetPointData().GetScalars().RemoveLastTuple();
+                actor.GeometryMapper.GetInput().GetPointData().RemoveArray(Globals.ScalarArrayName);
                 actor.MinNode = null;
                 actor.MaxNode = null;
                 // Remove frustum scalars
                 actor.FrustumCellLocator.GetDataSet().GetPointData().RemoveArray(Globals.ScalarArrayName);
                 //
-                vtkMapper mapper = actor.Geometry.GetMapper();
+                vtkMapper mapper = actor.GeometryMapper;
                 if (mapper.GetInterpolateScalarsBeforeMapping() != 0) mapper.SetInterpolateScalarsBeforeMapping(0);
             }
         }
@@ -5232,7 +5232,7 @@ namespace vtkControl
                     {
                         actor = entry.Value;
                         if (entry.Value == null) throw new ArgumentNullException("_actors.Actor", "The actor does not exist.");
-                        //mapper = actor.Geometry.GetMapper();
+                        //mapper = actor.GeometryMapper;
                         pointData = actor.GeometryPointData;
 
                         // if the part does not have scalar data
@@ -5859,7 +5859,7 @@ namespace vtkControl
             vtkDataSetMapper mapperGrid = vtkDataSetMapper.New();
             mapperGrid.SetInput(uGrid);
             vtkMaxActor actorGrid = new vtkMaxActor();
-            actorGrid.Geometry.SetMapper(mapperGrid);
+            actorGrid.GeometryMapper = mapperGrid;
             actorGrid.GeometryProperty.SetColor(color.R / 255d, color.G / 255d, color.B / 255d);
             actorGrid.GeometryProperty.SetAmbient(0.5);
             actorGrid.GeometryProperty.BackfaceCullingOn();
@@ -5940,7 +5940,7 @@ namespace vtkControl
             vtkDataSetMapper mapperGrid = vtkDataSetMapper.New();
             mapperGrid.SetInput(uGrid);
             vtkMaxActor actorGrid = new vtkMaxActor();
-            actorGrid.Geometry.SetMapper(mapperGrid);
+            actorGrid.GeometryMapper = mapperGrid;
             actorGrid.GeometryProperty.SetColor(1, 0.5, 0.5);
 
             // Visualize edges
@@ -5952,7 +5952,7 @@ namespace vtkControl
             vtkPolyDataMapper mapperEdges = vtkPolyDataMapper.New();
             mapperEdges.SetInputConnection(extractEdges.GetOutputPort());
             vtkMaxActor actorEdges = new vtkMaxActor();
-            actorEdges.Geometry.SetMapper(mapperEdges);
+            actorEdges.GeometryMapper = mapperEdges;
             actorEdges.GeometryProperty.SetColor(0, 0, 0);
             actorEdges.GeometryProperty.SetLineWidth(1);
             actorEdges.Geometry.PickableOff();
