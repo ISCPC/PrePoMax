@@ -5,6 +5,10 @@ By Students
 Add the possibility ot output the Query command as General text formating
 
 By Jakub
+31. 8. 2021
+1) kinematic/distributed coupling constraints
+2) symetry boundary conditions
+
 25. 5. 2021
 1) frequency step - specify a range of frequencies
 2) a replace step feature: Buckling for Static

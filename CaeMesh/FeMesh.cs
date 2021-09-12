@@ -3036,42 +3036,68 @@ namespace CaeMesh
                         connectedParts = new List<BasePart>();
                         for (int j = 0; j < cgp.SubPartNames.Length; j++)
                         {
-                            connectedParts.Add(_parts[cgp.SubPartNames[j]]);
-                            includedParts.Add(cgp.SubPartNames[j]);
+                            part = _parts[cgp.SubPartNames[j]];
+                            if (partsToInclude.Contains(part))
+                            {
+                                connectedParts.Add(part);
+                                includedParts.Add(cgp.SubPartNames[j]);
+                            }
                         }
-                        if (partsToInclude.Intersect(connectedParts).Count() > 0) allConnectedParts.Add(connectedParts);
-                        includedParts.Add(parts[i].Name);
+                        if (connectedParts.Count() > 0) allConnectedParts.Add(connectedParts);
+                        //
+                        includedParts.Add(parts[i].Name);   // add compound part
                     }
                 }
                 for (int i = 0; i < parts.Length; i++)
                 {
-                    if (!includedParts.Contains(parts[i].Name))
+                    if (partsToInclude.Contains(parts[i]) && !includedParts.Contains(parts[i].Name))
                     {
                         connectedParts = new List<BasePart>() { parts[i] };
-                        if (partsToInclude.Intersect(connectedParts).Count() > 0) allConnectedParts.Add(connectedParts);
+                        allConnectedParts.Add(connectedParts);
                     }
                 }
             }
             else if (_meshRepresentation == MeshRepresentation.Mesh || _meshRepresentation == MeshRepresentation.Results)
             {
+                Node<BasePart> node1;
+                Node<BasePart> node2;
+                Graph<BasePart> graph = new Graph<BasePart>();
+                Dictionary<BasePart, Node<BasePart>> keys = new Dictionary<BasePart, Node<BasePart>>();
+                //
                 for (int i = 0; i < parts.Length; i++)
                 {
-                    if (!includedParts.Contains(parts[i].Name))
+                    if (partsToInclude.Contains(parts[i]))
                     {
-                        connectedParts = new List<BasePart>() { parts[i] };
+                        if (!keys.TryGetValue(parts[i], out node1))
+                        {
+                            node1 = new Node<BasePart>(parts[i]);
+                            keys.Add(parts[i], node1);
+                            graph.AddNode(node1);
+                        }
+                        //
                         for (int j = i + 1; j < parts.Length; j++)
                         {
-                            if (parts[i].BoundingBox.Intersects(parts[j].BoundingBox))
+                            if (partsToInclude.Contains(parts[j]) &&
+                                parts[i].BoundingBox.Intersects(parts[j].BoundingBox) &&
+                                parts[i].NodeLabels.Intersect(parts[j].NodeLabels).Count() > 0)
                             {
-                                if (parts[i].NodeLabels.Intersect(parts[j].NodeLabels).Count() > 0)
+                                if (!keys.TryGetValue(parts[j], out node2))
                                 {
-                                    connectedParts.Add(parts[j]);
-                                    includedParts.Add(parts[j].Name);
+                                    node2 = new Node<BasePart>(parts[j]);
+                                    keys.Add(parts[j], node2);
+                                    graph.AddNode(node2);
                                 }
+                                graph.AddUndirectedEdge(node1, node2);
                             }
                         }
-                        if (partsToInclude.Intersect(connectedParts).Count() > 0) allConnectedParts.Add(connectedParts);
                     }
+                }
+                List<Graph<BasePart>> subGraphs = graph.GeConnectedSubgraphs();
+                foreach (var subGraph in subGraphs)
+                {
+                    connectedParts = new List<BasePart>();
+                    foreach (var node in subGraph.Nodes) connectedParts.Add(node.Value);
+                    if (partsToInclude.Intersect(connectedParts).Count() > 0) allConnectedParts.Add(connectedParts);
                 }
             }
             //
@@ -4681,6 +4707,8 @@ namespace CaeMesh
             //
             foreach (var entry in _parts)
             {
+                if (entry.Value is CompoundGeometryPart) continue;
+                //
                 partId = entry.Value.PartId;
                 visualization = entry.Value.Visualization;
                 // Surfaces
@@ -4727,6 +4755,8 @@ namespace CaeMesh
             //
             foreach (var entry in _parts)
             {
+                if (entry.Value is CompoundGeometryPart) continue;
+                //
                 partId = entry.Value.PartId;
                 visualization = entry.Value.Visualization;
                 // Surfaces
@@ -6843,10 +6873,11 @@ namespace CaeMesh
             // Get all cells and all nodes ids for elementSet
             for (int i = 0; i < cells.Length; i++)
             {
-                for (int j = 0; j < cells[i].Length; j++)
-                {
-                    nodeIds.Add(cells[i][j]);
-                }
+                nodeIds.UnionWith(cells[i]);
+                //for (int j = 0; j < cells[i].Length; j++)
+                //{
+                //    nodeIds.Add(cells[i][j]);
+                //}
             }
             // Get all node coordinates and prepare re-numbering map
             Dictionary<int, int> oldIds = new Dictionary<int, int>();   // the order of items is not retained

@@ -69,56 +69,66 @@ namespace UserControls
         private const int WM_MOUSEMOVE = 0x0200;
         private bool _disableMouse;
         private bool _disableSelectionsChanged;
+        private Dictionary<CodersLabTreeView, bool[]> _prevStates;
         // Geometry
-        private TreeNode _geomParts;
-        private TreeNode _meshRefinements;
+        private TreeNode _geomParts;                // 1
+        private TreeNode _meshRefinements;          // 1
         // Model
-        private TreeNode _model;
-        private TreeNode _meshParts;
-        private TreeNode _resultParts;
-        private TreeNode _nodeSets;
-        private TreeNode _elementSets;
-        private TreeNode _surfaces;
-        private TreeNode _referencePoints;
-        private TreeNode _materials;
-        private TreeNode _sections;
-        private TreeNode _constraints;
-        private TreeNode _contact;
-        private TreeNode _surfaceInteractions;
-        private TreeNode _contactPairs;
-        private TreeNode _initialConditions;
-        private TreeNode _steps;
-        private TreeNode _analyses;
+        private TreeNode _model;                    // 1
+        private TreeNode _modelMesh;                //   2
+        private TreeNode _modelParts;               //     3
+        private TreeNode _nodeSets;                 //     3
+        private TreeNode _elementSets;              //     3
+        private TreeNode _surfaces;                 //     3
+        private TreeNode _referencePoints;          //     3
+        private TreeNode _materials;                //   2
+        private TreeNode _sections;                 //   2
+        private TreeNode _constraints;              //   2
+        private TreeNode _contact;                  //   2
+        private TreeNode _surfaceInteractions;      //      3
+        private TreeNode _contactPairs;             //      3
+        private TreeNode _initialConditions;        //   2
+        private TreeNode _steps;                    //   2
+        private TreeNode _analyses;                 // 1
         // Results
-        private TreeNode _resultFieldOutputs;
-        private TreeNode _resultHistoryOutputs;
-        //
-        private string _geomPartsName;
-        private string _meshRefinementsName;
-        //
-        private string _modelName;
-        private string _meshPartsName;
-        private string _resultPartsName;
-        private string _nodeSetsName;
-        private string _elementSetsName;
-        private string _surfacesName;
-        private string _referencePointsName;
-        private string _materialsName;
-        private string _sectionsName;
-        private string _constraintsName;
-        private string _contactName;
-        private string _surfaceInteractionsName;
-        private string _contactPairsName;
-        private string _initialConditionsName;
-        private string _stepsName;
-        private string _historyOutputsName;
-        private string _fieldOutputsName;
-        private string _boundaryConditionsName;
-        private string _loadsName;
-        private string _definedFieldsName;
-        private string _analysesName;
-        
-        
+        private TreeNode _resultMesh;               // 1
+        private TreeNode _resultParts;              //   2
+        private TreeNode _results;                  // 1
+        private TreeNode _resultFieldOutputs;       //   2
+        private TreeNode _resultHistoryOutputs;     //   2
+        // Geometry
+        private string _geomPartsName = "Parts";
+        private string _meshRefinementsName = "Mesh refinements";
+        // Model
+        private string _modelName = "Model";
+        private string _modelMeshName = "Mesh";
+        private string _modelPartsName = "Parts";
+        private string _nodeSetsName = "Node sets";
+        private string _elementSetsName = "Element sets";
+        private string _surfacesName = "Surfaces";
+        private string _referencePointsName = "Reference points";
+        private string _materialsName = "Materials";
+        private string _sectionsName = "Sections";
+        private string _constraintsName = "Constraints";
+        private string _contactName = "Contact";
+        private string _surfaceInteractionsName = "Surface interactions";
+        private string _contactPairsName = "Contact pairs";
+        private string _initialConditionsName = "Initial conditions";
+        private string _stepsName = "Steps";
+        private string _fieldOutputsName = "Field outputs";
+        private string _historyOutputsName = "History outputs";
+        private string _boundaryConditionsName = "BCs";
+        private string _loadsName = "Loads";
+        private string _definedFieldsName = "Defined fields";
+        private string _analysesName = "Analyses";
+        // Results
+        private string _resultMeshName = "Mesh";
+        private string _resultPartsName = "Parts";
+        private string _resultsName = "Results";
+        private string _resultFieldOutputsName = "Field outputs";
+        private string _resultHistoryOutputsName = "History outputs";
+
+
         // Properties                                                                                                               
         public bool ScreenUpdating 
         { 
@@ -139,6 +149,10 @@ namespace UserControls
                 cltvGeometry.DisableMouse = value;
                 cltvModel.DisableMouse = value;
                 cltvResults.DisableMouse = value;
+                //
+                stbGeometry.TextVisible = !value;
+                stbModel.TextVisible = !value;
+                stbResults.TextVisible = !value;
             }
         }
         public string[] IntersectSelectionWithList(NamedClass[] list)
@@ -160,7 +174,7 @@ namespace UserControls
         public event Action<ViewType> GeometryMeshResultsEvent;
         public event Action<NamedClass[]> SelectEvent;
         public event Action ClearSelectionEvent;
-
+        //
         public event Action<string, string> CreateEvent;
         public event Action<NamedClass, string> EditEvent;
         public event Action<NamedClass[]> DuplicateEvent;
@@ -184,50 +198,27 @@ namespace UserControls
         public event Action<string> KillEvent;
         public event Action<NamedClass[], bool, string[]> ActivateDeactivateEvent;
         public event Action<NamedClass[], string[]> DeleteEvent;
-
+        //
         public event Action<string[]> FieldDataSelectEvent;
         public event Action RenderingOn;
         public event Action RenderingOff;
 
+
+        // Callbacks                                                                                                                
+        public Action RegenerateTreeCallBack;
 
 
         // Constructors                                                                                                             
         public ModelTree()
         {
             InitializeComponent();
-            //
-            _geomPartsName = "Parts";
-            _meshRefinementsName = "Mesh refinements";
-            //
-            _modelName = "Model";
-            _meshPartsName = "Parts";
-            _resultPartsName = "Parts";
-            _nodeSetsName = "Node sets";
-            _elementSetsName = "Element sets";
-            _surfacesName = "Surfaces";
-            _referencePointsName = "Reference points";
-            _materialsName = "Materials";
-            _sectionsName = "Sections";
-            _constraintsName = "Constraints";
-            _contactName = "Contact";
-            _surfaceInteractionsName = "Surface interactions";
-            _contactPairsName = "Contact pairs";
-            _initialConditionsName = "Initial conditions";
-            _stepsName = "Steps";
-            _boundaryConditionsName = "BCs";
-            _loadsName = "Loads";
-            _definedFieldsName = "Defined fields";
-            _analysesName = "Analyses";
-            // Results
-            _fieldOutputsName = "Field outputs";
-            _historyOutputsName = "History outputs";
-            //
+            // Geometry
             _geomParts = cltvGeometry.Nodes.Find(_geomPartsName, true)[0];
             _meshRefinements = cltvGeometry.Nodes.Find(_meshRefinementsName, true)[0];
-            //
+            // Model
             _model = cltvModel.Nodes.Find(_modelName, true)[0];
-            _meshParts = cltvModel.Nodes.Find(_meshPartsName, true)[0];
-            _resultParts = cltvResults.Nodes.Find(_resultPartsName, true)[0];
+            _modelMesh = cltvModel.Nodes.Find(_modelMeshName, true)[0];
+            _modelParts = cltvModel.Nodes.Find(_modelPartsName, true)[0];
             _nodeSets = cltvModel.Nodes.Find(_nodeSetsName, true)[0];
             _elementSets = cltvModel.Nodes.Find(_elementSetsName, true)[0];
             _surfaces = cltvModel.Nodes.Find(_surfacesName, true)[0];
@@ -241,15 +232,20 @@ namespace UserControls
             _initialConditions = cltvModel.Nodes.Find(_initialConditionsName, true)[0];
             _steps = cltvModel.Nodes.Find(_stepsName, true)[0];
             _analyses = cltvModel.Nodes.Find(_analysesName, true)[0];
-            _resultFieldOutputs = cltvResults.Nodes.Find(_fieldOutputsName, true)[0];
-            _resultHistoryOutputs = cltvResults.Nodes.Find(_historyOutputsName, true)[0];
+            // Results
+            _resultMesh = cltvResults.Nodes.Find(_resultMeshName, true)[0];
+            _resultParts = cltvResults.Nodes.Find(_resultPartsName, true)[0];
+            _results = cltvResults.Nodes.Find(_resultsName, true)[0];
+            _resultFieldOutputs = cltvResults.Nodes.Find(_resultFieldOutputsName, true)[0];
+            _resultHistoryOutputs = cltvResults.Nodes.Find(_resultHistoryOutputsName, true)[0];
+            //
             // Add NamedClasses to static items
-            _model.Tag = new EmptyNamedClass(typeof(CaeModel.FeModel).ToString());
+            _model.Tag = new EmptyNamedClass(typeof(FeModel).ToString());
             // Geometry icons
             _geomParts.StateImageKey = "GeomPart";
             // Model icons
-            cltvModel.Nodes.Find("Mesh", true)[0].StateImageKey = "Mesh";
-            _meshParts.StateImageKey = "BasePart";
+            _modelMesh.StateImageKey = "Mesh";
+            _modelParts.StateImageKey = "BasePart";
             _nodeSets.StateImageKey = "Node_set";
             _elementSets.StateImageKey = "Element_set";
             _surfaces.StateImageKey = "Surface";
@@ -262,18 +258,19 @@ namespace UserControls
             _steps.StateImageKey = "Step";
             _analyses.StateImageKey = "Bc";
             // Results icons
-            cltvResults.Nodes.Find("Mesh", true)[0].StateImageKey = "Mesh";
+            _resultMesh.StateImageKey = "Mesh";
             _resultParts.StateImageKey = "BasePart";
             _resultFieldOutputs.StateImageKey = "Field_output";
             _resultHistoryOutputs.StateImageKey = "History_output";
             //
             _doubleClick = false;
             _screenUpdating = true;
+            _prevStates = new Dictionary<CodersLabTreeView, bool[]>();
+            _prevStates.Add(cltvGeometry, null);
+            _prevStates.Add(cltvModel, null);
+            _prevStates.Add(cltvResults, null);
             //
-            cltvGeometry.Nodes[0].ExpandAll();
-            cltvModel.Nodes[0].ExpandAll();
-            cltvResults.Nodes[0].ExpandAll();
-            cltvResults.Nodes[1].ExpandAll();
+            Clear();
         }
 
 
@@ -282,6 +279,19 @@ namespace UserControls
         {
             e.Cancel = _disableMouse;
         }
+        private void stbGeometry_TextChanged(object sender, EventArgs e)
+        {
+            FilterTree(cltvGeometry, stbGeometry.Text);
+        }
+        private void stbModel_TextChanged(object sender, EventArgs e)
+        {
+            FilterTree(cltvModel, stbModel.Text);
+        }
+        private void stbResults_TextChanged(object sender, EventArgs e)
+        {
+            FilterTree(cltvResults, stbResults.Text);
+        }
+        
 
         #region Geometry-Model-Results
         private ViewType GetViewType()
@@ -633,8 +643,9 @@ namespace UserControls
                 foreach (TreeNode selectedNode in tree.SelectedNodes)
                 {
                     if (selectedNode.Tag == null) continue;
-
+                    //
                     items.Add((NamedClass)selectedNode.Tag);
+                    selectedNode.EnsureVisible();
                 }
                 SelectEvent?.Invoke(items.ToArray());
             }
@@ -1314,10 +1325,17 @@ namespace UserControls
         // Clear                                                                                                                    
         public void Clear()
         {
+            // Geometry
+            cltvGeometry.SelectedNodes.Clear();
+            cltvGeometry.Nodes.Clear();
             _geomParts.Nodes.Clear();
             _meshRefinements.Nodes.Clear();
-            //
-            _meshParts.Nodes.Clear();
+            // Model
+            cltvModel.SelectedNodes.Clear();
+            cltvModel.Nodes.Clear();
+            _model.Nodes.Clear();
+            _modelMesh.Nodes.Clear();
+            _modelParts.Nodes.Clear();
             _nodeSets.Nodes.Clear();
             _elementSets.Nodes.Clear();
             _surfaces.Nodes.Clear();
@@ -1325,6 +1343,7 @@ namespace UserControls
             _materials.Nodes.Clear();
             _sections.Nodes.Clear();
             _constraints.Nodes.Clear();
+            _contact.Nodes.Clear();
             _surfaceInteractions.Nodes.Clear();
             _contactPairs.Nodes.Clear();
             _initialConditions.Nodes.Clear();
@@ -1332,10 +1351,11 @@ namespace UserControls
             _analyses.Nodes.Clear();
             //
             SetNumberOfUserKeywords(0);
+            // Geometry
             _geomParts.Text = _geomPartsName;
             _meshRefinements.Text = _meshRefinementsName;
-            //
-            _meshParts.Text = _meshPartsName;
+            // Model
+            _modelParts.Text = _modelPartsName;
             _nodeSets.Text = _nodeSetsName;
             _elementSets.Text = _elementSetsName;
             _surfaces.Text = _surfacesName;
@@ -1349,13 +1369,34 @@ namespace UserControls
             _steps.Text = _stepsName;
             _analyses.Text = _analysesName;
             //
-            cltvGeometry.SelectedNodes.Clear();
-            cltvModel.SelectedNodes.Clear();
+            // Fill trees
+            //
+            // Geometry
+            cltvGeometry.Nodes.Add(_geomParts);
+            cltvGeometry.Nodes.Add(_meshRefinements);
+            // Model
+            cltvModel.Nodes.Add(_model);
+            _model.Nodes.Add(_modelMesh);
+            _modelMesh.Nodes.Add(_modelParts);
+            _modelMesh.Nodes.Add(_nodeSets);
+            _modelMesh.Nodes.Add(_elementSets);
+            _modelMesh.Nodes.Add(_surfaces);
+            _modelMesh.Nodes.Add(_referencePoints);
+            _model.Nodes.Add(_materials);
+            _model.Nodes.Add(_sections);
+            _model.Nodes.Add(_constraints);
+            _model.Nodes.Add(_contact);
+            _contact.Nodes.Add(_surfaceInteractions);
+            _contact.Nodes.Add(_contactPairs);
+            _model.Nodes.Add(_initialConditions);
+            _model.Nodes.Add(_steps);
+            cltvModel.Nodes.Add(_analyses);
+            // Expand/Collapse
+            _geomParts.ExpandAll();
+            _model.ExpandAll();
+            _contact.Collapse();
             //
             ClearResults(); //calls cltvResults.SelectedNodes.Clear();
-            //
-            _contact.Collapse();
-
         }
         public void ClearActiveTreeSelection()
         {
@@ -1372,16 +1413,26 @@ namespace UserControls
         }
         public void ClearResults()
         {
-            _resultParts.Nodes.Clear();
-            _resultParts.Text = _resultPartsName;
-            //
-            _resultFieldOutputs.Nodes.Clear();
-            _resultFieldOutputs.Text = _fieldOutputsName;
-            //
-            _resultHistoryOutputs.Nodes.Clear();
-            _resultHistoryOutputs.Text = _historyOutputsName;
-            //
             cltvResults.SelectedNodes.Clear();
+            cltvResults.Nodes.Clear();
+            _resultMesh.Nodes.Clear();
+            _resultParts.Nodes.Clear();
+            _results.Nodes.Clear();
+            _resultFieldOutputs.Nodes.Clear();
+            _resultHistoryOutputs.Nodes.Clear();
+            //
+            _resultParts.Text = _resultPartsName;
+            _resultFieldOutputs.Text = _fieldOutputsName;
+            _resultHistoryOutputs.Text = _historyOutputsName;
+            // Fill the tree
+            cltvResults.Nodes.Add(_resultMesh);
+            _resultMesh.Nodes.Add(_resultParts);
+            cltvResults.Nodes.Add(_results);
+            _results.Nodes.Add(_resultFieldOutputs);
+            _results.Nodes.Add(_resultHistoryOutputs);
+            // Expand/Collapse
+            _resultMesh.ExpandAll();
+            _results.ExpandAll();
         }
         //
         public void UpdateHighlight()
@@ -1461,11 +1512,12 @@ namespace UserControls
             //
             try
             {
-                bool[] prevModelTreeStates = GetTreeExpandCollapseState();
+                // Expand/Collapse
+                bool[][] prevModelTreeStates = GetAllTreesExpandCollapseState();
                 //
                 cltvGeometry.BeginUpdate();
                 cltvModel.BeginUpdate();
-                cltvResults.BeginUpdate();
+                cltvResults.BeginUpdate();                
                 Dictionary<CodersLabTreeView, string[]> selectedNodePaths = GetSelectedNodePaths();
                 Clear();
                 if (model != null)
@@ -1486,7 +1538,7 @@ namespace UserControls
                     if (model.Mesh != null)
                     {
                         // Mesh Parts
-                        AddObjectsToNode<string, CaeMesh.BasePart>(_meshPartsName, _meshParts, model.Mesh.Parts);
+                        AddObjectsToNode<string, CaeMesh.BasePart>(_modelPartsName, _modelParts, model.Mesh.Parts);
                         // Node sets
                         AddObjectsToNode<string, CaeMesh.FeNodeSet>(_nodeSetsName, _nodeSets, model.Mesh.NodeSets);
                         // Element sets
@@ -1540,15 +1592,22 @@ namespace UserControls
                 }
                 //
                 SelectNodesByPath(selectedNodePaths);
-                //
-                bool[] afterModelTreeStates = GetTreeExpandCollapseState();
-                if (prevModelTreeStates.Length == afterModelTreeStates.Length) SetTreeExpandCollapseState(prevModelTreeStates);
-                //
-                cltvGeometry.EndUpdate();
-                cltvModel.EndUpdate();
-                cltvResults.EndUpdate();
+                // Expand/Collapse
+                bool[][] afterModelTreeStates = GetAllTreesExpandCollapseState();
+                // Geometry
+                if (prevModelTreeStates[0].Length == afterModelTreeStates[0].Length)
+                    SetTreeExpandCollapseState(cltvGeometry, prevModelTreeStates[0]);
+                // Model
+                if (prevModelTreeStates[1].Length == afterModelTreeStates[1].Length)
+                    SetTreeExpandCollapseState(cltvModel, prevModelTreeStates[1]);
             }
             catch { }
+            finally
+            {
+                cltvGeometry.EndUpdate();
+                cltvModel.EndUpdate();
+                cltvResults.EndUpdate();                
+            }
         }
         private Dictionary<CodersLabTreeView, string[]> GetSelectedNodePaths()
         {
@@ -1618,10 +1677,10 @@ namespace UserControls
             }
             else if (item is MeshPart)
             {
-                node = _meshParts.Nodes.Add(item.Name);
+                node = _modelParts.Nodes.Add(item.Name);
                 node.Name = node.Text;
                 node.Tag = item;
-                parent = _meshParts;
+                parent = _modelParts;
             }
             else if (item is FeNodeSet)
             {
@@ -2005,6 +2064,62 @@ namespace UserControls
             stepNode.Expand();
             return stepNode;
         }
+        private void FilterTree(CodersLabTreeView tree, string text)
+        {
+            try
+            {
+                if (RegenerateTreeCallBack != null)
+                {
+                    if (_prevStates[tree] == null) _prevStates[tree] = GetTreeExpandCollapseState(tree);
+                    //
+                    tree.Visible = false;
+                    //
+                    RegenerateTreeCallBack();
+                    if (text.Length > 0)
+                    {
+                        string[] texts = text.ToUpper().Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                        FilterNodes(tree.Nodes, texts);
+                        tree.ExpandAll();
+                    }
+                    else
+                    {
+                        SetTreeExpandCollapseState(tree, _prevStates[tree]);
+                        _prevStates[tree] = null;
+                    }
+                }
+            }
+            catch { }
+            finally
+            {
+                tree.Visible = true;
+            }
+        }
+        private void FilterNodes(TreeNodeCollection nodes, string[] texts)
+        {
+            bool contains;
+            List<TreeNode> nodesToDelete = new List<TreeNode>();
+            //
+            foreach (TreeNode node in nodes)
+            {
+                FilterNodes(node.Nodes, texts);
+                //
+                if (node.Nodes.Count == 0)
+                {
+                    contains = false;
+                    foreach (var text in texts)
+                    {
+                        if (node.Text.Trim().ToUpper().Contains(text))
+                        { 
+                            contains = true;
+                            break;
+                        }
+                    }
+                    if (!contains) nodesToDelete.Add(node);
+                }
+            }
+            //
+            foreach (var node in nodesToDelete) nodes.Remove(node);
+        }
 
         // Node status                                                                                                              
         private void SetAllNodesStatusIcons(TreeNode node)
@@ -2025,6 +2140,8 @@ namespace UserControls
             if (node != null && node.Tag != null)
             {
                 CodersLabTreeView cltv = (CodersLabTreeView)node.TreeView;
+                if (cltv == null) return;
+                //
                 NamedClass item = (NamedClass)node.Tag;
                 bool warning;
                 //
@@ -2163,7 +2280,6 @@ namespace UserControls
             int n = _resultHistoryOutputs.Nodes.Count;
             if (n > 0) _resultHistoryOutputs.Text = _historyOutputsName + " (" + n + ")";
         }
-       
 
         // Expand/Collapse                                                                                                          
         private CodersLabTreeView GetActiveTree()
@@ -2182,40 +2298,65 @@ namespace UserControls
             else if (view == ViewType.Results) return cltvResults;
             else throw new NotSupportedException();
         }
-        public bool[] GetTreeExpandCollapseState()
+        public bool[][] GetAllTreesExpandCollapseState()
+        {
+            bool[][] allStates = new bool[3][];
+            allStates[0] = GetTreeExpandCollapseState(cltvGeometry);
+            allStates[1] = GetTreeExpandCollapseState(cltvModel);
+            allStates[2] = GetTreeExpandCollapseState(cltvResults);
+            return allStates;
+        }
+        public bool[] GetTreeExpandCollapseState(CodersLabTreeView tree)
         {
             List<bool> states = new List<bool>();
-            foreach (TreeNode node in cltvModel.Nodes)
-            {
-                GetNodeExpandCollapseState(node, states);
-            }
-            //
+            foreach (TreeNode node in tree.Nodes) GetNodeExpandCollapseState(node, states);
             return states.ToArray();
         }
         private void GetNodeExpandCollapseState(TreeNode node, List<bool> states)
         {
             states.Add(node.IsExpanded);
+            //
             foreach (TreeNode child in node.Nodes)
             {
                 GetNodeExpandCollapseState(child, states);
             }
         }
-        public void SetTreeExpandCollapseState(bool[] states)
+        public void SetAllTreeExpandCollapseState(bool[][] states)
         {
             try
             {
-                int count = 0;
-                cltvModel.BeginUpdate();
-                foreach (TreeNode node in cltvModel.Nodes)
-                {
-                    SetNodeExpandCollapseState(node, states, ref count);
-                }
-                cltvModel.EndUpdate();
+                if (states == null || states.Length == 0) return;
+                //
+                SetTreeExpandCollapseState(cltvGeometry, states[0]);
+                SetTreeExpandCollapseState(cltvModel, states[1]);
+                SetTreeExpandCollapseState(cltvResults, states[2]);
             }
             catch (Exception)
             {
             }
-           
+        }
+        public void SetTreeExpandCollapseState(CodersLabTreeView tree, bool[] states)
+        {
+            try
+            {
+                if (states == null || states.Length == 0) return;
+                //
+                int count = 0;
+                foreach (TreeNode node in tree.Nodes) CountAllTreeNodes(node, ref count);
+                //
+                if (states.Length == count)
+                {
+                    count = 0;
+                    //
+                    tree.BeginUpdate();
+                    foreach (TreeNode node in tree.Nodes) SetNodeExpandCollapseState(node, states, ref count);
+                    tree.EndUpdate();
+                }
+            }
+            catch (Exception)
+            {
+            }
+
         }
         private void SetNodeExpandCollapseState(TreeNode node, bool[] states, ref int count)
         {
@@ -2223,12 +2364,14 @@ namespace UserControls
             else node.Collapse();
             count++;
             //
-            foreach (TreeNode child in node.Nodes)
-            {
-                SetNodeExpandCollapseState(child, states, ref count);
-            }
+            foreach (TreeNode child in node.Nodes) SetNodeExpandCollapseState(child, states, ref count);
         }
-
+        private void CountAllTreeNodes(TreeNode node, ref int count)
+        {
+            count++;
+            //
+            foreach (TreeNode child in node.Nodes) CountAllTreeNodes(child, ref count);
+        }
         //                                                                                                                          
         private bool CanCreate(TreeNode node)
         {
@@ -2299,8 +2442,8 @@ namespace UserControls
         public void SetNumberOfUserKeywords(int numOfUserKeywords)
         {
             _numUserKeywords = numOfUserKeywords;
-            cltvModel.Nodes[0].Text = "Model";
-            if (_numUserKeywords > 0) cltvModel.Nodes[0].Text += " (User keywords: " + _numUserKeywords + ")";
+            _model.Text = _modelName;
+            if (_numUserKeywords > 0) _model.Text += " (User keywords: " + _numUserKeywords + ")";
         }
 
         //                                                                                                                          
@@ -2318,5 +2461,7 @@ namespace UserControls
                 cmsTree.Show(control, x, y);
             }
         }
+
+        
     }
 }

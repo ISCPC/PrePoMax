@@ -2303,7 +2303,7 @@ namespace vtkControl
                 ApplyEdgeVisibilityAndBackfaceCullingToActor(entry.Value, entry.Value.GetProperty(), vtkRendererLayer.Selection);
             }
             //
-            this.Invalidate();
+            if (_renderingOn) this.Invalidate();
         }
         private void ApplyEdgeVisibilityAndBackfaceCullingToActor(vtkActor actor, vtkProperty actorProperty, vtkRendererLayer layer)
         {
@@ -3079,6 +3079,36 @@ namespace vtkControl
         {
             _style.AdjustCameraDistanceAndClipping();
         }
+        public void AdjustCameraDistanceAndClippingRedraw()
+        {
+            if (_renderingOn)
+            {
+                _style.AdjustCameraDistanceAndClipping();
+                this.Invalidate();
+            }
+        }
+        public void UpdateScalarsAndRedraw()
+        {
+            if (_renderingOn)
+            {
+                // Update scalar field
+                UpdateScalarFormatting();
+                //
+                this.Invalidate();
+            }
+        }
+        public void UpdateScalarsAndCameraAndRedraw()
+        {
+            if (_renderingOn)
+            {
+                // Update scalar field
+                UpdateScalarFormatting();
+                //
+                _style.AdjustCameraDistanceAndClipping();
+                //
+                this.Invalidate();
+            }
+        }
 
         #endregion  ################################################################################################################
 
@@ -3088,21 +3118,16 @@ namespace vtkControl
             vtkMaxActor actor = new vtkMaxActor(data, false, true);
             AddActorGeometry(actor, data.Layer);
             //
-            if (this.RenderingOn)
-            {
-                _style.AdjustCameraDistanceAndClipping();
-                this.Invalidate();
-            }
+            AdjustCameraDistanceAndClippingRedraw();
         }
         public void AddCells(vtkMaxActorData data)
         {
             // Create actor
             vtkMaxActor actor = new vtkMaxActor(data);
             //
-            AddActor(actor, data.Layer, data.CanHaveElementEdges);            
+            AddActor(actor, data.Layer, data.CanHaveElementEdges);
             //
-            _style.AdjustCameraDistanceAndClipping();
-            this.Invalidate();
+            AdjustCameraDistanceAndClippingRedraw();
         }
         
         public void AddSphereActor(vtkMaxActorData data, double symbolSize)
@@ -3780,7 +3805,7 @@ namespace vtkControl
             {
                 actorModelEdges.GeometryProperty.SetOpacity(1);
                 AddActorGeometry(actorModelEdges, vtkRendererLayer.Selection);
-                this.Invalidate();
+                if (_renderingOn) this.Invalidate();
             }
             return;
             // Silhouette
@@ -4872,7 +4897,7 @@ namespace vtkControl
 
         #region Scalar fields ######################################################################################################
 
-        public void AddScalarFieldOnCells(vtkMaxActorData data)
+        public void AddScalarFieldOnCells(vtkMaxActorData data, bool update)
         {
             // Create actor
             vtkMaxActor actor = new vtkMaxActor(data);
@@ -4882,11 +4907,8 @@ namespace vtkControl
             if (data.CanHaveElementEdges && actor.ElementEdges != null) AddActorEdges(actor, false, vtkRendererLayer.Base);
             // Add modelEdges
             if (actor.ModelEdges != null) AddActorEdges(actor, true, data.Layer);
-            // Update scalar field
-            UpdateScalarFormatting();
             //
-            _style.AdjustCameraDistanceAndClipping();
-            this.Invalidate();
+            if (update) UpdateScalarsAndCameraAndRedraw();
         }
         //
         public bool AddAnimatedScalarFieldOnCells(vtkMaxActorData data)
@@ -4931,8 +4953,7 @@ namespace vtkControl
             //
             _animationActors.Add(baseActor.Name, actors);
             //
-            _style.AdjustCameraDistanceAndClipping();
-            this.Invalidate();
+            AdjustCameraDistanceAndClippingRedraw();
             //
             return true;
         }
@@ -4984,8 +5005,7 @@ namespace vtkControl
             _animationFrameData.ActorVisible.Add(data.Name, true);
             _animationFrameData.AnimatedActorNames.Add(animatedActorNames);
             //
-            _style.AdjustCameraDistanceAndClipping();
-            this.Invalidate();
+            AdjustCameraDistanceAndClippingRedraw();
             //
             return true;
         }
@@ -5115,7 +5135,7 @@ namespace vtkControl
             }
         }
         public void UpdateActorScalarField(string actorName, float[] values, NodesExchangeData extremeNodes,
-                                           float[] frustumCellLocatorValues)
+                                           float[] frustumCellLocatorValues, bool update)
         {
             if (System.Diagnostics.Debugger.IsAttached && false)
             {
@@ -5142,9 +5162,7 @@ namespace vtkControl
                 RemoveActorScalarField(actorName);
             }
             //
-            UpdateScalarFormatting();
-            //
-            this.Invalidate();
+            if (update) UpdateScalarsAndRedraw();
         }
         private void UpdateActorScalarField(string actorName, vtkFloatArray scalars, vtkFloatArray frustumScalars,
                                             NodesExchangeData extremeNodes)
@@ -5310,7 +5328,7 @@ namespace vtkControl
             //
             UpdateScalarFormatting();
             //
-            this.Invalidate();
+            if (_renderingOn) this.Invalidate();
         }
         private void UpdateActorColorContoursVisibility(string actorName, bool colorContours)
         {

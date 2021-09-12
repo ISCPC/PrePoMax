@@ -429,7 +429,7 @@ namespace vtkControl
                 if (this.Visible)
                 {
                     this.SyncRenderWindowSize();
-
+                    //
                     if (this._renderWindow.GetInteractor() != this._renderWindowInteractor)
                     {
                         // On X11, the SetInteractor method cannot be called until the parent
@@ -439,11 +439,10 @@ namespace vtkControl
                         // of painting.
                         //
                         this.AttachInteractor();
-                        this._renderWindow.Render();
+                        //this._renderWindow.Render();
                     }
-
                     this._renderWindow.Render();
-                    //System.Console.WriteLine(System.DateTime.Now + ": OnPaint");
+                    System.Console.WriteLine(System.DateTime.Now + ": OnRender");
                 }
             }
             base.OnPaint(e);

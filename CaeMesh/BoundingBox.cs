@@ -224,14 +224,20 @@ namespace CaeMesh
             return (MaxX - MinX) * (MaxY - MinY) * (MaxZ - MinZ);
         }
         //
-        public bool IsEqual(BoundingBox boundingBox)
+        public bool IsEqualInSize(BoundingBox boundingBox)
         {
-            double diagonal = Math.Pow(MinX - MaxX, 2) + Math.Pow(MinY - MaxY, 2) + Math.Pow(MinZ - MaxZ, 2);
-            double bbDiagonal = Math.Pow(boundingBox.MinX - boundingBox.MaxX, 2) + Math.Pow(boundingBox.MinY - boundingBox.MaxY, 2) + Math.Pow(boundingBox.MinZ - boundingBox.MaxZ, 2);
-
-            if (diagonal == 0 && bbDiagonal == 0) return true;
-            else if (diagonal != 0 && bbDiagonal != 0) return Math.Abs(diagonal - bbDiagonal) / Math.Max(diagonal, bbDiagonal) < 0.001 ? true : false;
-            return false;
+            double size = Math.Max(Math.Max(MaxX - MinX, MaxY - MinY), MaxZ - MinZ) * 1E-6;
+            //
+            if (Math.Abs(MinX - boundingBox.MinX) > size) return false;
+            else if (Math.Abs(MaxX - boundingBox.MaxX) > size) return false;
+            //
+            else if (Math.Abs(MinY - boundingBox.MinY) > size) return false;
+            else if (Math.Abs(MaxY - boundingBox.MaxY) > size) return false;
+            //
+            else if (Math.Abs(MinZ - boundingBox.MinZ) > size) return false;
+            else if (Math.Abs(MaxZ - boundingBox.MaxZ) > size) return false;
+            //
+            else return true;
         }
         //
         public BoundingBox DeepCopy()

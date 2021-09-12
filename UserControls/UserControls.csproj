@@ -82,7 +82,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AutoClosingMessageBox.cs" />
+    <Compile Include="MessageBoxes\AutoClosingMessageBox.cs" />
     <Compile Include="DataGridView\DataGridViewCopyPaste.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -120,11 +120,23 @@
     <Compile Include="ListView\MyListView.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Panels\BorderColoredPanel.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="TextBoxes\AutoScrollTextBox.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="TextBoxes\AutoScrollTextBox.Designer.cs">
       <DependentUpon>AutoScrollTextBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="TextBoxes\ResizableTextBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="TextBoxes\SearchTextBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="TextBoxes\SearchTextBox.Designer.cs">
+      <DependentUpon>SearchTextBox.cs</DependentUpon>
     </Compile>
     <Compile Include="TextBoxes\UnitAwareTextBox.cs">
       <SubType>Component</SubType>
@@ -218,6 +230,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="TextBoxes\AutoScrollTextBox.resx">
       <DependentUpon>AutoScrollTextBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TextBoxes\SearchTextBox.resx">
+      <DependentUpon>SearchTextBox.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="TextBoxes\UnitAwareTextBox.resx">
       <DependentUpon>UnitAwareTextBox.cs</DependentUpon>
@@ -352,6 +367,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="License-LGPL.txt" />
+    <None Include="Resources\Search1.png" />
+    <None Include="Resources\Search.png" />
     <None Include="Resources\Hide2.ico" />
     <None Include="Resources\Close_White.ico" />
     <None Include="Resources\Close_Red1.ico" />

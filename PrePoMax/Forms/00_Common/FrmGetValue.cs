@@ -85,19 +85,6 @@ namespace PrePoMax.Forms
             propertyGrid.Select();
             //
         }
-
-    
-
-       
-
-       
-
-        
-
-
-     
-
-       
       
     }
 }

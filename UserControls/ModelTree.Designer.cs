@@ -135,10 +135,13 @@
             this.ilStatusIcons = new System.Windows.Forms.ImageList(this.components);
             this.tcGeometryModelResults = new System.Windows.Forms.TabControl();
             this.tpGeometry = new System.Windows.Forms.TabPage();
+            this.stbGeometry = new UserControls.SearchTextBox();
             this.cltvGeometry = new UserControls.CodersLabTreeView();
             this.tpModel = new System.Windows.Forms.TabPage();
+            this.stbModel = new UserControls.SearchTextBox();
             this.cltvModel = new UserControls.CodersLabTreeView();
             this.tpResults = new System.Windows.Forms.TabPage();
+            this.stbResults = new UserControls.SearchTextBox();
             this.cltvResults = new UserControls.CodersLabTreeView();
             this.cmsTree.SuspendLayout();
             this.tcGeometryModelResults.SuspendLayout();
@@ -533,6 +536,7 @@
             // 
             // tpGeometry
             // 
+            this.tpGeometry.Controls.Add(this.stbGeometry);
             this.tpGeometry.Controls.Add(this.cltvGeometry);
             this.tpGeometry.Location = new System.Drawing.Point(4, 24);
             this.tpGeometry.Name = "tpGeometry";
@@ -541,17 +545,31 @@
             this.tpGeometry.Text = "Geometry";
             this.tpGeometry.UseVisualStyleBackColor = true;
             // 
+            // stbGeometry
+            // 
+            this.stbGeometry.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.stbGeometry.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.stbGeometry.Location = new System.Drawing.Point(0, 0);
+            this.stbGeometry.Name = "stbGeometry";
+            this.stbGeometry.Size = new System.Drawing.Size(270, 22);
+            this.stbGeometry.TabIndex = 1;
+            this.stbGeometry.TextVisible = false;
+            this.stbGeometry.TextChanged += new System.Action<object, System.EventArgs>(this.stbGeometry_TextChanged);
+            // 
             // cltvGeometry
             // 
+            this.cltvGeometry.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.cltvGeometry.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.cltvGeometry.DisableMouse = false;
-            this.cltvGeometry.Dock = System.Windows.Forms.DockStyle.Fill;
             this.cltvGeometry.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.cltvGeometry.HideSelection = false;
             this.cltvGeometry.HighlightForeErrorColor = System.Drawing.Color.Red;
             this.cltvGeometry.ImageIndex = 0;
             this.cltvGeometry.ImageList = this.ilIcons;
-            this.cltvGeometry.Location = new System.Drawing.Point(0, 0);
+            this.cltvGeometry.Location = new System.Drawing.Point(0, 21);
             this.cltvGeometry.Name = "cltvGeometry";
             treeNode1.ImageKey = "Dots.ico";
             treeNode1.Name = "Node0";
@@ -605,7 +623,7 @@
             this.cltvGeometry.SelectedImageIndex = 0;
             this.cltvGeometry.SelectionBackColor = System.Drawing.SystemColors.Highlight;
             this.cltvGeometry.SelectionMode = UserControls.TreeViewSelectionMode.MultiSelect;
-            this.cltvGeometry.Size = new System.Drawing.Size(231, 470);
+            this.cltvGeometry.Size = new System.Drawing.Size(231, 450);
             this.cltvGeometry.TabIndex = 0;
             this.cltvGeometry.SelectionsChanged += new System.EventHandler(this.cltv_SelectionsChanged);
             this.cltvGeometry.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.cltv_BeforeCollapse);
@@ -619,6 +637,7 @@
             // 
             // tpModel
             // 
+            this.tpModel.Controls.Add(this.stbModel);
             this.tpModel.Controls.Add(this.cltvModel);
             this.tpModel.Location = new System.Drawing.Point(4, 24);
             this.tpModel.Name = "tpModel";
@@ -627,18 +646,32 @@
             this.tpModel.Text = "FE Model";
             this.tpModel.UseVisualStyleBackColor = true;
             // 
+            // stbModel
+            // 
+            this.stbModel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.stbModel.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.stbModel.Location = new System.Drawing.Point(0, 0);
+            this.stbModel.Name = "stbModel";
+            this.stbModel.Size = new System.Drawing.Size(270, 22);
+            this.stbModel.TabIndex = 2;
+            this.stbModel.TextVisible = false;
+            this.stbModel.TextChanged += new System.Action<object, System.EventArgs>(this.stbModel_TextChanged);
+            // 
             // cltvModel
             // 
+            this.cltvModel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.cltvModel.BackColor = System.Drawing.SystemColors.Window;
             this.cltvModel.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.cltvModel.DisableMouse = false;
-            this.cltvModel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.cltvModel.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.cltvModel.HideSelection = false;
             this.cltvModel.HighlightForeErrorColor = System.Drawing.Color.Red;
             this.cltvModel.ImageIndex = 0;
             this.cltvModel.ImageList = this.ilIcons;
-            this.cltvModel.Location = new System.Drawing.Point(0, 0);
+            this.cltvModel.Location = new System.Drawing.Point(0, 21);
             this.cltvModel.Margin = new System.Windows.Forms.Padding(0);
             this.cltvModel.Name = "cltvModel";
             treeNode12.ImageKey = "BasePart.ico";
@@ -725,7 +758,7 @@
             this.cltvModel.SelectedImageIndex = 0;
             this.cltvModel.SelectionBackColor = System.Drawing.SystemColors.Highlight;
             this.cltvModel.SelectionMode = UserControls.TreeViewSelectionMode.MultiSelect;
-            this.cltvModel.Size = new System.Drawing.Size(231, 470);
+            this.cltvModel.Size = new System.Drawing.Size(231, 450);
             this.cltvModel.TabIndex = 0;
             this.cltvModel.SelectionsChanged += new System.EventHandler(this.cltv_SelectionsChanged);
             this.cltvModel.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.cltv_BeforeCollapse);
@@ -739,6 +772,7 @@
             // 
             // tpResults
             // 
+            this.tpResults.Controls.Add(this.stbResults);
             this.tpResults.Controls.Add(this.cltvResults);
             this.tpResults.Location = new System.Drawing.Point(4, 24);
             this.tpResults.Name = "tpResults";
@@ -748,17 +782,31 @@
             this.tpResults.Text = "Results";
             this.tpResults.UseVisualStyleBackColor = true;
             // 
+            // stbResults
+            // 
+            this.stbResults.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.stbResults.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.stbResults.Location = new System.Drawing.Point(0, 0);
+            this.stbResults.Name = "stbResults";
+            this.stbResults.Size = new System.Drawing.Size(270, 22);
+            this.stbResults.TabIndex = 3;
+            this.stbResults.TextVisible = false;
+            this.stbResults.TextChanged += new System.Action<object, System.EventArgs>(this.stbResults_TextChanged);
+            // 
             // cltvResults
             // 
+            this.cltvResults.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.cltvResults.BackColor = System.Drawing.SystemColors.Window;
             this.cltvResults.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.cltvResults.DisableMouse = false;
-            this.cltvResults.Dock = System.Windows.Forms.DockStyle.Fill;
             this.cltvResults.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.cltvResults.HighlightForeErrorColor = System.Drawing.Color.Red;
             this.cltvResults.ImageIndex = 0;
             this.cltvResults.ImageList = this.ilIcons;
-            this.cltvResults.Location = new System.Drawing.Point(3, 3);
+            this.cltvResults.Location = new System.Drawing.Point(0, 21);
             this.cltvResults.Margin = new System.Windows.Forms.Padding(0);
             this.cltvResults.Name = "cltvResults";
             treeNode28.ImageKey = "BasePart.ico";
@@ -793,7 +841,7 @@
             this.cltvResults.SelectedImageIndex = 0;
             this.cltvResults.SelectionBackColor = System.Drawing.SystemColors.Highlight;
             this.cltvResults.SelectionMode = UserControls.TreeViewSelectionMode.MultiSelect;
-            this.cltvResults.Size = new System.Drawing.Size(225, 464);
+            this.cltvResults.Size = new System.Drawing.Size(231, 450);
             this.cltvResults.TabIndex = 0;
             this.cltvResults.SelectionsChanged += new System.EventHandler(this.cltv_SelectionsChanged);
             this.cltvResults.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.cltv_BeforeCollapse);
@@ -859,8 +907,6 @@
         private System.Windows.Forms.ToolStripSeparator tsmiSpaceHideShow;
         private System.Windows.Forms.ToolStripMenuItem tsmiHide;
         private System.Windows.Forms.ToolStripMenuItem tsmiShow;
-        private System.Windows.Forms.TabPage tpGeometry;
-        private CodersLabTreeView cltvGeometry;
         private System.Windows.Forms.ToolStripSeparator tsmiSpaceMesh;
         private System.Windows.Forms.ToolStripMenuItem tsmiCreateMesh;
         private System.Windows.Forms.ToolStripMenuItem tsmiMeshingParameters;
@@ -885,5 +931,10 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiDuplicate;
         private System.Windows.Forms.ToolStripMenuItem tsmiPropagate;
         private System.Windows.Forms.ToolStripMenuItem tsmiSwapPartGeometries;
+        private System.Windows.Forms.TabPage tpGeometry;
+        private SearchTextBox stbGeometry;
+        private CodersLabTreeView cltvGeometry;
+        private SearchTextBox stbModel;
+        private SearchTextBox stbResults;
     }
 }

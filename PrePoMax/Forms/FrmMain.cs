@@ -147,6 +147,7 @@ namespace PrePoMax
             get { return _modelTree.DisableSelectionsChanged; }
             set { _modelTree.DisableSelectionsChanged = value; }
         }
+        public bool RenderingOn { get { return _vtk.RenderingOn; } set { _vtk.RenderingOn = value; } }
         #endregion  ################################################################################################################
 
 
@@ -199,11 +200,16 @@ namespace PrePoMax
                 // Menu
                 tsmiColorAnnotations.DropDown.Closing += DropDown_Closing;
                 // Tree
-                this._modelTree = new UserControls.ModelTree();
-                this._modelTree.Name = "modelTree";
-                this.splitContainer1.Panel1.Controls.Add(this._modelTree);
-                this._modelTree.Dock = System.Windows.Forms.DockStyle.Fill;
-                this._modelTree.TabIndex = 0;
+                _modelTree = new ModelTree();
+                _modelTree.Name = "modelTree";
+                //_modelTree.Location = new Point(0, 0);
+                splitContainer1.Panel1.Controls.Add(this._modelTree);
+                _modelTree.Dock = DockStyle.Fill;
+                //_modelTree.Size = splitContainer1.Panel1.ClientSize;
+                //_modelTree.Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Bottom;
+                //_modelTree.Dock = DockStyle.None;
+                _modelTree.TabIndex = 0;
+                _modelTree.RegenerateTreeCallBack = RegenerateTree;
                 //
                 _modelTree.GeometryMeshResultsEvent += ModelTree_ViewEvent;
                 _modelTree.SelectEvent += ModelTree_Select;
@@ -570,7 +576,7 @@ namespace PrePoMax
             if (form.Visible == false)
             {
                 UpdateHighlightFromTree();
-                GetFormLoaction(form);
+                SaveFormLoaction(form);
                 //
                 _controller.SetSelectByToDefault();
                 //
@@ -585,7 +591,7 @@ namespace PrePoMax
             //else if (form.Left + form.Width > screenSize.Width) form.Left = screenSize.Width - form.Width;
             //if (form.Top < 0) form.Top = 0;
             //else if (form.Top + form.Height > screenSize.Height) form.Top = screenSize.Height - form.Height;
-            GetFormLoaction(form);
+            SaveFormLoaction(form);
         }
         //
         private void KeyboardHook_Keydown(KeyboardHook.VKeys vKey)
@@ -2128,7 +2134,7 @@ namespace PrePoMax
                 {
                     _controller.SetTransparencyForGeometryPartsCommand(partNames,(byte)frmGetValue.Value);
                 }
-                GetFormLoaction(frmGetValue);
+                SaveFormLoaction(frmGetValue);
             }
         }
         private void ShowOnlyGeometryParts(string[] partNames)
@@ -2392,7 +2398,7 @@ namespace PrePoMax
                 {
                     _controller.FindEdgesByAngleForGeometryPartsCommand(partNames, frmGetValue.Value);
                 }
-                GetFormLoaction(frmGetValue);
+                SaveFormLoaction(frmGetValue);
             }
         }
         private void SetUpFrmGetValueForEdgeAngle(FrmGetValue frmGetValue, string[] partNames)
@@ -2665,8 +2671,16 @@ namespace PrePoMax
                         //
                         CloseAllForms();
                         await Task.Run(() => _controller.CreateMeshCommand(partName));
-                        //
-                        _modelTree.SelectBasePart(e, modifierKeys, part, true);
+                        // Check for the cancel button click
+                        if (IsStateWorking())
+                        {
+                            _modelTree.SelectBasePart(e, modifierKeys, part, true);
+                        }
+                        else
+                        {
+                            errors.Add("Mesh generation canceled.");
+                            break;
+                        }
                     }
                     catch
                     {
@@ -2845,7 +2859,7 @@ namespace PrePoMax
                 {
                     _controller.FindEdgesByAngleForModelPartsCommand(partNames, frmGetValue.Value);
                 }
-                GetFormLoaction(frmGetValue);
+                SaveFormLoaction(frmGetValue);
             }
         }
         private void RemeshElements()
@@ -2877,7 +2891,7 @@ namespace PrePoMax
                     {
                         _controller.RenumberNodesCommand((int)frmGetValue.Value);
                     }
-                    GetFormLoaction(frmGetValue);
+                    SaveFormLoaction(frmGetValue);
                 }
             }
             catch (Exception ex)
@@ -3079,7 +3093,7 @@ namespace PrePoMax
                 {
                     _controller.SetTransparencyForModelPartsCommand(partNames, (byte)frmGetValue.Value);
                 }
-                GetFormLoaction(frmGetValue);
+                SaveFormLoaction(frmGetValue);
             }
         }
         private void DeleteModelParts(string[] partNames)
@@ -5050,7 +5064,7 @@ namespace PrePoMax
                 {
                     _controller.SetTransparencyForResultParts(partNames, (byte)frmGetValue.Value);
                 }
-                GetFormLoaction(frmGetValue);
+                SaveFormLoaction(frmGetValue);
             }
         }
         private void ColorContoursOffResultPart(string[] partNames)
@@ -5127,7 +5141,7 @@ namespace PrePoMax
             {
                 string[] preSelectedEntityNames = _modelTree.IntersectSelectionWithList(entities);
                 //
-                _frmSelectEntity.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
+                SetFormLoaction(_frmSelectEntity);
                 _frmSelectEntity.PrepareForm(title, false, entities, preSelectedEntityNames, null);
                 _frmSelectEntity.OneEntitySelected = OperateOnEntity;
                 _frmSelectEntity.Show();
@@ -5147,7 +5161,7 @@ namespace PrePoMax
             {
                 string[] preSelectedEntityNames = _modelTree.IntersectSelectionWithList(entities);
                 //
-                _frmSelectEntity.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
+                SetFormLoaction(_frmSelectEntity);
                 _frmSelectEntity.PrepareForm(title, false, entities, preSelectedEntityNames, stepName);
                 _frmSelectEntity.OneEntitySelectedInStep = OperateOnEntityInStep;
                 _frmSelectEntity.Show();
@@ -5167,7 +5181,7 @@ namespace PrePoMax
             {
                 string[] preSelectedEntityNames = _modelTree.IntersectSelectionWithList(entities);
                 //
-                _frmSelectEntity.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
+                SetFormLoaction(_frmSelectEntity);
                 _frmSelectEntity.PrepareForm(title, true, entities, preSelectedEntityNames, null);
                 _frmSelectEntity.MultipleEntitiesSelected = OperateOnMultpleEntities;
                 _frmSelectEntity.MinNumberOfEntities = minNumberOfEntities;
@@ -5321,10 +5335,21 @@ namespace PrePoMax
             }
         }
         private void SetFormLoaction(Form form)
-        {            
-            form.Location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
+        {           
+            Rectangle screenSize = Screen.FromControl(this).Bounds;
+            Rectangle formSize = form.ClientRectangle;
+            Point location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
+            if (formSize.Width < screenSize.Width && formSize.Height < screenSize.Height)
+            {
+                if (location.X < 0) location.X = 0;
+                else if (location.X + formSize.Width > screenSize.Width) location.X = screenSize.Width - formSize.Width;
+                //
+                if (location.Y < 0) location.Y = 0;
+                else if (location.Y + formSize.Height > screenSize.Height) location.Y = screenSize.Height - formSize.Height;
+            }
+            form.Location = location;
         }
-        private void GetFormLoaction(Form form)
+        private void SaveFormLoaction(Form form)
         {
             _formLocation.X = form.Location.X - Left;
             _formLocation.Y = form.Location.Y - Top;
@@ -5645,10 +5670,10 @@ namespace PrePoMax
             InvokeIfRequired(() =>
             {
                 tsslState.Text = text;
-
+                //
                 if (working) tspbProgress.Style = ProgressBarStyle.Marquee;
                 else tspbProgress.Style = ProgressBarStyle.Blocks;
-
+                //
                 _vtk.RenderingOn = !working;
                 _vtk.Enabled = !working;
                 _modelTree.DisableMouse = working;
@@ -5656,7 +5681,7 @@ namespace PrePoMax
                 tsFile.DisableMouseButtons = working;
                 tsViews.DisableMouseButtons = working;
                 tsResults.DisableMouseButtons = working;
-
+                //
                 //this.DisableAllMouseEvents = working;
             });
         }
@@ -5677,6 +5702,10 @@ namespace PrePoMax
                 return true;
             }
             return false;
+        }
+        private bool IsStateWorking()
+        {
+            return tsslState.Text != Globals.ReadyText;
         }
 
         private void tsslCancel_MouseDown(object sender, MouseEventArgs e)
@@ -5860,6 +5889,7 @@ namespace PrePoMax
 
         #region vtkControl  ########################################################################################################
         // vtkControl
+
         public void SetFrontBackView(bool animate, bool front)
         {
             InvokeIfRequired(_vtk.SetFrontBackView, animate, front);
@@ -5882,6 +5912,14 @@ namespace PrePoMax
         public void AdjustCameraDistanceAndClipping()
         {
             InvokeIfRequired(_vtk.AdjustCameraDistanceAndClipping);
+        }
+        public void UpdateScalarsAndRedraw()
+        {
+            InvokeIfRequired(_vtk.UpdateScalarsAndRedraw);
+        }
+        public void UpdateScalarsAndCameraAndRedraw()
+        {
+            InvokeIfRequired(_vtk.UpdateScalarsAndCameraAndRedraw);
         }
         // Section view
         public void ApplySectionView(double[] point, double[] normal)
@@ -5938,18 +5976,18 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.AddCells, cellData);
         }
-        public void AddScalarFieldOn3DCells(vtkControl.vtkMaxActorData actorData)
+        public void AddScalarFieldOn3DCells(vtkControl.vtkMaxActorData actorData, bool update)
         {
-            InvokeIfRequired(_vtk.AddScalarFieldOnCells, actorData);
+            InvokeIfRequired(_vtk.AddScalarFieldOnCells, actorData, update);
         }
         public bool AddAnimatedScalarFieldOn3DCells(vtkControl.vtkMaxActorData actorData)
         {
             return _vtk.AddAnimatedScalarFieldOnCells(actorData);
         }
         public void UpdateActorSurfaceScalarField(string actorName, float[] values, NodesExchangeData extremeNodes,
-                                                  float[] frustumCellLocatorValues)
+                                                  float[] frustumCellLocatorValues, bool update)
         {
-            InvokeIfRequired(_vtk.UpdateActorScalarField, actorName, values, extremeNodes, frustumCellLocatorValues);
+            InvokeIfRequired(_vtk.UpdateActorScalarField, actorName, values, extremeNodes, frustumCellLocatorValues, update);
         }
         public void UpdateActorColorContoursVisibility(string[] actorNames, bool colorContour)
         {
@@ -6295,12 +6333,17 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.SaveAnimationAsImages, fileName, firstLastFrame, step, scalarRangeFromAllFrames, swing);
         }
-        
+
         #endregion  ################################################################################################################
-        
+
         #region Tree  ##############################################################################################################
         // Tree
-        public void RegenerateTree(FeModel model, OrderedDictionary<string, AnalysisJob> jobs,
+        public void RegenerateTree()
+        {
+            InvokeIfRequired(_modelTree.RegenerateTree, _controller.Model, _controller.Jobs, _controller.Results, _controller.History);
+            InvokeIfRequired(UpadteSymbolsForStepList);
+        }
+        public void RegenerateTree1(FeModel model, OrderedDictionary<string, AnalysisJob> jobs,
                                    CaeResults.FeResults results, CaeResults.HistoryResults history)
         {
             InvokeIfRequired(_modelTree.RegenerateTree, model, jobs, results, history);
@@ -6340,20 +6383,20 @@ namespace PrePoMax
             InvokeIfRequired(_modelTree.RemoveTreeNode<T>, viewType, nodeName, stepName);
             if (typeof(T) == typeof(CaeModel.Step)) RemoveOneStepInSymbolsForStepList(nodeName);
         }
-        public bool[] GetTreeExpandCollapseState()
+        public bool[][] GetTreeExpandCollapseState()
         {
-            if (this.InvokeRequired)
+            if (InvokeRequired)
             {
-                return (bool[])this.Invoke((MethodInvoker)delegate () { _modelTree.GetTreeExpandCollapseState(); });
+                return (bool[][])Invoke((Func<bool[][]>)delegate { return _modelTree.GetAllTreesExpandCollapseState(); });
             }
             else
             {
-                return _modelTree.GetTreeExpandCollapseState();
+                return _modelTree.GetAllTreesExpandCollapseState();
             }
         }
-        public void SetTreeExpandCollapseState(bool[] states)
+        public void SetTreeExpandCollapseState(bool[][] states)
         {
-            InvokeIfRequired(_modelTree.SetTreeExpandCollapseState, states);
+            InvokeIfRequired(_modelTree.SetAllTreeExpandCollapseState, states);
         }
         public void UpdateHighlight()
         {
@@ -6619,9 +6662,9 @@ namespace PrePoMax
 
         private void tsmiTest_Click(object sender, EventArgs e)
         {
-            if (false)
+            if (true)
             {
-                _controller.AutoCreateTiedPairs(0.5, 135);
+                _controller.AutoCreateTiedPairs(1, 135);
             }
             else
             {
@@ -6633,7 +6676,7 @@ namespace PrePoMax
                 surfaceInteraction.AddProperty(new Friction());
                 _controller.AddSurfaceInteraction(surfaceInteraction);
                 //
-                _controller.AutoCreateContactPairs(0.5, 135, surfaceInteraction);
+                _controller.AutoCreateContactPairs(1, 135, surfaceInteraction);
             }
 
 

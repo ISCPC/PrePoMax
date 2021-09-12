@@ -164,16 +164,5 @@ namespace CaeMesh
         {
             _visualization.RenumberEdges(orderedEdgesIds);
         }
-        public bool IsEqual(BasePart part)
-        {
-            if (_nodeLabels.Length != part.NodeLabels.Length) return false;
-            if (_boundingBox != null && part.BoundingBox != null && !_boundingBox.IsEqual(part.BoundingBox)) return false;
-            //for (int i = 0; i < _nodeLabels.Length; i++)
-            //{
-            //    if (_nodeLabels[i] != part.NodeLabels[i])
-            //        return false;
-            //}
-            return true;
-        }
     }
 }
