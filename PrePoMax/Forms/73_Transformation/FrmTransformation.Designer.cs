@@ -51,12 +51,12 @@
             this.labSelected = new System.Windows.Forms.Label();
             this.labAvailable = new System.Windows.Forms.Label();
             this.lvActiveTransformations = new UserControls.ListViewWithSelection();
+            this.colName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.btnAdd = new System.Windows.Forms.Button();
             this.btnRemove = new System.Windows.Forms.Button();
             this.btnClear = new System.Windows.Forms.Button();
             this.bntApply = new System.Windows.Forms.Button();
             this.gbProperties = new System.Windows.Forms.GroupBox();
-            this.colName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.gbTypes.SuspendLayout();
             this.gbProperties.SuspendLayout();
             this.SuspendLayout();
@@ -183,6 +183,10 @@
             this.lvActiveTransformations.UseCompatibleStateImageBehavior = false;
             this.lvActiveTransformations.View = System.Windows.Forms.View.Details;
             this.lvActiveTransformations.SelectedIndexChanged += new System.EventHandler(this.lvActiveTransformations_SelectedIndexChanged);
+            // 
+            // colName
+            // 
+            this.colName.Width = 27;
             // 
             // btnAdd
             // 

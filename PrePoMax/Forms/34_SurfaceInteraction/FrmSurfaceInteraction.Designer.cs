@@ -48,10 +48,10 @@
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.lvAddedProperties = new UserControls.ListViewWithSelection();
+            this.colName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.btnAdd = new System.Windows.Forms.Button();
             this.btnRemove = new System.Windows.Forms.Button();
             this.btnOKAddNew = new System.Windows.Forms.Button();
-            this.colName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.gbData.SuspendLayout();
             this.gbProperties.SuspendLayout();
             this.tcProperties.SuspendLayout();
@@ -265,6 +265,10 @@
             this.lvAddedProperties.UseCompatibleStateImageBehavior = false;
             this.lvAddedProperties.View = System.Windows.Forms.View.Details;
             this.lvAddedProperties.SelectedIndexChanged += new System.EventHandler(this.lvAddedProperties_SelectedIndexChanged);
+            // 
+            // colName
+            // 
+            this.colName.Width = 25;
             // 
             // btnAdd
             // 

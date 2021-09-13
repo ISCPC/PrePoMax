@@ -792,6 +792,7 @@
     <None Include="Icons\Step\Bc.png" />
     <None Include="Icons\Step\Load.png" />
     <None Include="Icons\Step\Defined_field.ico" />
+    <None Include="Icons\Material\Remove.ico" />
     <Content Include="main.ico" />
   </ItemGroup>
   <ItemGroup>

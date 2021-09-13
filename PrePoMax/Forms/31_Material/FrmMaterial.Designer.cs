@@ -405,7 +405,7 @@
             // 
             // colName
             // 
-            this.colName.Width = 187;
+            this.colName.Width = 27;
             // 
             // btnOKAddNew
             // 

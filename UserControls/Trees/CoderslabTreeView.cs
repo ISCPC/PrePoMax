@@ -731,7 +731,7 @@ namespace UserControls
 				// Select each node in range
 				SelectNode(firstNode, true, tva);
 				TreeNode tnTemp = firstNode;
-				while (tnTemp != lastNode)
+				while (tnTemp != null && tnTemp != lastNode)
 				{
 					tnTemp = tnTemp.NextVisibleNode;
 					if (tnTemp != null)

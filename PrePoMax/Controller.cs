@@ -2255,7 +2255,7 @@ namespace PrePoMax
                 CalculixSettings settings = _settings.Calculix;
                 string fileName = Path.Combine(settings.WorkDirectory, Globals.StlFileName);
                 //
-                _form.CropPartWithCylinder(partName, 9.95, fileName);
+                _form.CropPartWithCylinder(partName, 10, fileName);
                 //
                 ReplacePartGeometryFromFile(part, fileName);
             }
