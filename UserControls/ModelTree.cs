@@ -2072,7 +2072,7 @@ namespace UserControls
                 {
                     if (_prevStates[tree] == null) _prevStates[tree] = GetTreeExpandCollapseState(tree);
                     //
-                    tree.Visible = false;
+                    //tree.Visible = false;
                     //
                     RegenerateTreeCallBack();
                     if (text.Length > 0)
@@ -2091,7 +2091,7 @@ namespace UserControls
             catch { }
             finally
             {
-                tree.Visible = true;
+                //tree.Visible = true;
             }
         }
         private void FilterNodes(TreeNodeCollection nodes, string[] texts)
