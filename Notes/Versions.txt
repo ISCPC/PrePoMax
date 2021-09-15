@@ -4,6 +4,10 @@ Selection - UNDO after empty click
 By Students
 Add the possibility ot output the Query command as General text formating
 
+RENDERING
+https://vtk.org/pipermail/vtkusers/2016-November/097309.html
+
+
 By Jakub
 31. 8. 2021
 1) kinematic/distributed coupling constraints
