@@ -6183,7 +6183,7 @@ namespace PrePoMax
             //
             if (!fieldData.Equals(currentData)) // update results only if field data changed
             {
-                // stop and update animation data only if field data changed
+                // Stop and update animation data only if field data changed
                 if (_frmAnimation.Visible) _frmAnimation.Hide();
                 //
                 if (fieldData.Name == currentData.Name && fieldData.Component == currentData.Component)

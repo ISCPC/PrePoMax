@@ -2303,7 +2303,7 @@ namespace vtkControl
                 ApplyEdgeVisibilityAndBackfaceCullingToActor(entry.Value, entry.Value.GetProperty(), vtkRendererLayer.Selection);
             }
             //
-            if (_renderingOn) this.Invalidate();
+            this.Invalidate();
         }
         private void ApplyEdgeVisibilityAndBackfaceCullingToActor(vtkActor actor, vtkProperty actorProperty, vtkRendererLayer layer)
         {
@@ -3081,33 +3081,24 @@ namespace vtkControl
         }
         public void AdjustCameraDistanceAndClippingRedraw()
         {
-            if (_renderingOn)
-            {
-                _style.AdjustCameraDistanceAndClipping();
-                this.Invalidate();
-            }
+            _style.AdjustCameraDistanceAndClipping();
+            this.Invalidate();
         }
         public void UpdateScalarsAndRedraw()
         {
-            if (_renderingOn)
-            {
-                // Update scalar field
-                UpdateScalarFormatting();
-                //
-                this.Invalidate();
-            }
+            // Update scalar field
+            UpdateScalarFormatting();
+            //
+            this.Invalidate();
         }
         public void UpdateScalarsAndCameraAndRedraw()
         {
-            if (_renderingOn)
-            {
-                // Update scalar field
-                UpdateScalarFormatting();
-                //
-                _style.AdjustCameraDistanceAndClipping();
-                //
-                this.Invalidate();
-            }
+            // Update scalar field
+            UpdateScalarFormatting();
+            //
+            _style.AdjustCameraDistanceAndClipping();
+            //
+            this.Invalidate();
         }
 
         #endregion  ################################################################################################################
@@ -3805,7 +3796,7 @@ namespace vtkControl
             {
                 actorModelEdges.GeometryProperty.SetOpacity(1);
                 AddActorGeometry(actorModelEdges, vtkRendererLayer.Selection);
-                if (_renderingOn) this.Invalidate();
+                this.Invalidate();
             }
             return;
             // Silhouette
@@ -5328,7 +5319,7 @@ namespace vtkControl
             //
             UpdateScalarFormatting();
             //
-            if (_renderingOn) this.Invalidate();
+            this.Invalidate();
         }
         private void UpdateActorColorContoursVisibility(string actorName, bool colorContours)
         {
@@ -5763,7 +5754,7 @@ namespace vtkControl
             //
             ApplyEdgesVisibilityAndBackfaceCulling();
             //
-            if (_renderingOn) this.Invalidate();
+            this.Invalidate();
         }
         public void UpdateActorColor(vtkMaxActor actor, Color newColor)
         {

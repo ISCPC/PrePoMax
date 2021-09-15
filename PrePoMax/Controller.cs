@@ -10892,7 +10892,6 @@ namespace PrePoMax
             // Draw results
             else
             {
-                _form.RenderingOn = false;
                 _form.Clear3D();    // Removes section cut
                 //
                 if (_results == null) return;
@@ -10912,7 +10911,6 @@ namespace PrePoMax
                 //
                 if (resetCamera) _form.SetFrontBackView(true, true); // animation:true is here to correctly draw max/min widgets 
                 //
-                _form.RenderingOn = true;
                 _form.UpdateScalarsAndCameraAndRedraw();
             }
         }
