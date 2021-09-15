@@ -567,17 +567,19 @@ namespace CaeResults
             string componentName;
             string componentRename;
             components = new List<string>();
-            while (true)
+            while (lineNum < lines.Length)
             {
-                record = lines[lineNum++].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
+                record = lines[lineNum].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
+                //
                 if (record[0] == "-5") componentName = record[1];
                 else break;
                 //
                 if (componentRenamer.TryGetValue(componentName, out componentRename)) componentName = componentRename;
-                //
                 components.Add(componentName);
+                //
+                lineNum++;
             }
-            lineNum--;
+            //lineNum--;
             // Check if the line number equals the numebr of lines
             if (lines.Length - lineNum != numOfVal) numOfVal = lines.Length - lineNum;
             //
