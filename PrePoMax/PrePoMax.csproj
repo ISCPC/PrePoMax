@@ -233,6 +233,13 @@
     <Compile Include="Forms\00_Common\ViewStringValue.cs" />
     <Compile Include="Forms\00_Common\ViewUnitSystem.cs" />
     <Compile Include="Forms\00_Advisor\AdvisorCreator.cs" />
+    <Compile Include="Forms\00_SearchContactPairs\FrmSearchContactPairs.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\00_SearchContactPairs\FrmSearchContactPairs.Designer.cs">
+      <DependentUpon>FrmSearchContactPairs.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\00_SearchContactPairs\ViewSearchContactPair.cs" />
     <Compile Include="Forms\02_View\ExplodedViewParameters.cs" />
     <Compile Include="Forms\02_View\FrmExplodedView.cs">
       <SubType>Form</SubType>
@@ -562,6 +569,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\00_Common\FrmUnitSystem.resx">
       <DependentUpon>FrmUnitSystem.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\00_SearchContactPairs\FrmSearchContactPairs.resx">
+      <DependentUpon>FrmSearchContactPairs.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\02_View\FrmExplodedView.resx">
       <DependentUpon>FrmExplodedView.cs</DependentUpon>
