@@ -138,7 +138,7 @@ namespace vtkControl
             //
             if (!double.IsNaN(len) && len != 0)
             {
-                //Diagnostics.Debug.WriteLine(DateTime.Now.TimeOfDay + "   Len: " + len);
+                //System.Diagnostics.Debug.WriteLine(DateTime.Now.TimeOfDay + "   Len: " + len);
                 double prevWidth = _barWidth;
                 double p = Math.Floor(Math.Log10(len));
                 len /= Math.Pow(10, p);
