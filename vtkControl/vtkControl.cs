@@ -96,7 +96,11 @@ namespace vtkControl
                 if (value != _renderingOn)
                 {
                     _renderingOn = value;
-                    if (_renderingOn) this.Invalidate();
+                    if (_renderingOn)
+                    {
+                        this.Invalidate();
+                        AdjustCameraDistanceAndClipping();  // Update the scale widget after render
+                    }
                 }
             }
         }

@@ -442,7 +442,7 @@ namespace vtkControl
                         //this._renderWindow.Render();
                     }
                     this._renderWindow.Render();
-                    System.Console.WriteLine(System.DateTime.Now + ": OnRender");
+                    //System.Console.WriteLine(System.DateTime.Now + ": OnRender");
                 }
             }
             base.OnPaint(e);
