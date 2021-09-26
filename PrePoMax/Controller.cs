@@ -4670,54 +4670,57 @@ namespace PrePoMax
             List<MasterSlaveItem> masterSlaveItems = contactSearch.FindContactPairs(distance, angleDeg);
             ResumeExplodedViews(false);
             //
-            string name;
-            Tie tie;
-            Dictionary<string, int> nameCounter = new Dictionary<string, int>();
-            foreach (var masterSlaveItem in masterSlaveItems)
+            if (masterSlaveItems != null)
             {
-                if (nameCounter.ContainsKey(masterSlaveItem.Name)) nameCounter[masterSlaveItem.Name]++;
-                else nameCounter.Add(masterSlaveItem.Name, 1);
-            }
-            foreach (var masterSlaveItem in masterSlaveItems)
-            {
-                if (masterSlaveItem.Unresolved)
+                string name;
+                Tie tie;
+                Dictionary<string, int> nameCounter = new Dictionary<string, int>();
+                foreach (var masterSlaveItem in masterSlaveItems)
                 {
-                    name = masterSlaveItem.Name;
-                    if (nameCounter[name] > 1 || _model.Mesh.Surfaces.ContainsKey(name))
-                        name = _model.Mesh.Surfaces.GetNextNumberedKey(name);
-                    //
-                    FeSurface surface = new FeSurface(name);
-                    surface.CreationData = new Selection();
-                    surface.CreationData.SelectItem = vtkSelectItem.Surface;
-                    surface.CreationData.Add(new SelectionNodeIds(vtkSelectOperation.Add, false,
-                                                                  masterSlaveItem.MasterGeometryIds.ToArray(), true));
-                    AddSurface(surface, false);
+                    if (nameCounter.ContainsKey(masterSlaveItem.Name)) nameCounter[masterSlaveItem.Name]++;
+                    else nameCounter.Add(masterSlaveItem.Name, 1);
                 }
-                else
+                foreach (var masterSlaveItem in masterSlaveItems)
                 {
-                    name = masterSlaveItem.Name;
-                    if (nameCounter[name] > 1 || _model.Constraints.ContainsKey(name))
-                        name = _model.Constraints.GetNextNumberedKey(name);
-                    //
-                    tie = new Tie(name, distance, false, "", RegionTypeEnum.Selection, "", RegionTypeEnum.Selection);
-                    //
-                    tie.MasterCreationData = new Selection();
-                    tie.MasterCreationData.SelectItem = vtkSelectItem.Surface;
-                    tie.MasterCreationData.Add(new SelectionNodeIds(vtkSelectOperation.Add, false,
-                                                                    masterSlaveItem.MasterGeometryIds.ToArray(), true));
-                    tie.MasterCreationIds = new int[] { 1 };
-                    //
-                    tie.SlaveCreationData = new Selection();
-                    tie.SlaveCreationData.SelectItem = vtkSelectItem.Surface;
-                    tie.SlaveCreationData.Add(new SelectionNodeIds(vtkSelectOperation.Add, false,
-                                                                   masterSlaveItem.SlaveGeometryIds.ToArray(), true));
-                    tie.SlaveCreationIds = new int[] { 1 };
-                    //
-                    AddConstraint(tie, false);
+                    if (masterSlaveItem.Unresolved)
+                    {
+                        name = masterSlaveItem.Name;
+                        if (nameCounter[name] > 1 || _model.Mesh.Surfaces.ContainsKey(name))
+                            name = _model.Mesh.Surfaces.GetNextNumberedKey(name);
+                        //
+                        FeSurface surface = new FeSurface(name);
+                        surface.CreationData = new Selection();
+                        surface.CreationData.SelectItem = vtkSelectItem.Surface;
+                        surface.CreationData.Add(new SelectionNodeIds(vtkSelectOperation.Add, false,
+                                                                      masterSlaveItem.MasterGeometryIds.ToArray(), true));
+                        AddSurface(surface, false);
+                    }
+                    else
+                    {
+                        name = masterSlaveItem.Name;
+                        if (nameCounter[name] > 1 || _model.Constraints.ContainsKey(name))
+                            name = _model.Constraints.GetNextNumberedKey(name);
+                        //
+                        tie = new Tie(name, distance, false, "", RegionTypeEnum.Selection, "", RegionTypeEnum.Selection);
+                        //
+                        tie.MasterCreationData = new Selection();
+                        tie.MasterCreationData.SelectItem = vtkSelectItem.Surface;
+                        tie.MasterCreationData.Add(new SelectionNodeIds(vtkSelectOperation.Add, false,
+                                                                        masterSlaveItem.MasterGeometryIds.ToArray(), true));
+                        tie.MasterCreationIds = new int[] { 1 };
+                        //
+                        tie.SlaveCreationData = new Selection();
+                        tie.SlaveCreationData.SelectItem = vtkSelectItem.Surface;
+                        tie.SlaveCreationData.Add(new SelectionNodeIds(vtkSelectOperation.Add, false,
+                                                                       masterSlaveItem.SlaveGeometryIds.ToArray(), true));
+                        tie.SlaveCreationIds = new int[] { 1 };
+                        //
+                        AddConstraint(tie, false);
+                    }
                 }
+                //
+                FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
             }
-            //
-            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
 
         #endregion #################################################################################################################
@@ -4962,38 +4965,41 @@ namespace PrePoMax
             List<MasterSlaveItem> masterSlaveItems = contactSearch.FindContactPairs(distance, angleDeg);
             ResumeExplodedViews(false);
             //
-            string name;
-            ContactPair contactPair;
-            Dictionary<string, int> nameCounter = new Dictionary<string, int>();
-            foreach (var masterSlaveItem in masterSlaveItems)
+            if (masterSlaveItems != null)
             {
-                if (nameCounter.ContainsKey(masterSlaveItem.Name)) nameCounter[masterSlaveItem.Name]++;
-                else nameCounter.Add(masterSlaveItem.Name, 1);
+                string name;
+                ContactPair contactPair;
+                Dictionary<string, int> nameCounter = new Dictionary<string, int>();
+                foreach (var masterSlaveItem in masterSlaveItems)
+                {
+                    if (nameCounter.ContainsKey(masterSlaveItem.Name)) nameCounter[masterSlaveItem.Name]++;
+                    else nameCounter.Add(masterSlaveItem.Name, 1);
+                }
+                foreach (var masterSlaveItem in masterSlaveItems)
+                {
+                    name = masterSlaveItem.Name;
+                    if (nameCounter[name] > 1 || _model.ContactPairs.ContainsKey(name))
+                        name = _model.ContactPairs.GetNextNumberedKey(name);
+                    contactPair = new ContactPair(name, surfaceInteraction.Name, ContactPairMethod.SurfaceToSurface, false, false, 1,
+                        "", RegionTypeEnum.Selection, "", RegionTypeEnum.Selection);
+                    //
+                    contactPair.MasterCreationData = new Selection();
+                    contactPair.MasterCreationData.SelectItem = vtkSelectItem.Surface;
+                    contactPair.MasterCreationData.Add(new SelectionNodeIds(vtkSelectOperation.Add, false,
+                                                                    masterSlaveItem.MasterGeometryIds.ToArray(), true));
+                    contactPair.MasterCreationIds = new int[] { 1 };
+                    //
+                    contactPair.SlaveCreationData = new Selection();
+                    contactPair.SlaveCreationData.SelectItem = vtkSelectItem.Surface;
+                    contactPair.SlaveCreationData.Add(new SelectionNodeIds(vtkSelectOperation.Add, false,
+                                                                   masterSlaveItem.SlaveGeometryIds.ToArray(), true));
+                    contactPair.SlaveCreationIds = new int[] { 1 };
+                    //
+                    AddContactPair(contactPair, false);
+                }
+                //
+                FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
             }
-            foreach (var masterSlaveItem in masterSlaveItems)
-            {
-                name = masterSlaveItem.Name;
-                if (nameCounter[name] > 1 || _model.ContactPairs.ContainsKey(name))
-                    name = _model.ContactPairs.GetNextNumberedKey(name);
-                contactPair = new ContactPair(name, surfaceInteraction.Name, ContactPairMethod.SurfaceToSurface, false, false, 1,
-                    "", RegionTypeEnum.Selection, "", RegionTypeEnum.Selection);
-                //
-                contactPair.MasterCreationData = new Selection();
-                contactPair.MasterCreationData.SelectItem = vtkSelectItem.Surface;
-                contactPair.MasterCreationData.Add(new SelectionNodeIds(vtkSelectOperation.Add, false,
-                                                                masterSlaveItem.MasterGeometryIds.ToArray(), true));
-                contactPair.MasterCreationIds = new int[] { 1 };
-                //
-                contactPair.SlaveCreationData = new Selection();
-                contactPair.SlaveCreationData.SelectItem = vtkSelectItem.Surface;
-                contactPair.SlaveCreationData.Add(new SelectionNodeIds(vtkSelectOperation.Add, false,
-                                                               masterSlaveItem.SlaveGeometryIds.ToArray(), true));
-                contactPair.SlaveCreationIds = new int[] { 1 };
-                //
-                AddContactPair(contactPair, false);
-            }
-            //
-            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         
         #endregion #################################################################################################################

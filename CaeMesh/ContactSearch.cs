@@ -629,8 +629,11 @@ namespace CaeMesh
             _mesh = mesh;
             _geometry = geometry;
             //
-            _nodes = new double[mesh.MaxNodeId + 1][];
-            foreach (var nodeEntry in mesh.Nodes) _nodes[nodeEntry.Key] = nodeEntry.Value.Coor;            
+            if (_mesh != null && _mesh.Nodes != null)
+            {
+                _nodes = new double[_mesh.MaxNodeId + 1][];
+                foreach (var nodeEntry in _mesh.Nodes) _nodes[nodeEntry.Key] = nodeEntry.Value.Coor;
+            }
             //
             _includeSelfContact = false;
             _groupContactPairsBy = GroupContactPairsByEnum.None;
@@ -640,6 +643,7 @@ namespace CaeMesh
         // Methods                                                                                                                  
         public List<MasterSlaveItem> FindContactPairs(double distance, double angleDeg)
         {
+            if (_mesh == null) return null;
             // Bounding boxes for each cell
             int[] cell;
             BoundingBox bb;
