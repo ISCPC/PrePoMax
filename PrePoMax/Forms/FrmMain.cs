@@ -6662,6 +6662,10 @@ namespace PrePoMax
 
         private void tsmiTest_Click(object sender, EventArgs e)
         {
+            FrmSearchContactPairs frmSearchContactPairs = new FrmSearchContactPairs();
+            frmSearchContactPairs.Show();
+            return;
+
             if (true)
             {
                 _controller.AutoCreateTiedPairs(1, 135);
