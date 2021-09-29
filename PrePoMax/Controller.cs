@@ -4958,7 +4958,6 @@ namespace PrePoMax
         // Auto create
         public void AutoCreateContactPairs(double distance, double angleDeg, SurfaceInteraction surfaceInteraction)
         {
-            distance = 3;
             SuppressExplodedViews();
             ContactSearch contactSearch = new ContactSearch(_model.Mesh, _model.Geometry);
             contactSearch.GroupContactPairsBy = GroupContactPairsByEnum.ByParts;

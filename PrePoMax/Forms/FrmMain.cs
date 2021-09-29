@@ -6662,7 +6662,7 @@ namespace PrePoMax
 
         private void tsmiTest_Click(object sender, EventArgs e)
         {
-            FrmSearchContactPairs frmSearchContactPairs = new FrmSearchContactPairs();
+            FrmSearchContactPairs frmSearchContactPairs = new FrmSearchContactPairs(_controller);
             frmSearchContactPairs.Show();
             return;
 

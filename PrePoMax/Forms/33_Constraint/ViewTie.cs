@@ -26,7 +26,7 @@ namespace PrePoMax
         [OrderedDisplayName(1, 10, "Position tolerance")]
         [DescriptionAttribute("Enter the value of largest distance from the master surface for which the slave nodes will be " +
                               "included in the tie constraint. Default value equals 2.5 % of the typical element size.")]
-        [TypeConverter(typeof(CaeGlobals.StringLengthDefaultConverter))]
+        [TypeConverter(typeof(StringLengthDefaultConverter))]
         [Id(2, 1)]
         public double PositionTolerance { get { return _tie.PositionTolerance; } set { _tie.PositionTolerance = value; } }
         //
@@ -130,20 +130,12 @@ namespace PrePoMax
         public override void UpdateRegionVisibility()
         {
             base.UpdateRegionVisibility();
-            // Hide SelectionHidden
-            CustomPropertyDescriptor cpd;
             // Master
             if (base.MasterRegionType == RegionTypeEnum.Selection.ToFriendlyString())
-            {
-                cpd = DynamicCustomTypeDescriptor.GetProperty(nameof(MasterSelectionHidden));
-                cpd.SetIsBrowsable(false);
-            }
+                DynamicCustomTypeDescriptor.GetProperty(nameof(MasterSelectionHidden)).SetIsBrowsable(false);
             // Slave
             if (base.SlaveRegionType == RegionTypeEnum.Selection.ToFriendlyString())
-            {
-                cpd = DynamicCustomTypeDescriptor.GetProperty(nameof(SlaveSelectionHidden));
-                cpd.SetIsBrowsable(false);
-            }
+                DynamicCustomTypeDescriptor.GetProperty(nameof(SlaveSelectionHidden)).SetIsBrowsable(false);
         }
     }
 

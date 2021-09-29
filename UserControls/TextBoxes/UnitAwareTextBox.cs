@@ -25,7 +25,7 @@ namespace UserControls
                 double value = double.NaN;
                 try
                 {
-                    if (!double.TryParse(this.Text, out value))
+                    if (!double.TryParse(this.Text, out value) && _converter != null)
                     {
                         value = (double)_converter.ConvertFromString(this.Text);
                     }
