@@ -97,6 +97,7 @@ namespace UserControls
                 if (_converter != null)
                 {
                     // Convert
+                    if (Text.Trim().Length == 0) Text = "0";
                     double value = (double)_converter.ConvertFromString(this.Text);
                     this.Text = _converter.ConvertToString(value);
                 }

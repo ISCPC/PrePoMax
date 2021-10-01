@@ -16,23 +16,24 @@ namespace PrePoMax.Commands
     {
         // Variables                                                                                                                
         private FeSurface _surface;
+        private bool _update;
 
 
         // Constructor                                                                                                              
-        public CAddSurface(FeSurface surface)
+        public CAddSurface(FeSurface surface, bool update)
             : base("Add surface")
         {
             _surface = surface.DeepClone();
+            _update = update;
         }
 
 
         // Methods                                                                                                                  
         public override bool Execute(Controller receiver)
         {
-            receiver.AddSurface(_surface.DeepClone());
+            receiver.AddSurface(_surface.DeepClone(), _update);
             return true;
         }
-
         public override string GetCommandString()
         {
             return base.GetCommandString() + _surface.ToString();

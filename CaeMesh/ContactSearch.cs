@@ -93,6 +93,16 @@ namespace CaeMesh
             _slaveGeometryIds = slaveGeometryIds;
             _unresolved = false;
         }
+        public void SwapMasterSlave()
+        {
+            string tmpName = _masterName;
+            _masterName = _slaveName;
+            _slaveName = tmpName;
+            //
+            HashSet<int> tmpGeometryIds = _masterGeometryIds;
+            _masterGeometryIds = _slaveGeometryIds;
+            _slaveGeometryIds = tmpGeometryIds;
+        }
     }
     //
     public class Node<T>
@@ -482,7 +492,7 @@ namespace CaeMesh
             return masterSlaveItems;
         }
         //
-        private static string GetNameFromItemIds(HashSet<int> itemIds, List<string> allNames, FeMesh mesh)
+        public static string GetNameFromItemIds(HashSet<int> itemIds, List<string> allNames, FeMesh mesh)
         {
             string name;
             HashSet<int> partIds = new HashSet<int>();

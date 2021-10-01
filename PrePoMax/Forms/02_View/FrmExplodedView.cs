@@ -76,6 +76,18 @@ namespace PrePoMax.Forms
                 // Suppress symbols
                 _drawSymbolsForStep = _controller.GetDrawSymbolsForStep();
                 _controller.DrawSymbolsForStep("None", false);
+                // Set exploded view
+                if (_cancelParam.ScaleFactor == -1)
+                {
+                    _continueExplodedView = false;
+                }
+                else
+                {
+                    _continueExplodedView = true;           // animation of exploded view is not needed
+                    _controller.RemoveExplodedView(true);   // this redraws the scene and redraws selection
+                    _controller.PreviewExplodedView(_viewExplodedViewParameters.Parameters, false);
+                }
+                // Animate
                 UpdateScrollbarPosition(true);
             }
             else
@@ -83,14 +95,16 @@ namespace PrePoMax.Forms
                 // Resume section view
                 if (_sectionViewPlane != null) _controller.ApplySectionView(_sectionViewPlane.Point.Coor,
                                                                             _sectionViewPlane.Normal.Coor);
-                // Resume symbols
-                _controller.DrawSymbolsForStep(_drawSymbolsForStep, false);
+                
                 //
                 if (DialogResult == DialogResult.OK) _controller.ApplyExplodedView(_viewExplodedViewParameters.Parameters);
                 else if (DialogResult == DialogResult.Abort) Cancel(true);
                 else if (DialogResult == DialogResult.Cancel) Cancel(_cancelParam.ScaleFactor == -1);
                 // the form was closed from frmMain.CloseAllForms
                 else if (DialogResult == DialogResult.None) Cancel(_cancelParam.ScaleFactor == -1);
+                //
+                // Resume symbols
+                _controller.DrawSymbolsForStep(_drawSymbolsForStep, false);
             }
         }
         private void propertyGrid_PropertyValueChanged(object s, PropertyValueChangedEventArgs e)
@@ -127,18 +141,7 @@ namespace PrePoMax.Forms
             this.DialogResult = DialogResult.None;
             //
             propertyGrid.Refresh();
-            // Set exploded view
-            
-            if (_cancelParam.ScaleFactor == -1)
-            {
-                _continueExplodedView = false;
-            }
-            else
-            {
-                _continueExplodedView = true;           // animation of exploded view is not needed
-                _controller.RemoveExplodedView(true);   // this redraws the scene and redraws selection
-                _controller.PreviewExplodedView(_viewExplodedViewParameters.Parameters, false);
-            }
+            //
             _controller.ClearSelectionHistory();
             _controller.SetSelectByToOff();
             //
@@ -149,7 +152,9 @@ namespace PrePoMax.Forms
         {
             if (cancelToDefault)
             {
+                System.Diagnostics.Debug.WriteLine("PreviewExplodedView");
                 _controller.PreviewExplodedView(_defaultParam, true);
+                System.Diagnostics.Debug.WriteLine("RemoveExplodedView");
                 _controller.RemoveExplodedView(true);
             }
             else

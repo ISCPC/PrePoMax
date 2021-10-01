@@ -25,15 +25,17 @@ namespace PrePoMax.Forms
     }
 
     [Serializable]
-    public class ViewSearchContactPair
+    public class SearchContactPair
     {
         // Variables                                                                                                                
         private string _name;
         private SearchContactPairType _type;
+        private string _surfaceInteractionName;
         private SearchContactPairAdjust _adjust;
-        private double _adjustmentSize;
+        private double _distance;
         private bool _multiView;
-        private object _tag;
+        private CaeMesh.MasterSlaveItem _masterSlaveItem;
+        private StringLengthConverter _stringLengthConverter;
         private DynamicCustomTypeDescriptor _dctd = null;           // needed for sorting properties
 
 
@@ -46,25 +48,48 @@ namespace PrePoMax.Forms
             get { return _name; }
             set
             {
-                if (CaeGlobals.NamedClass.CheckName(value)) _name = value;
+                if (NamedClass.CheckName(value)) _name = value;
             }
         }
         //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(1, 10, "Type")]
-        [DescriptionAttribute("Type of the contact pair.")]
-        public SearchContactPairType Type { get { return _type; } set { _type = value; } }
+        [DescriptionAttribute("Select the type of the contact pair.")]
+        public SearchContactPairType Type
+        {
+            get { return _type; }
+            set
+            {
+                if (_type != value)
+                {
+                    _type = value;
+                    UpdateVisibility();
+                }
+            }
+        }
         //
         [CategoryAttribute("Data")]
-        [OrderedDisplayName(2, 10, "Adjust")]
+        [OrderedDisplayName(2, 10, "Surface interaction")]
+        [DescriptionAttribute("Select the surface interaction defining the properties of the contact pair.")]
+        public string SurfaceInteractionName
+        {
+            get
+            {
+                if (_type == SearchContactPairType.Tie) return "";
+                else return _surfaceInteractionName;
+            }
+            set { _surfaceInteractionName = value; } }
+        //
+        [CategoryAttribute("Data")]
+        [OrderedDisplayName(3, 10, "Adjust")]
         [DescriptionAttribute("Set adjust to No to prevent the projection of the slave nodes on the master surface.")]
         public SearchContactPairAdjust Adjust { get { return _adjust; } set { _adjust = value; } }
         //
         [CategoryAttribute("Data")]
-        [OrderedDisplayName(3, 10, "Adjustment size")]
-        [DescriptionAttribute("Set the adjustment size inside which the slave nodes will be projected.")]
-        [TypeConverter(typeof(StringLengthDefaultConverter))]
-        public double AdjustSize { get { return _adjustmentSize; } set { _adjustmentSize = value; } }
+        [OrderedDisplayName(4, 10, "Distance")]
+        [DescriptionAttribute("Set the distance inside which the slave nodes will be included/projected.")]
+        [TypeConverter(typeof(StringLengthConverter))]
+        public double Distance { get { return _distance; } set { _distance = value; } }
         //
         [Browsable(false)]
         public bool MultiView
@@ -72,32 +97,44 @@ namespace PrePoMax.Forms
             get { return _multiView; }
             set
             {
-                _multiView = value;
-                _dctd.GetProperty(nameof(Name)).SetIsBrowsable(!_multiView);
+                if (_multiView != value)
+                {
+                    _multiView = value;
+                    UpdateVisibility();
+                }
             }
         }
         //
         [Browsable(false)]
-        public object Tag { get { return _tag; } set { _tag = value; } }
+        public CaeMesh.MasterSlaveItem MasterSlaveItem { get { return _masterSlaveItem; } set { _masterSlaveItem = value; } }
 
 
         // Constructors                                                                                                             
-        public ViewSearchContactPair(string name, bool adjust, double adjustmentSize)
+        public SearchContactPair(string name, bool adjust, double adjustmentSize)
         {
             _name = name;
             _type = SearchContactPairType.Tie;
             if (adjust) _adjust = SearchContactPairAdjust.Yes;
             else _adjust = SearchContactPairAdjust.No;
-            _adjustmentSize = adjustmentSize;
+            _distance = adjustmentSize;
             //
+            _stringLengthConverter = new StringLengthConverter();
             _dctd = ProviderInstaller.Install(this);
+            //
+            UpdateVisibility();
         }
 
 
         // Methods                                                                                                                  
-        public void SetProperty(string propertyName, ViewSearchContactPair source)
+        public void PopululateDropDownLists(string[] surfaceInteracionNames)
         {
-            Type type = typeof(ViewSearchContactPair);
+            _dctd.PopulateProperty(nameof(SurfaceInteractionName), surfaceInteracionNames);
+            //
+            UpdateVisibility();
+        }
+        public void SetProperty(string propertyName, SearchContactPair source)
+        {
+            Type type = typeof(SearchContactPair);
             PropertyInfo[] propertyInfos = type.GetProperties();
             foreach (var property in propertyInfos)
             {
@@ -113,6 +150,11 @@ namespace PrePoMax.Forms
                     }
                 }
             }
+        }
+        public void UpdateVisibility()
+        {
+            _dctd.GetProperty(nameof(SurfaceInteractionName)).SetIsBrowsable(_type == SearchContactPairType.Contact);
+            _dctd.GetProperty(nameof(Name)).SetIsBrowsable(!_multiView);
         }
     }
 }

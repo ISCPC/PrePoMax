@@ -16,20 +16,22 @@ namespace PrePoMax.Commands
     {
         // Variables                                                                                                                
         private Constraint _constraint;
+        private bool _update;
 
 
         // Constructor                                                                                                              
-        public CAddConstraint(Constraint constraint)
+        public CAddConstraint(Constraint constraint, bool update)
             : base("Add constraint")
         {
             _constraint = constraint.DeepClone();
+            _update = update;
         }
 
 
         // Methods                                                                                                                  
         public override bool Execute(Controller receiver)
         {
-            receiver.AddConstraint(_constraint.DeepClone());
+            receiver.AddConstraint(_constraint.DeepClone(), _update);
             return true;
         }
 

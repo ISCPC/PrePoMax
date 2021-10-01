@@ -47,6 +47,7 @@ namespace CaeGlobals
             {
                 double valueDouble;
                 //
+                if (valueString.Trim().Length == 0) return 0;
                 if (!double.TryParse(valueString, out valueDouble))
                 {
                     Length length = Length.Parse(valueString);

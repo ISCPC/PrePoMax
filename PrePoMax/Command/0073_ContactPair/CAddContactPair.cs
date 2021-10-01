@@ -16,20 +16,22 @@ namespace PrePoMax.Commands
     {
         // Variables                                                                                                                
         private ContactPair _contactPair;
+        private bool _update;
 
 
         // Constructor                                                                                                              
-        public CAddContactPair(ContactPair contactPair)
+        public CAddContactPair(ContactPair contactPair, bool update)
             : base("Add contact pair")
         {
             _contactPair = contactPair.DeepClone();
+            _update = update;
         }
 
 
         // Methods                                                                                                                  
         public override bool Execute(Controller receiver)
         {
-            receiver.AddContactPair(_contactPair.DeepClone());
+            receiver.AddContactPair(_contactPair.DeepClone(), _update);
             return true;
         }
         public override string GetCommandString()

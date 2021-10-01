@@ -31,9 +31,9 @@ namespace UserControls
         {
             this.lBorder = new System.Windows.Forms.Label();
             this.pBackground = new System.Windows.Forms.Panel();
-            this.tbSearchBox = new UserControls.ResizableTextBox();
             this.btnClear = new System.Windows.Forms.Button();
             this.lIcon = new System.Windows.Forms.Label();
+            this.tbSearchBox = new UserControls.ResizableTextBox();
             this.pBackground.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -60,18 +60,6 @@ namespace UserControls
             this.pBackground.Size = new System.Drawing.Size(198, 20);
             this.pBackground.TabIndex = 10;
             // 
-            // tbSearchBox
-            // 
-            this.tbSearchBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbSearchBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.tbSearchBox.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tbSearchBox.Location = new System.Drawing.Point(21, 2);
-            this.tbSearchBox.Name = "tbSearchBox";
-            this.tbSearchBox.Size = new System.Drawing.Size(149, 18);
-            this.tbSearchBox.TabIndex = 10;
-            this.tbSearchBox.TextChanged += new System.EventHandler(this.tbSearchBox_TextChanged);
-            // 
             // btnClear
             // 
             this.btnClear.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -92,6 +80,19 @@ namespace UserControls
             this.lIcon.Name = "lIcon";
             this.lIcon.Size = new System.Drawing.Size(20, 20);
             this.lIcon.TabIndex = 9;
+            // 
+            // tbSearchBox
+            // 
+            this.tbSearchBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbSearchBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.tbSearchBox.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tbSearchBox.Location = new System.Drawing.Point(21, 2);
+            this.tbSearchBox.Name = "tbSearchBox";
+            this.tbSearchBox.Size = new System.Drawing.Size(149, 18);
+            this.tbSearchBox.TabIndex = 10;
+            this.tbSearchBox.EnabledChanged += new System.EventHandler(this.tbSearchBox_EnabledChanged);
+            this.tbSearchBox.TextChanged += new System.EventHandler(this.tbSearchBox_TextChanged);
             // 
             // SearchTextBox
             // 

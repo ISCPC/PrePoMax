@@ -12,10 +12,14 @@ namespace UserControls
 {
     public partial class SearchTextBox : UserControl
     {
+        // Variables                                                                                                                
+        private Color textBoxBackColor;
+
+
         // Properties                                                                                                               
         [Browsable(true)]
         public override string Text { get { return tbSearchBox.Text; } set { tbSearchBox.Text = value; } }
-        public bool TextVisible { get { return tbSearchBox.Visible; } set { tbSearchBox.Visible = value; } }
+        public bool ReadOnly { get { return tbSearchBox.ReadOnly; } set { tbSearchBox.ReadOnly = value; } }
 
 
         // Events                                                                                                                   
@@ -33,13 +37,19 @@ namespace UserControls
         {
             tbSearchBox.Text = "";
         }
+        private void tbSearchBox_EnabledChanged(object sender, EventArgs e)
+        {
+            if (tbSearchBox.Enabled) tbSearchBox.BackColor = Color.Empty;
+            else tbSearchBox.BackColor = textBoxBackColor;
+        }
 
 
         // Constructors                                                                                                             
         public SearchTextBox()
         {
             InitializeComponent();
+            //
+            textBoxBackColor = Color.FromArgb(tbSearchBox.BackColor.ToArgb());  // copy only the color values
         }
-
     }
 }

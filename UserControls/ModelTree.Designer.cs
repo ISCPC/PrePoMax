@@ -554,7 +554,6 @@
             this.stbGeometry.Name = "stbGeometry";
             this.stbGeometry.Size = new System.Drawing.Size(270, 22);
             this.stbGeometry.TabIndex = 1;
-            this.stbGeometry.TextVisible = false;
             this.stbGeometry.TextChanged += new System.Action<object, System.EventArgs>(this.stbGeometry_TextChanged);
             // 
             // cltvGeometry
@@ -655,7 +654,6 @@
             this.stbModel.Name = "stbModel";
             this.stbModel.Size = new System.Drawing.Size(270, 22);
             this.stbModel.TabIndex = 2;
-            this.stbModel.TextVisible = false;
             this.stbModel.TextChanged += new System.Action<object, System.EventArgs>(this.stbModel_TextChanged);
             // 
             // cltvModel
@@ -791,7 +789,6 @@
             this.stbResults.Name = "stbResults";
             this.stbResults.Size = new System.Drawing.Size(270, 22);
             this.stbResults.TabIndex = 3;
-            this.stbResults.TextVisible = false;
             this.stbResults.TextChanged += new System.Action<object, System.EventArgs>(this.stbResults_TextChanged);
             // 
             // cltvResults

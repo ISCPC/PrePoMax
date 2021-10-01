@@ -55,6 +55,7 @@ namespace PrePoMax
         private FrmSelectGeometry _frmSelectGeometry;
         private FrmSelectItemSet _frmSelectItemSet;
         private FrmUnitSystem _frmUnitSystem;
+        private FrmSearchContactPairs _frmSearchContactPairs;
         private FrmAnalyzeGeometry _frmAnalyzeGeometry;
         private FrmMeshingParameters _frmMeshingParameters;
         private FrmMeshRefinement _frmMeshRefinement;
@@ -285,6 +286,9 @@ namespace PrePoMax
                 _frmUnitSystem = new FrmUnitSystem(_controller);
                 AddFormToAllForms(_frmUnitSystem);
                 //
+                _frmSearchContactPairs = new FrmSearchContactPairs(_controller);
+                AddFormToAllForms(_frmSearchContactPairs);
+                //
                 _frmAnalyzeGeometry = new FrmAnalyzeGeometry(_controller);
                 AddFormToAllForms(_frmAnalyzeGeometry);
                 //
@@ -491,6 +495,7 @@ namespace PrePoMax
         {
             try
             {
+                e.Cancel = false;   // close the form
                 DialogResult response = DialogResult.None;
                 //
                 if (tsslState.Text != Globals.ReadyText)
@@ -510,9 +515,9 @@ namespace PrePoMax
                                                MessageBoxIcon.Warning);
                     if (response == DialogResult.Yes)
                     {
-                        e.Cancel = true;                                // Stop the form from closing before saving
-                        await Task.Run(() => _controller.Save());       // Save                        
-                        this.Close();                                   // Close the control
+                        e.Cancel = true;                                // stop the form from closing before saving
+                        await Task.Run(() => _controller.Save());       // save
+                        Close();                                        // close the control
                     }
                     else if (response == DialogResult.Cancel) e.Cancel = true;
                 }
@@ -2660,16 +2665,21 @@ namespace PrePoMax
                 SetStateWorking(Globals.MeshingText, true);
                 MouseEventArgs e = new MouseEventArgs(MouseButtons.Left, 0, 0, 0, 0);
                 Keys modifierKeys = Keys.Control;
-                _modelTree.ClearTreeSelection(ViewType.Model);
+                _modelTree.ClearTreeSelection(ViewType.Model);                
                 //
+                CloseAllForms();
+                //
+                System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
+                watch.Start();
+                //
+                GeometryPart part;
                 foreach (var partName in partNames)
                 {
                     try
                     {
-                        GeometryPart part = _controller.GetGeometryPart(partName);
+                        part = _controller.GetGeometryPart(partName);
                         if (part.MeshingParameters == null) SetDefaultMeshingParameters(partName);
                         //
-                        CloseAllForms();
                         await Task.Run(() => _controller.CreateMeshCommand(partName));
                         // Check for the cancel button click
                         if (IsStateWorking())
@@ -2687,6 +2697,12 @@ namespace PrePoMax
                         errors.Add("Mesh generation failed for part " + partName +
                                    ". Check the geometry and/or adjust the meshing parameters.");
                     }
+                }
+                watch.Stop();
+                if (partNames.Length > 1)
+                {
+                    WriteDataToOutput("");
+                    WriteDataToOutput("Elapsed time [s]: " + watch.Elapsed.TotalSeconds.ToString());
                 }
                 //
                 _controller.UpdateExplodedView(true);
@@ -6662,27 +6678,13 @@ namespace PrePoMax
 
         private void tsmiTest_Click(object sender, EventArgs e)
         {
-            FrmSearchContactPairs frmSearchContactPairs = new FrmSearchContactPairs(_controller);
-            frmSearchContactPairs.Show();
-            return;
-
-            if (true)
+            if (!_frmSearchContactPairs.Visible)
             {
-                _controller.AutoCreateTiedPairs(1, 135);
+                CloseAllForms();
+                SetFormLoaction(_frmSearchContactPairs);
+                _frmSearchContactPairs.PrepareFoam();
+                _frmSearchContactPairs.Show(this);
             }
-            else
-            {
-                SurfaceInteraction surfaceInteraction =
-                    new SurfaceInteraction(_controller.Model.SurfaceInteractions.GetNextNumberedKey("CI"));
-                SurfaceBehavior surfaceBehavior = new SurfaceBehavior();
-                surfaceBehavior.PressureOverclosureType = PressureOverclosureEnum.Tied;
-                surfaceInteraction.AddProperty(surfaceBehavior);
-                surfaceInteraction.AddProperty(new Friction());
-                _controller.AddSurfaceInteraction(surfaceInteraction);
-                //
-                _controller.AutoCreateContactPairs(1, 135, surfaceInteraction);
-            }
-
 
             //
             //if (timerTest.Enabled) timerTest.Stop();

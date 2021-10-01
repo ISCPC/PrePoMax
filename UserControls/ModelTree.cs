@@ -150,9 +150,9 @@ namespace UserControls
                 cltvModel.DisableMouse = value;
                 cltvResults.DisableMouse = value;
                 //
-                stbGeometry.TextVisible = !value;
-                stbModel.TextVisible = !value;
-                stbResults.TextVisible = !value;
+                stbGeometry.Enabled = !value;
+                stbModel.Enabled = !value;
+                stbResults.Enabled = !value;
             }
         }
         public string[] IntersectSelectionWithList(NamedClass[] list)
