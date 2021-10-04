@@ -3573,6 +3573,8 @@ namespace PrePoMax
 
         #endregion  ################################################################################################################
 
+        #region Interaction menu  ##################################################################################################
+
         #region Constraint menu  ###################################################################################################
         private void tsmiCreateConstraint_Click(object sender, EventArgs e)
         {
@@ -3668,7 +3670,7 @@ namespace PrePoMax
         }
 
         #endregion  ################################################################################################################
-
+        
         #region Surface interaction menu  ##########################################################################################
 
         private void tsmiCreateSurfaceInteraction_Click(object sender, EventArgs e)
@@ -3833,6 +3835,19 @@ namespace PrePoMax
                 _controller.RemoveContactPairsCommand(contactPairNames);
             }
         }
+        #endregion  ################################################################################################################
+
+        private void tsmiSearchContactPairs_Click(object sender, EventArgs e)
+        {
+            if (!_frmSearchContactPairs.Visible)
+            {
+                CloseAllForms();
+                SetFormLoaction(_frmSearchContactPairs);
+                _frmSearchContactPairs.PrepareFoam();
+                _frmSearchContactPairs.Show(this);
+            }
+        }
+
         #endregion  ################################################################################################################
 
         #region Initial condition menu  ############################################################################################
@@ -6678,13 +6693,7 @@ namespace PrePoMax
 
         private void tsmiTest_Click(object sender, EventArgs e)
         {
-            if (!_frmSearchContactPairs.Visible)
-            {
-                CloseAllForms();
-                SetFormLoaction(_frmSearchContactPairs);
-                _frmSearchContactPairs.PrepareFoam();
-                _frmSearchContactPairs.Show(this);
-            }
+            
 
             //
             //if (timerTest.Enabled) timerTest.Stop();
@@ -6816,5 +6825,12 @@ namespace PrePoMax
                 }
             }
         }
+
+        private void searchContactPairsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        
     }
 }

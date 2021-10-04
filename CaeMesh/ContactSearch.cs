@@ -19,6 +19,7 @@ namespace CaeMesh
         private FeMesh _mesh;
         private BasePart _part;
         private int _id;
+        private GeometryType _geometryType;
         private HashSet<int> _nodeIds;
         private BoundingBox _boundingBox;
         private bool _internal;
@@ -28,33 +29,112 @@ namespace CaeMesh
         public FeMesh Mesh { get { return _mesh; } set { _mesh = value; } }
         public BasePart Part { get { return _part; } set { _part = value; } }
         public int Id { get { return _id; } set { _id = value; } }
+        public GeometryType GeometryType { get { return _geometryType; } set { _geometryType = value; } }
         public HashSet<int> NodeIds { get { return _nodeIds; } set { _nodeIds = value; } }
         public BoundingBox BoundingBox { get { return _boundingBox; } set { _boundingBox = value; } }
         public bool Internal { get { return _internal; } set { _internal = value; } }
 
 
         // Constructors                                                                                                             
-        public ContactSurface(FeMesh mesh, double[][] _nodes, BasePart part, int id, double boundingBoxOffset)
+        public ContactSurface(FeMesh mesh, double[][] _nodes, BasePart part, int id, GeometryType geometryType,
+                              double boundingBoxOffset)
         {
             _mesh = mesh;
             _part = part;
             _id = id;
+            _geometryType = geometryType;
+            //
+            if (_geometryType == GeometryType.ShellEdgeSurface) _nodeIds = part.Visualization.GetNodeIdsByEdge(_id);
+            else _nodeIds = part.Visualization.GetNodeIdsBySurface(_id);
             //
             _boundingBox = new BoundingBox();
-            _nodeIds = part.Visualization.GetNodeIdsBySurface(_id);
-            //foreach (var nodeId in _nodeIds) _boundingBox.IncludeNode(_mesh.Nodes[nodeId]);
             _boundingBox.IncludeFirstCoor(_nodes[_nodeIds.First()]);
             foreach (var nodeId in _nodeIds) _boundingBox.IncludeCoorFast(_nodes[nodeId]);
             _boundingBox.Inflate(boundingBoxOffset);
             //
             _internal = false;
         }
-
+        public ContactSurface(ContactSurface contactSurface)
+        {
+            _mesh = contactSurface._mesh;
+            _part = contactSurface._part;
+            _id = contactSurface._id;
+            _geometryType = contactSurface._geometryType;
+            _nodeIds = new HashSet<int>(contactSurface._nodeIds);
+            _boundingBox = new BoundingBox(contactSurface._boundingBox);
+            _internal = contactSurface._internal;
+        }
 
         // Methods                                                                                                                  
+        public int[] GetCell(int cellId)
+        {
+            if (_geometryType == GeometryType.ShellEdgeSurface)
+            {
+                return _part.Visualization.EdgeCells[cellId];
+            }
+            else
+            {
+                int[] cell = _part.Visualization.Cells[cellId];
+                //
+                if (_geometryType == GeometryType.ShellBackSurface)
+                {
+                    if (cell.Length == 3) return new int[] { cell[0], cell[2], cell[1] };
+                    else if (cell.Length == 4) return new int[] { cell[0], cell[3], cell[2], cell[1] };
+                    else if (cell.Length == 6) return new int[] { cell[0], cell[2], cell[1], cell[5], cell[4], cell[3] };
+                    else if (cell.Length == 8) return new int[] { cell[0], cell[3], cell[2], cell[1],
+                                                                  cell[7], cell[6], cell[5], cell[4] };
+                    else throw new NotSupportedException();
+                }
+                else return cell;
+            }
+        }        
+        public double[] GetCellNormal(int cellId)
+        {
+            int[] cell = _part.Visualization.Cells[cellId];
+            double[] n1 = _mesh.Nodes[cell[0]].Coor;
+            double[] n2 = _mesh.Nodes[cell[1]].Coor;
+            double[] n3 = _mesh.Nodes[cell[2]].Coor;
+            double[] a = new double[3];
+            double[] b = new double[3];
+            double[] n = new double[3];
+            Geometry.VmV(ref a, n2, n1);
+            Geometry.VmV(ref b, n3, n1);
+            Geometry.VcrossV(ref n, a, b);
+            Geometry.Vnorm(ref n, n);
+            return n;
+        }
+        public void GetEdgeCellNormal(int edgeCellId, ref double[] cellNormal, ref double[] edgeCellNormal)
+        {
+            int baseCellId = _part.Visualization.GetEdgeCellBaseCellId(edgeCellId);
+            //
+            int[] cell = _part.Visualization.Cells[baseCellId];
+            int[] edgeCell = _part.Visualization.EdgeCells[edgeCellId];
+            int n1Id;
+            
+            //find edgeCell orientation
+            
+            if (edgeCell[0] == cell[0]) n1Id = 0;
+            else if (edgeCell[0] == cell[1]) n1Id = 1;
+            else if (edgeCell[0] == cell[2]) n1Id = 2;
+            else throw new NotSupportedException();
+            //
+            double[] n1 = _mesh.Nodes[cell[n1Id]].Coor;
+            double[] n2 = _mesh.Nodes[cell[(n1Id + 1) % 3]].Coor;
+            double[] n3 = _mesh.Nodes[cell[(n1Id + 2) % 3]].Coor;
+            double[] a = new double[3];
+            double[] b = new double[3];
+            double[] n = new double[3];
+            Geometry.VmV(ref a, n2, n1);
+            Geometry.VmV(ref b, n3, n1);
+            Geometry.VcrossV(ref n, a, b);
+            Geometry.Vnorm(ref cellNormal, n);
+            //
+            Geometry.VcrossV(ref edgeCellNormal, a, n);
+            Geometry.Vnorm(ref edgeCellNormal, edgeCellNormal);
+        }
         public int GetGeometryId()
         {
-            return _id * 100000 + 3 * 10000 + _part.PartId;
+            return _id * 100000 + (int)_geometryType * 10000 + _part.PartId;
         }
     }
     public class MasterSlaveItem
@@ -620,7 +700,8 @@ namespace CaeMesh
         private FeMesh _mesh;
         private FeMesh _geometry;
         private double[][] _nodes;
-        private BoundingBox[][] _boundingBoxes;
+        private BoundingBox[][] _cellBoundingBoxes;
+        private BoundingBox[][] _cellEdgeBoundingBoxes;
         private bool _includeSelfContact;
         private GroupContactPairsByEnum _groupContactPairsBy;
 
@@ -657,10 +738,11 @@ namespace CaeMesh
             // Bounding boxes for each cell
             int[] cell;
             BoundingBox bb;
-            _boundingBoxes = new BoundingBox[_mesh.GetMaxPartId() + 1][];
+            _cellBoundingBoxes = new BoundingBox[_mesh.GetMaxPartId() + 1][];
+            _cellEdgeBoundingBoxes = new BoundingBox[_mesh.GetMaxPartId() + 1][];
             foreach (var partEntry in _mesh.Parts)
             {
-                _boundingBoxes[partEntry.Value.PartId] = new BoundingBox[partEntry.Value.Visualization.Cells.Length];
+                _cellBoundingBoxes[partEntry.Value.PartId] = new BoundingBox[partEntry.Value.Visualization.Cells.Length];
                 for (int i = 0; i < partEntry.Value.Visualization.Cells.Length; i++)
                 {
                     cell = partEntry.Value.Visualization.Cells[i];
@@ -668,30 +750,85 @@ namespace CaeMesh
                     bb.IncludeFirstCoor(_nodes[cell[0]]);
                     bb.IncludeCoorFast(_nodes[cell[1]]);
                     bb.IncludeCoorFast(_nodes[cell[2]]);
+                    if (cell.Length == 4 || cell.Length == 8) bb.IncludeCoorFast(_nodes[cell[3]]);
                     bb.Inflate(distance * 0.5);
                     //
-                    _boundingBoxes[partEntry.Value.PartId][i] = bb;
+                    _cellBoundingBoxes[partEntry.Value.PartId][i] = bb;
+                }
+                // Shell edge faces
+                if (partEntry.Value.PartType == PartType.Shell)
+                {
+                    _cellEdgeBoundingBoxes[partEntry.Value.PartId]
+                        = new BoundingBox[partEntry.Value.Visualization.EdgeCells.Length];
+                    for (int i = 0; i < partEntry.Value.Visualization.EdgeCells.Length; i++)
+                    {
+                        cell = partEntry.Value.Visualization.EdgeCells[i];
+                        bb = new BoundingBox();
+                        bb.IncludeFirstCoor(_nodes[cell[0]]);
+                        bb.IncludeCoorFast(_nodes[cell[1]]);
+                        if (cell.Length == 3) bb.IncludeCoorFast(_nodes[cell[2]]);
+                        bb.Inflate(distance * 0.5);
+                        //
+                        _cellEdgeBoundingBoxes[partEntry.Value.PartId][i] = bb;
+                    }
                 }
             }
             // Find all surfaces of the assembly
             int count = 0;
-            foreach (var partEntry in _mesh.Parts) count += partEntry.Value.Visualization.FaceAreas.Length;
+            foreach (var partEntry in _mesh.Parts)
+            {
+                if (partEntry.Value.PartType == PartType.Solid) count += partEntry.Value.Visualization.FaceCount;
+                else if (partEntry.Value.PartType == PartType.Shell)
+                {
+                    count += 2 * partEntry.Value.Visualization.FaceCount;
+                    count += partEntry.Value.Visualization.EdgeCount;
+                }
+            }
             ContactSurface[] contactSurfaces = new ContactSurface[count];
             //
             count = 0;
+            HashSet<int> freeEdgeIds;
             foreach (var partEntry in _mesh.Parts)
             {
-                for (int i = 0; i < partEntry.Value.Visualization.FaceAreas.Length; i++)
+                if (partEntry.Value.PartType == PartType.Solid)
                 {
-                    contactSurfaces[count++] = new ContactSurface(_mesh, _nodes, partEntry.Value, i, distance * 0.5);
+                    // Solid faces
+                    for (int i = 0; i < partEntry.Value.Visualization.FaceCount; i++)
+                    {
+                        contactSurfaces[count++] = new ContactSurface(_mesh, _nodes, partEntry.Value, i,
+                                                                      GeometryType.SolidSurface, distance * 0.5);
+                    }
+                }
+                else if (partEntry.Value.PartType == PartType.Shell)
+                {
+                    // Sehll faces
+                    for (int i = 0; i < partEntry.Value.Visualization.FaceCount; i++)
+                    {
+                        contactSurfaces[count++] = new ContactSurface(_mesh, _nodes, partEntry.Value, i,
+                                                                      GeometryType.ShellFrontSurface, distance * 0.5);
+                        contactSurfaces[count] = new ContactSurface(contactSurfaces[count - 1]);    // copy
+                        contactSurfaces[count].GeometryType = GeometryType.ShellBackSurface;
+                        count++;
+                    }
+                    // Shell edge faces
+                    freeEdgeIds = partEntry.Value.Visualization.GetFreeEdgeIds();
+                    for (int i = 0; i < partEntry.Value.Visualization.EdgeCount; i++)
+                    {
+                        contactSurfaces[count] = new ContactSurface(_mesh, _nodes, partEntry.Value, i,
+                                                                    GeometryType.ShellEdgeSurface, distance * 0.5);
+                        // Fnd internal edges on shells
+                        if (!freeEdgeIds.Contains(i)) contactSurfaces[count].Internal = true;
+                        count++;
+                    }
                 }
             }
-            // Find internal surfaces to 
+            // Find internal surfaces on compound parts
             for (int i = 0; i < contactSurfaces.Length; i++)
-            {
+            {                
                 for (int j = i + 1; j < contactSurfaces.Length; j++)
                 {
-                    if (contactSurfaces[i].NodeIds.Count() == contactSurfaces[j].NodeIds.Count() &&
+                    if (contactSurfaces[i].GeometryType == contactSurfaces[j].GeometryType && // skip front and back shell
+                        contactSurfaces[i].NodeIds.Count() == contactSurfaces[j].NodeIds.Count() &&
                         contactSurfaces[i].BoundingBox.Intersects(contactSurfaces[j].BoundingBox) &&
                         contactSurfaces[i].NodeIds.Union(contactSurfaces[j].NodeIds).Count() == contactSurfaces[i].NodeIds.Count)
                     {
@@ -708,7 +845,7 @@ namespace CaeMesh
             {
                 for (int j = i + 1; j < contactSurfaces.Length; j++)
                 {
-                    if (CheckSurfaceToSurfaceContact(contactSurfaces[i], contactSurfaces[j], distance, angleRad))
+                    if (CheckSurfaceToSurfaceDistance(contactSurfaces[i], contactSurfaces[j], distance, angleRad))
                     {
                         contactSurfacePairs.Add(new ContactSurface[] { contactSurfaces[i], contactSurfaces[j] });
                     }
@@ -720,31 +857,44 @@ namespace CaeMesh
             else if (_groupContactPairsBy == GroupContactPairsByEnum.ByParts) return GroupContactPairsByParts(contactSurfacePairs);
             else throw new NotSupportedException();
         }
-        private bool CheckSurfaceToSurfaceContact(ContactSurface cs1, ContactSurface cs2, double distance, double angleRad)
+        private bool CheckSurfaceToSurfaceDistance(ContactSurface cs1, ContactSurface cs2, double distance, double angleRad)
         {
             if (cs1.Internal || cs2.Internal) return false;
             if (!_includeSelfContact && cs1.Part == cs2.Part) return false;
             if (!cs1.BoundingBox.Intersects(cs2.BoundingBox)) return false;
             //
-            double dist;
-            double ang;
-            int[] cell1;
-            int[] cell2;
-            double[] p = new double[3];
-            double[] q = new double[3];
-            double[] a = new double[3];
-            double[] b = new double[3];
-            double[] n1 = new double[3];
-            double[] n2 = new double[3];
-            double[][] t1 = new double[3][];
-            double[][] t2 = new double[3][];
             BoundingBox bb1;
             BoundingBox bb2;
-            BoundingBox[] bbs1 = _boundingBoxes[cs1.Part.PartId];
-            BoundingBox[] bbs2 = _boundingBoxes[cs2.Part.PartId];
+            BoundingBox[] bbs1;
+            BoundingBox[] bbs2;
             BoundingBox intersection = cs1.BoundingBox.GetIntersection(cs2.BoundingBox);
             //
-            foreach (int cell1Id in cs1.Part.Visualization.CellIdsByFace[cs1.Id])
+            int[] cell1;
+            int[] cell2;
+            int[] cell1Ids;
+            int[] cell2Ids;
+            double[] cellNorm = new double[3];
+            double[] edgeCellNorm = new double[3];
+            double[][] t1 = new double[3][];
+            double[][] t2 = new double[3][];
+            t1[2] = new double[3];
+            t2[2] = new double[3];
+            //
+            bool edgeSurface1 = cs1.GeometryType == GeometryType.ShellEdgeSurface;
+            bool edgeSurface2 = cs2.GeometryType == GeometryType.ShellEdgeSurface;
+            // Use face cell ids or edge cell ids
+            if (edgeSurface1)
+            {
+                bbs1 = _cellEdgeBoundingBoxes[cs1.Part.PartId];
+                cell1Ids = cs1.Part.Visualization.EdgeCellIdsByEdge[cs1.Id];
+            }
+            else
+            {
+                bbs1 = _cellBoundingBoxes[cs1.Part.PartId];
+                cell1Ids = cs1.Part.Visualization.CellIdsByFace[cs1.Id];
+            }
+            //
+            foreach (int cell1Id in cell1Ids)
             {
                 bb1 = bbs1[cell1Id];
                 //
@@ -756,7 +906,19 @@ namespace CaeMesh
                 else if (bb1.MinZ > intersection.MaxZ) continue;
                 else
                 {
-                    foreach (int cell2Id in cs2.Part.Visualization.CellIdsByFace[cs2.Id])
+                    // Use face cell ids or edge cell ids
+                    if (edgeSurface2)
+                    {
+                        bbs2 = _cellEdgeBoundingBoxes[cs2.Part.PartId];
+                        cell2Ids = cs2.Part.Visualization.EdgeCellIdsByEdge[cs2.Id];
+                    }
+                    else
+                    {
+                        bbs2 = _cellBoundingBoxes[cs2.Part.PartId];
+                        cell2Ids = cs2.Part.Visualization.CellIdsByFace[cs2.Id];
+                    }
+                    //
+                    foreach (int cell2Id in cell2Ids)
                     {
                         bb2 = bbs2[cell2Id];
                         //
@@ -768,36 +930,126 @@ namespace CaeMesh
                         else if (bb1.MinZ > bb2.MaxZ) continue;
                         else
                         {
-                            cell1 = cs1.Part.Visualization.Cells[cell1Id];
+                            if (!(edgeSurface1 && edgeSurface2)) return false;
+
+                            cell1 = cs1.GetCell(cell1Id);   // reverse cell ids for shell back faces or get shell edge cell
+                            cell2 = cs2.GetCell(cell2Id);   // reverse cell ids for shell back faces or get shell edge cell
+
+
+                            if (cell1.Contains(1) && cell1.Contains(48) && cell2.Contains(439) && cell2.Contains(460))
+                                cell1 = cell1;
+
+                            // Cell 1 triangle 1
                             t1[0] = _nodes[cell1[0]];
                             t1[1] = _nodes[cell1[1]];
-                            t1[2] = _nodes[cell1[2]];
-                            //
-                            Geometry.VmV(ref a, t1[1], t1[0]);
-                            Geometry.VmV(ref b, t1[2], t1[0]);
-                            Geometry.VcrossV(ref n1, a, b);
-                            Geometry.VxS(ref n1, n1, 1 / Math.Sqrt(Geometry.VdotV(n1, n1)));
-                            //
-                            cell2 = cs2.Part.Visualization.Cells[cell2Id];
+                            if (!edgeSurface1) t1[2] = _nodes[cell1[2]];
+                            // Cell 2 triangle 1
                             t2[0] = _nodes[cell2[0]];
                             t2[1] = _nodes[cell2[1]];
-                            t2[2] = _nodes[cell2[2]];
-                            //
-                            Geometry.VmV(ref a, t2[1], t2[0]);
-                            Geometry.VmV(ref b, t2[2], t2[0]);
-                            Geometry.VcrossV(ref n2, a, b);
-                            Geometry.VxS(ref n2, n2, 1 / Math.Sqrt(Geometry.VdotV(n2, n2)));
-                            //
-                            ang = Math.Acos(Geometry.VdotV(n1, n2));
-                            //
-                            if (ang > angleRad)
+                            if (!edgeSurface2) t2[2] = _nodes[cell2[2]];
+                            // 1. triangle is edge segment
+                            if (edgeSurface1)
                             {
-                                dist = Geometry.TriDist(ref p, ref q, t1, t2);
+                                cs1.GetEdgeCellNormal(cell1Id, ref cellNorm, ref edgeCellNorm);
+                                Geometry.VpVxS(ref t1[2], t1[1], cellNorm, 0.001 * distance);
+                            }
+                            // 2. triangle is edge segment
+                            if (edgeSurface2)
+                            {
+                                cs2.GetEdgeCellNormal(cell2Id, ref cellNorm, ref edgeCellNorm);
+                                Geometry.VpVxS(ref t2[2], t2[1], cellNorm, 0.001 * distance);
+                            }
+                            //if (t2[2][0] == 0.0 && t2[2][1] == 0.0 && t2[2][2] == 0.0)
+                            //    t2[2][0] = 0.0;
+
+                            //Geometry.VpVxS(ref t2[2], t2[1], cellNorm, 0.001 * distance);
+
+
+                            if (CheckTriangleToTriangleDistance(t1, t2, distance, angleRad)) return true;
+                            // Cell 2 is a rectangle
+                            if (cell2.Length == 4 || cell2.Length == 8)
+                            {
+                                // Cell 2 triangle 2
+                                t2[0] = _nodes[cell2[0]];
+                                t2[1] = _nodes[cell2[2]];
+                                t2[2] = _nodes[cell2[3]];
                                 //
-                                if (dist < distance) return true;
+                                if (CheckTriangleToTriangleDistance(t1, t2, distance, angleRad)) return true;
+                            }
+                            // Cell 1 is a rectangle
+                            if (cell1.Length == 4 || cell1.Length == 8)
+                            {
+                                // Cell 1 triangle 2
+                                t1[0] = _nodes[cell1[0]];
+                                t1[1] = _nodes[cell1[2]];
+                                t1[2] = _nodes[cell1[3]];
+                                //
+                                if (CheckTriangleToTriangleDistance(t1, t2, distance, angleRad)) return true;
+                                // Cell 2 triangle 1 again
+                                if (cell2.Length == 4 || cell2.Length == 8)
+                                {
+                                    t2[0] = _nodes[cell2[0]];
+                                    t2[1] = _nodes[cell2[1]];
+                                    t2[2] = _nodes[cell2[2]];
+                                    //
+                                    if (CheckTriangleToTriangleDistance(t1, t2, distance, angleRad)) return true;
+                                }
                             }
                         }
                     }
+                }
+            }
+            return false;
+        }
+        private bool CheckTriangleToTriangleDistance(double[][] t1, double[][] t2, double distance, double angleRad)
+        {
+            double dist;
+            double ang;
+            //
+            double[] a = new double[3];
+            double[] b = new double[3];
+            double[] n1 = new double[3];
+            double[] n2 = new double[3];
+            // Triangle 1
+            Geometry.VmV(ref a, t1[1], t1[0]);
+            Geometry.VmV(ref b, t1[2], t1[0]);
+            Geometry.VcrossV(ref n1, a, b);
+            Geometry.VxS(ref n1, n1, 1 / Math.Sqrt(Geometry.VdotV(n1, n1)));
+            // Triangle 2
+            Geometry.VmV(ref a, t2[1], t2[0]);
+            Geometry.VmV(ref b, t2[2], t2[0]);
+            Geometry.VcrossV(ref n2, a, b);
+            Geometry.VxS(ref n2, n2, 1 / Math.Sqrt(Geometry.VdotV(n2, n2)));
+            //
+            // 180° - the normals point in the opposite directions
+            ang = Math.PI - Math.Acos(Geometry.VdotV(n1, n2));
+            if (ang < angleRad)
+            {
+                // Closest points on triangles t1 and t2 are p adn q, respectively
+                double[] p = new double[3];
+                double[] q = new double[3];
+                double[] pq = new double[3];
+                //
+                dist = Geometry.TriDist(ref p, ref q, t1, t2);
+                //
+                if (dist < distance)
+                {
+                    // Check the orientraion of the triangle normals
+                    if (dist > 0)
+                    {
+                        double ang1;
+                        double ang2;
+                        Geometry.VmV(ref pq, q, p);         // vector from p to q
+                        Geometry.Vnorm(ref pq, pq);
+                        ang1 = Geometry.VdotV(pq, n1);
+                        if (ang1 < 0) return false;         // negative value means n1 poits away from q
+                        ang2 = Geometry.VdotV(pq, n2);
+                        if (ang2 > 0) return false;         // positive value means n2 poits away from p
+                        // Check that the closest triangle points are one above the other
+                        // The angle between the closest direction vector and normals must be small < 5° = 0.995
+                        if (ang1 < 0.995 && ang2 > -0.995) return false;
+                    }
+                    return true;
                 }
             }
             return false;

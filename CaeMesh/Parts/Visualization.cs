@@ -41,6 +41,12 @@ namespace CaeMesh
         /// [0...num. of cells] -> global element id
         /// </summary>
         public int[] CellIds { get { return _cellIds; } set { _cellIds = value; } }
+        
+        /// <summary>
+        /// FaceCount
+        /// Return number of faces
+        /// </summary>
+        public int FaceCount { get { return _cellIdsByFace.Length; } }
 
         /// <summary>
         /// CellIdsByFace
@@ -81,6 +87,12 @@ namespace CaeMesh
         }
 
         /// <summary>
+        /// EdgeCount
+        /// Return number of edges
+        /// </summary>
+        public int EdgeCount { get { return _edgeCellIdsByEdge.Length; } }
+
+        /// <summary>
         /// FaceEdgeIds
         /// [0...num. of faces][0...num. of edges] -> local edge id
         /// </summary>
@@ -90,7 +102,11 @@ namespace CaeMesh
         /// CellNeighboursOverEdge
         /// [0...num. of cells][0...num. of neigh.] -> local cell id
         /// </summary>
-        public int[][] CellNeighboursOverCellEdge { get { return _cellNeighboursOverCellEdge; } set { _cellNeighboursOverCellEdge = value; } }
+        public int[][] CellNeighboursOverCellEdge
+        {
+            get { return _cellNeighboursOverCellEdge; }
+            set { _cellNeighboursOverCellEdge = value; }
+        }
 
         /// <summary>
         /// EdgeCells
@@ -368,35 +384,15 @@ namespace CaeMesh
             }
             _edgeLengths = newEdgeLengths;
         }
-        /// <summary>
-        /// Get node ids of all surface edges
-        /// </summary>
-        public HashSet<int> GetSurfaceEdgesNodeIds(int surfaceId)
+        public HashSet<int> GetNodeIdsByEdge(int edgeId)
         {
-            HashSet<int> surfaceEdgesNodeIds = new HashSet<int>();
-            int edgeId;
-            for (int i = 0; i < _faceEdgeIds[surfaceId].Length; i++)
+            HashSet<int> edgeNodeIds = new HashSet<int>();
+            //
+            for (int i = 0; i < _edgeCellIdsByEdge[edgeId].Length; i++)
             {
-                edgeId = _faceEdgeIds[surfaceId][i];
-                for (int j = 0; j < _edgeCellIdsByEdge[edgeId].Length; j++)
-                {
-                    surfaceEdgesNodeIds.UnionWith(_edgeCells[_edgeCellIdsByEdge[edgeId][j]]);
-                }
+                edgeNodeIds.UnionWith(_edgeCells[_edgeCellIdsByEdge[edgeId][i]]);
             }
-            return surfaceEdgesNodeIds;
-        }
-        /// <summary>
-        /// Get node ids of all surface vertices
-        /// </summary>
-        public HashSet<int> GetSurfaceVerticesNodeIds(int surfaceId, HashSet<int> surfaceEdgesNodeIds)
-        {
-            //HashSet<int> surfaceEdgesNodeIds = GetSurfaceEdgesNodeIds(surfaceId);
-            HashSet<int> surfaceVerticesNodeIds = new HashSet<int>();
-            for (int i = 0; i < _vertexNodeIds.Length; i++)
-            {
-                if (surfaceEdgesNodeIds.Contains(_vertexNodeIds[i])) surfaceVerticesNodeIds.Add(_vertexNodeIds[i]);
-            }
-            return surfaceVerticesNodeIds;
+            return edgeNodeIds;
         }
         public Dictionary<int, HashSet<int>> GetNodeIdsByEdges()
         {
@@ -429,6 +425,7 @@ namespace CaeMesh
             //
             return allEdgeNodeIds.ToArray();
         }
+        //
         public HashSet<int> GetNodeIdsBySurface(int surfaceId)
         {
             HashSet<int> surfaceNodeIds = new HashSet<int>();
@@ -540,6 +537,25 @@ namespace CaeMesh
                 }
             }
             return freeNodeIds;
+        }
+        public int GetEdgeCellBaseCellId(int edgeCellId)
+        {
+            int[] nodeIds = _edgeCells[edgeCellId];
+            //
+            for (int i = 0; i < _cellNeighboursOverCellEdge.Length; i++)
+            {
+                for (int j = 0; j < _cellNeighboursOverCellEdge[i].Length; j++)
+                {
+                    if (_cellNeighboursOverCellEdge[i][j] == -1)
+                    {
+                        if (_cells[i].Intersect(nodeIds).Count() == nodeIds.Length)
+                            return i;
+                        else break;
+                    }
+                }
+            }
+            //
+            return -1;
         }
         //
         public Dictionary<int[], CellEdgeData> GetCellEdgeData(Func<int[], ElementFaceType, int[][]> GetVisualizationEdgeCells)

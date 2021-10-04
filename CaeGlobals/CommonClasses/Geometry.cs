@@ -123,6 +123,22 @@ namespace CaeGlobals
             Vr[1] = V1[2] * V2[0] - V1[0] * V2[2];
             Vr[2] = V1[0] * V2[1] - V1[1] * V2[0];
         }
+        public static void Vnorm(ref double[] Vr, double[] V)
+        {
+            double len = Math.Sqrt(V[0] * V[0] + V[1] * V[1] + V[2] * V[2]);
+            if (len > 0)
+            {
+                Vr[0] = V[0] / len;
+                Vr[1] = V[1] / len;
+                Vr[2] = V[2] / len;
+            }
+            else
+            {
+                Vr[0] = 0;
+                Vr[1] = 0;
+                Vr[2] = 0;
+            }
+        }
         public static void SegPoints(ref double[] VEC,
                                      ref double[] X, ref double[] Y,    // closest points
                                      double[] P, double[] A,            // seg 1 origin, vector
@@ -224,6 +240,20 @@ namespace CaeGlobals
             }
         }
 
+        //--------------------------------------------------------------------------
+        // TriDist() 
+        //
+        // Computes the closest points on two triangles, and returns the 
+        // distance between them.
+        // 
+        // S and T are the triangles, stored tri[point][dimension].
+        //
+        // If the triangles are disjoint, P and Q give the closest points of 
+        // S and T respectively. However, if the triangles overlap, P and Q 
+        // are basically a random pair of points from the triangles, not 
+        // coincident points on the intersection of the triangles, as might 
+        // be expected.
+        //--------------------------------------------------------------------------
         public static double TriDist(ref double[] P, ref double[] Q, double[][] S, double[][] T)
         {
             // Compute vectors along the 6 sides

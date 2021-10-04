@@ -121,7 +121,7 @@ namespace PrePoMax.Forms
                 bool adjust = cbAbjustMesh.SelectedIndex == 0;
                 //
                 double distance = tbDistance.Value;
-                double angleDeg = tbAngle.Value + 90;
+                double angleDeg = tbAngle.Value;
                 string[] surfaceInteracionNames = _controller.GetSurfaceInteractionNames();
                 if (surfaceInteracionNames.Length == 0) surfaceInteracionNames = new string[] { missing };
                 // Search
@@ -356,7 +356,8 @@ namespace PrePoMax.Forms
                 foreach (SearchContactPair contactPair in _selectedContactPairs)
                 {
                     masterGeometryIds.UnionWith(contactPair.MasterSlaveItem.MasterGeometryIds);
-                    slaveGeometryIds.UnionWith(contactPair.MasterSlaveItem.SlaveGeometryIds);
+                    if (!contactPair.MasterSlaveItem.Unresolved)
+                        slaveGeometryIds.UnionWith(contactPair.MasterSlaveItem.SlaveGeometryIds);
                 }
                 //
                 Selection masterSelection = new Selection();
@@ -372,8 +373,9 @@ namespace PrePoMax.Forms
                 _controller.Selection = slaveSelection;
                 _controller.HighlightSelection(false, true, true);
             }
+            else _controller.ClearAllSelection();
         }
 
-       
+
     }
 }

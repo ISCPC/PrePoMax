@@ -216,6 +216,7 @@
             this.tsmiShowContactPair = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerContactPair2 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiDeleteContactPair = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiSearchContactPairs = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiInitialCondition = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiCreateInitialCondition = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEditInitialCondition = new System.Windows.Forms.ToolStripMenuItem();
@@ -360,6 +361,7 @@
             this.tscbSymbolsForStep = new System.Windows.Forms.ToolStripComboBox();
             this.timerTest = new System.Windows.Forms.Timer(this.components);
             this.timerOutput = new System.Windows.Forms.Timer(this.components);
+            this.tsmiDividerInteraction1 = new System.Windows.Forms.ToolStripSeparator();
             this.menuStripMain.SuspendLayout();
             this.statusStripMain.SuspendLayout();
             this.tsResults.SuspendLayout();
@@ -1594,7 +1596,7 @@
             this.tsmiDeleteMaterial});
             this.tsmiMaterial.Image = ((System.Drawing.Image)(resources.GetObject("tsmiMaterial.Image")));
             this.tsmiMaterial.Name = "tsmiMaterial";
-            this.tsmiMaterial.Size = new System.Drawing.Size(156, 22);
+            this.tsmiMaterial.Size = new System.Drawing.Size(180, 22);
             this.tsmiMaterial.Text = "Material";
             // 
             // tsmiCreateMaterial
@@ -1634,7 +1636,7 @@
             // 
             this.tsmiMaterialLibrary.Image = ((System.Drawing.Image)(resources.GetObject("tsmiMaterialLibrary.Image")));
             this.tsmiMaterialLibrary.Name = "tsmiMaterialLibrary";
-            this.tsmiMaterialLibrary.Size = new System.Drawing.Size(156, 22);
+            this.tsmiMaterialLibrary.Size = new System.Drawing.Size(180, 22);
             this.tsmiMaterialLibrary.Text = "Material Library";
             this.tsmiMaterialLibrary.Click += new System.EventHandler(this.tsmiMaterialLibrary_Click);
             // 
@@ -1647,7 +1649,7 @@
             this.tsmiDelete});
             this.tsmiSection.Image = ((System.Drawing.Image)(resources.GetObject("tsmiSection.Image")));
             this.tsmiSection.Name = "tsmiSection";
-            this.tsmiSection.Size = new System.Drawing.Size(156, 22);
+            this.tsmiSection.Size = new System.Drawing.Size(180, 22);
             this.tsmiSection.Text = "Section";
             // 
             // tsmiCreateSection
@@ -1680,7 +1682,9 @@
             // 
             this.tsmiInteraction.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmiConstraint,
-            this.tsmiContact});
+            this.tsmiContact,
+            this.tsmiDividerInteraction1,
+            this.tsmiSearchContactPairs});
             this.tsmiInteraction.Name = "tsmiInteraction";
             this.tsmiInteraction.Size = new System.Drawing.Size(76, 20);
             this.tsmiInteraction.Text = "Interaction";
@@ -1697,7 +1701,7 @@
             this.tsmiDeleteConstraint});
             this.tsmiConstraint.Image = ((System.Drawing.Image)(resources.GetObject("tsmiConstraint.Image")));
             this.tsmiConstraint.Name = "tsmiConstraint";
-            this.tsmiConstraint.Size = new System.Drawing.Size(129, 22);
+            this.tsmiConstraint.Size = new System.Drawing.Size(182, 22);
             this.tsmiConstraint.Text = "Constraint";
             // 
             // tsmiCreateConstraint
@@ -1754,7 +1758,7 @@
             this.contactPairToolStripMenuItem});
             this.tsmiContact.Image = ((System.Drawing.Image)(resources.GetObject("tsmiContact.Image")));
             this.tsmiContact.Name = "tsmiContact";
-            this.tsmiContact.Size = new System.Drawing.Size(129, 22);
+            this.tsmiContact.Size = new System.Drawing.Size(182, 22);
             this.tsmiContact.Text = "Contact";
             // 
             // tsmiSurfaceInteraction
@@ -1767,7 +1771,7 @@
             this.tsmiDeleteSurfaceInteraction});
             this.tsmiSurfaceInteraction.Image = ((System.Drawing.Image)(resources.GetObject("tsmiSurfaceInteraction.Image")));
             this.tsmiSurfaceInteraction.Name = "tsmiSurfaceInteraction";
-            this.tsmiSurfaceInteraction.Size = new System.Drawing.Size(173, 22);
+            this.tsmiSurfaceInteraction.Size = new System.Drawing.Size(180, 22);
             this.tsmiSurfaceInteraction.Text = "Surface Interaction";
             // 
             // tsmiCreateSurfaceInteraction
@@ -1815,7 +1819,7 @@
             this.tsmiDeleteContactPair});
             this.contactPairToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("contactPairToolStripMenuItem.Image")));
             this.contactPairToolStripMenuItem.Name = "contactPairToolStripMenuItem";
-            this.contactPairToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
+            this.contactPairToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.contactPairToolStripMenuItem.Text = "Contact Pair";
             // 
             // tsmiCreateContactPair
@@ -1864,6 +1868,13 @@
             this.tsmiDeleteContactPair.Size = new System.Drawing.Size(108, 22);
             this.tsmiDeleteContactPair.Text = "Delete";
             this.tsmiDeleteContactPair.Click += new System.EventHandler(this.tsmiDeleteContactPair_Click);
+            // 
+            // tsmiSearchContactPairs
+            // 
+            this.tsmiSearchContactPairs.Name = "tsmiSearchContactPairs";
+            this.tsmiSearchContactPairs.Size = new System.Drawing.Size(182, 22);
+            this.tsmiSearchContactPairs.Text = "Search Contact Pairs";
+            this.tsmiSearchContactPairs.Click += new System.EventHandler(this.tsmiSearchContactPairs_Click);
             // 
             // tsmiInitialCondition
             // 
@@ -3124,6 +3135,11 @@
             // 
             this.timerOutput.Tick += new System.EventHandler(this.timerOutput_Tick);
             // 
+            // tsmiDividerInteraction1
+            // 
+            this.tsmiDividerInteraction1.Name = "tsmiDividerInteraction1";
+            this.tsmiDividerInteraction1.Size = new System.Drawing.Size(179, 6);
+            // 
             // FrmMain
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -3508,6 +3524,8 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiPropagateDefinedField;
         private System.Windows.Forms.ToolStripSeparator tsmiDividerDefinedField1;
         private System.Windows.Forms.ToolStripMenuItem tsmiDeleteDefinedField;
+        private System.Windows.Forms.ToolStripMenuItem tsmiSearchContactPairs;
+        private System.Windows.Forms.ToolStripSeparator tsmiDividerInteraction1;
     }
 }
 

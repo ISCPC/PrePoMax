@@ -640,13 +640,16 @@ namespace UserControls
                     }
                 }
                 // Select
+                TreeNode lastNode = null;
                 foreach (TreeNode selectedNode in tree.SelectedNodes)
                 {
                     if (selectedNode.Tag == null) continue;
                     //
                     items.Add((NamedClass)selectedNode.Tag);
-                    selectedNode.EnsureVisible();
+                    lastNode = selectedNode;
                 }
+                if (lastNode != null) lastNode.EnsureVisible();
+                //
                 SelectEvent?.Invoke(items.ToArray());
             }
             else if (tree.SelectedNodes.Count == 0) ClearSelectionEvent();
