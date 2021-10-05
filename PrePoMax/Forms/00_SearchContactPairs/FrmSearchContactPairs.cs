@@ -107,6 +107,7 @@ namespace PrePoMax.Forms
         {
             try
             {
+                Clear();
                 // Group by
                 CaeMesh.GroupContactPairsByEnum groupBy;
                 if (cbGroupBy.SelectedIndex == 0) groupBy = CaeMesh.GroupContactPairsByEnum.None;
@@ -115,7 +116,7 @@ namespace PrePoMax.Forms
                 // Type
                 SearchContactPairType type;
                 if (cbType.SelectedIndex == 0) type = SearchContactPairType.Tie;
-                else if (cbGroupBy.SelectedIndex == 1) type = SearchContactPairType.Contact;
+                else if (cbType.SelectedIndex == 1) type = SearchContactPairType.Contact;
                 else throw new NotSupportedException();
                 // Adjust
                 bool adjust = cbAbjustMesh.SelectedIndex == 0;
@@ -128,7 +129,9 @@ namespace PrePoMax.Forms
                 _controller.SuppressExplodedViews();
                 CaeMesh.ContactSearch contactSearch = new CaeMesh.ContactSearch(_controller.Model.Mesh, _controller.Model.Geometry);
                 contactSearch.GroupContactPairsBy = groupBy;
-                List<CaeMesh.MasterSlaveItem> masterSlaveItems = contactSearch.FindContactPairs(distance, angleDeg);
+                List<CaeMesh.MasterSlaveItem> masterSlaveItems = contactSearch.FindContactPairs(distance,
+                                                                                                angleDeg,
+                                                                                                type == SearchContactPairType.Tie);
                 _controller.ResumeExplodedViews(false);
                 // Fill data
                 SearchContactPair contactPair;
@@ -144,6 +147,8 @@ namespace PrePoMax.Forms
                 }
                 // Binding
                 SetDataGridViewBinding(contactPairs);
+                //
+                HighlightContactPairs();
             }
             catch (Exception ex)
             {
@@ -323,9 +328,17 @@ namespace PrePoMax.Forms
             }
             return maxWidth;
         }
-        private void SetDataGridViewBinding(object data)
+        private void Clear()
         {
             dgvData.DataSource = null;
+            propertyGrid.SelectedObject = null;
+            _selectedContactPairs.Clear();
+            HighlightContactPairs();
+            Application.DoEvents();
+        }
+        private void SetDataGridViewBinding(object data)
+        {
+            //Clear();
             //
             BindingSource binding = new BindingSource();
             binding.DataSource = data;

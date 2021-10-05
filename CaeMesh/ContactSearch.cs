@@ -105,22 +105,28 @@ namespace CaeMesh
         }
         public void GetEdgeCellNormal(int edgeCellId, ref double[] cellNormal, ref double[] edgeCellNormal)
         {
-            int baseCellId = _part.Visualization.GetEdgeCellBaseCellId(edgeCellId);
+            int baseCellId = _part.Visualization.GetEdgeCellBaseCellIdSlow(edgeCellId);
             //
             int[] cell = _part.Visualization.Cells[baseCellId];
             int[] edgeCell = _part.Visualization.EdgeCells[edgeCellId];
             int n1Id;
-            
-            //find edgeCell orientation
-            
+            int numNodes;
+            if (cell.Length == 3 || cell.Length == 6) numNodes = 3;
+            else numNodes = 4;
+            // Find the first edge node
             if (edgeCell[0] == cell[0]) n1Id = 0;
             else if (edgeCell[0] == cell[1]) n1Id = 1;
             else if (edgeCell[0] == cell[2]) n1Id = 2;
+            else if (numNodes == 4 && edgeCell[0] == cell[3]) n1Id = 3;
             else throw new NotSupportedException();
+            // Find the second node
+            int delta;
+            if (edgeCell[1] == cell[(n1Id + 1) % numNodes]) delta = 1;
+            else delta = -1;
             //
             double[] n1 = _mesh.Nodes[cell[n1Id]].Coor;
-            double[] n2 = _mesh.Nodes[cell[(n1Id + 1) % 3]].Coor;
-            double[] n3 = _mesh.Nodes[cell[(n1Id + 2) % 3]].Coor;
+            double[] n2 = _mesh.Nodes[cell[(numNodes + n1Id + 1 * delta) % numNodes]].Coor;
+            double[] n3 = _mesh.Nodes[cell[(numNodes + n1Id + 2 * delta) % numNodes]].Coor;
             double[] a = new double[3];
             double[] b = new double[3];
             double[] n = new double[3];
@@ -161,6 +167,16 @@ namespace CaeMesh
         public HashSet<int> MasterGeometryIds { get { return _masterGeometryIds; } set { _masterGeometryIds = value; } }
         public HashSet<int> SlaveGeometryIds { get { return _slaveGeometryIds; } set { _slaveGeometryIds = value; } }
         public bool Unresolved { get { return _unresolved; } set { _unresolved = value; } }
+        public string GeometryType
+        {
+            get
+            {
+                string name = GetGeometryTypeName(_masterGeometryIds);
+                if (name.Length > 0) name += "-";
+                name += GetGeometryTypeName(_slaveGeometryIds);
+                return name;
+            }
+        }
 
 
         // Constructors                                                                                                             
@@ -182,6 +198,30 @@ namespace CaeMesh
             HashSet<int> tmpGeometryIds = _masterGeometryIds;
             _masterGeometryIds = _slaveGeometryIds;
             _slaveGeometryIds = tmpGeometryIds;
+        }
+        private string GetGeometryTypeName(HashSet<int> geometryIds)
+        {
+            if (geometryIds == null) return "";
+            //
+            int typeId;
+            string name = "";
+            HashSet<int> typeIds = new HashSet<int>();
+            //
+            foreach (int geometryId in geometryIds) typeIds.Add(FeMesh.GetItemTypePartIdsFromGeometryId(geometryId)[1]);
+            //
+            if (typeIds.Count == 0) { }
+            else if (typeIds.Count == 1)
+            {
+                typeId = typeIds.First();
+                if (typeId == (int)CaeMesh.GeometryType.SolidSurface ||
+                    typeId == (int)CaeMesh.GeometryType.ShellFrontSurface ||
+                    typeId == (int)CaeMesh.GeometryType.ShellBackSurface) name += "Surface";
+                else if (typeId == (int)CaeMesh.GeometryType.ShellEdgeSurface) name += "Edge";
+                else throw new NotSupportedException();
+            }
+            else name += "Mixed";
+            //
+            return name;
         }
     }
     //
@@ -549,7 +589,7 @@ namespace CaeMesh
             }
         }
         //
-        public List<MasterSlaveItem> GetMasterSlaveItems()
+        public List<MasterSlaveItem> GetMasterSlaveItems(bool checkUnresolved)
         {
             List<Graph<NodeData>> connectedSubgraphList = _graph.GeConnectedSubgraphs();
             List<MasterSlaveItem> masterSlaveItems = new List<MasterSlaveItem>();
@@ -566,7 +606,7 @@ namespace CaeMesh
                 }
                 else
                 {
-                    masterSlaveItems.AddRange(GetMasterSlaveItemsFromGraphWithMultipleCycles(connectedGraph));
+                    masterSlaveItems.AddRange(GetMasterSlaveItemsFromGraphWithMultipleCycles(connectedGraph, checkUnresolved));
                 }
             }
             return masterSlaveItems;
@@ -664,17 +704,23 @@ namespace CaeMesh
             //
             return masterSlaveItems;
         }
-        private static List<MasterSlaveItem> GetMasterSlaveItemsFromGraphWithMultipleCycles(Graph<NodeData> graph)
+        private static List<MasterSlaveItem> GetMasterSlaveItemsFromGraphWithMultipleCycles(Graph<NodeData> graph,
+                                                                                            bool checkUnresolved)
         {
+            string prefix = "";
+            HashSet<int> ids = new HashSet<int>();
             List<MasterSlaveItem> masterSlaveItems = new List<MasterSlaveItem>();
             // Create an unresolved master slave item that is shown to the user as a single surface
-            HashSet<int> ids = new HashSet<int>();
-            MasterSlaveItem masterSlaveItem;
-            foreach (var node in graph.Nodes) ids.UnionWith(node.Value.ItemIds);
-            //
-            masterSlaveItem = new MasterSlaveItem("Unresolved", "", ids, null);
-            masterSlaveItem.Unresolved = true;
-            masterSlaveItems.Add(masterSlaveItem);
+            if (checkUnresolved)
+            {
+                MasterSlaveItem masterSlaveItem;
+                foreach (var node in graph.Nodes) ids.UnionWith(node.Value.ItemIds);
+                masterSlaveItem = new MasterSlaveItem("Unresolved", "", ids, null);
+                masterSlaveItem.Unresolved = true;
+                masterSlaveItems.Add(masterSlaveItem);
+                //
+                prefix = "Unresolved_";
+            }
             // Create master slave items
             Graph<NodeData> reducedGraph;
             masterSlaveItems.AddRange(GetMasterSlaveItemsFromGraphWithoutCycles(graph, out reducedGraph));
@@ -683,7 +729,7 @@ namespace CaeMesh
             {
                 foreach (var neighbor in node.Neighbors)
                 {
-                    masterSlaveItems.Add(new MasterSlaveItem("Unresolved_" + node.Value.Name, neighbor.Value.Name,
+                    masterSlaveItems.Add(new MasterSlaveItem(prefix + node.Value.Name, neighbor.Value.Name,
                                                              node.Value.ItemIds, neighbor.Value.ItemIds));
                     reducedGraph.RemoveDirectedEdge(neighbor, node);
                 }
@@ -732,7 +778,7 @@ namespace CaeMesh
 
 
         // Methods                                                                                                                  
-        public List<MasterSlaveItem> FindContactPairs(double distance, double angleDeg)
+        public List<MasterSlaveItem> FindContactPairs(double distance, double angleDeg, bool checkUnresolved)
         {
             if (_mesh == null) return null;
             // Bounding boxes for each cell
@@ -740,6 +786,7 @@ namespace CaeMesh
             BoundingBox bb;
             _cellBoundingBoxes = new BoundingBox[_mesh.GetMaxPartId() + 1][];
             _cellEdgeBoundingBoxes = new BoundingBox[_mesh.GetMaxPartId() + 1][];
+            //
             foreach (var partEntry in _mesh.Parts)
             {
                 _cellBoundingBoxes[partEntry.Value.PartId] = new BoundingBox[partEntry.Value.Visualization.Cells.Length];
@@ -852,9 +899,12 @@ namespace CaeMesh
                 }
             }
             // Group surface pairs
-            if (_groupContactPairsBy == GroupContactPairsByEnum.None) return GroupContactPairsByNone(contactSurfacePairs);
-            else if (_groupContactPairsBy == GroupContactPairsByEnum.BySurfaceAngle) throw new NotSupportedException();
-            else if (_groupContactPairsBy == GroupContactPairsByEnum.ByParts) return GroupContactPairsByParts(contactSurfacePairs);
+            if (_groupContactPairsBy == GroupContactPairsByEnum.None)
+                return GroupContactPairsByNone(contactSurfacePairs, checkUnresolved);
+            else if (_groupContactPairsBy == GroupContactPairsByEnum.BySurfaceAngle)
+                throw new NotSupportedException();
+            else if (_groupContactPairsBy == GroupContactPairsByEnum.ByParts)
+                return GroupContactPairsByParts(contactSurfacePairs, checkUnresolved);
             else throw new NotSupportedException();
         }
         private bool CheckSurfaceToSurfaceDistance(ContactSurface cs1, ContactSurface cs2, double distance, double angleRad)
@@ -930,15 +980,8 @@ namespace CaeMesh
                         else if (bb1.MinZ > bb2.MaxZ) continue;
                         else
                         {
-                            if (!(edgeSurface1 && edgeSurface2)) return false;
-
                             cell1 = cs1.GetCell(cell1Id);   // reverse cell ids for shell back faces or get shell edge cell
                             cell2 = cs2.GetCell(cell2Id);   // reverse cell ids for shell back faces or get shell edge cell
-
-
-                            if (cell1.Contains(1) && cell1.Contains(48) && cell2.Contains(439) && cell2.Contains(460))
-                                cell1 = cell1;
-
                             // Cell 1 triangle 1
                             t1[0] = _nodes[cell1[0]];
                             t1[1] = _nodes[cell1[1]];
@@ -959,12 +1002,6 @@ namespace CaeMesh
                                 cs2.GetEdgeCellNormal(cell2Id, ref cellNorm, ref edgeCellNorm);
                                 Geometry.VpVxS(ref t2[2], t2[1], cellNorm, 0.001 * distance);
                             }
-                            //if (t2[2][0] == 0.0 && t2[2][1] == 0.0 && t2[2][2] == 0.0)
-                            //    t2[2][0] = 0.0;
-
-                            //Geometry.VpVxS(ref t2[2], t2[1], cellNorm, 0.001 * distance);
-
-
                             if (CheckTriangleToTriangleDistance(t1, t2, distance, angleRad)) return true;
                             // Cell 2 is a rectangle
                             if (cell2.Length == 4 || cell2.Length == 8)
@@ -1055,7 +1092,7 @@ namespace CaeMesh
             return false;
         }
         //
-        private List<MasterSlaveItem> GroupContactPairsByNone(List<ContactSurface[]> contactSurfacePairs)
+        private List<MasterSlaveItem> GroupContactPairsByNone(List<ContactSurface[]> contactSurfacePairs, bool checkUnresolved)
         {
             List<MasterSlaveItem> masterSlaveItems = new List<MasterSlaveItem>();
             //
@@ -1068,11 +1105,11 @@ namespace CaeMesh
             //
             ContactGraph contactGraph = new ContactGraph();
             contactGraph.AddMasterSlaveItems(masterSlaveItems, _mesh);
-            masterSlaveItems = contactGraph.GetMasterSlaveItems();
+            masterSlaveItems = contactGraph.GetMasterSlaveItems(checkUnresolved);
             //
             return masterSlaveItems;
         }
-        private List<MasterSlaveItem> GroupContactPairsByParts(List<ContactSurface[]> contactSurfacePairs)
+        private List<MasterSlaveItem> GroupContactPairsByParts(List<ContactSurface[]> contactSurfacePairs, bool checkUnresolved)
         {
             int i;
             int j;
@@ -1114,7 +1151,7 @@ namespace CaeMesh
             //
             ContactGraph contactGraph = new ContactGraph();
             contactGraph.AddMasterSlaveItems(partKeyMasterSlaveItems.Values, _mesh);
-            List<MasterSlaveItem> masterSlaveItems = contactGraph.GetMasterSlaveItems();
+            List<MasterSlaveItem> masterSlaveItems = contactGraph.GetMasterSlaveItems(checkUnresolved);
             //
             return masterSlaveItems;
           }

@@ -538,7 +538,7 @@ namespace CaeMesh
             }
             return freeNodeIds;
         }
-        public int GetEdgeCellBaseCellId(int edgeCellId)
+        public int GetEdgeCellBaseCellIdSlow(int edgeCellId)
         {
             int[] nodeIds = _edgeCells[edgeCellId];
             //
@@ -554,7 +554,6 @@ namespace CaeMesh
                     }
                 }
             }
-            //
             return -1;
         }
         //

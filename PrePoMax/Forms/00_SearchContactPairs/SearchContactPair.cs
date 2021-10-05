@@ -23,7 +23,6 @@ namespace PrePoMax.Forms
         Yes,
         No
     }
-
     [Serializable]
     public class SearchContactPair
     {
@@ -35,7 +34,6 @@ namespace PrePoMax.Forms
         private double _distance;
         private bool _multiView;
         private CaeMesh.MasterSlaveItem _masterSlaveItem;
-        private StringLengthConverter _stringLengthConverter;
         private DynamicCustomTypeDescriptor _dctd = null;           // needed for sorting properties
 
 
@@ -53,7 +51,19 @@ namespace PrePoMax.Forms
         }
         //
         [CategoryAttribute("Data")]
-        [OrderedDisplayName(1, 10, "Type")]
+        [OrderedDisplayName(1, 10, "Geometry")]
+        [DescriptionAttribute("Geometry type of the contact pair.")]
+        public string GeometryType
+        {
+            get
+            {
+                if (_masterSlaveItem != null) return _masterSlaveItem.GeometryType;
+                else return "";
+            }
+        }
+        //
+        [CategoryAttribute("Data")]
+        [OrderedDisplayName(2, 10, "Type")]
         [DescriptionAttribute("Select the type of the contact pair.")]
         public SearchContactPairType Type
         {
@@ -69,7 +79,7 @@ namespace PrePoMax.Forms
         }
         //
         [CategoryAttribute("Data")]
-        [OrderedDisplayName(2, 10, "Surface interaction")]
+        [OrderedDisplayName(3, 10, "Surface interaction")]
         [DescriptionAttribute("Select the surface interaction defining the properties of the contact pair.")]
         public string SurfaceInteractionName
         {
@@ -81,12 +91,12 @@ namespace PrePoMax.Forms
             set { _surfaceInteractionName = value; } }
         //
         [CategoryAttribute("Data")]
-        [OrderedDisplayName(3, 10, "Adjust")]
+        [OrderedDisplayName(4, 10, "Adjust")]
         [DescriptionAttribute("Set adjust to No to prevent the projection of the slave nodes on the master surface.")]
         public SearchContactPairAdjust Adjust { get { return _adjust; } set { _adjust = value; } }
         //
         [CategoryAttribute("Data")]
-        [OrderedDisplayName(4, 10, "Distance")]
+        [OrderedDisplayName(5, 10, "Distance")]
         [DescriptionAttribute("Set the distance inside which the slave nodes will be included/projected.")]
         [TypeConverter(typeof(StringLengthConverter))]
         public double Distance { get { return _distance; } set { _distance = value; } }
@@ -118,7 +128,6 @@ namespace PrePoMax.Forms
             else _adjust = SearchContactPairAdjust.No;
             _distance = adjustmentSize;
             //
-            _stringLengthConverter = new StringLengthConverter();
             _dctd = ProviderInstaller.Install(this);
             //
             UpdateVisibility();
@@ -129,6 +138,8 @@ namespace PrePoMax.Forms
         public void PopululateDropDownLists(string[] surfaceInteracionNames)
         {
             _dctd.PopulateProperty(nameof(SurfaceInteractionName), surfaceInteracionNames);
+            //
+            _dctd.GetProperty(nameof(GeometryType)).SetIsBrowsable(false);
             //
             UpdateVisibility();
         }
