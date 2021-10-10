@@ -3843,7 +3843,7 @@ namespace PrePoMax
             {
                 CloseAllForms();
                 SetFormLoaction(_frmSearchContactPairs);
-                _frmSearchContactPairs.PrepareFoam();
+                _frmSearchContactPairs.PrepareForm();
                 _frmSearchContactPairs.Show(this);
             }
         }

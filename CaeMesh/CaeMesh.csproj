@@ -60,6 +60,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BoundingBox.cs" />
+    <Compile Include="ContactSearch\NodeData.cs" />
+    <Compile Include="ContactSearch\ContactGraph.cs" />
+    <Compile Include="ContactSearch\Node.cs" />
+    <Compile Include="ContactSearch\NodeList.cs" />
+    <Compile Include="ContactSearch\Graph.cs" />
+    <Compile Include="ContactSearch\GroupContactPairsByEnum.cs" />
+    <Compile Include="ContactSearch\ContactSurface.cs" />
+    <Compile Include="ContactSearch\MasterSlaveItem.cs" />
     <Compile Include="Elements\0D\FeElement0D.cs" />
     <Compile Include="Elements\VtkCellType.cs" />
     <Compile Include="Enums\GeomFaceType.cs" />
@@ -68,7 +76,7 @@
     <Compile Include="Enums\GeometryType.cs" />
     <Compile Include="Enums\ElementFaceType.cs" />
     <Compile Include="Enums\MeshRepresentation.cs" />
-    <Compile Include="ContactSearch.cs" />
+    <Compile Include="ContactSearch\ContactSearch.cs" />
     <Compile Include="FeReferencePoint.cs" />
     <Compile Include="Elements\3D\FeElement3D.cs" />
     <Compile Include="Elements\2D\FeElement2D.cs" />

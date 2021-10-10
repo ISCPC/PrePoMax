@@ -43,6 +43,8 @@ namespace PrePoMax
                 UpdateRegionVisibility();
             }
         }
+        //
+        [Browsable(false)]
         public virtual string SlaveRegionType
         {
             // This function returns strings bacause using enum RegionType shows all items in the drop down box
@@ -63,7 +65,7 @@ namespace PrePoMax
                 UpdateRegionVisibility();
             }
         }
-
+        //
         [Browsable(false)]
         public DynamicCustomTypeDescriptor DynamicCustomTypeDescriptor { get { return _dctd; } set { _dctd = value; } }
 

@@ -203,7 +203,8 @@ namespace CaeMesh
             if (visualization.EdgeCellIdsByEdge != null)
             {
                 _edgeCellIdsByEdge = new int[visualization.EdgeCellIdsByEdge.Length][];
-                for (int i = 0; i < _edgeCellIdsByEdge.Length; i++) _edgeCellIdsByEdge[i] = visualization.EdgeCellIdsByEdge[i].ToArray();
+                for (int i = 0; i < _edgeCellIdsByEdge.Length; i++)
+                    _edgeCellIdsByEdge[i] = visualization.EdgeCellIdsByEdge[i].ToArray();
             }
             //
             _edgeLengths = visualization.EdgeLengths != null ? visualization.EdgeLengths.ToArray() : null;
@@ -540,6 +541,7 @@ namespace CaeMesh
         }
         public int GetEdgeCellBaseCellIdSlow(int edgeCellId)
         {
+            bool found;
             int[] nodeIds = _edgeCells[edgeCellId];
             //
             for (int i = 0; i < _cellNeighboursOverCellEdge.Length; i++)
@@ -548,13 +550,64 @@ namespace CaeMesh
                 {
                     if (_cellNeighboursOverCellEdge[i][j] == -1)
                     {
-                        if (_cells[i].Intersect(nodeIds).Count() == nodeIds.Length)
-                            return i;
+                        found = true;
+                        for (int k = 0; k < nodeIds.Length; k++)
+                        {
+                            if (!_cells[i].Contains(nodeIds[k]))
+                            {
+                                found = false;
+                                break;
+                            }
+                        }
+                        if (found) return i;
                         else break;
                     }
                 }
             }
             return -1;
+        }
+        public int[] GetAllEdgeCellBaseCellIds()
+        {
+            bool found;
+            int[] nodeIds;
+            int[] baseCellIds = new int[_edgeCells.Length];
+            // Set initial value to -1
+            for (int i = 0; i < baseCellIds.Length; i++) baseCellIds[i] = -1;
+            //
+            for (int k = 0; k < _edgeCells.Length; k++)
+            {
+                if (baseCellIds[k] < 0) // skip found cells
+                {
+                    nodeIds = _edgeCells[k];
+                    //
+                    for (int i = 0; i < _cellNeighboursOverCellEdge.Length; i++)
+                    {
+                        for (int j = 0; j < _cellNeighboursOverCellEdge[i].Length; j++)
+                        {
+                            if (_cellNeighboursOverCellEdge[i][j] == -1)
+                            {
+                                found = true;
+                                for (int l = 0; l < nodeIds.Length; l++)
+                                {
+                                    if (!_cells[i].Contains(nodeIds[l]))
+                                    {
+                                        found = false;
+                                        break;
+                                    }
+                                }
+                                if (found)
+                                {
+                                    baseCellIds[k] = i;
+                                    break;
+                                }
+                                else break;
+                            }
+                        }
+                        if (baseCellIds[k] > -1) break;
+                    }
+                }
+            }
+            return baseCellIds;
         }
         //
         public Dictionary<int[], CellEdgeData> GetCellEdgeData(Func<int[], ElementFaceType, int[][]> GetVisualizationEdgeCells)
@@ -644,7 +697,8 @@ namespace CaeMesh
 
 
         // Section cut
-        public void ApplySectionView(Dictionary<int, FeElement> elements, int[] elementIds, HashSet<int> frontNodes, HashSet<int> backNodes)
+        public void ApplySectionView(Dictionary<int, FeElement> elements, int[] elementIds, HashSet<int> frontNodes,
+                                     HashSet<int> backNodes)
         {
             HashSet<int> visibleNodes;
             SectionCutCells(elements, frontNodes, backNodes, out visibleNodes);
@@ -754,7 +808,8 @@ namespace CaeMesh
             }
             _edgeCells = splitEdgeCells.ToArray();
         }
-        private void CreateSectionPlaneCellsAndEdges(Dictionary<int, FeElement> elements, int[] elementIds, HashSet<int> frontNodes, HashSet<int> backNodes)
+        private void CreateSectionPlaneCellsAndEdges(Dictionary<int, FeElement> elements, int[] elementIds, HashSet<int> frontNodes,
+                                                     HashSet<int> backNodes)
         {
             List<int[]> sectionPlaneCells;
             List<int> sectionPlaneCellIds;            

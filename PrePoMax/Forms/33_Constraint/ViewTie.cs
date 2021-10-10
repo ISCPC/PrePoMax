@@ -46,8 +46,8 @@ namespace PrePoMax
         [OrderedDisplayName(1, 10, "Hidden")]
         [DescriptionAttribute("Hidden.")]
         [Id(2, 2)]
-        //
         public string MasterSelectionHidden { get { return _selectionHidden; } set { _selectionHidden = value; } }
+        //
         [CategoryAttribute("Master Region")]
         [OrderedDisplayName(2, 10, "Master surface")]
         [DescriptionAttribute("Select the master surface for the creation of the tie definition.")]
@@ -71,7 +71,6 @@ namespace PrePoMax
         [DescriptionAttribute("Select the slave surface for the creation of the tie definition.")]
         [Id(3, 3)]
         public string SlaveSurfaceName { get { return _tie.SlaveRegionName; } set { _tie.SlaveRegionName = value; } }
-        //
         //
         [Category("Appearance")]
         [DisplayName("Master surface color")]
@@ -132,10 +131,10 @@ namespace PrePoMax
             base.UpdateRegionVisibility();
             // Master
             if (base.MasterRegionType == RegionTypeEnum.Selection.ToFriendlyString())
-                DynamicCustomTypeDescriptor.GetProperty(nameof(MasterSelectionHidden)).SetIsBrowsable(false);
+                base.DynamicCustomTypeDescriptor.GetProperty(nameof(MasterSelectionHidden)).SetIsBrowsable(false);
             // Slave
             if (base.SlaveRegionType == RegionTypeEnum.Selection.ToFriendlyString())
-                DynamicCustomTypeDescriptor.GetProperty(nameof(SlaveSelectionHidden)).SetIsBrowsable(false);
+                base.DynamicCustomTypeDescriptor.GetProperty(nameof(SlaveSelectionHidden)).SetIsBrowsable(false);
         }
     }
 

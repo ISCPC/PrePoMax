@@ -17,6 +17,7 @@ namespace PrePoMax.Forms
         private Controller _controller;
         private string missing = "Missing";
         private string[] _surfaceInteractionNames;
+        private CaeMesh.ContactSearch _contactSearch;
         private List<SearchContactPair> _selectedContactPairs;
         private bool _firstTime;
 
@@ -52,7 +53,7 @@ namespace PrePoMax.Forms
         // Event hadlers                                                                                                            
         private void FrmSearchContactPairs_Load(object sender, EventArgs e)
         {
-            PrepareFoam();
+            PrepareForm();
         }
         private void cbType_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -127,11 +128,12 @@ namespace PrePoMax.Forms
                 if (surfaceInteracionNames.Length == 0) surfaceInteracionNames = new string[] { missing };
                 // Search
                 _controller.SuppressExplodedViews();
-                CaeMesh.ContactSearch contactSearch = new CaeMesh.ContactSearch(_controller.Model.Mesh, _controller.Model.Geometry);
-                contactSearch.GroupContactPairsBy = groupBy;
-                List<CaeMesh.MasterSlaveItem> masterSlaveItems = contactSearch.FindContactPairs(distance,
-                                                                                                angleDeg,
-                                                                                                type == SearchContactPairType.Tie);
+                if (_contactSearch == null)
+                    _contactSearch = new CaeMesh.ContactSearch(_controller.Model.Mesh, _controller.Model.Geometry);
+                _contactSearch.GroupContactPairsBy = groupBy;
+                List<CaeMesh.MasterSlaveItem> masterSlaveItems = _contactSearch.FindContactPairs(distance,
+                                                                                                 angleDeg,
+                                                                                                 type == SearchContactPairType.Tie);
                 _controller.ResumeExplodedViews(false);
                 // Fill data
                 SearchContactPair contactPair;
@@ -205,12 +207,12 @@ namespace PrePoMax.Forms
         }
         private void btnCancel_Click(object sender, EventArgs e)
         {
+            _contactSearch = null;  // reset for a new initiation
             Hide();
         }
         // Context menu strip
         private void tsmiSwapMasterSlave_Click(object sender, EventArgs e)
         {
-
             if (_selectedContactPairs.Count > 0)
             {
                 foreach (SearchContactPair selectedContactPair in _selectedContactPairs)
@@ -228,6 +230,15 @@ namespace PrePoMax.Forms
         {
             if (_selectedContactPairs.Count > 0)
             {
+                HashSet<string> geometryTypes = new HashSet<string>();
+                //
+                foreach (SearchContactPair contactPair in _selectedContactPairs) geometryTypes.Add(contactPair.GeometryType);
+                if (geometryTypes.Count > 1)
+                {
+                    MessageBoxes.ShowError("The selected contact pairs must be of the same geometry type.");
+                    return;
+                }
+                //
                 HashSet<int> masterGeometryIds = new HashSet<int>();
                 HashSet<int> slaveGeometryIds = new HashSet<int>();
                 // Get merged geometry ids
@@ -269,13 +280,14 @@ namespace PrePoMax.Forms
                 //
                 SetDataGridViewBinding(contactPairs);
                 dgvData.ClearSelection();   // after binding the first row is selcted
-                dgvData.Rows[rowId].Selected = true;
+                //dgvData.Rows[rowId].Selected = true;
+                dgvData.CurrentCell = dgvData.Rows[rowId].Cells[0]; // position the black triangle
             }
         }
 
 
         // Methods                                                                                                                  
-        public void PrepareFoam()
+        public void PrepareForm()
         {
             dgvData.DataSource = null;
             propertyGrid.SelectedObject = null;
@@ -288,6 +300,8 @@ namespace PrePoMax.Forms
             cbSurfaceInteraction.SelectedIndex = 0;
             //
             cbSurfaceInteraction.DropDownWidth = DropDownWidth(cbSurfaceInteraction);
+            //
+            _contactSearch = null;
             //
             if (_firstTime)
             {

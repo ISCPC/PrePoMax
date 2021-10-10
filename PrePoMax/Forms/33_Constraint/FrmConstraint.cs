@@ -141,6 +141,8 @@ namespace PrePoMax.Forms
         }
         protected override void OnPropertyGridSelectedGridItemChanged()
         {
+            ShowHideContextMenu();
+            //
             ShowHideSelectionForm();
             //
             HighlightConstraint();
@@ -149,7 +151,7 @@ namespace PrePoMax.Forms
         }
         protected override void OnApply(bool onOkAddNew)
         {
-            if (propertyGrid.SelectedObject is ViewError ve) throw new CaeGlobals.CaeException(ve.Message);
+            if (propertyGrid.SelectedObject is ViewError ve) throw new CaeException(ve.Message);
             //
             _viewConstraint = (ViewConstraint)propertyGrid.SelectedObject;
             //
@@ -326,20 +328,41 @@ namespace PrePoMax.Forms
         {
             return _constraintNames.GetNextNumberedKey(namePrefix);
         }
+        //
+        private void ShowHideContextMenu()
+        {
+            propertyGrid.ContextMenuStrip = null;
+            //
+            if (propertyGrid.SelectedGridItem == null || propertyGrid.SelectedGridItem.PropertyDescriptor == null) return;
+            //
+            string property = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
+            //
+            if (Constraint != null)
+            {
+                if (Constraint is Tie)
+                {
+                    if (property == nameof(ViewTie.MasterRegionType) || property == nameof(ViewTie.SlaveRegionType))
+                        propertyGrid.ContextMenuStrip = cmsPropertyGrid;
+                }
+            }
+        }
         private void tsmiSwapMasterSlave_Click(object sender, EventArgs e)
         {
-            //if (propertyGrid.SelectedObject is ViewTie vt)
-            //{
-            //    string tmp = vt.SlaveRegionName;
-            //    vt.SlaveRegionName = vt.MasterRegionName;
-            //    vt.MasterRegionName = tmp;
-            //    //
-            //    propertyGrid.Refresh();
-            //    //
-            //    OnPropertyGridSelectedGridItemChanged();    // highlight
-            //    _propertyItemChanged = true;
-            //}
+            if (propertyGrid.SelectedObject is ViewTie vt)
+            {
+                if (Constraint is Tie tie)
+                {
+                    tie.SwapMasterSlave();
+                    //
+                    vt.UpdateRegionVisibility();
+                    propertyGrid.Refresh();
+                    //
+                    OnPropertyGridSelectedGridItemChanged();    // highlight
+                    _propertyItemChanged = true;
+                }
+            }
         }
+        //
         private void HighlightConstraint()
         {
             try

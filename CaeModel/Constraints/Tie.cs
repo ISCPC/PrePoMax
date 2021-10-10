@@ -17,15 +17,15 @@ namespace CaeModel
         private double _positionTolerance;
         private bool _adjust;
         //
-        private RegionTypeEnum _slaveRegionType;
-        private string _slaveSurfaceName;
         private RegionTypeEnum _masterRegionType;
         private string _masterSurfaceName;
+        private RegionTypeEnum _slaveRegionType;
+        private string _slaveSurfaceName;
         //
-        private int[] _slaveCreationIds;
-        private Selection _slaveCreationData;
         private int[] _masterCreationIds;
         private Selection _masterCreationData;
+        private int[] _slaveCreationIds;
+        private Selection _slaveCreationData;
 
 
         // Properties                                                                                                               
@@ -41,10 +41,10 @@ namespace CaeModel
         public RegionTypeEnum SlaveRegionType { get { return _slaveRegionType; } set { _slaveRegionType = value; } }
         public string SlaveRegionName { get { return _slaveSurfaceName; } set { _slaveSurfaceName = value; } }
         //
-        public int[] SlaveCreationIds { get { return _slaveCreationIds; } set { _slaveCreationIds = value; } }
-        public Selection SlaveCreationData { get { return _slaveCreationData; } set { _slaveCreationData = value; } }
         public int[] MasterCreationIds { get { return _masterCreationIds; } set { _masterCreationIds = value; } }
         public Selection MasterCreationData { get { return _masterCreationData; } set { _masterCreationData = value; } }
+        public int[] SlaveCreationIds { get { return _slaveCreationIds; } set { _slaveCreationIds = value; } }
+        public Selection SlaveCreationData { get { return _slaveCreationData; } set { _slaveCreationData = value; } }
 
 
         // Constructors                                                                                                             
@@ -68,15 +68,38 @@ namespace CaeModel
             _slaveRegionType = slaveRegionType;
             _slaveSurfaceName = slaveSurfaceName;
             //
-            _slaveCreationIds = null;
-            _slaveCreationData = null;
             _masterCreationIds = null;
             _masterCreationData = null;
+            _slaveCreationIds = null;
+            _slaveCreationData = null;
         }
 
 
         // Methods                                                                                                                  
-
+        public void SwapMasterSlave()
+        {
+            if (_name.Contains("_to_"))
+            {
+                string[] tmp = _name.Split(new string[] { "_to_" }, StringSplitOptions.None);
+                if (tmp.Length == 2) _name = tmp[1] + "_to_" + tmp[0];
+            }
+            //
+            RegionTypeEnum tmpRegionType = _masterRegionType;
+            _masterRegionType = _slaveRegionType;
+            _slaveRegionType = tmpRegionType;
+            //
+            string tmpSurfaceName = _masterSurfaceName;
+            _masterSurfaceName = _slaveSurfaceName;
+            _slaveSurfaceName = tmpSurfaceName;
+            //
+            int[] tmpCreationIds = _masterCreationIds;
+            _masterCreationIds = _slaveCreationIds;
+            _slaveCreationIds = tmpCreationIds;
+            //
+            Selection tmpCreationData = _masterCreationData;
+            _masterCreationData = _slaveCreationData;
+            _slaveCreationData = tmpCreationData;
+        }
 
     }
 }

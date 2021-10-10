@@ -126,7 +126,7 @@ namespace PrePoMax.Forms
         {
             _copy = false;
             _startPoint = new double[3];
-            _endPoint = new double[] { 1, 0, 0};
+            _endPoint = new double[] { 0, 0, 0};
         }
 
     }

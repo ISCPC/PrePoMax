@@ -134,8 +134,8 @@ namespace PrePoMax.Forms
         {
             _copy = false;
             _startPoint = new double[3];
-            _endPoint = new double[] { 0, 0, 1};
-            _angleDeg = 10;
+            _endPoint = new double[] { 0, 0, 0};
+            _angleDeg = 90;
         }
     }
 }
