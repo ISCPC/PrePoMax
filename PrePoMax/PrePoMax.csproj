@@ -152,6 +152,8 @@
     <Compile Include="Command\0050_Model\CSetModelUnitSystem.cs" />
     <Compile Include="Command\0050_Model\CCreateBoundaryLayer.cs" />
     <Compile Include="Command\0061_Material\CDuplicateMaterial.cs" />
+    <Compile Include="Command\0071_Constraint\CMergeByMasterSlaveConstraints.cs" />
+    <Compile Include="Command\0071_Constraint\CSwapMasterSlaveConstraints.cs" />
     <Compile Include="Command\0072_SurfaceInteraction\CAddSurfaceInteraction.cs" />
     <Compile Include="Command\0072_SurfaceInteraction\CDuplicateSurfaceInteractions.cs" />
     <Compile Include="Command\0072_SurfaceInteraction\CRemoveSurfaceInteractions.cs" />
@@ -169,6 +171,8 @@
     <Compile Include="Command\0071_Constraint\CShowConstraints.cs" />
     <Compile Include="Command\0073_ContactPair\CAddContactPair.cs" />
     <Compile Include="Command\0073_ContactPair\CHideContactPairs.cs" />
+    <Compile Include="Command\0073_ContactPair\CMergeByMasterSlaveContactPairs.cs" />
+    <Compile Include="Command\0073_ContactPair\CSwapMasterSlaveContactPairs.cs" />
     <Compile Include="Command\0073_ContactPair\CRemoveContactPairs.cs" />
     <Compile Include="Command\0073_ContactPair\CReplaceContactPair.cs" />
     <Compile Include="Command\0073_ContactPair\CShowContactPairs.cs" />

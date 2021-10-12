@@ -19,6 +19,7 @@ namespace PrePoMax.Forms
         private ContextMenuStrip cmsPropertyGrid;
         private System.ComponentModel.IContainer components;
         private ToolStripMenuItem tsmiSwapMasterSlave;
+        private string _prevSelectionFormProperty;
         private Controller _controller;
 
 
@@ -357,6 +358,9 @@ namespace PrePoMax.Forms
                     vt.UpdateRegionVisibility();
                     propertyGrid.Refresh();
                     //
+                    _prevSelectionFormProperty = null;   // calls ItemSetDataEditor.SelectionForm.ResetSelection
+                    ShowHideSelectionForm();
+                    //
                     OnPropertyGridSelectedGridItemChanged();    // highlight
                     _propertyItemChanged = true;
                 }
@@ -426,6 +430,9 @@ namespace PrePoMax.Forms
             if (propertyGrid.SelectedGridItem == null || propertyGrid.SelectedGridItem.PropertyDescriptor == null) return;
             //
             string property = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
+            //
+            if (property != _prevSelectionFormProperty) ItemSetDataEditor.SelectionForm.ResetSelection();
+            _prevSelectionFormProperty = property;
             //
             if (Constraint != null)
             {

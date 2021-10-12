@@ -16,6 +16,7 @@ namespace PrePoMax.Forms
         private string[] _contactPairNames;
         private string _contactPairToEditName;
         private ViewContactPair _viewContactPair;
+        private string _prevSelectionFormProperty;
         private Controller _controller;
 
 
@@ -248,6 +249,9 @@ namespace PrePoMax.Forms
             if (propertyGrid.SelectedGridItem == null || propertyGrid.SelectedGridItem.PropertyDescriptor == null) return;
             //
             string property = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
+            //
+            if (property != _prevSelectionFormProperty) ItemSetDataEditor.SelectionForm.ResetSelection();
+            _prevSelectionFormProperty = property;
             //
             if (ContactPair != null && ContactPair is ContactPair cp)
             {

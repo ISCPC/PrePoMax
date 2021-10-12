@@ -219,9 +219,6 @@ namespace PrePoMax
                 _modelTree.EditEvent += ModelTree_Edit;
                 _modelTree.DuplicateEvent += ModelTree_DuplicateEvent;
                 _modelTree.PropagateEvent += ModelTree_PropagateEvent;
-                _modelTree.HideShowEvent += ModelTree_HideShowEvent;
-                _modelTree.SetTransparencyEvent += ModelTree_SetTransparencyEvent;
-                _modelTree.ColorContoursVisibilityEvent += ModelTree_ColorContoursVisibilityEvent;
                 _modelTree.CreateCompoundPart += CreateAndImportCompoundPart;
                 _modelTree.SwapPartGeometries += SwapPartGeometries;
                 _modelTree.MeshingParametersEvent += GetSetMeshingParameters;
@@ -232,6 +229,11 @@ namespace PrePoMax
                 _modelTree.MergeParts += MergeModelParts;
                 _modelTree.ConvertElementSetsToMeshParts += ConvertElementSetsToMeshParts;
                 _modelTree.MaterialLibrary += ShowMaterialLibrary;
+                _modelTree.SwapMasterSlave += ModelTree_SwapMasterSlave;
+                _modelTree.MergeByMasterSlave += ModelTree_MergeByMasterSlave;
+                _modelTree.HideShowEvent += ModelTree_HideShowEvent;
+                _modelTree.SetTransparencyEvent += ModelTree_SetTransparencyEvent;
+                _modelTree.ColorContoursVisibilityEvent += ModelTree_ColorContoursVisibilityEvent;
                 _modelTree.RunEvent += RunAnalysis;
                 _modelTree.MonitorEvent += MonitorAnalysis;
                 _modelTree.ResultsEvent += ResultsAnalysis;
@@ -739,8 +741,7 @@ namespace PrePoMax
         private void ModelTree_DuplicateEvent(NamedClass[] items)
         {
             if (_controller.CurrentView == ViewGeometryModelResults.Geometry)
-            {
-            }
+            { }
             else if (_controller.CurrentView == ViewGeometryModelResults.Model)
             {
                 ApplyActionOnItems<FeNodeSet>(items, DuplicateNodeSets);
@@ -751,8 +752,7 @@ namespace PrePoMax
                 ApplyActionOnItems<Step>(items, DuplicateSteps);
             }
             else if (_controller.CurrentView == ViewGeometryModelResults.Results)
-            {
-            }
+            { }
         }
         private void ModelTree_PropagateEvent(NamedClass[] items, string[] stepNames)
         {
@@ -770,6 +770,31 @@ namespace PrePoMax
             else if (_controller.CurrentView == ViewGeometryModelResults.Results)
             {
             }
+        }
+        //
+        private void ModelTree_SwapMasterSlave(NamedClass[] items)
+        {
+            if (_controller.CurrentView == ViewGeometryModelResults.Geometry)
+            { }
+            else if (_controller.CurrentView == ViewGeometryModelResults.Model)
+            {
+                ApplyActionOnItems<CaeModel.Constraint>(items, SwapMasterSlaveConstraints);
+                ApplyActionOnItems<ContactPair>(items, SwapMasterSlaveContactPairs);
+            }
+            else if (_controller.CurrentView == ViewGeometryModelResults.Results)
+            { }
+        }
+        private void ModelTree_MergeByMasterSlave(NamedClass[] items)
+        {
+            if (_controller.CurrentView == ViewGeometryModelResults.Geometry)
+            { }
+            else if (_controller.CurrentView == ViewGeometryModelResults.Model)
+            {
+                ApplyActionOnItems<CaeModel.Constraint>(items, MergeByMasterSlaveConstraints);
+                ApplyActionOnItems<ContactPair>(items, MergeByMasterSlaveContactPairs);
+            }
+            else if (_controller.CurrentView == ViewGeometryModelResults.Results)
+            { }
         }
         //
         private void ModelTree_HideShowEvent(NamedClass[] items, HideShowOperation operation, string[] stepNames)
@@ -3603,6 +3628,28 @@ namespace PrePoMax
                  ExceptionTools.Show(this, ex);
              }
         }
+        private void tsmiSwapMasterSlaveConstraint_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Constaints", _controller.GetAllConstraints(), SwapMasterSlaveConstraints);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiMergeByMasterSlaveConstraint_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Constaints", _controller.GetAllConstraints(), MergeByMasterSlaveConstraints);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
         private void tsmiHideConstraint_Click(object sender, EventArgs e)
         {
             try
@@ -3636,7 +3683,7 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
-
+        //
         private void EditConstraint(string constraintName)
         {
             // Data editor
@@ -3644,6 +3691,14 @@ namespace PrePoMax
             ItemSetDataEditor.ParentForm = _frmConstraint;
             _frmSelectItemSet.SetOnlyGeometrySelection(false);
             ShowForm(_frmConstraint, "Edit Constraint", constraintName);
+        }
+        private void SwapMasterSlaveConstraints(string[] constraintNames)
+        {
+            _controller.SwapMasterSlaveConstraintsCommand(constraintNames);
+        }
+        private void MergeByMasterSlaveConstraints(string[] constraintNames)
+        {
+            _controller.MergeByMasterSlaveConstraintsCommand(constraintNames);
         }
         private void HideConstraints(string[] constraintNames)
         {
@@ -3770,6 +3825,28 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
+        private void tsmiSwapMasterSlaveContactPair_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Contact pairs", _controller.GetAllContactPairs(), SwapMasterSlaveContactPairs);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiMergeByMasterSlaveContactPair_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Contact pairs", _controller.GetAllContactPairs(), MergeByMasterSlaveContactPairs);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
         private void tsmiHideContactPair_Click(object sender, EventArgs e)
         {
             try
@@ -3811,6 +3888,14 @@ namespace PrePoMax
             ItemSetDataEditor.ParentForm = _frmContactPair;
             _frmSelectItemSet.SetOnlyGeometrySelection(false);
             ShowForm(_frmContactPair, "Edit Contact Pair", contactPairName);
+        }
+        private void SwapMasterSlaveContactPairs(string[] contactPairNames)
+        {
+            _controller.SwapMasterSlaveContactPairsCommand(contactPairNames);
+        }
+        private void MergeByMasterSlaveContactPairs(string[] contactPairNames)
+        {
+            _controller.MergeByMasterSlaveContactPairsCommand(contactPairNames);
         }
         private void HideContactPairs(string[] contactPairNames)
         {
@@ -6399,9 +6484,9 @@ namespace PrePoMax
             else if (view == ViewGeometryModelResults.Model) viewType = ViewType.Model;
             else if (view == ViewGeometryModelResults.Results) viewType = ViewType.Results;
             else throw new NotSupportedException();
-
+            //
             InvokeIfRequired(_modelTree.UpdateTreeNode, viewType, oldItemName, item, stepName, updateSelection);
-            if (item is CaeModel.Step) UpadteOneStepInSymbolsForStepList(oldItemName, item.Name);
+            if (item is Step) UpadteOneStepInSymbolsForStepList(oldItemName, item.Name);
         }
         public void RemoveTreeNode<T>(ViewGeometryModelResults view, string nodeName, string stepName) where T : NamedClass
         {
@@ -6831,6 +6916,6 @@ namespace PrePoMax
 
         }
 
-        
+       
     }
 }

@@ -23,7 +23,7 @@ namespace CaeMesh
             get
             {
                 if (_unresolved) return _masterName;
-                else return _masterName + "_to_" + _slaveName;
+                else return _masterName +  Globals.MasterSlaveSeparator + _slaveName;
             }
         }
         public string MasterName { get { return _masterName; } }
@@ -31,7 +31,7 @@ namespace CaeMesh
         public HashSet<int> MasterGeometryIds { get { return _masterGeometryIds; } set { _masterGeometryIds = value; } }
         public HashSet<int> SlaveGeometryIds { get { return _slaveGeometryIds; } set { _slaveGeometryIds = value; } }
         public bool Unresolved { get { return _unresolved; } set { _unresolved = value; } }
-        public string GeometryType
+        public string GeometryTypeName
         {
             get
             {
@@ -63,7 +63,7 @@ namespace CaeMesh
             _masterGeometryIds = _slaveGeometryIds;
             _slaveGeometryIds = tmpGeometryIds;
         }
-        private string GetGeometryTypeName(HashSet<int> geometryIds)
+        public static string GetGeometryTypeName(HashSet<int> geometryIds)
         {
             if (geometryIds == null) return "";
             //
@@ -77,13 +77,17 @@ namespace CaeMesh
             else if (typeIds.Count == 1)
             {
                 typeId = typeIds.First();
-                if (typeId == (int)CaeMesh.GeometryType.SolidSurface ||
-                    typeId == (int)CaeMesh.GeometryType.ShellFrontSurface ||
-                    typeId == (int)CaeMesh.GeometryType.ShellBackSurface) name += "Surface";
-                else if (typeId == (int)CaeMesh.GeometryType.ShellEdgeSurface) name += "Edge";
+                if (typeId == (int)GeometryType.SolidSurface) return "Solid";
+                else if (typeId == (int)GeometryType.ShellFrontSurface ||
+                         typeId == (int)GeometryType.ShellBackSurface) name += "Shell";
+                else if (typeId == (int)GeometryType.ShellEdgeSurface) name += "Edge";
                 else throw new NotSupportedException();
             }
-            else if (!typeIds.Contains((int)CaeMesh.GeometryType.ShellEdgeSurface)) name += "Surface";
+            else if (typeIds.Count == 2)
+            {
+                if (typeIds.Contains((int)GeometryType.ShellFrontSurface) &&
+                    typeIds.Contains((int)GeometryType.ShellBackSurface)) name += "Shell";
+            }
             else name += "Mixed";
             //
             return name;

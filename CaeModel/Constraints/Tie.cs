@@ -78,10 +78,10 @@ namespace CaeModel
         // Methods                                                                                                                  
         public void SwapMasterSlave()
         {
-            if (_name.Contains("_to_"))
+            if (_name.Contains(Globals.MasterSlaveSeparator))
             {
-                string[] tmp = _name.Split(new string[] { "_to_" }, StringSplitOptions.None);
-                if (tmp.Length == 2) _name = tmp[1] + "_to_" + tmp[0];
+                string[] tmp = _name.Split(new string[] { Globals.MasterSlaveSeparator }, StringSplitOptions.None);
+                if (tmp.Length == 2) _name = tmp[1] + Globals.MasterSlaveSeparator + tmp[0];
             }
             //
             RegionTypeEnum tmpRegionType = _masterRegionType;
@@ -100,6 +100,7 @@ namespace CaeModel
             _masterCreationData = _slaveCreationData;
             _slaveCreationData = tmpCreationData;
         }
+        
 
     }
 }

@@ -197,9 +197,12 @@
             this.tsmiCreateConstraint = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEditConstraint = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerConstraint1 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsmiSwapMasterSlaveConstraint = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiMergeByMasterSlaveConstraint = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiDividerConstraint2 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiHideConstraint = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiShowConstraint = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiDividerConstraint2 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsmiDividerConstraint3 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiDeleteConstraint = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiContact = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSurfaceInteraction = new System.Windows.Forms.ToolStripMenuItem();
@@ -212,10 +215,14 @@
             this.tsmiCreateContactPair = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEditContactPair = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerContactPair1 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsmiSwapMasterSlaveContactPair = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiMergeByMasterSlaveContactPair = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiDividerContactPair2 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiHideContactPair = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiShowContactPair = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiDividerContactPair2 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsmiDividerContactPair3 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiDeleteContactPair = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiDividerInteraction1 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiSearchContactPairs = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiInitialCondition = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiCreateInitialCondition = new System.Windows.Forms.ToolStripMenuItem();
@@ -361,7 +368,6 @@
             this.tscbSymbolsForStep = new System.Windows.Forms.ToolStripComboBox();
             this.timerTest = new System.Windows.Forms.Timer(this.components);
             this.timerOutput = new System.Windows.Forms.Timer(this.components);
-            this.tsmiDividerInteraction1 = new System.Windows.Forms.ToolStripSeparator();
             this.menuStripMain.SuspendLayout();
             this.statusStripMain.SuspendLayout();
             this.tsResults.SuspendLayout();
@@ -1596,7 +1602,7 @@
             this.tsmiDeleteMaterial});
             this.tsmiMaterial.Image = ((System.Drawing.Image)(resources.GetObject("tsmiMaterial.Image")));
             this.tsmiMaterial.Name = "tsmiMaterial";
-            this.tsmiMaterial.Size = new System.Drawing.Size(180, 22);
+            this.tsmiMaterial.Size = new System.Drawing.Size(156, 22);
             this.tsmiMaterial.Text = "Material";
             // 
             // tsmiCreateMaterial
@@ -1636,7 +1642,7 @@
             // 
             this.tsmiMaterialLibrary.Image = ((System.Drawing.Image)(resources.GetObject("tsmiMaterialLibrary.Image")));
             this.tsmiMaterialLibrary.Name = "tsmiMaterialLibrary";
-            this.tsmiMaterialLibrary.Size = new System.Drawing.Size(180, 22);
+            this.tsmiMaterialLibrary.Size = new System.Drawing.Size(156, 22);
             this.tsmiMaterialLibrary.Text = "Material Library";
             this.tsmiMaterialLibrary.Click += new System.EventHandler(this.tsmiMaterialLibrary_Click);
             // 
@@ -1649,7 +1655,7 @@
             this.tsmiDelete});
             this.tsmiSection.Image = ((System.Drawing.Image)(resources.GetObject("tsmiSection.Image")));
             this.tsmiSection.Name = "tsmiSection";
-            this.tsmiSection.Size = new System.Drawing.Size(180, 22);
+            this.tsmiSection.Size = new System.Drawing.Size(156, 22);
             this.tsmiSection.Text = "Section";
             // 
             // tsmiCreateSection
@@ -1695,9 +1701,12 @@
             this.tsmiCreateConstraint,
             this.tsmiEditConstraint,
             this.tsmiDividerConstraint1,
+            this.tsmiSwapMasterSlaveConstraint,
+            this.tsmiMergeByMasterSlaveConstraint,
+            this.tsmiDividerConstraint2,
             this.tsmiHideConstraint,
             this.tsmiShowConstraint,
-            this.tsmiDividerConstraint2,
+            this.tsmiDividerConstraint3,
             this.tsmiDeleteConstraint});
             this.tsmiConstraint.Image = ((System.Drawing.Image)(resources.GetObject("tsmiConstraint.Image")));
             this.tsmiConstraint.Name = "tsmiConstraint";
@@ -1707,27 +1716,46 @@
             // tsmiCreateConstraint
             // 
             this.tsmiCreateConstraint.Name = "tsmiCreateConstraint";
-            this.tsmiCreateConstraint.Size = new System.Drawing.Size(108, 22);
+            this.tsmiCreateConstraint.Size = new System.Drawing.Size(195, 22);
             this.tsmiCreateConstraint.Text = "Create";
             this.tsmiCreateConstraint.Click += new System.EventHandler(this.tsmiCreateConstraint_Click);
             // 
             // tsmiEditConstraint
             // 
             this.tsmiEditConstraint.Name = "tsmiEditConstraint";
-            this.tsmiEditConstraint.Size = new System.Drawing.Size(108, 22);
+            this.tsmiEditConstraint.Size = new System.Drawing.Size(195, 22);
             this.tsmiEditConstraint.Text = "Edit";
             this.tsmiEditConstraint.Click += new System.EventHandler(this.tsmiEditConstraint_Click);
             // 
             // tsmiDividerConstraint1
             // 
             this.tsmiDividerConstraint1.Name = "tsmiDividerConstraint1";
-            this.tsmiDividerConstraint1.Size = new System.Drawing.Size(105, 6);
+            this.tsmiDividerConstraint1.Size = new System.Drawing.Size(192, 6);
+            // 
+            // tsmiSwapMasterSlaveConstraint
+            // 
+            this.tsmiSwapMasterSlaveConstraint.Name = "tsmiSwapMasterSlaveConstraint";
+            this.tsmiSwapMasterSlaveConstraint.Size = new System.Drawing.Size(195, 22);
+            this.tsmiSwapMasterSlaveConstraint.Text = "Swap Master/Slave";
+            this.tsmiSwapMasterSlaveConstraint.Click += new System.EventHandler(this.tsmiSwapMasterSlaveConstraint_Click);
+            // 
+            // tsmiMergeByMasterSlaveConstraint
+            // 
+            this.tsmiMergeByMasterSlaveConstraint.Name = "tsmiMergeByMasterSlaveConstraint";
+            this.tsmiMergeByMasterSlaveConstraint.Size = new System.Drawing.Size(195, 22);
+            this.tsmiMergeByMasterSlaveConstraint.Text = "Merge by Master/Slave";
+            this.tsmiMergeByMasterSlaveConstraint.Click += new System.EventHandler(this.tsmiMergeByMasterSlaveConstraint_Click);
+            // 
+            // tsmiDividerConstraint2
+            // 
+            this.tsmiDividerConstraint2.Name = "tsmiDividerConstraint2";
+            this.tsmiDividerConstraint2.Size = new System.Drawing.Size(192, 6);
             // 
             // tsmiHideConstraint
             // 
             this.tsmiHideConstraint.Image = ((System.Drawing.Image)(resources.GetObject("tsmiHideConstraint.Image")));
             this.tsmiHideConstraint.Name = "tsmiHideConstraint";
-            this.tsmiHideConstraint.Size = new System.Drawing.Size(108, 22);
+            this.tsmiHideConstraint.Size = new System.Drawing.Size(195, 22);
             this.tsmiHideConstraint.Text = "Hide";
             this.tsmiHideConstraint.Click += new System.EventHandler(this.tsmiHideConstraint_Click);
             // 
@@ -1735,19 +1763,19 @@
             // 
             this.tsmiShowConstraint.Image = ((System.Drawing.Image)(resources.GetObject("tsmiShowConstraint.Image")));
             this.tsmiShowConstraint.Name = "tsmiShowConstraint";
-            this.tsmiShowConstraint.Size = new System.Drawing.Size(108, 22);
+            this.tsmiShowConstraint.Size = new System.Drawing.Size(195, 22);
             this.tsmiShowConstraint.Text = "Show";
             this.tsmiShowConstraint.Click += new System.EventHandler(this.tsmiShowConstraint_Click);
             // 
-            // tsmiDividerConstraint2
+            // tsmiDividerConstraint3
             // 
-            this.tsmiDividerConstraint2.Name = "tsmiDividerConstraint2";
-            this.tsmiDividerConstraint2.Size = new System.Drawing.Size(105, 6);
+            this.tsmiDividerConstraint3.Name = "tsmiDividerConstraint3";
+            this.tsmiDividerConstraint3.Size = new System.Drawing.Size(192, 6);
             // 
             // tsmiDeleteConstraint
             // 
             this.tsmiDeleteConstraint.Name = "tsmiDeleteConstraint";
-            this.tsmiDeleteConstraint.Size = new System.Drawing.Size(108, 22);
+            this.tsmiDeleteConstraint.Size = new System.Drawing.Size(195, 22);
             this.tsmiDeleteConstraint.Text = "Delete";
             this.tsmiDeleteConstraint.Click += new System.EventHandler(this.tsmiDeleteConstraint_Click);
             // 
@@ -1813,9 +1841,12 @@
             this.tsmiCreateContactPair,
             this.tsmiEditContactPair,
             this.tsmiDividerContactPair1,
+            this.tsmiSwapMasterSlaveContactPair,
+            this.tsmiMergeByMasterSlaveContactPair,
+            this.tsmiDividerContactPair2,
             this.tsmiHideContactPair,
             this.tsmiShowContactPair,
-            this.tsmiDividerContactPair2,
+            this.tsmiDividerContactPair3,
             this.tsmiDeleteContactPair});
             this.contactPairToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("contactPairToolStripMenuItem.Image")));
             this.contactPairToolStripMenuItem.Name = "contactPairToolStripMenuItem";
@@ -1825,27 +1856,46 @@
             // tsmiCreateContactPair
             // 
             this.tsmiCreateContactPair.Name = "tsmiCreateContactPair";
-            this.tsmiCreateContactPair.Size = new System.Drawing.Size(108, 22);
+            this.tsmiCreateContactPair.Size = new System.Drawing.Size(195, 22);
             this.tsmiCreateContactPair.Text = "Create";
             this.tsmiCreateContactPair.Click += new System.EventHandler(this.tsmiCreateContactPair_Click);
             // 
             // tsmiEditContactPair
             // 
             this.tsmiEditContactPair.Name = "tsmiEditContactPair";
-            this.tsmiEditContactPair.Size = new System.Drawing.Size(108, 22);
+            this.tsmiEditContactPair.Size = new System.Drawing.Size(195, 22);
             this.tsmiEditContactPair.Text = "Edit";
             this.tsmiEditContactPair.Click += new System.EventHandler(this.tsmiEditContactPair_Click);
             // 
             // tsmiDividerContactPair1
             // 
             this.tsmiDividerContactPair1.Name = "tsmiDividerContactPair1";
-            this.tsmiDividerContactPair1.Size = new System.Drawing.Size(105, 6);
+            this.tsmiDividerContactPair1.Size = new System.Drawing.Size(192, 6);
+            // 
+            // tsmiSwapMasterSlaveContactPair
+            // 
+            this.tsmiSwapMasterSlaveContactPair.Name = "tsmiSwapMasterSlaveContactPair";
+            this.tsmiSwapMasterSlaveContactPair.Size = new System.Drawing.Size(195, 22);
+            this.tsmiSwapMasterSlaveContactPair.Text = "Swap Master/Slave";
+            this.tsmiSwapMasterSlaveContactPair.Click += new System.EventHandler(this.tsmiSwapMasterSlaveContactPair_Click);
+            // 
+            // tsmiMergeByMasterSlaveContactPair
+            // 
+            this.tsmiMergeByMasterSlaveContactPair.Name = "tsmiMergeByMasterSlaveContactPair";
+            this.tsmiMergeByMasterSlaveContactPair.Size = new System.Drawing.Size(195, 22);
+            this.tsmiMergeByMasterSlaveContactPair.Text = "Merge by Master/Slave";
+            this.tsmiMergeByMasterSlaveContactPair.Click += new System.EventHandler(this.tsmiMergeByMasterSlaveContactPair_Click);
+            // 
+            // tsmiDividerContactPair2
+            // 
+            this.tsmiDividerContactPair2.Name = "tsmiDividerContactPair2";
+            this.tsmiDividerContactPair2.Size = new System.Drawing.Size(192, 6);
             // 
             // tsmiHideContactPair
             // 
             this.tsmiHideContactPair.Image = ((System.Drawing.Image)(resources.GetObject("tsmiHideContactPair.Image")));
             this.tsmiHideContactPair.Name = "tsmiHideContactPair";
-            this.tsmiHideContactPair.Size = new System.Drawing.Size(108, 22);
+            this.tsmiHideContactPair.Size = new System.Drawing.Size(195, 22);
             this.tsmiHideContactPair.Text = "Hide";
             this.tsmiHideContactPair.Click += new System.EventHandler(this.tsmiHideContactPair_Click);
             // 
@@ -1853,21 +1903,26 @@
             // 
             this.tsmiShowContactPair.Image = ((System.Drawing.Image)(resources.GetObject("tsmiShowContactPair.Image")));
             this.tsmiShowContactPair.Name = "tsmiShowContactPair";
-            this.tsmiShowContactPair.Size = new System.Drawing.Size(108, 22);
+            this.tsmiShowContactPair.Size = new System.Drawing.Size(195, 22);
             this.tsmiShowContactPair.Text = "Show";
             this.tsmiShowContactPair.Click += new System.EventHandler(this.tsmiShowContactPair_Click);
             // 
-            // tsmiDividerContactPair2
+            // tsmiDividerContactPair3
             // 
-            this.tsmiDividerContactPair2.Name = "tsmiDividerContactPair2";
-            this.tsmiDividerContactPair2.Size = new System.Drawing.Size(105, 6);
+            this.tsmiDividerContactPair3.Name = "tsmiDividerContactPair3";
+            this.tsmiDividerContactPair3.Size = new System.Drawing.Size(192, 6);
             // 
             // tsmiDeleteContactPair
             // 
             this.tsmiDeleteContactPair.Name = "tsmiDeleteContactPair";
-            this.tsmiDeleteContactPair.Size = new System.Drawing.Size(108, 22);
+            this.tsmiDeleteContactPair.Size = new System.Drawing.Size(195, 22);
             this.tsmiDeleteContactPair.Text = "Delete";
             this.tsmiDeleteContactPair.Click += new System.EventHandler(this.tsmiDeleteContactPair_Click);
+            // 
+            // tsmiDividerInteraction1
+            // 
+            this.tsmiDividerInteraction1.Name = "tsmiDividerInteraction1";
+            this.tsmiDividerInteraction1.Size = new System.Drawing.Size(179, 6);
             // 
             // tsmiSearchContactPairs
             // 
@@ -3135,11 +3190,6 @@
             // 
             this.timerOutput.Tick += new System.EventHandler(this.timerOutput_Tick);
             // 
-            // tsmiDividerInteraction1
-            // 
-            this.tsmiDividerInteraction1.Name = "tsmiDividerInteraction1";
-            this.tsmiDividerInteraction1.Size = new System.Drawing.Size(179, 6);
-            // 
             // FrmMain
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -3526,6 +3576,12 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiDeleteDefinedField;
         private System.Windows.Forms.ToolStripMenuItem tsmiSearchContactPairs;
         private System.Windows.Forms.ToolStripSeparator tsmiDividerInteraction1;
+        private System.Windows.Forms.ToolStripMenuItem tsmiSwapMasterSlaveConstraint;
+        private System.Windows.Forms.ToolStripMenuItem tsmiMergeByMasterSlaveConstraint;
+        private System.Windows.Forms.ToolStripSeparator tsmiDividerConstraint3;
+        private System.Windows.Forms.ToolStripMenuItem tsmiSwapMasterSlaveContactPair;
+        private System.Windows.Forms.ToolStripMenuItem tsmiMergeByMasterSlaveContactPair;
+        private System.Windows.Forms.ToolStripSeparator tsmiDividerContactPair3;
     }
 }
 

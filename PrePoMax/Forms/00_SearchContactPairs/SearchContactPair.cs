@@ -30,6 +30,7 @@ namespace PrePoMax.Forms
         private string _name;
         private SearchContactPairType _type;
         private string _surfaceInteractionName;
+        private string _contactPairMethod;
         private SearchContactPairAdjust _adjust;
         private double _distance;
         private bool _multiView;
@@ -53,11 +54,11 @@ namespace PrePoMax.Forms
         [CategoryAttribute("Data")]
         [OrderedDisplayName(1, 10, "Geometry")]
         [DescriptionAttribute("Geometry type of the contact pair.")]
-        public string GeometryType
+        public string GeometryTypeName
         {
             get
             {
-                if (_masterSlaveItem != null) return _masterSlaveItem.GeometryType;
+                if (_masterSlaveItem != null) return _masterSlaveItem.GeometryTypeName;
                 else return "";
             }
         }
@@ -91,12 +92,25 @@ namespace PrePoMax.Forms
             set { _surfaceInteractionName = value; } }
         //
         [CategoryAttribute("Data")]
-        [OrderedDisplayName(4, 10, "Adjust")]
+        [OrderedDisplayName(4, 10, "Method")]
+        [DescriptionAttribute("Select the method defining the properties of the contact pair.")]
+        public string ContactPairMethod
+        {
+            get
+            {
+                if (_type == SearchContactPairType.Tie) return "";
+                else return _contactPairMethod;
+            }
+            set { _contactPairMethod = value; }
+        }
+        //
+        [CategoryAttribute("Data")]
+        [OrderedDisplayName(5, 10, "Adjust")]
         [DescriptionAttribute("Set adjust to No to prevent the projection of the slave nodes on the master surface.")]
         public SearchContactPairAdjust Adjust { get { return _adjust; } set { _adjust = value; } }
         //
         [CategoryAttribute("Data")]
-        [OrderedDisplayName(5, 10, "Distance")]
+        [OrderedDisplayName(6, 10, "Distance")]
         [DescriptionAttribute("Set the distance inside which the slave nodes will be included/projected.")]
         [TypeConverter(typeof(StringLengthConverter))]
         public double Distance { get { return _distance; } set { _distance = value; } }
@@ -135,11 +149,12 @@ namespace PrePoMax.Forms
 
 
         // Methods                                                                                                                  
-        public void PopululateDropDownLists(string[] surfaceInteracionNames)
+        public void PopululateDropDownLists(string[] surfaceInteracionNames, string[] contacPairMethodNames)
         {
             _dctd.PopulateProperty(nameof(SurfaceInteractionName), surfaceInteracionNames);
+            _dctd.PopulateProperty(nameof(ContactPairMethod), contacPairMethodNames);
             //
-            _dctd.GetProperty(nameof(GeometryType)).SetIsBrowsable(false);
+            _dctd.GetProperty(nameof(GeometryTypeName)).SetIsBrowsable(false);
             //
             UpdateVisibility();
         }

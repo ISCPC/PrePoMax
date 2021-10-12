@@ -39,15 +39,17 @@ namespace PrePoMax
         {
             get { return _itemSetData; }
             set { if (_itemSetData != value) _itemSetData = value; }
-        }
+        }        
 
 
         // Constructors                                                                                                             
         public FrmSelectItemSet(Controller controller)
         {
+            this.SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.DoubleBuffer, true);            
+            //
             InitializeComponent();
             //
-            CaeGlobals.StringAngleDegConverter angleDegConverter = new CaeGlobals.StringAngleDegConverter();
+            StringAngleDegConverter angleDegConverter = new StringAngleDegConverter();
             tbGeometryEdgeAngle.UnitConverter = angleDegConverter;
             tbGeometrySurfaceAngle.UnitConverter = angleDegConverter;
             tbEdgeAngle.UnitConverter = angleDegConverter;
@@ -85,23 +87,17 @@ namespace PrePoMax
         {
             try
             {
-                // Set a marker that auto setup is running
-                _initialSetup = true;
-                // Called every time the form is shown with: form.Show()
-                if (this.Visible)
-                {
-                    // Form was just shown                
-                    if (ItemSetDataEditor.ParentForm is Forms.IFormItemSetDataParent fdsp)
-                        SetGeometrySelection(fdsp.IsSelectionGeometryBased());
-                    rbSelectBy_CheckedChanged(null, null);
-                }
-                else
-                {
-                    _controller.SetSelectByToDefault();
-                }
+                //typeof(GroupBox).InvokeMember("DoubleBuffered",
+                //                          System.Reflection.BindingFlags.SetProperty |
+                //                          System.Reflection.BindingFlags.Instance |
+                //                          System.Reflection.BindingFlags.NonPublic,
+                //                          null,
+                //                          gbFEMesh,
+                //                          new object[] { true });
+                if (this.Visible) ResetSelection();
+                else _controller.SetSelectByToDefault();
             }
             catch { }
-            finally { _initialSetup = false; }
         }
         private void FrmSelectItemSet_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -310,10 +306,10 @@ namespace PrePoMax
             _itemSetData.ItemIds = _controller.GetSelectionIds();
             Hide();
         }
-        public void Hide()
-        {
-            base.Hide();
-        }
+        //public void Hide()
+        //{
+        //    base.Hide();
+        //}
         //
         private void tbAngle_KeyUp(object sender, KeyEventArgs e)
         {
@@ -335,6 +331,20 @@ namespace PrePoMax
                 ItemSetDataEditor.SelectionForm.ResetLocation();
                 ItemSetDataEditor.SelectionForm.Show(owner);
             }
+        }
+        public void ResetSelection()
+        {
+            try
+            {
+                _initialSetup = true;
+                //
+                if (ItemSetDataEditor.ParentForm is Forms.IFormItemSetDataParent fdsp)
+                    SetGeometrySelection(fdsp.IsSelectionGeometryBased());
+                //
+                rbSelectBy_CheckedChanged(null, null);
+            }
+            catch { }
+            finally { _initialSetup = false; }
         }
         public void ResetLocation()
         {

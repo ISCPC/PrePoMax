@@ -13,6 +13,7 @@ namespace CaeMesh
         public static string InternalSelectionName = "Internal_Selection";
         public static string SlaveNameSuffix = "_Slave";
         public static string MasterNameSuffix = "_Master";
+        public static string MasterSlaveSeparator = "_to_";
         //
         public static Color[] ColorTable = new Color[]
         {

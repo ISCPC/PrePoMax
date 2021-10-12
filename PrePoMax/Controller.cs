@@ -4481,6 +4481,21 @@ namespace PrePoMax
             Commands.CAddConstraint comm = new Commands.CAddConstraint(constraint, update);
             _commands.AddAndExecute(comm);
         }
+        public void ReplaceConstraintCommand(string oldConstraintName, Constraint newConstraint)
+        {
+            Commands.CReplaceConstraint comm = new Commands.CReplaceConstraint(oldConstraintName, newConstraint);
+            _commands.AddAndExecute(comm);
+        }
+        public void SwapMasterSlaveConstraintsCommand(string[] constraintNames)
+        {
+            Commands.CSwapMasterSlaveConstraints comm = new Commands.CSwapMasterSlaveConstraints(constraintNames);
+            _commands.AddAndExecute(comm);
+        }
+        public void MergeByMasterSlaveConstraintsCommand(string[] constraintNames)
+        {
+            Commands.CMergeByMasterSlaveConstraints comm = new Commands.CMergeByMasterSlaveConstraints(constraintNames);
+            _commands.AddAndExecute(comm);
+        }
         public void HideConstraintsCommand(string[] constraintNames)
         {
             Commands.CHideConstraints comm = new Commands.CHideConstraints(constraintNames);
@@ -4489,11 +4504,6 @@ namespace PrePoMax
         public void ShowConstraintsCommand(string[] constraintNames)
         {
             Commands.CShowConstraints comm = new Commands.CShowConstraints(constraintNames);
-            _commands.AddAndExecute(comm);
-        }
-        public void ReplaceConstraintCommand(string oldConstraintName, Constraint newConstraint)
-        {
-            Commands.CReplaceConstraint comm = new Commands.CReplaceConstraint(oldConstraintName, newConstraint);
             _commands.AddAndExecute(comm);
         }
         public void RemoveConstraintsCommand(string[] constraintNames)
@@ -4524,6 +4534,135 @@ namespace PrePoMax
         {
             return _model.Constraints.Values.ToArray();
         }
+        public void ReplaceConstraint(string oldConstraintName, Constraint constraint)
+        {
+            DeleteSelectionBasedConstraintSets(oldConstraintName);
+            ConvertSelectionBasedConstraint(constraint);
+            //
+            _model.Constraints.Replace(oldConstraintName, constraint.Name, constraint);
+            //
+            _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldConstraintName, constraint, null);
+            //
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
+        }
+        public void SwapMasterSlaveConstraints(string[] constraintNames)
+        {
+            string newName;
+            bool update = false;
+            //
+            foreach (var name in constraintNames)
+            {
+                if (_model.Constraints[name] is Tie tie)
+                {
+                    tie.SwapMasterSlave();
+                    newName = tie.Name;
+                    //
+                    if (newName != name) _model.Constraints.Replace(name, newName, tie);
+                    _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.Constraints[newName], null, false);
+                    //
+                    update = true;
+                }
+            }
+            //
+            if (update) FeModelUpdate(UpdateType.RedrawSymbols);
+        }
+        public void MergeByMasterSlaveConstraints(string[] constraintNames)
+        {
+            string[] tmp;
+            string[] separators = new string[] { CaeMesh.Globals.MasterSlaveSeparator };
+            HashSet<string> allNames = new HashSet<string>();
+            HashSet<string> masterNames = new HashSet<string>();
+            HashSet<string> slaveNames = new HashSet<string>();
+            FeSurface masterSurface;
+            FeSurface slaveSurface;
+            List<Tie> toMerge = new List<Tie>();
+            HashSet<FeSurfaceFaceTypes> masterSurfaceTypes = new HashSet<FeSurfaceFaceTypes>();
+            HashSet<FeSurfaceFaceTypes> slaveSurfaceTypes = new HashSet<FeSurfaceFaceTypes>();
+            //
+            foreach (var name in constraintNames)
+            {
+                // Collect names
+                tmp = name.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+                if (tmp.Length == 2)
+                {
+                    masterNames.Add(tmp[0]);
+                    slaveNames.Add(tmp[1]);
+                }
+                // Collect mergable constraints
+                if (_model.Constraints[name] is Tie tie)
+                {
+                    if (tie.MasterRegionType == RegionTypeEnum.SurfaceName && tie.MasterCreationData != null &&
+                        tie.SlaveRegionType == RegionTypeEnum.SurfaceName && tie.SlaveCreationData != null)
+                    {
+                        if (_model.Mesh.Surfaces.TryGetValue(tie.MasterRegionName, out masterSurface) &&
+                            _model.Mesh.Surfaces.TryGetValue(tie.SlaveRegionName, out slaveSurface) &&
+                            masterSurface.CreationData != null && masterSurface.CreationData.IsGeometryBased() &&
+                            slaveSurface.CreationData != null && slaveSurface.CreationData.IsGeometryBased())
+                        {
+                            masterSurfaceTypes.Add(masterSurface.SurfaceFaceTypes);
+                            slaveSurfaceTypes.Add(slaveSurface.SurfaceFaceTypes);
+                            //
+                            toMerge.Add(tie);
+                        }
+                    }
+                }
+            }
+            // Merge
+            if (toMerge.Count > 1)
+            {
+                foreach (var key in _model.Constraints.Keys)
+                {
+                    tmp = key.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+                    allNames.UnionWith(tmp);
+                }
+                //
+                if (masterSurfaceTypes.Count == 1 && masterSurfaceTypes.First() != FeSurfaceFaceTypes.Unknown &&
+                    slaveSurfaceTypes.Count == 1 && slaveSurfaceTypes.First() != FeSurfaceFaceTypes.Unknown)
+                {
+                    // Names
+                    string name;
+                    string masterName;
+                    string slaveName;
+                    if (masterNames.Count == 1) masterName = masterNames.First();
+                    else masterName = allNames.GetNextNumberedKey("Merged");
+                    allNames.Add(masterName);
+                    //
+                    if (slaveNames.Count == 1) slaveName = slaveNames.First();
+                    else slaveName = allNames.GetNextNumberedKey("Merged");
+                    allNames.Add(slaveName);
+                    //
+                    name = masterName + CaeMesh.Globals.MasterSlaveSeparator + slaveName;
+                    if (_model.Constraints.ContainsKey(name)) name = _model.Constraints.GetNextNumberedKey(name);
+                    allNames.Add(name);
+                    // New tie
+                    Tie firstTie = toMerge.First();
+                    Tie newTie = new Tie(name, firstTie.PositionTolerance, firstTie.Adjust, "", RegionTypeEnum.Selection,
+                                         "", RegionTypeEnum.Selection);
+                    //
+                    newTie.MasterCreationData = new Selection();
+                    newTie.MasterCreationData.SelectItem = vtkSelectItem.Surface;
+                    newTie.MasterCreationIds = new int[] { 1 };
+                    //
+                    newTie.SlaveCreationData = new Selection();
+                    newTie.SlaveCreationData.SelectItem = vtkSelectItem.Surface;
+                    newTie.SlaveCreationIds = new int[] { 1 };
+                    // Combine selections
+                    List<string> removeNames = new List<string>();
+                    foreach (Tie tie in toMerge)
+                    {
+                        foreach (SelectionNode node in tie.MasterCreationData.Nodes) newTie.MasterCreationData.Add(node, null);
+                        foreach (SelectionNode node in tie.SlaveCreationData.Nodes) newTie.SlaveCreationData.Add(node, null);
+                        //
+                        if (tie != firstTie) removeNames.Add(tie.Name);
+                    }
+                    // Remove
+                    RemoveConstraints(removeNames.ToArray());
+                    //
+                    ReplaceConstraint(firstTie.Name, newTie); // also updates
+                }
+            }
+            else MessageBoxes.ShowError("The selected constraints are not of the same geometry type.");
+        }
         public void HideConstraints(string[] constraintNames)
         {
             foreach (var name in constraintNames)
@@ -4543,17 +4682,6 @@ namespace PrePoMax
             }
             //
             FeModelUpdate(UpdateType.RedrawSymbols);
-        }
-        public void ReplaceConstraint(string oldConstraintName, Constraint constraint)
-        {
-            DeleteSelectionBasedConstraintSets(oldConstraintName);
-            ConvertSelectionBasedConstraint(constraint);
-            //
-            _model.Constraints.Replace(oldConstraintName, constraint.Name, constraint);
-            //
-            _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldConstraintName, constraint, null);
-            //
-            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void ActivateDeactivateConstraint(string constraintName, bool active)
         {
@@ -4698,8 +4826,8 @@ namespace PrePoMax
                             name = _model.Constraints.GetNextNumberedKey(name);
                         //
                         adjust = contactPair.Adjust == Forms.SearchContactPairAdjust.Yes;
-                        tie = new Tie(name, contactPair.Distance, adjust, "", RegionTypeEnum.Selection, "",
-                                      RegionTypeEnum.Selection);
+                        tie = new Tie(name, contactPair.Distance, adjust, "", RegionTypeEnum.Selection,
+                                      "", RegionTypeEnum.Selection);
                         //
                         tie.MasterCreationData = new Selection();
                         tie.MasterCreationData.SelectItem = vtkSelectItem.Surface;
@@ -4807,6 +4935,21 @@ namespace PrePoMax
             Commands.CAddContactPair comm = new Commands.CAddContactPair(contactPair, update);
             _commands.AddAndExecute(comm);
         }
+        public void ReplaceContactPairCommand(string oldContactPairName, ContactPair newContactPair)
+        {
+            Commands.CReplaceContactPair comm = new Commands.CReplaceContactPair(oldContactPairName, newContactPair);
+            _commands.AddAndExecute(comm);
+        }
+        public void SwapMasterSlaveContactPairsCommand(string[] contactPairNames)
+        {
+            Commands.CSwapMasterSlaveContactPairs comm = new Commands.CSwapMasterSlaveContactPairs(contactPairNames);
+            _commands.AddAndExecute(comm);
+        }
+        public void MergeByMasterSlaveContactPairsCommand(string[] contactPairNames)
+        {
+            Commands.CMergeByMasterSlaveContactPairs comm = new Commands.CMergeByMasterSlaveContactPairs(contactPairNames);
+            _commands.AddAndExecute(comm);
+        }
         public void HideContactPairsCommand(string[] contactPairNames)
         {
             Commands.CHideContactPairs comm = new Commands.CHideContactPairs(contactPairNames);
@@ -4815,11 +4958,6 @@ namespace PrePoMax
         public void ShowContactPairsCommand(string[] contactPairNames)
         {
             Commands.CShowContactPairs comm = new Commands.CShowContactPairs(contactPairNames);
-            _commands.AddAndExecute(comm);
-        }
-        public void ReplaceContactPairCommand(string oldContactPairName, ContactPair newContactPair)
-        {
-            Commands.CReplaceContactPair comm = new Commands.CReplaceContactPair(oldContactPairName, newContactPair);
             _commands.AddAndExecute(comm);
         }
         public void RemoveContactPairsCommand(string[] contactPairNames)
@@ -4850,6 +4988,147 @@ namespace PrePoMax
         {
             return _model.ContactPairs.Values.ToArray();
         }
+        public void ReplaceContactPair(string oldContactPairName, ContactPair contactPair)
+        {
+            DeleteSelectionBasedContactPairSets(oldContactPairName);
+            ConvertSelectionBasedContactPair(contactPair);
+            //
+            _model.ContactPairs.Replace(oldContactPairName, contactPair.Name, contactPair);
+            //
+            _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldContactPairName, contactPair, null);
+            //
+            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
+        }
+        public void SwapMasterSlaveContactPairs(string[] contactPairNames)
+        {
+            string newName;
+            bool update = false;
+            ContactPair contactPair;
+            //
+            foreach (var name in contactPairNames)
+            {
+                contactPair = _model.ContactPairs[name];
+                contactPair.SwapMasterSlave();
+                newName = contactPair.Name;
+                //
+                if (newName != name) _model.ContactPairs.Replace(name, newName, contactPair);
+                _form.UpdateTreeNode(ViewGeometryModelResults.Model, name, _model.ContactPairs[newName], null, false);
+                //
+                update = true;
+            }
+            //
+            if (update) FeModelUpdate(UpdateType.RedrawSymbols);
+        }
+        public void MergeByMasterSlaveContactPairs(string[] contactPairNames)
+        {
+            string[] tmp;
+            string[] separators = new string[] { CaeMesh.Globals.MasterSlaveSeparator };
+            HashSet<string> allNames = new HashSet<string>();
+            HashSet<string> masterNames = new HashSet<string>();
+            HashSet<string> slaveNames = new HashSet<string>();
+            FeSurface masterSurface;
+            FeSurface slaveSurface;
+            ContactPair contactPair;
+            List<ContactPair> toMerge = new List<ContactPair>();
+            HashSet<string> surfaceInteractionNames = new HashSet<string>();
+            HashSet<ContactPairMethod> contactPairMethods = new HashSet<ContactPairMethod>();
+            HashSet<FeSurfaceFaceTypes> masterSurfaceTypes = new HashSet<FeSurfaceFaceTypes>();
+            HashSet<FeSurfaceFaceTypes> slaveSurfaceTypes = new HashSet<FeSurfaceFaceTypes>();
+            //
+            foreach (var name in contactPairNames)
+            {
+                // Collect names
+                tmp = name.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+                if (tmp.Length == 2)
+                {
+                    masterNames.Add(tmp[0]);
+                    slaveNames.Add(tmp[1]);
+                }
+                // Collect mergable contact paits
+                contactPair = _model.ContactPairs[name];
+                if (contactPair.MasterRegionType == RegionTypeEnum.SurfaceName && contactPair.MasterCreationData != null &&
+                    contactPair.SlaveRegionType == RegionTypeEnum.SurfaceName && contactPair.SlaveCreationData != null)
+                {
+                    if (_model.Mesh.Surfaces.TryGetValue(contactPair.MasterRegionName, out masterSurface) &&
+                        _model.Mesh.Surfaces.TryGetValue(contactPair.SlaveRegionName, out slaveSurface) &&
+                        masterSurface.CreationData != null && masterSurface.CreationData.IsGeometryBased() &&
+                        slaveSurface.CreationData != null && slaveSurface.CreationData.IsGeometryBased())
+                    {
+                        masterSurfaceTypes.Add(masterSurface.SurfaceFaceTypes);
+                        slaveSurfaceTypes.Add(slaveSurface.SurfaceFaceTypes);
+                        //
+                        toMerge.Add(contactPair);
+                        surfaceInteractionNames.Add(contactPair.SurfaceInteractionName);
+                        contactPairMethods.Add(contactPair.Method);
+                    }
+                }
+                
+            }
+            // Merge
+            if (surfaceInteractionNames.Count != 1)
+                MessageBoxes.ShowError("The selected contact pairs do not have the same surface interaction.");
+            else if (contactPairMethods.Count != 1)
+                MessageBoxes.ShowError("The selected contact pairs do not have the same contact pair method.");
+            else if (toMerge.Count > 1)
+            {
+                foreach (var key in _model.ContactPairs.Keys)
+                {
+                    tmp = key.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+                    allNames.UnionWith(tmp);
+                }
+                //
+                if (masterSurfaceTypes.Count == 1 && masterSurfaceTypes.First() != FeSurfaceFaceTypes.Unknown &&
+                    slaveSurfaceTypes.Count == 1 && slaveSurfaceTypes.First() != FeSurfaceFaceTypes.Unknown)
+                {
+                    // Names
+                    string name;
+                    string masterName;
+                    string slaveName;
+                    if (masterNames.Count == 1) masterName = masterNames.First();
+                    else masterName = allNames.GetNextNumberedKey("Merged");
+                    allNames.Add(masterName);
+                    //
+                    if (slaveNames.Count == 1) slaveName = slaveNames.First();
+                    else slaveName = allNames.GetNextNumberedKey("Merged");
+                    allNames.Add(slaveName);
+                    //
+                    name = masterName + CaeMesh.Globals.MasterSlaveSeparator + slaveName;
+                    if (_model.ContactPairs.ContainsKey(name)) name = _model.ContactPairs.GetNextNumberedKey(name);
+                    allNames.Add(name);
+                    // New tie
+                    ContactPair firstContactPair = toMerge.First();
+                    ContactPair newContactPair = new ContactPair(name, surfaceInteractionNames.First(), contactPairMethods.First(),
+                                                                 firstContactPair.SmallSliding, firstContactPair.Adjust,
+                                                                 firstContactPair.AdjustmentSize,
+                                                                 "", RegionTypeEnum.Selection,
+                                                                 "", RegionTypeEnum.Selection);
+                    //
+                    newContactPair.MasterCreationData = new Selection();
+                    newContactPair.MasterCreationData.SelectItem = vtkSelectItem.Surface;
+                    newContactPair.MasterCreationIds = new int[] { 1 };
+                    //
+                    newContactPair.SlaveCreationData = new Selection();
+                    newContactPair.SlaveCreationData.SelectItem = vtkSelectItem.Surface;
+                    newContactPair.SlaveCreationIds = new int[] { 1 };
+                    // Combine selections
+                    List<string> removeNames = new List<string>();
+                    foreach (ContactPair contactPairToMerge in toMerge)
+                    {
+                        foreach (SelectionNode node in contactPairToMerge.MasterCreationData.Nodes)
+                            newContactPair.MasterCreationData.Add(node, null);
+                        foreach (SelectionNode node in contactPairToMerge.SlaveCreationData.Nodes)
+                            newContactPair.SlaveCreationData.Add(node, null);
+                        //
+                        if (contactPairToMerge != firstContactPair) removeNames.Add(contactPairToMerge.Name);
+                    }
+                    // Remove
+                    RemoveContactPairs(removeNames.ToArray());
+                    //
+                    ReplaceContactPair(firstContactPair.Name, newContactPair); // also updates
+                }
+            }
+            else MessageBoxes.ShowError("The selected contact pairs are not of the same geometry type.");
+        }
         public void HideContactPairs(string[] contactPairNames)
         {
             foreach (var name in contactPairNames)
@@ -4869,17 +5148,6 @@ namespace PrePoMax
             }
             //
             FeModelUpdate(UpdateType.RedrawSymbols);
-        }
-        public void ReplaceContactPair(string oldContactPairName, ContactPair contactPair)
-        {
-            DeleteSelectionBasedContactPairSets(oldContactPairName);
-            ConvertSelectionBasedContactPair(contactPair);
-            //
-            _model.ContactPairs.Replace(oldContactPairName, contactPair.Name, contactPair);
-            //
-            _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldContactPairName, contactPair, null);
-            //
-            FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
         }
         public void ActivateDeactivateContactPair(string contactPairName, bool active)
         {
@@ -4962,6 +5230,7 @@ namespace PrePoMax
             {
                 string name;
                 bool adjust;
+                CaeModel.ContactPairMethod method;
                 ContactPair contactPairToAdd;
                 Dictionary<string, int> nameCounter = new Dictionary<string, int>();
                 foreach (var contactPair in contactPairs)
@@ -4975,14 +5244,14 @@ namespace PrePoMax
                     if (nameCounter[name] > 1 || _model.ContactPairs.ContainsKey(name))
                         name = _model.ContactPairs.GetNextNumberedKey(name);
                     //
-
                     adjust = contactPair.Adjust == Forms.SearchContactPairAdjust.Yes;
+                    if (contactPair.ContactPairMethod == Forms.FrmSearchContactPairs.ContactPairMethodNames[0])
+                        method = ContactPairMethod.NodeToSurface;
+                    else method = ContactPairMethod.SurfaceToSurface;
                     //
-
                     contactPairToAdd = new ContactPair(name, contactPair.SurfaceInteractionName,
-                                                       ContactPairMethod.SurfaceToSurface, false, adjust,
-                                                       contactPair.Distance,
-                                                        "", RegionTypeEnum.Selection, "", RegionTypeEnum.Selection);
+                                                       method, false, adjust, contactPair.Distance,
+                                                       "", RegionTypeEnum.Selection, "", RegionTypeEnum.Selection);
                     //
                     contactPairToAdd.MasterCreationData = new Selection();
                     contactPairToAdd.MasterCreationData.SelectItem = vtkSelectItem.Surface;

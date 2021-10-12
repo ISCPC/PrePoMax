@@ -145,7 +145,30 @@ namespace CaeModel
 
 
         // Methods                                                                                                                  
-
+        public void SwapMasterSlave()
+        {
+            if (_name.Contains(Globals.MasterSlaveSeparator))
+            {
+                string[] tmp = _name.Split(new string[] { Globals.MasterSlaveSeparator }, StringSplitOptions.None);
+                if (tmp.Length == 2) _name = tmp[1] + Globals.MasterSlaveSeparator + tmp[0];
+            }
+            //
+            RegionTypeEnum tmpRegionType = _masterRegionType;
+            _masterRegionType = _slaveRegionType;
+            _slaveRegionType = tmpRegionType;
+            //
+            string tmpSurfaceName = _masterSurfaceName;
+            _masterSurfaceName = _slaveSurfaceName;
+            _slaveSurfaceName = tmpSurfaceName;
+            //
+            int[] tmpCreationIds = _masterCreationIds;
+            _masterCreationIds = _slaveCreationIds;
+            _slaveCreationIds = tmpCreationIds;
+            //
+            Selection tmpCreationData = _masterCreationData;
+            _masterCreationData = _slaveCreationData;
+            _slaveCreationData = tmpCreationData;
+        }
 
     }
 }

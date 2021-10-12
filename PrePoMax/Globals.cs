@@ -53,7 +53,7 @@ namespace PrePoMax
         public static string MmgMeshFileName = "geometry.mesh";
         public static string EdgeNodesFileName = "edgeNodes";
         // Names
-        public static string NameSeparator = ":";
+        public static string NameSeparator = ":";        
         public static string MissingSectionName = "Missing_section";
     }
 }

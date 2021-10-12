@@ -27,29 +27,44 @@ namespace UserControls
         public int Edit;
         public int Duplicate;
         public int Propagate;
-        public int Hide;
-        public int Show;
-        public int Transparency;
-        public int Deformed;
-        public int ColorContours;
+        //
         public int CompoundPart;
         public int SwapParts;
+        //
         public int MeshingParameters;
         public int PreviewEdgeMesh;
         public int CreateMesh;
+        //
         public int CopyPartToGeometry;
+        //
         public int EditCalculixKeywords;
+        //
         public int MergePart;
+        //
         public int ConvertToPart;
+        //
         public int MaterialLibrary;
+        //
+        public int SwapMergeMasterSlave;
+        //
+        public int Hide;
+        public int Show;
+        public int Transparency;
+        //
+        public int Deformed;
+        public int ColorContours;
+        //
         public int Run;
         public int Monitor;
         public int Results;
         public int Kill;
+        //
         public int Activate;
         public int Deactivate;
+        //
         public int Expand;
         public int Colapse;
+        //
         public int Delete;
     }
     public enum HideShowOperation
@@ -130,8 +145,8 @@ namespace UserControls
 
 
         // Properties                                                                                                               
-        public bool ScreenUpdating 
-        { 
+        public bool ScreenUpdating
+        {
             get { return _screenUpdating; }
             set { _screenUpdating = value; }
         }
@@ -179,9 +194,6 @@ namespace UserControls
         public event Action<NamedClass, string> EditEvent;
         public event Action<NamedClass[]> DuplicateEvent;
         public event Action<NamedClass[], string[]> PropagateEvent;
-        public event Action<NamedClass[], HideShowOperation, string[]> HideShowEvent;
-        public event Action<string[]> SetTransparencyEvent;
-        public event Action<NamedClass[], bool> ColorContoursVisibilityEvent;
         public event Action<string[]> CreateCompoundPart;
         public event Action<string[]> SwapPartGeometries;
         public event Action<string[]> MeshingParametersEvent;
@@ -192,6 +204,11 @@ namespace UserControls
         public event Action<string[]> MergeParts;
         public event Action<string[]> ConvertElementSetsToMeshParts;
         public event Action MaterialLibrary;
+        public event Action<NamedClass[]> SwapMasterSlave;
+        public event Action<NamedClass[]> MergeByMasterSlave;
+        public event Action<NamedClass[], HideShowOperation, string[]> HideShowEvent;
+        public event Action<string[]> SetTransparencyEvent;
+        public event Action<NamedClass[], bool> ColorContoursVisibilityEvent;
         public event Action<string> RunEvent;
         public event Action<string> MonitorEvent;
         public event Action<string> ResultsEvent;
@@ -291,7 +308,7 @@ namespace UserControls
         {
             FilterTree(cltvResults, stbResults.Text);
         }
-        
+
 
         #region Geometry-Model-Results
         private ViewType GetViewType()
@@ -365,7 +382,7 @@ namespace UserControls
             oneAboveVisible |= visible;
             //Geometry                                              
             visible = menuFields.CompoundPart == n && n > 1;
-            tsmiSpaceCompoundPart.Visible = false;
+            tsmiSpaceCompoundPart.Visible = visible && oneAboveVisible;
             tsmiCompoundPart.Visible = visible;
             visible = menuFields.SwapParts == n && n == 2;
             tsmiSwapPartGeometries.Visible = visible;
@@ -387,15 +404,26 @@ namespace UserControls
             oneAboveVisible |= visible;
             // Merge mesh parts                                     
             visible = menuFields.MergePart == n && n > 1;
-            tsmiSpaceMergeParts.Visible = false;
+            tsmiSpaceMergeParts.Visible = visible && oneAboveVisible;
             tsmiMergeParts.Visible = visible;
             oneAboveVisible |= visible;
             // Convert element set                                  
             visible = menuFields.ConvertToPart == n;
-            tsmiSpaceConvertToPart.Visible = false;
+            tsmiSpaceConvertToPart.Visible = visible && oneAboveVisible;
             tsmiConvertToPart.Visible = visible;
             oneAboveVisible |= visible;
-            // Hide/Show/                                           
+            // Material library                                     
+            visible = menuFields.MaterialLibrary == n && n > 0;
+            tsmiSpaceMaterialLibrary.Visible = visible && oneAboveVisible;
+            tsmiMaterialLibrary.Visible = visible;
+            oneAboveVisible |= visible;
+            // Swap Merge Master/Slave                              
+            visible = menuFields.SwapMergeMasterSlave == n && n > 0;
+            tsmiSpaceSwapMergeMasterSlave.Visible = visible && oneAboveVisible;
+            tsmiSwapMasterSlave.Visible = visible;
+            tsmiMergeByMasterSlave.Visible = visible && n > 1;
+            oneAboveVisible |= visible;
+            // Hide/Show                                            
             visible = menuFields.Hide + menuFields.Show == n;
             tsmiSpaceHideShow.Visible = visible && oneAboveVisible;
             tsmiHide.Visible = visible;
@@ -409,11 +437,6 @@ namespace UserControls
             tsmiSpaceColorContours.Visible = visible && oneAboveVisible;
             tsmiColorContoursOff.Visible = visible;
             tsmiColorContoursOn.Visible = visible;
-            oneAboveVisible |= visible;
-            // Material library                                     
-            visible = menuFields.MaterialLibrary == n && n > 0;
-            tsmiSpaceMaterialLibrary.Visible = visible && oneAboveVisible;
-            tsmiMaterialLibrary.Visible = visible;
             oneAboveVisible |= visible;
             // Analysis                                             
             visible = menuFields.Run == n;
@@ -448,13 +471,6 @@ namespace UserControls
             // Edit
             enabled = menuFields.Edit == 1;
             tsmiEdit.Enabled = enabled;
-            // Hide/Show
-            tsmiHide.Enabled = true;
-            tsmiShow.Enabled = true;
-            tsmiShowOnly.Enabled = true;
-            // Deformed/Color contours
-            tsmiColorContoursOff.Enabled = true;
-            tsmiColorContoursOn.Enabled = true;
             // Mesh
             tsmiMeshingParameters.Enabled = true;
             tsmiCreateMesh.Enabled = true;
@@ -462,6 +478,13 @@ namespace UserControls
             tsmiCopyGeometryToResults.Enabled = true;
             // Material library
             tsmiMaterialLibrary.Enabled = true;
+            // Hide/Show
+            tsmiHide.Enabled = true;
+            tsmiShow.Enabled = true;
+            tsmiShowOnly.Enabled = true;
+            // Deformed/Color contours
+            tsmiColorContoursOff.Enabled = true;
+            tsmiColorContoursOn.Enabled = true;
             // Analysis
             enabled = menuFields.Run == 1;
             tsmiRun.Enabled = enabled;
@@ -496,26 +519,6 @@ namespace UserControls
             if (item != null && CanDuplicate(node)) menuFields.Duplicate++;
             //Propagate
             if (item != null && CanPropagate(node)) menuFields.Propagate++;
-            // Hide/Show
-            if (item != null && CanHide(item))
-            {
-                if (item.Visible) menuFields.Hide++;
-                else menuFields.Show++;
-            }
-            //Transparency
-            if (item != null && item is BasePart)
-            {
-                menuFields.Transparency++;
-            }
-            // Deformed/Color contours
-            if (item != null && item is ResultPart)
-            {
-                if (!ResultPart.Undeformed)
-                {
-                    menuFields.Deformed++;
-                    menuFields.ColorContours++;
-                }
-            }
             // Geometry part - Geometry
             if (item != null && item is GeometryPart && GetActiveTree() == cltvGeometry)
             {
@@ -534,19 +537,29 @@ namespace UserControls
                 menuFields.CopyPartToGeometry++;
             }
             // Merge mesh parts
-            if (item != null && item is MeshPart && GetActiveTree() == cltvModel)
-            {
-                menuFields.MergePart++;
-            }
+            if (item != null && item is MeshPart && GetActiveTree() == cltvModel) menuFields.MergePart++;
             // Convert element set to part
-            if (item != null && item is FeElementSet && GetActiveTree() == cltvModel)
-            {
-                menuFields.ConvertToPart++;
-            }
+            if (item != null && item is FeElementSet && GetActiveTree() == cltvModel) menuFields.ConvertToPart++;
             // Material library
-            if (node == _materials)
+            if (node == _materials) menuFields.MaterialLibrary++;
+            // Swap Merge Master/Slave
+            if (item != null && CanSwapMergeMasterSlave(node)) menuFields.SwapMergeMasterSlave++;
+            // Hide/Show
+            if (item != null && CanHide(item))
             {
-                menuFields.MaterialLibrary++;
+                if (item.Visible) menuFields.Hide++;
+                else menuFields.Show++;
+            }
+            //Transparency
+            if (item != null && item is BasePart) menuFields.Transparency++;
+            // Deformed/Color contours
+            if (item != null && item is ResultPart)
+            {
+                if (!ResultPart.Undeformed)
+                {
+                    menuFields.Deformed++;
+                    menuFields.ColorContours++;
+                }
             }
             // Analysis
             if (node.Parent == _analyses)
@@ -563,10 +576,7 @@ namespace UserControls
                 else menuFields.Activate++;
             }
             // Delete
-            if (item != null && !subPart)
-            {
-                menuFields.Delete++;
-            }
+            if (item != null && !subPart) menuFields.Delete++;
         }
         //
         private void cltv_MouseDown(object sender, MouseEventArgs e)
@@ -631,7 +641,7 @@ namespace UserControls
                 {
                     node = tree.SelectedNodes[0];
                     // Results
-                    if (node.Tag is FieldData)          
+                    if (node.Tag is FieldData)
                     {
                         SelectEvent?.Invoke(null);      // clear selection
                         FieldDataSelectEvent?.Invoke(new string[] { node.Parent.Name, node.Name });
@@ -658,13 +668,26 @@ namespace UserControls
         }
         private void cltv_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            CodersLabTreeView tree = (CodersLabTreeView)sender;
+            CodersLabTreeView tree = GetActiveTree();
+            if (tree.SelectedNodes.Count != 1) return;
             //
-            if (tree.SelectedNode == null || ModifierKeys == Keys.Shift || ModifierKeys == Keys.Control) return;
+            TreeNode selectedNode = tree.SelectedNodes[0];
             //
-            if (tree.SelectedNode == tree.HitTest(e.Location).Node)
+            if (selectedNode == null || ModifierKeys == Keys.Shift || ModifierKeys == Keys.Control) return;
+            //
+            if (selectedNode == tree.HitTest(e.Location).Node)
             {
-                if (tree.SelectedNode.Tag == null) tsmiCreate_Click(null, null);
+                if (selectedNode.Tag == null)
+                {
+                    if (CanCreate(selectedNode)) tsmiCreate_Click(null, null);
+                    else
+                    {
+                        _doubleClick = false;   // must be here to allow expand/collapse
+                        //
+                        if (selectedNode.IsExpanded) selectedNode.Collapse();
+                        else selectedNode.Expand();
+                    }
+                }
                 else tsmiEdit_Click(null, null);
             }
             _doubleClick = false;
@@ -692,7 +715,6 @@ namespace UserControls
         {
             CodersLabTreeView tree = (CodersLabTreeView)sender;
             foreach (TreeNode node in tree.Nodes) SetAllNodesStatusIcons(node);
-            
         }
         public void cltv_KeyDown(object sender, KeyEventArgs e)
         {
@@ -723,9 +745,9 @@ namespace UserControls
             {
                 CodersLabTreeView tree = GetActiveTree();
                 if (tree.SelectedNodes.Count != 1) return;
-
+                //
                 TreeNode selectedNode = tree.SelectedNodes[0];
-
+                //
                 if (selectedNode.Tag == null)
                 {
                     if (CanCreate(selectedNode))
@@ -733,14 +755,14 @@ namespace UserControls
                         string stepName = null;
                         if (selectedNode.Parent != null && selectedNode.Parent.Tag is Step)
                             stepName = selectedNode.Parent.Text;
-
+                        //
                         CreateEvent?.Invoke(selectedNode.Name, stepName);
                     }
                 }
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiEdit_Click(object sender, EventArgs e)
@@ -762,7 +784,7 @@ namespace UserControls
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiDuplicate_Click(object sender, EventArgs e)
@@ -787,7 +809,7 @@ namespace UserControls
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiPropagate_Click(object sender, EventArgs e)
@@ -821,7 +843,7 @@ namespace UserControls
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         // Visibility
@@ -862,7 +884,7 @@ namespace UserControls
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiInvertHideShow_Click(object sender, EventArgs e)
@@ -906,7 +928,7 @@ namespace UserControls
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiSetTransparency_Click(object sender, EventArgs e)
@@ -925,7 +947,7 @@ namespace UserControls
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiResultColorContoutsVisibility_Click(object sender, EventArgs e)
@@ -952,7 +974,7 @@ namespace UserControls
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         // Geometry - compound, swap
@@ -969,7 +991,7 @@ namespace UserControls
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiSwapPartGeometries_Click(object sender, EventArgs e)
@@ -985,7 +1007,7 @@ namespace UserControls
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         // Meshing
@@ -1002,7 +1024,7 @@ namespace UserControls
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiPreviewEdgeMesh_Click(object sender, EventArgs e)
@@ -1018,8 +1040,8 @@ namespace UserControls
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
-            }            
+                ExceptionTools.Show(this, ex);
+            }
         }
         private void tsmiCreateMesh_Click(object sender, EventArgs e)
         {
@@ -1034,7 +1056,7 @@ namespace UserControls
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         // Geometry - copy
@@ -1051,7 +1073,7 @@ namespace UserControls
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         // Model
@@ -1069,7 +1091,7 @@ namespace UserControls
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiMergeParts_Click(object sender, EventArgs e)
@@ -1085,7 +1107,7 @@ namespace UserControls
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiConvertToPart_Click(object sender, EventArgs e)
@@ -1101,7 +1123,7 @@ namespace UserControls
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         // Material
@@ -1119,7 +1141,46 @@ namespace UserControls
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        // Master/Slave
+        private void tsmiSwapMasterSlave_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                List<NamedClass> items = new List<NamedClass>();
+                //
+                foreach (TreeNode selectedNode in GetActiveTree().SelectedNodes)
+                {
+                    if (selectedNode.Tag == null) continue;
+                    items.Add((NamedClass)selectedNode.Tag);
+                }
+                //
+                if (items.Count > 0) SwapMasterSlave?.Invoke(items.ToArray());
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiMergeByMasterSlave_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                List<NamedClass> items = new List<NamedClass>();
+                //
+                foreach (TreeNode selectedNode in GetActiveTree().SelectedNodes)
+                {
+                    if (selectedNode.Tag == null) continue;
+                    items.Add((NamedClass)selectedNode.Tag);
+                }
+                //
+                if (items.Count > 0) MergeByMasterSlave?.Invoke(items.ToArray());
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
             }
         }
         // Analysis
@@ -1138,7 +1199,7 @@ namespace UserControls
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiMonitor_Click(object sender, EventArgs e)
@@ -1156,7 +1217,7 @@ namespace UserControls
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiResults_Click(object sender, EventArgs e)
@@ -1174,7 +1235,7 @@ namespace UserControls
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void tsmiKill_Click(object sender, EventArgs e)
@@ -1192,7 +1253,7 @@ namespace UserControls
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         // Activate/Deactivate
@@ -1226,7 +1287,7 @@ namespace UserControls
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         // Expand/Collapse
@@ -1273,7 +1334,7 @@ namespace UserControls
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         #endregion
@@ -1506,7 +1567,7 @@ namespace UserControls
             catch { return -1; }
             finally { _disableSelectionsChanged = false; }
         }
-        
+
         // Regenerate tree                                                                                                          
         public void RegenerateTree(FeModel model, IDictionary<string, AnalysisJob> jobs, FeResults results,
                                    HistoryResults history)
@@ -1520,7 +1581,7 @@ namespace UserControls
                 //
                 cltvGeometry.BeginUpdate();
                 cltvModel.BeginUpdate();
-                cltvResults.BeginUpdate();                
+                cltvResults.BeginUpdate();
                 Dictionary<CodersLabTreeView, string[]> selectedNodePaths = GetSelectedNodePaths();
                 Clear();
                 if (model != null)
@@ -1533,7 +1594,7 @@ namespace UserControls
                         //AddObjectsToNode<string, CaeMesh.BasePart>(_geomPartsName, _geomParts, model.Geometry.Parts);
                         AddGeometryParts(model.Geometry.Parts);
                         _geomParts.Expand();
-                        AddObjectsToNode<string, CaeMesh.FeMeshRefinement>(_meshRefinementsName, _meshRefinements, 
+                        AddObjectsToNode<string, CaeMesh.FeMeshRefinement>(_meshRefinementsName, _meshRefinements,
                                                                            model.Geometry.MeshRefinements);
                         _meshRefinements.Expand();
                     }
@@ -1609,7 +1670,7 @@ namespace UserControls
             {
                 cltvGeometry.EndUpdate();
                 cltvModel.EndUpdate();
-                cltvResults.EndUpdate();                
+                cltvResults.EndUpdate();
             }
         }
         private Dictionary<CodersLabTreeView, string[]> GetSelectedNodePaths()
@@ -1838,7 +1899,7 @@ namespace UserControls
                 node.Name = node.Text;
                 node.Tag = item;
                 parent = _analyses;
-            }           
+            }
             else throw new NotImplementedException();
             //
             parent.Text = parent.Name;
@@ -1864,7 +1925,7 @@ namespace UserControls
             if (item is AnalysisJob) baseNode = _analyses;
             else if (item is FeMeshRefinement) baseNode = _meshRefinements;
             else baseNode = tree.Nodes[0];
-
+            //
             TreeNode[] tmp;
             if (stepName != null)
             {
@@ -1872,7 +1933,7 @@ namespace UserControls
                 if (tmp.Length > 1) throw new Exception("Tree update failed. More than one step named: " + stepName);
                 baseNode = tmp[0];
             }
-
+            //
             bool nodeFound;
             tmp = baseNode.Nodes.Find(oldItemName, true);
             if (tmp.Length > 1)
@@ -1894,16 +1955,15 @@ namespace UserControls
                 if (tmp.Length > 0) baseNode = tmp[0];
                 else return;
             }
-
+            //
             baseNode.Text = item.Name;
             baseNode.Name = item.Name;
             baseNode.Tag = item;
-
+            //
             SetNodeStatus(baseNode);
-
-            // update selection
+            // Update selection
             if (updateSelection)
-            {                
+            {
                 if (tree != null && tree.SelectedNodes.Contains(baseNode)) UpdateHighlight();    // update only once
                 else tree.SelectedNode = baseNode; // for job the tree is null
                 // Expand for propagate
@@ -1993,7 +2053,7 @@ namespace UserControls
             TreeNode subNodeToAdd;
             foreach (var entry in parts)
             {
-                part = entry.Value;                
+                part = entry.Value;
                 if (!dependentPartNames.Contains(part.Name))
                 {
                     // Independent parts
@@ -2112,7 +2172,7 @@ namespace UserControls
                     foreach (var text in texts)
                     {
                         if (node.Text.Trim().ToUpper().Contains(text))
-                        { 
+                        {
                             contains = true;
                             break;
                         }
@@ -2416,6 +2476,22 @@ namespace UserControls
             else if (node.Tag is DefinedField) return true;
             else return false;
         }
+        private bool CanSwapMergeMasterSlave(TreeNode node)
+        {
+            if (node.Tag is Tie) return true;
+            else if (node.Tag is ContactPair) return true;
+            else return false;
+        }
+        private bool CanHide(object item)
+        {
+            if (item is BasePart) return true;
+            else if (item is FeReferencePoint) return true;
+            else if (item is Constraint) return true;
+            else if (item is ContactPair) return true;
+            else if (item is BoundaryCondition) return true;
+            else if (item is Load) return true;
+            else return false;
+        }
         private bool CanDeactivate(TreeNode node)
         {
             if (node.Tag is FeMeshRefinement) return true;
@@ -2430,16 +2506,7 @@ namespace UserControls
             else if (node.Tag is DefinedField) return true;
             else return false;
         }
-        private bool CanHide(object item)
-        {
-            if (item is BasePart) return true;
-            else if (item is FeReferencePoint) return true;
-            else if (item is Constraint) return true;
-            else if (item is ContactPair) return true;
-            else if (item is BoundaryCondition) return true;
-            else if (item is Load) return true;
-            else return false;
-        }
+
 
         //                                                                                                                          
         public void SetNumberOfUserKeywords(int numOfUserKeywords)
@@ -2465,6 +2532,6 @@ namespace UserControls
             }
         }
 
-        
+
     }
 }

@@ -17,9 +17,14 @@ namespace PrePoMax.Forms
         private Controller _controller;
         private string missing = "Missing";
         private string[] _surfaceInteractionNames;
+        private static string[] _contactPairMethodNames;
         private CaeMesh.ContactSearch _contactSearch;
         private List<SearchContactPair> _selectedContactPairs;
         private bool _firstTime;
+
+
+        // Properties                                                                                                               
+        public static string[] ContactPairMethodNames { get { return _contactPairMethodNames; } }
 
 
         // Constructors                                                                                                             
@@ -30,20 +35,25 @@ namespace PrePoMax.Forms
             _controller = controller;
             //
             tbDistance.UnitConverter = new StringLengthConverter();
-            tbAngle.UnitConverter = new StringAngleDegConverter();            
+            tbAngle.UnitConverter = new StringAngleDegConverter();
+            // Adjust
+            cbAbjustMesh.Items.Add("Yes");
+            cbAbjustMesh.Items.Add("No");
+            cbAbjustMesh.SelectedIndex = 1;
             // Type
             cbType.Items.Add(SearchContactPairType.Tie);
             cbType.Items.Add(SearchContactPairType.Contact);
             cbType.SelectedIndex = 0;
             cbSurfaceInteraction.Enabled = false;
+            // Method
+            _contactPairMethodNames = new string[] { "Node to surface", "Surface to surface" };
+            cbContactPairMethod.Items.Add(_contactPairMethodNames[0]);
+            cbContactPairMethod.Items.Add(_contactPairMethodNames[1]);
+            cbContactPairMethod.SelectedIndex = 1;
             // Group
             cbGroupBy.Items.Add("None");
             cbGroupBy.Items.Add("Parts");
             cbGroupBy.SelectedIndex = 1;
-            // Adjust
-            cbAbjustMesh.Items.Add("Yes");
-            cbAbjustMesh.Items.Add("No");
-            cbAbjustMesh.SelectedIndex = 1;
             //
             _selectedContactPairs = new List<SearchContactPair>(); 
             _firstTime = true;
@@ -57,7 +67,9 @@ namespace PrePoMax.Forms
         }
         private void cbType_SelectedIndexChanged(object sender, EventArgs e)
         {
-            cbSurfaceInteraction.Enabled = cbType.SelectedIndex == 1;
+            bool enabled = cbType.SelectedIndex == 1;
+            cbSurfaceInteraction.Enabled = enabled;
+            cbContactPairMethod.Enabled = enabled;
         }
         private void dgvData_SelectionChanged(object sender, EventArgs e)
         {
@@ -143,7 +155,8 @@ namespace PrePoMax.Forms
                     contactPair = new SearchContactPair(masterSlaveItem.Name, adjust, distance);
                     contactPair.Type = type;
                     contactPair.SurfaceInteractionName = cbSurfaceInteraction.SelectedItem.ToString();
-                    contactPair.PopululateDropDownLists(_surfaceInteractionNames);
+                    contactPair.ContactPairMethod = cbContactPairMethod.SelectedItem.ToString();
+                    contactPair.PopululateDropDownLists(_surfaceInteractionNames, _contactPairMethodNames);
                     contactPair.MasterSlaveItem = masterSlaveItem;                    
                     contactPairs.Add(contactPair);
                 }
@@ -173,12 +186,6 @@ namespace PrePoMax.Forms
                         if (contactPair.Type == SearchContactPairType.Tie) tiedContactPairs.Add(contactPair);
                         else if (contactPair.Type == SearchContactPairType.Contact) contactContactPairs.Add(contactPair);
                         else throw new NotSupportedException();
-                        //
-                        //if (contactPair.SurfaceInteractionName == missing)
-                        //{
-                        //    MessageBox.Show("Some contact pairs have a missing surface interaction.");
-                        //    break;
-                        //}
                     }
                     //
                     _controller.AutoCreateTiedPairs(tiedContactPairs);
@@ -232,10 +239,10 @@ namespace PrePoMax.Forms
             {
                 HashSet<string> geometryTypes = new HashSet<string>();
                 //
-                foreach (SearchContactPair contactPair in _selectedContactPairs) geometryTypes.Add(contactPair.GeometryType);
+                foreach (SearchContactPair contactPair in _selectedContactPairs) geometryTypes.Add(contactPair.GeometryTypeName);
                 if (geometryTypes.Count > 1)
                 {
-                    MessageBoxes.ShowError("The selected contact pairs must be of the same geometry type.");
+                    MessageBoxes.ShowError("The selected contact pairs are not of the same geometry type.");
                     return;
                 }
                 //
