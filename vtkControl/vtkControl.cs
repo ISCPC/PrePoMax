@@ -565,39 +565,38 @@ namespace vtkControl
                 if (_probeWidget.GetVisibility() == 1) _probeWidget.VisibilityOff();
                 return;
             }
-
+            //
             int globalPointId = GetNodeIdOnCellFaceClosestToPoint(pickedPoint);
             _mouseSelectionCurrentIds = new int[] { globalPointId };
-
+            //
             vtkMaxActorData data = Controller_GetNodeActorData(_mouseSelectionCurrentIds);
             _mouseSelectionActorCurrent = new vtkMaxActor(data, true, true);
             AddActorGeometry(_mouseSelectionActorCurrent, vtkRendererLayer.Selection);
             _mouseSelectionActorCurrent.Geometry.SetProperty(Globals.CurrentMouseSelectionProperty);
-
+            //
             if (showLabel)
             {
                 // Probe widget
                 string format = _scalarBarWidget.GetLabelFormat();
-
+                //
                 _renderer.SetWorldPoint(pickedPoint[0], pickedPoint[1], pickedPoint[2], 1.0);
                 _renderer.WorldToDisplay();
                 double[] display = _renderer.GetDisplayPoint();
-
                 //double w = ((float)display[0] + 20) / Width;
                 //double h = ((float)display[1] + 10) / Height;
                 double w = x + 20d;
                 double h = y + 10d;
-
+                //
                 _probeWidget.SetPosition(w, h);
                 _probeWidget.SetText("Node id: " + globalPointId);
-
+                //
                 if (data.Geometry.Nodes.Values != null)
                 {
                     // Probe widget
                     _probeWidget.SetText(_probeWidget.GetText() + Environment.NewLine +
                                          "Value: " + data.Geometry.Nodes.Values[0].ToString(format) + GetUnitAbbreviation());
                 }
-
+                //
                 if (_probeWidget.GetVisibility() == 0) _probeWidget.VisibilityOn();
             }
         }

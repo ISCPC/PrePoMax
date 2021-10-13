@@ -229,6 +229,7 @@ namespace PrePoMax
                 _modelTree.MergeParts += MergeModelParts;
                 _modelTree.ConvertElementSetsToMeshParts += ConvertElementSetsToMeshParts;
                 _modelTree.MaterialLibrary += ShowMaterialLibrary;
+                _modelTree.SearchContactPairs += SearchContactPairs;
                 _modelTree.SwapMasterSlave += ModelTree_SwapMasterSlave;
                 _modelTree.MergeByMasterSlave += ModelTree_MergeByMasterSlave;
                 _modelTree.HideShowEvent += ModelTree_HideShowEvent;
@@ -3924,6 +3925,17 @@ namespace PrePoMax
 
         private void tsmiSearchContactPairs_Click(object sender, EventArgs e)
         {
+            try
+            {
+                SearchContactPairs();
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void SearchContactPairs()
+        {
             if (!_frmSearchContactPairs.Visible)
             {
                 CloseAllForms();
@@ -6534,42 +6546,38 @@ namespace PrePoMax
         }
         public void SelectBaseParts(MouseEventArgs e, Keys modifierKeys, string[] partNames)
         {
-            // This is called from _vtk on part selection
-            //if (!_modelTree.DisableMouse)
+            if ((partNames != null && partNames.Length == 0) || 
+                (partNames != null && partNames.Length > 0 && partNames[0] == null))
             {
-                if ((partNames != null && partNames.Length == 0) || 
-                    (partNames != null && partNames.Length > 0 && partNames[0] == null))
+                if (modifierKeys != Keys.Shift && modifierKeys != Keys.Control) _controller.ClearAllSelection();
+            }
+            else
+            {
+                int count = 0;
+                BasePart[] parts;
+                int numOfSelectedTreeNodes = 0;
+                //
+                if (GetCurrentView() == ViewGeometryModelResults.Geometry) parts = _controller.GetGeometryPartsForSelection(partNames);
+                else if (GetCurrentView() == ViewGeometryModelResults.Model) parts = _controller.GetModelParts(partNames);
+                else if (GetCurrentView() == ViewGeometryModelResults.Results) parts = _controller.GetResultParts(partNames);
+                else throw new NotSupportedException();
+                //
+                foreach (var part in parts)
                 {
-                    if (modifierKeys != Keys.Shift && modifierKeys != Keys.Control) _controller.ClearAllSelection();
+                    numOfSelectedTreeNodes = _modelTree.SelectBasePart(e, modifierKeys, part, false);
+                    count++;
+                    //
+                    if (count == 1 && modifierKeys == Keys.None) modifierKeys |= Keys.Shift;
                 }
-                else
+                _modelTree.UpdateHighlight();
+                //
+                if (numOfSelectedTreeNodes > 0 && e.Button == MouseButtons.Right)
                 {
-                    int count = 0;
-                    BasePart[] parts;
-                    int numOfSelectedTreeNodes = 0;
-                    //
-                    if (GetCurrentView() == ViewGeometryModelResults.Geometry) parts = _controller.GetGeometryParts(partNames);
-                    else if (GetCurrentView() == ViewGeometryModelResults.Model) parts = _controller.GetModelParts(partNames);
-                    else if (GetCurrentView() == ViewGeometryModelResults.Results) parts = _controller.GetResultParts(partNames);
-                    else throw new NotSupportedException();
-                    //
-                    foreach (var part in parts)
-                    {
-                        numOfSelectedTreeNodes = _modelTree.SelectBasePart(e, modifierKeys, part, false);
-                        count++;
-                        //
-                        if (count == 1 && modifierKeys == Keys.None) modifierKeys |= Keys.Shift;
-                    }
-                    _modelTree.UpdateHighlight();
-                    //
-                    if (numOfSelectedTreeNodes > 0 && e.Button == MouseButtons.Right)
-                    {
-                        _modelTree.ShowContextMenu(_vtk, e.X, _vtk.Height - e.Y);
-                    }
+                    _modelTree.ShowContextMenu(_vtk, e.X, _vtk.Height - e.Y);
                 }
             }
         }
-
+        //
         public void SetNumberOfModelUserKeywords(int numOfUserKeywords)
         {
             InvokeIfRequired(_modelTree.SetNumberOfUserKeywords, numOfUserKeywords);

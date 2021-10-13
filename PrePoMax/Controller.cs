@@ -1663,6 +1663,33 @@ namespace PrePoMax
             }
             return parts;
         }
+        public GeometryPart[] GetGeometryPartsForSelection(string[] partNames)
+        {
+            BasePart part;
+            GeometryPart[] parts = new GeometryPart[partNames.Length];
+            //
+            if (partNames.Length > 0)
+            {
+                // Collect all compound parts
+                Dictionary<string, string> subPartNameCompoundPartName = new Dictionary<string, string>();
+                foreach (var entry in _model.Geometry.Parts)
+                {
+                    if (entry.Value is CompoundGeometryPart cgp)
+                    {
+                        foreach (var subPartName in cgp.SubPartNames) subPartNameCompoundPartName.Add(subPartName, entry.Value.Name);
+                    }
+                }
+                // Get s compound part if a sub part was selected
+                string partName;
+                for (int i = 0; i < partNames.Length; i++)
+                {
+                    if (!subPartNameCompoundPartName.TryGetValue(partNames[i], out partName)) partName = partNames[i];
+                    //
+                    if (_model.Geometry.Parts.TryGetValue(partName, out part)) parts[i] = (GeometryPart)part;
+                }
+            }
+            return parts;
+        }
         public GeometryPart[] GetGeometryParts()
         {
             if (_model.Geometry == null) return null;

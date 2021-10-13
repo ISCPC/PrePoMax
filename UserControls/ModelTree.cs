@@ -45,6 +45,7 @@ namespace UserControls
         //
         public int MaterialLibrary;
         //
+        public int SearchContactPairs;
         public int SwapMergeMasterSlave;
         //
         public int Hide;
@@ -204,6 +205,7 @@ namespace UserControls
         public event Action<string[]> MergeParts;
         public event Action<string[]> ConvertElementSetsToMeshParts;
         public event Action MaterialLibrary;
+        public event Action SearchContactPairs;
         public event Action<NamedClass[]> SwapMasterSlave;
         public event Action<NamedClass[]> MergeByMasterSlave;
         public event Action<NamedClass[], HideShowOperation, string[]> HideShowEvent;
@@ -417,6 +419,11 @@ namespace UserControls
             tsmiSpaceMaterialLibrary.Visible = visible && oneAboveVisible;
             tsmiMaterialLibrary.Visible = visible;
             oneAboveVisible |= visible;
+            // Search contact pairs                                 
+            visible = menuFields.SearchContactPairs == n && n > 0;
+            tsmiSpaceSearchContactPairs.Visible = visible && oneAboveVisible;
+            tsmiSearchContactPairs.Visible = visible;
+            oneAboveVisible |= visible;
             // Swap Merge Master/Slave                              
             visible = menuFields.SwapMergeMasterSlave == n && n > 0;
             tsmiSpaceSwapMergeMasterSlave.Visible = visible && oneAboveVisible;
@@ -543,6 +550,7 @@ namespace UserControls
             // Material library
             if (node == _materials) menuFields.MaterialLibrary++;
             // Swap Merge Master/Slave
+            if (CanSearchContactPairs(node)) menuFields.SearchContactPairs++;
             if (item != null && CanSwapMergeMasterSlave(node)) menuFields.SwapMergeMasterSlave++;
             // Hide/Show
             if (item != null && CanHide(item))
@@ -1145,6 +1153,23 @@ namespace UserControls
             }
         }
         // Master/Slave
+        private void tsmiSearchContactPairs_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                CodersLabTreeView tree = GetActiveTree();
+                if (tree.SelectedNodes.Count != 1) return;
+                //
+                TreeNode selectedNode = tree.SelectedNodes[0];
+                if (selectedNode.Tag != null) return;
+                //
+                SearchContactPairs?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
         private void tsmiSwapMasterSlave_Click(object sender, EventArgs e)
         {
             try
@@ -2476,6 +2501,12 @@ namespace UserControls
             else if (node.Tag is DefinedField) return true;
             else return false;
         }
+        private bool CanSearchContactPairs(TreeNode node)
+        {
+            if (node == _constraints) return true;
+            else if (node == _contactPairs) return true;
+            else return false;
+        }
         private bool CanSwapMergeMasterSlave(TreeNode node)
         {
             if (node.Tag is Tie) return true;
@@ -2532,6 +2563,6 @@ namespace UserControls
             }
         }
 
-
+        
     }
 }
