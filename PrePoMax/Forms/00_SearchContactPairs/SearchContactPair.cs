@@ -180,6 +180,8 @@ namespace PrePoMax.Forms
         public void UpdateVisibility()
         {
             _dctd.GetProperty(nameof(SurfaceInteractionName)).SetIsBrowsable(_type == SearchContactPairType.Contact);
+            _dctd.GetProperty(nameof(ContactPairMethod)).SetIsBrowsable(_type == SearchContactPairType.Contact);
+            //
             _dctd.GetProperty(nameof(Name)).SetIsBrowsable(!_multiView);
         }
     }
