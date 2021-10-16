@@ -871,16 +871,8 @@ namespace CaeModel
         // Getters
         public string[] GetAllMeshEntityNames()
         {
-            List<string> names = new List<string>();
-            if (_mesh != null)
-            {
-                names.AddRange(_mesh.Parts.Keys);
-                names.AddRange(_mesh.NodeSets.Keys);
-                names.AddRange(_mesh.ElementSets.Keys);
-                names.AddRange(_mesh.Surfaces.Keys);
-                names.AddRange(_mesh.ReferencePoints.Keys);
-            }
-            return names.ToArray();
+            if (_mesh != null) return _mesh.GetAllMeshEntityNames();
+            return new string[0];
         }
         public HashSet<string> GetReservedPartNames()
         {

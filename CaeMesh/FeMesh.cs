@@ -77,7 +77,7 @@ namespace CaeMesh
         {
             get { return _maxElementId; }
         }
-        public BoundingBox BoundingBox { get { return _boundingBox.DeepCopy(); } }
+        public BoundingBox BoundingBox { get { return _boundingBox.DeepCopy(); } }        
 
 
         // Constructors                                                                                                             
@@ -478,6 +478,16 @@ namespace CaeMesh
                 item.Valid = validity;
                 items.Add(new Tuple<NamedClass, string>(item, null));
             }
+        }
+        public string[] GetAllMeshEntityNames()
+        {
+            List<string> names = new List<string>();
+            names.AddRange(_parts.Keys);
+            names.AddRange(_nodeSets.Keys);
+            names.AddRange(_elementSets.Keys);
+            names.AddRange(_surfaces.Keys);
+            names.AddRange(_referencePoints.Keys);
+            return names.ToArray();
         }
 
         // Compare 
@@ -2184,6 +2194,44 @@ namespace CaeMesh
             // Update bounding boxes
             ComputeBoundingBox();
         }
+        public void MergeResultParts(string[] partNamesToMerge, out ResultPart newResultPart, out string[] mergedParts)
+        {
+            newResultPart = null;
+            mergedParts = null;
+            if (partNamesToMerge == null || partNamesToMerge.Length < 2) return;
+            // Find parts to merge
+            HashSet<int> allElementIds = new HashSet<int>();
+            List<string> mergedPartsList = new List<string>();
+            int minId = int.MaxValue;
+            BasePart part;
+            foreach (string partName in partNamesToMerge)
+            {
+                if (_parts.TryGetValue(partName, out part) && part is ResultPart resultPart)
+                {
+                    mergedPartsList.Add(partName);
+                    allElementIds.UnionWith(resultPart.Labels);
+                    if (resultPart.PartId < minId) minId = resultPart.PartId;
+                }
+            }
+            if (mergedPartsList.Count == 1) return;
+            //
+            mergedParts = mergedPartsList.ToArray();
+            // Remove parts
+            foreach (var partName in mergedParts) _parts.Remove(partName);
+            // Create new part
+            part = CreateBasePartFromElementIds(allElementIds.ToArray());
+            //
+            newResultPart = new ResultPart(part);
+            newResultPart.Name = _parts.GetNextNumberedKey("Merged_part");
+            newResultPart.PartId = minId;
+            SetPartsColorFromColorTable(newResultPart);
+            // Renumber elements
+            foreach (var elementId in newResultPart.Labels) _elements[elementId].PartId = minId;
+            // Add new part
+            _parts.Add(newResultPart.Name, newResultPart);
+            // Update bounding boxes
+            ComputeBoundingBox();
+        }
         public void MergePartsBasedOnMesh(FeMesh mesh, Type resultingPartType)
         {
             _parts.Clear();
@@ -2335,11 +2383,16 @@ namespace CaeMesh
             // Create new parts and remove element sets
             count = 0;
             newParts = new BasePart[newPartNames.Count];
+            string[] allMeshNames;
             foreach (var newPartName in newPartNames)
             {
                 newBasePart = CreateBasePartFromElementIds(_elementSets[newPartName].Labels);
                 newMeshPart = new MeshPart(newBasePart);
-                newMeshPart.Name = newPartName;
+                // Check name
+                newMeshPart.Name = "From_" + newPartName;
+                allMeshNames = GetAllMeshEntityNames();
+                if (allMeshNames.Contains(newMeshPart.Name)) newMeshPart.Name = allMeshNames.GetNextNumberedKey(newPartName);
+                //
                 newMeshPart.PartId = maxPartId + count;
                 SetPartsColorFromColorTable(newMeshPart);
                 //
@@ -4438,29 +4491,33 @@ namespace CaeMesh
             if (part == null) return new int[0];
             int[][] cells = part.Visualization.Cells;
             int[] cellIds = part.Visualization.CellIds;
-            int[] cellFaceIds = part.Visualization.CellIdsByFace[geometrySurfaceId];
-            //
-            int vtkCellId;
-            int elementId;
-            FeElement element;
             HashSet<int> globalVisualizationFaceIds = new HashSet<int>();
             //
-            for (int i = 0; i < cellFaceIds.Length; i++)
+            if (geometrySurfaceId < part.Visualization.CellIdsByFace.Length)
             {
-                elementId = cellIds[cellFaceIds[i]];
-                element = _elements[elementId];
-                if (element is FeElement3D element3D)
+                int[] cellFaceIds = part.Visualization.CellIdsByFace[geometrySurfaceId];
+                //
+                int vtkCellId;
+                int elementId;
+                FeElement element;
+                //
+                for (int i = 0; i < cellFaceIds.Length; i++)
                 {
-                    vtkCellId = element3D.GetVtkCellIdFromCell(cells[cellFaceIds[i]]);
-                    if (vtkCellId != -1) globalVisualizationFaceIds.Add(10 * elementId + vtkCellId);
-                    else throw new Exception();
+                    elementId = cellIds[cellFaceIds[i]];
+                    element = _elements[elementId];
+                    if (element is FeElement3D element3D)
+                    {
+                        vtkCellId = element3D.GetVtkCellIdFromCell(cells[cellFaceIds[i]]);
+                        if (vtkCellId != -1) globalVisualizationFaceIds.Add(10 * elementId + vtkCellId);
+                        else throw new Exception();
+                    }
+                    else if (element is FeElement2D) // shell nad geometry
+                    {
+                        vtkCellId = shellFrontFace ? 1 : 0;
+                        globalVisualizationFaceIds.Add(10 * elementId + vtkCellId);
+                    }
+                    else throw new NotSupportedException();
                 }
-                else if (element is FeElement2D) // shell nad geometry
-                {
-                    vtkCellId = shellFrontFace ? 1 : 0;
-                    globalVisualizationFaceIds.Add(10 * elementId + vtkCellId);
-                }
-                else throw new NotSupportedException();
             }
             return globalVisualizationFaceIds.ToArray();
         }

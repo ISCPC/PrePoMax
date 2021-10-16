@@ -1454,21 +1454,27 @@ namespace PrePoMax
             return _form.GetViewPlaneNormal();
         }
         //
-        public void PreviewExplodedView(ExplodedViewParameters parameters, bool animate, string[] partNames = null)
+        public void PreviewExplodedView(ExplodedViewParameters parameters, bool animate,
+                                        Dictionary<string, double[]> partOffsets = null)
         {
             FeMesh mesh = DisplayedMesh;
             if (mesh == null) return;
             //
-            Dictionary<string, double[]> partOffsets;
-            partOffsets = mesh.GetExplodedViewOffsets((int)parameters.Type, parameters.ScaleFactor * parameters.Magnification,
-                                                      partNames);
+            string[] partNames = null;
+            if (partOffsets == null)
+            {
+                partOffsets = mesh.GetExplodedViewOffsets((int)parameters.Type, parameters.ScaleFactor * parameters.Magnification,
+                                                          partNames);
+            }
             //
             _animating = animate;
             _form.PreviewExplodedView(partOffsets, animate);
             _animating = false;
         }
-        public void ApplyExplodedView(ExplodedViewParameters parameters, string[] partNames = null)
+        public void ApplyExplodedView(ExplodedViewParameters parameters, string[] partNames = null, bool update = true)
         {
+            if (parameters.ScaleFactor == -1) return;
+            //
             FeMesh mesh = DisplayedMesh;
             if (mesh == null) return;
             //
@@ -1481,7 +1487,7 @@ namespace PrePoMax
                                                       partNames);
             mesh.ApplyExplodedView(partOffsets);
             //
-            Redraw();
+            if (update) Redraw();
         }
         public void SuppressExplodedViews(string[] partNames = null)
         {
@@ -1548,9 +1554,9 @@ namespace PrePoMax
             if (IsExplodedViewActive())
             {
                 ExplodedViewParameters parameters = _explodedViewScaleFactors[CurrentView].DeepClone();
-                RemoveExplodedView(true);   // Highlight
+                Dictionary<string, double[]> partOffsets = RemoveExplodedView(true);   // Highlight
                 _form.Clear3DSelection();
-                PreviewExplodedView(parameters, false);
+                PreviewExplodedView(parameters, false, partOffsets);
                 parameters.ScaleFactor = 0;
                 PreviewExplodedView(parameters, animate);
             }
@@ -1575,23 +1581,28 @@ namespace PrePoMax
             if (_selection.Nodes.Count > 0) HighlightSelection();
             else _form.UpdateHighlightFromTree();
         }
-        public void RemoveExplodedView(bool update, string[] partNames = null)
+        public Dictionary<string, double[]> RemoveExplodedView(bool update, string[] partNames = null)
         {
+            Dictionary<string, double[]> partOffsets = new Dictionary<string, double[]>();
+            //
             FeMesh mesh = DisplayedMesh;
-            if (mesh == null) return;
-            //
-            if (partNames == null) partNames = mesh.Parts.Keys.ToArray();
-            //
-            _form.RemovePreviewedExplodedView(partNames);
-            //
-            if (_explodedViewScaleFactors[CurrentView].ScaleFactor != -1)
+            if (mesh != null)
             {
-                _explodedViewScaleFactors[CurrentView].ScaleFactor = -1;
                 //
-                mesh.RemoveExplodedView(partNames);
+                if (partNames == null) partNames = mesh.Parts.Keys.ToArray();
                 //
-                if (update) Redraw();
+                _form.RemovePreviewedExplodedView(partNames);
+                //
+                if (_explodedViewScaleFactors[CurrentView].ScaleFactor != -1)
+                {
+                    _explodedViewScaleFactors[CurrentView].ScaleFactor = -1;
+                    //
+                    partOffsets = mesh.RemoveExplodedView(partNames);
+                    //
+                    if (update) Redraw();
+                }
             }
+            return partOffsets;
         }        
 
         #endregion ################################################################################################################
@@ -3368,6 +3379,9 @@ namespace PrePoMax
                     _form.AddTreeNode(ViewGeometryModelResults.Model, _model.Mesh.Parts[partName], null);
                 }
             }
+            //
+            if (IsExplodedViewActive()) UpdateExplodedView(false);
+            //
             FeModelUpdate(UpdateType.DrawModel | UpdateType.RedrawSymbols);
         }
         public void ScaleModelParts(string[] partNames, double[] scaleCenter, double[] scaleFactors, bool copy)
@@ -3383,6 +3397,9 @@ namespace PrePoMax
                     _form.AddTreeNode(ViewGeometryModelResults.Model, _model.Mesh.Parts[partName], null);
                 }
             }
+            //
+            if (IsExplodedViewActive()) UpdateExplodedView(false);
+            //
             FeModelUpdate(UpdateType.DrawModel | UpdateType.RedrawSymbols);
         }
         public void RotateModelParts(string[] partNames, double[] rotateCenter, double[] rotateAxis, double rotateAngle, bool copy)
@@ -3398,24 +3415,27 @@ namespace PrePoMax
                     _form.AddTreeNode(ViewGeometryModelResults.Model, _model.Mesh.Parts[partName], null);
                 }
             }
+            //
+            if (IsExplodedViewActive()) UpdateExplodedView(false);
+            //
             FeModelUpdate(UpdateType.DrawModel | UpdateType.RedrawSymbols);
         }
         //
         public void MergeModelParts(string[] partNames)
         {
-            ViewGeometryModelResults view = ViewGeometryModelResults.Model;
             MeshPart newMeshPart;
             string[] mergedParts;
             //
-            SuppressExplodedViews();
+            ExplodedViewParameters parameters = _explodedViewScaleFactors[CurrentView].DeepClone();
+            RemoveExplodedView(false);
             _model.Mesh.MergeMeshParts(partNames, out newMeshPart, out mergedParts);
-            ResumeExplodedViews(false);
+            ApplyExplodedView(parameters, null, false);
             //
             if (newMeshPart != null && mergedParts != null)
             {
                 foreach (var partName in mergedParts)
                 {
-                    _form.RemoveTreeNode<MeshPart>(view, partName, null);
+                    _form.RemoveTreeNode<MeshPart>(ViewGeometryModelResults.Model, partName, null);
                 }
                 //
                 _form.AddTreeNode(ViewGeometryModelResults.Model, newMeshPart, null);
@@ -3561,7 +3581,7 @@ namespace PrePoMax
             {
                 newNodeSet = _model.Mesh.NodeSets[name].DeepClone();
                 newNodeSet.Name = NamedClass.GetNameWithoutLastValue(newNodeSet.Name);
-                newNodeSet.Name = _model.Mesh.NodeSets.GetNextNumberedKey(newNodeSet.Name);
+                newNodeSet.Name = GetAllMeshEntityNames().GetNextNumberedKey(newNodeSet.Name);
                 AddNodeSet(newNodeSet);
             }
         }
@@ -3788,7 +3808,7 @@ namespace PrePoMax
             {
                 newElementSet = _model.Mesh.ElementSets[name].DeepClone();
                 newElementSet.Name = NamedClass.GetNameWithoutLastValue(newElementSet.Name);
-                newElementSet.Name = _model.Mesh.ElementSets.GetNextNumberedKey(newElementSet.Name);
+                newElementSet.Name = GetAllMeshEntityNames().GetNextNumberedKey(newElementSet.Name);
                 AddElementSet(newElementSet);
             }
         }
@@ -3797,16 +3817,24 @@ namespace PrePoMax
             BasePart[] modifiedParts;
             BasePart[] newParts;
             //
+            ExplodedViewParameters parameters = _explodedViewScaleFactors[CurrentView].DeepClone();
+            RemoveExplodedView(false);
             _model.Mesh.CreateMeshPartsFromElementSets(elementSetNames, out modifiedParts, out newParts);
+            ApplyExplodedView(parameters, null, false);
+            //
             foreach (var part in modifiedParts)
             {
                 _form.UpdateTreeNode(ViewGeometryModelResults.Model, part.Name, part, null);
             }
-            // Add new parts and remove element sets
+            // Add new parts
             foreach (var part in newParts)
             {
                 _form.AddTreeNode(ViewGeometryModelResults.Model, part, null);
-                _form.RemoveTreeNode<FeElementSet>(ViewGeometryModelResults.Model, part.Name, null);
+            }
+            // Remove element sets
+            foreach (var elementSetName in elementSetNames)
+            {
+                _form.RemoveTreeNode<FeElementSet>(ViewGeometryModelResults.Model, elementSetName, null);
             }
             //
             AnnotateWithColorLegend();
@@ -6551,6 +6579,27 @@ namespace PrePoMax
             //
             DrawResults(false);
         }
+        //
+        public void MergeResultParts(string[] partNames)
+        {
+            ResultPart newResultPart;
+            string[] mergedParts;
+            //
+            ExplodedViewParameters parameters = _explodedViewScaleFactors[CurrentView].DeepClone();
+            RemoveExplodedView(false);
+            _results.Mesh.MergeResultParts(partNames, out newResultPart, out mergedParts);
+            ApplyExplodedView(parameters, null, false);
+            //
+            if (newResultPart != null && mergedParts != null)
+            {
+                foreach (var partName in mergedParts)
+                    _form.RemoveTreeNode<ResultPart>(ViewGeometryModelResults.Results, partName, null);
+                //
+                _form.AddTreeNode(ViewGeometryModelResults.Results, newResultPart, null);
+                //
+                DrawResults(false);
+            }
+        }
 
         #endregion #################################################################################################################
 
@@ -8202,6 +8251,8 @@ namespace PrePoMax
         private void DrawGeomPart(FeMesh mesh, BasePart part, vtkControl.vtkRendererLayer layer, bool canHaveElementEdges,
                                   bool pickable)
         {
+            if (part.Labels.Length == 0) return;
+            //
             vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
             data.Name = part.Name;
             GetPartColor(part, ref data.Color, ref data.BackfaceColor);
@@ -8310,6 +8361,7 @@ namespace PrePoMax
                                   Dictionary<int, int> elementIdColorId = null)
         {
             if (part is CompoundGeometryPart) return;
+            if (part.Labels.Length == 0) return;
             // Data
             vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
             data.Name = part.Name;
@@ -8327,9 +8379,9 @@ namespace PrePoMax
                                      out data.CellLocator.Cells.Types);
             // Get only needed nodes and elements - renumbered
             mesh.GetVisualizationNodesAndCells(part, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor,
-                                               out data.Geometry.Cells.Ids,
-                                               out data.Geometry.Cells.CellNodeIds,
-                                               out data.Geometry.Cells.Types);
+                                                out data.Geometry.Cells.Ids,
+                                                out data.Geometry.Cells.CellNodeIds,
+                                                out data.Geometry.Cells.Types);
             // Custom coloring of elements
             if (elementIdColorId != null)
             {
@@ -8359,7 +8411,7 @@ namespace PrePoMax
             {
                 data.ModelEdges = new PartExchangeData();
                 mesh.GetNodesAndCellsForModelEdges(part, out data.ModelEdges.Nodes.Ids, out data.ModelEdges.Nodes.Coor,
-                                                   out data.ModelEdges.Cells.CellNodeIds, out data.ModelEdges.Cells.Types);
+                                                    out data.ModelEdges.Cells.CellNodeIds, out data.ModelEdges.Cells.Types);
             }
             //
             ApplyLighting(data);
@@ -11257,6 +11309,7 @@ namespace PrePoMax
         }
         private void DrawResultPart(ResultPart part, FieldData fieldData, float scale, bool update)
         {
+            if (part.Labels.Length == 0) return;
             // Get visualization nodes and renumbered elements           
             PartExchangeData actorResultData = _results.GetScaledVisualizationNodesCellsAndValues(part, fieldData, scale);
             // Model edges

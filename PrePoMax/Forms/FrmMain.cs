@@ -227,6 +227,7 @@ namespace PrePoMax
                 _modelTree.CopyGeometryToResultsEvent += CopyGeometryPartsToResults;
                 _modelTree.EditCalculixKeywords += EditCalculiXKeywords;
                 _modelTree.MergeParts += MergeModelParts;
+                _modelTree.MergeResultParts += MergeResultParts;
                 _modelTree.ConvertElementSetsToMeshParts += ConvertElementSetsToMeshParts;
                 _modelTree.MaterialLibrary += ShowMaterialLibrary;
                 _modelTree.SearchContactPairs += SearchContactPairs;
@@ -5157,6 +5158,13 @@ namespace PrePoMax
         {
             _frmPartProperties.View = ViewGeometryModelResults.Results;
             ShowForm(_frmPartProperties, "Edit Part", partName);
+        }
+        private void MergeResultParts(string[] partNames)
+        {
+            if (MessageBoxes.ShowWarningQuestion("OK to merge selected parts?") == DialogResult.OK)
+            {
+                _controller.MergeResultParts(partNames);
+            }
         }
         private void HideResultParts(string[] partNames)
         {

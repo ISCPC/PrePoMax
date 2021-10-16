@@ -23,6 +23,7 @@ namespace PrePoMax.Forms
         private string _drawSymbolsForStep;
         private Octree.Plane _sectionViewPlane;
         private bool _continueExplodedView;
+        private Dictionary<string, double[]> _partOffsets;
 
         // Properties                                                                                                               
         public void SetExplodedViewParameters(ExplodedViewParameters parameters)
@@ -83,9 +84,11 @@ namespace PrePoMax.Forms
                 }
                 else
                 {
-                    _continueExplodedView = true;           // animation of exploded view is not needed
-                    _controller.RemoveExplodedView(true);   // this redraws the scene and redraws selection
-                    _controller.PreviewExplodedView(_viewExplodedViewParameters.Parameters, false);
+                    // Animation of exploded view is not needed
+                    _continueExplodedView = true;
+                    // This redraws the scene and redraws selection
+                    _partOffsets = _controller.RemoveExplodedView(true);
+                    _controller.PreviewExplodedView(_viewExplodedViewParameters.Parameters, false, _partOffsets);
                 }
                 // Animate
                 UpdateScrollbarPosition(true);
@@ -152,9 +155,9 @@ namespace PrePoMax.Forms
         {
             if (cancelToDefault)
             {
-                System.Diagnostics.Debug.WriteLine("PreviewExplodedView");
+                //System.Diagnostics.Debug.WriteLine("PreviewExplodedView");
                 _controller.PreviewExplodedView(_defaultParam, true);
-                System.Diagnostics.Debug.WriteLine("RemoveExplodedView");
+                //System.Diagnostics.Debug.WriteLine("RemoveExplodedView");
                 _controller.RemoveExplodedView(true);
             }
             else

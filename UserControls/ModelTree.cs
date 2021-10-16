@@ -203,6 +203,7 @@ namespace UserControls
         public event Action<string[]> CopyGeometryToResultsEvent;
         public event Action EditCalculixKeywords;
         public event Action<string[]> MergeParts;
+        public event Action<string[]> MergeResultParts;
         public event Action<string[]> ConvertElementSetsToMeshParts;
         public event Action MaterialLibrary;
         public event Action SearchContactPairs;
@@ -545,6 +546,7 @@ namespace UserControls
             }
             // Merge mesh parts
             if (item != null && item is MeshPart && GetActiveTree() == cltvModel) menuFields.MergePart++;
+            if (item != null && item is ResultPart && GetActiveTree() == cltvResults) menuFields.MergePart++;
             // Convert element set to part
             if (item != null && item is FeElementSet && GetActiveTree() == cltvModel) menuFields.ConvertToPart++;
             // Material library
@@ -1107,11 +1109,17 @@ namespace UserControls
             try
             {
                 List<string> names = new List<string>();
-                foreach (TreeNode node in cltvModel.SelectedNodes)
+                CodersLabTreeView tree = GetActiveTree();
+                //
+                foreach (TreeNode node in tree.SelectedNodes)
                 {
                     if (node.Tag != null) names.Add(((NamedClass)node.Tag).Name);
                 }
-                if (names.Count > 0) MergeParts?.Invoke(names.ToArray());
+                if (names.Count > 0)
+                {
+                    if (tree == cltvModel) MergeParts?.Invoke(names.ToArray());
+                    else if (tree == cltvResults) MergeResultParts?.Invoke(names.ToArray());
+                }
             }
             catch (Exception ex)
             {
@@ -1924,6 +1932,13 @@ namespace UserControls
                 node.Name = node.Text;
                 node.Tag = item;
                 parent = _analyses;
+            }
+            else if (item is ResultPart)
+            {
+                node = _resultParts.Nodes.Add(item.Name);
+                node.Name = node.Text;
+                node.Tag = item;
+                parent = _resultParts;
             }
             else throw new NotImplementedException();
             //
