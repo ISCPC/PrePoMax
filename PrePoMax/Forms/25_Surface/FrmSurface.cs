@@ -157,21 +157,23 @@ namespace PrePoMax.Forms
             else
             {
                 Surface = _controller.GetSurface(_surfaceToEditName);   // to clone
-                int[] ids = Surface.FaceIds;
-                if (Surface.CreationData == null && ids != null)        // from .inp
-                {
-                    // Add creation data
-                    Surface.CreationData = new Selection();
-                    Surface.CreationData.SelectItem = vtkSelectItem.Surface;
-                    Surface.CreationData.Add(new SelectionNodeIds(vtkSelectOperation.Add, false, ids));
-                }
-                // Change node selection history to ids to speed up
-                _selectionNodeIds = new SelectionNodeIds(vtkSelectOperation.None, false, ids);
-                _prevSelectionNodes = Surface.CreationData.Nodes;
-                _controller.CreateNewSelection(Surface.CreationData.CurrentView, vtkSelectItem.Surface, _selectionNodeIds, true);
-                Surface.CreationData = _controller.Selection.DeepClone();
                 //
-                if (Surface.CreatedFrom == FeSurfaceCreatedFrom.Selection) { }
+                if (Surface.CreatedFrom == FeSurfaceCreatedFrom.Selection)
+                {
+                    int[] ids = Surface.FaceIds;
+                    if (Surface.CreationData == null && ids != null)    // from .inp
+                    {
+                        // Add creation data
+                        Surface.CreationData = new Selection();
+                        Surface.CreationData.SelectItem = vtkSelectItem.Surface;
+                        Surface.CreationData.Add(new SelectionNodeIds(vtkSelectOperation.Add, false, ids));
+                    }
+                    // Change node selection history to ids to speed up
+                    _selectionNodeIds = new SelectionNodeIds(vtkSelectOperation.None, false, ids);
+                    _prevSelectionNodes = Surface.CreationData.Nodes;
+                    _controller.CreateNewSelection(Surface.CreationData.CurrentView, vtkSelectItem.Surface, _selectionNodeIds, true);
+                    Surface.CreationData = _controller.Selection.DeepClone();
+                }
                 else if (Surface.CreatedFrom == FeSurfaceCreatedFrom.NodeSet)
                     CheckMissingValueRef(ref nodeSetNames, _viewSurface.NodeSetName, s => { _viewSurface.NodeSetName = s; });
                 else throw new NotSupportedException();
