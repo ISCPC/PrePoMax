@@ -235,6 +235,17 @@ Dependency nglib - added following files for c++ redistriburable compatibility:
 
 Done
 
+Version 1.1.1 Master branch
+Added an automatic contact pair search tool for creating tied constraints and contacts
+Added support for swapping master and slave item of tied constraints and contacts
+Added support for merging of tied constraints and contacts
+Improved the speed of multiple tied constraints and contacts manipulation
+Added a search tool for filtering the geometry, model and results tree
+Added support for merging result parts
+Improved the speed of working with large (>100) number of result parts
+Improved the speed of selection in large (>100) assemblies
+Bug fixes
+
 Version 1.1.0 Master branch
 
 Added support for reading thermal field and history outputs
