@@ -118,7 +118,7 @@ namespace PrePoMax.Forms
             //
             HighlightNodes();
         }
-        protected override bool OnPrepareForm(string stepName, string partToEditName)
+        protected override bool OnPrepareForm(string stepName, string itemToEditName)
         {
             // Clear
             _controller.ClearSelectionHistoryAndCallSelectionChanged();

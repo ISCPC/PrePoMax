@@ -77,7 +77,7 @@ namespace PrePoMax.Forms
             set
             {
                 _scaleFactorX = value;
-                if (_scaleFactorX == 0) _scaleFactorX = 1;
+                if (_scaleFactorX <= 0) _scaleFactorX = 1;
             }
         }
         //
@@ -91,7 +91,7 @@ namespace PrePoMax.Forms
             set 
             {
                 _scaleFactorY = value;
-                if (_scaleFactorY == 0) _scaleFactorY = 1;
+                if (_scaleFactorY <= 0) _scaleFactorY = 1;
             }
         }
         //
@@ -105,7 +105,7 @@ namespace PrePoMax.Forms
             set
             {
                 _scaleFactorZ = value;
-                if (_scaleFactorZ == 0) _scaleFactorZ = 1;
+                if (_scaleFactorZ <= 0) _scaleFactorZ = 1;
             }
         }
 

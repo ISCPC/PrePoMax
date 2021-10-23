@@ -1634,7 +1634,7 @@ namespace PrePoMax
             Commands.CRemoveGeometryParts comm = new Commands.CRemoveGeometryParts(partNames);
             _commands.AddAndExecute(comm);
         }
-        //
+        // Flip
         public void FlipFaceOrientationsCommand(GeometrySelection geometrySelection)
         {
             Commands.CFlipFaceOrientations comm = new Commands.CFlipFaceOrientations(geometrySelection);
@@ -1643,6 +1643,12 @@ namespace PrePoMax
         public void SplitAFaceUsingTwoPointsCommand(GeometrySelection surfaceSelection, GeometrySelection verticesSelection)
         {
             Commands.CSplitAFaceUsingTwoPoints comm = new Commands.CSplitAFaceUsingTwoPoints(surfaceSelection, verticesSelection);
+            _commands.AddAndExecute(comm);
+        }
+        // Scale
+        public void ScaleGeometryPartsCommand(string[] partNames, double[] scaleCenter, double[] scaleFactors, bool copy)
+        {
+            Commands.CScaleGeometryParts comm = new Commands.CScaleGeometryParts(partNames, scaleCenter, scaleFactors, copy);
             _commands.AddAndExecute(comm);
         }
         public void FindEdgesByAngleForGeometryPartsCommand(string[] partNames, double edgeAngle)
@@ -2270,6 +2276,59 @@ namespace PrePoMax
             if (_netgenJob.JobStatus == JobStatus.OK) return outputBrepFileName;
             else return null;
         }
+        // Scale **********************************************************************************
+        public void ScaleGeometryParts(string[] partNames, double[] scaleCenter, double[] scaleFactors, bool copy)
+        {
+            // Scale
+            GeometryPart geometryPart;
+            string brepFileName;
+            //
+            foreach (var partName in partNames)
+            {
+                geometryPart = (GeometryPart)_model.Geometry.Parts[partName];
+                brepFileName = ScaleGeometryPart(geometryPart, scaleCenter, scaleFactors);
+                //
+                if (brepFileName != null)
+                {
+                    if (copy) ImportBrepPartFile(brepFileName);
+                    else ReplacePartGeometryFromFile(geometryPart, brepFileName);
+                }
+                else ClearAllSelection();
+            }
+        }
+        private string ScaleGeometryPart(GeometryPart part, double[] scaleCenter, double[] scaleFactors)
+        {
+            CalculixSettings settings = _settings.Calculix;
+            if (settings.WorkDirectory == null || !Directory.Exists(settings.WorkDirectory))
+            {
+                MessageBoxes.ShowWorkDirectoryError();
+                return null;
+            }
+            //
+            string executable = Application.StartupPath + Globals.NetGenMesher;
+            string inputBrepFileName = Path.Combine(settings.WorkDirectory, Globals.BrepFileName);
+            string outputBrepFileName = Path.Combine(settings.WorkDirectory, Globals.BrepFileName);
+            //
+            if (File.Exists(inputBrepFileName)) File.Delete(inputBrepFileName);
+            if (File.Exists(outputBrepFileName)) File.Delete(outputBrepFileName);
+            //
+            File.WriteAllText(inputBrepFileName, part.CADFileData);
+            //
+            string argument = "BREP_SCALE_GEOMETRY " +
+                              "\"" + inputBrepFileName.ToUTF8() + "\" " +
+                              "\"" + outputBrepFileName.ToUTF8() + "\" " +
+                              scaleCenter[0] + " " + scaleCenter[1] + " " + scaleCenter[2] + " " +
+                              scaleFactors[0] + " " + scaleFactors[1] + " " + scaleFactors[2];
+
+            //
+            _netgenJob = new NetgenJob(part.Name, executable, argument, settings.WorkDirectory);
+            _netgenJob.AppendOutput += netgenJobMeshing_AppendOutput;
+            _netgenJob.Submit();
+            // Job completed
+            if (_netgenJob.JobStatus == JobStatus.OK) return outputBrepFileName;
+            else return null;
+        }
+
         // Find edges *****************************************************************************
         public void FindEdgesByAngleForGeometryParts(string[] partNames, double edgeAngle)
         {

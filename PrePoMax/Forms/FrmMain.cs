@@ -2065,6 +2065,19 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
+        // Transform
+        private void tsmiScaleGeometryParts_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Parts", _controller.GetGeometryParts(), ScaleGeometryParts);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        //
         private void tsmiHideGeometryParts_Click(object sender, EventArgs e)
         {
             try
@@ -2133,12 +2146,23 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
-        //
+        //                                                                                                                          
         private void EditGeometryPart(string partName)
         {
             _frmPartProperties.View = ViewGeometryModelResults.Geometry;
             ShowForm(_frmPartProperties, "Edit Part", partName);
         }
+        // Transform
+        private void ScaleGeometryParts(string[] partNames)
+        {
+            SinglePointDataEditor.ParentForm = _frmScale;
+            SinglePointDataEditor.Controller = _controller;
+            // Set all part names for scaling
+            _frmScale.PartNames = partNames;
+            //
+            ShowForm(_frmScale, "Scale parts: " + partNames.ToShortString(), null);
+        }
+        //
         private void HideGeometryParts(string[] partNames)
         {
             _controller.HideGeometryPartsCommand(partNames);            
@@ -2958,33 +2982,33 @@ namespace PrePoMax
             }
         }
         // Transform
-        private void tsmiTranslateParts_Click(object sender, EventArgs e)
+        private void tsmiTranslateModelParts_Click(object sender, EventArgs e)
         {
             try
             {
-                SelectMultipleEntities("Parts", _controller.GetModelParts(), TranslateParts);
+                SelectMultipleEntities("Parts", _controller.GetModelParts(), TranslateModelParts);
             }
             catch (Exception ex)
             {
                 ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiScaleParts_Click(object sender, EventArgs e)
+        private void tsmiScaleModelParts_Click(object sender, EventArgs e)
         {
             try
             {
-                SelectMultipleEntities("Parts", _controller.GetModelParts(), ScaleParts);
+                SelectMultipleEntities("Parts", _controller.GetModelParts(), ScaleModelParts);
             }
             catch (Exception ex)
             {
                 ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiRotateParts_Click(object sender, EventArgs e)
+        private void tsmiRotateModelParts_Click(object sender, EventArgs e)
         {
             try
             {
-                SelectMultipleEntities("Parts", _controller.GetModelParts(), RotateParts);
+                SelectMultipleEntities("Parts", _controller.GetModelParts(), RotateModelParts);
             }
             catch (Exception ex)
             {
@@ -3067,7 +3091,7 @@ namespace PrePoMax
             ShowForm(_frmPartProperties, "Edit Part", partName);
         }
         // Transform
-        private void TranslateParts(string[] partNames)
+        private void TranslateModelParts(string[] partNames)
         {
             SinglePointDataEditor.ParentForm = _frmTranslate;
             SinglePointDataEditor.Controller = _controller;
@@ -3076,7 +3100,7 @@ namespace PrePoMax
             //
             ShowForm(_frmTranslate, "Translate parts: " + partNames.ToShortString(), null);
         }
-        private void ScaleParts(string[] partNames)
+        private void ScaleModelParts(string[] partNames)
         {
             SinglePointDataEditor.ParentForm = _frmScale;
             SinglePointDataEditor.Controller = _controller;
@@ -3085,7 +3109,7 @@ namespace PrePoMax
             //
             ShowForm(_frmScale, "Scale parts: " + partNames.ToShortString(), null);
         }
-        private void RotateParts(string[] partNames)
+        private void RotateModelParts(string[] partNames)
         {
             SinglePointDataEditor.ParentForm = _frmRotate;
             SinglePointDataEditor.Controller = _controller;

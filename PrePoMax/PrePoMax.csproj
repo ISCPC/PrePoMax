@@ -111,6 +111,7 @@
     <Compile Include="Command\0000_File\CImportFile.cs" />
     <Compile Include="Command\0010_Edit\CSetCalculixUserKeywords.cs" />
     <Compile Include="Command\0030_Geometry\01_Part\CCreateAndImportCompoundPart.cs" />
+    <Compile Include="Command\0030_Geometry\01_Part\CScaleGeometryParts.cs" />
     <Compile Include="Command\0030_Geometry\01_Part\CSetTransparencyForGeometryParts.cs" />
     <Compile Include="Command\0030_Geometry\01_Part\CHideGeometryParts.cs" />
     <Compile Include="Command\0030_Geometry\01_Part\CRemoveGeometryParts.cs" />

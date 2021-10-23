@@ -54,12 +54,13 @@ namespace PrePoMax.Forms
             get { return _modelProperties.GlobalResultsFileName; }
             set 
             {
-                
-                if (value.Contains(" ") || value.Contains(":") || value.Contains("\\") || value.Contains("/") 
-                    || value.ToUTF8() != value)
+                string fileName = System.IO.Path.GetFileName(value);
+                //
+                if (fileName.Contains(" ") || fileName.Contains(":") || fileName.Contains("\\") || fileName.Contains("/") 
+                    || fileName.ToUTF8() != fileName)
                     throw new Exception("Enter the global results file name (.frd) without path. " + 
                                         "The results file name must not contain any special characters.");
-                _modelProperties.GlobalResultsFileName = value; 
+                _modelProperties.GlobalResultsFileName = fileName; 
             }
         }
         //

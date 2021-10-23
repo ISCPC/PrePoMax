@@ -111,10 +111,15 @@ namespace PrePoMax.Forms
         }
         protected override void OnApply(bool onOkAddNew)
         {
-            _controller.ScaleModelPartsCommand(_partNames, ScaleCenter, ScaleFactors, _scaleParameters.Copy);
+            if (_controller.CurrentView == ViewGeometryModelResults.Geometry)
+                _controller.ScaleGeometryPartsCommand(_partNames, ScaleCenter, ScaleFactors, _scaleParameters.Copy);
+            else if (_controller.CurrentView == ViewGeometryModelResults.Model)
+                _controller.ScaleModelPartsCommand(_partNames, ScaleCenter, ScaleFactors, _scaleParameters.Copy);
+            else throw new NotSupportedException();
+            //
             HighlightNodes();
         }
-        protected override bool OnPrepareForm(string stepName, string sectionToEditName)
+        protected override bool OnPrepareForm(string stepName, string itemToEditName)
         {
             // Clear
             _controller.ClearSelectionHistoryAndCallSelectionChanged();
@@ -153,7 +158,7 @@ namespace PrePoMax.Forms
             //
             if (ids != null && ids.Length == 1)
             {
-                FeNode node = _controller.Model.Mesh.Nodes[ids[0]];
+                FeNode node = _controller.DisplayedMesh.Nodes[ids[0]];
                 //
                 _scaleParameters.CenterX = node.X;
                 _scaleParameters.CenterY = node.Y;
