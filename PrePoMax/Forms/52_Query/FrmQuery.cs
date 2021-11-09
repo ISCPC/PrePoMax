@@ -16,7 +16,7 @@ namespace PrePoMax.Forms
     public partial class FrmQuery : UserControls.PrePoMaxChildForm
     {
         // Variables                                                                                                                
-        private int _numNodesToSelect;
+        private int _numOfNodesToSelect;
         private double[][] _coorNodesToDraw;
         private double[][] _coorLinesToDraw;
         private Controller _controller;
@@ -30,7 +30,7 @@ namespace PrePoMax.Forms
         public FrmQuery()
         {
             InitializeComponent();
-            _numNodesToSelect = -1;
+            _numOfNodesToSelect = -1;
         }
 
 
@@ -51,54 +51,54 @@ namespace PrePoMax.Forms
                     case ("Point/Node"):
                         _controller.SelectBy = vtkSelectBy.QueryNode;
                         _controller.Selection.SelectItem = vtkSelectItem.Node;
-                        _numNodesToSelect = 1;
+                        _numOfNodesToSelect = 1;
                         break;
                     case ("Element"):
                         _controller.SelectBy = vtkSelectBy.QueryElement;
                         _controller.Selection.SelectItem = vtkSelectItem.Element;
-                        _numNodesToSelect = -1;
+                        _numOfNodesToSelect = -1;
                         break;
                     case ("Edge"):
                         _controller.SelectBy = vtkSelectBy.QueryEdge;
                         _controller.Selection.SelectItem = vtkSelectItem.Edge;
-                        _numNodesToSelect = -1;
+                        _numOfNodesToSelect = -1;
                         break;
                     case ("Surface"):
                         _controller.SelectBy = vtkSelectBy.QuerySurface;
                         _controller.Selection.SelectItem = vtkSelectItem.Surface;
-                        _numNodesToSelect = -1;
+                        _numOfNodesToSelect = -1;
                         break;
                     case ("Part"):
                         _controller.SelectBy = vtkSelectBy.QueryPart;
                         _controller.Selection.SelectItem = vtkSelectItem.Part;
-                        _numNodesToSelect = -1;
+                        _numOfNodesToSelect = -1;
                         break;
                     case ("Assembly"):
                         _controller.SelectBy = vtkSelectBy.Default;
                         _controller.Selection.SelectItem = vtkSelectItem.None;
                         OutputAssemblyData();
-                        _numNodesToSelect = -1;
+                        _numOfNodesToSelect = -1;
                         break;
                     case ("Bounding box size"):
                         _controller.SelectBy = vtkSelectBy.Default;
                         _controller.Selection.SelectItem = vtkSelectItem.None;
                         OutputBoundingBox();
-                        _numNodesToSelect = -1;
+                        _numOfNodesToSelect = -1;
                         break;
                     case ("Distance"):
                         _controller.SelectBy = vtkSelectBy.QueryNode;
                         _controller.Selection.SelectItem = vtkSelectItem.Node;
-                        _numNodesToSelect = 2;
+                        _numOfNodesToSelect = 2;
                         break;
                     case ("Angle"):
                         _controller.SelectBy = vtkSelectBy.QueryNode;
                         _controller.Selection.SelectItem = vtkSelectItem.Node;
-                        _numNodesToSelect = 3;
+                        _numOfNodesToSelect = 3;
                         break;
                     case ("Circle"):
                         _controller.SelectBy = vtkSelectBy.QueryNode;
                         _controller.Selection.SelectItem = vtkSelectItem.Node;
-                        _numNodesToSelect = 3;
+                        _numOfNodesToSelect = 3;
                         break;
                     default:
                         break;
@@ -165,7 +165,7 @@ namespace PrePoMax.Forms
                     }
                 }
                 else if (_controller.SelectBy == vtkSelectBy.QueryPart && ids.Length == 1) OnePartPicked(ids[0]);
-                else if (ids.Length == _numNodesToSelect)
+                else if (ids.Length == _numOfNodesToSelect)
                 {
                     // One node
                     if (ids.Length == 1) OneNodePicked(ids[0]);
@@ -188,7 +188,7 @@ namespace PrePoMax.Forms
             {
                 string data;
                 string lenUnit = GetLengthUnit();
-                _coorNodesToDraw = new double[_numNodesToSelect][];
+                _coorNodesToDraw = new double[_numOfNodesToSelect][];
                 //
                 Vec3D baseV = new Vec3D(_controller.GetNode(nodeId).Coor);
                 //
@@ -391,7 +391,7 @@ namespace PrePoMax.Forms
             if (Form_WriteDataToOutput != null)
             {
                 string data;
-                _coorNodesToDraw = new double[_numNodesToSelect][];
+                _coorNodesToDraw = new double[_numOfNodesToSelect][];
                 //
                 Vec3D baseV1 = new Vec3D(_controller.GetNode(nodeId1).Coor);
                 Vec3D baseV2 = new Vec3D(_controller.GetNode(nodeId2).Coor);
@@ -441,6 +441,7 @@ namespace PrePoMax.Forms
         //
         private void ComputeAngle(int nodeId1, int nodeId2, int nodeId3)
         {
+            System.Diagnostics.Debug.Write(nodeId1 + " " + nodeId2 + " " + nodeId3);
             string data;
             double angle;
             Vec3D p;
@@ -481,7 +482,7 @@ namespace PrePoMax.Forms
             }
             Form_WriteDataToOutput("");
             //
-            _coorNodesToDraw = new double[_numNodesToSelect][];
+            _coorNodesToDraw = new double[_numOfNodesToSelect][];
             _coorNodesToDraw[0] = baseV1.Coor;
             _coorNodesToDraw[1] = baseV2.Coor;
             _coorNodesToDraw[2] = baseV3.Coor;
@@ -540,7 +541,7 @@ namespace PrePoMax.Forms
             }
             Form_WriteDataToOutput("");
             //
-            _coorNodesToDraw = new double[_numNodesToSelect + 1][];
+            _coorNodesToDraw = new double[_numOfNodesToSelect + 1][];
             _coorNodesToDraw[0] = baseV1.Coor;
             _coorNodesToDraw[1] = baseV2.Coor;
             _coorNodesToDraw[2] = baseV3.Coor;

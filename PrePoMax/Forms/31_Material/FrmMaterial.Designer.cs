@@ -340,7 +340,7 @@
             // labSelected
             // 
             this.labSelected.AutoSize = true;
-            this.labSelected.Location = new System.Drawing.Point(209, 19);
+            this.labSelected.Location = new System.Drawing.Point(235, 19);
             this.labSelected.Name = "labSelected";
             this.labSelected.Size = new System.Drawing.Size(51, 15);
             this.labSelected.TabIndex = 8;
@@ -349,7 +349,7 @@
             // labAvailable
             // 
             this.labAvailable.AutoSize = true;
-            this.labAvailable.Location = new System.Drawing.Point(6, 19);
+            this.labAvailable.Location = new System.Drawing.Point(7, 19);
             this.labAvailable.Name = "labAvailable";
             this.labAvailable.Size = new System.Drawing.Size(55, 15);
             this.labAvailable.TabIndex = 7;
