@@ -460,16 +460,19 @@ namespace CaeMesh
                 if (partEntry.Value.PartId > maxPartId) maxPartId = partEntry.Value.PartId;
             }
             //
-            BasePart part;
-            foreach (var geometryPartEntry in _geometry.Parts)
+            if (_geometry != null && _geometry.Parts != null)
             {
-                if (geometryPartEntry.Value is CompoundGeometryPart cgp)
+                BasePart part;
+                foreach (var geometryPartEntry in _geometry.Parts)
                 {
-                    foreach (string subPartName in cgp.SubPartNames)
+                    if (geometryPartEntry.Value is CompoundGeometryPart cgp)
                     {
-                        if (_mesh.Parts.TryGetValue(subPartName, out part)) partIds[part.PartId] = maxPartId;
+                        foreach (string subPartName in cgp.SubPartNames)
+                        {
+                            if (_mesh.Parts.TryGetValue(subPartName, out part)) partIds[part.PartId] = maxPartId;
+                        }
+                        maxPartId++;
                     }
-                    maxPartId++;
                 }
             }
             //
