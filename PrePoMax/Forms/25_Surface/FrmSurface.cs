@@ -258,10 +258,8 @@ namespace PrePoMax.Forms
         }
         private void SetSelectItem()
         {
-            if (Surface.CreatedFrom == FeSurfaceCreatedFrom.Selection)
-                _controller.SetSelectItemToSurface();
-            else
-                _controller.SetSelectByToOff();
+            if (Surface.CreatedFrom == FeSurfaceCreatedFrom.Selection) _controller.SetSelectItemToSurface();
+            else _controller.SetSelectByToOff();
         }
         public void SelectionChanged(int[] ids)
         {

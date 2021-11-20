@@ -46,6 +46,11 @@ namespace PrePoMax.Forms
 
 
         // Event hadlers                                                                                                            
+        private void FrmAnalysis_VisibleChanged(object sender, EventArgs e)
+        {
+            // This must be here and not in PrepareForm since PrepareForm is called by GetDefaultJob
+            if (Visible) _controller.SetSelectByToOff();
+        }
         private void propertyGrid_PropertyValueChanged(object s, PropertyValueChangedEventArgs e)
         {
             propertyGrid.Refresh();
@@ -59,7 +64,7 @@ namespace PrePoMax.Forms
                 //
                 if ((_jobToEditName == null && _jobNames.Contains(_viewJob.Name)) ||                // named to existing name
                     (_viewJob.Name != _jobToEditName && _jobNames.Contains(_viewJob.Name)))         // renamed to existing name
-                    throw new CaeGlobals.CaeException("The selected analysis name already exists.");
+                    throw new CaeException("The selected analysis name already exists.");
                 //
                 if (_jobToEditName == null)
                 {
@@ -75,7 +80,7 @@ namespace PrePoMax.Forms
             }
             catch (Exception ex)
             {
-                CaeGlobals.ExceptionTools.Show(this, ex);
+                ExceptionTools.Show(this, ex);
             }
         }
         private void btnCancel_Click(object sender, EventArgs e)
@@ -90,6 +95,7 @@ namespace PrePoMax.Forms
                 Hide();
             }
         }
+
 
         // Methods                                                                                                                  
         public bool PrepareForm(string stepName, string jobToEditName)
@@ -114,9 +120,7 @@ namespace PrePoMax.Forms
             }
             //
             propertyGrid.SelectedObject = _viewJob;
-            propertyGrid.Select();
-            //
-            _controller.SetSelectByToOff();
+            propertyGrid.Select();            
             //
             return true;
         }
@@ -138,7 +142,6 @@ namespace PrePoMax.Forms
             return "Analysis-" + max.ToString();
         }
 
-       
-      
+     
     }
 }
