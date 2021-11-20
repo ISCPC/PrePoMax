@@ -1578,7 +1578,7 @@ namespace UserControls
                     }
                     else
                     {
-                        // this is without modifier keys - a new selection
+                        // This is without modifier keys - a new selection
                         tree.SelectedNodes.Clear();
                         tree.SelectedNodes.Add(baseNode);
                     }

@@ -7009,7 +7009,7 @@ namespace PrePoMax
             foreach (SelectionNode node in selectionCopy.Nodes) GetIdsFromSelectionNode(node, selectedIds);
             // Return
             int[] sorted = selectedIds.ToArray();
-            Array.Sort(sorted);
+            if (_selectBy != vtkSelectBy.QueryNode) Array.Sort(sorted);   // sorting of the ids breaks the angle query !!!
             return sorted;
         }
         private int[] GetIdsFromSelectionNode(SelectionNode selectionNode, HashSet<int> selectedIds)
