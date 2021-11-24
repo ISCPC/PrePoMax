@@ -238,13 +238,13 @@
     <Compile Include="Forms\00_Common\ViewStringValue.cs" />
     <Compile Include="Forms\00_Common\ViewUnitSystem.cs" />
     <Compile Include="Forms\00_Advisor\AdvisorCreator.cs" />
-    <Compile Include="Forms\00_SearchContactPairs\FrmSearchContactPairs.cs">
+    <Compile Include="Forms\36_SearchContactPairs\FrmSearchContactPairs.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\00_SearchContactPairs\FrmSearchContactPairs.Designer.cs">
+    <Compile Include="Forms\36_SearchContactPairs\FrmSearchContactPairs.Designer.cs">
       <DependentUpon>FrmSearchContactPairs.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\00_SearchContactPairs\SearchContactPair.cs" />
+    <Compile Include="Forms\36_SearchContactPairs\SearchContactPair.cs" />
     <Compile Include="Forms\02_View\ExplodedViewParameters.cs" />
     <Compile Include="Forms\02_View\FrmExplodedView.cs">
       <SubType>Form</SubType>
@@ -330,11 +330,11 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\35_ContactPair\ViewContactPair.cs" />
-    <Compile Include="Forms\36_InitialConditions\FrmInitialCondition.cs">
+    <Compile Include="Forms\37_InitialConditions\FrmInitialCondition.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\36_InitialConditions\ViewInitialCondition.cs" />
-    <Compile Include="Forms\36_InitialConditions\ViewInitialTemperature.cs" />
+    <Compile Include="Forms\37_InitialConditions\ViewInitialCondition.cs" />
+    <Compile Include="Forms\37_InitialConditions\ViewInitialTemperature.cs" />
     <Compile Include="Forms\41_Step\ViewCoupledTempDispStep.cs" />
     <Compile Include="Forms\41_Step\ViewUncoupledTempDispStep.cs" />
     <Compile Include="Forms\41_Step\ViewHeatTransferStep.cs" />
@@ -574,7 +574,7 @@
     <EmbeddedResource Include="Forms\00_Common\FrmUnitSystem.resx">
       <DependentUpon>FrmUnitSystem.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\00_SearchContactPairs\FrmSearchContactPairs.resx">
+    <EmbeddedResource Include="Forms\36_SearchContactPairs\FrmSearchContactPairs.resx">
       <DependentUpon>FrmSearchContactPairs.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\02_View\FrmExplodedView.resx">
@@ -619,7 +619,7 @@
     <EmbeddedResource Include="Forms\35_ContactPair\FrmContactPair.resx">
       <DependentUpon>FrmContactPair.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\36_InitialConditions\FrmInitialCondition.resx">
+    <EmbeddedResource Include="Forms\37_InitialConditions\FrmInitialCondition.resx">
       <DependentUpon>FrmInitialCondition.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\42_HistoryOutput\FrmHistoryOutput.resx">
@@ -812,6 +812,7 @@
   <ItemGroup>
     <Folder Include="Command\0020_View\" />
     <Folder Include="Command\0090_Tools\" />
+    <Folder Include="Forms\00_NewModel\" />
   </ItemGroup>
   <ItemGroup>
     <Analyzer Include="c:\Program Files\ActiViz.NET 5.8.0 OpenSource Edition\bin\Kitware.mummy.Runtime.dll" />
