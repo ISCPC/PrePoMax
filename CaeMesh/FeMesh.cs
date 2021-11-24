@@ -2156,6 +2156,17 @@ namespace CaeMesh
         }
         //
         // Merge and split parts
+        //public bool ArePartsOfTheSameElementType(string[] partNames)
+        //{
+        //    HashSet<Type> partTypes = new HashSet<Type>();
+        //    for (int i = 0; i < partNames.Length; i++)
+        //    {
+        //        ((MeshPart)_parts[partNames[i]]).li
+        //    }
+        //    MeshPart[] meshParts = _controller.GetModelParts(partNames);
+        //    foreach (var meshPart in meshParts) partTypes.Add(meshPart.PartType);
+        //    return false;
+        //}
         public void MergeMeshParts(string[] partNamesToMerge, out MeshPart newMeshPart, out string[] mergedParts)
         {
             newMeshPart = null;

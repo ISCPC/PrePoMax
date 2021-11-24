@@ -48,6 +48,7 @@ namespace PrePoMax
         KeyboardHook _keyboardHook;
         //
         private Point _formLocation;
+        private int _formScreenId;
         private List<Form> _allForms;
         private FrmSectionView _frmSectionView;
         private FrmExplodedView _frmExplodedView;
@@ -3121,9 +3122,17 @@ namespace PrePoMax
         //
         private void MergeModelParts(string[] partNames)
         {
-            if (MessageBoxes.ShowWarningQuestion("OK to merge selected parts?") == DialogResult.OK)
+            HashSet<PartType> partTypes = new HashSet<PartType>();
+            MeshPart[] meshParts = _controller.GetModelParts(partNames);
+            foreach (var meshPart in meshParts) partTypes.Add(meshPart.PartType);
+            //
+            if (partTypes.Count > 1) MessageBoxes.ShowError("Selected parts are of a different type and thus can not be merged.");
+            else
             {
-                _controller.MergeModelPartsCommand(partNames);
+                if (MessageBoxes.ShowWarningQuestion("OK to merge selected parts?") == DialogResult.OK)
+                {
+                    _controller.MergeModelPartsCommand(partNames);
+                }
             }
         }
         private void HideModelParts(string[] partNames)
@@ -5495,18 +5504,35 @@ namespace PrePoMax
             }
         }
         private void SetFormLoaction(Form form)
-        {           
-            Rectangle screenSize = Screen.FromControl(this).Bounds;
+        {
+            Rectangle screenBounds;
+            bool intersects = false;
             Rectangle formSize = form.ClientRectangle;
             Point location = new Point(Left + _formLocation.X, Top + _formLocation.Y);
-            if (formSize.Width < screenSize.Width && formSize.Height < screenSize.Height)
+            Rectangle locationRect = new Rectangle(location, new Size(1, 1));
+            //
+            foreach (var screen in Screen.AllScreens)
             {
-                if (location.X < 0) location.X = 0;
-                else if (location.X + formSize.Width > screenSize.Width) location.X = screenSize.Width - formSize.Width;
-                //
-                if (location.Y < 0) location.Y = 0;
-                else if (location.Y + formSize.Height > screenSize.Height) location.Y = screenSize.Height - formSize.Height;
+                screenBounds = screen.Bounds;
+                if (screenBounds.IntersectsWith(locationRect))
+                {
+                    intersects = true;
+                    // Size
+                    if (formSize.Width > screenBounds.Width) formSize.Width = screenBounds.Width;
+                    if (formSize.Height > screenBounds.Height) formSize.Height = screenBounds.Height;
+                    // Location X
+                    if (location.X < screenBounds.Left) location.X = screenBounds.Left;
+                    else if (location.X + formSize.Width > screenBounds.Left + screenBounds.Width)
+                        location.X = screenBounds.Left + screenBounds.Width - formSize.Width;
+                    // Location Y
+                    if (location.Y < screenBounds.Top) location.Y = screenBounds.Top;
+                    else if (location.Y + formSize.Height > screenBounds.Top + screenBounds.Height)
+                        location.Y = screenBounds.Top + screenBounds.Height - formSize.Height;
+                }
             }
+            //
+            if (!intersects) location = Location;
+            //
             form.Location = location;
         }
         private void SaveFormLoaction(Form form)

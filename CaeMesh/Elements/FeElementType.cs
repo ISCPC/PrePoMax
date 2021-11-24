@@ -20,7 +20,8 @@ namespace CaeMesh
     {
         [StandardValue("None", Visible = false)]
         None,
-        S6
+        S6,
+        CPS6
     }
 
     [Serializable]

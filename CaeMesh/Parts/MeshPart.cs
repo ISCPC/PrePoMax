@@ -93,6 +93,20 @@ namespace CaeMesh
             if (types.Contains(typeof(LinearHexaElement))) _linearHexaType = FeElementTypeLinearHexa.C3D8;
             if (types.Contains(typeof(ParabolicHexaElement))) _parabolicHexaType = FeElementTypeParabolicHexa.C3D20;
         }
+        //public void GetActiveElementTypes()
+        //{
+        //    if (_linearTriaType != FeElementTypeLinearTria.None) _linearTriaType = part.LinearTriaType;
+        //    if (_parabolicTriaType != FeElementTypeParabolicTria.None) _parabolicTriaType = part.ParabolicTriaType;
+        //    if (_linearQuadType != FeElementTypeLinearQuad.None) _linearQuadType = part.LinearQuadType;
+        //    if (_parabolicQuadType != FeElementTypeParabolicQuad.None) _parabolicQuadType = part.ParabolicQuadType;
+        //    //
+        //    if (_linearTetraType != FeElementTypeLinearTetra.None) _linearTetraType = part.LinearTetraType;
+        //    if (_parabolicTetraType != FeElementTypeParabolicTetra.None) _parabolicTetraType = part.ParabolicTetraType;
+        //    if (_linearWedgeType != FeElementTypeLinearWedge.None) _linearWedgeType = part.LinearWedgeType;
+        //    if (_parabolicWedgeType != FeElementTypeParabolicWedge.None) _parabolicWedgeType = part.ParabolicWedgeType;
+        //    if (_linearHexaType != FeElementTypeLinearHexa.None) _linearHexaType = part.LinearHexaType;
+        //    if (_parabolicHexaType != FeElementTypeParabolicHexa.None) _parabolicHexaType = part._parabolicHexaType;
+        //}
         public void AddElementTypes(Type[] elementTypes)
         {
             HashSet<Type> types = new HashSet<Type>(elementTypes);
@@ -124,6 +138,7 @@ namespace CaeMesh
             if (elementTypes != null) allTypes.UnionWith(elementTypes);
             _elementTypes = allTypes.ToArray();
         }
+        
         public void CopyActiveElementTypesFrom(MeshPart part)
         {
             if (_linearTriaType != FeElementTypeLinearTria.None) _linearTriaType = part.LinearTriaType;
