@@ -27,7 +27,7 @@ namespace CaeModel
         private StepCollection _stepCollection;                                                 //ISerializable
         private OrderedDictionary<int[], Calculix.CalculixUserKeyword> _calculixUserKeywords;   //ISerializable
         private ModelProperties _properties;                                                    //ISerializable
-        private UnitSystem _unitSystem;                                                         //ISerializable
+        private UnitSystem _unitSystem;                                                         //ISerializable        
 
 
         // Properties                                                                                                               
@@ -152,12 +152,12 @@ namespace CaeModel
                         else throw new NotSupportedException();
                         break;
                     case "_properties":
-                        _properties = (ModelProperties)entry.Value; break;
+                        _properties = (ModelProperties)entry.Value;
+                        // Compatibility for version v.1.1.1
+                        if (_properties.ModelSpace == ModelSpaceEnum.Undefined) _properties.ModelSpace = ModelSpaceEnum.Three_D;
+                        break;
                     case "_unitSystem":
-                        //if (entry.Value is CaeGlobals.UnitSystem us) _unitSystem = us;
-                        //else _unitSystem = new UnitSystem(UnitSystemType.MM_TON_S_C);
-                        //break;
-                        _unitSystem = (CaeGlobals.UnitSystem)entry.Value; break;
+                        _unitSystem = (UnitSystem)entry.Value; break;
                     case "_hashName":
                         _hashName = (string)entry.Value; break;
                     default:

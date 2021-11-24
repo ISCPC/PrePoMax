@@ -995,7 +995,7 @@ namespace CaeMesh
                 foreach (var elementId in allElementIds) _elements[elementId].PartId = partId;
             }
         }
-
+        
         // Visualization
         public void ExtractSolidPartVisualization(BasePart part, double edgeAngle)
         {
@@ -2154,19 +2154,14 @@ namespace CaeMesh
             // If changes were made return true in order to recompute edge lengths
             return true;
         }
-        //
+        
         // Merge and split parts
-        //public bool ArePartsOfTheSameElementType(string[] partNames)
-        //{
-        //    HashSet<Type> partTypes = new HashSet<Type>();
-        //    for (int i = 0; i < partNames.Length; i++)
-        //    {
-        //        ((MeshPart)_parts[partNames[i]]).li
-        //    }
-        //    MeshPart[] meshParts = _controller.GetModelParts(partNames);
-        //    foreach (var meshPart in meshParts) partTypes.Add(meshPart.PartType);
-        //    return false;
-        //}
+        public bool ArePartsMergable(string[] partNames)
+        {
+            HashSet<PartType> partTypes = new HashSet<PartType>();
+            foreach (var entry in _parts) partTypes.Add(entry.Value.PartType);
+            return partTypes.Count == 1;
+        }
         public void MergeMeshParts(string[] partNamesToMerge, out MeshPart newMeshPart, out string[] mergedParts)
         {
             newMeshPart = null;

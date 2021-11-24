@@ -44,6 +44,15 @@ namespace PrePoMax.Forms
             }
         }
         //
+        [Category("Data")]
+        [OrderedDisplayName(2, 10, "Model space")]
+        [Description("Model space.")]
+        [Id(3, 1)]
+        public ModelSpaceEnum ModelSpace
+        {
+            get { return _modelProperties.ModelSpace; }
+        }
+        //
         [Category("Submodel")]
         [OrderedDisplayName(0, 10, "Global results .frd")]
         [Description("Global results file name (.frd) without path.")]

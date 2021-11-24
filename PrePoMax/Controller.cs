@@ -3480,6 +3480,10 @@ namespace PrePoMax
             FeModelUpdate(UpdateType.DrawModel | UpdateType.RedrawSymbols);
         }
         //
+        public bool AreModelPartsMergable(string[] partNames)
+        {
+            return _model.Mesh.ArePartsMergable(partNames);
+        }
         public void MergeModelParts(string[] partNames)
         {
             MeshPart newMeshPart;
@@ -6364,7 +6368,7 @@ namespace PrePoMax
         private void CheckModelUnitSystem()
         {
             if (_model.UnitSystem == null) _model.UnitSystem = new UnitSystem();
-            if (_model.UnitSystem.UnitSystemType == UnitSystemType.Undefined) _form.SelectModelUnitSystem();
+            if (_model.UnitSystem.UnitSystemType == UnitSystemType.Undefined) _form.SelectNewModelProperties();
             //
             _model.UnitSystem.SetConverterUnits();          // model and results units systems can be different
             _form.UpdateUnitSystem(_model.UnitSystem);      // model and results units systems can be different
@@ -6639,6 +6643,10 @@ namespace PrePoMax
             DrawResults(false);
         }
         //
+        public bool AreResultPartsMergable(string[] partNames)
+        {
+            return _results.Mesh.ArePartsMergable(partNames);
+        }
         public void MergeResultParts(string[] partNames)
         {
             ResultPart newResultPart;
