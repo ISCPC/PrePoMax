@@ -105,6 +105,7 @@
             this.tsmiGeometryPart = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEditGeometryPart = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiTransformGeometryParts = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiScaleGeometryParts = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerGeomPart1 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiCopyGeometryPartsToResults = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerGeomPart2 = new System.Windows.Forms.ToolStripSeparator();
@@ -369,7 +370,6 @@
             this.tscbSymbolsForStep = new System.Windows.Forms.ToolStripComboBox();
             this.timerTest = new System.Windows.Forms.Timer(this.components);
             this.timerOutput = new System.Windows.Forms.Timer(this.components);
-            this.tsmiScaleGeometryParts = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStripMain.SuspendLayout();
             this.statusStripMain.SuspendLayout();
             this.tsResults.SuspendLayout();
@@ -1028,6 +1028,13 @@
             this.tsmiTransformGeometryParts.Size = new System.Drawing.Size(211, 22);
             this.tsmiTransformGeometryParts.Text = "Transform";
             // 
+            // tsmiScaleGeometryParts
+            // 
+            this.tsmiScaleGeometryParts.Name = "tsmiScaleGeometryParts";
+            this.tsmiScaleGeometryParts.Size = new System.Drawing.Size(101, 22);
+            this.tsmiScaleGeometryParts.Text = "Scale";
+            this.tsmiScaleGeometryParts.Click += new System.EventHandler(this.tsmiScaleGeometryParts_Click);
+            // 
             // tsmiDividerGeomPart1
             // 
             this.tsmiDividerGeomPart1.Name = "tsmiDividerGeomPart1";
@@ -1219,6 +1226,7 @@
             // 
             // tsmiCreateMesh
             // 
+            this.tsmiCreateMesh.Image = global::PrePoMax.Properties.Resources.Part;
             this.tsmiCreateMesh.Name = "tsmiCreateMesh";
             this.tsmiCreateMesh.Size = new System.Drawing.Size(182, 22);
             this.tsmiCreateMesh.Text = "Create Mesh";
@@ -1327,7 +1335,7 @@
             // tsmiEditPart
             // 
             this.tsmiEditPart.Name = "tsmiEditPart";
-            this.tsmiEditPart.Size = new System.Drawing.Size(180, 22);
+            this.tsmiEditPart.Size = new System.Drawing.Size(162, 22);
             this.tsmiEditPart.Text = "Edit";
             this.tsmiEditPart.Click += new System.EventHandler(this.tsmiEditPart_Click);
             // 
@@ -1338,47 +1346,47 @@
             this.tsmiScaleModelParts,
             this.tsmiRotateModelParts});
             this.tsmiTransformModelParts.Name = "tsmiTransformModelParts";
-            this.tsmiTransformModelParts.Size = new System.Drawing.Size(180, 22);
+            this.tsmiTransformModelParts.Size = new System.Drawing.Size(162, 22);
             this.tsmiTransformModelParts.Text = "Transform";
             // 
             // tsmiTranslateModelParts
             // 
             this.tsmiTranslateModelParts.Name = "tsmiTranslateModelParts";
-            this.tsmiTranslateModelParts.Size = new System.Drawing.Size(180, 22);
+            this.tsmiTranslateModelParts.Size = new System.Drawing.Size(120, 22);
             this.tsmiTranslateModelParts.Text = "Translate";
             this.tsmiTranslateModelParts.Click += new System.EventHandler(this.tsmiTranslateModelParts_Click);
             // 
             // tsmiScaleModelParts
             // 
             this.tsmiScaleModelParts.Name = "tsmiScaleModelParts";
-            this.tsmiScaleModelParts.Size = new System.Drawing.Size(180, 22);
+            this.tsmiScaleModelParts.Size = new System.Drawing.Size(120, 22);
             this.tsmiScaleModelParts.Text = "Scale";
             this.tsmiScaleModelParts.Click += new System.EventHandler(this.tsmiScaleModelParts_Click);
             // 
             // tsmiRotateModelParts
             // 
             this.tsmiRotateModelParts.Name = "tsmiRotateModelParts";
-            this.tsmiRotateModelParts.Size = new System.Drawing.Size(180, 22);
+            this.tsmiRotateModelParts.Size = new System.Drawing.Size(120, 22);
             this.tsmiRotateModelParts.Text = "Rotate";
             this.tsmiRotateModelParts.Click += new System.EventHandler(this.tsmiRotateModelParts_Click);
             // 
             // tsmiMergeParts
             // 
             this.tsmiMergeParts.Name = "tsmiMergeParts";
-            this.tsmiMergeParts.Size = new System.Drawing.Size(180, 22);
+            this.tsmiMergeParts.Size = new System.Drawing.Size(162, 22);
             this.tsmiMergeParts.Text = "Merge";
             this.tsmiMergeParts.Click += new System.EventHandler(this.tsmiMergeParts_Click);
             // 
             // tsmiDividerPart2
             // 
             this.tsmiDividerPart2.Name = "tsmiDividerPart2";
-            this.tsmiDividerPart2.Size = new System.Drawing.Size(177, 6);
+            this.tsmiDividerPart2.Size = new System.Drawing.Size(159, 6);
             // 
             // tsmiHideParts
             // 
             this.tsmiHideParts.Image = ((System.Drawing.Image)(resources.GetObject("tsmiHideParts.Image")));
             this.tsmiHideParts.Name = "tsmiHideParts";
-            this.tsmiHideParts.Size = new System.Drawing.Size(180, 22);
+            this.tsmiHideParts.Size = new System.Drawing.Size(162, 22);
             this.tsmiHideParts.Text = "Hide";
             this.tsmiHideParts.Click += new System.EventHandler(this.tsmiHideParts_Click);
             // 
@@ -1386,7 +1394,7 @@
             // 
             this.tsmiShowParts.Image = ((System.Drawing.Image)(resources.GetObject("tsmiShowParts.Image")));
             this.tsmiShowParts.Name = "tsmiShowParts";
-            this.tsmiShowParts.Size = new System.Drawing.Size(180, 22);
+            this.tsmiShowParts.Size = new System.Drawing.Size(162, 22);
             this.tsmiShowParts.Text = "Show";
             this.tsmiShowParts.Click += new System.EventHandler(this.tsmiShowParts_Click);
             // 
@@ -1394,26 +1402,26 @@
             // 
             this.tsmiShowOnlyParts.Image = ((System.Drawing.Image)(resources.GetObject("tsmiShowOnlyParts.Image")));
             this.tsmiShowOnlyParts.Name = "tsmiShowOnlyParts";
-            this.tsmiShowOnlyParts.Size = new System.Drawing.Size(180, 22);
+            this.tsmiShowOnlyParts.Size = new System.Drawing.Size(162, 22);
             this.tsmiShowOnlyParts.Text = "Show Only";
             this.tsmiShowOnlyParts.Click += new System.EventHandler(this.tsmiShowOnlyParts_Click);
             // 
             // tsmiSetTransparencyForParts
             // 
             this.tsmiSetTransparencyForParts.Name = "tsmiSetTransparencyForParts";
-            this.tsmiSetTransparencyForParts.Size = new System.Drawing.Size(180, 22);
+            this.tsmiSetTransparencyForParts.Size = new System.Drawing.Size(162, 22);
             this.tsmiSetTransparencyForParts.Text = "Set Transparency";
             this.tsmiSetTransparencyForParts.Click += new System.EventHandler(this.tsmiSetTransparencyForParts_Click);
             // 
             // tsmiDividerPart3
             // 
             this.tsmiDividerPart3.Name = "tsmiDividerPart3";
-            this.tsmiDividerPart3.Size = new System.Drawing.Size(177, 6);
+            this.tsmiDividerPart3.Size = new System.Drawing.Size(159, 6);
             // 
             // tsmiDeleteParts
             // 
             this.tsmiDeleteParts.Name = "tsmiDeleteParts";
-            this.tsmiDeleteParts.Size = new System.Drawing.Size(180, 22);
+            this.tsmiDeleteParts.Size = new System.Drawing.Size(162, 22);
             this.tsmiDeleteParts.Text = "Delete";
             this.tsmiDeleteParts.Click += new System.EventHandler(this.tsmiDeleteParts_Click);
             // 
@@ -3200,13 +3208,6 @@
             // timerOutput
             // 
             this.timerOutput.Tick += new System.EventHandler(this.timerOutput_Tick);
-            // 
-            // tsmiScaleGeometryParts
-            // 
-            this.tsmiScaleGeometryParts.Name = "tsmiScaleGeometryParts";
-            this.tsmiScaleGeometryParts.Size = new System.Drawing.Size(180, 22);
-            this.tsmiScaleGeometryParts.Text = "Scale";
-            this.tsmiScaleGeometryParts.Click += new System.EventHandler(this.tsmiScaleGeometryParts_Click);
             // 
             // FrmMain
             // 

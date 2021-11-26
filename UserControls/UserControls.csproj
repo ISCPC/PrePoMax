@@ -367,6 +367,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="License-LGPL.txt" />
+    <None Include="Resources\Part.png" />
     <None Include="Resources\Remove.ico" />
     <None Include="Resources\Search1.png" />
     <None Include="Resources\Search.png" />

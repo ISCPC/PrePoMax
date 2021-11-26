@@ -55,8 +55,7 @@ namespace PrePoMax
         private FrmSelectEntity _frmSelectEntity;
         private FrmSelectGeometry _frmSelectGeometry;
         private FrmSelectItemSet _frmSelectItemSet;
-        private FrmUnitSystem _frmUnitSystem;
-        private FrmSearchContactPairs _frmSearchContactPairs;
+        private FrmNewModel _frmNewModel;
         private FrmAnalyzeGeometry _frmAnalyzeGeometry;
         private FrmMeshingParameters _frmMeshingParameters;
         private FrmMeshRefinement _frmMeshRefinement;
@@ -77,6 +76,7 @@ namespace PrePoMax
         private FrmConstraint _frmConstraint;
         private FrmSurfaceInteraction _frmSurfaceInteraction;
         private FrmContactPair _frmContactPair;
+        private FrmSearchContactPairs _frmSearchContactPairs;
         private FrmInitialCondition _frmInitialCondition;
         private FrmStep _frmStep;
         private FrmHistoryOutput _frmHistoryOutput;
@@ -288,11 +288,8 @@ namespace PrePoMax
                 _frmExplodedView.Clear3D = Clear3DSelection;
                 AddFormToAllForms(_frmExplodedView);
                 //
-                _frmUnitSystem = new FrmUnitSystem(_controller);
-                AddFormToAllForms(_frmUnitSystem);
-                //
-                _frmSearchContactPairs = new FrmSearchContactPairs(_controller);
-                AddFormToAllForms(_frmSearchContactPairs);
+                _frmNewModel = new FrmNewModel(_controller);
+                AddFormToAllForms(_frmNewModel);
                 //
                 _frmAnalyzeGeometry = new FrmAnalyzeGeometry(_controller);
                 AddFormToAllForms(_frmAnalyzeGeometry);
@@ -351,6 +348,9 @@ namespace PrePoMax
                 //
                 _frmContactPair = new FrmContactPair(_controller);
                 AddFormToAllForms(_frmContactPair);
+                //
+                _frmSearchContactPairs = new FrmSearchContactPairs(_controller);
+                AddFormToAllForms(_frmSearchContactPairs);
                 //
                 _frmInitialCondition = new FrmInitialCondition(_controller);
                 AddFormToAllForms(_frmInitialCondition);
@@ -1068,7 +1068,7 @@ namespace PrePoMax
                 //
                 _controller.New();
                 //
-                SelectModelUnitSystem();
+                SelectNewModelProperties();
                 // No need for ModelChanged
                 _controller.ModelChanged = false;
             }
@@ -3122,18 +3122,14 @@ namespace PrePoMax
         //
         private void MergeModelParts(string[] partNames)
         {
-            HashSet<PartType> partTypes = new HashSet<PartType>();
-            MeshPart[] meshParts = _controller.GetModelParts(partNames);
-            foreach (var meshPart in meshParts) partTypes.Add(meshPart.PartType);
-            //
-            if (partTypes.Count > 1) MessageBoxes.ShowError("Selected parts are of a different type and thus can not be merged.");
-            else
+            if (_controller.AreModelPartsMergable(partNames))
             {
                 if (MessageBoxes.ShowWarningQuestion("OK to merge selected parts?") == DialogResult.OK)
                 {
                     _controller.MergeModelPartsCommand(partNames);
                 }
             }
+            else MessageBoxes.ShowError("Selected parts are of a different type and thus can not be merged.");
         }
         private void HideModelParts(string[] partNames)
         {
@@ -4831,7 +4827,7 @@ namespace PrePoMax
                 if (System.Diagnostics.Debugger.IsAttached)
                 {
                     if (GetCurrentView() == ViewGeometryModelResults.Geometry ||
-                    GetCurrentView() == ViewGeometryModelResults.Model) SelectModelUnitSystem();
+                    GetCurrentView() == ViewGeometryModelResults.Model) SelectNewModelProperties();
                     else SelectResultsUnitSystem();
                 }
             }
@@ -4840,17 +4836,17 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
-        public void SelectModelUnitSystem()
+        public void SelectNewModelProperties()
         {
             try
             {
-                // Disable unit system selection during regenerate - check that the state is ready
+                // Disable the form during regenerate - check that the state is ready
                 if (tsslState.Text != Globals.RegeneratingText)
                 {
                     UnitSystemType unitSystemType = _controller.Settings.General.UnitSystemType;
-                    if (unitSystemType == UnitSystemType.Undefined)
+                    .if (unitSystemType == UnitSystemType.Undefined)
                     {
-                        InvokeIfRequired(ShowForm, _frmUnitSystem, "Select Unit System", "Geometry & Model");
+                        InvokeIfRequired(ShowForm, _frmNewModel, "Select Unit System", "Geometry & Model");
                     }
                     else
                     {
@@ -4869,7 +4865,7 @@ namespace PrePoMax
             {
                 // Disable unit system selection during regenerate - check that the state is ready
                 if (tsslState.Text != Globals.RegeneratingText)
-                    InvokeIfRequired(ShowForm, _frmUnitSystem, "Select Unit System", "Results");
+                    InvokeIfRequired(ShowForm, _frmNewModel, "Select Unit System", "Results");
             }
             catch (Exception ex)
             {
@@ -5194,10 +5190,14 @@ namespace PrePoMax
         }
         private void MergeResultParts(string[] partNames)
         {
-            if (MessageBoxes.ShowWarningQuestion("OK to merge selected parts?") == DialogResult.OK)
+            if (_controller.AreResultPartsMergable(partNames))
             {
-                _controller.MergeResultParts(partNames);
+                if (MessageBoxes.ShowWarningQuestion("OK to merge selected parts?") == DialogResult.OK)
+                {
+                    _controller.MergeResultParts(partNames);
+                }
             }
+            else MessageBoxes.ShowError("Selected parts are of a different type and thus can not be merged.");
         }
         private void HideResultParts(string[] partNames)
         {

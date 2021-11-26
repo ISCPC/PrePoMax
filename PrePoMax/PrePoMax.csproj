@@ -232,19 +232,19 @@
     <Compile Include="Forms\00_Common\FrmSelectGeometry.Designer.cs">
       <DependentUpon>FrmSelectGeometry.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\00_Common\FrmUnitSystem.cs">
+    <Compile Include="Forms\00_Common\FrmNewModel.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\00_Common\ViewStringValue.cs" />
     <Compile Include="Forms\00_Common\ViewUnitSystem.cs" />
     <Compile Include="Forms\00_Advisor\AdvisorCreator.cs" />
-    <Compile Include="Forms\00_SearchContactPairs\FrmSearchContactPairs.cs">
+    <Compile Include="Forms\36_SearchContactPairs\FrmSearchContactPairs.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\00_SearchContactPairs\FrmSearchContactPairs.Designer.cs">
+    <Compile Include="Forms\36_SearchContactPairs\FrmSearchContactPairs.Designer.cs">
       <DependentUpon>FrmSearchContactPairs.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\00_SearchContactPairs\SearchContactPair.cs" />
+    <Compile Include="Forms\36_SearchContactPairs\SearchContactPair.cs" />
     <Compile Include="Forms\02_View\ExplodedViewParameters.cs" />
     <Compile Include="Forms\02_View\FrmExplodedView.cs">
       <SubType>Form</SubType>
@@ -270,18 +270,18 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\12_MeshRefinement\ViewFeMeshRefinement.cs" />
-    <Compile Include="Forms\21_Model\FrmBoundaryLayer.cs">
+    <Compile Include="Forms\21_FEModel\FrmBoundaryLayer.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\21_Model\FrmModelProperties.cs">
+    <Compile Include="Forms\21_FEModel\FrmModelProperties.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\21_Model\FrmRemeshingParameters.cs">
+    <Compile Include="Forms\21_FEModel\FrmRemeshingParameters.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\21_Model\ViewBoundaryLayer.cs" />
-    <Compile Include="Forms\21_Model\ViewRemeshingParameters.cs" />
-    <Compile Include="Forms\21_Model\ViewModelProperties.cs" />
+    <Compile Include="Forms\21_FEModel\ViewBoundaryLayer.cs" />
+    <Compile Include="Forms\21_FEModel\ViewRemeshingParameters.cs" />
+    <Compile Include="Forms\21_FEModel\ViewModelProperties.cs" />
     <Compile Include="Forms\22_Part\FrmScale.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -330,11 +330,11 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\35_ContactPair\ViewContactPair.cs" />
-    <Compile Include="Forms\36_InitialConditions\FrmInitialCondition.cs">
+    <Compile Include="Forms\37_InitialConditions\FrmInitialCondition.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\36_InitialConditions\ViewInitialCondition.cs" />
-    <Compile Include="Forms\36_InitialConditions\ViewInitialTemperature.cs" />
+    <Compile Include="Forms\37_InitialConditions\ViewInitialCondition.cs" />
+    <Compile Include="Forms\37_InitialConditions\ViewInitialTemperature.cs" />
     <Compile Include="Forms\41_Step\ViewCoupledTempDispStep.cs" />
     <Compile Include="Forms\41_Step\ViewUncoupledTempDispStep.cs" />
     <Compile Include="Forms\41_Step\ViewHeatTransferStep.cs" />
@@ -442,10 +442,10 @@
     <Compile Include="Forms\IFormItemSetDataParent.cs" />
     <Compile Include="Forms\IFormBase.cs" />
     <Compile Include="Forms\00_Common\ViewDoubleValue.cs" />
-    <Compile Include="Forms\21_Model\FrmCalculixKeywordEditor.cs">
+    <Compile Include="Forms\21_FEModel\FrmCalculixKeywordEditor.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\21_Model\FrmCalculixKeywordEditor.Designer.cs">
+    <Compile Include="Forms\21_FEModel\FrmCalculixKeywordEditor.Designer.cs">
       <DependentUpon>FrmCalculixKeywordEditor.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\11_MeshingParameters\ViewMeshingParameters.cs" />
@@ -571,10 +571,10 @@
     <EmbeddedResource Include="Forms\00_Common\FrmSelectGeometry.resx">
       <DependentUpon>FrmSelectGeometry.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\00_Common\FrmUnitSystem.resx">
-      <DependentUpon>FrmUnitSystem.cs</DependentUpon>
+    <EmbeddedResource Include="Forms\00_Common\FrmNewModel.resx">
+      <DependentUpon>FrmNewModel.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\00_SearchContactPairs\FrmSearchContactPairs.resx">
+    <EmbeddedResource Include="Forms\36_SearchContactPairs\FrmSearchContactPairs.resx">
       <DependentUpon>FrmSearchContactPairs.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\02_View\FrmExplodedView.resx">
@@ -589,13 +589,13 @@
     <EmbeddedResource Include="Forms\12_MeshRefinement\FrmMeshRefinement.resx">
       <DependentUpon>FrmMeshRefinement.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\21_Model\FrmBoundaryLayer.resx">
+    <EmbeddedResource Include="Forms\21_FEModel\FrmBoundaryLayer.resx">
       <DependentUpon>FrmBoundaryLayer.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\21_Model\FrmModelProperties.resx">
+    <EmbeddedResource Include="Forms\21_FEModel\FrmModelProperties.resx">
       <DependentUpon>FrmModelProperties.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\21_Model\FrmRemeshingParameters.resx">
+    <EmbeddedResource Include="Forms\21_FEModel\FrmRemeshingParameters.resx">
       <DependentUpon>FrmRemeshingParameters.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\22_Part\FrmScale.resx">
@@ -619,7 +619,7 @@
     <EmbeddedResource Include="Forms\35_ContactPair\FrmContactPair.resx">
       <DependentUpon>FrmContactPair.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\36_InitialConditions\FrmInitialCondition.resx">
+    <EmbeddedResource Include="Forms\37_InitialConditions\FrmInitialCondition.resx">
       <DependentUpon>FrmInitialCondition.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\42_HistoryOutput\FrmHistoryOutput.resx">
@@ -646,7 +646,7 @@
     <EmbeddedResource Include="Forms\25_Surface\FrmSurface.resx">
       <DependentUpon>FrmSurface.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\21_Model\FrmCalculixKeywordEditor.resx">
+    <EmbeddedResource Include="Forms\21_FEModel\FrmCalculixKeywordEditor.resx">
       <DependentUpon>FrmCalculixKeywordEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\26_ReferencePoint\FrmReferencePoint.resx">
@@ -807,6 +807,7 @@
     <None Include="Icons\Step\Load.png" />
     <None Include="Icons\Step\Defined_field.ico" />
     <None Include="Icons\Material\Remove.ico" />
+    <None Include="Icons\Mesh\Part.png" />
     <Content Include="main.ico" />
   </ItemGroup>
   <ItemGroup>

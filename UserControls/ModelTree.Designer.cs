@@ -110,6 +110,8 @@
             this.tsmiConvertToPart = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSpaceMaterialLibrary = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiMaterialLibrary = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiSpaceSearchContactPairs = new System.Windows.Forms.ToolStripSeparator();
+            this.tsmiSearchContactPairs = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSpaceSwapMergeMasterSlave = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiSwapMasterSlave = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiMergeByMasterSlave = new System.Windows.Forms.ToolStripMenuItem();
@@ -146,8 +148,6 @@
             this.tpResults = new System.Windows.Forms.TabPage();
             this.stbResults = new UserControls.SearchTextBox();
             this.cltvResults = new UserControls.CodersLabTreeView();
-            this.tsmiSpaceSearchContactPairs = new System.Windows.Forms.ToolStripSeparator();
-            this.tsmiSearchContactPairs = new System.Windows.Forms.ToolStripMenuItem();
             this.cmsTree.SuspendLayout();
             this.tcGeometryModelResults.SuspendLayout();
             this.tpGeometry.SuspendLayout();
@@ -276,6 +276,7 @@
             // 
             // tsmiCreateMesh
             // 
+            this.tsmiCreateMesh.Image = global::UserControls.Properties.Resources.Part;
             this.tsmiCreateMesh.Name = "tsmiCreateMesh";
             this.tsmiCreateMesh.Size = new System.Drawing.Size(211, 22);
             this.tsmiCreateMesh.Text = "Create Mesh";
@@ -341,6 +342,18 @@
             this.tsmiMaterialLibrary.Size = new System.Drawing.Size(211, 22);
             this.tsmiMaterialLibrary.Text = "Material Library";
             this.tsmiMaterialLibrary.Click += new System.EventHandler(this.tsmiMaterialLibrary_Click);
+            // 
+            // tsmiSpaceSearchContactPairs
+            // 
+            this.tsmiSpaceSearchContactPairs.Name = "tsmiSpaceSearchContactPairs";
+            this.tsmiSpaceSearchContactPairs.Size = new System.Drawing.Size(208, 6);
+            // 
+            // tsmiSearchContactPairs
+            // 
+            this.tsmiSearchContactPairs.Name = "tsmiSearchContactPairs";
+            this.tsmiSearchContactPairs.Size = new System.Drawing.Size(211, 22);
+            this.tsmiSearchContactPairs.Text = "Search Contact Pairs";
+            this.tsmiSearchContactPairs.Click += new System.EventHandler(this.tsmiSearchContactPairs_Click);
             // 
             // tsmiSpaceSwapMergeMasterSlave
             // 
@@ -881,18 +894,6 @@
             this.cltvResults.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseDoubleClick);
             this.cltvResults.MouseDown += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseDown);
             this.cltvResults.MouseUp += new System.Windows.Forms.MouseEventHandler(this.cltv_MouseUp);
-            // 
-            // tsmiSpaceSearchContactPairs
-            // 
-            this.tsmiSpaceSearchContactPairs.Name = "tsmiSpaceSearchContactPairs";
-            this.tsmiSpaceSearchContactPairs.Size = new System.Drawing.Size(208, 6);
-            // 
-            // tsmiSearchContactPairs
-            // 
-            this.tsmiSearchContactPairs.Name = "tsmiSearchContactPairs";
-            this.tsmiSearchContactPairs.Size = new System.Drawing.Size(211, 22);
-            this.tsmiSearchContactPairs.Text = "Search Contact Pairs";
-            this.tsmiSearchContactPairs.Click += new System.EventHandler(this.tsmiSearchContactPairs_Click);
             // 
             // ModelTree
             // 
