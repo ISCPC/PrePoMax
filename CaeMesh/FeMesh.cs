@@ -4934,14 +4934,22 @@ namespace CaeMesh
             return minDist;
         }
         //
-        public int[] GetGeometryEdgeIdsByAngle(int elementId, int[] edgeNodeIds, double angle, bool shellEdgeFace)
+        public int[] GetGeometryEdgeIdsByAngle(double[] point, int elementId, int[] edgeNodeIds, int[] cellFaceNodeIds,
+                                               double angle, bool shellEdgeFace)
         {
-            // THIS WORKS ON DEFORMED MESHES
             BasePart part;
+            int faceId;
+            // First find a face
+            if (!GetFaceId(elementId, cellFaceNodeIds, out part, out faceId)) return new int[0];
+            // Get closest edge
             int partEdgeId;
+            VisualizationData visualization = part.Visualization;
+            PointToClosestFaceEdgeDistance(point, visualization, faceId, out partEdgeId);
+            // Get edge cell ids from edge id
             HashSet<int> allEdgeIds = new HashSet<int>();
-            //
-            int[][] edgeCells = GetEdgeCells(elementId, edgeNodeIds, out part, out partEdgeId);
+            int[] edgeCellIds = visualization.EdgeCellIdsByEdge[partEdgeId];
+            int[][] edgeCells = new int[edgeCellIds.Length][];
+            for (int i = 0; i < edgeCells.Length; i++) edgeCells[i] = visualization.EdgeCells[edgeCellIds[i]];
             if (edgeCells == null) return new int[0];
             //
             allEdgeIds.Add(partEdgeId);
@@ -4950,14 +4958,13 @@ namespace CaeMesh
             int node2Id;
             Dictionary<int, HashSet<int>> nodeEdgeIds = new Dictionary<int, HashSet<int>>();
             HashSet<int> edgeIds;
-            int[] edgeCellIds;
-            for (int i = 0; i < part.Visualization.EdgeCellIdsByEdge.Length; i++)
+            for (int i = 0; i < visualization.EdgeCellIdsByEdge.Length; i++)
             {
-                edgeCellIds = part.Visualization.EdgeCellIdsByEdge[i];
+                edgeCellIds = visualization.EdgeCellIdsByEdge[i];
                 // Get the first node of the first edge cell
-                node1Id = part.Visualization.EdgeCells[edgeCellIds[0]][0];
+                node1Id = visualization.EdgeCells[edgeCellIds[0]][0];
                 // Get the last node of the last edge cell
-                node2Id = part.Visualization.EdgeCells[edgeCellIds[edgeCellIds.Length - 1]][1];
+                node2Id = visualization.EdgeCells[edgeCellIds[edgeCellIds.Length - 1]][1];
                 //
                 if (nodeEdgeIds.TryGetValue(node1Id, out edgeIds)) edgeIds.Add(i);
                 else nodeEdgeIds.Add(node1Id, new HashSet<int>() { i });
@@ -4978,7 +4985,7 @@ namespace CaeMesh
                 if (nodes.Contains(node1Id)) break;
                 nodes.Add(node1Id);
                 // This is computed on undeformed mesh
-                GetNextEdgeAndNodeId(edge1Id, node1Id, nodeEdgeIds[node1Id], angle, part.Visualization, out edge2Id, out node2Id);
+                GetNextEdgeAndNodeId(edge1Id, node1Id, nodeEdgeIds[node1Id], angle, visualization, out edge2Id, out node2Id);
                 if (edge2Id >= 0 && !allEdgeIds.Contains(edge2Id))
                 {
                     allEdgeIds.Add(edge2Id);
@@ -4996,7 +5003,7 @@ namespace CaeMesh
                 if (nodes.Contains(node1Id)) break;
                 nodes.Add(node1Id);
                 // This is computed on undeformed mesh
-                GetNextEdgeAndNodeId(edge1Id, node1Id, nodeEdgeIds[node1Id], angle, part.Visualization, out edge2Id, out node2Id);
+                GetNextEdgeAndNodeId(edge1Id, node1Id, nodeEdgeIds[node1Id], angle, visualization, out edge2Id, out node2Id);
                 if (edge2Id >= 0 && !allEdgeIds.Contains(edge2Id))
                 {
                     allEdgeIds.Add(edge2Id);

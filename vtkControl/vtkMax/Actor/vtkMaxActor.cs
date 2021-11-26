@@ -240,7 +240,7 @@ namespace vtkControl
             _geometryProperty = _geometry.GetProperty();
             // Edges
             _elementEdges = GetActorEdgesFromGridByVisualizationSurfaceExtraction(uGridEdges);
-            _elementEdgesProperty = _elementEdges.GetProperty();
+            if (_elementEdges != null) _elementEdgesProperty = _elementEdges.GetProperty();
         }
         public vtkMaxActor(vtkMaxActorData data)
             : this(data, false, false)

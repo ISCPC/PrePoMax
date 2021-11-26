@@ -7716,12 +7716,13 @@ namespace PrePoMax
             int[] cellFaceNodeIds;
             //
             string[] partNames;
-            BasePart part = DisplayedMesh.GetPartById(selectionOnPartId);
+            FeMesh mesh = DisplayedMesh;
+            BasePart part = mesh.GetPartById(selectionOnPartId);
             if (part != null) partNames = new string[] { part.Name };
             else partNames = null;
             //
             _form.GetGeometryPickProperties(point, out elementId, out edgeNodeIds, out cellFaceNodeIds, partNames);
-            return DisplayedMesh.GetGeometryEdgeIdsByAngle(elementId, edgeNodeIds, angle, shellEdgeFace);
+            return mesh.GetGeometryEdgeIdsByAngle(point, elementId, edgeNodeIds, cellFaceNodeIds, angle, shellEdgeFace);
         }
         private int[] GetGeometrySurfaceIdsByAngle(double[] point, double[] selectionDirection, double angle,
                                                    int selectionOnPartId)
