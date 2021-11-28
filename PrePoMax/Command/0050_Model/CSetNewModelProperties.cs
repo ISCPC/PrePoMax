@@ -12,16 +12,18 @@ using CaeGlobals;
 namespace PrePoMax.Commands
 {
     [Serializable]
-    class CSetModelUnitSystem : Command
+    class CSetNewModelProperties : Command
     {
         // Variables                                                                                                                
+        private ModelSpaceEnum _modelSpace;
         private UnitSystemType _unitSystemType;
 
 
         // Constructor                                                                                                              
-        public CSetModelUnitSystem(UnitSystemType unitSystemType)
-            : base("Set unit system")
+        public CSetNewModelProperties(ModelSpaceEnum modelSpace, UnitSystemType unitSystemType)
+            : base("Set new model properties")
         {
+            _modelSpace = modelSpace;
             _unitSystemType = unitSystemType;
         }
 
@@ -29,13 +31,14 @@ namespace PrePoMax.Commands
         // Methods                                                                                                                  
         public override bool Execute(Controller receiver)
         {
-            receiver.SetModelUnitSystem(_unitSystemType);
+            receiver.SetNewModelProperties(_modelSpace, _unitSystemType);
             return true;
         }
 
         public override string GetCommandString()
         {
-            return base.GetCommandString() + _unitSystemType.GetDescription();
+            return base.GetCommandString() + "Model space: " + _modelSpace.GetDisplayedName() 
+                                           + ", Unit system: " + _unitSystemType.GetDescription();
         }
     }
 }

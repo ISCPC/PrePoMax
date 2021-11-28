@@ -19,7 +19,7 @@ namespace UserControls
 
         // Constructors                                                                                                             
         public FrmPropertyListView()
-            :this(2.0)
+            : this(2.0)
         {
         }
         /// <summary>
@@ -27,7 +27,7 @@ namespace UserControls
         /// </summary>
         /// <param name="labelRatio">Larger value means wider second column. Default = 2.0</param>
         public FrmPropertyListView(double labelRatio)
-            :base(labelRatio)
+            : base(labelRatio)
         {
             InitializeComponent();
             //
@@ -54,7 +54,7 @@ namespace UserControls
         {
             OnListViewTypeMouseUp();
         }
-       
+
 
         // Methods                                                                                                                  
         public override bool PrepareForm(string stepName, string itemToEditName)
@@ -85,6 +85,6 @@ namespace UserControls
             _preselectIndex = index;
         }
 
-        
+
     }
 }

@@ -759,9 +759,9 @@ namespace vtkControl
             //
             double[][] allNodeCoor = cellFaceData.Geometry.Nodes.Coor;
             int[] allNodeIds = cellFaceData.Geometry.Nodes.Ids;
-
+            //
             int[][] cellEdges = GetVisualizationCellEdges(cellFaceData.Geometry.Nodes.Ids.Length);
-
+            //
             double[] d = new double[cellEdges.Length];
             for (int i = 0; i < cellEdges.Length; i++)
             {
@@ -775,7 +775,7 @@ namespace vtkControl
                                     PointToLineSegmentDistance(pickedPoint, allNodeCoor[cellEdges[i][1]], allNodeCoor[cellEdges[i][2]]));
                 }
             }
-
+            //
             double min = d[0];
             int minId = 0;
             for (int i = 1; i < d.Length; i++)
@@ -786,7 +786,7 @@ namespace vtkControl
                     minId = i;
                 }
             }
-
+            //
             int numOfNodes = cellEdges[minId].Length;
             nodeIds = new int[numOfNodes];
             nodeCoor = new double[numOfNodes][];
@@ -806,30 +806,28 @@ namespace vtkControl
                 edgeCelltype = (int)vtkCellType.VTK_QUADRATIC_EDGE;
             }
             else throw new NotSupportedException();
-
-            // swap edge node ids and coor so that first node is the closest
+            // Swap edge node ids and coor so that first node is the closest
             double[] firstCoor = allNodeCoor[cellEdges[minId].First()];
             double[] lastCoor = allNodeCoor[cellEdges[minId].Last()];
-
+            //
             double d1 = Math.Pow(pickedPoint[0] - firstCoor[0], 2) +
                         Math.Pow(pickedPoint[1] - firstCoor[1], 2) +
                         Math.Pow(pickedPoint[2] - firstCoor[2], 2);
-
+            //
             double d2 = Math.Pow(pickedPoint[0] - lastCoor[0], 2) +
                         Math.Pow(pickedPoint[1] - lastCoor[1], 2) +
                         Math.Pow(pickedPoint[2] - lastCoor[2], 2);
-
+            //
             bool swap = d2 < d1;
-
             int tmpId;
             double[] tmpCoor;
-
+            //
             if (swap)
             {
                 tmpId = nodeIds[0];
                 nodeIds[0] = nodeIds[numOfNodes - 1];
                 nodeIds[numOfNodes - 1] = tmpId;
-
+                //
                 tmpCoor = nodeCoor[0];
                 nodeCoor[0] = nodeCoor[numOfNodes - 1];
                 nodeCoor[numOfNodes - 1] = tmpCoor;
@@ -1061,27 +1059,27 @@ namespace vtkControl
                 if (_probeWidget.GetVisibility() == 1) _probeWidget.VisibilityOff();
                 return;
             }
-
+            //
             vtkCell cell;
             vtkCellLocator cellLocator;
             int globalPointId = GetNodeIdOnCellFaceClosestToPoint(pickedPoint);
             int globalCellId = GetGlobalCellIdClosestTo3DPoint(ref pickedPoint, out cell, out cellLocator);
             int[] globalCellFaceNodeIds = GetCellFaceNodeIds(cell, cellLocator);
             vtkMaxActorData cellFaceData = Controller_GetCellFaceActorData(globalCellId, globalCellFaceNodeIds); // works on undeformed mesh
-
+            //
             int[] nodeIds = null;
             double[][] nodeCoor = null;
             int[] edgeCell = null;
             int edgeCellType;
             GetClosestEdgeCell(pickedPoint, cellFaceData, out nodeIds, out nodeCoor, out edgeCell, out edgeCellType);
-
+            //
             vtkMaxActorData edgeData = Controller_GetEdgeActorData(globalCellId, nodeIds);
-
+            //
             if (edgeData != null)
             {
                 vtkMaxActor actor = new vtkMaxActor(edgeData);
                 _mouseSelectionActorCurrent = actor;
-
+                //
                 AddActorGeometry(_mouseSelectionActorCurrent, vtkRendererLayer.Selection);
                 _mouseSelectionActorCurrent.Geometry.SetProperty(Globals.CurrentMouseSelectionProperty);
             }

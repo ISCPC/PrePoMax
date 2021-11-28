@@ -384,7 +384,7 @@ namespace PrePoMax
             _explodedViewScaleFactors[ViewGeometryModelResults.Model] = new ExplodedViewParameters();
             //
             _model = new FeModel("Model-1");
-            SetModelUnitSystem(_model.UnitSystem.UnitSystemType);   // update widgets
+            SetNewModelProperties(_model.Properties.ModelSpace, _model.UnitSystem.UnitSystemType);   // update widgets
             //
             _annotateWithColor = AnnotateWithColorEnum.None;
             _drawSymbolsForStep = null;
@@ -452,11 +452,9 @@ namespace PrePoMax
             // Add and execute the clear command
             _currentView = ViewGeometryModelResults.Geometry;
             _commands.Clear();      // also calls _modelChanged = false;
-            ClearCommand();         // also calls _modelChanged = false;
+            ClearCommand();         // also calls _modelChanged = false; calls SetNewModelProperties()
             //
             _form.UpdateRecentFilesThreadSafe(_settings.General.GetRecentFiles());
-            //
-            SetModelUnitSystem(UnitSystemType.Undefined);
         }
         public void Open(string fileName)
         {
@@ -6345,14 +6343,15 @@ namespace PrePoMax
 
         #region Settings menu   ####################################################################################################
         // COMMANDS ********************************************************************************
-        public void SetModelUnitSystemCommand(UnitSystemType unitSystemType)
+        public void SetNewModelPropertiesCommand(ModelSpaceEnum modelSpace, UnitSystemType unitSystemType)
         {
-            Commands.CSetModelUnitSystem comm = new Commands.CSetModelUnitSystem(unitSystemType);
+            Commands.CSetNewModelProperties comm = new Commands.CSetNewModelProperties(modelSpace, unitSystemType);
             _commands.AddAndExecute(comm);
         }
         //******************************************************************************************
-        public void SetModelUnitSystem(UnitSystemType unitSystemType)
+        public void SetNewModelProperties(ModelSpaceEnum modelSpace, UnitSystemType unitSystemType)
         {
+            _model.Properties.ModelSpace = modelSpace;
             _model.UnitSystem = new UnitSystem(unitSystemType);
             //
             _form.UpdateUnitSystem(_model.UnitSystem);
@@ -6926,7 +6925,7 @@ namespace PrePoMax
                 // Limit surface selection to first shell face type
                 if (afterIds == null) { _selection.Add(node, ids); afterIds = GetSelectionIds(); _selection.RemoveLast(); }
                 HashSet<FeSurfaceFaceTypes> surfaceFaceTypes = mesh.GetSurfaceFaceTypesFromFaceIds(afterIds);
-                if (surfaceFaceTypes.Count() != 1) add = false;
+                if (surfaceFaceTypes.Count() > 1) add = false;      // 0 : when substracting the last item
                 // Limit surface selection to shell edge surfaces
                 else if (_selection.LimitSelectionToShellEdges)
                 {
@@ -6966,7 +6965,7 @@ namespace PrePoMax
                     HashSet<BasePart> parts = mesh.GetPartsFromSelectionIds(afterIds, _selection.SelectItem);
                     HashSet<PartType> partTypes = new HashSet<PartType>();
                     foreach (var part in parts) partTypes.Add(part.PartType);
-                    if (partTypes.Count == 1) add = true;
+                    if (partTypes.Count <= 1) add = true;   // 0 : when substracting the last item
                 }
                 else add = true;
             }
@@ -6988,13 +6987,12 @@ namespace PrePoMax
             //
             if (highlight) HighlightSelection();
         }
-        public void RemoveLastSelectionNode(bool highlight)
+        public void RemoveLastSelectionNode()
         {
             _selection.RemoveLast();
+            HighlightSelection();       // one color selection
             //
-            _form.SelectionChanged();
-            //
-            if (highlight) HighlightSelection();
+            _form.SelectionChanged();   // if two color selection is needed it is done from the form 
         }
         //
         public int[] GetSelectionIds()
@@ -7912,7 +7910,7 @@ namespace PrePoMax
         {
             vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
             int[][] edgeCells = DisplayedMesh.GetEdgeCells(elementId, edgeNodeIds);
-
+            //
             if (edgeCells != null)
             {
                 DisplayedMesh.GetNodesAndCellsForEdges(edgeCells, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor,
@@ -7923,10 +7921,9 @@ namespace PrePoMax
                     float scale = GetScale();
                     Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId, data.Geometry.Nodes.Ids, ref data.Geometry.Nodes.Coor);
                 }
-
-                // name for the probe widget
+                // Set the name for the probe widget
                 data.Name = DisplayedMesh.GetEdgeIdFromNodeIds(elementId, edgeNodeIds).ToString();
-
+                //
                 return data;
             }
             else return null;

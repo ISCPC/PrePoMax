@@ -211,7 +211,7 @@ namespace PrePoMax
         }
         private void btnUndoSelection_Click(object sender, EventArgs e)
         {
-            _controller.RemoveLastSelectionNode(true);
+            _controller.RemoveLastSelectionNode();
         }
         private void btnClearSelection_Click(object sender, EventArgs e)
         {

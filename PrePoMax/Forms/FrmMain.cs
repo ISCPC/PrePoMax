@@ -4843,15 +4843,17 @@ namespace PrePoMax
                 // Disable the form during regenerate - check that the state is ready
                 if (tsslState.Text != Globals.RegeneratingText)
                 {
-                    UnitSystemType unitSystemType = _controller.Settings.General.UnitSystemType;
-                    .if (unitSystemType == UnitSystemType.Undefined)
+                    //UnitSystemType unitSystemType = _controller.Settings.General.UnitSystemType;
+                    //ModelSpaceEnum modelSpace = _controller.Model.Properties.ModelSpace;
+                    //
+                    //if (unitSystemType == UnitSystemType.Undefined || modelSpace == ModelSpaceEnum.Undefined)
                     {
-                        InvokeIfRequired(ShowForm, _frmNewModel, "Select Unit System", "Geometry & Model");
+                        InvokeIfRequired(ShowForm, _frmNewModel, "", "New Model");
                     }
-                    else
-                    {
-                        _controller.SetModelUnitSystemCommand(unitSystemType);
-                    }
+                    //else
+                    //{
+                    //    _controller.SetNewModelPropertiesCommand(modelSpace, unitSystemType);
+                    //}
                 }
             }
             catch (Exception ex)
@@ -4874,7 +4876,8 @@ namespace PrePoMax
         }
         public void UpdateUnitSystem(UnitSystem unitSystem)
         {
-            tsslUnitSystem.Text = "Unit system: " + unitSystem.UnitSystemType.GetDescription();
+            tsslUnitSystem.Text = "Model space: " + _controller.Model.Properties.ModelSpace.GetDisplayedName(); 
+            tsslUnitSystem.Text += "   Unit system: " + unitSystem.UnitSystemType.GetDescription();
             //
             SetScaleWidgetUnit(unitSystem);
         }
