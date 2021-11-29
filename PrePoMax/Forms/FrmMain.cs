@@ -1064,10 +1064,11 @@ namespace PrePoMax
         {
             try
             {
-                if (_controller.ModelChanged && MessageBoxes.ShowWarningQuestion("OK to close the current model?") !=DialogResult.OK) return;
+                if (_controller.ModelChanged &&
+                    MessageBoxes.ShowWarningQuestion("OK to close the current model?") != DialogResult.OK) return;
                 //
                 _controller.New();
-                //
+                // The model space and the unit system are undefined
                 SelectNewModelProperties();
                 // No need for ModelChanged
                 _controller.ModelChanged = false;
@@ -1077,7 +1078,7 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiOpen_Click(object sender, EventArgs e)
+        private async void tsmiOpen_Click(object sender, EventArgs e)
         {
             try
             {                
@@ -1100,8 +1101,10 @@ namespace PrePoMax
                     openFileDialog.FileName = "";
                     if (openFileDialog.ShowDialog() == DialogResult.OK)
                     {
-                        if (CheckBeforeOpen(openFileDialog.FileName)) OpenAsync(openFileDialog.FileName);
+                        if (CheckBeforeOpen(openFileDialog.FileName)) await OpenAsync(openFileDialog.FileName);
                     }
+                    // If the model space or the unit system are undefined
+                    SelectNewModelProperties();
                 }
             }
             catch (Exception ex)
@@ -1129,7 +1132,7 @@ namespace PrePoMax
             }
             return true;
         }
-        private async void OpenAsync(string fileName, bool resetCamera = true, Action callback = null)
+        private async Task OpenAsync(string fileName, bool resetCamera = true, Action callback = null)
         {
             bool stateSet = false;
             try
@@ -1180,6 +1183,9 @@ namespace PrePoMax
         {
             try
             {
+                // If the model space or the unit system are undefined
+                SelectNewModelProperties();
+                //
                 string[] files = GetFileNamesToImport();
                 if (files != null && files.Length > 0)
                 {
@@ -4843,17 +4849,16 @@ namespace PrePoMax
                 // Disable the form during regenerate - check that the state is ready
                 if (tsslState.Text != Globals.RegeneratingText)
                 {
-                    //UnitSystemType unitSystemType = _controller.Settings.General.UnitSystemType;
-                    //ModelSpaceEnum modelSpace = _controller.Model.Properties.ModelSpace;
+                    UnitSystemType unitSystemType = _controller.Settings.General.UnitSystemType;
+                    ModelSpaceEnum modelSpace = _controller.Model.Properties.ModelSpace;
                     //
-                    //if (unitSystemType == UnitSystemType.Undefined || modelSpace == ModelSpaceEnum.Undefined)
+                    if (unitSystemType == UnitSystemType.Undefined || modelSpace == ModelSpaceEnum.Undefined)
                     {
-                        InvokeIfRequired(ShowForm, _frmNewModel, "", "New Model");
+                        CloseAllForms();
+                        SetFormLoaction((Form)_frmNewModel);
+                        //
+                        if (_frmNewModel.PrepareForm("", "New Model")) _frmNewModel.ShowDialog(this);
                     }
-                    //else
-                    //{
-                    //    _controller.SetNewModelPropertiesCommand(modelSpace, unitSystemType);
-                    //}
                 }
             }
             catch (Exception ex)

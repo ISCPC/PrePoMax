@@ -153,8 +153,6 @@ namespace CaeModel
                         break;
                     case "_properties":
                         _properties = (ModelProperties)entry.Value;
-                        // Compatibility for version v.1.1.1
-                        if (_properties.ModelSpace == ModelSpaceEnum.Undefined) _properties.ModelSpace = ModelSpaceEnum.Three_D;
                         break;
                     case "_unitSystem":
                         _unitSystem = (UnitSystem)entry.Value; break;
@@ -590,7 +588,7 @@ namespace CaeModel
             }
             return true;
         }
-        // Input
+        // Import
         public string[] ImportGeometryFromStlFile(string fileName)
         {
             FeMesh mesh = FileInOut.Input.StlFileReader.Read(fileName);
@@ -851,16 +849,29 @@ namespace CaeModel
         }
         private string[] ImportGeometry(FeMesh mesh, ICollection<string> reservedPartNames)
         {
+            // Check for 2D geometry
+            if (_properties.ModelSpace == ModelSpaceEnum.Two_D && !mesh.BoundingBox.Is2D())
+            {
+                throw new CaeException("The selected file does not contain 2D geometry in x-y plane.");
+            }
+            //
             if (_geometry == null)
             {                
                 _geometry = new FeMesh(MeshRepresentation.Geometry);
                 mesh.ResetPartsColor();
             }
+            //
             string[] addedPartNames = _geometry.AddMesh(mesh, reservedPartNames);
             return addedPartNames;
         }
         public void ImportMesh(FeMesh mesh, ICollection<string> reservedPartNames, bool forceRenameParts = true)
         {
+            // Check for 2D mesh
+            if (_properties.ModelSpace == ModelSpaceEnum.Two_D && !mesh.BoundingBox.Is2D())
+            {
+                throw new CaeException("The selected file does not contain 2D geometry in x-y plane.");
+            }
+            //
             if (_mesh == null)
             {
                 _mesh = new FeMesh(MeshRepresentation.Mesh);

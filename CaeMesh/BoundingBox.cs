@@ -223,6 +223,13 @@ namespace CaeMesh
         {
             return (MaxX - MinX) * (MaxY - MinY) * (MaxZ - MinZ);
         }
+        public bool Is2D()
+        {
+            double epsilon = GetDiagonal() * 1E-6;
+            //
+            if (Math.Abs(MinZ) < epsilon && Math.Abs(MaxZ) < epsilon) return true;
+            else return false;
+        }
         //
         public bool IsEqualInSize(BoundingBox boundingBox)
         {

@@ -667,11 +667,6 @@ namespace PrePoMax
         }
         public async Task ImportFileAsync(string fileName)
         {
-            //     Clear(); // clear all
-            //     // Add the Clear() to the command queue and execute
-            //     // to clear the model on regenerate; false to not clear the commands or regenerate
-            //     ClearCommand(false);
-
             await Task.Run(() => ImportFileCommand(fileName));
         }
         public void ImportFile(string fileName)
@@ -768,15 +763,19 @@ namespace PrePoMax
                     {
                         string[] lines = ex.StackTrace.Split(new string[] { "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
                         string error = ex.Message;
-                        for (int i = 0; i < lines.Length; i++)
+                        if (!(ex is CaeException))
                         {
-                            if (lines[i].Contains("PrePoMax"))
+                            for (int i = 0; i < lines.Length; i++)
                             {
-                                error += Environment.NewLine + lines[i];
-                                break;
+                                if (lines[i].Contains("PrePoMax"))
+                                {
+                                    error += Environment.NewLine + lines[i];
+                                    break;
+                                }
                             }
                         }
-                        _errors.Add("The file " + assemblyFileName + " could not be imported correctly: " + error);
+                        _errors.Add("The file " + assemblyFileName + " could not be imported correctly: " +
+                                    Environment.NewLine + error);
                     }
                     //
                     if (File.Exists(partFileName)) File.Delete(partFileName);
@@ -6364,11 +6363,8 @@ namespace PrePoMax
             //
             SetLegendAndLimits();
         }
-        private void CheckModelUnitSystem()
+        private void ApplyModelUnitSystem()
         {
-            if (_model.UnitSystem == null) _model.UnitSystem = new UnitSystem();
-            if (_model.UnitSystem.UnitSystemType == UnitSystemType.Undefined) _form.SelectNewModelProperties();
-            //
             _model.UnitSystem.SetConverterUnits();          // model and results units systems can be different
             _form.UpdateUnitSystem(_model.UnitSystem);      // model and results units systems can be different
         }
@@ -8274,7 +8270,7 @@ namespace PrePoMax
                     {
                         if (_model.Geometry != null && _model.Geometry.Parts.Count > 0)
                         {
-                            CheckModelUnitSystem();
+                            ApplyModelUnitSystem();
                             //
                             DrawAllGeomParts();
                             AnnotateWithColorLegend();
@@ -8370,7 +8366,7 @@ namespace PrePoMax
                     {
                         if (_model.Mesh != null && _model.Mesh.Parts.Count > 0)
                         {
-                            CheckModelUnitSystem();
+                            ApplyModelUnitSystem();
                             // Must be inside to continue screen update
                             try
                             {
