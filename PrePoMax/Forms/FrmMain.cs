@@ -4855,7 +4855,7 @@ namespace PrePoMax
                     if (unitSystemType == UnitSystemType.Undefined || modelSpace == ModelSpaceEnum.Undefined)
                     {
                         CloseAllForms();
-                        SetFormLoaction((Form)_frmNewModel);
+                        SetFormLoaction(_frmNewModel);
                         //
                         if (_frmNewModel.PrepareForm("", "New Model")) _frmNewModel.ShowDialog(this);
                     }
@@ -4872,7 +4872,17 @@ namespace PrePoMax
             {
                 // Disable unit system selection during regenerate - check that the state is ready
                 if (tsslState.Text != Globals.RegeneratingText)
-                    InvokeIfRequired(ShowForm, _frmNewModel, "Select Unit System", "Results");
+                {
+                    UnitSystemType unitSystemType = _controller.Settings.General.UnitSystemType;
+                    //
+                    if (unitSystemType == UnitSystemType.Undefined)
+                    {
+                        CloseAllForms();
+                        SetFormLoaction(_frmNewModel);
+                        //
+                        if (_frmNewModel.PrepareForm("", "Results")) _frmNewModel.ShowDialog(this);
+                    }
+                }
             }
             catch (Exception ex)
             {

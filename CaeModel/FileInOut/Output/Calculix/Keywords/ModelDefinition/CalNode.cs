@@ -38,9 +38,11 @@ namespace FileInOut.Output.Calculix
         {
             StringBuilder sb = new StringBuilder();
             FeNode node;
-            foreach (var entry in _nodes)
+            List<int> idsSorted = _nodes.Keys.ToList();
+            idsSorted.Sort();
+            foreach (int nodeId in idsSorted)
             {
-                node = entry.Value;
+                node = _nodes[nodeId];
                 sb.AppendFormat("{0}, {1:E8}, {2:E8}, {3:E8}", node.Id, node.X, node.Y, node.Z).AppendLine();
             }
             //
