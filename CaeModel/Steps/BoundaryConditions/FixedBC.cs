@@ -18,8 +18,8 @@ namespace CaeModel
 
 
         // Constructors                                                                                                             
-        public FixedBC(string name, string regionName, RegionTypeEnum regionType)
-            : base(name, regionName, regionType) 
+        public FixedBC(string name, string regionName, RegionTypeEnum regionType, bool twoD)
+            : base(name, regionName, regionType, twoD)
         {
         }
 
@@ -27,7 +27,8 @@ namespace CaeModel
         // Methods                                                                                                                  
         public int[] GetConstrainedDirections()
         {
-            return new int[] { 1, 2, 3, 4, 5, 6 };
+            if (_twoD) return new int[] { 1, 2, 6 };
+            else return new int[] { 1, 2, 3, 4, 5, 6 };
         }
     }
 }

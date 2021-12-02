@@ -1797,7 +1797,7 @@ namespace PrePoMax
         {
             try
             {
-                ExplodedViewParameters parameters = _controller.GetCurrentExplodedViewScaleFactors();
+                ExplodedViewParameters parameters = _controller.GetCurrentExplodedViewParameters();
                 _frmExplodedView.SetExplodedViewParameters(parameters);
                 //
                 ShowForm(_frmExplodedView, _frmExplodedView.Text, null);

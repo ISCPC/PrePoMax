@@ -154,7 +154,10 @@ namespace PrePoMax.Forms
             // Create new reference point
             if (_referencePointToEditName == null)
             {
-                ReferencePoint = new FeReferencePoint(GetReferencePointName(), 0, 0, 0);
+                if (_controller.Model.Properties.ModelSpace == CaeModel.ModelSpaceEnum.Two_D)
+                    ReferencePoint = new FeReferencePoint(GetReferencePointName(), 0, 0);
+                else  ReferencePoint = new FeReferencePoint(GetReferencePointName(), 0, 0, 0);
+                //
                 ReferencePoint.Color = _controller.Settings.Pre.ConstraintSymbolColor;
             }
             // Edit existing reference point

@@ -80,8 +80,15 @@ namespace PrePoMax
             regionTypePropertyNamePairs.Add(RegionTypeEnum.SurfaceName, nameof(SurfaceName));
             regionTypePropertyNamePairs.Add(RegionTypeEnum.ReferencePointName, nameof(ReferencePointName));
             //
-            base.SetBase(_displacementRotation, regionTypePropertyNamePairs);
-            base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
+            SetBase(_displacementRotation, regionTypePropertyNamePairs);
+            DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
+            // 2D
+            if (_displacementRotation.TwoD)
+            {
+                DynamicCustomTypeDescriptor.GetProperty(nameof(U3)).SetIsBrowsable(false);
+                DynamicCustomTypeDescriptor.GetProperty(nameof(UR1)).SetIsBrowsable(false);
+                DynamicCustomTypeDescriptor.GetProperty(nameof(UR2)).SetIsBrowsable(false);
+            }
         }
 
 

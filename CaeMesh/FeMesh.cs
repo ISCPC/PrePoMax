@@ -588,6 +588,12 @@ namespace CaeMesh
 
 
         }
+        public double GetBoundingBoxAreaAsSquareSide()
+        {
+            return Math.Pow((_boundingBox.MaxX - _boundingBox.MinX) *
+                            (_boundingBox.MaxY - _boundingBox.MinY),
+                            1.0 / 2.0);
+        }
 
         // Convert to parabolic
         public static void LinearToParabolic(ref Dictionary<int, FeNode> nodes, ref Dictionary<int, FeElement> elements,
@@ -5913,11 +5919,6 @@ namespace CaeMesh
         private void AddSurfaceFromNodeSet(FeSurface surface)
         {
             CreateSurfaceItems(surface);
-        }
-        public void AddReferencePoint(string name, double x, double y, double z)
-        {
-            FeReferencePoint point = new FeReferencePoint(name, x, y, z);
-            _referencePoints.Add(name, point);
         }
         //
         public string[] AddMesh(FeMesh mesh, ICollection<string> reservedPartNames, bool forceRenameParts = true)

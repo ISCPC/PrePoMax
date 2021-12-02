@@ -81,16 +81,20 @@ namespace PrePoMax
             // Must be here to correctly hide the RPs defined in base class
             regionTypePropertyNamePairs.Add(RegionTypeEnum.ReferencePointName, nameof(ReferencePointName));
             //
-            base.SetBase(_submodel, regionTypePropertyNamePairs);
-            base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
-            // 
-            CustomPropertyDescriptor cpd;
+            SetBase(_submodel, regionTypePropertyNamePairs);
+            DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
             // Now lets display Unconstrained/From global model instead of True/False
             for (int i = 1; i <= 3; i++)
             {
-                cpd = DynamicCustomTypeDescriptor.GetProperty("U" + i);
                 DynamicCustomTypeDescriptor.RenameBooleanProperty("U" + i, "From global model", "Unconstrained");
                 DynamicCustomTypeDescriptor.RenameBooleanProperty("UR" + i, "From global model", "Unconstrained");
+            }
+            // 2D
+            if (_submodel.TwoD)
+            {
+                DynamicCustomTypeDescriptor.GetProperty(nameof(U3)).SetIsBrowsable(false);
+                DynamicCustomTypeDescriptor.GetProperty(nameof(UR1)).SetIsBrowsable(false);
+                DynamicCustomTypeDescriptor.GetProperty(nameof(UR2)).SetIsBrowsable(false);
             }
         }
 

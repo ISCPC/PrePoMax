@@ -1491,13 +1491,14 @@ namespace FileInOut.Input
                     if (dofStart == 11)
                     {
                         name = boundaryConditions.GetNextNumberedKey("Temperature");
-                        TemperatureBC tempBC = new TemperatureBC(name, regionName, RegionTypeEnum. NodeSetName, dofValue);
+                        TemperatureBC tempBC = new TemperatureBC(name, regionName, RegionTypeEnum. NodeSetName, dofValue, false);
                         boundaryConditions.Add(name, tempBC);
                     }
                     else
                     {
                         name = boundaryConditions.GetNextNumberedKey("Displacement_rotation");
-                        DisplacementRotation dispRotBC = new DisplacementRotation(name, regionName, RegionTypeEnum.NodeSetName);
+                        DisplacementRotation dispRotBC = new DisplacementRotation(name, regionName, RegionTypeEnum.NodeSetName,
+                                                                                  false);
                         // Assign DOF prescribed displacement
                         for (var j = dofStart; j <= dofEnd; j++)
                         {

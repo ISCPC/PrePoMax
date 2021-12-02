@@ -854,7 +854,8 @@ namespace FileInOut.Output
                     }
                     else if (ptl.Type == PreTensionLoadType.Displacement)
                     {
-                        DisplacementRotation dr = new DisplacementRotation(ptl.Name, name, RegionTypeEnum.ReferencePointName);
+                        DisplacementRotation dr = new DisplacementRotation(ptl.Name, name, RegionTypeEnum.ReferencePointName,
+                                                                           model.Properties.ModelSpace == ModelSpaceEnum.Two_D);
                         dr.U1 = ptl.Magnitude;
                         calKey = new CalDisplacementRotation(dr, referencePointsNodeIds, null);
                     }

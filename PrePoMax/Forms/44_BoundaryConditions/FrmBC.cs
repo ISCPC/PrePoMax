@@ -338,11 +338,12 @@ namespace PrePoMax.Forms
         {
             Step step = _controller.GetStep(_stepName);
             System.Drawing.Color color = _controller.Settings.Pre.BoundaryConditionSymbolColor;
+            bool twoD = _controller.Model.Properties.ModelSpace == ModelSpaceEnum.Two_D;
             // Populate list view
             ListViewItem item;
             // Fixed
             item = new ListViewItem("Fixed");
-            FixedBC fixedBC = new FixedBC(GetBoundaryConditionName("Fixed"), "", RegionTypeEnum.Selection);
+            FixedBC fixedBC = new FixedBC(GetBoundaryConditionName("Fixed"), "", RegionTypeEnum.Selection, twoD);
             if (step.IsBoundaryConditionSupported(fixedBC))
             {
                 ViewFixedBC vfix = new ViewFixedBC(fixedBC);
@@ -354,7 +355,7 @@ namespace PrePoMax.Forms
             // Displacement/Rotation
             item = new ListViewItem("Displacement/Rotation");
             DisplacementRotation displacementRotation = new DisplacementRotation(GetBoundaryConditionName("Displacement_rotation"),
-                                                                                 "", RegionTypeEnum.Selection);
+                                                                                 "", RegionTypeEnum.Selection, twoD);
             if (step.IsBoundaryConditionSupported(displacementRotation))
             {
                 ViewDisplacementRotation vdr = new ViewDisplacementRotation(displacementRotation);
@@ -365,7 +366,7 @@ namespace PrePoMax.Forms
             }
             // Submodel
             item = new ListViewItem("Submodel");
-            SubmodelBC submodelBC = new SubmodelBC(GetBoundaryConditionName("Submodel"), "", RegionTypeEnum.Selection);
+            SubmodelBC submodelBC = new SubmodelBC(GetBoundaryConditionName("Submodel"), "", RegionTypeEnum.Selection, twoD);
             if (step.IsBoundaryConditionSupported(submodelBC))
             {
                 ViewSubmodelBC vsm = new ViewSubmodelBC(submodelBC);
@@ -377,7 +378,7 @@ namespace PrePoMax.Forms
             // Temperature
             item = new ListViewItem("Temperature");
             TemperatureBC temperatureBC = new TemperatureBC(GetBoundaryConditionName("Temperature"), "",
-                                                                                     RegionTypeEnum.Selection, 0);
+                                                            RegionTypeEnum.Selection, 0, twoD);
             if (step.IsBoundaryConditionSupported(temperatureBC))
             {
                 ViewTemperatureBC vtmp = new ViewTemperatureBC(temperatureBC);

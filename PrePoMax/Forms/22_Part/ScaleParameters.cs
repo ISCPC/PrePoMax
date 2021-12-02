@@ -22,6 +22,7 @@ namespace PrePoMax.Forms
         private double _scaleFactorY;
         private double _scaleFactorZ;
         private bool _copy;
+        private bool _twoD;
 
 
         // Properties                                                                                                               
@@ -65,7 +66,15 @@ namespace PrePoMax.Forms
         [Description("Z coordinate of the center point.")]
         [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
         [Id(1, 2)]
-        public double CenterZ { get { return _scaleCenter[2]; } set { _scaleCenter[2] = value; } }
+        public double CenterZ
+        {
+            get { return _scaleCenter[2]; }
+            set
+            {
+                _scaleCenter[2] = value;
+                if (_twoD) _scaleCenter[2] = 0;
+            }
+        }
         //
         [Category("Scale factors")]
         [OrderedDisplayName(0, 10, "X")]
@@ -105,13 +114,13 @@ namespace PrePoMax.Forms
             set
             {
                 _scaleFactorZ = value;
-                if (_scaleFactorZ <= 0) _scaleFactorZ = 1;
+                if (_scaleFactorZ <= 0 || _twoD) _scaleFactorZ = 1;
             }
         }
 
 
         // Constructors                                                                                                             
-        public ScaleParameters()
+        public ScaleParameters(CaeModel.ModelSpaceEnum modelSpace)
         {
             Clear();
             //
@@ -123,6 +132,17 @@ namespace PrePoMax.Forms
             _scaleCenterItemSetData.ToStringType = ItemSetDataToStringType.SelectSinglePoint;
             //
             _dctd.RenameBooleanProperty(nameof(Copy), "Copy and scale", "Scale");
+            //
+            if (modelSpace == CaeModel.ModelSpaceEnum.Three_D) { _twoD = false; }
+            else if (modelSpace == CaeModel.ModelSpaceEnum.Two_D)
+            {
+                _twoD = true;
+                CenterZ = 0;
+                FactorZ = 1;
+                _dctd.GetProperty(nameof(CenterZ)).SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(FactorZ)).SetIsBrowsable(false);
+            }
+            else throw new NotSupportedException();
         }
 
 
@@ -136,6 +156,12 @@ namespace PrePoMax.Forms
             _scaleFactorX = 1;
             _scaleFactorY = 1;
             _scaleFactorZ = 1;
+            //
+            if (_twoD)
+            {
+                CenterZ = 0;
+                FactorZ = 1;
+            }
         }
     }
 }

@@ -32,7 +32,7 @@ namespace PrePoMax
         [NonSerialized] protected ViewGeometryModelResults _currentView;
         [NonSerialized] protected string _drawSymbolsForStep;
         [NonSerialized] protected Dictionary<ViewGeometryModelResults, Octree.Plane> _sectionViewPlanes;
-        [NonSerialized] protected Dictionary<ViewGeometryModelResults, ExplodedViewParameters> _explodedViewScaleFactors;
+        [NonSerialized] protected Dictionary<ViewGeometryModelResults, ExplodedViewParameters> _explodedViewParameters;
         [NonSerialized] protected AnnotateWithColorEnum _annotateWithColor;
         // Selection
         [NonSerialized] protected vtkSelectBy _selectBy;
@@ -128,11 +128,11 @@ namespace PrePoMax
         }
         public bool IsExplodedViewActive()
         {
-            return _explodedViewScaleFactors[_currentView].ScaleFactor != -1;
+            return _explodedViewParameters[_currentView].ScaleFactor != -1;
         }
-        public ExplodedViewParameters GetCurrentExplodedViewScaleFactors()
+        public ExplodedViewParameters GetCurrentExplodedViewParameters()
         {
-            return _explodedViewScaleFactors[_currentView];
+            return _explodedViewParameters[_currentView];
         }
         public AnnotateWithColorEnum AnnotateWithColor
         {
@@ -325,10 +325,10 @@ namespace PrePoMax
             _sectionViewPlanes.Add(ViewGeometryModelResults.Model, null);
             _sectionViewPlanes.Add(ViewGeometryModelResults.Results, null);
             //
-            _explodedViewScaleFactors = new Dictionary<ViewGeometryModelResults, ExplodedViewParameters>();
-            _explodedViewScaleFactors.Add(ViewGeometryModelResults.Geometry, new ExplodedViewParameters());
-            _explodedViewScaleFactors.Add(ViewGeometryModelResults.Model, new ExplodedViewParameters());
-            _explodedViewScaleFactors.Add(ViewGeometryModelResults.Results, new ExplodedViewParameters());
+            _explodedViewParameters = new Dictionary<ViewGeometryModelResults, ExplodedViewParameters>();
+            _explodedViewParameters.Add(ViewGeometryModelResults.Geometry, new ExplodedViewParameters());
+            _explodedViewParameters.Add(ViewGeometryModelResults.Model, new ExplodedViewParameters());
+            _explodedViewParameters.Add(ViewGeometryModelResults.Results, new ExplodedViewParameters());
             // Must be here, before Clear
             _errors = new List<string>();
             //
@@ -380,8 +380,8 @@ namespace PrePoMax
             _sectionViewPlanes[ViewGeometryModelResults.Geometry] = null;
             _sectionViewPlanes[ViewGeometryModelResults.Model] = null;
             // Exploded view
-            _explodedViewScaleFactors[ViewGeometryModelResults.Geometry] = new ExplodedViewParameters();
-            _explodedViewScaleFactors[ViewGeometryModelResults.Model] = new ExplodedViewParameters();
+            _explodedViewParameters[ViewGeometryModelResults.Geometry] = new ExplodedViewParameters();
+            _explodedViewParameters[ViewGeometryModelResults.Model] = new ExplodedViewParameters();
             //
             _model = new FeModel("Model-1");
             SetNewModelProperties(_model.Properties.ModelSpace, _model.UnitSystem.UnitSystemType);   // update widgets
@@ -398,7 +398,7 @@ namespace PrePoMax
             // Section view
             _sectionViewPlanes[ViewGeometryModelResults.Results] = null;
             // Exploded view
-            _explodedViewScaleFactors[ViewGeometryModelResults.Results] = new ExplodedViewParameters();
+            _explodedViewParameters[ViewGeometryModelResults.Results] = new ExplodedViewParameters();
             //
             if (_results != null || _history != null)
             {
@@ -1475,7 +1475,7 @@ namespace PrePoMax
             FeMesh mesh = DisplayedMesh;
             if (mesh == null) return;
             //
-            _explodedViewScaleFactors[CurrentView] = parameters;
+            _explodedViewParameters[CurrentView] = parameters;
             //
             mesh.RemoveExplodedView();
             //
@@ -1488,16 +1488,16 @@ namespace PrePoMax
         }
         public void SuppressExplodedViews(string[] partNames = null)
         {
-            if (_model.Geometry != null && _explodedViewScaleFactors[ViewGeometryModelResults.Geometry].ScaleFactor != -1)
+            if (_model.Geometry != null && _explodedViewParameters[ViewGeometryModelResults.Geometry].ScaleFactor != -1)
             {
                 _model.Geometry.SuppressExploededView(partNames);
             }
-            if (_model.Mesh != null && _explodedViewScaleFactors[ViewGeometryModelResults.Model].ScaleFactor != -1)
+            if (_model.Mesh != null && _explodedViewParameters[ViewGeometryModelResults.Model].ScaleFactor != -1)
             {
                 _model.Mesh.SuppressExploededView(partNames);
             }
             if (_results != null && _results.Mesh != null && 
-                _explodedViewScaleFactors[ViewGeometryModelResults.Results].ScaleFactor != -1)
+                _explodedViewParameters[ViewGeometryModelResults.Results].ScaleFactor != -1)
             {
                 _results.Mesh.SuppressExploededView(partNames);
             }
@@ -1524,7 +1524,7 @@ namespace PrePoMax
             FeMesh mesh = DisplayedMesh;
             if (mesh == null) return;
             //
-            ExplodedViewParameters parameters = _explodedViewScaleFactors[CurrentView];
+            ExplodedViewParameters parameters = _explodedViewParameters[CurrentView];
             if (parameters.ScaleFactor != -1)
             {
                 mesh.RemoveExplodedView();
@@ -1550,7 +1550,7 @@ namespace PrePoMax
             // Deactivate exploded view
             if (IsExplodedViewActive())
             {
-                ExplodedViewParameters parameters = _explodedViewScaleFactors[CurrentView].DeepClone();
+                ExplodedViewParameters parameters = _explodedViewParameters[CurrentView].DeepClone();
                 Dictionary<string, double[]> partOffsets = RemoveExplodedView(true);   // Highlight
                 _form.Clear3DSelection();
                 PreviewExplodedView(parameters, false, partOffsets);
@@ -1564,7 +1564,7 @@ namespace PrePoMax
                 if (mesh != null && mesh.Parts.Count > 1)
                 {
                     _form.Clear3DSelection();
-                    ExplodedViewParameters parameters = _explodedViewScaleFactors[CurrentView].DeepClone();
+                    ExplodedViewParameters parameters = _explodedViewParameters[CurrentView].DeepClone();
                     parameters.ScaleFactor = 0.5;
                     PreviewExplodedView(parameters, animate);
                     ApplyExplodedView(parameters);  // Highlight
@@ -1590,9 +1590,9 @@ namespace PrePoMax
                 //
                 _form.RemovePreviewedExplodedView(partNames);
                 //
-                if (_explodedViewScaleFactors[CurrentView].ScaleFactor != -1)
+                if (_explodedViewParameters[CurrentView].ScaleFactor != -1)
                 {
-                    _explodedViewScaleFactors[CurrentView].ScaleFactor = -1;
+                    _explodedViewParameters[CurrentView].ScaleFactor = -1;
                     //
                     partOffsets = mesh.RemoveExplodedView(partNames);
                     //
@@ -2529,7 +2529,7 @@ namespace PrePoMax
             //
             FeMesh mesh = FileInOut.Input.VolFileReader.Read(fileName, FileInOut.Input.ElementsToImport.All, false);
             // Exploded view
-            if (part.CADFileData != null && GetCurrentExplodedViewScaleFactors().ScaleFactor != -1)
+            if (part.CADFileData != null && GetCurrentExplodedViewParameters().ScaleFactor != -1)
             {
                 Dictionary<string, double[]> partOffsets = new Dictionary<string, double[]>();
                 foreach (var entry in mesh.Parts) partOffsets.Add(entry.Key, part.Offset);
@@ -3486,7 +3486,7 @@ namespace PrePoMax
             MeshPart newMeshPart;
             string[] mergedParts;
             //
-            ExplodedViewParameters parameters = _explodedViewScaleFactors[CurrentView].DeepClone();
+            ExplodedViewParameters parameters = _explodedViewParameters[CurrentView].DeepClone();
             RemoveExplodedView(false);
             _model.Mesh.MergeMeshParts(partNames, out newMeshPart, out mergedParts);
             ApplyExplodedView(parameters, null, false);
@@ -3877,7 +3877,7 @@ namespace PrePoMax
             BasePart[] modifiedParts;
             BasePart[] newParts;
             //
-            ExplodedViewParameters parameters = _explodedViewScaleFactors[CurrentView].DeepClone();
+            ExplodedViewParameters parameters = _explodedViewParameters[CurrentView].DeepClone();
             RemoveExplodedView(false);
             _model.Mesh.CreateMeshPartsFromElementSets(elementSetNames, out modifiedParts, out newParts);
             ApplyExplodedView(parameters, null, false);
@@ -6645,7 +6645,7 @@ namespace PrePoMax
             ResultPart newResultPart;
             string[] mergedParts;
             //
-            ExplodedViewParameters parameters = _explodedViewScaleFactors[CurrentView].DeepClone();
+            ExplodedViewParameters parameters = _explodedViewParameters[CurrentView].DeepClone();
             RemoveExplodedView(false);
             _results.Mesh.MergeResultParts(partNames, out newResultPart, out mergedParts);
             ApplyExplodedView(parameters, null, false);
@@ -9028,7 +9028,7 @@ namespace PrePoMax
                     if (count > 0)
                     {
                         if (boundaryCondition is FixedBC fix)
-                            DrawFixedBCSymbols(prefixName, coor, color, symbolSize, symbolLayer);
+                            DrawFixedBCSymbols(prefixName, coor, color, symbolSize, symbolLayer, boundaryCondition.TwoD);
                         else if (boundaryCondition is DisplacementRotation dispRot)
                             DrawDisplacementRotationSymbols(prefixName, dispRot, coor, color, symbolSize, symbolLayer);
                     }
@@ -9087,7 +9087,7 @@ namespace PrePoMax
             catch { } // do not show the exception to the user
         }
         public void DrawFixedBCSymbols(string prefixName, double[][] symbolCoor, Color color,
-                                       int symbolSize, vtkControl.vtkRendererLayer layer)
+                                       int symbolSize, vtkControl.vtkRendererLayer layer, bool twoD)
         {
             vtkControl.vtkMaxActorData data;
             List<double[]> allCoor = new List<double[]>();
@@ -9109,10 +9109,13 @@ namespace PrePoMax
                 allNormals.Add(normalY);
             }
             //
-            for (int i = 0; i < symbolCoor.Length; i++)
+            if (!twoD)
             {
-                allCoor.Add(symbolCoor[i]);
-                allNormals.Add(normalZ);
+                for (int i = 0; i < symbolCoor.Length; i++)
+                {
+                    allCoor.Add(symbolCoor[i]);
+                    allNormals.Add(normalZ);
+                }
             }
             //
             data = new vtkControl.vtkMaxActorData();
@@ -9127,16 +9130,19 @@ namespace PrePoMax
             allCoor.Clear();
             allNormals.Clear();
             //
-            for (int i = 0; i < symbolCoor.Length; i++)
+            if (!twoD)
             {
-                allCoor.Add(symbolCoor[i]);
-                allNormals.Add(normalX);
-            }
-            //
-            for (int i = 0; i < symbolCoor.Length; i++)
-            {
-                allCoor.Add(symbolCoor[i]);
-                allNormals.Add(normalY);
+                for (int i = 0; i < symbolCoor.Length; i++)
+                {
+                    allCoor.Add(symbolCoor[i]);
+                    allNormals.Add(normalX);
+                }
+                //
+                for (int i = 0; i < symbolCoor.Length; i++)
+                {
+                    allCoor.Add(symbolCoor[i]);
+                    allNormals.Add(normalY);
+                }
             }
             //
             for (int i = 0; i < symbolCoor.Length; i++)
@@ -11778,7 +11784,12 @@ namespace PrePoMax
             //
             if (_settings.Post.DeformationScaleFactorType == DeformationScaleFactorType.Automatic)
             {
-                float size = (float)_results.Mesh.GetBoundingBoxVolumeAsCubeSide();
+                float size;
+                // 2D
+                if (_results.Mesh.BoundingBox.Is2D()) size = (float)_results.Mesh.GetBoundingBoxAreaAsSquareSide();
+                // 3D
+                else size = (float)_results.Mesh.GetBoundingBoxVolumeAsCubeSide();
+                //
                 float maxDisp = _results.GetMaxDisplacement(_currentFieldData.StepId, _currentFieldData.StepIncrementId);
                 if (maxDisp == -float.MaxValue) scale = 0;       // the displacement filed does not exist
                 else if (maxDisp != 0) scale = size * 0.25f / maxDisp;

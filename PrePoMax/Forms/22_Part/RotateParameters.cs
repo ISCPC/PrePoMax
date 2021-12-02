@@ -22,6 +22,7 @@ namespace PrePoMax.Forms
         private double[] _endPoint;
         private double _angleDeg;
         private bool _copy;
+        private bool _twoD;
 
 
         // Properties                                                                                                               
@@ -34,7 +35,7 @@ namespace PrePoMax.Forms
         [Category("Rotation axis")]
         [OrderedDisplayName(0, 10, "Select the start point")]
         [DescriptionAttribute("Select the start point.")]
-        [EditorAttribute(typeof(SinglePointDataEditor), typeof(System.Drawing.Design.UITypeEditor))]
+        [EditorAttribute(typeof(SinglePointDataEditor), typeof(UITypeEditor))]
         [Id(1, 2)]
         public ItemSetData StartPointItemSet
         {
@@ -49,59 +50,90 @@ namespace PrePoMax.Forms
         [Category("Rotation axis")]
         [OrderedDisplayName(1, 10, "X")]
         [Description("X coordinate of the start point.")]
-        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(1, 2)]
-        public double X1 { get { return _startPoint[0]; } set { _startPoint[0] = value; } }
+        public double X1
+        {
+            get { return _startPoint[0]; }
+            set
+            {
+                _startPoint[0] = value;
+                if (_twoD) _endPoint[0] = value;
+            }
+        }
         //
         [Category("Rotation axis")]
         [OrderedDisplayName(2, 10, "Y")]
         [Description("Y coordinate of the start point.")]
-        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(1, 2)]
-        public double Y1 { get { return _startPoint[1]; } set { _startPoint[1] = value; } }
+        public double Y1
+        {
+            get { return _startPoint[1]; }
+            set
+            {
+                _startPoint[1] = value;
+                if (_twoD) _endPoint[1] = value;
+            }
+        }
         //
         [Category("Rotation axis")]
         [OrderedDisplayName(3, 10, "Z")]
         [Description("Z coordinate of the start point.")]
-        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(1, 2)]
-        public double Z1 { get { return _startPoint[2]; } set { _startPoint[2] = value; } }
+        public double Z1
+        {
+            get { return _startPoint[2]; }
+            set
+            {
+                _startPoint[2] = value;
+                if (_twoD) _startPoint[2] = 0;
+            }
+        }
         //
         [Category("Rotation axis")]
         [OrderedDisplayName(4, 10, "Select the end point")]
         [DescriptionAttribute("Select the end point.")]
-        [EditorAttribute(typeof(SinglePointDataEditor), typeof(System.Drawing.Design.UITypeEditor))]
+        [EditorAttribute(typeof(SinglePointDataEditor), typeof(UITypeEditor))]
         [Id(1, 2)]
         public ItemSetData EndPointItemSet
         {
             get { return _endPointItemSetData; }
             set
             {
-                if (value != _endPointItemSetData)
-                    _endPointItemSetData = value;
+                if (value != _endPointItemSetData) _endPointItemSetData = value;
             }
         }
         //
         [Category("Rotation axis")]
         [OrderedDisplayName(5, 10, "X")]
         [Description("X coordinate of the end point.")]
-        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(1, 2)]
         public double X2 { get { return _endPoint[0]; } set { _endPoint[0] = value; } }
         //
         [Category("Rotation axis")]
         [OrderedDisplayName(6, 10, "Y")]
         [Description("Y coordinate of the end point.")]
-        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(1, 2)]
         public double Y2 { get { return _endPoint[1]; } set { _endPoint[1] = value; } }
         //
         [Category("Rotation axis")]
         [OrderedDisplayName(7, 10, "Z")]
         [Description("Z coordinate of the end point.")]
-        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(1, 2)]
-        public double Z2 { get { return _endPoint[2]; } set { _endPoint[2] = value; } }
+        public double Z2
+        {
+            get { return _endPoint[2]; }
+            set
+            {
+                _endPoint[2] = value;
+                if (_twoD) _endPoint[2] = 1;
+            }
+        }
         //
         [Category("Rotation angle")]
         [OrderedDisplayName(0, 10, "Angle")]
@@ -112,7 +144,7 @@ namespace PrePoMax.Forms
 
 
         // Constructors                                                                                                             
-        public RotateParameters()
+        public RotateParameters(CaeModel.ModelSpaceEnum modelSpace)
         {
             Clear();
             //
@@ -126,6 +158,21 @@ namespace PrePoMax.Forms
             _endPointItemSetData.ToStringType = ItemSetDataToStringType.SelectSinglePoint;
             //
             _dctd.RenameBooleanProperty(nameof(Copy), "Copy and rotate", "Rotate");
+            //
+            if (modelSpace == CaeModel.ModelSpaceEnum.Three_D) { _twoD = false; }
+            else if (modelSpace == CaeModel.ModelSpaceEnum.Two_D)
+            {
+                _twoD = true;
+                Z1 = 0;
+                Z2 = 1;
+                _dctd.GetProperty(nameof(Z1)).SetIsBrowsable(false);
+                // End point
+                _dctd.GetProperty(nameof(EndPointItemSet)).SetIsBrowsable(false); 
+                _dctd.GetProperty(nameof(X2)).SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(Y2)).SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(Z2)).SetIsBrowsable(false);
+            }
+            else throw new NotSupportedException();
         }
 
 
@@ -136,6 +183,12 @@ namespace PrePoMax.Forms
             _startPoint = new double[3];
             _endPoint = new double[] { 0, 0, 0};
             _angleDeg = 90;
+            //
+            if (_twoD)
+            {
+                Z1 = 0;
+                Z2 = 1;
+            }
         }
     }
 }
