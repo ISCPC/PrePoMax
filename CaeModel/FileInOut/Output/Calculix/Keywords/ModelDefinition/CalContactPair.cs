@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeModel;
 using CaeMesh;
+using CaeGlobals;
 
 namespace FileInOut.Output.Calculix
 {
@@ -43,7 +44,7 @@ namespace FileInOut.Output.Calculix
             {
                 sb.AppendFormat(", Adjust=");
                 if (double.IsNaN(_contactPair.AdjustmentSize)) sb.Append("0");
-                else sb.AppendFormat("{0}", _contactPair.AdjustmentSize);
+                else sb.AppendFormat("{0}", _contactPair.AdjustmentSize.ToCalculiX16String());
             }
             //
             sb.AppendLine();

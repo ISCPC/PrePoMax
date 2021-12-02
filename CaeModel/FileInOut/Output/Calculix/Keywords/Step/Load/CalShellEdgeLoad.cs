@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeModel;
 using CaeMesh;
+using CaeGlobals;
 
 namespace FileInOut.Output.Calculix
 {
@@ -45,8 +46,9 @@ namespace FileInOut.Output.Calculix
             StringBuilder sb = new StringBuilder();
             FeSurface surface = _surfaces[_load.SurfaceName];
             FeFaceName faceName;
-            int faceId = -1;
+            int faceId;
             double magnitude;
+            //
             foreach (var entry in surface.ElementFaces)
             {
                 faceName = entry.Key;
@@ -54,7 +56,7 @@ namespace FileInOut.Output.Calculix
                 magnitude = _load.Magnitude;
                 if (faceName == FeFaceName.S1 || faceName == FeFaceName.S2) throw new NotSupportedException();
                 //
-                sb.AppendFormat("{0}, EDNOR{1}, {2}", entry.Value, faceId, magnitude).AppendLine();
+                sb.AppendFormat("{0}, EDNOR{1}, {2}", entry.Value, faceId, magnitude.ToCalculiX16String()).AppendLine();
             }
             return sb.ToString();
         }

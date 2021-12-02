@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeModel;
 using CaeMesh;
+using CaeGlobals;
 
 namespace FileInOut.Output.Calculix
 {
@@ -54,7 +55,7 @@ namespace FileInOut.Output.Calculix
                 else
                     magnitude = _load.Magnitude;
                 //
-                sb.AppendFormat("{0}, P{1}, {2}", entry.Value, faceName.ToString()[1], magnitude).AppendLine();
+                sb.AppendFormat("{0}, P{1}, {2}", entry.Value, faceName.ToString()[1], magnitude.ToCalculiX16String()).AppendLine();
             }
             return sb.ToString();
         }

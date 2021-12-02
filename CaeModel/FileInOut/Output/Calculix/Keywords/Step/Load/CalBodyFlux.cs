@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeModel;
 using CaeMesh;
+using CaeGlobals;
 
 namespace FileInOut.Output.Calculix
 {
@@ -35,7 +36,7 @@ namespace FileInOut.Output.Calculix
             //*Dflux
             //ElementSet-1, BF, 10
             StringBuilder sb = new StringBuilder();
-            sb.AppendFormat("{0}, BF, {1}{2}", _flux.RegionName, _flux.Magnitude, Environment.NewLine);
+            sb.AppendFormat("{0}, BF, {1}{2}", _flux.RegionName, _flux.Magnitude.ToCalculiX16String(), Environment.NewLine);
             return sb.ToString();
         }
     }

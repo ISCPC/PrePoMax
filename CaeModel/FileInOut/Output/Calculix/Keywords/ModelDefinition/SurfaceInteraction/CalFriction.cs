@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeModel;
 using CaeMesh;
+using CaeGlobals;
 
 namespace FileInOut.Output.Calculix
 {
@@ -33,8 +34,8 @@ namespace FileInOut.Output.Calculix
         public override string GetDataString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append(_friction.Coefficient);
-            if (!double.IsNaN(_friction.StickSlope)) sb.AppendFormat(", {0}", _friction.StickSlope);
+            sb.Append(_friction.Coefficient.ToCalculiX16String());
+            if (!double.IsNaN(_friction.StickSlope)) sb.AppendFormat(", {0}", _friction.StickSlope.ToCalculiX16String());
             sb.AppendLine();
             return sb.ToString();
         }

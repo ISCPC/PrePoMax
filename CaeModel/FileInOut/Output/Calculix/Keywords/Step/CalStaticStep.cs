@@ -39,9 +39,11 @@ namespace FileInOut.Output.Calculix
             {
                 string minMax = "";
                 if (_step.IncrementationType == IncrementationTypeEnum.Automatic)
-                    minMax = string.Format(", {0}, {1}", _step.MinTimeIncrement, _step.MaxTimeIncrement);
+                    minMax = string.Format(", {0}, {1}", _step.MinTimeIncrement.ToCalculiX16String(),
+                                           _step.MaxTimeIncrement.ToCalculiX16String());
                 //
-                return string.Format("{0}, {1}{2}{3}", _step.InitialTimeIncrement, _step.TimePeriod, minMax, Environment.NewLine);
+                return string.Format("{0}, {1}{2}{3}", _step.InitialTimeIncrement.ToCalculiX16String(),
+                                     _step.TimePeriod.ToCalculiX16String(), minMax, Environment.NewLine);
             }
             else return "";
         }

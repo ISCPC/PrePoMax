@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeModel;
 using CaeMesh;
+using CaeGlobals;
 
 namespace FileInOut.Output.Calculix
 {
@@ -53,13 +54,15 @@ namespace FileInOut.Output.Calculix
             }
             //
             double[] values = _displacementRotation.GetConstrainValues();
+            string[] stringValues = new string[values.Length];
+            for (int i = 0; i < values.Length; i++) stringValues[i] = values[i].ToCalculiX16String();
             // Node set
             if (_displacementRotation.RegionType == CaeGlobals.RegionTypeEnum.NodeSetName)
             {
                 for (int i = 0; i < directions.Length; i++)
                 {
                     sb.AppendFormat("{0}, {1}, {2}", _displacementRotation.RegionName, directions[i], directions[i]);
-                    if (!fixedBc) sb.AppendFormat(", {0}", values[i].ToString());
+                    if (!fixedBc) sb.AppendFormat(", {0}", stringValues);
                     sb.AppendLine();
                 }
             }
@@ -70,7 +73,7 @@ namespace FileInOut.Output.Calculix
                 for (int i = 0; i < directions.Length; i++)
                 {
                     sb.AppendFormat("{0}, {1}, {2}", _nodeSetNameOfSurface, directions[i], directions[i]);
-                    if (!fixedBc) sb.AppendFormat(", {0}", values[i].ToString());
+                    if (!fixedBc) sb.AppendFormat(", {0}", stringValues);
                     sb.AppendLine();
                 }
             }
@@ -84,7 +87,7 @@ namespace FileInOut.Output.Calculix
                     if (directions[i] <= 3) sb.AppendFormat("{0}, {1}, {2}", rpNodeIds[0], directions[i], directions[i]);
                     // Rotational directions - second node id:          6976, 2, 2, 0
                     else sb.AppendFormat("{0}, {1}, {2}", rpNodeIds[1], directions[i] - 3, directions[i] - 3);
-                    if (!fixedBc) sb.AppendFormat(", {0}", values[i].ToString());
+                    if (!fixedBc) sb.AppendFormat(", {0}", stringValues);
                     sb.AppendLine();
                 }
             }

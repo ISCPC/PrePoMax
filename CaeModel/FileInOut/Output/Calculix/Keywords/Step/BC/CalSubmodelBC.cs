@@ -37,13 +37,10 @@ namespace FileInOut.Output.Calculix
         }
         public override string GetDataString()
         {
-            StringBuilder sb = new StringBuilder();
-
             // *Boundary, Submodel, Step=1
             // nodeSet-1, 1, 1        node set id, start DOF, end DOF
-
+            StringBuilder sb = new StringBuilder();
             int[] directions = _submodel.GetConstrainedDirections();
-
             // Node set
             if (_submodel.RegionType == CaeGlobals.RegionTypeEnum.NodeSetName)
             {
@@ -64,7 +61,7 @@ namespace FileInOut.Output.Calculix
                 }
             }
             else throw new NotSupportedException();
-
+            //
             return sb.ToString();
         }
     }

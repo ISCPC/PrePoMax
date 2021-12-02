@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeModel;
 using CaeMesh;
+using CaeGlobals;
 
 namespace FileInOut.Output.Calculix
 {
@@ -40,10 +41,12 @@ namespace FileInOut.Output.Calculix
             for (int i = 0; i < data.Length; i++)
             {
                 if (_temperatureDependent)
-                    sb.AppendFormat("{0}, {1}, {2}{3}", data[i][0], data[i][1], data[i][2], Environment.NewLine);
+                    sb.AppendFormat("{0}, {1}, {2}{3}", data[i][0].ToCalculiX16String(), data[i][1].ToCalculiX16String(),
+                                    data[i][2].ToCalculiX16String(), Environment.NewLine);
                 else
                 {
-                    sb.AppendFormat("{0}, {1}{2}", data[i][0], data[i][1], Environment.NewLine);
+                    sb.AppendFormat("{0}, {1}{2}", data[i][0].ToCalculiX16String(), data[i][1].ToCalculiX16String(),
+                                    Environment.NewLine);
                     break;
                 }
             }

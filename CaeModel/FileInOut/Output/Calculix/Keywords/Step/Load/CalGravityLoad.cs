@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeModel;
 using CaeMesh;
+using CaeGlobals;
 
 namespace FileInOut.Output.Calculix
 {
@@ -47,7 +48,8 @@ namespace FileInOut.Output.Calculix
             }
             else f1 = f2 = f3 = 0;
 
-            sb.AppendFormat("{0}, Grav, {1}, {2}, {3}, {4}", _load.RegionName, len, f1, f2, f3);
+            sb.AppendFormat("{0}, Grav, {1}, {2}, {3}, {4}", _load.RegionName, len.ToCalculiX16String(),
+                            f1.ToCalculiX16String(), f2.ToCalculiX16String(), f3.ToCalculiX16String());
             sb.AppendLine();
             return sb.ToString();
         }

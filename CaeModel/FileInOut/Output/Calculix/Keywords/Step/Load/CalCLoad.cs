@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeModel;
 using CaeMesh;
+using CaeGlobals;
 
 namespace FileInOut.Output.Calculix
 {
@@ -50,15 +51,15 @@ namespace FileInOut.Output.Calculix
             foreach (var dir in directions)
             {
                 if (_load.RegionType == CaeGlobals.RegionTypeEnum.NodeId)
-                    sb.AppendFormat("{0}, {1}, {2}", _load.NodeId, dir, _load.GetDirection(dir - 1).ToString());
+                    sb.AppendFormat("{0}, {1}, {2}", _load.NodeId, dir, _load.GetDirection(dir - 1).ToCalculiX16String());
                 else if (_load.RegionType == CaeGlobals.RegionTypeEnum.NodeSetName) // node set
-                    sb.AppendFormat("{0}, {1}, {2}", _load.RegionName, dir, _load.GetDirection(dir - 1).ToString());
+                    sb.AppendFormat("{0}, {1}, {2}", _load.RegionName, dir, _load.GetDirection(dir - 1).ToCalculiX16String());
                 else if (_load.RegionType == CaeGlobals.RegionTypeEnum.ReferencePointName) // reference point
-                    sb.AppendFormat("{0}, {1}, {2}", rpNodeIds[0], dir, _load.GetDirection(dir - 1).ToString());
-
+                    sb.AppendFormat("{0}, {1}, {2}", rpNodeIds[0], dir, _load.GetDirection(dir - 1).ToCalculiX16String());
+                //
                 sb.AppendLine();
             }
-
+            //
             return sb.ToString();
         }
     }

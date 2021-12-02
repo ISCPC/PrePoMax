@@ -40,7 +40,10 @@ namespace FileInOut.Output.Calculix
         {
             StringBuilder sb = new StringBuilder();
             int count;
-            foreach (FeElement feElement in _elements)
+            // Sort
+            List<FeElement> sortedElements = _elements.OrderBy(element => element.Id).ToList();
+            //
+            foreach (FeElement feElement in sortedElements)
             {
                 sb.AppendFormat("{0}", feElement.Id);
                 count = 1;

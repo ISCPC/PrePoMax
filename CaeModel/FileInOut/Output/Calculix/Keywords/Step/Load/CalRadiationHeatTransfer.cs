@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeModel;
 using CaeMesh;
+using CaeGlobals;
 
 namespace FileInOut.Output.Calculix
 {
@@ -52,8 +53,8 @@ namespace FileInOut.Output.Calculix
             {
                 faceName = entry.Key;
                 sb.AppendFormat("{0}, R{1}{2}, {3}, {4}{5}", entry.Value, faceName.ToString()[1], cavityRadiation,
-                                _radiationHeatTransfer.SinkTemperature, _radiationHeatTransfer.Emissivity,
-                                Environment.NewLine);
+                                _radiationHeatTransfer.SinkTemperature.ToCalculiX16String(),
+                                _radiationHeatTransfer.Emissivity.ToCalculiX16String(), Environment.NewLine);
             }
             return sb.ToString();
         }

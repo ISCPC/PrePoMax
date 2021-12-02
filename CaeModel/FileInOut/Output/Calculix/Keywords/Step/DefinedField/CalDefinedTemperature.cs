@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeModel;
 using CaeMesh;
+using CaeGlobals;
 
 namespace FileInOut.Output.Calculix
 {
@@ -52,7 +53,8 @@ namespace FileInOut.Output.Calculix
             StringBuilder sb = new StringBuilder();
             if (_definedTemperature.Type == DefinedTemperatureTypeEnum.ByValue)
             {
-                sb.AppendFormat("{0}, {1}{2}", _regionName, _definedTemperature.Temperature, Environment.NewLine);
+                sb.AppendFormat("{0}, {1}{2}", _regionName, _definedTemperature.Temperature.ToCalculiX16String(),
+                                Environment.NewLine);
             }
             return sb.ToString();
         }

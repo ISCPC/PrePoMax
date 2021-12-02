@@ -33,12 +33,11 @@ namespace FileInOut.Output.Calculix
         public override string GetKeywordString()
         {
             //*RIGID BODY,NSET=rigid1,REF NODE=100,ROT NODE=101
-
             string nodeSetName;
             if (_rigidBody.RegionType == CaeGlobals.RegionTypeEnum.NodeSetName) nodeSetName = _rigidBody.RegionName;
             else if (_rigidBody.RegionType == CaeGlobals.RegionTypeEnum.SurfaceName) nodeSetName = _surfaceNodeSetName;
             else throw new NotSupportedException();
-            
+            //
             return string.Format("*Rigid body, Nset={0}, Ref node={1}, Rot node={2}{3}", nodeSetName,
                                  _referencePointsNodeIds[_rigidBody.ReferencePointName][0],
                                  _referencePointsNodeIds[_rigidBody.ReferencePointName][1],

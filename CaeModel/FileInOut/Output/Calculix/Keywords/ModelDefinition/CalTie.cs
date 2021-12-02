@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeModel;
 using CaeMesh;
+using CaeGlobals;
 
 namespace FileInOut.Output.Calculix
 {
@@ -32,7 +33,8 @@ namespace FileInOut.Output.Calculix
             //slaveSurfaceName, masterSurfaceName
             StringBuilder sb = new StringBuilder();
             sb.AppendFormat("*Tie, Name={0}", _tie.Name );
-            if (!double.IsNaN(_tie.PositionTolerance)) sb.AppendFormat(", Position tolerance={0}", _tie.PositionTolerance);
+            if (!double.IsNaN(_tie.PositionTolerance)) sb.AppendFormat(", Position tolerance={0}",
+                                                                       _tie.PositionTolerance.ToCalculiX16String());
             if (!_tie.Adjust) sb.AppendFormat(", Adjust=No");
             sb.AppendLine();
             return sb.ToString();

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeModel;
 using CaeMesh;
+using CaeGlobals;
 
 namespace FileInOut.Output.Calculix
 {
@@ -42,19 +43,20 @@ namespace FileInOut.Output.Calculix
             // 6975, 11, 11, 100        node id, start DOF, end DOF, value
             // Node set
             string regionName;
-            if (_temperatureBC.RegionType == CaeGlobals.RegionTypeEnum.NodeSetName)
+            if (_temperatureBC.RegionType == RegionTypeEnum.NodeSetName)
             {
                 regionName = _temperatureBC.RegionName;
             }
             // Surface
-            else if (_temperatureBC.RegionType == CaeGlobals.RegionTypeEnum.SurfaceName)
+            else if (_temperatureBC.RegionType == RegionTypeEnum.SurfaceName)
             {
                 if (_nodeSetNameOfSurface == null) throw new ArgumentException();
                 regionName = _nodeSetNameOfSurface;
             }
             else throw new NotSupportedException();
             //
-            sb.AppendFormat("{0}, 11, 11, {1}{2}", regionName, _temperatureBC.Temperature, Environment.NewLine);
+            sb.AppendFormat("{0}, 11, 11, {1}{2}", regionName, _temperatureBC.Temperature.ToCalculiX16String(),
+                            Environment.NewLine);
             //
             return sb.ToString();
         }

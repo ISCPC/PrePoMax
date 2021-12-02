@@ -6368,11 +6368,8 @@ namespace PrePoMax
             _model.UnitSystem.SetConverterUnits();          // model and results units systems can be different
             _form.UpdateUnitSystem(_model.UnitSystem);      // model and results units systems can be different
         }
-        private void CheckResultsUnitSystem()
+        private void ApplyResultsUnitSystem()
         {
-            if (_results.UnitSystem == null) _results.UnitSystem = new UnitSystem();
-            if (_results.UnitSystem.UnitSystemType == UnitSystemType.Undefined) _form.SelectResultsUnitSystem();
-            //
             _results.UnitSystem.SetConverterUnits();        // model and results units systems can be different
             _form.UpdateUnitSystem(_results.UnitSystem);    // model and results units systems can be different
         }
@@ -11315,7 +11312,7 @@ namespace PrePoMax
                 //
                 if (_results == null) return;
                 //
-                CheckResultsUnitSystem();
+                ApplyResultsUnitSystem();
                 // Settings - must be here before drawing parts to correctly set the numer of colors
                 SetLegendAndLimits();
                 AnnotateWithColorLegend();
@@ -11405,7 +11402,7 @@ namespace PrePoMax
             //
             if (_results == null) return false;
             //
-            CheckResultsUnitSystem();
+            ApplyResultsUnitSystem();
             // Settings - must be here before drawing parts to correctly set the numer of colors
             float scale = GetScale();
             SetLegendAndLimits();
@@ -11476,7 +11473,7 @@ namespace PrePoMax
             numFrames = -1;
             if (_results == null) return false;
             //
-            CheckResultsUnitSystem();
+            ApplyResultsUnitSystem();
             // Settings - must be here before drawing parts to correctly set the numer of colors
             float scale = GetScaleForAllStepsAndIncrements();
             SetLegendAndLimits();

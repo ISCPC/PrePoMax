@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeModel;
 using CaeMesh;
+using CaeGlobals;
 
 namespace FileInOut.Output.Calculix
 {
@@ -49,7 +50,8 @@ namespace FileInOut.Output.Calculix
         public override string GetDataString()
         {
             if (_autoCompute) return "";
-            else return string.Format("{0}, {1}, {2}{3}", _x, _y, _z, Environment.NewLine);
+            else return string.Format("{0}, {1}, {2}{3}", _x.ToCalculiX16String(), _y.ToCalculiX16String(),
+                                      _z.ToCalculiX16String(), Environment.NewLine);
         }
     }
 }

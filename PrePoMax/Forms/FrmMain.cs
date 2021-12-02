@@ -1103,8 +1103,6 @@ namespace PrePoMax
                     {
                         if (CheckBeforeOpen(openFileDialog.FileName)) await OpenAsync(openFileDialog.FileName);
                     }
-                    // If the model space or the unit system are undefined
-                    SelectNewModelProperties();
                 }
             }
             catch (Exception ex)
@@ -1144,6 +1142,9 @@ namespace PrePoMax
                     callback?.Invoke();                    
                 }
                 else MessageBoxes.ShowWarning("Another task is already running.");
+                // If the model space or the unit system are undefined
+                if (_controller.Model.Geometry != null || _controller.Model.Mesh != null) SelectNewModelProperties();
+                if (_controller.Results != null) SelectResultsUnitSystem();
             }
             catch (Exception ex)
             {
@@ -4849,7 +4850,7 @@ namespace PrePoMax
                 // Disable the form during regenerate - check that the state is ready
                 if (tsslState.Text != Globals.RegeneratingText)
                 {
-                    UnitSystemType unitSystemType = _controller.Settings.General.UnitSystemType;
+                    UnitSystemType unitSystemType = _controller.Model.UnitSystem.UnitSystemType;
                     ModelSpaceEnum modelSpace = _controller.Model.Properties.ModelSpace;
                     //
                     if (unitSystemType == UnitSystemType.Undefined || modelSpace == ModelSpaceEnum.Undefined)
@@ -4873,7 +4874,7 @@ namespace PrePoMax
                 // Disable unit system selection during regenerate - check that the state is ready
                 if (tsslState.Text != Globals.RegeneratingText)
                 {
-                    UnitSystemType unitSystemType = _controller.Settings.General.UnitSystemType;
+                    UnitSystemType unitSystemType = _controller.Results.UnitSystem.UnitSystemType;
                     //
                     if (unitSystemType == UnitSystemType.Undefined)
                     {
@@ -4891,8 +4892,7 @@ namespace PrePoMax
         }
         public void UpdateUnitSystem(UnitSystem unitSystem)
         {
-            tsslUnitSystem.Text = "Model space: " + _controller.Model.Properties.ModelSpace.GetDisplayedName(); 
-            tsslUnitSystem.Text += "   Unit system: " + unitSystem.UnitSystemType.GetDescription();
+            tsslUnitSystem.Text = "Unit system: " + unitSystem.UnitSystemType.GetDescription();
             //
             SetScaleWidgetUnit(unitSystem);
         }

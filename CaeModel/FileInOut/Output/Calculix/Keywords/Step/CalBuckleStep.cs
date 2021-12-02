@@ -34,7 +34,8 @@ namespace FileInOut.Output.Calculix
         }
         public override string GetDataString()
         {
-            return string.Format("{0}, {1}{2}", _step.NumOfBucklingFactors, _step.Accuracy, Environment.NewLine);
+            return string.Format("{0}, {1}{2}", _step.NumOfBucklingFactors, _step.Accuracy.ToCalculiX16String(),
+                                 Environment.NewLine);
         }
     }
 }

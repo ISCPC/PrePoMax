@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeModel;
 using CaeMesh;
+using CaeGlobals;
 
 namespace FileInOut.Output.Calculix
 {
@@ -36,7 +37,7 @@ namespace FileInOut.Output.Calculix
         public override string GetDataString()
         {
             if (_section.Type == SolidSectionType.TwoDimensional)
-                return string.Format("{0}{1}", _section.Thickness, Environment.NewLine);
+                return string.Format("{0}{1}", _section.Thickness.ToCalculiX16String(), Environment.NewLine);
             else return "";
         }
     }

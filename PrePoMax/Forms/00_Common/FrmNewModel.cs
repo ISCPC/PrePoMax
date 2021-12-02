@@ -122,7 +122,7 @@ namespace PrePoMax.Forms
             this.gbModelSpace.Size = new System.Drawing.Size(310, 72);
             this.gbModelSpace.TabIndex = 100;
             this.gbModelSpace.TabStop = false;
-            this.gbModelSpace.Text = "Model Sapce";
+            this.gbModelSpace.Text = "Model Space";
             // 
             // rb2D
             // 
@@ -258,8 +258,16 @@ namespace PrePoMax.Forms
                 _geometryAndModelOrResults = geometryAndModelOrResults;
             else throw new ArgumentException();
             //
-            gbModelSpace.Enabled = geometryAndModelOrResults == "New Model";
-            Text = "Properties";
+            if (geometryAndModelOrResults == "New Model")
+            {
+                gbModelSpace.Enabled = true;
+                Text = "Model Properties";
+            }
+            else
+            {
+                gbModelSpace.Enabled = false;
+                Text = "Results Properties";
+            }
             // Add list view items
             UnitSystemType defaultUnitSystemType = _controller.Settings.General.UnitSystemType;
             UnitSystemType[] unitSystemTypes = new UnitSystemType[] { UnitSystemType.UNIT_LESS,

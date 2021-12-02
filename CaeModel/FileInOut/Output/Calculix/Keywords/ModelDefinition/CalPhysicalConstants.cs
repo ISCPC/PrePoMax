@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeModel;
 using CaeMesh;
+using CaeGlobals;
 
 namespace FileInOut.Output.Calculix
 {
@@ -33,11 +34,11 @@ namespace FileInOut.Output.Calculix
             string newtonGravity = "";
             //
             if (_modelProperties.AbsoluteZero != double.PositiveInfinity)
-                absoluteZero = ", Absolute zero=" + _modelProperties.AbsoluteZero.ToString();
+                absoluteZero = ", Absolute zero=" + _modelProperties.AbsoluteZero.ToCalculiX16String();
             if (_modelProperties.StefanBoltzmann != double.PositiveInfinity)
-                stefanBoltzman = ", Stefan Boltzmann=" + _modelProperties.StefanBoltzmann.ToString();
+                stefanBoltzman = ", Stefan Boltzmann=" + _modelProperties.StefanBoltzmann.ToCalculiX16String();
             if (_modelProperties.NewtonGravity != double.PositiveInfinity)
-                newtonGravity = ", Newton gravity=" + _modelProperties.NewtonGravity.ToString();
+                newtonGravity = ", Newton gravity=" + _modelProperties.NewtonGravity.ToCalculiX16String();
             //
             if (absoluteZero != "" || stefanBoltzman != "" || newtonGravity != "")
             {

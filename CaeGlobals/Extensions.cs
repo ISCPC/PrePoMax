@@ -213,7 +213,13 @@ namespace CaeGlobals
                    selectBy == vtkSelectBy.GeometrySurfaceAngle ||
                    selectBy == vtkSelectBy.GeometryPart;
         }
-
+        // Double
+        public static string ToCalculiX16String(this double value)
+        {
+            string result = value.ToString();
+            if (result.Length > 16) result = value.ToString("E8");
+            return result;
+        }
         // String[]
         public static string ToRows(this string[] names, int maxRows = 30)
         {

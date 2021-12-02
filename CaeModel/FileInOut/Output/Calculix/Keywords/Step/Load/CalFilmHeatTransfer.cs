@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeModel;
 using CaeMesh;
+using CaeGlobals;
 
 namespace FileInOut.Output.Calculix
 {
@@ -45,8 +46,9 @@ namespace FileInOut.Output.Calculix
             foreach (var entry in surface.ElementFaces)
             {
                 faceName = entry.Key;
-                sb.AppendFormat("{0}, F{1}, {2}, {3}{4}", entry.Value, faceName.ToString()[1], _filmHeatTransfer.SinkTemperature,
-                                                          _filmHeatTransfer.FilmCoefficient, Environment.NewLine);
+                sb.AppendFormat("{0}, F{1}, {2}, {3}{4}", entry.Value, faceName.ToString()[1],
+                                _filmHeatTransfer.SinkTemperature.ToCalculiX16String(),
+                                _filmHeatTransfer.FilmCoefficient.ToCalculiX16String(), Environment.NewLine);
             }
             return sb.ToString();
         }

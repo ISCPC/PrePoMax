@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeModel;
 using CaeMesh;
+using CaeGlobals;
 
 namespace FileInOut.Output.Calculix
 {
@@ -25,11 +26,11 @@ namespace FileInOut.Output.Calculix
             _initialTemperature = initialTemperature;
             //
             _regionName = "";
-            if (_initialTemperature.RegionType == CaeGlobals.RegionTypeEnum.NodeSetName)
+            if (_initialTemperature.RegionType == RegionTypeEnum.NodeSetName)
                 _regionName += _initialTemperature.RegionName;
-            else if (_initialTemperature.RegionType == CaeGlobals.RegionTypeEnum.SurfaceName)
+            else if (_initialTemperature.RegionType == RegionTypeEnum.SurfaceName)
                 _regionName += model.Mesh.Surfaces[_initialTemperature.RegionName].NodeSetName;
-            else if (_initialTemperature.RegionType == CaeGlobals.RegionTypeEnum.Selection)
+            else if (_initialTemperature.RegionType == RegionTypeEnum.Selection)
             { }
             else throw new NotSupportedException();
         }
@@ -46,7 +47,7 @@ namespace FileInOut.Output.Calculix
         public override string GetDataString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendFormat("{0}, {1}{2}", _regionName, _initialTemperature.Temperature, Environment.NewLine);
+            sb.AppendFormat("{0}, {1}{2}", _regionName, _initialTemperature.Temperature.ToCalculiX16String(), Environment.NewLine);
             return sb.ToString();
         }
     }
