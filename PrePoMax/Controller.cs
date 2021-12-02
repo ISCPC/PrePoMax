@@ -6468,6 +6468,7 @@ namespace PrePoMax
                                                 Path.Combine(directory, inputFileNameWithoutExtension + ".dat"),
                                                 Path.Combine(directory, inputFileNameWithoutExtension + ".sta"),
                                                 Path.Combine(directory, inputFileNameWithoutExtension + ".cvg"),
+                                                Path.Combine(directory, inputFileNameWithoutExtension + ".12d"),
                                                 Path.Combine(directory, inputFileNameWithoutExtension + ".frd")
                                                 };
                 try

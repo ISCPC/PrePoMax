@@ -175,8 +175,8 @@
             this.btvLibrary.Size = new System.Drawing.Size(268, 370);
             this.btvLibrary.TabIndex = 4;
             this.btvLibrary.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.btvLibrary_AfterSelect);
+            this.btvLibrary.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.btvLibrary_MouseDoubleClick);
             this.btvLibrary.MouseDown += new System.Windows.Forms.MouseEventHandler(this.btvLibrary_MouseDown);
-            this.btvLibrary.MouseUp += new System.Windows.Forms.MouseEventHandler(this.btvLibrary_MouseUp);
             // 
             // btnOK
             // 

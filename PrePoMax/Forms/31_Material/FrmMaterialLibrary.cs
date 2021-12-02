@@ -85,9 +85,9 @@ namespace PrePoMax.Forms
             catch
             { }
         }
-        private void btvLibrary_MouseUp(object sender, MouseEventArgs e)
+        private void btvLibrary_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-
+            btnCopyToModel_Click(null, null);
         }
         //
         private void lvModelMaterials_MouseDown(object sender, MouseEventArgs e)

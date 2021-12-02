@@ -279,7 +279,6 @@ namespace CaeJob
             //AppendDataToOutput(" Peak physical memory usage: " + (Math.Round(_peakWorkingSet / 1048576.0, 3)).ToString() + " MB");
             //AppendDataToOutput(" Peak paged memory usage:    " + (Math.Round(_peakPagedMem / 1048576.0, 3)).ToString() + " MB");
             //Console.WriteLine($"  Peak virtual memory usage  : {_peakVirtualMem / 1024 / 1024}");
-
             //
             Timer_Tick(null, null);
             //
@@ -297,13 +296,13 @@ namespace CaeJob
             psi.Arguments = _argument;
             psi.WorkingDirectory = _workDirectory;
             psi.UseShellExecute = false;
-
+            //
             SetEnvironmentVariables(psi);
-
+            //
             _exe = new Process();
             _exe.StartInfo = psi;
             _exe.Start();
-
+            //
             int ms = 1000 * 3600 * 24 * 7 * 3; // 3 weeks
             if (_exe.WaitForExit(ms))
             {
@@ -332,12 +331,12 @@ namespace CaeJob
             psi.UseShellExecute = false;
             psi.RedirectStandardOutput = true;
             psi.RedirectStandardError = true;
-
+            //
             SetEnvironmentVariables(psi);
-
+            //
             _exe = new Process();
             _exe.StartInfo = psi;            
-
+            //
             using (AutoResetEvent outputWaitHandle = new AutoResetEvent(false))
             using (AutoResetEvent errorWaitHandle = new AutoResetEvent(false))
             {
@@ -357,7 +356,7 @@ namespace CaeJob
                         _peakWorkingSet = _exe.PeakWorkingSet64;
                     }
                 };
-
+                //
                 _exe.ErrorDataReceived += (sender, e) =>
                 {
                     if (e.Data == null)
@@ -371,9 +370,9 @@ namespace CaeJob
                         AppendDataToOutput(e.Data);
                     }
                 };
-
+                //
                 _exe.Start();
-
+                //
                 _exe.BeginOutputReadLine();
                 _exe.BeginErrorReadLine();
                 int ms = 1000 * 3600 * 24 * 7 * 3; // 3 weeks
@@ -428,9 +427,8 @@ namespace CaeJob
                     UInt32 childProcessId = (UInt32)item["ProcessId"];
                     if ((int)childProcessId != Process.GetCurrentProcess().Id)
                     {
-
                         KillAllProcessesSpawnedBy(childProcessId);
-
+                        //
                         try
                         {
                             Process childProcess = Process.GetProcessById((int)childProcessId);
@@ -443,7 +441,7 @@ namespace CaeJob
                 }
             }
         }
-
+        //
         private void AppendDataToOutput(string data)
         {
             if (_myLock == null) _myLock = new object();
@@ -455,9 +453,9 @@ namespace CaeJob
             {
                 string statusFileName = Path.Combine(_workDirectory, Name + ".sta");
                 if (!File.Exists(statusFileName)) return;
-
+                //
                 long size = new System.IO.FileInfo(statusFileName).Length;
-
+                //
                 if (size != _statusFileLength)
                 {
                     using (FileStream fileStream = new FileStream(statusFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
@@ -480,9 +478,9 @@ namespace CaeJob
             {
                 string convergenceFileName = Path.Combine(_workDirectory, Name + ".cvg");
                 if (!File.Exists(convergenceFileName)) return;
-
+                //
                 long size = new System.IO.FileInfo(convergenceFileName).Length;
-
+                //
                 if (size != _convergenceFileLength)
                 {
                     using (FileStream fileStream = new FileStream(convergenceFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))

@@ -161,16 +161,25 @@ namespace PrePoMax.Forms
             {
                 lvTypes.Enabled = true;
                 _viewSection = null;
-                //
+                // Preselect
                 HashSet<PartType> partTypes = new HashSet<PartType>();
                 foreach (var entry in _controller.Model.Mesh.Parts) partTypes.Add(entry.Value.PartType);
-                if (partTypes.Count == 1)
+                // 3D
+                if (_controller.Model.Properties.ModelSpace == ModelSpaceEnum.Three_D)
                 {
-                    if (partTypes.First() == PartType.Solid) _preselectIndex = 0;
-                    else if (partTypes.First() == PartType.Shell) _preselectIndex = 1;
-                    else throw new NotSupportedException();
+                    if (partTypes.Count == 1)
+                    {
+                        if (partTypes.First() == PartType.Solid) _preselectIndex = 0;
+                        else if (partTypes.First() == PartType.Shell) _preselectIndex = 1;
+                        else throw new NotSupportedException();
+                    }
+                    else HighlightSection(); // must be here if called from the menu
                 }
-                else HighlightSection(); // must be here if called from the menu
+                // 2D
+                else if (_controller.Model.Properties.ModelSpace == ModelSpaceEnum.Two_D)
+                {
+                    _preselectIndex = 0;
+                }
             }
             // Edit existing section
             else
@@ -226,7 +235,14 @@ namespace PrePoMax.Forms
             item = new ListViewItem("Solid section");
             if (materialNames.Length > 0)
             {
-                SolidSection ss = new SolidSection(GetSectionName("Solid"), materialNames[0], "", RegionTypeEnum.Selection);
+                double thickness;
+                ModelSpaceEnum modelSpace = _controller.Model.Properties.ModelSpace;
+                if (modelSpace == ModelSpaceEnum.Three_D) thickness = 0;    // hides the thickness property
+                else if (modelSpace == ModelSpaceEnum.Two_D) thickness = 1;
+                else throw new NotSupportedException();
+                //
+                SolidSection ss = new SolidSection(GetSectionName("Solid"), materialNames[0], "",
+                                                   RegionTypeEnum.Selection, thickness);
                 ViewSolidSection vss = new ViewSolidSection(ss);
                 vss.PopululateDropDownLists(materialNames, partNames, elementSetNames);
                 item.Tag = vss;
@@ -256,39 +272,77 @@ namespace PrePoMax.Forms
                 if (Section == null) { }
                 else if (Section is SolidSection || Section is ShellSection)
                 {
-                    if (Section.RegionType == RegionTypeEnum.PartName)
+                    // 3D
+                    if (_controller.Model.Properties.ModelSpace == ModelSpaceEnum.Three_D)
                     {
-                        PartType partType = _controller.Model.Mesh.Parts[Section.RegionName].PartType;
-                        if (Section is SolidSection && partType == PartType.Solid) return true;
-                        else if (Section is ShellSection && partType == PartType.Shell) return true;
-                        else return false;
-                    }
-                    else if (Section.RegionType == RegionTypeEnum.ElementSetName)
-                    {
-                        FeElementSet elementSet = _controller.Model.Mesh.ElementSets[Section.RegionName];
-                        if (Section is SolidSection && _controller.AreElementsAllSolidElements3D(elementSet.Labels)) return true;
-                        else if (Section is ShellSection && _controller.AreElementsAllShellElements(elementSet.Labels)) return true;
-                        else return false;
-                    }
-                    else if (Section.RegionType == RegionTypeEnum.Selection)
-                    {
-                        if (Section.CreationIds != null)
+                        if (Section.RegionType == RegionTypeEnum.PartName)
                         {
-                            int partId;
-                            BasePart part;
-                            int[] geometryIds = Section.CreationIds;
-                            foreach (int geometryId in geometryIds)
-                            {
-                                partId = FeMesh.GetItemTypePartIdsFromGeometryId(geometryId)[2];
-                                part = _controller.Model.Mesh.GetPartById(partId);
-                                if (part == null) { }
-                                else if (Section is SolidSection && part.PartType != PartType.Solid) return false;
-                                else if (Section is ShellSection && part.PartType != PartType.Shell) return false;
-                            }
-                            return true;
+                            PartType partType = _controller.Model.Mesh.Parts[Section.RegionName].PartType;
+                            if (Section is SolidSection && partType == PartType.Solid) return true;
+                            else if (Section is ShellSection && partType == PartType.Shell) return true;
+                            else return false;
                         }
+                        else if (Section.RegionType == RegionTypeEnum.ElementSetName)
+                        {
+                            FeElementSet elementSet = _controller.Model.Mesh.ElementSets[Section.RegionName];
+                            if (Section is SolidSection && _controller.AreElementsAllSolidElements3D(elementSet.Labels)) return true;
+                            else if (Section is ShellSection && _controller.AreElementsAllShellElements(elementSet.Labels)) return true;
+                            else return false;
+                        }
+                        else if (Section.RegionType == RegionTypeEnum.Selection)
+                        {
+                            if (Section.CreationIds != null)
+                            {
+                                int partId;
+                                BasePart part;
+                                int[] geometryIds = Section.CreationIds;
+                                foreach (int geometryId in geometryIds)
+                                {
+                                    partId = FeMesh.GetItemTypePartIdsFromGeometryId(geometryId)[2];
+                                    part = _controller.Model.Mesh.GetPartById(partId);
+                                    if (part == null) { }
+                                    else if (Section is SolidSection && part.PartType != PartType.Solid) return false;
+                                    else if (Section is ShellSection && part.PartType != PartType.Shell) return false;
+                                }
+                                return true;
+                            }
+                        }
+                        else throw new NotSupportedException();
                     }
-                    else throw new NotSupportedException();
+                    // 2D
+                    else if (_controller.Model.Properties.ModelSpace == ModelSpaceEnum.Two_D)
+                    {
+                        if (Section.RegionType == RegionTypeEnum.PartName)
+                        {
+                            PartType partType = _controller.Model.Mesh.Parts[Section.RegionName].PartType;
+                            if (Section is SolidSection && partType == PartType.Shell) return true;
+                            else return false;
+                        }
+                        else if (Section.RegionType == RegionTypeEnum.ElementSetName)
+                        {
+                            FeElementSet elementSet = _controller.Model.Mesh.ElementSets[Section.RegionName];
+                            if (Section is SolidSection && _controller.AreElementsAllShellElements(elementSet.Labels)) return true;
+                            else return false;
+                        }
+                        else if (Section.RegionType == RegionTypeEnum.Selection)
+                        {
+                            if (Section.CreationIds != null)
+                            {
+                                int partId;
+                                BasePart part;
+                                int[] geometryIds = Section.CreationIds;
+                                foreach (int geometryId in geometryIds)
+                                {
+                                    partId = FeMesh.GetItemTypePartIdsFromGeometryId(geometryId)[2];
+                                    part = _controller.Model.Mesh.GetPartById(partId);
+                                    if (part == null) { }
+                                    else if (Section is SolidSection && part.PartType != PartType.Shell) return false;
+                                }
+                                return true;
+                            }
+                        }
+                        else throw new NotSupportedException();
+                    }
                 }
                 else throw new NotSupportedException();
                 //

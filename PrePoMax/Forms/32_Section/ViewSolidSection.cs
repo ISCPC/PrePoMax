@@ -17,11 +17,10 @@ namespace PrePoMax
         
 
         // Properties                                                                                                               
-        [Browsable(false)]
         [CategoryAttribute("Data")]
         [OrderedDisplayName(6, 10, "Thickness")]
         [DescriptionAttribute("Set the thickness in the case of 2D plain strain/stress state.")]
-        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
+        [TypeConverter(typeof(StringLengthConverter))]
         public double Thickness { get { return _solidSection.Thickness; } set { _solidSection.Thickness = value; } }
         //
         [Browsable(false)]
@@ -36,6 +35,12 @@ namespace PrePoMax
         {
             _solidSection = solidSection;
             SetBase(_solidSection);
+            //
+            if (_solidSection.Type == CaeModel.SolidSectionType.ThreeDimensional)
+                DynamicCustomTypeDescriptor.GetProperty(nameof(Thickness)).SetIsBrowsable(false);
+            else if (_solidSection.Type == CaeModel.SolidSectionType.TwoDimensional)
+                DynamicCustomTypeDescriptor.GetProperty(nameof(Thickness)).SetIsBrowsable(true);
+            else throw new NotSupportedException();
         }
 
 
