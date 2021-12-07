@@ -9404,7 +9404,7 @@ namespace PrePoMax
                 _model.Mesh.CreateSurfaceItems(surface);
                 _model.Mesh.Surfaces.Add(surface.Name, surface);    // Must add here for the remove to work properly 
                 //
-                if (surface.ElementFaces == null) // after meshing/update the node set in not yet updated
+                if (surface.ElementFaces == null) // after meshing/update the node set is not yet updated
                 {
                     RemoveSurfaceAndElementFacesFromModel(new string[] { surface.Name });
                     return;
@@ -9444,7 +9444,7 @@ namespace PrePoMax
             int id;
             double[] faceNormal;
             bool shellElement;
-            bool[] shellFacesS1 = new bool[distributedElementIds.Length];
+            bool shellEdge;
             double[][] distributedCoor = new double[distributedElementIds.Length][];
             double[][] distributedLoadNormals = new double[distributedElementIds.Length][];
             for (int i = 0; i < distributedElementIds.Length; i++)
@@ -9453,7 +9453,8 @@ namespace PrePoMax
                 _model.Mesh.GetElementFaceCenterAndNormal(allElementIds[id], allElementFaceNames[id], out faceCenter,
                                                           out faceNormal, out shellElement);
                 //
-                if (!shellElement)
+                shellEdge = shellElement && allElementFaceNames[id] != FeFaceName.S1 && allElementFaceNames[id] != FeFaceName.S2;
+                if (!shellElement || shellEdge)
                 {
                     faceNormal[0] *= -1;
                     faceNormal[1] *= -1;
@@ -9564,7 +9565,14 @@ namespace PrePoMax
                     if (layer == vtkControl.vtkRendererLayer.Selection)
                         DrawSurfaceEdge(prefixName, dLoad.SurfaceName, color, layer, true, false, onlyVisible);
                     //
-                    if (count > 0) DrawDLoadSymbols(prefixName, dLoad, color, symbolSize, layer);
+                    if (count > 0)
+                    {
+                        // 2D
+                        if (dLoad.TwoD)
+                            DrawShellEdgeLoadSymbols(prefixName, dLoad.SurfaceName, dLoad.Magnitude, color, symbolSize, layer);
+                        // 3D
+                        else DrawDLoadSymbols(prefixName, dLoad, color, symbolSize, layer);
+                    }
                 }
                 else if (load is STLoad stLoad)
                 {
@@ -9584,7 +9592,8 @@ namespace PrePoMax
                     //
                     count += DrawSurface(prefixName, shellEdgeLoad.SurfaceName, color, layer, true, false, onlyVisible);
                     //
-                    if (count > 0) DrawShellEdgeLoadSymbols(prefixName, shellEdgeLoad, color, symbolSize, layer);
+                    if (count > 0) DrawShellEdgeLoadSymbols(prefixName, shellEdgeLoad.SurfaceName, shellEdgeLoad.Magnitude,
+                                                            color, symbolSize, layer);
                 }
                 else if (load is GravityLoad gLoad)
                 {
@@ -9884,10 +9893,10 @@ namespace PrePoMax
                 _form.AddOrientedArrowsActor(data, symbolSize);
             }
         }
-        public void DrawShellEdgeLoadSymbols(string prefixName, ShellEdgeLoad shellEdgeLoad, Color color, int symbolSize,
-                                             vtkControl.vtkRendererLayer layer)
+        public void DrawShellEdgeLoadSymbols(string prefixName, string surfaceName, double magnitude, Color color,
+                                             int symbolSize, vtkControl.vtkRendererLayer layer)
         {
-            FeSurface surface = _model.Mesh.Surfaces[shellEdgeLoad.SurfaceName];
+            FeSurface surface = _model.Mesh.Surfaces[surfaceName];
             //
             List<int> allElementIds = new List<int>();
             List<FeFaceName> allElementFaceNames = new List<FeFaceName>();
@@ -9918,7 +9927,7 @@ namespace PrePoMax
                 id = distributedElementIds[i];
                 _model.Mesh.GetElementFaceCenterAndNormal(allElementIds[id], allElementFaceNames[id], out faceCenter,
                                                           out faceNormal, out shellElement);
-                if (shellEdgeLoad.Magnitude < 0)
+                if (magnitude < 0)
                 {
                     faceNormal[0] *= -1;
                     faceNormal[1] *= -1;
@@ -9939,7 +9948,7 @@ namespace PrePoMax
                 data.Geometry.Nodes.Normals = distributedLoadNormals.ToArray();
                 data.SectionViewPossible = false;
                 ApplyLighting(data);
-                bool translate = shellEdgeLoad.Magnitude > 0;
+                bool translate = magnitude > 0;
                 _form.AddOrientedArrowsActor(data, symbolSize, translate);
             }
         }
@@ -10405,7 +10414,6 @@ namespace PrePoMax
                 // Draw node set as geometry
                 if (nodeSet.CreationData != null && nodeSet.CreationData.SelectItem == vtkSelectItem.Geometry)
                 {
-                    // In order for the Regenerate history to work perform the selection
                     int[] ids = nodeSet.CreationIds;
                     //
                     if (ids == null || ids.Length == 0) return 0;
@@ -10517,21 +10525,29 @@ namespace PrePoMax
             {
                 if (s.Type == FeSurfaceType.Element && s.ElementFaces != null)
                 {
-                    vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
-                    data.Name = prefixName + Globals.NameSeparator + surfaceName;
-                    data.Color = color;
-                    data.Layer = layer;
-                    data.CanHaveElementEdges = true;
-                    data.BackfaceCulling = backfaceCulling;
-                    data.DrawOnGeometry = true;
-                    data.UseSecondaryHighightColor = useSecondaryHighlightColor;
-                    _model.Mesh.GetSurfaceGeometry(surfaceName, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.CellNodeIds,
-                                                   out data.Geometry.Cells.Types, onlyVisible);
-                    //
-                    ApplyLighting(data);
-                    _form.Add3DCells(data);
-                    //
-                    return data.Geometry.Cells.CellNodeIds.Length;
+                    if (s.SurfaceFaceTypes == FeSurfaceFaceTypes.ShellEdgeFaces)
+                    {
+                        return DrawSurfaceEdge(prefixName, surfaceName, color, layer, backfaceCulling,
+                                               useSecondaryHighlightColor, onlyVisible);
+                    }
+                    else
+                    {
+                        vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
+                        data.Name = prefixName + Globals.NameSeparator + surfaceName;
+                        data.Color = color;
+                        data.Layer = layer;
+                        data.CanHaveElementEdges = true;
+                        data.BackfaceCulling = backfaceCulling;
+                        data.DrawOnGeometry = true;
+                        data.UseSecondaryHighightColor = useSecondaryHighlightColor;
+                        _model.Mesh.GetSurfaceGeometry(surfaceName, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.CellNodeIds,
+                                                       out data.Geometry.Cells.Types, onlyVisible);
+                        //
+                        ApplyLighting(data);
+                        _form.Add3DCells(data);
+                        //
+                        return data.Geometry.Cells.CellNodeIds.Length;
+                    }
                 }
                 else if (s.Type == FeSurfaceType.Node && Model.Mesh.NodeSets.TryGetValue(s.NodeSetName, out ns))
                 {
@@ -10597,7 +10613,7 @@ namespace PrePoMax
             ApplyLighting(data);
             _form.Add3DCells(data);
         }
-        public void DrawSurfaceEdge(string prefixName, string surfaceName, Color color,
+        public int DrawSurfaceEdge(string prefixName, string surfaceName, Color color,
                                     vtkControl.vtkRendererLayer layer, bool backfaceCulling = true,
                                     bool useSecondaryHighlightColor = false, bool onlyVisible = false)
         {
@@ -10608,7 +10624,8 @@ namespace PrePoMax
                 if (s.Type == FeSurfaceType.Element && s.ElementFaces != null)
                 {
                     vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
-                    data.Name = prefixName + Globals.NameSeparator + surfaceName;
+                    data.Name = prefixName + Globals.NameSeparator + surfaceName + "_edge";
+                    data.LineWidth = 2;
                     data.Color = color;
                     data.Layer = layer;
                     data.CanHaveElementEdges = true;
@@ -10620,12 +10637,15 @@ namespace PrePoMax
                     //
                     ApplyLighting(data);
                     _form.Add3DCells(data);
+                    //
+                    return data.Geometry.Cells.CellNodeIds.Length;
                 }
                 else if (s.Type == FeSurfaceType.Node && Model.Mesh.NodeSets.TryGetValue(s.NodeSetName, out ns))
                 {
                     //DrawNodeSet(prefixName + Globals.NameSeparator + surfaceName, s.NodeSetName, color, layer);
                 }
             }
+            return 0;
         }
         // Draw geometry ids
         public void DrawEdgesByGeometryEdgeIds(string prefixName, int[] ids, Color color,

@@ -849,13 +849,13 @@ namespace FileInOut.Output
                     if (ptl.Type == PreTensionLoadType.Force)
                     {
                         int nodeId = referencePointsNodeIds[name][0];
-                        CLoad cLoad = new CLoad(ptl.Name, nodeId, ptl.Magnitude, 0, 0);
+                        CLoad cLoad = new CLoad(ptl.Name, nodeId, ptl.Magnitude, 0, 0, ptl.TwoD);
                         calKey = new CalCLoad(cLoad, referencePointsNodeIds);
                     }
                     else if (ptl.Type == PreTensionLoadType.Displacement)
                     {
                         DisplacementRotation dr = new DisplacementRotation(ptl.Name, name, RegionTypeEnum.ReferencePointName,
-                                                                           model.Properties.ModelSpace == ModelSpaceEnum.Two_D);
+                                                                           ptl.TwoD);
                         dr.U1 = ptl.Magnitude;
                         calKey = new CalDisplacementRotation(dr, referencePointsNodeIds, null);
                     }

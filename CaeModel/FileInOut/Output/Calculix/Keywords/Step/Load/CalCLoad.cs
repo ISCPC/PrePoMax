@@ -41,7 +41,7 @@ namespace FileInOut.Output.Calculix
             StringBuilder sb = new StringBuilder();
             //
             int[] rpNodeIds = null;
-            if (_load.RegionType == CaeGlobals.RegionTypeEnum.ReferencePointName) rpNodeIds = _referencePointsNodeIds[_load.RegionName];
+            if (_load.RegionType == RegionTypeEnum.ReferencePointName) rpNodeIds = _referencePointsNodeIds[_load.RegionName];
             //
             List<int> directions = new List<int>();
             if (_load.F1 != 0) directions.Add(1);
@@ -50,7 +50,7 @@ namespace FileInOut.Output.Calculix
             //
             foreach (var dir in directions)
             {
-                if (_load.RegionType == CaeGlobals.RegionTypeEnum.NodeId)
+                if (_load.RegionType == RegionTypeEnum.NodeId)
                     sb.AppendFormat("{0}, {1}, {2}", _load.NodeId, dir, _load.GetDirection(dir - 1).ToCalculiX16String());
                 else if (_load.RegionType == CaeGlobals.RegionTypeEnum.NodeSetName) // node set
                     sb.AppendFormat("{0}, {1}, {2}", _load.RegionName, dir, _load.GetDirection(dir - 1).ToCalculiX16String());

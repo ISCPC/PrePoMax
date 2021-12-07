@@ -5,8 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeModel;
 using CaeGlobals;
-using System.Windows.Forms;
 using CaeMesh;
+using System.Windows.Forms;
 
 namespace PrePoMax.Forms
 {
@@ -176,7 +176,7 @@ namespace PrePoMax.Forms
                     else HighlightSection(); // must be here if called from the menu
                 }
                 // 2D
-                else if (_controller.Model.Properties.ModelSpace == ModelSpaceEnum.Two_D)
+                else if (_controller.Model.Properties.ModelSpace.IsTwoD())
                 {
                     _preselectIndex = 0;
                 }
@@ -233,16 +233,11 @@ namespace PrePoMax.Forms
             ListViewItem item;
             // Solid section
             item = new ListViewItem("Solid section");
+            bool twoD = _controller.Model.Properties.ModelSpace.IsTwoD();
             if (materialNames.Length > 0)
             {
-                double thickness;
-                ModelSpaceEnum modelSpace = _controller.Model.Properties.ModelSpace;
-                if (modelSpace == ModelSpaceEnum.Three_D) thickness = 0;    // hides the thickness property
-                else if (modelSpace == ModelSpaceEnum.Two_D) thickness = 1;
-                else throw new NotSupportedException();
-                //
                 SolidSection ss = new SolidSection(GetSectionName("Solid"), materialNames[0], "",
-                                                   RegionTypeEnum.Selection, thickness);
+                                                   RegionTypeEnum.Selection, 1, twoD);
                 ViewSolidSection vss = new ViewSolidSection(ss);
                 vss.PopululateDropDownLists(materialNames, partNames, elementSetNames);
                 item.Tag = vss;
@@ -253,7 +248,8 @@ namespace PrePoMax.Forms
             item = new ListViewItem("Shell section");
             if (materialNames.Length > 0)
             {
-                ShellSection ss = new ShellSection(GetSectionName("Shell"), materialNames[0], "", RegionTypeEnum.Selection, 1);
+                ShellSection ss = new ShellSection(GetSectionName("Shell"), materialNames[0], "", RegionTypeEnum.Selection,
+                                                   1, twoD);
                 ViewShellSection vss = new ViewShellSection(ss);
                 vss.PopululateDropDownLists(materialNames, partNames, elementSetNames);
                 item.Tag = vss;
@@ -310,7 +306,7 @@ namespace PrePoMax.Forms
                         else throw new NotSupportedException();
                     }
                     // 2D
-                    else if (_controller.Model.Properties.ModelSpace == ModelSpaceEnum.Two_D)
+                    else if (_controller.Model.Properties.ModelSpace.IsTwoD())
                     {
                         if (Section.RegionType == RegionTypeEnum.PartName)
                         {

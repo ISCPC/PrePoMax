@@ -17,6 +17,8 @@ namespace CaeModel
         private string _regionName;
         private Selection _creationData;
         private int[] _creationIds;
+        private bool _twoD;
+
 
         // Properties                                                                                                               
         public string MaterialName { get { return _materialName; } set { _materialName = value; } }
@@ -24,10 +26,11 @@ namespace CaeModel
         public string RegionName { get { return _regionName; } set { _regionName = value; } }
         public int[] CreationIds { get { return _creationIds; } set { _creationIds = value; } }
         public Selection CreationData { get { return _creationData; } set { _creationData = value; } }
+        public bool TwoD { get { return _twoD; } }
 
 
         // Constructors                                                                                                             
-        public Section(string name, string materialName, string regionName, RegionTypeEnum regionType) 
+        public Section(string name, string materialName, string regionName, RegionTypeEnum regionType, bool twoD) 
             : base(name)
         {
             _materialName = materialName;
@@ -35,6 +38,7 @@ namespace CaeModel
             _regionType = regionType;
             _creationIds = null;
             _creationData = null;
+            _twoD = twoD;
         }
     }
 

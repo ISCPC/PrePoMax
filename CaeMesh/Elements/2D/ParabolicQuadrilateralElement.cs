@@ -116,7 +116,9 @@ namespace CaeMesh
             //
             return cells;
         }
-        public override Dictionary<FeFaceName, double> GetFaceNamesAndAreasFromNodeSet(HashSet<int> nodeSet, Dictionary<int, FeNode> nodes)
+        public override Dictionary<FeFaceName, double> GetFaceNamesAndAreasFromNodeSet(HashSet<int> nodeSet,
+                                                                                       Dictionary<int, FeNode> nodes,
+                                                                                       bool edgeFaces)
         {
             // Check only first 4 nodes (as in linear element)
             int significantNodes = 4;
@@ -130,13 +132,32 @@ namespace CaeMesh
                     faceNodeIds[i] = true;
                     count++;
                 }
-                if (i >= 4 && count <= i - 4) break;
+                // If three or more nodes were missed: break
+                if (i + 1 - count >= 3) break;
             }
-            // POS S2 = 1-2-3-4 . 0-1-2-3
+            //
             Dictionary<FeFaceName, double> faces = new Dictionary<FeFaceName, double>();
             //
-            if (faceNodeIds[0] && faceNodeIds[1] && faceNodeIds[2] && faceNodeIds[3])
-                faces.Add(FeFaceName.S2, GetArea(FeFaceName.S2, nodes));
+            if (edgeFaces)
+            {
+                if (count >= 2)
+                {
+                    // S3 = 1-2-5 . 0-1-4
+                    // S4 = 2-3-6 . 1-2-5
+                    // S5 = 3-4-7 . 2-3-6
+                    // S6 = 4-1-8 . 3-0-7
+                    if (faceNodeIds[0] && faceNodeIds[1]) faces.Add(FeFaceName.S3, GetArea(FeFaceName.S3, nodes));
+                    if (faceNodeIds[1] && faceNodeIds[2]) faces.Add(FeFaceName.S4, GetArea(FeFaceName.S4, nodes));
+                    if (faceNodeIds[2] && faceNodeIds[3]) faces.Add(FeFaceName.S5, GetArea(FeFaceName.S5, nodes));
+                    if (faceNodeIds[3] && faceNodeIds[0]) faces.Add(FeFaceName.S6, GetArea(FeFaceName.S6, nodes));
+                }
+            }
+            else if (count == 4)
+            {
+                // POS S2 = 1-2-3 . 0-1-2
+                if (faceNodeIds[0] && faceNodeIds[1] && faceNodeIds[2] && faceNodeIds[3])
+                    faces.Add(FeFaceName.S2, GetArea(FeFaceName.S2, nodes));
+            }
             //
             return faces;
         }

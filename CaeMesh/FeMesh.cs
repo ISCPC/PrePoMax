@@ -3590,8 +3590,10 @@ namespace CaeMesh
                 surface.AddElementFace(entry.Key, elementSetName);
             }
         }
-        private void GetNodeAndElementIdsFromNodeSetSurface(FeSurface surface, out int[] nodeIds, out int[] elementIds)
+        private void GetNodeAndElementIdsFromNodeSetSurface(FeSurface surface, out int[] nodeIds, out int[] elementIds,
+                                                            out bool edgeBased)
         {
+            edgeBased = false;
             if (surface.CreatedFrom == FeSurfaceCreatedFrom.NodeSet)
             {
                 if (_nodeSets.ContainsKey(surface.CreatedFromNodeSetName))
@@ -3599,11 +3601,9 @@ namespace CaeMesh
                     HashSet<int> allNodeSetIds = new HashSet<int>(_nodeSets[surface.CreatedFromNodeSetName].Labels);
                     HashSet<int> visualizationNodeIds = new HashSet<int>();
                     HashSet<int> hashElementIds = new HashSet<int>();
-
-                    // for each node get all elements
+                    // For each node get all elements
                     int elementId;
-                    List<int> listElementIds;
-                    Dictionary<int, List<int>> nodeElementIds = new Dictionary<int, List<int>>();
+                    HashSet<int> allFreeEdgeNodeIds = new HashSet<int>();
                     foreach (var entry in _parts)
                     {
                         for (int i = 0; i < entry.Value.Visualization.Cells.Length; i++)
@@ -3615,15 +3615,16 @@ namespace CaeMesh
                                 {
                                     visualizationNodeIds.Add(nodeId);
                                     hashElementIds.Add(elementId);
-
-                                    if (nodeElementIds.TryGetValue(nodeId, out listElementIds)) listElementIds.Add(elementId);
-                                    else nodeElementIds.Add(nodeId, new List<int> { elementId });
                                 }
                             }
                         }
+                        //
+                        allFreeEdgeNodeIds.UnionWith(entry.Value.Visualization.GetFreeEdgeNodeIds());
                     }
                     nodeIds = visualizationNodeIds.ToArray();
                     elementIds = hashElementIds.ToArray();
+                    //
+                    edgeBased = allFreeEdgeNodeIds.Intersect(visualizationNodeIds).Count() == visualizationNodeIds.Count;
                 }
                 else // return empty sets
                 {
@@ -3681,7 +3682,8 @@ namespace CaeMesh
                                                    out double area, out FeSurfaceFaceTypes surfaceFaceTypes)
         {
             int[] elementIds;
-            GetNodeAndElementIdsFromNodeSetSurface(surface, out nodeIds, out elementIds);
+            bool edgeBased;
+            GetNodeAndElementIdsFromNodeSetSurface(surface, out nodeIds, out elementIds, out edgeBased);
             // To speed up the search
             HashSet<int> nodeSetLookUp = new HashSet<int>(nodeIds);
             //
@@ -3695,7 +3697,7 @@ namespace CaeMesh
             foreach (int elementId in elementIds)
             {
                 element = _elements[elementId];
-                faces = element.GetFaceNamesAndAreasFromNodeSet(nodeSetLookUp, _nodes);
+                faces = element.GetFaceNamesAndAreasFromNodeSet(nodeSetLookUp, _nodes, edgeBased);
                 //
                 foreach (var entry in faces)
                 {

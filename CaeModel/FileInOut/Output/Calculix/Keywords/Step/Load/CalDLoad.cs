@@ -46,16 +46,18 @@ namespace FileInOut.Output.Calculix
             StringBuilder sb = new StringBuilder();
             FeSurface surface = _surfaces[_load.SurfaceName];
             FeFaceName faceName;
+            int faceId;
             double magnitude;
+            int delta = _load.TwoD ? 2 : 0;
             foreach (var entry in surface.ElementFaces)
             {
                 faceName = entry.Key;
-                if (surface.SurfaceFaceTypes == FeSurfaceFaceTypes.ShellFaces && faceName == FeFaceName.S2)
-                    magnitude = -_load.Magnitude;
-                else
-                    magnitude = _load.Magnitude;
+                if (_load.TwoD && faceName == FeFaceName.S1 || faceName == FeFaceName.S2) throw new NotSupportedException();
+                faceId = int.Parse(faceName.ToString().Substring(1)) - delta;
+                magnitude = _load.Magnitude;
+                if (surface.SurfaceFaceTypes == FeSurfaceFaceTypes.ShellFaces && faceName == FeFaceName.S2) magnitude *= -1;
                 //
-                sb.AppendFormat("{0}, P{1}, {2}", entry.Value, faceName.ToString()[1], magnitude.ToCalculiX16String()).AppendLine();
+                sb.AppendFormat("{0}, P{1}, {2}", entry.Value, faceId, magnitude.ToCalculiX16String()).AppendLine();
             }
             return sb.ToString();
         }

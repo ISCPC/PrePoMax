@@ -39,10 +39,8 @@ namespace FileInOut.Output.Calculix
         public override string GetDataString()
         {
             //*Dload
-            //_obremenitev_el_surf_S3, P3, 1
-            //_obremenitev_el_surf_S4, P4, 1
-            //_obremenitev_el_surf_S1, P1, 1
-            //_obremenitev_el_surf_S2, P2, 1
+            //_obremenitev_el_surf_S3, EDNOR1, 1
+            //_obremenitev_el_surf_S4, EDNOR2, 1
             StringBuilder sb = new StringBuilder();
             FeSurface surface = _surfaces[_load.SurfaceName];
             FeFaceName faceName;
@@ -52,9 +50,9 @@ namespace FileInOut.Output.Calculix
             foreach (var entry in surface.ElementFaces)
             {
                 faceName = entry.Key;
+                if (faceName == FeFaceName.S1 || faceName == FeFaceName.S2) throw new NotSupportedException();
                 faceId = int.Parse(faceName.ToString().Substring(1)) - 2;
                 magnitude = _load.Magnitude;
-                if (faceName == FeFaceName.S1 || faceName == FeFaceName.S2) throw new NotSupportedException();
                 //
                 sb.AppendFormat("{0}, EDNOR{1}, {2}", entry.Value, faceId, magnitude.ToCalculiX16String()).AppendLine();
             }

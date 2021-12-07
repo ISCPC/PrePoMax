@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeMesh;
 using CaeGlobals;
+using CaeModel;
 using System.Windows.Forms;
 using System.Drawing;
 
@@ -154,7 +155,7 @@ namespace PrePoMax.Forms
             // Create new reference point
             if (_referencePointToEditName == null)
             {
-                if (_controller.Model.Properties.ModelSpace == CaeModel.ModelSpaceEnum.Two_D)
+                if (_controller.Model.Properties.ModelSpace.IsTwoD())
                     ReferencePoint = new FeReferencePoint(GetReferencePointName(), 0, 0);
                 else  ReferencePoint = new FeReferencePoint(GetReferencePointName(), 0, 0, 0);
                 //

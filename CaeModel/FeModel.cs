@@ -850,7 +850,7 @@ namespace CaeModel
         private string[] ImportGeometry(FeMesh mesh, ICollection<string> reservedPartNames)
         {
             // Check for 2D geometry
-            if (_properties.ModelSpace == ModelSpaceEnum.Two_D && !mesh.BoundingBox.Is2D())
+            if (_properties.ModelSpace.IsTwoD() && !mesh.BoundingBox.Is2D())
             {
                 throw new CaeException("The selected file does not contain 2D geometry in x-y plane.");
             }
@@ -867,7 +867,7 @@ namespace CaeModel
         public void ImportMesh(FeMesh mesh, ICollection<string> reservedPartNames, bool forceRenameParts = true)
         {
             // Check for 2D mesh
-            if (_properties.ModelSpace == ModelSpaceEnum.Two_D && !mesh.BoundingBox.Is2D())
+            if (_properties.ModelSpace.IsTwoD() && !mesh.BoundingBox.Is2D())
             {
                 throw new CaeException("The selected file does not contain 2D geometry in x-y plane.");
             }
@@ -955,7 +955,8 @@ namespace CaeModel
                     loads.Add(new CLoad("_cLoad_" + entry.Key.ToString(), entry.Key,
                                         load.F1 / aSum * entry.Value,
                                         load.F2 / aSum * entry.Value,
-                                        load.F3 / aSum * entry.Value));
+                                        load.F3 / aSum * entry.Value,
+                                        load.TwoD));
                 }
             }
             //

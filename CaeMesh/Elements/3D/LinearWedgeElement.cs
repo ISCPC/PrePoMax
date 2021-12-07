@@ -118,11 +118,13 @@ namespace CaeMesh
 
             return cells;
         }
-        public override Dictionary<FeFaceName, double> GetFaceNamesAndAreasFromNodeSet(HashSet<int> nodeSet, Dictionary<int, FeNode> nodes)
+        public override Dictionary<FeFaceName, double> GetFaceNamesAndAreasFromNodeSet(HashSet<int> nodeSet,
+                                                                                       Dictionary<int, FeNode> nodes,
+                                                                                       bool edgeFaces)
         {
-            int significantNodes = NodeIds.Length;
+            int significantNodes = 6;
             bool[] faceNodeIds = new bool[significantNodes];
-
+            //
             int count = 0;
             for (int i = 0; i < significantNodes; i++)
             {
@@ -131,16 +133,16 @@ namespace CaeMesh
                     faceNodeIds[i] = true;
                     count++;
                 }
-                if (i >= 3 && count <= i - 3) break;
+                // If four or more nodes were missed: break
+                if (i + 1 - count >= 4) break;
             }
-
             // S1 = 1-2-3   . 0-1-2  
             // S2 = 4-5-6   . 3-4-5  
             // S3 = 1-2-5-4 . 0-1-4-3
             // S4 = 2-3-6-5 . 1-2-5-4
             // S5 = 3-1-4-6 . 2-0-3-5
             Dictionary<FeFaceName, double> faces = new Dictionary<FeFaceName, double>();
-
+            //
             if (count >= 3)
             {
                 if (faceNodeIds[0] && faceNodeIds[1] && faceNodeIds[2]) faces.Add(FeFaceName.S1, GetArea(FeFaceName.S1, nodes));
@@ -149,7 +151,7 @@ namespace CaeMesh
                 if (faceNodeIds[1] && faceNodeIds[2] && faceNodeIds[5] && faceNodeIds[4]) faces.Add(FeFaceName.S4, GetArea(FeFaceName.S4, nodes));
                 if (faceNodeIds[2] && faceNodeIds[0] && faceNodeIds[3] && faceNodeIds[5]) faces.Add(FeFaceName.S5, GetArea(FeFaceName.S5, nodes));
             }
-
+            //
             return faces;
         }
         public override double[] GetEquivalentForcesFromFaceName(FeFaceName faceName)

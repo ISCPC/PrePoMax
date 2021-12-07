@@ -315,52 +315,56 @@ namespace PrePoMax.Forms
         }
         private void HighlightNodes()
         {
-            Color color = Color.Red;
-            vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
-            //
-            _controller.ClearAllSelection();
-            //
-            _coorNodesToDraw = new double[1][];
-            _coorNodesToDraw[0] = new double[3];
-            //
-            _coorLinesToDraw = new double[2][];
-            _coorLinesToDraw[0] = new double[3];
-            //
-            if (propertyGrid.SelectedObject is ViewSymmetry vs)
+            try
             {
-                _coorNodesToDraw[0][0] = vs.SymmetryPointX;
-                _coorNodesToDraw[0][1] = vs.SymmetryPointY;
-                _coorNodesToDraw[0][2] = vs.SymmetryPointZ;
+                Color color = Color.Red;
+                vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
+                //
+                _controller.ClearAllSelection();
+                //
+                _coorNodesToDraw = new double[1][];
+                _coorNodesToDraw[0] = new double[3];
+                //
+                _coorLinesToDraw = new double[2][];
+                _coorLinesToDraw[0] = new double[3];
+                //
+                if (propertyGrid.SelectedObject is ViewSymmetry vs)
+                {
+                    _coorNodesToDraw[0][0] = vs.SymmetryPointX;
+                    _coorNodesToDraw[0][1] = vs.SymmetryPointY;
+                    _coorNodesToDraw[0][2] = vs.SymmetryPointZ;
+                }
+                else if (propertyGrid.SelectedObject is ViewLinearPattern vlp)
+                {
+                    _coorNodesToDraw[0][0] = vlp.EndPointX;
+                    _coorNodesToDraw[0][1] = vlp.EndPointY;
+                    _coorNodesToDraw[0][2] = vlp.EndPointZ;
+                    //
+                    _coorLinesToDraw[0][0] = vlp.StartPointX;
+                    _coorLinesToDraw[0][1] = vlp.StartPointY;
+                    _coorLinesToDraw[0][2] = vlp.StartPointZ;
+                    _coorLinesToDraw[1] = _coorNodesToDraw[0];
+                    //
+                    _controller.HighlightConnectedLines(_coorLinesToDraw);
+                }
+                else if (propertyGrid.SelectedObject is ViewCircularPattern vcp)
+                {
+                    _coorNodesToDraw[0][0] = vcp.SecondPointX;
+                    _coorNodesToDraw[0][1] = vcp.SecondPointY;
+                    _coorNodesToDraw[0][2] = vcp.SecondPointZ;
+                    //
+                    _coorLinesToDraw[0][0] = vcp.FirstPointX;
+                    _coorLinesToDraw[0][1] = vcp.FirstPointY;
+                    _coorLinesToDraw[0][2] = vcp.FirstPointZ;
+                    _coorLinesToDraw[1] = _coorNodesToDraw[0];
+                    //
+                    _controller.HighlightConnectedLines(_coorLinesToDraw);
+                }
+                else throw new NotSupportedException();
+                //
+                _controller.DrawNodes("Transformation", _coorNodesToDraw, color, layer, 7);
             }
-            else if (propertyGrid.SelectedObject is ViewLinearPattern vlp)
-            {
-                _coorNodesToDraw[0][0] = vlp.EndPointX;
-                _coorNodesToDraw[0][1] = vlp.EndPointY;
-                _coorNodesToDraw[0][2] = vlp.EndPointZ;
-                //
-                _coorLinesToDraw[0][0] = vlp.StartPointX;
-                _coorLinesToDraw[0][1] = vlp.StartPointY;
-                _coorLinesToDraw[0][2] = vlp.StartPointZ;
-                _coorLinesToDraw[1] = _coorNodesToDraw[0];
-                //
-                _controller.HighlightConnectedLines(_coorLinesToDraw);
-            }
-            else if (propertyGrid.SelectedObject is ViewCircularPattern vcp)
-            {
-                _coorNodesToDraw[0][0] = vcp.SecondPointX;
-                _coorNodesToDraw[0][1] = vcp.SecondPointY;
-                _coorNodesToDraw[0][2] = vcp.SecondPointZ;
-                //
-                _coorLinesToDraw[0][0] = vcp.FirstPointX;
-                _coorLinesToDraw[0][1] = vcp.FirstPointY;
-                _coorLinesToDraw[0][2] = vcp.FirstPointZ;
-                _coorLinesToDraw[1] = _coorNodesToDraw[0];
-                //
-                _controller.HighlightConnectedLines(_coorLinesToDraw);
-            }
-            else throw new NotSupportedException();
-            //
-            _controller.DrawNodes("Transformation", _coorNodesToDraw, color, layer, 7);
+            catch { }
         }
     }
 }

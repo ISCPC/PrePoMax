@@ -102,9 +102,10 @@ namespace CaeMesh
             return cells;
         }
         public override Dictionary<FeFaceName, double> GetFaceNamesAndAreasFromNodeSet(HashSet<int> nodeSet,
-                                                                                       Dictionary<int, FeNode> nodes)
+                                                                                       Dictionary<int, FeNode> nodes,
+                                                                                       bool edgeFaces)
         {
-            int significantNodes = NodeIds.Length;
+            int significantNodes = 3;
             bool[] faceNodeIds = new bool[significantNodes];
             //
             int count = 0;
@@ -115,13 +116,27 @@ namespace CaeMesh
                     faceNodeIds[i] = true;
                     count++;
                 }
-                if (i >= 1 && count <= i - 1) break;
+                // If two or more nodes were missed: break
+                if (i + 1 - count >= 2) break;
             }
-            // POS S2 = 1-2-3 . 0-1-2
+            //
             Dictionary<FeFaceName, double> faces = new Dictionary<FeFaceName, double>();
             //
-            if (count == 3)
+            if (edgeFaces)
             {
+                if (count >= 2)
+                {
+                    // S3 = 1-2 . 0-1
+                    // S4 = 2-3 . 1-2
+                    // S5 = 3-1 . 2-0
+                    if (faceNodeIds[0] && faceNodeIds[1]) faces.Add(FeFaceName.S3, GetArea(FeFaceName.S3, nodes));
+                    if (faceNodeIds[1] && faceNodeIds[2]) faces.Add(FeFaceName.S4, GetArea(FeFaceName.S4, nodes));
+                    if (faceNodeIds[2] && faceNodeIds[0]) faces.Add(FeFaceName.S5, GetArea(FeFaceName.S5, nodes));
+                }
+            }
+            else if (count == 3)
+            {
+                // POS S2 = 1-2-3 . 0-1-2
                 if (faceNodeIds[0] && faceNodeIds[1] && faceNodeIds[2]) faces.Add(FeFaceName.S2, GetArea(FeFaceName.S2, nodes));
             }
             //

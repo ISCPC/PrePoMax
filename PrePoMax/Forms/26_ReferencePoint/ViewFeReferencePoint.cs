@@ -104,7 +104,7 @@ namespace PrePoMax.Forms
             //
             DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
             // 2D
-            if (_referencePoint.TwoD) DynamicCustomTypeDescriptor.GetProperty(nameof(Z)).SetIsBrowsable(false);
+            DynamicCustomTypeDescriptor.GetProperty(nameof(Z)).SetIsBrowsable(!_referencePoint.TwoD);
         }
 
 

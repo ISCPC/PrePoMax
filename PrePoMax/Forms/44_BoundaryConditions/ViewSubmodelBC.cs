@@ -90,12 +90,9 @@ namespace PrePoMax
                 DynamicCustomTypeDescriptor.RenameBooleanProperty("UR" + i, "From global model", "Unconstrained");
             }
             // 2D
-            if (_submodel.TwoD)
-            {
-                DynamicCustomTypeDescriptor.GetProperty(nameof(U3)).SetIsBrowsable(false);
-                DynamicCustomTypeDescriptor.GetProperty(nameof(UR1)).SetIsBrowsable(false);
-                DynamicCustomTypeDescriptor.GetProperty(nameof(UR2)).SetIsBrowsable(false);
-            }
+            DynamicCustomTypeDescriptor.GetProperty(nameof(U3)).SetIsBrowsable(!_submodel.TwoD);
+            DynamicCustomTypeDescriptor.GetProperty(nameof(UR1)).SetIsBrowsable(!_submodel.TwoD);
+            DynamicCustomTypeDescriptor.GetProperty(nameof(UR2)).SetIsBrowsable(!_submodel.TwoD);
         }
 
 
@@ -110,7 +107,7 @@ namespace PrePoMax
             regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
             regionTypeListItemsPairs.Add(RegionTypeEnum.NodeSetName, nodeSetNames);
             regionTypeListItemsPairs.Add(RegionTypeEnum.SurfaceName, surfaceNames);
-            base.PopululateDropDownLists(regionTypeListItemsPairs);
+            PopululateDropDownLists(regionTypeListItemsPairs);
         }
     }
 

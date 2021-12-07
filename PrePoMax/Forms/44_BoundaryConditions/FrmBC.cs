@@ -338,7 +338,7 @@ namespace PrePoMax.Forms
         {
             Step step = _controller.GetStep(_stepName);
             System.Drawing.Color color = _controller.Settings.Pre.BoundaryConditionSymbolColor;
-            bool twoD = _controller.Model.Properties.ModelSpace == ModelSpaceEnum.Two_D;
+            bool twoD = _controller.Model.Properties.ModelSpace.IsTwoD();
             // Populate list view
             ListViewItem item;
             // Fixed

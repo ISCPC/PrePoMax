@@ -29,8 +29,9 @@ namespace CaeModel
 
 
         // Constructors                                                                                                             
-        public ShellSection(string name, string materialName, string regionName, RegionTypeEnum regionType, double thickness)
-            : base(name, materialName, regionName, regionType)
+        public ShellSection(string name, string materialName, string regionName, RegionTypeEnum regionType, double thickness,
+                            bool twoD)
+            : base(name, materialName, regionName, regionType, twoD)
         {
             Thickness = thickness;
             _offset = 0;

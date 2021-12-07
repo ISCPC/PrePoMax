@@ -1108,7 +1108,7 @@ namespace FileInOut.Input
                 }
                 //
                 string name = sections.GetNextNumberedKey("Section");
-                var section = new SolidSection(name, materialName, regionName, RegionTypeEnum.ElementSetName);
+                var section = new SolidSection(name, materialName, regionName, RegionTypeEnum.ElementSetName, 0, false);
                 //
                 return section;
             }
@@ -1144,7 +1144,7 @@ namespace FileInOut.Input
                     //
                     string name = sections.GetNextNumberedKey("Section");
                     ShellSection section = new ShellSection(name, materialName, regionName, RegionTypeEnum.ElementSetName,
-                                                            thickness);
+                                                            thickness, false);
                     section.Offset = offset;
                     //
                     return section;
@@ -1650,8 +1650,9 @@ namespace FileInOut.Input
                     // Get degree of freedom and value
                     int dof = int.Parse(recordCL[1]); ;
                     double dofValue = double.Parse(recordCL[2]);
-                    CLoad cfLoad = new CLoad(nameCF, regionName, RegionTypeEnum.NodeSetName, 0.0, 0.0, 0.0);
-                    MomentLoad momentLoad = new MomentLoad(nameMom, regionName, RegionTypeEnum.NodeSetName, 0.0, 0.0, 0.0);
+                    CLoad cfLoad = new CLoad(nameCF, regionName, RegionTypeEnum.NodeSetName, 0.0, 0.0, 0.0, false);
+                    MomentLoad momentLoad = new MomentLoad(nameMom, regionName, RegionTypeEnum.NodeSetName,
+                                                           0.0, 0.0, 0.0, false);
                     //
                     switch (dof)
                     {
@@ -1716,7 +1717,8 @@ namespace FileInOut.Input
                         gValue = double.Parse(recordDL[2]);
                         nameGrav = step.Loads.GetNextNumberedKey("Grav");
                         //
-                        GravityLoad gLoad = new GravityLoad(nameGrav, regionName, RegionTypeEnum.ElementSetName, 0.0, 0.0, 0.0);
+                        GravityLoad gLoad = new GravityLoad(nameGrav, regionName, RegionTypeEnum.ElementSetName,
+                                                            0.0, 0.0, 0.0, false);
                         //
                         gLoad.F1 = double.Parse(recordDL[3]) * gValue;
                         gLoad.F2 = double.Parse(recordDL[4]) * gValue;

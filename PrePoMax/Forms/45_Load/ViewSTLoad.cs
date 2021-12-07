@@ -28,28 +28,28 @@ namespace PrePoMax
         [CategoryAttribute("Force components")]
         [OrderedDisplayName(0, 10, "F1")]
         [DescriptionAttribute("Value of the force component in the direction of the first axis.")]
-        [TypeConverter(typeof(CaeGlobals.StringForceConverter))]
+        [TypeConverter(typeof(StringForceConverter))]
         [Id(1, 3)]
         public double F1 { get { return _stLoad.F1; } set { _stLoad.F1 = value; } }
         //
         [CategoryAttribute("Force components")]
         [OrderedDisplayName(1, 10, "F2")]
         [DescriptionAttribute("Value of the force component in the direction of the second axis.")]
-        [TypeConverter(typeof(CaeGlobals.StringForceConverter))]
+        [TypeConverter(typeof(StringForceConverter))]
         [Id(2, 3)]
         public double F2 { get { return _stLoad.F2; } set { _stLoad.F2 = value; } }
         //
         [CategoryAttribute("Force components")]
         [OrderedDisplayName(2, 10, "F3")]
         [DescriptionAttribute("Value of the force component in the direction of the third axis.")]
-        [TypeConverter(typeof(CaeGlobals.StringForceConverter))]
+        [TypeConverter(typeof(StringForceConverter))]
         [Id(3, 3)]
         public double F3 { get { return _stLoad.F3; } set { _stLoad.F3 = value; } }
         //
         [CategoryAttribute("Force magnitude")]
         [OrderedDisplayName(0, 10, "Magnitude")]
         [DescriptionAttribute("Value of the surface traction load magnitude.")]
-        [TypeConverter(typeof(CaeGlobals.StringForceConverter))]
+        [TypeConverter(typeof(StringForceConverter))]
         [Id(1, 4)]
         public double Flength
         {
@@ -82,8 +82,10 @@ namespace PrePoMax
             regionTypePropertyNamePairs.Add(RegionTypeEnum.Selection, nameof(SelectionHidden));
             regionTypePropertyNamePairs.Add(RegionTypeEnum.SurfaceName, nameof(SurfaceName));
             //
-            base.SetBase(_stLoad, regionTypePropertyNamePairs);
-            base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
+            SetBase(_stLoad, regionTypePropertyNamePairs);
+            DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
+            // 2D
+            DynamicCustomTypeDescriptor.GetProperty(nameof(F3)).SetIsBrowsable(!stLoad.TwoD);
         }
 
 
@@ -99,7 +101,7 @@ namespace PrePoMax
             Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
             regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
             regionTypeListItemsPairs.Add(RegionTypeEnum.SurfaceName, surfaceNames);
-            base.PopululateDropDownLists(regionTypeListItemsPairs);
+            PopululateDropDownLists(regionTypeListItemsPairs);
         }
     }
 

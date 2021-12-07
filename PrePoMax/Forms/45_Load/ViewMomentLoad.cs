@@ -34,28 +34,28 @@ namespace PrePoMax
         [CategoryAttribute("Moment components")]
         [OrderedDisplayName(0, 10, "M1")]
         [DescriptionAttribute("Value of the moment component per node in the direction of the first axis.")]
-        [TypeConverter(typeof(CaeGlobals.StringMomentConverter))]
+        [TypeConverter(typeof(StringMomentConverter))]
         [Id(1, 3)]
         public double M1 { get { return _momentLoad.M1; } set { _momentLoad.M1 = value; } }
         //
         [CategoryAttribute("Moment components")]
         [OrderedDisplayName(1, 10, "M2")]
         [DescriptionAttribute("Value of the moment component per node in the direction of the second axis.")]
-        [TypeConverter(typeof(CaeGlobals.StringMomentConverter))]
+        [TypeConverter(typeof(StringMomentConverter))]
         [Id(2, 3)]
         public double M2 { get { return _momentLoad.M2; } set { _momentLoad.M2 = value; } }
         //
         [CategoryAttribute("Moment components")]
         [OrderedDisplayName(2, 10, "M3")]
         [DescriptionAttribute("Value of the moment component per node in the direction of the third axis.")]
-        [TypeConverter(typeof(CaeGlobals.StringMomentConverter))]
+        [TypeConverter(typeof(StringMomentConverter))]
         [Id(3, 3)]
         public double M3 { get { return _momentLoad.M3; } set { _momentLoad.M3 = value; } }
         //
         [CategoryAttribute("Moment magnitude")]
         [OrderedDisplayName(3, 10, "Magnitude")]
         [DescriptionAttribute("Value of the moment load magnitude.")]
-        [TypeConverter(typeof(CaeGlobals.StringMomentConverter))]
+        [TypeConverter(typeof(StringMomentConverter))]
         [Id(1, 4)]
         public double Mlength
         {
@@ -93,8 +93,11 @@ namespace PrePoMax
             regionTypePropertyNamePairs.Add(RegionTypeEnum.NodeSetName, nameof(NodeSetName));
             regionTypePropertyNamePairs.Add(RegionTypeEnum.ReferencePointName, nameof(ReferencePointName));
             //
-            base.SetBase(_momentLoad, regionTypePropertyNamePairs);
-            base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
+            SetBase(_momentLoad, regionTypePropertyNamePairs);
+            DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
+            //
+            DynamicCustomTypeDescriptor.GetProperty(nameof(M1)).SetIsBrowsable(!momentLoad.TwoD);
+            DynamicCustomTypeDescriptor.GetProperty(nameof(M2)).SetIsBrowsable(!momentLoad.TwoD);
         }
 
 
@@ -109,7 +112,7 @@ namespace PrePoMax
             regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
             regionTypeListItemsPairs.Add(RegionTypeEnum.NodeSetName, nodeSetNames);
             regionTypeListItemsPairs.Add(RegionTypeEnum.ReferencePointName, referencePointNames);
-            base.PopululateDropDownLists(regionTypeListItemsPairs);
+            PopululateDropDownLists(regionTypeListItemsPairs);
         }
       
     }

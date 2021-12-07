@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeMesh;
 using CaeGlobals;
+using CaeModel;
 using System.ComponentModel;
 using DynamicTypeDescriptor;
 using System.Drawing.Design;
@@ -35,7 +36,7 @@ namespace PrePoMax.Forms
         [Category("Center point coordinates")]
         [OrderedDisplayName(0, 10, "Select the center point")]
         [DescriptionAttribute("Select the center point.")]
-        [EditorAttribute(typeof(SinglePointDataEditor), typeof(System.Drawing.Design.UITypeEditor))]
+        [EditorAttribute(typeof(SinglePointDataEditor), typeof(UITypeEditor))]
         [Id(1, 2)]
         public ItemSetData ScaleCenterItemSet
         {
@@ -50,21 +51,21 @@ namespace PrePoMax.Forms
         [Category("Center point coordinates")]
         [OrderedDisplayName(1, 10, "X")]
         [Description("X coordinate of the center point.")]
-        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(1, 2)]
         public double CenterX { get { return _scaleCenter[0]; } set { _scaleCenter[0] = value; } }
         //
         [Category("Center point coordinates")]
         [OrderedDisplayName(2, 10, "Y")]
         [Description("Y coordinate of the center point.")]
-        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(1, 2)]
         public double CenterY { get { return _scaleCenter[1]; } set { _scaleCenter[1] = value; } }
         //
         [Category("Center point coordinates")]
         [OrderedDisplayName(3, 10, "Z")]
         [Description("Z coordinate of the center point.")]
-        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(1, 2)]
         public double CenterZ
         {
@@ -133,16 +134,17 @@ namespace PrePoMax.Forms
             //
             _dctd.RenameBooleanProperty(nameof(Copy), "Copy and scale", "Scale");
             //
-            if (modelSpace == CaeModel.ModelSpaceEnum.Three_D) { _twoD = false; }
-            else if (modelSpace == CaeModel.ModelSpaceEnum.Two_D)
+            if (modelSpace == ModelSpaceEnum.Three_D) { _twoD = false; }
+            else if (modelSpace.IsTwoD())
             {
                 _twoD = true;
                 CenterZ = 0;
                 FactorZ = 1;
-                _dctd.GetProperty(nameof(CenterZ)).SetIsBrowsable(false);
-                _dctd.GetProperty(nameof(FactorZ)).SetIsBrowsable(false);
             }
             else throw new NotSupportedException();
+            //
+            _dctd.GetProperty(nameof(CenterZ)).SetIsBrowsable(!_twoD);
+            _dctd.GetProperty(nameof(FactorZ)).SetIsBrowsable(!_twoD);
         }
 
 

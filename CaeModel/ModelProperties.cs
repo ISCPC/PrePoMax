@@ -18,16 +18,29 @@ namespace CaeModel
     [Serializable]
     public enum ModelSpaceEnum
     {
-        Undefined,
-        [DynamicTypeDescriptor.StandardValue("Two_D", DisplayName = "2D")]
-        Two_D,
+        Undefined = 0,
         [DynamicTypeDescriptor.StandardValue("Three_D", DisplayName = "3D")]
-        Three_D
+        Three_D = 1,
+        [DynamicTypeDescriptor.StandardValue("PlaneStress", DisplayName = "2D plane stress")]
+        PlaneStress = 2,
+        [DynamicTypeDescriptor.StandardValue("PlaneStrain", DisplayName = "2D plane strain")]
+        PlaneStrain = 3,
+        [DynamicTypeDescriptor.StandardValue("Axisymmetric", DisplayName = "2D axisymmetric")]
+        Axisymmetric = 4
+    }
+    public static class ExtensionMethods
+    {
+        // ModelSpaceEnum
+        public static bool IsTwoD(this ModelSpaceEnum modelSpace)
+        {
+            return (int)modelSpace > 1; // 2, 3 or 4 is 2D
+        }
     }
 
     [Serializable]
     public class ModelProperties
     {
+        // Variables                                                                                                                
         public ModelType ModelType;
         public ModelSpaceEnum ModelSpace;
         public string GlobalResultsFileName;
@@ -35,7 +48,11 @@ namespace CaeModel
         public double StefanBoltzmann;
         public double NewtonGravity;
 
-        // Constructor
+
+        // Properties                                                                                                               
+
+
+        // Constructors                                                                                                             
         public ModelProperties()
         {
             ModelType = ModelType.General;
@@ -45,5 +62,9 @@ namespace CaeModel
             StefanBoltzmann = double.PositiveInfinity;
             NewtonGravity = double.PositiveInfinity;
         }
+
+
+        // Methods                                                                                                                  
+
     }
 }

@@ -46,7 +46,8 @@ namespace FileInOut.Output.Calculix
                 foreach (var stLoad in _cLoads)
                 {
                     int[] rpNodeIds = null;
-                    if (stLoad.RegionType == CaeGlobals.RegionTypeEnum.ReferencePointName) rpNodeIds = _referencePointsNodeIds[stLoad.RegionName];
+                    if (stLoad.RegionType == RegionTypeEnum.ReferencePointName)
+                        rpNodeIds = _referencePointsNodeIds[stLoad.RegionName];
                     //
                     List<int> directions = new List<int>();
                     if (stLoad.F1 != 0) directions.Add(1);
@@ -55,12 +56,15 @@ namespace FileInOut.Output.Calculix
                     //
                     foreach (var dir in directions)
                     {
-                        if (stLoad.RegionType == CaeGlobals.RegionTypeEnum.NodeId)
-                            sb.AppendFormat("{0}, {1}, {2}", stLoad.NodeId, dir, stLoad.GetDirection(dir - 1).ToCalculiX16String());
-                        else if (stLoad.RegionType == CaeGlobals.RegionTypeEnum.NodeSetName) // node set
-                            sb.AppendFormat("{0}, {1}, {2}", stLoad.RegionName, dir, stLoad.GetDirection(dir - 1).ToCalculiX16String());
-                        else if (stLoad.RegionType == CaeGlobals.RegionTypeEnum.ReferencePointName) // reference point
-                            sb.AppendFormat("{0}, {1}, {2}", rpNodeIds[0], dir, stLoad.GetDirection(dir - 1).ToCalculiX16String());
+                        if (stLoad.RegionType == RegionTypeEnum.NodeId)
+                            sb.AppendFormat("{0}, {1}, {2}", stLoad.NodeId, dir,
+                                            stLoad.GetDirection(dir - 1).ToCalculiX16String());
+                        else if (stLoad.RegionType == RegionTypeEnum.NodeSetName) // node set
+                            sb.AppendFormat("{0}, {1}, {2}", stLoad.RegionName, dir,
+                                            stLoad.GetDirection(dir - 1).ToCalculiX16String());
+                        else if (stLoad.RegionType == RegionTypeEnum.ReferencePointName) // reference point
+                            sb.AppendFormat("{0}, {1}, {2}", rpNodeIds[0], dir,
+                                            stLoad.GetDirection(dir - 1).ToCalculiX16String());
 
                         sb.AppendLine();
                     }

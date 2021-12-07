@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeMesh;
 using CaeGlobals;
+using CaeModel;
 using System.ComponentModel;
 using DynamicTypeDescriptor;
 using System.Drawing.Design;
@@ -121,7 +122,7 @@ namespace PrePoMax.Forms
 
 
         // Constructors                                                                                                             
-        public TranslateParameters(CaeModel.ModelSpaceEnum modelSpace)
+        public TranslateParameters(ModelSpaceEnum modelSpace)
         {
             Clear();
             //
@@ -136,16 +137,17 @@ namespace PrePoMax.Forms
             //
             _dctd.RenameBooleanProperty(nameof(Copy), "Copy and translate", "Translate");
             //
-            if (modelSpace == CaeModel.ModelSpaceEnum.Three_D) { _twoD = false; }
-            else if (modelSpace == CaeModel.ModelSpaceEnum.Two_D)
+            if (modelSpace == ModelSpaceEnum.Three_D) { _twoD = false; }
+            else if (modelSpace.IsTwoD())
             {
                 _twoD = true;
                 Z1 = 0;
                 Z2 = 0;
-                _dctd.GetProperty(nameof(Z1)).SetIsBrowsable(false);
-                _dctd.GetProperty(nameof(Z2)).SetIsBrowsable(false);
             }
             else throw new NotSupportedException();
+            //
+            _dctd.GetProperty(nameof(Z1)).SetIsBrowsable(!_twoD);
+            _dctd.GetProperty(nameof(Z2)).SetIsBrowsable(!_twoD);
         }
 
 

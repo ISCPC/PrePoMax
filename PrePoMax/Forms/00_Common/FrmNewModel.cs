@@ -17,10 +17,12 @@ namespace PrePoMax.Forms
         private string _geometryAndModelOrResults;
         private ViewUnitSystem _viewUnitSystem;
         private GroupBox gbModelSpace;
-        private RadioButton rb2D;
+        private RadioButton rb2DPlaneStress;
         private RadioButton rb3D;
         private Controller _controller;
         private int _lvSelectedIndex;
+        private RadioButton rb2DAxisymmetric;
+        private RadioButton rb2DPlaneStrain;
         private bool _focusOK;
 
 
@@ -58,16 +60,18 @@ namespace PrePoMax.Forms
             MethodInfo m = typeof(RadioButton).GetMethod("SetStyle", BindingFlags.Instance | BindingFlags.NonPublic);
             if (m != null)
             {
-                m.Invoke(rb2D, new object[] { ControlStyles.StandardClick | ControlStyles.StandardDoubleClick, true });
+                m.Invoke(rb2DPlaneStress, new object[] { ControlStyles.StandardClick | ControlStyles.StandardDoubleClick, true });
                 m.Invoke(rb3D, new object[] { ControlStyles.StandardClick | ControlStyles.StandardDoubleClick, true });
             }
-            rb2D.MouseDoubleClick += rbModelSpace_DoubleClick;
+            rb2DPlaneStress.MouseDoubleClick += rbModelSpace_DoubleClick;
             rb3D.MouseDoubleClick += rbModelSpace_DoubleClick;
         }
         private void InitializeComponent()
         {
             this.gbModelSpace = new System.Windows.Forms.GroupBox();
-            this.rb2D = new System.Windows.Forms.RadioButton();
+            this.rb2DAxisymmetric = new System.Windows.Forms.RadioButton();
+            this.rb2DPlaneStrain = new System.Windows.Forms.RadioButton();
+            this.rb2DPlaneStress = new System.Windows.Forms.RadioButton();
             this.rb3D = new System.Windows.Forms.RadioButton();
             this.gbType.SuspendLayout();
             this.gbProperties.SuspendLayout();
@@ -84,38 +88,42 @@ namespace PrePoMax.Forms
             // lvTypes
             // 
             this.lvTypes.Size = new System.Drawing.Size(298, 100);
-            this.lvTypes.TabIndex = 3;
+            this.lvTypes.TabIndex = 5;
             this.lvTypes.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.lvTypes_MouseDoubleClick);
             // 
             // gbProperties
             // 
             this.gbProperties.Location = new System.Drawing.Point(12, 224);
-            this.gbProperties.Size = new System.Drawing.Size(310, 296);
+            this.gbProperties.Size = new System.Drawing.Size(310, 271);
             this.gbProperties.TabIndex = 102;
             this.gbProperties.Text = "Units";
             // 
             // propertyGrid
             // 
-            this.propertyGrid.Size = new System.Drawing.Size(298, 268);
+            this.propertyGrid.Size = new System.Drawing.Size(298, 243);
             this.propertyGrid.TabIndex = 10;
             this.propertyGrid.TabStop = false;
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(160, 526);
+            this.btnOK.Location = new System.Drawing.Point(160, 501);
             this.btnOK.TabIndex = 0;
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(241, 526);
+            this.btnCancel.Location = new System.Drawing.Point(241, 501);
             // 
             // btnOkAddNew
             // 
-            this.btnOkAddNew.Location = new System.Drawing.Point(79, 526);
+            this.btnOkAddNew.Location = new System.Drawing.Point(79, 501);
             // 
             // gbModelSpace
             // 
-            this.gbModelSpace.Controls.Add(this.rb2D);
+            this.gbModelSpace.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.gbModelSpace.Controls.Add(this.rb2DAxisymmetric);
+            this.gbModelSpace.Controls.Add(this.rb2DPlaneStrain);
+            this.gbModelSpace.Controls.Add(this.rb2DPlaneStress);
             this.gbModelSpace.Controls.Add(this.rb3D);
             this.gbModelSpace.Location = new System.Drawing.Point(12, 12);
             this.gbModelSpace.Name = "gbModelSpace";
@@ -124,15 +132,35 @@ namespace PrePoMax.Forms
             this.gbModelSpace.TabStop = false;
             this.gbModelSpace.Text = "Model Space";
             // 
-            // rb2D
+            // rb2DAxisymmetric
             // 
-            this.rb2D.AutoSize = true;
-            this.rb2D.Location = new System.Drawing.Point(6, 47);
-            this.rb2D.Name = "rb2D";
-            this.rb2D.Size = new System.Drawing.Size(39, 19);
-            this.rb2D.TabIndex = 2;
-            this.rb2D.Text = "2D";
-            this.rb2D.UseVisualStyleBackColor = true;
+            this.rb2DAxisymmetric.AutoSize = true;
+            this.rb2DAxisymmetric.Location = new System.Drawing.Point(189, 47);
+            this.rb2DAxisymmetric.Name = "rb2DAxisymmetric";
+            this.rb2DAxisymmetric.Size = new System.Drawing.Size(115, 19);
+            this.rb2DAxisymmetric.TabIndex = 4;
+            this.rb2DAxisymmetric.Text = "2D Axisymmetric";
+            this.rb2DAxisymmetric.UseVisualStyleBackColor = true;
+            // 
+            // rb2DPlaneStrain
+            // 
+            this.rb2DPlaneStrain.AutoSize = true;
+            this.rb2DPlaneStrain.Location = new System.Drawing.Point(189, 22);
+            this.rb2DPlaneStrain.Name = "rb2DPlaneStrain";
+            this.rb2DPlaneStrain.Size = new System.Drawing.Size(104, 19);
+            this.rb2DPlaneStrain.TabIndex = 3;
+            this.rb2DPlaneStrain.Text = "2D Plane Strain";
+            this.rb2DPlaneStrain.UseVisualStyleBackColor = true;
+            // 
+            // rb2DPlaneStress
+            // 
+            this.rb2DPlaneStress.AutoSize = true;
+            this.rb2DPlaneStress.Location = new System.Drawing.Point(6, 47);
+            this.rb2DPlaneStress.Name = "rb2DPlaneStress";
+            this.rb2DPlaneStress.Size = new System.Drawing.Size(104, 19);
+            this.rb2DPlaneStress.TabIndex = 2;
+            this.rb2DPlaneStress.Text = "2D Plane Stress";
+            this.rb2DPlaneStress.UseVisualStyleBackColor = true;
             // 
             // rb3D
             // 
@@ -149,7 +177,7 @@ namespace PrePoMax.Forms
             // FrmNewModel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.ClientSize = new System.Drawing.Size(334, 561);
+            this.ClientSize = new System.Drawing.Size(334, 536);
             this.Controls.Add(this.gbModelSpace);
             this.Name = "FrmNewModel";
             this.Text = "Properties";
@@ -221,8 +249,10 @@ namespace PrePoMax.Forms
         protected override void OnApply(bool onOkAddNew)
         {
             ModelSpaceEnum modelSpace = ModelSpaceEnum.Undefined;
-            if (rb2D.Checked) modelSpace = ModelSpaceEnum.Two_D;
-            else if (rb3D.Checked) modelSpace = ModelSpaceEnum.Three_D;
+            if (rb3D.Checked) modelSpace = ModelSpaceEnum.Three_D;
+            else if (rb2DPlaneStress.Checked) modelSpace = ModelSpaceEnum.PlaneStress;
+            else if (rb2DPlaneStrain.Checked) modelSpace = ModelSpaceEnum.PlaneStrain;
+            else if (rb2DAxisymmetric.Checked) modelSpace = ModelSpaceEnum.Axisymmetric;
             else throw new NotSupportedException();
             //
             _viewUnitSystem = (ViewUnitSystem)propertyGrid.SelectedObject;
@@ -231,7 +261,7 @@ namespace PrePoMax.Forms
             // Replace
             if (_geometryAndModelOrResults == "New Model")
             {
-                if (modelSpace == ModelSpaceEnum.Two_D)
+                if (modelSpace.IsTwoD())
                 {
                     if ((_controller.Model.Geometry != null && !_controller.Model.Geometry.BoundingBox.Is2D())
                         || (_controller.Model.Mesh != null && !_controller.Model.Mesh.BoundingBox.Is2D()))
@@ -303,8 +333,6 @@ namespace PrePoMax.Forms
         {
             if (e.Button == MouseButtons.Left && e.Clicks == 2) OnApply(false);
         }
-
-        
 
 
         // Methods                                                                                                                  
