@@ -6299,7 +6299,6 @@ namespace CaeMesh
                             possiblyUnrefNodeIds.Add(nodeId);
                             removedElementIds.Add(elementId);
                         }
-
                         _elements.Remove(elementId);
                     }
                     // Remove parts

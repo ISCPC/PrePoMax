@@ -124,7 +124,7 @@ namespace CaeMesh
             if (elementTypes != null) allTypes.UnionWith(elementTypes);
             _elementTypes = allTypes.ToArray();
         }
-        
+        //
         public void CopyActiveElementTypesFrom(MeshPart part)
         {
             if (_linearTriaType != FeElementTypeLinearTria.None) _linearTriaType = part.LinearTriaType;
@@ -220,7 +220,7 @@ namespace CaeMesh
             properties.ParabolicHexaType = _parabolicHexaType;
 
             return properties;
-        }
+        }       
         public override void SetProperties(PartProperties properties)
         {
             base.SetProperties(properties);
@@ -246,6 +246,55 @@ namespace CaeMesh
                 _linearHexaType = properties.LinearHexaType;
             if (_parabolicHexaType != FeElementTypeParabolicHexa.None && properties.ParabolicHexaType != FeElementTypeParabolicHexa.None)
                 _parabolicHexaType = properties.ParabolicHexaType;
+        }
+        //
+        public List<Enum> GetElementTypeEnums()
+        {
+            List<Enum> elementTypeEnums = new List<Enum>();
+            //
+            if (_linearTriaType != FeElementTypeLinearTria.None) elementTypeEnums.Add(_linearTriaType);
+            if (_parabolicTriaType != FeElementTypeParabolicTria.None) elementTypeEnums.Add(_parabolicTriaType);
+            if (_linearQuadType != FeElementTypeLinearQuad.None) elementTypeEnums.Add(_linearQuadType);
+            if (_parabolicQuadType != FeElementTypeParabolicQuad.None) elementTypeEnums.Add(_parabolicQuadType);
+            //
+            if (_linearTetraType != FeElementTypeLinearTetra.None) elementTypeEnums.Add(_linearTetraType);
+            if (_parabolicTetraType != FeElementTypeParabolicTetra.None) elementTypeEnums.Add(_parabolicTetraType);
+            if (_linearWedgeType != FeElementTypeLinearWedge.None) elementTypeEnums.Add(_linearWedgeType);
+            if (_parabolicWedgeType != FeElementTypeParabolicWedge.None) elementTypeEnums.Add(_parabolicWedgeType);
+            if (_linearHexaType != FeElementTypeLinearHexa.None) elementTypeEnums.Add(_linearHexaType);
+            if (_parabolicHexaType != FeElementTypeParabolicHexa.None) elementTypeEnums.Add(_parabolicHexaType);
+            //
+            return elementTypeEnums;
+        }
+        public void SetElementTypeEnums(List<Enum> elementTypeEnums)
+        {
+            if (elementTypeEnums != null)
+            {
+                foreach (var elementEnum in elementTypeEnums)
+                {
+                    if (elementEnum is FeElementTypeLinearTria && _linearTriaType != FeElementTypeLinearTria.None)
+                        _linearTriaType = (FeElementTypeLinearTria)elementEnum;
+                    else if (elementEnum is FeElementTypeParabolicTria && _parabolicTriaType != FeElementTypeParabolicTria.None)
+                        _parabolicTriaType = (FeElementTypeParabolicTria)elementEnum;
+                    else if (elementEnum is FeElementTypeLinearQuad && _linearQuadType != FeElementTypeLinearQuad.None)
+                        _linearQuadType = (FeElementTypeLinearQuad)elementEnum;
+                    else if (elementEnum is FeElementTypeParabolicQuad && _parabolicQuadType != FeElementTypeParabolicQuad.None)
+                        _parabolicQuadType = (FeElementTypeParabolicQuad)elementEnum;
+                    //
+                    else if (elementEnum is FeElementTypeLinearTetra && _linearTetraType != FeElementTypeLinearTetra.None)
+                        _linearTetraType = (FeElementTypeLinearTetra)elementEnum;
+                    else if (elementEnum is FeElementTypeParabolicTetra && _parabolicTetraType != FeElementTypeParabolicTetra.None)
+                        _parabolicTetraType = (FeElementTypeParabolicTetra)elementEnum;
+                    else if (elementEnum is FeElementTypeLinearWedge && _linearWedgeType != FeElementTypeLinearWedge.None)
+                        _linearWedgeType = (FeElementTypeLinearWedge)elementEnum;
+                    else if (elementEnum is FeElementTypeParabolicWedge && _parabolicWedgeType != FeElementTypeParabolicWedge.None)
+                        _parabolicWedgeType = (FeElementTypeParabolicWedge)elementEnum;
+                    else if (elementEnum is FeElementTypeLinearHexa && _linearHexaType != FeElementTypeLinearHexa.None)
+                        _linearHexaType = (FeElementTypeLinearHexa)elementEnum;
+                    else if (elementEnum is FeElementTypeParabolicHexa && _parabolicHexaType != FeElementTypeParabolicHexa.None)
+                        _parabolicHexaType = (FeElementTypeParabolicHexa)elementEnum;
+                }
+            }
         }
     }
 }

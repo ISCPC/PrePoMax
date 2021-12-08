@@ -441,6 +441,17 @@ namespace CaeModel
                 items.Add(new Tuple<NamedClass, string>(item, stepName));
             }
         }
+        public bool RegionValid(IMultiRegion multiRegion)
+        {
+            if (multiRegion.RegionType == RegionTypeEnum.NodeSetName)
+                return _mesh.NodeSets[multiRegion.RegionName].Valid;
+            else if (multiRegion.RegionType == RegionTypeEnum.ElementSetName)
+                return _mesh.ElementSets[multiRegion.RegionName].Valid;
+            else if (multiRegion.RegionType == RegionTypeEnum.SurfaceName)
+                return _mesh.Surfaces[multiRegion.RegionName].Valid;
+            //
+            return false;
+        }
         //
         public int[] GetSectionAssignments(out Dictionary<int, int> elementIdSectionId)
         {

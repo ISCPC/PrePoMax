@@ -1010,11 +1010,7 @@ namespace PrePoMax
                 }
                 _form.WriteDataToOutput("Nodes: " + numPoints);
                 _form.WriteDataToOutput("Elements: " + numElements);
-            }
-            // Regenerate and change the DisplayedMesh to Model before updating sets
-            _form.Clear3D();
-            _currentView = ViewGeometryModelResults.Model;
-            _form.SetCurrentView(_currentView);
+            }            
             // This is not executed for the first meshing                               
             // For geometry based sets the part id must remain the same after remesh    
             bool renumbered = false;
@@ -1022,10 +1018,12 @@ namespace PrePoMax
             {
                 for (int i = 0; i < removedPartIds.Length; i++)
                 {
-                    if (removedPartIds[i] != -1)
+                    if (removedPartIds[i] != -1)    // compound
                     {
                         _model.Mesh.RenumberPart(partNames[i], removedPartIds[i]);
                         renumbered = true;
+                        // Set finite element types
+                        GetModelPart(partNames[i]).SetElementTypeEnums(GetGeometryPart(partNames[i]).GetElementTypeEnums());
                     }
                 }
             }
@@ -1037,6 +1035,10 @@ namespace PrePoMax
                     if (_model.Mesh.Parts.TryGetValue(partName, out basePart)) basePart.SmoothShaded = true;
                 }
             }
+            // Regenerate and change the DisplayedMesh to Model before updating sets
+            _form.Clear3D();
+            _currentView = ViewGeometryModelResults.Model;
+            _form.SetCurrentView(_currentView);
             // Regenerate tree
             _form.RegenerateTree();
             // Redraw to be able to update sets based on selection
@@ -3390,24 +3392,29 @@ namespace PrePoMax
             _form.UpdateActor(oldPartName, meshPart.Name, meshPart.Color);
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldPartName, meshPart, null);
             //
-            // Rename the geometric part in pair
-            if (oldPartName != meshPart.Name && _model.Geometry != null && _model.Geometry.Parts.ContainsKey(oldPartName))
+            if (_model.Geometry != null && _model.Geometry.Parts.ContainsKey(oldPartName))
             {
-                string newPartName = meshPart.Name;
+                // Save element type enums
                 GeometryPart geomPart = GetGeometryPart(oldPartName);
-                geomPart.Name = newPartName;
-                _model.Geometry.Parts.Replace(oldPartName, geomPart.Name, geomPart);
-                // Rename compound sub-part names array
-                foreach (var entry in _model.Geometry.Parts)
+                geomPart.AddElementTypeEnums(meshPart.GetElementTypeEnums());
+                // Rename the geometric part in pair
+                if (oldPartName != meshPart.Name)
                 {
-                    if (entry.Value is CompoundGeometryPart cgp)
+                    string newPartName = meshPart.Name;
+                    geomPart.Name = newPartName;
+                    _model.Geometry.Parts.Replace(oldPartName, geomPart.Name, geomPart);
+                    // Rename compound sub-part names array
+                    foreach (var entry in _model.Geometry.Parts)
                     {
-                        for (int i = 0; i < cgp.SubPartNames.Length; i++)
+                        if (entry.Value is CompoundGeometryPart cgp)
                         {
-                            if (cgp.SubPartNames[i] == oldPartName)
+                            for (int i = 0; i < cgp.SubPartNames.Length; i++)
                             {
-                                cgp.SubPartNames[i] = newPartProperties.Name;
-                                break;
+                                if (cgp.SubPartNames[i] == oldPartName)
+                                {
+                                    cgp.SubPartNames[i] = newPartProperties.Name;
+                                    break;
+                                }
                             }
                         }
                     }
@@ -5646,7 +5653,9 @@ namespace PrePoMax
         }
         public void ReplaceHistoryOutput(string stepName, string oldHistoryOutputName, HistoryOutput historyOutput)
         {
-            if (StepCollection.MultiRegionChanged(GetHistoryOutput(stepName, oldHistoryOutputName), historyOutput))
+            HistoryOutput oldHistoryOutput = GetHistoryOutput(stepName, oldHistoryOutputName);
+            // First check for a valid region since MultiRegionChanged changes the region type and region name
+            if (!_model.RegionValid(oldHistoryOutput) || StepCollection.MultiRegionChanged(oldHistoryOutput, historyOutput))
             {
                 DeleteSelectionBasedHistoryOutputSets(stepName, oldHistoryOutputName);
                 ConvertSelectionBasedHistoryOutput(historyOutput);
@@ -5730,7 +5739,7 @@ namespace PrePoMax
                 historyOutput.CreationData = null;
                 historyOutput.CreationIds = null;
             }
-        }
+        }        
         private void DeleteSelectionBasedHistoryOutputSets(string stepName, string oldHistoryOutputName)
         {
             HistoryOutput historyOutput = GetHistoryOutput(stepName, oldHistoryOutputName);
@@ -5892,7 +5901,9 @@ namespace PrePoMax
         public void ReplaceBoundaryCondition(string stepName, string oldBoundaryConditionName,
                                              BoundaryCondition boundaryCondition)
         {
-            if (StepCollection.MultiRegionChanged(GetBoundaryCondition(stepName, oldBoundaryConditionName), boundaryCondition))
+            BoundaryCondition oldBC = GetBoundaryCondition(stepName, oldBoundaryConditionName);
+            // First check for a valid region since MultiRegionChanged changes the region type and region name
+            if (!_model.RegionValid(oldBC) || StepCollection.MultiRegionChanged(oldBC, boundaryCondition))
             {
                 DeleteSelectionBasedBoundaryConditionSets(stepName, oldBoundaryConditionName);
                 ConvertSelectionBasedBoundaryCondition(boundaryCondition);
@@ -6065,7 +6076,9 @@ namespace PrePoMax
         }
         public void ReplaceLoad(string stepName, string oldLoadName, Load load)
         {
-            if (StepCollection.MultiRegionChanged(GetLoad(stepName, oldLoadName), load))
+            Load oldload = GetLoad(stepName, oldLoadName);
+            // First check for a valid region since MultiRegionChanged changes the region type and region name
+            if (!_model.RegionValid(oldload) || StepCollection.MultiRegionChanged(oldload, load))
             {
                 DeleteSelectionBasedLoadSets(stepName, oldLoadName);
                 ConvertSelectionBasedLoad(load);
@@ -6248,7 +6261,9 @@ namespace PrePoMax
         }
         public void ReplaceDefinedField(string stepName, string oldDefinedFieldName, DefinedField definedField)
         {
-            if (StepCollection.MultiRegionChanged(GetDefinedField(stepName, oldDefinedFieldName), definedField))
+            DefinedField oldDefinedField = GetDefinedField(stepName, oldDefinedFieldName);
+            // First check for a valid region since MultiRegionChanged changes the region type and region name
+            if (!_model.RegionValid(oldDefinedField) || StepCollection.MultiRegionChanged(oldDefinedField, definedField))
             {
                 DeleteSelectionBasedDefinedFieldSets(stepName, oldDefinedFieldName);
                 ConvertSelectionBasedDefinedField(definedField);

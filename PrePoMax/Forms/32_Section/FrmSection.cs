@@ -233,9 +233,9 @@ namespace PrePoMax.Forms
             ListViewItem item;
             // Solid section
             item = new ListViewItem("Solid section");
-            bool twoD = _controller.Model.Properties.ModelSpace.IsTwoD();
             if (materialNames.Length > 0)
             {
+                bool twoD = _controller.Model.Properties.ModelSpace.IsTwoD();
                 SolidSection ss = new SolidSection(GetSectionName("Solid"), materialNames[0], "",
                                                    RegionTypeEnum.Selection, 1, twoD);
                 ViewSolidSection vss = new ViewSolidSection(ss);
@@ -248,6 +248,7 @@ namespace PrePoMax.Forms
             item = new ListViewItem("Shell section");
             if (materialNames.Length > 0)
             {
+                bool twoD = _controller.Model.Properties.ModelSpace.IsTwoD();
                 ShellSection ss = new ShellSection(GetSectionName("Shell"), materialNames[0], "", RegionTypeEnum.Selection,
                                                    1, twoD);
                 ViewShellSection vss = new ViewShellSection(ss);
