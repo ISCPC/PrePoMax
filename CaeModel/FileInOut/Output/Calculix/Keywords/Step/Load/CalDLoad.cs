@@ -52,7 +52,7 @@ namespace FileInOut.Output.Calculix
             foreach (var entry in surface.ElementFaces)
             {
                 faceName = entry.Key;
-                if (_load.TwoD && faceName == FeFaceName.S1 || faceName == FeFaceName.S2) throw new NotSupportedException();
+                if (_load.TwoD && (faceName == FeFaceName.S1 || faceName == FeFaceName.S2)) throw new NotSupportedException();
                 faceId = int.Parse(faceName.ToString().Substring(1)) - delta;
                 magnitude = _load.Magnitude;
                 if (surface.SurfaceFaceTypes == FeSurfaceFaceTypes.ShellFaces && faceName == FeFaceName.S2) magnitude *= -1;

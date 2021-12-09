@@ -71,6 +71,7 @@
     <Compile Include="Contact\Surface interaction\SurfaceInteractionProperty.cs" />
     <Compile Include="FileInOut\Input\Mmg\MmgFileReader.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalPhysicalConstants.cs" />
+    <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalMembraneSection.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\SurfaceInteraction\CalGapConductance.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\BC\CalTemperatureBC.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\CalHeatTransferStep.cs" />
@@ -109,6 +110,7 @@
     <Compile Include="Materials\ThermalExpansion.cs" />
     <Compile Include="Materials\ElasticWithDensity.cs" />
     <Compile Include="ModelProperties.cs" />
+    <Compile Include="Sections\MembraneSection.cs" />
     <Compile Include="Sections\ShellSection.cs" />
     <Compile Include="Steps\BoundaryConditions\TemperatureBC.cs" />
     <Compile Include="Steps\BoundaryConditions\FixedBC.cs" />

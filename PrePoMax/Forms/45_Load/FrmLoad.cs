@@ -411,7 +411,18 @@ namespace PrePoMax.Forms
             {
                 // Get and convert a converted load back to selection
                 FELoad = _controller.GetLoad(stepName, _loadToEditName); // to clone
-                if (FELoad.CreationData != null) FELoad.RegionType = RegionTypeEnum.Selection;
+                if (FELoad.CreationData != null)
+                {
+                    if (!_controller.Model.RegionValid(FELoad))
+                    {
+                        // Not valid
+                        FELoad.CreationData = null;
+                        FELoad.CreationIds = null;
+                        _propertyItemChanged = true;
+                    }
+                    FELoad.RegionType = RegionTypeEnum.Selection;
+                }
+                
                 bool twoD = FELoad.TwoD;
                 // Convert the load to internal to hide it
                 LoadInternal(true);

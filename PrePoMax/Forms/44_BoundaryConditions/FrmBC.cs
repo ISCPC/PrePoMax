@@ -261,7 +261,17 @@ namespace PrePoMax.Forms
             {
                 // Get and convert a converted load back to selection
                 BoundaryCondition = _controller.GetBoundaryCondition(stepName, _boundaryConditionToEditName); // to clone
-                if (BoundaryCondition.CreationData != null) BoundaryCondition.RegionType = RegionTypeEnum.Selection;
+                if (BoundaryCondition.CreationData != null)
+                {
+                    if (!_controller.Model.RegionValid(BoundaryCondition))
+                    {
+                        // Not valid
+                        BoundaryCondition.CreationData = null;
+                        BoundaryCondition.CreationIds = null;
+                        _propertyItemChanged = true;
+                    }
+                    BoundaryCondition.RegionType = RegionTypeEnum.Selection;
+                }
                 // Convert the boundary condition to internal to hide it
                 BoundaryConditionInternal(true);
                 //

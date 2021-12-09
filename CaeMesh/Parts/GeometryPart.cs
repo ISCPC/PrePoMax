@@ -139,10 +139,9 @@ namespace CaeMesh
                     oldEnums.Add(oldElementTypeEnum.GetType(), oldElementTypeEnum);
             }
             //
-            Enum oldEnum;
             foreach (var newEnum in elementTypeEnums)
             {
-                if (oldEnums.TryGetValue(newEnum.GetType(), out oldEnum)) oldEnum = newEnum;
+                if (oldEnums.ContainsKey(newEnum.GetType())) oldEnums[newEnum.GetType()] = newEnum;
                 else oldEnums.Add(newEnum.GetType(), newEnum);
             }
             //

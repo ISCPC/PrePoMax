@@ -57,28 +57,28 @@ namespace FileInOut.Output.Calculix
             string[] stringValues = new string[values.Length];
             for (int i = 0; i < values.Length; i++) stringValues[i] = values[i].ToCalculiX16String();
             // Node set
-            if (_displacementRotation.RegionType == CaeGlobals.RegionTypeEnum.NodeSetName)
+            if (_displacementRotation.RegionType == RegionTypeEnum.NodeSetName)
             {
                 for (int i = 0; i < directions.Length; i++)
                 {
                     sb.AppendFormat("{0}, {1}, {2}", _displacementRotation.RegionName, directions[i], directions[i]);
-                    if (!fixedBc) sb.AppendFormat(", {0}", stringValues);
+                    if (!fixedBc) sb.AppendFormat(", {0}", stringValues[i]);
                     sb.AppendLine();
                 }
             }
             // Surface
-            else if (_displacementRotation.RegionType == CaeGlobals.RegionTypeEnum.SurfaceName)
+            else if (_displacementRotation.RegionType == RegionTypeEnum.SurfaceName)
             {
                 if (_nodeSetNameOfSurface == null) throw new ArgumentException();
                 for (int i = 0; i < directions.Length; i++)
                 {
                     sb.AppendFormat("{0}, {1}, {2}", _nodeSetNameOfSurface, directions[i], directions[i]);
-                    if (!fixedBc) sb.AppendFormat(", {0}", stringValues);
+                    if (!fixedBc) sb.AppendFormat(", {0}", stringValues[i]);
                     sb.AppendLine();
                 }
             }
             // Reference point
-            else if (_displacementRotation.RegionType == CaeGlobals.RegionTypeEnum.ReferencePointName)
+            else if (_displacementRotation.RegionType == RegionTypeEnum.ReferencePointName)
             {
                 int[] rpNodeIds = _referencePointsNodeIds[_displacementRotation.RegionName];
                 for (int i = 0; i < directions.Length; i++)
@@ -87,7 +87,7 @@ namespace FileInOut.Output.Calculix
                     if (directions[i] <= 3) sb.AppendFormat("{0}, {1}, {2}", rpNodeIds[0], directions[i], directions[i]);
                     // Rotational directions - second node id:          6976, 2, 2, 0
                     else sb.AppendFormat("{0}, {1}, {2}", rpNodeIds[1], directions[i] - 3, directions[i] - 3);
-                    if (!fixedBc) sb.AppendFormat(", {0}", stringValues);
+                    if (!fixedBc) sb.AppendFormat(", {0}", stringValues[i]);
                     sb.AppendLine();
                 }
             }

@@ -239,6 +239,7 @@
     <Compile Include="Forms\00_Common\ViewStringValue.cs" />
     <Compile Include="Forms\00_Common\ViewUnitSystem.cs" />
     <Compile Include="Forms\00_Advisor\AdvisorCreator.cs" />
+    <Compile Include="Forms\32_Section\ViewMembraneSection.cs" />
     <Compile Include="Forms\36_SearchContactPairs\FrmSearchContactPairs.cs">
       <SubType>Form</SubType>
     </Compile>

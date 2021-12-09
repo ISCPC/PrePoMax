@@ -233,6 +233,13 @@ namespace CaeModel
                         || (shs.RegionType == RegionTypeEnum.ElementSetName
                             && _mesh.ElementSets.ContainsValidKey(section.RegionName)));
                 }
+                else if (section is MembraneSection ms)
+                {
+                    valid = _materials.ContainsValidKey(section.MaterialName)
+                        && ((ms.RegionType == RegionTypeEnum.PartName && _mesh.Parts.ContainsValidKey(section.RegionName))
+                        || (ms.RegionType == RegionTypeEnum.ElementSetName
+                            && _mesh.ElementSets.ContainsValidKey(section.RegionName)));
+                }
                 else throw new NotSupportedException();
                 //
                 SetItemValidity(null, section, valid, items);
@@ -494,7 +501,7 @@ namespace CaeModel
                             }
                         }
                     }
-                    else if (entry.Value is ShellSection)
+                    else if (entry.Value is ShellSection || entry.Value is MembraneSection)
                     {
                         FeElementSet elementSet = _mesh.ElementSets[entry.Value.RegionName];
                         foreach (var elementId in elementSet.Labels)

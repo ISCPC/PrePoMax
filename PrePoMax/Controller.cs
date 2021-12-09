@@ -4561,7 +4561,7 @@ namespace PrePoMax
             {
                 string name;
                 // Element set output
-                if (section is SolidSection || section is ShellSection)
+                if (section is SolidSection || section is ShellSection || section is MembraneSection)
                 {
                     name = FeMesh.GetNextFreeSelectionName(_model.Mesh.ElementSets, section.Name);
                     // For
@@ -4589,7 +4589,8 @@ namespace PrePoMax
             Section section = GetSection(oldSectionName);
             if (section.CreationData != null && section.RegionName != null)
             {
-                if (section is SolidSection || section is ShellSection) RemoveElementSets(new string[] { section.RegionName });
+                if (section is SolidSection || section is ShellSection || section is MembraneSection)
+                    RemoveElementSets(new string[] { section.RegionName });
                 else throw new NotSupportedException();
             }
         }
@@ -10828,7 +10829,7 @@ namespace PrePoMax
                         if (sec.RegionType == RegionTypeEnum.PartName) HighlightModelParts(new string[] { sec.RegionName });
                         else if (sec.RegionType == RegionTypeEnum.ElementSetName)
                         {
-                            bool backfaceCulling = !(sec is ShellSection);
+                            bool backfaceCulling = sec is SolidSection;
                             HighlightElementSets(new string[] { sec.RegionName }, backfaceCulling);
                         }
                         else throw new NotSupportedException();
@@ -11025,7 +11026,6 @@ namespace PrePoMax
         }
         public void HighlightNodeSets(string[] nodeSetsToSelect, bool useSecondaryHighlightColor = false)
         {
-            IDictionary<string, FeNodeSet> nodeSets = _model.Mesh.NodeSets;
             Color color = Color.Red;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Selection;
             int nodeSize = 1; // size <= 1 gets overwritten in vtkControl for the highlights in selection layer
