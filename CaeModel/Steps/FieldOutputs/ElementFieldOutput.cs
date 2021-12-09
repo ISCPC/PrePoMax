@@ -26,13 +26,25 @@ namespace CaeModel
     }
 
     [Serializable]
+    public enum ElementFieldOutputOutputEnum
+    {
+        Default,
+        [DynamicTypeDescriptor.StandardValue("TwoD", DisplayName = "2D")]
+        TwoD,
+        [DynamicTypeDescriptor.StandardValue("ThreeD", DisplayName = "3D")]
+        ThreeD
+    }
+
+    [Serializable]
     public class ElementFieldOutput : FieldOutput
     {
         // Variables                                                                                                                
+        private ElementFieldOutputOutputEnum _output;
         private ElementFieldVariable _variables;
 
 
         // Properties                                                                                                               
+        public ElementFieldOutputOutputEnum Output { get { return _output; } set { _output = value; } }
         public ElementFieldVariable Variables { get { return _variables; } set { _variables = value; } }
 
 
@@ -41,6 +53,7 @@ namespace CaeModel
             : base(name) 
         {
             _variables |= variables;
+            _output = ElementFieldOutputOutputEnum.Default;
         }
 
 

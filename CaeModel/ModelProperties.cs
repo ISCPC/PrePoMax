@@ -19,8 +19,8 @@ namespace CaeModel
     public enum ModelSpaceEnum
     {
         Undefined = 0,
-        [DynamicTypeDescriptor.StandardValue("Three_D", DisplayName = "3D")]
-        Three_D = 1,
+        [DynamicTypeDescriptor.StandardValue("ThreeD", DisplayName = "3D")]
+        ThreeD = 1,
         [DynamicTypeDescriptor.StandardValue("PlaneStress", DisplayName = "2D plane stress")]
         PlaneStress = 2,
         [DynamicTypeDescriptor.StandardValue("PlaneStrain", DisplayName = "2D plane strain")]

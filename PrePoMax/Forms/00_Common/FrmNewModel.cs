@@ -249,7 +249,7 @@ namespace PrePoMax.Forms
         protected override void OnApply(bool onOkAddNew)
         {
             ModelSpaceEnum modelSpace = ModelSpaceEnum.Undefined;
-            if (rb3D.Checked) modelSpace = ModelSpaceEnum.Three_D;
+            if (rb3D.Checked) modelSpace = ModelSpaceEnum.ThreeD;
             else if (rb2DPlaneStress.Checked) modelSpace = ModelSpaceEnum.PlaneStress;
             else if (rb2DPlaneStrain.Checked) modelSpace = ModelSpaceEnum.PlaneStrain;
             else if (rb2DAxisymmetric.Checked) modelSpace = ModelSpaceEnum.Axisymmetric;

@@ -217,6 +217,15 @@ Dependency nglib - added following files for c++ redistriburable compatibility:
 
 Done
 
+Save history in a file?!?!?
+
+Version 1.1.1 Master branch
+Added support for membrane section and membrane finite element types
+Added support for performing 2D plane stress analysis
+Added support for performing 2D plane strain analysis
+Added support for performing 2D axisymmetric analysis
+Bug fixes
+
 Version 1.1.1 Master branch
 Added support for geometry part scaling (unit conversion)
 Added an automatic contact pair search tool for creating tied constraints and contacts

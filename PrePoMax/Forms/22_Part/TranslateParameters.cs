@@ -137,7 +137,7 @@ namespace PrePoMax.Forms
             //
             _dctd.RenameBooleanProperty(nameof(Copy), "Copy and translate", "Translate");
             //
-            if (modelSpace == ModelSpaceEnum.Three_D) { _twoD = false; }
+            if (modelSpace == ModelSpaceEnum.ThreeD) { _twoD = false; }
             else if (modelSpace.IsTwoD())
             {
                 _twoD = true;

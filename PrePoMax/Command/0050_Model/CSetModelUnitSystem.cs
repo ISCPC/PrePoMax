@@ -30,7 +30,7 @@ namespace PrePoMax.Commands
         // Methods                                                                                                                  
         public override bool Execute(Controller receiver)
         {
-            receiver.SetNewModelProperties(ModelSpaceEnum.Three_D, _unitSystemType);
+            receiver.SetNewModelProperties(ModelSpaceEnum.ThreeD, _unitSystemType);
             return true;
         }
 

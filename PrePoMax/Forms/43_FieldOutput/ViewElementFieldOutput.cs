@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel;
+using CaeModel;
 using CaeGlobals;
 using DynamicTypeDescriptor;
 
@@ -50,7 +51,7 @@ namespace PrePoMax
     public class ViewElementFieldOutput : ViewFieldOutput
     {
         // Variables                                                                                                                
-        private CaeModel.ElementFieldOutput _fieldOutput;
+        private ElementFieldOutput _fieldOutput;
         private DynamicCustomTypeDescriptor _dctd;
 
 
@@ -58,7 +59,16 @@ namespace PrePoMax
         public override string Name { get { return _fieldOutput.Name; } set { _fieldOutput.Name = value; } }
         public override int Frequency { get { return _fieldOutput.Frequency; } set { _fieldOutput.Frequency = value; } }
         //
-        [OrderedDisplayName(2, 10, "Variables to output")]
+        [OrderedDisplayName(2, 10, "Output (2D/3D)")]
+        [CategoryAttribute("Data")]
+        [DescriptionAttribute("If Output=3D, the 1D and 2D elements are stored in their expanded 3D form.")]
+        public ElementFieldOutputOutputEnum Output
+        {
+            get { return _fieldOutput.Output; }
+            set { _fieldOutput.Output = value; }
+        }
+        //
+        [OrderedDisplayName(3, 10, "Variables to output")]
         [CategoryAttribute("Data")]
         [DescriptionAttribute("Element field variables")]
         public ViewElementFieldVariable Variables
@@ -85,11 +95,11 @@ namespace PrePoMax
             }
         }
         //
-        public override CaeModel.FieldOutput Base { get { return _fieldOutput; } set { _fieldOutput = (CaeModel.ElementFieldOutput)value; } }
+        public override FieldOutput Base { get { return _fieldOutput; } set { _fieldOutput = (ElementFieldOutput)value; } }
 
 
         // Constructors                                                                                                             
-        public ViewElementFieldOutput(CaeModel.ElementFieldOutput fieldOutput)
+        public ViewElementFieldOutput(ElementFieldOutput fieldOutput)
         {
             _fieldOutput = fieldOutput;
             _dctd = ProviderInstaller.Install(this);
