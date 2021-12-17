@@ -52,14 +52,18 @@ namespace PrePoMax
     {
         // Variables                                                                                                                
         private ElementFieldOutput _fieldOutput;
-        private DynamicCustomTypeDescriptor _dctd;
 
 
         // Properties                                                                                                               
         public override string Name { get { return _fieldOutput.Name; } set { _fieldOutput.Name = value; } }
         public override int Frequency { get { return _fieldOutput.Frequency; } set { _fieldOutput.Frequency = value; } }
+        public override bool LastIterations
+        {
+            get { return _fieldOutput.LastIterations; }
+            set { _fieldOutput.LastIterations = value; }
+        }
         //
-        [OrderedDisplayName(2, 10, "Output (2D/3D)")]
+        [OrderedDisplayName(3, 10, "Output (2D/3D)")]
         [CategoryAttribute("Data")]
         [DescriptionAttribute("If Output=3D, the 1D and 2D elements are stored in their expanded 3D form.")]
         public ElementFieldOutputOutputEnum Output
@@ -68,7 +72,7 @@ namespace PrePoMax
             set { _fieldOutput.Output = value; }
         }
         //
-        [OrderedDisplayName(3, 10, "Variables to output")]
+        [OrderedDisplayName(4, 10, "Variables to output")]
         [CategoryAttribute("Data")]
         [DescriptionAttribute("Element field variables")]
         public ViewElementFieldVariable Variables
@@ -103,6 +107,8 @@ namespace PrePoMax
         {
             _fieldOutput = fieldOutput;
             _dctd = ProviderInstaller.Install(this);
+            //
+            _dctd.RenameBooleanPropertyToOnOff(nameof(LastIterations));
         }
 
 

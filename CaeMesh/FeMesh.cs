@@ -1019,7 +1019,7 @@ namespace CaeMesh
             //
             ExtractEdgesFromShellByAngle(part, edgeAngle);  // extracts free and error elements
             //
-            HashSet<int> vertexNodeIds = ExtractVerticesFromEdgesByAngle(part, edgeAngle);
+            HashSet<int> vertexNodeIds = ExtractVerticesFromEdgesByAngle(part, edgeAngle);            
             //
             SplitVisualizationEdgesAndFaces(part, vertexNodeIds);
             //
@@ -1191,19 +1191,29 @@ namespace CaeMesh
             {
                 angle *= Math.PI / 180;
                 //
+                List<int> edgeCellIds;
+                Dictionary<int, List<int>> nodeIdEdgeCellIds = new Dictionary<int, List<int>>();
                 for (int i = 0; i < part.Visualization.EdgeCells.Length; i++)
                 {
                     cell1 = part.Visualization.EdgeCells[i];
-                    for (int j = i + 1; j < part.Visualization.EdgeCells.Length; j++)
+                    for (int j = 0; j < cell1.Length; j++)
                     {
-                        cell2 = part.Visualization.EdgeCells[j];
-                        //
-                        if (cell1[0] == cell2[0] || cell1[0] == cell2[1]) commonNode = cell1[0];
-                        else if (cell1[1] == cell2[0] || cell1[1] == cell2[1]) commonNode = cell1[1];
-                        else commonNode = -1;
-                        //nodeIds = cell1.Intersect(cell2);
-                        if (commonNode > 0)
+                        if (nodeIdEdgeCellIds.TryGetValue(cell1[j], out edgeCellIds)) edgeCellIds.Add(i);
+                        else nodeIdEdgeCellIds.Add(cell1[j], new List<int> { i });
+                    }
+                }
+                //
+                foreach (var entry in nodeIdEdgeCellIds)
+                {
+                    edgeCellIds = entry.Value;
+                    for (int i = 0; i < edgeCellIds.Count; i++)
+                    {
+                        cell1 = part.Visualization.EdgeCells[edgeCellIds[i]];
+                        for (int j = i + 1; j < edgeCellIds.Count; j++)
                         {
+                            cell2 = part.Visualization.EdgeCells[edgeCellIds[j]];
+                            commonNode = entry.Key;
+                            //
                             phi = ComputeAngleInRadFromEdgeCellIndices(cell1, cell2, commonNode);
                             //if (phi > Math.PI / 2) 
                             phi = Math.PI - phi;
@@ -3308,11 +3318,11 @@ namespace CaeMesh
             {
                 newElement = entry.Value;
                 oldId = entry.Key;
-
+                //
                 newIds.Add(oldId, newId);
                 newElement.Id = newId;
                 renumberedElements.Add(newId, newElement);
-
+                //
                 newId++;
             }
             _elements = renumberedElements;

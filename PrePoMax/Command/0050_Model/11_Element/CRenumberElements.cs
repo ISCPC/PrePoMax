@@ -12,29 +12,29 @@ using CaeGlobals;
 namespace PrePoMax.Commands
 {
     [Serializable]
-    class CRenumberNodes : Command
+    class CRenumberElements : Command
     {
         // Variables                                                                                                                
-        private int _startNodeId;
+        private int _startElementId;
 
 
         // Constructor                                                                                                              
-        public CRenumberNodes(int startNodeId)
-            : base("Renumber nodes")
+        public CRenumberElements(int startElementId)
+            : base("Renumber elements")
         {
-            _startNodeId = startNodeId;
+            _startElementId = startElementId;
         }
 
 
         // Methods                                                                                                                  
         public override bool Execute(Controller receiver)
         {
-            receiver.RenumberNodes(_startNodeId);
+            receiver.RenumberElements(_startElementId);
             return true;
         }
         public override string GetCommandString()
         {
-            return base.GetCommandString() + _startNodeId;
+            return base.GetCommandString() + _startElementId;
         }
     }
 }

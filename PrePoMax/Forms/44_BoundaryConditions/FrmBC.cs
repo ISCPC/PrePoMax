@@ -263,7 +263,7 @@ namespace PrePoMax.Forms
                 BoundaryCondition = _controller.GetBoundaryCondition(stepName, _boundaryConditionToEditName); // to clone
                 if (BoundaryCondition.CreationData != null)
                 {
-                    if (!_controller.Model.RegionValid(BoundaryCondition))
+                    if (!BoundaryCondition.Valid || !_controller.Model.RegionValid(BoundaryCondition))
                     {
                         // Not valid
                         BoundaryCondition.CreationData = null;

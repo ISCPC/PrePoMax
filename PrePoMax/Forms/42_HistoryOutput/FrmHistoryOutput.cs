@@ -203,7 +203,7 @@ namespace PrePoMax.Forms
                 HistoryOutput = _controller.GetHistoryOutput(_stepName, _historyOutputToEditName); // to clone                
                 if (HistoryOutput.CreationData != null)
                 {
-                    if (!_controller.Model.RegionValid(HistoryOutput))
+                    if (!HistoryOutput.Valid || !_controller.Model.RegionValid(HistoryOutput))
                     {
                         // Not valid
                         HistoryOutput.CreationData = null; 

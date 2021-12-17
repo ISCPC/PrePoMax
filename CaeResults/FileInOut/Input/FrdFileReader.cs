@@ -443,9 +443,9 @@ namespace CaeResults
             {
                 // STATIC STEP
 
-                //                              field#  stepIncrement#       step# - COMMENTS
-                //    1PSTEP                        25               1           2
-                //             time        numOfvalues
+                //                              field#  stepIncrement#       step#            - COMMENTS
+                //    1PSTEP                        25               1           2           
+                //             time        numOfvalues                                       
                 //  100CL  107 2.000000000         613                     0    7           1
 
 
@@ -460,29 +460,40 @@ namespace CaeResults
 
                 // FREQUENCY STEP
 
-                //    1PSTEP                         5           1           2          
-                //    1PGM                1.000000E+00                                  
-                //    1PGK                7.155923E+05                                  
-                //    1PHID                         -1                                  
-                //    1PSUBC                         0                                  
-                //    1PMODE                         1                                   - frequency
+                //    1PSTEP                         5           1           2               
+                //    1PGM                1.000000E+00                                       
+                //    1PGK                7.155923E+05                                       
+                //    1PHID                         -1                                       
+                //    1PSUBC                         0                                       
+                //    1PMODE                         1                            - frequency
                 //  100CL  102 1.34633E+02        1329                     2    2MODAL      1
-                // -4  DISP        4    1
-                // -5  D1          1    2    1    0
-                // -5  D2          1    2    2    0
-                // -5  D3          1    2    3    0
-                // -5  ALL         1    2    0    0    1ALL
+                // -4  DISP        4    1                                                    
+                // -5  D1          1    2    1    0                                          
+                // -5  D2          1    2    2    0                                          
+                // -5  D3          1    2    3    0                                          
+                // -5  ALL         1    2    0    0    1ALL                                  
 
                 // BUCKLING STEP
 
-                //                              field#  stepIncrement#       step# - COMMENTS
-                //    1PSTEP                         4           1           1
+                //                              field#  stepIncrement#       step#            - COMMENTS
+                //    1PSTEP                         4           1           1               
                 //  100CL  104  93.9434614        1329                     4    4           1
-                //  -4  DISP        4    1
-                //  -5  D1          1    2    1    0
-                //  -5  D2          1    2    2    0
-                //  -5  D3          1    2    3    0
-                //  -5  ALL         1    2    0    0    1ALL
+                //  -4  DISP        4    1                                                   
+                //  -5  D1          1    2    1    0                                         
+                //  -5  D2          1    2    2    0                                         
+                //  -5  D3          1    2    3    0                                         
+                //  -5  ALL         1    2    0    0    1ALL                                 
+
+                // LAST ITERATIONS
+
+                //    1PSTEP              STP 2INC  12                                       
+                //                                                     iteration#             - COMMENTS
+                //  100CL  1051.0000000000        2251                     3    5           1
+                // -4  DISP        4    1                                                    
+                // -5  D1          1    2    1    0                                          
+                // -5  D2          1    2    2    0                                          
+                // -5  D3          1    2    3    0                                          
+                // -5  ALL         1    2    0    0    1ALL                                  
             }
             //
             string line;
@@ -494,11 +505,20 @@ namespace CaeResults
             StepType type = StepType.Static;
             float time;
             int stepId;
-            int stepIncrementId;
+            int stepIncrementId = -1;
             //
             record = lines[lineNum++].Split(splitter, StringSplitOptions.RemoveEmptyEntries);       // 1PSTEP
-            stepId = int.Parse(record[3]);
-            stepIncrementId = int.Parse(record[2]);
+            // Last iterations
+            if (record[2].Contains("INC"))
+            {
+                type = StepType.LastIterations;
+                stepId = int.Parse(record[record.Length - 1]);
+            }
+            else
+            {
+                stepId = int.Parse(record[3]);
+                stepIncrementId = int.Parse(record[2]);
+            }
             // Find 100C line - user field data
             while (!lines[lineNum].TrimStart().StartsWith("100C")) lineNum++;
             //
@@ -543,6 +563,10 @@ namespace CaeResults
                 record = lines[lineNum - 2].Split(splitter, StringSplitOptions.RemoveEmptyEntries); // 1PMODE
                 int freqNum = int.Parse(record[1]);
                 stepIncrementId = freqNum;
+            }
+            else if (type == StepType.LastIterations)
+            {
+                stepIncrementId = int.Parse(record[5]);
             }
             //
             record = lines[lineNum++].Split(splitter, StringSplitOptions.RemoveEmptyEntries);       // -4  DISP

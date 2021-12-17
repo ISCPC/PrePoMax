@@ -201,7 +201,7 @@ namespace PrePoMax.Forms
                 DefinedField = _controller.GetDefinedField(_stepName, _definedFieldToEditName); // to clone
                 if (DefinedField.CreationData != null)
                 {
-                    if (!_controller.Model.RegionValid(DefinedField))
+                    if (!DefinedField.Valid || !_controller.Model.RegionValid(DefinedField))
                     {
                         DefinedField.CreationData = null;
                         DefinedField.CreationIds = null;

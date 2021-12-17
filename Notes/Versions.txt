@@ -219,11 +219,15 @@ Done
 
 Save history in a file?!?!?
 
-Version 1.1.1 Master branch
-Added support for membrane section and membrane finite element types
-Added support for performing 2D plane stress analysis
-Added support for performing 2D plane strain analysis
-Added support for performing 2D axisymmetric analysis
+Version 1.1.2 Master branch
+Added support for opening and visualizing the ResultsForLastIterations.frd files
+Added support for Last iterations parameter at nodal, elemental and contact field outputs
+Added support for element renumbering
+Added support for membrane section and membrane finite element types M3D3, M3D6, M3D4, M3D4R, M3D8, M3D8R
+Added support for performing 2D plane stress analysis using finite element types CPS3, CPS6, CPS4, CPS4R, CPS8, CPS8R
+Added support for performing 2D plane strain analysis using finite element types CPE3, CPE6, CPE4, CPE4R, CPE8, CPE8R
+Added support for performing 2D axisymmetric analysis using finite element types CAX3, CAX6, CAX4, CAX4R, CAX8, CAX8R
+Added support for outputting shell and planar element results in 2D or 3D
 Bug fixes
 
 Version 1.1.1 Master branch

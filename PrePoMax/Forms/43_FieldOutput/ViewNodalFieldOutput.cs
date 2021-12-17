@@ -32,15 +32,19 @@ namespace PrePoMax
     {
         // Variables                                                                                                                
         private CaeModel.NodalFieldOutput _fieldOutput;
-        private DynamicCustomTypeDescriptor _dctd;
 
 
         // Properties                                                                                                               
         public override string Name { get { return _fieldOutput.Name; } set { _fieldOutput.Name = value; } }
         public override int Frequency { get { return _fieldOutput.Frequency; } set { _fieldOutput.Frequency = value; } }
+        public override bool LastIterations
+        {
+            get { return _fieldOutput.LastIterations; }
+            set { _fieldOutput.LastIterations = value; }
+        }
         //
-        [OrderedDisplayName(2, 10, "Variables to output")]
         [CategoryAttribute("Data")]
+        [OrderedDisplayName(3, 10, "Variables to output")]
         [DescriptionAttribute("Nodal field variables")]
         public ViewNodalFieldVariable Variables 
         { 
@@ -54,6 +58,7 @@ namespace PrePoMax
             } 
         }
         //
+        
         public override CaeModel.FieldOutput Base { get { return _fieldOutput; } set { _fieldOutput = (CaeModel.NodalFieldOutput)value; } }
 
 
@@ -62,6 +67,8 @@ namespace PrePoMax
         {
             _fieldOutput = fieldOutput;
             _dctd = ProviderInstaller.Install(this);
+            //
+            _dctd.RenameBooleanPropertyToOnOff(nameof(LastIterations));
         }
     }
 

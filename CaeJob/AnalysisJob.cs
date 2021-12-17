@@ -48,9 +48,6 @@ namespace CaeJob
         [NonSerialized] private string _outputFileName;
         [NonSerialized] private string _errorFileName;
         [NonSerialized] private object _myLock;
-        [NonSerialized] private long _peakPagedMem;
-        [NonSerialized] private long _peakVirtualMem;
-        [NonSerialized] private long _peakWorkingSet;
 
 
         // Properties                                                                                                               
@@ -230,11 +227,7 @@ namespace CaeJob
             if (File.Exists(_outputFileName)) File.Delete(_outputFileName);
             if (File.Exists(_errorFileName)) File.Delete(_errorFileName);
             //
-            _peakPagedMem = 0;
-            _peakVirtualMem = 0;
-            _peakWorkingSet = 0;
-            //
-            if (CaeGlobals.Tools.IsWindows10orNewer()) Run_Win10();
+            if (Tools.IsWindows10orNewer()) Run_Win10();
             else Run_OldWin();
         }
         void bwStart_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -350,10 +343,6 @@ namespace CaeJob
                     else
                     {
                         AppendDataToOutput(e.Data);
-                        // Update the values for the overall peak memory statistics.
-                        _peakPagedMem = _exe.PeakPagedMemorySize64;
-                        _peakVirtualMem = _exe.PeakVirtualMemorySize64;
-                        _peakWorkingSet = _exe.PeakWorkingSet64;
                     }
                 };
                 //

@@ -2919,14 +2919,14 @@ namespace PrePoMax
         // COMMANDS ********************************************************************************
         public void RenumberNodesCommand(int startNodeId)
         {
-            Commands.CRenumberNodes comm = new Commands.CRenumberNodes(startNodeId, _currentView);
+            Commands.CRenumberNodes comm = new Commands.CRenumberNodes(startNodeId);
             _commands.AddAndExecute(comm);
         }
         //******************************************************************************************
         public void RenumberNodes(int startNodeId)
         {
-            if (_currentView == ViewGeometryModelResults.Geometry) _model.Geometry.RenumberNodes(startNodeId);
-            else if (_currentView == ViewGeometryModelResults.Model) _model.Mesh.RenumberNodes(startNodeId);
+            if (_currentView == ViewGeometryModelResults.Model) _model.Mesh.RenumberNodes(startNodeId);
+            else throw new NotSupportedException();
         }
         public int[] GetAllNodeIds()
         {
@@ -2974,7 +2974,18 @@ namespace PrePoMax
         #endregion #################################################################################################################
 
         #region Element menu   #####################################################################################################
-        //
+        // COMMANDS ********************************************************************************
+        public void RenumberElementsCommand(int startNodeId)
+        {
+            Commands.CRenumberElements comm = new Commands.CRenumberElements(startNodeId);
+            _commands.AddAndExecute(comm);
+        }
+        //******************************************************************************************
+        public void RenumberElements(int startElementId)
+        {
+            if (_currentView == ViewGeometryModelResults.Model) _model.Mesh.RenumberElements(startElementId);
+            else throw new NotSupportedException();
+        }
         public int[] GetAllElementIds()
         {
             if (_currentView == ViewGeometryModelResults.Geometry) return _model.Geometry.Elements.Keys.ToArray();
@@ -11673,6 +11684,7 @@ namespace PrePoMax
             if (_currentFieldData.Type == StepType.Static) unit = _results.UnitSystem.TimeUnitAbbreviation;
             else if (_currentFieldData.Type == StepType.Frequency) unit = _results.UnitSystem.FrequencyUnitAbbreviation;
             else if (_currentFieldData.Type == StepType.Buckling) unit = "";
+            else if (_currentFieldData.Type == StepType.LastIterations) unit = _results.UnitSystem.TimeUnitAbbreviation;
             else throw new NotSupportedException();
             //
             vtkControl.DataFieldType fieldType = ConvertStepType(_currentFieldData);
@@ -11689,6 +11701,7 @@ namespace PrePoMax
             if (fieldData.Type == StepType.Static) fieldType = vtkControl.DataFieldType.Static;
             else if (fieldData.Type == StepType.Frequency) fieldType = vtkControl.DataFieldType.Frequency;
             else if (fieldData.Type == StepType.Buckling) fieldType = vtkControl.DataFieldType.Buckling;
+            else if (fieldData.Type == StepType.LastIterations) fieldType = vtkControl.DataFieldType.LastIterations;
             else throw new NotSupportedException();
             return fieldType;
         }

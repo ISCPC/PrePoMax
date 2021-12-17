@@ -24,12 +24,12 @@ namespace CaeModel
     public class NodalFieldOutput : FieldOutput
     {
         // Variables                                                                                                                
-        private NodalFieldVariable _variables;
+        private NodalFieldVariable _variables;        
 
 
         // Properties                                                                                                               
         public NodalFieldVariable Variables { get { return _variables; } set { _variables = value; } }
-     
+
 
         // Constructors                                                                                                             
         public NodalFieldOutput(string name, NodalFieldVariable variables)

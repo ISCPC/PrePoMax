@@ -413,7 +413,7 @@ namespace PrePoMax.Forms
                 FELoad = _controller.GetLoad(stepName, _loadToEditName); // to clone
                 if (FELoad.CreationData != null)
                 {
-                    if (!_controller.Model.RegionValid(FELoad))
+                    if (!FELoad.Valid || !_controller.Model.RegionValid(FELoad))
                     {
                         // Not valid
                         FELoad.CreationData = null;

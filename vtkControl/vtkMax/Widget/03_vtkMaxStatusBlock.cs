@@ -69,7 +69,15 @@ namespace vtkControl
                          _analysisTime.ToString() + " " + _analysisTimeUnit;
             }
             else if (_fieldType == DataFieldType.Buckling)
+            {
                 _text += "Step: #" + _stepNumber + "   Buckling factor: " + _analysisTime.ToString();
+            }
+            else if (_fieldType == DataFieldType.LastIterations)
+            {
+                _text += "Increment: #" + _stepNumber + "   Iteration: #" + _incrementNumber +
+                         "   Analysis time: " + _analysisTime.ToString() + " " + _analysisTimeUnit;
+            }
+            else throw new NotSupportedException();
             //
             _text += Environment.NewLine;
             _text += "Deformation scale factor: " + _deformationScaleFactor.ToString();

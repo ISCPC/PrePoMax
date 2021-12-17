@@ -681,6 +681,29 @@ namespace CaeResults
                             break;
                         }
                     }
+                    //// Remove frst step
+                    //fieldData.StepIncrementId = 1;
+                    ////
+                    //foreach (var entry in _fields)
+                    //{
+                    //    if (entry.Key.Name.ToUpper() == fieldData.Name.ToUpper() &&
+                    //        entry.Key.StepId == fieldData.StepId &&
+                    //        entry.Key.StepIncrementId == fieldData.StepIncrementId)
+                    //    {
+                    //        float[] allValues = entry.Value.GetComponentValues(fieldData.Component);
+                    //        int globalId;
+                    //        int localId;
+                    //        for (int i = 0; i < globalNodeIds.Length; i++)
+                    //        {
+                    //            globalId = globalNodeIds[i];
+                    //            if (_nodeIdsLookUp.TryGetValue(globalId, out localId) && localId >= 0 && localId < allValues.Length)
+                    //                values[i] -= allValues[localId];
+                    //            else
+                    //                return null;
+                    //        }
+                    //        break;
+                    //    }
+                    //}
                 }
             }
             return values;
@@ -706,12 +729,12 @@ namespace CaeResults
             }
             return false;
         }
-        public NodesExchangeData GetExtremeValues(string partName, FieldData fieldData)
+        public NodesExchangeData GetExtremeValues(string partName, FieldData fieldData, float[] values)
         {
-            return GetScaledExtremeValues(partName, fieldData, 0, 0);
+            return GetScaledExtremeValues(partName, fieldData, values, 0, 0);
         }
-        public NodesExchangeData GetScaledExtremeValues(string partName, FieldData fieldData, float absoluteScale,
-                                                        float relativeScale)
+        public NodesExchangeData GetScaledExtremeValues(string partName, FieldData fieldData, float[] values,
+                                                        float absoluteScale, float relativeScale)
         {
             if (!fieldData.Valid) return null;
             //
@@ -720,8 +743,8 @@ namespace CaeResults
             nodesData.Coor = new double[2][];
             nodesData.Values = new float[2];
             int minId = -1;
-            int maxId = -1;
-
+            int maxId = -1;            
+            //
             if (fieldData.StepIncrementId == 0)     // zero increment
             {
                 if (fieldData.StepId == 1)          // first step / zero increment
@@ -744,12 +767,27 @@ namespace CaeResults
                     {
                         int id;
                         float value;
-                        float[] values = fieldEntry.Value.GetComponentValues(fieldData.Component);
+                        BasePart basePart;
+                        //float[] values = fieldEntry.Value.GetComponentValues(fieldData.Component);
                         //
-                        nodesData.Values[0] = float.MaxValue;
-                        nodesData.Values[1] = -float.MaxValue;
+                        basePart = _mesh.Parts[partName];
                         //
-                        foreach (var nodeId in _mesh.Parts[partName].NodeLabels)
+                        if (_nodeIdsLookUp.TryGetValue(basePart.NodeLabels[0], out id) && id < values.Length)
+                        {
+                                value = values[id];
+                                //
+                                nodesData.Values[0] = value;
+                                minId = basePart.NodeLabels[0];
+                                nodesData.Values[1] = value;
+                                maxId = basePart.NodeLabels[0];
+                        }
+                        else
+                        {
+                            nodesData.Values[0] = float.MaxValue;
+                            nodesData.Values[1] = -float.MaxValue;
+                        }
+                        //
+                        foreach (var nodeId in basePart.NodeLabels)
                         {
                             if (_nodeIdsLookUp.TryGetValue(nodeId, out id) && id < values.Length)
                             {
@@ -840,7 +878,7 @@ namespace CaeResults
             else
             {
                 pData.Nodes.Values = GetValues(fData, pData.Nodes.Ids);
-                pData.ExtremeNodes = GetScaledExtremeValues(part.Name, fData, scale, 1);
+                pData.ExtremeNodes = GetScaledExtremeValues(part.Name, fData, pData.Nodes.Values, scale, 1);
             }
             if (scale != 0)
                 ScaleNodeCoordinates(scale, fData.StepId, fData.StepIncrementId, pData.Nodes.Ids, ref pData.Nodes.Coor);
@@ -866,7 +904,7 @@ namespace CaeResults
             else
             {
                 pData.Nodes.Values = GetValues(fData, pData.Nodes.Ids);
-                pData.ExtremeNodes = GetExtremeValues(part.Name, fData);
+                pData.ExtremeNodes = GetExtremeValues(part.Name, fData, pData.Nodes.Values);
             }
             //
             pData.NodesAnimation = new NodesExchangeData[numFrames];
@@ -891,7 +929,8 @@ namespace CaeResults
                 //
                 if (invariant) relativeScale = Math.Abs(relativeScale);
                 ScaleValues(relativeScale, pData.Nodes.Values, out pData.NodesAnimation[i].Values);
-                pData.ExtremeNodesAnimation[i] = GetScaledExtremeValues(part.Name, fData, absoluteScale, relativeScale);
+                pData.ExtremeNodesAnimation[i] = GetScaledExtremeValues(part.Name, fData, pData.Nodes.Values,
+                                                                        absoluteScale, relativeScale);
             }
             //
             return pData;
@@ -954,7 +993,8 @@ namespace CaeResults
                 //
                 if (invariant) relativeScale = Math.Abs(relativeScale);
                 ScaleValues(relativeScale, pData.Nodes.Values, out pData.NodesAnimation[i].Values);
-                pData.ExtremeNodesAnimation[i] = GetScaledExtremeValues(elementSet.Name, fData, absoluteScale, relativeScale);
+                pData.ExtremeNodesAnimation[i] = GetScaledExtremeValues(elementSet.Name, fData, pData.Nodes.Values, 
+                                                                        absoluteScale, relativeScale);
             }
             //
             return pData;
