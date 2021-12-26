@@ -15,6 +15,7 @@ namespace CaeModel
         // Variables                                                                                                                
         private int[] _creationIds;
         private Selection _creationData;
+        protected bool _twoD;
         protected Color _color;
 
 
@@ -23,6 +24,7 @@ namespace CaeModel
         public virtual RegionTypeEnum RegionType { get; set; }
         public int[] CreationIds { get { return _creationIds; } set { _creationIds = value; } }
         public Selection CreationData { get { return _creationData; } set { _creationData = value; } }
+        public bool TwoD { get { return _twoD; } }
         public Color Color
         {
             get
@@ -36,11 +38,12 @@ namespace CaeModel
         }
 
         // Constructors                                                                                                             
-        public Load(string name)
+        public Load(string name, bool twoD)
             : base(name) 
         {
             _creationIds = null;
             _creationData = null;
+            _twoD = twoD;
             _color = Color.RoyalBlue;
         }
 

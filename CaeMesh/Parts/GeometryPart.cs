@@ -12,6 +12,7 @@ namespace CaeMesh
     {
         // Variables                                                                                                                
         private MeshingParameters _meshingParameters;
+        private List<Enum> _elementTypeEnums;
         private int[] _freeEdgeCellIds;
         private int[] _errorEdgeCellIds;
         private int[] _freeNodeIds;
@@ -30,6 +31,7 @@ namespace CaeMesh
                     _meshingParameters.QuadDominated = false;
             }
         }
+        
         public int[] FreeEdgeCellIds { get { return _freeEdgeCellIds; } set { _freeEdgeCellIds = value; } }
         public int[] ErrorEdgeCellIds { get { return _errorEdgeCellIds; } set { _errorEdgeCellIds = value; } }
         public int[] FreeNodeIds { get { return _freeNodeIds; } set { _freeNodeIds = value; } }
@@ -72,6 +74,7 @@ namespace CaeMesh
             : base(name, partId, nodeLabels, elementLabels, elementTypes)
         {
             _meshingParameters = null;
+            _elementTypeEnums = null;
             _freeEdgeCellIds = null;
             _errorEdgeCellIds = null;
             _freeNodeIds = null;
@@ -82,6 +85,7 @@ namespace CaeMesh
             : base(part)
         {
             _meshingParameters = null;
+            _elementTypeEnums = null;
             _freeEdgeCellIds = null;
             _errorEdgeCellIds = null;
             _freeNodeIds = null;
@@ -92,6 +96,7 @@ namespace CaeMesh
             : base((BasePart)part)
         {
             _meshingParameters = part.MeshingParameters != null ? part.MeshingParameters.DeepClone() : null;
+            _elementTypeEnums = part._elementTypeEnums != null ? part._elementTypeEnums.ToList() : null;
             _freeEdgeCellIds = part.FreeEdgeCellIds != null ? part.FreeEdgeCellIds.ToArray() : null;
             _errorEdgeCellIds = part.ErrorEdgeCellIds != null ? part.ErrorEdgeCellIds.ToArray() : null;
             _freeNodeIds = part.FreeNodeIds != null ? part.FreeNodeIds.ToArray() : null;
@@ -120,6 +125,27 @@ namespace CaeMesh
         public override void SetProperties(PartProperties properties)
         {
             base.SetProperties(properties);
+        }
+        public List<Enum> GetElementTypeEnums()
+        {
+            return _elementTypeEnums;
+        }
+        public void AddElementTypeEnums(List<Enum> elementTypeEnums)
+        {            
+            Dictionary<Type, Enum> oldEnums = new Dictionary<Type, Enum>();
+            if (_elementTypeEnums != null)
+            {
+                foreach (var oldElementTypeEnum in _elementTypeEnums)
+                    oldEnums.Add(oldElementTypeEnum.GetType(), oldElementTypeEnum);
+            }
+            //
+            foreach (var newEnum in elementTypeEnums)
+            {
+                if (oldEnums.ContainsKey(newEnum.GetType())) oldEnums[newEnum.GetType()] = newEnum;
+                else oldEnums.Add(newEnum.GetType(), newEnum);
+            }
+            //
+            _elementTypeEnums = oldEnums.Values.ToList();
         }
         public override void RenumberVisualizationElements(Dictionary<int, int> newIds)
         {

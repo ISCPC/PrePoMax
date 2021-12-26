@@ -1797,7 +1797,7 @@ namespace PrePoMax
         {
             try
             {
-                ExplodedViewParameters parameters = _controller.GetCurrentExplodedViewScaleFactors();
+                ExplodedViewParameters parameters = _controller.GetCurrentExplodedViewParameters();
                 _frmExplodedView.SetExplodedViewParameters(parameters);
                 //
                 ShowForm(_frmExplodedView, _frmExplodedView.Text, null);
@@ -2954,7 +2954,7 @@ namespace PrePoMax
             try
             {
                 if (_controller.Model.Mesh == null) return;
-
+                //
                 using (FrmGetValue frmGetValue = new FrmGetValue())
                 {
                     frmGetValue.NumOfDigits = 0;
@@ -2965,6 +2965,35 @@ namespace PrePoMax
                     if (frmGetValue.ShowDialog() == DialogResult.OK)
                     {
                         _controller.RenumberNodesCommand((int)frmGetValue.Value);
+                    }
+                    SaveFormLoaction(frmGetValue);
+                }
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+
+        #endregion  ################################################################################################################
+
+        #region Element menu  ######################################################################################################
+        private void tsmiRenumberAllElements_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (_controller.Model.Mesh == null) return;
+                //
+                using (FrmGetValue frmGetValue = new FrmGetValue())
+                {
+                    frmGetValue.NumOfDigits = 0;
+                    frmGetValue.MinValue = 1;
+                    SetFormLoaction(frmGetValue);
+                    string desc = "Enter the starting element id for the element renumbering.";
+                    frmGetValue.PrepareForm("Renumber Elements", "Start element id", desc, 1, null);
+                    if (frmGetValue.ShowDialog() == DialogResult.OK)
+                    {
+                        _controller.RenumberElementsCommand((int)frmGetValue.Value);
                     }
                     SaveFormLoaction(frmGetValue);
                 }
@@ -7000,6 +7029,6 @@ namespace PrePoMax
 
         }
 
-       
+        
     }
 }

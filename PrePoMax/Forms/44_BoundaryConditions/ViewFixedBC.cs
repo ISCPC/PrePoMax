@@ -38,8 +38,8 @@ namespace PrePoMax
             regionTypePropertyNamePairs.Add(RegionTypeEnum.SurfaceName, nameof(SurfaceName));
             regionTypePropertyNamePairs.Add(RegionTypeEnum.ReferencePointName, nameof(ReferencePointName));
             //
-            base.SetBase(_fixedBC, regionTypePropertyNamePairs);
-            base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
+            SetBase(_fixedBC, regionTypePropertyNamePairs);
+            DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
         }
 
 
@@ -55,7 +55,7 @@ namespace PrePoMax
             regionTypeListItemsPairs.Add(RegionTypeEnum.NodeSetName, nodeSetNames);
             regionTypeListItemsPairs.Add(RegionTypeEnum.SurfaceName, surfaceNames);
             regionTypeListItemsPairs.Add(RegionTypeEnum.ReferencePointName, referencePointNames);
-            base.PopululateDropDownLists(regionTypeListItemsPairs);
+            PopululateDropDownLists(regionTypeListItemsPairs);
         }
     }
 

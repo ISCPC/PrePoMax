@@ -12,7 +12,8 @@ namespace CaeResults
         None,
         Static,
         Frequency,
-        Buckling
+        Buckling,
+        LastIterations
     }
 
     [Serializable]

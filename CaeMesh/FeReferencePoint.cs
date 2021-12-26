@@ -43,13 +43,22 @@ namespace CaeMesh
         private int _createdFromRefNodeId2;                     //ISerializable
         private string _refNodeSetName;                         //ISerializable
         private string _rotNodeSetName;                         //ISerializable
+        private bool _twoD;                                     //ISerializable
         private Color _color;                                   //ISerializable
-        
+
 
         // Properties                                                                                                               
         public double X { get { return _x; } set { _x = value; } }
         public double Y { get { return _y; } set { _y = value; } }
-        public double Z { get { return _z; } set { _z = value; } }
+        public double Z
+        {
+            get { return _z; }
+            set
+            {
+                _z = value;
+                if (_twoD) _z = 0;
+            }
+        }
         public FeReferencePointCreatedFrom CreatedFrom
         { 
             get { return _createdFrom; }
@@ -70,10 +79,16 @@ namespace CaeMesh
         public int CreatedFromRefNodeId2 { get { return _createdFromRefNodeId2; } set { _createdFromRefNodeId2 = value; } }
         public string RefNodeSetName { get { return _refNodeSetName; } set { _refNodeSetName = value; } }
         public string RotNodeSetName { get { return _rotNodeSetName; } set { _rotNodeSetName = value; } }
+        public bool TwoD { get { return _twoD; } }
         public Color Color { get { return _color; } set { _color = value; } }
 
 
         // Constructors                                                                                                             
+        public FeReferencePoint(string name, double x, double y)
+            :this(name, x, y, 0)
+        {
+            _twoD = true;
+        }
         public FeReferencePoint(string name, double x, double y, double z)
             :base(name)
         {
@@ -82,6 +97,7 @@ namespace CaeMesh
             _x = x;
             _y = y;
             _z = z;
+            _twoD = false;
         }
         public FeReferencePoint(string name, FeNode refNode1, int refNode2Id)
             : base(name)
@@ -93,6 +109,7 @@ namespace CaeMesh
             _x = refNode1.X;
             _y = refNode1.Y;
             _z = refNode1.Z;
+            _twoD = false;
         }
         public FeReferencePoint(SerializationInfo info, StreamingContext context)
             : base(info, context)
@@ -102,6 +119,8 @@ namespace CaeMesh
             //
             bool version052 = false;
             string createdFromNodeSetName = null;
+            // Compatibility for version v1.1.1
+            _twoD = false;
             //
             foreach (SerializationEntry entry in info)
             {
@@ -127,6 +146,8 @@ namespace CaeMesh
                         _refNodeSetName = (string)entry.Value; break;
                     case "_rotNodeSetName":
                         _rotNodeSetName = (string)entry.Value; break;
+                    case "_twoD":
+                        _twoD = (bool)entry.Value; break;
                     case "_color":
                         _color = (Color)entry.Value; break;
                     // Compatibility for version v0.5.2
@@ -134,7 +155,7 @@ namespace CaeMesh
                         version052 = true;
                         createdFromNodeSetName = (string)entry.Value; break;
                 }
-            }
+            }            
             // Compatibility for version v0.5.2
             if (version052)
             {
@@ -142,6 +163,8 @@ namespace CaeMesh
                 _regionName = createdFromNodeSetName;
                 _regionType = RegionTypeEnum.NodeSetName;
             }
+            //
+            Z = _z; // is it 2D
         }
 
 
@@ -170,13 +193,13 @@ namespace CaeMesh
         {
             _x = centerOfGravity[0];
             _y = centerOfGravity[1];
-            _z = centerOfGravity[2];
+            Z = centerOfGravity[2]; // is it 2D
         }
         public void UpdateCoordinates(double[][] boundingBox)
         {
             _x = (boundingBox[0][0] + boundingBox[0][1]) / 2;
             _y = (boundingBox[1][0] + boundingBox[1][1]) / 2;
-            _z = (boundingBox[2][0] + boundingBox[2][1]) / 2;
+            Z = (boundingBox[2][0] + boundingBox[2][1]) / 2; // is it 2D
         }
 
         // ISerialization
@@ -195,9 +218,8 @@ namespace CaeMesh
             info.AddValue("_createdFromRefNodeId2", _createdFromRefNodeId2, typeof(int));
             info.AddValue("_refNodeSetName", _refNodeSetName, typeof(string));
             info.AddValue("_rotNodeSetName", _rotNodeSetName, typeof(string));
+            info.AddValue("_twoD", _twoD, typeof(bool));
             info.AddValue("_color", _color, typeof(Color));
         }
-
-
     }
 }

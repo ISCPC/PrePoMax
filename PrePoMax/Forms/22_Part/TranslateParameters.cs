@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeMesh;
 using CaeGlobals;
+using CaeModel;
 using System.ComponentModel;
 using DynamicTypeDescriptor;
 using System.Drawing.Design;
@@ -21,6 +22,7 @@ namespace PrePoMax.Forms
         private double[] _startPoint;
         private double[] _endPoint;
         private bool _copy;
+        private bool _twoD;
 
 
         // Properties                                                                                                               
@@ -33,7 +35,7 @@ namespace PrePoMax.Forms
         [Category("Start point coordinates")]
         [OrderedDisplayName(0, 10, "Select the start point")]
         [DescriptionAttribute("Select the start point.")]
-        [EditorAttribute(typeof(SinglePointDataEditor), typeof(System.Drawing.Design.UITypeEditor))]
+        [EditorAttribute(typeof(SinglePointDataEditor), typeof(UITypeEditor))]
         [Id(1, 2)]
         public ItemSetData StartPointItemSet
         {
@@ -48,28 +50,36 @@ namespace PrePoMax.Forms
         [Category("Start point coordinates")]
         [OrderedDisplayName(1, 10, "X")]
         [Description("X coordinate of the start point.")]
-        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(1, 2)]
         public double X1 { get { return _startPoint[0]; } set { _startPoint[0] = value; } }
         //
         [Category("Start point coordinates")]
         [OrderedDisplayName(2, 10, "Y")]
         [Description("Y coordinate of the start point.")]
-        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(1, 2)]
         public double Y1 { get { return _startPoint[1]; } set { _startPoint[1] = value; } }
         //
         [Category("Start point coordinates")]
         [OrderedDisplayName(3, 10, "Z")]
         [Description("Z coordinate of the start point.")]
-        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(1, 2)]
-        public double Z1 { get { return _startPoint[2]; } set { _startPoint[2] = value; } }
+        public double Z1
+        { 
+            get { return _startPoint[2]; } 
+            set 
+            {
+                _startPoint[2] = value;
+                if (_twoD) _startPoint[2] = 0;
+            }
+        }
         //
         [Category("End point coordinates")]
         [OrderedDisplayName(0, 10, "Select the end point")]
         [DescriptionAttribute("Select the end point.")]
-        [EditorAttribute(typeof(SinglePointDataEditor), typeof(System.Drawing.Design.UITypeEditor))]
+        [EditorAttribute(typeof(SinglePointDataEditor), typeof(UITypeEditor))]
         [Id(1, 3)]
         public ItemSetData EndPointItemSet
         {
@@ -84,27 +94,35 @@ namespace PrePoMax.Forms
         [Category("End point coordinates")]
         [OrderedDisplayName(1, 10, "X")]
         [Description("X coordinate of the end point.")]
-        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(1, 3)]
         public double X2 { get { return _endPoint[0]; } set { _endPoint[0] = value; } }
         //
         [Category("End point coordinates")]
         [OrderedDisplayName(2, 10, "Y")]
         [Description("Y coordinate of the end point.")]
-        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(1, 3)]
         public double Y2 { get { return _endPoint[1]; } set { _endPoint[1] = value; } }
         //
         [Category("End point coordinates")]
         [OrderedDisplayName(3, 10, "Z")]
         [Description("Z coordinate of the end point.")]
-        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(1, 3)]
-        public double Z2 { get { return _endPoint[2]; } set { _endPoint[2] = value; } }
+        public double Z2
+        {
+            get { return _endPoint[2]; }
+            set
+            {
+                _endPoint[2] = value;
+                if (_twoD) _endPoint[2] = 0;
+            }
+        }
 
 
         // Constructors                                                                                                             
-        public TranslateParameters()
+        public TranslateParameters(ModelSpaceEnum modelSpace)
         {
             Clear();
             //
@@ -118,6 +136,18 @@ namespace PrePoMax.Forms
             _endPointItemSetData.ToStringType = ItemSetDataToStringType.SelectSinglePoint;
             //
             _dctd.RenameBooleanProperty(nameof(Copy), "Copy and translate", "Translate");
+            //
+            if (modelSpace == ModelSpaceEnum.ThreeD) { _twoD = false; }
+            else if (modelSpace.IsTwoD())
+            {
+                _twoD = true;
+                Z1 = 0;
+                Z2 = 0;
+            }
+            else throw new NotSupportedException();
+            //
+            _dctd.GetProperty(nameof(Z1)).SetIsBrowsable(!_twoD);
+            _dctd.GetProperty(nameof(Z2)).SetIsBrowsable(!_twoD);
         }
 
 
@@ -127,6 +157,11 @@ namespace PrePoMax.Forms
             _copy = false;
             _startPoint = new double[3];
             _endPoint = new double[] { 0, 0, 0};
+            if (_twoD)
+            {
+                Z1 = 0;
+                Z2 = 0;
+            }
         }
 
     }

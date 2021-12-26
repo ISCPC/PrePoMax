@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using CaeGlobals;
 using DynamicTypeDescriptor;
-using CaeGlobals;
 
 namespace PrePoMax
 {
@@ -32,21 +31,21 @@ namespace PrePoMax
         [Id(4, 2)]
         public string ElementSetName { get { return _cenLoad.RegionName; } set { _cenLoad.RegionName = value; } }
         //
-        [CategoryAttribute("Axis point")]
+        [CategoryAttribute("Center point")]
         [OrderedDisplayName(0, 10, "X")]
         [DescriptionAttribute("X coordinate of the axis point.")]
         [TypeConverter(typeof(StringLengthConverter))]
         [Id(1, 3)]
         public double X { get { return _cenLoad.X; } set { _cenLoad.X = value; } }
         //
-        [CategoryAttribute("Axis point")]
+        [CategoryAttribute("Center point")]
         [OrderedDisplayName(1, 10, "Y")]
         [DescriptionAttribute("X coordinate of the axis point.")]
         [TypeConverter(typeof(StringLengthConverter))]
         [Id(2, 3)]
         public double Y { get { return _cenLoad.Y; } set { _cenLoad.Y = value; } }
         //
-        [CategoryAttribute("Axis point")]
+        [CategoryAttribute("Center point")]
         [OrderedDisplayName(2, 10, "Z")]
         [DescriptionAttribute("X coordinate of the axis point.")]
         [TypeConverter(typeof(StringLengthConverter))]
@@ -95,8 +94,13 @@ namespace PrePoMax
             regionTypePropertyNamePairs.Add(RegionTypeEnum.PartName, nameof(PartName));
             regionTypePropertyNamePairs.Add(RegionTypeEnum.ElementSetName, nameof(ElementSetName));
             //
-            base.SetBase(_cenLoad, regionTypePropertyNamePairs);
-            base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
+            SetBase(_cenLoad, regionTypePropertyNamePairs);
+            DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
+            //
+            DynamicCustomTypeDescriptor.GetProperty(nameof(Z)).SetIsBrowsable(!cLoad.TwoD);
+            DynamicCustomTypeDescriptor.GetProperty(nameof(N1)).SetIsBrowsable(!cLoad.TwoD);
+            DynamicCustomTypeDescriptor.GetProperty(nameof(N2)).SetIsBrowsable(!cLoad.TwoD);
+            DynamicCustomTypeDescriptor.GetProperty(nameof(N3)).SetIsBrowsable(!cLoad.TwoD);
         }
 
 
@@ -111,7 +115,7 @@ namespace PrePoMax
             regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
             regionTypeListItemsPairs.Add(RegionTypeEnum.PartName, partNames);
             regionTypeListItemsPairs.Add(RegionTypeEnum.ElementSetName, elementSetNames);
-            base.PopululateDropDownLists(regionTypeListItemsPairs);
+            PopululateDropDownLists(regionTypeListItemsPairs);
         }
     }
 

@@ -370,6 +370,8 @@
             this.tscbSymbolsForStep = new System.Windows.Forms.ToolStripComboBox();
             this.timerTest = new System.Windows.Forms.Timer(this.components);
             this.timerOutput = new System.Windows.Forms.Timer(this.components);
+            this.tsmiElement = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiRenumberAllElements = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStripMain.SuspendLayout();
             this.statusStripMain.SuspendLayout();
             this.tsResults.SuspendLayout();
@@ -1240,6 +1242,7 @@
             this.tsmiToolsParts,
             this.tsmiDividerModel1,
             this.tsmiNode,
+            this.tsmiElement,
             this.tsmiPart,
             this.tsmiNodeSet,
             this.tsmiElementSet,
@@ -1310,7 +1313,7 @@
             // tsmiRenumberAllNodes
             // 
             this.tsmiRenumberAllNodes.Name = "tsmiRenumberAllNodes";
-            this.tsmiRenumberAllNodes.Size = new System.Drawing.Size(146, 22);
+            this.tsmiRenumberAllNodes.Size = new System.Drawing.Size(180, 22);
             this.tsmiRenumberAllNodes.Text = "Renumber All";
             this.tsmiRenumberAllNodes.Click += new System.EventHandler(this.tsmiRenumberAllNodes_Click);
             // 
@@ -3209,6 +3212,21 @@
             // 
             this.timerOutput.Tick += new System.EventHandler(this.timerOutput_Tick);
             // 
+            // tsmiElement
+            // 
+            this.tsmiElement.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsmiRenumberAllElements});
+            this.tsmiElement.Name = "tsmiElement";
+            this.tsmiElement.Size = new System.Drawing.Size(194, 22);
+            this.tsmiElement.Text = "Element";
+            // 
+            // tsmiRenumberAllElements
+            // 
+            this.tsmiRenumberAllElements.Name = "tsmiRenumberAllElements";
+            this.tsmiRenumberAllElements.Size = new System.Drawing.Size(180, 22);
+            this.tsmiRenumberAllElements.Text = "Renumber All";
+            this.tsmiRenumberAllElements.Click += new System.EventHandler(this.tsmiRenumberAllElements_Click);
+            // 
             // FrmMain
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -3603,6 +3621,8 @@
         private System.Windows.Forms.ToolStripSeparator tsmiDividerContactPair3;
         private System.Windows.Forms.ToolStripMenuItem tsmiTransformGeometryParts;
         private System.Windows.Forms.ToolStripMenuItem tsmiScaleGeometryParts;
+        private System.Windows.Forms.ToolStripMenuItem tsmiElement;
+        private System.Windows.Forms.ToolStripMenuItem tsmiRenumberAllElements;
     }
 }
 

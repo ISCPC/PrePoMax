@@ -10,32 +10,32 @@ using DynamicTypeDescriptor;
 namespace PrePoMax
 {
     [Serializable]
-    public class ViewShellSection : ViewSection
+    public class ViewMembraneSection : ViewSection
     {
         // Variables                                                                                                                
-        protected CaeModel.ShellSection _shellSection;
-        
+        protected CaeModel.MembraneSection _membraneSection;
+
 
         // Properties                                                                                                               
         [CategoryAttribute("Data")]
         [OrderedDisplayName(2, 10, "Thickness")]
-        [DescriptionAttribute("Set the shell thickness.")]
+        [DescriptionAttribute("Set the membrane thickness.")]
         [TypeConverter(typeof(StringLengthConverter))]
-        public double Thickness { get { return _shellSection.Thickness; } set { _shellSection.Thickness = value; } }
+        public double Thickness { get { return _membraneSection.Thickness; } set { _membraneSection.Thickness = value; } }
         //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(3, 10, "Offset")]
-        [DescriptionAttribute("Set the offset of the shell mid-surface in regard to the selected geometry. " +
-                              "The unit is the shell thickness.")]
+        [DescriptionAttribute("Set the offset of the membrane mid-surface in regard to the selected geometry. "
+                              + "The unit is the shell thickness.")]
         [TypeConverter(typeof(StringDefaultDoubleConverter))]
-        public double Offset { get { return _shellSection.Offset; } set { _shellSection.Offset = value; } }
+        public double Offset { get { return _membraneSection.Offset; } set { _membraneSection.Offset = value; } }
 
 
         // Constructors                                                                                                             
-        public ViewShellSection(CaeModel.ShellSection shellSection)
+        public ViewMembraneSection(CaeModel.MembraneSection membraneSection)
         {
-            _shellSection = shellSection;
-            SetBase(_shellSection);
+            _membraneSection = membraneSection;
+            SetBase(_membraneSection);
             //
             StringDefaultDoubleConverter.InitialValue = 1;
         }

@@ -11,32 +11,30 @@ using CaeGlobals;
 
 namespace PrePoMax.Commands
 {
-    // Compatibility v1.1.1 - the command was renamed to CSetNewModelProperties
     [Serializable]
-    class CSetModelUnitSystem : Command
+    class CRenumberElements : Command
     {
         // Variables                                                                                                                
-        private UnitSystemType _unitSystemType;
+        private int _startElementId;
 
 
         // Constructor                                                                                                              
-        public CSetModelUnitSystem(UnitSystemType unitSystemType)
-            : base("Set unit system")
+        public CRenumberElements(int startElementId)
+            : base("Renumber elements")
         {
-            _unitSystemType = unitSystemType;
+            _startElementId = startElementId;
         }
 
 
         // Methods                                                                                                                  
         public override bool Execute(Controller receiver)
         {
-            receiver.SetNewModelProperties(ModelSpaceEnum.ThreeD, _unitSystemType);
+            receiver.RenumberElements(_startElementId);
             return true;
         }
-
         public override string GetCommandString()
         {
-            return base.GetCommandString() + _unitSystemType.GetDescription();
+            return base.GetCommandString() + _startElementId;
         }
     }
 }

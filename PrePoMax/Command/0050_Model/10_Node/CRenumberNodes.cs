@@ -16,25 +16,22 @@ namespace PrePoMax.Commands
     {
         // Variables                                                                                                                
         private int _startNodeId;
-        private ViewGeometryModelResults _view;
+
 
         // Constructor                                                                                                              
-        public CRenumberNodes(int startNodeId, ViewGeometryModelResults currentView)
+        public CRenumberNodes(int startNodeId)
             : base("Renumber nodes")
         {
             _startNodeId = startNodeId;
-            _view = currentView;
         }
 
 
         // Methods                                                                                                                  
         public override bool Execute(Controller receiver)
         {
-            receiver.CurrentView = _view;
             receiver.RenumberNodes(_startNodeId);
             return true;
         }
-
         public override string GetCommandString()
         {
             return base.GetCommandString() + _startNodeId;

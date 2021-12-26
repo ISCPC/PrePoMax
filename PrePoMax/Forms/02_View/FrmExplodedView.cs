@@ -25,6 +25,7 @@ namespace PrePoMax.Forms
         private bool _continueExplodedView;
         private Dictionary<string, double[]> _partOffsets;
 
+
         // Properties                                                                                                               
         public void SetExplodedViewParameters(ExplodedViewParameters parameters)
         {
@@ -46,9 +47,10 @@ namespace PrePoMax.Forms
         {
             InitializeComponent();
             //
-            _controller = controller;
             _viewExplodedViewParameters = new ViewExplodedViewParameters();
             propertyGrid.SelectedObject = _viewExplodedViewParameters;
+            //
+            _controller = controller;
             //
             propertyGrid.SetParent(this);   // for the Tab key to work
             propertyGrid.SetLabelColumnWidth(1.75);

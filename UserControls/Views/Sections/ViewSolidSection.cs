@@ -26,13 +26,13 @@ namespace UserControls
             set { _solidSection.Thickness = value; }
         }
 
-        [CategoryAttribute("Data")]
-        [OrderedDisplayName(4, 10, "Type")]
-        [DescriptionAttribute("The type of the solid section.")]
-        public CaeModel.SolidSectionType Type
-        {
-            get { return _solidSection.Type; }
-        }
+        //[CategoryAttribute("Data")]
+        //[OrderedDisplayName(4, 10, "Type")]
+        //[DescriptionAttribute("The type of the solid section.")]
+        //public CaeModel.SolidSectionType Type
+        //{
+        //    get { return _solidSection.Type; }
+        //}
 
 
         // Constructors                                                                                                             

@@ -58,10 +58,14 @@ namespace CaeMesh
             // S2 = 1-4-2-8-9-5  . 0-3-1-7-8-4
             // S3 = 2-4-3-9-10-6 . 1-3-2-8-9-5
             // S4 = 3-4-1-10-8-7 . 2-3-0-9-7-6
-            if (faceName == FeFaceName.S1) return new int[] { NodeIds[0], NodeIds[1], NodeIds[2], NodeIds[4], NodeIds[5], NodeIds[6] };
-            if (faceName == FeFaceName.S2) return new int[] { NodeIds[0], NodeIds[3], NodeIds[1], NodeIds[7], NodeIds[8], NodeIds[4] };
-            if (faceName == FeFaceName.S3) return new int[] { NodeIds[1], NodeIds[3], NodeIds[2], NodeIds[8], NodeIds[9], NodeIds[5] };
-            if (faceName == FeFaceName.S4) return new int[] { NodeIds[2], NodeIds[3], NodeIds[0], NodeIds[9], NodeIds[7], NodeIds[6] };
+            if (faceName == FeFaceName.S1) return new int[] { NodeIds[0], NodeIds[1], NodeIds[2],
+                                                              NodeIds[4], NodeIds[5], NodeIds[6] };
+            if (faceName == FeFaceName.S2) return new int[] { NodeIds[0], NodeIds[3], NodeIds[1],
+                                                              NodeIds[7], NodeIds[8], NodeIds[4] };
+            if (faceName == FeFaceName.S3) return new int[] { NodeIds[1], NodeIds[3], NodeIds[2],
+                                                              NodeIds[8], NodeIds[9], NodeIds[5] };
+            if (faceName == FeFaceName.S4) return new int[] { NodeIds[2], NodeIds[3], NodeIds[0],
+                                                              NodeIds[9], NodeIds[7], NodeIds[6] };
             else throw new NotSupportedException();
         }
         public override int[] GetVtkCellFromFaceName(FeFaceName faceName)
@@ -98,11 +102,11 @@ namespace CaeMesh
             return cells;
         }
         public override Dictionary<FeFaceName, double> GetFaceNamesAndAreasFromNodeSet(HashSet<int> nodeSet,
-                                                                                       Dictionary<int, FeNode> nodes)
+                                                                                       Dictionary<int, FeNode> nodes,
+                                                                                       bool edgeFaces)
         {
             // Check only first 4 nodes (as in linear element)
             int significantNodes = 4;
-            //
             bool[] faceNodeIds = new bool[significantNodes];
             //
             int count = 0;
@@ -113,7 +117,8 @@ namespace CaeMesh
                     faceNodeIds[i] = true;
                     count++;
                 }
-                if (i >= 1 && count <= i - 1) break;
+                // If two or more nodes were missed: break
+                if (i + 1 - count >= 2) break;
             }
             // S1 = 1-2-3 . 0-1-2
             // S2 = 1-4-2 . 0-3-1

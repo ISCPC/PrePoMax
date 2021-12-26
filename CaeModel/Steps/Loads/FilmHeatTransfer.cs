@@ -28,8 +28,8 @@ namespace CaeModel
 
         // Constructors                                                                                                             
         public FilmHeatTransfer(string name, string surfaceName, RegionTypeEnum regionType, double sinkTemperature,
-                                double filmCoefficient)
-            : base(name) 
+                                double filmCoefficient, bool twoD)
+            : base(name, twoD) 
         {
             _surfaceName = surfaceName;
             _regionType = regionType;

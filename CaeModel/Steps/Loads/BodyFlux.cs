@@ -24,8 +24,8 @@ namespace CaeModel
         
 
         // Constructors                                                                                                             
-        public BodyFlux(string name, string regionName, RegionTypeEnum regionType, double magnitude)
-            : base(name) 
+        public BodyFlux(string name, string regionName, RegionTypeEnum regionType, double magnitude, bool twoD)
+            : base(name, twoD) 
         {
             _regionName = regionName;
             _regionType = regionType;

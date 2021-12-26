@@ -124,9 +124,11 @@ namespace CaeMesh
 
             return cells;
         }
-        public override Dictionary<FeFaceName, double> GetFaceNamesAndAreasFromNodeSet(HashSet<int> nodeSet, Dictionary<int, FeNode> nodes)
+        public override Dictionary<FeFaceName, double> GetFaceNamesAndAreasFromNodeSet(HashSet<int> nodeSet,
+                                                                                       Dictionary<int, FeNode> nodes,
+                                                                                       bool edgeFaces)
         {
-            int significantNodes = NodeIds.Length;
+            int significantNodes = 8;
             bool[] faceNodeIds = new bool[significantNodes];
             //
             int count = 0;
@@ -137,7 +139,8 @@ namespace CaeMesh
                     faceNodeIds[i] = true;
                     count++;
                 }
-                if (i >= 4 && count <= i - 4) break;
+                // If five or more nodes were missed: break
+                if (i + 1 - count >= 5) break;
             }
             // S1 = 1-2-3-4 . 0-1-2-3
             // S2 = 5-8-7-6 . 4-7-6-5

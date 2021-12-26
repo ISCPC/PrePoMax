@@ -5,37 +5,40 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeModel;
 using CaeMesh;
+using CaeGlobals;
 
 namespace FileInOut.Output.Calculix
 {
     [Serializable]
-    internal class CalContactFile : CalculixKeyword
+    internal class CalMembraneSection : CalculixKeyword
     {
         // Variables                                                                                                                
-        private ContactFieldOutput _contactFieldOutput;
+        private MembraneSection _section;
 
 
         // Properties                                                                                                               
 
 
         // Constructor                                                                                                              
-        public CalContactFile(ContactFieldOutput contactFieldOutput)
+        public CalMembraneSection(MembraneSection section)
         {
-            _contactFieldOutput = contactFieldOutput;
+            _section = section;
         }
 
 
         // Methods                                                                                                                  
         public override string GetKeywordString()
         {
-            string frequency = _contactFieldOutput.Frequency > 1 ? ", Frequency=" + _contactFieldOutput.Frequency : "";
-            string lastIterations = _contactFieldOutput.LastIterations ? ", Last iterations" : "";
+            StringBuilder sb = new StringBuilder();
+            sb.AppendFormat("*Membrane section, Elset={0}, Material={1}", _section.RegionName, _section.MaterialName);
+            if (!double.IsNaN(_section.Offset)) sb.AppendFormat(", Offset={0}", _section.Offset.ToCalculiX16String());
+            sb.AppendLine();
             //
-            return string.Format("*Contact file{0}{1}{2}", frequency, lastIterations, Environment.NewLine);
+            return sb.ToString();
         }
         public override string GetDataString()
         {
-            return string.Format("{0}{1}", _contactFieldOutput.Variables.ToString(), Environment.NewLine);
+            return string.Format("{0}{1}", _section.Thickness.ToCalculiX16String(), Environment.NewLine);
         }
     }
 }

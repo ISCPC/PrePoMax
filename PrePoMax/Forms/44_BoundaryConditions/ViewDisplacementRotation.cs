@@ -80,8 +80,12 @@ namespace PrePoMax
             regionTypePropertyNamePairs.Add(RegionTypeEnum.SurfaceName, nameof(SurfaceName));
             regionTypePropertyNamePairs.Add(RegionTypeEnum.ReferencePointName, nameof(ReferencePointName));
             //
-            base.SetBase(_displacementRotation, regionTypePropertyNamePairs);
-            base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
+            SetBase(_displacementRotation, regionTypePropertyNamePairs);
+            DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
+            // 2D
+            DynamicCustomTypeDescriptor.GetProperty(nameof(U3)).SetIsBrowsable(!_displacementRotation.TwoD);
+            DynamicCustomTypeDescriptor.GetProperty(nameof(UR1)).SetIsBrowsable(!_displacementRotation.TwoD);
+            DynamicCustomTypeDescriptor.GetProperty(nameof(UR2)).SetIsBrowsable(!_displacementRotation.TwoD);
         }
 
 
@@ -97,7 +101,7 @@ namespace PrePoMax
             regionTypeListItemsPairs.Add(RegionTypeEnum.NodeSetName, nodeSetNames);
             regionTypeListItemsPairs.Add(RegionTypeEnum.SurfaceName, surfaceNames);
             regionTypeListItemsPairs.Add(RegionTypeEnum.ReferencePointName, referencePointNames);
-            base.PopululateDropDownLists(regionTypeListItemsPairs);
+            PopululateDropDownLists(regionTypeListItemsPairs);
         }
     }
 

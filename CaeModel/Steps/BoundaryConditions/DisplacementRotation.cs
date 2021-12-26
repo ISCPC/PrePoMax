@@ -21,20 +21,26 @@ namespace CaeModel
     public class DisplacementRotation : BoundaryCondition
     {
         // Variables                                                                                                                
+        private double _u1;
+        private double _u2;
+        private double _u3;
+        private double _ur1;
+        private double _ur2;
+        private double _ur3;
 
 
         // Properties                                                                                                               
-        public double U1 { get; set; }
-        public double U2 { get; set; }
-        public double U3 { get; set; }
-        public double UR1 { get; set; }
-        public double UR2 { get; set; }
-        public double UR3 { get; set; }
+        public double U1 { get { return _u1; } set { _u1 = value; } }
+        public double U2 { get { return _u2; } set { _u2 = value; } }
+        public double U3 { get { return _u3; } set { _u3 = value; if (_twoD) _u3 = double.NaN; } }
+        public double UR1 { get { return _ur1; } set { _ur1 = value; if (_twoD) _ur1 = double.NaN; } }
+        public double UR2 { get { return _ur2; } set { _ur2 = value; if (_twoD) _ur2 = double.NaN; } }
+        public double UR3 { get { return _ur3; } set { _ur3 = value; } }
 
 
         // Constructors                                                                                                             
-        public DisplacementRotation(string name, string regionName, RegionTypeEnum regionType)
-            : base(name, regionName, regionType) 
+        public DisplacementRotation(string name, string regionName, RegionTypeEnum regionType, bool twoD)
+            : base(name, regionName, regionType, twoD)
         {
             U1 = double.NaN;
             U2 = double.NaN;
@@ -49,12 +55,12 @@ namespace CaeModel
         public int[] GetConstrainedDirections()
         {
             List<int> directions = new List<int>();
-            if (!double.IsNaN(U1)) directions.Add(1);
-            if (!double.IsNaN(U2)) directions.Add(2);
-            if (!double.IsNaN(U3)) directions.Add(3);
-            if (!double.IsNaN(UR1)) directions.Add(4);
-            if (!double.IsNaN(UR2)) directions.Add(5);
-            if (!double.IsNaN(UR3)) directions.Add(6);
+            if (!double.IsNaN(_u1)) directions.Add(1);
+            if (!double.IsNaN(_u2)) directions.Add(2);
+            if (!double.IsNaN(_u3)) directions.Add(3);
+            if (!double.IsNaN(_ur1)) directions.Add(4);
+            if (!double.IsNaN(_ur2)) directions.Add(5);
+            if (!double.IsNaN(_ur3)) directions.Add(6);
             return directions.ToArray();
         }
         public int GetConstraintHash()
@@ -67,23 +73,23 @@ namespace CaeModel
         public double[] GetConstrainValues()
         {
             List<double> values = new List<double>();
-            if (!double.IsNaN(U1)) values.Add(U1);
-            if (!double.IsNaN(U2)) values.Add(U2);
-            if (!double.IsNaN(U3)) values.Add(U3);
-            if (!double.IsNaN(UR1)) values.Add(UR1);
-            if (!double.IsNaN(UR2)) values.Add(UR2);
-            if (!double.IsNaN(UR3)) values.Add(UR3);
+            if (!double.IsNaN(_u1)) values.Add(_u1);
+            if (!double.IsNaN(_u2)) values.Add(_u2);
+            if (!double.IsNaN(_u3)) values.Add(_u3);
+            if (!double.IsNaN(_ur1)) values.Add(_ur1);
+            if (!double.IsNaN(_ur2)) values.Add(_ur2);
+            if (!double.IsNaN(_ur3)) values.Add(_ur3);
             return values.ToArray();
         }
         public int[] GetFixedDirections()
         {
             List<int> directions = new List<int>();
-            if (double.IsPositiveInfinity(U1)) directions.Add(1);
-            if (double.IsPositiveInfinity(U2)) directions.Add(2);
-            if (double.IsPositiveInfinity(U3)) directions.Add(3);
-            if (double.IsPositiveInfinity(UR1)) directions.Add(4);
-            if (double.IsPositiveInfinity(UR2)) directions.Add(5);
-            if (double.IsPositiveInfinity(UR3)) directions.Add(6);
+            if (double.IsPositiveInfinity(_u1)) directions.Add(1);
+            if (double.IsPositiveInfinity(_u2)) directions.Add(2);
+            if (double.IsPositiveInfinity(_u3)) directions.Add(3);
+            if (double.IsPositiveInfinity(_ur1)) directions.Add(4);
+            if (double.IsPositiveInfinity(_ur2)) directions.Add(5);
+            if (double.IsPositiveInfinity(_ur3)) directions.Add(6);
             return directions.ToArray();
         }
         public bool IsProperlyDefined(out string error)
@@ -106,12 +112,12 @@ namespace CaeModel
             double value;
             switch (dof)
             {
-                case 1: value = U1; break;
-                case 2: value = U2; break;
-                case 3: value = U3; break;
-                case 4: value = UR1; break;
-                case 5: value = UR2; break;
-                case 6: value = UR3; break;
+                case 1: value = _u1; break;
+                case 2: value = _u2; break;
+                case 3: value = _u3; break;
+                case 4: value = _ur1; break;
+                case 5: value = _ur2; break;
+                case 6: value = _ur3; break;
                 default: throw new NotSupportedException();
             }
             if (double.IsNaN(value)) return DOFType.Free;

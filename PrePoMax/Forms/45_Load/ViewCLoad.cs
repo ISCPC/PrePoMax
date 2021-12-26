@@ -65,7 +65,7 @@ namespace PrePoMax
             {
                 if (value <= 0)
                     throw new Exception("Value of the force load magnitude must be greater than 0.");
-
+                //
                 double len = Math.Sqrt(_cLoad.F1 * _cLoad.F1 + _cLoad.F2 * _cLoad.F2 + _cLoad.F3 * _cLoad.F3);
                 double r;
                 if (len == 0) r = 0;
@@ -89,9 +89,11 @@ namespace PrePoMax
             regionTypePropertyNamePairs.Add(RegionTypeEnum.Selection, nameof(SelectionHidden));
             regionTypePropertyNamePairs.Add(RegionTypeEnum.NodeSetName, nameof(NodeSetName));
             regionTypePropertyNamePairs.Add(RegionTypeEnum.ReferencePointName, nameof(ReferencePointName));
-            base.SetBase(_cLoad, regionTypePropertyNamePairs);
+            SetBase(_cLoad, regionTypePropertyNamePairs);
             //
-            base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
+            DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
+            // 2D
+            DynamicCustomTypeDescriptor.GetProperty(nameof(F3)).SetIsBrowsable(!cLoad.TwoD);
         }
 
 
@@ -106,7 +108,7 @@ namespace PrePoMax
             regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
             regionTypeListItemsPairs.Add(RegionTypeEnum.NodeSetName, nodeSetNames);
             regionTypeListItemsPairs.Add(RegionTypeEnum.ReferencePointName, referencePointNames);
-            base.PopululateDropDownLists(regionTypeListItemsPairs);
+            PopululateDropDownLists(regionTypeListItemsPairs);
         }
         
     }

@@ -45,16 +45,17 @@ namespace FileInOut.Output.Calculix
             foreach (int nodeId in idsSorted)
             {
                 node = _nodes[nodeId];
-                if (_modelSpace == ModelSpaceEnum.Three_D)
+                if (_modelSpace == ModelSpaceEnum.ThreeD)
                     sb.AppendFormat("{0}, {1:E8}, {2:E8}, {3:E8}", node.Id, node.X, node.Y, node.Z).AppendLine();
-                else if (_modelSpace == ModelSpaceEnum.Two_D)
+                else if (_modelSpace.IsTwoD())
                     sb.AppendFormat("{0}, {1:E8}, {2:E8}", node.Id, node.X, node.Y).AppendLine();
+                else throw new NotSupportedException();
             }
             //
             FeReferencePoint rp;
             foreach (var entry in _referencePointsNodeIds)
             {
-                if (_modelSpace == ModelSpaceEnum.Three_D)
+                if (_modelSpace == ModelSpaceEnum.ThreeD)
                 {
                     if (_referencePoints.TryGetValue(entry.Key, out rp))
                     {
@@ -66,7 +67,7 @@ namespace FileInOut.Output.Calculix
                         sb.AppendFormat("{0}, {1:E8}, {2:E8}, {3:E8}", entry.Value[0], 0, 0, 0).AppendLine();
                     }
                 }
-                else if (_modelSpace == ModelSpaceEnum.Two_D)
+                else if (_modelSpace.IsTwoD())
                 {
                     if (_referencePoints.TryGetValue(entry.Key, out rp))
                     {
@@ -78,6 +79,7 @@ namespace FileInOut.Output.Calculix
                         sb.AppendFormat("{0}, {1:E8}, {2:E8}", entry.Value[0], 0, 0).AppendLine();
                     }
                 }
+                else throw new NotSupportedException();
             }
             return sb.ToString();
         }

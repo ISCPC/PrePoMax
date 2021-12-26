@@ -29,8 +29,12 @@ namespace FileInOut.Output.Calculix
         public override string GetKeywordString()
         {
             string frequency = _elementFieldOutput.Frequency > 1 ? ", Frequency=" + _elementFieldOutput.Frequency : "";
-
-            return string.Format("*El file{0}{1}", frequency, Environment.NewLine);
+            string lastIterations = _elementFieldOutput.LastIterations ? ", Last iterations" : "";
+            string output = "";
+            if (_elementFieldOutput.Output == ElementFieldOutputOutputEnum.TwoD) output += ", Output=2D";
+            else if (_elementFieldOutput.Output == ElementFieldOutputOutputEnum.ThreeD) output += ", Output=3D";
+            //
+            return string.Format("*El file{0}{1}{2}{3}", frequency, lastIterations, output, Environment.NewLine);
         }
         public override string GetDataString()
         {

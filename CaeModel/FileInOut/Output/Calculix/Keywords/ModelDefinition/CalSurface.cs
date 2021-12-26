@@ -13,15 +13,17 @@ namespace FileInOut.Output.Calculix
     {
         // Variables                                                                                                                
         private FeSurface _surface;
+        private bool _twoD;
 
 
         // Properties                                                                                                               
 
 
         // Constructor                                                                                                              
-        public CalSurface(FeSurface surface)
+        public CalSurface(FeSurface surface, bool twoD)
         {
             _surface = surface;
+            _twoD = twoD;
         }
 
 
@@ -35,9 +37,23 @@ namespace FileInOut.Output.Calculix
             StringBuilder sb = new StringBuilder();
             if (_surface.Type == FeSurfaceType.Element)
             {
+                string faceKey = "";
                 foreach (var elementSetEntry in _surface.ElementFaces)
                 {
-                    sb.AppendFormat("{0}, {1}", elementSetEntry.Value, elementSetEntry.Key).AppendLine();
+                    if (_twoD)
+                    {
+                        if (elementSetEntry.Key == FeFaceName.S1) faceKey = "N";
+                        else if (elementSetEntry.Key == FeFaceName.S2) faceKey = "P";
+                        else if (elementSetEntry.Key == FeFaceName.S3) faceKey = "S1";
+                        else if (elementSetEntry.Key == FeFaceName.S4) faceKey = "S2";
+                        else if (elementSetEntry.Key == FeFaceName.S5) faceKey = "S3";
+                        else if (elementSetEntry.Key == FeFaceName.S6) faceKey = "S4";
+                    }
+                    else
+                    {
+                        faceKey = elementSetEntry.Key.ToString();
+                    }
+                    sb.AppendFormat("{0}, {1}", elementSetEntry.Value, faceKey).AppendLine();
                 }
             }
             else if (_surface.Type == FeSurfaceType.Node)

@@ -50,8 +50,9 @@ namespace CaeModel
 
 
         // Constructors                                                                                                             
-        public RadiationHeatTransfer(string name, string surfaceName, RegionTypeEnum regionType, double sinkTemperature, double emissivity)
-            : base(name) 
+        public RadiationHeatTransfer(string name, string surfaceName, RegionTypeEnum regionType, double sinkTemperature,
+                                     double emissivity, bool twoD)
+            : base(name, twoD) 
         {
             _surfaceName = surfaceName;
             _regionType = regionType;

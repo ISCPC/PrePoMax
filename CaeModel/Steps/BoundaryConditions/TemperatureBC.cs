@@ -20,8 +20,8 @@ namespace CaeModel
 
 
         // Constructors                                                                                                             
-        public TemperatureBC(string name, string regionName, RegionTypeEnum regionType, double temperature)
-            : base(name, regionName, regionType) 
+        public TemperatureBC(string name, string regionName, RegionTypeEnum regionType, double temperature, bool twoD)
+            : base(name, regionName, regionType, twoD) 
         {
             _temperature = temperature;
         }

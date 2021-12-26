@@ -199,7 +199,16 @@ namespace PrePoMax.Forms
             {
                 // Get and convert a converted history output back to selection
                 DefinedField = _controller.GetDefinedField(_stepName, _definedFieldToEditName); // to clone
-                if (DefinedField.CreationData != null) DefinedField.RegionType = RegionTypeEnum.Selection;
+                if (DefinedField.CreationData != null)
+                {
+                    if (!DefinedField.Valid || !_controller.Model.RegionValid(DefinedField))
+                    {
+                        DefinedField.CreationData = null;
+                        DefinedField.CreationIds = null;
+                        _propertyItemChanged = true;
+                    }
+                    DefinedField.RegionType = RegionTypeEnum.Selection;
+                }
                 //
                 int selectedId;
                 if (_viewDefinedField is ViewDefinedTemperature vdt)

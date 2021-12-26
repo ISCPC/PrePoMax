@@ -42,9 +42,7 @@ namespace PrePoMax.Forms
         {
             InitializeComponent();
             //
-            _controller = controller;
-            //
-            tsmiResetAll_Click(null, null);
+            _controller = controller;            
             //
             _coorNodesToDraw = new double[1][];
             _coorNodesToDraw[0] = new double[3];
@@ -121,6 +119,7 @@ namespace PrePoMax.Forms
         protected override bool OnPrepareForm(string stepName, string itemToEditName)
         {
             // Clear
+            tsmiResetAll_Click(null, null);
             _controller.ClearSelectionHistoryAndCallSelectionChanged();
             _translateParameters.Clear();
             // Disable selection
@@ -140,7 +139,7 @@ namespace PrePoMax.Forms
         }
         private void tsmiResetAll_Click(object sender, EventArgs e)
         {
-            _translateParameters = new TranslateParameters();
+            _translateParameters = new TranslateParameters(_controller.Model.Properties.ModelSpace);
             propertyGrid.SelectedObject = _translateParameters;
             _controller.ClearAllSelection();
         }

@@ -200,8 +200,18 @@ namespace PrePoMax.Forms
             // Edit existing history output
             {
                 // Get and convert a converted history output back to selection
-                HistoryOutput = _controller.GetHistoryOutput(_stepName, _historyOutputToEditName); // to clone
-                if (HistoryOutput.CreationData != null) HistoryOutput.RegionType = RegionTypeEnum.Selection;
+                HistoryOutput = _controller.GetHistoryOutput(_stepName, _historyOutputToEditName); // to clone                
+                if (HistoryOutput.CreationData != null)
+                {
+                    if (!HistoryOutput.Valid || !_controller.Model.RegionValid(HistoryOutput))
+                    {
+                        // Not valid
+                        HistoryOutput.CreationData = null; 
+                        HistoryOutput.CreationIds = null;
+                        _propertyItemChanged = true;
+                    }
+                    HistoryOutput.RegionType = RegionTypeEnum.Selection;
+                }
                 //
                 int selectedId;
                 if (_viewHistoryOutput is ViewNodalHistoryOutput vnho)

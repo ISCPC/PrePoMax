@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using CaeGlobals;
+using DynamicTypeDescriptor;
 
 namespace PrePoMax
 {
@@ -12,6 +13,7 @@ namespace PrePoMax
     public abstract class ViewFieldOutput
     {
         // Variables                                                                                                                
+        protected DynamicCustomTypeDescriptor _dctd;
 
 
         // Properties                                                                                                               
@@ -19,15 +21,20 @@ namespace PrePoMax
         [OrderedDisplayName(0, 10, "Name")]
         [DescriptionAttribute("Name of the field output.")]
         public abstract string Name { get; set; }
-
+        //
         [CategoryAttribute("Data")]
         [OrderedDisplayName(1, 10, "Frequency")]
         [DescriptionAttribute("Integer N, which indicates that only results of every N-th increment will be stored.")]
         public abstract int Frequency { get ; set; }
-
-
+        //
+        [CategoryAttribute("Data")]
+        [OrderedDisplayName(2, 10, "Last iterations")]
+        [DescriptionAttribute("Turning last iterations on is useful for debugging purposes in case of divergent solution.")]
+        public abstract bool LastIterations { get; set; }
+        //
         [Browsable(false)]
         public abstract CaeModel.FieldOutput Base { get; set; }
+
 
         // Constructors                                                                                                             
 

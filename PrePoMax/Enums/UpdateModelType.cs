@@ -10,9 +10,9 @@ namespace PrePoMax
     [Flags]
     public enum UpdateType
     {
-        Check = 0x01,
-        DrawModel = 0x02,
-        ResetCamera = 0x04,
-        RedrawSymbols = 0x08
+        Check = 1,
+        DrawModel = 2,
+        ResetCamera = 4,
+        RedrawSymbols = 8
     }
 }

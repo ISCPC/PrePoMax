@@ -410,6 +410,7 @@ namespace vtkControl
 
                 vtkCamera camera = renderer.GetActiveCamera();
                 double factor = Math.Pow(1.1, this._motionFactor * 0.2 * this.GetMouseWheelMotionFactor());
+                //factor = 1;
                 camera.SetParallelScale(camera.GetParallelScale() * factor);
 
                 double[] worldPosAfter = DisplayToWorld(renderer, new double[] { clickPos[0], clickPos[1] });
@@ -438,7 +439,7 @@ namespace vtkControl
 
                 vtkCamera camera = renderer.GetActiveCamera();
                 double factor = Math.Pow(1.1, this._motionFactor * 0.2 * this.GetMouseWheelMotionFactor());
-                //factor = 1.001;
+                //factor = 1.00;
                 camera.SetParallelScale(camera.GetParallelScale() / factor);
 
                 double[] worldPosAfter = DisplayToWorld(renderer, new double[] { clickPos[0], clickPos[1] });
@@ -583,31 +584,31 @@ namespace vtkControl
         {
             vtkRenderer renderer = this.GetCurrentRenderer();
             if (renderer == null) return;
-         
+            //
             vtkRenderWindowInteractor rwi = this.GetInteractor();
             int[] clickPos = rwi.GetEventPosition();
-
+            //
             double[] newPickPoint;
             double[] oldPickPoint;
-
+            //
             newPickPoint = DisplayToWorld(renderer, new double[] { clickPos[0], clickPos[1] });
             oldPickPoint = DisplayToWorld(renderer, new double[] { rwi.GetLastEventPosition()[0], rwi.GetLastEventPosition()[1] });
-
+            //
             vtkCamera camera = renderer.GetActiveCamera();
             PanCamera(camera, newPickPoint, oldPickPoint);
-
+            //
             if (rwi.GetLightFollowCamera() == 1) renderer.UpdateLightsGeometryToFollowCamera();
-
             // Widgets - Pan
+            int dx;
+            int dy;
             foreach (vtkMaxBorderWidget widget in _widgets)
             {
                 // compute the delta
-                int dx = clickPos[0] - rwi.GetLastEventPosition()[0];
-                int dy = clickPos[1] - rwi.GetLastEventPosition()[1];
-
+                dx = clickPos[0] - rwi.GetLastEventPosition()[0];
+                dy = clickPos[1] - rwi.GetLastEventPosition()[1];
+                //
                 widget.MousePan(dx, dy);
             }
-
             rwi.Render();
         }
         private void PanCamera(vtkCamera camera, double[] posStart, double[] posEnd)
@@ -616,35 +617,35 @@ namespace vtkControl
             motionVector[0] = posEnd[0] - posStart[0];
             motionVector[1] = posEnd[1] - posStart[1];
             motionVector[2] = posEnd[2] - posStart[2];
-
+            //
             double[] cPos = camera.GetPosition();
             double[] fPos = camera.GetFocalPoint();
-
-            //double[] clip = camera.GetClippingRange();
+            //
+            //System.Diagnostics.Debug.WriteLine(string.Format("cPos1 x: {0},  y: {1},  z: {2}", cPos[0], cPos[1], cPos[2]));
+            //
             camera.SetPosition(cPos[0] + motionVector[0], cPos[1] + motionVector[1], cPos[2] + motionVector[2]);
             camera.SetFocalPoint(fPos[0] + motionVector[0], fPos[1] + motionVector[1], fPos[2] + motionVector[2]);
-
+            //
             AdjustCameraDistanceAndClipping();
         }
-
+        //
         public override void Rotate()
         {
             vtkRenderer renderer = this.GetCurrentRenderer();
             if (renderer == null) return;
-
+            //
             vtkRenderWindowInteractor rwi = this.GetInteractor();
             int[] clickPos = rwi.GetEventPosition();
-
-            // compute the angle
+            // Compute the angle
             int dx = clickPos[0] - rwi.GetLastEventPosition()[0];
             int dy = clickPos[1] - rwi.GetLastEventPosition()[1];
-
+            //
             double delta_elevation = -20.0 / 500;
             double delta_azimuth = -20.0 / 500;
-
+            //
             double rxf = dx * delta_azimuth * this._motionFactor;
             double ryf = dy * delta_elevation * this._motionFactor;
-
+            //
             Rotate(rxf, ryf);
         }
         private void Rotate(double azimuthAngle, double ElevationAngle)
@@ -671,10 +672,8 @@ namespace vtkControl
             wpa[1] -= n[1] * d;
             wpa[2] -= n[2] * d;
             //
-            PanCamera(camera, wpa, _rotationCenterWorld);
-            AdjustCameraDistance(renderer, camera);
-            // Adjust the clipping range and lights
-            if (this.GetAutoAdjustCameraClippingRange() == 1) ResetClippingRange();
+            PanCamera(camera, wpa, _rotationCenterWorld);   // calls AdjustCameraDistanceAndClipping()
+            // Adjust the lights
             if (rwi.GetLightFollowCamera() == 1) renderer.UpdateLightsGeometryToFollowCamera();
             // Widgets - Rotate
             foreach (vtkMaxBorderWidget widget in _widgets)
@@ -684,7 +683,7 @@ namespace vtkControl
             rwi.Modified();
             rwi.Render();
         }
-
+        //
         private void Select(int x, int y)
         {
             if (PointPickedOnMouseMoveEvt != null)
@@ -720,7 +719,7 @@ namespace vtkControl
             //
             rwi.Render();
         }
-
+        //
         private void AddAnnotationForCenter3D(vtkRenderWindowInteractor interactor, vtkRenderer renderer)
         {
             if (_centerAnnotationActor != null) RemoveAnnotationForCenter(renderer);
@@ -798,42 +797,50 @@ namespace vtkControl
         }
         private void AdjustCameraDistance(vtkRenderer renderer, vtkCamera camera)
         {
-            // camera should not be to close
-
+            // Camera should not be to close or to far
             double[] b1 = renderer.ComputeVisiblePropBounds();
             double[] b2 = _selectionRenderer.ComputeVisiblePropBounds();
             double[] b3 = _overlayRenderer.ComputeVisiblePropBounds();
-
+            //
             double[] b = new double[] { Math.Min(b1[0], Math.Min(b2[0], b3[0])), Math.Max(b1[1], Math.Max(b2[1], b3[1])),
                                         Math.Min(b1[2], Math.Min(b2[2], b3[2])), Math.Max(b1[3], Math.Max(b2[3], b3[3])),
                                         Math.Min(b1[4], Math.Min(b2[4], b3[4])), Math.Max(b1[5], Math.Max(b2[5], b3[5]))};
-
-            double D = Math.Sqrt(Math.Pow(b[0] - b[1], 2) + Math.Pow(b[2] - b[3], 2) + Math.Pow(b[4] - b[5], 2));   // diameter
+            //
+            double r = 0.5 * Math.Sqrt(Math.Pow(b[0] - b[1], 2) + Math.Pow(b[2] - b[3], 2) + Math.Pow(b[4] - b[5], 2)); // radius
             double[] center = new double[] { (b[0] + b[1]) / 2, (b[2] + b[3]) / 2, (b[4] + b[5]) / 2 };
-
+            //
             double[] pos = camera.GetPosition();
-            //System.Diagnostics.Debug.WriteLine(string.Format("pos x: {0},  y: {1},  z: {1}", pos[0], pos[1], pos[2]));
-
-            double[] delta = new double[3];
-            //delta[0] = _rotationCenterWorld[0] - pos[0];
-            //delta[1] = _rotationCenterWorld[1] - pos[1];
-            //delta[2] = _rotationCenterWorld[2] - pos[2];
-
+            double[] focalPos = camera.GetFocalPoint();
+            //
+            double[] delta = new double[3]; // vector from camera position to the geometry center
+            //
             delta[0] = center[0] - pos[0];
             delta[1] = center[1] - pos[1];
             delta[2] = center[2] - pos[2];
-
-            double[] direction = camera.GetViewPlaneNormal();
-            double d1 = -(direction[0] * delta[0] + direction[1] * delta[1] + direction[2] * delta[2]);
-
-            if (d1 < D)
-            {
-                double[] newPos = new double[3];
-                newPos[0] = pos[0] + direction[0] * D;
-                newPos[1] = pos[1] + direction[1] * D;
-                newPos[2] = pos[2] + direction[2] * D;
-                camera.SetPosition(newPos[0], newPos[1], newPos[2]);
-            }
+            //
+            double[] normal = camera.GetDirectionOfProjection();
+            double d = normal[0] * delta[0] + normal[1] * delta[1] + normal[2] * delta[2]; // distance to geometry center
+            double k = d - r;
+            //
+            double[] motionVector = new double[3];
+            motionVector[0] = k * normal[0];
+            motionVector[1] = k * normal[1];
+            motionVector[2] = k * normal[2];
+            //
+            //System.Diagnostics.Debug.WriteLine(string.Format("pos4 x: {0},  y: {1},  z: {2}", pos[0], pos[1], pos[2]));
+            //
+            double[] newPos = new double[3];
+            newPos[0] = pos[0] + motionVector[0];
+            newPos[1] = pos[1] + motionVector[1];
+            newPos[2] = pos[2] + motionVector[2];
+            camera.SetPosition(newPos[0], newPos[1], newPos[2]);
+            //
+            //System.Diagnostics.Debug.WriteLine(string.Format("pos5 x: {0},  y: {1},  z: {2}", newPos[0], newPos[1], newPos[2]));
+            //
+            newPos[0] = focalPos[0] + motionVector[0];
+            newPos[1] = focalPos[1] + motionVector[1];
+            newPos[2] = focalPos[2] + motionVector[2];
+            camera.SetFocalPoint(newPos[0], newPos[1], newPos[2]);
         }
         private void AdjustCameraDistance__(vtkRenderer renderer, vtkCamera camera)
         {
@@ -897,18 +904,20 @@ namespace vtkControl
         {
             double min, max, minSel, maxSel, minOver, maxOver;
             min = max = minSel = maxSel = minOver = maxOver = 0;
-
+            //
             GetCurrentRenderer().ResetCameraClippingRange();
             GetCurrentRenderer().GetActiveCamera().GetClippingRange(ref min, ref max);
-
+            //
             _selectionRenderer.ResetCameraClippingRange();
             _selectionRenderer.GetActiveCamera().GetClippingRange(ref minSel, ref maxSel);
-
+            //
             _overlayRenderer.ResetCameraClippingRange();
             _overlayRenderer.GetActiveCamera().GetClippingRange(ref minOver, ref maxOver);
-
-            // near and far settng for the Z-buffer
-            GetCurrentRenderer().GetActiveCamera().SetClippingRange(Math.Min(min, Math.Min(minSel, minOver)), Math.Max(max, Math.Max(maxSel, maxOver)));
+            // Near and far settng for the Z-buffer
+            GetCurrentRenderer().GetActiveCamera().SetClippingRange(Math.Min(min, Math.Min(minSel, minOver)),
+                                                                    Math.Max(max, Math.Max(maxSel, maxOver)));
+            //System.Diagnostics.Debug.WriteLine("Near: " + Math.Min(min, Math.Min(minSel, minOver)) + "    " +
+            //                                   "Far: " + Math.Max(max, Math.Max(maxSel, maxOver)));
         }
 
         private void InitializeRubberBandSelection()

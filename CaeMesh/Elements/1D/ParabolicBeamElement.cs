@@ -49,7 +49,9 @@ namespace CaeMesh
         {
             throw new NotImplementedException();
         }
-        public override Dictionary<FeFaceName, double> GetFaceNamesAndAreasFromNodeSet(HashSet<int> nodeSet, Dictionary<int, FeNode> nodes)
+        public override Dictionary<FeFaceName, double> GetFaceNamesAndAreasFromNodeSet(HashSet<int> nodeSet,
+                                                                                       Dictionary<int, FeNode> nodes,
+                                                                                       bool edgeFaces)
         {
             throw new NotImplementedException();
         }

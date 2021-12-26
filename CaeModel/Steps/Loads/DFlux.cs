@@ -25,8 +25,8 @@ namespace CaeModel
         
 
         // Constructors                                                                                                             
-        public DFlux(string name, string surfaceName, RegionTypeEnum regionType, double magnitude)
-            : base(name) 
+        public DFlux(string name, string surfaceName, RegionTypeEnum regionType, double magnitude, bool twoD)
+            : base(name, twoD)
         {
             _surfaceName = surfaceName;
             _regionType = regionType;

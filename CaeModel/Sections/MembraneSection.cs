@@ -8,7 +8,7 @@ using CaeGlobals;
 namespace CaeModel
 {
     [Serializable]
-    public class ShellSection : Section
+    public class MembraneSection : Section
     {
         // Variables                                                                                                                
         private double _thickness;
@@ -16,10 +16,10 @@ namespace CaeModel
 
 
         // Properties                                                                                                               
-        public double Thickness 
+        public double Thickness
         {
-            get { return _thickness; } 
-            set 
+            get { return _thickness; }
+            set
             {
                 _thickness = value;
                 if (_thickness <= 0) _thickness = 0.001;
@@ -29,8 +29,8 @@ namespace CaeModel
 
 
         // Constructors                                                                                                             
-        public ShellSection(string name, string materialName, string regionName, RegionTypeEnum regionType, double thickness,
-                            bool twoD)
+        public MembraneSection(string name, string materialName, string regionName, RegionTypeEnum regionType, double thickness,
+                               bool twoD)
             : base(name, materialName, regionName, regionType, twoD)
         {
             Thickness = thickness;

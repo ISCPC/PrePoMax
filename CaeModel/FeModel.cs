@@ -233,6 +233,13 @@ namespace CaeModel
                         || (shs.RegionType == RegionTypeEnum.ElementSetName
                             && _mesh.ElementSets.ContainsValidKey(section.RegionName)));
                 }
+                else if (section is MembraneSection ms)
+                {
+                    valid = _materials.ContainsValidKey(section.MaterialName)
+                        && ((ms.RegionType == RegionTypeEnum.PartName && _mesh.Parts.ContainsValidKey(section.RegionName))
+                        || (ms.RegionType == RegionTypeEnum.ElementSetName
+                            && _mesh.ElementSets.ContainsValidKey(section.RegionName)));
+                }
                 else throw new NotSupportedException();
                 //
                 SetItemValidity(null, section, valid, items);
@@ -441,6 +448,17 @@ namespace CaeModel
                 items.Add(new Tuple<NamedClass, string>(item, stepName));
             }
         }
+        public bool RegionValid(IMultiRegion multiRegion)
+        {
+            if (multiRegion.RegionType == RegionTypeEnum.NodeSetName)
+                return _mesh.NodeSets[multiRegion.RegionName].Valid;
+            else if (multiRegion.RegionType == RegionTypeEnum.ElementSetName)
+                return _mesh.ElementSets[multiRegion.RegionName].Valid;
+            else if (multiRegion.RegionType == RegionTypeEnum.SurfaceName)
+                return _mesh.Surfaces[multiRegion.RegionName].Valid;
+            //
+            return false;
+        }
         //
         public int[] GetSectionAssignments(out Dictionary<int, int> elementIdSectionId)
         {
@@ -483,7 +501,7 @@ namespace CaeModel
                             }
                         }
                     }
-                    else if (entry.Value is ShellSection)
+                    else if (entry.Value is ShellSection || entry.Value is MembraneSection)
                     {
                         FeElementSet elementSet = _mesh.ElementSets[entry.Value.RegionName];
                         foreach (var elementId in elementSet.Labels)
@@ -850,7 +868,7 @@ namespace CaeModel
         private string[] ImportGeometry(FeMesh mesh, ICollection<string> reservedPartNames)
         {
             // Check for 2D geometry
-            if (_properties.ModelSpace == ModelSpaceEnum.Two_D && !mesh.BoundingBox.Is2D())
+            if (_properties.ModelSpace.IsTwoD() && !mesh.BoundingBox.Is2D())
             {
                 throw new CaeException("The selected file does not contain 2D geometry in x-y plane.");
             }
@@ -867,7 +885,7 @@ namespace CaeModel
         public void ImportMesh(FeMesh mesh, ICollection<string> reservedPartNames, bool forceRenameParts = true)
         {
             // Check for 2D mesh
-            if (_properties.ModelSpace == ModelSpaceEnum.Two_D && !mesh.BoundingBox.Is2D())
+            if (_properties.ModelSpace.IsTwoD() && !mesh.BoundingBox.Is2D())
             {
                 throw new CaeException("The selected file does not contain 2D geometry in x-y plane.");
             }
@@ -955,7 +973,8 @@ namespace CaeModel
                     loads.Add(new CLoad("_cLoad_" + entry.Key.ToString(), entry.Key,
                                         load.F1 / aSum * entry.Value,
                                         load.F2 / aSum * entry.Value,
-                                        load.F3 / aSum * entry.Value));
+                                        load.F3 / aSum * entry.Value,
+                                        load.TwoD));
                 }
             }
             //

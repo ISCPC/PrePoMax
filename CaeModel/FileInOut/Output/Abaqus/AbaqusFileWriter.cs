@@ -262,7 +262,7 @@ namespace FileInOut.Output
                     if (entry.Value is SolidSection solid)
                     {
                         sb.AppendFormat("*Solid section, elset={0}, material={1}", solid.RegionName, solid.MaterialName).AppendLine();
-                        if (solid.Type == SolidSectionType.TwoDimensional) sb.AppendLine(solid.Thickness.ToString());
+                        if (solid.TwoD) sb.AppendLine(solid.Thickness.ToString());
                     }
                     else if (entry.Value is ShellSection shell)
                     {

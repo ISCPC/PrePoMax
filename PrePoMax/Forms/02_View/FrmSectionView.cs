@@ -288,6 +288,7 @@ namespace PrePoMax.Forms
             n.Normalize();
             // Project 1/2 diagonal on the positive normal
             double l = Vec3D.DotProduct(v, n) * 1.05;
+            if (l == 0) l = 1;  // 2D
             //
             _projHalfSize = new Vec3D(_sectionViewParameters.Normal);
             _projHalfSize.Normalize();

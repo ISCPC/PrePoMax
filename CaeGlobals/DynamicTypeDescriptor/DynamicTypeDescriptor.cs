@@ -1750,7 +1750,6 @@ namespace DynamicTypeDescriptor
         }
         private void UpdateMemberData()
         {
-
             if (m_pd != null)
             {
                 m_value = m_pd.GetValue(m_owner);
@@ -2259,6 +2258,16 @@ namespace DynamicTypeDescriptor
                 return m_StatandardValues;
             }
         }
+        public void RemoveStandardValues(string[] standardValueNames)
+        {
+            List<StandardValueAttribute> valuesToRemove = new List<StandardValueAttribute>();
+            foreach (var standardValue in m_StatandardValues)
+            {
+                if (standardValueNames.Contains(standardValue.DisplayName)) valuesToRemove.Add(standardValue);
+            }
+            foreach (var standardValue in valuesToRemove) m_StatandardValues.Remove(standardValue);
+        }
+        
         private Image m_ValueImage = null;
 
         public Image ValueImage

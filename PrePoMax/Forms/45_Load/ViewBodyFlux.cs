@@ -52,8 +52,8 @@ namespace PrePoMax
             regionTypePropertyNamePairs.Add(RegionTypeEnum.PartName, nameof(PartName));
             regionTypePropertyNamePairs.Add(RegionTypeEnum.ElementSetName, nameof(ElementSetName));
             //
-            base.SetBase(_flux, regionTypePropertyNamePairs);
-            base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
+            SetBase(_flux, regionTypePropertyNamePairs);
+            DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
         }
 
 
@@ -68,7 +68,7 @@ namespace PrePoMax
             regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
             regionTypeListItemsPairs.Add(RegionTypeEnum.PartName, partNames);
             regionTypeListItemsPairs.Add(RegionTypeEnum.ElementSetName, elementSetNames);
-            base.PopululateDropDownLists(regionTypeListItemsPairs);
+            PopululateDropDownLists(regionTypeListItemsPairs);
         }
     }
 

@@ -65,21 +65,21 @@ namespace PrePoMax.Forms
         [Category("Coordinates")]
         [DisplayName("X")]
         [Description("X coordinate of the reference point.")]
-        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(2, 3)]
         public double X { get { return _referencePoint.X; } set { _referencePoint.X = value; } }
         //
         [Category("Coordinates")]
         [DisplayName("Y")]
         [Description("Y coordinate of the reference point.")]
-        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(3, 3)]
         public double Y { get { return _referencePoint.Y; } set { _referencePoint.Y = value; } }
         //
         [Category("Coordinates")]
         [DisplayName("Z")]
         [Description("Z coordinate of the reference point.")]
-        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
+        [TypeConverter(typeof(StringLengthConverter))]
         [Id(4, 3)]
         public double Z { get { return _referencePoint.Z; } set { _referencePoint.Z = value; } }
         //
@@ -98,11 +98,13 @@ namespace PrePoMax.Forms
             _referencePoint = referencePoint;
             //
             Dictionary<RegionTypeEnum, string> regionTypePropertyNamePairs = new Dictionary<RegionTypeEnum, string>();
-            regionTypePropertyNamePairs.Add(RegionTypeEnum.NodeSetName, nameof(this.NodeSetName));
-            regionTypePropertyNamePairs.Add(RegionTypeEnum.SurfaceName, nameof(this.SurfaceName));
+            regionTypePropertyNamePairs.Add(RegionTypeEnum.NodeSetName, nameof(NodeSetName));
+            regionTypePropertyNamePairs.Add(RegionTypeEnum.SurfaceName, nameof(SurfaceName));
             base.SetBase(_referencePoint, regionTypePropertyNamePairs);
             //
-            base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
+            DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
+            // 2D
+            DynamicCustomTypeDescriptor.GetProperty(nameof(Z)).SetIsBrowsable(!_referencePoint.TwoD);
         }
 
 

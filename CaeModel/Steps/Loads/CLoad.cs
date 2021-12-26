@@ -16,14 +16,18 @@ namespace CaeModel
         private string _regionName;
         private RegionTypeEnum _regionType;
         private int _nodeId;
+        private double _f1;
+        private double _f2;
+        private double _f3;
+
 
         // Properties                                                                                                               
         public override string RegionName { get { return _regionName; } set { _regionName = value; } }
         public override RegionTypeEnum RegionType { get { return _regionType; } set { _regionType = value; } }
         public int NodeId { get { return _nodeId; } set { _nodeId = value; } }
-        public double F1 { get; set; }
-        public double F2 { get; set; }
-        public double F3 { get; set; }
+        public double F1 { get { return _f1; } set { _f1 = value; } }
+        public double F2 { get { return _f2; } set { _f2 = value; } }
+        public double F3 { get { return _f3; } set { _f3 = value; if (_twoD) _f3 = 0; } }
         public double GetDirection(int direction)
         {
             if (direction == 0) return F1;
@@ -33,27 +37,27 @@ namespace CaeModel
 
 
         // Constructors                                                                                                             
-        public CLoad(string name, string regionName, RegionTypeEnum regionType, double f1, double f2, double f3)
-            : base(name) 
+        public CLoad(string name, string regionName, RegionTypeEnum regionType, double f1, double f2, double f3, bool twoD)
+            : base(name, twoD) 
         {
             _regionName = regionName;
             RegionType = regionType;
             _nodeId = -1;
-
-            F1 = f1;
-            F2 = f2;
-            F3 = f3;
+            //
+            _f1 = f1;
+            _f2 = f2;
+            F3 = f3;    // account for 2D
         }
-        public CLoad(string name, int nodeId, double f1, double f2, double f3)
-            : base(name)
+        public CLoad(string name, int nodeId, double f1, double f2, double f3, bool twoD)
+            : base(name, twoD)
         {
             _regionName = null;
-            RegionType = CaeGlobals.RegionTypeEnum.NodeId;
+            RegionType = RegionTypeEnum.NodeId;
             _nodeId = nodeId;
-
-            F1 = f1;
-            F2 = f2;
-            F3 = f3;
+            //
+            _f1 = f1;
+            _f2 = f2;
+            F3 = f3;    // account for 2D
         }
 
 
