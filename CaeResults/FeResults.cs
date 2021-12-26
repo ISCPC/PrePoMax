@@ -729,11 +729,11 @@ namespace CaeResults
             }
             return false;
         }
-        public NodesExchangeData GetExtremeValues(string partName, FieldData fieldData, float[] values)
+        public NodesExchangeData GetExtremeValues(string partName, FieldData fieldData)
         {
-            return GetScaledExtremeValues(partName, fieldData, values, 0, 0);
+            return GetScaledExtremeValues(partName, fieldData, 0, 0);
         }
-        public NodesExchangeData GetScaledExtremeValues(string partName, FieldData fieldData, float[] values,
+        public NodesExchangeData GetScaledExtremeValues(string partName, FieldData fieldData,
                                                         float absoluteScale, float relativeScale)
         {
             if (!fieldData.Valid) return null;
@@ -760,7 +760,7 @@ namespace CaeResults
                 }
             }
             else
-            {
+            {                
                 foreach (var fieldEntry in _fields)
                 {
                     if (fieldEntry.Key.Name == fieldData.Name && fieldEntry.Key.StepId == fieldData.StepId &&
@@ -769,7 +769,7 @@ namespace CaeResults
                         int id;
                         float value;
                         BasePart basePart;
-                        values = fieldEntry.Value.GetComponentValues(fieldData.Component);
+                        float[] values = fieldEntry.Value.GetComponentValues(fieldData.Component);
                         //
                         basePart = _mesh.Parts[partName];
                         //
@@ -879,7 +879,7 @@ namespace CaeResults
             else
             {
                 pData.Nodes.Values = GetValues(fData, pData.Nodes.Ids);
-                pData.ExtremeNodes = GetScaledExtremeValues(part.Name, fData, pData.Nodes.Values, scale, 1);
+                pData.ExtremeNodes = GetScaledExtremeValues(part.Name, fData, scale, 1);
             }
             if (scale != 0)
                 ScaleNodeCoordinates(scale, fData.StepId, fData.StepIncrementId, pData.Nodes.Ids, ref pData.Nodes.Coor);
@@ -905,7 +905,7 @@ namespace CaeResults
             else
             {
                 pData.Nodes.Values = GetValues(fData, pData.Nodes.Ids);
-                pData.ExtremeNodes = GetExtremeValues(part.Name, fData, pData.Nodes.Values);
+                pData.ExtremeNodes = GetExtremeValues(part.Name, fData);
             }
             //
             pData.NodesAnimation = new NodesExchangeData[numFrames];
@@ -930,7 +930,7 @@ namespace CaeResults
                 //
                 if (invariant) relativeScale = Math.Abs(relativeScale);
                 ScaleValues(relativeScale, pData.Nodes.Values, out pData.NodesAnimation[i].Values);
-                pData.ExtremeNodesAnimation[i] = GetScaledExtremeValues(part.Name, fData, pData.Nodes.Values,
+                pData.ExtremeNodesAnimation[i] = GetScaledExtremeValues(part.Name, fData,
                                                                         absoluteScale, relativeScale);
             }
             //
@@ -994,7 +994,7 @@ namespace CaeResults
                 //
                 if (invariant) relativeScale = Math.Abs(relativeScale);
                 ScaleValues(relativeScale, pData.Nodes.Values, out pData.NodesAnimation[i].Values);
-                pData.ExtremeNodesAnimation[i] = GetScaledExtremeValues(elementSet.Name, fData, pData.Nodes.Values, 
+                pData.ExtremeNodesAnimation[i] = GetScaledExtremeValues(elementSet.Name, fData,
                                                                         absoluteScale, relativeScale);
             }
             //
