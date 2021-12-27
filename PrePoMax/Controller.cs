@@ -669,6 +669,8 @@ namespace PrePoMax
                         FeModel.ReadFromFile(model, br);
                         FeResults.ReadFromFile(results, br);
                     }
+                    //
+                    model.UpdateMeshPartsElementTypes();
                 }
                 return data;
             }
@@ -684,7 +686,7 @@ namespace PrePoMax
             {
                 object[] data = null;
                 Controller tmp = null;
-
+                //
                 using (FileStream fs = new FileStream(fileName, FileMode.Open))
                 using (BinaryReader br = new BinaryReader(fs))
                 {
@@ -692,10 +694,13 @@ namespace PrePoMax
                     tmp = (Controller)data[0];
                     model = tmp._model;
                     results = tmp._results;
-
+                    //
                     FeModel.ReadFromFile(model, br);
                     FeResults.ReadFromFile(results, br);
                 }
+                //
+                model.UpdateMeshPartsElementTypes();
+                //
                 return data;
             }
             catch
@@ -740,27 +745,27 @@ namespace PrePoMax
                         _form.WriteDataToOutput("Use the following menu to turn it back on: Geometry -> Find Model Edges by Angle");
                     }
                 }
-            }
-            else if (extension == ".mesh")
-                _model.ImportGeometryFromMmgMeshFile(fileName);
+            }            
             else if (extension == ".stp" || extension == ".step")
                 ImportCADAssemblyFile(fileName, "STEP_ASSEMBLY_SPLIT_TO_COMPOUNDS");
             else if (extension == ".igs" || extension == ".iges")
                 ImportCADAssemblyFile(fileName, "IGES_ASSEMBLY_SPLIT_TO_COMPOUNDS");
             else if (extension == ".brep")
                 ImportCADAssemblyFile(fileName, "BREP_ASSEMBLY_SPLIT_TO_COMPOUNDS");
-            else if (extension == ".unv")
-                _model.ImportMeshFromUnvFile(fileName);
             else if (extension == ".vol")
                 _model.ImportMeshFromVolFile(fileName);
+            else if (extension == ".mesh")
+                _model.ImportMeshFromMmgFile(fileName);
             else if (extension == ".inp")
                 _errors = _model.ImportMeshFromInpFile(fileName, _form.WriteDataToOutput);
-            else throw new NotSupportedException();           
+            else if (extension == ".unv")
+                _model.ImportMeshFromUnvFile(fileName);
+            else throw new NotSupportedException();            
             //
             UpdateAfterImport(extension);
         }
         private void UpdateAfterImport(string extension)
-        {
+        {            
             // Exploded view
             UpdateExplodedView(false);
             // Visualization
@@ -773,6 +778,9 @@ namespace PrePoMax
             }
             else if (extension == ".unv" || extension == ".vol" || extension == ".inp" || extension == ".mesh")
             {
+                // Element types
+                _model.UpdateMeshPartsElementTypes();
+                //
                 _currentView = ViewGeometryModelResults.Model;
                 _form.SetCurrentView(_currentView);
                 DrawModel(false);
@@ -1067,11 +1075,13 @@ namespace PrePoMax
                     {
                         _model.Mesh.RenumberPart(partNames[i], removedPartIds[i]);
                         renumbered = true;
-                        // Set finite element types
+                        // Set finite element types from previous meshing
                         GetModelPart(partNames[i]).SetElementTypeEnums(GetGeometryPart(partNames[i]).GetElementTypeEnums());
                     }
                 }
             }
+            // Update finite element types based on model dimensionality
+            _model.UpdateMeshPartsElementTypes();
             // Shading
             if (fromBrep)
             {
@@ -1144,6 +1154,8 @@ namespace PrePoMax
             else
             {
                 _model.ImportGeneratedRemeshFromMeshFile(fileName, elementIds, part, convertToSecondOrder, midNodes);
+                // Update finite element types based on model dimensionality
+                _model.UpdateMeshPartsElementTypes();
                 // Regenerate and change the DisplayedMesh to Model before updating sets
                 _form.Clear3D();
                 _currentView = ViewGeometryModelResults.Model;
@@ -3094,8 +3106,12 @@ namespace PrePoMax
         //******************************************************************************************
         public void ReplaceModelProperties(string newModelName, ModelProperties newModelProperties)
         {
+            bool update = _model.Properties.ModelSpace != newModelProperties.ModelSpace;
+            //
             _model.Name = newModelName;
             _model.Properties = newModelProperties;
+            //
+            if (update) _model.UpdateMeshPartsElementTypes();
         }
         // Tools
         public void CreateBoundaryLayer(int[] geometryIds, double thickness)

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using CaeGlobals;
+
 
 namespace PrePoMax.Forms
 {
@@ -79,7 +81,7 @@ namespace PrePoMax.Forms
             _propertyItemChanged = false;
             _viewModelProperties = null;
             //
-            _viewModelProperties = new ViewModelProperties(_controller.Model.Properties);
+            _viewModelProperties = new ViewModelProperties(_controller.Model.Properties.DeepClone());
             _viewModelProperties.Name = _controller.Model.Name;
             //
             propertyGrid.SelectedObject = _viewModelProperties;

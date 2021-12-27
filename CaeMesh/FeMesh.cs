@@ -746,7 +746,8 @@ namespace CaeMesh
                     if (existingPartNodeIds.TryGetValue(element.PartId, out partNodeIds)) partNodeIds.UnionWith(element.NodeIds);
                     else existingPartNodeIds.Add(element.PartId, new HashSet<int>(element.NodeIds));
                     //
-                    if (existingPartElementTypes.TryGetValue(element.PartId, out partElementTypes)) partElementTypes.Add(element.GetType());
+                    if (existingPartElementTypes.TryGetValue(element.PartId, out partElementTypes))
+                        partElementTypes.Add(element.GetType());
                     else existingPartElementTypes.Add(element.PartId, new HashSet<Type>() { element.GetType() });
                 }
             }
@@ -800,18 +801,18 @@ namespace CaeMesh
                     // Find connected elements of the same type
                     if (element is FeElement1D)
                     {
-                        FloodFillFast<FeElement1D>(element, partId, nodeElements, ref partNodeIds, ref partElementIds, ref partElementTypes,
-                                                   inpElementTypeSetLabels);
+                        FloodFillFast<FeElement1D>(element, partId, nodeElements, ref partNodeIds, ref partElementIds,
+                                                   ref partElementTypes, inpElementTypeSetLabels);
                     }
                     else if (element is FeElement2D)
                     {
-                        FloodFillFast<FeElement2D>(element, partId, nodeElements, ref partNodeIds, ref partElementIds, ref partElementTypes,
-                                                   inpElementTypeSetLabels);
+                        FloodFillFast<FeElement2D>(element, partId, nodeElements, ref partNodeIds, ref partElementIds,
+                                                   ref partElementTypes, inpElementTypeSetLabels);
                     }
                     else if (element is FeElement3D)
                     {
-                        FloodFillFast<FeElement3D>(element, partId, nodeElements, ref partNodeIds, ref partElementIds, ref partElementTypes,
-                                                   inpElementTypeSetLabels);
+                        FloodFillFast<FeElement3D>(element, partId, nodeElements, ref partNodeIds, ref partElementIds,
+                                                   ref partElementTypes, inpElementTypeSetLabels);
                     }
                     else throw new NotSupportedException();
                 }
@@ -840,14 +841,18 @@ namespace CaeMesh
                 partElementIds.Sort();
                 // Create part
                 if (_meshRepresentation == MeshRepresentation.Geometry)
-                    part = new GeometryPart(name, partId, sortedPartNodeIds.ToArray(), partElementIds.ToArray(), partElementTypes.ToArray());
+                    part = new GeometryPart(name, partId, sortedPartNodeIds.ToArray(), partElementIds.ToArray(),
+                                            partElementTypes.ToArray());
                 else if (_meshRepresentation == MeshRepresentation.Mesh)
                 {
-                    part = new MeshPart(name, partId, sortedPartNodeIds.ToArray(), partElementIds.ToArray(), partElementTypes.ToArray());
-                    if (inpElementTypeNames != null) (part as MeshPart).SetPropertiesFromInpElementTypeName(inpElementTypeNames.ToArray());
+                    part = new MeshPart(name, partId, sortedPartNodeIds.ToArray(), partElementIds.ToArray(),
+                                        partElementTypes.ToArray());
+                    if (inpElementTypeNames != null)
+                        (part as MeshPart).SetPropertiesFromInpElementTypeName(inpElementTypeNames.ToArray());
                 }
                 else if (_meshRepresentation == MeshRepresentation.Results)
-                    part = new ResultPart(name, partId, sortedPartNodeIds.ToArray(), partElementIds.ToArray(), partElementTypes.ToArray());
+                    part = new ResultPart(name, partId, sortedPartNodeIds.ToArray(), partElementIds.ToArray(),
+                                          partElementTypes.ToArray());
                 else throw new NotSupportedException();
                 // Add part
                 _parts.Add(name, part);
@@ -927,17 +932,18 @@ namespace CaeMesh
             //
             //ResetPartsColor();
         }
-        private void FloodFillFast<T>(FeElement element, int partId, Dictionary<int, List<FeElement>> nodeElements, ref HashSet<int> partNodeIds,
-                                      ref List<int> partElementIds, ref HashSet<Type> partElementTypes, HashSet<int> elementTypeSet)
+        private void FloodFillFast<T>(FeElement element, int partId, Dictionary<int, List<FeElement>> nodeElements,
+                                      ref HashSet<int> partNodeIds, ref List<int> partElementIds,
+                                      ref HashSet<Type> partElementTypes, HashSet<int> elementTypeSet)
         {
             UniqueQueue<FeElement> neighbours = new UniqueQueue<FeElement>();
             neighbours.Enqueue(element);
-
+            //
             FeElement el;
             while (neighbours.Count > 0)
             {
                 el = neighbours.Dequeue();
-
+                //
                 foreach (var nodeId in el.NodeIds)
                 {
                     foreach (var currEl in nodeElements[nodeId])
@@ -2861,6 +2867,14 @@ namespace CaeMesh
             //
             return parts;
         }
+        // 3D - 2D
+        public void UpdatePartsElementTypes(Dictionary<Type, HashSet<Enum>> elementTypeEnums)
+        {
+            foreach (var entry in _parts)
+            {
+                if (entry.Value is MeshPart mp) mp.UpdateElementTypeEnums(elementTypeEnums);
+            }
+        }
         // Section view - OLD
         public void ApplySectionView(Octree.Plane sectionPlane)
         {
@@ -3228,7 +3242,6 @@ namespace CaeMesh
                 return connectedPartNames.ToArray();
             }
         }
-
         // Colors
         public void ResetPartsColor()
         {
@@ -3248,7 +3261,7 @@ namespace CaeMesh
         public void SetPartsColorFromColorTable(BasePart part)
         {
             part.Color = Globals.ColorTable[(part.PartId - 1) % Globals.ColorTable.Length];
-        }
+        }        
 
         #endregion #################################################################################################################
 

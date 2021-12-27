@@ -14,7 +14,7 @@ namespace PrePoMax.Forms
     [Serializable]
     public class ViewPartProperties
     {
-        // Variables                                                                                                                      
+        // Variables                                                                                                                
         private PartProperties _partProperties;
         private DynamicCustomTypeDescriptor _dctd = null;
 
@@ -88,37 +88,61 @@ namespace PrePoMax.Forms
         [OrderedDisplayName(4, 10, "Linear tetra type")]
         [Description("Select the type of the linear tetrahedron elements.")]
         [Id(5, 3)]
-        public FeElementTypeLinearTetra LinearTetraType { get { return _partProperties.LinearTetraType; } set { _partProperties.LinearTetraType = value; } }
+        public FeElementTypeLinearTetra LinearTetraType 
+        {
+            get { return _partProperties.LinearTetraType; }
+            set { _partProperties.LinearTetraType = value; }
+        }
         //
         [Category("Element type")]
         [OrderedDisplayName(5, 10, "Parabolic tetra type")]
         [Description("Select the type of the parabolic tetrahedron elements.")]
         [Id(6, 3)]
-        public FeElementTypeParabolicTetra ParabolicTetraType { get { return _partProperties.ParabolicTetraType; } set { _partProperties.ParabolicTetraType = value; } }
+        public FeElementTypeParabolicTetra ParabolicTetraType
+        {
+            get { return _partProperties.ParabolicTetraType; }
+            set { _partProperties.ParabolicTetraType = value; }
+        }
         //
         [Category("Element type")]
         [OrderedDisplayName(6, 10, "Linear wedge type")]
         [Description("Select the type of the linear wedge elements.")]
         [Id(7, 3)]
-        public FeElementTypeLinearWedge LinearWedgeType { get { return _partProperties.LinearWedgeType; } set { _partProperties.LinearWedgeType = value; } }
+        public FeElementTypeLinearWedge LinearWedgeType
+        {
+            get { return _partProperties.LinearWedgeType; }
+            set { _partProperties.LinearWedgeType = value; }
+        }
         //
         [Category("Element type")]
         [OrderedDisplayName(7, 10, "Parabolic wedge type")]
         [Description("Select the type of the parabolic wedge elements.")]
         [Id(8, 3)]
-        public FeElementTypeParabolicWedge ParabolicWedgeType { get { return _partProperties.ParabolicWedgeType; } set { _partProperties.ParabolicWedgeType = value; } }
+        public FeElementTypeParabolicWedge ParabolicWedgeType
+        {
+            get { return _partProperties.ParabolicWedgeType; }
+            set { _partProperties.ParabolicWedgeType = value; }
+        }
         //
         [Category("Element type")]
         [OrderedDisplayName(8, 10, "Linear hexa type")]
         [Description("Select the type of the linear hexahedron elements.")]
         [Id(9, 3)]
-        public FeElementTypeLinearHexa LinearHexaType { get { return _partProperties.LinearHexaType; } set { _partProperties.LinearHexaType = value; } }
+        public FeElementTypeLinearHexa LinearHexaType
+        {
+            get { return _partProperties.LinearHexaType; }
+            set { _partProperties.LinearHexaType = value; }
+        }
         //
         [Category("Element type")]
         [OrderedDisplayName(9, 10, "Parabolic hexa type")]
         [Description("Select the type of the parabolic hexahedron elements.")]
         [Id(10, 3)]
-        public FeElementTypeParabolicHexa ParabolicHexaType { get { return _partProperties.ParabolicHexaType; } set { _partProperties.ParabolicHexaType = value; } }
+        public FeElementTypeParabolicHexa ParabolicHexaType
+        {
+            get { return _partProperties.ParabolicHexaType; }
+            set { _partProperties.ParabolicHexaType = value; }
+        }
         //
         [Category("Appearance")]
         [OrderedDisplayName(0, 10, "Part color")]
@@ -136,107 +160,137 @@ namespace PrePoMax.Forms
 
 
         // Constructors                                                                                                             
-        public ViewPartProperties(PartProperties properties, ViewGeometryModelResults currentView)
+        public ViewPartProperties(PartProperties properties, ViewGeometryModelResults currentView,
+                                  Dictionary<Type, HashSet<string>> elementTypeNamesToRemove)
         {
             _partProperties = properties;
             _dctd = ProviderInstaller.Install(this);
             _dctd.CategorySortOrder = CustomSortOrder.AscendingById;
             _dctd.PropertySortOrder = CustomSortOrder.AscendingById;
             //
-            CustomPropertyDescriptor cpd = null;
-            //
-            if (currentView == ViewGeometryModelResults.Results)
+            if (currentView == ViewGeometryModelResults.Geometry)
             {
-                cpd = _dctd.GetProperty(nameof(NumberOfElements));
-                cpd.SetIsBrowsable(true);
-                cpd = _dctd.GetProperty(nameof(NumberOfNodes));
-                cpd.SetIsBrowsable(true);
+                _dctd.GetProperty(nameof(NumberOfElements)).SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(NumberOfNodes)).SetIsBrowsable(false);
                 //
-                cpd = _dctd.GetProperty(nameof(LinearTriaType));
-                cpd.SetIsBrowsable(false);
-                cpd = _dctd.GetProperty(nameof(ParabolicTriaType));
-                cpd.SetIsBrowsable(false);
-                cpd = _dctd.GetProperty(nameof(LinearQuadType));
-                cpd.SetIsBrowsable(false);
-                cpd = _dctd.GetProperty(nameof(ParabolicQuadType));
-                cpd.SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(LinearTriaType)).SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(ParabolicTriaType)).SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(LinearQuadType)).SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(ParabolicQuadType)).SetIsBrowsable(false);
                 //
-                cpd = _dctd.GetProperty(nameof(LinearTetraType));
-                cpd.SetIsBrowsable(false);
-                cpd = _dctd.GetProperty(nameof(ParabolicTetraType));
-                cpd.SetIsBrowsable(false);
-                cpd = _dctd.GetProperty(nameof(LinearWedgeType));
-                cpd.SetIsBrowsable(false);
-                cpd = _dctd.GetProperty(nameof(ParabolicWedgeType));
-                cpd.SetIsBrowsable(false);
-                cpd = _dctd.GetProperty(nameof(LinearHexaType));
-                cpd.SetIsBrowsable(false);
-                cpd = _dctd.GetProperty(nameof(ParabolicHexaType));
-                cpd.SetIsBrowsable(false);
-            }
-            else if (currentView == ViewGeometryModelResults.Geometry)
-            {
-                cpd = _dctd.GetProperty(nameof(NumberOfElements));
-                cpd.SetIsBrowsable(false);
-                cpd = _dctd.GetProperty(nameof(NumberOfNodes));
-                cpd.SetIsBrowsable(false);
-                //
-                cpd = _dctd.GetProperty(nameof(LinearTriaType));
-                cpd.SetIsBrowsable(false);
-                cpd = _dctd.GetProperty(nameof(ParabolicTriaType));
-                cpd.SetIsBrowsable(false);
-                cpd = _dctd.GetProperty(nameof(LinearQuadType));
-                cpd.SetIsBrowsable(false);
-                cpd = _dctd.GetProperty(nameof(ParabolicQuadType));
-                cpd.SetIsBrowsable(false);
-                //
-                cpd = _dctd.GetProperty(nameof(LinearTetraType));
-                cpd.SetIsBrowsable(false);
-                cpd = _dctd.GetProperty(nameof(ParabolicTetraType));
-                cpd.SetIsBrowsable(false);
-                cpd = _dctd.GetProperty(nameof(LinearWedgeType));
-                cpd.SetIsBrowsable(false);
-                cpd = _dctd.GetProperty(nameof(ParabolicWedgeType));
-                cpd.SetIsBrowsable(false);
-                cpd = _dctd.GetProperty(nameof(LinearHexaType));
-                cpd.SetIsBrowsable(false);
-                cpd = _dctd.GetProperty(nameof(ParabolicHexaType));
-                cpd.SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(LinearTetraType)).SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(ParabolicTetraType)).SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(LinearWedgeType)).SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(ParabolicWedgeType)).SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(LinearHexaType)).SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(ParabolicHexaType)).SetIsBrowsable(false);
                 //
                 if (PartType == PartType.Compound)
                 {
-                    cpd = _dctd.GetProperty(nameof(Color));
-                    cpd.SetIsBrowsable(false);
+                    _dctd.GetProperty(nameof(Color)).SetIsBrowsable(false);
                 }
             }
-            else //currentView == ViewGeometryMeshResults.Mesh
+            else if (currentView == ViewGeometryModelResults.Model)
             {
-                cpd = _dctd.GetProperty(nameof(NumberOfElements));
-                cpd.SetIsBrowsable(true);
-                cpd = _dctd.GetProperty(nameof(NumberOfNodes));
-                cpd.SetIsBrowsable(true);
+                _dctd.GetProperty(nameof(NumberOfElements)).SetIsBrowsable(true);
+                _dctd.GetProperty(nameof(NumberOfNodes)).SetIsBrowsable(true);
                 //
-                cpd = _dctd.GetProperty(nameof(LinearTriaType));
-                cpd.SetIsBrowsable(_partProperties.LinearTriaType != FeElementTypeLinearTria.None);
-                cpd = _dctd.GetProperty(nameof(ParabolicTriaType));
-                cpd.SetIsBrowsable(_partProperties.ParabolicTriaType != FeElementTypeParabolicTria.None);
-                cpd = _dctd.GetProperty(nameof(LinearQuadType));
-                cpd.SetIsBrowsable(_partProperties.LinearQuadType != FeElementTypeLinearQuad.None);
-                cpd = _dctd.GetProperty(nameof(ParabolicQuadType));
-                cpd.SetIsBrowsable(_partProperties.ParabolicQuadType != FeElementTypeParabolicQuad.None);
+                if (_partProperties.LinearTriaType != FeElementTypeLinearTria.None)
+                {
+                    _dctd.GetProperty(nameof(LinearTriaType)).SetIsBrowsable(true);
+                    _dctd.GetProperty(nameof(LinearTriaType)).RemoveStandardValues(
+                        elementTypeNamesToRemove[typeof(FeElementTypeLinearTria)]);
+                }
+                else _dctd.GetProperty(nameof(LinearTriaType)).SetIsBrowsable(false);
                 //
-                cpd = _dctd.GetProperty(nameof(LinearTetraType));
-                cpd.SetIsBrowsable(_partProperties.LinearTetraType != FeElementTypeLinearTetra.None);
-                cpd = _dctd.GetProperty(nameof(ParabolicTetraType));
-                cpd.SetIsBrowsable(_partProperties.ParabolicTetraType != FeElementTypeParabolicTetra.None);
-                cpd = _dctd.GetProperty(nameof(LinearWedgeType));
-                cpd.SetIsBrowsable(_partProperties.LinearWedgeType != FeElementTypeLinearWedge.None);
-                cpd = _dctd.GetProperty(nameof(ParabolicWedgeType));
-                cpd.SetIsBrowsable(_partProperties.ParabolicWedgeType != FeElementTypeParabolicWedge.None);
-                cpd = _dctd.GetProperty(nameof(LinearHexaType));
-                cpd.SetIsBrowsable(_partProperties.LinearHexaType != FeElementTypeLinearHexa.None);
-                cpd = _dctd.GetProperty(nameof(ParabolicHexaType));
-                cpd.SetIsBrowsable(_partProperties.ParabolicHexaType != FeElementTypeParabolicHexa.None);
+                if (_partProperties.ParabolicTriaType != FeElementTypeParabolicTria.None)
+                {
+                    _dctd.GetProperty(nameof(ParabolicTriaType)).SetIsBrowsable(true);
+                    _dctd.GetProperty(nameof(ParabolicTriaType)).RemoveStandardValues(
+                        elementTypeNamesToRemove[typeof(FeElementTypeParabolicTria)]);
+                }
+                else _dctd.GetProperty(nameof(ParabolicTriaType)).SetIsBrowsable(false);
+                //
+                if (_partProperties.LinearQuadType != FeElementTypeLinearQuad.None)
+                {
+                    _dctd.GetProperty(nameof(LinearQuadType)).SetIsBrowsable(true);
+                    _dctd.GetProperty(nameof(LinearQuadType)).RemoveStandardValues(
+                        elementTypeNamesToRemove[typeof(FeElementTypeLinearQuad)]);
+                }
+                else _dctd.GetProperty(nameof(LinearQuadType)).SetIsBrowsable(false);
+                //
+                if (_partProperties.ParabolicQuadType != FeElementTypeParabolicQuad.None)
+                {
+                    _dctd.GetProperty(nameof(ParabolicQuadType)).SetIsBrowsable(true);
+                    _dctd.GetProperty(nameof(ParabolicQuadType)).RemoveStandardValues(
+                        elementTypeNamesToRemove[typeof(FeElementTypeParabolicQuad)]);
+                }
+                else _dctd.GetProperty(nameof(ParabolicQuadType)).SetIsBrowsable(false);
+                // Solid
+                if (_partProperties.LinearTetraType != FeElementTypeLinearTetra.None)
+                {
+                    _dctd.GetProperty(nameof(LinearTetraType)).SetIsBrowsable(true);
+                    _dctd.GetProperty(nameof(LinearTetraType)).RemoveStandardValues(
+                        elementTypeNamesToRemove[typeof(FeElementTypeLinearTetra)]);
+                }
+                else _dctd.GetProperty(nameof(LinearTetraType)).SetIsBrowsable(false);
+                //
+                if (_partProperties.ParabolicTetraType != FeElementTypeParabolicTetra.None)
+                {
+                    _dctd.GetProperty(nameof(ParabolicTetraType)).SetIsBrowsable(true);
+                    _dctd.GetProperty(nameof(ParabolicTetraType)).RemoveStandardValues(
+                        elementTypeNamesToRemove[typeof(FeElementTypeParabolicTetra)]);
+                }
+                else _dctd.GetProperty(nameof(ParabolicTetraType)).SetIsBrowsable(false);
+                //
+                if (_partProperties.LinearWedgeType != FeElementTypeLinearWedge.None)
+                {
+                    _dctd.GetProperty(nameof(LinearWedgeType)).SetIsBrowsable(true);
+                    _dctd.GetProperty(nameof(LinearWedgeType)).RemoveStandardValues(
+                        elementTypeNamesToRemove[typeof(FeElementTypeLinearWedge)]);
+                }
+                else _dctd.GetProperty(nameof(LinearWedgeType)).SetIsBrowsable(false);
+                //
+                if (_partProperties.ParabolicWedgeType != FeElementTypeParabolicWedge.None)
+                {
+                    _dctd.GetProperty(nameof(ParabolicWedgeType)).SetIsBrowsable(true);
+                    _dctd.GetProperty(nameof(ParabolicWedgeType)).RemoveStandardValues(
+                        elementTypeNamesToRemove[typeof(FeElementTypeParabolicWedge)]);
+                }
+                else _dctd.GetProperty(nameof(ParabolicWedgeType)).SetIsBrowsable(false);
+                //
+                if (_partProperties.LinearHexaType != FeElementTypeLinearHexa.None)
+                {
+                    _dctd.GetProperty(nameof(LinearHexaType)).SetIsBrowsable(true);
+                    _dctd.GetProperty(nameof(LinearHexaType)).RemoveStandardValues(
+                        elementTypeNamesToRemove[typeof(FeElementTypeLinearHexa)]);
+                }
+                else _dctd.GetProperty(nameof(LinearHexaType)).SetIsBrowsable(false);
+                //
+                if (_partProperties.ParabolicHexaType != FeElementTypeParabolicHexa.None)
+                {
+                    _dctd.GetProperty(nameof(ParabolicHexaType)).SetIsBrowsable(true);
+                    _dctd.GetProperty(nameof(ParabolicHexaType)).RemoveStandardValues(
+                        elementTypeNamesToRemove[typeof(FeElementTypeParabolicHexa)]);
+                }
+                else _dctd.GetProperty(nameof(ParabolicHexaType)).SetIsBrowsable(false);
+            }
+            else if (currentView == ViewGeometryModelResults.Results)
+            {
+                _dctd.GetProperty(nameof(NumberOfElements)).SetIsBrowsable(true);
+                _dctd.GetProperty(nameof(NumberOfNodes)).SetIsBrowsable(true);
+                //
+                _dctd.GetProperty(nameof(LinearTriaType)).SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(ParabolicTriaType)).SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(LinearQuadType)).SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(ParabolicQuadType)).SetIsBrowsable(false);
+                //
+                _dctd.GetProperty(nameof(LinearTetraType)).SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(ParabolicTetraType)).SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(LinearWedgeType)).SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(ParabolicWedgeType)).SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(LinearHexaType)).SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(ParabolicHexaType)).SetIsBrowsable(false);
             }
         }
 

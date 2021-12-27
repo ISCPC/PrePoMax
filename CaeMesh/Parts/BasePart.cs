@@ -91,7 +91,7 @@ namespace CaeMesh
         private bool IsSolid()
         {
             if (_elementTypes == null) return false;
-
+            //
             foreach (var type in _elementTypes)
             {
                 if (type != typeof(LinearTetraElement) && type != typeof(LinearWedgeElement) && type != typeof(LinearHexaElement) &&
@@ -102,7 +102,7 @@ namespace CaeMesh
         private bool IsShell()
         {
             if (_elementTypes == null) return false;
-
+            //
             foreach (var type in _elementTypes)
             {
                 if (type != typeof(LinearTriangleElement) && type != typeof(LinearQuadrilateralElement) &&
@@ -113,7 +113,7 @@ namespace CaeMesh
         private bool IsBeam()
         {
             if (_elementTypes == null) return false;
-
+            //
             foreach (var type in _elementTypes)
             {
                 if (type != typeof(LinearBeamElement) && type != typeof(ParabolicBeamElement)) return false;

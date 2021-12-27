@@ -2258,12 +2258,13 @@ namespace DynamicTypeDescriptor
                 return m_StatandardValues;
             }
         }
-        public void RemoveStandardValues(string[] standardValueNames)
+        public void RemoveStandardValues(HashSet<string> standardValueNames)
         {
             List<StandardValueAttribute> valuesToRemove = new List<StandardValueAttribute>();
             foreach (var standardValue in m_StatandardValues)
             {
-                if (standardValueNames.Contains(standardValue.DisplayName)) valuesToRemove.Add(standardValue);
+                // StandardValue's value must be coverted to string to be found
+                if (standardValueNames.Contains(standardValue.Value.ToString())) valuesToRemove.Add(standardValue);
             }
             foreach (var standardValue in valuesToRemove) m_StatandardValues.Remove(standardValue);
         }

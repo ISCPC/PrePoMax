@@ -338,6 +338,50 @@ namespace CaeMesh
                 }
             }
         }
+        public void UpdateElementTypeEnums(Dictionary<Type, HashSet<Enum>> elementTypeEnums)
+        {
+            if (elementTypeEnums != null)
+            {
+                HashSet<Enum> elementEnums;
+                //
+                if (_linearTriaType != FeElementTypeLinearTria.None &&
+                    elementTypeEnums.TryGetValue(typeof(FeElementTypeLinearTria), out elementEnums) &&
+                    !elementEnums.Contains(_linearTriaType)) _linearTriaType = (FeElementTypeLinearTria)elementEnums.First();
+                if (_parabolicTriaType != FeElementTypeParabolicTria.None &&
+                    elementTypeEnums.TryGetValue(typeof(FeElementTypeParabolicTria), out elementEnums) &&
+                    !elementEnums.Contains(_parabolicTriaType)) _parabolicTriaType = (FeElementTypeParabolicTria)elementEnums.First();
+                if (_linearQuadType != FeElementTypeLinearQuad.None &&
+                    elementTypeEnums.TryGetValue(typeof(FeElementTypeLinearQuad), out elementEnums) &&
+                    !elementEnums.Contains(_linearQuadType)) _linearQuadType = (FeElementTypeLinearQuad)elementEnums.First();
+                if (_parabolicQuadType != FeElementTypeParabolicQuad.None &&
+                    elementTypeEnums.TryGetValue(typeof(FeElementTypeParabolicQuad), out elementEnums) &&
+                    !elementEnums.Contains(_parabolicQuadType)) _parabolicQuadType = (FeElementTypeParabolicQuad)elementEnums.First();
+                //
+                if (_linearTetraType != FeElementTypeLinearTetra.None &&
+                    elementTypeEnums.TryGetValue(typeof(FeElementTypeLinearTetra), out elementEnums) &&
+                    !elementEnums.Contains(_linearTetraType)) _linearTetraType = (FeElementTypeLinearTetra)elementEnums.First();
+                if (_parabolicTetraType != FeElementTypeParabolicTetra.None &&
+                    elementTypeEnums.TryGetValue(typeof(FeElementTypeParabolicTetra), out elementEnums) &&
+                    !elementEnums.Contains(_parabolicTetraType)) _parabolicTetraType = (FeElementTypeParabolicTetra)elementEnums.First();
+                if (_linearWedgeType != FeElementTypeLinearWedge.None &&
+                    elementTypeEnums.TryGetValue(typeof(FeElementTypeLinearWedge), out elementEnums) &&
+                    !elementEnums.Contains(_linearWedgeType)) _linearWedgeType = (FeElementTypeLinearWedge)elementEnums.First();
+                if (_parabolicWedgeType != FeElementTypeParabolicWedge.None &&
+                    elementTypeEnums.TryGetValue(typeof(FeElementTypeParabolicWedge), out elementEnums) &&
+                    !elementEnums.Contains(_parabolicWedgeType)) _parabolicWedgeType = (FeElementTypeParabolicWedge)elementEnums.First();
+                if (_linearHexaType != FeElementTypeLinearHexa.None &&
+                    elementTypeEnums.TryGetValue(typeof(FeElementTypeLinearHexa), out elementEnums) &&
+                    !elementEnums.Contains(_linearHexaType)) _linearHexaType = (FeElementTypeLinearHexa)elementEnums.First();
+                if (_parabolicHexaType != FeElementTypeParabolicHexa.None &&
+                    elementTypeEnums.TryGetValue(typeof(FeElementTypeParabolicHexa), out elementEnums) &&
+                    !elementEnums.Contains(_parabolicHexaType)) _parabolicHexaType = (FeElementTypeParabolicHexa)elementEnums.First();
+            }
+        }
+
+
+
+
+
     }
 }
 
