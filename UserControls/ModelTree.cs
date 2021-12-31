@@ -1681,6 +1681,8 @@ namespace UserControls
                         {
                             // Results parts
                             AddObjectsToNode<string, CaeMesh.BasePart>(_resultPartsName, _resultParts, results.Mesh.Parts);
+                            // Node sets
+                            AddObjectsToNode<string, CaeMesh.FeNodeSet>(_resultNodeSetsName, _resultNodeSets, results.Mesh.NodeSets);
                             // Field outputs
                             string[] fieldNames;
                             string[][] allComponents;

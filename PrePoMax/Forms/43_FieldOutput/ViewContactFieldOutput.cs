@@ -44,6 +44,12 @@ namespace PrePoMax
             get { return _fieldOutput.LastIterations; }
             set { _fieldOutput.LastIterations = value; }
         }
+        [Browsable(false)]
+        public override bool ContactElements
+        {
+            get { return _fieldOutput.ContactElements; }
+            set { _fieldOutput.ContactElements = value; }
+        }
         //
         [OrderedDisplayName(3, 10, "Variables to output")]
         [CategoryAttribute("Data")]

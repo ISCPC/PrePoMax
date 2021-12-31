@@ -250,7 +250,7 @@ namespace FileInOut.Input
                 }
             }
         }
-        static public void ReadCel(string fileName, Dictionary<int, FeNode> nodes,
+        static public void ReadCel(string fileName,
                                    out Dictionary<int, FeElement> uniqueElements,
                                    out Dictionary<string, FeElementSet> elementSets)
         {
@@ -457,19 +457,19 @@ namespace FileInOut.Input
             for (int i = 1; i < lines.Length; i++)
             {
                 if (lines[i].StartsWith("*")) continue;
-
+                //
                 record = lines[i].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
-
+                //
                 id = int.Parse(record[0]);
                 node = new FeNode();
                 node.Id = id;
                 node.X = double.Parse(record[1]);
                 node.Y = double.Parse(record[2]);
-                node.Z = double.Parse(record[3]);
-
+                if (record.Length == 4) node.Z = double.Parse(record[3]);
+                //
                 nodes.Add(id, node);
             }
-
+            //
             return nodes;
         }
         private static void AddElements(string[] lines, ref Dictionary<int, FeElement> elements,

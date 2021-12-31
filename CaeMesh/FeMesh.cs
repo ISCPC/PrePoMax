@@ -2214,7 +2214,7 @@ namespace CaeMesh
             newMeshPart = new MeshPart(part);
             newMeshPart.Name = _parts.GetNextNumberedKey("Merged_part");
             newMeshPart.PartId = minId;
-            SetPartsColorFromColorTable(newMeshPart);
+            SetPartColorFromColorTable(newMeshPart);
             // Renumber elements
             foreach (var elementId in newMeshPart.Labels) _elements[elementId].PartId = minId;
             // Add new part
@@ -2252,7 +2252,7 @@ namespace CaeMesh
             newResultPart = new ResultPart(part);
             newResultPart.Name = _parts.GetNextNumberedKey("Merged_part");
             newResultPart.PartId = minId;
-            SetPartsColorFromColorTable(newResultPart);
+            SetPartColorFromColorTable(newResultPart);
             // Renumber elements
             foreach (var elementId in newResultPart.Labels) _elements[elementId].PartId = minId;
             // Add new part
@@ -2410,7 +2410,7 @@ namespace CaeMesh
                 //
                 newBasePart.Name = part.Name;
                 newBasePart.PartId = part.PartId;
-                SetPartsColorFromColorTable(newBasePart);
+                SetPartColorFromColorTable(newBasePart);
                 // Replace part
                 _parts[newBasePart.Name] = newBasePart;
                 // Keep existing edges
@@ -2442,7 +2442,7 @@ namespace CaeMesh
                 if (allMeshNames.Contains(newBasePart.Name)) newBasePart.Name = allMeshNames.GetNextNumberedKey(newPartName);
                 //
                 newBasePart.PartId = maxPartId + count;
-                SetPartsColorFromColorTable(newBasePart);
+                SetPartColorFromColorTable(newBasePart);
                 //
                 _parts.Add(newBasePart.Name, newBasePart);
                 newParts[count++] = newBasePart;
@@ -3247,8 +3247,8 @@ namespace CaeMesh
         {
             foreach (var entry in _parts)
             {
-                if (entry.Value.Color == System.Drawing.Color.Gray) // Gray if default color
-                    SetPartsColorFromColorTable(entry.Value);
+                if (entry.Value.Color == System.Drawing.Color.Gray) // gray is the default base part color
+                    SetPartColorFromColorTable(entry.Value);
             }
         }
         public void SetPartsColor(System.Drawing.Color color)
@@ -3258,7 +3258,7 @@ namespace CaeMesh
                 entry.Value.Color = color;
             }
         }
-        public void SetPartsColorFromColorTable(BasePart part)
+        public void SetPartColorFromColorTable(BasePart part)
         {
             part.Color = Globals.ColorTable[(part.PartId - 1) % Globals.ColorTable.Length];
         }        
@@ -5972,22 +5972,21 @@ namespace CaeMesh
         //
         public string[] AddMesh(FeMesh mesh, ICollection<string> reservedPartNames, bool forceRenameParts = true)
         {
+            int numOfNodes = mesh.Nodes.Count;
+            int numOfElements = mesh.Elements.Count;
+            int firstNodeId = _nodes.FindFreeIntervalOfKeys(numOfNodes, _maxNodeId);
+            int firstElementId = _elements.FindFreeIntervalOfKeys(numOfElements, _maxElementId);
+            //
             int count;
             string entryName;
             // Renumber nodes
-            mesh.RenumberNodes(_maxNodeId + 1);
-            foreach (var entry in mesh.Nodes)
-            {
-                _nodes.Add(entry.Key, entry.Value);
-            }
-            _maxNodeId = mesh.MaxNodeId;
+            mesh.RenumberNodes(firstNodeId);
+            _nodes.AddRange(mesh.Nodes);
+            if (_maxNodeId < mesh.MaxNodeId) _maxNodeId = mesh.MaxNodeId;
             // Renumber elements
-            mesh.RenumberElements(_maxElementId + 1);
-            foreach (var entry in mesh.Elements)
-            {
-                _elements.Add(entry.Key, entry.Value);
-            }
-            _maxElementId = mesh.MaxElementId;
+            mesh.RenumberElements(firstElementId);
+            _elements.AddRange(mesh.Elements);
+            if (_maxElementId < mesh.MaxElementId) _maxElementId = mesh.MaxElementId;
             // Add and rename nodeSets
             count = 1;
             foreach (var entry in mesh.NodeSets)
@@ -6037,15 +6036,16 @@ namespace CaeMesh
                 if (entry.Value.PartId > maxPartID) maxPartID = entry.Value.PartId;
             }
             mesh.RenumberParts(maxPartID + 1);
-            mesh.ResetPartsColor();
             // Add and rename parts
-            count = 1;
             List<string> addedPartNames = new List<string>();
             HashSet<string> allNames = new HashSet<string>(_parts.Keys);
             if (reservedPartNames != null) allNames.UnionWith(reservedPartNames);
             //
             foreach (var entry in mesh.Parts)
             {
+                // Set color after renumbering
+                SetPartColorFromColorTable(entry.Value);
+                //
                 entryName = entry.Key;
                 if (forceRenameParts || allNames.Contains(entryName))
                 {
@@ -6069,6 +6069,7 @@ namespace CaeMesh
             FeMesh partialMesh = new FeMesh(mesh, partNames);
             return AddMesh(partialMesh, reservedPartNames, forceRenameParts);
         }
+       
         #endregion #################################################################################################################
 
         #region Update entities ####################################################################################################

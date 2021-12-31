@@ -14,6 +14,7 @@ namespace CaeModel
         // Variables                                                                                                                
         private int _frequency;
         private bool _lastIterations;
+        private bool _contactElements;
 
 
         // Properties                                                                                                               
@@ -27,6 +28,7 @@ namespace CaeModel
             }
         }
         public bool LastIterations { get { return _lastIterations; } set { _lastIterations = value; } }
+        public bool ContactElements { get { return _contactElements; } set { _contactElements = value; } }
 
 
         // Constructors                                                                                                             
@@ -35,6 +37,7 @@ namespace CaeModel
         {
             _frequency = 1;
             _lastIterations = false;
+            _contactElements = false;
         }
 
 

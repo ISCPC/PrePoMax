@@ -610,12 +610,12 @@ namespace PrePoMax
         {
             Dictionary<int, FeElement> elements;
             Dictionary<string, FeElementSet> elementSets;
-            FileInOut.Input.InpFileReader.ReadCel(fileName, _model.Mesh.Nodes, out elements, out elementSets);
-            _results.Mesh.Elements.AddRange(elements);
-            _results.Mesh.ElementSets.AddRange(elementSets);
-            _results.Mesh.CreatePartsFromElementSets(elementSets.Keys.ToArray(),
-                                                     out BasePart[] modifiedParts,
-                                                     out BasePart[] newParts);
+            FileInOut.Input.InpFileReader.ReadCel(fileName, out elements, out elementSets);
+            //_results.Mesh.Elements.AddRange(elements);
+            //_results.Mesh.ElementSets.AddRange(elementSets);
+            //_results.Mesh.CreatePartsFromElementSets(elementSets.Keys.ToArray(),
+            //                                         out BasePart[] modifiedParts,
+            //                                         out BasePart[] newParts);
             //
             if (elements == null)
             {
@@ -624,6 +624,9 @@ namespace PrePoMax
             }
             else
             {
+                Dictionary<string, FeNodeSet> nodeSets = GetNodeSetsFromCelElements(_results.Mesh.Nodes, elements, elementSets);
+                _results.Mesh.NodeSets.AddRange(nodeSets);
+                //
                 if (redraw)
                 {
                     // Set the view but do not draw
@@ -635,6 +638,28 @@ namespace PrePoMax
                     _modelChanged = true;
                 }
             }
+        }
+        private Dictionary<string, FeNodeSet> GetNodeSetsFromCelElements(Dictionary<int, FeNode> nodes,
+                                                                         Dictionary<int, FeElement> elements,
+                                                                         Dictionary<string, FeElementSet> elementSets)
+        {
+            int count = 0;
+            HashSet<int> nodeIds = new HashSet<int>();
+            Dictionary<string, FeNodeSet> nodeSets = new Dictionary<string, FeNodeSet>();
+            //
+            foreach (var entry in elementSets)
+            {
+                nodeIds.Clear();
+                foreach (var elementId in entry.Value.Labels) nodeIds.UnionWith(elements[elementId].NodeIds);
+                nodeIds.IntersectWith(nodes.Keys);
+                nodeSets.Add(entry.Key, new FeNodeSet(entry.Key, nodeIds.ToArray()));
+                count += nodeIds.Count();
+            }
+            //
+            if (count == 0) MessageBoxes.ShowWarning("Turn on the 3D output option in the field outputs " +
+                                                     "to enable viewing of the contact element nodes.");
+            //
+            return nodeSets;
         }
         // Read pmx
         private object[] TryReadCompressedPmx(string fileName, out FeModel model, out FeResults results, 
@@ -2003,7 +2028,7 @@ namespace PrePoMax
             }
             _modelChanged = true;
         }
-        public void SwapGeometryPartgeometries(string partName1, string partName2)
+        public void SwapGeometryPartGeometries(string partName1, string partName2)
         {
             GeometryPart part1 = (GeometryPart)_model.Geometry.Parts[partName1];
             GeometryPart part2 = (GeometryPart)_model.Geometry.Parts[partName2];
@@ -6603,6 +6628,13 @@ namespace PrePoMax
             _jobs[jobName].Kill(Environment.NewLine + "Kill command sent by user." + Environment.NewLine);
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, jobName, _jobs[jobName], null);
         }
+        public void KillAllJobs()
+        {
+            foreach (var entry in _jobs)
+            {
+                if (entry.Value.JobStatus == JobStatus.Running) KillJob(entry.Key);
+            }
+        }
         public void RemoveJobs(string[] jobNames)
         {
             foreach (var name in jobNames)
@@ -10477,6 +10509,14 @@ namespace PrePoMax
                              int nodeSize = 5, bool onlyVisible = false, bool useSecondaryHighlightColor = false)
         {
             double[][] nodeCoor = DisplayedMesh.GetNodeSetCoor(nodeIds, onlyVisible);
+            //
+            if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
+            {
+                float scale = GetScale();
+                _results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId,
+                                              nodeIds, ref nodeCoor);
+            }
+            //
             DrawNodes(prefixName, nodeCoor, color, layer, nodeSize, false, useSecondaryHighlightColor);
             return nodeCoor.Length;
         }
@@ -10490,35 +10530,50 @@ namespace PrePoMax
             data.Layer = layer;
             data.DrawOnGeometry = drawOnGeometry;
             data.Geometry.Nodes.Coor = nodeCoor;
-            data.UseSecondaryHighightColor = useSecondaryHighlightColor;
+            data.UseSecondaryHighightColor = useSecondaryHighlightColor;            
+            //
             ApplyLighting(data);
             _form.Add3DNodes(data);
         }
         public int DrawNodeSet(string prefixName, string nodeSetName, Color color, 
                                vtkControl.vtkRendererLayer layer, bool backfaceCulling = true, int nodeSize = 5,
                                bool useSecondaryHighlightColor = false, bool onlyVisible = false)
-        {
-            if (nodeSetName != null && _model.Mesh.NodeSets.ContainsKey(nodeSetName))
+        {            
+            if (nodeSetName != null)
             {
-                FeNodeSet nodeSet = _model.Mesh.NodeSets[nodeSetName];
-                // Draw node set as geometry
-                if (nodeSet.CreationData != null && nodeSet.CreationData.SelectItem == vtkSelectItem.Geometry)
+                FeMesh mesh = DisplayedMesh;
+                //
+                if (mesh.NodeSets.ContainsKey(nodeSetName))
                 {
-                    int[] ids = nodeSet.CreationIds;
-                    //
-                    if (ids == null || ids.Length == 0) return 0;
-                    //
-                    nodeSize = (int)Math.Max(1.5 * nodeSize, nodeSize + 3);
-                    return DrawItemsByGeometryIds(ids, prefixName, nodeSetName, color, layer, nodeSize, backfaceCulling,
-                                                  useSecondaryHighlightColor, onlyVisible);
-                }
-                // Draw node set as single nodes
-                else
-                {
-                    double[][] nodeCoor = _model.Mesh.GetNodeSetCoor(nodeSet.Labels, onlyVisible);
-                    DrawNodes(prefixName + Globals.NameSeparator + nodeSetName, nodeCoor, color,
-                              layer, nodeSize, false, useSecondaryHighlightColor);
-                    return nodeCoor.Length;
+                    FeNodeSet nodeSet = mesh.NodeSets[nodeSetName];
+                    // Draw node set as geometry
+                    if (nodeSet.CreationData != null && nodeSet.CreationData.SelectItem == vtkSelectItem.Geometry)
+                    {
+                        int[] ids = nodeSet.CreationIds;
+                        //
+                        if (ids == null || ids.Length == 0) return 0;
+                        //
+                        nodeSize = (int)Math.Max(1.5 * nodeSize, nodeSize + 3);
+                        return DrawItemsByGeometryIds(ids, prefixName, nodeSetName, color, layer, nodeSize, backfaceCulling,
+                                                      useSecondaryHighlightColor, onlyVisible);
+                    }
+                    // Draw node set as single nodes
+                    else
+                    {
+                        double[][] nodeCoor = mesh.GetNodeSetCoor(nodeSet.Labels, onlyVisible);
+                        //
+                        //
+                        if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
+                        {
+                            float scale = GetScale();
+                            _results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId,
+                                                          nodeSet.Labels, ref nodeCoor);
+                        }
+                        //
+                        DrawNodes(prefixName + Globals.NameSeparator + nodeSetName, nodeCoor, color,
+                                  layer, nodeSize, false, useSecondaryHighlightColor);
+                        return nodeCoor.Length;
+                    }
                 }
             }
             return 0;
@@ -10558,8 +10613,8 @@ namespace PrePoMax
                 if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
                 {
                     float scale = GetScale();
-                    Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId, nodeIds,
-                                                 ref data.Geometry.Nodes.Coor);
+                    _results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId, nodeIds,
+                                                  ref data.Geometry.Nodes.Coor);
                 }
                 //
                 ApplyLighting(data);
@@ -10961,6 +11016,10 @@ namespace PrePoMax
                     if (obj is ResultPart || obj is GeometryPart)
                     {
                         HighlightResultParts(new string[] { ((BasePart)obj).Name });
+                    }
+                    else if (obj is FeNodeSet ns)
+                    {
+                        HighlightNodeSets(new string[] { ns.Name });
                     }
                 }
             }
