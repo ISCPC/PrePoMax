@@ -63,9 +63,11 @@ namespace CaeModel
         // Methods                                                                                                                  
         public override bool IsBoundaryConditionSupported(BoundaryCondition boundaryCondition)
         {
-            if (boundaryCondition is FixedBC || boundaryCondition is DisplacementRotation)
+            if (boundaryCondition is FixedBC || 
+                boundaryCondition is DisplacementRotation)
                 return true;
-            else if (boundaryCondition is SubmodelBC || boundaryCondition is TemperatureBC)
+            else if (boundaryCondition is SubmodelBC ||
+                     boundaryCondition is TemperatureBC)
                 return false;
             else throw new NotSupportedException();
         }

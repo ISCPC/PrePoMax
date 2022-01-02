@@ -1636,7 +1636,7 @@ namespace FileInOut.Input
                     }
                 }
                 //
-                MergestepBoudaryConditions(boundaryConditions, nodeSets, step, mesh);
+                MergeStepBoudaryConditions(boundaryConditions, nodeSets, step, mesh);
                 //
                 foreach (var entry in boundaryConditions) step.AddBoundaryCondition(entry.Value);
                 foreach (var entry in nodeSets) mesh.AddNodeSet(entry.Value);
@@ -1646,7 +1646,7 @@ namespace FileInOut.Input
                 _errors.Add("Failed to import boundary condition: " + lines.ToRows());
             }
         }
-        private static void MergestepBoudaryConditions(Dictionary<string, BoundaryCondition> boundaryConditions,
+        private static void MergeStepBoudaryConditions(Dictionary<string, BoundaryCondition> boundaryConditions,
                                                        Dictionary<string, FeNodeSet> nodeSets,
                                                        Step step, FeMesh mesh)
         {
@@ -1679,7 +1679,6 @@ namespace FileInOut.Input
                 //
                 boundaryConditions.Clear();
                 // Merge
-                string nodeSetName;
                 BoundaryCondition boundaryCondition;
                 HashSet<int> nodeIds = new HashSet<int>();
                 FeNodeSet mergedNodeSet;

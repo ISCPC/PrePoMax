@@ -464,6 +464,8 @@ namespace PrePoMax
             else if (extension == ".frd") OpenFrd(fileName);
             else if (extension == ".dat") OpenDatFile(fileName);
             else throw new NotSupportedException();
+            // Check validity
+            CheckAndUpdateValidity();
             // Get first component of the first field for the last increment in the last step
             if (_results != null) _currentFieldData = _results.GetFirstComponentOfTheFirstFieldAtDefaultIncrement();
             //

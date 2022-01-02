@@ -128,17 +128,10 @@ namespace PrePoMax.Forms
                 //
                 HighlightBoundaryCondition();
             }
-            else if (_viewBc is ViewFixedBC fix &&
+            else if ((_viewBc is ViewFixedBC fix || _viewBc is ViewDisplacementRotation) &&
                      (property == nameof(fix.NodeSetName) ||
                       property == nameof(fix.ReferencePointName) ||
                       property == nameof(fix.SurfaceName)))
-            {
-                HighlightBoundaryCondition();
-            }
-            else if (_viewBc is ViewDisplacementRotation vdr &&
-                     (property == nameof(vdr.NodeSetName) ||
-                      property == nameof(vdr.ReferencePointName) ||
-                      property == nameof(vdr.SurfaceName)))
             {
                 HighlightBoundaryCondition();
             }
@@ -470,8 +463,8 @@ namespace PrePoMax.Forms
         {
             if (BoundaryCondition != null && BoundaryCondition.RegionType == RegionTypeEnum.Selection)
             {
-                if (BoundaryCondition is FixedBC || BoundaryCondition is DisplacementRotation
-                    || BoundaryCondition is SubmodelBC || BoundaryCondition is TemperatureBC)
+                if (BoundaryCondition is FixedBC || BoundaryCondition is DisplacementRotation ||
+                    BoundaryCondition is SubmodelBC || BoundaryCondition is TemperatureBC)
                 {
                     BoundaryCondition.CreationIds = ids;
                     BoundaryCondition.CreationData = _controller.Selection.DeepClone();

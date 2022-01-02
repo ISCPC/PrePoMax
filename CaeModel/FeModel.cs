@@ -252,7 +252,8 @@ namespace CaeModel
                 constraint = entry.Value;
                 if (constraint is RigidBody rb)
                 {
-                    valid = _mesh.ReferencePoints.ContainsValidKey(rb.ReferencePointName)
+                    valid = rb.ReferencePointName != null
+                            && _mesh.ReferencePoints.ContainsValidKey(rb.ReferencePointName)
                             && ((rb.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(rb.RegionName))
                             || (rb.RegionType == RegionTypeEnum.SurfaceName && _mesh.Surfaces.ContainsValidKey(rb.RegionName)));
                 }
