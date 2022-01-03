@@ -37,19 +37,12 @@ namespace FileInOut.Output.Calculix
         public override string GetDataString()
         {
             StringBuilder sb = new StringBuilder();
-
-            double f1, f2, f3;
-            double len = Math.Sqrt(_load.F1 * _load.F1 + _load.F2 * _load.F2 + _load.F3 * _load.F3);
-            if (len != 0)
-            {
-                f1 = _load.F1 / len;
-                f2 = _load.F2 / len;
-                f3 = _load.F3 / len;
-            }
-            else f1 = f2 = f3 = 0;
-
+            //
+            Vec3D f = new Vec3D(_load.F1, _load.F2, _load.F3);
+            double len = f.Normalize();
+            //
             sb.AppendFormat("{0}, Grav, {1}, {2}, {3}, {4}", _load.RegionName, len.ToCalculiX16String(),
-                            f1.ToCalculiX16String(), f2.ToCalculiX16String(), f3.ToCalculiX16String());
+                            f.X.ToCalculiX16String(), f.Y.ToCalculiX16String(), f.Z.ToCalculiX16String());
             sb.AppendLine();
             return sb.ToString();
         }

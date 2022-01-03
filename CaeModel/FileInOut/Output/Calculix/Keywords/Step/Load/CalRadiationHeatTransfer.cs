@@ -14,13 +14,13 @@ namespace FileInOut.Output.Calculix
     {
         // Variables                                                                                                                
         private RadiationHeatTransfer _radiationHeatTransfer;
-        private IDictionary<string, FeSurface> _surfaces;
+        private FeSurface _surface;
 
         
         // Constructor                                                                                                              
-        public CalRadiationHeatTransfer(IDictionary<string, FeSurface> surfaces, RadiationHeatTransfer radiationHeatTransfer)
+        public CalRadiationHeatTransfer(RadiationHeatTransfer radiationHeatTransfer, FeSurface surface)
         {
-            _surfaces = surfaces;
+            _surface = surface;
             _radiationHeatTransfer = radiationHeatTransfer;
         }
 
@@ -44,15 +44,29 @@ namespace FileInOut.Output.Calculix
             //_obremenitev_el_surf_S3, R3CR, -273.15, 0.5
             //_obremenitev_el_surf_S2, R2CR, -273.15, 0.5
             StringBuilder sb = new StringBuilder();
-            FeSurface surface = _surfaces[_radiationHeatTransfer.SurfaceName];
             FeFaceName faceName;
+            string faceKey = "";
             string cavityRadiation = "";
             if (_radiationHeatTransfer.CavityRadiation) cavityRadiation = "CR";
             //
-            foreach (var entry in surface.ElementFaces)
+            foreach (var entry in _surface.ElementFaces)
             {
                 faceName = entry.Key;
-                sb.AppendFormat("{0}, R{1}{2}, {3}, {4}{5}", entry.Value, faceName.ToString()[1], cavityRadiation,
+                if (_radiationHeatTransfer.TwoD)
+                {
+                    if (faceName == FeFaceName.S1) faceKey = "RN";
+                    else if (faceName == FeFaceName.S2) faceKey = "RP";
+                    else if (faceName == FeFaceName.S3) faceKey = "R1";
+                    else if (faceName == FeFaceName.S4) faceKey = "R2";
+                    else if (faceName == FeFaceName.S5) faceKey = "R3";
+                    else if (faceName == FeFaceName.S6) faceKey = "R4";
+                }
+                else
+                {
+                    faceKey = "R" + faceName.ToString()[1];
+                }
+                //
+                sb.AppendFormat("{0}, {1}{2}, {3}, {4}{5}", entry.Value, faceKey, cavityRadiation,
                                 _radiationHeatTransfer.SinkTemperature.ToCalculiX16String(),
                                 _radiationHeatTransfer.Emissivity.ToCalculiX16String(), Environment.NewLine);
             }

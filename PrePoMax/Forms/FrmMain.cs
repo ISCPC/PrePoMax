@@ -503,6 +503,18 @@ namespace PrePoMax
                 e.Cancel = false;   // close the form
                 DialogResult response = DialogResult.None;
                 //
+                foreach (var entry in _controller.Jobs)
+                {
+                    if (entry.Value.JobStatus == JobStatus.Running)
+                    {
+                        response = MessageBoxes.ShowWarningQuestion("There is an analysis running." +
+                                                                    " Closing will kill the analysis. Close anyway?");
+                        if (response == DialogResult.Cancel) e.Cancel = true;
+                        else if (response == DialogResult.OK) _controller.KillAllJobs();
+                        break;
+                    }
+                }
+                //
                 if (tsslState.Text != Globals.ReadyText)
                 {
                     response = MessageBoxes.ShowWarningQuestion("There is a task running. Close anyway?");
@@ -2304,7 +2316,7 @@ namespace PrePoMax
                 if (part1 is CompoundGeometryPart || part2 is CompoundGeometryPart)
                     MessageBoxes.ShowError("Compound parts cannot be swaped.");
                 else
-                    _controller.SwapGeometryPartgeometries(partNames[0], partNames[1]);
+                    _controller.SwapGeometryPartGeometries(partNames[0], partNames[1]);
             }
             else MessageBoxes.ShowError("Compound subparts cannot be swaped.");
         }

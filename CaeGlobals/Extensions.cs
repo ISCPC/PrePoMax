@@ -141,6 +141,26 @@ namespace CaeGlobals
         {
             return new HashSet<string>(array).GetNextNumberedKey(key, postFix);
         }
+        public static int FindFreeIntervalOfKeys<T>(this Dictionary<int, T> dic, int numOfKeys, int maxKey)
+        {
+            int count = 0;
+            int firstId = 1;                    // start at 1
+            //
+            for (int i = 1; i <= maxKey; i++)   // start at 1
+            {
+                if (dic.ContainsKey(i))
+                {
+                    count = 0;
+                    firstId = i + 1;
+                }
+                else
+                {
+                    if (++count == numOfKeys) break;
+                }
+            }
+            //
+            return firstId;
+        }
 
         // Property grid items
         public static IEnumerable<GridItem> EnumerateAllItems(this PropertyGrid grid)

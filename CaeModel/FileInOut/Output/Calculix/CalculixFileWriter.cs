@@ -404,7 +404,7 @@ namespace FileInOut.Output
                 {
                     if (entry.Value.Active && entry.Value.ElementFaces != null)
                     {
-                        surface = new CalSurface(entry.Value);
+                        surface = new CalSurface(entry.Value, model.Properties.ModelSpace.IsTwoD());
                         parent.AddKeyword(surface);
                     }
                     else parent.AddKeyword(new CalDeactivated(entry.Value.Name));
@@ -818,7 +818,7 @@ namespace FileInOut.Output
                 }
                 else if (load is DLoad dl)
                 {
-                    CalDLoad dload = new CalDLoad(model.Mesh.Surfaces, dl);
+                    CalDLoad dload = new CalDLoad(dl, model.Mesh.Surfaces[dl.SurfaceName]);
                     parent.AddKeyword(dload);
                 }
                 else if (load is STLoad stl)
@@ -828,7 +828,7 @@ namespace FileInOut.Output
                 }
                 else if (load is ShellEdgeLoad sel)
                 {
-                    CalShellEdgeLoad seload = new CalShellEdgeLoad(model.Mesh.Surfaces, sel);
+                    CalShellEdgeLoad seload = new CalShellEdgeLoad(sel, model.Mesh.Surfaces[sel.SurfaceName]);
                     parent.AddKeyword(seload);
                 }
                 else if (load is GravityLoad gl)
@@ -882,12 +882,13 @@ namespace FileInOut.Output
                 }
                 else if (load is FilmHeatTransfer fht)
                 {
-                    CalFilmHeatTransfer filmHeatTransfer = new CalFilmHeatTransfer(model.Mesh.Surfaces, fht);
+                    CalFilmHeatTransfer filmHeatTransfer = new CalFilmHeatTransfer(fht, model.Mesh.Surfaces[fht.SurfaceName]);
                     parent.AddKeyword(filmHeatTransfer);
                 }
                 else if (load is RadiationHeatTransfer rht)
                 {
-                    CalRadiationHeatTransfer radiationHeatTransfer = new CalRadiationHeatTransfer(model.Mesh.Surfaces, rht);
+                    CalRadiationHeatTransfer radiationHeatTransfer =
+                        new CalRadiationHeatTransfer(rht, model.Mesh.Surfaces[rht.SurfaceName]);
                     parent.AddKeyword(radiationHeatTransfer);
                 }
                 else throw new NotImplementedException();

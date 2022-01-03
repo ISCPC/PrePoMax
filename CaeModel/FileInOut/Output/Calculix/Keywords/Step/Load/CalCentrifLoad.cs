@@ -38,20 +38,13 @@ namespace FileInOut.Output.Calculix
         {
             StringBuilder sb = new StringBuilder();
             //
-            double n1, n2, n3;
-            double len = Math.Sqrt(_load.N1 * _load.N1 + _load.N2 * _load.N2 + _load.N3 * _load.N3);
-            if (len != 0)
-            {
-                n1 = _load.N1 / len;
-                n2 = _load.N2 / len;
-                n3 = _load.N3 / len;
-            }
-            else n1 = n2 = n3 = 0;
+            Vec3D n = new Vec3D(_load.N1, _load.N2, _load.N3);
+            n.Normalize();
             //
             sb.AppendFormat("{0}, CENTRIF, {1}, {2}, {3}, {4}, {5}, {6}, {7}", _load.RegionName,
                             _load.RotationalSpeed2.ToCalculiX16String(), 
                             _load.X.ToCalculiX16String(), _load.Y.ToCalculiX16String(), _load.Z.ToCalculiX16String(),
-                            n1.ToCalculiX16String(), n2.ToCalculiX16String(), n3.ToCalculiX16String());
+                            n.X.ToCalculiX16String(), n.Y.ToCalculiX16String(), n.Z.ToCalculiX16String());
             sb.AppendLine();
             return sb.ToString();
         }

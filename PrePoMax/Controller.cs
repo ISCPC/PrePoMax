@@ -464,6 +464,8 @@ namespace PrePoMax
             else if (extension == ".frd") OpenFrd(fileName);
             else if (extension == ".dat") OpenDatFile(fileName);
             else throw new NotSupportedException();
+            // Check validity
+            CheckAndUpdateValidity();
             // Get first component of the first field for the last increment in the last step
             if (_results != null) _currentFieldData = _results.GetFirstComponentOfTheFirstFieldAtDefaultIncrement();
             //
@@ -610,12 +612,12 @@ namespace PrePoMax
         {
             Dictionary<int, FeElement> elements;
             Dictionary<string, FeElementSet> elementSets;
-            FileInOut.Input.InpFileReader.ReadCel(fileName, _model.Mesh.Nodes, out elements, out elementSets);
-            _results.Mesh.Elements.AddRange(elements);
-            _results.Mesh.ElementSets.AddRange(elementSets);
-            _results.Mesh.CreatePartsFromElementSets(elementSets.Keys.ToArray(),
-                                                     out BasePart[] modifiedParts,
-                                                     out BasePart[] newParts);
+            FileInOut.Input.InpFileReader.ReadCel(fileName, out elements, out elementSets);
+            //_results.Mesh.Elements.AddRange(elements);
+            //_results.Mesh.ElementSets.AddRange(elementSets);
+            //_results.Mesh.CreatePartsFromElementSets(elementSets.Keys.ToArray(),
+            //                                         out BasePart[] modifiedParts,
+            //                                         out BasePart[] newParts);
             //
             if (elements == null)
             {
@@ -624,6 +626,9 @@ namespace PrePoMax
             }
             else
             {
+                Dictionary<string, FeNodeSet> nodeSets = GetNodeSetsFromCelElements(_results.Mesh.Nodes, elements, elementSets);
+                _results.Mesh.NodeSets.AddRange(nodeSets);
+                //
                 if (redraw)
                 {
                     // Set the view but do not draw
@@ -635,6 +640,28 @@ namespace PrePoMax
                     _modelChanged = true;
                 }
             }
+        }
+        private Dictionary<string, FeNodeSet> GetNodeSetsFromCelElements(Dictionary<int, FeNode> nodes,
+                                                                         Dictionary<int, FeElement> elements,
+                                                                         Dictionary<string, FeElementSet> elementSets)
+        {
+            int count = 0;
+            HashSet<int> nodeIds = new HashSet<int>();
+            Dictionary<string, FeNodeSet> nodeSets = new Dictionary<string, FeNodeSet>();
+            //
+            foreach (var entry in elementSets)
+            {
+                nodeIds.Clear();
+                foreach (var elementId in entry.Value.Labels) nodeIds.UnionWith(elements[elementId].NodeIds);
+                nodeIds.IntersectWith(nodes.Keys);
+                nodeSets.Add(entry.Key, new FeNodeSet(entry.Key, nodeIds.ToArray()));
+                count += nodeIds.Count();
+            }
+            //
+            if (count == 0) MessageBoxes.ShowWarning("Turn on the 3D output option in the field outputs " +
+                                                     "to enable viewing of the contact element nodes.");
+            //
+            return nodeSets;
         }
         // Read pmx
         private object[] TryReadCompressedPmx(string fileName, out FeModel model, out FeResults results, 
@@ -669,6 +696,8 @@ namespace PrePoMax
                         FeModel.ReadFromFile(model, br);
                         FeResults.ReadFromFile(results, br);
                     }
+                    //
+                    model.UpdateMeshPartsElementTypes();
                 }
                 return data;
             }
@@ -684,7 +713,7 @@ namespace PrePoMax
             {
                 object[] data = null;
                 Controller tmp = null;
-
+                //
                 using (FileStream fs = new FileStream(fileName, FileMode.Open))
                 using (BinaryReader br = new BinaryReader(fs))
                 {
@@ -692,10 +721,13 @@ namespace PrePoMax
                     tmp = (Controller)data[0];
                     model = tmp._model;
                     results = tmp._results;
-
+                    //
                     FeModel.ReadFromFile(model, br);
                     FeResults.ReadFromFile(results, br);
                 }
+                //
+                model.UpdateMeshPartsElementTypes();
+                //
                 return data;
             }
             catch
@@ -740,27 +772,27 @@ namespace PrePoMax
                         _form.WriteDataToOutput("Use the following menu to turn it back on: Geometry -> Find Model Edges by Angle");
                     }
                 }
-            }
-            else if (extension == ".mesh")
-                _model.ImportGeometryFromMmgMeshFile(fileName);
+            }            
             else if (extension == ".stp" || extension == ".step")
                 ImportCADAssemblyFile(fileName, "STEP_ASSEMBLY_SPLIT_TO_COMPOUNDS");
             else if (extension == ".igs" || extension == ".iges")
                 ImportCADAssemblyFile(fileName, "IGES_ASSEMBLY_SPLIT_TO_COMPOUNDS");
             else if (extension == ".brep")
                 ImportCADAssemblyFile(fileName, "BREP_ASSEMBLY_SPLIT_TO_COMPOUNDS");
-            else if (extension == ".unv")
-                _model.ImportMeshFromUnvFile(fileName);
             else if (extension == ".vol")
                 _model.ImportMeshFromVolFile(fileName);
+            else if (extension == ".mesh")
+                _model.ImportMeshFromMmgFile(fileName);
             else if (extension == ".inp")
                 _errors = _model.ImportMeshFromInpFile(fileName, _form.WriteDataToOutput);
-            else throw new NotSupportedException();           
+            else if (extension == ".unv")
+                _model.ImportMeshFromUnvFile(fileName);
+            else throw new NotSupportedException();            
             //
             UpdateAfterImport(extension);
         }
         private void UpdateAfterImport(string extension)
-        {
+        {            
             // Exploded view
             UpdateExplodedView(false);
             // Visualization
@@ -773,6 +805,9 @@ namespace PrePoMax
             }
             else if (extension == ".unv" || extension == ".vol" || extension == ".inp" || extension == ".mesh")
             {
+                // Element types
+                _model.UpdateMeshPartsElementTypes();
+                //
                 _currentView = ViewGeometryModelResults.Model;
                 _form.SetCurrentView(_currentView);
                 DrawModel(false);
@@ -1067,11 +1102,13 @@ namespace PrePoMax
                     {
                         _model.Mesh.RenumberPart(partNames[i], removedPartIds[i]);
                         renumbered = true;
-                        // Set finite element types
+                        // Set finite element types from previous meshing
                         GetModelPart(partNames[i]).SetElementTypeEnums(GetGeometryPart(partNames[i]).GetElementTypeEnums());
                     }
                 }
             }
+            // Update finite element types based on model dimensionality
+            _model.UpdateMeshPartsElementTypes();
             // Shading
             if (fromBrep)
             {
@@ -1144,6 +1181,8 @@ namespace PrePoMax
             else
             {
                 _model.ImportGeneratedRemeshFromMeshFile(fileName, elementIds, part, convertToSecondOrder, midNodes);
+                // Update finite element types based on model dimensionality
+                _model.UpdateMeshPartsElementTypes();
                 // Regenerate and change the DisplayedMesh to Model before updating sets
                 _form.Clear3D();
                 _currentView = ViewGeometryModelResults.Model;
@@ -1991,7 +2030,7 @@ namespace PrePoMax
             }
             _modelChanged = true;
         }
-        public void SwapGeometryPartgeometries(string partName1, string partName2)
+        public void SwapGeometryPartGeometries(string partName1, string partName2)
         {
             GeometryPart part1 = (GeometryPart)_model.Geometry.Parts[partName1];
             GeometryPart part2 = (GeometryPart)_model.Geometry.Parts[partName2];
@@ -3094,8 +3133,12 @@ namespace PrePoMax
         //******************************************************************************************
         public void ReplaceModelProperties(string newModelName, ModelProperties newModelProperties)
         {
+            bool update = _model.Properties.ModelSpace != newModelProperties.ModelSpace;
+            //
             _model.Name = newModelName;
             _model.Properties = newModelProperties;
+            //
+            if (update) _model.UpdateMeshPartsElementTypes();
         }
         // Tools
         public void CreateBoundaryLayer(int[] geometryIds, double thickness)
@@ -6587,6 +6630,13 @@ namespace PrePoMax
             _jobs[jobName].Kill(Environment.NewLine + "Kill command sent by user." + Environment.NewLine);
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, jobName, _jobs[jobName], null);
         }
+        public void KillAllJobs()
+        {
+            foreach (var entry in _jobs)
+            {
+                if (entry.Value.JobStatus == JobStatus.Running) KillJob(entry.Key);
+            }
+        }
         public void RemoveJobs(string[] jobNames)
         {
             foreach (var name in jobNames)
@@ -8583,7 +8633,7 @@ namespace PrePoMax
                         //
                         try 
                         {
-                            // must be inside to continue screen update
+                            // Must be inside to continue screen update
                             if (_currentView != ViewGeometryModelResults.Model) CurrentView = ViewGeometryModelResults.Model;
                             DrawSymbols();
                             //
@@ -8912,7 +8962,7 @@ namespace PrePoMax
                 {
                     // Master
                     if (!_model.Mesh.ReferencePoints.ContainsKey(rb.ReferencePointName)) return;
-                    else HighlightReferencePoints(new string[] { rb.ReferencePointName });
+                    else DrawReferencePoint(_model.Mesh.ReferencePoints[rb.ReferencePointName], masterColor, layer);
                     // Slave
                     if (rb.RegionType == RegionTypeEnum.NodeSetName)
                         count += DrawNodeSet(prefixName, rb.RegionName, masterColor, layer, true, nodeSymbolSize,
@@ -10461,6 +10511,14 @@ namespace PrePoMax
                              int nodeSize = 5, bool onlyVisible = false, bool useSecondaryHighlightColor = false)
         {
             double[][] nodeCoor = DisplayedMesh.GetNodeSetCoor(nodeIds, onlyVisible);
+            //
+            if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
+            {
+                float scale = GetScale();
+                _results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId,
+                                              nodeIds, ref nodeCoor);
+            }
+            //
             DrawNodes(prefixName, nodeCoor, color, layer, nodeSize, false, useSecondaryHighlightColor);
             return nodeCoor.Length;
         }
@@ -10474,35 +10532,50 @@ namespace PrePoMax
             data.Layer = layer;
             data.DrawOnGeometry = drawOnGeometry;
             data.Geometry.Nodes.Coor = nodeCoor;
-            data.UseSecondaryHighightColor = useSecondaryHighlightColor;
+            data.UseSecondaryHighightColor = useSecondaryHighlightColor;            
+            //
             ApplyLighting(data);
             _form.Add3DNodes(data);
         }
         public int DrawNodeSet(string prefixName, string nodeSetName, Color color, 
                                vtkControl.vtkRendererLayer layer, bool backfaceCulling = true, int nodeSize = 5,
                                bool useSecondaryHighlightColor = false, bool onlyVisible = false)
-        {
-            if (nodeSetName != null && _model.Mesh.NodeSets.ContainsKey(nodeSetName))
+        {            
+            if (nodeSetName != null)
             {
-                FeNodeSet nodeSet = _model.Mesh.NodeSets[nodeSetName];
-                // Draw node set as geometry
-                if (nodeSet.CreationData != null && nodeSet.CreationData.SelectItem == vtkSelectItem.Geometry)
+                FeMesh mesh = DisplayedMesh;
+                //
+                if (mesh.NodeSets.ContainsKey(nodeSetName))
                 {
-                    int[] ids = nodeSet.CreationIds;
-                    //
-                    if (ids == null || ids.Length == 0) return 0;
-                    //
-                    nodeSize = (int)Math.Max(1.5 * nodeSize, nodeSize + 3);
-                    return DrawItemsByGeometryIds(ids, prefixName, nodeSetName, color, layer, nodeSize, backfaceCulling,
-                                                  useSecondaryHighlightColor, onlyVisible);
-                }
-                // Draw node set as single nodes
-                else
-                {
-                    double[][] nodeCoor = _model.Mesh.GetNodeSetCoor(nodeSet.Labels, onlyVisible);
-                    DrawNodes(prefixName + Globals.NameSeparator + nodeSetName, nodeCoor, color,
-                              layer, nodeSize, false, useSecondaryHighlightColor);
-                    return nodeCoor.Length;
+                    FeNodeSet nodeSet = mesh.NodeSets[nodeSetName];
+                    // Draw node set as geometry
+                    if (nodeSet.CreationData != null && nodeSet.CreationData.SelectItem == vtkSelectItem.Geometry)
+                    {
+                        int[] ids = nodeSet.CreationIds;
+                        //
+                        if (ids == null || ids.Length == 0) return 0;
+                        //
+                        nodeSize = (int)Math.Max(1.5 * nodeSize, nodeSize + 3);
+                        return DrawItemsByGeometryIds(ids, prefixName, nodeSetName, color, layer, nodeSize, backfaceCulling,
+                                                      useSecondaryHighlightColor, onlyVisible);
+                    }
+                    // Draw node set as single nodes
+                    else
+                    {
+                        double[][] nodeCoor = mesh.GetNodeSetCoor(nodeSet.Labels, onlyVisible);
+                        //
+                        //
+                        if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
+                        {
+                            float scale = GetScale();
+                            _results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId,
+                                                          nodeSet.Labels, ref nodeCoor);
+                        }
+                        //
+                        DrawNodes(prefixName + Globals.NameSeparator + nodeSetName, nodeCoor, color,
+                                  layer, nodeSize, false, useSecondaryHighlightColor);
+                        return nodeCoor.Length;
+                    }
                 }
             }
             return 0;
@@ -10542,8 +10615,8 @@ namespace PrePoMax
                 if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
                 {
                     float scale = GetScale();
-                    Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId, nodeIds,
-                                                 ref data.Geometry.Nodes.Coor);
+                    _results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId, nodeIds,
+                                                  ref data.Geometry.Nodes.Coor);
                 }
                 //
                 ApplyLighting(data);
@@ -10945,6 +11018,10 @@ namespace PrePoMax
                     if (obj is ResultPart || obj is GeometryPart)
                     {
                         HighlightResultParts(new string[] { ((BasePart)obj).Name });
+                    }
+                    else if (obj is FeNodeSet ns)
+                    {
+                        HighlightNodeSets(new string[] { ns.Name });
                     }
                 }
             }

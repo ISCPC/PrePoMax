@@ -62,8 +62,13 @@ namespace PrePoMax
             get { return _fieldOutput.LastIterations; }
             set { _fieldOutput.LastIterations = value; }
         }
+        public override bool ContactElements
+        {
+            get { return _fieldOutput.ContactElements; }
+            set { _fieldOutput.ContactElements = value; }
+        }
         //
-        [OrderedDisplayName(3, 10, "Output (2D/3D)")]
+        [OrderedDisplayName(4, 10, "Output (2D/3D)")]
         [CategoryAttribute("Data")]
         [DescriptionAttribute("If Output=3D, the 1D and 2D elements are stored in their expanded 3D form.")]
         public ElementFieldOutputOutputEnum Output
@@ -72,7 +77,7 @@ namespace PrePoMax
             set { _fieldOutput.Output = value; }
         }
         //
-        [OrderedDisplayName(4, 10, "Variables to output")]
+        [OrderedDisplayName(5, 10, "Variables to output")]
         [CategoryAttribute("Data")]
         [DescriptionAttribute("Element field variables")]
         public ViewElementFieldVariable Variables

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using CaeModel;
 
 namespace PrePoMax.Forms
 {
@@ -22,7 +23,8 @@ namespace PrePoMax.Forms
             get { return _viewPartProperties.GetBase(); }
             set
             {
-                _viewPartProperties = new ViewPartProperties(value, _currentView);
+                _viewPartProperties = new ViewPartProperties(value, _currentView,
+                    _controller.Model.Properties.ModelSpace.GetUnavailableElementTypeNames());
             }
         }
         public ViewGeometryModelResults View { get { return _currentView; } set { _currentView = value; } }

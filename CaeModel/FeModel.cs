@@ -252,7 +252,8 @@ namespace CaeModel
                 constraint = entry.Value;
                 if (constraint is RigidBody rb)
                 {
-                    valid = _mesh.ReferencePoints.ContainsValidKey(rb.ReferencePointName)
+                    valid = rb.ReferencePointName != null
+                            && _mesh.ReferencePoints.ContainsValidKey(rb.ReferencePointName)
                             && ((rb.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(rb.RegionName))
                             || (rb.RegionType == RegionTypeEnum.SurfaceName && _mesh.Surfaces.ContainsValidKey(rb.RegionName)));
                 }
@@ -594,18 +595,7 @@ namespace CaeModel
                 SetNumberOfUserKeywords?.Invoke(_calculixUserKeywords.Count);
             }
             catch { }
-        }
-        private bool IndicesOfTheSameParent(int[] userIndices, int[] deletedItemIndces, out int parentLevel)
-        {
-            // 6, 0, 2  ... userIndices
-            // 6, 0     ... deletedItemIndces
-            parentLevel = deletedItemIndces.Length - 1 - 1;
-            for (int i = 0; i <= parentLevel; i++)
-            {
-                if (userIndices[i] != deletedItemIndces[i]) return false;
-            }
-            return true;
-        }
+        }        
         // Import
         public string[] ImportGeometryFromStlFile(string fileName)
         {
@@ -614,25 +604,7 @@ namespace CaeModel
             string[] addedPartNames = ImportGeometry(mesh, GetReservedPartNames());
             //
             return addedPartNames;
-        }
-        public bool ImportGeometryFromMmgMeshFile(string fileName)
-        {
-            FeMesh mesh = FileInOut.Input.MmgFileReader.Read(fileName, MeshRepresentation.Mesh);
-            //
-            bool noErrors = true;
-            foreach (var entry in mesh.Parts)
-            {
-                if (entry.Value is GeometryPart gp && gp.HasErrors)
-                {
-                    noErrors = false;
-                    break;
-                }
-            }
-            //
-            ImportMesh(mesh, GetReservedPartNames());
-            //
-            return noErrors;
-        }
+        }        
         public string[] ImportGeometryFromBrepFile(string visFileName, string brepFileName)
         {
             FeMesh mesh = FileInOut.Input.VisFileReader.Read(visFileName);
@@ -655,20 +627,31 @@ namespace CaeModel
             string[] addedPartNames = ImportGeometry(mesh, GetReservedPartNames());
             //
             return addedPartNames;
-        }
-        public void ImportMeshFromUnvFile(string fileName)
-        {
-            FeMesh mesh = FileInOut.Input.UnvFileReader.Read(fileName, FileInOut.Input.ElementsToImport.Shell |
-                                                                       FileInOut.Input.ElementsToImport.Solid);
-            //
-            ImportMesh(mesh, GetReservedPartNames());
-        }
+        }        
         public void ImportMeshFromVolFile(string fileName)
         {
             FeMesh mesh = FileInOut.Input.VolFileReader.Read(fileName, FileInOut.Input.ElementsToImport.Shell |
                                                                        FileInOut.Input.ElementsToImport.Solid);
             //
             ImportMesh(mesh, GetReservedPartNames());
+        }
+        public bool ImportMeshFromMmgFile(string fileName)
+        {
+            FeMesh mesh = FileInOut.Input.MmgFileReader.Read(fileName, MeshRepresentation.Mesh);
+            //
+            bool noErrors = true;
+            foreach (var entry in mesh.Parts)
+            {
+                if (entry.Value is GeometryPart gp && gp.HasErrors)
+                {
+                    noErrors = false;
+                    break;
+                }
+            }
+            //
+            ImportMesh(mesh, GetReservedPartNames());
+            //
+            return noErrors;
         }
         public void ImportGeneratedMeshFromMeshFile(string fileName, BasePart part, bool convertToSecondorder,
                                                    bool splitCompoundMesh)
@@ -865,6 +848,14 @@ namespace CaeModel
             //
             return FileInOut.Input.InpFileReader.Errors;
         }
+        public void ImportMeshFromUnvFile(string fileName)
+        {
+            FeMesh mesh = FileInOut.Input.UnvFileReader.Read(fileName, FileInOut.Input.ElementsToImport.Shell |
+                                                                       FileInOut.Input.ElementsToImport.Solid);
+            //
+            ImportMesh(mesh, GetReservedPartNames());
+        }
+        //
         private string[] ImportGeometry(FeMesh mesh, ICollection<string> reservedPartNames)
         {
             // Check for 2D geometry
@@ -980,6 +971,13 @@ namespace CaeModel
             //
             return loads.ToArray();
         }
+        // 3D - 2D
+        public void UpdateMeshPartsElementTypes()
+        {
+            Dictionary<Type, HashSet<Enum>> elementTypeEnums = _properties.ModelSpace.GetAvailableElementTypes();
+            if (_mesh != null) _mesh.UpdatePartsElementTypes(elementTypeEnums);
+        }
+        
         // ISerialization
         public void GetObjectData(SerializationInfo info, StreamingContext context)
         {

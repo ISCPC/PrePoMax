@@ -47,14 +47,30 @@ namespace FileInOut.Output.Calculix
             // Node set
             if (_fixedBC.RegionType == CaeGlobals.RegionTypeEnum.NodeSetName)
             {
-                sb.AppendFormat("{0}, 1, 6, 0", _fixedBC.RegionName);
+                if (_fixedBC.TwoD)
+                {
+                    sb.AppendFormat("{0}, 1, 2, 0", _fixedBC.RegionName); sb.AppendLine();
+                    sb.AppendFormat("{0}, 6, 6, 0", _fixedBC.RegionName);
+                }
+                else
+                {
+                    sb.AppendFormat("{0}, 1, 6, 0", _fixedBC.RegionName);
+                }
                 sb.AppendLine();
             }
             // Surface
             else if (_fixedBC.RegionType == CaeGlobals.RegionTypeEnum.SurfaceName)
             {
                 if (_nodeSetNameOfSurface == null) throw new ArgumentException();
-                sb.AppendFormat("{0}, 1, 6, 0", _nodeSetNameOfSurface);
+                if (_fixedBC.TwoD)
+                {
+                    sb.AppendFormat("{0}, 1, 2, 0", _nodeSetNameOfSurface); sb.AppendLine();
+                    sb.AppendFormat("{0}, 6, 6, 0", _nodeSetNameOfSurface);
+                }
+                else
+                {
+                    sb.AppendFormat("{0}, 1, 6, 0", _nodeSetNameOfSurface);
+                }
                 sb.AppendLine();
             }
             // Reference point
@@ -62,10 +78,16 @@ namespace FileInOut.Output.Calculix
             {
                 int[] rpNodeIds = _referencePointsNodeIds[_fixedBC.RegionName];
                 //
-                sb.AppendFormat("{0}, 1, 3, 0", rpNodeIds[0]);
-                sb.AppendLine();
-                sb.AppendFormat("{0}, 1, 3, 0", rpNodeIds[1]);
-                sb.AppendLine();
+                if (_fixedBC.TwoD)
+                {
+                    sb.AppendFormat("{0}, 1, 2, 0", rpNodeIds[0]); sb.AppendLine();
+                    sb.AppendFormat("{0}, 3, 3, 0", rpNodeIds[1]); sb.AppendLine();
+                }
+                else
+                {
+                    sb.AppendFormat("{0}, 1, 3, 0", rpNodeIds[0]); sb.AppendLine();
+                    sb.AppendFormat("{0}, 1, 3, 0", rpNodeIds[1]); sb.AppendLine();
+                }
             }
             else throw new NotSupportedException();
             //

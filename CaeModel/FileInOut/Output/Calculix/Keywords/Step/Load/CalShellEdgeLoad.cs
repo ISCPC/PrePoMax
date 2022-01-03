@@ -14,17 +14,17 @@ namespace FileInOut.Output.Calculix
     {
         // Variables                                                                                                                
         private ShellEdgeLoad _load;
-        private IDictionary<string, FeSurface> _surfaces;
+        private FeSurface _surface;
 
 
         // Properties                                                                                                               
 
 
         // Constructor                                                                                                              
-        public CalShellEdgeLoad(IDictionary<string, FeSurface> surfaces, ShellEdgeLoad load)
+        public CalShellEdgeLoad(ShellEdgeLoad load, FeSurface surface)
         {
-            _surfaces = surfaces;
             _load = load;
+            _surface = surface;
         }
 
 
@@ -42,19 +42,25 @@ namespace FileInOut.Output.Calculix
             //_obremenitev_el_surf_S3, EDNOR1, 1
             //_obremenitev_el_surf_S4, EDNOR2, 1
             StringBuilder sb = new StringBuilder();
-            FeSurface surface = _surfaces[_load.SurfaceName];
             FeFaceName faceName;
-            int faceId;
+            string faceKey = "";
             double magnitude;
             //
-            foreach (var entry in surface.ElementFaces)
+            foreach (var entry in _surface.ElementFaces)
             {
                 faceName = entry.Key;
-                if (faceName == FeFaceName.S1 || faceName == FeFaceName.S2) throw new NotSupportedException();
-                faceId = int.Parse(faceName.ToString().Substring(1)) - 2;
-                magnitude = _load.Magnitude;
+                if (_load.TwoD) throw new NotSupportedException();
+                else
+                {
+                    if (faceName == FeFaceName.S1 || faceName == FeFaceName.S2) throw new NotSupportedException();
+                    else if (faceName == FeFaceName.S3) faceKey = "EDNOR1";
+                    else if (faceName == FeFaceName.S4) faceKey = "EDNOR2";
+                    else if (faceName == FeFaceName.S5) faceKey = "EDNOR3";
+                    else if (faceName == FeFaceName.S6) faceKey = "EDNOR4";
+                }
                 //
-                sb.AppendFormat("{0}, EDNOR{1}, {2}", entry.Value, faceId, magnitude.ToCalculiX16String()).AppendLine();
+                magnitude = _load.Magnitude;
+                sb.AppendFormat("{0}, EDNOR{1}, {2}", entry.Value, faceKey, magnitude.ToCalculiX16String()).AppendLine();
             }
             return sb.ToString();
         }

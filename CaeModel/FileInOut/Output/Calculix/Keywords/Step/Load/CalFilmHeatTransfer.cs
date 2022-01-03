@@ -14,14 +14,14 @@ namespace FileInOut.Output.Calculix
     {
         // Variables                                                                                                                
         private FilmHeatTransfer _filmHeatTransfer;
-        private IDictionary<string, FeSurface> _surfaces;
+        private FeSurface _surface;
 
 
         // Constructor                                                                                                              
-        public CalFilmHeatTransfer(IDictionary<string, FeSurface> surfaces, FilmHeatTransfer filmHeatTransfer)
+        public CalFilmHeatTransfer(FilmHeatTransfer filmHeatTransfer, FeSurface surface)
         {
-            _surfaces = surfaces;
             _filmHeatTransfer = filmHeatTransfer;
+            _surface = surface;
         }
 
 
@@ -40,13 +40,27 @@ namespace FileInOut.Output.Calculix
             // _obremenitev_el_surf_S4, F4, 20, 0.5
             // _obremenitev_el_surf_S1, F1, 20, 0.5
             // _obremenitev_el_surf_S2, F2, 20, 0.5
-            StringBuilder sb = new StringBuilder();
-            FeSurface surface = _surfaces[_filmHeatTransfer.SurfaceName];
+            StringBuilder sb = new StringBuilder();            
             FeFaceName faceName;
-            foreach (var entry in surface.ElementFaces)
+            string faceKey = "";
+            foreach (var entry in _surface.ElementFaces)
             {
                 faceName = entry.Key;
-                sb.AppendFormat("{0}, F{1}, {2}, {3}{4}", entry.Value, faceName.ToString()[1],
+                if (_filmHeatTransfer.TwoD)
+                {
+                    if (faceName == FeFaceName.S1) faceKey = "FN";
+                    else if (faceName == FeFaceName.S2) faceKey = "FP";
+                    else if (faceName == FeFaceName.S3) faceKey = "F1";
+                    else if (faceName == FeFaceName.S4) faceKey = "F2";
+                    else if (faceName == FeFaceName.S5) faceKey = "F3";
+                    else if (faceName == FeFaceName.S6) faceKey = "F4";
+                }
+                else
+                {
+                    faceKey = "F" + faceName.ToString()[1];
+                }
+                //
+                sb.AppendFormat("{0}, {1}, {2}, {3}{4}", entry.Value, faceKey,
                                 _filmHeatTransfer.SinkTemperature.ToCalculiX16String(),
                                 _filmHeatTransfer.FilmCoefficient.ToCalculiX16String(), Environment.NewLine);
             }

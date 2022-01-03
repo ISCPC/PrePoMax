@@ -343,6 +343,7 @@
     <Compile Include="Forms\41_Step\ViewHeatTransferStep.cs" />
     <Compile Include="Forms\42_HistoryOutput\ViewContactHistoryOutput.cs" />
     <Compile Include="Forms\43_FieldOutput\ViewContactFieldOutput.cs" />
+    <Compile Include="Forms\33_Constraint\ViewPointSpring.cs" />
     <Compile Include="Forms\44_BoundaryConditions\ViewTemperatureBC.cs" />
     <Compile Include="Forms\44_BoundaryConditions\ViewFixedBC.cs" />
     <Compile Include="Forms\45_Load\ViewCFlux.cs" />

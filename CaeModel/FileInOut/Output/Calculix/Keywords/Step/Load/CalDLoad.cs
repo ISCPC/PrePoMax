@@ -14,17 +14,17 @@ namespace FileInOut.Output.Calculix
     {
         // Variables                                                                                                                
         private DLoad _load;
-        private IDictionary<string, FeSurface> _surfaces;
+        private FeSurface _surface;
 
 
         // Properties                                                                                                               
 
 
         // Constructor                                                                                                              
-        public CalDLoad(IDictionary<string, FeSurface> surfaces, DLoad load)
+        public CalDLoad(DLoad load, FeSurface surface)
         {
-            _surfaces = surfaces;
             _load = load;
+            _surface = surface;
         }
 
 
@@ -44,20 +44,29 @@ namespace FileInOut.Output.Calculix
             // _obremenitev_el_surf_S1, P1, 1
             // _obremenitev_el_surf_S2, P2, 1
             StringBuilder sb = new StringBuilder();
-            FeSurface surface = _surfaces[_load.SurfaceName];
             FeFaceName faceName;
-            int faceId;
+            string faceKey = "";
             double magnitude;
-            int delta = _load.TwoD ? 2 : 0;
-            foreach (var entry in surface.ElementFaces)
+            foreach (var entry in _surface.ElementFaces)
             {
                 faceName = entry.Key;
-                if (_load.TwoD && (faceName == FeFaceName.S1 || faceName == FeFaceName.S2)) throw new NotSupportedException();
-                faceId = int.Parse(faceName.ToString().Substring(1)) - delta;
-                magnitude = _load.Magnitude;
-                if (surface.SurfaceFaceTypes == FeSurfaceFaceTypes.ShellFaces && faceName == FeFaceName.S2) magnitude *= -1;
+                if (_load.TwoD)
+                {
+                    if (faceName == FeFaceName.S1 || faceName == FeFaceName.S2) throw new NotSupportedException();
+                    else if (faceName == FeFaceName.S3) faceKey = "P1";
+                    else if (faceName == FeFaceName.S4) faceKey = "P2";
+                    else if (faceName == FeFaceName.S5) faceKey = "P3";
+                    else if (faceName == FeFaceName.S6) faceKey = "P4";
+                }
+                else
+                {
+                    faceKey = "P" + faceName.ToString()[1];
+                }
                 //
-                sb.AppendFormat("{0}, P{1}, {2}", entry.Value, faceId, magnitude.ToCalculiX16String()).AppendLine();
+                magnitude = _load.Magnitude;
+                if (_surface.SurfaceFaceTypes == FeSurfaceFaceTypes.ShellFaces && faceName == FeFaceName.S2) magnitude *= -1;
+                //
+                sb.AppendFormat("{0}, {1}, {2}", entry.Value, faceKey, magnitude.ToCalculiX16String()).AppendLine();
             }
             return sb.ToString();
         }

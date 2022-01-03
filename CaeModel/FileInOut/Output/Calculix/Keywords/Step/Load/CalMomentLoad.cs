@@ -56,7 +56,6 @@ namespace FileInOut.Output.Calculix
                     sb.AppendFormat("{0}, {1}, {2}", _load.RegionName, dir, _load.GetDirection(dir - 4).ToCalculiX16String());
                 else if (_load.RegionType == CaeGlobals.RegionTypeEnum.ReferencePointName) // reference point
                     sb.AppendFormat("{0}, {1}, {2}", rpNodeIds[1], dir - 3, _load.GetDirection(dir - 4).ToCalculiX16String());
-
                 sb.AppendLine();
             }
             //

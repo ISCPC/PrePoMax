@@ -14,8 +14,7 @@ namespace PrePoMax
     [Serializable]
     public class ViewTie : ViewConstraint
     {
-        // Variables                                                                                                                
-        private string _selectionHidden;
+        // Variables                                                                                                                        
         private CaeModel.Tie _tie;
         
 

@@ -30,8 +30,9 @@ namespace FileInOut.Output.Calculix
         {
             string frequency = _nodalFieldOutput.Frequency > 1 ? ", Frequency=" + _nodalFieldOutput.Frequency : "";
             string lastIterations = _nodalFieldOutput.LastIterations ? ", Last iterations" : "";
+            string contactElements = _nodalFieldOutput.ContactElements ? ", Contact elements" : "";
             //
-            return string.Format("*Node file{0}{1}{2}", frequency, lastIterations, Environment.NewLine);
+            return string.Format("*Node file{0}{1}{2}{3}", frequency, lastIterations, contactElements, Environment.NewLine);
         }
         public override string GetDataString()
         {

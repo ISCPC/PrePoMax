@@ -13,6 +13,7 @@ namespace PrePoMax
     public abstract class ViewConstraint : ViewMasterSlaveMultiRegion
     {
         // Variables                                                                                                                
+        protected string _selectionHidden;
 
 
         // Properties                                                                                                               

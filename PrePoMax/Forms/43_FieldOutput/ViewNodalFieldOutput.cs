@@ -42,9 +42,14 @@ namespace PrePoMax
             get { return _fieldOutput.LastIterations; }
             set { _fieldOutput.LastIterations = value; }
         }
+        public override bool ContactElements
+        {
+            get { return _fieldOutput.ContactElements; }
+            set { _fieldOutput.ContactElements = value; }
+        }
         //
         [CategoryAttribute("Data")]
-        [OrderedDisplayName(3, 10, "Variables to output")]
+        [OrderedDisplayName(4, 10, "Variables to output")]
         [DescriptionAttribute("Nodal field variables")]
         public ViewNodalFieldVariable Variables 
         { 

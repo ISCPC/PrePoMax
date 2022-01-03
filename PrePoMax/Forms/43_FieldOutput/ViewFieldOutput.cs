@@ -32,6 +32,11 @@ namespace PrePoMax
         [DescriptionAttribute("Turning last iterations on is useful for debugging purposes in case of divergent solution.")]
         public abstract bool LastIterations { get; set; }
         //
+        [CategoryAttribute("Data")]
+        [OrderedDisplayName(3, 10, "Contact elements")]
+        [DescriptionAttribute("Stores the contact elements in a file with the .cel extension.")]
+        public abstract bool ContactElements { get; set; }
+        //
         [Browsable(false)]
         public abstract CaeModel.FieldOutput Base { get; set; }
 

@@ -18,7 +18,6 @@ namespace PrePoMax.Forms
         // Variables                                                                                                                
         private string _name;
         private ModelProperties _modelProperties;
-        private CustomPropertyDescriptor cpd = null;
         private DynamicCustomTypeDescriptor _dctd = null;
 
 
@@ -48,10 +47,7 @@ namespace PrePoMax.Forms
         [OrderedDisplayName(2, 10, "Model space")]
         [Description("Model space.")]
         [Id(3, 1)]
-        public ModelSpaceEnum ModelSpace
-        {
-            get { return _modelProperties.ModelSpace; }
-        }
+        public ModelSpaceEnum ModelSpace { get { return _modelProperties.ModelSpace; } set { _modelProperties.ModelSpace = value; } }
         //
         [Category("Submodel")]
         [OrderedDisplayName(0, 10, "Global results .frd")]
@@ -123,12 +119,21 @@ namespace PrePoMax.Forms
         }
         private void UpdateVisibility()
         {
-            cpd = _dctd.GetProperty(nameof(GlobalResultsFileName));
-            if (_modelProperties.ModelType == ModelType.Submodel) cpd.SetIsBrowsable(true);
-            else cpd.SetIsBrowsable(false);
+            _dctd.GetProperty(nameof(GlobalResultsFileName)).SetIsBrowsable(_modelProperties.ModelType == ModelType.Submodel);
+            //
+            if (_modelProperties.ModelSpace.IsTwoD())
+            {
+                _dctd.GetProperty(nameof(ModelSpace)).RemoveStandardValues(
+                    new HashSet<string>() { ModelSpaceEnum.ThreeD.ToString() });
+            }
+            else
+            {
+                _dctd.GetProperty(nameof(ModelSpace)).RemoveStandardValues(
+                    new HashSet<string>() { ModelSpaceEnum.PlaneStress.ToString(),
+                                            ModelSpaceEnum.PlaneStrain.ToString(),
+                                            ModelSpaceEnum.Axisymmetric.ToString() });
+            }
         }
-
-       
        
 
     }

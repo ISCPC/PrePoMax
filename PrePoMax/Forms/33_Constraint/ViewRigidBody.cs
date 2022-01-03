@@ -16,7 +16,6 @@ namespace PrePoMax
     {
         // Variables                                                                                                                
         private CaeModel.RigidBody _rigidBody;
-        private string _selectionHidden;
 
 
         // Properties                                                                                                               
