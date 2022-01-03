@@ -763,12 +763,13 @@ namespace CaeResults
             {
                 foreach (var fieldEntry in _fields)
                 {
-                    if (fieldEntry.Key.Name == fieldData.Name && fieldEntry.Key.StepId == fieldData.StepId && fieldEntry.Key.StepIncrementId == fieldData.StepIncrementId)
+                    if (fieldEntry.Key.Name == fieldData.Name && fieldEntry.Key.StepId == fieldData.StepId &&
+                        fieldEntry.Key.StepIncrementId == fieldData.StepIncrementId)
                     {
                         int id;
                         float value;
                         BasePart basePart;
-                        //float[] values = fieldEntry.Value.GetComponentValues(fieldData.Component);
+                        values = fieldEntry.Value.GetComponentValues(fieldData.Component);
                         //
                         basePart = _mesh.Parts[partName];
                         //

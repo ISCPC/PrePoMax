@@ -250,6 +250,90 @@ namespace FileInOut.Input
                 }
             }
         }
+        static public void ReadCel(string fileName, Dictionary<int, FeNode> nodes,
+                                   out Dictionary<int, FeElement> uniqueElements,
+                                   out Dictionary<string, FeElementSet> elementSets)
+        {
+            _errors = new List<string>();
+            uniqueElements = null;
+            elementSets = null;
+            //
+            if (fileName != null && File.Exists(fileName))
+            {
+                string[] lines = File.ReadAllLines(fileName);
+                lines = ReadIncludes(lines, 0, Path.GetDirectoryName(fileName));
+                //
+                string[] dataSet;
+                string[][] dataSets = GetDataSets(lines);
+                //
+                Dictionary<int, FeElement> elements = new Dictionary<int, FeElement>();
+                //
+                string keyword;
+                List<InpElementSet> inpElementTypeSets = new List<InpElementSet>();
+                // Elements
+                for (int i = 0; i < dataSets.Length; i++)
+                {
+                    dataSet = dataSets[i];
+                    keyword = dataSet[0].Split(_splitterComma, StringSplitOptions.RemoveEmptyEntries)[0].Trim().ToUpper();
+                    //
+                    if (keyword == "*ELEMENT") // elements
+                    {
+                        //if (elements.Count >= 1) continue;
+                        AddElements(dataSet, ref elements, ref inpElementTypeSets);
+                    }
+                }
+                // Remove duplicate elements
+                RemoveDuplicateElements(elements, inpElementTypeSets, out uniqueElements, out elementSets);
+            }
+        }
+        private static void RemoveDuplicateElements(Dictionary<int, FeElement> elements,
+                                                    List<InpElementSet> inpElementTypeSets,
+                                                    out Dictionary<int, FeElement> uniqueElements,
+                                                    out Dictionary<string, FeElementSet> elementSets)
+        {
+            uniqueElements = new Dictionary<int, FeElement>();
+            elementSets = new Dictionary<string, FeElementSet>();
+            //
+            CompareIntArray comparer = new CompareIntArray();
+            HashSet<int[]> elementNodeLabels = new HashSet<int[]>(comparer);
+            FeElement element;
+            List<int> labels = new List<int>();
+            FeElementSet elementSet;
+            int newId = int.MaxValue;
+            //
+            foreach (var entry in elements)
+            {
+                if (entry.Value.Id < newId) newId = entry.Value.Id;
+            }
+            //
+            foreach (var inpElementSet in inpElementTypeSets)
+            {
+                labels.Clear();
+                elementNodeLabels.Clear();
+                //
+                foreach (var elementId in inpElementSet.ElementLabels)
+                {
+                    element = elements[elementId];
+                    if (!elementNodeLabels.Contains(element.NodeIds))
+                    {
+                        element.Id = newId;
+                        uniqueElements.Add(element.Id, element);
+                        labels.Add(element.Id);
+                        elementNodeLabels.Add(element.NodeIds);
+                        newId++;
+                    }
+                }
+                elementSet = new FeElementSet(inpElementSet.Name, labels.ToArray());
+                elementSets.Add(elementSet.Name, elementSet);
+            }
+        }
+        private static void ReorientElements(Dictionary<int, FeElement> elements, Dictionary<int, FeNode> nodes)
+        {
+            foreach (var entry in elements)
+            {
+
+            }
+        }
         private static string[] ReadIncludes(string[] lines, int firstLine, string workDirectoryName)
         {
             int includeRowNumber = -1;
@@ -424,11 +508,23 @@ namespace FileInOut.Input
                         // LINEAR ELEMENTS                                                                                          
                         // Linear triangle element
                         case "S3":
+                        case "M3D3":
+                        case "CPS3":
+                        case "CPE3":
+                        case "CAX3":
                             element = GetLinearTriangleElement(lines[i].Split(_splitter, StringSplitOptions.RemoveEmptyEntries));
                             break;
                         // Linear quadrilateral element
                         case "S4":
                         case "S4R":
+                        case "M3D4":
+                        case "M3D4R":
+                        case "CPS4":
+                        case "CPS4R":
+                        case "CPE4":
+                        case "CPE4R":
+                        case "CAX4":
+                        case "CAX4R":
                             element = GetLinearQuadrilateralElement(lines[i].Split(_splitter, StringSplitOptions.RemoveEmptyEntries));
                             break;
                         // Linear tetrahedron element
@@ -448,15 +544,28 @@ namespace FileInOut.Input
                         // PARABOLIC ELEMENTS                                                                                       
                         // Parabolic triangle element
                         case "S6":
+                        case "M3D6":
+                        case "CPS6":
+                        case "CPE6":
+                        case "CAX6":
                             element = GetParabolicTriangleElement(lines[i].Split(_splitter, StringSplitOptions.RemoveEmptyEntries));
                             break;
                         // Parabolic quadrilateral element
                         case "S8":
                         case "S8R":
+                        case "M3D8":
+                        case "M3D8R":
+                        case "CPS8":
+                        case "CPS8R":
+                        case "CPE8":
+                        case "CPE8R":
+                        case "CAX8":
+                        case "CAX8R":
                             element = GetParabolicQuadrilateralElement(ref i, lines, _splitter);
                             break;
                         // Parabolic tetrahedron element
                         case "C3D10":
+                        case "C3D10T":
                             element = GetParabolicTetraElement(ref i, lines, _splitter);
                             break;
                         // Parabolic wedge element
@@ -474,8 +583,7 @@ namespace FileInOut.Input
                     elementIds.Add(element.Id);
                     elements.Add(element.Id, element);
                 }
-
-                // find element set
+                // Find element set
                 InpElementSet inpSet = null;
                 foreach (var entry in inpElementTypeSets)
                 {
@@ -485,13 +593,13 @@ namespace FileInOut.Input
                         break;
                     }
                 }
-                // create new set
+                // Create new set
                 if (inpSet == null)
                 {
                     inpSet = new InpElementSet(elementSetName, new HashSet<string>(), new HashSet<int>());
                     inpElementTypeSets.Add(inpSet);
                 }
-                // add type and labels
+                // Add type and labels
                 inpSet.InpElementTypeNames.Add(elementType);
                 inpSet.ElementLabels.UnionWith(elementIds);
             }

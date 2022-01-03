@@ -63,6 +63,8 @@ namespace CaeMesh
             {
                 for (int j = i + 1; j < contactSurfaces.Length; j++)
                 {
+                    if (i == 21 && j == 42)
+                        i = i;
                     if (CheckSurfaceToSurfaceDistance(contactSurfaces[i], contactSurfaces[j], distance, angleRad))
                     {
                         contactSurfacePairs.Add(new ContactSurface[] { contactSurfaces[i], contactSurfaces[j] });
@@ -220,6 +222,9 @@ namespace CaeMesh
             //
             bool edgeSurface1 = cs1.GeometryType == GeometryType.ShellEdgeSurface;
             bool edgeSurface2 = cs2.GeometryType == GeometryType.ShellEdgeSurface;
+            bool allowPenetration = (edgeSurface1 && edgeSurface2) ||
+                                    (cs1.GeometryType == GeometryType.SolidSurface &&
+                                     cs1.GeometryType == GeometryType.SolidSurface);
             // Use face cell ids or edge cell ids
             if (edgeSurface1)
             {
@@ -281,16 +286,18 @@ namespace CaeMesh
                             // 1. triangle is edge segment
                             if (edgeSurface1)
                             {
-                                cs1.GetEdgeCellNormal(cell1Id, _edgeCellBaseCellIds[cs1.Part.PartId][cell1Id], ref cellNorm, ref edgeCellNorm);
+                                cs1.GetEdgeCellNormal(cell1Id, _edgeCellBaseCellIds[cs1.Part.PartId][cell1Id],
+                                                      ref cellNorm, ref edgeCellNorm);
                                 Geometry.VpVxS(ref t1[2], t1[1], cellNorm, 0.001 * distance);
                             }
                             // 2. triangle is edge segment
                             if (edgeSurface2)
                             {
-                                cs2.GetEdgeCellNormal(cell2Id, _edgeCellBaseCellIds[cs2.Part.PartId][cell2Id], ref cellNorm, ref edgeCellNorm);
+                                cs2.GetEdgeCellNormal(cell2Id, _edgeCellBaseCellIds[cs2.Part.PartId][cell2Id],
+                                                      ref cellNorm, ref edgeCellNorm);
                                 Geometry.VpVxS(ref t2[2], t2[1], cellNorm, 0.001 * distance);
                             }
-                            if (CheckTriangleToTriangleDistance(t1, t2, distance, angleRad)) return true;
+                            if (CheckTriangleToTriangleDistance(t1, t2, distance, angleRad, allowPenetration)) return true;
                             // Cell 2 is a rectangle
                             if (cell2.Length == 4 || cell2.Length == 8)
                             {
@@ -299,7 +306,7 @@ namespace CaeMesh
                                 t2[1] = _nodes[cell2[2]];
                                 t2[2] = _nodes[cell2[3]];
                                 //
-                                if (CheckTriangleToTriangleDistance(t1, t2, distance, angleRad)) return true;
+                                if (CheckTriangleToTriangleDistance(t1, t2, distance, angleRad, allowPenetration)) return true;
                             }
                             // Cell 1 is a rectangle
                             if (cell1.Length == 4 || cell1.Length == 8)
@@ -309,7 +316,7 @@ namespace CaeMesh
                                 t1[1] = _nodes[cell1[2]];
                                 t1[2] = _nodes[cell1[3]];
                                 //
-                                if (CheckTriangleToTriangleDistance(t1, t2, distance, angleRad)) return true;
+                                if (CheckTriangleToTriangleDistance(t1, t2, distance, angleRad, allowPenetration)) return true;
                                 // Cell 2 triangle 1 again
                                 if (cell2.Length == 4 || cell2.Length == 8)
                                 {
@@ -317,7 +324,7 @@ namespace CaeMesh
                                     t2[1] = _nodes[cell2[1]];
                                     t2[2] = _nodes[cell2[2]];
                                     //
-                                    if (CheckTriangleToTriangleDistance(t1, t2, distance, angleRad)) return true;
+                                    if (CheckTriangleToTriangleDistance(t1, t2, distance, angleRad, allowPenetration)) return true;
                                 }
                             }
                         }
@@ -326,7 +333,8 @@ namespace CaeMesh
             }
             return false;
         }
-        private bool CheckTriangleToTriangleDistance(double[][] t1, double[][] t2, double distance, double angleRad)
+        private bool CheckTriangleToTriangleDistance(double[][] t1, double[][] t2, double distance, double angleRad,
+                                                     bool penetrationPossible)
         {
             double dist;
             double ang;
@@ -364,15 +372,16 @@ namespace CaeMesh
                     {
                         double ang1;
                         double ang2;
-                        Geometry.VmV(ref pq, q, p);         // vector from p to q
+                        // pq is a vector from p to q
+                        Geometry.VmV(ref pq, q, p);
                         Geometry.Vnorm(ref pq, pq);
                         ang1 = Geometry.VdotV(pq, n1);
-                        if (ang1 < 0) return false;         // negative value means n1 poits away from q
+                        if (!penetrationPossible && ang1 < 0) return false;     // negative value means n1 poits away from q
                         ang2 = Geometry.VdotV(pq, n2);
-                        if (ang2 > 0) return false;         // positive value means n2 poits away from p
+                        if (!penetrationPossible && ang2 > 0) return false;     // positive value means n2 poits away from p
                         // Check that the closest triangle points are one above the other
                         // The angle between the closest direction vector and normals must be small < 5° = 0.995
-                        if (ang1 < 0.995 && ang2 > -0.995) return false;
+                        if (Math.Abs(ang1) < 0.995 && Math.Abs(ang2) < 0.995) return false;
                     }
                     return true;
                 }

@@ -35,9 +35,17 @@ namespace FileInOut.Output.Calculix
             StringBuilder sb = new StringBuilder();
             if (_surface.Type == FeSurfaceType.Element)
             {
+                string key = "";
                 foreach (var elementSetEntry in _surface.ElementFaces)
                 {
-                    sb.AppendFormat("{0}, {1}", elementSetEntry.Value, elementSetEntry.Key).AppendLine();
+                    if (elementSetEntry.Key == FeFaceName.S1) key = "N";
+                    if (elementSetEntry.Key == FeFaceName.S2) key = "P";
+                    if (elementSetEntry.Key == FeFaceName.S3) key = "S1";
+                    if (elementSetEntry.Key == FeFaceName.S4) key = "S2";
+                    if (elementSetEntry.Key == FeFaceName.S5) key = "S3";
+                    if (elementSetEntry.Key == FeFaceName.S6) key = "S4";
+                    sb.AppendFormat("{0}, {1}", elementSetEntry.Value, key).AppendLine();
+                    //sb.AppendFormat("{0}, {1}", elementSetEntry.Value, elementSetEntry.Key).AppendLine();
                 }
             }
             else if (_surface.Type == FeSurfaceType.Node)

@@ -633,7 +633,7 @@ namespace CaeResults
                     {
                         start = 3;
                         nodeId = int.Parse(line.Substring(start, 10));
-                        nodeValueId = nodeIdsLookUp[nodeId];
+                        if (!nodeIdsLookUp.TryGetValue(nodeId, out nodeValueId)) nodeValueId = -1;
                     }
                     // Values
                     start = 13;
@@ -641,7 +641,7 @@ namespace CaeResults
                     {
                         if (start + width > line.Length) continue;
                         //
-                        values[j][nodeValueId] = float.Parse(line.Substring(start, width));
+                        if (nodeValueId != -1) values[j][nodeValueId] = float.Parse(line.Substring(start, width));
                         start += width;
                     }
                 }
@@ -664,7 +664,7 @@ namespace CaeResults
                     {
                         start = 3;
                         nodeId = int.Parse(line.Substring(start, 10));
-                        nodeValueId = nodeIdsLookUp[nodeId];
+                        if (!nodeIdsLookUp.TryGetValue(nodeId, out nodeValueId)) nodeValueId = -1;
                     }
                     // Values
                     start = 13;
@@ -677,7 +677,7 @@ namespace CaeResults
                         //
                         if (start + width > line.Length) continue;
                         //
-                        values[j][nodeValueId] = float.Parse(line.Substring(start, width));
+                        if (nodeValueId != -1) values[j][nodeValueId] = float.Parse(line.Substring(start, width));
                         start += width;
                     }
                 }

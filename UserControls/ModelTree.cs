@@ -93,9 +93,9 @@ namespace UserControls
         private TreeNode _model;                    // 1
         private TreeNode _modelMesh;                //   2
         private TreeNode _modelParts;               //     3
-        private TreeNode _nodeSets;                 //     3
-        private TreeNode _elementSets;              //     3
-        private TreeNode _surfaces;                 //     3
+        private TreeNode _modelNodeSets;            //     3
+        private TreeNode _modelElementSets;         //     3
+        private TreeNode _modelSurfaces;            //     3
         private TreeNode _referencePoints;          //     3
         private TreeNode _materials;                //   2
         private TreeNode _sections;                 //   2
@@ -109,6 +109,9 @@ namespace UserControls
         // Results
         private TreeNode _resultMesh;               // 1
         private TreeNode _resultParts;              //   2
+        private TreeNode _resultNodeSets;           //   2
+        private TreeNode _resultElementSets;        //   2
+        private TreeNode _resultSurfaces;           //   2
         private TreeNode _results;                  // 1
         private TreeNode _resultFieldOutputs;       //   2
         private TreeNode _resultHistoryOutputs;     //   2
@@ -119,9 +122,9 @@ namespace UserControls
         private string _modelName = "Model";
         private string _modelMeshName = "Mesh";
         private string _modelPartsName = "Parts";
-        private string _nodeSetsName = "Node sets";
-        private string _elementSetsName = "Element sets";
-        private string _surfacesName = "Surfaces";
+        private string _modelNodeSetsName = "Node sets";
+        private string _modelElementSetsName = "Element sets";
+        private string _modelSurfacesName = "Surfaces";
         private string _referencePointsName = "Reference points";
         private string _materialsName = "Materials";
         private string _sectionsName = "Sections";
@@ -140,6 +143,9 @@ namespace UserControls
         // Results
         private string _resultMeshName = "Mesh";
         private string _resultPartsName = "Parts";
+        private string _resultNodeSetsName = "Node sets";
+        private string _resultElementSetsName = "Element sets";
+        private string _resultSurfacesName = "Surfaces";
         private string _resultsName = "Results";
         private string _resultFieldOutputsName = "Field outputs";
         private string _resultHistoryOutputsName = "History outputs";
@@ -239,9 +245,9 @@ namespace UserControls
             _model = cltvModel.Nodes.Find(_modelName, true)[0];
             _modelMesh = cltvModel.Nodes.Find(_modelMeshName, true)[0];
             _modelParts = cltvModel.Nodes.Find(_modelPartsName, true)[0];
-            _nodeSets = cltvModel.Nodes.Find(_nodeSetsName, true)[0];
-            _elementSets = cltvModel.Nodes.Find(_elementSetsName, true)[0];
-            _surfaces = cltvModel.Nodes.Find(_surfacesName, true)[0];
+            _modelNodeSets = cltvModel.Nodes.Find(_modelNodeSetsName, true)[0];
+            _modelElementSets = cltvModel.Nodes.Find(_modelElementSetsName, true)[0];
+            _modelSurfaces = cltvModel.Nodes.Find(_modelSurfacesName, true)[0];
             _referencePoints = cltvModel.Nodes.Find(_referencePointsName, true)[0];
             _materials = cltvModel.Nodes.Find(_materialsName, true)[0];
             _sections = cltvModel.Nodes.Find(_sectionsName, true)[0];
@@ -255,6 +261,9 @@ namespace UserControls
             // Results
             _resultMesh = cltvResults.Nodes.Find(_resultMeshName, true)[0];
             _resultParts = cltvResults.Nodes.Find(_resultPartsName, true)[0];
+            _resultNodeSets = cltvResults.Nodes.Find(_resultNodeSetsName, true)[0];
+            _resultElementSets = cltvResults.Nodes.Find(_resultElementSetsName, true)[0];
+            _resultSurfaces = cltvResults.Nodes.Find(_resultSurfacesName, true)[0];
             _results = cltvResults.Nodes.Find(_resultsName, true)[0];
             _resultFieldOutputs = cltvResults.Nodes.Find(_resultFieldOutputsName, true)[0];
             _resultHistoryOutputs = cltvResults.Nodes.Find(_resultHistoryOutputsName, true)[0];
@@ -266,9 +275,9 @@ namespace UserControls
             // Model icons
             _modelMesh.StateImageKey = "Mesh";
             _modelParts.StateImageKey = "BasePart";
-            _nodeSets.StateImageKey = "Node_set";
-            _elementSets.StateImageKey = "Element_set";
-            _surfaces.StateImageKey = "Surface";
+            _modelNodeSets.StateImageKey = "Node_set";
+            _modelElementSets.StateImageKey = "Element_set";
+            _modelSurfaces.StateImageKey = "Surface";
             _referencePoints.StateImageKey = "Reference_point";
             _materials.StateImageKey = "Material";
             _sections.StateImageKey = "Section";
@@ -280,6 +289,9 @@ namespace UserControls
             // Results icons
             _resultMesh.StateImageKey = "Mesh";
             _resultParts.StateImageKey = "BasePart";
+            _resultNodeSets.StateImageKey = "Node_set";
+            _resultElementSets.StateImageKey = "Element_set";
+            _resultSurfaces.StateImageKey = "Surface";
             _resultFieldOutputs.StateImageKey = "Field_output";
             _resultHistoryOutputs.StateImageKey = "History_output";
             //
@@ -604,16 +616,6 @@ namespace UserControls
                     tree.SelectedNodes.Clear();
                     ClearSelectionEvent();
                 }
-                //else
-                //{
-                //    if (e.Button == MouseButtons.Left)
-                //    {
-                //        if (!_doubleClick && tree.SelectedNode != null && node != null && tree.SelectedNode == node)
-                //        {
-                //            UpdateHighlight();
-                //        }
-                //    }
-                //}
             }
             catch
             { }
@@ -1433,9 +1435,9 @@ namespace UserControls
             _model.Nodes.Clear();
             _modelMesh.Nodes.Clear();
             _modelParts.Nodes.Clear();
-            _nodeSets.Nodes.Clear();
-            _elementSets.Nodes.Clear();
-            _surfaces.Nodes.Clear();
+            _modelNodeSets.Nodes.Clear();
+            _modelElementSets.Nodes.Clear();
+            _modelSurfaces.Nodes.Clear();
             _referencePoints.Nodes.Clear();
             _materials.Nodes.Clear();
             _sections.Nodes.Clear();
@@ -1445,7 +1447,7 @@ namespace UserControls
             _contactPairs.Nodes.Clear();
             _initialConditions.Nodes.Clear();
             _steps.Nodes.Clear();
-            _analyses.Nodes.Clear();
+            _analyses.Nodes.Clear();            
             //
             SetNumberOfUserKeywords(0);
             // Geometry
@@ -1453,9 +1455,9 @@ namespace UserControls
             _meshRefinements.Text = _meshRefinementsName;
             // Model
             _modelParts.Text = _modelPartsName;
-            _nodeSets.Text = _nodeSetsName;
-            _elementSets.Text = _elementSetsName;
-            _surfaces.Text = _surfacesName;
+            _modelNodeSets.Text = _modelNodeSetsName;
+            _modelElementSets.Text = _modelElementSetsName;
+            _modelSurfaces.Text = _modelSurfacesName;
             _referencePoints.Text = _referencePointsName;
             _materials.Text = _materialsName;
             _sections.Text = _sectionsName;
@@ -1475,9 +1477,9 @@ namespace UserControls
             cltvModel.Nodes.Add(_model);
             _model.Nodes.Add(_modelMesh);
             _modelMesh.Nodes.Add(_modelParts);
-            _modelMesh.Nodes.Add(_nodeSets);
-            _modelMesh.Nodes.Add(_elementSets);
-            _modelMesh.Nodes.Add(_surfaces);
+            _modelMesh.Nodes.Add(_modelNodeSets);
+            _modelMesh.Nodes.Add(_modelElementSets);
+            _modelMesh.Nodes.Add(_modelSurfaces);
             _modelMesh.Nodes.Add(_referencePoints);
             _model.Nodes.Add(_materials);
             _model.Nodes.Add(_sections);
@@ -1514,16 +1516,25 @@ namespace UserControls
             cltvResults.Nodes.Clear();
             _resultMesh.Nodes.Clear();
             _resultParts.Nodes.Clear();
+            _resultNodeSets.Nodes.Clear();
+            _resultElementSets.Nodes.Clear();
+            _resultSurfaces.Nodes.Clear();
             _results.Nodes.Clear();
             _resultFieldOutputs.Nodes.Clear();
             _resultHistoryOutputs.Nodes.Clear();
             //
             _resultParts.Text = _resultPartsName;
+            _resultNodeSets.Text = _resultNodeSetsName;
+            _resultElementSets.Text = _resultElementSetsName;
+            _resultSurfaces.Text = _resultSurfacesName;
             _resultFieldOutputs.Text = _fieldOutputsName;
             _resultHistoryOutputs.Text = _historyOutputsName;
             // Fill the tree
             cltvResults.Nodes.Add(_resultMesh);
             _resultMesh.Nodes.Add(_resultParts);
+            _resultMesh.Nodes.Add(_resultNodeSets);
+            _resultMesh.Nodes.Add(_resultElementSets);
+            _resultMesh.Nodes.Add(_resultSurfaces);
             cltvResults.Nodes.Add(_results);
             _results.Nodes.Add(_resultFieldOutputs);
             _results.Nodes.Add(_resultHistoryOutputs);
@@ -1637,11 +1648,11 @@ namespace UserControls
                         // Mesh Parts
                         AddObjectsToNode<string, CaeMesh.BasePart>(_modelPartsName, _modelParts, model.Mesh.Parts);
                         // Node sets
-                        AddObjectsToNode<string, CaeMesh.FeNodeSet>(_nodeSetsName, _nodeSets, model.Mesh.NodeSets);
+                        AddObjectsToNode<string, CaeMesh.FeNodeSet>(_modelNodeSetsName, _modelNodeSets, model.Mesh.NodeSets);
                         // Element sets
-                        AddObjectsToNode<string, CaeMesh.FeElementSet>(_elementSetsName, _elementSets, model.Mesh.ElementSets);
+                        AddObjectsToNode<string, CaeMesh.FeElementSet>(_modelElementSetsName, _modelElementSets, model.Mesh.ElementSets);
                         // Surfaces
-                        AddObjectsToNode<string, CaeMesh.FeSurface>(_surfacesName, _surfaces, model.Mesh.Surfaces);
+                        AddObjectsToNode<string, CaeMesh.FeSurface>(_modelSurfacesName, _modelSurfaces, model.Mesh.Surfaces);
                         // Reference points
                         AddObjectsToNode<string, CaeMesh.FeReferencePoint>(_referencePointsName, _referencePoints,
                                                                            model.Mesh.ReferencePoints);
@@ -1781,31 +1792,31 @@ namespace UserControls
             }
             else if (item is FeNodeSet)
             {
-                node = _nodeSets.Nodes.Add(item.Name);
+                node = _modelNodeSets.Nodes.Add(item.Name);
                 node.Name = node.Text;
                 node.Tag = item;
-                parent = _nodeSets;
+                parent = _modelNodeSets;
             }
             else if (item is FeElementSet)
             {
-                node = _elementSets.Nodes.Add(item.Name);
+                node = _modelElementSets.Nodes.Add(item.Name);
                 node.Name = node.Text;
                 node.Tag = item;
-                parent = _elementSets;
+                parent = _modelElementSets;
             }
             else if (item is FeElementSet)
             {
-                node = _elementSets.Nodes.Add(item.Name);
+                node = _modelElementSets.Nodes.Add(item.Name);
                 node.Name = node.Text;
                 node.Tag = item;
-                parent = _elementSets;
+                parent = _modelElementSets;
             }
             else if (item is FeSurface)
             {
-                node = _surfaces.Nodes.Add(item.Name);
+                node = _modelSurfaces.Nodes.Add(item.Name);
                 node.Name = node.Text;
                 node.Tag = item;
-                parent = _surfaces;
+                parent = _modelSurfaces;
             }
             else if (item is FeReferencePoint)
             {
@@ -1981,7 +1992,7 @@ namespace UserControls
                 nodeFound = false;
                 foreach (var treeNode in tmp)
                 {
-                    if (treeNode.Tag.GetType() == item.GetType())
+                    if (treeNode.Tag != null && treeNode.Tag.GetType() == item.GetType())
                     {
                         baseNode = treeNode;
                         nodeFound = true;
@@ -2479,9 +2490,9 @@ namespace UserControls
         private bool CanCreate(TreeNode node)
         {
             if (node.Name == _meshRefinementsName) return true;
-            else if (node.Name == _nodeSetsName) return true;
-            else if (node.Name == _elementSetsName) return true;
-            else if (node.Name == _surfacesName) return true;
+            else if (node.Name == _modelNodeSetsName) return true;
+            else if (node.Name == _modelElementSetsName) return true;
+            else if (node.Name == _modelSurfacesName) return true;
             else if (node.Name == _referencePointsName) return true;
             else if (node.Name == _materialsName) return true;
             else if (node.Name == _sectionsName) return true;

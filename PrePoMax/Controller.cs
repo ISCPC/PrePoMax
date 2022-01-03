@@ -462,7 +462,7 @@ namespace PrePoMax
             //
             if (extension == ".pmx") OpenPmx(fileName);
             else if (extension == ".frd") OpenFrd(fileName);
-            else if (extension == ".dat") OpenDat(fileName);
+            else if (extension == ".dat") OpenDatFile(fileName);
             else throw new NotSupportedException();
             // Get first component of the first field for the last increment in the last step
             if (_results != null) _currentFieldData = _results.GetFirstComponentOfTheFirstFieldAtDefaultIncrement();
@@ -522,6 +522,7 @@ namespace PrePoMax
         {
             ClearResults();
             _results = FrdFileReader.Read(fileName);
+            bool redraw = false;
             //
             if (_results == null)
             {
@@ -542,9 +543,10 @@ namespace PrePoMax
                     {
                         if (similarity < 1)
                         {
-                            if (MessageBox.Show("Some node coordinates in the result .frd file are different from the coordinates in the model mesh." +
-                                                Environment.NewLine + Environment.NewLine +
-                                                "Apply model mesh properties (part names, geomery...) to the result mesh?", "Warning",
+                            if (MessageBox.Show("Some node coordinates in the result .frd file are different from " +
+                                                "the coordinates in the model mesh." + Environment.NewLine + Environment.NewLine +
+                                                "Apply model mesh properties (part names, geomery...) to the result mesh?",
+                                                "Warning",
                                                 MessageBoxButtons.YesNo,
                                                 MessageBoxIcon.Warning) == DialogResult.Yes) similarity = 1;
                         }
@@ -558,29 +560,18 @@ namespace PrePoMax
                     //
                     ResumeExplodedViews(false); // must be here after the MergePartsBasedOnMesh
                 }
-                // Set the view but do not draw
-                _currentView = ViewGeometryModelResults.Results;     
-                _form.SetCurrentView(_currentView);
-                // Regenerate tree
-                _form.RegenerateTree();
-                // Set model changed
-                _modelChanged = true;
+                redraw = true;
             }
+            // Open .cel file
+            string celFileName = Path.GetFileNameWithoutExtension(fileName) + ".cel";
+            celFileName = Path.Combine(Path.GetDirectoryName(fileName), celFileName);
+            if (File.Exists(celFileName)) OpenCelFile(celFileName, false);
             // Open .dat file
             string datFileName = Path.GetFileNameWithoutExtension(fileName) + ".dat";
             datFileName = Path.Combine(Path.GetDirectoryName(fileName), datFileName);
-            if (File.Exists(datFileName)) OpenDat(datFileName);
-        }
-        private void OpenDat(string fileName)
-        {
-            _history = CaeResults.DatFileReader.Read(fileName);
+            if (File.Exists(datFileName)) OpenDatFile(datFileName, false);
             //
-            if (_history == null)
-            {
-                MessageBoxes.ShowError("The dat file does not exist or is empty.");
-                return;
-            }
-            else
+            if (redraw)
             {
                 // Set the view but do not draw
                 _currentView = ViewGeometryModelResults.Results;
@@ -589,6 +580,60 @@ namespace PrePoMax
                 _form.RegenerateTree();
                 // Set model changed
                 _modelChanged = true;
+            }
+        }
+        private void OpenDatFile(string fileName, bool redraw = true)
+        {
+            _history = DatFileReader.Read(fileName);
+            //
+            if (_history == null)
+            {
+                MessageBoxes.ShowError("The dat file does not exist or is empty.");
+                return;
+            }
+            else
+            {
+                if (redraw)
+                {
+
+                    // Set the view but do not draw
+                    _currentView = ViewGeometryModelResults.Results;
+                    _form.SetCurrentView(_currentView);
+                    // Regenerate tree
+                    _form.RegenerateTree();
+                    // Set model changed
+                    _modelChanged = true;
+                }
+            }
+        }
+        private void OpenCelFile(string fileName, bool redraw = true)
+        {
+            Dictionary<int, FeElement> elements;
+            Dictionary<string, FeElementSet> elementSets;
+            FileInOut.Input.InpFileReader.ReadCel(fileName, _model.Mesh.Nodes, out elements, out elementSets);
+            _results.Mesh.Elements.AddRange(elements);
+            _results.Mesh.ElementSets.AddRange(elementSets);
+            _results.Mesh.CreatePartsFromElementSets(elementSets.Keys.ToArray(),
+                                                     out BasePart[] modifiedParts,
+                                                     out BasePart[] newParts);
+            //
+            if (elements == null)
+            {
+                MessageBoxes.ShowError("The cel file does not exist or is empty.");
+                return;
+            }
+            else
+            {
+                if (redraw)
+                {
+                    // Set the view but do not draw
+                    _currentView = ViewGeometryModelResults.Results;
+                    _form.SetCurrentView(_currentView);
+                    // Regenerate tree
+                    _form.RegenerateTree();
+                    // Set model changed
+                    _modelChanged = true;
+                }
             }
         }
         // Read pmx
@@ -3897,7 +3942,7 @@ namespace PrePoMax
             //
             ExplodedViewParameters parameters = _explodedViewParameters[CurrentView].DeepClone();
             RemoveExplodedView(false);
-            _model.Mesh.CreateMeshPartsFromElementSets(elementSetNames, out modifiedParts, out newParts);
+            _model.Mesh.CreatePartsFromElementSets(elementSetNames, out modifiedParts, out newParts);
             ApplyExplodedView(parameters, null, false);
             //
             foreach (var part in modifiedParts)
@@ -6496,6 +6541,8 @@ namespace PrePoMax
                                                 Path.Combine(directory, inputFileNameWithoutExtension + ".sta"),
                                                 Path.Combine(directory, inputFileNameWithoutExtension + ".cvg"),
                                                 Path.Combine(directory, inputFileNameWithoutExtension + ".12d"),
+                                                Path.Combine(directory, inputFileNameWithoutExtension + ".cel"), // contact elments
+                                                Path.Combine(directory, "ResultsForLastIterations.frd"),
                                                 Path.Combine(directory, inputFileNameWithoutExtension + ".frd")
                                                 };
                 try

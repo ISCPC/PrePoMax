@@ -243,6 +243,17 @@ namespace CaeGlobals
             if (!list.Contains(item.Key))
                 list.Add(item.Key);
         }
+        
+        /// <summary>
+        /// Adds another dictionary to the <see cref="T:System.Collections.Generic.IDictionary`2" />.
+        /// </summary>
+        /// 
+        /// <param name="dicToAdd">The dictionary to add.</param>
+        /// 
+        public void AddRange(Dictionary<TKey, TValue> dicToAdd)
+        {
+            foreach (var item in dicToAdd) Add(item.Key, item.Value);
+        }
 
         /// <summary>
         /// Replace an element with the provided key and value to the <see cref="T:System.Collections.Generic.IDictionary`2" />.

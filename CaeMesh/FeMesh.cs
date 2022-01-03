@@ -2336,18 +2336,15 @@ namespace CaeMesh
             }
         }
         //
-        public void CreateMeshPartsFromElementSets(string[] elementSetNames, out BasePart[] modifiedParts, out BasePart[] newParts)
+        public void CreatePartsFromElementSets(string[] elementSetNames, out BasePart[] modifiedParts, out BasePart[] newParts)
         {
             // Get parts from ids
             int maxPartId = -int.MaxValue;
-            Dictionary<int, MeshPart> partIdNamePairs = new Dictionary<int, MeshPart>();
+            Dictionary<int, BasePart> partIdNamePairs = new Dictionary<int, BasePart>();
             foreach (var entry in _parts)
             {
-                if (entry.Value is MeshPart mp)
-                {
-                    partIdNamePairs.Add(entry.Value.PartId, mp);
-                    if (entry.Value.PartId > maxPartId) maxPartId = entry.Value.PartId;
-                }
+                partIdNamePairs.Add(entry.Value.PartId, entry.Value);
+                if (entry.Value.PartId > maxPartId) maxPartId = entry.Value.PartId;
             }
             maxPartId++;
             // Get element ids to remove from parts by partIds
@@ -2368,8 +2365,11 @@ namespace CaeMesh
                         element = _elements[elementId];
                         partId = element.PartId;
                         //
-                        if (elementIdsToRemove.TryGetValue(partId, out elementIds)) elementIds.Add(elementId);
-                        else elementIdsToRemove.Add(partId, new List<int>() { elementId });
+                        if (partId != -1)   // for contact elements in .cel files
+                        {
+                            if (elementIdsToRemove.TryGetValue(partId, out elementIds)) elementIds.Add(elementId);
+                            else elementIdsToRemove.Add(partId, new List<int>() { elementId });
+                        }
                         //
                         element.PartId = maxPartId + i;
                     }
@@ -2377,30 +2377,41 @@ namespace CaeMesh
             }
             // Modify existing parts
             int count = 0;
-            MeshPart meshPart;
+            BasePart part;
             BasePart newBasePart;
             MeshPart newMeshPart;
+            ResultPart newResultPart;
             List<FeElement1D> edgeElements = new List<FeElement1D>();
             modifiedParts = new BasePart[elementIdsToRemove.Count];
             foreach (var entry in elementIdsToRemove)
             {
-                meshPart = partIdNamePairs[entry.Key];
-                meshPart.Labels = meshPart.Labels.Except(entry.Value).ToArray();
+                part = partIdNamePairs[entry.Key];
+                part.Labels = part.Labels.Except(entry.Value).ToArray();
                 //
-                newBasePart = CreateBasePartFromElementIds(meshPart.Labels);
+                newBasePart = CreateBasePartFromElementIds(part.Labels);
                 edgeElements.AddRange(GetLineElementsFromEdges(newBasePart)); // get new free edges
-                newMeshPart = new MeshPart(newBasePart);
-                newMeshPart.Name = meshPart.Name;
-                newMeshPart.PartId = meshPart.PartId;
-                SetPartsColorFromColorTable(newMeshPart);
-                newMeshPart.CopyActiveElementTypesFrom(meshPart);
-                // Replace part
-                _parts[newMeshPart.Name] = newMeshPart;
-                // Keep existing edges
-                edgeElements.AddRange(GetLineElementsFromEdges(meshPart));
-                ConvertLineFeElementsToEdges(edgeElements, new string[] { newMeshPart.Name });
+                if (part is MeshPart mp)
+                {
+                    newMeshPart = new MeshPart(newBasePart);
+                    newMeshPart.CopyActiveElementTypesFrom(mp);
+                    newBasePart = newMeshPart;
+                }
+                else if (part is ResultPart rp)
+                {
+                    newResultPart = new ResultPart(newBasePart);
+                    newBasePart = newResultPart;
+                }
                 //
-                modifiedParts[count++] = newMeshPart;
+                newBasePart.Name = part.Name;
+                newBasePart.PartId = part.PartId;
+                SetPartsColorFromColorTable(newBasePart);
+                // Replace part
+                _parts[newBasePart.Name] = newBasePart;
+                // Keep existing edges
+                edgeElements.AddRange(GetLineElementsFromEdges(part));
+                ConvertLineFeElementsToEdges(edgeElements, new string[] { newBasePart.Name });
+                //
+                modifiedParts[count++] = newBasePart;
             }
             // Create new parts and remove element sets
             count = 0;
@@ -2409,21 +2420,30 @@ namespace CaeMesh
             foreach (var newPartName in newPartNames)
             {
                 newBasePart = CreateBasePartFromElementIds(_elementSets[newPartName].Labels);
-                newMeshPart = new MeshPart(newBasePart);
+                if (_meshRepresentation == MeshRepresentation.Mesh)
+                {
+                    newMeshPart = new MeshPart(newBasePart);
+                    newBasePart = newMeshPart;
+                }
+                else if (_meshRepresentation == MeshRepresentation.Results)
+                {
+                    newResultPart = new ResultPart(newBasePart);
+                    newBasePart = newResultPart;
+                }
                 // Check name
-                newMeshPart.Name = "From_" + newPartName;
+                newBasePart.Name = "From_" + newPartName;
                 allMeshNames = GetAllMeshEntityNames();
-                if (allMeshNames.Contains(newMeshPart.Name)) newMeshPart.Name = allMeshNames.GetNextNumberedKey(newPartName);
+                if (allMeshNames.Contains(newBasePart.Name)) newBasePart.Name = allMeshNames.GetNextNumberedKey(newPartName);
                 //
-                newMeshPart.PartId = maxPartId + count;
-                SetPartsColorFromColorTable(newMeshPart);
+                newBasePart.PartId = maxPartId + count;
+                SetPartsColorFromColorTable(newBasePart);
                 //
-                _parts.Add(newMeshPart.Name, newMeshPart);
-                newParts[count++] = newMeshPart;
+                _parts.Add(newBasePart.Name, newBasePart);
+                newParts[count++] = newBasePart;
                 // Keep existing edges
-                ConvertLineFeElementsToEdges(edgeElements, new string[] { newMeshPart.Name });
+                ConvertLineFeElementsToEdges(edgeElements, new string[] { newBasePart.Name });
                 //
-                _elementSets.Remove(newMeshPart.Name);
+                _elementSets.Remove(newBasePart.Name);
             }
             // Update bounding boxes
             ComputeBoundingBox();
@@ -3332,13 +3352,15 @@ namespace CaeMesh
             foreach (var entry in _elementSets)
             {
                 elementSet = entry.Value;
+                if (elementSet.CreatedFromParts) continue;
+                //
                 for (int i = 0; i < elementSet.Labels.Length; i++)
                 {
                     elementSet.Labels[i] = newIds[elementSet.Labels[i]];
                 }
                 // Renumber selection
                 if (elementSet.CreationData != null)
-                {
+                {                    
                     foreach (var node in elementSet.CreationData.Nodes)
                     {
                         if (node is SelectionNodeIds snids)
