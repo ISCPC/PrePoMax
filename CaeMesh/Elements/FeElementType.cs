@@ -9,6 +9,16 @@ namespace CaeMesh
 {
     // 2D                                                                                                                           
     [Serializable]
+    public enum FeElementTypeSpring
+    {
+        [StandardValue("None", Visible = false)]
+        None = 0,
+        SPRING1 = 10,
+        SPRING2 = 11,
+        SPRINGA = 12,
+    }
+    //
+    [Serializable]
     public enum FeElementTypeLinearTria
     {
         [StandardValue("None", Visible = false)]

@@ -166,9 +166,14 @@ namespace PrePoMax.Forms
             //
             if (Constraint == null) throw new CaeException("No constraint was selected.");
             //
-            if (Constraint is PointSpring ps && ps.RegionType == RegionTypeEnum.Selection &&
-                (ps.CreationIds == null || ps.CreationIds.Length == 0))
-                throw new CaeException("The point spring region must contain at least one item.");
+            if (Constraint is PointSpring ps)
+            {
+                if (ps.RegionType == RegionTypeEnum.Selection && (ps.CreationIds == null || ps.CreationIds.Length == 0))
+                    throw new CaeException("The point spring region must contain at least one item.");
+                //
+                if (ps.GetSpringStiffnessValues().Length == 0)
+                    throw new CaeException("At least one stiffness must be larger than 0.");
+            }
             //
             if (Constraint is RigidBody rb && rb.RegionType == RegionTypeEnum.Selection &&
                 (rb.CreationIds == null || rb.CreationIds.Length == 0))

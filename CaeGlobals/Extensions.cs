@@ -234,10 +234,11 @@ namespace CaeGlobals
                    selectBy == vtkSelectBy.GeometryPart;
         }
         // Double
-        public static string ToCalculiX16String(this double value)
+        public static string ToCalculiX16String(this double value, bool enforceSeparator = false)
         {
             string result = value.ToString();
             if (result.Length > 16) result = value.ToString("E8");
+            else if (enforceSeparator && !result.Contains(".")) result += ".";
             return result;
         }
         // String[]

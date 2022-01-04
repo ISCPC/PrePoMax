@@ -71,7 +71,8 @@
     <Compile Include="Contact\Surface interaction\SurfaceInteractionProperty.cs" />
     <Compile Include="FileInOut\Input\Mmg\MmgFileReader.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalPhysicalConstants.cs" />
-    <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalMembraneSection.cs" />
+    <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\Section\CalMembraneSection.cs" />
+    <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\Section\CalLinearSpringSection.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\SurfaceInteraction\CalGapConductance.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\BC\CalTemperatureBC.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\CalHeatTransferStep.cs" />
@@ -82,7 +83,7 @@
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalPreTensionSection.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalDeactivated.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalContactPair.cs" />
-    <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalShellSection.cs" />
+    <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\Section\CalShellSection.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\Material\CalSpecificHeat.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\Material\CalThermalConductivity.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\Material\CalThermalExpansion.cs" />
@@ -154,7 +155,7 @@
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalElementSet.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\Material\CalElastic.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalRigidBody.cs" />
-    <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\CalSolidSection.cs" />
+    <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\Section\CalSolidSection.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\ModelDefinition\Material\CalMaterial.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\CalStaticStep.cs" />
     <Compile Include="FileInOut\Output\Calculix\Keywords\Step\CalStep.cs" />

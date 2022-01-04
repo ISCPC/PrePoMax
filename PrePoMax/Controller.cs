@@ -8982,7 +8982,13 @@ namespace PrePoMax
                 string prefixName = "CONSTRAINT" + Globals.NameSeparator + constraint.Name;
                 //
                 int count = 0;
-                if (constraint is RigidBody rb)
+                if (constraint is PointSpring ps)
+                {
+                    // Master
+                    count += DrawNodeSet(prefixName, ps.MasterRegionName, masterColor, layer, true, nodeSymbolSize,
+                                         false, onlyVisible);
+                }
+                else if (constraint is RigidBody rb)
                 {
                     // Master
                     if (!_model.Mesh.ReferencePoints.ContainsKey(rb.ReferencePointName)) return;
@@ -9006,16 +9012,16 @@ namespace PrePoMax
                         DrawRigidBodySymbol(rb, masterColor, symbolLayer, onlyVisible);
                     }
                 }
-                else if (constraint is Tie t)
+                else if (constraint is Tie tie)
                 {
                     // Master
-                    count += DrawSurface(prefixName, t.MasterRegionName, masterColor, layer, true, false, onlyVisible);
+                    count += DrawSurface(prefixName, tie.MasterRegionName, masterColor, layer, true, false, onlyVisible);
                     if (layer == vtkControl.vtkRendererLayer.Selection)
-                        DrawSurfaceEdge(prefixName, t.MasterRegionName, masterColor, layer, true, false, onlyVisible);
+                        DrawSurfaceEdge(prefixName, tie.MasterRegionName, masterColor, layer, true, false, onlyVisible);
                     // Slave
-                    count += DrawSurface(prefixName, t.SlaveRegionName, slaveColor, layer, true, true, onlyVisible);
+                    count += DrawSurface(prefixName, tie.SlaveRegionName, slaveColor, layer, true, true, onlyVisible);
                     if (layer == vtkControl.vtkRendererLayer.Selection)
-                        DrawSurfaceEdge(prefixName, t.SlaveRegionName, slaveColor, layer, true, true, onlyVisible);
+                        DrawSurfaceEdge(prefixName, tie.SlaveRegionName, slaveColor, layer, true, true, onlyVisible);
                 }
                 else throw new NotSupportedException();
             }

@@ -28,7 +28,7 @@ namespace FileInOut.Output
             }
             System.IO.File.WriteAllText(fileName, sb.ToString());
         }
-
+        //
         static public List<CalculixKeyword> GetAllKeywords(FeModel model)
         {
             List<CalculixKeyword> keywords = GetModelKeywords(model);
@@ -81,7 +81,48 @@ namespace FileInOut.Output
                 foreach (var entry in preTensionLoads)
                 {
                     referencePointsNodeIds.Add(entry.Key, new int[] { id + 1 });
-                    id ++;
+                    id++;
+                }
+            }
+            // Prepare point springs
+            List<CalElement> additionalElements = new List<CalElement>();
+            List<CalLinearSpringSection> linearSpringSections = new List<CalLinearSpringSection>();
+            {
+                if (model.Mesh != null)
+                {
+                    int[] directions;
+                    double[] stiffnesses;
+                    int id = model.Mesh.MaxElementId;
+                    List<FeElement> springElements;
+                    HashSet<string> elementSetNames = new HashSet<string>(model.Mesh.ElementSets.Keys);
+                    elementSetNames.UnionWith(model.Mesh.Parts.Keys);
+                    //
+                    foreach (var entry in model.Constraints)
+                    {
+                        if (entry.Value is PointSpring ps)
+                        {
+                            directions = ps.GetSpringDirections();
+                            stiffnesses = ps.GetSpringStiffnessValues();
+                            //
+                            if (directions.Length > 0)
+                            {
+                                for (int i = 0; i < directions.Length; i++)
+                                {
+                                    name = elementSetNames.GetNextNumberedKey(ps.Name, "_DOF_" + directions[i]);
+                                    springElements = new List<FeElement>();
+                                    foreach (var nodeId in model.Mesh.NodeSets[ps.RegionName].Labels)
+                                    {
+                                        springElements.Add(new LinearSpringElement(id + 1, new int[] { nodeId }));
+                                        id++;
+                                    }
+                                    //
+                                    additionalElements.Add(new CalElement(FeElementTypeSpring.SPRING1.ToString(), name, springElements));
+                                    //
+                                    linearSpringSections.Add(new CalLinearSpringSection(name, directions[i], stiffnesses[i]));
+                                }
+                            }
+                        }
+                    }
                 }
             }
             //
@@ -106,7 +147,7 @@ namespace FileInOut.Output
             // Elements
             title = new CalTitle("Elements", "");
             keywords.Add(title);
-            AppendElements(model, title);
+            AppendElements(model, additionalElements, title);
             // Node sets
             title = new CalTitle("Node sets", "");
             keywords.Add(title);
@@ -130,7 +171,7 @@ namespace FileInOut.Output
             // Sections
             title = new CalTitle("Sections", "");
             keywords.Add(title);
-            AppendSections(model, title);
+            AppendSections(model, linearSpringSections, title);
             // Pre-tension sections
             title = new CalTitle("Pre-tension sections", "");
             keywords.Add(title);
@@ -188,8 +229,7 @@ namespace FileInOut.Output
             }
             return true;
         }
-
-
+        //
         static public void RemoveLostUserKeywords(FeModel model)
         {
             List<CalculixKeyword> keywords = GetModelKeywords(model);
@@ -210,7 +250,7 @@ namespace FileInOut.Output
                 model.CalculixUserKeywords.Remove(indices);
             }
         }
-
+        //
         static public string GetShortKeywordData(CalculixKeyword keyword)
         {
             StringBuilder sb = new StringBuilder();
@@ -237,7 +277,7 @@ namespace FileInOut.Output
                 WriteKeywordRecursively(sb, childkeyword);
             }
         }
-
+        //
         static private string[] GetAllSubmodelNodeSetNames(FeModel model)
         {
             List<string> nodeSetNames = new List<string>();
@@ -247,7 +287,7 @@ namespace FileInOut.Output
                 {
                     if (entry.Value is SubmodelBC sm)
                     {
-                        if (sm.RegionType == CaeGlobals.RegionTypeEnum.SurfaceName) 
+                        if (sm.RegionType == RegionTypeEnum.SurfaceName) 
                             nodeSetNames.Add(model.Mesh.Surfaces[sm.RegionName].NodeSetName);
                         else nodeSetNames.Add(sm.RegionName);
                     }
@@ -255,7 +295,7 @@ namespace FileInOut.Output
             }
             return nodeSetNames.ToArray();
         }
-
+        //
         static private void AppendHeading(FeModel model, CalculixKeyword parent)
         {
             CalHeading heading = new CalHeading(model.Name, model.HashName, model.UnitSystem.UnitSystemType);
@@ -276,7 +316,8 @@ namespace FileInOut.Output
             }
 
         }
-        static private void AppendElements(FeModel model, CalculixKeyword parent)
+        static private void AppendElements(FeModel model, List<CalElement> additionalElements,
+                                           CalculixKeyword parent)
         {
             if (model.Mesh != null)
             {
@@ -308,7 +349,8 @@ namespace FileInOut.Output
                             type = part.LinearHexaType.ToString();
                         else if (part.ParabolicTriaType != FeElementTypeParabolicTria.None && element is ParabolicTriangleElement)
                             type = part.ParabolicTriaType.ToString();
-                        else if (part.ParabolicQuadType != FeElementTypeParabolicQuad.None && element is ParabolicQuadrilateralElement)
+                        else if (part.ParabolicQuadType != FeElementTypeParabolicQuad.None &&
+                                 element is ParabolicQuadrilateralElement)
                             type = part.ParabolicQuadType.ToString();
                         else if (part.ParabolicTetraType != FeElementTypeParabolicTetra.None && element is ParabolicTetraElement)
                             type = part.ParabolicTetraType.ToString();
@@ -324,10 +366,12 @@ namespace FileInOut.Output
                     //
                     foreach (var typeEntry in elementTypes)
                     {
-                        elementKeyword = new CalElement(typeEntry.Key, part.Name, typeEntry.Value, part);
+                        elementKeyword = new CalElement(typeEntry.Key, part.Name, typeEntry.Value);
                         parent.AddKeyword(elementKeyword);
                     }
                 }
+                // Additional elements
+                foreach (var additionalElementKeyword in additionalElements) parent.AddKeyword(additionalElementKeyword);
             }
         }
         static private void AppendNodeSets(FeModel model, Dictionary<string, int[]> referencePointsNodeIds, CalculixKeyword parent)
@@ -467,7 +511,8 @@ namespace FileInOut.Output
             }
             
         }
-        static private void AppendSections(FeModel model, CalculixKeyword parent)
+        static private void AppendSections(FeModel model, List<CalLinearSpringSection> linearSpringSections,
+                                           CalculixKeyword parent)
         {
             if (model.Mesh != null)
             {
@@ -481,6 +526,11 @@ namespace FileInOut.Output
                         else throw new NotImplementedException();
                     }
                     else parent.AddKeyword(new CalDeactivated(entry.Value.Name));
+                }
+                //
+                foreach (var calLinearSpringSection in linearSpringSections)
+                {
+                    parent.AddKeyword(calLinearSpringSection);
                 }
             }
         }
@@ -532,11 +582,13 @@ namespace FileInOut.Output
                 {
                     if (entry.Value.Active)
                     {
-                        if (entry.Value is RigidBody rigidBody)
+                        if (entry.Value is PointSpring) { } // this contraint is split into elements and a section
+                        else if (entry.Value is RigidBody rb)
                         {
                             string surfaceNodeSetName = null;
-                            if (rigidBody.RegionType == CaeGlobals.RegionTypeEnum.SurfaceName) surfaceNodeSetName = model.Mesh.Surfaces[rigidBody.RegionName].NodeSetName;
-                            CalRigidBody calRigidBody = new CalRigidBody(rigidBody, referencePointsNodeIds, surfaceNodeSetName);
+                            if (rb.RegionType == RegionTypeEnum.SurfaceName)
+                                surfaceNodeSetName = model.Mesh.Surfaces[rb.RegionName].NodeSetName;
+                            CalRigidBody calRigidBody = new CalRigidBody(rb, referencePointsNodeIds, surfaceNodeSetName);
                             parent.AddKeyword(calRigidBody);
                         }
                         else if (entry.Value is Tie tie)

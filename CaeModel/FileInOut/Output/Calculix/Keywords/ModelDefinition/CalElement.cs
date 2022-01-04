@@ -15,19 +15,17 @@ namespace FileInOut.Output.Calculix
         private string _elementType;
         private string _elementSetName;
         private List<FeElement> _elements;
-        private MeshPart _part;
 
 
         // Properties                                                                                                               
 
 
         // Constructor                                                                                                              
-        public CalElement(string elementType, string elementSetName, List<FeElement> elements, MeshPart part)
+        public CalElement(string elementType, string elementSetName, List<FeElement> elements)
         {
             _elementType = elementType;
             _elementSetName = elementSetName;
             _elements = elements;
-            _part = part;
         }
 
 

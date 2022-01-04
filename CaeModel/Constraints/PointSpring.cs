@@ -80,7 +80,7 @@ namespace CaeModel
 
 
         // Methods                                                                                                                  
-        public int[] GetConstrainedDirections()
+        public int[] GetSpringDirections()
         {
             List<int> directions = new List<int>();
             if (_k1 > 0) directions.Add(1);
@@ -91,7 +91,7 @@ namespace CaeModel
             if (_kt3 > 0) directions.Add(6);
             return directions.ToArray();
         }
-        public double[] GetConstrainValues()
+        public double[] GetSpringStiffnessValues()
         {
             List<double> values = new List<double>();
             if (_k1 > 0) values.Add(_k1);
