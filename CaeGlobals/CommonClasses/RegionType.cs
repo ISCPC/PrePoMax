@@ -47,6 +47,8 @@ namespace CaeGlobals
         {
             switch (regionType)
             {
+                case RegionTypeEnum.None:
+                    return "None";
                 case RegionTypeEnum.PartName:
                     return "Part name";
                 case RegionTypeEnum.NodeId:

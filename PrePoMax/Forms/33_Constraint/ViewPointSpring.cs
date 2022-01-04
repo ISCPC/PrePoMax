@@ -28,25 +28,16 @@ namespace PrePoMax
         public override string MasterRegionType { get { return base.MasterRegionType; } set { base.MasterRegionType = value; } }
         //
         [CategoryAttribute("Region")]
-        [OrderedDisplayName(1, 10, "Hidden")]
-        [DescriptionAttribute("Hidden.")]
-        [Id(2, 2)]
-        public string SelectionHidden { get { return _selectionHidden; } set { _selectionHidden = value; } }
-        //
-        [CategoryAttribute("Region")]
-        [OrderedDisplayName(2, 10, "Node set")]
+        [OrderedDisplayName(1, 10, "Node set")]
         [DescriptionAttribute("Select the node set for the creation of the constraint definition.")]
-        [Id(3, 2)]
+        [Id(2, 2)]
         public string NodeSetName { get { return _pointSpring.RegionName; } set { _pointSpring.RegionName = value; } }
         //
         [CategoryAttribute("Region")]
-        [OrderedDisplayName(3, 10, "Reference point")]
+        [OrderedDisplayName(2, 10, "Reference point")]
         [DescriptionAttribute("Select the reference point for the creation of the constraint definition.")]
-        [Id(4, 2)]
+        [Id(3, 2)]
         public string ReferencePointName { get { return _pointSpring.RegionName; } set { _pointSpring.RegionName = value; } }
-        //
-        [Browsable(false)]
-        public override string SlaveRegionType { get { return base.SlaveRegionType; } set { base.SlaveRegionType = value; } }
         //
         [CategoryAttribute("DOF")]
         [OrderedDisplayName(0, 10, "K1")]
@@ -56,13 +47,13 @@ namespace PrePoMax
         //
         [CategoryAttribute("DOF")]
         [OrderedDisplayName(1, 10, "K2")]        
-        [DescriptionAttribute("Value of the stiffness per nodein the direction of the second axis.")]
+        [DescriptionAttribute("Value of the stiffness per node in the direction of the second axis.")]
         [Id(2, 3)]
         public double K2 { get { return _pointSpring.K2; } set { _pointSpring.K2 = value; } }
         //
         [CategoryAttribute("DOF")]
         [OrderedDisplayName(2, 10, "K3")]
-        [DescriptionAttribute("Value of the stiffness per nodein the direction of the third axis.")]
+        [DescriptionAttribute("Value of the stiffness per node in the direction of the third axis.")]
         [Id(3, 3)]
         public double K3 { get { return _pointSpring.K3; } set { _pointSpring.K3 = value; } }
         //
@@ -99,7 +90,7 @@ namespace PrePoMax
             _pointSpring = pointSpring;
             //
             Dictionary<RegionTypeEnum, string> regionTypePropertyNamePairs = new Dictionary<RegionTypeEnum, string>();
-            regionTypePropertyNamePairs.Add(RegionTypeEnum.Selection, nameof(SelectionHidden));
+            regionTypePropertyNamePairs.Add(RegionTypeEnum.Selection, nameof(MasterSelectionHidden));
             regionTypePropertyNamePairs.Add(RegionTypeEnum.NodeSetName, nameof(NodeSetName));
             regionTypePropertyNamePairs.Add(RegionTypeEnum.ReferencePointName, nameof(ReferencePointName));
             //
@@ -123,6 +114,7 @@ namespace PrePoMax
             regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
             regionTypeListItemsPairs.Add(RegionTypeEnum.NodeSetName, nodeSetNames);
             regionTypeListItemsPairs.Add(RegionTypeEnum.ReferencePointName, referencePointNames);
+            //
             PopululateDropDownLists(regionTypeListItemsPairs, null);
         }
     }

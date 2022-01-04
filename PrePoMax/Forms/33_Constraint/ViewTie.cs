@@ -42,35 +42,23 @@ namespace PrePoMax
         public override string MasterRegionType { get { return base.MasterRegionType; } set { base.MasterRegionType = value; } }
         //
         [CategoryAttribute("Master Region")]
-        [OrderedDisplayName(1, 10, "Hidden")]
-        [DescriptionAttribute("Hidden.")]
-        [Id(2, 2)]
-        public string MasterSelectionHidden { get { return _selectionHidden; } set { _selectionHidden = value; } }
-        //
-        [CategoryAttribute("Master Region")]
-        [OrderedDisplayName(2, 10, "Master surface")]
+        [OrderedDisplayName(1, 10, "Master surface")]
         [DescriptionAttribute("Select the master surface for the creation of the tie definition.")]
-        [Id(3, 2)]
+        [Id(2, 2)]
         public string MasterSurfaceName { get { return _tie.MasterRegionName; } set { _tie.MasterRegionName = value; } }
         // SLAVE -------------------------------------------------------------------------------------------------------------------
         [CategoryAttribute("Slave Region")]
-        [OrderedDisplayName(3, 10, "Slave region type")]
+        [OrderedDisplayName(0, 10, "Slave region type")]
         [DescriptionAttribute("Select the slave region type for the creation of the tie definition.")]
         [Id(1, 3)]
         public override string SlaveRegionType { get { return base.SlaveRegionType; } set { base.SlaveRegionType = value; } }
         //
         [CategoryAttribute("Slave Region")]
-        [OrderedDisplayName(4, 10, "Hidden")]
-        [DescriptionAttribute("Hidden.")]
-        [Id(2, 3)]
-        public string SlaveSelectionHidden { get { return _selectionHidden; } set { _selectionHidden = value; } }
-        //
-        [CategoryAttribute("Slave Region")]
-        [OrderedDisplayName(5, 10, "Slave surface")]
+        [OrderedDisplayName(1, 10, "Slave surface")]
         [DescriptionAttribute("Select the slave surface for the creation of the tie definition.")]
-        [Id(3, 3)]
+        [Id(2, 3)]
         public string SlaveSurfaceName { get { return _tie.SlaveRegionName; } set { _tie.SlaveRegionName = value; } }
-        //
+        // -------------------------------------------------------------------------------------------------------------------------
         [Category("Appearance")]
         [DisplayName("Master surface color")]
         [Description("Select the master surface color.")]
@@ -125,16 +113,7 @@ namespace PrePoMax
             //
             PopululateDropDownLists(masterRegionTypeListItemsPairs, slaveTypeListItemsPairs);
         }
-        public override void UpdateRegionVisibility()
-        {
-            base.UpdateRegionVisibility();
-            // Master
-            if (base.MasterRegionType == RegionTypeEnum.Selection.ToFriendlyString())
-                base.DynamicCustomTypeDescriptor.GetProperty(nameof(MasterSelectionHidden)).SetIsBrowsable(false);
-            // Slave
-            if (base.SlaveRegionType == RegionTypeEnum.Selection.ToFriendlyString())
-                base.DynamicCustomTypeDescriptor.GetProperty(nameof(SlaveSelectionHidden)).SetIsBrowsable(false);
-        }
+        
     }
 
 }

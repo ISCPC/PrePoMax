@@ -20,13 +20,13 @@ namespace PrePoMax
 
         // Properties                                                                                                               
         public override string Name { get { return _rigidBody.Name; } set { _rigidBody.Name = value; } }
-        //
+        // MASTER ------------------------------------------------------------------------------------------------------------------
         [CategoryAttribute("Control point")]
         [OrderedDisplayName(0, 10, "Reference point")]
         [DescriptionAttribute("Select the reference point for the creation of the rigid body definition.")]
         [Id(1, 2)]
         public string ReferencePointName { get { return _rigidBody.ReferencePointName; } set { _rigidBody.ReferencePointName = value; } }
-        //
+        // SLAVE -------------------------------------------------------------------------------------------------------------------
         [CategoryAttribute("Region")]
         [OrderedDisplayName(0, 10, "Region type")]
         [DescriptionAttribute("Select the region type for the creation of the rigid body definition.")]
@@ -34,23 +34,17 @@ namespace PrePoMax
         public override string SlaveRegionType { get { return base.SlaveRegionType; } set { base.SlaveRegionType = value; } }
         //
         [CategoryAttribute("Region")]
-        [OrderedDisplayName(1, 10, "Hidden")]
-        [DescriptionAttribute("Hidden.")]
-        [Id(2, 3)]
-        public string SelectionHidden { get { return _selectionHidden; } set { _selectionHidden = value; } }
-        //
-        [CategoryAttribute("Region")]
-        [OrderedDisplayName(2, 10, "Node set")]
+        [OrderedDisplayName(1, 10, "Node set")]
         [DescriptionAttribute("Select the node set for the creation of the rigid body definition.")]
-        [Id(3, 3)]
+        [Id(2, 3)]
         public string NodeSetName { get { return _rigidBody.RegionName; } set { _rigidBody.RegionName = value; } }
         //
         [CategoryAttribute("Region")]
-        [OrderedDisplayName(3, 10, "Surface")]
+        [OrderedDisplayName(2, 10, "Surface")]
         [DescriptionAttribute("Select the surface for the creation of the rigid body definition.")]
-        [Id(4, 3)]
+        [Id(3, 3)]
         public string SurfaceName { get { return _rigidBody.RegionName; } set { _rigidBody.RegionName = value; } }
-        //
+        // -------------------------------------------------------------------------------------------------------------------------
         [Category("Appearance")]
         [DisplayName("Color")]
         [Description("Select constraint color.")]
@@ -69,7 +63,7 @@ namespace PrePoMax
             masterRegionTypePropertyNamePairs.Add(RegionTypeEnum.ReferencePointName, nameof(ReferencePointName));
             //
             Dictionary<RegionTypeEnum, string> slaveRegionTypePropertyNamePairs = new Dictionary<RegionTypeEnum, string>();
-            slaveRegionTypePropertyNamePairs.Add(RegionTypeEnum.Selection, nameof(SelectionHidden));
+            slaveRegionTypePropertyNamePairs.Add(RegionTypeEnum.Selection, nameof(SlaveSelectionHidden));
             slaveRegionTypePropertyNamePairs.Add(RegionTypeEnum.NodeSetName, nameof(NodeSetName));
             slaveRegionTypePropertyNamePairs.Add(RegionTypeEnum.SurfaceName, nameof(SurfaceName));
             //
@@ -97,15 +91,7 @@ namespace PrePoMax
             //
             base.PopululateDropDownLists(masterRegionTypeListItemsPairs, slaveRegionTypeListItemsPairs);
         }
-        public override void UpdateRegionVisibility()
-        {
-            base.UpdateRegionVisibility();
-            // Hide SelectionHidden
-            if (base.SlaveRegionType == RegionTypeEnum.Selection.ToFriendlyString())
-            {
-                base.DynamicCustomTypeDescriptor.GetProperty(nameof(SelectionHidden)).SetIsBrowsable(false);
-            }
-        }
+        
     }
 
 }

@@ -6,11 +6,13 @@ using System.Threading.Tasks;
 using CaeMesh;
 using CaeGlobals;
 using System.Drawing;
+using System.Runtime.Serialization;
+
 
 namespace CaeModel
 {
     [Serializable]
-    public abstract class Constraint : NamedClass, IMasterSlaveMultiRegion
+    public abstract class Constraint : NamedClass, IMasterSlaveMultiRegion, ISerializable
     {
         // Variables                                                                                                                
         private string _masterRegionName;
@@ -60,9 +62,64 @@ namespace CaeModel
             _masterColor = Color.Yellow;
             _slaveColor = Color.Yellow;
         }
+        public Constraint(SerializationInfo info, StreamingContext context)
+            : base (info, context)
+        {
+            foreach (SerializationEntry entry in info)
+            {
+                switch (entry.Name)
+                {
+                    case "_masterRegionName":
+                        _masterRegionName = (string)entry.Value; break;
+                    case "_masterRegionType":
+                        _masterRegionType = (RegionTypeEnum)entry.Value; break;
+                    case "_slaveRegionName":
+                        _slaveRegionName = (string)entry.Value; break;
+                    case "_slaveRegionType":
+                        _slaveRegionType = (RegionTypeEnum)entry.Value; break;
+                    //
+                    case "_masterCreationIds":
+                        _masterCreationIds = (int[])entry.Value; break;
+                    case "_masterCreationData":
+                        _masterCreationData = (Selection)entry.Value; break;
+                    case "_slaveCreationIds":
+                        _slaveCreationIds = (int[])entry.Value; break;
+                    case "_slaveCreationData":
+                        _slaveCreationData = (Selection)entry.Value; break;
+                    //
+                    case "_masterColor":
+                        _masterColor = (Color)entry.Value; break;
+                    case "_slaveColor":
+                        _slaveColor = (Color)entry.Value; break;
+                    //
+                    default:
+                        break;
+                }
+            }
+        }
 
 
         // Methods                                                                                                                  
+
+        // ISerialization
+        public new void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            // using typeof() works also for null fields
+            base.GetObjectData(info, context);
+            //
+            info.AddValue("_masterRegionName", _masterRegionName, typeof(string));
+            info.AddValue("_masterRegionType", _masterRegionType, typeof(RegionTypeEnum));
+            info.AddValue("_slaveRegionName", _slaveRegionName, typeof(string));
+            info.AddValue("_slaveRegionType", _slaveRegionType, typeof(RegionTypeEnum));
+            //
+            info.AddValue("_masterCreationIds", _masterCreationIds, typeof(int[]));
+            info.AddValue("_masterCreationData", _masterCreationData, typeof(Selection));
+            info.AddValue("_slaveCreationIds", _slaveCreationIds, typeof(int[]));
+            info.AddValue("_slaveCreationData", _slaveCreationData, typeof(Selection));
+            //
+            info.AddValue("_masterColor", _masterColor, typeof(Color));
+            info.AddValue("_slaveColor", _slaveColor, typeof(Color));
+        }
 
     }
 }

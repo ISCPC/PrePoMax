@@ -738,7 +738,7 @@ namespace UserControls
 				}
 				SelectNode(lastNode, true, tva);
 			}
-			catch (Exception ex)
+			catch
 			{
 				int error = 0;
 			}

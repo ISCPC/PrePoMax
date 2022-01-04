@@ -50,8 +50,8 @@ namespace PrePoMax
             // This function returns strings bacause using enum RegionType shows all items in the drop down box
             get
             {
-                if (_region == null) return "";
-                if (_slaveRegionTypePropertyNamePairs.ContainsKey(_region.SlaveRegionType))
+                if (_region == null || _region.SlaveRegionType == RegionTypeEnum.None) return "";
+                else if (_slaveRegionTypePropertyNamePairs.ContainsKey(_region.SlaveRegionType))
                     return _region.SlaveRegionType.ToFriendlyString();
                 else throw new NotSupportedException();
             }
@@ -85,22 +85,34 @@ namespace PrePoMax
             _slaveRegionTypePropertyNamePairs = slaveRegionTypePropertyNamePairs;
             //
             _masterRegionNameRegionTypePairs = new Dictionary<string, RegionTypeEnum>();
-            foreach (var entry in _masterRegionTypePropertyNamePairs)
-                _masterRegionNameRegionTypePairs.Add(entry.Key.ToFriendlyString(), entry.Key);
+            if (_masterRegionTypePropertyNamePairs != null)
+            {
+                foreach (var entry in _masterRegionTypePropertyNamePairs)
+                    _masterRegionNameRegionTypePairs.Add(entry.Key.ToFriendlyString(), entry.Key);
+            }
             //
             _slaveRegionNameRegionTypePairs = new Dictionary<string, RegionTypeEnum>();
-            foreach (var entry in _slaveRegionTypePropertyNamePairs)
-                _slaveRegionNameRegionTypePairs.Add(entry.Key.ToFriendlyString(), entry.Key);
+            if (_slaveRegionTypePropertyNamePairs != null)
+            {
+                foreach (var entry in _slaveRegionTypePropertyNamePairs)
+                    _slaveRegionNameRegionTypePairs.Add(entry.Key.ToFriendlyString(), entry.Key);
+            }
         }
         public void PopululateDropDownLists(Dictionary<RegionTypeEnum, string[]> masterRegionTypeListItemsPairs,
                                             Dictionary<RegionTypeEnum, string[]> slaveRegionTypeListItemsPairs)
         {
             // Master
-            foreach (var entry in masterRegionTypeListItemsPairs)
-                _dctd.PopulateProperty(_masterRegionTypePropertyNamePairs[entry.Key], entry.Value);
+            if (masterRegionTypeListItemsPairs != null)
+            {
+                foreach (var entry in masterRegionTypeListItemsPairs)
+                    _dctd.PopulateProperty(_masterRegionTypePropertyNamePairs[entry.Key], entry.Value);
+            }
             // Slave
-            foreach (var entry in slaveRegionTypeListItemsPairs)
-                _dctd.PopulateProperty(_slaveRegionTypePropertyNamePairs[entry.Key], entry.Value);
+            if (slaveRegionTypeListItemsPairs != null)
+            {
+                foreach (var entry in slaveRegionTypeListItemsPairs)
+                    _dctd.PopulateProperty(_slaveRegionTypePropertyNamePairs[entry.Key], entry.Value);
+            }
             // Prepare the region drop down list
             PopululateDropDownListForRegionType(masterRegionTypeListItemsPairs, slaveRegionTypeListItemsPairs);
             // Update visible dorp down lists
@@ -122,17 +134,20 @@ namespace PrePoMax
             if (selection) numOfItemsToBeBrowsable = 1;
             _dctd.PopulateProperty(() => this.MasterRegionType, types.ToArray(), false, numOfItemsToBeBrowsable);
             // Slave
-            types = new List<string>();
-            selection = false;
-            foreach (var entry in slaveRegionTypeListItemsPairs)
+            if (slaveRegionTypeListItemsPairs != null)
             {
-                if (entry.Value.Length > 0) types.Add(entry.Key.ToFriendlyString());
-                if (entry.Key == RegionTypeEnum.Selection) selection = true;
+                types = new List<string>();
+                selection = false;
+                foreach (var entry in slaveRegionTypeListItemsPairs)
+                {
+                    if (entry.Value.Length > 0) types.Add(entry.Key.ToFriendlyString());
+                    if (entry.Key == RegionTypeEnum.Selection) selection = true;
+                }
+                //
+                numOfItemsToBeBrowsable = 2;
+                if (selection) numOfItemsToBeBrowsable = 1;
+                _dctd.PopulateProperty(() => this.SlaveRegionType, types.ToArray(), false, numOfItemsToBeBrowsable);
             }
-            //
-            numOfItemsToBeBrowsable = 2;
-            if (selection) numOfItemsToBeBrowsable = 1;
-            _dctd.PopulateProperty(() => this.SlaveRegionType, types.ToArray(), false, numOfItemsToBeBrowsable);
         }
         public virtual void UpdateRegionVisibility()
         {
@@ -144,12 +159,14 @@ namespace PrePoMax
                 _dctd.GetProperty(entry.Value).SetIsBrowsable(browsable);
             }
             // Slave
-            foreach (var entry in _slaveRegionTypePropertyNamePairs)
+            if (_slaveRegionTypePropertyNamePairs != null)
             {
-                browsable = _region.SlaveRegionType == entry.Key;
-                _dctd.GetProperty(entry.Value).SetIsBrowsable(browsable);
+                foreach (var entry in _slaveRegionTypePropertyNamePairs)
+                {
+                    browsable = _region.SlaveRegionType == entry.Key;
+                    _dctd.GetProperty(entry.Value).SetIsBrowsable(browsable);
+                }
             }
-
         }
     }
 }

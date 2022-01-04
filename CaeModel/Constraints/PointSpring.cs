@@ -5,20 +5,22 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeMesh;
 using CaeGlobals;
+using System.Runtime.Serialization;
+
 
 namespace CaeModel
 {
     [Serializable]
-    public class PointSpring : Constraint
+    public class PointSpring : Constraint, ISerializable
     {
         // Variables                                                                                                                
-        protected bool _twoD;
-        private double _k1;
-        private double _k2;
-        private double _k3;
-        private double _kt1;
-        private double _kt2;
-        private double _kt3;
+        protected bool _twoD;           //ISerializable
+        private double _k1;             //ISerializable
+        private double _k2;             //ISerializable
+        private double _k3;             //ISerializable
+        private double _kt1;            //ISerializable
+        private double _kt2;            //ISerializable
+        private double _kt3;            //ISerializable
 
 
         // Properties                                                                                                               
@@ -49,6 +51,32 @@ namespace CaeModel
             KT2 = 0;
             KT3 = 0;
         }
+        public PointSpring(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+            foreach (SerializationEntry entry in info)
+            {
+                switch (entry.Name)
+                {
+                    case "_twoD":
+                        _twoD = (bool)entry.Value; break;
+                    case "_k1":
+                        _k1 = (double)entry.Value; break;
+                    case "_k2":
+                        _k2 = (double)entry.Value; break;
+                    case "_k3":
+                        _k3 = (double)entry.Value; break;
+                    case "_kt1":
+                        _kt1 = (double)entry.Value; break;
+                    case "_kt2":
+                        _kt2 = (double)entry.Value; break;
+                    case "_kt3":
+                        _kt3 = (double)entry.Value; break;
+                    default:
+                        break;
+                }
+            }
+        }
 
 
         // Methods                                                                                                                  
@@ -73,6 +101,20 @@ namespace CaeModel
             if (_kt2 > 0) values.Add(_kt2);
             if (_kt3 > 0) values.Add(_kt3);
             return values.ToArray();
+        }
+        // ISerialization
+        public new void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            // using typeof() works also for null fields
+            base.GetObjectData(info, context);
+            //
+            info.AddValue("_twoD", _twoD, typeof(bool));
+            info.AddValue("_k1", _k1, typeof(double));
+            info.AddValue("_k2", _k2, typeof(double));
+            info.AddValue("_k3", _k3, typeof(double));
+            info.AddValue("_kt1", _kt1, typeof(double));
+            info.AddValue("_kt2", _kt2, typeof(double));
+            info.AddValue("_kt3", _kt3, typeof(double));
         }
     }
 }

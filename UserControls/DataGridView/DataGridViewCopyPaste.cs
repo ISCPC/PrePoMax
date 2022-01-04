@@ -348,7 +348,6 @@ namespace UserControls
             // Get the clipboard value in a dictionary
             Dictionary<int, Dictionary<int, string>> cbValues = ClipboardValues(Clipboard.GetText());
             //
-            double value;
             string valueString;
             int iRowIndex = startCell.RowIndex;
             // Add new rows
@@ -357,8 +356,6 @@ namespace UserControls
             BindingSource bindingSource = (BindingSource)DataSource;
             while (RowCount < lastRow + 1) bindingSource.AddNew();
             //
-
-
             TypeConverter[] converters = null;
             if (this.DataSource is BindingSource bs && bs.DataSource is System.Collections.ICollection ic)
             {

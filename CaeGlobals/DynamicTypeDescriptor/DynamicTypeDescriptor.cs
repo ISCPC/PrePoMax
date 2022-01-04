@@ -1101,7 +1101,7 @@ namespace DynamicTypeDescriptor
                         }
                         prefix = attr.KeyPrefix + cpd.PropertyType.Name;
                     }
-                    catch (Exception ex)
+                    catch
                     {
                         return;
                     }

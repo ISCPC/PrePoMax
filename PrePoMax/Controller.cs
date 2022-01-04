@@ -4933,10 +4933,31 @@ namespace PrePoMax
         private void ConvertSelectionBasedConstraint(Constraint constraint, bool update = true)
         {
             // Create a named set and convert a selection to a named set
-            if (constraint is RigidBody rb)
+            string name;
+            if (constraint is PointSpring ps)
             {
-                string name;
-                // Surface
+                // Node set
+                if (ps.RegionType == RegionTypeEnum.Selection)
+                {
+                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.NodeSets, constraint.Name);
+                    FeNodeSet nodeSet = new FeNodeSet(name, ps.CreationIds);
+                    nodeSet.CreationData = ps.CreationData.DeepClone();
+                    nodeSet.Internal = true;
+                    AddNodeSet(nodeSet, update);
+                    //
+                    ps.RegionName = name;
+                    ps.RegionType = RegionTypeEnum.NodeSetName;
+                }
+                // Clear the creation data if not used
+                else
+                {
+                    ps.CreationData = null;
+                    ps.CreationIds = null;
+                }
+            }
+            else if (constraint is RigidBody rb)
+            {
+                // Node set
                 if (rb.RegionType == RegionTypeEnum.Selection)
                 {
                     name = FeMesh.GetNextFreeSelectionName(_model.Mesh.NodeSets, constraint.Name);
@@ -4957,7 +4978,6 @@ namespace PrePoMax
             }
             else if (constraint is Tie tie)
             {
-                string name;
                 // Master Surface
                 if (tie.MasterRegionType == RegionTypeEnum.Selection)
                 {
@@ -4999,7 +5019,11 @@ namespace PrePoMax
         {
             // Delete previously created sets
             Constraint constraint = GetConstraint(oldConstraintName);
-            if (constraint is RigidBody rb && rb.CreationData != null && rb.RegionName != null)
+            if (constraint is PointSpring ps && ps.CreationData != null && ps.RegionName != null)
+            {
+                RemoveNodeSets(new string[] { ps.RegionName });
+            }
+            else if (constraint is RigidBody rb && rb.CreationData != null && rb.RegionName != null)
             {
                 RemoveNodeSets(new string[] { rb.RegionName });
             }
@@ -11283,7 +11307,7 @@ namespace PrePoMax
             {
                 constraint = _model.Constraints[constraintName];
                 //
-                if (constraint is RigidBody || constraint is Tie)
+                if (constraint is PointSpring || constraint is RigidBody || constraint is Tie)
                 {
                     DrawConstraint(constraint, Color.Red, Color.Red, 4, vtkControl.vtkRendererLayer.Selection, false);
                 }

@@ -5,17 +5,19 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeMesh;
 using CaeGlobals;
+using System.Runtime.Serialization;
+
 
 namespace CaeModel
 {
     [Serializable]
-    public class Tie : Constraint
+    public class Tie : Constraint, ISerializable
     {
         // Variables                                                                                                                
         private static string _positive = "The value must be larger than 0.";
         //
-        private double _positionTolerance;
-        private bool _adjust;
+        private double _positionTolerance;          //ISerializable
+        private bool _adjust;                       //ISerializable
 
 
         // Properties                                                                                                               
@@ -42,6 +44,28 @@ namespace CaeModel
             //
             PositionTolerance = positionTolerance;
             _adjust = adjust;
+        }
+        public Tie(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+            foreach (SerializationEntry entry in info)
+            {
+                switch (entry.Name)
+                {
+                    case "_positionTolerance":
+                        _positionTolerance = (double)entry.Value; break;
+                    case "_adjust":
+                        _adjust = (bool)entry.Value; break;
+                    // Compatibility for version v1.1.1
+                    case "_masterSurfaceName":
+                        MasterRegionName = (string)entry.Value; break;
+                    // Compatibility for version v1.1.1
+                    case "_slaveSurfaceName":
+                        SlaveRegionName = (string)entry.Value; break;
+                    default:
+                        break;
+                }
+            }
         }
 
 
@@ -71,6 +95,16 @@ namespace CaeModel
             SlaveCreationData = tmpCreationData;
         }
         
+        // ISerialization
+        public new void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            // using typeof() works also for null fields
+            base.GetObjectData(info, context);
+            //
+            info.AddValue("_positionTolerance", _positionTolerance, typeof(double));
+            info.AddValue("_adjust", _adjust, typeof(bool));
+        }
+
 
     }
 }

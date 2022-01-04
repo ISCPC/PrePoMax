@@ -643,8 +643,6 @@ namespace CaeMesh
                 }
             }
             watch.Stop();
-            if (watch.ElapsedMilliseconds > 500)
-                cells = cells;
             //
             return allEdges;
         }

@@ -250,7 +250,13 @@ namespace CaeModel
             foreach (var entry in _constraints)
             {
                 constraint = entry.Value;
-                if (constraint is RigidBody rb)
+                if (constraint is PointSpring ps)
+                {
+                    valid = (ps.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsValidKey(ps.RegionName))
+                            || (ps.RegionType == RegionTypeEnum.ReferencePointName
+                               && _mesh.ReferencePoints.ContainsValidKey(ps.RegionName));
+                }
+                else if (constraint is RigidBody rb)
                 {
                     valid = rb.ReferencePointName != null
                             && _mesh.ReferencePoints.ContainsValidKey(rb.ReferencePointName)

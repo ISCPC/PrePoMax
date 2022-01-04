@@ -5,11 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeMesh;
 using CaeGlobals;
+using System.Runtime.Serialization;
+
 
 namespace CaeModel
 {
     [Serializable]
-    public class RigidBody : Constraint
+    public class RigidBody : Constraint, ISerializable
     {
         // Variables                                                                                                                
 
@@ -28,8 +30,43 @@ namespace CaeModel
             : base(name, referencePointName, RegionTypeEnum.ReferencePointName, regionName, regionType)
         {
         }
+        public RigidBody(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+            foreach (SerializationEntry entry in info)
+            {
+                switch (entry.Name)
+                {
+                    // Compatibility for version v1.1.1
+                    case "_referencePointName":
+                        MasterRegionName = (string)entry.Value; break;
+                    // Compatibility for version v1.1.1
+                    case "_regionName":
+                        RegionName = (string)entry.Value; break;
+                    // Compatibility for version v1.1.1
+                    case "_regionType":
+                        RegionType = (RegionTypeEnum)entry.Value; break;
+                    // Compatibility for version v1.1.1
+                    case "_creationIds":
+                        CreationIds = (int[])entry.Value; break;
+                    // Compatibility for version v1.1.1
+                    case "_creationData":
+                        CreationData = (Selection)entry.Value; break;
+                    //
+                    default:
+                        break;
+                }
+            }
+        }
 
 
         // Methods                                                                                                                  
+
+        // ISerialization
+        public new void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            // using typeof() works also for null fields
+            base.GetObjectData(info, context);
+        }
     }
 }
