@@ -150,6 +150,14 @@ namespace PrePoMax.Forms
         }
         protected override void OnPropertyGridSelectedGridItemChanged()
         {
+            if (_viewConstraint is ViewPointSpring vps)
+            {
+                if (propertyGrid.SelectedGridItem != null && propertyGrid.SelectedGridItem.PropertyDescriptor != null)
+                {
+                    string property = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
+                    //if (property == "Region type") vps.UpdateRegionVisibility
+                }
+            }
             ShowHideContextMenu();
             //
             ShowHideSelectionForm();
@@ -488,13 +496,18 @@ namespace PrePoMax.Forms
             //
             if (Constraint != null)
             {
+                ItemSetDataEditor.SelectionForm.SetOnlyGeometrySelection(false);
+                //
                 if (Constraint is PointSpring ps && ps.RegionType == RegionTypeEnum.Selection)
                     ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
                 else if (Constraint is RigidBody rb && rb.RegionType == RegionTypeEnum.Selection)
+                {
                     ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
+                    ItemSetDataEditor.SelectionForm.SetOnlyGeometrySelection(true);
+                }
                 else if (Constraint is Tie tie)
                 {
-                    if (property == nameof(ViewTie.MasterRegionType) &&  tie.MasterRegionType == RegionTypeEnum.Selection)
+                    if (property == nameof(ViewTie.MasterRegionType) && tie.MasterRegionType == RegionTypeEnum.Selection)
                         ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
                     else if (property == nameof(ViewTie.SlaveRegionType) && tie.SlaveRegionType == RegionTypeEnum.Selection)
                         ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);

@@ -42,18 +42,21 @@ namespace PrePoMax
         [CategoryAttribute("DOF")]
         [OrderedDisplayName(0, 10, "K1")]
         [DescriptionAttribute("Value of the stiffness per node in the direction of the first axis.")]
+        [TypeConverter(typeof(StringForcePerLenghtConverter))]
         [Id(1, 3)]
         public double K1 { get { return _pointSpring.K1; } set { _pointSpring.K1 = value; } }
         //
         [CategoryAttribute("DOF")]
-        [OrderedDisplayName(1, 10, "K2")]        
+        [OrderedDisplayName(1, 10, "K2")]
         [DescriptionAttribute("Value of the stiffness per node in the direction of the second axis.")]
+        [TypeConverter(typeof(StringForcePerLenghtConverter))]
         [Id(2, 3)]
         public double K2 { get { return _pointSpring.K2; } set { _pointSpring.K2 = value; } }
         //
         [CategoryAttribute("DOF")]
         [OrderedDisplayName(2, 10, "K3")]
         [DescriptionAttribute("Value of the stiffness per node in the direction of the third axis.")]
+        [TypeConverter(typeof(StringForcePerLenghtConverter))]
         [Id(3, 3)]
         public double K3 { get { return _pointSpring.K3; } set { _pointSpring.K3 = value; } }
         //
@@ -96,10 +99,8 @@ namespace PrePoMax
             //
             SetBase(_pointSpring, regionTypePropertyNamePairs, null);
             DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
-            // 2D
-            DynamicCustomTypeDescriptor.GetProperty(nameof(K3)).SetIsBrowsable(!_pointSpring.TwoD);
-            DynamicCustomTypeDescriptor.GetProperty(nameof(KT1)).SetIsBrowsable(!_pointSpring.TwoD);
-            DynamicCustomTypeDescriptor.GetProperty(nameof(KT2)).SetIsBrowsable(!_pointSpring.TwoD);
+            //
+            UpdateRegionVisibility();
         }
 
 
@@ -116,6 +117,21 @@ namespace PrePoMax
             regionTypeListItemsPairs.Add(RegionTypeEnum.ReferencePointName, referencePointNames);
             //
             PopululateDropDownLists(regionTypeListItemsPairs, null);
+        }
+        public override void UpdateRegionVisibility()
+        {
+            base.UpdateRegionVisibility();
+            //
+            bool visible = !DynamicCustomTypeDescriptor.GetProperty(nameof(ReferencePointName)).IsBrowsable;
+
+            visible = false;
+
+            // 2D
+            DynamicCustomTypeDescriptor.GetProperty(nameof(K3)).SetIsBrowsable(!_pointSpring.TwoD);
+            //
+            DynamicCustomTypeDescriptor.GetProperty(nameof(KT1)).SetIsBrowsable(visible && !_pointSpring.TwoD);
+            DynamicCustomTypeDescriptor.GetProperty(nameof(KT2)).SetIsBrowsable(visible && !_pointSpring.TwoD);
+            DynamicCustomTypeDescriptor.GetProperty(nameof(KT3)).SetIsBrowsable(visible);
         }
     }
 

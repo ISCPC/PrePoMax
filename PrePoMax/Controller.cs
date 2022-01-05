@@ -5019,7 +5019,8 @@ namespace PrePoMax
         {
             // Delete previously created sets
             Constraint constraint = GetConstraint(oldConstraintName);
-            if (constraint is PointSpring ps && ps.CreationData != null && ps.RegionName != null)
+            if (constraint is PointSpring ps && ps.CreationData != null && ps.RegionName != null &&
+                ps.RegionType == RegionTypeEnum.NodeSetName)
             {
                 RemoveNodeSets(new string[] { ps.RegionName });
             }
@@ -8984,15 +8985,27 @@ namespace PrePoMax
                 int count = 0;
                 if (constraint is PointSpring ps)
                 {
-                    // Master
-                    count += DrawNodeSet(prefixName, ps.MasterRegionName, masterColor, layer, true, nodeSymbolSize,
-                                         false, onlyVisible);
+                    // Node set
+                    if (ps.RegionType == RegionTypeEnum.NodeSetName)
+                    {
+                        count += DrawNodeSet(prefixName, ps.MasterRegionName, masterColor, layer, true, nodeSymbolSize,
+                                             false, onlyVisible);
+                    }
+                    else if (ps.RegionType == RegionTypeEnum.ReferencePointName)
+                    {
+                        //DrawReferencePoint(_model.Mesh.ReferencePoints[ps.RegionName], masterColor, layer);
+                    }
+                    else throw new NotSupportedException();
                 }
                 else if (constraint is RigidBody rb)
                 {
                     // Master
-                    if (!_model.Mesh.ReferencePoints.ContainsKey(rb.ReferencePointName)) return;
-                    else DrawReferencePoint(_model.Mesh.ReferencePoints[rb.ReferencePointName], masterColor, layer);
+                    // Only draw reference point during highlight
+                    if (layer == vtkControl.vtkRendererLayer.Selection)
+                    {
+                        if (!_model.Mesh.ReferencePoints.ContainsKey(rb.ReferencePointName)) return;
+                        else DrawReferencePoint(_model.Mesh.ReferencePoints[rb.ReferencePointName], masterColor, layer);
+                    }
                     // Slave
                     if (rb.RegionType == RegionTypeEnum.NodeSetName)
                         count += DrawNodeSet(prefixName, rb.RegionName, masterColor, layer, true, nodeSymbolSize,
@@ -11309,13 +11322,15 @@ namespace PrePoMax
         public void HighlightConstraints(string[] constraintsToSelect)
         {
             Constraint constraint;
+            int nodeSize = 1; // size <= 1 gets overwritten in vtkControl for the highlights in selection layer
+            //
             foreach (var constraintName in constraintsToSelect)
             {
                 constraint = _model.Constraints[constraintName];
                 //
                 if (constraint is PointSpring || constraint is RigidBody || constraint is Tie)
                 {
-                    DrawConstraint(constraint, Color.Red, Color.Red, 4, vtkControl.vtkRendererLayer.Selection, false);
+                    DrawConstraint(constraint, Color.Red, Color.Red, nodeSize, vtkControl.vtkRendererLayer.Selection, false);
                 }
                 else throw new NotSupportedException();
             }
