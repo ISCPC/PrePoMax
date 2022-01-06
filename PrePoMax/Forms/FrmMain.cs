@@ -6258,6 +6258,10 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.AddOrientedDoubleArrowsActor, actorData, symbolSize);
         }
+        public void AddOrientedSpringActor(vtkControl.vtkMaxActorData actorData, double symbolSize, bool invert = false)
+        {
+            InvokeIfRequired(_vtk.AddOrientedSpringActor, actorData, symbolSize, invert);
+        }
         public void AddOrientedThermosActor(vtkControl.vtkMaxActorData actorData, double symbolSize, bool invert = false)
         {
             InvokeIfRequired(_vtk.AddOrientedThermoActor, actorData, symbolSize, invert);

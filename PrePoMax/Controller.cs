@@ -8964,23 +8964,28 @@ namespace PrePoMax
         // Constraints
         public void DrawAllConstraints()
         {
+            int symbolSize = _settings.Pre.SymbolSize;
             int nodeSymbolSize = _settings.Pre.NodeSymbolSize;
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
             //
             foreach (var entry in _model.Constraints)
             {
-                DrawConstraint(entry.Value, entry.Value.MasterColor, entry.Value.SlaveColor, nodeSymbolSize, layer, true);
+                DrawConstraint(entry.Value, entry.Value.MasterColor, entry.Value.SlaveColor, symbolSize,
+                               nodeSymbolSize, layer, true);
             }
         }
-        public void DrawConstraint(Constraint constraint, Color masterColor, Color slaveColor, int nodeSymbolSize,
-                                   vtkControl.vtkRendererLayer layer, bool onlyVisible)
+        public void DrawConstraint(Constraint constraint, Color masterColor, Color slaveColor, int symbolSize,
+                                   int nodeSymbolSize, vtkControl.vtkRendererLayer layer, bool onlyVisible)
         {
             try
             {
                 if (!((constraint.Active && constraint.Visible && constraint.Valid && !constraint.Internal) ||
                       layer == vtkControl.vtkRendererLayer.Selection)) return;
                 //
+                double[][] coor = null;
                 string prefixName = "CONSTRAINT" + Globals.NameSeparator + constraint.Name;
+                vtkControl.vtkRendererLayer symbolLayer = 
+                    layer == vtkControl.vtkRendererLayer.Selection ? layer : vtkControl.vtkRendererLayer.Overlay;
                 //
                 int count = 0;
                 if (constraint is PointSpring ps)
@@ -8988,14 +8993,25 @@ namespace PrePoMax
                     // Node set
                     if (ps.RegionType == RegionTypeEnum.NodeSetName)
                     {
+                        if (!_model.Mesh.NodeSets.ContainsKey(ps.RegionName)) return;
+                        FeNodeSet nodeSet = _model.Mesh.NodeSets[ps.RegionName];
+                        coor = new double[nodeSet.Labels.Length][];
+                        for (int i = 0; i < nodeSet.Labels.Length; i++) coor[i] = _model.Mesh.Nodes[nodeSet.Labels[i]].Coor;
+                        //
                         count += DrawNodeSet(prefixName, ps.MasterRegionName, masterColor, layer, true, nodeSymbolSize,
                                              false, onlyVisible);
                     }
                     else if (ps.RegionType == RegionTypeEnum.ReferencePointName)
                     {
-                        //DrawReferencePoint(_model.Mesh.ReferencePoints[ps.RegionName], masterColor, layer);
+                        if (!_model.Mesh.ReferencePoints.ContainsKey(ps.RegionName)) return;
+                        FeReferencePoint referencePoint = _model.Mesh.ReferencePoints[ps.RegionName];
+                        coor = new double[1][];
+                        coor[0] = referencePoint.Coor();
+                        count++;
                     }
                     else throw new NotSupportedException();
+                    // Symbol
+                    if (count > 0) DrawSpringSymbols(prefixName, ps, coor, masterColor, symbolSize, symbolLayer);
                 }
                 else if (constraint is RigidBody rb)
                 {
@@ -9020,8 +9036,6 @@ namespace PrePoMax
                     // Symbol
                     if (count > 0)
                     {
-                        vtkControl.vtkRendererLayer symbolLayer = layer == vtkControl.vtkRendererLayer.Selection ?
-                                                                       layer : vtkControl.vtkRendererLayer.Overlay;
                         DrawRigidBodySymbol(rb, masterColor, symbolLayer, onlyVisible);
                     }
                 }
@@ -9099,6 +9113,53 @@ namespace PrePoMax
                     ApplyLighting(data);
                     _form.Add3DCells(data);
                 }
+            }
+        }
+        public void DrawSpringSymbols(string prefixName, PointSpring pointSpring , double[][] symbolCoor,
+                                      Color color, int symbolSize, vtkControl.vtkRendererLayer layer)
+        {
+            // Spring
+            List<double[]> allCoor = new List<double[]>();
+            List<double[]> allNormals = new List<double[]>();
+            HashSet<int> directions = new HashSet<int>(pointSpring.GetSpringDirections());
+            //
+            if (directions.Contains(1))
+            {
+                double[] normalX = new double[] { 1, 0, 0 };
+                for (int i = 0; i < symbolCoor.Length; i++)
+                {
+                    allCoor.Add(symbolCoor[i]);
+                    allNormals.Add(normalX);
+                }
+            }
+            if (directions.Contains(2))
+            {
+                double[] normalY = new double[] { 0, 1, 0 };
+                for (int i = 0; i < symbolCoor.Length; i++)
+                {
+                    allCoor.Add(symbolCoor[i]);
+                    allNormals.Add(normalY);
+                }
+            }
+            if (directions.Contains(3))
+            {
+                double[] normalZ = new double[] { 0, 0, 1 };
+                for (int i = 0; i < symbolCoor.Length; i++)
+                {
+                    allCoor.Add(symbolCoor[i]);
+                    allNormals.Add(normalZ);
+                }
+            }
+            if (allCoor.Count > 0)
+            {
+                vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
+                data.Name = prefixName;
+                data.Color = color;
+                data.Layer = layer;
+                data.Geometry.Nodes.Coor = allCoor.ToArray();
+                data.Geometry.Nodes.Normals = allNormals.ToArray();
+                ApplyLighting(data);
+                _form.AddOrientedSpringActor(data, symbolSize);
             }
         }
         // Contact pairs
@@ -11322,6 +11383,7 @@ namespace PrePoMax
         public void HighlightConstraints(string[] constraintsToSelect)
         {
             Constraint constraint;
+            int symbolSize = _settings.Pre.SymbolSize;
             int nodeSize = 1; // size <= 1 gets overwritten in vtkControl for the highlights in selection layer
             //
             foreach (var constraintName in constraintsToSelect)
@@ -11330,7 +11392,8 @@ namespace PrePoMax
                 //
                 if (constraint is PointSpring || constraint is RigidBody || constraint is Tie)
                 {
-                    DrawConstraint(constraint, Color.Red, Color.Red, nodeSize, vtkControl.vtkRendererLayer.Selection, false);
+                    DrawConstraint(constraint, Color.Red, Color.Red, symbolSize, nodeSize,
+                                   vtkControl.vtkRendererLayer.Selection, false);
                 }
                 else throw new NotSupportedException();
             }
