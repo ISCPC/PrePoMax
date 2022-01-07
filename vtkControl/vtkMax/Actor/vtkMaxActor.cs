@@ -1284,7 +1284,7 @@ namespace vtkControl
         }
         private vtkDataArray ComputeNormals(vtkPointSet pointSet)
         {
-            // recompute polydata normals
+            // Recompute polydata normals
             vtkPolyDataNormals normalGenerator = vtkPolyDataNormals.New();
             normalGenerator.SetInput(pointSet);
             normalGenerator.SplittingOff(); // prevents changes in topology

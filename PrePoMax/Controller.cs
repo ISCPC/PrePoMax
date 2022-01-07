@@ -8995,8 +8995,12 @@ namespace PrePoMax
                     {
                         if (!_model.Mesh.NodeSets.ContainsKey(ps.RegionName)) return;
                         FeNodeSet nodeSet = _model.Mesh.NodeSets[ps.RegionName];
-                        coor = new double[nodeSet.Labels.Length][];
-                        for (int i = 0; i < nodeSet.Labels.Length; i++) coor[i] = _model.Mesh.Nodes[nodeSet.Labels[i]].Coor;
+                        if (nodeSet.Labels.Length < 10)
+                        {
+                            coor = new double[nodeSet.Labels.Length][];
+                            for (int i = 0; i < nodeSet.Labels.Length; i++) coor[i] = _model.Mesh.Nodes[nodeSet.Labels[i]].Coor;
+                        }
+                        else coor = new double[][] { nodeSet.CenterOfGravity };
                         //
                         count += DrawNodeSet(prefixName, ps.MasterRegionName, masterColor, layer, true, nodeSymbolSize,
                                              false, onlyVisible);
@@ -9747,8 +9751,12 @@ namespace PrePoMax
                     {
                         if (!_model.Mesh.NodeSets.ContainsKey(cLoad.RegionName)) return;
                         FeNodeSet nodeSet = _model.Mesh.NodeSets[cLoad.RegionName];
-                        coor = new double[nodeSet.Labels.Length][];
-                        for (int i = 0; i < nodeSet.Labels.Length; i++) coor[i] = _model.Mesh.Nodes[nodeSet.Labels[i]].Coor;
+                        if (nodeSet.Labels.Length < 10)
+                        { 
+                            coor = new double[nodeSet.Labels.Length][];
+                            for (int i = 0; i < nodeSet.Labels.Length; i++) coor[i] = _model.Mesh.Nodes[nodeSet.Labels[i]].Coor;
+                        }
+                        else coor = new double[][] { nodeSet.CenterOfGravity };
                         //
                         count += DrawNodeSet(prefixName, nodeSet.Name, color, layer, true, nodeSymbolSize, false, onlyVisible);
                     }
@@ -10978,7 +10986,27 @@ namespace PrePoMax
             //
             return nodeIds.Length + edgeIds.Length + surfaceFaceIds.Length + partFaceIds.Length;
         }
-
+        // Tools
+        private void ReduceCoor(ref double[][] coor, int numberOfPoints)
+        {
+            if (coor.Length > numberOfPoints)
+            {
+                List<int> allIds = new List<int>();
+                for (int i = 0; i < coor.Length; i++) allIds.Add(i);
+                //
+                int id;
+                Random rand = new Random();
+                double[][] newCoor = new double[numberOfPoints][];
+                for (int i = 0; i < numberOfPoints; i++)
+                {
+                    id = rand.Next(0, allIds.Count() - 1);
+                    //
+                    newCoor[i] = coor[id];
+                    allIds.RemoveAt(id);
+                }
+                coor = newCoor;
+            }
+        }
         // Apply settings
         private void ApplyLighting(vtkControl.vtkMaxActorData data)
         {
