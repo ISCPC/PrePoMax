@@ -83,7 +83,7 @@ namespace PrePoMax.Commands
         // ISerialization
         public void GetObjectData(SerializationInfo info, StreamingContext context)
         {
-            // using typeof() works also for null fields
+            // Using typeof() works also for null fields
             info.AddValue("Command+_name", _name, typeof(string));
             info.AddValue("Command+_dateCreated", _dateCreated, typeof(DateTime));
             info.AddValue("_partNames", _partNames, typeof(string[]));

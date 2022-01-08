@@ -25,10 +25,10 @@ namespace PrePoMax.Forms
             set
             {
                 var clone = value.DeepClone();
-                if (clone is NodalFieldOutput nfo) _viewFieldOutput = new ViewNodalFieldOutput(nfo);
+                if (clone == null) _viewFieldOutput = null;
+                else if (clone is NodalFieldOutput nfo) _viewFieldOutput = new ViewNodalFieldOutput(nfo);
                 else if (clone is ElementFieldOutput efo) _viewFieldOutput = new ViewElementFieldOutput(efo);
                 else if (clone is ContactFieldOutput cfo) _viewFieldOutput = new ViewContactFieldOutput(cfo);
-                else if (clone == null) _viewFieldOutput = null;
                 else throw new NotImplementedException();
             }
         }

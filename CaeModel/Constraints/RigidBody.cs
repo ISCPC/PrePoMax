@@ -26,8 +26,8 @@ namespace CaeModel
 
 
         // Constructors                                                                                                             
-        public RigidBody(string name, string referencePointName, string regionName, RegionTypeEnum regionType)
-            : base(name, referencePointName, RegionTypeEnum.ReferencePointName, regionName, regionType)
+        public RigidBody(string name, string referencePointName, string regionName, RegionTypeEnum regionType, bool twoD)
+            : base(name, referencePointName, RegionTypeEnum.ReferencePointName, regionName, regionType, twoD)
         {
         }
         public RigidBody(SerializationInfo info, StreamingContext context)
@@ -65,7 +65,7 @@ namespace CaeModel
         // ISerialization
         public new void GetObjectData(SerializationInfo info, StreamingContext context)
         {
-            // using typeof() works also for null fields
+            // Using typeof() works also for null fields
             base.GetObjectData(info, context);
         }
     }

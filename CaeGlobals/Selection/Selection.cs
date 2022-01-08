@@ -179,7 +179,7 @@ namespace CaeGlobals
         // ISerialization
         public void GetObjectData(SerializationInfo info, StreamingContext context)
         {
-            // using typeof() works also for null fields
+            // Using typeof() works also for null fields
             info.AddValue("_nodes", _nodes, typeof(List<SelectionNode>));
             info.AddValue("_selectItem", _selectItem, typeof(vtkSelectItem));
             info.AddValue("_currentView", _currentView, typeof(int));

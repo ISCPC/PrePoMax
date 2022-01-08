@@ -856,7 +856,8 @@ namespace FileInOut.Input
                 }
                 //
                 string rigidBodyName = constraints.GetNextNumberedKey("Constraint");
-                RigidBody rigidBody = new RigidBody(rigidBodyName, referencePointName, nodeSetName, RegionTypeEnum.NodeSetName);
+                RigidBody rigidBody = new RigidBody(rigidBodyName, referencePointName, nodeSetName,
+                                                    RegionTypeEnum.NodeSetName, false);
                 return rigidBody;                
             }
             catch

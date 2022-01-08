@@ -4857,9 +4857,10 @@ namespace PrePoMax
                     if (_model.Constraints.ContainsKey(name)) name = _model.Constraints.GetNextNumberedKey(name);
                     allNames.Add(name);
                     // New tie
+                    bool twoD = _model.Properties.ModelSpace.IsTwoD();
                     Tie firstTie = toMerge.First();
                     Tie newTie = new Tie(name, firstTie.PositionTolerance, firstTie.Adjust, "", RegionTypeEnum.Selection,
-                                         "", RegionTypeEnum.Selection);
+                                         "", RegionTypeEnum.Selection, twoD);
                     //
                     newTie.MasterCreationData = new Selection();
                     newTie.MasterCreationData.SelectItem = vtkSelectItem.Surface;
@@ -4955,6 +4956,27 @@ namespace PrePoMax
                     ps.CreationIds = null;
                 }
             }
+            else if (constraint is SurfaceSpring ss)
+            {
+                // Surface
+                if (ss.RegionType == RegionTypeEnum.Selection)
+                {
+                    name = FeMesh.GetNextFreeSelectionName(_model.Mesh.Surfaces,
+                                                           constraint.Name + CaeMesh.Globals.MasterNameSuffix);
+                    FeSurface surface = new FeSurface(name, ss.CreationIds, ss.CreationData.DeepClone());
+                    surface.Internal = true;
+                    AddSurface(surface, update);
+                    //
+                    ss.RegionName = name;
+                    ss.RegionType = RegionTypeEnum.SurfaceName;
+                }
+                // Clear the creation data if not used
+                else
+                {
+                    ss.CreationData = null;
+                    ss.CreationIds = null;
+                }
+            }
             else if (constraint is RigidBody rb)
             {
                 // Node set
@@ -5024,6 +5046,11 @@ namespace PrePoMax
             {
                 RemoveNodeSets(new string[] { ps.RegionName });
             }
+            else if (constraint is SurfaceSpring ss)
+            {
+                if (ss.CreationData != null && ss.RegionName != null)
+                    RemoveSurfaces(new string[] { ss.RegionName }, false);
+            }
             else if (constraint is RigidBody rb && rb.CreationData != null && rb.RegionName != null)
             {
                 RemoveNodeSets(new string[] { rb.RegionName });
@@ -5073,8 +5100,9 @@ namespace PrePoMax
                             name = _model.Constraints.GetNextNumberedKey(name);
                         //
                         adjust = contactPair.Adjust == Forms.SearchContactPairAdjust.Yes;
+                        bool twoD = _model.Properties.ModelSpace.IsTwoD();
                         tie = new Tie(name, contactPair.Distance, adjust, "", RegionTypeEnum.Selection,
-                                      "", RegionTypeEnum.Selection);
+                                      "", RegionTypeEnum.Selection, twoD);
                         //
                         tie.MasterCreationData = new Selection();
                         tie.MasterCreationData.SelectItem = vtkSelectItem.Surface;
@@ -9017,6 +9045,23 @@ namespace PrePoMax
                     // Symbol
                     if (count > 0) DrawSpringSymbols(prefixName, ps, coor, masterColor, symbolSize, symbolLayer);
                 }
+                else if (constraint is SurfaceSpring ss)
+                {
+                    // Surface
+                    if (ss.RegionType == RegionTypeEnum.SurfaceName)
+                    {
+                        if (!_model.Mesh.Surfaces.ContainsKey(ss.RegionName)) return;
+                        coor = new double[1][];
+                        coor[0] = _model.Mesh.GetSurfaceCG(ss.RegionName);
+                        //
+                        count += DrawSurface(prefixName, ss.RegionName, masterColor, layer, true, false, onlyVisible);
+                        if (layer == vtkControl.vtkRendererLayer.Selection)
+                            DrawSurfaceEdge(prefixName, ss.RegionName, masterColor, layer, true, false, onlyVisible);
+                    }
+                    else throw new NotSupportedException();
+                    // Symbol
+                    if (count > 0) DrawSpringSymbols(prefixName, ss, coor, masterColor, symbolSize, symbolLayer);
+                }
                 else if (constraint is RigidBody rb)
                 {
                     // Master
@@ -9119,13 +9164,13 @@ namespace PrePoMax
                 }
             }
         }
-        public void DrawSpringSymbols(string prefixName, PointSpring pointSpring , double[][] symbolCoor,
+        public void DrawSpringSymbols(string prefixName, SpringConstraint spring, double[][] symbolCoor,
                                       Color color, int symbolSize, vtkControl.vtkRendererLayer layer)
         {
             // Spring
             List<double[]> allCoor = new List<double[]>();
             List<double[]> allNormals = new List<double[]>();
-            HashSet<int> directions = new HashSet<int>(pointSpring.GetSpringDirections());
+            HashSet<int> directions = new HashSet<int>(spring.GetSpringDirections());
             //
             if (directions.Contains(1))
             {
@@ -11418,7 +11463,7 @@ namespace PrePoMax
             {
                 constraint = _model.Constraints[constraintName];
                 //
-                if (constraint is PointSpring || constraint is RigidBody || constraint is Tie)
+                if (constraint is PointSpring || constraint is SurfaceSpring || constraint is RigidBody || constraint is Tie)
                 {
                     DrawConstraint(constraint, Color.Red, Color.Red, symbolSize, nodeSize,
                                    vtkControl.vtkRendererLayer.Selection, false);

@@ -30,6 +30,7 @@ namespace PrePoMax.Forms
             set
             {
                 if (value is PointSpring ps) _viewConstraint = new ViewPointSpring(ps.DeepClone());
+                else if (value is SurfaceSpring ss) _viewConstraint = new ViewSurfaceSpring(ss.DeepClone());
                 else if (value is RigidBody rb) _viewConstraint = new ViewRigidBody(rb.DeepClone());
                 else if (value is Tie tie) _viewConstraint = new ViewTie(tie.DeepClone());
                 else throw new NotImplementedException();
@@ -124,6 +125,13 @@ namespace PrePoMax.Forms
                     _viewConstraint = vps;
                     _controller.Selection.EnableShellEdgeFaceSelection = true;
                 }
+                else if (itemTag is ViewSurfaceSpring vss)
+                {
+                    _viewConstraint = vss;
+                    _controller.Selection.EnableShellEdgeFaceSelection = true;
+                    // 2D
+                    if ((vss.GetBase() as SurfaceSpring).TwoD) _controller.Selection.LimitSelectionToShellEdges = true;
+                }
                 else if (itemTag is ViewRigidBody vrd)
                 {
                     _viewConstraint = vrd;
@@ -133,6 +141,8 @@ namespace PrePoMax.Forms
                 {
                     _viewConstraint = vt;
                     _controller.Selection.EnableShellEdgeFaceSelection = true;
+                    // 2D
+                    if ((vt.GetBase() as Tie).TwoD) _controller.Selection.LimitSelectionToShellEdges = true;
                 }
                 else throw new NotImplementedException();
                 //
@@ -143,21 +153,13 @@ namespace PrePoMax.Forms
                 //
                 HighlightConstraint();
                 // Context menu
-                if (propertyGrid.SelectedObject is ViewRigidBody vrb) propertyGrid.ContextMenuStrip = null;
+                if (propertyGrid.SelectedObject is ViewRigidBody) propertyGrid.ContextMenuStrip = null;
                 // Swap Master/Slave
-                else if (propertyGrid.SelectedObject is ViewTie vt) propertyGrid.ContextMenuStrip = cmsPropertyGrid;
+                else if (propertyGrid.SelectedObject is ViewTie) propertyGrid.ContextMenuStrip = cmsPropertyGrid;
             }
         }
         protected override void OnPropertyGridSelectedGridItemChanged()
         {
-            if (_viewConstraint is ViewPointSpring vps)
-            {
-                if (propertyGrid.SelectedGridItem != null && propertyGrid.SelectedGridItem.PropertyDescriptor != null)
-                {
-                    string property = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
-                    //if (property == "Region type") vps.UpdateRegionVisibility
-                }
-            }
             ShowHideContextMenu();
             //
             ShowHideSelectionForm();
@@ -183,6 +185,15 @@ namespace PrePoMax.Forms
                     throw new CaeException("At least one stiffness must be larger than 0.");
             }
             //
+            if (Constraint is SurfaceSpring ss)
+            {
+                if (ss.RegionType == RegionTypeEnum.Selection && (ss.CreationIds == null || ss.CreationIds.Length == 0))
+                    throw new CaeException("The surface spring region must contain at least one item.");
+                //
+                if (ss.GetSpringStiffnessValues().Length == 0)
+                    throw new CaeException("At least one stiffness must be larger than 0.");
+            }
+            //
             if (Constraint is RigidBody rb && rb.RegionType == RegionTypeEnum.Selection &&
                 (rb.CreationIds == null || rb.CreationIds.Length == 0))
                 throw new CaeException("The rigid body region must contain at least one item.");
@@ -197,7 +208,9 @@ namespace PrePoMax.Forms
                     (tie.SlaveCreationIds == null || tie.SlaveCreationIds.Length == 0))
                     throw new CaeException("The tie slave region must contain at least one item.");
                 // Check for errors with constructor
-                var tmp = new Tie(tie.Name, tie.MasterRegionName, tie.MasterRegionType, tie.SlaveRegionName, tie.SlaveRegionType);
+                bool twoD = _controller.Model.Properties.ModelSpace.IsTwoD();
+                var tmp = new Tie(tie.Name, tie.MasterRegionName, tie.MasterRegionType,
+                                  tie.SlaveRegionName, tie.SlaveRegionType, twoD);
             }
             //
             if ((_constraintToEditName == null && _constraintNames.Contains(Constraint.Name)) ||            // named to existing name
@@ -272,6 +285,7 @@ namespace PrePoMax.Forms
                 // Get and convert a converted constraint back to selection
                 Constraint = _controller.GetConstraint(_constraintToEditName); // to clone                
                 if (Constraint is PointSpring ps && ps.CreationData != null) ps.RegionType = RegionTypeEnum.Selection;
+                else if (Constraint is SurfaceSpring ss && ss.CreationData != null) ss.RegionType = RegionTypeEnum.Selection;
                 else if (Constraint is RigidBody rb && rb.CreationData != null) rb.RegionType = RegionTypeEnum.Selection;
                 else if (Constraint is Tie tie)
                 {
@@ -294,6 +308,19 @@ namespace PrePoMax.Forms
                     else throw new NotSupportedException();
                     //
                     vps.PopululateDropDownLists(nodeSetNames, referencePointNames);
+                    // Context menu strip
+                    propertyGrid.ContextMenuStrip = null;
+                }
+                else if (_viewConstraint is ViewSurfaceSpring vss)
+                {
+                    selectedId = lvTypes.FindItemWithText("Surface spring").Index;
+                    // Master
+                    if (vss.MasterRegionType == RegionTypeEnum.Selection.ToFriendlyString()) { }
+                    else if (vss.MasterRegionType == RegionTypeEnum.SurfaceName.ToFriendlyString())
+                        CheckMissingValueRef(ref surfaceNames, vss.SurfaceName, s => { vss.SurfaceName = s; });
+                    else throw new NotSupportedException();
+                    //
+                    vss.PopululateDropDownLists(surfaceNames);
                     // Context menu strip
                     propertyGrid.ContextMenuStrip = null;
                 }
@@ -354,11 +381,21 @@ namespace PrePoMax.Forms
             item.Tag = vps;
             vps.Color = color;
             lvTypes.Items.Add(item);
+            // Surface spring
+            item = new ListViewItem("Surface spring");
+            SurfaceSpring surfaceSpring = new SurfaceSpring(GetConstraintName("Surface_spring"),
+                                                            "", RegionTypeEnum.Selection, twoD);
+            ViewSurfaceSpring vss = new ViewSurfaceSpring(surfaceSpring);
+            vss.PopululateDropDownLists(surfaceNames);
+            item.Tag = vss;
+            vss.Color = color;
+            lvTypes.Items.Add(item);
             // Rigid body
             item = new ListViewItem("Rigid body");
             if (referencePointNames.Length > 0)
             {
-                RigidBody rb = new RigidBody(GetConstraintName("Rigid_body"), referencePointNames[0], "", RegionTypeEnum.Selection);
+                RigidBody rb = new RigidBody(GetConstraintName("Rigid_body"), referencePointNames[0],
+                                             "", RegionTypeEnum.Selection, twoD);
                 ViewRigidBody vrb = new ViewRigidBody(rb);
                 vrb.PopululateDropDownLists(referencePointNames, nodeSetNames, surfaceNames);
                 vrb.Color = color;
@@ -368,7 +405,7 @@ namespace PrePoMax.Forms
             lvTypes.Items.Add(item);
             // Tie
             item = new ListViewItem("Tie");
-            Tie tie = new Tie(GetConstraintName("Tie"), "", RegionTypeEnum.Selection, "", RegionTypeEnum.Selection);
+            Tie tie = new Tie(GetConstraintName("Tie"), "", RegionTypeEnum.Selection, "", RegionTypeEnum.Selection, twoD);
             ViewTie vt = new ViewTie(tie);
             vt.PopululateDropDownLists(surfaceNames);
             item.Tag = vt;
@@ -433,6 +470,11 @@ namespace PrePoMax.Forms
                 {
                     // Master
                     HighlightRegion(ps.MasterRegionType, ps.MasterRegionName, ps.CreationData, true, false);
+                }
+                else if (Constraint is SurfaceSpring ss)
+                {
+                    // Master
+                    HighlightRegion(ss.MasterRegionType, ss.MasterRegionName, ss.CreationData, true, false);
                 }
                 else if (Constraint is RigidBody rb)
                 {
@@ -500,6 +542,8 @@ namespace PrePoMax.Forms
                 //
                 if (Constraint is PointSpring ps && ps.RegionType == RegionTypeEnum.Selection)
                     ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
+                else if (Constraint is SurfaceSpring ss && ss.RegionType == RegionTypeEnum.Selection)
+                    ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
                 else if (Constraint is RigidBody rb && rb.RegionType == RegionTypeEnum.Selection)
                 {
                     ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
@@ -529,6 +573,11 @@ namespace PrePoMax.Forms
             else if (Constraint is PointSpring ps)
             {
                 if (ps.RegionType == RegionTypeEnum.Selection) _controller.SetSelectItemToNode();
+                else _controller.SetSelectByToOff();
+            }
+            else if (Constraint is SurfaceSpring ss)
+            {
+                if (ss.RegionType == RegionTypeEnum.Selection) _controller.SetSelectItemToSurface();
                 else _controller.SetSelectByToOff();
             }
             else if (Constraint is RigidBody rb)
@@ -571,6 +620,15 @@ namespace PrePoMax.Forms
                     {
                         ps.CreationIds = ids;
                         ps.CreationData = _controller.Selection.DeepClone();
+                        changed = true;
+                    }
+                }
+                else if (Constraint is SurfaceSpring ss)
+                {
+                    if (ss.RegionType == RegionTypeEnum.Selection)
+                    {
+                        ss.CreationIds = ids;
+                        ss.CreationData = _controller.Selection.DeepClone();
                         changed = true;
                     }
                 }
@@ -628,6 +686,11 @@ namespace PrePoMax.Forms
                 if (Constraint is PointSpring ps)
                 {
                     if (ps.CreationData != null) return ps.CreationData.IsGeometryBased();
+                    else return true;
+                }
+                else if (Constraint is SurfaceSpring ss)
+                {
+                    if (ss.CreationData != null) return ss.CreationData.IsGeometryBased();
                     else return true;
                 }
                 else if (Constraint is RigidBody rb)

@@ -8154,7 +8154,7 @@ namespace CaeMesh
         // ISerialization
         public void GetObjectData(SerializationInfo info, StreamingContext context)
         {
-            // using typeof() works also for null fields
+            // Using typeof() works also for null fields
             info.AddValue("_meshRepresentation", _meshRepresentation, typeof(MeshRepresentation));
             info.AddValue("_meshRefinements", _meshRefinements, typeof(OrderedDictionary<string, FeMeshRefinement>));
             info.AddValue("_parts", _parts, typeof(OrderedDictionary<string, BasePart>));

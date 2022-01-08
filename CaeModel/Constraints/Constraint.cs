@@ -15,21 +15,23 @@ namespace CaeModel
     public abstract class Constraint : NamedClass, IMasterSlaveMultiRegion, ISerializable
     {
         // Variables                                                                                                                
-        private string _masterRegionName;
-        private RegionTypeEnum _masterRegionType;
-        private string _slaveRegionName;
-        private RegionTypeEnum _slaveRegionType;
+        private string _masterRegionName;               //ISerializable
+        private RegionTypeEnum _masterRegionType;       //ISerializable
+        private string _slaveRegionName;                //ISerializable
+        private RegionTypeEnum _slaveRegionType;        //ISerializable
         //
-        private int[] _masterCreationIds;
-        private Selection _masterCreationData;
-        private int[] _slaveCreationIds;
-        private Selection _slaveCreationData;
+        private int[] _masterCreationIds;               //ISerializable
+        private Selection _masterCreationData;          //ISerializable
+        private int[] _slaveCreationIds;                //ISerializable
+        private Selection _slaveCreationData;           //ISerializable
         //
-        protected Color _masterColor;
-        protected Color _slaveColor;
+        protected Color _masterColor;                   //ISerializable
+        protected Color _slaveColor;                    //ISerializable
+        //
+        private bool _twoD;                             //ISerializable
 
 
-        // Properties                                                                                                               
+        // Properties                                                                                                                       
         public string MasterRegionName { get { return _masterRegionName; } set { _masterRegionName = value; } }
         public RegionTypeEnum MasterRegionType { get { return _masterRegionType; } set { _masterRegionType = value; } }
         public string SlaveRegionName { get { return _slaveRegionName; } set { _slaveRegionName = value; } }
@@ -42,11 +44,13 @@ namespace CaeModel
         //
         public Color MasterColor { get { return _masterColor; } set { _masterColor = value; } }
         public Color SlaveColor { get { return _slaveColor; } set { _slaveColor = value; } }
+        //
+        public bool TwoD { get { return _twoD; } }
 
 
         // Constructors                                                                                                             
         public Constraint(string name, string masterRegionName, RegionTypeEnum masterRegionType,
-                          string slaveRegionName, RegionTypeEnum slaveRegionType)
+                          string slaveRegionName, RegionTypeEnum slaveRegionType, bool twoD)
             : base(name) 
         {
             _masterRegionName = masterRegionName;
@@ -61,6 +65,8 @@ namespace CaeModel
             //
             _masterColor = Color.Yellow;
             _slaveColor = Color.Yellow;
+            //
+            _twoD = twoD;
         }
         public Constraint(SerializationInfo info, StreamingContext context)
             : base (info, context)
@@ -92,6 +98,9 @@ namespace CaeModel
                     case "_slaveColor":
                         _slaveColor = (Color)entry.Value; break;
                     //
+                    case "_twoD":
+                        _twoD = (bool)entry.Value; break;
+                    //
                     default:
                         break;
                 }
@@ -104,7 +113,7 @@ namespace CaeModel
         // ISerialization
         public new void GetObjectData(SerializationInfo info, StreamingContext context)
         {
-            // using typeof() works also for null fields
+            // Using typeof() works also for null fields
             base.GetObjectData(info, context);
             //
             info.AddValue("_masterRegionName", _masterRegionName, typeof(string));
@@ -119,6 +128,8 @@ namespace CaeModel
             //
             info.AddValue("_masterColor", _masterColor, typeof(Color));
             info.AddValue("_slaveColor", _slaveColor, typeof(Color));
+            //
+            info.AddValue("_twoD", _twoD, typeof(bool));
         }
 
     }

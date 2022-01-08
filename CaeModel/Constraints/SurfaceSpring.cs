@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CaeMesh;
+using CaeGlobals;
 using System.Runtime.Serialization;
 
-namespace CaeGlobals
+
+namespace CaeModel
 {
     [Serializable]
-    public class SelectionNodeInvert : SelectionNode, ISerializable
+    public class SurfaceSpring : SpringConstraint
     {
         // Variables                                                                                                                
 
@@ -17,24 +20,18 @@ namespace CaeGlobals
 
 
         // Constructors                                                                                                             
-        public SelectionNodeInvert()
-            : base(vtkSelectOperation.Invert)
+        public SurfaceSpring(string name, string regionName, RegionTypeEnum regionType, bool twoD)
+            : base(name, regionName, regionType, twoD)
         {
         }
-        public SelectionNodeInvert(SerializationInfo info, StreamingContext context)
+        public SurfaceSpring(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
         }
 
 
         // Methods                                                                                                                  
+       
 
-        // ISerialization
-        public new void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            base.GetObjectData(info, context);
-            // Using typeof() works also for null fields
-            //info.AddValue("_pickedPoint", _pickedPoint, typeof(double[]));
-        }
     }
 }

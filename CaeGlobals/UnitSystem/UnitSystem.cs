@@ -610,7 +610,7 @@ namespace CaeGlobals
         // ISerialization
         public void GetObjectData(SerializationInfo info, StreamingContext context)
         {
-            // using typeof() works also for null fields
+            // Using typeof() works also for null fields
             info.AddValue("_unitSystemType", _unitSystemType, typeof(UnitSystemType));
         }
     }

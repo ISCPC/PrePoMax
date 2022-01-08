@@ -12,38 +12,27 @@ using System.Drawing.Design;
 namespace PrePoMax
 {
     [Serializable]
-    public class ViewPointSpring : ViewSpring
+    public class ViewSurfaceSpring : ViewSpring
     {
         // Variables                                                                                                                
 
 
         // Properties                                                                                                               
         [CategoryAttribute("Region")]
-        [OrderedDisplayName(1, 10, "Node set")]
-        [DescriptionAttribute("Select the node set for the creation of the constraint definition.")]
+        [OrderedDisplayName(1, 10, "Surface")]
+        [DescriptionAttribute("Select the surface for the creation of the constraint definition.")]
         [Id(2, 2)]
-        public string NodeSetName { get { return _springConstraint.RegionName; } set { _springConstraint.RegionName = value; } }
-        //
-        [CategoryAttribute("Region")]
-        [OrderedDisplayName(2, 10, "Reference point")]
-        [DescriptionAttribute("Select the reference point for the creation of the constraint definition.")]
-        [Id(3, 2)]
-        public string ReferencePointName
-        {
-            get { return _springConstraint.RegionName; }
-            set { _springConstraint.RegionName = value; }
-        }
+        public string SurfaceName { get { return _springConstraint.RegionName; } set { _springConstraint.RegionName = value; } }
 
 
         // Constructors                                                                                                             
-        public ViewPointSpring(CaeModel.PointSpring pointSpring)
-            : base(pointSpring)
+        public ViewSurfaceSpring(CaeModel.SurfaceSpring surfaceSpring)
+            : base(surfaceSpring)
         {
             // The order is important
             Dictionary<RegionTypeEnum, string> regionTypePropertyNamePairs = new Dictionary<RegionTypeEnum, string>();
             regionTypePropertyNamePairs.Add(RegionTypeEnum.Selection, nameof(MasterSelectionHidden));
-            regionTypePropertyNamePairs.Add(RegionTypeEnum.NodeSetName, nameof(NodeSetName));
-            regionTypePropertyNamePairs.Add(RegionTypeEnum.ReferencePointName, nameof(ReferencePointName));
+            regionTypePropertyNamePairs.Add(RegionTypeEnum.SurfaceName, nameof(SurfaceName));
             //
             SetBase(_springConstraint, regionTypePropertyNamePairs, null);
             DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
@@ -57,12 +46,11 @@ namespace PrePoMax
         {
             return _springConstraint;
         }
-        public void PopululateDropDownLists(string[] nodeSetNames, string[] referencePointNames)
+        public void PopululateDropDownLists(string[] surfaceNames)
         {
             Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
             regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
-            regionTypeListItemsPairs.Add(RegionTypeEnum.NodeSetName, nodeSetNames);
-            regionTypeListItemsPairs.Add(RegionTypeEnum.ReferencePointName, referencePointNames);
+            regionTypeListItemsPairs.Add(RegionTypeEnum.SurfaceName, surfaceNames);
             //
             PopululateDropDownLists(regionTypeListItemsPairs, null);
         }

@@ -99,7 +99,7 @@ namespace CaeModel
         // ISerialization
         public new void GetObjectData(SerializationInfo info, StreamingContext context)
         {
-            // using typeof() works also for null fields
+            // Using typeof() works also for null fields
             base.GetObjectData(info, context);
             //
             info.AddValue("_numOfFrequencies", _numOfFrequencies, typeof(int));

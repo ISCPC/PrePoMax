@@ -80,7 +80,7 @@ namespace CaeGlobals
         public new void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             base.GetObjectData(info, context);
-            // using typeof() works also for null fields
+            // Using typeof() works also for null fields
             info.AddValue("_selectAll", _selectAll, typeof(bool));
             info.AddValue("_itemIds", _itemIds, typeof(int[]));
             info.AddValue("_geometryIds", _geometryIds, typeof(bool));

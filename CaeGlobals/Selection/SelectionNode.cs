@@ -50,7 +50,7 @@ namespace CaeGlobals
         // ISerialization
         public void GetObjectData(SerializationInfo info, StreamingContext context)
         {
-            // using typeof() works also for null fields
+            // Using typeof() works also for null fields
             info.AddValue("_selectOpreation", _selectOpreation, typeof(vtkSelectOperation));
             info.AddValue("_hash", _hash, typeof(double));
         }

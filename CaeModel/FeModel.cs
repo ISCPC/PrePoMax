@@ -256,6 +256,10 @@ namespace CaeModel
                             || (ps.RegionType == RegionTypeEnum.ReferencePointName
                                && _mesh.ReferencePoints.ContainsValidKey(ps.RegionName));
                 }
+                else if (constraint is SurfaceSpring ss)
+                {
+                    valid = ss.RegionType == RegionTypeEnum.SurfaceName && _mesh.Surfaces.ContainsValidKey(ss.RegionName);
+                }
                 else if (constraint is RigidBody rb)
                 {
                     valid = rb.ReferencePointName != null
@@ -987,7 +991,7 @@ namespace CaeModel
         // ISerialization
         public void GetObjectData(SerializationInfo info, StreamingContext context)
         {
-            // using typeof() works also for null fields
+            // Using typeof() works also for null fields
             info.AddValue("_name", Name, typeof(string));
             info.AddValue("_geometry", _geometry, typeof(FeMesh));
             info.AddValue("_mesh", _mesh, typeof(FeMesh));

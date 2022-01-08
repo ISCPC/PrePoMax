@@ -31,13 +31,13 @@ namespace CaeModel
 
         // Constructors                                                                                                             
         public Tie(string name, string masterSurfaceName, RegionTypeEnum masterRegionType,
-                   string slaveSurfaceName, RegionTypeEnum slaveRegionType)
-           : this(name, double.NaN, true, masterSurfaceName, masterRegionType, slaveSurfaceName, slaveRegionType)
+                   string slaveSurfaceName, RegionTypeEnum slaveRegionType, bool twoD)
+           : this(name, double.NaN, true, masterSurfaceName, masterRegionType, slaveSurfaceName, slaveRegionType, twoD)
         {
         }
         public Tie(string name, double positionTolerance, bool adjust, string masterSurfaceName, RegionTypeEnum masterRegionType,
-                   string slaveSurfaceName, RegionTypeEnum slaveRegionType)
-            : base(name, masterSurfaceName, masterRegionType, slaveSurfaceName, slaveRegionType)
+                   string slaveSurfaceName, RegionTypeEnum slaveRegionType, bool twoD)
+            : base(name, masterSurfaceName, masterRegionType, slaveSurfaceName, slaveRegionType, twoD)
         {
             if (masterRegionType == RegionTypeEnum.SurfaceName && slaveRegionType == RegionTypeEnum.SurfaceName &&
                 slaveSurfaceName == masterSurfaceName) throw new CaeException("Master and slave surface names must be different.");
@@ -98,7 +98,7 @@ namespace CaeModel
         // ISerialization
         public new void GetObjectData(SerializationInfo info, StreamingContext context)
         {
-            // using typeof() works also for null fields
+            // Using typeof() works also for null fields
             base.GetObjectData(info, context);
             //
             info.AddValue("_positionTolerance", _positionTolerance, typeof(double));
