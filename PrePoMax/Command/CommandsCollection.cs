@@ -66,21 +66,18 @@ namespace PrePoMax.Commands
         {
             // Write to form
             WriteToOutput(command);
-
             // First execute to check for errors
             if (command.Execute(_controller))
             {
                 // Add command
                 AddCommand(command);
-
                 // Add history
                 AddToHistory(command);
-
                 // Write to file
                 WriteToFile();
-
+                //
                 _currPositionIndex++;
-
+                //
                 OnEnableDisableUndoRedo();
             }
         }

@@ -1121,8 +1121,6 @@ namespace PrePoMax
             _form.Clear3D();
             _currentView = ViewGeometryModelResults.Model;
             _form.SetCurrentView(_currentView);
-            // Regenerate tree
-            _form.RegenerateTree();
             // Redraw to be able to update sets based on selection
             FeModelUpdate(UpdateType.DrawModel);
             // At the end update the sets
@@ -1133,6 +1131,8 @@ namespace PrePoMax
             }
             // Update the sets and symbols
             FeModelUpdate(UpdateType.Check | UpdateType.RedrawSymbols);
+            // Regenerate tree
+            _form.RegenerateTree(true);
         }
         public void ImportGeneratedRemesh(string fileName, int[] elementIds, BasePart part,
                                           bool convertToSecondOrder, Dictionary<int[], FeNode> midNodes,

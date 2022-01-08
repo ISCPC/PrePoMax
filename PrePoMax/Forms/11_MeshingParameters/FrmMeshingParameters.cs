@@ -161,6 +161,8 @@ namespace PrePoMax.Forms
             {
                 _controller.SetMeshingParametersCommand(_partNames, _viewMeshingParameters.GetBase());
             }
+            // Regenerate for remeshing (form shown as Modal) must return OK
+            else DialogResult = System.Windows.Forms.DialogResult.OK;
         }
 
 

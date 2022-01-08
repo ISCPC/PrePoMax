@@ -911,19 +911,67 @@ namespace CaeModel
             reservedPartNames.UnionWith(GetAllMeshEntityNames());
             return reservedPartNames;
         }
+        // Springs
+        public List<PointSpring> GetPointSpringsFromSurfaceSpring(SurfaceSpring spring)
+        {
+            Dictionary<int, double> nodalStiffnesses;
+            double area;
+            GetDistributedNodalValuesFromSurface(spring.RegionName, out nodalStiffnesses, out area);
+            //
+            List<PointSpring> springs = new List<PointSpring>();
+            foreach (var entry in nodalStiffnesses)
+            {
+                if (entry.Value != 0 && (spring.GetSpringDirections().Length > 0))
+                {
+                    springs.Add(new PointSpring("_PointSpring_" + entry.Key.ToString(),
+                                entry.Key,
+                                spring.K1 / area * entry.Value,
+                                spring.K2 / area * entry.Value,
+                                spring.K3 / area * entry.Value,
+                                spring.TwoD));
+                }
+            }
+            //
+            return springs;
+        }
         // Loads
         public CLoad[] GetNodalLoadsFromSurfaceTraction(STLoad load)
         {
+            Dictionary<int, double> nodalForces;
+            double area;
+            GetDistributedNodalValuesFromSurface(load.SurfaceName, out nodalForces, out area);
+            //
+            List<CLoad> loads = new List<CLoad>();
+            foreach (var entry in nodalForces)
+            {
+                if (entry.Value != 0 && (load.F1 != 0 || load.F2 != 0 || load.F3 != 0))
+                {
+                    loads.Add(new CLoad("_CLoad_" + entry.Key.ToString(),
+                                        entry.Key,
+                                        load.F1 / area * entry.Value,
+                                        load.F2 / area * entry.Value,
+                                        load.F3 / area * entry.Value,
+                                        load.TwoD));
+                }
+            }
+            //
+            return loads.ToArray();
+        }
+        public void GetDistributedNodalValuesFromSurface(string surfaceName,
+                                                         out Dictionary<int, double> nodalValues,
+                                                         out double aSum)
+        {
+            nodalValues = new Dictionary<int, double>();
+            aSum = 0;
+            //
             int nodeId;
             int sectionId = 0;
             int[] nodeIds;
             double A;
-            double aSum = 0;
             double thickness;
-            double[] equForces;
+            double[] equValue;
             FeElement element;
-            Dictionary<int, double> nodalForces = new Dictionary<int, double>();
-            Dictionary<int, int> elementIdSectionId;            
+            Dictionary<int, int> elementIdSectionId;
             Dictionary<int, double> sectionIdThickness = new Dictionary<int, double>();
             // Get element thicknesses
             GetSectionAssignments(out elementIdSectionId);
@@ -936,8 +984,8 @@ namespace CaeModel
                 sectionIdThickness.Add(sectionId++, thickness);
             }
             //
-            FeSurface surface = _mesh.Surfaces[load.SurfaceName];
-            if (surface.ElementFaces == null) return null;
+            FeSurface surface = _mesh.Surfaces[surfaceName];
+            if (surface.ElementFaces == null) return;
             //
             foreach (var entry in surface.ElementFaces)
             {
@@ -955,31 +1003,16 @@ namespace CaeModel
                     }
                     aSum += A;
                     nodeIds = element.GetNodeIdsFromFaceName(entry.Key);
-                    equForces = element.GetEquivalentForcesFromFaceName(entry.Key);
+                    equValue = element.GetEquivalentForcesFromFaceName(entry.Key);
                     //
                     for (int i = 0; i < nodeIds.Length; i++)
                     {
                         nodeId = nodeIds[i];
-                        if (nodalForces.ContainsKey(nodeId)) nodalForces[nodeId] += A * equForces[i];
-                        else nodalForces.Add(nodeId, A * equForces[i]);
+                        if (nodalValues.ContainsKey(nodeId)) nodalValues[nodeId] += A * equValue[i];
+                        else nodalValues.Add(nodeId, A * equValue[i]);
                     }
                 }
             }
-            //
-            List<CLoad> loads = new List<CLoad>();
-            foreach (var entry in nodalForces)
-            {
-                if (entry.Value != 0 && (load.F1 != 0 || load.F2 != 0 || load.F3 != 0))
-                {
-                    loads.Add(new CLoad("_cLoad_" + entry.Key.ToString(), entry.Key,
-                                        load.F1 / aSum * entry.Value,
-                                        load.F2 / aSum * entry.Value,
-                                        load.F3 / aSum * entry.Value,
-                                        load.TwoD));
-                }
-            }
-            //
-            return loads.ToArray();
         }
         // 3D - 2D
         public void UpdateMeshPartsElementTypes()

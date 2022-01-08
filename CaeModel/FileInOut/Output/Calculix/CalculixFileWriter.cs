@@ -166,7 +166,6 @@ namespace FileInOut.Output
                                             out List<CalElement> additionalElements,
                                             out List<CalLinearSpringSection> linearSpringSections)
         {
-            // Prepare point springs
             additionalElements = new List<CalElement>();
             linearSpringSections = new List<CalLinearSpringSection>();
             {
@@ -181,49 +180,60 @@ namespace FileInOut.Output
                     List<FeElement> springElements;
                     HashSet<string> elementSetNames = new HashSet<string>(model.Mesh.ElementSets.Keys);
                     elementSetNames.UnionWith(model.Mesh.Parts.Keys);
-                    //
+                    // Collect point ans surface springs
+                    List<PointSpring> activePointSprings = new List<PointSpring>();
                     foreach (var entry in model.Constraints)
                     {
-                        if (entry.Value is PointSpring ps && ps.Active)
+                        if (entry.Value is PointSpring ps && ps.Active) activePointSprings.Add(ps);
+                        else if (entry.Value is SurfaceSpring ss && ss.Active)
+                            activePointSprings.AddRange(model.GetPointSpringsFromSurfaceSpring(ss));
+                    }
+                    //
+                    foreach (PointSpring ps in activePointSprings)
+                    {
+                        directions = ps.GetSpringDirections();
+                        stiffnesses = ps.GetSpringStiffnessValues();
+                        //
+                        if (directions.Length == 0) continue;
+                        //
+                        for (int i = 0; i < directions.Length; i++)
                         {
-                            directions = ps.GetSpringDirections();
-                            stiffnesses = ps.GetSpringStiffnessValues();
-                            //
-                            if (directions.Length == 0) continue;
-                            //
-                            for (int i = 0; i < directions.Length; i++)
+                            name = elementSetNames.GetNextNumberedKey(ps.Name, "_DOF_" + directions[i]);
+                            springElements = new List<FeElement>();
+                            // Node id
+                            if (ps.RegionType == RegionTypeEnum.NodeId)
                             {
-                                name = elementSetNames.GetNextNumberedKey(ps.Name, "_DOF_" + directions[i]);
-                                springElements = new List<FeElement>();
-                                // Node set
-                                if (ps.RegionType == RegionTypeEnum.NodeSetName)
+                                springElements.Add(new LinearSpringElement(elementId + 1, new int[] { ps.NodeId }));
+                                elementId++;
+                            }
+                            // Node set
+                            else if (ps.RegionType == RegionTypeEnum.NodeSetName)
+                            {
+                                if (model.Mesh.NodeSets.TryGetValue(ps.RegionName, out nodeSet))
                                 {
-                                    if (model.Mesh.NodeSets.TryGetValue(ps.RegionName, out nodeSet))
+                                    foreach (var label in nodeSet.Labels)
                                     {
-                                        foreach (var label in nodeSet.Labels)
-                                        {
-                                            springElements.Add(new LinearSpringElement(elementId + 1, new int[] { label }));
-                                            elementId++;
-                                        }
-                                    }
-                                }
-                                // Reference point
-                                else if (ps.RegionType == RegionTypeEnum.ReferencePointName)
-                                {
-                                    if (referencePointsNodeIds.TryGetValue(ps.RegionName, out refPointIds))
-                                    {
-                                        springElements.Add(new LinearSpringElement(elementId + 1,
-                                                                                   new int[] { refPointIds[0] }));
+                                        springElements.Add(new LinearSpringElement(elementId + 1, new int[] { label }));
                                         elementId++;
                                     }
                                 }
-                                else throw new NotSupportedException();
-                                //
-                                additionalElements.Add(new CalElement(FeElementTypeSpring.SPRING1.ToString(),
-                                                                      name, springElements));
-                                //
-                                linearSpringSections.Add(new CalLinearSpringSection(name, directions[i], stiffnesses[i]));
                             }
+                            // Reference point
+                            else if (ps.RegionType == RegionTypeEnum.ReferencePointName)
+                            {
+                                if (referencePointsNodeIds.TryGetValue(ps.RegionName, out refPointIds))
+                                {
+                                    springElements.Add(new LinearSpringElement(elementId + 1,
+                                                                               new int[] { refPointIds[0] }));
+                                    elementId++;
+                                }
+                            }
+                            else throw new NotSupportedException();
+                            //
+                            additionalElements.Add(new CalElement(FeElementTypeSpring.SPRING1.ToString(),
+                                                                  name, springElements));
+                            //
+                            linearSpringSections.Add(new CalLinearSpringSection(name, directions[i], stiffnesses[i]));
                         }
                     }
                 }

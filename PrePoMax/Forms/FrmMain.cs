@@ -211,7 +211,7 @@ namespace PrePoMax
                 //_modelTree.Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Bottom;
                 //_modelTree.Dock = DockStyle.None;
                 _modelTree.TabIndex = 0;
-                _modelTree.RegenerateTreeCallBack = RegenerateTree;
+                _modelTree.RegenerateTreeCallBack = RegenerateTreeCallback;
                 //
                 _modelTree.GeometryMeshResultsEvent += ModelTree_ViewEvent;
                 _modelTree.SelectEvent += ModelTree_Select;
@@ -252,7 +252,7 @@ namespace PrePoMax
                 tsResults.Location = new Point(tsViews.Left + tsViews.Width, 0);
                 tscbSymbolsForStep.SelectedIndexChanged += tscbSymbolsForStep_SelectedIndexChanged;
                 // Controller
-                _controller = new PrePoMax.Controller(this);
+                _controller = new Controller(this);
                 // Vtk
                 _vtk.OnMouseLeftButtonUpSelection += SelectPointOrArea;
                 _vtk.Controller_GetNodeActorData = _controller.GetNodeActorData;
@@ -6587,15 +6587,14 @@ namespace PrePoMax
 
         #region Tree  ##############################################################################################################
         // Tree
-        public void RegenerateTree()
+        public void RegenerateTreeCallback()
         {
-            InvokeIfRequired(_modelTree.RegenerateTree, _controller.Model, _controller.Jobs, _controller.Results, _controller.History);
-            InvokeIfRequired(UpadteSymbolsForStepList);
+            RegenerateTree();
         }
-        public void RegenerateTree1(FeModel model, OrderedDictionary<string, AnalysisJob> jobs,
-                                   CaeResults.FeResults results, CaeResults.HistoryResults history)
+        public void RegenerateTree(bool remeshing = false)
         {
-            InvokeIfRequired(_modelTree.RegenerateTree, model, jobs, results, history);
+            InvokeIfRequired(_modelTree.RegenerateTree, _controller.Model, _controller.Jobs, _controller.Results,
+                            _controller.History, remeshing);
             InvokeIfRequired(UpadteSymbolsForStepList);
         }
         public void AddTreeNode(ViewGeometryModelResults view, NamedClass item, string stepName)
@@ -6636,11 +6635,12 @@ namespace PrePoMax
         {
             if (InvokeRequired)
             {
-                return (bool[][])Invoke((Func<bool[][]>)delegate { return _modelTree.GetAllTreesExpandCollapseState(); });
+                return (bool[][])Invoke((Func<bool[][]>)delegate
+                    { return _modelTree.GetAllTreesExpandCollapseState(out string[][] afterNodeNames); });
             }
             else
             {
-                return _modelTree.GetAllTreesExpandCollapseState();
+                return _modelTree.GetAllTreesExpandCollapseState(out string[][] afterNodeNames);
             }
         }
         public void SetTreeExpandCollapseState(bool[][] states)

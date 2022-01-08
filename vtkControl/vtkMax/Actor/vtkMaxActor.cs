@@ -954,8 +954,6 @@ namespace vtkControl
         {
             double d1;
             double d2;
-            Vec3D n1;
-            Vec3D n2;
             //
             int[] nodeIds;
             double[][] nodeCoor;
@@ -964,14 +962,12 @@ namespace vtkControl
             bool isSurface;
             vtkIdList nodeList = vtkIdList.New();
             vtkIdList edgeNodeList = vtkIdList.New();
-            //List<int> actorCellIds = new List<int>();
             //
             numOfCellPolys = null;
             if (data.Cells.Ids != null)
             {
                 numOfCellPolys = new int[data.Cells.Ids.Length];
             }
-
             //
             int lineType = (int)vtkCellType.VTK_LINE;
             int quadraticEdgeType = (int)vtkCellType.VTK_QUADRATIC_EDGE;

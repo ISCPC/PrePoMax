@@ -1614,14 +1614,15 @@ namespace UserControls
 
         // Regenerate tree                                                                                                          
         public void RegenerateTree(FeModel model, IDictionary<string, AnalysisJob> jobs, FeResults results,
-                                   HistoryResults history)
+                                   HistoryResults history, bool remeshing = false)
         {
             if (!_screenUpdating) return;
             //
             try
             {
                 // Expand/Collapse
-                bool[][] prevModelTreeStates = GetAllTreesExpandCollapseState();
+                string[][] prevNodeNames;
+                bool[][] prevModelTreeStates = GetAllTreesExpandCollapseState(out prevNodeNames, remeshing);
                 //
                 cltvGeometry.BeginUpdate();
                 cltvModel.BeginUpdate();
@@ -1703,13 +1704,13 @@ namespace UserControls
                 //
                 SelectNodesByPath(selectedNodePaths);
                 // Expand/Collapse
-                bool[][] afterModelTreeStates = GetAllTreesExpandCollapseState();
+                bool[][] afterModelTreeStates = GetAllTreesExpandCollapseState(out string[][] afterNodeNames, remeshing);
                 // Geometry
                 if (prevModelTreeStates[0].Length == afterModelTreeStates[0].Length)
                     SetTreeExpandCollapseState(cltvGeometry, prevModelTreeStates[0]);
                 // Model
                 if (prevModelTreeStates[1].Length == afterModelTreeStates[1].Length)
-                    SetTreeExpandCollapseState(cltvModel, prevModelTreeStates[1]);
+                    SetTreeExpandCollapseState(cltvModel, prevModelTreeStates[1], remeshing);
             }
             catch { }
             finally
@@ -2186,7 +2187,7 @@ namespace UserControls
             {
                 if (RegenerateTreeCallBack != null)
                 {
-                    if (_prevStates[tree] == null) _prevStates[tree] = GetTreeExpandCollapseState(tree);
+                    if (_prevStates[tree] == null) _prevStates[tree] = GetTreeExpandCollapseState(tree, out string[] names);
                     //
                     //tree.Visible = false;
                     //
@@ -2414,27 +2415,34 @@ namespace UserControls
             else if (view == ViewType.Results) return cltvResults;
             else throw new NotSupportedException();
         }
-        public bool[][] GetAllTreesExpandCollapseState()
+        public bool[][] GetAllTreesExpandCollapseState(out string[][] allNames, bool skipModelParts = false)
         {
             bool[][] allStates = new bool[3][];
-            allStates[0] = GetTreeExpandCollapseState(cltvGeometry);
-            allStates[1] = GetTreeExpandCollapseState(cltvModel);
-            allStates[2] = GetTreeExpandCollapseState(cltvResults);
+            allNames = new string[3][];
+            allStates[0] = GetTreeExpandCollapseState(cltvGeometry, out allNames[0], skipModelParts);
+            allStates[1] = GetTreeExpandCollapseState(cltvModel, out allNames[1], skipModelParts);
+            allStates[2] = GetTreeExpandCollapseState(cltvResults, out allNames[2], skipModelParts);
             return allStates;
         }
-        public bool[] GetTreeExpandCollapseState(CodersLabTreeView tree)
+        public bool[] GetTreeExpandCollapseState(CodersLabTreeView tree, out string[] names, bool skipModelParts = false)
         {
             List<bool> states = new List<bool>();
-            foreach (TreeNode node in tree.Nodes) GetNodeExpandCollapseState(node, states);
+            List<string> namesList = new List<string>();
+            foreach (TreeNode node in tree.Nodes) GetNodeExpandCollapseState(node, ref states, ref namesList, skipModelParts);
+            names = namesList.ToArray();
             return states.ToArray();
         }
-        private void GetNodeExpandCollapseState(TreeNode node, List<bool> states)
+        private void GetNodeExpandCollapseState(TreeNode node, ref List<bool> states,
+                                                ref List<string> names, bool skipModelParts)
         {
+            if (node == _modelParts && skipModelParts) return;
+            //
             states.Add(node.IsExpanded);
+            names.Add(node.Text);
             //
             foreach (TreeNode child in node.Nodes)
             {
-                GetNodeExpandCollapseState(child, states);
+                GetNodeExpandCollapseState(child, ref states, ref names, skipModelParts);
             }
         }
         public void SetAllTreeExpandCollapseState(bool[][] states)
@@ -2451,21 +2459,21 @@ namespace UserControls
             {
             }
         }
-        public void SetTreeExpandCollapseState(CodersLabTreeView tree, bool[] states)
+        public void SetTreeExpandCollapseState(CodersLabTreeView tree, bool[] states, bool skipModelParts = false)
         {
             try
             {
                 if (states == null || states.Length == 0) return;
                 //
                 int count = 0;
-                foreach (TreeNode node in tree.Nodes) CountAllTreeNodes(node, ref count);
+                foreach (TreeNode node in tree.Nodes) CountAllTreeNodes(node, ref count, skipModelParts);
                 //
                 if (states.Length == count)
                 {
                     count = 0;
                     //
                     tree.BeginUpdate();
-                    foreach (TreeNode node in tree.Nodes) SetNodeExpandCollapseState(node, states, ref count);
+                    foreach (TreeNode node in tree.Nodes) SetNodeExpandCollapseState(node, states, ref count, skipModelParts);
                     tree.EndUpdate();
                 }
             }
@@ -2474,19 +2482,23 @@ namespace UserControls
             }
 
         }
-        private void SetNodeExpandCollapseState(TreeNode node, bool[] states, ref int count)
+        private void SetNodeExpandCollapseState(TreeNode node, bool[] states, ref int count, bool skipModelParts)
         {
+            if (node == _modelParts && skipModelParts) return;
+            //
             if (states[count]) node.Expand();
             else node.Collapse();
             count++;
             //
-            foreach (TreeNode child in node.Nodes) SetNodeExpandCollapseState(child, states, ref count);
+            foreach (TreeNode child in node.Nodes) SetNodeExpandCollapseState(child, states, ref count, skipModelParts);
         }
-        private void CountAllTreeNodes(TreeNode node, ref int count)
+        private void CountAllTreeNodes(TreeNode node, ref int count, bool skipModelParts)
         {
+            if (node == _modelParts && skipModelParts) return;
+            //
             count++;
             //
-            foreach (TreeNode child in node.Nodes) CountAllTreeNodes(child, ref count);
+            foreach (TreeNode child in node.Nodes) CountAllTreeNodes(child, ref count, skipModelParts);
         }
         //                                                                                                                          
         private bool CanCreate(TreeNode node)
