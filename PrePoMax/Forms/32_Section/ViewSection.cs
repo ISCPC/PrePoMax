@@ -30,7 +30,7 @@ namespace PrePoMax
         //
         [CategoryAttribute("Region")]
         [OrderedDisplayName(0, 10, "Region type")]
-        [DescriptionAttribute("Select the region type for the creation ot the section.")]
+        [DescriptionAttribute("Select the region type for the creation of the section.")]
         public override string RegionType { get { return base.RegionType; } set { base.RegionType = value; } }
         //
         [CategoryAttribute("Region")]
@@ -40,12 +40,12 @@ namespace PrePoMax
         //
         [CategoryAttribute("Region")]
         [OrderedDisplayName(2, 10, "Part")]        
-        [DescriptionAttribute("Select the part for the creation ot the section.")]
+        [DescriptionAttribute("Select the part for the creation of the section.")]
         public string PartName { get { return _section.RegionName; } set { _section.RegionName = value; } }
         //
         [CategoryAttribute("Region")]
         [OrderedDisplayName(3, 10, "Element set")]
-        [DescriptionAttribute("Select the element set for the creation ot the section.")]
+        [DescriptionAttribute("Select the element set for the creation of the section.")]
         public string ElementSetName { get { return _section.RegionName; } set { _section.RegionName = value; } }
 
 

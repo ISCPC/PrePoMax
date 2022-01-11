@@ -3207,6 +3207,7 @@ namespace vtkControl
             distanceToCamera.SetScreenSize(symbolSize);
             distanceToCamera.SetRenderer(_renderer);
             // Cone
+            //vtkTubeFilter cone = CreateConeSource(-0.5, 0, 0, 21);
             vtkConeSource cone = vtkConeSource.New();
             cone.SetCenter(-0.5, 0, 0);
             cone.SetResolution(31);
@@ -3215,7 +3216,7 @@ namespace vtkControl
             coneNormals.SetInput(cone.GetOutput());
             coneNormals.Update();
             // Set normals
-            cone.GetOutput().GetPointData().SetNormals(coneNormals.GetOutput().GetPointData().GetNormals());
+            //cone.GetOutput().GetPointData().SetNormals(coneNormals.GetOutput().GetPointData().GetNormals());
             // Glyph
             vtkGlyph3D glyph = vtkGlyph3D.New();
             glyph.SetSourceConnection(cone.GetOutputPort());
@@ -3235,6 +3236,7 @@ namespace vtkControl
             // Actor
             data.Name += Globals.NameSeparator + "cones";
             vtkMaxActor actor = new vtkMaxActor(data, mapper);
+            actor.GeometryProperty.SetRepresentationToSurface();
             // Add
             ApplySymbolFormatingToActor(actor);
             AddActorGeometry(actor, data.Layer);
@@ -3338,17 +3340,17 @@ namespace vtkControl
             distanceToCamera.SetRenderer(_renderer);
             // Arrow
             vtkArrowSource arrow = vtkArrowSource.New();
-            arrow.SetTipResolution(13);
+            arrow.SetTipResolution(21);
             arrow.SetTipLength(0.3);
             arrow.SetTipRadius(0.1);
-            arrow.SetShaftResolution(7);
+            arrow.SetShaftResolution(15);
             arrow.SetShaftRadius(0.03);
             // Compute normals
             vtkPolyDataNormals normals = vtkPolyDataNormals.New();
             normals.SetInput(arrow.GetOutput());
             normals.Update();
             // Set normals
-            arrow.GetOutput().GetPointData().SetNormals(normals.GetOutput().GetPointData().GetNormals());
+            //arrow.GetOutput().GetPointData().SetNormals(normals.GetOutput().GetPointData().GetNormals());
             // Transform
             vtkTransform transform = vtkTransform.New();
             transform.Identity();
@@ -3412,14 +3414,14 @@ namespace vtkControl
             distanceToCamera.SetRenderer(_renderer);
             // Arrow
             vtkArrowSource arrow = vtkArrowSource.New();
-            arrow.SetTipResolution(13);
+            arrow.SetTipResolution(21);
             arrow.SetTipLength(0.3);
             arrow.SetTipRadius(0.1);
-            arrow.SetShaftResolution(7);
+            arrow.SetShaftResolution(15);
             arrow.SetShaftRadius(0.03);            
             // Cone
             vtkConeSource cone = vtkConeSource.New();
-            cone.SetResolution(13);
+            cone.SetResolution(21);
             cone.SetHeight(0.3);
             cone.SetRadius(0.1);
             cone.SetCenter(0.65, 0, 0);
@@ -3432,7 +3434,7 @@ namespace vtkControl
             normals.SetInput(appendFilter.GetOutput());
             normals.Update();
             // Set normals
-            appendFilter.GetOutput().GetPointData().SetNormals(normals.GetOutput().GetPointData().GetNormals());
+            //appendFilter.GetOutput().GetPointData().SetNormals(normals.GetOutput().GetPointData().GetNormals());
             // Transform
             vtkTransform transform = vtkTransform.New();
             transform.Identity();
@@ -3536,25 +3538,37 @@ namespace vtkControl
         {
             // Points
             double r = diameter / 2;
+            double delta;
             double phi = 0;
             double phiDelta = Math.PI / radialResolution;
-            double linPart = 0.2;
+            double linPart = diameter;
             double hDelta = (height - 2 * linPart) / (numOfTurns * radialResolution);
-            int numOfPoints = numOfTurns * radialResolution + 5;
+            int linResolution = 3;
+            int numOfPoints = numOfTurns * radialResolution + 1 + 2 * 2 * linResolution;
+            int count = 0;
             //
-            vtkPoints points = vtkPoints.New();
+            double[][] points = new double[numOfPoints][];
             // Start
-            points.InsertNextPoint(0, 0, 0);
-            points.InsertNextPoint(linPart, 0, 0);
+            delta = linPart / linResolution;
+            for (int i = 0; i < linResolution; i++) points[count++] = new double[] { delta * i, 0, 0 };
+            delta = r / linResolution;
+            for (int i = 0; i < linResolution; i++) points[count++] = new double[] { linPart, delta * i, 0 };
             // Helix
             for (int i = 0; i <= numOfTurns * radialResolution; i++)
             {
-                points.InsertNextPoint(linPart + hDelta * i, r * Math.Cos(phi), r * Math.Sin(phi));
+                points[count++] = new double[] { linPart + hDelta * i, r * Math.Cos(phi), r * Math.Sin(phi) };
                 phi += phiDelta;
             }
             // End
-            points.InsertNextPoint(height - linPart, 0, 0);
-            points.InsertNextPoint(height, 0, 0);
+            delta = r / linResolution;
+            for (int i = 0; i < linResolution; i++) points[count++] = new double[] { height - linPart, r - delta * (i + 1), 0, 0 };
+            delta = linPart / linResolution;
+            for (int i = 0; i < linResolution; i++) points[count++] = new double[] { height - linPart + delta * (i + 1), 0, 0 };
+            //
+            points = SmoothLinePoitns(points, 3);
+            //
+            vtkPoints vtkPoints = vtkPoints.New();
+            foreach (var point in points) vtkPoints.InsertNextPoint(point[0], point[1], point[2]);
             // Polyline
             vtkPolyLine polyLine = vtkPolyLine.New();
             polyLine.GetPointIds().SetNumberOfIds(numOfPoints);
@@ -3564,16 +3578,91 @@ namespace vtkControl
             cells.InsertNextCell(polyLine);
             // Polydata
             vtkPolyData polydata = vtkPolyData.New();
-            polydata.SetPoints(points);
+            polydata.SetPoints(vtkPoints);
             polydata.SetLines(cells);
             // Create tube filter
             vtkTubeFilter tubeFilter = vtkTubeFilter.New();
             tubeFilter.SetInput(polydata);
             tubeFilter.SetRadius(0.03);
             tubeFilter.SetNumberOfSides(10);
+            tubeFilter.CappingOn();
             tubeFilter.Update();
             //
             return tubeFilter.GetOutputPort();
+        }
+        private double[][] SmoothLinePoitns(double[][] points, int numOfPoints)
+        {
+            int half = numOfPoints / 2;
+            int evenNumOfPoitns = half * 2 + 1;
+            double[][] smooth = new double[points.Length][];
+            double[] newPoint;
+            //
+            for (int i = 0; i < points.Length; i++)
+            {
+                if (i < half || i >= points.Length - half)
+                {
+                    smooth[i] = points[i];
+                }
+                else
+                {
+                    newPoint = new double[3];
+                    for (int j = -half; j <= half; j++)
+                    {
+                        newPoint[0] += points[i + j][0];
+                        newPoint[1] += points[i + j][1];
+                        newPoint[2] += points[i + j][2];
+                    }
+                    newPoint[0] /= evenNumOfPoitns;
+                    newPoint[1] /= evenNumOfPoitns;
+                    newPoint[2] /= evenNumOfPoitns;
+                    //
+                    smooth[i] = newPoint;
+                }
+            }
+            //
+            return smooth;
+        }
+        private vtkTubeFilter CreateConeSource(double sx, double sy, double sz, int resolution)
+        {
+            // Points
+            int numOfPoints = 2;
+            //
+            vtkPoints points = vtkPoints.New();
+            // Start
+            points.InsertNextPoint(sx - 0.5, sy , sz );
+            points.InsertNextPoint(sx + 0.5, sy , sz );
+            // Polyline
+            vtkPolyLine polyLine = vtkPolyLine.New();
+            polyLine.GetPointIds().SetNumberOfIds(numOfPoints);
+            for (int i = 0; i < numOfPoints; i++) polyLine.GetPointIds().SetId(i, i);
+            // Create a cell array to store the lines in and add the lines to it
+            vtkCellArray cells = vtkCellArray.New();
+            cells.InsertNextCell(polyLine);
+            // Daimeter
+            vtkFloatArray scalars = vtkFloatArray.New();
+            scalars.InsertNextTuple1(0.5);
+            scalars.InsertNextTuple1(0.01);
+            // Polydata
+            vtkPolyData polydata = vtkPolyData.New();
+            polydata.SetPoints(points);
+            polydata.SetLines(cells);
+            polydata.GetPointData().SetScalars(scalars);
+            // Create tube filter
+            vtkTubeFilter tubeFilter = vtkTubeFilter.New();
+            tubeFilter.SetInput(polydata);
+            tubeFilter.SetNumberOfSides(resolution);
+            tubeFilter.SetVaryRadiusToVaryRadiusByAbsoluteScalar();
+            tubeFilter.CappingOn();
+            tubeFilter.Update();
+            // Compute normals
+            vtkPolyDataNormals normals = vtkPolyDataNormals.New();
+            normals.SetInput(tubeFilter.GetOutput());
+            normals.ComputeCellNormalsOff();
+            normals.Update();
+            // Set normals
+            tubeFilter.GetOutput().GetPointData().SetNormals(normals.GetOutput().GetPointData().GetNormals());
+            //
+            return tubeFilter;
         }
         public void AddOrientedThermoActor(vtkMaxActorData data, double symbolSize, bool invert)
         {

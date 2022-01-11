@@ -21,7 +21,7 @@ namespace PrePoMax.Forms
         // Properties                                                                                                               
         [CategoryAttribute("Region")]
         [OrderedDisplayName(0, 10, "Region type")]
-        [DescriptionAttribute("Select the region type for the creation ot the remeshing.")]
+        [DescriptionAttribute("Select the region type for the creation of the remeshing.")]
         [Id(1, 1)]
         public override string RegionType { get { return base.RegionType; } set { base.RegionType = value; } }
         //
@@ -33,7 +33,7 @@ namespace PrePoMax.Forms
         //
         [CategoryAttribute("Region")]
         [OrderedDisplayName(2, 10, "Element set")]
-        [DescriptionAttribute("Select the element set for the creation ot the section.")]
+        [DescriptionAttribute("Select the element set for the creation of the section.")]
         [Id(3, 1)]
         public string ElementSetName { get { return _parameters.RegionName; } set { _parameters.RegionName = value; } }
         //

@@ -2,7 +2,7 @@
 
 Selection - UNDO after empty click
 By Students
-Add the possibility ot output the Query command as General text formating
+Add the possibility to output the Query command as General text formating
 
 RENDERING
 https://vtk.org/pipermail/vtkusers/2016-November/097309.html
@@ -220,6 +220,9 @@ Done
 Save history in a file?!?!?
 
 Version 1.1.2 Master branch
+Added new a symbol for the spring constraints
+Added new constraint type Surface Constraint
+Added new constraint type Point Constraint
 Added support for opening and visualizing the contact element nodes from jobname.cel files
 Added support for Contact elements parameter at nodal, elemental and contact field outputs
 Added support for opening and visualizing the ResultsForLastIterations.frd files

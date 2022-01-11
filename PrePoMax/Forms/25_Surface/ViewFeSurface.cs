@@ -37,7 +37,7 @@ namespace PrePoMax.Forms
         //
         [CategoryAttribute("Region")]
         [OrderedDisplayName(0, 10, "Region type")]
-        [DescriptionAttribute("Select the region type for the creation ot the surface.")]
+        [DescriptionAttribute("Select the region type for the creation of the surface.")]
         public string CreateSurfaceFrom
         {
             get { return _surface.CreatedFrom.ToString(); }
