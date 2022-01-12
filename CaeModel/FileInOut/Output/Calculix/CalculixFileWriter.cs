@@ -85,9 +85,9 @@ namespace FileInOut.Output
                 }
             }
             // Prepare point springs
-            List<CalElement> additionalElements;
+            List<CalElement> springElements;
             List<CalLinearSpringSection> linearSpringSections;
-            GetPointSprings(model, referencePointsNodeIds, out additionalElements, out linearSpringSections);
+            GetPointSprings(model, referencePointsNodeIds, out springElements, out linearSpringSections);
             //
             CalTitle title;
             List<CalculixKeyword> keywords = new List<CalculixKeyword>();
@@ -110,7 +110,7 @@ namespace FileInOut.Output
             // Elements
             title = new CalTitle("Elements", "");
             keywords.Add(title);
-            AppendElements(model, additionalElements, title);
+            AppendElements(model, springElements, title);
             // Node sets
             title = new CalTitle("Node sets", "");
             keywords.Add(title);
@@ -163,24 +163,27 @@ namespace FileInOut.Output
             return keywords;
         }
         static private void GetPointSprings(FeModel model, Dictionary<string, int[]> referencePointsNodeIds,
-                                            out List<CalElement> additionalElements,
+                                            out List<CalElement> springElements,
                                             out List<CalLinearSpringSection> linearSpringSections)
         {
-            additionalElements = new List<CalElement>();
+            springElements = new List<CalElement>();
             linearSpringSections = new List<CalLinearSpringSection>();
             {
                 if (model.Mesh != null)
                 {
+                    int count;
+                    int[] elementIds;
                     int[] refPointIds;
                     int[] directions;
                     double[] stiffnesses;
                     string name;
                     int elementId = model.Mesh.MaxElementId;
                     FeNodeSet nodeSet;
-                    List<FeElement> springElements;
+                    List<FeElement> newElements;
                     HashSet<string> elementSetNames = new HashSet<string>(model.Mesh.ElementSets.Keys);
+                    List<CalElementSet> newElementSets = new List<CalElementSet>();
                     elementSetNames.UnionWith(model.Mesh.Parts.Keys);
-                    // Collect point ans surface springs
+                    // Collect point and surface springs
                     List<PointSpring> activePointSprings = new List<PointSpring>();
                     foreach (var entry in model.Constraints)
                     {
@@ -198,12 +201,15 @@ namespace FileInOut.Output
                         //
                         for (int i = 0; i < directions.Length; i++)
                         {
+                            // Name
                             name = elementSetNames.GetNextNumberedKey(ps.Name, "_DOF_" + directions[i]);
-                            springElements = new List<FeElement>();
+                            elementSetNames.Add(name);
+                            //
+                            newElements = new List<FeElement>();
                             // Node id
                             if (ps.RegionType == RegionTypeEnum.NodeId)
                             {
-                                springElements.Add(new LinearSpringElement(elementId + 1, new int[] { ps.NodeId }));
+                                newElements.Add(new LinearSpringElement(elementId + 1, new int[] { ps.NodeId }));
                                 elementId++;
                             }
                             // Node set
@@ -213,7 +219,7 @@ namespace FileInOut.Output
                                 {
                                     foreach (var label in nodeSet.Labels)
                                     {
-                                        springElements.Add(new LinearSpringElement(elementId + 1, new int[] { label }));
+                                        newElements.Add(new LinearSpringElement(elementId + 1, new int[] { label }));
                                         elementId++;
                                     }
                                 }
@@ -223,16 +229,19 @@ namespace FileInOut.Output
                             {
                                 if (referencePointsNodeIds.TryGetValue(ps.RegionName, out refPointIds))
                                 {
-                                    springElements.Add(new LinearSpringElement(elementId + 1,
+                                    newElements.Add(new LinearSpringElement(elementId + 1,
                                                                                new int[] { refPointIds[0] }));
                                     elementId++;
                                 }
                             }
                             else throw new NotSupportedException();
                             //
-                            additionalElements.Add(new CalElement(FeElementTypeSpring.SPRING1.ToString(),
-                                                                  name, springElements));
-                            //
+                            count = 0;
+                            elementIds = new int[newElements.Count];
+                            foreach (var element in newElements) elementIds[count++] = element.Id;
+                            springElements.Add(new CalElement(FeElementTypeSpring.SPRING1.ToString(),
+                                                                  name, newElements));
+                            newElementSets.Add(new CalElementSet(new FeGroup(name, elementIds)));
                             linearSpringSections.Add(new CalLinearSpringSection(name, directions[i], stiffnesses[i]));
                         }
                     }

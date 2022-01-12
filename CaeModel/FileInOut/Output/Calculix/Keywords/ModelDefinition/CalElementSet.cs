@@ -20,10 +20,15 @@ namespace FileInOut.Output.Calculix
 
 
         // Constructor                                                                                                              
+        public CalElementSet(FeGroup elementSet)
+            : this(elementSet, null)
+        {
+        }
         public CalElementSet(FeGroup elementSet, FeModel model)
         {
             _elementSet = elementSet;
-            if (_elementSet is FeElementSet es && es.CreatedFromParts) _partNames = model.Mesh.GetPartNamesByIds(es.Labels);
+            if (model != null && _elementSet is FeElementSet es && es.CreatedFromParts)
+                _partNames = model.Mesh.GetPartNamesByIds(es.Labels);
             else _partNames = null;
         }
 
