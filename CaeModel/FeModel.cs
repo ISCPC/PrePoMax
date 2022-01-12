@@ -912,7 +912,7 @@ namespace CaeModel
             return reservedPartNames;
         }
         // Springs
-        public List<PointSpring> GetPointSpringsFromSurfaceSpring(SurfaceSpring spring)
+        public PointSpring[] GetPointSpringsFromSurfaceSpring(SurfaceSpring spring)
         {
             Dictionary<int, double> nodalStiffnesses;
             double area;
@@ -923,7 +923,7 @@ namespace CaeModel
             {
                 if (entry.Value != 0 && (spring.GetSpringDirections().Length > 0))
                 {
-                    springs.Add(new PointSpring("_PointSpring_" + entry.Key.ToString(),
+                    springs.Add(new PointSpring(spring.Name + "_" + entry.Key.ToString(),
                                 entry.Key,
                                 spring.K1 / area * entry.Value,
                                 spring.K2 / area * entry.Value,
@@ -932,7 +932,7 @@ namespace CaeModel
                 }
             }
             //
-            return springs;
+            return springs.ToArray();
         }
         // Loads
         public CLoad[] GetNodalLoadsFromSurfaceTraction(STLoad load)

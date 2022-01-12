@@ -31,7 +31,6 @@ namespace CaeGlobals
                 return (T)formatter.Deserialize(stream);
             }
         }
-
         // Save clone to File
         public static void DumpToFile<T>(this T a, string fileName)
         {
@@ -93,7 +92,6 @@ namespace CaeGlobals
                 return default(T);
             }
         }
-
         // Dictionary
         public static bool ContainsValidKey<T>(this IDictionary<string, T> dictionary, string key)
         {
@@ -161,7 +159,6 @@ namespace CaeGlobals
             //
             return firstId;
         }
-
         // Property grid items
         public static IEnumerable<GridItem> EnumerateAllItems(this PropertyGrid grid)
         {
@@ -191,7 +188,6 @@ namespace CaeGlobals
                 }
             }
         }
-
         // String Array
         public static string ToUTF8(this string text)
         {
@@ -208,7 +204,7 @@ namespace CaeGlobals
             byte[] bytes = Encoding.ASCII.GetBytes(text);
             return Encoding.Default.GetString(bytes);
         }
-
+        //
         public static string ToShortString(this string[] stringArray)
         {
             string allNames = null;
@@ -219,7 +215,6 @@ namespace CaeGlobals
             }
             return allNames;
         }
-
         // vtkSelectBy
         public static bool IsGeometryBased(this vtkSelectBy selectBy)
         {

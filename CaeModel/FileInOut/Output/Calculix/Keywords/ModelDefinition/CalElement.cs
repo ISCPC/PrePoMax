@@ -32,7 +32,10 @@ namespace FileInOut.Output.Calculix
         // Methods                                                                                                                  
         public override string GetKeywordString()
         {
-            return string.Format("*Element, Type={0}, Elset={1}{2}", _elementType, _elementSetName, Environment.NewLine);
+            string elSet = "";
+            if (_elementSetName != null && _elementSetName.Length > 0) elSet = ", Elset=" + _elementSetName;
+            //
+            return string.Format("*Element, Type={0}{1}{2}", _elementType, elSet, Environment.NewLine);
         }
         public override string GetDataString()
         {
