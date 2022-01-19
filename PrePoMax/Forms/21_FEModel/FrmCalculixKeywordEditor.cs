@@ -315,9 +315,29 @@ namespace PrePoMax.Forms
         {
             _selectedKeywordFirstLine = -1;
             _selectedKeywordNumOfLines = -1;
-            List<string> lines = WriteTreeNodeToLines(btvKeywordsTree.Nodes[0], 0);
-            rtbInpFile.Lines = lines.ToArray();
-            FormatInp(rtbInpFile);
+            //
+            string[] newLines = WriteTreeNodeToLines(btvKeywordsTree.Nodes[0], 0).ToArray();
+            string[] oldLines = rtbInpFile.Lines;
+            bool equal = true;
+            //
+            if (newLines.Length == oldLines.Length)
+            {
+                for (int i = 0; i < newLines.Length; i++)
+                {
+                    if (newLines[i] != oldLines[i])
+                    {
+                        equal = false;
+                        break;
+                    }
+                }
+            }
+            else equal = false;
+            //
+            //if (!equal)
+            {
+                rtbInpFile.Lines = newLines;
+                FormatInp(rtbInpFile);
+            }
         }
         private List<string> WriteTreeNodeToLines(TreeNode node, int lineCount)
         {
@@ -463,7 +483,6 @@ namespace PrePoMax.Forms
                 for (int i = 0; i < lines.Length; i++)
                 {
                     line = lines[i];
-                    
 
                     if (line.StartsWith("**") || line.StartsWith("*") || line.StartsWith("..."))
                     {

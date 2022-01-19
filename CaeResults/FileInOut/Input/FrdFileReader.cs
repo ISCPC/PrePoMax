@@ -102,6 +102,8 @@ namespace CaeResults
                     }
                 }
                 //
+                RemoveErrorElements(nodes, ref elements);
+                //
                 FeMesh mesh = new FeMesh(nodes, elements, MeshRepresentation.Results);
                 mesh.ResetPartsColor();
                 result.SetMesh(mesh, nodeIdsLookUp);
@@ -326,6 +328,11 @@ namespace CaeResults
                 switch (feDescriptorId)
                 {
                     // LINEAR ELEMENTS                                                                                              
+                    case FrdFeDescriptorId.BeamLinear:
+                        // Beam element
+                        record1 = lines[++i].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
+                        if (TryGetLinearBeamElement(id, record1, out element)) elements.Add(id, element);
+                        break;
                     case FrdFeDescriptorId.ShellLinearTriangle:
                         // Triangle element
                         record1 = lines[++i].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
@@ -395,8 +402,24 @@ namespace CaeResults
                         throw new Exception("The element type " + feDescriptorId.ToString() + " is not supported.");
                 }
             }
-
+            //
             return elements;
+        }
+        static private void RemoveErrorElements(Dictionary<int, FeNode> nodes, ref Dictionary<int, FeElement> elements)
+        {
+            List<int> elementsIdsToRemove = new List<int>();
+            foreach (var entry in elements)
+            {
+                foreach (var nodeId in entry.Value.NodeIds)
+                {
+                    if (!nodes.ContainsKey(nodeId))
+                    {
+                        elementsIdsToRemove.Add(entry.Key);
+                        break;
+                    }
+                }
+            }
+            foreach (var elementId in elementsIdsToRemove) elements.Remove(elementId);
         }
         static private void GetField(string[] lines, bool constantWidth, FieldData prevFieldData, Dictionary<int, int> nodeIdsLookUp,
                                      out FieldData fieldData, out Field field)
@@ -799,6 +822,26 @@ namespace CaeResults
 
 
         // LINEAR ELEMENTS                                                                                              
+        static private bool TryGetLinearBeamElement(int id, string[] record, out FeElement element)
+        {
+            element = null;
+            //
+            try
+            {
+                int[] nodes = new int[2];
+                for (int i = 0; i < nodes.Length; i++)
+                {
+                    if (!int.TryParse(record[i + 1], out nodes[i])) return false;
+                }
+                element = new LinearBeamElement(id, nodes);
+                //
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
         static private LinearTriangleElement GetLinearTriangleElement(int id, string[] record)
         {
             int[] nodes = new int[3];

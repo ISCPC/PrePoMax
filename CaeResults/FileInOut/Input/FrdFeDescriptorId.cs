@@ -18,7 +18,9 @@ namespace CaeResults
         ShellLinearTriangle = 7,
         ShellParabolicTriangle = 8,
         ShellLinearQuadrilateral = 9,
-        ShellParabolicQuadrilateral = 10
+        ShellParabolicQuadrilateral = 10,
+        //
+        BeamLinear = 11
     }
 
 

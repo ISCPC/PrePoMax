@@ -2276,13 +2276,18 @@ namespace PrePoMax
                 SetStateWorking(Globals.CreatingCompoundText, true);
                 //
                 GeometryPart part;
+                HashSet<PartType> stlPartTypes = new HashSet<PartType>();
+                HashSet<PartType> brepPartNames = new HashSet<PartType>();
+                //
                 foreach (var partName in partNames)
                 {
                     part = (GeometryPart)_controller.Model.Geometry.Parts[partName];
-                    if (part.CADFileData == null)
-                        throw new CaeException("Compound part can only be made from CAD based geometry parts.");
+                    if (part.CADFileData == null) stlPartTypes.Add(part.PartType);
+                    else brepPartNames.Add(part.PartType);
                 }
-                //
+                if (stlPartTypes.Count + brepPartNames.Count != 1)
+                    throw new CaeException("Compound part can be made from only CAD or only stl based geometry parts " + 
+                                           "of the same type.");
                 await Task.Run(() => _controller.CreateAndImportCompoundPartCommand(partNames));
             }
             catch (Exception ex)

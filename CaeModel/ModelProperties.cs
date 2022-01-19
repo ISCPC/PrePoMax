@@ -104,7 +104,8 @@ namespace CaeModel
                     {
                         if (unavailableElementTypeNames.TryGetValue(elementType, out elementEnums))
                             elementEnums.Add(item.ToString());
-                        else unavailableElementTypeNames.Add(elementType, new HashSet<string>() { item.ToString() });
+                        else
+                            unavailableElementTypeNames.Add(elementType, new HashSet<string>() { item.ToString() });
                     }
                 }
             }

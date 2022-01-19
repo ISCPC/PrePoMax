@@ -831,7 +831,7 @@ namespace PrePoMax
                     {
                         if (partFileName.ToLower().Contains("compound"))
                         {
-                            addedPartNames = ImportCompoundPart(partFileName);
+                            addedPartNames = ImportBrepCompoundPart(partFileName);
                         }
                         else
                         {
@@ -904,19 +904,47 @@ namespace PrePoMax
         }        
         public string[] CreateAndImportCompoundPart(string[] partNames)
         {
-            string[] createdFileNames = CreateCompoundPart(partNames);
-            string[] importedPartNames = null;
+            GeometryPart part;
+            HashSet<PartType> stlPartTypes = new HashSet<PartType>();
+            HashSet<PartType> brepPartNames = new HashSet<PartType>();
             //
-            if (createdFileNames.Length == 1)
+            foreach (var partName in partNames)
             {
-                string brepFileName = createdFileNames[0];
-                HideGeometryParts(partNames);
-                importedPartNames = ImportCompoundPart(brepFileName);
+                part = (GeometryPart)_model.Geometry.Parts[partName];
+                if (part.CADFileData == null) stlPartTypes.Add(part.PartType);
+                else brepPartNames.Add(part.PartType);
             }
+            if (stlPartTypes.Count + brepPartNames.Count != 1) throw new NotSupportedException();
             //
-            return importedPartNames;
+            if (stlPartTypes.Count > 0)
+            {
+                GeometryPart geometryPart;
+                string[] mergedPartNames;
+                FeMesh mesh = _model.Geometry.DeepCopy();
+                mesh.MergeGeometryParts(partNames, out geometryPart, out mergedPartNames);
+                _model.Geometry.AddPartsFromMesh(mesh, new string[] { geometryPart.Name }, null);
+                //
+                UpdateAfterImport(".stl");
+                //
+                return new string[] { geometryPart.Name };
+            }
+            else if (brepPartNames.Count > 0)
+            {
+                string[] createdFileNames = CreateBrepCompoundPart(partNames);
+                string[] importedPartNames = null;
+                //
+                if (createdFileNames.Length == 1)
+                {
+                    string brepFileName = createdFileNames[0];
+                    HideGeometryParts(partNames);
+                    importedPartNames = ImportBrepCompoundPart(brepFileName);
+                }
+                //
+                return importedPartNames;
+            }
+            else throw new NotSupportedException();
         }
-        public string[] CreateCompoundPart(string[] partNames)
+        public string[] CreateBrepCompoundPart(string[] partNames)
         {
             string workDirectory = _settings.Calculix.WorkDirectory;
             if (workDirectory == null || !Directory.Exists(workDirectory))
@@ -957,7 +985,7 @@ namespace PrePoMax
             }
             else return null;
         }
-        private string[] ImportCompoundPart(string brepFileName)
+        private string[] ImportBrepCompoundPart(string brepFileName)
         {
             string compoundPartName = _model.Geometry.Parts.GetNextNumberedKey("Compound");
             string[] importedPartNames = ImportCADAssemblyFile(brepFileName, "BREP_ASSEMBLY_SPLIT_TO_PARTS");
@@ -8510,8 +8538,7 @@ namespace PrePoMax
                                                out data.Geometry.Cells.Ids, out data.Geometry.Cells.CellNodeIds,
                                                out data.Geometry.Cells.Types);
             // Model edges
-            if ((part.PartType == PartType.Solid || part.PartType == PartType.SolidAsShell || part.PartType == PartType.Shell) &&
-                part.Visualization.EdgeCells != null)
+            if (part.PartType.HasEdges() && part.Visualization.EdgeCells != null)
             {
                 data.ModelEdges = new PartExchangeData();
                 mesh.GetNodesAndCellsForModelEdges(part, out data.ModelEdges.Nodes.Ids, out data.ModelEdges.Nodes.Coor,
@@ -8642,8 +8669,7 @@ namespace PrePoMax
             // Back face
             if (part.PartType == PartType.Shell) data.BackfaceCulling = false;
             // Model edges
-            if (((part.PartType == PartType.Solid || part.PartType == PartType.SolidAsShell || part.PartType == PartType.Shell) &&
-                part.Visualization.EdgeCells != null) || part.PartType == PartType.Wire)
+            if (part.PartType.HasEdges() && part.Visualization.EdgeCells != null)
             {
                 data.ModelEdges = new PartExchangeData();
                 mesh.GetNodesAndCellsForModelEdges(part, out data.ModelEdges.Nodes.Ids, out data.ModelEdges.Nodes.Coor,
@@ -11730,9 +11756,7 @@ namespace PrePoMax
             PartExchangeData actorResultData = _results.GetScaledVisualizationNodesCellsAndValues(part, fieldData, scale);
             // Model edges
             PartExchangeData modelEdgesResultData = null;            
-            if ((part.PartType == PartType.Solid || part.PartType == PartType.SolidAsShell || part.PartType == PartType.Shell) &&
-                part.Visualization.EdgeCells != null)
-            //if (_results.Mesh.Elements[part.Labels[0]] is FeElement3D && part.Visualization.EdgeCells != null)
+            if (part.PartType.HasEdges() && part.Visualization.EdgeCells != null)
             {
                 modelEdgesResultData = _results.GetScaledEdgesNodesAndCells(part, fieldData, scale);
             }
@@ -11747,6 +11771,7 @@ namespace PrePoMax
             data.Pickable = true;
             data.SmoothShaded = part.SmoothShaded;
             data.ActorRepresentation = GetRepresentation(part);
+            data.NodeSize = 5;
             // Back face                                                    
             if (part.PartType == PartType.Shell) data.BackfaceCulling = false;
             //
@@ -11907,8 +11932,7 @@ namespace PrePoMax
                                                                                                                     numFrames);
             // Model edges
             PartExchangeData modelEdgesResultData = null;
-            if ((part.PartType == PartType.Solid || part.PartType == PartType.SolidAsShell || part.PartType == PartType.Shell) &&
-                part.Visualization.EdgeCells != null)
+            if (part.PartType.HasEdges() && part.Visualization.EdgeCells != null)
             {
                 modelEdgesResultData = _results.GetScaleFactorAnimationDataEdgesNodesAndCells(part, fieldData, scale, numFrames);
             }
@@ -11936,8 +11960,7 @@ namespace PrePoMax
                                                                                                                       scale);
             // Model edges
             PartExchangeData modelEdgesResultData = null;
-            if ((part.PartType == PartType.Solid || part.PartType == PartType.SolidAsShell || part.PartType == PartType.Shell) &&
-                part.Visualization.EdgeCells != null)
+            if (part.PartType.HasEdges() && part.Visualization.EdgeCells != null)
             {
                 modelEdgesResultData = _results.GetTimeIncrementAnimationDataVisualizationEdgesNodesAndCells(part, fieldData, scale);
             }

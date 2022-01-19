@@ -307,4 +307,33 @@ namespace CaeGlobals
             return names.ToArray();
         }               
     }
+
+
+
+
+//    // Create the geometry of a point (the coordinate)
+//    vtkPoints points = vtkPoints.New();
+//    // Create the topology of the point (a vertex)
+//    vtkCellArray vertices = vtkCellArray.New();
+//            for (int i = 0; i<data.Geometry.Nodes.Coor.GetLength(0); i++)
+//            {
+//                points.InsertNextPoint(data.Geometry.Nodes.Coor[i][0], data.Geometry.Nodes.Coor[i][1], data.Geometry.Nodes.Coor[i][2]);
+//                vertices.InsertNextCell(1);
+//                vertices.InsertCellPoint(i);
+//            }
+//// Create a polydata object
+//vtkPolyData pointsPolyData = vtkPolyData.New();
+//// Set the points and vertices created as the geometry and topology of the polydata
+//pointsPolyData.SetPoints(points);
+//pointsPolyData.SetVerts(vertices);
+//// Mapper
+//vtkPolyDataMapper mapper = vtkPolyDataMapper.New();
+//mapper.SetInput(pointsPolyData);
+//_geometryMapper = mapper;
+//// Actor
+//_geometry.SetMapper(_geometryMapper);
+////
+//_geometryProperty = _geometry.GetProperty();
+//_geometryProperty.SetColor(data.Color.R / 255d, data.Color.G / 255d, data.Color.B / 255d);
+//            //_geometryProperty.SetPointSize(data.NodeSize);
 }

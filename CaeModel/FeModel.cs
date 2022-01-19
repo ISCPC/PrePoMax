@@ -643,7 +643,7 @@ namespace CaeModel
             FeMesh mesh = FileInOut.Input.VolFileReader.Read(fileName, FileInOut.Input.ElementsToImport.Shell |
                                                                        FileInOut.Input.ElementsToImport.Solid);
             //
-            ImportMesh(mesh, GetReservedPartNames());
+            ImportMesh(mesh, GetReservedPartNames(), true, false);
         }
         public bool ImportMeshFromMmgFile(string fileName)
         {
@@ -659,12 +659,12 @@ namespace CaeModel
                 }
             }
             //
-            ImportMesh(mesh, GetReservedPartNames());
+            ImportMesh(mesh, GetReservedPartNames(), true, false);
             //
             return noErrors;
         }
         public void ImportGeneratedMeshFromMeshFile(string fileName, BasePart part, bool convertToSecondorder,
-                                                   bool splitCompoundMesh)
+                                                    bool splitCompoundMesh)
         {
             FileInOut.Input.ElementsToImport elementsToImport;
             GeometryPart subPart;
@@ -863,7 +863,7 @@ namespace CaeModel
             FeMesh mesh = FileInOut.Input.UnvFileReader.Read(fileName, FileInOut.Input.ElementsToImport.Shell |
                                                                        FileInOut.Input.ElementsToImport.Solid);
             //
-            ImportMesh(mesh, GetReservedPartNames());
+            ImportMesh(mesh, GetReservedPartNames(), true, false);
         }
         //
         private string[] ImportGeometry(FeMesh mesh, ICollection<string> reservedPartNames)
@@ -883,7 +883,8 @@ namespace CaeModel
             string[] addedPartNames = _geometry.AddMesh(mesh, reservedPartNames);
             return addedPartNames;
         }
-        public void ImportMesh(FeMesh mesh, ICollection<string> reservedPartNames, bool forceRenameParts = true)
+        public void ImportMesh(FeMesh mesh, ICollection<string> reservedPartNames, bool forceRenameParts = true,
+                               bool renumberNodesAndElements = true)
         {
             // Check for 2D mesh
             if (_properties.ModelSpace.IsTwoD() && !mesh.BoundingBox.Is2D())
@@ -896,7 +897,7 @@ namespace CaeModel
                 _mesh = new FeMesh(MeshRepresentation.Mesh);
                 mesh.ResetPartsColor();
             }
-            _mesh.AddMesh(mesh, reservedPartNames, forceRenameParts);
+            _mesh.AddMesh(mesh, reservedPartNames, forceRenameParts, renumberNodesAndElements);
         }
         // Getters
         public string[] GetAllMeshEntityNames()
