@@ -22,6 +22,7 @@ namespace PrePoMax
         public static string MeshingText = "Meshing...";
         public static string UndoingText = "Undoing...";
         public static string CreatingCompoundText = "Creating compound...";
+        public static string RegeneratingCompoundText = "Regenerating compound...";
         public static string RegeneratingText = "Regenerating history...";
         public static string FlippingNormalsText = "Flipping normals...";
         public static string SplittingFacesText = "Splitting faces...";
@@ -55,5 +56,7 @@ namespace PrePoMax
         // Names
         public static string NameSeparator = ":";        
         public static string MissingSectionName = "Missing_section";
+        // Graphics
+        public static int BeamNodeSize = 5;
     }
 }

@@ -172,5 +172,12 @@ namespace CaeMesh
         {
             return new LinearTriangleElement(Id, PartId, NodeIds.ToArray());
         }
+        //
+        public void FlipNormal()
+        {
+            int tmp = NodeIds[1];
+            NodeIds[1] = NodeIds[2];
+            NodeIds[2] = tmp;
+        }
     }
 }

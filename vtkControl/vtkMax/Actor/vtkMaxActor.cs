@@ -470,6 +470,54 @@ namespace vtkControl
             stlWriter.SetInput(decimate.GetOutput());
             stlWriter.Write();
         }
+        public void Smooth(double a, string fileName)
+        {
+            vtkWindowedSincPolyDataFilter smoother = vtkWindowedSincPolyDataFilter.New();
+            vtkSmoothPolyDataFilter smoothFilter = vtkSmoothPolyDataFilter.New();
+            //
+            if (true)
+            {
+                int smoothingIterations = 20;
+                double passBand = 0.001;
+                double featureAngle = 360.0;
+                //
+                smoother.SetInput(_geometryMapper.GetInput());
+                smoother.SetNumberOfIterations(smoothingIterations);
+                //smoother.BoundarySmoothingOff();
+                smoother.BoundarySmoothingOn();
+                smoother.FeatureEdgeSmoothingOn();
+                //smoother.FeatureEdgeSmoothingOn();
+                smoother.SetFeatureAngle(featureAngle);
+                smoother.SetPassBand(passBand);
+                smoother.NonManifoldSmoothingOn();
+                //smoother.NormalizeCoordinatesOn();
+                smoother.Update();
+            }
+            if (false)
+            {
+                smoothFilter.SetInput(_geometryMapper.GetInput());
+                smoothFilter.SetNumberOfIterations(15);
+                smoothFilter.SetRelaxationFactor(0.1);
+                smoothFilter.FeatureEdgeSmoothingOff();
+                smoothFilter.BoundarySmoothingOn();
+                smoothFilter.Update();
+            }
+            //
+            vtkDecimatePro decimate = vtkDecimatePro.New();
+            decimate.SetInput(smoother.GetOutput());
+            decimate.PreserveTopologyOff();
+            decimate.SetTargetReduction(0.95);
+            decimate.SplittingOn();
+            decimate.BoundaryVertexDeletionOn();
+            decimate.PreserveTopologyOff();
+            decimate.Update();
+            //
+            //
+            vtkSTLWriter stlWriter = vtkSTLWriter.New();
+            stlWriter.SetFileName(fileName);
+            stlWriter.SetInput(smoother.GetOutput());
+            stlWriter.Write();
+        }
         private void AddCellDataToGrid(vtkUnstructuredGrid source, vtkUnstructuredGrid uGridActor, vtkUnstructuredGrid uGridEdges)
         {
             List<int> actorCellIds = new List<int>();

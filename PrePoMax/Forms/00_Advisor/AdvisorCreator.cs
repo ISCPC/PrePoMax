@@ -39,7 +39,8 @@ namespace PrePoMax
             advisorControl.AddPage(Results(frmMain));
             //
             ViewType viewType;
-            if (frmMain.GetCurrentView() == ViewGeometryModelResults.Geometry) viewType = ViewType.Geometry;
+            if (frmMain.GetCurrentView() == ViewGeometryModelResults.None) return null;
+            else if (frmMain.GetCurrentView() == ViewGeometryModelResults.Geometry) viewType = ViewType.Geometry;
             else if (frmMain.GetCurrentView() == ViewGeometryModelResults.Model) viewType = ViewType.Model;
             else if (frmMain.GetCurrentView() == ViewGeometryModelResults.Results) viewType = ViewType.Results;
             else throw new NotSupportedException();

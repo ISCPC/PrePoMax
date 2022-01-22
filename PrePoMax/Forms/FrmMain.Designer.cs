@@ -115,16 +115,21 @@
             this.tsmiSetTransparencyForGeometryParts = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerGeomPart3 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiDeleteGeometryParts = new System.Windows.Forms.ToolStripMenuItem();
+            this.cADPartToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiFlipFaceNormalCAD = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiSplitAFaceUsingTwoPoints = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiStlPart = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiFindEdgesByAngleForGeometryParts = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiFlipStlPartSurfacesNormal = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiSmoothPart = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiCropWithCylinder = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiCropWithCube = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerGeometry1 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiCreateAndImportCompoundPart = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiRegenerateCompoundPart = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSwapGeometryPartGeometries = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerGeometry2 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiGeometryAnalyze = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiFlipFaceNormal = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiSplitAFaceUsingTwoPoints = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiFindEdgesByAngleForGeometryParts = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiCropWithCylinder = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiCropWithCube = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiMesh = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiMeshingParameters = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiMeshRefinement = new System.Windows.Forms.ToolStripMenuItem();
@@ -144,6 +149,8 @@
             this.tsmiDividerModel1 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiNode = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiRenumberAllNodes = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiElement = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiRenumberAllElements = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiPart = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEditPart = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiTransformModelParts = new System.Windows.Forms.ToolStripMenuItem();
@@ -370,8 +377,6 @@
             this.tscbSymbolsForStep = new System.Windows.Forms.ToolStripComboBox();
             this.timerTest = new System.Windows.Forms.Timer(this.components);
             this.timerOutput = new System.Windows.Forms.Timer(this.components);
-            this.tsmiElement = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiRenumberAllElements = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStripMain.SuspendLayout();
             this.statusStripMain.SuspendLayout();
             this.tsResults.SuspendLayout();
@@ -983,16 +988,14 @@
             // 
             this.tsmiGeometry.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmiGeometryPart,
+            this.cADPartToolStripMenuItem,
+            this.tsmiStlPart,
             this.tsmiDividerGeometry1,
             this.tsmiCreateAndImportCompoundPart,
+            this.tsmiRegenerateCompoundPart,
             this.tsmiSwapGeometryPartGeometries,
             this.tsmiDividerGeometry2,
-            this.tsmiGeometryAnalyze,
-            this.tsmiFlipFaceNormal,
-            this.tsmiSplitAFaceUsingTwoPoints,
-            this.tsmiFindEdgesByAngleForGeometryParts,
-            this.tsmiCropWithCylinder,
-            this.tsmiCropWithCube});
+            this.tsmiGeometryAnalyze});
             this.tsmiGeometry.Name = "tsmiGeometry";
             this.tsmiGeometry.Size = new System.Drawing.Size(71, 20);
             this.tsmiGeometry.Text = "Geometry";
@@ -1012,7 +1015,7 @@
             this.tsmiDividerGeomPart3,
             this.tsmiDeleteGeometryParts});
             this.tsmiGeometryPart.Name = "tsmiGeometryPart";
-            this.tsmiGeometryPart.Size = new System.Drawing.Size(226, 22);
+            this.tsmiGeometryPart.Size = new System.Drawing.Size(221, 22);
             this.tsmiGeometryPart.Text = "Part";
             // 
             // tsmiEditGeometryPart
@@ -1097,43 +1100,21 @@
             this.tsmiDeleteGeometryParts.Text = "Delete";
             this.tsmiDeleteGeometryParts.Click += new System.EventHandler(this.tsmiDeleteGeometryParts_Click);
             // 
-            // tsmiDividerGeometry1
+            // cADPartToolStripMenuItem
             // 
-            this.tsmiDividerGeometry1.Name = "tsmiDividerGeometry1";
-            this.tsmiDividerGeometry1.Size = new System.Drawing.Size(223, 6);
+            this.cADPartToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsmiFlipFaceNormalCAD,
+            this.tsmiSplitAFaceUsingTwoPoints});
+            this.cADPartToolStripMenuItem.Name = "cADPartToolStripMenuItem";
+            this.cADPartToolStripMenuItem.Size = new System.Drawing.Size(221, 22);
+            this.cADPartToolStripMenuItem.Text = "CAD Part";
             // 
-            // tsmiCreateAndImportCompoundPart
+            // tsmiFlipFaceNormalCAD
             // 
-            this.tsmiCreateAndImportCompoundPart.Name = "tsmiCreateAndImportCompoundPart";
-            this.tsmiCreateAndImportCompoundPart.Size = new System.Drawing.Size(226, 22);
-            this.tsmiCreateAndImportCompoundPart.Text = "Create Compound Part";
-            this.tsmiCreateAndImportCompoundPart.Click += new System.EventHandler(this.tsmiCreateAndImportCompoundPart_Click);
-            // 
-            // tsmiSwapGeometryPartGeometries
-            // 
-            this.tsmiSwapGeometryPartGeometries.Name = "tsmiSwapGeometryPartGeometries";
-            this.tsmiSwapGeometryPartGeometries.Size = new System.Drawing.Size(226, 22);
-            this.tsmiSwapGeometryPartGeometries.Text = "Swap Part Geometries";
-            this.tsmiSwapGeometryPartGeometries.Click += new System.EventHandler(this.tsmiSwapGeometryPartGeometries_Click);
-            // 
-            // tsmiDividerGeometry2
-            // 
-            this.tsmiDividerGeometry2.Name = "tsmiDividerGeometry2";
-            this.tsmiDividerGeometry2.Size = new System.Drawing.Size(223, 6);
-            // 
-            // tsmiGeometryAnalyze
-            // 
-            this.tsmiGeometryAnalyze.Name = "tsmiGeometryAnalyze";
-            this.tsmiGeometryAnalyze.Size = new System.Drawing.Size(226, 22);
-            this.tsmiGeometryAnalyze.Text = "Analyze";
-            this.tsmiGeometryAnalyze.Click += new System.EventHandler(this.tsmiGeometryAnalyze_Click);
-            // 
-            // tsmiFlipFaceNormal
-            // 
-            this.tsmiFlipFaceNormal.Name = "tsmiFlipFaceNormal";
-            this.tsmiFlipFaceNormal.Size = new System.Drawing.Size(226, 22);
-            this.tsmiFlipFaceNormal.Text = "Flip Face Normal";
-            this.tsmiFlipFaceNormal.Click += new System.EventHandler(this.tsmiFlipFaceNormal_Click);
+            this.tsmiFlipFaceNormalCAD.Name = "tsmiFlipFaceNormalCAD";
+            this.tsmiFlipFaceNormalCAD.Size = new System.Drawing.Size(226, 22);
+            this.tsmiFlipFaceNormalCAD.Text = "Flip Face Normal";
+            this.tsmiFlipFaceNormalCAD.Click += new System.EventHandler(this.tsmiFlipFaceNormalCAD_Click);
             // 
             // tsmiSplitAFaceUsingTwoPoints
             // 
@@ -1142,26 +1123,90 @@
             this.tsmiSplitAFaceUsingTwoPoints.Text = "Split a Face Using Two Points";
             this.tsmiSplitAFaceUsingTwoPoints.Click += new System.EventHandler(this.tsmiSplitAFaceUsingTwoPoints_Click);
             // 
+            // tsmiStlPart
+            // 
+            this.tsmiStlPart.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsmiFindEdgesByAngleForGeometryParts,
+            this.tsmiFlipStlPartSurfacesNormal,
+            this.tsmiSmoothPart,
+            this.tsmiCropWithCylinder,
+            this.tsmiCropWithCube});
+            this.tsmiStlPart.Name = "tsmiStlPart";
+            this.tsmiStlPart.Size = new System.Drawing.Size(221, 22);
+            this.tsmiStlPart.Text = "Stl Part";
+            // 
             // tsmiFindEdgesByAngleForGeometryParts
             // 
             this.tsmiFindEdgesByAngleForGeometryParts.Name = "tsmiFindEdgesByAngleForGeometryParts";
-            this.tsmiFindEdgesByAngleForGeometryParts.Size = new System.Drawing.Size(226, 22);
+            this.tsmiFindEdgesByAngleForGeometryParts.Size = new System.Drawing.Size(218, 22);
             this.tsmiFindEdgesByAngleForGeometryParts.Text = "Find Model Edges by Angle";
             this.tsmiFindEdgesByAngleForGeometryParts.Click += new System.EventHandler(this.tsmiFindEdgesByAngleForGeometryParts_Click);
+            // 
+            // tsmiFlipStlPartSurfacesNormal
+            // 
+            this.tsmiFlipStlPartSurfacesNormal.Name = "tsmiFlipStlPartSurfacesNormal";
+            this.tsmiFlipStlPartSurfacesNormal.Size = new System.Drawing.Size(218, 22);
+            this.tsmiFlipStlPartSurfacesNormal.Text = "Flip Part Surfaces Normal";
+            this.tsmiFlipStlPartSurfacesNormal.Click += new System.EventHandler(this.tsmiFlipStlPartSurfacesNormal_Click);
+            // 
+            // tsmiSmoothPart
+            // 
+            this.tsmiSmoothPart.Name = "tsmiSmoothPart";
+            this.tsmiSmoothPart.Size = new System.Drawing.Size(218, 22);
+            this.tsmiSmoothPart.Text = "Smooth Part";
+            this.tsmiSmoothPart.Click += new System.EventHandler(this.tsmiSmoothPart_Click);
             // 
             // tsmiCropWithCylinder
             // 
             this.tsmiCropWithCylinder.Name = "tsmiCropWithCylinder";
-            this.tsmiCropWithCylinder.Size = new System.Drawing.Size(226, 22);
+            this.tsmiCropWithCylinder.Size = new System.Drawing.Size(218, 22);
             this.tsmiCropWithCylinder.Text = "Crop With Cylinder";
             this.tsmiCropWithCylinder.Click += new System.EventHandler(this.tsmiCropWithCylinder_Click);
             // 
             // tsmiCropWithCube
             // 
             this.tsmiCropWithCube.Name = "tsmiCropWithCube";
-            this.tsmiCropWithCube.Size = new System.Drawing.Size(226, 22);
+            this.tsmiCropWithCube.Size = new System.Drawing.Size(218, 22);
             this.tsmiCropWithCube.Text = "Crop With Cube";
             this.tsmiCropWithCube.Click += new System.EventHandler(this.tsmiCropWithCube_Click);
+            // 
+            // tsmiDividerGeometry1
+            // 
+            this.tsmiDividerGeometry1.Name = "tsmiDividerGeometry1";
+            this.tsmiDividerGeometry1.Size = new System.Drawing.Size(218, 6);
+            // 
+            // tsmiCreateAndImportCompoundPart
+            // 
+            this.tsmiCreateAndImportCompoundPart.Name = "tsmiCreateAndImportCompoundPart";
+            this.tsmiCreateAndImportCompoundPart.Size = new System.Drawing.Size(221, 22);
+            this.tsmiCreateAndImportCompoundPart.Text = "Create Compound Part";
+            this.tsmiCreateAndImportCompoundPart.Click += new System.EventHandler(this.tsmiCreateAndImportCompoundPart_Click);
+            // 
+            // tsmiRegenerateCompoundPart
+            // 
+            this.tsmiRegenerateCompoundPart.Name = "tsmiRegenerateCompoundPart";
+            this.tsmiRegenerateCompoundPart.Size = new System.Drawing.Size(221, 22);
+            this.tsmiRegenerateCompoundPart.Text = "Regenerate Compound Part";
+            this.tsmiRegenerateCompoundPart.Click += new System.EventHandler(this.tsmiRegenerateCompoundPart_Click);
+            // 
+            // tsmiSwapGeometryPartGeometries
+            // 
+            this.tsmiSwapGeometryPartGeometries.Name = "tsmiSwapGeometryPartGeometries";
+            this.tsmiSwapGeometryPartGeometries.Size = new System.Drawing.Size(221, 22);
+            this.tsmiSwapGeometryPartGeometries.Text = "Swap Part Geometries";
+            this.tsmiSwapGeometryPartGeometries.Click += new System.EventHandler(this.tsmiSwapGeometryPartGeometries_Click);
+            // 
+            // tsmiDividerGeometry2
+            // 
+            this.tsmiDividerGeometry2.Name = "tsmiDividerGeometry2";
+            this.tsmiDividerGeometry2.Size = new System.Drawing.Size(218, 6);
+            // 
+            // tsmiGeometryAnalyze
+            // 
+            this.tsmiGeometryAnalyze.Name = "tsmiGeometryAnalyze";
+            this.tsmiGeometryAnalyze.Size = new System.Drawing.Size(221, 22);
+            this.tsmiGeometryAnalyze.Text = "Analyze";
+            this.tsmiGeometryAnalyze.Click += new System.EventHandler(this.tsmiGeometryAnalyze_Click);
             // 
             // tsmiMesh
             // 
@@ -1313,9 +1358,24 @@
             // tsmiRenumberAllNodes
             // 
             this.tsmiRenumberAllNodes.Name = "tsmiRenumberAllNodes";
-            this.tsmiRenumberAllNodes.Size = new System.Drawing.Size(180, 22);
+            this.tsmiRenumberAllNodes.Size = new System.Drawing.Size(146, 22);
             this.tsmiRenumberAllNodes.Text = "Renumber All";
             this.tsmiRenumberAllNodes.Click += new System.EventHandler(this.tsmiRenumberAllNodes_Click);
+            // 
+            // tsmiElement
+            // 
+            this.tsmiElement.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsmiRenumberAllElements});
+            this.tsmiElement.Name = "tsmiElement";
+            this.tsmiElement.Size = new System.Drawing.Size(194, 22);
+            this.tsmiElement.Text = "Element";
+            // 
+            // tsmiRenumberAllElements
+            // 
+            this.tsmiRenumberAllElements.Name = "tsmiRenumberAllElements";
+            this.tsmiRenumberAllElements.Size = new System.Drawing.Size(146, 22);
+            this.tsmiRenumberAllElements.Text = "Renumber All";
+            this.tsmiRenumberAllElements.Click += new System.EventHandler(this.tsmiRenumberAllElements_Click);
             // 
             // tsmiPart
             // 
@@ -2885,12 +2945,12 @@
             this.tsFile.Dock = System.Windows.Forms.DockStyle.None;
             this.tsFile.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsbNew,
-            this.tsbImport,
             this.tsbOpen,
+            this.tsbImport,
             this.tsbSave});
             this.tsFile.Location = new System.Drawing.Point(3, 25);
             this.tsFile.Name = "tsFile";
-            this.tsFile.Size = new System.Drawing.Size(104, 25);
+            this.tsFile.Size = new System.Drawing.Size(135, 25);
             this.tsFile.TabIndex = 5;
             this.tsFile.Text = "File";
             // 
@@ -2967,7 +3027,7 @@
             this.toolStripViewSeparator4,
             this.tslSymbols,
             this.tscbSymbolsForStep});
-            this.tsViews.Location = new System.Drawing.Point(107, 25);
+            this.tsViews.Location = new System.Drawing.Point(138, 25);
             this.tsViews.Name = "tsViews";
             this.tsViews.Size = new System.Drawing.Size(654, 25);
             this.tsViews.TabIndex = 6;
@@ -3211,21 +3271,6 @@
             // timerOutput
             // 
             this.timerOutput.Tick += new System.EventHandler(this.timerOutput_Tick);
-            // 
-            // tsmiElement
-            // 
-            this.tsmiElement.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsmiRenumberAllElements});
-            this.tsmiElement.Name = "tsmiElement";
-            this.tsmiElement.Size = new System.Drawing.Size(194, 22);
-            this.tsmiElement.Text = "Element";
-            // 
-            // tsmiRenumberAllElements
-            // 
-            this.tsmiRenumberAllElements.Name = "tsmiRenumberAllElements";
-            this.tsmiRenumberAllElements.Size = new System.Drawing.Size(180, 22);
-            this.tsmiRenumberAllElements.Text = "Renumber All";
-            this.tsmiRenumberAllElements.Click += new System.EventHandler(this.tsmiRenumberAllElements_Click);
             // 
             // FrmMain
             // 
@@ -3568,7 +3613,7 @@
         private System.Windows.Forms.ToolStripSeparator tsmiDividerView5;
         private System.Windows.Forms.ToolStripMenuItem tsmiAnnotateFaceOrientations;
         private System.Windows.Forms.ToolStripSeparator tsmiDividerGeometry2;
-        private System.Windows.Forms.ToolStripMenuItem tsmiFlipFaceNormal;
+        private System.Windows.Forms.ToolStripMenuItem tsmiFlipFaceNormalCAD;
         private System.Windows.Forms.ToolStripMenuItem tsmiExportToMmgMesh;
         private System.Windows.Forms.ToolStripMenuItem tsmiSplitAFaceUsingTwoPoints;
         private System.Windows.Forms.ToolStripMenuItem tsmiCropWithCylinder;
@@ -3623,6 +3668,11 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiScaleGeometryParts;
         private System.Windows.Forms.ToolStripMenuItem tsmiElement;
         private System.Windows.Forms.ToolStripMenuItem tsmiRenumberAllElements;
+        private System.Windows.Forms.ToolStripMenuItem tsmiStlPart;
+        private System.Windows.Forms.ToolStripMenuItem cADPartToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem tsmiFlipStlPartSurfacesNormal;
+        private System.Windows.Forms.ToolStripMenuItem tsmiSmoothPart;
+        private System.Windows.Forms.ToolStripMenuItem tsmiRegenerateCompoundPart;
     }
 }
 

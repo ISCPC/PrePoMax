@@ -693,6 +693,20 @@ namespace CaeMesh
             return new VisualizationData(this);
         }
 
+        // Flip normals
+        public void FlipTriangleNormals()
+        {
+            int tmp;
+            foreach (var cell in _cells)
+            {
+                if (cell.Length == 3)
+                {
+                    tmp = cell[1];
+                    cell[1] = cell[2];
+                    cell[2] = tmp;
+                }
+            }
+        }
 
         // Section cut
         public void ApplySectionView(Dictionary<int, FeElement> elements, int[] elementIds, HashSet<int> frontNodes,

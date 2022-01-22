@@ -328,7 +328,8 @@ namespace PrePoMax.Forms
                 _coorLinesToDraw = new double[2][];
                 _coorLinesToDraw[0] = new double[3];
                 //
-                if (propertyGrid.SelectedObject is ViewSymmetry vs)
+                if (propertyGrid.SelectedObject == null) { }
+                else if (propertyGrid.SelectedObject is ViewSymmetry vs)
                 {
                     _coorNodesToDraw[0][0] = vs.SymmetryPointX;
                     _coorNodesToDraw[0][1] = vs.SymmetryPointY;

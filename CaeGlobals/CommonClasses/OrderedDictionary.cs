@@ -269,7 +269,6 @@ namespace CaeGlobals
             {
                 this.dictionary.Add(newKey, value);
                 //
-                //int index = this.list.FindIndex(key => dictionary.Comparer.Equals(key, oldKey));
                 int index = this.list.IndexOf(oldKey);
                 this.list.RemoveAt(index);
                 this.list.Insert(index, newKey);

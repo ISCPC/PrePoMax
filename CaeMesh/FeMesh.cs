@@ -960,54 +960,6 @@ namespace CaeMesh
                 }
             }
         }
-        // Merge geometry parts by type
-        private void MergeGeometryParts()
-        {
-            string name = null;
-            int partId = -1;
-            BasePart part;
-            List<string> mergedPartNames = new List<string>();
-            List<int> allNodeIds = new List<int>();
-            List<int> allElementIds = new List<int>();
-            HashSet<Type> allElementTypes = new HashSet<Type>();
-            List<PartType> partTypes = new List<PartType>() { PartType.Shell, PartType.Wire };
-            //
-            foreach (var partType in partTypes)
-            {
-                // Clear
-                mergedPartNames.Clear();
-                allNodeIds.Clear();
-                allElementIds.Clear();
-                allElementTypes.Clear();
-                // Gather all data
-                foreach (var entry in _parts)
-                {
-                    if (mergedPartNames.Count == 0)
-                    {
-                        name = entry.Key;
-                        partId = entry.Value.PartId;
-                    }
-                    if (entry.Value.PartType == partType)
-                    {
-                        mergedPartNames.Add(entry.Key);
-                        allNodeIds.AddRange(entry.Value.NodeLabels);
-                        allElementIds.AddRange(entry.Value.Labels);
-                        allElementTypes.UnionWith(entry.Value.ElementTypes);
-                    }
-                }
-                // Remove merged parts
-                foreach (var mergedPartName in mergedPartNames) _parts.Remove(mergedPartName);
-                // Add merged part
-                allNodeIds.Sort();
-                allElementIds.Sort();
-                //
-                part = new GeometryPart(name, partId, allNodeIds.ToArray(), allElementIds.ToArray(), allElementTypes.ToArray());
-                _parts.Add(name, part);
-                // Renumber element PartIds
-                foreach (var elementId in allElementIds) _elements[elementId].PartId = partId;
-            }
-        }
-        
         // Visualization
         public void ExtractSolidPartVisualization(BasePart part, double edgeAngle)
         {
@@ -2225,6 +2177,52 @@ namespace CaeMesh
             HashSet<PartType> partTypes = new HashSet<PartType>();
             foreach (var entry in _parts) partTypes.Add(entry.Value.PartType);
             return partTypes.Count == 1;
+        }
+        private void MergeGeometryParts()
+        {
+            string name = null;
+            int partId = -1;
+            BasePart part;
+            List<string> mergedPartNames = new List<string>();
+            List<int> allNodeIds = new List<int>();
+            List<int> allElementIds = new List<int>();
+            HashSet<Type> allElementTypes = new HashSet<Type>();
+            List<PartType> partTypes = new List<PartType>() { PartType.Shell, PartType.Wire };
+            //
+            foreach (var partType in partTypes)
+            {
+                // Clear
+                mergedPartNames.Clear();
+                allNodeIds.Clear();
+                allElementIds.Clear();
+                allElementTypes.Clear();
+                // Gather all data
+                foreach (var entry in _parts)
+                {
+                    if (mergedPartNames.Count == 0)
+                    {
+                        name = entry.Key;
+                        partId = entry.Value.PartId;
+                    }
+                    if (entry.Value.PartType == partType)
+                    {
+                        mergedPartNames.Add(entry.Key);
+                        allNodeIds.AddRange(entry.Value.NodeLabels);
+                        allElementIds.AddRange(entry.Value.Labels);
+                        allElementTypes.UnionWith(entry.Value.ElementTypes);
+                    }
+                }
+                // Remove merged parts
+                foreach (var mergedPartName in mergedPartNames) _parts.Remove(mergedPartName);
+                // Add merged part
+                allNodeIds.Sort();
+                allElementIds.Sort();
+                //
+                part = new GeometryPart(name, partId, allNodeIds.ToArray(), allElementIds.ToArray(), allElementTypes.ToArray());
+                _parts.Add(name, part);
+                // Renumber element PartIds
+                foreach (var elementId in allElementIds) _elements[elementId].PartId = partId;
+            }
         }
         public void MergeGeometryParts(string[] partNamesToMerge, out GeometryPart newGeometryPart, out string[] mergedPartNames)
         {
@@ -3487,19 +3485,6 @@ namespace CaeMesh
                 part.RenumberVisualizationElements(newIds);
             }
         }
-        public void RenumberPart(string partName, int newPartId)
-        {
-            int oldPartId;
-            BasePart part = _parts[partName];
-            oldPartId = part.PartId;
-            if (newPartId == oldPartId) return;
-            // Renumber
-            part.PartId = newPartId;
-            foreach (var entry in _elements)
-            {
-                if (entry.Value.PartId == oldPartId) entry.Value.PartId = newPartId;
-            }
-        }
         public void RenumberParts(int startId = 0)
         {
             Dictionary<int, int> newId = new Dictionary<int, int>();
@@ -3511,6 +3496,16 @@ namespace CaeMesh
             }
             //
             foreach (var entry in _elements) entry.Value.PartId = newId[entry.Value.PartId];
+        }
+        public void ChangePartId(string partName, int newPartId)
+        {
+            int oldPartId;
+            BasePart part = _parts[partName];
+            oldPartId = part.PartId;
+            if (newPartId == oldPartId) return;
+            // Renumber
+            part.PartId = newPartId;
+            foreach (var elementId in part.Labels) _elements[elementId].PartId = newPartId;
         }
 
         #endregion #################################################################################################################
@@ -4250,7 +4245,7 @@ namespace CaeMesh
             int[][] cells = part.Visualization.Cells;
             int[] cellIds = part.Visualization.CellIds;
             if (cells == null) return false;
-
+            //
             int faceCellId = -1;
             int numberOfSameNodes = cellFaceGlobalNodeIds.Length;
             HashSet<int> faceNodeIds = new HashSet<int>(cellFaceGlobalNodeIds);

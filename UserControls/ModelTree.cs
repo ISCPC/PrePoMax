@@ -1973,6 +1973,61 @@ namespace UserControls
         {
             if (!_screenUpdating) return;   // must be here; when _screenUpdating = false the function add tree node is not working
             //
+            TreeNode baseNode = FindTreeNode(view, oldItemName, item, stepName);
+            if (baseNode == null) return;
+            //
+            baseNode.Text = item.Name;
+            baseNode.Name = item.Name;
+            baseNode.Tag = item;
+            //
+            SetNodeStatus(baseNode);
+            // Update selection
+            if (updateSelection)
+            {
+                CodersLabTreeView tree = GetTree(view);
+                //
+                if (tree != null && tree.SelectedNodes.Contains(baseNode)) UpdateHighlight();    // update only once
+                else tree.SelectedNode = baseNode; // for job the tree is null
+                // Expand for propagate
+                while (baseNode.Parent != null)
+                {
+                    baseNode = baseNode.Parent;
+                    if (!baseNode.IsExpanded) baseNode.Expand();
+                }
+            }
+        }
+        public void SwapTreeNodes(ViewType view, string firstItemName, NamedClass firstItem,
+                                  string secondItemName, NamedClass secondItem, string stepName)
+        {
+            TreeNode firstNode = FindTreeNode(view, firstItemName, firstItem, stepName);
+            if (firstNode == null) return;
+            //
+            TreeNode secondNode = FindTreeNode(view, secondItemName, secondItem, stepName);
+            if (secondNode == null) return;
+            //
+            if (firstNode.Parent != secondNode.Parent) return;
+            //
+            TreeNode parent = firstNode.Parent;
+            //
+            int firstIndex = firstNode.Index;
+            int secondIndex = secondNode.Index;
+            //
+            firstNode.Remove();
+            secondNode.Remove();
+            //
+            if (firstIndex < secondIndex)
+            {
+                parent.Nodes.Insert(firstIndex, secondNode);
+                parent.Nodes.Insert(secondIndex, firstNode);
+            }
+            else
+            {
+                parent.Nodes.Insert(secondIndex, firstNode);
+                parent.Nodes.Insert(firstIndex, secondNode);
+            }
+        }
+        private TreeNode FindTreeNode(ViewType view, string itemName, NamedClass item, string stepName)
+        {
             CodersLabTreeView tree = GetTree(view);
             //
             TreeNode baseNode = null;
@@ -1984,12 +2039,12 @@ namespace UserControls
             if (stepName != null)
             {
                 tmp = _steps.Nodes.Find(stepName, true);
-                if (tmp.Length > 1) throw new Exception("Tree update failed. More than one step named: " + stepName);
+                if (tmp.Length > 1) throw new Exception("Node search failed. More than one step named: " + stepName);
                 baseNode = tmp[0];
             }
             //
             bool nodeFound;
-            tmp = baseNode.Nodes.Find(oldItemName, true);
+            tmp = baseNode.Nodes.Find(itemName, true);
             if (tmp.Length > 1)
             {
                 nodeFound = false;
@@ -2002,31 +2057,15 @@ namespace UserControls
                         break;
                     }
                 }
-                if (!nodeFound) throw new Exception("Tree update failed. The item name to edit was not found: " + item.Name);
+                if (!nodeFound) throw new Exception("Tree search failed. The item name to edit was not found: " + item.Name);
             }
             else
             {
-                if (tmp.Length > 0) baseNode = tmp[0];
-                else return;
+                if (tmp.Length == 1) baseNode = tmp[0];
+                else baseNode = null;
             }
             //
-            baseNode.Text = item.Name;
-            baseNode.Name = item.Name;
-            baseNode.Tag = item;
-            //
-            SetNodeStatus(baseNode);
-            // Update selection
-            if (updateSelection)
-            {
-                if (tree != null && tree.SelectedNodes.Contains(baseNode)) UpdateHighlight();    // update only once
-                else tree.SelectedNode = baseNode; // for job the tree is null
-                // Expand for propagate
-                while (baseNode.Parent != null)
-                {
-                    baseNode = baseNode.Parent;
-                    if (!baseNode.IsExpanded) baseNode.Expand();
-                }
-            }
+            return baseNode;
         }
         public void RemoveTreeNode<T>(ViewType view, string nodeName, string stepName) where T : NamedClass
         {

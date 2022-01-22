@@ -12,32 +12,30 @@ using CaeGlobals;
 namespace PrePoMax.Commands
 {
     [Serializable]
-    class CFindEdgesByAngleForGeometryPartsCommand : Command
+    class CRegenerateCompoundParts : Command
     {
         // Variables                                                                                                                
-        private string[] _partNames;
-        private double _edgeAngle;
+        private string[] _compoundPartNames;
 
 
         // Constructor                                                                                                              
-        public CFindEdgesByAngleForGeometryPartsCommand(string[] partNames, double edgeAngle)
-            : base("Find edges by angle for geometry parts")
+        public CRegenerateCompoundParts(string[] compoundPartNames)
+            : base("Regenerate compound parts")
         {
-            _partNames = partNames;
-            _edgeAngle = edgeAngle;
+            _compoundPartNames = compoundPartNames;
         }
 
 
         // Methods                                                                                                                  
         public override bool Execute(Controller receiver)
         {
-            receiver.FindEdgesByAngleForGeometryParts(_partNames, _edgeAngle);
+            receiver.RegenerateCompoundParts(_compoundPartNames);
             return true;
         }
 
         public override string GetCommandString()
         {
-            return base.GetCommandString() + GetArrayAsString(_partNames) + ": " + _edgeAngle + "°";
+            return base.GetCommandString() + GetArrayAsString(_compoundPartNames);
         }
     }
 }

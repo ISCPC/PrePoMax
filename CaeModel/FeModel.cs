@@ -63,6 +63,8 @@ namespace CaeModel
         {
             Name = name;
             _hashName = Tools.GetRandomString(8);
+            _geometry = new FeMesh(MeshRepresentation.Geometry);
+            _mesh = new FeMesh(MeshRepresentation.Mesh);
             _materials = new OrderedDictionary<string, Material>();
             _sections = new OrderedDictionary<string, Section>();
             _constraints = new OrderedDictionary<string, Constraint>();

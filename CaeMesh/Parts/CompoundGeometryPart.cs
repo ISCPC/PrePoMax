@@ -11,23 +11,26 @@ namespace CaeMesh
     public class CompoundGeometryPart : GeometryPart
     {
         // Variables                                                                                                                
+        private string[] _createdFromPartNames;
         private string[] _subPartNames;
 
 
         // Properties                                                                                                               
+        public string[] CreatedFromPartNames { get { return _createdFromPartNames; } set { _createdFromPartNames = value; } }
         public string[] SubPartNames { get { return _subPartNames; } set { _subPartNames = value; } }
 
 
         // Constructors                                                                                                             
-        public CompoundGeometryPart(string name, string[] subParts)
+        public CompoundGeometryPart(string name, string[] createdFromPartNames, string[] subPartNames)
             : base(name, -111, new int[0], new int[0], new Type[0])
         {
-            _subPartNames = subParts;
+            _createdFromPartNames = createdFromPartNames;
+            _subPartNames = subPartNames;
             _partType = PartType.Compound;
         }
 
         public CompoundGeometryPart(CompoundGeometryPart part)
-            : this(part.Name, part.SubPartNames)
+            : this(part.Name, part.CreatedFromPartNames, part.SubPartNames)
         {
         }
 

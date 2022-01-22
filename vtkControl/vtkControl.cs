@@ -1417,6 +1417,7 @@ namespace vtkControl
                 // Reset visibility
                 ApplyEdgeVisibilityAndBackfaceCullingToActor(entry.Value.Geometry, entry.Value.GeometryProperty,
                                                              vtkRendererLayer.Base);
+                if (minDist == 0) break;
             }
             //
             Marshal.FreeHGlobal(x);
@@ -3954,31 +3955,53 @@ namespace vtkControl
         }
         private void HighlightAllActorsByName(string actorName)
         {
-            //vtkMaxActor actor = GetCopyOfActor(actorName);
-            vtkMaxActor actorModelEdges = GetCopyOfModelEdgesActor(actorName);
-            //
-            //if (actor != null && actorModelEdges != null)
-            if (actorModelEdges != null)
+            vtkMaxActor highlightActor = GetCopyOfModelEdgesActor(actorName);
+            if (highlightActor != null && highlightActor.Geometry.GetMapper().GetInput().GetNumberOfPoints() == 0)
             {
-                actorModelEdges.GeometryProperty.SetOpacity(1);
-                AddActorGeometry(actorModelEdges, vtkRendererLayer.Selection);
+                // Silhouette
+                vtkMaxActor actor = _actors[actorName];
+                vtkPolyDataSilhouette silhouette = vtkPolyDataSilhouette.New();
+                silhouette.SetInput(actor.GeometryMapper.GetInput());
+                silhouette.SetCamera(_renderer.GetActiveCamera());
+                //silhouette.SetDirectionToCameraOrigin();  // not working
+                silhouette.SetDirectionToCameraVector();
+                silhouette.SetBorderEdges(1); // free edges
+                silhouette.SetEnableFeatureAngle(1);
+                silhouette.SetFeatureAngle(30);
+                //
+                vtkDataSetMapper dsMapper = vtkDataSetMapper.New();
+                dsMapper.SetInput(silhouette.GetOutput());
+                //
+                highlightActor = new vtkMaxActor();
+                highlightActor.GeometryMapper = dsMapper;
+                highlightActor.Geometry.PickableOff();
+            }
+            //
+            if (highlightActor != null)
+            {
+                highlightActor.GeometryProperty.SetOpacity(1);
+                AddActorGeometry(highlightActor, vtkRendererLayer.Selection);
                 this.Invalidate();
             }
-            return;
-            // Silhouette
-            vtkMaxActor actor = _actors[actorName];
-            vtkPolyDataSilhouette silhouette = vtkPolyDataSilhouette.New();
-            silhouette.SetInput(actor.GeometryMapper.GetInput());
-            silhouette.SetCamera(_renderer.GetActiveCamera());
-            silhouette.SetEnableFeatureAngle(0);
-            vtkPolyDataMapper mapper = vtkPolyDataMapper.New();
-            mapper.SetInputConnection(silhouette.GetOutputPort(0));
-            vtkActor outlineActor = vtkActor.New();
-            outlineActor.SetMapper(mapper);
-            outlineActor.GetProperty().SetColor(0, 0, 0);
-            outlineActor.GetProperty().SetLineWidth(0.8f);
-            //outlineActor.GetProperty().SetRepresentationToWireframe();
-            _renderer.AddActor(outlineActor);
+        }
+        private vtkMaxActor GetCopyOfEdgesActor(string actorName)
+        {
+            vtkMaxActor actor = null;
+            if (_actors.ContainsKey(actorName))
+            {
+                vtkMaxActor actorToHighLight = _actors[actorName];
+                //
+                vtkPolyData data = vtkPolyData.New();
+                data.DeepCopy(actorToHighLight.ElementEdges.GetMapper().GetInput());
+                //
+                vtkDataSetMapper mapper = vtkDataSetMapper.New();
+                mapper.SetInput(data);
+                //
+                actor = new vtkMaxActor();
+                actor.GeometryMapper = mapper;
+                actor.Geometry.PickableOff();
+            }
+            return actor;
         }
         private vtkMaxActor GetCopyOfModelEdgesActor(string actorName)
         {
@@ -5959,6 +5982,11 @@ namespace vtkControl
         {
             vtkMaxActor actor = _actors[partName];
             actor.CropWithCube(a, fileName);
+        }
+        public void SmoothPart(string partName, double a, string fileName)
+        {
+            vtkMaxActor actor = _actors[partName];
+            actor.Smooth(a, fileName);
         }
 
 

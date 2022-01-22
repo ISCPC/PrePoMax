@@ -107,7 +107,9 @@ namespace PrePoMax
             // This gets called from: _controller.CurrentView
             InvokeIfRequired(() =>
             {
-                if (view == ViewGeometryModelResults.Geometry)
+                if (view == ViewGeometryModelResults.None)
+                { }
+                else if (view == ViewGeometryModelResults.Geometry)
                 {
                     _modelTree.SetGeometryTab();
                     if (_controller.Model != null) UpdateUnitSystem(_controller.Model.UnitSystem);
@@ -127,11 +129,7 @@ namespace PrePoMax
                 //
                 if (_advisorControl != null)
                 {
-                    ViewType viewType;
-                    if (view == ViewGeometryModelResults.Geometry) viewType = ViewType.Geometry;
-                    else if (view == ViewGeometryModelResults.Model) viewType = ViewType.Model;
-                    else if (view == ViewGeometryModelResults.Results) viewType = ViewType.Results;
-                    else throw new NotSupportedException();
+                    ViewType viewType = GetViewType(view);
                     //
                     _advisorControl.PrepareControls(viewType);
                 }
@@ -150,6 +148,16 @@ namespace PrePoMax
             set { _modelTree.DisableSelectionsChanged = value; }
         }
         public bool RenderingOn { get { return _vtk.RenderingOn; } set { _vtk.RenderingOn = value; } }
+        private ViewType GetViewType(ViewGeometryModelResults view)
+        {
+            ViewType viewType;
+            if (view == ViewGeometryModelResults.Geometry) viewType = ViewType.Geometry;
+            else if (view == ViewGeometryModelResults.Model) viewType = ViewType.Model;
+            else if (view == ViewGeometryModelResults.Results) viewType = ViewType.Results;
+            else throw new NotSupportedException();
+            return viewType;
+        }
+
         #endregion  ################################################################################################################
 
 
@@ -172,6 +180,7 @@ namespace PrePoMax
             _modelTree = null;
             _args = args;
             _edgeVisibilities = new Dictionary<ViewGeometryModelResults, Action<object, EventArgs>>();
+            _edgeVisibilities.Add(ViewGeometryModelResults.None, tsmiShowModelEdges_Click);
             _edgeVisibilities.Add(ViewGeometryModelResults.Geometry, tsmiShowModelEdges_Click);
             _edgeVisibilities.Add(ViewGeometryModelResults.Model, tsmiShowElementEdges_Click);
             _edgeVisibilities.Add(ViewGeometryModelResults.Results, tsmiShowElementEdges_Click);
@@ -444,7 +453,7 @@ namespace PrePoMax
                 // Set form size
                 _controller.Settings.General.ApplyFormSize(this);
                 //
-                _vtk.Show();
+                //_vtk.Show();
                 _vtk.Enabled = true;
                 // Close splash 
                 splash.BeginInvoke((MethodInvoker)delegate () { splash.Close(); });
@@ -461,13 +470,17 @@ namespace PrePoMax
                 {
                     try
                     {
-                        SetStateWorking(Globals.OpeningText);
+                        //SetStateWorking(Globals.OpeningText);
                         string extension = Path.GetExtension(fileName).ToLower();
                         if (extension == ".pmx" || extension == ".frd")
-                            await Task.Run(() => Open(fileName));
+                            await Task.Run(() => OpenAsync(fileName));
                         else if (extension == ".stl" || extension == ".unv" || extension == ".vol" || extension == ".inp")
                         {
+                            // Create new model
+                            tsmiNew_Click(null, null);
+                            // Import
                             await _controller.ImportFileAsync(fileName);
+                            //
                             _controller.OpenedFileName = null; // otherwise the previous OpenedFileName gets overwriten on Save
                         }
                         else MessageBoxes.ShowError("The file name extension is not supported.");
@@ -475,19 +488,19 @@ namespace PrePoMax
                         _vtk.SetFrontBackView(false, true);
                     }
                     catch (Exception ex)
-                    {                        
+                    {
                         ExceptionTools.Show(this, ex);
-                        _controller.New();
+                        _controller.ModelChanged = false;   // hide messagebox
+                        tsmiNew_Click(null, null);
                     }
                     finally
                     {
-                        SetStateReady(Globals.OpeningText);                        
+                        //SetStateReady(Globals.OpeningText);                        
                     }
                 }
                 else
                 {
-                    // New file
-                    _controller.New();
+                    SetEmptyWorkspace();
                 }
             });
             timer.Start();
@@ -991,83 +1004,102 @@ namespace PrePoMax
         // Menus                                                                                                                    
         private void SetMenuAndToolStripVisibility()
         {
+            // Main menu
+            foreach (ToolStripMenuItem item in menuStripMain.Items) item.Enabled = false;
+            // File menu
+            foreach (ToolStripItem item in tsmiFile.DropDownItems) item.Enabled = false;
+            // Toolbar Views
+            toolStripViewSeparator4.Visible = false;
+            tslSymbols.Visible = false;
+            tscbSymbolsForStep.Visible = false;
+            // Toolbar Results
+            tsResults.Visible = false;
+            //
             switch (_controller.CurrentView)
             {
+                case ViewGeometryModelResults.None:
+                    // Main menu
+                    tsmiFile.Enabled = true;
+                    tsmiHelp.Enabled = true;
+                    // File menu
+                    tsmiNew.Enabled = true;
+                    tsmiOpen.Enabled = true;
+                    tsmiOpenRecent.Enabled = true;
+                    //tsmiImportFile.Enabled = true;
+                    tsmiExit.Enabled = true;
+                    break;
                 case ViewGeometryModelResults.Geometry:
+                    // Main menu
+                    tsmiFile.Enabled = true;
+                    tsmiEdit.Enabled = true;
+                    tsmiView.Enabled = true;
                     tsmiGeometry.Enabled = true;
                     tsmiMesh.Enabled = true;
-                    tsmiModel.Enabled = false;
-                    tsmiProperty.Enabled = false;
-                    tsmiInteraction.Enabled = false;
-                    tsmiStepMenu.Enabled = false;
-                    tsmiBC.Enabled = false;
-                    tsmiLoad.Enabled = false;
-                    tsmiAnalysis.Enabled = false;
-                    tsmiResults.Enabled = false;
-
-                    tsmiDividerView4.Visible = false;
-                    tsmiResultsUndeformed.Visible = false;
-                    tsmiResultsDeformed.Visible = false;
-                    tsmiResultsColorContours.Visible = false;
-
-                    // toolStrip
-                    toolStripViewSeparator4.Visible = false;
-                    tslSymbols.Visible = false;
-                    tscbSymbolsForStep.Visible = false;
-
-                    tsResults.Visible = false;
+                    tsmiTools.Enabled = true;
+                    tsmiHelp.Enabled = true;
+                    // File menu
+                    foreach (ToolStripItem item in tsmiFile.DropDownItems) item.Enabled = true;
                     break;
                 case ViewGeometryModelResults.Model:
-                    tsmiGeometry.Enabled = false;
-                    tsmiMesh.Enabled = false;
+                    // Main menu
+                    tsmiFile.Enabled = true;
+                    tsmiEdit.Enabled = true;
+                    tsmiView.Enabled = true;
                     tsmiModel.Enabled = true;
                     tsmiProperty.Enabled = true;
                     tsmiInteraction.Enabled = true;
+                    tsmiInitialCondition.Enabled = true;
                     tsmiStepMenu.Enabled = true;
                     tsmiBC.Enabled = true;
                     tsmiLoad.Enabled = true;
                     tsmiAnalysis.Enabled = true;
-                    tsmiResults.Enabled = false;
-
-                    tsmiDividerView4.Visible = false;
-                    tsmiResultsUndeformed.Visible = false;
-                    tsmiResultsDeformed.Visible = false;
-                    tsmiResultsColorContours.Visible = false;
-
-                    // toolStrip
+                    tsmiTools.Enabled = true;
+                    tsmiHelp.Enabled = true;
+                    // File menu
+                    foreach (ToolStripItem item in tsmiFile.DropDownItems) item.Enabled = true;
+                    // Toolbar Views
                     toolStripViewSeparator4.Visible = true;
                     tslSymbols.Visible = true;
                     tscbSymbolsForStep.Visible = true;
-
-                    tsResults.Visible = false;
                     break;
                 case ViewGeometryModelResults.Results:
-                    tsmiGeometry.Enabled = false;
-                    tsmiMesh.Enabled = false;
-                    tsmiModel.Enabled = false;
-                    tsmiProperty.Enabled = false;
-                    tsmiInteraction.Enabled = false;
-                    tsmiStepMenu.Enabled = false;
-                    tsmiBC.Enabled = false;
-                    tsmiLoad.Enabled = false;
-                    tsmiAnalysis.Enabled = false;
+                    // Main menu
+                    tsmiFile.Enabled = true;
+                    tsmiEdit.Enabled = true;
+                    tsmiView.Enabled = true;
                     tsmiResults.Enabled = true;
-
-                    tsmiDividerView4.Visible = true;
-                    tsmiResultsUndeformed.Visible = true;
-                    tsmiResultsDeformed.Visible = true;
-                    tsmiResultsColorContours.Visible = true;
-
-                    // toolStrip
-                    toolStripViewSeparator4.Visible = false;
-                    tslSymbols.Visible = false;
-                    tscbSymbolsForStep.Visible = false;
-
+                    tsmiTools.Enabled = true;
+                    tsmiHelp.Enabled = true;
+                    // File menu
+                    foreach (ToolStripItem item in tsmiFile.DropDownItems) item.Enabled = true;
+                    // Toolbar Results
                     tsResults.Visible = true;
                     break;
                 default:
                     break;
             }
+        }
+        private void SetEmptyWorkspace()
+        {
+            _controller.CurrentView = ViewGeometryModelResults.None;
+            //
+            _modelTree.DisableMouse = true;
+            tsViews.DisableMouseButtons = true;
+            tsResults.DisableMouseButtons = true;
+            //
+            UpdateRecentFilesThreadSafe(_controller.Settings.General.GetRecentFiles());
+        }
+        private void UnsetEmptyWorkspace()
+        {
+            InvokeIfRequired(() =>
+            {
+                _vtk.Show();
+                //
+                _modelTree.DisableMouse = false;
+                tsViews.DisableMouseButtons = false;
+                tsResults.DisableMouseButtons = false;
+            }
+            );
         }
 
         #region File menu ##########################################################################################################
@@ -1077,23 +1109,29 @@ namespace PrePoMax
             try
             {
                 if (_controller.ModelChanged &&
-                    MessageBoxes.ShowWarningQuestion("OK to close the current model?") != DialogResult.OK) return;
+                    MessageBoxes.ShowWarningQuestion("OK to close the current model?") != DialogResult.OK) return;                
                 //
                 _controller.New();
                 // The model space and the unit system are undefined
                 SelectNewModelProperties();
                 // No need for ModelChanged
                 _controller.ModelChanged = false;
+                //
+                UnsetEmptyWorkspace();
             }
             catch (Exception ex)
             {
                 ExceptionTools.Show(this, ex);
             }
+            finally
+            {
+
+            }
         }
         private async void tsmiOpen_Click(object sender, EventArgs e)
         {
             try
-            {                
+            {
                 using (OpenFileDialog openFileDialog = new OpenFileDialog())
                 {
                     if (!System.Diagnostics.Debugger.IsAttached)
@@ -1109,6 +1147,7 @@ namespace PrePoMax
                                                 "|PrePoMax files|*.pmx" +
                                                 "|Calculix result files|*.frd";
                     }
+
                     //
                     openFileDialog.FileName = "";
                     if (openFileDialog.ShowDialog() == DialogResult.OK)
@@ -1120,7 +1159,8 @@ namespace PrePoMax
             catch (Exception ex)
             {
                 ExceptionTools.Show(this, ex);
-                _controller.New();
+                _controller.ModelChanged = false;   // hide messagebox
+                tsmiNew_Click(null, null);
             }
         }
         private bool CheckBeforeOpen(string fileName)
@@ -1157,6 +1197,7 @@ namespace PrePoMax
                 // If the model space or the unit system are undefined
                 if (_controller.Model.Geometry != null || _controller.Model.Mesh != null) SelectNewModelProperties();
                 if (_controller.Results != null) SelectResultsUnitSystem();
+                
             }
             catch (Exception ex)
             {
@@ -1168,7 +1209,7 @@ namespace PrePoMax
             }
         }
         private void Open(string fileName, bool resetCamera = true)
-        {
+        {            
             _controller.Open(fileName);
             //
             if (_controller.Results != null)
@@ -1190,10 +1231,14 @@ namespace PrePoMax
                 //
                 if (resetCamera) tsmiFrontView_Click(null, null);
             }
-            else throw new NotSupportedException();            
+            else throw new NotSupportedException();
+            //
+            UnsetEmptyWorkspace();
         }
         internal async void tsmiImportFile_Click(object sender, EventArgs e)
         {
+            if (GetCurrentView() == ViewGeometryModelResults.None) return;
+            //
             try
             {
                 // If the model space or the unit system are undefined
@@ -1232,6 +1277,8 @@ namespace PrePoMax
         }
         internal async void tsmiSave_Click(object sender, EventArgs e)
         {
+            if (GetCurrentView() == ViewGeometryModelResults.None) return;
+            //
             try
             {
                 if (sender == null) System.Diagnostics.Debug.WriteLine("null");
@@ -1251,6 +1298,8 @@ namespace PrePoMax
         }
         private async void tsmiSaveAs_Click(object sender, EventArgs e)
         {
+            if (GetCurrentView() == ViewGeometryModelResults.None) return;
+            //
             try
             {
                 SetStateWorking(Globals.SavingAsText);
@@ -2074,6 +2123,7 @@ namespace PrePoMax
         #endregion
 
         #region Geometry ###########################################################################################################
+        // Part
         internal void tsmiEditGeometryPart_Click(object sender, EventArgs e)
         {
             try
@@ -2085,7 +2135,7 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
-        // Transform
+        // Sub menu Transform
         private void tsmiScaleGeometryParts_Click(object sender, EventArgs e)
         {
             try
@@ -2097,7 +2147,18 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
-        //
+        // End Transform
+        private void tsmiCopyGeometryPartsToResults_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Parts", _controller.GetGeometryParts(), CopyGeometryPartsToResults);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
         private void tsmiHideGeometryParts_Click(object sender, EventArgs e)
         {
             try
@@ -2144,17 +2205,6 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
-        private void tsmiCopyGeometryPartsToResults_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                SelectMultipleEntities("Parts", _controller.GetGeometryParts(), CopyGeometryPartsToResults);
-            }
-            catch (Exception ex)
-            {
-                ExceptionTools.Show(this, ex);
-            }
-        }
         private void tsmiDeleteGeometryParts_Click(object sender, EventArgs e)
         {
             try
@@ -2166,189 +2216,9 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
-        //                                                                                                                          
-        private void EditGeometryPart(string partName)
-        {
-            _frmPartProperties.View = ViewGeometryModelResults.Geometry;
-            ShowForm(_frmPartProperties, "Edit Part", partName);
-        }
-        // Transform
-        private void ScaleGeometryParts(string[] partNames)
-        {
-            SinglePointDataEditor.ParentForm = _frmScale;
-            SinglePointDataEditor.Controller = _controller;
-            // Set all part names for scaling
-            _frmScale.PartNames = partNames;
-            //
-            ShowForm(_frmScale, "Scale parts: " + partNames.ToShortString(), null);
-        }
-        //
-        private void HideGeometryParts(string[] partNames)
-        {
-            _controller.HideGeometryPartsCommand(partNames);            
-        }
-        private void ShowGeometryParts(string[] partNames)
-        {
-            _controller.ShowGeometryPartsCommand(partNames);
-        }
-        private void SetTransparencyForGeometryParts(string[] partNames)
-        {
-            if (_controller.Model.Geometry == null) return;
-            //
-            using (FrmGetValue frmGetValue = new FrmGetValue())
-            {
-                frmGetValue.NumOfDigits = 0;
-                frmGetValue.MinValue = 25;
-                frmGetValue.MaxValue = 255;
-                SetFormLoaction(frmGetValue);
-                OrderedDictionary<string, double> presetValues = new OrderedDictionary<string, double>();
-                presetValues.Add("Semi-transparent", 128);
-                presetValues.Add("Opaque", 255);
-                string desc = "Enter the transparency between 0 and 255.\n" + "(0 - transparent; 255 - opaque)";
-                frmGetValue.PrepareForm("Set Transparency: " + partNames.ToShortString(), "Transparency",  desc, 128, presetValues);
-                if (frmGetValue.ShowDialog() == DialogResult.OK)
-                {
-                    _controller.SetTransparencyForGeometryPartsCommand(partNames,(byte)frmGetValue.Value);
-                }
-                SaveFormLoaction(frmGetValue);
-            }
-        }
-        private void ShowOnlyGeometryParts(string[] partNames)
-        {
-            // If sub part is selected add the whole compound part
-            HashSet<string> partsToShow = new HashSet<string>(partNames);
-            foreach (var entry in _controller.Model.Geometry.Parts)
-            {
-                if (entry.Value is CompoundGeometryPart cgp)
-                {
-                    if (partNames.Contains(cgp.Name))
-                    {
-                        partsToShow.Add(cgp.Name);
-                        partsToShow.UnionWith(cgp.SubPartNames);
-                    }
-                }
-            }
-            //
-            HashSet<string> allNames = new HashSet<string>(_controller.Model.Geometry.Parts.Keys);
-            allNames.ExceptWith(partsToShow);
-            _controller.HideGeometryPartsCommand(allNames.ToArray());
-            _controller.ShowGeometryPartsCommand(partsToShow.ToArray());
-        }
-        private void CopyGeometryPartsToResults(string[] partNames)
-        {
-            CloseAllForms();
-            _controller.CopyGeometryPartsToResults(partNames);
-        }
-        private void DeleteGeometryParts(string[] partNames)
-        {
-            GeometryPart[] parts = _controller.GetGeometryPartsWithoutSubParts();
-            HashSet<string> deletablePartNames = new HashSet<string>();
-            foreach (GeometryPart part in parts) deletablePartNames.Add(part.Name);
-            deletablePartNames.IntersectWith(partNames);
-            if (deletablePartNames.Count > 0)
-            {
-                partNames = deletablePartNames.ToArray();
-                if (MessageBoxes.ShowWarningQuestion("OK to delete selected parts?") == DialogResult.OK)
-                {
-                    _controller.RemoveGeometryPartsCommand(partNames.ToArray());
-                }
-            }
-            else MessageBoxes.ShowError("Selected parts belong to a compound part and cannot be deleted:" + Environment.NewLine +
-                                        partNames.ToRows());
-        }
-        //
-        private void tsmiCreateAndImportCompoundPart_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                Clear3DSelection();
-                SelectMultipleEntities("Parts", _controller.GetCADGeometryParts(), CreateAndImportCompoundPart, 2);
-            }
-            catch (Exception ex)
-            {
-                ExceptionTools.Show(this, ex);
-            }
-        }        
-        private async void CreateAndImportCompoundPart(string[] partNames)
-        {
-            try
-            {
-                SetStateWorking(Globals.CreatingCompoundText, true);
-                //
-                GeometryPart part;
-                HashSet<PartType> stlPartTypes = new HashSet<PartType>();
-                HashSet<PartType> brepPartNames = new HashSet<PartType>();
-                //
-                foreach (var partName in partNames)
-                {
-                    part = (GeometryPart)_controller.Model.Geometry.Parts[partName];
-                    if (part.CADFileData == null) stlPartTypes.Add(part.PartType);
-                    else brepPartNames.Add(part.PartType);
-                }
-                if (stlPartTypes.Count + brepPartNames.Count != 1)
-                    throw new CaeException("Compound part can be made from only CAD or only stl based geometry parts " + 
-                                           "of the same type.");
-                await Task.Run(() => _controller.CreateAndImportCompoundPartCommand(partNames));
-            }
-            catch (Exception ex)
-            {
-                ExceptionTools.Show(this, ex);
-            }
-            finally
-            {
-                SetStateReady(Globals.CreatingCompoundText);
-            }
-        }
-        // 
-        private void tsmiSwapGeometryPartGeometries_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                SelectMultipleEntities("Parts", _controller.GetGeometryParts(), SwapPartGeometries, 2, 2);
-            }
-            catch (Exception ex)
-            {
-                ExceptionTools.Show(this, ex);
-            }
-        }
-        private void SwapPartGeometries(string[] partNames)
-        {
-            GeometryPart[] parts = _controller.GetGeometryPartsWithoutSubParts();
-            GeometryPart part1 = _controller.GetGeometryPart(partNames[0]);
-            GeometryPart part2 = _controller.GetGeometryPart(partNames[1]);
-            if (parts.Contains(part1) && parts.Contains(part2))
-            {
-                if (part1 is CompoundGeometryPart || part2 is CompoundGeometryPart)
-                    MessageBoxes.ShowError("Compound parts cannot be swaped.");
-                else
-                    _controller.SwapGeometryPartGeometries(partNames[0], partNames[1]);
-            }
-            else MessageBoxes.ShowError("Compound subparts cannot be swaped.");
-        }
-        private void tsmiGeometryAnalyze_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                SelectMultipleEntities("Parts", _controller.GetGeometryParts(), AnalyzeGeometry);
-            }
-            catch (Exception ex)
-            {
-                ExceptionTools.Show(this, ex);
-            }
-
-        }
-        private void AnalyzeGeometry(string[] partNames)
-        {
-            if (!_frmAnalyzeGeometry.Visible)
-            {
-                CloseAllForms();
-                SetFormLoaction((Form)_frmAnalyzeGeometry);
-                _frmAnalyzeGeometry.PartNamesToAnalyze = partNames;
-                _frmAnalyzeGeometry.Show();
-            }
-        }
-        //
-        private async void tsmiFlipFaceNormal_Click(object sender, EventArgs e)
+        // End Part
+        // CAD Part
+        private async void tsmiFlipFaceNormalCAD_Click(object sender, EventArgs e)
         {
             try
             {
@@ -2377,13 +2247,6 @@ namespace PrePoMax
                 SetStateReady(Globals.FlippingNormalsText);
             }
         }
-        private void FlipFaces(GeometrySelection geometrySelection)
-        {
-            SetStateWorking(Globals.FlippingNormalsText);
-            _controller.FlipFaceOrientationsCommand(geometrySelection);
-            SetStateReady(Globals.FlippingNormalsText);
-        }
-        //
         private async void tsmiSplitAFaceUsingTwoPoints_Click(object sender, EventArgs e)
         {
             try
@@ -2434,7 +2297,41 @@ namespace PrePoMax
                 SetStateReady(Globals.SplittingFacesText);
             }
         }
-        //
+        // End CAD Part
+        // Stl Part
+        private void tsmiFindEdgesByAngleForGeometryParts_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Parts", _controller.GetNonCADGeometryParts(), FindEdgesByAngleForGeometryParts);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiFlipStlPartSurfacesNormal_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Parts", _controller.GetNonCADGeometryParts(), FlipStlPartSurfacesNormal);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiSmoothPart_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectOneEntity("Parts", _controller.GetNonCADGeometryParts(), _controller.SmoothGeometryPart);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
         private void tsmiCropWithCylinder_Click(object sender, EventArgs e)
         {
             try
@@ -2457,17 +2354,158 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
-        //
-        private void tsmiFindEdgesByAngleForGeometryParts_Click(object sender, EventArgs e)
+        // End Stl Part
+        private void tsmiCreateAndImportCompoundPart_Click(object sender, EventArgs e)
         {
             try
             {
-                SelectMultipleEntities("Parts", _controller.GetNonCADGeometryParts(), FindEdgesByAngleForGeometryParts);
+                Clear3DSelection();
+                SelectMultipleEntities("Parts", _controller.GetCADGeometryParts(), CreateAndImportCompoundPart, 2);
             }
             catch (Exception ex)
             {
                 ExceptionTools.Show(this, ex);
             }
+        }
+        private void tsmiRegenerateCompoundPart_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Parts", _controller.GetCompoundParts(), RegenerateCompoundParts);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiSwapGeometryPartGeometries_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Parts", _controller.GetGeometryParts(), SwapPartGeometries, 2, 2);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        // Analyze geometry
+        private void tsmiGeometryAnalyze_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("Parts", _controller.GetGeometryParts(), AnalyzeGeometry);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+
+        }
+        //                                                                                                                          
+        // Part
+        private void EditGeometryPart(string partName)
+        {
+            _frmPartProperties.View = ViewGeometryModelResults.Geometry;
+            ShowForm(_frmPartProperties, "Edit Part", partName);
+        }
+        // Sub menu Transform
+        private void ScaleGeometryParts(string[] partNames)
+        {
+            SinglePointDataEditor.ParentForm = _frmScale;
+            SinglePointDataEditor.Controller = _controller;
+            // Set all part names for scaling
+            _frmScale.PartNames = partNames;
+            //
+            ShowForm(_frmScale, "Scale parts: " + partNames.ToShortString(), null);
+        }
+        // End Transform
+        private void CopyGeometryPartsToResults(string[] partNames)
+        {
+            CloseAllForms();
+            _controller.CopyGeometryPartsToResults(partNames);
+        }
+        private void HideGeometryParts(string[] partNames)
+        {
+            _controller.HideGeometryPartsCommand(partNames);            
+        }
+        private void ShowGeometryParts(string[] partNames)
+        {
+            _controller.ShowGeometryPartsCommand(partNames);
+        }
+        private void ShowOnlyGeometryParts(string[] partNames)
+        {
+            // If sub part is selected add the whole compound part
+            HashSet<string> partsToShow = new HashSet<string>(partNames);
+            foreach (var entry in _controller.Model.Geometry.Parts)
+            {
+                if (entry.Value is CompoundGeometryPart cgp)
+                {
+                    if (partNames.Contains(cgp.Name))
+                    {
+                        partsToShow.Add(cgp.Name);
+                        partsToShow.UnionWith(cgp.SubPartNames);
+                    }
+                }
+            }
+            //
+            HashSet<string> allNames = new HashSet<string>(_controller.Model.Geometry.Parts.Keys);
+            allNames.ExceptWith(partsToShow);
+            _controller.HideGeometryPartsCommand(allNames.ToArray());
+            _controller.ShowGeometryPartsCommand(partsToShow.ToArray());
+        }
+        private void SetTransparencyForGeometryParts(string[] partNames)
+        {
+            if (_controller.Model.Geometry == null) return;
+            //
+            using (FrmGetValue frmGetValue = new FrmGetValue())
+            {
+                frmGetValue.NumOfDigits = 0;
+                frmGetValue.MinValue = 25;
+                frmGetValue.MaxValue = 255;
+                SetFormLoaction(frmGetValue);
+                OrderedDictionary<string, double> presetValues = new OrderedDictionary<string, double>();
+                presetValues.Add("Semi-transparent", 128);
+                presetValues.Add("Opaque", 255);
+                string desc = "Enter the transparency between 0 and 255.\n" + "(0 - transparent; 255 - opaque)";
+                frmGetValue.PrepareForm("Set Transparency: " + partNames.ToShortString(), "Transparency", desc, 128, presetValues);
+                if (frmGetValue.ShowDialog() == DialogResult.OK)
+                {
+                    _controller.SetTransparencyForGeometryPartsCommand(partNames, (byte)frmGetValue.Value);
+                }
+                SaveFormLoaction(frmGetValue);
+            }
+        }
+        private void DeleteGeometryParts(string[] partNames)
+        {
+            GeometryPart[] parts = _controller.GetGeometryPartsWithoutSubParts();
+            HashSet<string> deletablePartNames = new HashSet<string>();
+            foreach (GeometryPart part in parts) deletablePartNames.Add(part.Name);
+            deletablePartNames.IntersectWith(partNames);
+            if (deletablePartNames.Count > 0)
+            {
+                partNames = deletablePartNames.ToArray();
+                if (MessageBoxes.ShowWarningQuestion("OK to delete selected parts?") == DialogResult.OK)
+                {
+                    _controller.RemoveGeometryPartsCommand(partNames.ToArray());
+                }
+            }
+            else MessageBoxes.ShowError("Selected parts belong to a compound part and cannot be deleted:" + Environment.NewLine +
+                                        partNames.ToRows());
+        }
+        // End Part
+        // CAD Part
+        private void FlipFaces(GeometrySelection geometrySelection)
+        {
+            SetStateWorking(Globals.FlippingNormalsText);
+            _controller.FlipFaceOrientationsCommand(geometrySelection);
+            SetStateReady(Globals.FlippingNormalsText);
+        }
+        // End CAD Part
+        // Stl Part
+        private void FlipStlPartSurfacesNormal(string[] partNames)
+        {
+            _controller.FlipStlPartSurfacesNormalCommand(partNames);
         }
         private void FindEdgesByAngleForGeometryParts(string[] partNames)
         {
@@ -2493,6 +2531,105 @@ namespace PrePoMax
             string desc = "Enter the face angle for model edges detection.";
             frmGetValue.PrepareForm("Find model edges: " + partNames.ToShortString(), "Angle", desc,
                                     CaeMesh.Globals.EdgeAngle, presetValues, new StringAngleDegConverter());
+        }
+        // End Stl Part
+        private async void CreateAndImportCompoundPart(string[] partNames)
+        {
+            try
+            {
+                SetStateWorking(Globals.CreatingCompoundText, true);
+                //
+                GeometryPart part;
+                HashSet<PartType> stlPartTypes = new HashSet<PartType>();
+                HashSet<PartType> cadPartTypes = new HashSet<PartType>();
+                //
+                string[] allPartNames = _controller.GetPartAndSubPartNames(partNames);
+                foreach (var partName in allPartNames)
+                {
+                    part = (GeometryPart)_controller.Model.Geometry.Parts[partName];
+                    if (part.CADFileData == null) stlPartTypes.Add(part.PartType);
+                    else cadPartTypes.Add(part.PartType);
+                }
+                if (stlPartTypes.Count + cadPartTypes.Count != 1)
+                    throw new CaeException("Compound part can be made from only CAD or only stl based geometry parts " + 
+                                           "of the same type.");
+                await Task.Run(() => _controller.CreateAndImportCompoundPartCommand(partNames));
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+            finally
+            {
+                SetStateReady(Globals.CreatingCompoundText);
+            }
+        }
+        private async void RegenerateCompoundParts(string[] compoundPartNames)
+        {
+            try
+            {
+                SetStateWorking(Globals.RegeneratingCompoundText, true);
+                //
+                string missingPartName = null;
+                string errorCompoundPartName = null;
+                CompoundGeometryPart part;
+                foreach (var compoundPartName in compoundPartNames)
+                {
+                    part = (CompoundGeometryPart)_controller.Model.Geometry.Parts[compoundPartName];
+                    if (part.CreatedFromPartNames != null && part.CreatedFromPartNames.Length > 1)
+                    {
+                        foreach (var createdFromPartName in part.CreatedFromPartNames)
+                        {
+                            if (!_controller.Model.Geometry.Parts.ContainsKey(createdFromPartName))
+                            {
+                                missingPartName = createdFromPartName;
+                                errorCompoundPartName = compoundPartName;
+                                break;
+                            }
+                        }
+                        //
+                        if (missingPartName != null) break;
+                    }
+                }
+                if (missingPartName != null)
+                    throw new CaeException("The part '" + missingPartName + "' that was used to create a compound part '" +
+                                           errorCompoundPartName + "' is missing.");
+                //
+                await Task.Run(() => _controller.RegenerateCompoundPartsCommand(compoundPartNames));
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+            finally
+            {
+                SetStateReady(Globals.RegeneratingCompoundText);
+            }
+        }
+        private void SwapPartGeometries(string[] partNames)
+        {
+            GeometryPart[] parts = _controller.GetGeometryPartsWithoutSubParts();
+            GeometryPart part1 = _controller.GetGeometryPart(partNames[0]);
+            GeometryPart part2 = _controller.GetGeometryPart(partNames[1]);
+            if (parts.Contains(part1) && parts.Contains(part2))
+            {
+                if (part1 is CompoundGeometryPart || part2 is CompoundGeometryPart)
+                    MessageBoxes.ShowError("Compound parts cannot be swaped.");
+                else
+                    _controller.SwapPartGeometriesCommand(partNames[0], partNames[1]);
+            }
+            else MessageBoxes.ShowError("Compound subparts cannot be swaped.");
+        }
+        // Analyze geometry
+        private void AnalyzeGeometry(string[] partNames)
+        {
+            if (!_frmAnalyzeGeometry.Visible)
+            {
+                CloseAllForms();
+                SetFormLoaction((Form)_frmAnalyzeGeometry);
+                _frmAnalyzeGeometry.PartNamesToAnalyze = partNames;
+                _frmAnalyzeGeometry.Show();
+            }
         }
 
         #endregion  ################################################################################################################
@@ -2956,6 +3093,7 @@ namespace PrePoMax
         }
         private void RemeshElements()
         {
+            if (_controller.Model == null || _controller.Model.Mesh == null) return;
             // Data editor
             ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
             ItemSetDataEditor.ParentForm = _frmRemeshingParameters;
@@ -4019,6 +4157,8 @@ namespace PrePoMax
         }
         private void SearchContactPairs()
         {
+            if (_controller.Model == null || _controller.Model.Mesh == null) return;
+            //
             if (!_frmSearchContactPairs.Visible)
             {
                 CloseAllForms();
@@ -5624,13 +5764,14 @@ namespace PrePoMax
         {
             tsmiNew_Click(null, null);
         }
-        private void tsbImport_Click(object sender, EventArgs e)
-        {
-            tsmiImportFile_Click(null, null);
-        }
+        
         private void tsbOpen_Click(object sender, EventArgs e)
         {
             tsmiOpen_Click(null, null);
+        }
+        private void tsbImport_Click(object sender, EventArgs e)
+        {
+            tsmiImportFile_Click(null, null);
         }
         private void tsbSave_Click(object sender, EventArgs e)
         {
@@ -6423,6 +6564,10 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.CropPartWithCube, partName, a, fileName);
         }
+        public void SmoothPart(string partName, double a, string fileName)
+        {
+            InvokeIfRequired(_vtk.SmoothPart, partName, a, fileName);
+        }
 
         #endregion  ################################################################################################################
 
@@ -6604,11 +6749,7 @@ namespace PrePoMax
         }
         public void AddTreeNode(ViewGeometryModelResults view, NamedClass item, string stepName)
         {
-            ViewType viewType;
-            if (view == ViewGeometryModelResults.Geometry) viewType = ViewType.Geometry;
-            else if (view == ViewGeometryModelResults.Model) viewType = ViewType.Model;
-            else if (view == ViewGeometryModelResults.Results) viewType = ViewType.Results;
-            else throw new NotSupportedException();
+            ViewType viewType = GetViewType(view);
             //
             InvokeIfRequired(_modelTree.AddTreeNode, viewType, item, stepName);
             if (item is Step) UpadteSymbolsForStepList();
@@ -6616,22 +6757,22 @@ namespace PrePoMax
         public void UpdateTreeNode(ViewGeometryModelResults view, string oldItemName, NamedClass item, string stepName,
                                    bool updateSelection = true)
         {
-            ViewType viewType;
-            if (view == ViewGeometryModelResults.Geometry) viewType = ViewType.Geometry;
-            else if (view == ViewGeometryModelResults.Model) viewType = ViewType.Model;
-            else if (view == ViewGeometryModelResults.Results) viewType = ViewType.Results;
-            else throw new NotSupportedException();
+            ViewType viewType = GetViewType(view);
             //
             InvokeIfRequired(_modelTree.UpdateTreeNode, viewType, oldItemName, item, stepName, updateSelection);
             if (item is Step) UpadteOneStepInSymbolsForStepList(oldItemName, item.Name);
         }
+        public void SwapTreeNode(ViewGeometryModelResults view, string firstItemName, NamedClass firstItem,
+                                string secondItemName, NamedClass secondItem, string stepName)
+        {
+            ViewType viewType = GetViewType(view);
+            //
+            InvokeIfRequired(_modelTree.SwapTreeNodes, viewType, firstItemName, firstItem, secondItemName, secondItem, stepName);
+            //if (item is Step) UpadteOneStepInSymbolsForStepList(oldItemName, item.Name);
+        }
         public void RemoveTreeNode<T>(ViewGeometryModelResults view, string nodeName, string stepName) where T : NamedClass
         {
-            ViewType viewType;
-            if (view == ViewGeometryModelResults.Geometry) viewType = ViewType.Geometry;
-            else if (view == ViewGeometryModelResults.Model) viewType = ViewType.Model;
-            else if (view == ViewGeometryModelResults.Results) viewType = ViewType.Results;
-            else throw new NotSupportedException();
+            ViewType viewType = GetViewType(view);
             //
             InvokeIfRequired(_modelTree.RemoveTreeNode<T>, viewType, nodeName, stepName);
             if (typeof(T) == typeof(CaeModel.Step)) RemoveOneStepInSymbolsForStepList(nodeName);
@@ -6669,6 +6810,11 @@ namespace PrePoMax
         public void UpdateHighlightFromTree()
         {
             InvokeIfRequired(_modelTree.UpdateHighlight);
+        }
+        public void SelectBaseParts(string[] partNames)
+        {
+            MouseEventArgs e = new MouseEventArgs(MouseButtons.Left, 1, 0, 0, 0);
+            InvokeIfRequired(SelectBaseParts, e, Keys.None, partNames);
         }
         public void SelectBaseParts(MouseEventArgs e, Keys modifierKeys, string[] partNames)
         {
@@ -6991,6 +7137,7 @@ namespace PrePoMax
         }
         internal void tsmiAdvisor_Click(object sender, EventArgs e)
         {
+            if (GetCurrentView() == ViewGeometryModelResults.None) return;
             // Change the wizzard check state
             tsmiAdvisor.Checked = !tsmiAdvisor.Checked;
             // Add wizard panel
@@ -7017,6 +7164,7 @@ namespace PrePoMax
                     UpdateVtkControlSize();
                     // Panel 2 - RIGHT
                     _advisorControl = AdvisorCreator.CreateControl(this);
+                    //
                     splitContainer.Panel2.Controls.Add(_advisorControl);
                     _advisorControl.Dock = DockStyle.Fill;
                     _advisorControl.UpdateDesign();
@@ -7045,11 +7193,6 @@ namespace PrePoMax
             }
         }
 
-        private void searchContactPairsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        
+       
     }
 }
