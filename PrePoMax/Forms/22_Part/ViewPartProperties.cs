@@ -170,8 +170,8 @@ namespace PrePoMax.Forms
             //
             if (currentView == ViewGeometryModelResults.Geometry)
             {
-                _dctd.GetProperty(nameof(NumberOfElements)).SetIsBrowsable(false);
-                _dctd.GetProperty(nameof(NumberOfNodes)).SetIsBrowsable(false);
+                _dctd.GetProperty(nameof(NumberOfElements)).SetIsBrowsable(true);
+                _dctd.GetProperty(nameof(NumberOfNodes)).SetIsBrowsable(true);
                 //
                 _dctd.GetProperty(nameof(LinearTriaType)).SetIsBrowsable(false);
                 _dctd.GetProperty(nameof(ParabolicTriaType)).SetIsBrowsable(false);

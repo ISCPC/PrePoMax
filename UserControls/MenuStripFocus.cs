@@ -10,6 +10,14 @@ using System.Windows.Forms;
 
 namespace UserControls
 {
+    internal class NoHighlightRenderer : ToolStripProfessionalRenderer
+    {
+        protected override void OnRenderMenuItemBackground(ToolStripItemRenderEventArgs e)
+        {
+            if (e.Item.Enabled) base.OnRenderMenuItemBackground(e);
+        }
+    }
+
     public partial class MenuStripFocus : MenuStrip
     {
         // Variables                                                                                                                
@@ -25,6 +33,7 @@ namespace UserControls
         public MenuStripFocus()
         {
             InitializeComponent();
+            Renderer = new NoHighlightRenderer();
         }
         
         
@@ -74,6 +83,5 @@ namespace UserControls
                 }
             }
         }
-
     }
 }

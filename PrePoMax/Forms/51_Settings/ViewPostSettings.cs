@@ -67,15 +67,26 @@ namespace PrePoMax.Settings
             {
                 _postSettings.DrawUndeformedModel = value;
                 //
+                _dctd.GetProperty(nameof(DrawUndeformedModelAsEdges)).SetIsBrowsable(_postSettings.DrawUndeformedModel);
                 _dctd.GetProperty(nameof(UndeformedModelColor)).SetIsBrowsable(_postSettings.DrawUndeformedModel);
             }
         }
         //
         [CategoryAttribute("Deformation")]
-        [OrderedDisplayName(3, 10, "Undeformed model color")]
+        [OrderedDisplayName(3, 10, "Draw undeformed model as")]
+        [DescriptionAttribute("Draw undeformed model as a solid or wireframe shape.")]
+        [Id(4, 1)]
+        public bool DrawUndeformedModelAsEdges
+        {
+            get { return _postSettings.DrawUndeformedModelAsEdges; }
+            set { _postSettings.DrawUndeformedModelAsEdges = value; }
+        }
+        //
+        [CategoryAttribute("Deformation")]
+        [OrderedDisplayName(4, 10, "Undeformed model color")]
         [DescriptionAttribute("Set the color of the undeformed model.")]
         [Editor(typeof(UserControls.ColorEditorEx), typeof(UITypeEditor))]
-        [Id(4, 1)]
+        [Id(5, 1)]
         public System.Drawing.Color UndeformedModelColor
         {
             get { return _postSettings.UndeformedModelColor; } 
@@ -125,6 +136,7 @@ namespace PrePoMax.Settings
             _dctd.RenameBooleanPropertyToYesNo(nameof(ShowMinValueLocation));
             _dctd.RenameBooleanPropertyToYesNo(nameof(ShowMaxValueLocation));
             _dctd.RenameBooleanPropertyToYesNo(nameof(DrawUndeformedModel));
+            _dctd.RenameBooleanProperty(nameof(DrawUndeformedModelAsEdges), "Wireframe body", "Shaded body");
         }
 
 

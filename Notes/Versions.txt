@@ -199,7 +199,7 @@ Errors:
 - running with no Admin rights the number of cpus can not be changed...
 - the mouseMove event gets fired every second?!
 - there is something wrong when using small dimension: 0.001 - negative Jacobian
-- the moment on rigid body rotation node works in opposite direction?
+
 
 Dependency nglib - added following files for c++ redistriburable compatibility:
 
@@ -220,7 +220,10 @@ Done
 Save history in a file?!?!?
 
 Version 1.1.2 Master branch
-Added new a symbol for the spring constraints
+Added a feature to smooth stl part
+Added a feature to flip stl part normal
+Added a feature to regenerate a compound part
+Added new symbol for the spring constraints
 Added new constraint type Surface Constraint
 Added new constraint type Point Constraint
 Added support for opening and visualizing the contact element nodes from jobname.cel files

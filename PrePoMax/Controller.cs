@@ -8855,9 +8855,9 @@ namespace PrePoMax
             // Get all nodes and elements for selection - renumbered
             data.CellLocator = new PartExchangeData();
             mesh.GetAllNodesAndCells(part, out data.CellLocator.Nodes.Ids, out data.CellLocator.Nodes.Coor,
-                                     out data.CellLocator.Cells.Ids,
-                                     out data.CellLocator.Cells.CellNodeIds,
-                                     out data.CellLocator.Cells.Types);
+                                        out data.CellLocator.Cells.Ids,
+                                        out data.CellLocator.Cells.CellNodeIds,
+                                        out data.CellLocator.Cells.Types);
             // Get only needed nodes and elements - renumbered
             mesh.GetVisualizationNodesAndCells(part, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor,
                                                 out data.Geometry.Cells.Ids,
@@ -11922,7 +11922,8 @@ namespace PrePoMax
                 AnnotateWithColorLegend();
                 //
                 float scale = GetScale();
-                DrawAllResultParts(_currentFieldData, scale, _settings.Post.DrawUndeformedModel, _settings.Post.UndeformedModelColor);
+                DrawAllResultParts(_currentFieldData, scale, _settings.Post.DrawUndeformedModel,
+                                   _settings.Post.DrawUndeformedModelAsEdges, _settings.Post.UndeformedModelColor);
                 // Transformation
                 ApplyTransformation();
                 //
@@ -11934,7 +11935,8 @@ namespace PrePoMax
                 _form.UpdateScalarsAndCameraAndRedraw();
             }
         }
-        private void DrawAllResultParts(FieldData fieldData, float scale, bool drawUndeformedModel, Color undeformedModelColor)
+        private void DrawAllResultParts(FieldData fieldData, float scale, bool drawUndeformedModel, 
+                                        bool drawUndeformedModelAsEdges, Color undeformedModelColor)
         {
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
             List<string> hiddenActors = new List<string>();
@@ -11954,7 +11956,8 @@ namespace PrePoMax
                     }
                     else
                     {
-                        if (drawUndeformedModel) DrawUndeformedPartCopy(resultPart, undeformedModelColor, layer);
+                        if (drawUndeformedModel) DrawUndeformedPartCopy(resultPart, drawUndeformedModelAsEdges,
+                                                                        undeformedModelColor, layer);
                         //
                         DrawResultPart(resultPart, fieldData, scale, false);
                     }
@@ -12023,7 +12026,9 @@ namespace PrePoMax
                 if (entry.Value is ResultPart resultPart)
                 {
                     // Udeformed shape
-                    if (postSettings.DrawUndeformedModel) DrawUndeformedPartCopy(resultPart, postSettings.UndeformedModelColor, layer);
+                    if (postSettings.DrawUndeformedModel) DrawUndeformedPartCopy(resultPart,
+                                                                                 postSettings.DrawUndeformedModelAsEdges,
+                                                                                 postSettings.UndeformedModelColor, layer);
                     // Results
                     data = GetScaleFactorAnimationDataFromPart(resultPart, _currentFieldData, scale, numFrames);
                     foreach (NodesExchangeData nData in data.Geometry.ExtremeNodesAnimation)
@@ -12094,7 +12099,9 @@ namespace PrePoMax
                 if (entry.Value is ResultPart resultPart)
                 {
                     // Udeformed shape
-                    if (postSettings.DrawUndeformedModel) DrawUndeformedPartCopy(resultPart, postSettings.UndeformedModelColor, layer);
+                    if (postSettings.DrawUndeformedModel) DrawUndeformedPartCopy(resultPart,
+                                                                                 postSettings.DrawUndeformedModelAsEdges,
+                                                                                 postSettings.UndeformedModelColor, layer);
                     // Results
                     data = GetTimeIncrementAnimationDataFromPart(resultPart, _currentFieldData, scale);
                     foreach (NodesExchangeData nData in data.Geometry.ExtremeNodesAnimation)
@@ -12285,7 +12292,7 @@ namespace PrePoMax
             //
             _form.UpdateScalarsAndRedraw();
         }
-        public void DrawUndeformedPartCopy(BasePart part, Color color, vtkControl.vtkRendererLayer layer)
+        public void DrawUndeformedPartCopy(BasePart part, bool drawAsEdges, Color color, vtkControl.vtkRendererLayer layer)
         {
             vtkControl.vtkMaxActorData data;
             data = new vtkControl.vtkMaxActorData();
@@ -12294,7 +12301,19 @@ namespace PrePoMax
             data.Layer = layer;
             data.CanHaveElementEdges = false;
             data.SmoothShaded = part.SmoothShaded;
-            _results.GetUndeformedNodesAndCells(part, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
+            //
+            if (drawAsEdges)
+            {
+                if (data.Color.A == 255) data.Color = Color.FromArgb(254, data.Color);
+                _results.GetUndeformedModelEdges(part, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.CellNodeIds,
+                                                 out data.Geometry.Cells.Types);
+            }
+            else
+            {
+                _results.GetUndeformedNodesAndCells(part, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.CellNodeIds,
+                                                    out data.Geometry.Cells.Types);
+            }
+            //
             ApplyLighting(data);
             _form.Add3DCells(data);
         }        

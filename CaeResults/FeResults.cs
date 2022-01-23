@@ -843,11 +843,6 @@ namespace CaeResults
             values = GetValues(fieldData, nodeIds);
             if (scale != 0) ScaleNodeCoordinates(scale, fieldData.StepId, fieldData.StepIncrementId, nodeIds, ref nodeCoor);
         }
-        public void GetUndeformedNodesAndCells(BasePart part, out double[][] nodeCoor, out int[][] cells, out int[] cellTypes)
-        {
-            int[] nodeIds, cellIds;
-            _mesh.GetVisualizationNodesAndCells(part, out nodeIds, out nodeCoor, out cellIds, out cells, out cellTypes);
-        }
         //
         public PartExchangeData GetScaledAllNodesCellsAndValues(FeGroup elementSet, FieldData fData, float scale)
         {
@@ -893,6 +888,16 @@ namespace CaeResults
             if (scale != 0)
                 ScaleNodeCoordinates(scale, fData.StepId, fData.StepIncrementId, resultData.Nodes.Ids, ref resultData.Nodes.Coor);
             return resultData;
+        }
+        public void GetUndeformedNodesAndCells(BasePart part, out double[][] nodeCoor, out int[][] cells, out int[] cellTypes)
+        {
+            int[] nodeIds, cellIds;
+            _mesh.GetVisualizationNodesAndCells(part, out nodeIds, out nodeCoor, out cellIds, out cells, out cellTypes);
+        }
+        public void GetUndeformedModelEdges(BasePart part, out double[][] nodeCoor, out int[][] cells, out int[] cellTypes)
+        {
+            int[] nodeIds;
+            _mesh.GetNodesAndCellsForModelEdges(part, out nodeIds, out nodeCoor, out cells, out cellTypes);
         }
         // Animation        
         public PartExchangeData GetScaleFactorAnimationDataVisualizationNodesCellsAndValues(BasePart part, FieldData fData,

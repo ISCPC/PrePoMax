@@ -35,6 +35,7 @@ namespace PrePoMax
         private DeformationScaleFactorType _dsfType;
         private double _deformationScaleFactorValue;
         private bool _drawUndeformedModel;
+        private bool _drawUndeformedModelAsEdges;
         private Color _undeformedModelColor;
         private bool _showMinValueLocation;
         private bool _showMaxValueLocation;
@@ -76,6 +77,11 @@ namespace PrePoMax
             get { return _drawUndeformedModel; }
             set { _drawUndeformedModel = value; }
         }
+        public bool DrawUndeformedModelAsEdges
+        {
+            get { return _drawUndeformedModelAsEdges; }
+            set { _drawUndeformedModelAsEdges = value; }
+        }
         public Color UndeformedModelColor
         {
             get { return _undeformedModelColor; }
@@ -110,7 +116,8 @@ namespace PrePoMax
             _dsfType = PrePoMax.DeformationScaleFactorType.Automatic;
             _deformationScaleFactorValue = -1;
             _drawUndeformedModel = true;
-            _undeformedModelColor = System.Drawing.Color.FromArgb(128, 128, 128, 128);
+            _drawUndeformedModelAsEdges = true;
+            _undeformedModelColor = Color.Black;
             //
             _showMinValueLocation = false;
             _showMaxValueLocation = true;
