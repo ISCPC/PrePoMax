@@ -70,5 +70,12 @@ namespace vtkControl
             ModelEdges = null;
             CellLocator = null;
         }
+
+        // Methods                                                                                                                  
+        public double[][][] GetStlTriangles()
+        {
+            vtkMaxActor actor = new vtkMaxActor(this);
+            return actor.GetStlTriangles();
+        }
     }
 }

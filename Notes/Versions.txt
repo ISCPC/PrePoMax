@@ -220,6 +220,8 @@ Done
 Save history in a file?!?!?
 
 Version 1.1.2 Master branch
+Added support to export mesh and result parts as stl files.
+Added support to represent the undeformed result using a wireframe representation.
 Added a feature to smooth stl part
 Added a feature to flip stl part normal
 Added a feature to regenerate a compound part

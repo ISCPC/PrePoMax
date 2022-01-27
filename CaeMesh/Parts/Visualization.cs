@@ -137,7 +137,7 @@ namespace CaeMesh
         public int[] VertexNodeIds { get { return _vertexNodeIds; } set { _vertexNodeIds = value; } }
 
         [NonSerialized]
-        private Dictionary<int[], CellNeighbour> _cellNeighboursOverCell;
+        private Dictionary<int[], CellNeighbour> _cellNeighboursOverCell; // this are solid cell neighbours to extract surface
 
 
         // Constructors                                                                                                             
@@ -305,6 +305,33 @@ namespace CaeMesh
                     if (newIds.TryGetValue(_vertexNodeIds[i], out id)) _vertexNodeIds[i] = id;
                 }
             }
+            // Cell neighbours over cell
+            if (_cellNeighboursOverCell != null)
+            {
+                int[] renumberedKkey;
+                int[] renumberedCell;
+                CellNeighbour cellNeighbour;
+                CompareIntArray comparer = new CompareIntArray();
+                Dictionary<int[], CellNeighbour> renumberedNeighbours = 
+                    new Dictionary<int[], CellNeighbour>(_cellNeighboursOverCell.Count, comparer);
+                //
+                foreach (var entry in _cellNeighboursOverCell)
+                {
+                    renumberedKkey = new int[entry.Key.Length];
+                    renumberedCell = new int[entry.Value.Cell1.Length];
+                    //
+                    for (int i = 0; i < renumberedCell.Length; i++)
+                    {
+                        if (newIds.TryGetValue(entry.Key[i], out id)) renumberedKkey[i] = id;
+                        if (newIds.TryGetValue(entry.Value.Cell1[i], out id)) renumberedCell[i] = id;
+                    }
+                    //
+                    cellNeighbour = entry.Value;
+                    cellNeighbour.Cell1 = renumberedCell;
+                    renumberedNeighbours.Add(renumberedKkey, cellNeighbour);
+                }
+                _cellNeighboursOverCell = renumberedNeighbours;
+            }
         }
         public void RenumberElements(Dictionary<int, int> newIds)
         {
@@ -314,6 +341,16 @@ namespace CaeMesh
                 for (int i = 0; i < _cellIds.Length; i++)
                 {
                     if (newIds.TryGetValue(_cellIds[i], out id)) _cellIds[i] = id;
+                }
+            }
+            // Cell neighbours over cell
+            if (_cellNeighboursOverCell != null)
+            {
+                foreach (var entry in _cellNeighboursOverCell)
+                {
+
+                    if (entry.Value.Id1 != -1 && newIds.TryGetValue(entry.Value.Id1, out id)) entry.Value.Id1 = id;
+                    if (entry.Value.Id2 != -1 && newIds.TryGetValue(entry.Value.Id2, out id)) entry.Value.Id2 = id;
                 }
             }
         }

@@ -34,20 +34,24 @@ namespace FileInOut.Input
                 //
                 foreach (List<string> dataSet in dataSets)
                 {
-                    if (dataSet[0] == VolKeywords.points.ToString()) // Nodes
+                    // Nodes
+                    if (dataSet[0] == VolKeywords.points.ToString()) 
                     {
                         nodes = GetNodes(dataSet.ToArray());
                     }
-                    else if (dataSet[0] == VolKeywords.volumeelements.ToString()) // 3D Elements
+                    // 3D Elements
+                    else if (dataSet[0] == VolKeywords.volumeelements.ToString())           
                     {
                         AddVolumeElements(dataSet.ToArray(), elements, ref elementStartId);
                     }
+                    // 2D Elements
                     else if (dataSet[0] == VolKeywords.surfaceelements.ToString() ||
-                             dataSet[0] == VolKeywords.surfaceelementsuv.ToString()) // 2D Elements
+                             dataSet[0] == VolKeywords.surfaceelementsuv.ToString())        
                     {
                         AddSurfaceElements(dataSet.ToArray(), elements, ref elementStartId, surfaceIdNodeIds);
                     }
-                    else if (dataSet[0] == VolKeywords.edgesegmentsgi2.ToString()) // 1D Elements
+                    // 1D Elements - always import
+                    else if (dataSet[0] == VolKeywords.edgesegmentsgi2.ToString())          
                     {
                         AddLineElements(dataSet.ToArray(), elements, ref elementStartId, edgeIdNodeIds, vertexNodeIds);
                     }

@@ -39,7 +39,7 @@ namespace PrePoMax
         FrmSplash splash;
 
         private vtkControl.vtkControl _vtk;
-        private UserControls.ModelTree _modelTree;
+        private ModelTree _modelTree;
         private Controller _controller;
         private string[] _args;
         private string[] outputLines;
@@ -48,7 +48,6 @@ namespace PrePoMax
         KeyboardHook _keyboardHook;
         //
         private Point _formLocation;
-        private int _formScreenId;
         private List<Form> _allForms;
         private FrmSectionView _frmSectionView;
         private FrmExplodedView _frmExplodedView;
@@ -107,9 +106,7 @@ namespace PrePoMax
             // This gets called from: _controller.CurrentView
             InvokeIfRequired(() =>
             {
-                if (view == ViewGeometryModelResults.None)
-                { }
-                else if (view == ViewGeometryModelResults.Geometry)
+                if (view == ViewGeometryModelResults.Geometry)
                 {
                     _modelTree.SetGeometryTab();
                     if (_controller.Model != null) UpdateUnitSystem(_controller.Model.UnitSystem);
@@ -180,7 +177,6 @@ namespace PrePoMax
             _modelTree = null;
             _args = args;
             _edgeVisibilities = new Dictionary<ViewGeometryModelResults, Action<object, EventArgs>>();
-            _edgeVisibilities.Add(ViewGeometryModelResults.None, tsmiShowModelEdges_Click);
             _edgeVisibilities.Add(ViewGeometryModelResults.Geometry, tsmiShowModelEdges_Click);
             _edgeVisibilities.Add(ViewGeometryModelResults.Model, tsmiShowElementEdges_Click);
             _edgeVisibilities.Add(ViewGeometryModelResults.Results, tsmiShowElementEdges_Click);
@@ -197,6 +193,16 @@ namespace PrePoMax
             //StringEnergyPerVolumeConverter.SetVolumeUnit = "in³";
             //double v1 = (double)converter.ConvertFromString("8.5 in·lb/in³");
 
+
+            if (TestWriteAccess() == false)
+            {
+                MessageBoxes.ShowError("PrePoMax has no write access for the folder: " + Application.StartupPath +
+                                       Environment.NewLine + Environment.NewLine +
+                                       "To run PrePoMax, move the base PrePoMax folder to another, non-protected folder.");
+                Close();
+                return;
+            }
+            //
             Text = Globals.ProgramName;
             this.TopMost = true;
             splash = new FrmSplash { TopMost = true };
@@ -268,8 +274,9 @@ namespace PrePoMax
                 _vtk.Controller_GetCellActorData = _controller.GetCellActorData;
                 _vtk.Controller_GetCellFaceActorData = _controller.GetCellFaceActorData;
                 _vtk.Controller_GetEdgeActorData = _controller.GetEdgeActorData;
-                _vtk.Controller_GetSurfaceEdgesActorDataFromElementId = _controller.GetSurfaceEdgeActorDataFromElementId;
-                _vtk.Controller_GetSurfaceEdgesActorDataFromNodeAndElementIds = _controller.GetSurfaceEdgeActorDataFromNodeAndElementIds;
+                _vtk.Controller_GetSurfaceEdgesActorDataFromElementId = _controller.GetSurfaceEdgesActorDataFromElementId;
+                _vtk.Controller_GetSurfaceEdgesActorDataFromNodeAndElementIds =
+                    _controller.GetSurfaceEdgesActorDataFromNodeAndElementIds;
                 _vtk.Controller_GetPartActorData = _controller.GetPartActorData;
                 _vtk.Controller_GetGeometryActorData = _controller.GetGeometryActorData;
                 _vtk.Controller_GetGeometryVertexActorData = _controller.GetGeometryVertexActorData;
@@ -500,7 +507,9 @@ namespace PrePoMax
                 }
                 else
                 {
-                    SetEmptyWorkspace();
+                    _controller.CurrentView = ViewGeometryModelResults.Geometry;
+                    //
+                    UpdateRecentFilesThreadSafe(_controller.Settings.General.GetRecentFiles());
                 }
             });
             timer.Start();
@@ -515,6 +524,8 @@ namespace PrePoMax
             {
                 e.Cancel = false;   // close the form
                 DialogResult response = DialogResult.None;
+                // No write access
+                if (_controller == null) return;
                 //
                 foreach (var entry in _controller.Jobs)
                 {
@@ -588,7 +599,23 @@ namespace PrePoMax
             _vtk.Width -= 2;
             _vtk.Height -= 2;
         }
-        //
+        private bool TestWriteAccess()
+        {
+            try
+            {
+                string fileName = Controller.GetFreeRandomFileName(Application.StartupPath, ".test");
+                File.WriteAllText(fileName, "");
+                //
+                File.Delete(fileName);
+                //
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        // Forms
         private void itemForm_VisibleChanged(object sender, EventArgs e)
         {
             Form form = sender as Form;
@@ -628,7 +655,7 @@ namespace PrePoMax
             //else if (form.Top + form.Height > screenSize.Height) form.Top = screenSize.Height - form.Height;
             SaveFormLoaction(form);
         }
-        //
+        // Keyboard
         private void KeyboardHook_Keydown(KeyboardHook.VKeys vKey)
         {
             if (this == ActiveForm)
@@ -651,7 +678,7 @@ namespace PrePoMax
                     _modelTree.cltv_KeyDown(this, new KeyEventArgs(key));
             }
         }
-        //
+        // Timer
         private void timerOutput_Tick(object sender, EventArgs e)
         {
             tbOutput.Lines = outputLines;
@@ -1004,46 +1031,78 @@ namespace PrePoMax
         // Menus                                                                                                                    
         private void SetMenuAndToolStripVisibility()
         {
-            // Main menu
-            foreach (ToolStripMenuItem item in menuStripMain.Items) item.Enabled = false;
-            // File menu
-            foreach (ToolStripItem item in tsmiFile.DropDownItems) item.Enabled = false;
-            // Toolbar Views
-            toolStripViewSeparator4.Visible = false;
-            tslSymbols.Visible = false;
-            tscbSymbolsForStep.Visible = false;
-            // Toolbar Results
-            tsResults.Visible = false;
-            //
-            switch (_controller.CurrentView)
+            InvokeIfRequired(() =>
             {
-                case ViewGeometryModelResults.None:
+                //                      Disable                                                         
+                // Main menu
+                foreach (ToolStripMenuItem item in menuStripMain.Items) item.Enabled = false;
+                tsmiFile.Enabled = true;
+                tsmiHelp.Enabled = true;
+                // File menu
+                foreach (ToolStripItem item in tsmiFile.DropDownItems) item.Enabled = false;
+                // Toolbar File
+                tsbImport.Enabled = false;
+                tsbSave.Enabled = false;
+                // Toolbar View
+                //foreach (ToolStripItem item in tsViews.Items) item.Enabled = false;
+                tsViews.DisableMouseButtons = true;
+                toolStripViewSeparator4.Visible = false;
+                tslSymbols.Visible = false;
+                tscbSymbolsForStep.Visible = false;
+                // Toolbar Results
+                tsResults.Visible = false;
+                // Vtk
+                bool vktVisible = false;
+                // Tree
+                _modelTree.DisableGeometryAndModelTreeMouse = true;
+                _modelTree.DisableResultsTreeMouse = true;
+                //                      Enable                                                          
+                if (_controller.ModelInitialized || _controller.ResultsInitialized)
+                {
                     // Main menu
-                    tsmiFile.Enabled = true;
-                    tsmiHelp.Enabled = true;
+                    tsmiEdit.Enabled = true;                    
+                    tsmiTools.Enabled = true;
+                    // File menu
+                    foreach (ToolStripItem item in tsmiFile.DropDownItems) item.Enabled = true;
+                    tsmiImportFile.Enabled = _controller.ModelInitialized;
+                    // Toolbar File
+                    tsbImport.Enabled = _controller.ModelInitialized;
+                    tsbSave.Enabled = true;                    
+                }
+                else
+                {
                     // File menu
                     tsmiNew.Enabled = true;
                     tsmiOpen.Enabled = true;
                     tsmiOpenRecent.Enabled = true;
-                    //tsmiImportFile.Enabled = true;
                     tsmiExit.Enabled = true;
-                    break;
-                case ViewGeometryModelResults.Geometry:
+                }
+                //
+                bool setGeometryView = _controller.CurrentView == ViewGeometryModelResults.Geometry;
+                bool setModelView = _controller.CurrentView == ViewGeometryModelResults.Model;
+                bool setResultsView = _controller.CurrentView == ViewGeometryModelResults.Results;
+                bool setEmptyView = (setGeometryView && !_controller.ModelInitialized) ||
+                                    (setModelView && !_controller.ModelInitialized) ||
+                                    (setResultsView && !_controller.ResultsInitialized);
+                
+                //
+                if (setEmptyView) { }
+                else if (setGeometryView)
+                {
                     // Main menu
-                    tsmiFile.Enabled = true;
-                    tsmiEdit.Enabled = true;
                     tsmiView.Enabled = true;
                     tsmiGeometry.Enabled = true;
                     tsmiMesh.Enabled = true;
-                    tsmiTools.Enabled = true;
-                    tsmiHelp.Enabled = true;
-                    // File menu
-                    foreach (ToolStripItem item in tsmiFile.DropDownItems) item.Enabled = true;
-                    break;
-                case ViewGeometryModelResults.Model:
+                    // Toolbar View
+                    tsViews.DisableMouseButtons = false;
+                    // Vtk
+                    vktVisible = true;
+                    // Tree
+                    _modelTree.DisableGeometryAndModelTreeMouse = false;
+                }
+                else if (setModelView)
+                {
                     // Main menu
-                    tsmiFile.Enabled = true;
-                    tsmiEdit.Enabled = true;
                     tsmiView.Enabled = true;
                     tsmiModel.Enabled = true;
                     tsmiProperty.Enabled = true;
@@ -1053,53 +1112,33 @@ namespace PrePoMax
                     tsmiBC.Enabled = true;
                     tsmiLoad.Enabled = true;
                     tsmiAnalysis.Enabled = true;
-                    tsmiTools.Enabled = true;
-                    tsmiHelp.Enabled = true;
-                    // File menu
-                    foreach (ToolStripItem item in tsmiFile.DropDownItems) item.Enabled = true;
-                    // Toolbar Views
+                    // Toolbar View
+                    tsViews.DisableMouseButtons = false;
                     toolStripViewSeparator4.Visible = true;
                     tslSymbols.Visible = true;
                     tscbSymbolsForStep.Visible = true;
-                    break;
-                case ViewGeometryModelResults.Results:
+                    // Vtk
+                    vktVisible = true;
+                    // Tree
+                    _modelTree.DisableGeometryAndModelTreeMouse = false;
+                }
+                else if (setResultsView)
+                {
                     // Main menu
-                    tsmiFile.Enabled = true;
-                    tsmiEdit.Enabled = true;
                     tsmiView.Enabled = true;
                     tsmiResults.Enabled = true;
-                    tsmiTools.Enabled = true;
-                    tsmiHelp.Enabled = true;
-                    // File menu
-                    foreach (ToolStripItem item in tsmiFile.DropDownItems) item.Enabled = true;
+                    // Toolbar View
+                    tsViews.DisableMouseButtons = false;
                     // Toolbar Results
                     tsResults.Visible = true;
-                    break;
-                default:
-                    break;
-            }
-        }
-        private void SetEmptyWorkspace()
-        {
-            _controller.CurrentView = ViewGeometryModelResults.None;
-            //
-            _modelTree.DisableMouse = true;
-            tsViews.DisableMouseButtons = true;
-            tsResults.DisableMouseButtons = true;
-            //
-            UpdateRecentFilesThreadSafe(_controller.Settings.General.GetRecentFiles());
-        }
-        private void UnsetEmptyWorkspace()
-        {
-            InvokeIfRequired(() =>
-            {
-                _vtk.Show();
+                    // Vtk
+                    vktVisible = true;
+                    // Tree
+                    _modelTree.DisableResultsTreeMouse = false;
+                }
                 //
-                _modelTree.DisableMouse = false;
-                tsViews.DisableMouseButtons = false;
-                tsResults.DisableMouseButtons = false;
-            }
-            );
+                _vtk.Visible = vktVisible;
+            });
         }
 
         #region File menu ##########################################################################################################
@@ -1114,10 +1153,10 @@ namespace PrePoMax
                 _controller.New();
                 // The model space and the unit system are undefined
                 SelectNewModelProperties();
-                // No need for ModelChanged
-                _controller.ModelChanged = false;
                 //
-                UnsetEmptyWorkspace();
+                SetMenuAndToolStripVisibility();
+                //
+                _controller.ModelChanged = false; // must be here since adding unit system changes the model
             }
             catch (Exception ex)
             {
@@ -1195,9 +1234,8 @@ namespace PrePoMax
                 }
                 else MessageBoxes.ShowWarning("Another task is already running.");
                 // If the model space or the unit system are undefined
-                if (_controller.Model.Geometry != null || _controller.Model.Mesh != null) SelectNewModelProperties();
-                if (_controller.Results != null) SelectResultsUnitSystem();
-                
+                if (_controller.ModelInitialized) SelectNewModelProperties();
+                if (_controller.ResultsInitialized) SelectResultsUnitSystem();
             }
             catch (Exception ex)
             {
@@ -1233,14 +1271,14 @@ namespace PrePoMax
             }
             else throw new NotSupportedException();
             //
-            UnsetEmptyWorkspace();
+            SetMenuAndToolStripVisibility();
         }
         internal async void tsmiImportFile_Click(object sender, EventArgs e)
         {
-            if (GetCurrentView() == ViewGeometryModelResults.None) return;
-            //
             try
             {
+                if (!_controller.ModelInitialized)
+                    throw new CaeException("There is no model to import into. First create a new model.");
                 // If the model space or the unit system are undefined
                 SelectNewModelProperties();
                 //
@@ -1277,10 +1315,11 @@ namespace PrePoMax
         }
         internal async void tsmiSave_Click(object sender, EventArgs e)
         {
-            if (GetCurrentView() == ViewGeometryModelResults.None) return;
-            //
             try
             {
+                if (!_controller.ModelInitialized)
+                    throw new CaeException("There is no model to save. First create a new model.");
+                //
                 if (sender == null) System.Diagnostics.Debug.WriteLine("null");
                 else System.Diagnostics.Debug.WriteLine(sender.ToString());
                 //
@@ -1298,10 +1337,11 @@ namespace PrePoMax
         }
         private async void tsmiSaveAs_Click(object sender, EventArgs e)
         {
-            if (GetCurrentView() == ViewGeometryModelResults.None) return;
-            //
             try
             {
+                if (!_controller.ModelInitialized)
+                    throw new CaeException("There is no model to save. First create a new model.");
+                //
                 SetStateWorking(Globals.SavingAsText);
                 await Task.Run(() => _controller.SaveAs());
             }
@@ -1423,11 +1463,32 @@ namespace PrePoMax
         {
             try
             {
-                if (_controller.Model.Geometry != null && _controller.Model.Geometry.Parts != null)
+                ViewGeometryModelResults currentView = GetCurrentView();
+                if (currentView == ViewGeometryModelResults.Geometry)
                 {
-                    SelectMultipleEntities("Parts", _controller.GetGeometryParts(), SavePartsAsStl);
+                    if (_controller.Model.Geometry != null && _controller.Model.Geometry.Parts != null)
+                    {
+                        SelectMultipleEntities("Parts", _controller.GetGeometryParts(), SavePartsAsStl);
+                    }
+                    else throw new CaeException("No geometry parts to export.");
                 }
-                else throw new CaeException("No geometry to export.");
+                else if (currentView == ViewGeometryModelResults.Model)
+                {
+                    if (_controller.Model.Mesh != null && _controller.Model.Mesh.Parts != null)
+                    {
+                        SelectMultipleEntities("Parts", _controller.GetModelParts(), SavePartsAsStl);
+                    }
+                    else throw new CaeException("No mesh parts to export.");
+                }
+                else if (currentView == ViewGeometryModelResults.Results)
+                {
+                    if (_controller.Results.Mesh != null && _controller.Results.Mesh.Parts != null)
+                    {
+                        SelectMultipleEntities("Parts", _controller.GetResultParts(), SavePartsAsStl);
+                    }
+                    else throw new CaeException("No result parts to export.");
+                }
+                else throw new NotSupportedException();
             }
             catch (Exception ex)
             {
@@ -1533,7 +1594,7 @@ namespace PrePoMax
                         // The filter adds the extension to the file name
                         SetStateWorking(Globals.ExportingText);
                         //
-                        await Task.Run(() => _controller.ExportGeometryPartsAsStl(partNames, saveFileDialog.FileName));
+                        await Task.Run(() => _controller.ExportToStl(partNames, saveFileDialog.FileName));
                     }
                 }
             }
@@ -1549,12 +1610,9 @@ namespace PrePoMax
         //
         private void tsmiCloseResults_Click(object sender, EventArgs e)
         {
-            _controller.ClearResults();
-
-            ClearResults();
+            _controller.ClearResults(); // calls this.ClearResults();
+            //
             if (_controller.CurrentView == ViewGeometryModelResults.Results) Clear3D();
-
-            _modelTree.ClearResults();
         }
         private void tsmiExit_Click(object sender, EventArgs e)
         {
@@ -1629,7 +1687,7 @@ namespace PrePoMax
             {
                 SetStateWorking(Globals.UndoingText);
                 _modelTree.ScreenUpdating = false;
-
+                //
                 await Task.Run(() => _controller.UndoHistory());
             }
             catch (Exception ex)
@@ -1641,6 +1699,8 @@ namespace PrePoMax
                 SetStateReady(Globals.UndoingText);
                 _modelTree.ScreenUpdating = true;
                 _modelTree.RegenerateTree(_controller.Model, _controller.Jobs, _controller.Results, _controller.History);
+                //
+                SetMenuAndToolStripVisibility();
             }
         }
         private void tsmiRedo_Click(object sender, EventArgs e)
@@ -1648,6 +1708,8 @@ namespace PrePoMax
             try
             {
                 _controller.RedoHistory();
+                //
+                SetMenuAndToolStripVisibility();
             }
             catch (Exception ex)
             {
@@ -1668,6 +1730,8 @@ namespace PrePoMax
                 SetStateWorking(Globals.RegeneratingText);
                 _modelTree.ScreenUpdating = false;
                 await Task.Run(() => _controller.RegenerateHistoryCommands());
+                //
+                SetMenuAndToolStripVisibility();
             }
             catch (Exception ex)
             {
@@ -1678,6 +1742,8 @@ namespace PrePoMax
                 SetStateReady(Globals.RegeneratingText);
                 _modelTree.ScreenUpdating = true;
                 _modelTree.RegenerateTree(_controller.Model, _controller.Jobs, _controller.Results, _controller.History);
+                //
+                SetMenuAndToolStripVisibility();
             }
         }
         private void tsmiRegenerteUsingOtherFiles_Click(object sender, EventArgs e)
@@ -1708,6 +1774,8 @@ namespace PrePoMax
                 SetStateReady(Globals.RegeneratingText);
                 _modelTree.ScreenUpdating = true;
                 _modelTree.RegenerateTree(_controller.Model, _controller.Jobs, _controller.Results, _controller.History);
+                //
+                SetMenuAndToolStripVisibility();
             }
         }
 
@@ -6237,6 +6305,8 @@ namespace PrePoMax
             {
                 tscbStepAndIncrement.Items.Clear();
                 _modelTree.ClearResults();
+                //
+                SetMenuAndToolStripVisibility();
             });
         }
         public void Clear3D()
@@ -7137,7 +7207,7 @@ namespace PrePoMax
         }
         internal void tsmiAdvisor_Click(object sender, EventArgs e)
         {
-            if (GetCurrentView() == ViewGeometryModelResults.None) return;
+            if (!_controller.ModelInitialized) return;
             // Change the wizzard check state
             tsmiAdvisor.Checked = !tsmiAdvisor.Checked;
             // Add wizard panel

@@ -177,6 +177,26 @@ namespace UserControls
                 stbResults.Enabled = !value;
             }
         }
+        public bool DisableGeometryAndModelTreeMouse
+        {
+            set
+            {
+                cltvGeometry.DisableMouse = value;
+                cltvModel.DisableMouse = value;
+                //
+                stbGeometry.Enabled = !value;
+                stbModel.Enabled = !value;
+            }
+        }
+        public bool DisableResultsTreeMouse
+        {
+            set
+            {
+                cltvResults.DisableMouse = value;
+                //
+                stbResults.Enabled = !value;
+            }
+        }
         public string[] IntersectSelectionWithList(NamedClass[] list)
         {
             List<string> selected = new List<string>();

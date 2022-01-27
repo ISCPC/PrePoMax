@@ -10,14 +10,6 @@ using System.Windows.Forms;
 
 namespace UserControls
 {
-    internal class NoHighlightRenderer : ToolStripProfessionalRenderer
-    {
-        protected override void OnRenderMenuItemBackground(ToolStripItemRenderEventArgs e)
-        {
-            if (e.Item.Enabled) base.OnRenderMenuItemBackground(e);
-        }
-    }
-
     public partial class MenuStripFocus : MenuStrip
     {
         // Variables                                                                                                                
@@ -33,10 +25,23 @@ namespace UserControls
         public MenuStripFocus()
         {
             InitializeComponent();
-            Renderer = new NoHighlightRenderer();
         }
-        
-        
+
+
+        // Event handlers                                                                                                           
+        private void MenuStripFocus_MouseLeave(object sender, EventArgs e)
+        {
+            foreach (ToolStripItem item in Items)
+            {
+                if (item.Selected && !item.Enabled)
+                {
+                    item.Enabled = true;
+                    item.Enabled = false;
+                }
+            }
+        }
+
+
         // Methods                                                                                                                  
         protected override void WndProc(ref Message m)
         {
@@ -83,5 +88,6 @@ namespace UserControls
                 }
             }
         }
+       
     }
 }

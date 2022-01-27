@@ -32,6 +32,7 @@
             // 
             // MenuStripFocus
             // 
+            this.MouseLeave += new System.EventHandler(this.MenuStripFocus_MouseLeave);
             this.ResumeLayout(false);
 
         }

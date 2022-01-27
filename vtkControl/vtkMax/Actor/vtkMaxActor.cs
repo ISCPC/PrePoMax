@@ -1695,5 +1695,34 @@ namespace vtkControl
             if (ElementEdges != null) ElementEdges.GetMapper().RemoveAllClippingPlanes();
             if (ModelEdges != null) ModelEdges.GetMapper().RemoveAllClippingPlanes();
         }
+        // Exports
+        public double[][][] GetStlTriangles()
+        {
+            vtkCell cell;
+            vtkPoints points;
+            long numOfPoints;
+            long numCells = _geometryMapper.GetInput().GetNumberOfCells();
+            double[][] trianlge;
+            List<double[][]> trianlges = new List<double[][]>();
+            //
+            for (int i = 0; i < numCells; i++)
+            {
+                cell = _geometryMapper.GetInput().GetCell(i);
+                points = cell.GetPoints();
+                numOfPoints = points.GetNumberOfPoints();
+                if (numOfPoints == 3)
+                {
+                    trianlge = new double[3][];
+                    for (int j = 0; j < 3; j++)
+                    {
+                        trianlge[j] = points.GetPoint(j);
+                    }
+                    trianlges.Add(trianlge);
+                }
+                else throw new NotSupportedException();
+            }
+            //
+            return trianlges.ToArray(); ;
+        }
     }
 }

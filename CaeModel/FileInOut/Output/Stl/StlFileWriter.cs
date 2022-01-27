@@ -35,7 +35,6 @@ namespace FileInOut.Output
                         }
                         normal = ComputeNormal(vertices);
                         facets.Add(new Facet(normal, vertices, 0));
-                        Facet f = new Facet();
                     }
                 }
             }
@@ -49,6 +48,32 @@ namespace FileInOut.Output
             //}
         }
 
+        public static void Write(string fileName, List<double[][]> stlTriangles)
+        {
+            List<Facet> facets = new List<Facet>();
+            Normal normal;
+            //
+            foreach (var triangle in stlTriangles)
+            {
+                Vertex[] vertices = new Vertex[3];
+                for (int i = 0; i < triangle.Length; i++)
+                {
+                    vertices[i] = new Vertex((float)triangle[i][0], (float)triangle[i][1], (float)triangle[i][2]);
+                }
+                normal = ComputeNormal(vertices);
+                facets.Add(new Facet(normal, vertices, 0));
+                Facet f = new Facet();
+            }
+            //
+            STLDocument stlFile = new STLDocument("part", facets);
+            stlFile.SaveAsText(fileName);
+            //
+            //using (Stream stream = File.OpenWrite(fileName))
+            //{
+            //   stlFile.WriteBinary(stream);
+            //}
+        }
+        //
         private static Normal ComputeNormal(Vertex[] vertices)
         {
             float[] v1 = new float[] { vertices[1].X - vertices[0].X, vertices[1].Y - vertices[0].Y, vertices[1].Z - vertices[0].Z };

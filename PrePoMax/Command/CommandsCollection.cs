@@ -14,7 +14,6 @@ namespace PrePoMax.Commands
         
         // Variables                                                                                                                
         protected bool _showDialogs;
-        protected int _currCommandIndex;
         protected int _currPositionIndex;
         protected Controller _controller;
         protected List<Command> _commands;
@@ -26,6 +25,8 @@ namespace PrePoMax.Commands
 
         // Properties                                                                                                               
         public string HistoryFileNameTxt { get { return _historyFileNameTxt; } }
+        public int Count { get { return _commands.Count(); } }
+        public int CurrPositionIndex { get { return _currPositionIndex; } }
 
 
         // Callbacks                                                                                                                
@@ -46,7 +47,7 @@ namespace PrePoMax.Commands
             _historyFileNameTxt = Path.Combine(System.Windows.Forms.Application.StartupPath, Globals.HistoryFileName + ".txt");
             _historyFileNameBin = Path.Combine(System.Windows.Forms.Application.StartupPath, Globals.HistoryFileName + ".rec");
             _prevView = ViewGeometryModelResults.Geometry;
-
+            //
             WriteToFile();
         }
         public CommandsCollection(Controller controller, CommandsCollection commandsCollection)
@@ -84,7 +85,9 @@ namespace PrePoMax.Commands
         private void AddCommand(Command command)
         {
             // Remove old commands
-            if (_currPositionIndex < _commands.Count - 1) _commands.RemoveRange(_currPositionIndex + 1, _commands.Count - _currPositionIndex - 1);
+            if (_currPositionIndex < _commands.Count - 1)
+                _commands.RemoveRange(_currPositionIndex + 1, _commands.Count - _currPositionIndex - 1);
+            //
             _commands.Add(command);
         }
         private void AddToHistory(Command command)

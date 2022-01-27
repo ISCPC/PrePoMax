@@ -82,6 +82,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MenuStrip\NoHighlightRenderer.cs" />
     <Compile Include="MessageBoxes\AutoClosingMessageBox.cs" />
     <Compile Include="DataGridView\DataGridViewCopyPaste.cs">
       <SubType>Component</SubType>
@@ -150,8 +151,10 @@
     <Compile Include="Trees\DoubleBufferedTreeView.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="MenuStripFocus.cs" />
-    <Compile Include="MenuStripFocus.Designer.cs">
+    <Compile Include="MenuStrip\MenuStripFocus.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="MenuStrip\MenuStripFocus.Designer.cs">
       <DependentUpon>MenuStripFocus.cs</DependentUpon>
     </Compile>
     <Compile Include="ModelTree.cs">
@@ -223,7 +226,7 @@
     <EmbeddedResource Include="ListView\MyListView.resx">
       <DependentUpon>MyListView.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MenuStripFocus.resx">
+    <EmbeddedResource Include="MenuStrip\MenuStripFocus.resx">
       <DependentUpon>MenuStripFocus.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ModelTree.resx">
