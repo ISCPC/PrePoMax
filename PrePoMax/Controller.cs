@@ -25,8 +25,6 @@ namespace PrePoMax
         [NonSerialized] protected SettingsContainer _settings;
         [NonSerialized] protected OrderedDictionary<string, AnalysisJob> _jobs;
         // States
-        [NonSerialized] protected bool _modelInitialized;
-        [NonSerialized] protected bool _resultsInitialized;
         [NonSerialized] protected bool _modelChanged;
         [NonSerialized] protected bool _savingFile;
         [NonSerialized] protected bool _animating;
@@ -80,8 +78,14 @@ namespace PrePoMax
         }
         public OrderedDictionary<string, AnalysisJob> Jobs { get { return _jobs; } }
         // States
-        public bool ModelInitialized { get { return _modelInitialized; } set { _modelInitialized = value; } }
-        public bool ResultsInitialized { get { return _resultsInitialized; } set { _resultsInitialized = value; } }
+        public bool ModelInitialized
+        {
+            get { return _commands != null && _commands.CurrPositionIndex > 0; } 
+        }
+        public bool ResultsInitialized
+        {
+            get { return _results != null && _results.Mesh != null && _results.Mesh.Nodes.Count > 0; } 
+        }
         public bool ModelChanged { get { return _modelChanged; } set { _modelChanged = value; } }
         public bool SavingFile { get { return _savingFile; } }
         public FeModel Model { get { return _model; } }
@@ -322,9 +326,6 @@ namespace PrePoMax
             ApplySettings();
             // Jobs
             _jobs = new OrderedDictionary<string, AnalysisJob>();
-            // States
-            _modelInitialized = false;
-            _resultsInitialized = false;
             // View
             _sectionViewPlanes = new Dictionary<ViewGeometryModelResults, Octree.Plane>();
             _sectionViewPlanes.Add(ViewGeometryModelResults.Geometry, null);
@@ -355,16 +356,7 @@ namespace PrePoMax
         {
             _form.EnableDisableUndoRedo(undo, redo);
         }
-        private void UpdateInitialization()
-        {
-            _modelInitialized = false;
-            _resultsInitialized = false;
-            //
-            if (_commands != null && _commands.CurrPositionIndex > 0) _modelInitialized = true;     // 0 is clear command
-            if (_model != null && _model.Mesh != null && _model.Mesh.Nodes.Count > 0) _modelInitialized = true;
-            if (_model != null && _model.Geometry != null && _model.Geometry.Nodes.Count > 0) _modelInitialized = true;
-            if (_results != null && _results.Mesh != null && _results.Mesh.Nodes.Count > 0) _resultsInitialized = true;
-        }
+        
 
         #region Clear   ############################################################################################################
         // COMMANDS ********************************************************************************
@@ -393,8 +385,6 @@ namespace PrePoMax
             SetSelectByToDefault();
             //
             _modelChanged = false;  // must be here since ClearResults can set it to true
-            _modelInitialized = false;
-            _resultsInitialized = false;
         }
         public void ClearModel()
         {
@@ -425,7 +415,6 @@ namespace PrePoMax
             if (_results != null || _history != null)
             {
                 _modelChanged = true;
-                _resultsInitialized = false;
                 _results = null;
                 _history = null;
             }
@@ -474,8 +463,6 @@ namespace PrePoMax
             ClearCommand();         // also calls _modelChanged = false; calls SetNewModelProperties()
             //
             _form.UpdateRecentFilesThreadSafe(_settings.General.GetRecentFiles());
-            //
-            _modelInitialized = true;
         }
         public void Open(string fileName)
         {
@@ -487,10 +474,8 @@ namespace PrePoMax
             else throw new NotSupportedException();
             // Check validity
             CheckAndUpdateValidity();
-            // Initialized
-            UpdateInitialization();
             // Get first component of the first field for the last increment in the last step
-            if (_resultsInitialized) _currentFieldData = _results.GetFirstComponentOfTheFirstFieldAtDefaultIncrement();
+            if (ResultsInitialized) _currentFieldData = _results.GetFirstComponentOfTheFirstFieldAtDefaultIncrement();
             //
             UpdateExplodedView(false);
             // Settings
@@ -587,9 +572,8 @@ namespace PrePoMax
                     ResumeExplodedViews(false); // must be here after the MergePartsBasedOnMesh
                 }
                 redraw = true;
-                // Set states
+                // Model changed
                 _modelChanged = true;
-                _resultsInitialized = true;
             }
             // Open .cel file
             string celFileName = Path.GetFileNameWithoutExtension(fileName) + ".cel";
@@ -630,9 +614,8 @@ namespace PrePoMax
                     // Regenerate tree
                     _form.RegenerateTree();
                 }
-                // Set states
+                // Model changed
                 _modelChanged = true;
-                _resultsInitialized = true;
             }
         }
         private void OpenCelFile(string fileName, bool redraw = true)
@@ -665,9 +648,8 @@ namespace PrePoMax
                     _form.RegenerateTree();
                     
                 }
-                // Set states
+                // Model changed
                 _modelChanged = true;
-                _resultsInitialized = true;
             }
         }
         private Dictionary<string, FeNodeSet> GetNodeSetsFromCelElements(Dictionary<int, FeNode> nodes,
@@ -6829,9 +6811,6 @@ namespace PrePoMax
             _model.UnitSystem = new UnitSystem(unitSystemType);
             //
             _form.UpdateUnitSystem(_model.UnitSystem);
-            //
-            if (modelSpace != ModelSpaceEnum.Undefined && unitSystemType != UnitSystemType.Undefined)
-                _modelInitialized = true;
         }
         public void SetResultsUnitSystem(UnitSystemType unitSystemType)
         {
@@ -6840,8 +6819,6 @@ namespace PrePoMax
             _form.UpdateUnitSystem(_results.UnitSystem);
             //
             SetLegendAndLimits();
-            //
-            _resultsInitialized = true;
         }
         private void ApplyModelUnitSystem()
         {

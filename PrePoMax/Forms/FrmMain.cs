@@ -1634,7 +1634,8 @@ namespace PrePoMax
                     ToolStripMenuItem menuItem;
                     foreach (var fileName in fileNames)
                     {
-                        menuItem = new ToolStripMenuItem(fileName);
+                        menuItem = new ToolStripMenuItem(fileName.Replace("&", "&&"));
+                        menuItem.Name = fileName;
                         menuItem.Click += tsmiRecentFile_Click;
                         tsmiOpenRecent.DropDownItems.Add(menuItem);
                     }
@@ -1657,7 +1658,7 @@ namespace PrePoMax
         {
             try
             {
-                string fileName = ((ToolStripMenuItem)sender).Text;
+                string fileName = ((ToolStripMenuItem)sender).Name;
                 if (CheckBeforeOpen(fileName)) OpenAsync(fileName);
             }
             catch (Exception ex)

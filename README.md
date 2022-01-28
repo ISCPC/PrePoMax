@@ -22,6 +22,8 @@ At last change the active solution platform using the main menu: **Build** -> **
 
 Start the compilation and execution of the project by pressing the Start button...
 
+Compiling PrePoMax only creates some of its subfolders and default settings are prepared. To fully use a compiled version of PrePoMax, first look at the latest released version of the PrePoMax’s base folder. Then copy all folders that are missing in the compiled version from the released version (Models, NetGen, Solver…). Then you have to set the working folder and solvers (CalculiX) executables file name in the Settings->Calculix.
+
 # Structure
 
 The PrePoMax is a solution which consists of 9 projects:
