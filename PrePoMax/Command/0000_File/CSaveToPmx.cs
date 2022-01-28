@@ -12,7 +12,7 @@ using System.IO;
 namespace PrePoMax.Commands
 {
     [Serializable]
-    class CSaveToPmx : Command
+    public class CSaveToPmx : Command
     {
         // Variables                                                                                                                
         private string _fileName;
@@ -20,6 +20,7 @@ namespace PrePoMax.Commands
 
 
         // Properties                                                                                                               
+        public string FileName { get { return _fileName; } }
         public byte[] Hash { get { return _hash; } set { _hash = value; } }
 
 
@@ -32,14 +33,33 @@ namespace PrePoMax.Commands
 
 
         // Methods                                                                                                                  
+        private byte[] GetHash()
+        {
+            byte[] hash = null;
+            string globalFileName = Tools.GetGlobalPath(_fileName);
+            //
+            if (File.Exists(globalFileName))
+            {
+                using (FileStream fop = File.OpenRead(Tools.GetGlobalPath(_fileName)))
+                {
+                    hash = System.Security.Cryptography.SHA1.Create().ComputeHash(fop);
+                    // string hash = BitConverter.ToString(_hash);
+                }
+            }
+            //
+            return hash;
+        }
+        public bool IsFileHashUnchanged()
+        {
+            byte[] hash = GetHash();
+            if (hash == null) return false;
+            else return hash.SequenceEqual(_hash);
+        }
         public override bool Execute(Controller receiver)
         {
             receiver.SaveToPmx(Tools.GetGlobalPath(_fileName));
             //
-            using (FileStream fop = File.OpenRead(Tools.GetGlobalPath(_fileName)))
-            {
-                _hash = System.Security.Cryptography.SHA1.Create().ComputeHash(fop); // string hash = BitConverter.ToString(_hash);
-            }
+            _hash = GetHash();
             //
             return true;
         }

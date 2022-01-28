@@ -44,7 +44,7 @@ namespace PrePoMax.Commands
             _commands = new List<Command>();
             _history = new List<string>();
             _historyFileNameTxt = Path.Combine(System.Windows.Forms.Application.StartupPath, Globals.HistoryFileName + ".txt");
-            _historyFileNameBin = Path.Combine(System.Windows.Forms.Application.StartupPath, Globals.HistoryFileName + ".pmxh");
+            _historyFileNameBin = Path.Combine(System.Windows.Forms.Application.StartupPath, Globals.HistoryFileName + ".pmh");
             _previousView = ViewGeometryModelResults.Geometry;
             //
             WriteToFile();
@@ -109,11 +109,24 @@ namespace PrePoMax.Commands
                 OnEnableDisableUndoRedo();
             }
         }
+        public void ExecuteAllCommandsFromLastSave()
+        {
+            
+            ExecuteAllCommands();
+        }
         public void ExecuteAllCommands()
         {
-            ExecuteAllCommands(false, false);
+            ExecuteAllCommands(false, false, null);
         }
         public void ExecuteAllCommands(bool showImportDialog, bool showMeshParametersDialog)
+        {
+            ExecuteAllCommands(showImportDialog, showMeshParametersDialog, null);
+        }
+        public void ExecuteAllCommandsFromLastSave(CSaveToPmx lastSave)
+        {
+            ExecuteAllCommands(false, false, lastSave);
+        }
+        public void ExecuteAllCommands(bool showImportDialog, bool showMeshParametersDialog, CSaveToPmx lastSave)
         {
             int count = 0;
             bool showDialogs = showImportDialog || showMeshParametersDialog;
@@ -123,17 +136,22 @@ namespace PrePoMax.Commands
             foreach (Command command in _commands)
             {
                 if (count++ <= _currPositionIndex)
-                {                    
+                {
                     // Write to form
                     WriteToOutput(command);
                     // Try
                     try
                     {
+                        // Skip all up to last save
+                        if (lastSave != null && command != lastSave) { }
                         // Skip save
-                        if (command is CSaveToPmx) { }
-                        else 
+                        else if (command is CSaveToPmx)
                         {
-
+                            if (lastSave != null && command == lastSave) lastSave = null;
+                        }
+                        // Execute
+                        else
+                        {
                             // Execute with dialog
                             if (showDialogs && command is ICommandWithDialog icwd &&
                                 ((showImportDialog && command is CImportFile) ||
@@ -169,6 +187,18 @@ namespace PrePoMax.Commands
             WriteToFile();
             //
             OnEnableDisableUndoRedo();
+        }
+        public CSaveToPmx GetLastSaveCommnad()
+        {
+            Command[] reversed = _commands.ToArray();
+            reversed.Reverse();
+            //
+            for (int i = 0; i < reversed.Length; i++)
+            {
+                if (reversed[i] is CSaveToPmx cstp && cstp.IsFileHashUnchanged()) return cstp;
+            }
+            //
+            return null;
         }
         // Clear
         public void Clear()

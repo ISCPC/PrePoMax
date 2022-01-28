@@ -482,7 +482,7 @@ namespace PrePoMax
             string extension = Path.GetExtension(fileName).ToLower();
             //
             if (extension == ".pmx") OpenPmx(fileName);
-            else if (extension == ".pmxh") OpenPmxh(fileName);
+            else if (extension == ".pmh") OpenPmh(fileName);
             else if (extension == ".frd") OpenFrd(fileName);
             else if (extension == ".dat") OpenDatFile(fileName);
             else throw new NotSupportedException();
@@ -543,12 +543,25 @@ namespace PrePoMax
             // Set view - at the end
             _form.SetCurrentView(_currentView);
         }
-        private void OpenPmxh(string fileName)
+        private void OpenPmh(string fileName)
         {
             New();
             //
             _commands.ReadFromFile(fileName);
-            _commands.ExecuteAllCommands();
+            //
+            Commands.CSaveToPmx lastSave = _commands.GetLastSaveCommnad();
+            if (lastSave != null)
+            {
+                Commands.CommandsCollection prevCommands = new Commands.CommandsCollection(this, _commands);
+                OpenPmx(lastSave.FileName);
+                _commands = new Commands.CommandsCollection(this, prevCommands);
+                //
+                _commands.ExecuteAllCommandsFromLastSave(lastSave);
+            }
+            else
+            {
+                _commands.ExecuteAllCommands();
+            }
             // Model changed
             _modelChanged = true;
         }

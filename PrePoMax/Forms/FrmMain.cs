@@ -487,7 +487,7 @@ namespace PrePoMax
                     try
                     {
                         string extension = Path.GetExtension(fileName).ToLower();
-                        if (extension == ".pmx" || extension == ".pmxh" || extension == ".frd")
+                        if (extension == ".pmx" || extension == ".pmh" || extension == ".frd")
                             await Task.Run(() => OpenAsync(fileName));
                         else if (extension == ".stl" || extension == ".unv" || extension == ".vol" || extension == ".inp")
                         {
@@ -1185,18 +1185,18 @@ namespace PrePoMax
                     // Debugger attached
                     if (System.Diagnostics.Debugger.IsAttached)
                     {
-                        openFileDialog.Filter = "All files|*.pmx;*.pmxh;*.frd;*.dat" +
+                        openFileDialog.Filter = "All files|*.pmx;*.pmh;*.frd;*.dat" +
                                                 "|PrePoMax files|*.pmx" +
-                                                "|PrePoMax history|*.pmxh" +
+                                                "|PrePoMax history|*.pmh" +
                                                 "|Calculix result files|*.frd" +
                                                 "|Calculix dat files|*.dat";        // added .dat file
                     }
                     // No dedugger
                     else
                     {
-                        openFileDialog.Filter = "All files|*.pmx;*.pmxr;*.frd" +
+                        openFileDialog.Filter = "All files|*.pmx;*.pmh;*.frd" +
                                                 "|PrePoMax files|*.pmx" +
-                                                "|PrePoMax history|*.pmxh" +
+                                                "|PrePoMax history|*.pmh" +
                                                 "|Calculix result files|*.frd";
                     }
 
@@ -1702,7 +1702,7 @@ namespace PrePoMax
                 SetStateWorking(Globals.UndoingText);
                 _modelTree.ScreenUpdating = false;
                 //
-                await Task.Run(() => _controller.UndoHistory());
+                await Task.Run(() => _controller.UndoHistory());                
             }
             catch (Exception ex)
             {
@@ -1715,6 +1715,8 @@ namespace PrePoMax
                 _modelTree.RegenerateTree(_controller.Model, _controller.Jobs, _controller.Results, _controller.History);
                 //
                 SetMenuAndToolStripVisibility();
+                //
+                SetZoomToFit(true);
             }
         }
         private void tsmiRedo_Click(object sender, EventArgs e)
@@ -1724,6 +1726,8 @@ namespace PrePoMax
                 _controller.RedoHistory();
                 //
                 SetMenuAndToolStripVisibility();
+                //
+                SetZoomToFit(true);
             }
             catch (Exception ex)
             {
@@ -1758,6 +1762,8 @@ namespace PrePoMax
                 _modelTree.RegenerateTree(_controller.Model, _controller.Jobs, _controller.Results, _controller.History);
                 //
                 SetMenuAndToolStripVisibility();
+                //
+                SetZoomToFit(true);
             }
         }
         private void tsmiRegenerteUsingOtherFiles_Click(object sender, EventArgs e)
@@ -1790,6 +1796,8 @@ namespace PrePoMax
                 _modelTree.RegenerateTree(_controller.Model, _controller.Jobs, _controller.Results, _controller.History);
                 //
                 SetMenuAndToolStripVisibility();
+                //
+                SetZoomToFit(true);
             }
         }
 
