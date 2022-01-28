@@ -217,9 +217,10 @@ Dependency nglib - added following files for c++ redistriburable compatibility:
 
 Done
 
-Save history in a file?!?!?
 
-Version 1.1.2 Master branch
+
+Version 1.2.0 Master branch
+Added crash recovery functionality
 Added support to export mesh and result parts as stl files.
 Added support to represent the undeformed result using a wireframe representation.
 Added a feature to smooth stl part

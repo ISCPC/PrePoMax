@@ -108,6 +108,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Command\0000_File\CSaveToPmx.cs" />
     <Compile Include="Command\0000_File\CImportFile.cs" />
     <Compile Include="Command\0010_Edit\CSetCalculixUserKeywords.cs" />
     <Compile Include="Command\0030_Geometry\CRegenerateCompoundParts.cs" />

@@ -228,12 +228,7 @@ namespace PrePoMax
         {
             return _errors.Count();
         }
-        // History
-        public string GetHistoryFileName()
-        {
-            return _commands.HistoryFileNameTxt;
-        }
-        //
+        // Tools
         public string OpenedFileName
         {
             get
@@ -253,8 +248,6 @@ namespace PrePoMax
                     if (_settings.General.LastFileName != null)
                         _form.SetTitle(Globals.ProgramName + "   " + _settings.General.LastFileName);
                     else _form.SetTitle(Globals.ProgramName);
-                    //
-                    // ApplySettings();
                 }
             }
         }
@@ -316,22 +309,18 @@ namespace PrePoMax
 
         // Constructors                                                                                                             
         public Controller(FrmMain form)
-        {
+        {            
             // Form
             _form = form;
             _form.Controller = this;
-            // Settings
-            _settings = new SettingsContainer();
-            _settings.LoadFromFile();
-            ApplySettings();
             // Jobs
             _jobs = new OrderedDictionary<string, AnalysisJob>();
-            // View
+            // Section view
             _sectionViewPlanes = new Dictionary<ViewGeometryModelResults, Octree.Plane>();
             _sectionViewPlanes.Add(ViewGeometryModelResults.Geometry, null);
             _sectionViewPlanes.Add(ViewGeometryModelResults.Model, null);
             _sectionViewPlanes.Add(ViewGeometryModelResults.Results, null);
-            //
+            // Exploded view
             _explodedViewParameters = new Dictionary<ViewGeometryModelResults, ExplodedViewParameters>();
             _explodedViewParameters.Add(ViewGeometryModelResults.Geometry, new ExplodedViewParameters());
             _explodedViewParameters.Add(ViewGeometryModelResults.Model, new ExplodedViewParameters());
@@ -350,13 +339,32 @@ namespace PrePoMax
             _commands.OnEnableDisableUndoRedo();
             //
             Clear();
+            // Settings - must follow Clear to load the Opened file name
+            _settings = new SettingsContainer();
+            _settings.LoadFromFile();
+            ApplySettings();
         }
+
+        #region Commands   #########################################################################################################
         
         private void _commands_CommandExecuted(string undo, string redo)
         {
             _form.EnableDisableUndoRedo(undo, redo);
         }
-        
+        public string GetHistoryFileNameTxt()
+        {
+            return _commands.GetHistoryFileNameTxt();
+        }
+        public string GetHistoryFileNameBin()
+        {
+            return _commands.GetHistoryFileNameBin();
+        }
+        public void DeleteHistoryFiles()
+        {
+            if (_commands != null) _commands.DeleteHistoryFiles();
+        }
+
+        #endregion #################################################################################################################
 
         #region Clear   ############################################################################################################
         // COMMANDS ********************************************************************************
@@ -444,7 +452,7 @@ namespace PrePoMax
             _form.Clear3DSelection();
         }
 
-        #endregion ################################################################################################################
+        #endregion #################################################################################################################
 
         // Menus
         #region File menu   ########################################################################################################
@@ -453,7 +461,12 @@ namespace PrePoMax
         {
             Commands.CImportFile comm = new Commands.CImportFile(fileName);
             _commands.AddAndExecute(comm);
-        }        
+        }
+        public void SaveToPmxCommand(string fileName)
+        {
+            Commands.CSaveToPmx comm = new Commands.CSaveToPmx(fileName);
+            _commands.AddAndExecute(comm);
+        }
         //******************************************************************************************
         public void New()
         {
@@ -469,6 +482,7 @@ namespace PrePoMax
             string extension = Path.GetExtension(fileName).ToLower();
             //
             if (extension == ".pmx") OpenPmx(fileName);
+            else if (extension == ".pmxh") OpenPmxh(fileName);
             else if (extension == ".frd") OpenFrd(fileName);
             else if (extension == ".dat") OpenDatFile(fileName);
             else throw new NotSupportedException();
@@ -528,6 +542,15 @@ namespace PrePoMax
             if (data[2] is bool[][] states) _form.SetTreeExpandCollapseState(states);
             // Set view - at the end
             _form.SetCurrentView(_currentView);
+        }
+        private void OpenPmxh(string fileName)
+        {
+            New();
+            //
+            _commands.ReadFromFile(fileName);
+            _commands.ExecuteAllCommands();
+            // Model changed
+            _modelChanged = true;
         }
         private void OpenFrd(string fileName)
         {
@@ -1258,14 +1281,14 @@ namespace PrePoMax
         {
             if (OpenedFileName != null && Path.GetExtension(OpenedFileName) == ".pmx")
             {
-                SaveToPmx(OpenedFileName);
+                SaveToPmxCommand(OpenedFileName);
             }
             else SaveAs();
         }
         public void SaveAs()
         {
             string fileName = GetFileNameToSaveAs();
-            if (fileName != null) SaveToPmx(fileName);
+            if (fileName != null) SaveToPmxCommand(fileName);
         }
         public void SaveToPmx(string fileName)
         {
@@ -1319,8 +1342,6 @@ namespace PrePoMax
                     //
                     fs.Write(versionBuffer, 0, 32);
                     fs.Write(compressedData, 0, compressedData.Length);
-                    //
-                    _form.WriteDataToOutput("Model saved to file: " + fileName);
                 }
                 //
                 ResumeExplodedViews(false);

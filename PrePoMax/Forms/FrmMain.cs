@@ -459,27 +459,35 @@ namespace PrePoMax
                 timer.Stop();
                 // Set form size
                 _controller.Settings.General.ApplyFormSize(this);
-                //
-                //_vtk.Show();
+                // Vtk
                 _vtk.Enabled = true;
                 // Close splash 
                 splash.BeginInvoke((MethodInvoker)delegate () { splash.Close(); });
                 // At the end when vtk is loaded open the file
                 string fileName = null;
-                if (_args != null && _args.Length == 1) fileName = _args[0];
-                else
+                // Try to recover unsaved progess due to crushed PrePoMax
+                if (File.Exists(_controller.GetHistoryFileNameBin()))
                 {
+                    if (MessageBoxes.ShowWarningQuestion("A recovery file from a previous PrePoMax session exists. " +
+                                                         "Would you like to try to recover it?") == DialogResult.OK)
+                    {
+                        fileName = _controller.GetHistoryFileNameBin();
+                    }
+                }
+                if (fileName == null)
+                {
+                    // Open file from exe arguments
+                    if (_args != null && _args.Length == 1) fileName = _args[0];
                     // Check for open last file
-                    if (_controller.Settings.General.OpenLastFile) fileName = _controller.OpenedFileName;
+                    else if (_controller.Settings.General.OpenLastFile) fileName = _controller.OpenedFileName;
                 }
                 //
                 if (File.Exists(fileName))
                 {
                     try
                     {
-                        //SetStateWorking(Globals.OpeningText);
                         string extension = Path.GetExtension(fileName).ToLower();
-                        if (extension == ".pmx" || extension == ".frd")
+                        if (extension == ".pmx" || extension == ".pmxh" || extension == ".frd")
                             await Task.Run(() => OpenAsync(fileName));
                         else if (extension == ".stl" || extension == ".unv" || extension == ".vol" || extension == ".inp")
                         {
@@ -502,7 +510,6 @@ namespace PrePoMax
                     }
                     finally
                     {
-                        //SetStateReady(Globals.OpeningText);                        
                     }
                 }
                 else
@@ -562,11 +569,13 @@ namespace PrePoMax
                     }
                     else if (response == DialogResult.Cancel) e.Cancel = true;
                 }
-                // Save form size and location
+                // Save form size and location and delete history files
                 if (e.Cancel == false && _controller != null)
                 {
                     _controller.Settings.General.SaveFormSize(this);
                     _controller.Settings.SaveToFile();
+                    //
+                    _controller.DeleteHistoryFiles();
                     //
                     _vtk.Clear();
                     _vtk.Dispose();
@@ -1085,7 +1094,7 @@ namespace PrePoMax
                                     (setModelView && !_controller.ModelInitialized) ||
                                     (setResultsView && !_controller.ResultsInitialized);
                 
-                //
+                // Only for individul views !!!
                 if (setEmptyView) { }
                 else if (setGeometryView)
                 {
@@ -1173,17 +1182,21 @@ namespace PrePoMax
             {
                 using (OpenFileDialog openFileDialog = new OpenFileDialog())
                 {
-                    if (!System.Diagnostics.Debugger.IsAttached)
+                    // Debugger attached
+                    if (System.Diagnostics.Debugger.IsAttached)
                     {
-                        openFileDialog.Filter = "All files|*.pmx;*.frd;*.dat" +
+                        openFileDialog.Filter = "All files|*.pmx;*.pmxh;*.frd;*.dat" +
                                                 "|PrePoMax files|*.pmx" +
+                                                "|PrePoMax history|*.pmxh" +
                                                 "|Calculix result files|*.frd" +
                                                 "|Calculix dat files|*.dat";        // added .dat file
                     }
+                    // No dedugger
                     else
                     {
-                        openFileDialog.Filter = "All files|*.pmx;*.frd;*.dat" +
+                        openFileDialog.Filter = "All files|*.pmx;*.pmxr;*.frd" +
                                                 "|PrePoMax files|*.pmx" +
+                                                "|PrePoMax history|*.pmxh" +
                                                 "|Calculix result files|*.frd";
                     }
 
@@ -1317,8 +1330,8 @@ namespace PrePoMax
         {
             try
             {
-                if (!_controller.ModelInitialized)
-                    throw new CaeException("There is no model to save. First create a new model.");
+                if (!_controller.ModelInitialized && !_controller.ResultsInitialized)
+                    throw new CaeException("There is no model or results to save.");
                 //
                 if (sender == null) System.Diagnostics.Debug.WriteLine("null");
                 else System.Diagnostics.Debug.WriteLine(sender.ToString());
@@ -1339,8 +1352,8 @@ namespace PrePoMax
         {
             try
             {
-                if (!_controller.ModelInitialized)
-                    throw new CaeException("There is no model to save. First create a new model.");
+                if (!_controller.ModelInitialized && !_controller.ResultsInitialized)
+                    throw new CaeException("There is no model or results to save.");
                 //
                 SetStateWorking(Globals.SavingAsText);
                 await Task.Run(() => _controller.SaveAs());
@@ -1719,7 +1732,7 @@ namespace PrePoMax
         }
         private void tsmiViewHistory_Click(object sender, EventArgs e)
         {
-            System.Diagnostics.Process.Start(_controller.GetHistoryFileName());
+            System.Diagnostics.Process.Start(_controller.GetHistoryFileNameTxt());
         }
         private async void tsmiRegenerate_Click(object sender, EventArgs e)
         {
