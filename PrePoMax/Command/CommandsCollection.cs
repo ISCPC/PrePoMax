@@ -81,9 +81,14 @@ namespace PrePoMax.Commands
             string data = command.GetCommandString();
             //
             _history.Add(data);
-            _controller.ModelChanged = true;
             //
-            ModelChanged_ResetJobStatus?.Invoke();
+            if (command is CSaveToPmx) { }
+            else
+            {
+                _controller.ModelChanged = true;
+                //
+                ModelChanged_ResetJobStatus?.Invoke();
+            }
         }
         private void ExecuteCommand(Command command, bool addCommand)
         {
