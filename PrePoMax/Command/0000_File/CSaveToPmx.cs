@@ -29,6 +29,7 @@ namespace PrePoMax.Commands
             :base("Save to file")
         {
             _fileName = Tools.GetLocalPath(fileName);
+            _hash = null;
         }
 
 
@@ -43,7 +44,7 @@ namespace PrePoMax.Commands
                 using (FileStream fop = File.OpenRead(Tools.GetGlobalPath(_fileName)))
                 {
                     hash = System.Security.Cryptography.SHA1.Create().ComputeHash(fop);
-                    // string hash = BitConverter.ToString(_hash);
+                    string hashString = BitConverter.ToString(hash);
                 }
             }
             //
@@ -52,7 +53,7 @@ namespace PrePoMax.Commands
         public bool IsFileHashUnchanged()
         {
             byte[] hash = GetHash();
-            if (hash == null) return false;
+            if (hash == null || _hash == null) return false;
             else return hash.SequenceEqual(_hash);
         }
         public override bool Execute(Controller receiver)

@@ -553,7 +553,7 @@ namespace PrePoMax
             if (lastSave != null)
             {
                 Commands.CommandsCollection prevCommands = new Commands.CommandsCollection(this, _commands);
-                OpenPmx(lastSave.FileName);
+                _form.Open(lastSave.FileName, true);    // form open redraws the sceene
                 _commands = new Commands.CommandsCollection(this, prevCommands);
                 //
                 _commands.ExecuteAllCommandsFromLastSave(lastSave);
@@ -922,7 +922,7 @@ namespace PrePoMax
             }
             //
             string executable = Application.StartupPath + Globals.NetGenMesher;
-            string outFileName = GetFreeRandomFileName(settings.WorkDirectory, ".brep");
+            string outFileName = GetNonExistentRandomFileName(settings.WorkDirectory, ".brep");
             //
             string argument = splitCommand +
                               " \"" + assemblyFileName.ToUTF8() + "\"" +
@@ -1005,7 +1005,7 @@ namespace PrePoMax
             }
             //
             string executable = Application.StartupPath + Globals.NetGenMesher;
-            string inFileName = GetFreeRandomFileName(workDirectory);
+            string inFileName = GetNonExistentRandomFileName(workDirectory);
 
             string[] inFileNames = new string[partNames.Length];
             for (int i = 0; i < partNames.Length; i++) 
@@ -1103,7 +1103,7 @@ namespace PrePoMax
                 return null;
             }
         }
-        public static string GetFreeRandomFileName(string path, string extension = "")
+        public static string GetNonExistentRandomFileName(string path, string extension = "")
         {
             string hash;
             bool repeate;
@@ -1313,7 +1313,7 @@ namespace PrePoMax
                 OpenedFileName = fileName;
                 object[] data = new object[] { this, _jobs, states };
                 // Use a temporary file to save the data and copy it at the end
-                string tmpFileName = GetFreeRandomFileName(Path.GetDirectoryName(fileName), ".tmp");
+                string tmpFileName = GetNonExistentRandomFileName(Path.GetDirectoryName(fileName), ".tmp");
                 //
                 SuppressExplodedViews();
                 //

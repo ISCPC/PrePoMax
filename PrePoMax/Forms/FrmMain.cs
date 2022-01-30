@@ -612,7 +612,7 @@ namespace PrePoMax
         {
             try
             {
-                string fileName = Controller.GetFreeRandomFileName(Application.StartupPath, ".test");
+                string fileName = Controller.GetNonExistentRandomFileName(Application.StartupPath, ".test");
                 File.WriteAllText(fileName, "");
                 //
                 File.Delete(fileName);
@@ -1259,7 +1259,7 @@ namespace PrePoMax
                 if (stateSet) SetStateReady(Globals.OpeningText);
             }
         }
-        private void Open(string fileName, bool resetCamera = true)
+        public void Open(string fileName, bool resetCamera = true)
         {            
             _controller.Open(fileName);
             //

@@ -94,8 +94,8 @@ namespace PrePoMax.Commands
         {
             // Write to form
             WriteToOutput(command);
-            // First execute to check for errors
-            if (command.Execute(_controller))
+            // First execute to check for errors - DO NOT EXECUTE SAVE COMMAND
+            if (command is CSaveToPmx || command.Execute(_controller))
             {
                 // Add command
                 if (addCommand) AddCommand(command);
@@ -108,10 +108,15 @@ namespace PrePoMax.Commands
                 //
                 OnEnableDisableUndoRedo();
             }
+            // Execute the save command at the end to include all changes in the file
+            if (command is CSaveToPmx)
+            {
+                command.Execute(_controller);
+                WriteToFile();  // repeare the write in order to save
+            }
         }
         public void ExecuteAllCommandsFromLastSave()
         {
-            
             ExecuteAllCommands();
         }
         public void ExecuteAllCommands()
@@ -190,8 +195,7 @@ namespace PrePoMax.Commands
         }
         public CSaveToPmx GetLastSaveCommnad()
         {
-            Command[] reversed = _commands.ToArray();
-            reversed.Reverse();
+            Command[] reversed = _commands.ToArray().Reverse().ToArray();   // must be like this
             //
             for (int i = 0; i < reversed.Length; i++)
             {
@@ -267,6 +271,14 @@ namespace PrePoMax.Commands
                 // write to files
                 File.WriteAllLines(_historyFileNameTxt, _history.ToArray());
                 _commands.DumpToFile(_historyFileNameBin);
+
+                // Use other file
+                //string fileName =
+                //   Controller.GetNonExistentRandomFileName(System.Windows.Forms.Application.StartupPath, "pmh");
+                //_commands.DumpToFile(fileName);
+                ////
+                //File.Copy(fileName, _historyFileNameBin, true);
+                //File.Delete(fileName);
             }
         }
         public void ReadFromFile(string fileName)
