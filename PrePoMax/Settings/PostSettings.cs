@@ -113,7 +113,7 @@ namespace PrePoMax
         }
         public void Reset()
         {
-            _dsfType = PrePoMax.DeformationScaleFactorType.Automatic;
+            _dsfType = DeformationScaleFactorType.Automatic;
             _deformationScaleFactorValue = -1;
             _drawUndeformedModel = true;
             _drawUndeformedModelAsEdges = true;

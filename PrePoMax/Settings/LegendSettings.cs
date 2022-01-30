@@ -78,7 +78,7 @@ namespace PrePoMax
         }
         public void Reset()
         {
-            _numberFormat = WidgetNumberFormat.Scientific;
+            _numberFormat = WidgetNumberFormat.General;
             _numberOfSignificantDigits = 4;
             //
             _colorSpectrum = new vtkControl.vtkMaxColorSpectrum();

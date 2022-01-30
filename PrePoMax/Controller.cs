@@ -5429,6 +5429,7 @@ namespace PrePoMax
                         //
                         tie.MasterCreationData = new Selection();
                         tie.MasterCreationData.SelectItem = vtkSelectItem.Surface;
+                        tie.MasterCreationData.EnableShellEdgeFaceSelection = true;
                         tie.MasterCreationData.Add(new SelectionNodeIds(vtkSelectOperation.Add, false,
                                                                         contactPair.MasterSlaveItem.MasterGeometryIds.ToArray(),
                                                                         true));
@@ -5436,6 +5437,7 @@ namespace PrePoMax
                         //
                         tie.SlaveCreationData = new Selection();
                         tie.SlaveCreationData.SelectItem = vtkSelectItem.Surface;
+                        tie.SlaveCreationData.EnableShellEdgeFaceSelection = true;
                         tie.SlaveCreationData.Add(new SelectionNodeIds(vtkSelectOperation.Add, false,
                                                                        contactPair.MasterSlaveItem.SlaveGeometryIds.ToArray(),
                                                                        true));
@@ -5853,6 +5855,7 @@ namespace PrePoMax
                     //
                     contactPairToAdd.MasterCreationData = new Selection();
                     contactPairToAdd.MasterCreationData.SelectItem = vtkSelectItem.Surface;
+                    contactPairToAdd.MasterCreationData.EnableShellEdgeFaceSelection = true;
                     contactPairToAdd.MasterCreationData.Add(new SelectionNodeIds(vtkSelectOperation.Add, false,
                                                             contactPair.MasterSlaveItem.MasterGeometryIds.ToArray(),
                                                             true));
@@ -5860,6 +5863,7 @@ namespace PrePoMax
                     //
                     contactPairToAdd.SlaveCreationData = new Selection();
                     contactPairToAdd.SlaveCreationData.SelectItem = vtkSelectItem.Surface;
+                    contactPairToAdd.SlaveCreationData.EnableShellEdgeFaceSelection = true;
                     contactPairToAdd.SlaveCreationData.Add(new SelectionNodeIds(vtkSelectOperation.Add, false,
                                                            contactPair.MasterSlaveItem.SlaveGeometryIds.ToArray(),
                                                            true));

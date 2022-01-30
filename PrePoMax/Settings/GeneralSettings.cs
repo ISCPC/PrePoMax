@@ -57,7 +57,7 @@ namespace PrePoMax
         }
         public void Reset()
         {
-            _openLastFile = true;
+            _openLastFile = false;
             _lastFileName = null;
             _saveResultsInPmx = true;
             _recentFiles = null;

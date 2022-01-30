@@ -1492,7 +1492,7 @@ namespace CaeMesh
                 {
                     if (!visitedVisualizationCellIds.Contains(cellId))
                     {
-                        GetSplitVisualizationFaceByCellId_(part, cellId, modelEdges, out faceCellIds, out faceEdgeIds);
+                        GetSplitVisualizationFaceByCellId(part, cellId, modelEdges, out faceCellIds, out faceEdgeIds);
                         visualizationFaces.Add(faceCellIds);
                         faceEdges.Add(faceEdgeIds);
                         visitedVisualizationCellIds.UnionWith(faceCellIds);
@@ -1776,22 +1776,24 @@ namespace CaeMesh
                         // Check all neighbours of the selected border cell
                         foreach (var neighbourId in allCellNeighbours[notVisitedCellId])
                         {
-                            // Check if the neighbour was allready added in the previous or in this border layer
-                            if (!surfaceCellIdsHash.Contains(neighbourId) && !newSurfaceCellIds.Contains(neighbourId))
+                            // -1 stands for a cell with no neighbour
+                            if (neighbourId == -1) freeEdgeCellIds.Add(notVisitedCellId);
+                            else
                             {
-                                // -1 stands for a cell with no neighbour
-                                if (neighbourId == -1) freeEdgeCellIds.Add(notVisitedCellId);
-                                // If neighbour exists
-                                else
+                                cellNodes.Clear();
+                                cellNodes.UnionWith(visualizationCells[notVisitedCellId]);
+                                cellNodes.IntersectWith(visualizationCells[neighbourId]);
+                                edgeNodes = cellNodes.ToArray();
+                                Array.Sort(edgeNodes);
+                                // Check if the neighbour was allready added in the previous or in this border layer
+                                if (!surfaceCellIdsHash.Contains(neighbourId) && !newSurfaceCellIds.Contains(neighbourId))
                                 {
-                                    cellNodes.Clear();
-                                    cellNodes.UnionWith(visualizationCells[notVisitedCellId]);
-                                    cellNodes.IntersectWith(visualizationCells[neighbourId]);
-                                    edgeNodes = cellNodes.ToArray();
-                                    Array.Sort(edgeNodes);
-                                    //
                                     if (modelEdges.TryGetValue(edgeNodes, out edgeId)) surfaceEdgeIdsHash.Add(edgeId);
                                     else newSurfaceCellIds.Add(neighbourId);
+                                }
+                                else
+                                {
+                                    if (modelEdges.TryGetValue(edgeNodes, out edgeId)) surfaceEdgeIdsHash.Add(edgeId);
                                 }
                             }
                         }
@@ -1832,8 +1834,8 @@ namespace CaeMesh
             }
             surfaceEdgeIds = surfaceEdgeIdsHash.ToArray();
         }
-        public void GetSplitVisualizationFaceByCellId_(BasePart part, int cellId, Dictionary<int[], int> modelEdges,
-                                                      out int[] surfaceCellIds, out int[] surfaceEdgeIds)
+        public void GetSplitVisualizationFaceByCellId_old(BasePart part, int cellId, Dictionary<int[], int> modelEdges,
+                                                          out int[] surfaceCellIds, out int[] surfaceEdgeIds)
         {
             surfaceCellIds = null;
             surfaceEdgeIds = null;
@@ -1867,11 +1869,6 @@ namespace CaeMesh
                         // Check all neighbours of the selected border cell
                         foreach (var neighbourId in allCellNeighbours[notVisitedCellId])
                         {
-                            cellNodes.Clear();
-                            cellNodes.UnionWith(visualizationCells[notVisitedCellId]);
-                            cellNodes.IntersectWith(visualizationCells[neighbourId]);
-                            edgeNodes = cellNodes.ToArray();
-                            Array.Sort(edgeNodes);
                             // Check if the neighbour was allready added in the previous or in this border layer
                             if (!surfaceCellIdsHash.Contains(neighbourId) && !newSurfaceCellIds.Contains(neighbourId))
                             {
@@ -1880,13 +1877,15 @@ namespace CaeMesh
                                 // If neighbour exists
                                 else
                                 {
+                                    cellNodes.Clear();
+                                    cellNodes.UnionWith(visualizationCells[notVisitedCellId]);
+                                    cellNodes.IntersectWith(visualizationCells[neighbourId]);
+                                    edgeNodes = cellNodes.ToArray();
+                                    Array.Sort(edgeNodes);
+                                    //
                                     if (modelEdges.TryGetValue(edgeNodes, out edgeId)) surfaceEdgeIdsHash.Add(edgeId);
                                     else newSurfaceCellIds.Add(neighbourId);
                                 }
-                            }
-                            else
-                            {
-                                if (modelEdges.TryGetValue(edgeNodes, out edgeId)) surfaceEdgeIdsHash.Add(edgeId);
                             }
                         }
                     }

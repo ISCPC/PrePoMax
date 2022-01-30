@@ -72,7 +72,7 @@ namespace vtkControl
         // Constructors                                                                                                             
         public vtkMaxColorSpectrum()
         {
-            _type = vtkColorSpectrumType.CoolWarm;
+            _type = vtkColorSpectrumType.Rainbow;
             _minMaxType = vtkColorSpectrumMinMaxType.Automatic;
             _minUserValue = 0;
             _maxUserValue = 1;
