@@ -41,8 +41,7 @@ namespace PrePoMax.Settings
         //
         [Category("General")]
         [OrderedDisplayName(3, 10, "Default unit system")]
-        [Description("Select the default unit system for new models. Using the option Undefined will open " + 
-                     "the unit system selection window at each new model creation.")]
+        [Description("Select the default unit system for new models.")]
         public string UnitSystemType
         {
             get

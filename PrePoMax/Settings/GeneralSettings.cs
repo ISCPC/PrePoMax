@@ -61,7 +61,7 @@ namespace PrePoMax
             _lastFileName = null;
             _saveResultsInPmx = true;
             _recentFiles = null;
-            _unitSystemType = UnitSystemType.Undefined;
+            _unitSystemType = UnitSystemType.MM_TON_S_C;
             _edgeAngle = 30;
             //
             ResetFormSize();
