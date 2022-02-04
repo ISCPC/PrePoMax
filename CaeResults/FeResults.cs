@@ -425,6 +425,19 @@ namespace CaeResults
             _fieldLookUp.Add(_fields.Count, fieldData);
             _fields.Add(fieldData, field);
         }
+        public Field GetField(FieldData fieldData)
+        {
+            foreach (var entry in _fields)
+            {
+                if (entry.Key.Name.ToUpper() == fieldData.Name.ToUpper() &&
+                    entry.Key.StepId == fieldData.StepId &&
+                    entry.Key.StepIncrementId == fieldData.StepIncrementId)
+                {
+                    return entry.Value;
+                }
+            }
+            return null;
+        }
         //
         public string[] GetComponentNames(string fieldName)
         {
@@ -631,8 +644,7 @@ namespace CaeResults
         {
             return fieldName.ToUpper() + "_" + component.ToUpper() + "_" + stepId.ToString() + "_" + stepIncrementId.ToString();
         }
-
-
+        //
         public float GetIncrementTime(int stepId, int stepIncrementId)
         {
             if (stepIncrementId == 0) return 0; // zero increment
@@ -660,27 +672,21 @@ namespace CaeResults
                 }
                 else
                 {
-                    foreach (var entry in _fields)
+                    Field field = GetField(fieldData);
+                    //
+                    float[] allValues = field.GetComponentValues(fieldData.Component);
+                    values = new float[globalNodeIds.Length];
+                    int globalId;
+                    int localId;
+                    for (int i = 0; i < globalNodeIds.Length; i++)
                     {
-                        if (entry.Key.Name.ToUpper() == fieldData.Name.ToUpper() &&
-                            entry.Key.StepId == fieldData.StepId &&
-                            entry.Key.StepIncrementId == fieldData.StepIncrementId)
-                        {
-                            float[] allValues = entry.Value.GetComponentValues(fieldData.Component);
-                            values = new float[globalNodeIds.Length];
-                            int globalId;
-                            int localId;
-                            for (int i = 0; i < globalNodeIds.Length; i++)
-                            {
-                                globalId = globalNodeIds[i];
-                                if (_nodeIdsLookUp.TryGetValue(globalId, out localId) && localId >= 0 && localId < allValues.Length)
-                                    values[i] = allValues[localId];
-                                else
-                                    return null;
-                            }
-                            break;
-                        }
+                        globalId = globalNodeIds[i];
+                        if (_nodeIdsLookUp.TryGetValue(globalId, out localId) && localId >= 0 && localId < allValues.Length)
+                            values[i] = allValues[localId];
+                        else
+                            return null;
                     }
+
                     //// Remove frst step
                     //fieldData.StepIncrementId = 1;
                     ////
@@ -1176,6 +1182,55 @@ namespace CaeResults
             int[] nodeIds = part.Visualization.GetOrderedNodeIdsForEdge(itemTypePartIds[0]);
             //
             return 0;
+        }
+        
+        // Wear
+        public void ComputeWearFields()
+        {
+            FieldData fieldData;
+            Field field;
+            FieldData wearData;
+            Field wear = new Field("WEAR");
+            float[] values;
+            //
+            string[] fieldNames = GetAllFieldNames();
+            foreach (var fieldName in fieldNames)
+            {
+                if (fieldName == "CONTACT")
+                {
+                    string[] componentNames = GetComponentNames(fieldName);
+                    //
+                    int[] stepIds = GetAllStepIds();
+                    foreach (var stepId in stepIds)
+                    {
+                        int[] stepIncrementIds = GetIncrementIds(stepId);
+                        foreach (var stepIncrementId in stepIncrementIds)
+                        {
+                            fieldData = GetFieldData(fieldName, "CSLIP1", stepId, stepIncrementId);
+                            field = GetField(fieldData);
+
+                            if (field == null) values = new float[1];
+                            else values = field.GetComponentValues("CSLIP1");
+
+                            wear = new Field("WEAR");
+                            wear.AddComponent("CSLIP1R", values);
+                            wearData = new FieldData("WEAR", "CSLIP1R", stepId, stepIncrementId);
+                            wearData.Type = fieldData.Type;
+
+                            AddFiled(wearData, wear);
+
+                            //string[] componentNames = GetComponentNames(fieldName);
+                            //foreach (var componentName in componentNames)
+                            //{
+                            //    data = GetFieldData(fieldName, componentName, stepId, stepIncrementId);
+                            //}
+                        }
+                    }
+                }
+            }
+
+            //AddFiled();
+
         }
 
     }

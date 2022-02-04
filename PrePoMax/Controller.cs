@@ -578,6 +578,8 @@ namespace PrePoMax
             }
             else
             {
+                _results.ComputeWearFields();
+
                 _form.Clear3D();
                 // Check if the meshes are the same and rename the parts
                 if (_model.Mesh != null && _results.Mesh != null && _model.HashName == _results.HashName)

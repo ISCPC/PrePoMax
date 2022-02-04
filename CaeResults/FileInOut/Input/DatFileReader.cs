@@ -711,9 +711,10 @@ namespace CaeResults
 
                 }
             }
-            foreach (var historyEntry in historyOutput.Sets)
+            // Averege the summed values
+            foreach (var setEntry in historyOutput.Sets)
             {
-                foreach (var fieldEntry in historyEntry.Value.Fields)
+                foreach (var fieldEntry in setEntry.Value.Fields)
                 {
                     foreach (var componentEntry in fieldEntry.Value.Components)
                     {
