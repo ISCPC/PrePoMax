@@ -14,12 +14,14 @@ namespace CaeResults
         // Variables                                                                                                                
         private List<double> _time;
         private List<double> _values;
+        private List<int> _count;
         private bool _local;
 
 
         // Properties                                                                                                               
         public List<double> Time { get { return _time; } set { _time = value; } }
         public List<double> Values { get { return _values; } set { _values = value; } }
+        public List<int> Count { get { return _count; } set { _count = value; } }
         public bool Local { get { return _local; } set { _local = value; } }
 
 
@@ -31,6 +33,7 @@ namespace CaeResults
             _name = name;
             _time = new List<double>();
             _values = new List<double>();
+            _count = new List<int>();
             _local = local;
         }
 
@@ -39,7 +42,24 @@ namespace CaeResults
 
 
         // Methods                                                                                                                  
-
+        public void Add(double time, double value)
+        {
+            _time.Add(time);
+            _values.Add(value);
+            _count.Add(1);
+        }
+        public void SumValue(double value)
+        {
+            _values[_values.Count - 1] += value;
+            _count[_count.Count - 1]++;
+        }
+        public void ComputeAverage()
+        {
+            for (int i = 0; i < _values.Count; i++)
+            {
+                if (_count[i] > 1) _values[i] /= _count[i];
+            }
+        }
 
     }
 }

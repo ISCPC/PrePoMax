@@ -2989,6 +2989,7 @@ namespace vtkControl
                     for (int j = 0; j < 3; j++)
                     {
                         rStart[i][j] = mCamStart.GetElement(i, j);
+                        if (double.IsNaN(rStart[i][j])) throw new NotSupportedException();
                     }
                 }
                 double[] tStart = new double[3];
@@ -3009,6 +3010,7 @@ namespace vtkControl
                     for (int j = 0; j < 3; j++)
                     {
                         rEnd[i][j] = mCamEnd.GetElement(i, j);
+                        if (double.IsNaN(rEnd[i][j])) throw new NotSupportedException();
                     }
                 }
                 double[] tEnd = new double[3];

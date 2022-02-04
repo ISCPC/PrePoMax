@@ -607,7 +607,7 @@ namespace CaeResults
             HistoryResults historyOutput = new HistoryResults("HistoryOutput");
             HistoryResultSet set;
             HistoryResultField field;
-            HistoryResultComponent component;
+            HistoryResultComponent component = null;
             HistoryResultEntries entries;
             //
             DatDataSet repairedDataSet;
@@ -650,7 +650,7 @@ namespace CaeResults
                         // The first column is id column
                         if (repairedDataSet.ComponentNames[1] == "Int.Pnt.")
                         {
-                            // The second column in In.Pnt. column
+                            // The second column is In.Pnt. column
                             valueId = values[0].ToString() + "_" + values[1].ToString();
                             offset = 2;
                         }
@@ -690,7 +690,8 @@ namespace CaeResults
                              field.Name == nameContactStress ||
                              field.Name == nameContactPrintEnergy) && entries.Time.Contains(time))
                         {
-                            entries.Values[entries.Values.Count - 1] += values[j + offset];
+                            entries.SumValue(values[j + offset]);
+                            //entries.Values[entries.Values.Count - 1] += values[j + offset];
                         }
                         // Skip repeating
                         else if (field.Name == nameTotalNumberOfContactElements && entries.Time.Contains(time)) 
@@ -698,9 +699,27 @@ namespace CaeResults
                         // Add
                         else
                         {
-                            entries.Time.Add(time);
-                            entries.Values.Add(values[j + offset]);
-                            
+                            entries.Add(time, values[j + offset]);
+                            //entries.Time.Add(time);
+                            //entries.Values.Add(values[j + offset]);
+                        }
+                    }
+                }
+                //
+                foreach (var entry in component.Entries)
+                {
+
+                }
+            }
+            foreach (var historyEntry in historyOutput.Sets)
+            {
+                foreach (var fieldEntry in historyEntry.Value.Fields)
+                {
+                    foreach (var componentEntry in fieldEntry.Value.Components)
+                    {
+                        foreach (var entry in componentEntry.Value.Entries)
+                        {
+                            entry.Value.ComputeAverage();
                         }
                     }
                 }

@@ -217,6 +217,9 @@ Dependency nglib - added following files for c++ redistriburable compatibility:
 
 Done
 
+Version 1.2.1 Master branch
+
+
 
 
 Version 1.2.0 Master branch

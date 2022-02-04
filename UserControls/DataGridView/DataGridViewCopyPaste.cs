@@ -297,10 +297,14 @@ namespace UserControls
         {            
             Dictionary<int, Dictionary<int, double>> values = new Dictionary<int, Dictionary<int, double>>();
             Dictionary<int, double> rowValues;
+            double value;
             foreach (DataGridViewCell cell in SelectedCells)
             {
-                if (values.TryGetValue(cell.RowIndex, out rowValues)) rowValues.Add(cell.ColumnIndex, (double)cell.Value);
-                else values.Add(cell.RowIndex, new Dictionary<int, double>() { { cell.ColumnIndex, (double)cell.Value } });
+                if (cell.Value == null) value = double.NaN;
+                else value = (double)cell.Value;
+                //
+                if (values.TryGetValue(cell.RowIndex, out rowValues)) rowValues.Add(cell.ColumnIndex, value);
+                else values.Add(cell.RowIndex, new Dictionary<int, double>() { { cell.ColumnIndex, value } });
             }
             return values;
         }
