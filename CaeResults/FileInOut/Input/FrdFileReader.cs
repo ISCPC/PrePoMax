@@ -442,6 +442,11 @@ namespace CaeResults
                 case "STRESS":
                     field = CreateStressField(fieldData.Name, components, values);
                     break;
+                case "TOSTRAIN":
+                case "MESTRAIN":
+                case "PE":
+                    field = CreateStrainField(fieldData.Name, components, values);
+                    break;
                 // Thermal
                 case "FLUX":
                     field = CreateVectorField(fieldData.Name, components, values);
@@ -729,8 +734,6 @@ namespace CaeResults
         }
         static private Field CreateStressField(string name, List<string> components, float[][] values)
         {
-            // https://en.wikiversity.org/wiki/Principal_stresses
-            //
             Field field = new Field(name);
             //
             if (values.Length == 6)
@@ -751,18 +754,32 @@ namespace CaeResults
                                                   );
                 }
                 field.AddComponent("MISES", vonMises, true);
+                //
+                float[] tresca = new float[values[0].Length];
+                field.AddComponent("TRESCA", tresca, true);
+                //
+                for (int i = 0; i < components.Count; i++) field.AddComponent(components[i], values[i]);
+                //
+                ComputeAndAddPrincipalVariables(field, values);
+                //
+                float[] eMax = field.GetComponentValues("PRINCIPAL-MAX");
+                float[] eMin = field.GetComponentValues("PRINCIPAL-MIN");
+                for (int i = 0; i < tresca.Length; i++) tresca[i] = eMax[i] - eMin[i];
             }
-            //
-            for (int i = 0; i < components.Count; i++)
-            {
-                field.AddComponent(components[i], values[i]);
-            }
-            //
-            if (values.Length == 6) ComputeAndAddPrincipalStresses(field, values);
             //
             return field;
         }
-        static private void ComputeAndAddPrincipalStresses(Field field, float[][] values)
+        static private Field CreateStrainField(string name, List<string> components, float[][] values)
+        {
+            Field field = new Field(name);
+            //
+            for (int i = 0; i < components.Count; i++) field.AddComponent(components[i], values[i]);
+            //
+            if (values.Length == 6) ComputeAndAddPrincipalVariables(field, values);
+            //
+            return field;
+        }
+        static private void ComputeAndAddPrincipalVariables(Field field, float[][] values)
         {
             // https://en.wikipedia.org/wiki/Cubic_function#General_solution_to_the_cubic_equation_with_arbitrary_coefficients
             // https://en.wikiversity.org/wiki/Principal_stresses
