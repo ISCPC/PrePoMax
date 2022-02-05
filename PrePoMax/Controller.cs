@@ -1150,7 +1150,9 @@ namespace PrePoMax
             if (part is GeometryPart gp)
             {
                 // Convert mesh to second order
-                convertToSecondOrder = gp.MeshingParameters.SecondOrder && !gp.MeshingParameters.MidsideNodesOnGeometry;
+                if (Path.GetExtension(fileName) == ".mesh") convertToSecondOrder = gp.MeshingParameters.SecondOrder;   // mmg
+                else convertToSecondOrder = gp.MeshingParameters.SecondOrder && !gp.MeshingParameters.MidsideNodesOnGeometry;
+                //
                 if (convertToSecondOrder) _form.WriteDataToOutput("Converting mesh to second order...");
                 // Split compound mesh
                 splitCompoundMesh = gp.MeshingParameters.SplitCompoundMesh;
