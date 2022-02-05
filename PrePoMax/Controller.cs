@@ -3172,8 +3172,8 @@ namespace PrePoMax
             //
             SuppressExplodedViews(new string[] { part.Name });
             File.WriteAllText(brepFileName, part.CADFileData);
-            CreateMeshRefinementFile(part, meshRefinementFileName, null);
             part.MeshingParameters.WriteToFile(meshParametersFileName);
+            CreateMeshRefinementFile(part, meshRefinementFileName, null);
             ResumeExplodedViews(false);
             //
             string argument = "BREP_MESH " +
@@ -3218,7 +3218,7 @@ namespace PrePoMax
             }
             // Get part ids of the geometry to mesh
             HashSet<int> meshPartIds = new HashSet<int>();
-            if (part is CaeMesh.CompoundGeometryPart cgp)
+            if (part is CompoundGeometryPart cgp)
             {
                 foreach (var partName in cgp.SubPartNames) meshPartIds.Add(_model.Geometry.Parts[partName].PartId);
             }
@@ -3239,7 +3239,13 @@ namespace PrePoMax
                     {
                         if (geometryIds == null || geometryIds.Length == 0) break;
                         //
-                        h = meshRefinement.MeshSize;
+                        int[] itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(geometryIds[0]);
+                        GeometryPart gPart = (GeometryPart)_model.Geometry.GetPartById(itemTypePartIds[2]);
+                        //
+                        if (meshRefinement.MeshSize > gPart.MeshingParameters.MaxH) h = gPart.MeshingParameters.MaxH;
+                        else if (meshRefinement.MeshSize < gPart.MeshingParameters.MinH) h = gPart.MeshingParameters.MinH;
+                        else h = meshRefinement.MeshSize;
+                        //
                         double[][] points;
                         double[][][] lines;
                         _model.Geometry.GetVetexAndEdgeCoorFromGeometryIds(geometryIds, h, false, out points, out lines);
@@ -11664,7 +11670,15 @@ namespace PrePoMax
         public void HighlightMeshRefinements(string[] meshRefinementsToSelect)
         {
             int[] ids;
+            int[] itemTypePartIds;
+            double[][] coor;
+            double meshSize;
+            bool backfaceCulling;
+            GeometryPart part;
+            FeMesh mesh = DisplayedMesh;
             FeMeshRefinement meshRefinement;
+            MeshingParameters meshingParameters;
+            //
             foreach (var meshRefinementName in meshRefinementsToSelect)
             {
                 meshRefinement = _model.Geometry.MeshRefinements[meshRefinementName];
@@ -11672,14 +11686,21 @@ namespace PrePoMax
                 {
                     ids = meshRefinement.GeometryIds;
                     if (ids.Length == 0) return;
-                    //
-                    double[][] coor;
-                    DisplayedMesh.GetVetexAndEdgeCoorFromGeometryIds(ids, meshRefinement.MeshSize, true, out coor);
-                    DrawNodes(meshRefinement.Name, coor, Color.Red, vtkControl.vtkRendererLayer.Selection);
                     // The selection is limited to one part
-                    int[] itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(ids[0]);
-                    BasePart part = _model.Geometry.GetPartById(itemTypePartIds[2]);
-                    bool backfaceCulling = part.PartType != PartType.Shell;
+                    itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(ids[0]);
+                    part = (GeometryPart)mesh.GetPartById(itemTypePartIds[2]);
+                    //
+                    if (part.MeshingParameters != null) meshingParameters = part.MeshingParameters;
+                    else meshingParameters = GetDefaultMeshingParameters(new string[] { part.Name }, true);
+                    //
+                    if (meshRefinement.MeshSize > meshingParameters.MaxH) meshSize = meshingParameters.MaxH;
+                    else if (meshRefinement.MeshSize < meshingParameters.MinH) meshSize = meshingParameters.MinH;
+                    else meshSize = meshRefinement.MeshSize;
+                    //
+                    mesh.GetVetexAndEdgeCoorFromGeometryIds(ids, meshSize, true, out coor);
+                    DrawNodes(meshRefinement.Name, coor, Color.Red, vtkControl.vtkRendererLayer.Selection);
+                    //
+                    backfaceCulling = part.PartType != PartType.Shell;
                     //
                     HighlightItemsByGeometryIds(ids, backfaceCulling, false);
                 }

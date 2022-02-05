@@ -25,9 +25,10 @@ namespace PrePoMax.Forms
         public string Name { get { return _meshRefinement.Name; } set { _meshRefinement.Name = value; } }
         //
         [CategoryAttribute("Data")]
-        [OrderedDisplayName(1, 10, "Mesh size")]
-        [DescriptionAttribute("Local size of the mesh.")]
-        [TypeConverter(typeof(CaeGlobals.StringLengthConverter))]
+        [OrderedDisplayName(1, 10, "Element size")]
+        [DescriptionAttribute("Element size can only be used to reduce the local element size, but the global limit of " +
+                              "the minimum element size is kept.")]
+        [TypeConverter(typeof(StringLengthConverter))]
         public double MeshSize { get { return _meshRefinement.MeshSize; } set { _meshRefinement.MeshSize = value; } }
 
 
