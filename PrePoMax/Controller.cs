@@ -7337,8 +7337,12 @@ namespace PrePoMax
                 if (_selectBy == vtkSelectBy.Id) return;
                 // Set the current view for the selection;
                 if (_selection.Nodes.Count == 0) SetSelectionView(_currentView);
-                // Empty pick - Clear
-                if (pickedPoint == null && planeParameters == null) ClearSelectionHistoryAndCallSelectionChanged();
+                // Empty pick - Clear if no operation is used
+                if (pickedPoint == null && planeParameters == null)
+                {
+                    if (selectOperation == vtkSelectOperation.None) // must be here
+                        ClearSelectionHistoryAndCallSelectionChanged();
+                }
                 else
                 {
                     vtkSelectBy selectBy = _selectBy;
