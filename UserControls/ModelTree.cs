@@ -1366,24 +1366,27 @@ namespace UserControls
             try
             {
                 List<NamedClass> items = new List<NamedClass>();
-                string stepName;
-                List<string> stepNames = new List<string>();
+                string parentName;
+                List<string> parentNames = new List<string>();
                 //
                 foreach (TreeNode selectedNode in GetActiveTree().SelectedNodes)
                 {
                     if (selectedNode.Tag == null) continue;
                     //
                     items.Add((NamedClass)selectedNode.Tag);
-                    stepName = null;
-                    if (selectedNode.Parent != null && selectedNode.Parent.Parent != null && selectedNode.Parent.Parent.Tag is Step)
-                        stepName = selectedNode.Parent.Parent.Text;
-                    stepNames.Add(stepName);
+                    parentName = null;
+                    if (selectedNode.Parent != null && selectedNode.Parent.Parent != null) 
+                    {
+                        if (selectedNode.Parent.Parent.Tag is Step) parentName = selectedNode.Parent.Parent.Text;
+                        else if (selectedNode.Parent.Tag is Field) parentName = selectedNode.Parent.Text;
+                    }
+                    parentNames.Add(parentName);
                 }
                 //
                 if (items.Count > 0)
                 {
                     RenderingOff?.Invoke();
-                    DeleteEvent?.Invoke(items.ToArray(), stepNames.ToArray());
+                    DeleteEvent?.Invoke(items.ToArray(), parentNames.ToArray());
                     RenderingOn?.Invoke();
                 }
             }
@@ -2087,7 +2090,7 @@ namespace UserControls
             //
             return baseNode;
         }
-        public void RemoveTreeNode<T>(ViewType view, string nodeName, string stepName) where T : NamedClass
+        public void RemoveTreeNode<T>(ViewType view, string nodeName, string parentName) where T : NamedClass
         {
             if (!_screenUpdating) return;
             //
@@ -2099,10 +2102,13 @@ namespace UserControls
             else baseNode = tree.Nodes[0];
             //
             TreeNode[] tmp;
-            if (stepName != null)
+            if (parentName != null)
             {
-                tmp = _steps.Nodes.Find(stepName, true);
-                if (tmp.Length > 1) throw new Exception("Tree update failed. More than one step named: " + stepName);
+                if (view == ViewType.Model) tmp = _steps.Nodes.Find(parentName, true);
+                else if (view == ViewType.Results) tmp = _resultFieldOutputs.Nodes.Find(parentName, true);
+                else throw new NotSupportedException();
+                //
+                if (tmp.Length > 1) throw new Exception("Tree update failed. More than one parent named: " + parentName);
                 baseNode = tmp[0];
             }
             //
@@ -2127,7 +2133,8 @@ namespace UserControls
             tree.SelectedNodes.Remove(tmp[0]);
             //
             parent.Text = parent.Name;
-            if (parent.Nodes.Count > 0) parent.Text += " (" + parent.Nodes.Count + ")";
+            if (parent.Tag is Field) SetNodeStatus(parent);  // remove dotted T icon
+            else if (parent.Nodes.Count > 0) parent.Text += " (" + parent.Nodes.Count + ")";
         }
         private void AddObjectsToNode<Tkey, Tval>(string initialNodeName, TreeNode node, IDictionary<Tkey, Tval> dictionary,
                                                   bool countNodes = true)
@@ -2392,13 +2399,14 @@ namespace UserControls
             {
                 node = _resultFieldOutputs.Nodes.Add(fieldNames[i]);
                 node.Name = node.Text;
+                node.Tag = new Field(fieldNames[i]);
                 SetNodeImage(node, "Dots.ico");
                 //
                 for (int j = 0; j < components[i].Length; j++)
                 {
                     child = node.Nodes.Add(components[i][j]);
                     child.Name = child.Text;
-                    child.Tag = new CaeResults.FieldData(child.Name);
+                    child.Tag = new FieldData(child.Name);
                     SetNodeImage(child, "Dots.ico");
                 }
                 //
@@ -2418,6 +2426,8 @@ namespace UserControls
                 {
                     if (node.Nodes.Count > 0)
                     {
+                        node.Expand();
+                        cltvResults.SelectedNodes.Clear();  // for the shift key to work
                         cltvResults.SelectedNode = node.Nodes[0];
                         return;
                     }

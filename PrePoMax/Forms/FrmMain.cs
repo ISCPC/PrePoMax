@@ -798,7 +798,7 @@ namespace PrePoMax
             else if (_controller.CurrentView == ViewGeometryModelResults.Results)
             {
                 if (namedClass is ResultPart || namedClass is GeometryPart) EditResultPart(namedClass.Name);
-                else if (namedClass is CaeResults.HistoryResultData hd) ShowHistoryOutput(hd);
+                else if (namedClass is CaeResults.HistoryResultData hd) ShowHistoryResultData(hd);
                 else if (namedClass is CaeResults.FieldData fd) ShowLegendSettings();
             }
         }
@@ -904,7 +904,7 @@ namespace PrePoMax
             }
         }
         //
-        private void ModelTree_Delete(NamedClass[] items, string[] stepNames)
+        private void ModelTree_Delete(NamedClass[] items, string[] parentNames)
         {
             if (_controller.CurrentView == ViewGeometryModelResults.Geometry)
             {
@@ -925,11 +925,11 @@ namespace PrePoMax
                 ApplyActionOnItems<ContactPair>(items, DeleteContactPairs);
                 ApplyActionOnItems<InitialCondition>(items, DeleteInitialConditions);
                 //
-                DeleteStepItems<HistoryOutput>(items, stepNames, DeleteHistoryOutputs);
-                DeleteStepItems<FieldOutput>(items, stepNames, DeleteFieldOutputs);
-                DeleteStepItems<BoundaryCondition>(items, stepNames, DeleteBoundaryConditions);
-                DeleteStepItems<Load>(items, stepNames, DeleteLoads);
-                DeleteStepItems<DefinedField>(items, stepNames, DeleteDefinedFields);
+                DeleteParentItems<HistoryOutput>(items, parentNames, DeleteHistoryOutputs);
+                DeleteParentItems<FieldOutput>(items, parentNames, DeleteFieldOutputs);
+                DeleteParentItems<BoundaryCondition>(items, parentNames, DeleteBoundaryConditions);
+                DeleteParentItems<Load>(items, parentNames, DeleteLoads);
+                DeleteParentItems<DefinedField>(items, parentNames, DeleteDefinedFields);
                 ApplyActionOnItems<Step>(items, DeleteSteps);
                 //
                 ApplyActionOnItems<AnalysisJob>(items, DeleteAnalyses);
@@ -940,6 +940,8 @@ namespace PrePoMax
             {
                 ApplyActionOnItems<ResultPart>(items, DeleteResultParts);
                 ApplyActionOnItems<GeometryPart>(items, DeleteResultParts);
+                //
+                DeleteParentItems<CaeResults.FieldData>(items, parentNames, DeleteResultFieldOutputComponents);
             }
         }
         private void ModelTree_ActivateDeactivateEvent(NamedClass[] items, bool activate, string[] stepNames)
@@ -1007,26 +1009,27 @@ namespace PrePoMax
         }
         private void ApplyActionOnItemsInStep<T>(NamedClass[] items, string[] steps, Action<string, string> Action)
         {
-            List<string> names = new List<string>();
             for (int i = 0; i < items.Length; i++)
             {
                 if (items[i] is T) Action(steps[i], items[i].Name);
             }
         }
-        private void DeleteStepItems<T>(NamedClass[] items, string[] stepNames, Action<string, string[]> Delete)
+        private void DeleteParentItems<T>(NamedClass[] items, string[] parentNames, Action<string, string[]> Delete)
         {
-            Dictionary<string, List<string>> stepItems = new Dictionary<string, List<string>>();
+            List<string> itemList;
+            Dictionary<string, List<string>> parentItems = new Dictionary<string, List<string>>();
+            //
             for (int i = 0; i < items.Length; i++)
             {
                 if (items[i] is T)
                 {
-                    if (stepItems.ContainsKey(stepNames[i])) stepItems[stepNames[i]].Add(items[i].Name);
-                    else stepItems.Add(stepNames[i], new List<string>() { items[i].Name });
+                    if (parentItems.TryGetValue(parentNames[i], out itemList)) itemList.Add(items[i].Name);
+                    else parentItems.Add(parentNames[i], new List<string>() { items[i].Name });
                 }
             }
-            if (stepItems.Count > 0)
+            if (parentItems.Count > 0)
             {
-                foreach (var entry in stepItems)
+                foreach (var entry in parentItems)
                 {
                     Delete(entry.Key, entry.Value.ToArray());
                 }
@@ -1270,7 +1273,7 @@ namespace PrePoMax
                 // Set last increment
                 SetDefaultStepAndIncrementIds();
                 // Show the selection in the results tree
-                InvokeIfRequired(_modelTree.SelectFirstComponentOfFirstFieldOutput);
+                SelectFirstComponentOfFirstFieldOutput();
             }
             //
             if (_controller.CurrentView == ViewGeometryModelResults.Geometry) _controller.DrawGeometry(resetCamera);
@@ -5551,7 +5554,7 @@ namespace PrePoMax
 
         #region Result  ############################################################################################################
 
-        public void ShowHistoryOutput(CaeResults.HistoryResultData historyData)
+        public void ShowHistoryResultData(CaeResults.HistoryResultData historyData)
         {
             try
             {
@@ -5571,6 +5574,14 @@ namespace PrePoMax
             catch (Exception ex)
             {
                 ExceptionTools.Show(this, ex);
+            }
+        }
+        public void DeleteResultFieldOutputComponents(string fieldName, string[] componentNames)
+        {
+            if (MessageBoxes.ShowWarningQuestion("OK to delete selected components from field output " + fieldName + "?"
+                                                 + Environment.NewLine + componentNames.ToRows()) == DialogResult.OK)
+            {
+                _controller.RemoveResultFieldOutputComponents(fieldName, componentNames);
             }
         }
        
@@ -6867,7 +6878,7 @@ namespace PrePoMax
             ViewType viewType = GetViewType(view);
             //
             InvokeIfRequired(_modelTree.RemoveTreeNode<T>, viewType, nodeName, stepName);
-            if (typeof(T) == typeof(CaeModel.Step)) RemoveOneStepInSymbolsForStepList(nodeName);
+            if (typeof(T) == typeof(Step)) RemoveOneStepInSymbolsForStepList(nodeName);
         }
         public bool[][] GetTreeExpandCollapseState()
         {
@@ -6940,6 +6951,10 @@ namespace PrePoMax
                     _modelTree.ShowContextMenu(_vtk, e.X, _vtk.Height - e.Y);
                 }
             }
+        }
+        public void SelectFirstComponentOfFirstFieldOutput()
+        {
+            InvokeIfRequired(_modelTree.SelectFirstComponentOfFirstFieldOutput);
         }
         //
         public void SetNumberOfModelUserKeywords(int numOfUserKeywords)

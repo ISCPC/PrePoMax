@@ -124,6 +124,9 @@ namespace CaeResults
         {
             return _components[name].Min.Id;
         }
-
+        public void RemoveComponent(string name)
+        {
+            _components.Remove(name);
+        }
     }
 }

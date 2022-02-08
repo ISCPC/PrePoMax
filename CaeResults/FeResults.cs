@@ -227,7 +227,7 @@ namespace CaeResults
                         unitAbbreviation = "%";
                         break;
                     default:
-                        if (System.Diagnostics.Debugger.IsAttached) throw new NotSupportedException();
+                        //if (System.Diagnostics.Debugger.IsAttached) throw new NotSupportedException();
                         //
                         unitConverter = new DoubleConverter();
                         unitAbbreviation = "?";
@@ -439,6 +439,15 @@ namespace CaeResults
             return null;
         }
         //
+        public string[] GetComponentNames()
+        {
+            HashSet<string> componentNames = new HashSet<string>();
+            foreach (var entry in _fields)
+            {
+                componentNames.UnionWith(entry.Value.GetCmponentNames());
+            }
+            return componentNames.ToArray();
+        }
         public string[] GetComponentNames(string fieldName)
         {
             foreach (var entry in _fields)
@@ -836,6 +845,77 @@ namespace CaeResults
             }
             return nodesData;
         }
+        // Remove
+        public void RemoveResultFieldOutputComponents(string fieldName, string[] componentNames)
+        {
+            foreach (var entry in _fields)
+            {
+                if (entry.Key.Name == fieldName)
+                {
+                    foreach (var componentName in componentNames)
+                    {
+                        entry.Value.RemoveComponent(componentName);
+                    }
+                }
+            }
+        }
+        public void GetClosestFieldComponent(string fieldName, string componentName,
+                                             out string closestFieldName, out string closestComponentName)
+        {
+            closestFieldName = null;
+            closestComponentName = null;
+            string[] existingComponentNames = GetComponentNames(fieldName);
+            //
+            for (int i = 0; i < existingComponentNames.Length; i++)
+            {
+                if (existingComponentNames[i] == componentName)
+                {
+                    if (i + 1 < existingComponentNames.Length) closestComponentName = existingComponentNames[i + 1];
+                    else if (i > 1) closestComponentName = existingComponentNames[i - 1];
+                }
+            }
+            // Component found
+            if (closestComponentName != null)
+            {
+                closestFieldName = fieldName;
+            }
+            // No components found in the same field
+            else
+            {
+                string[] existingFieldNames = GetAllFieldNames();
+                for (int i = 0; i < existingFieldNames.Length; i++)
+                {
+                    if (existingFieldNames[i] == fieldName)
+                    {
+                        // Find the next field output with at least one component
+                        while (++i < existingFieldNames.Length)
+                        {
+                            existingComponentNames = GetComponentNames(existingFieldNames[i]);
+                            if (existingComponentNames.Length > 0)
+                            {
+                                closestFieldName = existingFieldNames[i];
+                                closestComponentName = existingComponentNames[0];
+                                return;
+                            }
+                        }
+                        // Find the prevous field output with at least one component
+                        while (--i > 0)
+                        {
+                            existingComponentNames = GetComponentNames(existingFieldNames[i]);
+                            if (existingComponentNames.Length > 0)
+                            {
+                                closestFieldName = existingFieldNames[i];
+                                closestComponentName = existingComponentNames[0];
+                                return;
+                            }
+                        }
+                    }
+                }
+                // No field with at least one component found
+                closestFieldName = null;
+                closestComponentName = null;
+            }
+        }
         // Scaled results
         public void GetScaledNodesAndValues(FieldData fieldData, float scale, int[] nodeIds, out double[][] nodeCoor,
                                             out float[] values)
@@ -1087,22 +1167,25 @@ namespace CaeResults
             else
             {
                 string name = "DISP";
-
-                float[][] disp = new float[3][];
-                disp[0] = GetValues(new FieldData(name, "U1", stepId, stepIncrementId), globalNodeIds);
-                disp[1] = GetValues(new FieldData(name, "U2", stepId, stepIncrementId), globalNodeIds);
-                disp[2] = GetValues(new FieldData(name, "U3", stepId, stepIncrementId), globalNodeIds);
-
-                scaledNodes = new double[nodes.GetLength(0)][];
-                for (int i = 0; i < nodes.GetLength(0); i++) scaledNodes[i] = nodes[i].ToArray();  // copy coordinates
-
-                if (disp[0] != null && disp[1] != null && disp[2] != null)
+                string[] componentNames = GetComponentNames(name);
+                scaledNodes = new double[nodes.Length][];
+                for (int i = 0; i < nodes.Length; i++) scaledNodes[i] = nodes[i].ToArray();  // copy coordinates
+                // Components can be deleted
+                if (componentNames.Contains("U1") && componentNames.Contains("U2") && componentNames.Contains("U3"))
                 {
-                    for (int i = 0; i < nodes.GetLength(0); i++)
+                    float[][] disp = new float[3][];
+                    disp[0] = GetValues(new FieldData(name, "U1", stepId, stepIncrementId), globalNodeIds);
+                    disp[1] = GetValues(new FieldData(name, "U2", stepId, stepIncrementId), globalNodeIds);
+                    disp[2] = GetValues(new FieldData(name, "U3", stepId, stepIncrementId), globalNodeIds);
+                    //
+                    if (disp[0] != null && disp[1] != null && disp[2] != null)
                     {
-                        for (int j = 0; j < 3; j++)
+                        for (int i = 0; i < nodes.Length; i++)
                         {
-                            scaledNodes[i][j] += scale * disp[j][i];
+                            for (int j = 0; j < 3; j++)
+                            {
+                                scaledNodes[i][j] += scale * disp[j][i];
+                            }
                         }
                     }
                 }
@@ -1113,19 +1196,23 @@ namespace CaeResults
             if (scale != 0)
             {
                 string name = "DISP";
-                //
-                float[][] disp = new float[3][];
-                disp[0] = GetValues(new FieldData(name, "U1", stepId, stepIncrementId), globalNodeIds);
-                disp[1] = GetValues(new FieldData(name, "U2", stepId, stepIncrementId), globalNodeIds);
-                disp[2] = GetValues(new FieldData(name, "U3", stepId, stepIncrementId), globalNodeIds);
-                //
-                if (disp[0] != null && disp[1] != null && disp[2] != null)
+                string[] componentNames = GetComponentNames(name);
+                // Components can be deleted
+                if (componentNames.Contains("U1") && componentNames.Contains("U2") && componentNames.Contains("U3"))
                 {
-                    for (int i = 0; i < nodes.GetLength(0); i++)
+                    float[][] disp = new float[3][];
+                    disp[0] = GetValues(new FieldData(name, "U1", stepId, stepIncrementId), globalNodeIds);
+                    disp[1] = GetValues(new FieldData(name, "U2", stepId, stepIncrementId), globalNodeIds);
+                    disp[2] = GetValues(new FieldData(name, "U3", stepId, stepIncrementId), globalNodeIds);
+                    //
+                    if (disp[0] != null && disp[1] != null && disp[2] != null)
                     {
-                        for (int j = 0; j < 3; j++)
+                        for (int i = 0; i < nodes.Length; i++)
                         {
-                            nodes[i][j] += scale * disp[j][i];
+                            for (int j = 0; j < 3; j++)
+                            {
+                                nodes[i][j] += scale * disp[j][i];
+                            }
                         }
                     }
                 }
@@ -1190,8 +1277,10 @@ namespace CaeResults
             FieldData fieldData;
             Field field;
             FieldData wearData;
-            Field wear = new Field("WEAR");
+            Field wear;
             float[] values;
+            float[] newValues;
+            float[] prevValues = null;
             //
             string[] fieldNames = GetAllFieldNames();
             foreach (var fieldName in fieldNames)
@@ -1201,29 +1290,38 @@ namespace CaeResults
                     string[] componentNames = GetComponentNames(fieldName);
                     //
                     int[] stepIds = GetAllStepIds();
-                    foreach (var stepId in stepIds)
+                    //
+                    for (int i = 0; i < stepIds.Length; i++)
                     {
-                        int[] stepIncrementIds = GetIncrementIds(stepId);
-                        foreach (var stepIncrementId in stepIncrementIds)
+                        int[] stepIncrementIds = GetIncrementIds(stepIds[i]);
+                        //
+                        for (int j = 0; j < stepIncrementIds.Length; j++)
                         {
-                            fieldData = GetFieldData(fieldName, "CSLIP1", stepId, stepIncrementId);
+                            fieldData = GetFieldData(fieldName, "CSLIP1", stepIds[i], stepIncrementIds[j]);
                             field = GetField(fieldData);
-
+                            //
                             if (field == null) values = new float[1];
                             else values = field.GetComponentValues("CSLIP1");
-
+                            //
+                            newValues = new float[values.Length];
+                            //
+                            if (prevValues != null)
+                            { 
+                                for (int k = 0; k < prevValues.Length; k++)
+                                {
+                                    if (prevValues[k] != 0 && values[k] != 0) newValues[k] = values[k] - prevValues[k];
+                                    else newValues[k] = 0;
+                                }
+                            }
+                            //
                             wear = new Field("WEAR");
-                            wear.AddComponent("CSLIP1R", values);
-                            wearData = new FieldData("WEAR", "CSLIP1R", stepId, stepIncrementId);
+                            wear.AddComponent("CSLIP1R", newValues);
+                            wearData = new FieldData("WEAR", "CSLIP1R", stepIds[i], stepIncrementIds[j]);
                             wearData.Type = fieldData.Type;
-
+                            //
                             AddFiled(wearData, wear);
-
-                            //string[] componentNames = GetComponentNames(fieldName);
-                            //foreach (var componentName in componentNames)
-                            //{
-                            //    data = GetFieldData(fieldName, componentName, stepId, stepIncrementId);
-                            //}
+                            //
+                            prevValues = values;
                         }
                     }
                 }

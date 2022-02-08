@@ -579,7 +579,7 @@ namespace PrePoMax
             else
             {
                 _results.ComputeWearFields();
-
+                //
                 _form.Clear3D();
                 // Check if the meshes are the same and rename the parts
                 if (_model.Mesh != null && _results.Mesh != null && _model.HashName == _results.HashName)
@@ -630,7 +630,6 @@ namespace PrePoMax
                 // Regenerate tree
                 _form.RegenerateTree();
             }
-            
         }
         private void OpenDatFile(string fileName, bool redraw = true)
         {
@@ -7253,7 +7252,20 @@ namespace PrePoMax
                 }
                 col++;
             }
-        }        
+        }
+        //
+        public void RemoveResultFieldOutputComponents(string fieldName, string[] componentNames)
+        {
+            _results.RemoveResultFieldOutputComponents(fieldName, componentNames);
+            _form.ClearActiveTreeSelection();   // prevents errors on _form.RemoveTreeNode
+            //
+            ViewGeometryModelResults view = ViewGeometryModelResults.Results;
+            foreach (var name in componentNames) _form.RemoveTreeNode<FieldData>(view, name, fieldName);
+            //
+            if (_results.GetComponentNames().Length > 0) _form.SelectFirstComponentOfFirstFieldOutput();
+            //
+            DrawResults(false); // in all cases redraw the 
+        }
         //
         public List<Transformation> GetTransformations()
         {
@@ -12076,6 +12088,7 @@ namespace PrePoMax
                 _form.Clear3D();    // Removes section cut
                 //
                 if (_results == null) return;
+                if (_results.GetComponentNames().Length == 0) _viewResultsType = ViewResultsType.Undeformed;
                 //
                 ApplyResultsUnitSystem();
                 // Settings - must be here before drawing parts to correctly set the numer of colors
@@ -12177,6 +12190,7 @@ namespace PrePoMax
             _form.Clear3D();
             //
             if (_results == null) return false;
+            if (_results.GetComponentNames().Length == 0) _viewResultsType = ViewResultsType.Undeformed;
             //
             ApplyResultsUnitSystem();
             // Settings - must be here before drawing parts to correctly set the numer of colors
@@ -12250,6 +12264,7 @@ namespace PrePoMax
             //
             numFrames = -1;
             if (_results == null) return false;
+            if (_results.GetComponentNames().Length == 0) _viewResultsType = ViewResultsType.Undeformed;
             //
             ApplyResultsUnitSystem();
             // Settings - must be here before drawing parts to correctly set the numer of colors
