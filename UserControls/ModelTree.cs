@@ -554,7 +554,13 @@ namespace UserControls
             // Create
             if (CanCreate(node)) menuFields.Create++;
             // Edit
-            if (item != null) menuFields.Edit++;
+            if (item != null)
+            {
+                if (item is Field ||
+                    item is HistoryResultSet ||
+                    item is HistoryResultField) { }
+                else menuFields.Edit++;
+            }
             //Duplicate
             if (item != null && CanDuplicate(node)) menuFields.Duplicate++;
             //Propagate
@@ -1379,6 +1385,7 @@ namespace UserControls
                     {
                         if (selectedNode.Parent.Parent.Tag is Step) parentName = selectedNode.Parent.Parent.Text;
                         else if (selectedNode.Parent.Tag is Field) parentName = selectedNode.Parent.Text;
+                        else if (selectedNode.Parent.Tag is HistoryResultSet) parentName = selectedNode.Parent.Text;
                     }
                     parentNames.Add(parentName);
                 }
@@ -1637,7 +1644,7 @@ namespace UserControls
 
         // Regenerate tree                                                                                                          
         public void RegenerateTree(FeModel model, IDictionary<string, AnalysisJob> jobs, FeResults results,
-                                   HistoryResults history, bool remeshing = false)
+                                   bool remeshing = false)
         {
             if (!_screenUpdating) return;
             //
@@ -1721,8 +1728,10 @@ namespace UserControls
                             SetFieldOutputAndComponentNames(fieldNames, allComponents);
                             //SelectFirstComponentOfFirstFieldOutput();
                         }
+                        //
+                        if (results.History != null) SetHistoryOutputNames(results.History);
                     }
-                    if (history != null) SetHistoryOutputNames(history);
+                    
                 }
                 //
                 SelectNodesByPath(selectedNodePaths);
@@ -2097,15 +2106,36 @@ namespace UserControls
             CodersLabTreeView tree = GetTree(view);
             //
             TreeNode baseNode = null;
-            if (typeof(T) == typeof(AnalysisJob)) baseNode = _analyses;
-            else if (typeof(T) == typeof(FeMeshRefinement)) baseNode = _meshRefinements;
+            if (typeof(T) == typeof(FeMeshRefinement)) baseNode = _meshRefinements;
+            else if (typeof(T) == typeof(AnalysisJob)) baseNode = _analyses;
+            else if (typeof(T) == typeof(Field)) baseNode = _resultFieldOutputs;
+            else if (typeof(T) == typeof(HistoryResultSet) ||
+                     typeof(T) == typeof(HistoryResultField) ||
+                     typeof(T) == typeof(HistoryResultData))
+                baseNode = _resultHistoryOutputs;
             else baseNode = tree.Nodes[0];
-            //
+            // Find parent
             TreeNode[] tmp;
             if (parentName != null)
             {
                 if (view == ViewType.Model) tmp = _steps.Nodes.Find(parentName, true);
-                else if (view == ViewType.Results) tmp = _resultFieldOutputs.Nodes.Find(parentName, true);
+                else if (view == ViewType.Results)
+                {
+                    if (typeof(T) == typeof(Field)) tmp = _resultFieldOutputs.Nodes.Find(parentName, true);
+                    else if (typeof(T) == typeof(HistoryResultField)) tmp = _resultHistoryOutputs.Nodes.Find(parentName, true);
+                    else if (typeof(T) == typeof(HistoryResultData))
+                    {
+                        string[] split = parentName.Split(new string[] { "@@@" }, StringSplitOptions.None);
+                        if (split.Length == 2)
+                        {
+                            tmp = _resultHistoryOutputs.Nodes.Find(split[0], true);
+                            if (tmp.Length == 1) tmp = tmp[0].Nodes.Find(split[1], true);
+                            else throw new NotSupportedException();
+                        }
+                        else throw new NotSupportedException();
+                    }
+                    else throw new NotSupportedException();
+                }
                 else throw new NotSupportedException();
                 //
                 if (tmp.Length > 1) throw new Exception("Tree update failed. More than one parent named: " + parentName);
@@ -2133,7 +2163,8 @@ namespace UserControls
             tree.SelectedNodes.Remove(tmp[0]);
             //
             parent.Text = parent.Name;
-            if (parent.Tag is Field) SetNodeStatus(parent);  // remove dotted T icon
+            if (parent.Tag is Field || parent.Tag is HistoryResultSet || parent.Tag is HistoryResultField)
+                SetNodeStatus(parent);  // remove dotted T icon
             else if (parent.Nodes.Count > 0) parent.Text += " (" + parent.Nodes.Count + ")";
         }
         private void AddObjectsToNode<Tkey, Tval>(string initialNodeName, TreeNode node, IDictionary<Tkey, Tval> dictionary,
@@ -2443,20 +2474,22 @@ namespace UserControls
             {
                 node1 = _resultHistoryOutputs.Nodes.Add(setEntry.Key);
                 node1.Name = node1.Text;
+                node1.Tag = setEntry.Value;
                 SetNodeImage(node1, "Dots.ico");
                 //
                 foreach (var fieldEntry in setEntry.Value.Fields)
                 {
                     node2 = node1.Nodes.Add(fieldEntry.Key);
                     node2.Name = node2.Text;
+                    node2.Tag = fieldEntry.Value;
                     SetNodeImage(node2, "Dots.ico");
                     //
                     foreach (var componentEntry in fieldEntry.Value.Components)
                     {
                         node3 = node2.Nodes.Add(componentEntry.Key);
                         node3.Name = node3.Text;
+                        node3.Tag = new HistoryResultData(setEntry.Key, fieldEntry.Key, componentEntry.Key);    // for edit
                         SetNodeImage(node3, "Dots.ico");
-                        node3.Tag = new HistoryResultData(setEntry.Key, fieldEntry.Key, componentEntry.Key);
                     }
                 }
             }
@@ -2585,7 +2618,7 @@ namespace UserControls
             else if (node.Name == _initialConditionsName) return true;
             else if (node.Name == _stepsName) return true;
             else if (node.Name == _historyOutputsName) return true;
-            else if (node.Name == _fieldOutputsName) return true;
+            else if (node.TreeView == cltvModel && node.Name == _fieldOutputsName) return true;
             else if (node.Name == _boundaryConditionsName) return true;
             else if (node.Name == _loadsName) return true;
             else if (node.Name == _definedFieldsName) return true;

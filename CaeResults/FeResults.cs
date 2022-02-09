@@ -22,6 +22,7 @@ namespace CaeResults
         private string _fileName;
         private FeMesh _mesh;
         private Dictionary<int, FieldData> _fieldLookUp;
+        private HistoryResults _history;
         private DateTime _dateTime;
         private UnitSystem _unitSystem;
 
@@ -30,6 +31,7 @@ namespace CaeResults
         public string HashName { get { return _hashName; } set { _hashName = value; } }
         public string FileName { get { return _fileName; } set { _fileName = value; } }
         public FeMesh Mesh { get { return _mesh; } set { _mesh = value; } }
+        public HistoryResults History { get { return _history; } set { _history = value; } }
         public DateTime DateTime { get { return _dateTime; } set { _dateTime = value; } }
         public UnitSystem UnitSystem { get { return _unitSystem; } set { _unitSystem = value; } }        
 
@@ -43,6 +45,7 @@ namespace CaeResults
             _nodeIdsLookUp = null;
             _fields = new Dictionary<FieldData, Field>();
             _fieldLookUp = new Dictionary<int, FieldData>();
+            _history = null;
             _unitSystem = new UnitSystem();
         }
 
@@ -57,10 +60,8 @@ namespace CaeResults
             else
             {
                 bw.Write((int)1);
-                
                 // Mesh
                 FeMesh.WriteToBinaryFile(results.Mesh, bw);
-
                 // Node lookup
                 if (results._nodeIdsLookUp == null) bw.Write((int)0);
                 else
@@ -74,7 +75,6 @@ namespace CaeResults
                         bw.Write(entry.Value);
                     }
                 }
-
                 // Fields
                 if (results._fields == null) bw.Write((int)0);
                 else
@@ -846,19 +846,91 @@ namespace CaeResults
             return nodesData;
         }
         // Remove
-        public void RemoveResultFieldOutputComponents(string fieldName, string[] componentNames)
+        public void RemoveResultFieldOutputs(string[] fieldOutputNames)
         {
-            foreach (var entry in _fields)
+            if (_fields != null)
             {
-                if (entry.Key.Name == fieldName)
+                List<FieldData> fieldsToRemove = new List<FieldData>();
+                foreach (var entry in _fields)
                 {
-                    foreach (var componentName in componentNames)
+                    if (fieldOutputNames.Contains(entry.Key.Name)) fieldsToRemove.Add(entry.Key);
+                }
+                //
+                foreach (var fieldToRemove in fieldsToRemove)
+                {
+                    _fields.Remove(fieldToRemove);
+                }
+            }
+        }
+        public void RemoveResultFieldOutputComponents(string fieldOutputName, string[] componentNames)
+        {
+            if (_fields != null)
+            {
+                foreach (var entry in _fields)
+                {
+                    if (entry.Key.Name == fieldOutputName)
                     {
-                        entry.Value.RemoveComponent(componentName);
+                        foreach (var componentName in componentNames)
+                        {
+                            entry.Value.RemoveComponent(componentName);
+                        }
                     }
                 }
             }
         }
+        //
+        public void RemoveResultHistoryResultSets(string[] historyResultSetNames)
+        {
+            if (_history != null)
+            {
+                List<string> setsToRemove = new List<string>();
+                foreach (var entry in _history.Sets)
+                {
+                    if (historyResultSetNames.Contains(entry.Key)) setsToRemove.Add(entry.Key);
+                }
+                //
+                foreach (var setToRemove in setsToRemove)
+                {
+                    _history.Sets.Remove(setToRemove);
+                }
+            }
+        }
+        public void RemoveResultHistoryResultFields(string historyResultSetName, string[] historyResultFieldNames)
+        {
+            if (_history != null)
+            {
+                List<string> fieldsToRemove = new List<string>();
+                foreach (var entry in _history.Sets[historyResultSetName].Fields)
+                {
+                    if (historyResultFieldNames.Contains(entry.Key)) fieldsToRemove.Add(entry.Key);
+                }
+                //
+                foreach (var fieldToRemove in fieldsToRemove)
+                {
+                    _history.Sets[historyResultSetName].Fields.Remove(fieldToRemove);
+                }
+            }
+        }
+        public void RemoveResultHistoryResultCompoments(string historyResultSetName,
+                                                        string historyResultFieldName,
+                                                        string[] historyResultComponentNames)
+        {
+            if (_history != null)
+            {
+                List<string> componentsToRemove = new List<string>();
+                foreach (var entry in _history.Sets[historyResultSetName].Fields[historyResultFieldName].Components)
+                {
+                    if (historyResultComponentNames.Contains(entry.Key)) componentsToRemove.Add(entry.Key);
+                }
+                //
+                foreach (var componentToRemove in componentsToRemove)
+                {
+                    _history.Sets[historyResultSetName].Fields[historyResultFieldName].Components.Remove(componentToRemove);
+                }
+            }
+        }
+
+
         public void GetClosestFieldComponent(string fieldName, string componentName,
                                              out string closestFieldName, out string closestComponentName)
         {

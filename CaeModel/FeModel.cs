@@ -27,7 +27,7 @@ namespace CaeModel
         private StepCollection _stepCollection;                                                 //ISerializable
         private OrderedDictionary<int[], Calculix.CalculixUserKeyword> _calculixUserKeywords;   //ISerializable
         private ModelProperties _properties;                                                    //ISerializable
-        private UnitSystem _unitSystem;                                                         //ISerializable        
+        private UnitSystem _unitSystem;                                                         //ISerializable
 
 
         // Properties                                                                                                               

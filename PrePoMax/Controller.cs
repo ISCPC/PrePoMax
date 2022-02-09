@@ -47,8 +47,7 @@ namespace PrePoMax
         //
         protected FeModel _model;
         protected NetgenJob _netgenJob;
-        protected FeResults _results;
-        protected HistoryResults _history;
+        protected FeResults _results;        
         // History
         protected Commands.CommandsCollection _commands;
        
@@ -184,8 +183,7 @@ namespace PrePoMax
         public double SelectAngle { get { return _selectAngle; } set { _selectAngle = value; } }
         public Selection Selection { get { return _selection; } set { _selection = value; } }
         // Results
-        public FeResults Results { get { return _results; } }
-        public HistoryResults History { get { return _history; } }
+        public FeResults Results { get { return _results; } }        
         public ViewResultsType ViewResultsType
         {
             get { return _viewResultsType; }
@@ -420,11 +418,10 @@ namespace PrePoMax
             // Exploded view
             _explodedViewParameters[ViewGeometryModelResults.Results] = new ExplodedViewParameters();
             //
-            if (_results != null || _history != null)
+            if (_results != null)
             {
                 _modelChanged = true;
-                _results = null;
-                _history = null;
+                _results = null;                
             }
             //
             _currentFieldData = null;
@@ -516,8 +513,6 @@ namespace PrePoMax
                 throw new Exception("The file can not be read. It is either corrupt or was created by a previous version.");
             // Get controller
             tmp = (Controller)data[0];
-            // Set history
-            _history = tmp.History;
             // Commands
             _commands.EnableDisableUndoRedo -= _commands_CommandExecuted;
             _commands = new Commands.CommandsCollection(this, tmp._commands); // to recreate the history file
@@ -571,7 +566,7 @@ namespace PrePoMax
             _results = FrdFileReader.Read(fileName);
             bool redraw = false;
             //
-            if (_results == null)
+            if (_results == null || _results.Mesh == null)
             {
                 MessageBoxes.ShowError("The results file does not exist or is empty.");
                 return;
@@ -633,9 +628,10 @@ namespace PrePoMax
         }
         private void OpenDatFile(string fileName, bool redraw = true)
         {
-            _history = DatFileReader.Read(fileName);
+            if (_results == null) _results = new FeResults(fileName);
+            _results.History = DatFileReader.Read(fileName);
             //
-            if (_history == null)
+            if (_results.History == null)
             {
                 MessageBoxes.ShowError("The dat file does not exist or is empty.");
                 return;
@@ -1324,15 +1320,12 @@ namespace PrePoMax
                 using (FileStream fs = new FileStream(tmpFileName, FileMode.Create))
                 {
                     FeResults results = null;
-                    HistoryResults history = null;
                     bool saveResults = _settings.General.SaveResultsInPmx;
                     // When controller (data[0]) is dumped to stream, the results should be null if selected
                     if (saveResults == false)
                     {
                         results = _results;
                         _results = null;
-                        history = _history;
-                        _history = null;
                     }
                     // Controller
                     data.DumpToStream(bw);                    
@@ -1344,7 +1337,6 @@ namespace PrePoMax
                     if (saveResults == false)
                     {
                         _results = results;
-                        _history = history;
                     }
                     //
                     bw.Flush();
@@ -7203,7 +7195,7 @@ namespace PrePoMax
         //
         public void GetHistoryOutputData(HistoryResultData historyData, out string[] columnNames, out object[][] rowBasedData)
         {
-            HistoryResultSet set = _history.Sets[historyData.SetName];
+            HistoryResultSet set = _results.History.Sets[historyData.SetName];
             HistoryResultField field = set.Fields[historyData.FieldName];
             HistoryResultComponent component = field.Components[historyData.ComponentName];
             string unit = "\n[" + _results.GetHistoryUnitAbbrevation(field.Name, component.Name) + "]";
@@ -7254,17 +7246,59 @@ namespace PrePoMax
             }
         }
         //
-        public void RemoveResultFieldOutputComponents(string fieldName, string[] componentNames)
+        public void RemoveResultFieldOutputs(string[] fieldOutputNames)
         {
-            _results.RemoveResultFieldOutputComponents(fieldName, componentNames);
+            _results.RemoveResultFieldOutputs(fieldOutputNames);
             _form.ClearActiveTreeSelection();   // prevents errors on _form.RemoveTreeNode
             //
             ViewGeometryModelResults view = ViewGeometryModelResults.Results;
-            foreach (var name in componentNames) _form.RemoveTreeNode<FieldData>(view, name, fieldName);
+            foreach (var name in fieldOutputNames) _form.RemoveTreeNode<Field>(view, name, null);
             //
             if (_results.GetComponentNames().Length > 0) _form.SelectFirstComponentOfFirstFieldOutput();
             //
             DrawResults(false); // in all cases redraw the 
+        }
+        public void RemoveResultFieldOutputComponents(string fieldOutputName, string[] componentNames)
+        {
+            _results.RemoveResultFieldOutputComponents(fieldOutputName, componentNames);
+            _form.ClearActiveTreeSelection();   // prevents errors on _form.RemoveTreeNode
+            //
+            ViewGeometryModelResults view = ViewGeometryModelResults.Results;
+            foreach (var name in componentNames) _form.RemoveTreeNode<FieldData>(view, name, fieldOutputName);
+            //
+            if (_results.GetComponentNames().Length > 0) _form.SelectFirstComponentOfFirstFieldOutput();
+            //
+            DrawResults(false); // in all cases redraw the 
+        }
+        //
+        public void RemoveResultHistoryResultSets(string[] historyResultSetNames)
+        {
+            _results.RemoveResultHistoryResultSets(historyResultSetNames);
+            _form.ClearActiveTreeSelection();   // prevents errors on _form.RemoveTreeNode
+            //
+            ViewGeometryModelResults view = ViewGeometryModelResults.Results;
+            foreach (var name in historyResultSetNames) _form.RemoveTreeNode<HistoryResultSet>(view, name, null);
+        }
+        public void RemoveResultHistoryResultFields(string historyResultSetName, string[] historyResultFieldNames)
+        {
+            _results.RemoveResultHistoryResultFields(historyResultSetName, historyResultFieldNames);
+            _form.ClearActiveTreeSelection();   // prevents errors on _form.RemoveTreeNode
+            //
+            ViewGeometryModelResults view = ViewGeometryModelResults.Results;
+            foreach (var name in historyResultFieldNames)
+                _form.RemoveTreeNode<HistoryResultField>(view, name, historyResultSetName);
+        }
+        public void RemoveResultHistoryResultCompoments(string historyResultSetName,
+                                                        string historyResultFieldName,
+                                                        string[] historyResultComponentNames)
+        {
+            _results.RemoveResultHistoryResultCompoments(historyResultSetName, historyResultFieldName,
+                                                         historyResultComponentNames);
+            _form.ClearActiveTreeSelection();   // prevents errors on _form.RemoveTreeNode
+            //
+            ViewGeometryModelResults view = ViewGeometryModelResults.Results;
+            foreach (var name in historyResultComponentNames)
+                _form.RemoveTreeNode<HistoryResultData>(view, name, historyResultSetName + "@@@" + historyResultFieldName);
         }
         //
         public List<Transformation> GetTransformations()
@@ -12087,7 +12121,7 @@ namespace PrePoMax
             {
                 _form.Clear3D();    // Removes section cut
                 //
-                if (_results == null) return;
+                if (_results == null || _results.Mesh == null) return;
                 if (_results.GetComponentNames().Length == 0) _viewResultsType = ViewResultsType.Undeformed;
                 //
                 ApplyResultsUnitSystem();
@@ -12189,7 +12223,7 @@ namespace PrePoMax
         {
             _form.Clear3D();
             //
-            if (_results == null) return false;
+            if (_results == null || _results.Mesh == null) return false;
             if (_results.GetComponentNames().Length == 0) _viewResultsType = ViewResultsType.Undeformed;
             //
             ApplyResultsUnitSystem();
@@ -12263,7 +12297,7 @@ namespace PrePoMax
             _form.Clear3D();
             //
             numFrames = -1;
-            if (_results == null) return false;
+            if (_results == null ||_results.Mesh == null) return false;
             if (_results.GetComponentNames().Length == 0) _viewResultsType = ViewResultsType.Undeformed;
             //
             ApplyResultsUnitSystem();
@@ -12449,7 +12483,7 @@ namespace PrePoMax
         }
         public void UpdatePartsScalarFields()
         {
-            if (_results == null) return;
+            if (_results == null || _results.Mesh == null) return;
             // Settings                                                              
             SetLegendAndLimits();
             //

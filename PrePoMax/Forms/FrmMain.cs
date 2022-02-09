@@ -924,7 +924,7 @@ namespace PrePoMax
                 ApplyActionOnItems<SurfaceInteraction>(items, DeleteSurfaceInteractions);
                 ApplyActionOnItems<ContactPair>(items, DeleteContactPairs);
                 ApplyActionOnItems<InitialCondition>(items, DeleteInitialConditions);
-                //
+                // First delete step items and then steps
                 DeleteParentItems<HistoryOutput>(items, parentNames, DeleteHistoryOutputs);
                 DeleteParentItems<FieldOutput>(items, parentNames, DeleteFieldOutputs);
                 DeleteParentItems<BoundaryCondition>(items, parentNames, DeleteBoundaryConditions);
@@ -940,8 +940,14 @@ namespace PrePoMax
             {
                 ApplyActionOnItems<ResultPart>(items, DeleteResultParts);
                 ApplyActionOnItems<GeometryPart>(items, DeleteResultParts);
-                //
+                // First delete components and then field outputs
                 DeleteParentItems<CaeResults.FieldData>(items, parentNames, DeleteResultFieldOutputComponents);
+                ApplyActionOnItems<CaeResults.Field>(items, DeleteResultFieldOutputs);
+                //
+                RemoveResultHistoryResultCompoments(items);
+                DeleteParentItems<CaeResults.HistoryResultField>(items, parentNames, DeleteResultHistoryResultFields);
+                ApplyActionOnItems<CaeResults.HistoryResultSet>(items, RemoveResultHistoryResultSets);
+                
             }
         }
         private void ModelTree_ActivateDeactivateEvent(NamedClass[] items, bool activate, string[] stepNames)
@@ -1266,7 +1272,7 @@ namespace PrePoMax
         {            
             _controller.Open(fileName);
             //
-            if (_controller.Results != null)
+            if (_controller.Results != null && _controller.Results.Mesh != null)
             {
                 // Reset the previous step and increment
                 SetAllStepAndIncrementIds();
@@ -1715,7 +1721,7 @@ namespace PrePoMax
             {
                 SetStateReady(Globals.UndoingText);
                 _modelTree.ScreenUpdating = true;
-                _modelTree.RegenerateTree(_controller.Model, _controller.Jobs, _controller.Results, _controller.History);
+                _modelTree.RegenerateTree(_controller.Model, _controller.Jobs, _controller.Results);
                 //
                 SetMenuAndToolStripVisibility();
                 //
@@ -1762,7 +1768,7 @@ namespace PrePoMax
             {
                 SetStateReady(Globals.RegeneratingText);
                 _modelTree.ScreenUpdating = true;
-                _modelTree.RegenerateTree(_controller.Model, _controller.Jobs, _controller.Results, _controller.History);
+                _modelTree.RegenerateTree(_controller.Model, _controller.Jobs, _controller.Results);
                 //
                 SetMenuAndToolStripVisibility();
                 //
@@ -1796,7 +1802,7 @@ namespace PrePoMax
             {
                 SetStateReady(Globals.RegeneratingText);
                 _modelTree.ScreenUpdating = true;
-                _modelTree.RegenerateTree(_controller.Model, _controller.Jobs, _controller.Results, _controller.History);
+                _modelTree.RegenerateTree(_controller.Model, _controller.Jobs, _controller.Results);
                 //
                 SetMenuAndToolStripVisibility();
                 //
@@ -5306,14 +5312,11 @@ namespace PrePoMax
             if (job.JobStatus == JobStatus.OK || job.JobStatus == JobStatus.Running ||
                 job.JobStatus == JobStatus.FailedWithResults)
             {
-                //string resultsFile = Path.GetFileNameWithoutExtension(job.Name) + ".frd";
                 string resultsFile = job.Name + ".frd";
-
-                OpenAsync(Path.Combine(job.WorkDirectory, resultsFile), false,
-                    () => { if (_controller.Results != null) _frmMonitor.DialogResult = DialogResult.OK; }); // this hides the dialog
-
-                //if (_controller.Results != null) _frmMonitor.DialogResult = DialogResult.OK; // this hides the dialog
-                //_frmMonitor.Hide();
+                //
+                await OpenAsync(Path.Combine(job.WorkDirectory, resultsFile), false,
+                    () => { if (_controller.Results != null && _controller.Results.Mesh != null)
+                            _frmMonitor.DialogResult = DialogResult.OK; }); // this hides the monitor window
             }
             else
             {
@@ -5576,15 +5579,77 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
-        public void DeleteResultFieldOutputComponents(string fieldName, string[] componentNames)
+        public void DeleteResultFieldOutputs(string[] fieldOutputNames)
         {
-            if (MessageBoxes.ShowWarningQuestion("OK to delete selected components from field output " + fieldName + "?"
-                                                 + Environment.NewLine + componentNames.ToRows()) == DialogResult.OK)
+            if (MessageBoxes.ShowWarningQuestion("OK to delete selected field outputs?" + Environment.NewLine
+                                                 + fieldOutputNames.ToRows()) == DialogResult.OK)
             {
-                _controller.RemoveResultFieldOutputComponents(fieldName, componentNames);
+                _controller.RemoveResultFieldOutputs(fieldOutputNames);
             }
         }
-       
+        public void DeleteResultFieldOutputComponents(string fieldOutputName, string[] componentNames)
+        {
+            if (MessageBoxes.ShowWarningQuestion("OK to delete selected components from field output " + fieldOutputName + "?"
+                                                 + Environment.NewLine + componentNames.ToRows()) == DialogResult.OK)
+            {
+                _controller.RemoveResultFieldOutputComponents(fieldOutputName, componentNames);
+            }
+        }
+        public void RemoveResultHistoryResultSets(string[] historyResultSetNames)
+        {
+            if (MessageBoxes.ShowWarningQuestion("OK to delete selected history outputs?" + Environment.NewLine
+                                                 + historyResultSetNames.ToRows()) == DialogResult.OK)
+            {
+                _controller.RemoveResultHistoryResultSets(historyResultSetNames);
+            }
+        }
+        public void DeleteResultHistoryResultFields(string historyResultSetName, string[] historyResultFieldNames)
+        {
+            if (MessageBoxes.ShowWarningQuestion("OK to delete selected fields from history output " + historyResultSetName + "?"
+                                                 + Environment.NewLine + historyResultFieldNames.ToRows()) == DialogResult.OK)
+            {
+                _controller.RemoveResultHistoryResultFields(historyResultSetName, historyResultFieldNames);
+            }
+        }
+        public void RemoveResultHistoryResultCompoments(NamedClass[] items)
+        {
+            Dictionary<string, List<string>> parentItemNames;
+            Dictionary<string, Dictionary<string, List<string>>> parentParentItemNames =
+                new Dictionary<string, Dictionary<string, List<string>>>();
+            //
+            foreach (var item in items)
+            {
+                if (item is CaeResults.HistoryResultData hrd)
+                {
+                    if (parentParentItemNames.TryGetValue(hrd.SetName, out parentItemNames))
+                    {
+                        parentItemNames[hrd.FieldName].Add(hrd.ComponentName);
+                    }
+                    else
+                    {
+                        parentParentItemNames.Add(hrd.SetName, new Dictionary<string, List<string>>()
+                                                  { { hrd.FieldName, new List<string>() { hrd.ComponentName} } });
+                    }
+                }
+            }
+            //
+            string[] itemNames;
+            foreach (var parentParentEntry in parentParentItemNames)
+            {
+                foreach (var parentEntry in parentParentEntry.Value)
+                {
+                    itemNames = parentEntry.Value.ToArray();
+                    if (MessageBoxes.ShowWarningQuestion("OK to delete selected components from history field " +
+                                                         parentEntry.Key + "?" + Environment.NewLine +
+                                                         itemNames.ToRows()) == DialogResult.OK)
+                    {
+                        _controller.RemoveResultHistoryResultCompoments(parentParentEntry.Key,
+                                                                        parentEntry.Key,
+                                                                        itemNames);
+                    }
+                }
+            }
+        }
         #endregion  ################################################################################################################
 
         #region Help menu  #########################################################################################################
@@ -6846,8 +6911,7 @@ namespace PrePoMax
         }
         public void RegenerateTree(bool remeshing = false)
         {
-            InvokeIfRequired(_modelTree.RegenerateTree, _controller.Model, _controller.Jobs, _controller.Results,
-                            _controller.History, remeshing);
+            InvokeIfRequired(_modelTree.RegenerateTree, _controller.Model, _controller.Jobs, _controller.Results, remeshing);
             InvokeIfRequired(UpadteSymbolsForStepList);
         }
         public void AddTreeNode(ViewGeometryModelResults view, NamedClass item, string stepName)
@@ -6873,11 +6937,11 @@ namespace PrePoMax
             InvokeIfRequired(_modelTree.SwapTreeNodes, viewType, firstItemName, firstItem, secondItemName, secondItem, stepName);
             //if (item is Step) UpadteOneStepInSymbolsForStepList(oldItemName, item.Name);
         }
-        public void RemoveTreeNode<T>(ViewGeometryModelResults view, string nodeName, string stepName) where T : NamedClass
+        public void RemoveTreeNode<T>(ViewGeometryModelResults view, string nodeName, string parentName) where T : NamedClass
         {
             ViewType viewType = GetViewType(view);
             //
-            InvokeIfRequired(_modelTree.RemoveTreeNode<T>, viewType, nodeName, stepName);
+            InvokeIfRequired(_modelTree.RemoveTreeNode<T>, viewType, nodeName, parentName);
             if (typeof(T) == typeof(Step)) RemoveOneStepInSymbolsForStepList(nodeName);
         }
         public bool[][] GetTreeExpandCollapseState()
