@@ -1480,7 +1480,6 @@ namespace PrePoMax
         {
             SuppressExplodedViews(partNames);
             //
-            float scale = GetScale();
             FeMesh mesh = DisplayedMesh;
             vtkControl.vtkMaxActorData data;
             List<double[][]> stlTriangles = new List<double[][]>();
@@ -1499,7 +1498,7 @@ namespace PrePoMax
                 }
                 else if (_currentView == ViewGeometryModelResults.Results)
                 {
-                    data = GetResultPartActorData((ResultPart)mesh.Parts[partNames[i]], _currentFieldData, scale, false);
+                    data = GetResultPartActorData((ResultPart)mesh.Parts[partNames[i]], _currentFieldData);
                 }
                 else throw new NotSupportedException();
                 //
@@ -1658,7 +1657,8 @@ namespace PrePoMax
             string[] partNames = null;
             if (partOffsets == null)
             {
-                partOffsets = mesh.GetExplodedViewOffsets((int)parameters.Type, parameters.ScaleFactor * parameters.Magnification,
+                partOffsets = mesh.GetExplodedViewOffsets((int)parameters.Type,
+                                                          parameters.ScaleFactor * parameters.Magnification,
                                                           partNames);
             }
             //
@@ -3349,7 +3349,8 @@ namespace PrePoMax
         }
         public FeNode GetNode(int nodeId)
         {
-            return DisplayedMesh.Nodes[nodeId];
+            if (_currentView == ViewGeometryModelResults.Results) return _results.UndeformedNodes[nodeId];
+            else return DisplayedMesh.Nodes[nodeId];
         }
 
         #endregion #################################################################################################################
@@ -7914,23 +7915,7 @@ namespace PrePoMax
             //
             if (selectBy == vtkSelectBy.Node || selectBy == vtkSelectBy.QueryNode)
             {
-                int nodeId;
-                // Scale nodes                
-                if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
-                {
-                    float scale = GetScale();
-                    double[][] cellFaceNodeCoor = new double[cellFaceNodeIds.Length][];
-                    for (int i = 0; i < cellFaceNodeIds.Length; i++)
-                        cellFaceNodeCoor[i] = DisplayedMesh.Nodes[cellFaceNodeIds[i]].Coor;
-                    //
-                    Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId,
-                                                 cellFaceNodeIds, ref cellFaceNodeCoor);
-                    nodeId = DisplayedMesh.GetCellFaceNodeIdClosestToPoint(pickedPoint, cellFaceNodeIds, cellFaceNodeCoor);
-                }
-                else
-                {
-                    nodeId = DisplayedMesh.GetCellFaceNodeIdClosestToPoint(pickedPoint, cellFaceNodeIds);
-                }
+                int nodeId = DisplayedMesh.GetCellFaceNodeIdClosestToPoint(pickedPoint, cellFaceNodeIds);
                 return new int[] { nodeId };
             }
             else if (selectBy == vtkSelectBy.Element || selectBy == vtkSelectBy.QueryElement)
@@ -8389,8 +8374,8 @@ namespace PrePoMax
             }
             else
             {
-                float scale = GetScale();
-                Results.GetScaledNodesAndValues(_currentFieldData, scale, nodeIds, out data.Geometry.Nodes.Coor, out data.Geometry.Nodes.Values);
+                Results.GetNodesAndValues(_currentFieldData, nodeIds, out data.Geometry.Nodes.Coor,
+                                          out data.Geometry.Nodes.Values);
             }
             //
             return data;
@@ -8465,8 +8450,7 @@ namespace PrePoMax
             }
             else if(_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
             {
-                float scale = GetScale();
-                PartExchangeData actorResultData = _results.GetScaledAllNodesCellsAndValues(elementSet, _currentFieldData, scale);
+                PartExchangeData actorResultData = _results.GetAllNodesCellsAndValues(elementSet, _currentFieldData);
                 data = GetVtkData(actorResultData, null, null);
             }
             else throw new NotSupportedException();
@@ -8522,13 +8506,6 @@ namespace PrePoMax
             data.Geometry.Cells.CellNodeIds = cells;
             //
             data.Geometry.Cells.Types = new int[] { cellTypes };
-            // Scale nodes
-            if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
-            {
-                float scale = GetScale();
-                Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId,
-                                             data.Geometry.Nodes.Ids, ref data.Geometry.Nodes.Coor);
-            }
             //
             return data;
         }
@@ -8541,13 +8518,6 @@ namespace PrePoMax
             {
                 DisplayedMesh.GetNodesAndCellsForEdges(edgeCells, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor,
                                                        out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
-                // Scale nodes
-                if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
-                {
-                    float scale = GetScale();
-                    Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId,
-                                                 data.Geometry.Nodes.Ids, ref data.Geometry.Nodes.Coor);
-                }
                 // Set the name for the probe widget
                 data.Name = DisplayedMesh.GetEdgeIdFromNodeIds(elementId, edgeNodeIds).ToString();
                 //
@@ -8563,15 +8533,6 @@ namespace PrePoMax
                 vtkControl.vtkMaxActorData data = new vtkControl.vtkMaxActorData();
                 DisplayedMesh.GetNodesAndCellsForEdges(edgeCells, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor,
                                                        out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
-
-                // Scale nodes
-                if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
-                {
-                    float scale = GetScale();
-                    Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId,
-                                                 data.Geometry.Nodes.Ids, ref data.Geometry.Nodes.Coor);
-                }
-
                 return data;
             }
             else return null;
@@ -8647,12 +8608,6 @@ namespace PrePoMax
                                                            out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
                     // Name for the probe widget
                     data.Name = faceId.ToString();
-                    // Scale nodes
-                    if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
-                    {
-                        float scale = GetScale();
-                        Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId, data.Geometry.Nodes.Ids, ref data.Geometry.Nodes.Coor);
-                    }
                     //
                     return data;
                 }
@@ -8709,12 +8664,6 @@ namespace PrePoMax
                                                    out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
             // Name for the probe widget
             data.Name = geometryIds.ToString();
-            // Scale nodes
-            if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
-            {
-                float scale = GetScale();
-                Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId, data.Geometry.Nodes.Ids, ref data.Geometry.Nodes.Coor);
-            }
             //
             noEdgePartNames = noEdgePartNamesHash.ToArray();
             //
@@ -8768,7 +8717,7 @@ namespace PrePoMax
                 double[][] deformedCoor;
                 float scale = GetScale();
                 //
-                _results.GetScaledNodesAndValues(_currentFieldData, scale, cellFaceNodeIds, out deformedCoor, out values);
+                _results.GetNodesAndValues(_currentFieldData, cellFaceNodeIds, out deformedCoor, out values);
                 // A - first cell point
                 // B - second cell point
                 // C - third cell point
@@ -8785,7 +8734,7 @@ namespace PrePoMax
                 double[][] uvw = Matrix.MatrixProduct(invLinSys, p);
                 //
                 double[][] coor;
-                _results.GetScaledNodesAndValues(_currentFieldData, 0, cellFaceNodeIds, out coor, out values);
+                _results.GetNodesAndValues(_currentFieldData, cellFaceNodeIds, out coor, out values);
                 //
                 linSys[0] = new double[] { coor[0][0], coor[1][0], coor[2][0] };
                 linSys[1] = new double[] { coor[0][1], coor[1][1], coor[2][1] };
@@ -11206,14 +11155,6 @@ namespace PrePoMax
                              int nodeSize = 5, bool onlyVisible = false, bool useSecondaryHighlightColor = false)
         {
             double[][] nodeCoor = DisplayedMesh.GetNodeSetCoor(nodeIds, onlyVisible);
-            //
-            if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
-            {
-                float scale = GetScale();
-                _results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId,
-                                              nodeIds, ref nodeCoor);
-            }
-            //
             DrawNodes(prefixName, nodeCoor, color, layer, nodeSize, false, useSecondaryHighlightColor);
             return nodeCoor.Length;
         }
@@ -11259,14 +11200,6 @@ namespace PrePoMax
                     {
                         double[][] nodeCoor = mesh.GetNodeSetCoor(nodeSet.Labels, onlyVisible);
                         //
-                        //
-                        if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
-                        {
-                            float scale = GetScale();
-                            _results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId,
-                                                          nodeSet.Labels, ref nodeCoor);
-                        }
-                        //
                         DrawNodes(prefixName + Globals.NameSeparator + nodeSetName, nodeCoor, color,
                                   layer, nodeSize, false, useSecondaryHighlightColor);
                         return nodeCoor.Length;
@@ -11306,13 +11239,6 @@ namespace PrePoMax
                 data.Geometry.Nodes.Coor = nodeCoor;
                 data.Geometry.Cells.CellNodeIds = cells;
                 data.Geometry.Cells.Types = cellTypes;
-                // Scale nodes
-                if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
-                {
-                    float scale = GetScale();
-                    _results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId, nodeIds,
-                                                  ref data.Geometry.Nodes.Coor);
-                }
                 //
                 ApplyLighting(data);
                 _form.Add3DCells(data);
@@ -11419,13 +11345,6 @@ namespace PrePoMax
             data.UseSecondaryHighightColor = useSecondaryHighlightColor;
             data.Geometry.Cells.CellNodeIds = cells;
             mesh.GetSurfaceGeometry(cells, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.Types);
-            // Scale nodes
-            if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
-            {
-                float scale = GetScale();
-                Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId,
-                                             data.Geometry.Nodes.Ids, ref data.Geometry.Nodes.Coor);
-            }
             //
             ApplyLighting(data);
             _form.Add3DCells(data);
@@ -11444,13 +11363,6 @@ namespace PrePoMax
             data.Geometry.Cells.CellNodeIds = cells;
             mesh.GetSurfaceEdgesGeometry(cells, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor,
                                          out data.Geometry.Cells.Types);
-            // Scale nodes
-            if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
-            {
-                float scale = GetScale();
-                Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId,
-                                             data.Geometry.Nodes.Ids, ref data.Geometry.Nodes.Coor);
-            }
             //
             ApplyLighting(data);
             _form.Add3DCells(data);
@@ -11787,14 +11699,6 @@ namespace PrePoMax
                                                                out data.Geometry.Cells.Types);
                         // Name for the probe widget
                         data.Name = part.Name + "_badEdgeElements";
-                        // Scale nodes
-                        if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
-                        {
-                            float scale = GetScale();
-                            Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId,
-                                                         data.Geometry.Nodes.Ids, ref data.Geometry.Nodes.Coor);
-                        }
-                        //
                         data.Color = color;
                         data.Layer = layer;
                         data.CanHaveElementEdges = true;
@@ -11949,13 +11853,6 @@ namespace PrePoMax
             data.UseSecondaryHighightColor = useSecondaryHighlightColor;
             data.Geometry.Cells.CellNodeIds = cells;
             mesh.GetSurfaceGeometry(cells, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.Types);
-            // Scale nodes
-            if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
-            {
-                float scale = GetScale();
-                Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId,
-                                             data.Geometry.Nodes.Ids, ref data.Geometry.Nodes.Coor);
-            }
             //
             ApplyLighting(data);
             _form.Add3DCells(data);
@@ -11972,13 +11869,6 @@ namespace PrePoMax
             data.Geometry.Cells.CellNodeIds = cells;
             mesh.GetSurfaceEdgesGeometry(cells, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor, 
                                          out data.Geometry.Cells.Types);
-            // Scale nodes
-            if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
-            {
-                float scale = GetScale();
-                Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId,
-                                             data.Geometry.Nodes.Ids, ref data.Geometry.Nodes.Coor);
-            }
             //
             ApplyLighting(data);
             _form.Add3DCells(data);
@@ -12230,7 +12120,10 @@ namespace PrePoMax
                 AnnotateWithColorLegend();
                 //
                 float scale = GetScale();
-                DrawAllResultParts(_currentFieldData, scale, _settings.Post.DrawUndeformedModel,
+                SetStatusBlock(scale);
+                //
+                _results.SetMeshDeformation(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId);
+                DrawAllResultParts(_currentFieldData, _settings.Post.DrawUndeformedModel,
                                    _settings.Post.DrawUndeformedModelAsEdges, _settings.Post.UndeformedModelColor);
                 // Transformation
                 ApplyTransformation();
@@ -12243,13 +12136,11 @@ namespace PrePoMax
                 _form.UpdateScalarsAndCameraAndRedraw();
             }
         }
-        private void DrawAllResultParts(FieldData fieldData, float scale, bool drawUndeformedModel, 
+        private void DrawAllResultParts(FieldData fieldData, bool drawUndeformedModel, 
                                         bool drawUndeformedModelAsEdges, Color undeformedModelColor)
         {
             vtkControl.vtkRendererLayer layer = vtkControl.vtkRendererLayer.Base;
             List<string> hiddenActors = new List<string>();
-            //
-            SetStatusBlock(scale);
             //
             _form.InitializeResultWidgetPositions(); // reset the widget position after setting the status block content
             //
@@ -12267,7 +12158,7 @@ namespace PrePoMax
                         if (drawUndeformedModel) DrawUndeformedPartCopy(resultPart, drawUndeformedModelAsEdges,
                                                                         undeformedModelColor, layer);
                         //
-                        DrawResultPart(resultPart, fieldData, scale, false);
+                        DrawResultPart(resultPart, fieldData, false);
                     }
                 }
                 // Draw geometry parts copied to the results
@@ -12280,9 +12171,9 @@ namespace PrePoMax
             }
             if (hiddenActors.Count > 0) _form.HideActors(hiddenActors.ToArray(), true);
         }
-        private void DrawResultPart(ResultPart part, FieldData fieldData, float scale, bool update)
+        private void DrawResultPart(ResultPart part, FieldData fieldData, bool update)
         {
-            vtkControl.vtkMaxActorData data = GetResultPartActorData(part, fieldData, scale, update);
+            vtkControl.vtkMaxActorData data = GetResultPartActorData(part, fieldData);
             //
             if (data != null)
             {
@@ -12290,19 +12181,19 @@ namespace PrePoMax
                 _form.AddScalarFieldOn3DCells(data, update);
             }
         }
-        private vtkControl.vtkMaxActorData GetResultPartActorData(ResultPart part, FieldData fieldData, float scale, bool update)
+        private vtkControl.vtkMaxActorData GetResultPartActorData(ResultPart part, FieldData fieldData)
         {
             if (part.Labels.Length == 0) return null;
             // Get visualization nodes and renumbered elements           
-            PartExchangeData actorResultData = _results.GetScaledVisualizationNodesCellsAndValues(part, fieldData, scale);
+            PartExchangeData actorResultData = _results.GetVisualizationNodesCellsAndValues(part, fieldData);
             // Model edges
             PartExchangeData modelEdgesResultData = null;
             if (part.PartType.HasEdges() && part.Visualization.EdgeCells != null)
             {
-                modelEdgesResultData = _results.GetScaledEdgesNodesAndCells(part, fieldData, scale);
+                modelEdgesResultData = _results.GetEdgesNodesAndCells(part, fieldData);
             }
             // Get all needed nodes and elements - renumbered               
-            PartExchangeData locatorResultData = _results.GetScaledAllNodesCellsAndValues(part, fieldData, scale);
+            PartExchangeData locatorResultData = _results.GetAllNodesCellsAndValues(part, fieldData);
             //
             vtkControl.vtkMaxActorData data = GetVtkData(actorResultData, modelEdgesResultData, locatorResultData);
             data.Name = part.Name;
@@ -12503,17 +12394,16 @@ namespace PrePoMax
         private vtkControl.vtkMaxActorData GetTimeIncrementAnimationDataFromPart(ResultPart part, FieldData fieldData, float scale)
         {
             // Get visualization nodes and renumbered elements
-            PartExchangeData actorResultData = _results.GetTimeIncrementAnimationDataVisualizationNodesCellsAndValues(part, fieldData,
-                                                                                                                      scale);
+            PartExchangeData actorResultData =
+                _results.GetTimeIncrementAnimationDataVisualizationNodesCellsAndValues(part, fieldData);
             // Model edges
             PartExchangeData modelEdgesResultData = null;
             if (part.PartType.HasEdges() && part.Visualization.EdgeCells != null)
             {
-                modelEdgesResultData = _results.GetTimeIncrementAnimationDataVisualizationEdgesNodesAndCells(part, fieldData, scale);
+                modelEdgesResultData = _results.GetTimeIncrementAnimationDataVisualizationEdgesNodesAndCells(part, fieldData);
             }
             // Get all needed nodes and elements - renumbered
-            PartExchangeData locatorResultData = _results.GetTimeIncrementAnimationDataAllNodesCellsAndValues(part, fieldData,
-                                                                                                              scale);
+            PartExchangeData locatorResultData = _results.GetTimeIncrementAnimationDataAllNodesCellsAndValues(part, fieldData);
             //
             vtkControl.vtkMaxActorData data = GetVtkData(actorResultData, modelEdgesResultData, locatorResultData);
             data.Name = part.Name;
@@ -12597,11 +12487,10 @@ namespace PrePoMax
                 {
                     // Get all needed nodes and elements - renumbered
                     PartExchangeData locatorResultData =
-                        _results.GetScaledAllNodesCellsAndValues(entry.Value, _currentFieldData, scale);
+                        _results.GetAllNodesCellsAndValues(entry.Value, _currentFieldData);
                     // Get visualization nodes and renumbered elements  - to scale min nad max nodes coor
-                    PartExchangeData actorResultData = _results.GetScaledVisualizationNodesCellsAndValues(entry.Value,
-                                                                                                          _currentFieldData,
-                                                                                                          scale);  
+                    PartExchangeData actorResultData =
+                        _results.GetVisualizationNodesCellsAndValues(entry.Value, _currentFieldData);
                     _form.UpdateActorSurfaceScalarField(entry.Key, actorResultData.Nodes.Values, actorResultData.ExtremeNodes,
                                                         locatorResultData.Nodes.Values, false);
                 }
@@ -12676,7 +12565,7 @@ namespace PrePoMax
         {
             if (_currentView == ViewGeometryModelResults.Results)
             {
-                FeNode node = _results.Mesh.Nodes[nodeId].DeepClone();
+                FeNode node = _results.UndeformedNodes[nodeId];
                 double[][] coor = new double[][] { node.Coor };
                 _results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId,
                                               new int[] { nodeId }, ref coor);
@@ -12692,7 +12581,7 @@ namespace PrePoMax
             if (_currentView == ViewGeometryModelResults.Results)
             {
                 double[][] coor = new double[nodeIds.Length][];
-                for (int i = 0; i < nodeIds.Length; i++) coor[i] = _results.Mesh.Nodes[nodeIds[i]].Coor;
+                for (int i = 0; i < nodeIds.Length; i++) coor[i] = _results.UndeformedNodes[nodeIds[i]].Coor;
                 //
                 _results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId,
                                               nodeIds, ref coor);

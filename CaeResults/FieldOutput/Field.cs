@@ -106,7 +106,8 @@ namespace CaeResults
         }
         public float[] GetComponentValues(string name)
         {
-            return _components[name].Values;
+            if (_components.ContainsKey(name)) return _components[name].Values;
+            else return null;
         }
         public float GetComponentMax(string name)
         {

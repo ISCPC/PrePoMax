@@ -28,7 +28,11 @@ namespace CaeMesh
             : this(id, coor[0], coor[1], coor[2])
         {
         }
-
+        public FeNode(FeNode node)
+            : this(node.Id, node.X, node.Y, node.Z)
+        {
+        }
+       
 
         // Methods                                                                                                                  
         public double[] Coor
