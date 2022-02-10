@@ -88,7 +88,8 @@ namespace PrePoMax
         private FrmAnalysis _frmAnalysis;
         private FrmMonitor _frmMonitor;
         private FrmAnimation _frmAnimation;
-        private FrmHistoryResultsOutput _frmHistoryResultsOutput;
+        private FrmViewResultHistoryOutput _frmViewResultHistoryOutput;
+        private FrmResultHistoryOutput _frmResultHistoryOutput;
         private FrmTransformation _frmTransformation;
 
 
@@ -409,8 +410,11 @@ namespace PrePoMax
                 _frmAnimation.Form_ControlsEnable = DisableEnableControlsForAnimation;
                 AddFormToAllForms(_frmAnimation);
                 //
-                _frmHistoryResultsOutput = new FrmHistoryResultsOutput(_controller);
-                AddFormToAllForms(_frmHistoryResultsOutput);
+                _frmViewResultHistoryOutput = new FrmViewResultHistoryOutput(_controller);
+                AddFormToAllForms(_frmViewResultHistoryOutput);
+                //
+                _frmResultHistoryOutput = new FrmResultHistoryOutput(_controller);
+                AddFormToAllForms(_frmResultHistoryOutput);
                 //
                 _frmTransformation = new FrmTransformation(_controller);
                 AddFormToAllForms(_frmTransformation);
@@ -798,7 +802,7 @@ namespace PrePoMax
             else if (_controller.CurrentView == ViewGeometryModelResults.Results)
             {
                 if (namedClass is ResultPart || namedClass is GeometryPart) EditResultPart(namedClass.Name);
-                else if (namedClass is CaeResults.HistoryResultData hd) ShowHistoryResultData(hd);
+                else if (namedClass is CaeResults.HistoryResultData hd) ViewResultHistoryOutputData(hd);
                 else if (namedClass is CaeResults.FieldData fd) ShowLegendSettings();
             }
         }
@@ -944,7 +948,7 @@ namespace PrePoMax
                 DeleteParentItems<CaeResults.FieldData>(items, parentNames, DeleteResultFieldOutputComponents);
                 ApplyActionOnItems<CaeResults.Field>(items, DeleteResultFieldOutputs);
                 //
-                RemoveResultHistoryResultCompoments(items);
+                DeleteResultHistoryResultCompoments(items);
                 DeleteParentItems<CaeResults.HistoryResultField>(items, parentNames, DeleteResultHistoryResultFields);
                 ApplyActionOnItems<CaeResults.HistoryResultSet>(items, RemoveResultHistoryResultSets);
                 
@@ -5546,8 +5550,8 @@ namespace PrePoMax
         }
         private void DeleteResultParts(string[] partNames)
         {
-            if (MessageBoxes.ShowWarningQuestion("OK to delete selected parts?" + Environment.NewLine
-                                                 + partNames.ToRows()) == DialogResult.OK)
+            if (MessageBoxes.ShowWarningQuestion("OK to delete selected parts?" + Environment.NewLine + 
+                                                 partNames.ToRows()) == DialogResult.OK)
             {
                 _controller.RemoveResultParts(partNames);
             }
@@ -5555,30 +5559,21 @@ namespace PrePoMax
 
         #endregion  ################################################################################################################
 
-        #region Result  ############################################################################################################
-
-        public void ShowHistoryResultData(CaeResults.HistoryResultData historyData)
+        #region Result field output  ###############################################################################################
+        
+        private void tsmiDeleteResultFieldOutput_Click(object sender, EventArgs e)
         {
             try
             {
-                if (!_frmHistoryResultsOutput.Visible)
-                {
-                    CloseAllForms();
-                    SetFormLoaction((Form)_frmHistoryResultsOutput);
-                    //
-                    string[] columnNames;
-                    object[][] rowBasedData;
-                    _controller.GetHistoryOutputData(historyData, out columnNames, out rowBasedData);
-                    //
-                    _frmHistoryResultsOutput.SetData(columnNames, rowBasedData);
-                    _frmHistoryResultsOutput.Show();
-                }
+                SelectMultipleEntities("Field Outputs", _controller.GetResultFieldOutputsAsNamedItems(),
+                                       DeleteResultFieldOutputs);
             }
             catch (Exception ex)
             {
                 ExceptionTools.Show(this, ex);
             }
         }
+        //
         public void DeleteResultFieldOutputs(string[] fieldOutputNames)
         {
             if (MessageBoxes.ShowWarningQuestion("OK to delete selected field outputs?" + Environment.NewLine
@@ -5594,6 +5589,43 @@ namespace PrePoMax
             {
                 _controller.RemoveResultFieldOutputComponents(fieldOutputName, componentNames);
             }
+        }
+
+        #endregion  ################################################################################################################
+
+        #region Result history output  #############################################################################################
+
+        private void tsmiCreateResultHistoryOutput_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                CreateResultHistoryOutput();
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiDeleteResultHistoryOutput_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SelectMultipleEntities("History Outputs", _controller.GetResultHistoryOutputsAsNamedItems(),
+                                       RemoveResultHistoryResultSets);
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        //
+        private void CreateResultHistoryOutput()
+        {
+            if (_controller.Results == null || _controller.Results.Mesh == null) return;
+            // Data editor
+            ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
+            ItemSetDataEditor.ParentForm = _frmResultHistoryOutput;
+            ShowForm(_frmResultHistoryOutput, "Create History Output", null);
         }
         public void RemoveResultHistoryResultSets(string[] historyResultSetNames)
         {
@@ -5611,7 +5643,7 @@ namespace PrePoMax
                 _controller.RemoveResultHistoryResultFields(historyResultSetName, historyResultFieldNames);
             }
         }
-        public void RemoveResultHistoryResultCompoments(NamedClass[] items)
+        public void DeleteResultHistoryResultCompoments(NamedClass[] items)
         {
             Dictionary<string, List<string>> parentItemNames;
             Dictionary<string, Dictionary<string, List<string>>> parentParentItemNames =
@@ -5650,6 +5682,34 @@ namespace PrePoMax
                 }
             }
         }
+        #endregion  ################################################################################################################
+
+        #region Result  ############################################################################################################
+
+        public void ViewResultHistoryOutputData(CaeResults.HistoryResultData historyData)
+        {
+            try
+            {
+                if (!_frmViewResultHistoryOutput.Visible)
+                {
+                    CloseAllForms();
+                    SetFormLoaction(_frmViewResultHistoryOutput);
+                    //
+                    string[] columnNames;
+                    object[][] rowBasedData;
+                    _controller.GetHistoryOutputData(historyData, out columnNames, out rowBasedData);
+                    //
+                    _frmViewResultHistoryOutput.SetData(columnNames, rowBasedData);
+                    _frmViewResultHistoryOutput.Show();
+                }
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        
+       
         #endregion  ################################################################################################################
 
         #region Help menu  #########################################################################################################
@@ -5791,6 +5851,8 @@ namespace PrePoMax
             if (_frmBoundaryCondition != null && _frmBoundaryCondition.Visible) _frmBoundaryCondition.SelectionChanged(ids);
             if (_frmLoad != null && _frmLoad.Visible) _frmLoad.SelectionChanged(ids);
             if (_frmDefinedField != null && _frmDefinedField.Visible) _frmDefinedField.SelectionChanged(ids);
+            //
+            if (_frmResultHistoryOutput != null && _frmResultHistoryOutput.Visible) _frmResultHistoryOutput.SelectionChanged(ids);
         }
         public void SetSelectBy(vtkSelectBy selectBy)
         {
@@ -7364,6 +7426,6 @@ namespace PrePoMax
             }
         }
 
-       
+        
     }
 }

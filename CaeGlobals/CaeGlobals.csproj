@@ -76,6 +76,7 @@
     <Compile Include="CommonClasses\EmptyNamedClass.cs" />
     <Compile Include="CommonClasses\EventArgs.cs" />
     <Compile Include="CommonClasses\Geometry.cs" />
+    <Compile Include="CommonClasses\MatrixInverse.cs" />
     <Compile Include="CommonClasses\OrderedDictionary.cs" />
     <Compile Include="Comparers\CompareDoubleArray.cs" />
     <Compile Include="Comparers\CompareIntArray.cs" />

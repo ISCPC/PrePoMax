@@ -71,6 +71,8 @@
     <Compile Include="FileInOut\Input\FrdFeDescriptorId.cs" />
     <Compile Include="FileInOut\Input\DatFileReader.cs" />
     <Compile Include="FileInOut\Input\FrdFileReader.cs" />
+    <Compile Include="HistoryOutputs\ResultHistoryOutput.cs" />
+    <Compile Include="HistoryOutputs\ResultHistoryOutputFromField.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="FieldOutput\Field.cs" />
     <Compile Include="Transformations\CircularPattern.cs" />

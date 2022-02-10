@@ -7173,10 +7173,50 @@ namespace PrePoMax
 
         #endregion #################################################################################################################
 
+        #region Result node set  ###################################################################################################
+        public string[] GetResultUserNodeSetNames()
+        {
+            if (_results != null && _results.Mesh != null)
+            {
+                List<string> userNodeSetNames = new List<string>();
+                foreach (var entry in _results.Mesh.NodeSets)
+                {
+                    if (!entry.Value.Internal) userNodeSetNames.Add(entry.Key);
+                }
+                return userNodeSetNames.ToArray();
+            }
+            else return null;
+        }
+
+        #endregion #################################################################################################################
+
+        #region Result surface  ####################################################################################################
+        public string[] GetResultUserSurfaceNames()
+        {
+            if (_results != null && _results.Mesh != null)
+            {
+                List<string> userSurfaceNames = new List<string>();
+                foreach (var entry in _results.Mesh.Surfaces)
+                {
+                    if (!entry.Value.Internal) userSurfaceNames.Add(entry.Key);
+                }
+                return userSurfaceNames.ToArray();
+            }
+            else return null;
+        }
+
+        #endregion #################################################################################################################
+
         #region Results  ###########################################################################################################
+
+        // Field
         public string[] GetResultFieldOutputNames()
         {
             return _results.GetAllFieldNames();
+        }
+        public NamedClass[] GetResultFieldOutputsAsNamedItems()
+        {
+            return _results.GetFieldsAsNamedItems();
         }
         public string[] GetResultFieldOutputComponents(string fieldOutputName)
         {
@@ -7192,7 +7232,19 @@ namespace PrePoMax
         {
             return _results.GetIncrementIds(stepId);
         }
-        //
+        // History
+        public string[] GetResultHistoryOutputSetNames()
+        {
+            if (_results != null && _results.History != null)
+            {
+                return _results.History.Sets.Keys.ToArray();
+            }
+            else return new string[0];
+        }
+        public NamedClass[] GetResultHistoryOutputsAsNamedItems()
+        {
+            return _results.GetHistoriyOutputsAsNamedItems();
+        }
         public void GetHistoryOutputData(HistoryResultData historyData, out string[] columnNames, out object[][] rowBasedData)
         {
             HistoryResultSet set = _results.History.Sets[historyData.SetName];
@@ -8411,13 +8463,14 @@ namespace PrePoMax
                 _model.Mesh.GetAllNodesAndCells(elementSet, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.Ids,
                                                 out data.Geometry.Cells.CellNodeIds, out data.Geometry.Cells.Types);
             }
-            else
+            else if(_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
             {
                 float scale = GetScale();
                 PartExchangeData actorResultData = _results.GetScaledAllNodesCellsAndValues(elementSet, _currentFieldData, scale);
                 data = GetVtkData(actorResultData, null, null);
             }
-
+            else throw new NotSupportedException();
+            //
             return data;
         }
         public vtkControl.vtkMaxActorData GetCellFaceActorData(int elementId, int[] nodeIds)
@@ -8469,6 +8522,14 @@ namespace PrePoMax
             data.Geometry.Cells.CellNodeIds = cells;
             //
             data.Geometry.Cells.Types = new int[] { cellTypes };
+            // Scale nodes
+            if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
+            {
+                float scale = GetScale();
+                Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId,
+                                             data.Geometry.Nodes.Ids, ref data.Geometry.Nodes.Coor);
+            }
+            //
             return data;
         }
         public vtkControl.vtkMaxActorData GetEdgeActorData(int elementId, int[] edgeNodeIds)
@@ -8484,7 +8545,8 @@ namespace PrePoMax
                 if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
                 {
                     float scale = GetScale();
-                    Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId, data.Geometry.Nodes.Ids, ref data.Geometry.Nodes.Coor);
+                    Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId,
+                                                 data.Geometry.Nodes.Ids, ref data.Geometry.Nodes.Coor);
                 }
                 // Set the name for the probe widget
                 data.Name = DisplayedMesh.GetEdgeIdFromNodeIds(elementId, edgeNodeIds).ToString();
@@ -8506,7 +8568,8 @@ namespace PrePoMax
                 if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
                 {
                     float scale = GetScale();
-                    Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId, data.Geometry.Nodes.Ids, ref data.Geometry.Nodes.Coor);
+                    Results.ScaleNodeCoordinates(scale, _currentFieldData.StepId, _currentFieldData.StepIncrementId,
+                                                 data.Geometry.Nodes.Ids, ref data.Geometry.Nodes.Coor);
                 }
 
                 return data;
@@ -8697,6 +8760,43 @@ namespace PrePoMax
             noEdgePartName = null;
             double precision = _form.GetSelectionPrecision();
             FeMesh mesh = DisplayedMesh;
+
+            // Scale nodes
+            if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
+            {
+                float[] values;
+                double[][] deformedCoor;
+                float scale = GetScale();
+                //
+                _results.GetScaledNodesAndValues(_currentFieldData, scale, cellFaceNodeIds, out deformedCoor, out values);
+                // A - first cell point
+                // B - second cell point
+                // C - third cell point
+                // P - point
+                // A * u + B * v + C * w = P
+                double[][] linSys = new double[3][];
+                linSys[0] = new double[] { deformedCoor[0][0], deformedCoor[1][0], deformedCoor[2][0] };
+                linSys[1] = new double[] { deformedCoor[0][1], deformedCoor[1][1], deformedCoor[2][1] };
+                linSys[2] = new double[] { deformedCoor[0][2], deformedCoor[1][2], deformedCoor[2][2] };
+                double[][] invLinSys = Matrix.MatrixInverse(linSys);
+                //
+                double[][] p = new double[][] { new double[] { point[0] }, new double[] { point[1] }, new double[] { point[2] } };
+                //
+                double[][] uvw = Matrix.MatrixProduct(invLinSys, p);
+                //
+                double[][] coor;
+                _results.GetScaledNodesAndValues(_currentFieldData, 0, cellFaceNodeIds, out coor, out values);
+                //
+                linSys[0] = new double[] { coor[0][0], coor[1][0], coor[2][0] };
+                linSys[1] = new double[] { coor[0][1], coor[1][1], coor[2][1] };
+                linSys[2] = new double[] { coor[0][2], coor[1][2], coor[2][2] };
+                //
+                p = Matrix.MatrixProduct(linSys, uvw);
+                //
+                point[0] = p[0][0];
+                point[1] = p[1][0];
+                point[2] = p[2][0];
+            }
             int geomId = mesh.GetGeometryIdByPrecision(point, elementId, cellFaceNodeIds, false, precision);
             int[] itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(geomId);
             GeometryType geomType = (GeometryType)itemTypePartIds[1];
@@ -9048,14 +9148,14 @@ namespace PrePoMax
             // Get all nodes and elements for selection - renumbered
             data.CellLocator = new PartExchangeData();
             mesh.GetAllNodesAndCells(part, out data.CellLocator.Nodes.Ids, out data.CellLocator.Nodes.Coor,
-                                        out data.CellLocator.Cells.Ids,
-                                        out data.CellLocator.Cells.CellNodeIds,
-                                        out data.CellLocator.Cells.Types);
+                                     out data.CellLocator.Cells.Ids,
+                                     out data.CellLocator.Cells.CellNodeIds,
+                                     out data.CellLocator.Cells.Types);
             // Get only needed nodes and elements - renumbered
             mesh.GetVisualizationNodesAndCells(part, out data.Geometry.Nodes.Ids, out data.Geometry.Nodes.Coor,
-                                                out data.Geometry.Cells.Ids,
-                                                out data.Geometry.Cells.CellNodeIds,
-                                                out data.Geometry.Cells.Types);
+                                               out data.Geometry.Cells.Ids,
+                                               out data.Geometry.Cells.CellNodeIds,
+                                               out data.Geometry.Cells.Types);
             // Custom coloring of elements
             if (elementIdColorId != null)
             {
@@ -9084,7 +9184,7 @@ namespace PrePoMax
             {
                 data.ModelEdges = new PartExchangeData();
                 mesh.GetNodesAndCellsForModelEdges(part, out data.ModelEdges.Nodes.Ids, out data.ModelEdges.Nodes.Coor,
-                                                    out data.ModelEdges.Cells.CellNodeIds, out data.ModelEdges.Cells.Types);
+                                                   out data.ModelEdges.Cells.CellNodeIds, out data.ModelEdges.Cells.Types);
             }
             //
             data.NodeSize = Globals.BeamNodeSize;

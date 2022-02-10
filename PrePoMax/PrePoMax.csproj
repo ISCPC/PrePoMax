@@ -369,6 +369,11 @@
     <Compile Include="Forms\51_Settings\ViewUnitSystemlSettings.cs" />
     <Compile Include="Forms\51_Settings\ViewStatusBlockSettings.cs" />
     <Compile Include="Forms\51_Settings\ViewLegendSettings.cs" />
+    <Compile Include="Forms\72_ResultHistoryOutput\FrmResultHistoryOutput.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\72_ResultHistoryOutput\ViewResultHistoryOutputFromField.cs" />
+    <Compile Include="Forms\72_ResultHistoryOutput\ViewResultHistoryOutput.cs" />
     <Compile Include="Forms\73_Transformation\FrmTransformation.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -442,11 +447,11 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\61_Analysis\EnvVarsUIEditor.cs" />
-    <Compile Include="Forms\72_HistoryResultsOutput\FrmHistoryResultsOutput.cs">
+    <Compile Include="Forms\72_ResultHistoryOutput\FrmViewResultHistoryOutput.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\72_HistoryResultsOutput\FrmHistoryResultsOutput.Designer.cs">
-      <DependentUpon>FrmHistoryResultsOutput.cs</DependentUpon>
+    <Compile Include="Forms\72_ResultHistoryOutput\FrmViewResultHistoryOutput.Designer.cs">
+      <DependentUpon>FrmViewResultHistoryOutput.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\IFormHighlight.cs" />
     <Compile Include="Forms\IFormItemSetDataParent.cs" />
@@ -701,8 +706,11 @@
     <EmbeddedResource Include="Forms\71_Animation\FrmAnimation.resx">
       <DependentUpon>FrmAnimation.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\72_HistoryResultsOutput\FrmHistoryResultsOutput.resx">
-      <DependentUpon>FrmHistoryResultsOutput.cs</DependentUpon>
+    <EmbeddedResource Include="Forms\72_ResultHistoryOutput\FrmResultHistoryOutput.resx">
+      <DependentUpon>FrmResultHistoryOutput.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\72_ResultHistoryOutput\FrmViewResultHistoryOutput.resx">
+      <DependentUpon>FrmViewResultHistoryOutput.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\73_Transformation\FrmTransformation.resx">
       <DependentUpon>FrmTransformation.cs</DependentUpon>

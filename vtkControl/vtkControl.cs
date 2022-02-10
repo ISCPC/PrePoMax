@@ -722,20 +722,20 @@ namespace vtkControl
                 if (_probeWidget.GetVisibility() == 1) _probeWidget.VisibilityOff();
                 return;
             }
-
+            //
             vtkCell cell;
             vtkCellLocator cellLocator;
             int globalCellId = GetGlobalCellIdClosestTo3DPoint(ref pickedPoint, out cell, out cellLocator);
             int[] globalCellFaceNodeIds = GetCellFaceNodeIds(cell, cellLocator);
-            vtkMaxActorData cellFaceData = Controller_GetCellFaceActorData(globalCellId, globalCellFaceNodeIds); // works on undeformed mesh
-
+            // Works on deformed mesh
+            vtkMaxActorData cellFaceData = Controller_GetCellFaceActorData(globalCellId, globalCellFaceNodeIds);
+            //
             int[] nodeIds = null;
             double[][] nodeCoor = null;
             int[] edgeCell = null;
             int edgeCellType;
             GetClosestEdgeCell(pickedPoint, cellFaceData, out nodeIds, out nodeCoor, out edgeCell, out edgeCellType);
-
-
+            //
             vtkPoints p = vtkPoints.New();
             for (int i = 0; i < nodeCoor.Length; i++)
             {
@@ -743,7 +743,7 @@ namespace vtkControl
             }
             vtkUnstructuredGrid grid = vtkUnstructuredGrid.New();
             grid.SetPoints(p);
-
+            //
             vtkIdList pointIds = vtkIdList.New();
             for (int i = 0; i < edgeCell.Length; i++)  // renumber
             {
@@ -751,10 +751,10 @@ namespace vtkControl
             }
             grid.InsertNextCell(edgeCellType, pointIds);
             grid.Update();      // must create a new grid, not only grid from cell . is not drawn for some zoom values ???
-
+            //
             vtkMaxActor actor = new vtkMaxActor(grid);
             _mouseSelectionActorCurrent = actor;
-
+            //
             AddActorGeometry(_mouseSelectionActorCurrent, vtkRendererLayer.Selection);
             _mouseSelectionActorCurrent.Geometry.SetProperty(Globals.CurrentMouseSelectionProperty);
         }
@@ -1094,7 +1094,8 @@ namespace vtkControl
             int globalPointId = GetNodeIdOnCellFaceClosestToPoint(pickedPoint);
             int globalCellId = GetGlobalCellIdClosestTo3DPoint(ref pickedPoint, out cell, out cellLocator);
             int[] globalCellFaceNodeIds = GetCellFaceNodeIds(cell, cellLocator);
-            vtkMaxActorData cellFaceData = Controller_GetCellFaceActorData(globalCellId, globalCellFaceNodeIds); // works on undeformed mesh
+            // Works on deformed mesh
+            vtkMaxActorData cellFaceData = Controller_GetCellFaceActorData(globalCellId, globalCellFaceNodeIds);
             //
             int[] nodeIds = null;
             double[][] nodeCoor = null;

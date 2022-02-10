@@ -10,7 +10,7 @@ using System.Windows.Forms;
 
 namespace PrePoMax
 {
-    public partial class FrmHistoryResultsOutput : Form
+    public partial class FrmViewResultHistoryOutput : Form
     {
         // Variables                                                                                                                
         private Controller _controller;
@@ -20,7 +20,7 @@ namespace PrePoMax
 
 
         // Constructors                                                                                                             
-        public FrmHistoryResultsOutput(Controller controller)
+        public FrmViewResultHistoryOutput(Controller controller)
         {
             InitializeComponent();
             //

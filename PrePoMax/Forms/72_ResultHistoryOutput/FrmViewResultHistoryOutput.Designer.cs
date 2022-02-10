@@ -1,6 +1,6 @@
 ﻿namespace PrePoMax
 {
-    partial class FrmHistoryResultsOutput
+    partial class FrmViewResultHistoryOutput
     {
         /// <summary>
         /// Required designer variable.

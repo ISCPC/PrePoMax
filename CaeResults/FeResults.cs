@@ -14,10 +14,12 @@ namespace CaeResults
     {
         // Variables                                                                                                                
         [NonSerialized]
-        private Dictionary<int, int> _nodeIdsLookUp;            // [globalId][resultsId]
+        private Dictionary<int, int> _nodeIdsLookUp;            // [globalId][resultsId] for values
         [NonSerialized]
         private Dictionary<FieldData, Field> _fields;
-
+        [NonSerialized]
+        private Dictionary<int, FeNode> _undeformedNodes;
+        //
         private string _hashName;
         private string _fileName;
         private FeMesh _mesh;
@@ -132,7 +134,8 @@ namespace CaeResults
         public void SetMesh(FeMesh mesh, Dictionary<int, int> nodeIdsLookUp)
         {
             _mesh = mesh;
-
+            //
+            //
             _nodeIdsLookUp = nodeIdsLookUp;
         }
         //
@@ -547,6 +550,16 @@ namespace CaeResults
             }
             return names.ToArray();
         }
+        public NamedClass[] GetFieldsAsNamedItems()
+        {
+            string[] names = GetAllFieldNames();
+            NamedClass[] fields = new NamedClass[names.Length];
+            for (int i = 0; i < names.Length; i++)
+            {
+                fields[i] = new EmptyNamedClass(names[i]);
+            }
+            return fields;
+        }
         public string[] GetStepFieldNames(int stepId)
         {
             List<string> names = new List<string>();
@@ -844,6 +857,17 @@ namespace CaeResults
                 }
             }
             return nodesData;
+        }
+        // History
+        public NamedClass[] GetHistoriyOutputsAsNamedItems()
+        {
+            string[] names = _history.Sets.Keys.ToArray();
+            NamedClass[] historyOutputs = new NamedClass[names.Length];
+            for (int i = 0; i < names.Length; i++)
+            {
+                historyOutputs[i] = new EmptyNamedClass(names[i]);
+            }
+            return historyOutputs;
         }
         // Remove
         public void RemoveResultFieldOutputs(string[] fieldOutputNames)

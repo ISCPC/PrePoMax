@@ -4366,7 +4366,7 @@ namespace CaeMesh
                 if (faceCellId != -1) break;
             }
             if (faceCellId == -1) return false;
-
+            //
             for (int i = 0; i < part.Visualization.CellIdsByFace.Length; i++)
             {
                 if (part.Visualization.CellIdsByFace[i].Contains(faceCellId))
@@ -4375,7 +4375,7 @@ namespace CaeMesh
                     break;
                 }
             }
-
+            //
             return true;
         }
         public int[] GetSurfaceNodeIds(int elementId, int[] cellFaceGlobalNodeIds)
