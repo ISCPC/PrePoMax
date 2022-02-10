@@ -348,7 +348,7 @@ namespace PrePoMax.Forms
         }
         private void OutputAssemblyData()
         {
-            CaeMesh.FeMesh mesh = _controller.DisplayedMesh;
+            FeMesh mesh = _controller.DisplayedMesh;
             if (mesh == null) return;
             double[] bb = _controller.GetBoundingBox();
             double[] size = new double[] { bb[1] - bb[0], bb[3] - bb[2], bb[5] - bb[4] };
@@ -399,7 +399,8 @@ namespace PrePoMax.Forms
                 string lenUnit = GetLengthUnit();
                 //
                 Form_WriteDataToOutput("");
-                data = string.Format("{0,16}{1,8}{2,16}{3,16}, {4,16}", "Distance".PadRight(16), "[/]", "id1, id2:", nodeId1, nodeId2);
+                data = string.Format(
+                    "{0,16}{1,8}{2,16}{3,16}, {4,16}", "Distance".PadRight(16), "[/]", "id1, id2:", nodeId1, nodeId2);
                 Form_WriteDataToOutput(data);
                 data = string.Format("{0,16}{1,8}{2,16}{3,16:E}, {4,16:E}, {5,16:E}, {6,16:E}",
                                      "Base".PadRight(16), lenUnit, "dx, dy, dz, D:", baseD.X, baseD.Y, baseD.Z, baseD.Len);
@@ -413,10 +414,12 @@ namespace PrePoMax.Forms
                     Vec3D delta = trueScaledD - baseD;
                     //
                     data = string.Format("{0,16}{1,8}{2,16}{3,16:E}, {4,16:E}, {5,16:E}, {6,16:E}",
-                                         "Deformed".PadRight(16), lenUnit, "dx, dy, dz, D:", trueScaledD.X, trueScaledD.Y, trueScaledD.Z, trueScaledD.Len);
+                                         "Deformed".PadRight(16), lenUnit, "dx, dy, dz, D:",
+                                         trueScaledD.X, trueScaledD.Y, trueScaledD.Z, trueScaledD.Len);
                     Form_WriteDataToOutput(data);
                     data = string.Format("{0,16}{1,8}{2,16}{3,16:E}, {4,16:E}, {5,16:E}, {6,16:E}",
-                                         "Delta".PadRight(16), lenUnit, "dx, dy, dz, D:", delta.X, delta.Y, delta.Z, trueScaledD.Len - baseD.Len);
+                                         "Delta".PadRight(16), lenUnit, "dx, dy, dz, D:",
+                                         delta.X, delta.Y, delta.Z, trueScaledD.Len - baseD.Len);
                     Form_WriteDataToOutput(data);
                     //
                     float scale = _controller.GetScale();
@@ -494,7 +497,7 @@ namespace PrePoMax.Forms
         }
         private void ComputeCircle(int nodeId1, int nodeId2, int nodeId3)
         {
-            //https://en.wikipedia.org/wiki/Circumscribed_circle
+            // https://en.wikipedia.org/wiki/Circumscribed_circle
             string data;
             double r;
             Vec3D center;
@@ -619,7 +622,7 @@ namespace PrePoMax.Forms
         //
         private string GetLengthUnit()
         {
-            string unit = "";
+            string unit;
             //
             if (_controller.CurrentView == ViewGeometryModelResults.Geometry ||
                 _controller.CurrentView == ViewGeometryModelResults.Model)
@@ -632,7 +635,7 @@ namespace PrePoMax.Forms
         }
         private string GetAreaUnit()
         {
-            string unit = "";
+            string unit;
             //
             if (_controller.CurrentView == ViewGeometryModelResults.Geometry ||
                 _controller.CurrentView == ViewGeometryModelResults.Model)
