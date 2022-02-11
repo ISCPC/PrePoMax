@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using CaeGlobals;
 
-namespace CaeResult
+namespace CaeResults
 {
     [Serializable]
     public class ResultHistoryOutputFromField : ResultHistoryOutput
@@ -22,9 +22,12 @@ namespace CaeResult
 
 
         // Constructors                                                                                                             
-        public ResultHistoryOutputFromField(string name, string regionName, RegionTypeEnum regionType)
+        public ResultHistoryOutputFromField(string name, string filedName, string componentName,
+                                            string regionName, RegionTypeEnum regionType)
             : base(name, regionName, regionType)
         {
+            _fieldName = filedName;
+            _componentName = componentName;
         }
 
 

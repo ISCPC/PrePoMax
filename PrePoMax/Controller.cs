@@ -572,9 +572,7 @@ namespace PrePoMax
                 return;
             }
             else
-            {
-                _results.ComputeWearFields();
-                //
+            {                
                 _form.Clear3D();
                 // Check if the meshes are the same and rename the parts
                 if (_model.Mesh != null && _results.Mesh != null && _model.HashName == _results.HashName)
@@ -595,7 +593,11 @@ namespace PrePoMax
                                                 MessageBoxIcon.Warning) == DialogResult.Yes) similarity = 1;
                         }
                         //
-                        if (similarity == 1) _results.CopyPartsFromMesh(_model.Mesh);
+                        if (similarity == 1)
+                        {
+                            _results.CopyPartsFromMesh(_model.Mesh);
+                            _results.CopyMeshitemsFromMesh(_model.Mesh);
+                        }
                         else if (similarity == 2)
                         {
                             _results.Mesh.MergePartsBasedOnMesh(_model.Mesh, typeof(ResultPart));
@@ -604,6 +606,10 @@ namespace PrePoMax
                     //
                     ResumeExplodedViews(false); // must be here after the MergePartsBasedOnMesh
                 }
+
+                _results.ComputeWearFields();
+                //
+
                 redraw = true;
                 // Model changed
                 _modelChanged = true;
@@ -1625,7 +1631,6 @@ namespace PrePoMax
         #endregion ################################################################################################################
 
         #region View menu   ########################################################################################################
-        //
         public void ApplySectionView(double[] point, double[] normal)
         {
             _sectionViewPlanes[_currentView] = new Octree.Plane(point, normal);
@@ -4606,12 +4611,13 @@ namespace PrePoMax
         private void UpdateSurfacesBasedOnNodeSet(string nodeSetName)
         {
             // use list not to throw collection moddified
-            List<CaeMesh.FeSurface> changedSurfaces = new List<FeSurface>();
+            List<FeSurface> changedSurfaces = new List<FeSurface>();
             if (_model != null && _model.Mesh != null)
             {
                 foreach (var entry in _model.Mesh.Surfaces)
                 {
-                    if (entry.Value.CreatedFrom == FeSurfaceCreatedFrom.NodeSet && entry.Value.CreatedFromNodeSetName == nodeSetName)
+                    if (entry.Value.CreatedFrom == FeSurfaceCreatedFrom.NodeSet &&
+                        entry.Value.CreatedFromNodeSetName == nodeSetName)
                     {
                         changedSurfaces.Add(entry.Value);
                     }
@@ -7029,6 +7035,21 @@ namespace PrePoMax
 
         #endregion #################################################################################################################
 
+        #region Results  ###########################################################################################################
+
+        public List<Transformation> GetTransformations()
+        {
+            return _transformations;
+        }
+        public void SetTransformations(List<Transformation> transformations)
+        {
+            _transformations = transformations;
+            //
+            if (_currentView == ViewGeometryModelResults.Results) DrawResults(false);
+        }
+
+        #endregion #################################################################################################################
+
         #region Result part menu  ##################################################################################################
         public string[] GetResultPartNames()
         {
@@ -7207,9 +7228,7 @@ namespace PrePoMax
 
         #endregion #################################################################################################################
 
-        #region Results  ###########################################################################################################
-
-        // Field
+        #region Result field output  ###############################################################################################
         public string[] GetResultFieldOutputNames()
         {
             return _results.GetAllFieldNames();
@@ -7232,7 +7251,36 @@ namespace PrePoMax
         {
             return _results.GetIncrementIds(stepId);
         }
-        // History
+        // Remove
+        public void RemoveResultFieldOutputs(string[] fieldOutputNames)
+        {
+            _results.RemoveResultFieldOutputs(fieldOutputNames);
+            _form.ClearActiveTreeSelection();   // prevents errors on _form.RemoveTreeNode
+            //
+            ViewGeometryModelResults view = ViewGeometryModelResults.Results;
+            foreach (var name in fieldOutputNames) _form.RemoveTreeNode<Field>(view, name, null);
+            //
+            if (_results.GetComponentNames().Length > 0) _form.SelectFirstComponentOfFirstFieldOutput();
+            //
+            DrawResults(false); // in all cases redraw the 
+        }
+        public void RemoveResultFieldOutputComponents(string fieldOutputName, string[] componentNames)
+        {
+            _results.RemoveResultFieldOutputComponents(fieldOutputName, componentNames);
+            _form.ClearActiveTreeSelection();   // prevents errors on _form.RemoveTreeNode
+            //
+            ViewGeometryModelResults view = ViewGeometryModelResults.Results;
+            foreach (var name in componentNames) _form.RemoveTreeNode<FieldData>(view, name, fieldOutputName);
+            //
+            if (_results.GetComponentNames().Length > 0) _form.SelectFirstComponentOfFirstFieldOutput();
+            //
+            DrawResults(false); // in all cases redraw the 
+        }
+        //
+        
+        #endregion #################################################################################################################
+
+        #region Result history output  #############################################################################################
         public string[] GetResultHistoryOutputSetNames()
         {
             if (_results != null && _results.History != null)
@@ -7272,7 +7320,7 @@ namespace PrePoMax
             // Create rows
             for (int i = 0; i < numRow; i++) rowBasedData[i] = new object[numCol];
             // Add time column name
-            columnNames[0] = "Time" + timeUnit;            
+            columnNames[0] = "Time" + timeUnit;
             // Fill the data array
             for (int i = 0; i < sortedTime.Length; i++) rowBasedData[i][0] = sortedTime[i];
             // Add data column
@@ -7298,31 +7346,13 @@ namespace PrePoMax
             }
         }
         //
-        public void RemoveResultFieldOutputs(string[] fieldOutputNames)
+        public void AddResultHistoryOutput(ResultHistoryOutput resultHistoryOutput)
         {
-            _results.RemoveResultFieldOutputs(fieldOutputNames);
-            _form.ClearActiveTreeSelection();   // prevents errors on _form.RemoveTreeNode
+            HistoryResultSet historyResultSet = _results.AddResultHistoryOutput(resultHistoryOutput);
             //
-            ViewGeometryModelResults view = ViewGeometryModelResults.Results;
-            foreach (var name in fieldOutputNames) _form.RemoveTreeNode<Field>(view, name, null);
-            //
-            if (_results.GetComponentNames().Length > 0) _form.SelectFirstComponentOfFirstFieldOutput();
-            //
-            DrawResults(false); // in all cases redraw the 
+            _form.AddTreeNode(ViewGeometryModelResults.Results, historyResultSet, null);
         }
-        public void RemoveResultFieldOutputComponents(string fieldOutputName, string[] componentNames)
-        {
-            _results.RemoveResultFieldOutputComponents(fieldOutputName, componentNames);
-            _form.ClearActiveTreeSelection();   // prevents errors on _form.RemoveTreeNode
-            //
-            ViewGeometryModelResults view = ViewGeometryModelResults.Results;
-            foreach (var name in componentNames) _form.RemoveTreeNode<FieldData>(view, name, fieldOutputName);
-            //
-            if (_results.GetComponentNames().Length > 0) _form.SelectFirstComponentOfFirstFieldOutput();
-            //
-            DrawResults(false); // in all cases redraw the 
-        }
-        //
+        // Remove
         public void RemoveResultHistoryResultSets(string[] historyResultSetNames)
         {
             _results.RemoveResultHistoryResultSets(historyResultSetNames);
@@ -7352,17 +7382,7 @@ namespace PrePoMax
             foreach (var name in historyResultComponentNames)
                 _form.RemoveTreeNode<HistoryResultData>(view, name, historyResultSetName + "@@@" + historyResultFieldName);
         }
-        //
-        public List<Transformation> GetTransformations()
-        {
-            return _transformations;
-        }
-        public void SetTransformations(List<Transformation> transformations)
-        {
-            _transformations = transformations;
-            //
-            if (_currentView == ViewGeometryModelResults.Results) DrawResults(false);
-        }
+
         #endregion #################################################################################################################
 
         #region Activate Deactivate  ###############################################################################################
@@ -7433,8 +7453,6 @@ namespace PrePoMax
             try
             {
                 if (_selectBy == vtkSelectBy.Id) return;
-                // Set the current view for the selection;
-                if (_selection.Nodes.Count == 0) SetSelectionView(_currentView);
                 // Empty pick - Clear if no operation is used
                 if (pickedPoint == null && planeParameters == null)
                 {
@@ -7465,12 +7483,6 @@ namespace PrePoMax
                         if (IsExplodedViewActive()) pickedPartOffsets = mesh.GetPartOffsetsByNames(pickedPartNames);
                     }
                     //
-                    //if (IsExplodedViewActive() && pickedPoint == null && planeParameters != null)
-                    //{
-                    //    _form.WriteDataToOutput("Area selection is not possible while exploded view is active.");
-                    //    return;
-                    //}
-                    //
                     SelectionNode selectionNode = new SelectionNodeMouse(pickedPoint, selectionDirection, planeParameters,
                                                                          selectOperation, pickedPartIds, pickedPartOffsets,
                                                                          _selectBy, _selectAngle);
@@ -7483,6 +7495,8 @@ namespace PrePoMax
         }
         public void AddSelectionNode(SelectionNode node, bool highlight, bool callSelectionChenged)
         {
+            // Set the current view for the selection;
+            if (_selection.Nodes.Count == 0) SetSelectionView(_currentView);
             // Get selected ids
             int[] ids = GetIdsFromSelectionNode(node, new HashSet<int>());
             int[] afterIds = null;
@@ -8707,44 +8721,7 @@ namespace PrePoMax
             // Used for mouse move selection
             noEdgePartName = null;
             double precision = _form.GetSelectionPrecision();
-            FeMesh mesh = DisplayedMesh;
-
-            // Scale nodes
-            if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
-            {
-                float[] values;
-                double[][] deformedCoor;
-                float scale = GetScale();
-                //
-                _results.GetNodesAndValues(_currentFieldData, cellFaceNodeIds, out deformedCoor, out values);
-                // A - first cell point
-                // B - second cell point
-                // C - third cell point
-                // P - point
-                // A * u + B * v + C * w = P
-                double[][] linSys = new double[3][];
-                linSys[0] = new double[] { deformedCoor[0][0], deformedCoor[1][0], deformedCoor[2][0] };
-                linSys[1] = new double[] { deformedCoor[0][1], deformedCoor[1][1], deformedCoor[2][1] };
-                linSys[2] = new double[] { deformedCoor[0][2], deformedCoor[1][2], deformedCoor[2][2] };
-                double[][] invLinSys = Matrix.MatrixInverse(linSys);
-                //
-                double[][] p = new double[][] { new double[] { point[0] }, new double[] { point[1] }, new double[] { point[2] } };
-                //
-                double[][] uvw = Matrix.MatrixProduct(invLinSys, p);
-                //
-                double[][] coor;
-                _results.GetNodesAndValues(_currentFieldData, cellFaceNodeIds, out coor, out values);
-                //
-                linSys[0] = new double[] { coor[0][0], coor[1][0], coor[2][0] };
-                linSys[1] = new double[] { coor[0][1], coor[1][1], coor[2][1] };
-                linSys[2] = new double[] { coor[0][2], coor[1][2], coor[2][2] };
-                //
-                p = Matrix.MatrixProduct(linSys, uvw);
-                //
-                point[0] = p[0][0];
-                point[1] = p[1][0];
-                point[2] = p[2][0];
-            }
+            FeMesh mesh = DisplayedMesh;            
             int geomId = mesh.GetGeometryIdByPrecision(point, elementId, cellFaceNodeIds, false, precision);
             int[] itemTypePartIds = FeMesh.GetItemTypePartIdsFromGeometryId(geomId);
             GeometryType geomType = (GeometryType)itemTypePartIds[1];
@@ -11288,7 +11265,8 @@ namespace PrePoMax
         {
             FeSurface s;
             FeNodeSet ns;
-            if (_model.Mesh.Surfaces.TryGetValue(surfaceName, out s) && s.Active && s.Visible && s.Valid)
+            FeMesh mesh = DisplayedMesh;
+            if (mesh.Surfaces.TryGetValue(surfaceName, out s) && s.Active && s.Visible && s.Valid)
             {
                 if (s.Type == FeSurfaceType.Element && s.ElementFaces != null)
                 {
@@ -11307,8 +11285,8 @@ namespace PrePoMax
                         data.BackfaceCulling = backfaceCulling;
                         data.DrawOnGeometry = true;
                         data.UseSecondaryHighightColor = useSecondaryHighlightColor;
-                        _model.Mesh.GetSurfaceGeometry(surfaceName, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.CellNodeIds,
-                                                       out data.Geometry.Cells.Types, onlyVisible);
+                        mesh.GetSurfaceGeometry(surfaceName, out data.Geometry.Nodes.Coor, out data.Geometry.Cells.CellNodeIds,
+                                                out data.Geometry.Cells.Types, onlyVisible);
                         //
                         ApplyLighting(data);
                         _form.Add3DCells(data);
@@ -11641,13 +11619,34 @@ namespace PrePoMax
                 }
                 else if (view == ViewGeometryModelResults.Results)
                 {
-                    if (obj is ResultPart || obj is GeometryPart)
+                    if (obj is string name)
+                    {
+                        if (_results.Mesh.NodeSets.ContainsKey(name))
+                            Highlight3DObject(view, _results.Mesh.NodeSets[name]);
+                        else if (_results.Mesh.ElementSets.ContainsKey(name))
+                            Highlight3DObject(view, _results.Mesh.ElementSets[name]);
+                        //else if (_results.Mesh.Parts.ContainsKey(name))
+                        //    Highlight3DObject(view, _results.Mesh.Parts[name]);
+                        else if (_results.Mesh.Surfaces.ContainsKey(name))
+                            Highlight3DObject(view, _results.Mesh.Surfaces[name]);
+                        //else if (_results.Mesh.ReferencePoints.ContainsKey(name))
+                        //    Highlight3DObject(view, _results.Mesh.ReferencePoints[name]);
+                    }
+                    else if (obj is ResultPart || obj is GeometryPart)
                     {
                         HighlightResultParts(new string[] { ((BasePart)obj).Name });
                     }
                     else if (obj is FeNodeSet ns)
                     {
                         HighlightNodeSets(new string[] { ns.Name });
+                    }
+                    else if (obj is FeElementSet es)
+                    {
+                        HighlightElementSets(new string[] { es.Name });
+                    }
+                    else if (obj is FeSurface s)
+                    {
+                        HighlightSurfaces(new string[] { s.Name });
                     }
                 }
             }
@@ -11782,7 +11781,7 @@ namespace PrePoMax
         {
             BasePart[] parts = GetResultParts();
             Color color = Color.Red;
-
+            //
             foreach (var part in parts)
             {
                 //if (part.Visible && partsToSelect.Contains(part.Name))
@@ -12129,6 +12128,8 @@ namespace PrePoMax
                 //
                 Octree.Plane plane = _sectionViewPlanes[_currentView];
                 if (plane != null) ApplySectionView(plane.Point.Coor, plane.Normal.Coor);
+                //
+                UpdateHighlight();
                 //
                 if (resetCamera) _form.SetFrontBackView(true, true); // animation:true is here to correctly draw max/min widgets 
                 //

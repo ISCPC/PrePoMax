@@ -13,11 +13,32 @@ namespace PrePoMax
     public class ViewResultHistoryOutputFromField : ViewResultHistoryOutput
     {
         // Variables                                                                                                                
-        private CaeResult.ResultHistoryOutputFromField _historyOutput;
-
+        private CaeResults.ResultHistoryOutputFromField _historyOutput;
+        private Dictionary<string, string[]> _filedNameComponentNames;
 
         // Properties                                                                                                               
         public override string Name { get { return _historyOutput.Name; } set { _historyOutput.Name = value; } }
+        //
+        [CategoryAttribute("Data")]
+        [OrderedDisplayName(1, 10, "Field name")]
+        [DescriptionAttribute("Filed name for the history output.")]
+        public string FieldName
+        {
+            get { return _historyOutput.FieldName; }
+            set
+            {
+                if (_historyOutput.FieldName != value)
+                {
+                    _historyOutput.FieldName = value;
+                    UpdateComponents();
+                }
+            }
+        }
+        //
+        [CategoryAttribute("Data")]
+        [OrderedDisplayName(2, 10, "Component name")]
+        [DescriptionAttribute("Component name for the history output.")]
+        public string ComponentName { get { return _historyOutput.ComponentName; } set { _historyOutput.ComponentName = value; } }
         //
         [CategoryAttribute("Region")]
         [OrderedDisplayName(2, 10, "Node set")]
@@ -31,7 +52,7 @@ namespace PrePoMax
 
        
         // Constructors                                                                                                             
-        public ViewResultHistoryOutputFromField(CaeResult.ResultHistoryOutputFromField historyOutput)
+        public ViewResultHistoryOutputFromField(CaeResults.ResultHistoryOutputFromField historyOutput)
         {
             // The order is important
             _historyOutput = historyOutput;
@@ -41,23 +62,40 @@ namespace PrePoMax
             regionTypePropertyNamePairs.Add(RegionTypeEnum.NodeSetName, nameof(NodeSetName));
             regionTypePropertyNamePairs.Add(RegionTypeEnum.SurfaceName, nameof(SurfaceName));
             //
-            base.SetBase(_historyOutput, regionTypePropertyNamePairs);
-            base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
+            SetBase(_historyOutput, regionTypePropertyNamePairs);
+            DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
         }
 
 
         // Methods                                                                                                                  
-        public override CaeResult.ResultHistoryOutput GetBase()
+        public override CaeResults.ResultHistoryOutput GetBase()
         {
             return _historyOutput;
         }
-        public void PopululateDropDownLists(string[] nodeSetNames, string[] surfaceNames)
+        public void PopululateDropDownLists(string[] nodeSetNames, string[] surfaceNames,
+                                            Dictionary<string, string[]> filedNameComponentNames)
         {
             Dictionary<RegionTypeEnum, string[]> regionTypeListItemsPairs = new Dictionary<RegionTypeEnum, string[]>();
             regionTypeListItemsPairs.Add(RegionTypeEnum.Selection, new string[] { "Hidden" });
             regionTypeListItemsPairs.Add(RegionTypeEnum.NodeSetName, nodeSetNames);
             regionTypeListItemsPairs.Add(RegionTypeEnum.SurfaceName, surfaceNames);
             base.PopululateDropDownLists(regionTypeListItemsPairs);
+            //
+            _filedNameComponentNames = filedNameComponentNames;
+            DynamicCustomTypeDescriptor.PopulateProperty(nameof(FieldName), _filedNameComponentNames.Keys.ToArray());
+            //
+            UpdateComponents();
+        }
+
+        private void UpdateComponents()
+        {
+            string[] componentNames;
+            if (_filedNameComponentNames.TryGetValue(_historyOutput.FieldName, out componentNames) &&
+                componentNames.Length > 1)
+            {
+                DynamicCustomTypeDescriptor.PopulateProperty(nameof(ComponentName), componentNames);
+                if (!componentNames.Contains(ComponentName)) ComponentName = componentNames[0];
+            }
         }
     }
 

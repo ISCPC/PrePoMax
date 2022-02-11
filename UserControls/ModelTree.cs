@@ -559,6 +559,10 @@ namespace UserControls
                 if (item is Field ||
                     item is HistoryResultSet ||
                     item is HistoryResultField) { }
+                else if (node.TreeView == cltvResults &&
+                         (item is FeNodeSet ||
+                          item is FeElementSet ||
+                          item is FeSurface)) { }
                 else menuFields.Edit++;
             }
             //Duplicate
@@ -624,7 +628,14 @@ namespace UserControls
                 else menuFields.Activate++;
             }
             // Delete
-            if (item != null && !subPart) menuFields.Delete++;
+            if (item != null && !subPart)
+            {
+                if (node.TreeView == cltvResults &&
+                    (item is FeNodeSet ||
+                     item is FeElementSet ||
+                     item is FeSurface)) { }
+                else menuFields.Delete++;
+            }
         }
         //
         private void cltv_MouseDown(object sender, MouseEventArgs e)
@@ -1711,9 +1722,13 @@ namespace UserControls
                         if (results.Mesh != null)
                         {
                             // Results parts
-                            AddObjectsToNode<string, CaeMesh.BasePart>(_resultPartsName, _resultParts, results.Mesh.Parts);
+                            AddObjectsToNode<string, BasePart>(_resultPartsName, _resultParts, results.Mesh.Parts);
                             // Node sets
-                            AddObjectsToNode<string, CaeMesh.FeNodeSet>(_resultNodeSetsName, _resultNodeSets, results.Mesh.NodeSets);
+                            AddObjectsToNode<string, FeNodeSet>(_resultNodeSetsName, _resultNodeSets, results.Mesh.NodeSets);
+                            // Element sets
+                            AddObjectsToNode<string, FeElementSet>(_resultElementSetsName, _resultElementSets, results.Mesh.ElementSets);
+                            // Surfaces
+                            AddObjectsToNode<string, FeSurface>(_resultSurfacesName, _resultSurfaces, results.Mesh.Surfaces);
                             // Field outputs
                             string[] fieldNames;
                             string[][] allComponents;
@@ -1729,7 +1744,7 @@ namespace UserControls
                             //SelectFirstComponentOfFirstFieldOutput();
                         }
                         //
-                        if (results.History != null) SetHistoryOutputNames(results.History);
+                        if (results.History != null) SetHistoryResults(results.History);
                     }
                     
                 }
@@ -1802,7 +1817,7 @@ namespace UserControls
                 }
             }
         }
-        public void AddTreeNode(ViewType view, NamedClass item, string stepName)
+        public void AddTreeNode(ViewType view, NamedClass item, string parentName)
         {
             if (!_screenUpdating) return;
             if (item.Internal) return;
@@ -1907,10 +1922,10 @@ namespace UserControls
                 node = AddStep((Step)item);
                 parent = _steps;
             }
-            else if (item is HistoryOutput && stepName != null)
+            else if (item is HistoryOutput && parentName != null)
             {
-                tmp = _steps.Nodes.Find(stepName, true);
-                if (tmp.Length > 1) throw new Exception("Adding operation failed. More than one step named: " + stepName);
+                tmp = _steps.Nodes.Find(parentName, true);
+                if (tmp.Length > 1) throw new Exception("Adding operation failed. More than one step named: " + parentName);
                 //
                 tmp = tmp[0].Nodes.Find(_historyOutputsName, true);
                 if (tmp.Length > 1) throw new Exception("Adding operation failed. There is no history output node to add to.");
@@ -1920,10 +1935,10 @@ namespace UserControls
                 node.Tag = item;
                 parent = tmp[0];
             }
-            else if (item is FieldOutput && stepName != null)
+            else if (item is FieldOutput && parentName != null)
             {
-                tmp = _steps.Nodes.Find(stepName, true);
-                if (tmp.Length > 1) throw new Exception("Adding operation failed. More than one step named: " + stepName);
+                tmp = _steps.Nodes.Find(parentName, true);
+                if (tmp.Length > 1) throw new Exception("Adding operation failed. More than one step named: " + parentName);
                 //
                 tmp = tmp[0].Nodes.Find(_fieldOutputsName, true);
                 if (tmp.Length > 1) throw new Exception("Adding operation failed. There is no field output node to add to.");
@@ -1933,10 +1948,10 @@ namespace UserControls
                 node.Tag = item;
                 parent = tmp[0];
             }
-            else if (item is BoundaryCondition && stepName != null)
+            else if (item is BoundaryCondition && parentName != null)
             {
-                tmp = _steps.Nodes.Find(stepName, true);
-                if (tmp.Length > 1) throw new Exception("Adding operation failed. More than one step named: " + stepName);
+                tmp = _steps.Nodes.Find(parentName, true);
+                if (tmp.Length > 1) throw new Exception("Adding operation failed. More than one step named: " + parentName);
                 //
                 tmp = tmp[0].Nodes.Find(_boundaryConditionsName, true);
                 if (tmp.Length > 1) throw new Exception("Adding operation failed. There is no bounday condition node to add to.");
@@ -1946,10 +1961,10 @@ namespace UserControls
                 node.Tag = item;
                 parent = tmp[0];
             }
-            else if (item is Load && stepName != null)
+            else if (item is Load && parentName != null)
             {
-                tmp = _steps.Nodes.Find(stepName, true);
-                if (tmp.Length > 1) throw new Exception("Adding operation failed. More than one step named: " + stepName);
+                tmp = _steps.Nodes.Find(parentName, true);
+                if (tmp.Length > 1) throw new Exception("Adding operation failed. More than one step named: " + parentName);
                 //
                 tmp = tmp[0].Nodes.Find(_loadsName, true);
                 if (tmp.Length > 1) throw new Exception("Adding operation failed. There is no load node to add to.");
@@ -1959,10 +1974,10 @@ namespace UserControls
                 node.Tag = item;
                 parent = tmp[0];
             }
-            else if (item is DefinedField && stepName != null)
+            else if (item is DefinedField && parentName != null)
             {
-                tmp = _steps.Nodes.Find(stepName, true);
-                if (tmp.Length > 1) throw new Exception("Adding operation failed. More than one step named: " + stepName);
+                tmp = _steps.Nodes.Find(parentName, true);
+                if (tmp.Length > 1) throw new Exception("Adding operation failed. More than one step named: " + parentName);
                 //
                 tmp = tmp[0].Nodes.Find(_definedFieldsName, true);
                 if (tmp.Length > 1) throw new Exception("Adding operation failed. There is no defined field node to add to.");
@@ -1986,6 +2001,11 @@ namespace UserControls
                 node.Tag = item;
                 parent = _resultParts;
             }
+            else if (item is HistoryResultSet hrs)
+            {
+                node = SetHistoryResultSet(hrs);
+                parent = _resultHistoryOutputs;
+            }
             else throw new NotImplementedException();
             //
             parent.Text = parent.Name;
@@ -2001,11 +2021,11 @@ namespace UserControls
                 if (!node.IsExpanded) node.Expand();
             }
         }
-        public void UpdateTreeNode(ViewType view, string oldItemName, NamedClass item, string stepName, bool updateSelection)
+        public void UpdateTreeNode(ViewType view, string oldItemName, NamedClass item, string parentName, bool updateSelection)
         {
             if (!_screenUpdating) return;   // must be here; when _screenUpdating = false the function add tree node is not working
             //
-            TreeNode baseNode = FindTreeNode(view, oldItemName, item, stepName);
+            TreeNode baseNode = FindTreeNode(view, oldItemName, item, parentName);
             if (baseNode == null) return;
             //
             baseNode.Text = item.Name;
@@ -2029,12 +2049,12 @@ namespace UserControls
             }
         }
         public void SwapTreeNodes(ViewType view, string firstItemName, NamedClass firstItem,
-                                  string secondItemName, NamedClass secondItem, string stepName)
+                                  string secondItemName, NamedClass secondItem, string parentName)
         {
-            TreeNode firstNode = FindTreeNode(view, firstItemName, firstItem, stepName);
+            TreeNode firstNode = FindTreeNode(view, firstItemName, firstItem, parentName);
             if (firstNode == null) return;
             //
-            TreeNode secondNode = FindTreeNode(view, secondItemName, secondItem, stepName);
+            TreeNode secondNode = FindTreeNode(view, secondItemName, secondItem, parentName);
             if (secondNode == null) return;
             //
             if (firstNode.Parent != secondNode.Parent) return;
@@ -2058,7 +2078,7 @@ namespace UserControls
                 parent.Nodes.Insert(firstIndex, secondNode);
             }
         }
-        private TreeNode FindTreeNode(ViewType view, string itemName, NamedClass item, string stepName)
+        private TreeNode FindTreeNode(ViewType view, string itemName, NamedClass item, string parentName)
         {
             CodersLabTreeView tree = GetTree(view);
             //
@@ -2068,10 +2088,10 @@ namespace UserControls
             else baseNode = tree.Nodes[0];
             //
             TreeNode[] tmp;
-            if (stepName != null)
+            if (parentName != null)
             {
-                tmp = _steps.Nodes.Find(stepName, true);
-                if (tmp.Length > 1) throw new Exception("Node search failed. More than one step named: " + stepName);
+                tmp = _steps.Nodes.Find(parentName, true);
+                if (tmp.Length > 1) throw new Exception("Node search failed. More than one step named: " + parentName);
                 baseNode = tmp[0];
             }
             //
@@ -2104,15 +2124,12 @@ namespace UserControls
             if (!_screenUpdating) return;
             //
             CodersLabTreeView tree = GetTree(view);
-            //
+            // No parent
             TreeNode baseNode = null;
             if (typeof(T) == typeof(FeMeshRefinement)) baseNode = _meshRefinements;
             else if (typeof(T) == typeof(AnalysisJob)) baseNode = _analyses;
             else if (typeof(T) == typeof(Field)) baseNode = _resultFieldOutputs;
-            else if (typeof(T) == typeof(HistoryResultSet) ||
-                     typeof(T) == typeof(HistoryResultField) ||
-                     typeof(T) == typeof(HistoryResultData))
-                baseNode = _resultHistoryOutputs;
+            else if (typeof(T) == typeof(HistoryResultSet)) baseNode = _resultHistoryOutputs;
             else baseNode = tree.Nodes[0];
             // Find parent
             TreeNode[] tmp;
@@ -2121,7 +2138,7 @@ namespace UserControls
                 if (view == ViewType.Model) tmp = _steps.Nodes.Find(parentName, true);
                 else if (view == ViewType.Results)
                 {
-                    if (typeof(T) == typeof(Field)) tmp = _resultFieldOutputs.Nodes.Find(parentName, true);
+                    if (typeof(T) == typeof(FieldData)) tmp = _resultFieldOutputs.Nodes.Find(parentName, true);
                     else if (typeof(T) == typeof(HistoryResultField)) tmp = _resultHistoryOutputs.Nodes.Find(parentName, true);
                     else if (typeof(T) == typeof(HistoryResultData))
                     {
@@ -2422,7 +2439,7 @@ namespace UserControls
         }
 
         // Results                                                                                                                  
-        public void SetFieldOutputAndComponentNames(string[] fieldNames, string[][] components)
+        private void SetFieldOutputAndComponentNames(string[] fieldNames, string[][] components)
         {
             TreeNode node;
             TreeNode child;
@@ -2465,39 +2482,46 @@ namespace UserControls
                 }
             }
         }
-        public void SetHistoryOutputNames(HistoryResults historyOutput)
+        private void SetHistoryResults(HistoryResults historyResult)
         {
-            TreeNode node1;
-            TreeNode node2;
-            TreeNode node3;
-            foreach (var setEntry in historyOutput.Sets)
+            foreach (var setEntry in historyResult.Sets)
             {
-                node1 = _resultHistoryOutputs.Nodes.Add(setEntry.Key);
-                node1.Name = node1.Text;
-                node1.Tag = setEntry.Value;
-                SetNodeImage(node1, "Dots.ico");
-                //
-                foreach (var fieldEntry in setEntry.Value.Fields)
-                {
-                    node2 = node1.Nodes.Add(fieldEntry.Key);
-                    node2.Name = node2.Text;
-                    node2.Tag = fieldEntry.Value;
-                    SetNodeImage(node2, "Dots.ico");
-                    //
-                    foreach (var componentEntry in fieldEntry.Value.Components)
-                    {
-                        node3 = node2.Nodes.Add(componentEntry.Key);
-                        node3.Name = node3.Text;
-                        node3.Tag = new HistoryResultData(setEntry.Key, fieldEntry.Key, componentEntry.Key);    // for edit
-                        SetNodeImage(node3, "Dots.ico");
-                    }
-                }
+                SetHistoryResultSet(setEntry.Value);
             }
             //
             _resultHistoryOutputs.Expand();
             //
             int n = _resultHistoryOutputs.Nodes.Count;
             if (n > 0) _resultHistoryOutputs.Text = _historyOutputsName + " (" + n + ")";
+        }
+        private TreeNode SetHistoryResultSet(HistoryResultSet historyResultSet)
+        {
+            TreeNode node1;
+            TreeNode node2;
+            TreeNode node3;
+            //
+            node1 = _resultHistoryOutputs.Nodes.Add(historyResultSet.Name);
+            node1.Name = node1.Text;
+            node1.Tag = historyResultSet;
+            SetNodeImage(node1, "Dots.ico");
+            //
+            foreach (var fieldEntry in historyResultSet.Fields)
+            {
+                node2 = node1.Nodes.Add(fieldEntry.Key);
+                node2.Name = node2.Text;
+                node2.Tag = fieldEntry.Value;
+                SetNodeImage(node2, "Dots.ico");
+                //
+                foreach (var componentEntry in fieldEntry.Value.Components)
+                {
+                    node3 = node2.Nodes.Add(componentEntry.Key);
+                    node3.Name = node3.Text;
+                    node3.Tag = new HistoryResultData(historyResultSet.Name, fieldEntry.Key, componentEntry.Key); // for edit
+                    SetNodeImage(node3, "Dots.ico");
+                }
+            }
+            //
+            return node1;
         }
 
         // Expand/Collapse                                                                                                          
@@ -2606,9 +2630,9 @@ namespace UserControls
         private bool CanCreate(TreeNode node)
         {
             if (node.Name == _meshRefinementsName) return true;
-            else if (node.Name == _modelNodeSetsName) return true;
-            else if (node.Name == _modelElementSetsName) return true;
-            else if (node.Name == _modelSurfacesName) return true;
+            else if (node.TreeView == cltvModel && node.Name == _modelNodeSetsName) return true;
+            else if (node.TreeView == cltvModel && node.Name == _modelElementSetsName) return true;
+            else if (node.TreeView == cltvModel && node.Name == _modelSurfacesName) return true;
             else if (node.Name == _referencePointsName) return true;
             else if (node.Name == _materialsName) return true;
             else if (node.Name == _sectionsName) return true;
@@ -2623,12 +2647,15 @@ namespace UserControls
             else if (node.Name == _loadsName) return true;
             else if (node.Name == _definedFieldsName) return true;
             else if (node.Name == _analysesName) return true;
+            else if (node.TreeView == cltvResults && node.Name == _resultNodeSetsName) return false;
+            else if (node.TreeView == cltvResults && node.Name == _resultElementSetsName) return false;
+            else if (node.TreeView == cltvResults && node.Name == _resultSurfacesName) return false;
             else return false;
         }
         private bool CanDuplicate(TreeNode node)
         {
-            if (node.Tag is FeNodeSet) return true;
-            else if (node.Tag is FeElementSet) return true;
+            if (node.TreeView == cltvModel && node.Tag is FeNodeSet) return true;
+            else if (node.TreeView == cltvModel && node.Tag is FeElementSet) return true;
             else if (node.Tag is Material) return true;
             else if (node.Tag is SurfaceInteraction) return true;
             else if (node.Tag is Step) return true;

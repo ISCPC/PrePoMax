@@ -896,7 +896,8 @@ namespace FileInOut.Output
                     string nodeSetNameOfSurface = null;
                     if (dispRot.RegionType == RegionTypeEnum.SurfaceName)
                         nodeSetNameOfSurface = model.Mesh.Surfaces[dispRot.RegionName].NodeSetName;
-                    CalDisplacementRotation calDisplacementRotation = new CalDisplacementRotation(dispRot, referencePointsNodeIds, nodeSetNameOfSurface);
+                    CalDisplacementRotation calDisplacementRotation =
+                        new CalDisplacementRotation(dispRot, referencePointsNodeIds, nodeSetNameOfSurface);
                     parent.AddKeyword(calDisplacementRotation);
                 }
                 else if (boundaryCondition is SubmodelBC sm)

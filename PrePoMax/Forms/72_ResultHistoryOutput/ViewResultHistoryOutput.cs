@@ -36,7 +36,7 @@ namespace PrePoMax
 
 
         // Methods
-        public abstract CaeResult.ResultHistoryOutput GetBase();
+        public abstract CaeResults.ResultHistoryOutput GetBase();
         public override void UpdateRegionVisibility()
         {
             base.UpdateRegionVisibility();

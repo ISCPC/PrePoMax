@@ -120,8 +120,8 @@ namespace PrePoMax
                 else if (view == ViewGeometryModelResults.Results)
                 {
                     _modelTree.SetResultsTab();
-                    InitializeResultWidgetPositions();
                     if (_controller.Results != null) UpdateUnitSystem(_controller.Results.UnitSystem);
+                    InitializeResultWidgetPositions();
                 }
                 else throw new NotSupportedException();
                 //
@@ -763,6 +763,11 @@ namespace PrePoMax
                 else if (nodeName == "Defined fields" && stepName != null) CreateDefinedField(stepName);
                 else if (nodeName == "Analyses") tsmiCreateAnalysis_Click(null, null);
             }
+            else if (_controller.Results != null && _controller.Results.Mesh != null &&
+                     _controller.CurrentView == ViewGeometryModelResults.Results)
+            {
+                if (nodeName == "History outputs") tsmiCreateResultHistoryOutput_Click(null, null);
+            }
         }
         private void ModelTree_Edit(NamedClass namedClass, string stepName)
         {
@@ -1164,7 +1169,6 @@ namespace PrePoMax
         }
 
         #region File menu ##########################################################################################################
-
         internal void tsmiNew_Click(object sender, EventArgs e)
         {
             try
@@ -1707,7 +1711,6 @@ namespace PrePoMax
         #endregion  ################################################################################################################
 
         #region Edit menu ##########################################################################################################
-
         private async void tsmiUndo_Click(object sender, EventArgs e)
         {
             try
@@ -1846,7 +1849,6 @@ namespace PrePoMax
         #endregion  ################################################################################################################
 
         #region View menu ##########################################################################################################
-
         private void tsmiFrontView_Click(object sender, EventArgs e)
         {
             _vtk.SetFrontBackView(true, true);
@@ -3474,7 +3476,6 @@ namespace PrePoMax
         #endregion  ################################################################################################################
 
         #region Node set menu  #####################################################################################################
-
         private void tsmiCreateNodeSet_Click(object sender, EventArgs e)
         {
             try
@@ -3549,7 +3550,6 @@ namespace PrePoMax
         #endregion  ################################################################################################################
 
         #region Element set menu  ##################################################################################################
-        
         private void tsmiCreateElementSet_Click(object sender, EventArgs e)
         {
             try
@@ -3639,7 +3639,6 @@ namespace PrePoMax
         #endregion  ################################################################################################################
 
         #region Surface menu  ######################################################################################################
-
         private void tsmiCreateSurface_Click(object sender, EventArgs e)
         {
             try
@@ -3698,7 +3697,6 @@ namespace PrePoMax
         #endregion  ################################################################################################################
 
         #region Reference point  ###################################################################################################
-       
         private void tsmiCreateRP_Click(object sender, EventArgs e)
         {
             try
@@ -3766,7 +3764,6 @@ namespace PrePoMax
         #endregion  ################################################################################################################
 
         #region Material menu  #####################################################################################################
-
         internal void tsmiCreateMaterial_Click(object sender, EventArgs e)
         {
             try
@@ -4052,7 +4049,6 @@ namespace PrePoMax
         #endregion  ################################################################################################################
         
         #region Surface interaction menu  ##########################################################################################
-
         private void tsmiCreateSurfaceInteraction_Click(object sender, EventArgs e)
         {
             try
@@ -4337,7 +4333,6 @@ namespace PrePoMax
         #endregion  ################################################################################################################
 
         #region Step menu  #########################################################################################################
-
         internal void tsmiCreateStep_Click(object sender, EventArgs e)
         {
             try
@@ -4784,7 +4779,6 @@ namespace PrePoMax
         #endregion  ################################################################################################################
 
         #region Load menu  #########################################################################################################
-
         internal void tsmiCreateLoad_Click(object sender, EventArgs e)
         {
             try
@@ -5188,7 +5182,6 @@ namespace PrePoMax
         #endregion  ################################################################################################################
 
         #region Analysis menu  #####################################################################################################
-
         private void tsmiCreateAnalysis_Click(object sender, EventArgs e)
         {
             try
@@ -5377,8 +5370,33 @@ namespace PrePoMax
 
         #endregion  ################################################################################################################
 
-        #region Result part menu  ##################################################################################################
+        #region Results  ###########################################################################################################
+        public void ViewResultHistoryOutputData(CaeResults.HistoryResultData historyData)
+        {
+            try
+            {
+                if (!_frmViewResultHistoryOutput.Visible)
+                {
+                    CloseAllForms();
+                    SetFormLoaction(_frmViewResultHistoryOutput);
+                    //
+                    string[] columnNames;
+                    object[][] rowBasedData;
+                    _controller.GetHistoryOutputData(historyData, out columnNames, out rowBasedData);
+                    //
+                    _frmViewResultHistoryOutput.SetData(columnNames, rowBasedData);
+                    _frmViewResultHistoryOutput.Show();
+                }
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
 
+        #endregion  ################################################################################################################
+        
+        #region Result part menu  ##################################################################################################
         private void tsmiEditResultParts_Click(object sender, EventArgs e)
         {
             try
@@ -5560,7 +5578,6 @@ namespace PrePoMax
         #endregion  ################################################################################################################
 
         #region Result field output  ###############################################################################################
-        
         private void tsmiDeleteResultFieldOutput_Click(object sender, EventArgs e)
         {
             try
@@ -5594,7 +5611,6 @@ namespace PrePoMax
         #endregion  ################################################################################################################
 
         #region Result history output  #############################################################################################
-
         private void tsmiCreateResultHistoryOutput_Click(object sender, EventArgs e)
         {
             try
@@ -5622,9 +5638,11 @@ namespace PrePoMax
         private void CreateResultHistoryOutput()
         {
             if (_controller.Results == null || _controller.Results.Mesh == null) return;
+            if (_controller.Results.GetAllFiledNameComponentNames().Count == 0) return;
             // Data editor
-            ItemSetDataEditor.SelectionForm = _frmSelectItemSet;
+            ItemSetDataEditor.SelectionForm = _frmSelectItemSet;            
             ItemSetDataEditor.ParentForm = _frmResultHistoryOutput;
+            _frmSelectItemSet.SetOnlyGeometrySelection(false);
             ShowForm(_frmResultHistoryOutput, "Create History Output", null);
         }
         public void RemoveResultHistoryResultSets(string[] historyResultSetNames)
@@ -5684,34 +5702,6 @@ namespace PrePoMax
         }
         #endregion  ################################################################################################################
 
-        #region Result  ############################################################################################################
-
-        public void ViewResultHistoryOutputData(CaeResults.HistoryResultData historyData)
-        {
-            try
-            {
-                if (!_frmViewResultHistoryOutput.Visible)
-                {
-                    CloseAllForms();
-                    SetFormLoaction(_frmViewResultHistoryOutput);
-                    //
-                    string[] columnNames;
-                    object[][] rowBasedData;
-                    _controller.GetHistoryOutputData(historyData, out columnNames, out rowBasedData);
-                    //
-                    _frmViewResultHistoryOutput.SetData(columnNames, rowBasedData);
-                    _frmViewResultHistoryOutput.Show();
-                }
-            }
-            catch (Exception ex)
-            {
-                ExceptionTools.Show(this, ex);
-            }
-        }
-        
-       
-        #endregion  ################################################################################################################
-
         #region Help menu  #########################################################################################################
         private void tsmiHomePage_Click(object sender, EventArgs e)
         {
@@ -5726,7 +5716,6 @@ namespace PrePoMax
         #endregion  ################################################################################################################
 
         #region Selection methods  #################################################################################################
-
         private void SelectOneEntity(string title, NamedClass[] entities, Action<string> OperateOnEntity)
         {
             if (entities == null || entities.Length == 0) return;
@@ -5812,7 +5801,6 @@ namespace PrePoMax
         #endregion  ################################################################################################################
 
         #region Mouse selection methods  ###########################################################################################
-
         public void SelectPointOrArea(double[] pickedPoint, double[] selectionDirection, double[][] planeParameters,
                                       vtkSelectOperation selectOperation, string[] pickedPartNames)
         {
@@ -6976,27 +6964,28 @@ namespace PrePoMax
             InvokeIfRequired(_modelTree.RegenerateTree, _controller.Model, _controller.Jobs, _controller.Results, remeshing);
             InvokeIfRequired(UpadteSymbolsForStepList);
         }
-        public void AddTreeNode(ViewGeometryModelResults view, NamedClass item, string stepName)
+        public void AddTreeNode(ViewGeometryModelResults view, NamedClass item, string parentName)
         {
             ViewType viewType = GetViewType(view);
             //
-            InvokeIfRequired(_modelTree.AddTreeNode, viewType, item, stepName);
+            InvokeIfRequired(_modelTree.AddTreeNode, viewType, item, parentName);
             if (item is Step) UpadteSymbolsForStepList();
         }
-        public void UpdateTreeNode(ViewGeometryModelResults view, string oldItemName, NamedClass item, string stepName,
+        public void UpdateTreeNode(ViewGeometryModelResults view, string oldItemName, NamedClass item, string parentName,
                                    bool updateSelection = true)
         {
             ViewType viewType = GetViewType(view);
             //
-            InvokeIfRequired(_modelTree.UpdateTreeNode, viewType, oldItemName, item, stepName, updateSelection);
+            InvokeIfRequired(_modelTree.UpdateTreeNode, viewType, oldItemName, item, parentName, updateSelection);
             if (item is Step) UpadteOneStepInSymbolsForStepList(oldItemName, item.Name);
         }
         public void SwapTreeNode(ViewGeometryModelResults view, string firstItemName, NamedClass firstItem,
-                                string secondItemName, NamedClass secondItem, string stepName)
+                                string secondItemName, NamedClass secondItem, string parentName)
         {
             ViewType viewType = GetViewType(view);
             //
-            InvokeIfRequired(_modelTree.SwapTreeNodes, viewType, firstItemName, firstItem, secondItemName, secondItem, stepName);
+            InvokeIfRequired(_modelTree.SwapTreeNodes, viewType, firstItemName, firstItem, secondItemName,
+                             secondItem, parentName);
             //if (item is Step) UpadteOneStepInSymbolsForStepList(oldItemName, item.Name);
         }
         public void RemoveTreeNode<T>(ViewGeometryModelResults view, string nodeName, string parentName) where T : NamedClass

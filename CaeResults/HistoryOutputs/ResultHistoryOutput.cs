@@ -8,7 +8,7 @@ using System.ComponentModel;
 using CaeGlobals;
 using DynamicTypeDescriptor;
 
-namespace CaeResult
+namespace CaeResults
 {   
     [Serializable]
     public abstract class ResultHistoryOutput : NamedClass, IMultiRegion

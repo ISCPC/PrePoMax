@@ -7,6 +7,46 @@ using System.Threading.Tasks;
 namespace CaeGlobals
 {
     // https://docs.microsoft.com/en-us/archive/msdn-magazine/2016/july/test-run-matrix-inversion-using-csharp#the-demo-program
+
+
+    // Scale nodes
+    //if (_currentView == ViewGeometryModelResults.Results && _results.Mesh != null)
+    //{
+    //    float[] values;
+    //    double[][] deformedCoor;
+    //    float scale = GetScale();
+    //    //
+    //    _results.GetNodesAndValues(_currentFieldData, cellFaceNodeIds, out deformedCoor, out values);
+    //    // A - first cell point
+    //    // B - second cell point
+    //    // C - third cell point
+    //    // P - point
+    //    // A * u + B * v + C * w = P
+    //    double[][] linSys = new double[3][];
+    //    linSys[0] = new double[] { deformedCoor[0][0], deformedCoor[1][0], deformedCoor[2][0] };
+    //    linSys[1] = new double[] { deformedCoor[0][1], deformedCoor[1][1], deformedCoor[2][1] };
+    //    linSys[2] = new double[] { deformedCoor[0][2], deformedCoor[1][2], deformedCoor[2][2] };
+    //    double[][] invLinSys = Matrix.MatrixInverse(linSys);
+    //    //
+    //    double[][] p = new double[][] { new double[] { point[0] }, new double[] { point[1] }, new double[] { point[2] } };
+    //    //
+    //    double[][] uvw = Matrix.MatrixProduct(invLinSys, p);
+    //    //
+    //    double[][] coor;
+    //    _results.GetNodesAndValues(_currentFieldData, cellFaceNodeIds, out coor, out values);
+    //    //
+    //    linSys[0] = new double[] { coor[0][0], coor[1][0], coor[2][0] };
+    //    linSys[1] = new double[] { coor[0][1], coor[1][1], coor[2][1] };
+    //    linSys[2] = new double[] { coor[0][2], coor[1][2], coor[2][2] };
+    //    //
+    //    p = Matrix.MatrixProduct(linSys, uvw);
+    //    //
+    //    point[0] = p[0][0];
+    //    point[1] = p[1][0];
+    //    point[2] = p[2][0];
+    //}
+
+
     public class Matrix
     {
         public static double[][] MatrixInverse(double[][] matrix)

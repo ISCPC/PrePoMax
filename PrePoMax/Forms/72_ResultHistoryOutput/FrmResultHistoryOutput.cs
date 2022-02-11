@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CaeResult;
+using CaeResults;
 using CaeGlobals;
 using System.Windows.Forms;
 
@@ -132,12 +132,7 @@ namespace PrePoMax.Forms
             // Create
             if (_historyOutputToEditName == null)
             {
-                //_controller.AddHistoryOutputCommand(_stepName, HistoryOutput);
-            }
-            // Replace
-            else if (_propertyItemChanged)
-            {
-                //_controller.ReplaceHistoryOutputCommand(_stepName, _historyOutputToEditName, HistoryOutput);
+                _controller.AddResultHistoryOutput(ResultHistoryOutput);
             }
             // If all is successful close the ItemSetSelectionForm - except for OKAddNew
             if (!onOkAddNew) ItemSetDataEditor.SelectionForm.Hide();
@@ -166,11 +161,12 @@ namespace PrePoMax.Forms
             _historyOutputToEditName = historyOutputToEditName;
             string[] nodeSetNames = _controller.GetResultUserNodeSetNames();
             string[] surfaceNames = _controller.GetResultUserSurfaceNames();
+            Dictionary<string, string[]> filedNameComponentNames = _controller.Results.GetAllFiledNameComponentNames();
             //
             if (_historyOutputSetNames == null)
                 throw new CaeException("The history output names must be defined first.");
             // Populate list view
-            PopulateListOfHistoryOutputs(nodeSetNames, surfaceNames);
+            PopulateListOfHistoryOutputs(nodeSetNames, surfaceNames, filedNameComponentNames);
             // Create new history output
             if (_historyOutputToEditName == null)
             {
@@ -191,15 +187,18 @@ namespace PrePoMax.Forms
 
 
         // Methods                                                                                                                  
-        private void PopulateListOfHistoryOutputs(string[] nodeSetNames, string[] surfaceNames)
+        private void PopulateListOfHistoryOutputs(string[] nodeSetNames, string[] surfaceNames,
+                                                  Dictionary<string, string[]> filedNameComponentNames)
         {
             ListViewItem item;
             // Node output
             item = new ListViewItem("History output from field output");
+            CaeResults.FieldData fieldData = _controller.CurrentFieldData;
             ResultHistoryOutputFromField rhoff = new ResultHistoryOutputFromField(GetHistoryOutputName("FF"),
+                                                                                  fieldData.Name, fieldData.Component,
                                                                                   "", RegionTypeEnum.Selection);
             ViewResultHistoryOutputFromField vrhoff = new ViewResultHistoryOutputFromField(rhoff);
-            vrhoff.PopululateDropDownLists(nodeSetNames, surfaceNames);
+            vrhoff.PopululateDropDownLists(nodeSetNames, surfaceNames, filedNameComponentNames);
             item.Tag = vrhoff;
             lvTypes.Items.Add(item);
         }

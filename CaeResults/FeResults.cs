@@ -365,7 +365,7 @@ namespace CaeResults
                         unitAbbreviation = "%";
                         break;
                     default:
-                        //if (System.Diagnostics.Debugger.IsAttached) throw new NotSupportedException();
+                        if (System.Diagnostics.Debugger.IsAttached) throw new NotSupportedException();
                         //
                         unitConverter = new DoubleConverter();
                         unitAbbreviation = "?";
@@ -491,10 +491,10 @@ namespace CaeResults
                     // Error
                     case "ERROR":
                     default:
-                        if (System.Diagnostics.Debugger.IsAttached) throw new NotSupportedException();
-                        //
-                        unitConverter = new DoubleConverter();
-                        unitAbbreviation = "?";
+                        GetFieldUnitConverterAndAbbrevation(fieldName.ToUpper(), componentName,
+                                                            out unitConverter, out unitAbbreviation);
+                        if (unitAbbreviation == "?" && System.Diagnostics.Debugger.IsAttached)
+                            throw new NotSupportedException();
                         break;
                 }
             }
@@ -514,6 +514,23 @@ namespace CaeResults
                 _mesh.Parts.Add(entry.Key, part);
 
                 foreach (var elementId in part.Labels) _mesh.Elements[elementId].PartId = part.PartId;
+            }
+        }
+        public void CopyMeshitemsFromMesh(FeMesh mesh)
+        {
+            foreach (var nodeSet in mesh.NodeSets)
+            {
+                _mesh.NodeSets.Add(nodeSet.Key, nodeSet.Value.DeepClone());
+            }
+            //
+            foreach (var elementSet in mesh.ElementSets)
+            {
+                _mesh.ElementSets.Add(elementSet.Key, elementSet.Value.DeepClone());
+            }
+            //
+            foreach (var surface in mesh.Surfaces)
+            {
+                _mesh.Surfaces.Add(surface.Key, surface.Value.DeepClone());
             }
         }
         public void SetPartPropertiesFromMesh(FeMesh mesh)
@@ -575,6 +592,79 @@ namespace CaeResults
                 }
             }
             return null;
+        }
+        //
+        public HistoryResultSet AddResultHistoryOutput(ResultHistoryOutput resultHistoryOutput)
+        {
+            HistoryResultSet historyResultSet = null;
+            //
+            if (resultHistoryOutput is ResultHistoryOutputFromField rhoff)
+            {
+                int[] nodeIds = null;
+                if (rhoff.RegionType == RegionTypeEnum.NodeSetName)
+                {
+                    nodeIds = _mesh.NodeSets[rhoff.RegionName].Labels;
+                }
+                else if (rhoff.RegionType == RegionTypeEnum.SurfaceName)
+                {
+                    string nodeSetName = _mesh.Surfaces[rhoff.RegionName].NodeSetName;
+                    nodeIds = _mesh.NodeSets[nodeSetName].Labels;
+                }
+                else if (rhoff.RegionType == RegionTypeEnum.Selection)
+                {
+                    nodeIds = rhoff.CreationIds;
+                }
+                //
+                if (nodeIds != null)
+                {                    
+                    // Prepare entries
+                    string name;
+                    HistoryResultComponent historyResultComponent = new HistoryResultComponent(rhoff.ComponentName);
+                    historyResultComponent.Entries = new Dictionary<string, HistoryResultEntries>();
+                    for (int i = 0; i < nodeIds.Length; i++)
+                    {
+                        name = nodeIds[i].ToString();
+                        historyResultComponent.Entries.Add(name, new HistoryResultEntries(name, false));
+                    }
+                    // Get all existing increments
+                    Dictionary<int, int[]> existingStepIncrementIds =
+                        GetExistingIncrementIds(rhoff.FieldName, rhoff.ComponentName);
+                    Field field;
+                    float[] values;
+                    int resultNodeId;
+                    FieldData fieldData;
+                    //
+                    foreach (var entry in existingStepIncrementIds)
+                    {
+                        foreach (var incrementId in entry.Value)
+                        {
+                            fieldData = GetFieldData(rhoff.FieldName, rhoff.ComponentName, entry.Key, incrementId);
+                            field = GetField(fieldData);
+                            if (field != null)
+                            {
+                                //
+                                values = field.GetComponentValues(rhoff.ComponentName);
+                                //
+                                for (int i = 0; i < nodeIds.Length; i++)
+                                {
+                                    name = nodeIds[i].ToString();
+                                    resultNodeId = _nodeIdsLookUp[nodeIds[i]];
+                                    historyResultComponent.Entries[name].Add(fieldData.Time, values[resultNodeId]);
+                                }
+                            }
+                        }
+                    }
+                    //
+                    HistoryResultField historyResultField = new HistoryResultField(rhoff.FieldName);
+                    historyResultField.Components.Add(historyResultComponent.Name, historyResultComponent);
+                    //
+                    historyResultSet = new HistoryResultSet(rhoff.Name);
+                    historyResultSet.Fields.Add(historyResultField.Name, historyResultField);
+                    //
+                    _history.Sets.Add(historyResultSet.Name, historyResultSet);
+                }
+            }
+            return historyResultSet;
         }
         //
         public string[] GetComponentNames()
@@ -773,6 +863,25 @@ namespace CaeResults
                 }
             }
             return existingIncrementIds;
+        }
+        public Dictionary<string, string[]> GetAllFiledNameComponentNames()
+        {
+            HashSet<string> componentNames;
+            Dictionary<string, HashSet<string>> filedNameComponentNames = new Dictionary<string, HashSet<string>>();
+            foreach (var entry in _fields)
+            {
+                if (filedNameComponentNames.TryGetValue(entry.Key.Name, out componentNames))
+                    componentNames.UnionWith(entry.Value.GetCmponentNames());
+                else
+                    filedNameComponentNames.Add(entry.Key.Name, new HashSet<string>(entry.Value.GetCmponentNames()));
+            }
+            //
+            Dictionary<string, string[]> filedNameComponentNamesArr = new Dictionary<string, string[]>();
+            foreach (var entry in filedNameComponentNames)
+            {
+                filedNameComponentNamesArr.Add(entry.Key, entry.Value.ToArray());
+            }
+            return filedNameComponentNamesArr;
         }
         public bool FieldExists(string fieldName, string component, int stepId, int stepIncrementId)
         {
