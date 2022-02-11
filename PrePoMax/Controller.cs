@@ -1484,7 +1484,6 @@ namespace PrePoMax
             vtkControl.vtkMaxActorData data;
             List<double[][]> stlTriangles = new List<double[][]>();
             //
-
             for (int i = 0; i < partNames.Length; i++)
             {
                 if (_currentView == ViewGeometryModelResults.Geometry)
@@ -2139,7 +2138,7 @@ namespace PrePoMax
             //
             if (_results != null && _results.Mesh != null)
             {
-                string[] addedPartNames = _results.Mesh.AddPartsFromMesh(_model.Geometry, partNamesToCopy.ToArray(), null, false);
+                string[] addedPartNames = _results.AddPartsFromMesh(_model.Geometry, partNamesToCopy.ToArray());
                 if (addedPartNames.Length > 0)
                 {
                     _form.RegenerateTree();
@@ -12150,14 +12149,15 @@ namespace PrePoMax
                 {
                     if (_viewResultsType == ViewResultsType.Undeformed)
                     {
-                        // Udeformed shape
+                        // Udeformed view rype
                         DrawModelPart(_results.Mesh, resultPart, layer);
                     }
                     else
                     {
+                        // Undeformed 
                         if (drawUndeformedModel) DrawUndeformedPartCopy(resultPart, drawUndeformedModelAsEdges,
                                                                         undeformedModelColor, layer);
-                        //
+                        // Deformed
                         DrawResultPart(resultPart, fieldData, false);
                     }
                 }
@@ -12234,11 +12234,11 @@ namespace PrePoMax
             {
                 if (entry.Value is ResultPart resultPart)
                 {
-                    // Udeformed shape
+                    // Udeformed
                     if (postSettings.DrawUndeformedModel) DrawUndeformedPartCopy(resultPart,
                                                                                  postSettings.DrawUndeformedModelAsEdges,
                                                                                  postSettings.UndeformedModelColor, layer);
-                    // Results
+                    // Deformed
                     data = GetScaleFactorAnimationDataFromPart(resultPart, _currentFieldData, scale, numFrames);
                     foreach (NodesExchangeData nData in data.Geometry.ExtremeNodesAnimation)
                     {
@@ -12363,21 +12363,13 @@ namespace PrePoMax
                                                                                float scale, int numFrames)
         {
             // Get visualization nodes and renumbered elements
-            PartExchangeData actorResultData = _results.GetScaleFactorAnimationDataVisualizationNodesCellsAndValues(part, 
-                                                                                                                    fieldData,
-                                                                                                                    scale, 
-                                                                                                                    numFrames);
-            // Model edges
-            PartExchangeData modelEdgesResultData = null;
-            if (part.PartType.HasEdges() && part.Visualization.EdgeCells != null)
-            {
-                modelEdgesResultData = _results.GetScaleFactorAnimationDataEdgesNodesAndCells(part, fieldData, scale, numFrames);
-            }
-            // Get all needed nodes and elements - renumbered
-            PartExchangeData locatorResultData = _results.GetScaleFactorAnimationDataAllNodesCellsAndValues(part, fieldData,
-                                                                                                            scale, numFrames);
+            PartExchangeData modelResultData;
+            PartExchangeData modelEdgesResultData;
+            PartExchangeData locatorResultData;
+            _results.GetScaleFactorAnimationData(part, fieldData, scale, numFrames,
+                                                 out modelResultData, out modelEdgesResultData, out locatorResultData);
             //
-            vtkControl.vtkMaxActorData data = GetVtkData(actorResultData, modelEdgesResultData, locatorResultData);
+            vtkControl.vtkMaxActorData data = GetVtkData(modelResultData, modelEdgesResultData, locatorResultData);
             data.Name = part.Name;
             GetPartColor(part, ref data.Color, ref data.BackfaceColor);
             data.ColorContours = part.ColorContours;
@@ -12391,21 +12383,17 @@ namespace PrePoMax
             //
             return data;
         }
-        private vtkControl.vtkMaxActorData GetTimeIncrementAnimationDataFromPart(ResultPart part, FieldData fieldData, float scale)
+        private vtkControl.vtkMaxActorData GetTimeIncrementAnimationDataFromPart(ResultPart part, FieldData fieldData,
+                                                                                 float scale)
         {
             // Get visualization nodes and renumbered elements
-            PartExchangeData actorResultData =
-                _results.GetTimeIncrementAnimationDataVisualizationNodesCellsAndValues(part, fieldData);
-            // Model edges
-            PartExchangeData modelEdgesResultData = null;
-            if (part.PartType.HasEdges() && part.Visualization.EdgeCells != null)
-            {
-                modelEdgesResultData = _results.GetTimeIncrementAnimationDataVisualizationEdgesNodesAndCells(part, fieldData);
-            }
-            // Get all needed nodes and elements - renumbered
-            PartExchangeData locatorResultData = _results.GetTimeIncrementAnimationDataAllNodesCellsAndValues(part, fieldData);
+            PartExchangeData modelResultData;
+            PartExchangeData modelEdgesResultData;
+            PartExchangeData locatorResultData;
+            _results.GetTimeIncrementAnimationData(part, fieldData, scale,
+                                                   out modelResultData, out modelEdgesResultData, out locatorResultData);
             //
-            vtkControl.vtkMaxActorData data = GetVtkData(actorResultData, modelEdgesResultData, locatorResultData);
+            vtkControl.vtkMaxActorData data = GetVtkData(modelResultData, modelEdgesResultData, locatorResultData);
             data.Name = part.Name;
             GetPartColor(part, ref data.Color, ref data.BackfaceColor);
             data.ColorContours = part.ColorContours;

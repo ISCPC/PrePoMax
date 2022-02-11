@@ -6718,6 +6718,12 @@ namespace CaeMesh
             nodeSet.CenterOfGravity = centerOfGravity;
             nodeSet.BoundingBox = boundingBox;
         }
+        public double[][] GetNodeSetCoor(int[] nodeIds)
+        {
+            List<double[]> coor = new List<double[]>();
+            for (int i = 0; i < nodeIds.Length; i++) coor.Add(_nodes[nodeIds[i]].Coor);
+            return coor.ToArray();
+        }
         public double[][] GetNodeSetCoor(int[] nodeIds, bool onlyVisible)
         {
             int nodeId;

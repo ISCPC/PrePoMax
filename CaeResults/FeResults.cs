@@ -22,9 +22,9 @@ namespace CaeResults
         [NonSerialized]
         private float _scale;
         [NonSerialized]
-        private float _stepId;
+        private int _stepId;
         [NonSerialized]
-        private float _stepIncrementId;
+        private int _stepIncrementId;
         //
         private string _hashName;
         private string _fileName;
@@ -113,7 +113,7 @@ namespace CaeResults
             {
                 // Mesh
                 FeMesh.ReadFromBinaryFile(results.Mesh, br);
-                results.SetUndeformedNodes();
+                results.InitializeUndeformedNodes();
                 // Node lookup
                 exist = br.ReadInt32();
                 if (exist == 1)
@@ -144,11 +144,18 @@ namespace CaeResults
         public void SetMesh(FeMesh mesh, Dictionary<int, int> nodeIdsLookUp)
         {
             _mesh = mesh;
-            SetUndeformedNodes();
+            InitializeUndeformedNodes();
             //
             _nodeIdsLookUp = nodeIdsLookUp;
         }
-        private void SetUndeformedNodes()
+        public string[] AddPartsFromMesh(FeMesh mesh, string[] partNames)
+        {
+            _mesh.Nodes = _undeformedNodes;
+            string[] addedPartNames = _mesh.AddPartsFromMesh(mesh, partNames, null, false);
+            InitializeUndeformedNodes();
+            return addedPartNames;
+        }
+        private void InitializeUndeformedNodes()
         {
             _undeformedNodes = new Dictionary<int, FeNode>();
             foreach (var entry in _mesh.Nodes) _undeformedNodes.Add(entry.Key, new FeNode(entry.Value));
@@ -172,7 +179,7 @@ namespace CaeResults
                     // Components can be deleted
                     if (componentNames.Contains("U1") && componentNames.Contains("U2") && componentNames.Contains("U3"))
                     {
-                        Field U = GetField(new FieldData(name, "", stepId, stepIncrementId));
+                        Field U = GetField(new FieldData(name, "", _stepId, _stepIncrementId));
                         if (U != null)
                         {
                             //
@@ -189,11 +196,17 @@ namespace CaeResults
                                 //
                                 foreach (var entry in _undeformedNodes)
                                 {
-                                    resultNodeId = _nodeIdsLookUp[entry.Key];
-                                    deformedNode = new FeNode(entry.Key,
-                                                              entry.Value.X + _scale * disp[0][resultNodeId],
-                                                              entry.Value.Y + _scale * disp[1][resultNodeId],
-                                                              entry.Value.Z + _scale * disp[2][resultNodeId]);
+                                    // Result parts
+                                    if (_nodeIdsLookUp.TryGetValue(entry.Key, out resultNodeId))
+                                    {
+                                        deformedNode = new FeNode(entry.Key,
+                                                                  entry.Value.X + _scale * disp[0][resultNodeId],
+                                                                  entry.Value.Y + _scale * disp[1][resultNodeId],
+                                                                  entry.Value.Z + _scale * disp[2][resultNodeId]);
+                                    }
+                                    // Geometry parts
+                                    else deformedNode = entry.Value;
+                                    //
                                     deformedNodes.Add(deformedNode.Id, deformedNode);
                                 }
                             }
@@ -203,10 +216,61 @@ namespace CaeResults
                 if (deformedNodes == null)
                 {
                     deformedNodes = new Dictionary<int, FeNode>();
-                    foreach (var entry in _undeformedNodes) deformedNodes.Add(entry.Key, new FeNode(entry.Value));
+                    foreach (var entry in _undeformedNodes) deformedNodes.Add(entry.Key, entry.Value);
                 }
                 //
                 _mesh.Nodes = deformedNodes;
+            }
+        }
+        public void SetPartDeformation(BasePart part, float scale, int stepId, int stepIncrementId)
+        {
+            bool scaled = false;
+            FeNode unDeformedNode;
+            //
+            if (scale != 0)
+            {
+                string name = "DISP";
+                string[] componentNames = GetComponentNames(name);
+                // Components can be deleted
+                if (componentNames.Contains("U1") && componentNames.Contains("U2") && componentNames.Contains("U3"))
+                {
+                    Field U = GetField(new FieldData(name, "", stepId, stepIncrementId));
+                    if (U != null)
+                    {
+                        //
+                        float[][] disp = new float[3][];
+                        disp[0] = U.GetComponentValues("U1");
+                        disp[1] = U.GetComponentValues("U2");
+                        disp[2] = U.GetComponentValues("U3");
+                        //
+                        if (disp[0] != null && disp[1] != null && disp[2] != null)
+                        {
+                            scaled = true;
+                            int resultNodeId;
+                            FeNode deformedNode;
+                            //
+                            foreach (var nodeId in part.NodeLabels)
+                            {
+                                resultNodeId = _nodeIdsLookUp[nodeId];
+                                unDeformedNode = _undeformedNodes[nodeId];
+                                //
+                                deformedNode = new FeNode(unDeformedNode.Id,
+                                                          unDeformedNode.X + scale * disp[0][resultNodeId],
+                                                          unDeformedNode.Y + scale * disp[1][resultNodeId],
+                                                          unDeformedNode.Z + scale * disp[2][resultNodeId]);
+                                _mesh.Nodes[deformedNode.Id] = deformedNode;
+                            }
+                        }
+                    }
+                }
+            }
+            if (!scaled)
+            {
+                foreach (var nodeId in part.NodeLabels)
+                {
+                    unDeformedNode = _undeformedNodes[nodeId];
+                    _mesh.Nodes[unDeformedNode.Id] = unDeformedNode;
+                }
             }
         }
         //
@@ -1136,21 +1200,51 @@ namespace CaeResults
             _mesh.Nodes = tmp;
         }
         // Animation        
-        public PartExchangeData GetScaleFactorAnimationDataVisualizationNodesCellsAndValues(BasePart part, FieldData fData,
-                                                                                            float scale, int numFrames)
+        public void GetScaleFactorAnimationData(BasePart part, FieldData fData, float scale, int numFrames,
+                                                out PartExchangeData modelResultData,
+                                                out PartExchangeData modelEdgesResultData,
+                                                out PartExchangeData locatorResultData)
         {
-            PartExchangeData pData = new PartExchangeData();
-            _mesh.GetVisualizationNodesAndCells(part, out pData.Nodes.Ids, out pData.Nodes.Coor, out pData.Cells.Ids,
-                                                out pData.Cells.CellNodeIds, out pData.Cells.Types);
-            if (!fData.Valid) pData.Nodes.Values = null;
+            modelEdgesResultData = null;
+            bool modelEdges = part.PartType.HasEdges() && part.Visualization.EdgeCells != null;
+            // Undeforme part
+            SetPartDeformation(part, 0, 0, 0);
+            // Model
+            modelResultData = new PartExchangeData();
+            _mesh.GetVisualizationNodesAndCells(part, out modelResultData.Nodes.Ids, out modelResultData.Nodes.Coor,
+                                                out modelResultData.Cells.Ids, out modelResultData.Cells.CellNodeIds,
+                                                out modelResultData.Cells.Types);
+            // Edges
+            if (modelEdges)
+            {
+                modelEdgesResultData = new PartExchangeData();
+                _mesh.GetNodesAndCellsForModelEdges(part, out modelEdgesResultData.Nodes.Ids,
+                                                    out modelEdgesResultData.Nodes.Coor,
+                                                    out modelEdgesResultData.Cells.CellNodeIds,
+                                                    out modelEdgesResultData.Cells.Types);
+            }
+            // Locator
+            locatorResultData = new PartExchangeData();
+            _mesh.GetAllNodesAndCells(part, out locatorResultData.Nodes.Ids, out locatorResultData.Nodes.Coor, 
+                                      out locatorResultData.Cells.Ids, out locatorResultData.Cells.CellNodeIds,
+                                      out locatorResultData.Cells.Types);
+            // Values
+            if (!fData.Valid)
+            {
+                modelResultData.Nodes.Values = null;
+                locatorResultData.Nodes.Values = null;
+            }
             else
             {
-                pData.Nodes.Values = GetValues(fData, pData.Nodes.Ids);
-                pData.ExtremeNodes = GetExtremeValues(part.Name, fData);
+                modelResultData.Nodes.Values = GetValues(fData, modelResultData.Nodes.Ids);
+                modelResultData.ExtremeNodes = GetExtremeValues(part.Name, fData);
+                locatorResultData.Nodes.Values = GetValues(fData, locatorResultData.Nodes.Ids);
             }
-            //
-            pData.NodesAnimation = new NodesExchangeData[numFrames];
-            pData.ExtremeNodesAnimation = new NodesExchangeData[numFrames];
+            // Aniumation
+            modelResultData.NodesAnimation = new NodesExchangeData[numFrames];
+            modelResultData.ExtremeNodesAnimation = new NodesExchangeData[numFrames];
+            if (modelEdges) modelEdgesResultData.NodesAnimation = new NodesExchangeData[numFrames];
+            locatorResultData.NodesAnimation = new NodesExchangeData[numFrames];
             //
             float[] ratios;
             if (fData.Type == StepType.Frequency || fData.Type == StepType.Buckling) ratios = GetRelativeModalScales(numFrames);
@@ -1164,80 +1258,83 @@ namespace CaeResults
             {
                 relativeScale = ratios[i];
                 absoluteScale = relativeScale * scale;
-                //
-                pData.NodesAnimation[i] = new NodesExchangeData();
-                ScaleNodeCoordinates(absoluteScale, fData.StepId, fData.StepIncrementId, pData.Nodes.Ids, pData.Nodes.Coor,
-                                     out pData.NodesAnimation[i].Coor);
-                //
+                // Deform mesh
+                SetPartDeformation(part, absoluteScale, fData.StepId, fData.StepIncrementId);
+                // Get scaled model
+                modelResultData.NodesAnimation[i] = new NodesExchangeData();
+                modelResultData.NodesAnimation[i].Coor = _mesh.GetNodeSetCoor(modelResultData.Nodes.Ids);
+                // Get scaled edges
+                if (modelEdges)
+                {
+                    modelEdgesResultData.NodesAnimation[i] = new NodesExchangeData();
+                    modelEdgesResultData.NodesAnimation[i].Coor = _mesh.GetNodeSetCoor(modelEdgesResultData.Nodes.Ids);
+                }
+                // Get scaled locator
+                locatorResultData.NodesAnimation[i] = new NodesExchangeData();
+                locatorResultData.NodesAnimation[i].Coor = _mesh.GetNodeSetCoor(locatorResultData.Nodes.Ids);
+                // Scale values
                 if (invariant) relativeScale = Math.Abs(relativeScale);
-                ScaleValues(relativeScale, pData.Nodes.Values, out pData.NodesAnimation[i].Values);
-                pData.ExtremeNodesAnimation[i] = GetScaledExtremeValues(part.Name, fData, relativeScale);
+                // Model
+                ScaleValues(relativeScale, modelResultData.Nodes.Values, out modelResultData.NodesAnimation[i].Values);
+                modelResultData.ExtremeNodesAnimation[i] = GetScaledExtremeValues(part.Name, fData, relativeScale);
+                // Locator
+                ScaleValues(relativeScale, locatorResultData.Nodes.Values, out locatorResultData.NodesAnimation[i].Values);
             }
-            //
-            return pData;
         }
-        public PartExchangeData GetScaleFactorAnimationDataEdgesNodesAndCells(BasePart part, FieldData fData, float scale,
-                                                                              int numFrames)
+        public void GetTimeIncrementAnimationData(BasePart part, FieldData fData, float scale,
+                                                  out PartExchangeData modelResultData,
+                                                  out PartExchangeData modelEdgesResultData,
+                                                  out PartExchangeData locatorResultData)
         {
-            PartExchangeData pData = new PartExchangeData();
-            _mesh.GetNodesAndCellsForModelEdges(part, out pData.Nodes.Ids, out pData.Nodes.Coor, out pData.Cells.CellNodeIds,
-                                                out pData.Cells.Types);
-            pData.NodesAnimation = new NodesExchangeData[numFrames];
+            modelEdgesResultData = null;
+            bool modelEdges = part.PartType.HasEdges() && part.Visualization.EdgeCells != null;
+            // Undeforme part
+            SetPartDeformation(part, 0, 0, 0);
+            // Model
+            modelResultData = GetVisualizationNodesCellsAndValues(part, fData);
+            // Edges
+            if (modelEdges) modelEdgesResultData = GetEdgesNodesAndCells(part, fData);
+            // Locator
+            locatorResultData = GetAllNodesCellsAndValues(part, fData);
+            // Get all existing increments
+            Dictionary<int, int[]> existingStepIncrementIds = GetExistingIncrementIds(fData.Name, fData.Component);
+            // Count all existing increments
+            int numFrames = 0;
+            foreach (var entry in existingStepIncrementIds) numFrames += entry.Value.Length;
+            // Create animation frames
+            modelResultData.NodesAnimation = new NodesExchangeData[numFrames];
+            modelResultData.ExtremeNodesAnimation = new NodesExchangeData[numFrames];
+            if (modelEdges) modelEdgesResultData.NodesAnimation = new NodesExchangeData[numFrames];
+            locatorResultData.NodesAnimation = new NodesExchangeData[numFrames];
             //
-            float[] ratios;
-            if (fData.Type == StepType.Frequency || fData.Type == StepType.Buckling) ratios = GetRelativeModalScales(numFrames);
-            else ratios = GetRelativeScales(numFrames);
-            //
-            float absoluteScale;
-            bool invariant = IsComponentInvariant(fData);
-            //
-            for (int i = 0; i < numFrames; i++)
+            PartExchangeData data;
+            FieldData tmpFieldData = new FieldData(fData);  // create a copy
+            int count = 0;
+            foreach (var entry in existingStepIncrementIds)
             {
-                absoluteScale = ratios[i] * scale;
-                //
-                pData.NodesAnimation[i] = new NodesExchangeData();
-                ScaleNodeCoordinates(absoluteScale, fData.StepId, fData.StepIncrementId, pData.Nodes.Ids, pData.Nodes.Coor,
-                                     out pData.NodesAnimation[i].Coor);
+                tmpFieldData.StepId = entry.Key;
+                foreach (var incrementId in entry.Value)
+                {
+                    tmpFieldData.StepIncrementId = incrementId;
+                    // Deform part
+                    SetPartDeformation(part, scale, tmpFieldData.StepId, tmpFieldData.StepIncrementId);
+                    // Model
+                    data = GetVisualizationNodesCellsAndValues(part, tmpFieldData);
+                    modelResultData.NodesAnimation[count] = data.Nodes;
+                    modelResultData.ExtremeNodesAnimation[count] = data.ExtremeNodes;
+                    // Edges
+                    if (modelEdges)
+                    {
+                        data = GetEdgesNodesAndCells(part, tmpFieldData);
+                        modelEdgesResultData.NodesAnimation[count] = data.Nodes;
+                    }
+                    // Locator
+                    data = GetAllNodesCellsAndValues(part, tmpFieldData);
+                    locatorResultData.NodesAnimation[count] = data.Nodes;
+                    //
+                    count++;
+                }
             }
-            //
-            return pData;
-        }
-        public PartExchangeData GetScaleFactorAnimationDataAllNodesCellsAndValues(FeGroup elementSet, FieldData fData, float scale,
-                                                                                  int numFrames)
-        {
-            PartExchangeData pData = new PartExchangeData();
-            _mesh.GetAllNodesAndCells(elementSet, out pData.Nodes.Ids, out pData.Nodes.Coor, out pData.Cells.Ids, out pData.Cells.CellNodeIds, out pData.Cells.Types);
-            if (!fData.Valid) pData.Nodes.Values = null;
-            else
-            {
-                pData.Nodes.Values = GetValues(fData, pData.Nodes.Ids);
-            }
-            //
-            pData.NodesAnimation = new NodesExchangeData[numFrames];
-            pData.ExtremeNodesAnimation = new NodesExchangeData[numFrames];
-            //
-            float[] ratios;
-            if (fData.Type == StepType.Frequency || fData.Type == StepType.Buckling) ratios = GetRelativeModalScales(numFrames);
-            else ratios = GetRelativeScales(numFrames);
-            //
-            float absoluteScale;
-            float relativeScale;
-            bool invariant = IsComponentInvariant(fData);
-            //
-            for (int i = 0; i < numFrames; i++)
-            {
-                relativeScale = ratios[i];
-                absoluteScale = relativeScale * scale;
-                //
-                pData.NodesAnimation[i] = new NodesExchangeData();
-                ScaleNodeCoordinates(absoluteScale, fData.StepId, fData.StepIncrementId, pData.Nodes.Ids, pData.Nodes.Coor, out pData.NodesAnimation[i].Coor);
-                //
-                if (invariant) relativeScale = Math.Abs(relativeScale);
-                ScaleValues(relativeScale, pData.Nodes.Values, out pData.NodesAnimation[i].Values);
-                pData.ExtremeNodesAnimation[i] = GetScaledExtremeValues(elementSet.Name, fData, relativeScale);
-            }
-            //
-            return pData;
         }
         //
         private float[] GetRelativeScales(int numFrames)
@@ -1256,51 +1353,6 @@ namespace CaeResults
                 ratios[i] = (float)Math.Sin((-1 + i * ratio) * Math.PI / 2);     // end with 1
             }
             return ratios;
-        }
-        public PartExchangeData GetTimeIncrementAnimationDataVisualizationNodesCellsAndValues(BasePart part, FieldData fData)
-        {
-            return GetTimeIncrementAnimationData(part, fData, GetVisualizationNodesCellsAndValues);
-        }
-        public PartExchangeData GetTimeIncrementAnimationDataVisualizationEdgesNodesAndCells(BasePart part, FieldData fData)
-        {
-            return GetTimeIncrementAnimationData(part, fData, GetEdgesNodesAndCells);
-        }
-        public PartExchangeData GetTimeIncrementAnimationDataAllNodesCellsAndValues(BasePart part, FieldData fData)
-        {
-            return GetTimeIncrementAnimationData(part, fData, GetAllNodesCellsAndValues);
-        }
-        private PartExchangeData GetTimeIncrementAnimationData(BasePart part, FieldData fData,
-                                                               Func<BasePart, FieldData, PartExchangeData> GetGeometryData)
-        {
-            PartExchangeData pData = GetGeometryData(part, fData);
-
-            // get all existing increments
-            Dictionary<int, int[]> existingStepIncrementIds = GetExistingIncrementIds(fData.Name, fData.Component);
-            // count all existing increments
-            int numFrames = 0;
-            foreach (var entry in existingStepIncrementIds) numFrames += entry.Value.Length;
-
-            // create animation frames
-            pData.NodesAnimation = new NodesExchangeData[numFrames];
-            pData.ExtremeNodesAnimation = new NodesExchangeData[numFrames];
-
-            FieldData tmpFieldData = new FieldData(fData);  // create a copy
-            int count = 0;
-            foreach (var entry in existingStepIncrementIds)
-            {
-                tmpFieldData.StepId = entry.Key;
-                foreach (var incrementId in entry.Value)
-                {
-                    tmpFieldData.StepIncrementId = incrementId;
-                    //
-                    PartExchangeData animData = GetGeometryData(part, tmpFieldData);
-                    pData.NodesAnimation[count] = animData.Nodes;
-                    pData.ExtremeNodesAnimation[count] = animData.ExtremeNodes;
-                    count++;
-                }
-            }
-            //
-            return pData;
         }
         //
         public void ScaleNodeCoordinates(float scale, int stepId, int stepIncrementId, int[] globalNodeIds, double[][] nodes,

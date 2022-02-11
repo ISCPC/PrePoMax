@@ -1636,47 +1636,44 @@ namespace vtkControl
         {
             if (data.Geometry.NodesAnimation != null)
             {
-                if (frameNumber < 0 || frameNumber >= data.Geometry.NodesAnimation.Length) throw new Exception("The animation frame can not be set.");
-
-                vtkMaxActorAnimationData animationData = new vtkMaxActorAnimationData(data.Geometry.NodesAnimation[frameNumber].Coor, 
-                                                                                      data.ModelEdges.NodesAnimation[frameNumber].Coor,
-                                                                                      data.Geometry.NodesAnimation[frameNumber].Values,
-                                                                                      data.Geometry.ExtremeNodesAnimation[frameNumber],
-                                                                                      data.CellLocator.NodesAnimation[frameNumber].Coor,
-                                                                                      data.CellLocator.NodesAnimation[frameNumber].Values);
-                // actor points
+                if (frameNumber < 0 || frameNumber >= data.Geometry.NodesAnimation.Length)
+                    throw new Exception("The animation frame can not be set.");
+                //
+                vtkMaxActorAnimationData animationData = 
+                    new vtkMaxActorAnimationData(data.Geometry.NodesAnimation[frameNumber].Coor, 
+                                                 data.ModelEdges.NodesAnimation[frameNumber].Coor,
+                                                 data.Geometry.NodesAnimation[frameNumber].Values,
+                                                 data.Geometry.ExtremeNodesAnimation[frameNumber],
+                                                 data.CellLocator.NodesAnimation[frameNumber].Coor,
+                                                 data.CellLocator.NodesAnimation[frameNumber].Values);
+                // Actor points
                 if (animationData.Points != null)
                 {
                     vtkPointSet pointSet = _geometryMapper.GetInput() as vtkPointSet;
                     pointSet.SetPoints(animationData.Points);
                     (_elementEdges.GetMapper().GetInput() as vtkPointSet).SetPoints(animationData.Points);
-
-                    // normals
+                    // Normals
                     if (pointSet.GetPointData().GetNormals() != null && animationData.PointNormals == null)
                         animationData.PointNormals = ComputeNormals(pointSet);
                     pointSet.GetPointData().SetNormals(animationData.PointNormals);
                 }
-                
-                // actor edges points
+                // Actor edges points
                 if (animationData.ModelEdgesPoints != null && _modelEdges != null)
                     (_modelEdges.GetMapper().GetInput() as vtkPointSet).SetPoints(animationData.ModelEdgesPoints);
-
-                // values
+                // Values
                 if (animationData.Values != null) _geometryMapper.GetInput().GetPointData().SetScalars(animationData.Values);
-                
-                // min/max
+                // Min/max
                 if (animationData.MinNode != null) _minNode = animationData.MinNode;
                 if (animationData.MaxNode != null) _maxNode = animationData.MaxNode;
-
-                // locator points
+                // Locator points
                 if (animationData.LocatorPoints != null)
                 {
                     vtkPointSet pointSet = _frustumCellLocator.GetDataSet() as vtkPointSet;
                     pointSet.SetPoints(animationData.LocatorPoints);
                 }
-
-                // locator values
-                if (animationData.LocatorValues != null) _frustumCellLocator.GetDataSet().GetPointData().SetScalars(animationData.LocatorValues);
+                // Locator values
+                if (animationData.LocatorValues != null)
+                    _frustumCellLocator.GetDataSet().GetPointData().SetScalars(animationData.LocatorValues);
             }
         }
 
