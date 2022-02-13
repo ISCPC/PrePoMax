@@ -469,34 +469,50 @@ namespace PrePoMax
                 splash.BeginInvoke((MethodInvoker)delegate () { splash.Close(); });
                 // At the end when vtk is loaded open the file
                 string fileName = null;
-                // Try to recover unsaved progess due to crushed PrePoMax
-                if (File.Exists(_controller.GetHistoryFileNameBin()))
-                {
-                    if (MessageBoxes.ShowWarningQuestion("A recovery file from a previous PrePoMax session exists. " +
-                                                         "Would you like to try to recover it?") == DialogResult.OK)
-                    {
-                        fileName = _controller.GetHistoryFileNameBin();
-                    }
-                }
-                if (fileName == null)
-                {
-                    // Open file from exe arguments
-                    if (_args != null && _args.Length == 1) fileName = _args[0];
-                    // Check for open last file
-                    else if (_controller.Settings.General.OpenLastFile) fileName = _controller.OpenedFileName;
-                }
+                UnitSystemType unitSystemType = UnitSystemType.Undefined;
                 //
-                if (File.Exists(fileName))
+                try
                 {
-                    try
+                    // Try to recover unsaved progess due to crushed PrePoMax
+                    if (File.Exists(_controller.GetHistoryFileNameBin()))
+                    {
+                        if (MessageBoxes.ShowWarningQuestion("A recovery file from a previous PrePoMax session exists. " +
+                                                             "Would you like to try to recover it?") == DialogResult.OK)
+                        {
+                            fileName = _controller.GetHistoryFileNameBin();
+                        }
+                    }
+                    if (fileName == null)
+                    {
+                        // Open file from exe arguments
+                        if (_args != null && _args.Length >= 1)
+                        {
+                            fileName = _args[0];
+                            unitSystemType = _controller.Settings.General.UnitSystemType;
+                            for (int i = 1; i < _args.Length; i++)
+                            {
+                                if (_args[i].ToUpper() == "-US" && i + 1 < _args.Length)
+                                {
+                                    if (!Enum.TryParse(_args[i + 1].ToUpper(), out unitSystemType))
+                                        throw new CaeException("The unit system type " + _args[i + 1] + " is not supported.");
+                                }
+                            }
+                        }
+                        // Check for open last file
+                        else if (_controller.Settings.General.OpenLastFile) fileName = _controller.OpenedFileName;
+                    }
+                    //
+                    if (File.Exists(fileName))
                     {
                         string extension = Path.GetExtension(fileName).ToLower();
+                        HashSet<string> importExtensions = GetFileImportExtensions();
+                        //
                         if (extension == ".pmx" || extension == ".pmh" || extension == ".frd")
                             await Task.Run(() => OpenAsync(fileName));
-                        else if (extension == ".stl" || extension == ".unv" || extension == ".vol" || extension == ".inp")
+                        else if (importExtensions.Contains(extension))
                         {
                             // Create new model
-                            tsmiNew_Click(null, null);
+                            New(ModelSpaceEnum.ThreeD, unitSystemType);
                             // Import
                             await _controller.ImportFileAsync(fileName);
                             //
@@ -506,21 +522,21 @@ namespace PrePoMax
                         //
                         _vtk.SetFrontBackView(false, true);
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        ExceptionTools.Show(this, ex);
-                        _controller.ModelChanged = false;   // hide messagebox
-                        tsmiNew_Click(null, null);
-                    }
-                    finally
-                    {
+                        _controller.CurrentView = ViewGeometryModelResults.Geometry;
+                        //
+                        UpdateRecentFilesThreadSafe(_controller.Settings.General.GetRecentFiles());
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    _controller.CurrentView = ViewGeometryModelResults.Geometry;
-                    //
-                    UpdateRecentFilesThreadSafe(_controller.Settings.General.GetRecentFiles());
+                    ExceptionTools.Show(this, ex);
+                    _controller.ModelChanged = false;   // hide messagebox
+                    tsmiNew_Click(null, null);
+                }
+                finally
+                {
                 }
             });
             timer.Start();
@@ -1171,14 +1187,20 @@ namespace PrePoMax
         #region File menu ##########################################################################################################
         internal void tsmiNew_Click(object sender, EventArgs e)
         {
+            New(ModelSpaceEnum.Undefined, UnitSystemType.Undefined);
+        }
+        private void New(ModelSpaceEnum modelSpace, UnitSystemType unitSystemType)
+        {
             try
             {
                 if (_controller.ModelChanged &&
-                    MessageBoxes.ShowWarningQuestion("OK to close the current model?") != DialogResult.OK) return;                
+                    MessageBoxes.ShowWarningQuestion("OK to close the current model?") != DialogResult.OK) return;
                 //
                 _controller.New();
                 // The model space and the unit system are undefined
-                SelectNewModelProperties();
+                if (modelSpace == ModelSpaceEnum.Undefined || unitSystemType == UnitSystemType.Undefined)
+                    SelectNewModelProperties();
+                else _controller.SetNewModelPropertiesCommand(modelSpace, unitSystemType);
                 //
                 SetMenuAndToolStripVisibility();
                 //
@@ -6425,6 +6447,17 @@ namespace PrePoMax
                             + "|Abaqus/Calculix inp files|*.inp"
                             + "|Mmg mesh files|*.mesh";
             return filter;
+        }
+        private HashSet<string> GetFileImportExtensions()
+        {
+            string[] tmp = GetFileImportFilter().Split(new string[] { "*", "\"", ";", "|" },
+                                                       StringSplitOptions.RemoveEmptyEntries);
+            HashSet<string> extensions = new HashSet<string>();
+            foreach (var entry in tmp)
+            {
+                if (entry.StartsWith(".")) extensions.Add(entry);
+            }
+            return extensions;
         }
 
         #region Clear  #############################################################################################################
