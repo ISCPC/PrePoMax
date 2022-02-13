@@ -39,8 +39,7 @@ namespace CaeResults
         public Dictionary<int, FeNode> UndeformedNodes { get { return _undeformedNodes; } }
         public string HashName { get { return _hashName; } set { _hashName = value; } }
         public string FileName { get { return _fileName; } set { _fileName = value; } }
-        public FeMesh Mesh { get { return _mesh; } set { _mesh = value; } }
-        public HistoryResults History { get { return _history; } set { _history = value; } }
+        public FeMesh Mesh { get { return _mesh; } set { _mesh = value; } }        
         public DateTime DateTime { get { return _dateTime; } set { _dateTime = value; } }
         public UnitSystem UnitSystem { get { return _unitSystem; } set { _unitSystem = value; } }        
 
@@ -272,6 +271,17 @@ namespace CaeResults
                     _mesh.Nodes[unDeformedNode.Id] = unDeformedNode;
                 }
             }
+        }
+        //
+        public HistoryResults GetHistory()
+        {
+            return _history;
+        }
+        public void SetHistory(HistoryResults historyResults)
+        {
+            _history = historyResults;
+            //
+            ComputeWearFromHistory();
         }
         //
         public TypeConverter GetFieldUnitConverter(string fieldDataName, string componentName)
@@ -1109,6 +1119,69 @@ namespace CaeResults
             }
             return historyOutputs;
         }
+        public void GetHistoryOutputData(HistoryResultData historyData, out string[] columnNames, out object[][] rowBasedData)
+        {
+            HistoryResultSet set = _history.Sets[historyData.SetName];
+            HistoryResultField field = set.Fields[historyData.FieldName];
+            HistoryResultComponent component = field.Components[historyData.ComponentName];
+            string unit = "\n[" + GetHistoryUnitAbbrevation(field.Name, component.Name) + "]";
+            string timeUnit = "\n[" + GetHistoryUnitAbbrevation("Time", null) + "]";
+            // Sorted time
+            double[] sortedTime;
+            Dictionary<double, int> timeRowId;
+            GetSortedTime(new HistoryResultComponent[] { component }, out sortedTime, out timeRowId);
+            // Create the data array
+            int numRow = sortedTime.Length;
+            int numCol = component.Entries.Count + 1; // +1 for the time column
+            columnNames = new string[numCol];
+            rowBasedData = new object[numRow][];
+            // Create rows
+            for (int i = 0; i < numRow; i++) rowBasedData[i] = new object[numCol];
+            // Add time column name
+            columnNames[0] = "Time" + timeUnit;
+            // Fill the data array
+            for (int i = 0; i < sortedTime.Length; i++) rowBasedData[i][0] = sortedTime[i];
+            // Add data column
+            //
+            int col = 1;
+            int row;
+            double[] timePoints;
+            double[] values;
+            foreach (var entry in component.Entries)
+            {
+                columnNames[col] = entry.Key + unit;
+                if (entry.Value.Local) columnNames[col] += "\nLocal";
+                //
+                row = 0;
+                timePoints = entry.Value.Time.ToArray();
+                values = entry.Value.Values.ToArray();
+                for (int i = 0; i < timePoints.Length; i++)
+                {
+                    row = timeRowId[timePoints[i]];
+                    rowBasedData[row][col] = values[i];
+                }
+                col++;
+            }
+        }
+        public void GetSortedTime(HistoryResultComponent[] components, out double[] sortedTime,
+                                  out Dictionary<double, int> timeRowId)
+        {
+            // Collect all time points
+            HashSet<double> timePointsHash = new HashSet<double>();
+            foreach (var component in components)
+            {
+                foreach (var entry in component.Entries)
+                {
+                    foreach (var time in entry.Value.Time) timePointsHash.Add(time);
+                }
+            }
+            // Sort time points
+            sortedTime = timePointsHash.ToArray();
+            Array.Sort(sortedTime);
+            // Create a map of time point vs row id
+            timeRowId = new Dictionary<double, int>();
+            for (int i = 0; i < sortedTime.Length; i++) timeRowId.Add(sortedTime[i], i);
+        }
         // Remove
         public void RemoveResultFieldOutputs(string[] fieldOutputNames)
         {
@@ -1636,6 +1709,125 @@ namespace CaeResults
 
             //AddFiled();
 
+        }
+        private void ComputeWearFromHistory()
+        {
+            HistoryResultField relativeContactDisplacement = null;
+            //
+            foreach (var setEntry in _history.Sets)
+            {
+                foreach (var fieldEntry in setEntry.Value.Fields)
+                {
+                    if (fieldEntry.Key.ToUpper() == "RELATIVE CONTACT DISPLACEMENT")
+                    {
+                        relativeContactDisplacement = fieldEntry.Value;
+                    }
+                }
+            }
+            if (relativeContactDisplacement != null)
+            {
+                HistoryResultComponent tang1 = relativeContactDisplacement.Components["TANG1"];
+                HistoryResultComponent tang1r = ComputeRelativeDisplacement("TANG1R", tang1);
+                //
+                HistoryResultComponent tang2 = relativeContactDisplacement.Components["TANG2"];
+                HistoryResultComponent tang2r = ComputeRelativeDisplacement("TANG2R", tang2);
+                //
+                HistoryResultComponent tangAllr =
+                    ComputeVectorMagnitude("TANGALLR", new HistoryResultComponent[] { tang1r, tang2r});
+                //
+                relativeContactDisplacement = new HistoryResultField("Relative contact displacement");
+                relativeContactDisplacement.Components.Add(tang1r.Name, tang1r);
+                relativeContactDisplacement.Components.Add(tang2r.Name, tang2r);
+                relativeContactDisplacement.Components.Add(tangAllr.Name, tangAllr);
+                //
+                HistoryResultSet contactWear = new HistoryResultSet("CONTACT_WEAR");
+                contactWear.Fields.Add(relativeContactDisplacement.Name, relativeContactDisplacement);
+                //
+                _history.Sets.Add(contactWear.Name, contactWear);
+            }
+        }
+        private HistoryResultComponent ComputeRelativeDisplacement(string componentName, HistoryResultComponent tang1)
+        {
+            double[] time;
+            double[] values;
+            HistoryResultEntries itemData;
+            HistoryResultComponent component = new HistoryResultComponent(componentName);
+            //
+            foreach (var entry in tang1.Entries)
+            {
+                time = entry.Value.Time.ToArray();
+                values = entry.Value.Values.ToArray();
+                itemData = new HistoryResultEntries(entry.Key, false);
+                //
+                for (int i = 1; i < values.Length; i++)
+                {
+                    // Add only values != 0
+                    if (values[i - 1] != 0 && values[i] != 0) itemData.Add(time[i], values[i] - values[i - 1]);
+                }
+                if (itemData.Time.Count > 0) component.Entries.Add(itemData.Name, itemData);
+            }
+            //
+            return component;
+        }
+        private HistoryResultComponent ComputeVectorMagnitude(string componentName, HistoryResultComponent[] components)
+        {
+            // Sorted time
+            double[] sortedTime;
+            Dictionary<double, int> timeRowId;
+            GetSortedTime(components, out sortedTime, out timeRowId);
+            // Get all entry names
+            HashSet<string> entryNamesHash = new HashSet<string>();
+            foreach (var component in components)
+            {
+                if (entryNamesHash.Count == 0) entryNamesHash.UnionWith(component.Entries.Keys);
+                else entryNamesHash.IntersectWith(component.Entries.Keys);
+            }
+            //
+            double value;
+            double[][] values = new double[components.Length][];
+            HistoryResultEntries historyEntry;
+            HistoryResultComponent magnitudeComponent = new HistoryResultComponent(componentName);
+            foreach (var entryName in entryNamesHash)
+            {
+                // Get all entry values from all components
+                for (int i = 0; i < components.Length; i++)
+                {
+                    if (components[i].Entries.TryGetValue(entryName, out historyEntry))
+                        values[i] = GetAllEntryValues(historyEntry, timeRowId);
+                    else values[i] = new double[timeRowId.Count];
+                }
+                // Compute the magnitude
+                historyEntry = new HistoryResultEntries(entryName, false);
+                for (int i = 0; i < sortedTime.Length; i++)
+                {
+                    value = 0;
+                    for (int j = 0; j < components.Length; j++)
+                    {
+                        value += Math.Pow(values[j][i], 2);
+                    }
+                    historyEntry.Add(sortedTime[i], Math.Sqrt(value));
+                }
+                //
+                if (historyEntry.Time.Count > 0) magnitudeComponent.Entries.Add(historyEntry.Name, historyEntry);
+            }
+            //
+            return magnitudeComponent;
+        }
+        private double[] GetAllEntryValues(HistoryResultEntries historyEntry, Dictionary<double, int> timeRowId)
+        {
+            int id;
+            double[] values;
+            double[] timePoints;
+            double[] allValues = new double[timeRowId.Count];
+            //
+            timePoints = historyEntry.Time.ToArray();
+            values = historyEntry.Values.ToArray();
+            for (int i = 0; i < timePoints.Length; i++)
+            {
+                id = timeRowId[timePoints[i]];
+                allValues[id] = values[i];
+            }
+            return allValues;
         }
 
     }

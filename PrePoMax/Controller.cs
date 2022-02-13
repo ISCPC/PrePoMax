@@ -635,9 +635,9 @@ namespace PrePoMax
         private void OpenDatFile(string fileName, bool redraw = true)
         {
             if (_results == null) _results = new FeResults(fileName);
-            _results.History = DatFileReader.Read(fileName);
+            _results.SetHistory(DatFileReader.Read(fileName));
             //
-            if (_results.History == null)
+            if (_results.GetHistory() == null)
             {
                 MessageBoxes.ShowError("The dat file does not exist or is empty.");
                 return;
@@ -646,7 +646,6 @@ namespace PrePoMax
             {
                 if (redraw)
                 {
-
                     // Set the view but do not draw
                     _currentView = ViewGeometryModelResults.Results;
                     _form.SetCurrentView(_currentView);
@@ -7283,9 +7282,9 @@ namespace PrePoMax
         #region Result history output  #############################################################################################
         public string[] GetResultHistoryOutputSetNames()
         {
-            if (_results != null && _results.History != null)
+            if (_results != null && _results.GetHistory() != null)
             {
-                return _results.History.Sets.Keys.ToArray();
+                return _results.GetHistory().Sets.Keys.ToArray();
             }
             else return new string[0];
         }
@@ -7295,55 +7294,7 @@ namespace PrePoMax
         }
         public void GetHistoryOutputData(HistoryResultData historyData, out string[] columnNames, out object[][] rowBasedData)
         {
-            HistoryResultSet set = _results.History.Sets[historyData.SetName];
-            HistoryResultField field = set.Fields[historyData.FieldName];
-            HistoryResultComponent component = field.Components[historyData.ComponentName];
-            string unit = "\n[" + _results.GetHistoryUnitAbbrevation(field.Name, component.Name) + "]";
-            string timeUnit = "\n[" + _results.GetHistoryUnitAbbrevation("Time", null) + "]";
-            // Collect all time points
-            HashSet<double> timePointsHash = new HashSet<double>();
-            foreach (var entry in component.Entries)
-            {
-                foreach (var time in entry.Value.Time) timePointsHash.Add(time);
-            }
-            // Sort time points
-            double[] sortedTime = timePointsHash.ToArray();
-            Array.Sort(sortedTime);
-            // Create a map of time point vs column id
-            Dictionary<double, int> timeRowId = new Dictionary<double, int>();
-            for (int i = 0; i < sortedTime.Length; i++) timeRowId.Add(sortedTime[i], i);
-            // Create the data array
-            int numRow = sortedTime.Length;
-            int numCol = component.Entries.Count + 1; // +1 for the time column
-            columnNames = new string[numCol];
-            rowBasedData = new object[numRow][];
-            // Create rows
-            for (int i = 0; i < numRow; i++) rowBasedData[i] = new object[numCol];
-            // Add time column name
-            columnNames[0] = "Time" + timeUnit;
-            // Fill the data array
-            for (int i = 0; i < sortedTime.Length; i++) rowBasedData[i][0] = sortedTime[i];
-            // Add data column
-            //
-            int col = 1;
-            int row;
-            double[] timePoints;
-            double[] values;
-            foreach (var entry in component.Entries)
-            {
-                columnNames[col] = entry.Key + unit;
-                if (entry.Value.Local) columnNames[col] += "\nLocal";
-                //
-                row = 0;
-                timePoints = entry.Value.Time.ToArray();
-                values = entry.Value.Values.ToArray();
-                for (int i = 0; i < timePoints.Length; i++)
-                {
-                    row = timeRowId[timePoints[i]];
-                    rowBasedData[row][col] = values[i];
-                }
-                col++;
-            }
+            _results.GetHistoryOutputData(historyData, out columnNames, out rowBasedData);
         }
         //
         public void AddResultHistoryOutput(ResultHistoryOutput resultHistoryOutput)

@@ -1744,7 +1744,7 @@ namespace UserControls
                             //SelectFirstComponentOfFirstFieldOutput();
                         }
                         //
-                        if (results.History != null) SetHistoryResults(results.History);
+                        if (results.GetHistory() != null) SetHistoryResults(results.GetHistory());
                     }
                     
                 }
