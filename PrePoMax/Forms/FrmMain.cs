@@ -39,7 +39,6 @@ namespace PrePoMax
         FrmSplash splash;
 
         private vtkControl.vtkControl _vtk;
-        private bool _vtkInitialized;
         private ModelTree _modelTree;
         private Controller _controller;
         private string[] _args;
@@ -213,7 +212,6 @@ namespace PrePoMax
             try
             {
                 // Vtk
-                _vtkInitialized = false;
                 _vtk = new vtkControl.vtkControl();
                 panelControl.Parent.Controls.Add(_vtk);
                 panelControl.SendToBack();
@@ -467,6 +465,12 @@ namespace PrePoMax
                 _controller.Settings.General.ApplyFormSize(this);
                 // Vtk
                 _vtk.Enabled = true;
+                // Reduce flicker
+                _vtk.Left += _vtk.Width;
+                _vtk.Visible = true;
+                Application.DoEvents();
+                _vtk.Left -= _vtk.Width;
+                _vtk.Visible = false;
                 // Close splash 
                 splash.BeginInvoke((MethodInvoker)delegate () { splash.Close(); });
                 // At the end when vtk is loaded open the file
@@ -1183,15 +1187,7 @@ namespace PrePoMax
                     _modelTree.DisableResultsTreeMouse = false;
                 }
                 //
-                if (!_vtkInitialized && vtkVisible)
-                {
-                    _vtk.Left += _vtk.Width;
-                    _vtk.Visible = vtkVisible;
-                    Application.DoEvents();
-                    _vtk.Left -= _vtk.Width;
-                    _vtkInitialized = true;
-                }
-                else _vtk.Visible = vtkVisible;
+                _vtk.Visible = vtkVisible;
             });
         }
 
