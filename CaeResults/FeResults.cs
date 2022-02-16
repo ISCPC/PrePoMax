@@ -1716,12 +1716,17 @@ namespace CaeResults
             //
             foreach (var setEntry in _history.Sets)
             {
-                foreach (var fieldEntry in setEntry.Value.Fields)
+                if (setEntry.Key.ToUpper() == "ALL_CONTACT_ELEMENTS")
                 {
-                    if (fieldEntry.Key.ToUpper() == "RELATIVE CONTACT DISPLACEMENT")
+                    foreach (var fieldEntry in setEntry.Value.Fields)
                     {
-                        relativeContactDisplacement = fieldEntry.Value;
+                        if (fieldEntry.Key.ToUpper() == "RELATIVE CONTACT DISPLACEMENT")
+                        {
+                            relativeContactDisplacement = fieldEntry.Value;
+                            break;
+                        }
                     }
+                    if (relativeContactDisplacement != null) break;
                 }
             }
             if (relativeContactDisplacement != null)
@@ -1744,6 +1749,12 @@ namespace CaeResults
                 contactWear.Fields.Add(relativeContactDisplacement.Name, relativeContactDisplacement);
                 //
                 _history.Sets.Add(contactWear.Name, contactWear);
+            }
+            //
+            Dictionary<string, AvgData> partNameAvgData = new Dictionary<string, AvgData>();
+            foreach (var entry in _mesh.Parts)
+            {
+                partNameAvgData.Add(entry.Key, entry.Value.Visualization.GetAvgData());
             }
         }
         private HistoryResultComponent ComputeRelativeDisplacement(string componentName, HistoryResultComponent tang1)

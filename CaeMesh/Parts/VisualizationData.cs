@@ -744,6 +744,74 @@ namespace CaeMesh
                 }
             }
         }
+        // Compute nodal average
+        public AvgData GetAvgData()
+        {
+            int nodeId;
+            int elementId;
+            int cellId;
+            int[] cell;
+            AvgData avgData = new AvgData();
+            AvgNodalData avgNode;
+            AvgNodalSurfaceData avgSurface;
+            AvgNodalSurfaceElementData avgElement;
+            //
+            for (int faceId = 0; faceId < _cellIdsByFace.Length; faceId++)
+            {
+                for (int i = 0; i < _cellIdsByFace[faceId].Length; i++)
+                {
+                    cellId = _cellIdsByFace[faceId][i];
+                    cell = _cells[cellId];
+                    elementId = _cellIds[cellId];
+                    //
+                    for (int j = 0; j < cell.Length; j++)
+                    {
+                        nodeId = cell[j];
+                        //
+                        if (avgData.Nodes.TryGetValue(nodeId, out avgNode))
+                        {
+                            if (avgNode.Surfaces.TryGetValue(faceId, out avgSurface))
+                            {
+                                if (avgSurface.Elements.TryGetValue(elementId, out avgElement))
+                                {
+                                    avgElement.Data.Add(new Tuple<double, Vec3D>(0, new Vec3D()));
+                                }
+                                else
+                                {
+                                    avgElement = new AvgNodalSurfaceElementData();
+                                    //
+                                    avgSurface.Elements.Add(elementId, avgElement);
+                                }
+                            }
+                            else
+                            {
+                                avgElement = new AvgNodalSurfaceElementData();
+                                //
+                                avgSurface = new AvgNodalSurfaceData();
+                                avgSurface.Elements.Add(elementId, avgElement);
+                                //
+                                avgNode.Surfaces.Add(faceId, avgSurface);
+                            }
+                        }
+                        else
+                        {
+                            avgElement = new AvgNodalSurfaceElementData();
+                            //
+                            avgSurface = new AvgNodalSurfaceData();
+                            avgSurface.Elements.Add(elementId, avgElement);
+                            //
+                            avgNode = new AvgNodalData();
+                            avgNode.Surfaces.Add(faceId, avgSurface);
+                            //
+                            avgData.Nodes.Add(nodeId, avgNode);
+                        }
+                    }
+                }
+            }
+            //
+            return avgData;
+        }
+
 
         // Section cut
         public void ApplySectionView(Dictionary<int, FeElement> elements, int[] elementIds, HashSet<int> frontNodes,
