@@ -39,13 +39,14 @@ namespace PrePoMax
         FrmSplash splash;
 
         private vtkControl.vtkControl _vtk;
+        private bool _vtkInitialized;
         private ModelTree _modelTree;
         private Controller _controller;
         private string[] _args;
         private string[] outputLines;
         private Dictionary<ViewGeometryModelResults, Action<object, EventArgs>> _edgeVisibilities; // save display style
         private AdvisorControl _advisorControl;
-        KeyboardHook _keyboardHook;
+        private KeyboardHook _keyboardHook;
         //
         private Point _formLocation;
         private List<Form> _allForms;
@@ -212,6 +213,7 @@ namespace PrePoMax
             try
             {
                 // Vtk
+                _vtkInitialized = false;
                 _vtk = new vtkControl.vtkControl();
                 panelControl.Parent.Controls.Add(_vtk);
                 panelControl.SendToBack();
@@ -1095,7 +1097,7 @@ namespace PrePoMax
                 // Toolbar Results
                 tsResults.Visible = false;
                 // Vtk
-                bool vktVisible = false;
+                bool vtkVisible = false;
                 // Tree
                 _modelTree.DisableGeometryAndModelTreeMouse = true;
                 _modelTree.DisableResultsTreeMouse = true;
@@ -1139,7 +1141,7 @@ namespace PrePoMax
                     // Toolbar View
                     tsViews.DisableMouseButtons = false;
                     // Vtk
-                    vktVisible = true;
+                    vtkVisible = true;
                     // Tree
                     _modelTree.DisableGeometryAndModelTreeMouse = false;
                 }
@@ -1161,7 +1163,7 @@ namespace PrePoMax
                     tslSymbols.Visible = true;
                     tscbSymbolsForStep.Visible = true;
                     // Vtk
-                    vktVisible = true;
+                    vtkVisible = true;
                     // Tree
                     _modelTree.DisableGeometryAndModelTreeMouse = false;
                 }
@@ -1175,12 +1177,20 @@ namespace PrePoMax
                     // Toolbar Results
                     tsResults.Visible = true;
                     // Vtk
-                    vktVisible = true;
+                    vtkVisible = true;
                     // Tree
                     _modelTree.DisableResultsTreeMouse = false;
                 }
                 //
-                _vtk.Visible = vktVisible;
+                if (!_vtkInitialized && vtkVisible)
+                {
+                    _vtk.Left += _vtk.Width;
+                    _vtk.Visible = vtkVisible;
+                    Application.DoEvents();
+                    _vtk.Left -= _vtk.Width;
+                    _vtkInitialized = true;
+                }
+                else _vtk.Visible = vtkVisible;
             });
         }
 
@@ -1204,7 +1214,7 @@ namespace PrePoMax
                 //
                 SetMenuAndToolStripVisibility();
                 //
-                _controller.ModelChanged = false; // must be here since adding unit system changes the model
+                _controller.ModelChanged = false; // must be here since adding unit system changes the model                
             }
             catch (Exception ex)
             {
