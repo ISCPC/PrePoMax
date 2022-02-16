@@ -506,6 +506,7 @@ namespace PrePoMax
                     //
                     if (File.Exists(fileName))
                     {
+                        fileName = Path.GetFullPath(fileName);  // change local file name to global
                         string extension = Path.GetExtension(fileName).ToLower();
                         HashSet<string> importExtensions = GetFileImportExtensions();
                         //
