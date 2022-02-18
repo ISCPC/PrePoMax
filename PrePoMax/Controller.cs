@@ -1630,6 +1630,7 @@ namespace PrePoMax
         #endregion ################################################################################################################
 
         #region View menu   ########################################################################################################
+        // Section view
         public void ApplySectionView(double[] point, double[] normal)
         {
             _sectionViewPlanes[_currentView] = new Octree.Plane(point, normal);
@@ -1650,7 +1651,7 @@ namespace PrePoMax
         {
             return _form.GetViewPlaneNormal();
         }
-        //
+        // Exploded view
         public void PreviewExplodedView(ExplodedViewParameters parameters, bool animate,
                                         Dictionary<string, double[]> partOffsets = null)
         {
@@ -1668,6 +1669,8 @@ namespace PrePoMax
             _animating = animate;
             _form.PreviewExplodedView(partOffsets, animate);
             _animating = false;
+            //
+            _form.SetExplodedViewStatus(true);
         }
         public void ApplyExplodedView(ExplodedViewParameters parameters, string[] partNames = null, bool update = true)
         {
@@ -1684,6 +1687,8 @@ namespace PrePoMax
             partOffsets = mesh.GetExplodedViewOffsets((int)parameters.Type, parameters.ScaleFactor * parameters.Magnification,
                                                       partNames);
             mesh.ApplyExplodedView(partOffsets);
+            //
+            _form.SetExplodedViewStatus(true);
             //
             if (update) Redraw();
         }
@@ -1757,6 +1762,8 @@ namespace PrePoMax
                 PreviewExplodedView(parameters, false, partOffsets);
                 parameters.ScaleFactor = 0;
                 PreviewExplodedView(parameters, animate);
+                //
+                _form.SetExplodedViewStatus(false);
             }
             // Activate exploded view
             else
@@ -1769,6 +1776,8 @@ namespace PrePoMax
                     parameters.ScaleFactor = 0.5;
                     PreviewExplodedView(parameters, animate);
                     ApplyExplodedView(parameters);  // Highlight
+                    //
+                    //_form.SetExplodedViewStatus(true);
                 }
             }
             // Resume section view
@@ -1800,6 +1809,9 @@ namespace PrePoMax
                     if (update) Redraw();
                 }
             }
+            //
+            _form.SetExplodedViewStatus(false);
+            //
             return partOffsets;
         }
 

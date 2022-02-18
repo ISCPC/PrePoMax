@@ -10,7 +10,22 @@ namespace CaeMesh
     [Serializable]
     public class AvgData
     {
-        public Dictionary<int, AvgNodalData> Nodes = new Dictionary<int, AvgNodalData>();
+        public Dictionary<int, AvgNodalData> Nodes;
+
+
+        // Constructors
+        public AvgData()
+        {
+            Nodes = new Dictionary<int, AvgNodalData>();
+        }
+        public AvgData(AvgData avgData)
+            : this()
+        {
+            foreach (var entr in avgData.Nodes)
+            {
+                Nodes.Add(entr.Key, new AvgNodalData(entr.Value));
+            }
+        }
 
 
         // Methods
@@ -28,17 +43,14 @@ namespace CaeMesh
             {
                 areaSum = 0;
                 value = 0;
-                foreach (var surfaceEntry in nodeEntry.Value.Surfaces)
+                foreach (var elementEntry in nodeEntry.Value.Elements)
                 {
-                    foreach (var elementEntry in surfaceEntry.Value.Elements)
+                    foreach (var tuple in elementEntry.Value.Data)
                     {
-                        foreach (var tupleEntry in elementEntry.Value.Data)
+                        if (tuple.Item1 != 0)
                         {
-                            if (tupleEntry.Item1 != 0)
-                            {
-                                value += tupleEntry.Item1 * tupleEntry.Item2;
-                                areaSum += tupleEntry.Item2;
-                            }
+                            value += tuple.Item1 * tuple.Item2;
+                            areaSum += tuple.Item2;
                         }
                     }
                 }
@@ -52,22 +64,50 @@ namespace CaeMesh
             return values;
         }
     }
+    //
     [Serializable]
     public class AvgNodalData
     {
-        public Dictionary<int, AvgNodalSurfaceData> Surfaces = new Dictionary<int, AvgNodalSurfaceData>();
+        public Dictionary<int, AvgNodalElementData> Elements;
+
+
+        // Constructors
+        public AvgNodalData()
+        {
+            Elements = new Dictionary<int, AvgNodalElementData>();
+        }
+        public AvgNodalData(AvgNodalData avgNodalSurfaceData)
+            : this()
+        {
+            foreach (var entry in avgNodalSurfaceData.Elements)
+            {
+                Elements.Add(entry.Key, new AvgNodalElementData(entry.Value));
+            }
+        }
     }
+    //
     [Serializable]
-    public class AvgNodalSurfaceData
+    public class AvgNodalElementData
     {
-        public Dictionary<int, AvgNodalSurfaceElementData> Elements = new Dictionary<int, AvgNodalSurfaceElementData>();
+        // Value, area, normal
+        public List<Tuple<double, double, Vec3D>> Data;
+
+
+        // Constructors
+        public AvgNodalElementData()
+        {
+            Data = new List<Tuple<double, double, Vec3D>>();
+        }
+        public AvgNodalElementData(AvgNodalElementData avgNodalSurfaceElementData)
+            : this()
+        {
+            foreach (var tuple in avgNodalSurfaceElementData.Data)
+            {
+                Data.Add(new Tuple<double, double, Vec3D>(tuple.Item1, tuple.Item2, tuple.Item3));
+            }
+        }
     }
-    [Serializable]
-    public class AvgNodalSurfaceElementData
-    {
-        // value, area, normal
-        public List<Tuple<double, double, Vec3D>> Data = new List<Tuple<double, double, Vec3D>>();
-    }
+    //
     public class AvgEntryData
     {
         public int[] NodeIds;

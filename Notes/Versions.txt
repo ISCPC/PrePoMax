@@ -219,7 +219,12 @@ Done
 
 Version 1.2.1 Master branch
 
-
+Added support for file import using command line arguments
+Added support for adding a history output from a field output
+Added support for removeing field outpurts
+Added support for removeing history outpurts
+Added Tresca stress
+Added pricipal strains
 
 
 Version 1.2.0 Master branch
@@ -257,7 +262,6 @@ Improved the speed of selection in large (>100) assemblies
 Bug fixes
 
 Version 1.1.0 Master branch
-
 Added support for reading thermal field and history outputs
 Added support for enabling the output of thermal field and history outputs
 Added support to read unsupported CalculiX keywords from an .inp file as user defined keywords
@@ -309,8 +313,6 @@ Added support for visualizing the results on shell faces (option 2D)
 Added support for auto-scroll in the monitor window
 Bug fixes
 
-
-
 Version 0.8.0 Master branch
 For Frequency analysis added the mode number in the status block
 Added the Adviser
@@ -320,7 +322,6 @@ Added support for Duplicate of Materials, Surface Interactions and Steps
 Added support for legend background and border
 Added support for status block background and border
 Bug fixes
-
 
 Version 0.7.0 Master branch
 Added support for individual colors for RPs, Constraints, Contact pairs, BCs and Loads
@@ -335,7 +336,6 @@ Added support for set creation on the fly
 Simplified the creation of new sets
 Fixed the visibility of symbols if geometry hidden
 Added support for multi-part selection
-
 
 Version 0.6.0 Master branch
 Added support for Fixed parameter for BSc
@@ -355,7 +355,6 @@ Added support for Submodel boundary conditions
 Added support for edge preview
 Added support for mesh refinement - one part at a time
 Fixed visualization error with to few colors for color contours
-
 
 Version 0.5.2 Master branch
 Added support for importing and meshing 'hollow' CAD files
@@ -382,7 +381,6 @@ Added frequency option for the field output (every n increments)
 Bug fixes - A bug in color conturs lookup table and other bugs reported by Martin
 Bug fixes - Medium nodes on geometry - Midside nodes
 
-
 Version 0.5.1 Master branch
 Added support for additional mesh parameters
 Added support for reading and displaying *El print data
@@ -399,7 +397,6 @@ Added support for *Frequency step
 Added support for reading Frequency results
 Bug fixes
 
-
 Version 0.5.0 Sync branch
 Added support for selection by edges
 Added Querry -> Assembly data
@@ -414,7 +411,6 @@ Added support for importing .inp materials
 Added support for importing .inp reference points and rigid bodies
 Fixed stl import in case of collapsed triangles
 Addeed support for internal surfaces
-
 
 Version 0.4.7 Sync branch
 Added support for gravity and centrifugal loads

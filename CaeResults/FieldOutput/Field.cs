@@ -88,6 +88,10 @@ namespace CaeResults
 
 
         // Methods                                                                                                                  
+        public void AddComponent(FieldComponent component)
+        {
+            _components.Add(component.Name, component);
+        }
         public void AddComponent(string name, float[] values, bool invariant = false)
         {
             _components.Add(name, new FieldComponent(name, values, invariant));

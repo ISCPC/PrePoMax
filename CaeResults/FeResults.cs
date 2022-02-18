@@ -169,6 +169,11 @@ namespace CaeResults
                 _scale = scale;
                 _stepId = stepId;
                 _stepIncrementId = stepIncrementId;
+                //
+                int resultNodeId;
+                double[] offset;
+                FeNode node;
+                FeNode deformedNode;
                 Dictionary<int, FeNode> deformedNodes = null;
                 //
                 if (_scale != 0)
@@ -189,24 +194,28 @@ namespace CaeResults
                             //
                             if (disp[0] != null && disp[1] != null && disp[2] != null)
                             {
-                                int resultNodeId;
-                                FeNode deformedNode;
                                 deformedNodes = new Dictionary<int, FeNode>();
                                 //
-                                foreach (var entry in _undeformedNodes)
+                                foreach (var entry in _mesh.Parts)
                                 {
-                                    // Result parts
-                                    if (_nodeIdsLookUp.TryGetValue(entry.Key, out resultNodeId))
-                                    {
-                                        deformedNode = new FeNode(entry.Key,
-                                                                  entry.Value.X + _scale * disp[0][resultNodeId],
-                                                                  entry.Value.Y + _scale * disp[1][resultNodeId],
-                                                                  entry.Value.Z + _scale * disp[2][resultNodeId]);
-                                    }
-                                    // Geometry parts
-                                    else deformedNode = entry.Value;
+                                    offset = entry.Value.Offset;
                                     //
-                                    deformedNodes.Add(deformedNode.Id, deformedNode);
+                                    foreach (var nodeId in entry.Value.NodeLabels)
+                                    {
+                                        node = _undeformedNodes[nodeId];
+                                        // Result parts
+                                        if (_nodeIdsLookUp.TryGetValue(node.Id, out resultNodeId))
+                                        {
+                                            deformedNode = new FeNode(node.Id,
+                                                                      node.X + offset[0] + _scale * disp[0][resultNodeId],
+                                                                      node.Y + offset[1] + _scale * disp[1][resultNodeId],
+                                                                      node.Z + offset[2] + _scale * disp[2][resultNodeId]);
+                                        }
+                                        // Geometry parts
+                                        else deformedNode = node;
+                                        //
+                                        deformedNodes.Add(deformedNode.Id, deformedNode);
+                                    }
                                 }
                             }
                         }
@@ -215,7 +224,27 @@ namespace CaeResults
                 if (deformedNodes == null)
                 {
                     deformedNodes = new Dictionary<int, FeNode>();
-                    foreach (var entry in _undeformedNodes) deformedNodes.Add(entry.Key, entry.Value);
+                    foreach (var entry in _mesh.Parts)
+                    {
+                        offset = entry.Value.Offset;
+                        //
+                        foreach (var nodeId in entry.Value.NodeLabels)
+                        {
+                            node = _undeformedNodes[nodeId];
+                            // Result parts
+                            if (_nodeIdsLookUp.TryGetValue(node.Id, out resultNodeId))
+                            {
+                                deformedNode = new FeNode(node.Id,
+                                                          node.X + offset[0],
+                                                          node.Y + offset[1],
+                                                          node.Z + offset[2]);
+                            }
+                            // Geometry parts
+                            else deformedNode = node;
+                            //
+                            deformedNodes.Add(deformedNode.Id, deformedNode);
+                        }
+                    }
                 }
                 //
                 _mesh.Nodes = deformedNodes;
@@ -229,6 +258,8 @@ namespace CaeResults
             _stepIncrementId = -1;
             //
             bool scaled = false;
+            double[] offset;
+            FeNode deformedNode;
             FeNode unDeformedNode;
             //
             if (scale != 0)
@@ -251,7 +282,7 @@ namespace CaeResults
                         {
                             scaled = true;
                             int resultNodeId;
-                            FeNode deformedNode;
+                            offset = part.Offset;
                             //
                             foreach (var nodeId in part.NodeLabels)
                             {
@@ -259,9 +290,9 @@ namespace CaeResults
                                 unDeformedNode = _undeformedNodes[nodeId];
                                 //
                                 deformedNode = new FeNode(unDeformedNode.Id,
-                                                          unDeformedNode.X + scale * disp[0][resultNodeId],
-                                                          unDeformedNode.Y + scale * disp[1][resultNodeId],
-                                                          unDeformedNode.Z + scale * disp[2][resultNodeId]);
+                                                          unDeformedNode.X + offset[0] + scale * disp[0][resultNodeId],
+                                                          unDeformedNode.Y + offset[1] + scale * disp[1][resultNodeId],
+                                                          unDeformedNode.Z + offset[2] + scale * disp[2][resultNodeId]);
                                 _mesh.Nodes[deformedNode.Id] = deformedNode;
                             }
                         }
@@ -270,10 +301,15 @@ namespace CaeResults
             }
             if (!scaled)
             {
+                offset = part.Offset;
                 foreach (var nodeId in part.NodeLabels)
                 {
                     unDeformedNode = _undeformedNodes[nodeId];
-                    _mesh.Nodes[unDeformedNode.Id] = unDeformedNode;
+                    deformedNode = new FeNode(unDeformedNode.Id,
+                                              unDeformedNode.X + offset[0],
+                                              unDeformedNode.Y + offset[1],
+                                              unDeformedNode.Z + offset[2]);
+                    _mesh.Nodes[unDeformedNode.Id] = deformedNode;
                 }
             }
         }
@@ -286,7 +322,7 @@ namespace CaeResults
         {
             _history = historyResults;
             //
-            ComputeWearFromHistory();
+            ComputeWear();
         }
         //
         public TypeConverter GetFieldUnitConverter(string fieldDataName, string componentName)
@@ -362,6 +398,12 @@ namespace CaeResults
                             }
                         }
                         break;
+                    // WEAR
+                    case "SLIDING_DISTANCE":
+                    case "DEPTH":
+                        unitConverter = new StringLengthConverter();
+                        unitAbbreviation = _unitSystem.LengthUnitAbbreviation;
+                        break;
                     // Thermal
                     case "NDTEMP":
                         unitConverter = new StringTemperatureConverter();
@@ -380,7 +422,7 @@ namespace CaeResults
                         unitAbbreviation = "%";
                         break;
                     default:
-                        //if (System.Diagnostics.Debugger.IsAttached) throw new NotSupportedException();
+                        if (System.Diagnostics.Debugger.IsAttached) throw new NotSupportedException();
                         //
                         unitConverter = new DoubleConverter();
                         unitAbbreviation = "?";
@@ -592,6 +634,7 @@ namespace CaeResults
         //
         public void AddFiled(FieldData fieldData, Field field)
         {
+            fieldData = new FieldData(fieldData);   // copy
             _fieldLookUp.Add(_fields.Count, fieldData);
             _fields.Add(fieldData, field);
         }
@@ -1114,6 +1157,59 @@ namespace CaeResults
             return nodesData;
         }
         // History
+        public HistoryResultSet GetHistoryResultSet(string setName)
+        {
+            HistoryResultSet set = null;
+            //
+            foreach (var setEntry in _history.Sets)
+            {
+                if (setEntry.Key.ToUpper() == setName.ToUpper())
+                {
+                    set = setEntry.Value;
+                    break;
+                }
+            }
+            //
+            return set;
+        }
+        public HistoryResultField GetHistoryResultField(string setName, string fieldName)
+        {
+            HistoryResultSet set = GetHistoryResultSet(setName);
+            HistoryResultField field = null;
+            //
+            if (set != null)
+            {
+                foreach (var fieldEntry in set.Fields)
+                {
+                    if (fieldEntry.Key.ToUpper() == fieldName.ToUpper())
+                    {
+                        field = fieldEntry.Value;
+                        break;
+                    }
+                }
+            }
+            //
+            return field;
+        }
+        public HistoryResultComponent GetHistoryResultComponent(string setName, string fieldName, string componentName)
+        {
+            HistoryResultField field = GetHistoryResultField(setName, fieldName);
+            HistoryResultComponent component = null;
+            //
+            if (field != null)
+            {
+                foreach (var componentEntry in field.Components)
+                {
+                    if (componentEntry.Key.ToUpper() == componentName.ToUpper())
+                    {
+                        component = componentEntry.Value;
+                        break;
+                    }
+                }
+            }
+            //
+            return component;
+        }
         public NamedClass[] GetHistoriyOutputsAsNamedItems()
         {
             string[] names = _history.Sets.Keys.ToArray();
@@ -1657,103 +1753,43 @@ namespace CaeResults
         }
         
         // Wear
-        public void ComputeWearFields()
+        public void ComputeWear()
         {
-            FieldData fieldData;
-            Field field;
-            FieldData wearData;
-            Field wear;
-            float[] values;
-            float[] newValues;
-            float[] prevValues = null;
-            //
-            string[] fieldNames = GetAllFieldNames();
-            foreach (var fieldName in fieldNames)
-            {
-                if (fieldName == "CONTACT")
-                {
-                    string[] componentNames = GetComponentNames(fieldName);
-                    //
-                    int[] stepIds = GetAllStepIds();
-                    //
-                    for (int i = 0; i < stepIds.Length; i++)
-                    {
-                        int[] stepIncrementIds = GetIncrementIds(stepIds[i]);
-                        //
-                        for (int j = 0; j < stepIncrementIds.Length; j++)
-                        {
-                            fieldData = GetFieldData(fieldName, "CSLIP1", stepIds[i], stepIncrementIds[j]);
-                            field = GetField(fieldData);
-                            //
-                            if (field == null) values = new float[1];
-                            else values = field.GetComponentValues("CSLIP1");
-                            //
-                            newValues = new float[values.Length];
-                            //
-                            if (prevValues != null)
-                            { 
-                                for (int k = 0; k < prevValues.Length; k++)
-                                {
-                                    if (prevValues[k] != 0 && values[k] != 0) newValues[k] = values[k] - prevValues[k];
-                                    else newValues[k] = 0;
-                                }
-                            }
-                            //
-                            wear = new Field("WEAR");
-                            wear.AddComponent("CSLIP1R", newValues);
-                            wearData = new FieldData("WEAR", "CSLIP1R", stepIds[i], stepIncrementIds[j]);
-                            wearData.Type = fieldData.Type;
-                            //
-                            AddFiled(wearData, wear);
-                            //
-                            prevValues = values;
-                        }
-                    }
-                }
-            }
+            ComputeHistoryWearSlidingDistance();
+            ComputeFieldWearSlidingDistance();
         }
-        private void ComputeWearFromHistory()
+        private void ComputeHistoryWearSlidingDistance()
         {
-            HistoryResultField relativeContactDisplacement = null;
+            HistoryResultField relativeContactDisplacement =
+                GetHistoryResultField("ALL_CONTACT_ELEMENTS", "RELATIVE CONTACT DISPLACEMENT");
             //
-            foreach (var setEntry in _history.Sets)
-            {
-                if (setEntry.Key.ToUpper() == "ALL_CONTACT_ELEMENTS")
-                {
-                    foreach (var fieldEntry in setEntry.Value.Fields)
-                    {
-                        if (fieldEntry.Key.ToUpper() == "RELATIVE CONTACT DISPLACEMENT")
-                        {
-                            relativeContactDisplacement = fieldEntry.Value;
-                            break;
-                        }
-                    }
-                    if (relativeContactDisplacement != null) break;
-                }
-            }
             if (relativeContactDisplacement != null)
             {
                 HistoryResultComponent tang1 = relativeContactDisplacement.Components["TANG1"];
-                HistoryResultComponent tang1r = ComputeRelativeDisplacement("TANG1R", tang1);
+                HistoryResultComponent s1 = ComputeRelativeDisplacement("S1", tang1);
                 //
                 HistoryResultComponent tang2 = relativeContactDisplacement.Components["TANG2"];
-                HistoryResultComponent tang2r = ComputeRelativeDisplacement("TANG2R", tang2);
+                HistoryResultComponent s2 = ComputeRelativeDisplacement("S2", tang2);
                 //
-                HistoryResultComponent tangAllr =
-                    ComputeVectorMagnitude("TANGALLR", new HistoryResultComponent[] { tang1r, tang2r});
+                HistoryResultComponent all =
+                    ComputeVectorMagnitude("ALL", new HistoryResultComponent[] { s1, s2 });
                 //
-                relativeContactDisplacement = new HistoryResultField("Relative contact displacement");
-                relativeContactDisplacement.Components.Add(tang1r.Name, tang1r);
-                relativeContactDisplacement.Components.Add(tang2r.Name, tang2r);
-                relativeContactDisplacement.Components.Add(tangAllr.Name, tangAllr);
+                relativeContactDisplacement = new HistoryResultField("Sliding_distance");
+                relativeContactDisplacement.Components.Add(all.Name, all);
+                relativeContactDisplacement.Components.Add(s1.Name, s1);
+                relativeContactDisplacement.Components.Add(s2.Name, s2);
                 //
                 HistoryResultSet contactWear = new HistoryResultSet("CONTACT_WEAR");
                 contactWear.Fields.Add(relativeContactDisplacement.Name, relativeContactDisplacement);
                 //
                 _history.Sets.Add(contactWear.Name, contactWear);
-                //
-                //
-                //
+            }
+        }
+        public void ComputeFieldWearSlidingDistance()
+        {
+            HistoryResultComponent all = GetHistoryResultComponent("CONTACT_WEAR", "SLIDING_DISTANCE", "ALL");
+            if (all != null)
+            {
                 Dictionary<string, AvgData> partNameAvgData = new Dictionary<string, AvgData>();
                 foreach (var entry in _mesh.Parts)
                 {
@@ -1763,13 +1799,25 @@ namespace CaeResults
                 // Sorted time
                 double[] sortedTime;
                 Dictionary<double, int> timeRowId;
-                GetSortedTime(new HistoryResultComponent[] { tangAllr }, out sortedTime, out timeRowId);
-                Dictionary<double, float[]> fieldValues = GetNodalValuesFromElementFaceHistory(tangAllr);
+                GetSortedTime(new HistoryResultComponent[] { all }, out sortedTime, out timeRowId);
+                Dictionary<double, float[]> timeAvgValues = GetNodalValuesFromElementFaceHistory(all);
                 //
-                Field wear;
-                FieldData wearData;
+                float[] pressureValues;
+                float[] slidingDistanceValues;
+                float[] depthValues;
+                float[] prevDepthValues = null;
+                Field pressureField;
+                FieldData pressureData = new FieldData("CONTACT", "CPRESS", 0, 0);
+                Field slidingDistanceField;
+                FieldData slidingDistanceData = new FieldData("SLIDING_DISTANCE", "ALL", 0, 0);                
+                Field depthField;
+                FieldData depthData = new FieldData("DEPTH", "H", 0, 0);
                 int count = 0;
                 int[] stepIds = GetAllStepIds();
+                //
+                pressureData.Type = StepType.Static;
+                slidingDistanceData.Type = StepType.Static;
+                depthData.Type = StepType.Static;
                 //
                 for (int i = 0; i < stepIds.Length; i++)
                 {
@@ -1778,19 +1826,42 @@ namespace CaeResults
                     for (int j = 0; j < stepIncrementIds.Length; j++)
                     {
                         if (i == 0 && j == 0) continue;
+                        // Pressure
+                        pressureData.StepId = stepIds[i];
+                        pressureData.StepIncrementId = stepIncrementIds[j];
+                        pressureData.Time = (float)sortedTime[count];
+                        pressureField = GetField(pressureData);
+                        pressureValues = pressureField.GetComponentValues(pressureData.Component);
+                        // Sliding distance
+                        slidingDistanceValues = timeAvgValues[sortedTime[count]];
+                        slidingDistanceData.StepId = stepIds[i];
+                        slidingDistanceData.StepIncrementId = stepIncrementIds[j];
+                        slidingDistanceData.Time = (float)sortedTime[count];
+                        slidingDistanceField = new Field(slidingDistanceData.Name);
+                        slidingDistanceField.AddComponent(new FieldComponent(slidingDistanceData.Component,
+                                                                             slidingDistanceValues));
+                        AddFiled(slidingDistanceData, slidingDistanceField);
+                        // Wear depth
+                        depthValues = new float[pressureValues.Length];
+                        if (prevDepthValues == null) prevDepthValues = new float[pressureValues.Length];
+                        for (int k = 0; k < depthValues.Length; k++)
+                        {
+                            depthValues[k] = 0.001f * pressureValues[k] * slidingDistanceValues[k] + prevDepthValues[k];
+                        }
+                        depthData.StepId = stepIds[i];
+                        depthData.StepIncrementId = stepIncrementIds[j];
+                        depthData.Time = (float)sortedTime[count];
+                        depthField = new Field(depthData.Name);
+                        depthField.AddComponent(new FieldComponent(depthData.Component, depthValues));
+                        AddFiled(depthData, depthField);
                         //
-                        wear = new Field("WEAR");
-                        wear.AddComponent("TANGALLR", fieldValues[sortedTime[count]]);
-                        wearData = new FieldData("WEAR", "TANGALLR", stepIds[i], stepIncrementIds[j]);
-                        wearData.Type = StepType.Static;
-                        //
-                        AddFiled(wearData, wear);
-                        //
+                        prevDepthValues = depthValues;
                         count++;
                     }
                 }
             }
         }
+        //
         private HistoryResultComponent ComputeRelativeDisplacement(string componentName, HistoryResultComponent tang1)
         {
             double[] time;
@@ -1937,16 +2008,15 @@ namespace CaeResults
             Dictionary<double, float[]> timeValues = new Dictionary<double, float[]>();
             for (int i = 0; i < sortedTime.Length; i++)
             {
-                avgDataClone = avgData.DeepClone();
+                avgDataClone = new AvgData(avgData);
                 //
                 for (int j = 0; j < historyValues.Length; j++)
                 {
                     avgEntryData = valueIdAvgEntryData[j];
                     for (int k = 0; k < avgEntryData.NodeIds.Length; k++)
                     {
-                        avgDataClone.Nodes[avgEntryData.NodeIds[k]].Surfaces[avgEntryData.SurfaceId].
-                            Elements[avgEntryData.ElementId].Data.Add(new Tuple<double, double, Vec3D>(
-                            historyValues[j][i], avgEntryData.Area, avgEntryData.Normal));
+                        avgDataClone.Nodes[avgEntryData.NodeIds[k]].Elements[avgEntryData.ElementId].Data.Add(
+                            new Tuple<double, double, Vec3D>(historyValues[j][i], avgEntryData.Area, avgEntryData.Normal));
                     }
                 }
                 //

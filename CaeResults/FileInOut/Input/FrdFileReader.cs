@@ -310,10 +310,16 @@ namespace CaeResults
         }
         static private Dictionary<int, FeElement> GetElements(string[] lines)
         {
+            //        el.id   type       ?   mat.id      
+            // -1      1413      3       0        1      
+            //           n1        n1        n3        n4
+            // -2       483       489       481       482
+
             Dictionary<int, FeElement> elements = new Dictionary<int, FeElement>();
             int id;
             FrdFeDescriptorId feDescriptorId;
             FeElement element;
+            int materialID;
             string[] record1;
             string[] record2;
             string[] splitter = new string[] { " " };
@@ -324,7 +330,8 @@ namespace CaeResults
                 record1 = lines[i].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
                 id = int.Parse(record1[1]);
                 feDescriptorId = (FrdFeDescriptorId)int.Parse(record1[2]);
-
+                materialID = int.Parse(record1[4]);
+                //
                 switch (feDescriptorId)
                 {
                     // LINEAR ELEMENTS                                                                                              

@@ -749,66 +749,40 @@ namespace CaeMesh
         {
             int nodeId;
             int elementId;
-            int surfaceId;
-            int cellId;
             int[] cell;
             AvgData avgData = new AvgData();
             AvgNodalData avgNode;
-            AvgNodalSurfaceData avgSurface;
-            AvgNodalSurfaceElementData avgElement;
+            AvgNodalElementData avgElement;
             //
-            for (int faceId = 0; faceId < _cellIdsByFace.Length; faceId++)
+            for (int i = 0; i < _cells.Length; i++)
             {
-                surfaceId = faceId;
-                surfaceId = 0;
+                cell = _cells[i];
+                elementId = _cellIds[i];
                 //
-                for (int i = 0; i < _cellIdsByFace[faceId].Length; i++)
+                for (int j = 0; j < cell.Length; j++)
                 {
-                    cellId = _cellIdsByFace[faceId][i];
-                    cell = _cells[cellId];
-                    elementId = _cellIds[cellId];
+                    nodeId = cell[j];
                     //
-                    for (int j = 0; j < cell.Length; j++)
+                    if (avgData.Nodes.TryGetValue(nodeId, out avgNode))
                     {
-                        nodeId = cell[j];
-                        //
-                        if (avgData.Nodes.TryGetValue(nodeId, out avgNode))
+                        if (avgNode.Elements.TryGetValue(elementId, out avgElement))
                         {
-                            if (avgNode.Surfaces.TryGetValue(surfaceId, out avgSurface))
-                            {
-                                if (avgSurface.Elements.TryGetValue(elementId, out avgElement))
-                                {
-                                    //avgElement.Data.Add(new Tuple<double, double, Vec3D>(0, 0, new Vec3D()));
-                                }
-                                else
-                                {
-                                    avgElement = new AvgNodalSurfaceElementData();
-                                    //
-                                    avgSurface.Elements.Add(elementId, avgElement);
-                                }
-                            }
-                            else
-                            {
-                                avgElement = new AvgNodalSurfaceElementData();
-                                //
-                                avgSurface = new AvgNodalSurfaceData();
-                                avgSurface.Elements.Add(elementId, avgElement);
-                                //
-                                avgNode.Surfaces.Add(surfaceId, avgSurface);
-                            }
                         }
                         else
                         {
-                            avgElement = new AvgNodalSurfaceElementData();
+                            avgElement = new AvgNodalElementData();
                             //
-                            avgSurface = new AvgNodalSurfaceData();
-                            avgSurface.Elements.Add(elementId, avgElement);
-                            //
-                            avgNode = new AvgNodalData();
-                            avgNode.Surfaces.Add(surfaceId, avgSurface);
-                            //
-                            avgData.Nodes.Add(nodeId, avgNode);
+                            avgNode.Elements.Add(elementId, avgElement);
                         }
+                    }
+                    else
+                    {
+                        avgElement = new AvgNodalElementData();
+                        //
+                        avgNode = new AvgNodalData();
+                        avgNode.Elements.Add(elementId, avgElement);
+                        //
+                        avgData.Nodes.Add(nodeId, avgNode);
                     }
                 }
             }

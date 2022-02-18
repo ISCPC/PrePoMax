@@ -1186,6 +1186,9 @@ namespace PrePoMax
                     // Tree
                     _modelTree.DisableResultsTreeMouse = false;
                 }
+                //                      Buttons                                                         
+                tsbSectionView.Checked = _controller.IsSectionViewActive();
+                tsbExplodedView.Checked = _controller.IsExplodedViewActive();
                 //
                 _vtk.Visible = vtkVisible;
             });
@@ -6573,22 +6576,18 @@ namespace PrePoMax
         // Section view
         public void ApplySectionView(double[] point, double[] normal)
         {
-
             InvokeIfRequired(_vtk.ApplySectionView, point, normal);
+            InvokeIfRequired(() => { tsbSectionView.Checked = true; });
         }
         public void UpdateSectionView(double[] point, double[] normal)
         {
             InvokeIfRequired(_vtk.UpdateSectionView, point, normal);
+            InvokeIfRequired(() => { tsbSectionView.Checked = true; });
         }
         public void RemoveSectionView()
         {
             InvokeIfRequired(_vtk.RemoveSectionView);
-        }
-        public void SetSectionViewStatus(bool status)
-        {
-            // Must be updated on view change and clear
-
-            //tsbSectionView.Checked = status;
+            InvokeIfRequired(() => { tsbSectionView.Checked = false; });
         }
         // Exploded view
         public void PreviewExplodedView(Dictionary<string, double[]> partOffsets, bool animate)
@@ -6598,7 +6597,11 @@ namespace PrePoMax
         public void RemovePreviewedExplodedView(string[] partNames)
         {
             InvokeIfRequired(_vtk.RemovePreviewedExplodedView, partNames);
-        }        
+        }
+        public void SetExplodedViewStatus(bool status)
+        {
+            InvokeIfRequired(() => { tsbExplodedView.Checked = status; });
+        }
         // Transforms
         public void AddSymmetry(int symmetryPlane, double[] symmetryPoint)
         {
