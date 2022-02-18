@@ -158,9 +158,9 @@ namespace CaeResults
         {
             _undeformedNodes = new Dictionary<int, FeNode>();
             foreach (var entry in _mesh.Nodes) _undeformedNodes.Add(entry.Key, new FeNode(entry.Value));
-            _scale = 0;
-            _stepId = 0;
-            _stepIncrementId = 0;
+            _scale = -1;
+            _stepId = -1;
+            _stepIncrementId = -1;
         }
         public void SetMeshDeformation(float scale, int stepId, int stepIncrementId)
         {
@@ -223,6 +223,11 @@ namespace CaeResults
         }
         public void SetPartDeformation(BasePart part, float scale, int stepId, int stepIncrementId)
         {
+            // Reset global mesh deformation settings
+            _scale = -1;
+            _stepId = -1;
+            _stepIncrementId = -1;
+            //
             bool scaled = false;
             FeNode unDeformedNode;
             //
@@ -375,7 +380,7 @@ namespace CaeResults
                         unitAbbreviation = "%";
                         break;
                     default:
-                        if (System.Diagnostics.Debugger.IsAttached) throw new NotSupportedException();
+                        //if (System.Diagnostics.Debugger.IsAttached) throw new NotSupportedException();
                         //
                         unitConverter = new DoubleConverter();
                         unitAbbreviation = "?";
@@ -1706,9 +1711,6 @@ namespace CaeResults
                     }
                 }
             }
-
-            //AddFiled();
-
         }
         private void ComputeWearFromHistory()
         {
@@ -1749,12 +1751,44 @@ namespace CaeResults
                 contactWear.Fields.Add(relativeContactDisplacement.Name, relativeContactDisplacement);
                 //
                 _history.Sets.Add(contactWear.Name, contactWear);
-            }
-            //
-            Dictionary<string, AvgData> partNameAvgData = new Dictionary<string, AvgData>();
-            foreach (var entry in _mesh.Parts)
-            {
-                partNameAvgData.Add(entry.Key, entry.Value.Visualization.GetAvgData());
+                //
+                //
+                //
+                Dictionary<string, AvgData> partNameAvgData = new Dictionary<string, AvgData>();
+                foreach (var entry in _mesh.Parts)
+                {
+                    partNameAvgData.Add(entry.Key, entry.Value.Visualization.GetAvgData());
+                }
+                //
+                // Sorted time
+                double[] sortedTime;
+                Dictionary<double, int> timeRowId;
+                GetSortedTime(new HistoryResultComponent[] { tangAllr }, out sortedTime, out timeRowId);
+                Dictionary<double, float[]> fieldValues = GetNodalValuesFromElementFaceHistory(tangAllr);
+                //
+                Field wear;
+                FieldData wearData;
+                int count = 0;
+                int[] stepIds = GetAllStepIds();
+                //
+                for (int i = 0; i < stepIds.Length; i++)
+                {
+                    int[] stepIncrementIds = GetIncrementIds(stepIds[i]);
+                    //
+                    for (int j = 0; j < stepIncrementIds.Length; j++)
+                    {
+                        if (i == 0 && j == 0) continue;
+                        //
+                        wear = new Field("WEAR");
+                        wear.AddComponent("TANGALLR", fieldValues[sortedTime[count]]);
+                        wearData = new FieldData("WEAR", "TANGALLR", stepIds[i], stepIncrementIds[j]);
+                        wearData.Type = StepType.Static;
+                        //
+                        AddFiled(wearData, wear);
+                        //
+                        count++;
+                    }
+                }
             }
         }
         private HistoryResultComponent ComputeRelativeDisplacement(string componentName, HistoryResultComponent tang1)
@@ -1770,6 +1804,7 @@ namespace CaeResults
                 values = entry.Value.Values.ToArray();
                 itemData = new HistoryResultEntries(entry.Key, false);
                 //
+                itemData.Add(time[0], 0);   // must be here to keep the time in the component
                 for (int i = 1; i < values.Length; i++)
                 {
                     // Add only values != 0
@@ -1839,6 +1874,92 @@ namespace CaeResults
                 allValues[id] = values[i];
             }
             return allValues;
+        }
+        private Dictionary<double, float[]> GetNodalValuesFromElementFaceHistory(HistoryResultComponent historyResultComponent)
+        {
+            // Sorted time
+            double[] sortedTime;
+            Dictionary<double, int> timeRowId;
+            GetSortedTime(new HistoryResultComponent[] { historyResultComponent }, out sortedTime, out timeRowId);
+            // Average data structure
+            AvgData avgData = new AvgData();
+            foreach (var entry in _mesh.Parts)
+            {
+                avgData.AddRange(entry.Value.Visualization.GetAvgData().Nodes);
+            }
+            // Get all values data for each node
+            int faceId;
+            int elementId;
+            int count = 0;
+            string[] tmp;
+            double faceArea;
+            double[] faceNormal;
+            double[][] historyValues = new double[historyResultComponent.Entries.Count][];
+            FeElement element;
+            FeFaceName faceName;
+            AvgEntryData avgEntryData;
+            Dictionary<int, AvgEntryData> valueIdAvgEntryData = new Dictionary<int, AvgEntryData>();
+            //
+            foreach (var entry in historyResultComponent.Entries)
+            {
+                tmp = entry.Key.Split(new string[] { "_" }, StringSplitOptions.RemoveEmptyEntries);
+                if (tmp.Length == 2 && int.TryParse(tmp[0], out elementId) && int.TryParse(tmp[1], out faceId))
+                {
+                    switch (faceId)
+                    {
+                        case 1: faceName = FeFaceName.S1; break;
+                        case 2: faceName = FeFaceName.S2; break;
+                        case 3: faceName = FeFaceName.S3; break;
+                        case 4: faceName = FeFaceName.S4; break;
+                        case 5: faceName = FeFaceName.S5; break;
+                        case 6: faceName = FeFaceName.S6; break;
+                        default: throw new NotSupportedException();
+                    }
+                    element = _mesh.Elements[elementId];
+                    _mesh.GetElementFaceNormalAndArea(elementId, faceName, out faceNormal, out faceArea);
+                    //
+                    avgEntryData = new AvgEntryData();
+                    avgEntryData.NodeIds = element.GetNodeIdsFromFaceName(faceName);
+                    avgEntryData.SurfaceId = 0;
+                    avgEntryData.ElementId = elementId;
+                    avgEntryData.Area = faceArea;
+                    avgEntryData.Normal = new Vec3D(faceNormal);
+                    //
+                    valueIdAvgEntryData.Add(count, avgEntryData);
+                    historyValues[count] = GetAllEntryValues(entry.Value, timeRowId);
+                }
+                count++;
+            }
+            // Average
+            float[] averagedValues;
+            AvgData avgDataClone;
+            Dictionary<int, double> averagedNodalValues;
+            Dictionary<double, float[]> timeValues = new Dictionary<double, float[]>();
+            for (int i = 0; i < sortedTime.Length; i++)
+            {
+                avgDataClone = avgData.DeepClone();
+                //
+                for (int j = 0; j < historyValues.Length; j++)
+                {
+                    avgEntryData = valueIdAvgEntryData[j];
+                    for (int k = 0; k < avgEntryData.NodeIds.Length; k++)
+                    {
+                        avgDataClone.Nodes[avgEntryData.NodeIds[k]].Surfaces[avgEntryData.SurfaceId].
+                            Elements[avgEntryData.ElementId].Data.Add(new Tuple<double, double, Vec3D>(
+                            historyValues[j][i], avgEntryData.Area, avgEntryData.Normal));
+                    }
+                }
+                //
+                averagedValues = new float[_nodeIdsLookUp.Count];
+                averagedNodalValues = avgDataClone.GetAveragedValues();
+                foreach (var entry in averagedNodalValues)
+                {
+                    averagedValues[_nodeIdsLookUp[entry.Key]] = (float)entry.Value;
+                }
+                timeValues.Add(sortedTime[i], averagedValues);
+            }
+            //
+            return timeValues;
         }
 
     }

@@ -607,7 +607,7 @@ namespace PrePoMax
                     ResumeExplodedViews(false); // must be here after the MergePartsBasedOnMesh
                 }
 
-                _results.ComputeWearFields();
+                //_results.ComputeWearFields();
                 //
 
                 redraw = true;

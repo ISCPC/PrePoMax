@@ -749,6 +749,7 @@ namespace CaeMesh
         {
             int nodeId;
             int elementId;
+            int surfaceId;
             int cellId;
             int[] cell;
             AvgData avgData = new AvgData();
@@ -758,6 +759,9 @@ namespace CaeMesh
             //
             for (int faceId = 0; faceId < _cellIdsByFace.Length; faceId++)
             {
+                surfaceId = faceId;
+                surfaceId = 0;
+                //
                 for (int i = 0; i < _cellIdsByFace[faceId].Length; i++)
                 {
                     cellId = _cellIdsByFace[faceId][i];
@@ -770,11 +774,11 @@ namespace CaeMesh
                         //
                         if (avgData.Nodes.TryGetValue(nodeId, out avgNode))
                         {
-                            if (avgNode.Surfaces.TryGetValue(faceId, out avgSurface))
+                            if (avgNode.Surfaces.TryGetValue(surfaceId, out avgSurface))
                             {
                                 if (avgSurface.Elements.TryGetValue(elementId, out avgElement))
                                 {
-                                    avgElement.Data.Add(new Tuple<double, Vec3D>(0, new Vec3D()));
+                                    //avgElement.Data.Add(new Tuple<double, double, Vec3D>(0, 0, new Vec3D()));
                                 }
                                 else
                                 {
@@ -790,7 +794,7 @@ namespace CaeMesh
                                 avgSurface = new AvgNodalSurfaceData();
                                 avgSurface.Elements.Add(elementId, avgElement);
                                 //
-                                avgNode.Surfaces.Add(faceId, avgSurface);
+                                avgNode.Surfaces.Add(surfaceId, avgSurface);
                             }
                         }
                         else
@@ -801,7 +805,7 @@ namespace CaeMesh
                             avgSurface.Elements.Add(elementId, avgElement);
                             //
                             avgNode = new AvgNodalData();
-                            avgNode.Surfaces.Add(faceId, avgSurface);
+                            avgNode.Surfaces.Add(surfaceId, avgSurface);
                             //
                             avgData.Nodes.Add(nodeId, avgNode);
                         }
