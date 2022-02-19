@@ -400,6 +400,7 @@ namespace CaeResults
                         break;
                     // WEAR
                     case "SLIDING_DISTANCE":
+                    case "SURFACE_NORMAL":
                     case "DEPTH":
                         unitConverter = new StringLengthConverter();
                         unitAbbreviation = _unitSystem.LengthUnitAbbreviation;
@@ -548,7 +549,8 @@ namespace CaeResults
                     // Error
                     case "ERROR":
                     default:
-                        GetFieldUnitConverterAndAbbrevation(fieldName.ToUpper(), componentName,
+                        string noSpacesName = fieldName.Replace(' ', '_');
+                        GetFieldUnitConverterAndAbbrevation(noSpacesName.ToUpper(), componentName,
                                                             out unitConverter, out unitAbbreviation);
                         if (unitAbbreviation == "?" && System.Diagnostics.Debugger.IsAttached)
                             throw new NotSupportedException();
@@ -1756,6 +1758,25 @@ namespace CaeResults
         public void ComputeWear()
         {
             ComputeHistoryWearSlidingDistance();
+            //
+            HistoryResultComponent slidingDistanceAll = GetHistoryResultComponent("CONTACT_WEAR", "SLIDING DISTANCE", "ALL");
+            if (slidingDistanceAll != null)
+            {
+                CreateAveragedFieldFromElementFaceHistory("SLIDING_DISTANCE", slidingDistanceAll, true);
+            }
+            //
+            HistoryResultField surfaceNormalField = GetHistoryResultField("CONTACT_WEAR", "Surface normal");
+            if (surfaceNormalField != null)
+            {
+                HistoryResultComponent n1 = surfaceNormalField.Components["N1"];
+                HistoryResultComponent n2 = surfaceNormalField.Components["N2"];
+                HistoryResultComponent n3 = surfaceNormalField.Components["N3"];
+                //
+                CreateAveragedFieldFromElementFaceHistory("SURFACE_NORMAL", n1, false);
+                CreateAveragedFieldFromElementFaceHistory("SURFACE_NORMAL", n2, false);
+                CreateAveragedFieldFromElementFaceHistory("SURFACE_NORMAL", n3, false);
+            }
+            //
             ComputeFieldWearSlidingDistance();
         }
         private void ComputeHistoryWearSlidingDistance()
@@ -1774,44 +1795,59 @@ namespace CaeResults
                 HistoryResultComponent all =
                     ComputeVectorMagnitude("ALL", new HistoryResultComponent[] { s1, s2 });
                 //
-                relativeContactDisplacement = new HistoryResultField("Sliding_distance");
+                relativeContactDisplacement = new HistoryResultField("Sliding distance");
                 relativeContactDisplacement.Components.Add(all.Name, all);
                 relativeContactDisplacement.Components.Add(s1.Name, s1);
                 relativeContactDisplacement.Components.Add(s2.Name, s2);
+               
+                // Use tang1 since it contains only values != 0
+                HistoryResultComponent[] normalComponents = GetNormalsFromFromElementFaceHistory(tang1);
+                //
+                HistoryResultField surfaceNormalsField = new HistoryResultField("Surface normal");
+                surfaceNormalsField.Components.Add(normalComponents[0].Name, normalComponents[0]);
+                surfaceNormalsField.Components.Add(normalComponents[1].Name, normalComponents[1]);
+                surfaceNormalsField.Components.Add(normalComponents[2].Name, normalComponents[2]);
                 //
                 HistoryResultSet contactWear = new HistoryResultSet("CONTACT_WEAR");
                 contactWear.Fields.Add(relativeContactDisplacement.Name, relativeContactDisplacement);
+                contactWear.Fields.Add(surfaceNormalsField.Name, surfaceNormalsField);
                 //
                 _history.Sets.Add(contactWear.Name, contactWear);
             }
         }
         public void ComputeFieldWearSlidingDistance()
         {
-            HistoryResultComponent all = GetHistoryResultComponent("CONTACT_WEAR", "SLIDING_DISTANCE", "ALL");
-            if (all != null)
+            HistoryResultComponent slidingDistanceAll = GetHistoryResultComponent("CONTACT_WEAR", "SLIDING DISTANCE", "ALL");
+            if (slidingDistanceAll != null)
             {
-                Dictionary<string, AvgData> partNameAvgData = new Dictionary<string, AvgData>();
-                foreach (var entry in _mesh.Parts)
-                {
-                    partNameAvgData.Add(entry.Key, entry.Value.Visualization.GetAvgData());
-                }
-                //
                 // Sorted time
                 double[] sortedTime;
                 Dictionary<double, int> timeRowId;
-                GetSortedTime(new HistoryResultComponent[] { all }, out sortedTime, out timeRowId);
-                Dictionary<double, float[]> timeAvgValues = GetNodalValuesFromElementFaceHistory(all);
+                GetSortedTime(new HistoryResultComponent[] { slidingDistanceAll }, out sortedTime, out timeRowId);
                 //
+                float dh;
                 float[] pressureValues;
                 float[] slidingDistanceValues;
+                float[] normalN1Values;
+                float[] normalN2Values;
+                float[] normalN3Values;
                 float[] depthValues;
+                float[] depthValuesH1;
+                float[] depthValuesH2;
+                float[] depthValuesH3;
                 float[] prevDepthValues = null;
+                float[] prevDepthValuesH1 = null;
+                float[] prevDepthValuesH2 = null;
+                float[] prevDepthValuesH3 = null;
+
                 Field pressureField;
-                FieldData pressureData = new FieldData("CONTACT", "CPRESS", 0, 0);
                 Field slidingDistanceField;
-                FieldData slidingDistanceData = new FieldData("SLIDING_DISTANCE", "ALL", 0, 0);                
                 Field depthField;
-                FieldData depthData = new FieldData("DEPTH", "H", 0, 0);
+                Field normalField;
+                FieldData pressureData = new FieldData("CONTACT", "CPRESS", 0, 0);
+                FieldData slidingDistanceData = new FieldData("SLIDING_DISTANCE", "ALL", 0, 0);                
+                FieldData depthData = new FieldData("DEPTH", "ALL", 0, 0);
+                FieldData normalData = new FieldData("SURFACE_NORMAL", "", 0, 0);
                 int count = 0;
                 int[] stepIds = GetAllStepIds();
                 //
@@ -1827,35 +1863,58 @@ namespace CaeResults
                     {
                         if (i == 0 && j == 0) continue;
                         // Pressure
-                        pressureData.StepId = stepIds[i];
-                        pressureData.StepIncrementId = stepIncrementIds[j];
-                        pressureData.Time = (float)sortedTime[count];
+                        pressureData = GetFieldData(pressureData.Name, pressureData.Component,
+                                                    stepIds[i], stepIncrementIds[j]);
                         pressureField = GetField(pressureData);
                         pressureValues = pressureField.GetComponentValues(pressureData.Component);
                         // Sliding distance
-                        slidingDistanceValues = timeAvgValues[sortedTime[count]];
-                        slidingDistanceData.StepId = stepIds[i];
-                        slidingDistanceData.StepIncrementId = stepIncrementIds[j];
-                        slidingDistanceData.Time = (float)sortedTime[count];
-                        slidingDistanceField = new Field(slidingDistanceData.Name);
-                        slidingDistanceField.AddComponent(new FieldComponent(slidingDistanceData.Component,
-                                                                             slidingDistanceValues));
-                        AddFiled(slidingDistanceData, slidingDistanceField);
+                        slidingDistanceData = GetFieldData(slidingDistanceData.Name, slidingDistanceData.Component,
+                                                           stepIds[i], stepIncrementIds[j]);
+                        slidingDistanceField = GetField(slidingDistanceData);
+                        slidingDistanceValues = slidingDistanceField.GetComponentValues(slidingDistanceData.Component);
+                        // Normal
+                        normalData = GetFieldData(normalData.Name, normalData.Component,
+                                                  stepIds[i], stepIncrementIds[j]);
+                        normalField = GetField(normalData);
+                        normalN1Values = normalField.GetComponentValues("N1");
+                        normalN2Values = normalField.GetComponentValues("N2");
+                        normalN3Values = normalField.GetComponentValues("N3");
                         // Wear depth
                         depthValues = new float[pressureValues.Length];
-                        if (prevDepthValues == null) prevDepthValues = new float[pressureValues.Length];
+                        depthValuesH1 = new float[pressureValues.Length];
+                        depthValuesH2 = new float[pressureValues.Length];
+                        depthValuesH3 = new float[pressureValues.Length];
+                        if (prevDepthValues == null)
+                        {
+                            prevDepthValues = new float[pressureValues.Length];
+                            prevDepthValuesH1 = new float[pressureValues.Length];
+                            prevDepthValuesH2 = new float[pressureValues.Length];
+                            prevDepthValuesH3 = new float[pressureValues.Length];
+                        }
+                        //
                         for (int k = 0; k < depthValues.Length; k++)
                         {
-                            depthValues[k] = 0.001f * pressureValues[k] * slidingDistanceValues[k] + prevDepthValues[k];
+                            dh = 0.001f * pressureValues[k] * slidingDistanceValues[k];
+                            depthValues[k] = dh + prevDepthValues[k];
+                            depthValuesH1[k] = dh * normalN1Values[k] + prevDepthValuesH1[k];
+                            depthValuesH2[k] = dh * normalN2Values[k] + prevDepthValuesH2[k];
+                            depthValuesH3[k] = dh * normalN3Values[k] + prevDepthValuesH3[k];
                         }
                         depthData.StepId = stepIds[i];
                         depthData.StepIncrementId = stepIncrementIds[j];
                         depthData.Time = (float)sortedTime[count];
                         depthField = new Field(depthData.Name);
                         depthField.AddComponent(new FieldComponent(depthData.Component, depthValues));
+                        depthField.AddComponent(new FieldComponent("H1", depthValuesH1));
+                        depthField.AddComponent(new FieldComponent("H2", depthValuesH2));
+                        depthField.AddComponent(new FieldComponent("H3", depthValuesH3));
                         AddFiled(depthData, depthField);
                         //
                         prevDepthValues = depthValues;
+                        prevDepthValuesH1 = depthValuesH1;
+                        prevDepthValuesH2 = depthValuesH2;
+                        prevDepthValuesH3 = depthValuesH3;
+                        //
                         count++;
                     }
                 }
@@ -1930,6 +1989,116 @@ namespace CaeResults
             //
             return magnitudeComponent;
         }
+        private HistoryResultComponent[] GetNormalsFromFromElementFaceHistory(HistoryResultComponent historyResultComponent)
+        {
+            HistoryResultComponent[] normalComponents = new HistoryResultComponent[3];
+            normalComponents[0] = new HistoryResultComponent("N1");
+            normalComponents[1] = new HistoryResultComponent("N2");
+            normalComponents[2] = new HistoryResultComponent("N3");
+            // Sorted time
+            double[] sortedTime;
+            Dictionary<double, int> timeRowId;
+            GetSortedTime(new HistoryResultComponent[] { historyResultComponent }, out sortedTime, out timeRowId);
+            // Get all values data for each node
+            int faceId;
+            int elementId;
+            int count = 0;
+            string[] tmp;
+            double faceArea;
+            double[] faceNormal;
+            FeElement element;
+            FeFaceName faceName;
+            HistoryResultEntries normal1Entry;
+            HistoryResultEntries normal2Entry;
+            HistoryResultEntries normal3Entry;
+            //
+            foreach (var entry in historyResultComponent.Entries)
+            {
+                tmp = entry.Key.Split(new string[] { "_" }, StringSplitOptions.RemoveEmptyEntries);
+                if (tmp.Length == 2 && int.TryParse(tmp[0], out elementId) && int.TryParse(tmp[1], out faceId))
+                {
+                    switch (faceId)
+                    {
+                        case 1: faceName = FeFaceName.S1; break;
+                        case 2: faceName = FeFaceName.S2; break;
+                        case 3: faceName = FeFaceName.S3; break;
+                        case 4: faceName = FeFaceName.S4; break;
+                        case 5: faceName = FeFaceName.S5; break;
+                        case 6: faceName = FeFaceName.S6; break;
+                        default: throw new NotSupportedException();
+                    }
+                    element = _mesh.Elements[elementId];
+                    _mesh.GetElementFaceNormalAndArea(elementId, faceName, out faceNormal, out faceArea);
+                    //
+                    normal1Entry = new HistoryResultEntries(entry.Key, false);
+                    normal2Entry = new HistoryResultEntries(entry.Key, false);
+                    normal3Entry = new HistoryResultEntries(entry.Key, false);
+                    //
+                    foreach (var time in entry.Value.Time)
+                    {
+                        normal1Entry.Add(time, faceNormal[0]);
+                        normal2Entry.Add(time, faceNormal[1]);
+                        normal3Entry.Add(time, faceNormal[2]);
+                    }
+                    //
+                    normalComponents[0].Entries.Add(normal1Entry.Name, normal1Entry);
+                    normalComponents[1].Entries.Add(normal2Entry.Name, normal2Entry);
+                    normalComponents[2].Entries.Add(normal3Entry.Name, normal3Entry);
+                }
+                count++;
+            }
+            //
+            return normalComponents;
+        }
+        private void CreateAveragedFieldFromElementFaceHistory(string fieldName, HistoryResultComponent historyResultComponent,
+                                                               bool areaAverage)
+        {
+            if (historyResultComponent != null)
+            {
+                // Sorted time
+                double[] sortedTime;
+                Dictionary<double, int> timeRowId;
+                GetSortedTime(new HistoryResultComponent[] { historyResultComponent }, out sortedTime, out timeRowId);
+                Dictionary<double, float[]> timeAvgValues =
+                    GetNodalValuesFromElementFaceHistory(historyResultComponent, areaAverage);
+                //
+                bool newField;
+                float[] values;
+                Field field;
+                FieldData fieldData = new FieldData(fieldName, historyResultComponent.Name, 0, 0);
+                int count = 0;
+                int[] stepIds = GetAllStepIds();
+                //
+                fieldData.Type = StepType.Static;
+                //
+                for (int i = 0; i < stepIds.Length; i++)
+                {
+                    int[] stepIncrementIds = GetIncrementIds(stepIds[i]);
+                    //
+                    for (int j = 0; j < stepIncrementIds.Length; j++)
+                    {
+                        if (i == 0 && j == 0) continue;
+                        // Field
+                        values = timeAvgValues[sortedTime[count]];
+                        fieldData.StepId = stepIds[i];
+                        fieldData.StepIncrementId = stepIncrementIds[j];
+                        fieldData.Time = (float)sortedTime[count];
+                        //
+                        newField = false;
+                        field = GetField(fieldData);
+                        if (field == null)
+                        {
+                            field = new Field(fieldData.Name);
+                            newField = true;
+                        }
+                        field.AddComponent(new FieldComponent(fieldData.Component, values));
+                        if (newField) AddFiled(fieldData, field);
+                        //
+                        count++;
+                    }
+                }
+            }
+        }
         private double[] GetAllEntryValues(HistoryResultEntries historyEntry, Dictionary<double, int> timeRowId)
         {
             int id;
@@ -1946,7 +2115,8 @@ namespace CaeResults
             }
             return allValues;
         }
-        private Dictionary<double, float[]> GetNodalValuesFromElementFaceHistory(HistoryResultComponent historyResultComponent)
+        private Dictionary<double, float[]> GetNodalValuesFromElementFaceHistory(HistoryResultComponent historyResultComponent,
+                                                                                 bool areaAverage)
         {
             // Sorted time
             double[] sortedTime;
@@ -1994,7 +2164,6 @@ namespace CaeResults
                     avgEntryData.SurfaceId = 0;
                     avgEntryData.ElementId = elementId;
                     avgEntryData.Area = faceArea;
-                    avgEntryData.Normal = new Vec3D(faceNormal);
                     //
                     valueIdAvgEntryData.Add(count, avgEntryData);
                     historyValues[count] = GetAllEntryValues(entry.Value, timeRowId);
@@ -2016,12 +2185,12 @@ namespace CaeResults
                     for (int k = 0; k < avgEntryData.NodeIds.Length; k++)
                     {
                         avgDataClone.Nodes[avgEntryData.NodeIds[k]].Elements[avgEntryData.ElementId].Data.Add(
-                            new Tuple<double, double, Vec3D>(historyValues[j][i], avgEntryData.Area, avgEntryData.Normal));
+                            new Tuple<double, double>(historyValues[j][i], avgEntryData.Area));
                     }
                 }
                 //
                 averagedValues = new float[_nodeIdsLookUp.Count];
-                averagedNodalValues = avgDataClone.GetAveragedValues();
+                averagedNodalValues = avgDataClone.GetAveragedValues(areaAverage);
                 foreach (var entry in averagedNodalValues)
                 {
                     averagedValues[_nodeIdsLookUp[entry.Key]] = (float)entry.Value;

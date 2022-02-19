@@ -2633,17 +2633,21 @@ namespace vtkControl
             if (animate) AnimateCamera(cameraStart, camera, camera);
             else this.Invalidate();
         }
+        public void SetZoomFactor(double factor)
+        {
+            vtkCamera camera = _renderer.GetActiveCamera();
+            camera.SetParallelScale(factor);
+        }
         public void SetZoomToFit(bool animate)
         {
             if (_animating) return;
             _animating = animate;
-
+            //
             vtkCamera camera = _renderer.GetActiveCamera();
             vtkCamera cameraStart = vtkCamera.New();
             cameraStart.DeepCopy(camera);
-
+            //
             ResetCamera();
-
             //_renderWindowInteractor.Modified(); // this updates the vtkMax annotation objects
             if (animate) AnimateCamera(cameraStart, camera, camera);
             else this.Invalidate();

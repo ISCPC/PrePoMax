@@ -468,6 +468,8 @@ namespace PrePoMax
                 // Reduce flicker
                 _vtk.Left += _vtk.Width;
                 _vtk.Visible = true;
+                _controller.Redraw();
+                _vtk.SetZoomFactor(1000);    // set starting zoom larger that the object
                 Application.DoEvents();
                 _vtk.Left -= _vtk.Width;
                 _vtk.Visible = false;

@@ -33,11 +33,12 @@ namespace CaeMesh
         {
             foreach (var entry in nodes) Nodes.Add(entry.Key, entry.Value);
         }
-        public Dictionary<int, double> GetAveragedValues()
+        public Dictionary<int, double> GetAveragedValues(bool areaAverage)
         {
             Dictionary<int, double> values = new Dictionary<int, double>();
             double value;
             double areaSum;
+            double averageFactor;
             //
             foreach (var nodeEntry in Nodes)
             {
@@ -49,8 +50,11 @@ namespace CaeMesh
                     {
                         if (tuple.Item1 != 0)
                         {
-                            value += tuple.Item1 * tuple.Item2;
-                            areaSum += tuple.Item2;
+                            if (areaAverage) averageFactor = tuple.Item2;
+                            else averageFactor = 1;
+                            //
+                            value += tuple.Item1 * averageFactor;
+                            areaSum += averageFactor;
                         }
                     }
                 }
@@ -90,20 +94,20 @@ namespace CaeMesh
     public class AvgNodalElementData
     {
         // Value, area, normal
-        public List<Tuple<double, double, Vec3D>> Data;
+        public List<Tuple<double, double>> Data;
 
 
         // Constructors
         public AvgNodalElementData()
         {
-            Data = new List<Tuple<double, double, Vec3D>>();
+            Data = new List<Tuple<double, double>>();
         }
         public AvgNodalElementData(AvgNodalElementData avgNodalSurfaceElementData)
             : this()
         {
             foreach (var tuple in avgNodalSurfaceElementData.Data)
             {
-                Data.Add(new Tuple<double, double, Vec3D>(tuple.Item1, tuple.Item2, tuple.Item3));
+                Data.Add(new Tuple<double, double>(tuple.Item1, tuple.Item2));
             }
         }
     }
@@ -114,6 +118,5 @@ namespace CaeMesh
         public int SurfaceId;
         public int ElementId;
         public double Area;
-        public Vec3D Normal;
     }
 }
