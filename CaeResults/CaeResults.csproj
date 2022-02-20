@@ -59,6 +59,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FeResults.cs" />
+    <Compile Include="FieldOutputNames.cs" />
     <Compile Include="HistoryOutputs\HistoryResultData.cs" />
     <Compile Include="HistoryOutputs\HistoryResultComponent.cs" />
     <Compile Include="HistoryOutputs\HistoryResultField.cs" />

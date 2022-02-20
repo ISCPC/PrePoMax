@@ -7345,7 +7345,7 @@ namespace PrePoMax
                 timerTest.Interval = 10;
                 //timerTest.Stop();
 
-                string[] names = new string[] { "STRESS", "DISP" };
+                string[] names = new string[] { CaeResults.FFieldNames.Stress, CaeResults.FFieldNames.Disp };
                 string[] components = new string[] { "SZZ", "D2" };
 
                 CaeResults.FieldData currentData = _controller.CurrentFieldData;
