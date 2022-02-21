@@ -12065,11 +12065,15 @@ namespace PrePoMax
         #region Results  ###########################################################################################################
         public void DrawResults(bool resetCamera)
         {
+            //bool test = _form.RenderingOn;
+            //_form.RenderingOn = false;
             // Set the current view and call DrawResults
             if (CurrentView != ViewGeometryModelResults.Results) CurrentView = ViewGeometryModelResults.Results;
             // Draw results
             else
             {
+                bool rendering = _form.RenderingOn;
+                if (rendering) _form.RenderingOn = false;
                 _form.Clear3D();    // Removes section cut
                 //
                 if (_results == null || _results.Mesh == null) return;
@@ -12097,6 +12101,8 @@ namespace PrePoMax
                 if (resetCamera) _form.SetFrontBackView(true, true); // animation:true is here to correctly draw max/min widgets 
                 //
                 _form.UpdateScalarsAndCameraAndRedraw();
+                //
+                if (rendering) _form.RenderingOn = true;
             }
         }
         private void DrawAllResultParts(FieldData fieldData, bool drawUndeformedModel, 
