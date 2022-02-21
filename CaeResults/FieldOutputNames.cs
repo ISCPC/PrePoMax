@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CaeResults
 {
-    public class FFieldNames
+    public class FOFieldNames
     {
         public const string None = "NONE";
         //
@@ -39,7 +39,7 @@ namespace CaeResults
         public const string ContactWear = "CONTACT_WEAR";
     }
 
-    public class FComponentNames
+    public class FOComponentNames
     {
         public const string COpen = "COPEN";
         public const string CSlip1 = "CSLIP1";

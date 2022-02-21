@@ -440,26 +440,26 @@ namespace CaeResults
             //
             switch (fieldData.Name)
             {
-                case FFieldNames.Disp:
+                case FOFieldNames.Disp:
                     field = CreateVectorField(fieldData.Name, components, values);
                     break;
-                case FFieldNames.Forc:
+                case FOFieldNames.Forc:
                     field = CreateVectorField(fieldData.Name, components, values);
                     break;
-                case FFieldNames.Stress:
+                case FOFieldNames.Stress:
                     field = CreateStressField(fieldData.Name, components, values);
                     break;
-                case FFieldNames.ToStrain:
-                case FFieldNames.MeStrain:
-                case FFieldNames.Pe:
+                case FOFieldNames.ToStrain:
+                case FOFieldNames.MeStrain:
+                case FOFieldNames.Pe:
                     field = CreateStrainField(fieldData.Name, components, values);
                     break;
                 // Thermal
-                case FFieldNames.Flux:
+                case FOFieldNames.Flux:
                     field = CreateVectorField(fieldData.Name, components, values);
                     break;
                 // Error
-                case FFieldNames.ZZStr:
+                case FOFieldNames.ZZStr:
                     field = CreateStressField(fieldData.Name, components, values);
                     break;
                 default:

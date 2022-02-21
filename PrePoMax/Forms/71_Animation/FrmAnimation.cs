@@ -167,27 +167,27 @@ namespace PrePoMax.Forms
         private void numNumOfFrames_ValueChanged(object sender, EventArgs e)
         {
             Stop();
-
+            //
             if ((int)numNumOfFrames.Value != _numFrames)
             {
                 _numFrames = (int)numNumOfFrames.Value;
-
+                //
                 tbarFrameSelector.Maximum = _numFrames;
                 numCurrFrame.Maximum = _numFrames;
                 numFirstFrame.Maximum = _numFrames;
                 numLastFrame.Maximum = _numFrames;
-
+                //
                 if (_currFrme > _numFrames) tbarFrameSelector.Value = _numFrames;
                 numFirstFrame.Value = 1;
                 numLastFrame.Value = _numFrames;
-
+                //
                 _updateAnimation = true;
             }
         }
         private void NumIncrementStep_ValueChanged(object sender, EventArgs e)
         {
             Stop();
-
+            //
             if (_animationType == AnimationType.ScaleFactor) _frameDelta = 1;
             else _frameDelta = (int)numIncrementStep.Value;
         }
@@ -313,10 +313,10 @@ namespace PrePoMax.Forms
         private void AnimationTypeChanged(bool updateAnimation)
         {
             Stop();
-
+            //
             numNumOfFrames.Enabled = rbScaleFactor.Checked;
             numIncrementStep.Enabled = !rbScaleFactor.Checked;
-
+            //
             if (rbScaleFactor.Checked)
             {
                 numNumOfFrames.Value = _prevNumFrmes;
@@ -324,16 +324,18 @@ namespace PrePoMax.Forms
             }
             else
             {
-                _prevNumFrmes = (int)numNumOfFrames.Value;
+                _prevNumFrmes = (int)numNumOfFrames.Value;                
                 _animationType = AnimationType.TimeIncrements;
             }
-
+            //
             NumIncrementStep_ValueChanged(null, null);
-
+            //
             if (updateAnimation)
             {
                 _updateAnimation = true;
                 UpdateFrame();
+                //
+                numCurrFrame.Value = numNumOfFrames.Value;
             }
         }
         public void UpdateAnimation()

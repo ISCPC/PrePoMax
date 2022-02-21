@@ -178,7 +178,7 @@ namespace CaeResults
                 //
                 if (_scale != 0)
                 {
-                    string name = FFieldNames.Disp;
+                    string name = FOFieldNames.Disp;
                     string[] componentNames = GetComponentNames(name);
                     // Components can be deleted
                     if (componentNames.Contains("U1") && componentNames.Contains("U2") && componentNames.Contains("U3"))
@@ -264,7 +264,7 @@ namespace CaeResults
             //
             if (scale != 0)
             {
-                string name = FFieldNames.Disp;
+                string name = FOFieldNames.Disp;
                 string[] componentNames = GetComponentNames(name);
                 // Components can be deleted
                 if (componentNames.Contains("U1") && componentNames.Contains("U2") && componentNames.Contains("U3"))
@@ -346,50 +346,50 @@ namespace CaeResults
             {
                 switch (fieldDataName.ToUpper())
                 {
-                    case FFieldNames.None:
+                    case FOFieldNames.None:
                         unitConverter = new DoubleConverter();
                         unitAbbreviation = "";
                         break;
-                    case FFieldNames.Disp:
+                    case FOFieldNames.Disp:
                         unitConverter = new StringLengthConverter();
                         unitAbbreviation = _unitSystem.LengthUnitAbbreviation;
                         break;
-                    case FFieldNames.Stress:
-                    case FFieldNames.ZZStr:
+                    case FOFieldNames.Stress:
+                    case FOFieldNames.ZZStr:
                         unitConverter = new StringPressureConverter();
                         unitAbbreviation = _unitSystem.PressureUnitAbbreviation;
                         break;
-                    case FFieldNames.ToStrain: 
-                    case FFieldNames.MeStrain:
-                    case FFieldNames.Pe:
+                    case FOFieldNames.ToStrain: 
+                    case FOFieldNames.MeStrain:
+                    case FOFieldNames.Pe:
                         unitConverter = new DoubleConverter();
                         unitAbbreviation = "/";
                         break;
-                    case FFieldNames.Forc:
+                    case FOFieldNames.Forc:
                         unitConverter = new StringForceConverter();
                         unitAbbreviation = _unitSystem.ForceUnitAbbreviation;
                         break;
-                    case FFieldNames.Ener:
+                    case FOFieldNames.Ener:
                         unitConverter = new StringEnergyPerVolumeConverter();
                         unitAbbreviation = _unitSystem.EnergyPerVolumeUnitAbbreviation;
                         break;
-                    case FFieldNames.Error:
+                    case FOFieldNames.Error:
                         unitConverter = new DoubleConverter();
                         unitAbbreviation = "%";
                         break;
-                    case FFieldNames.Contact:
+                    case FOFieldNames.Contact:
                         {
                             switch (componentName.ToUpper())
                             {
-                                case FComponentNames.COpen:
-                                case FComponentNames.CSlip1:
-                                case FComponentNames.CSlip2:
+                                case FOComponentNames.COpen:
+                                case FOComponentNames.CSlip1:
+                                case FOComponentNames.CSlip2:
                                     unitConverter = new StringLengthConverter();
                                     unitAbbreviation = _unitSystem.LengthUnitAbbreviation;
                                     break;
-                                case FComponentNames.CPress:
-                                case FComponentNames.CShear1:
-                                case FComponentNames.CShear2:
+                                case FOComponentNames.CPress:
+                                case FOComponentNames.CShear1:
+                                case FOComponentNames.CShear2:
                                     unitConverter = new StringPressureConverter();
                                     unitAbbreviation = _unitSystem.PressureUnitAbbreviation;
                                     break;
@@ -399,26 +399,26 @@ namespace CaeResults
                         }
                         break;
                     // WEAR
-                    case FFieldNames.SlidingDistance:
-                    case FFieldNames.SurfaceNormal:
-                    case FFieldNames.Depth:
+                    case FOFieldNames.SlidingDistance:
+                    case FOFieldNames.SurfaceNormal:
+                    case FOFieldNames.Depth:
                         unitConverter = new StringLengthConverter();
                         unitAbbreviation = _unitSystem.LengthUnitAbbreviation;
                         break;
                     // Thermal
-                    case FFieldNames.NdTemp:
+                    case FOFieldNames.NdTemp:
                         unitConverter = new StringTemperatureConverter();
                         unitAbbreviation = _unitSystem.TemperatureUnitAbbreviation;
                         break;
-                    case FFieldNames.Flux:
+                    case FOFieldNames.Flux:
                         unitConverter = new StringPowerPerAreaConverter();
                         unitAbbreviation = _unitSystem.PowerPerAreaUnitAbbreviation;
                         break;
-                    case FFieldNames.Rfl:
+                    case FOFieldNames.Rfl:
                         unitConverter = new StringPowerConverter();
                         unitAbbreviation = _unitSystem.PowerUnitAbbreviation;
                         break;
-                    case FFieldNames.HError:
+                    case FOFieldNames.HError:
                         unitConverter = new DoubleConverter();
                         unitAbbreviation = "%";
                         break;
@@ -456,14 +456,14 @@ namespace CaeResults
             {
                 switch (fieldName.ToUpper())
                 {
-                    case "TIME":
+                    case HOFieldNames.Time:
                         unitConverter = new StringTimeConverter();
                         unitAbbreviation = _unitSystem.TimeUnitAbbreviation;
                         break;
-                    case "DISPLACEMENTS":
-                    case "RELATIVE CONTACT DISPLACEMENT":
-                    case "CENTER OF GRAVITY CG":
-                    case "MEAN SURFACE NORMAL":
+                    case HOFieldNames.Displacements:
+                    case HOFieldNames.RelativeContactDisplacement:
+                    case HOFieldNames.CenterOgGravityCG:
+                    case HOFieldNames.MeanSurfaceNormal:
                         if (componentName.ToUpper().StartsWith("UR"))
                         {
                             unitConverter = new StringAngleConverter();
@@ -475,12 +475,12 @@ namespace CaeResults
                             unitAbbreviation = _unitSystem.LengthUnitAbbreviation;
                         }
                         break;
-                    case "SURFACE AREA":
+                    case HOFieldNames.SurfaceArea:
                         unitConverter = new StringAreaConverter();
                         unitAbbreviation = _unitSystem.AreaUnitAbbreviation;
                         break;
-                    case "VOLUME":
-                    case "TOTAL VOLUME":
+                    case HOFieldNames.Volume:
+                    case HOFieldNames.TotalVolume:
                         unitConverter = new StringVolumeConverter();
                         unitAbbreviation = _unitSystem.VolumeUnitAbbreviation;
                         break;
@@ -547,7 +547,7 @@ namespace CaeResults
                         unitAbbreviation = _unitSystem.PowerPerAreaUnitAbbreviation;
                         break;
                     // Error
-                    case FFieldNames.Error:
+                    case FOFieldNames.Error:
                     default:
                         string noSpacesName = fieldName.Replace(' ', '_');
                         GetFieldUnitConverterAndAbbrevation(noSpacesName.ToUpper(), componentName,
@@ -1649,7 +1649,7 @@ namespace CaeResults
             }
             else
             {
-                string name = FFieldNames.Disp;
+                string name = FOFieldNames.Disp;
                 string[] componentNames = GetComponentNames(name);
                 scaledNodes = new double[nodes.Length][];
                 for (int i = 0; i < nodes.Length; i++) scaledNodes[i] = nodes[i].ToArray();  // copy coordinates
@@ -1678,7 +1678,7 @@ namespace CaeResults
         {
             if (scale != 0)
             {
-                string name = FFieldNames.Disp;
+                string name = FOFieldNames.Disp;
                 string[] componentNames = GetComponentNames(name);
                 // Components can be deleted
                 if (componentNames.Contains("U1") && componentNames.Contains("U2") && componentNames.Contains("U3"))
@@ -1724,7 +1724,7 @@ namespace CaeResults
             float fieldMax;
             foreach (var entry in _fields)
             {
-                if (entry.Key.Name == FFieldNames.Disp)
+                if (entry.Key.Name == FOFieldNames.Disp)
                 {
                     fieldMax = entry.Value.GetComponentMax("ALL");
                     if (fieldMax > max) max = fieldMax;
@@ -1738,7 +1738,7 @@ namespace CaeResults
             foreach (var entry in _fields)
             {
                 if (entry.Key.StepId == stepId && entry.Key.StepIncrementId == stepIncrementId &&
-                    entry.Key.Name == FFieldNames.Disp)
+                    entry.Key.Name == FOFieldNames.Disp)
                 {
                     max = entry.Value.GetComponentMax("ALL");
                 }
@@ -1760,10 +1760,10 @@ namespace CaeResults
         {
             ComputeHistoryWearSlidingDistance();
             //
-            HistoryResultComponent slidingDistanceAll = GetHistoryResultComponent(FFieldNames.ContactWear, "SLIDING DISTANCE", "ALL");
+            HistoryResultComponent slidingDistanceAll = GetHistoryResultComponent(FOFieldNames.ContactWear, "SLIDING DISTANCE", "ALL");
             if (slidingDistanceAll != null)
             {
-                CreateAveragedFieldFromElementFaceHistory(FFieldNames.SlidingDistance, slidingDistanceAll, true);
+                CreateAveragedFieldFromElementFaceHistory(FOFieldNames.SlidingDistance, slidingDistanceAll, true);
             }
             //
             HistoryResultField surfaceNormalField = GetHistoryResultField("CONTACT_WEAR", "Surface normal");
@@ -1773,9 +1773,9 @@ namespace CaeResults
                 HistoryResultComponent n2 = surfaceNormalField.Components["N2"];
                 HistoryResultComponent n3 = surfaceNormalField.Components["N3"];
                 //
-                CreateAveragedFieldFromElementFaceHistory(FFieldNames.SurfaceNormal, n1, false);
-                CreateAveragedFieldFromElementFaceHistory(FFieldNames.SurfaceNormal, n2, false);
-                CreateAveragedFieldFromElementFaceHistory(FFieldNames.SurfaceNormal, n3, false);
+                CreateAveragedFieldFromElementFaceHistory(FOFieldNames.SurfaceNormal, n1, false);
+                CreateAveragedFieldFromElementFaceHistory(FOFieldNames.SurfaceNormal, n2, false);
+                CreateAveragedFieldFromElementFaceHistory(FOFieldNames.SurfaceNormal, n3, false);
             }
             //
             ComputeFieldWearSlidingDistance();
@@ -1783,7 +1783,7 @@ namespace CaeResults
         private void ComputeHistoryWearSlidingDistance()
         {
             HistoryResultField relativeContactDisplacement =
-                GetHistoryResultField("ALL_CONTACT_ELEMENTS", "RELATIVE CONTACT DISPLACEMENT");
+                GetHistoryResultField("ALL_CONTACT_ELEMENTS", HOFieldNames.RelativeContactDisplacement);
             //
             if (relativeContactDisplacement != null)
             {
@@ -1845,10 +1845,10 @@ namespace CaeResults
                 Field slidingDistanceField;
                 Field depthField;
                 Field normalField;
-                FieldData pressureData = new FieldData(FFieldNames.Contact, FComponentNames.CPress, 0, 0);
-                FieldData slidingDistanceData = new FieldData(FFieldNames.SlidingDistance, "ALL", 0, 0);                
-                FieldData depthData = new FieldData(FFieldNames.Depth, "ALL", 0, 0);
-                FieldData normalData = new FieldData(FFieldNames.SurfaceNormal, "", 0, 0);
+                FieldData pressureData = new FieldData(FOFieldNames.Contact, FOComponentNames.CPress, 0, 0);
+                FieldData slidingDistanceData = new FieldData(FOFieldNames.SlidingDistance, "ALL", 0, 0);                
+                FieldData depthData = new FieldData(FOFieldNames.Depth, "ALL", 0, 0);
+                FieldData normalData = new FieldData(FOFieldNames.SurfaceNormal, "", 0, 0);
                 int count = 0;
                 int[] stepIds = GetAllStepIds();
                 //

@@ -14,7 +14,6 @@ namespace CaeResults
     public static class DatFileReader
     {
         // Nodal                                                                                                        
-        private static readonly string nameDisplacements = "Displacements";
         private static readonly string nameForces = "Forces";
         private static readonly string nameTotalForce = "Total force";
         private static readonly string nameStresses = "Stresses";
@@ -27,22 +26,16 @@ namespace CaeResults
         private static readonly string nameHeatGeneration = "Heat generation";
         private static readonly string nameTotalHeatGeneration = "Total heat generation";
         // Contact                                                                                                      
-        private static readonly string nameRelativeContactDisplacement = "Relative contact displacement";
         private static readonly string nameContactStress = "Contact stress";
         private static readonly string nameContactPrintEnergy = "Contact print energy";
         private static readonly string nameTotalNumberOfContactElements = "Total number of contact elements";
         private static readonly string nameContactStatistics = "Statistics for slave set";
         private static readonly string nameTotalSurfaceForce = "Total surface force";
-        private static readonly string nameMomentAboutOrigin = "Moment about origin";
-        private static readonly string nameCenterOfGravity = "Center of gravity CG";
-        private static readonly string nameMeanSurfaceNormal = "Mean surface normal";
+        private static readonly string nameMomentAboutOrigin = "Moment about origin";        
         private static readonly string nameMomentAboutCG = "Moment about CG";
-        private static readonly string nameSurfaceArea = "Surface area";
         private static readonly string nameNormalSurfaceForce = "Normal surface force";
         private static readonly string nameShearSurfaceForce = "Shear surface force";
         // Element                                                                                                      
-        private static readonly string nameVolume = "Volume";
-        private static readonly string nameTotalVolume = "Total volume";
         private static readonly string nameInternalEnergy = "Internal energy";
         private static readonly string nameTotalInternalEnergy = "Total internal energy";
         // Thermal
@@ -96,7 +89,7 @@ namespace CaeResults
                 //
                 List<string> dataSetNames = new List<string>();
                 // Nodal                                                                
-                dataSetNames.Add(nameDisplacements);                
+                dataSetNames.Add(HOFieldNames.Displacements);                
                 dataSetNames.Add(nameForces);
                 dataSetNames.Add(nameTotalForce);
                 dataSetNames.Add(nameStresses);
@@ -109,22 +102,22 @@ namespace CaeResults
                 dataSetNames.Add(nameHeatGeneration);
                 dataSetNames.Add(nameTotalHeatGeneration);
                 // Contact                                                              
-                dataSetNames.Add(nameRelativeContactDisplacement);
+                dataSetNames.Add(HOFieldNames.RelativeContactDisplacement);
                 dataSetNames.Add(nameContactStress);
                 dataSetNames.Add(nameContactPrintEnergy);
                 dataSetNames.Add(nameTotalNumberOfContactElements);
                 dataSetNames.Add(nameContactStatistics);
                 dataSetNames.Add(nameTotalSurfaceForce);
                 dataSetNames.Add(nameMomentAboutOrigin);
-                dataSetNames.Add(nameCenterOfGravity);
-                dataSetNames.Add(nameMeanSurfaceNormal);
+                dataSetNames.Add(HOFieldNames.CenterOgGravityCG);
+                dataSetNames.Add(HOFieldNames.MeanSurfaceNormal);
                 dataSetNames.Add(nameMomentAboutCG);
-                dataSetNames.Add(nameSurfaceArea);
+                dataSetNames.Add(HOFieldNames.SurfaceArea);
                 dataSetNames.Add(nameNormalSurfaceForce);
                 dataSetNames.Add(nameShearSurfaceForce);
                 // Element                                                              
-                dataSetNames.Add(nameVolume);
-                dataSetNames.Add(nameTotalVolume);
+                dataSetNames.Add(HOFieldNames.Volume);
+                dataSetNames.Add(HOFieldNames.TotalVolume);
                 dataSetNames.Add(nameInternalEnergy);
                 dataSetNames.Add(nameTotalInternalEnergy);
                 // Thermal
@@ -311,9 +304,9 @@ namespace CaeResults
                 {
                     foreach (var name in dataSetNames)
                     {
-                        if (lines[0].ToLower().Trim().StartsWith(name.ToLower()))
+                        if (lines[0].ToUpper().Trim().StartsWith(name.ToUpper()))
                         {
-                            if (name == nameDisplacements)
+                            if (name == HOFieldNames.Displacements)
                             {
                                 //displacements (vx,vy,vz) for set NODESET-1 and time  0.1000000E+01
                                 //       310 -2.462709E-03 -6.331758E-04 -4.384750E-05
@@ -384,7 +377,7 @@ namespace CaeResults
                             //                                                                                                      
                             // Contact                                                                                              
                             //                                                                                                      
-                            else if (name == nameRelativeContactDisplacement)
+                            else if (name == HOFieldNames.RelativeContactDisplacement)
                             {
                                 // relative contact displacement (slave element+face,normal,tang1,tang2) for all contact elements and time 0.1000000E+01
                                 //     84102          4 -1.111983E-07 -2.300226E-07  1.142343E-07
@@ -436,13 +429,13 @@ namespace CaeResults
                                 lines[0] = lines[0].Replace("total internal energy for set",
                                                             "total internal energy (SE) for set");
                             }
-                            else if (name == nameVolume)
+                            else if (name == HOFieldNames.Volume)
                             {
                                 //volume (element, volume) for set SOLID_PART-1 and time  0.1000000E+01
                                 //      1655  1.538557E+00
                                 lines[0] = lines[0].Replace("(element, volume)", "(Id,EVOL)");
                             }
-                            else if (name == nameTotalVolume)
+                            else if (name == HOFieldNames.TotalVolume)
                             {
                                 //total volume for set SOLID_PART-1 and time  0.1000000E+01
                                 //        2.322033E+03
@@ -686,7 +679,7 @@ namespace CaeResults
                             component.Entries.Add(entries.Name, entries);
                         }
                         // Sum - If the same Id exists for the same time: sum them together
-                        if ((field.Name == nameRelativeContactDisplacement ||
+                        if ((field.Name == HOFieldNames.RelativeContactDisplacement ||
                              field.Name == nameContactStress ||
                              field.Name == nameContactPrintEnergy) && entries.Time.Contains(time))
                         {

@@ -4924,7 +4924,7 @@ namespace vtkControl
         {
             _scaleWidget.SetUnit(unit);
             //
-            Invalidate();
+            this.Invalidate();
         }
         // Scalar bar
         public void InitializeResultWidgetPositions()
