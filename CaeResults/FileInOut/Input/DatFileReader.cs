@@ -13,38 +13,6 @@ namespace CaeResults
     [Serializable]
     public static class DatFileReader
     {
-        // Nodal                                                                                                        
-        private static readonly string nameForces = "Forces";
-        private static readonly string nameTotalForce = "Total force";
-        private static readonly string nameStresses = "Stresses";
-        private static readonly string nameStrains = "Strains";
-        private static readonly string nameMechanicalStrains = "Mechanical strains";
-        private static readonly string nameEquivalentPlasticStrains = "Equivalent plastic strain";
-        private static readonly string nameInternalEnergyDensity = "Internal energy density";
-        // Thermal
-        private static readonly string nameTemperatures = "Temperatures";
-        private static readonly string nameHeatGeneration = "Heat generation";
-        private static readonly string nameTotalHeatGeneration = "Total heat generation";
-        // Contact                                                                                                      
-        private static readonly string nameContactStress = "Contact stress";
-        private static readonly string nameContactPrintEnergy = "Contact print energy";
-        private static readonly string nameTotalNumberOfContactElements = "Total number of contact elements";
-        private static readonly string nameContactStatistics = "Statistics for slave set";
-        private static readonly string nameTotalSurfaceForce = "Total surface force";
-        private static readonly string nameMomentAboutOrigin = "Moment about origin";        
-        private static readonly string nameMomentAboutCG = "Moment about CG";
-        private static readonly string nameNormalSurfaceForce = "Normal surface force";
-        private static readonly string nameShearSurfaceForce = "Shear surface force";
-        // Element                                                                                                      
-        private static readonly string nameInternalEnergy = "Internal energy";
-        private static readonly string nameTotalInternalEnergy = "Total internal energy";
-        // Thermal
-        private static readonly string nameHeatFlux = "Heat flux";
-        private static readonly string nameBodyHeating = "Body heating";
-        private static readonly string nameTotalBodyHeating = "Total body heating";
-        // Error                                                                                                        
-        private static readonly string nameError = "Error";
-        //
         private static readonly string[] spaceSplitter = new string[] { " " };
         private static readonly string[] commaSplitter = new string[] { "," };
         private static readonly string[] underscoreSplitter = new string[] { "_" };
@@ -90,40 +58,40 @@ namespace CaeResults
                 List<string> dataSetNames = new List<string>();
                 // Nodal                                                                
                 dataSetNames.Add(HOFieldNames.Displacements);                
-                dataSetNames.Add(nameForces);
-                dataSetNames.Add(nameTotalForce);
-                dataSetNames.Add(nameStresses);
-                dataSetNames.Add(nameStrains);
-                dataSetNames.Add(nameMechanicalStrains);
-                dataSetNames.Add(nameEquivalentPlasticStrains);
-                dataSetNames.Add(nameInternalEnergyDensity);                
+                dataSetNames.Add(HOFieldNames.Forces);
+                dataSetNames.Add(HOFieldNames.TotalForce);
+                dataSetNames.Add(HOFieldNames.Stresses);
+                dataSetNames.Add(HOFieldNames.Strains);
+                dataSetNames.Add(HOFieldNames.MechanicalStrains);
+                dataSetNames.Add(HOFieldNames.EquivalentPlasticStrains);
+                dataSetNames.Add(HOFieldNames.InternalEnergyDensity);                
                 // Thermal
-                dataSetNames.Add(nameTemperatures);
-                dataSetNames.Add(nameHeatGeneration);
-                dataSetNames.Add(nameTotalHeatGeneration);
+                dataSetNames.Add(HOFieldNames.Temperatures);
+                dataSetNames.Add(HOFieldNames.HeatGeneration);
+                dataSetNames.Add(HOFieldNames.TotalHeatGeneration);
                 // Contact                                                              
                 dataSetNames.Add(HOFieldNames.RelativeContactDisplacement);
-                dataSetNames.Add(nameContactStress);
-                dataSetNames.Add(nameContactPrintEnergy);
-                dataSetNames.Add(nameTotalNumberOfContactElements);
-                dataSetNames.Add(nameContactStatistics);
-                dataSetNames.Add(nameTotalSurfaceForce);
-                dataSetNames.Add(nameMomentAboutOrigin);
+                dataSetNames.Add(HOFieldNames.ContactStress);
+                dataSetNames.Add(HOFieldNames.ContactPrintEnergy);
+                dataSetNames.Add(HOFieldNames.TotalNumberOfContactElements);
+                dataSetNames.Add(HOFieldNames.StatisticsForSlaveSet);
+                dataSetNames.Add(HOFieldNames.TotalSurfaceForce);
+                dataSetNames.Add(HOFieldNames.MomentAboutOrigin);
                 dataSetNames.Add(HOFieldNames.CenterOgGravityCG);
                 dataSetNames.Add(HOFieldNames.MeanSurfaceNormal);
-                dataSetNames.Add(nameMomentAboutCG);
+                dataSetNames.Add(HOFieldNames.MomentAboutCG);
                 dataSetNames.Add(HOFieldNames.SurfaceArea);
-                dataSetNames.Add(nameNormalSurfaceForce);
-                dataSetNames.Add(nameShearSurfaceForce);
+                dataSetNames.Add(HOFieldNames.NormalSurfaceForce);
+                dataSetNames.Add(HOFieldNames.ShearSurfaceForce);
                 // Element                                                              
                 dataSetNames.Add(HOFieldNames.Volume);
                 dataSetNames.Add(HOFieldNames.TotalVolume);
-                dataSetNames.Add(nameInternalEnergy);
-                dataSetNames.Add(nameTotalInternalEnergy);
+                dataSetNames.Add(HOFieldNames.InternalEnergy);
+                dataSetNames.Add(HOFieldNames.TotalInternalEnergy);
                 // Thermal
-                dataSetNames.Add(nameHeatFlux);
-                dataSetNames.Add(nameBodyHeating);
-                dataSetNames.Add(nameTotalBodyHeating);
+                dataSetNames.Add(HOFieldNames.HeatFlux);
+                dataSetNames.Add(HOFieldNames.BodyHeating);
+                dataSetNames.Add(HOFieldNames.TotalBodyHeating);
                 //                                                                      
                 Dictionary<string, string> repairedSetNames = new Dictionary<string, string>();
                 //
@@ -135,11 +103,12 @@ namespace CaeResults
                 foreach (string[] dataSetLines in dataSetLinesList)
                 {
                     dataSet = GetDatDataSet(dataSetNames, dataSetLines, repairedSetNames);
-                    if (dataSet.FieldName != nameError) dataSets.Add(dataSet);
+                    if (dataSet.FieldName != HOFieldNames.Error) dataSets.Add(dataSet);
                 }
                 //
                 HistoryResults historyOutput = GetHistoryOutput(dataSets);
-                AddVonMisesStressComponent(historyOutput);
+                AddStressComponents(historyOutput);
+                AddStrainComponents(historyOutput);
                 return historyOutput;
             }
             //
@@ -174,7 +143,7 @@ namespace CaeResults
                     }
                 }
                 // Contact statistics
-                if (theName == nameContactStatistics)
+                if (theName == HOFieldNames.StatisticsForSlaveSet)
                 {
                     dataSet = new List<string>();
                     for (int j = 0; j <= 8; j++)
@@ -312,26 +281,26 @@ namespace CaeResults
                                 //       310 -2.462709E-03 -6.331758E-04 -4.384750E-05
                                 lines[0] = lines[0].Replace("(vx,vy,vz)", "(Id,U1,U2,U3)");
                             }
-                            else if (name == nameForces)
+                            else if (name ==HOFieldNames.Forces)
                             {
                                 //forces (fx,fy,fz) for set NODESET-1 and time  0.1000000E+01
                                 //       310 -2.582430E-13 -1.013333E-01  6.199805E-14
                                 lines[0] = lines[0].Replace("(fx,fy,fz)", "(Id,RF1,RF2,RF3)");
                             }
-                            else if (name == nameTotalForce)
+                            else if (name == HOFieldNames.TotalForce)
                             {
                                 //total force (fx,fy,fz) for set NODESET-1 and time  0.1000000E+01
                                 //       -5.868470E-13 -1.000000E+00 -1.028019E-13
                                 lines[0] = lines[0].Replace("(fx,fy,fz)", "(RF1,RF2,RF3)");
                             }
-                            else if (name == nameStresses)
+                            else if (name == HOFieldNames.Stresses)
                             {
                                 //stresses (elem, integ.pnt.,sxx,syy,szz,sxy,sxz,syz) for set SOLID_PART-1 and time  0.1000000E+01
                                 //      1655   1  1.186531E-02 -3.997792E-02 -3.119545E-03  1.104426E-02  2.740127E-03 -9.467634E-03
                                 lines[0] = lines[0].Replace("(elem, integ.pnt.,sxx,syy,szz,sxy,sxz,syz)",
                                                             "(Id,Int.Pnt.,S11,S22,S33,S12,S13,S23)");
                             }
-                            else if (name == nameStrains)
+                            else if (name == HOFieldNames.Strains)
                             {
                                 //strains (elem, integ.pnt.,exx,eyy,ezz,exy,exz,eyz) forset SOLID_PART-1 and time  0.1000000E+01
                                 //      1655   1  1.180693E-07 -2.028650E-07  2.530589E-08  6.836925E-08  1.696269E-08 -5.860917E-08
@@ -339,7 +308,7 @@ namespace CaeResults
                                                             "(Id,Int.Pnt.,E11,E22,E33,E12,E13,E23)");
                                 lines[0] = lines[0].Replace(" forset ", " for set ");
                             }
-                            else if (name == nameMechanicalStrains)
+                            else if (name == HOFieldNames.MechanicalStrains)
                             {
                                 // mechanical strains (elem, integ.pnt.,exx,eyy,ezz,exy,exz,eyz) forset ELEMENTSET-1 and time  0.1000000E+01
                                 //      2030   1  1.428572E-07 -4.761905E-07  1.428571E-07 -1.951987E-14  2.100533E-15  1.625910E-15
@@ -347,7 +316,7 @@ namespace CaeResults
                                                             "(Id,Int.Pnt.,E11,E22,E33,E12,E13,E23)");
                                 lines[0] = lines[0].Replace(" forset ", " for set ");
                             }
-                            else if (name == nameEquivalentPlasticStrains)
+                            else if (name == HOFieldNames.EquivalentPlasticStrains)
                             {
                                 // equivalent plastic strain (elem, integ.pnt.,pe)for set ELEMENTSET-1 and time  0.6250000E-01
                                 //      1682   1  0.000000E+00
@@ -356,19 +325,19 @@ namespace CaeResults
                                 lines[0] = lines[0].Replace(")for set ", ") for set ");
                             }
                             // Thermal                                                                                              
-                            else if (name == nameTemperatures)
+                            else if (name == HOFieldNames.Temperatures)
                             {
                                 // temperatures for set INTERNAL_SELECTION-1_NH_OUTPUT-1 and time  0.1000000E+01
                                 //      3450  1.000000E+02
                                 lines[0] = lines[0].Replace("temperatures for set", "temperatures (Id,T) for set");
                             }
-                            else if (name == nameHeatGeneration)
+                            else if (name == HOFieldNames.HeatGeneration)
                             {
                                 // heat generation for set INTERNAL_SELECTION-4_NH_OUTPUT-1 and time  0.1000000E+01
                                 //       793  6.764684E+02
                                 lines[0] = lines[0].Replace("heat generation for set", "heat generation (Id,RFL) for set");
                             }
-                            else if (name == nameTotalHeatGeneration)
+                            else if (name == HOFieldNames.TotalHeatGeneration)
                             {
                                 // total heat generation for set INTERNAL_SELECTION-4_NH_OUTPUT-1 and time  0.5750000E+01
                                 //        9.890290E+02
@@ -385,7 +354,7 @@ namespace CaeResults
                                                             "(Id,Int.Pnt.,NORMAL,TANG1,TANG2)");
                                 lines[0] = lines[0].Replace("for all contact elements", "for set ALL_CONTACT_ELEMENTS");
                             }
-                            else if (name == nameContactStress)
+                            else if (name == HOFieldNames.ContactStress)
                             {
                                 // contact stress (slave element+face,press,tang1,tang2) for all contact elements and time 0.5000000E+00
                                 //     97837          4  9.511105E-01 -2.082501E-01 -2.605988E-02
@@ -393,14 +362,14 @@ namespace CaeResults
                                                             "(Id,Int.Pnt.,PRESS,TANG1,TANG2)");
                                 lines[0] = lines[0].Replace("for all contact elements", "for set ALL_CONTACT_ELEMENTS");
                             }
-                            else if (name == nameContactPrintEnergy)
+                            else if (name == HOFieldNames.ContactPrintEnergy)
                             {
                                 // contact print energy (slave element+face,energy)for all contact elements and time 0.5000000E+00
                                 //     98823          4  6.898953E-06
                                 lines[0] = lines[0].Replace("(slave element+face,energy)for", "(Id,Int.Pnt.,ENERGY) for");
                                 lines[0] = lines[0].Replace("for all contact elements", "for set ALL_CONTACT_ELEMENTS");
                             }
-                            else if (name == nameTotalNumberOfContactElements)
+                            else if (name == HOFieldNames.TotalNumberOfContactElements)
                             {
                                 // total number of contact elements for time  0.5000000E+00
                                 // 560
@@ -409,20 +378,20 @@ namespace CaeResults
                             //                                                                                                      
                             // Element                                                                                              
                             //                                                                                                      
-                            else if (name == nameInternalEnergyDensity)
+                            else if (name == HOFieldNames.InternalEnergyDensity)
                             {
                                 // internal energy density (elem, integ.pnt.,eneset ELEMENTSET-1 and time  0.6250000E-01
                                 //      3068   1  4.313000E-01
                                 lines[0] = lines[0].Replace("(elem, integ.pnt.,eneset ",
                                                             "(Id,Int.Pnt.,ENER) for set ");
                             }
-                            else if (name == nameInternalEnergy)
+                            else if (name == HOFieldNames.InternalEnergy)
                             {
                                 //internal energy (element, energy) for set SOLID_PART-1 and time  0.1000000E+01
                                 //      1655  9.342906E-09
                                 lines[0] = lines[0].Replace("(element, energy)", "(Id,ELSE)");
                             }
-                            else if (name == nameTotalInternalEnergy)
+                            else if (name == HOFieldNames.TotalInternalEnergy)
                             {
                                 //total internal energy for set SOLID_PART-1 and time  0.1000000E+01
                                 //        3.249095E-04
@@ -442,19 +411,19 @@ namespace CaeResults
                                 lines[0] = lines[0].Replace("total volume for set", "total volume (VOL) for set");
                             }
                             // Thermal                                                                                              
-                            else if (name == nameHeatFlux)
+                            else if (name == HOFieldNames.HeatFlux)
                             {
                                 // heat flux (elem, integ.pnt.,qx,qy,qz) for set INTERNAL_SELECTION-3_EH_OUTPUT-1 and time  0.1000000E+01
                                 //       477   1 -6.733427E+00  1.076158E+01 -1.030648E+01
                                 lines[0] = lines[0].Replace("(elem, integ.pnt.,qx,qy,qz)", "(Id,Int.Pnt.,Q1,Q2,Q3)");
                             }
-                            else if (name == nameBodyHeating)
+                            else if (name == HOFieldNames.BodyHeating)
                             {
                                 // body heating (element, volume) for set INTERNAL_SELECTION-3_EH_OUTPUT-1 and time  0.1000000E+01
                                 //       477  0.000000E+00
                                 lines[0] = lines[0].Replace("(element, volume)", "(Id,EBHE)");
                             }
-                            else if (name == nameTotalBodyHeating)
+                            else if (name == HOFieldNames.TotalBodyHeating)
                             {
                                 // total body heating for set INTERNAL_SELECTION-3_EH_OUTPUT-1 and time  0.1000000E+01
                                 //        0.126000E+00
@@ -592,7 +561,7 @@ namespace CaeResults
             }
             catch
             {
-                return new DatDataSet() { FieldName = nameError };
+                return new DatDataSet() { FieldName = HOFieldNames.Error };
             }
         }
         static private HistoryResults GetHistoryOutput(List<DatDataSet> dataSets)
@@ -627,9 +596,11 @@ namespace CaeResults
                     field = new HistoryResultField(repairedDataSet.FieldName);
                     set.Fields.Add(field.Name, field);
                     // Add MISES component
-                    if (field.Name == nameStresses)
+                    if (field.Name == HOFieldNames.Stresses)
                     {
-                        component = new HistoryResultComponent("MISES");
+                        component = new HistoryResultComponent(HOComponentNames.Mises);
+                        field.Components.Add(component.Name, component);
+                        component = new HistoryResultComponent(HOComponentNames.Tresca);
                         field.Components.Add(component.Name, component);
                     }
                 }
@@ -680,14 +651,14 @@ namespace CaeResults
                         }
                         // Sum - If the same Id exists for the same time: sum them together
                         if ((field.Name == HOFieldNames.RelativeContactDisplacement ||
-                             field.Name == nameContactStress ||
-                             field.Name == nameContactPrintEnergy) && entries.Time.Contains(time))
+                             field.Name == HOFieldNames.ContactStress ||
+                             field.Name == HOFieldNames.ContactPrintEnergy) && entries.Time.Contains(time))
                         {
                             entries.SumValue(values[j + offset]);
                             //entries.Values[entries.Values.Count - 1] += values[j + offset];
                         }
                         // Skip repeating
-                        else if (field.Name == nameTotalNumberOfContactElements && entries.Time.Contains(time)) 
+                        else if (field.Name == HOFieldNames.TotalNumberOfContactElements && entries.Time.Contains(time)) 
                         { }
                         // Add
                         else
@@ -699,10 +670,6 @@ namespace CaeResults
                     }
                 }
                 //
-                foreach (var entry in component.Entries)
-                {
-
-                }
             }
             // Averege the summed values
             foreach (var setEntry in historyOutput.Sets)
@@ -744,23 +711,25 @@ namespace CaeResults
             return dataSet;
         }
         //
-        static private void AddVonMisesStressComponent(HistoryResults historyOutput)
+        static private void AddStressComponents(HistoryResults historyOutput)
         {
             foreach (var setsEntry in historyOutput.Sets)
             {
                 foreach (var fieldEntry in setsEntry.Value.Fields)
                 {
-                    if (fieldEntry.Key == nameStresses)
+                    if (fieldEntry.Key == HOFieldNames.Stresses)
                     {
-                        HistoryResultComponent vonMisesCom = fieldEntry.Value.Components["MISES"];
-                        HistoryResultComponent sgnMaxAbsPrinCom = new HistoryResultComponent("SGN-MAX-ABS-PRI");
-                        HistoryResultComponent prinMaxCom = new HistoryResultComponent("PRINCIPAL-MAX");
-                        HistoryResultComponent prinMidCom = new HistoryResultComponent("PRINCIPAL-MID");
-                        HistoryResultComponent prinMinCom = new HistoryResultComponent("PRINCIPAL-MIN");
+                        HistoryResultComponent vonMisesCom = fieldEntry.Value.Components[HOComponentNames.Mises];
+                        HistoryResultComponent trescaCom = fieldEntry.Value.Components[HOComponentNames.Tresca];
+                        HistoryResultComponent sgnMaxAbsPrinCom = new HistoryResultComponent(HOComponentNames.SgnMaxAbsPri);
+                        HistoryResultComponent prinMaxCom = new HistoryResultComponent(HOComponentNames.PrincipalMax);
+                        HistoryResultComponent prinMidCom = new HistoryResultComponent(HOComponentNames.PrincipalMid);
+                        HistoryResultComponent prinMinCom = new HistoryResultComponent(HOComponentNames.PrincipalMin);
                         //
-                        string[] entryNames = fieldEntry.Value.Components["S11"].Entries.Keys.ToArray();
+                        string[] entryNames = fieldEntry.Value.Components[HOComponentNames.S11].Entries.Keys.ToArray();
                         double[][] values = new double[6][];
                         double[] vmArray;
+                        double[] trescaArray;
                         double[] sgnMaxAbsPrinArray;
                         double[] prinMaxArray;
                         double[] prinMidArray;
@@ -780,14 +749,15 @@ namespace CaeResults
                         //
                         foreach (var entryName in entryNames)
                         {
-                            values[0] = fieldEntry.Value.Components["S11"].Entries[entryName].Values.ToArray();
-                            values[1] = fieldEntry.Value.Components["S22"].Entries[entryName].Values.ToArray();
-                            values[2] = fieldEntry.Value.Components["S33"].Entries[entryName].Values.ToArray();
-                            values[3] = fieldEntry.Value.Components["S12"].Entries[entryName].Values.ToArray();
-                            values[4] = fieldEntry.Value.Components["S23"].Entries[entryName].Values.ToArray();
-                            values[5] = fieldEntry.Value.Components["S13"].Entries[entryName].Values.ToArray();
+                            values[0] = fieldEntry.Value.Components[HOComponentNames.S11].Entries[entryName].Values.ToArray();
+                            values[1] = fieldEntry.Value.Components[HOComponentNames.S22].Entries[entryName].Values.ToArray();
+                            values[2] = fieldEntry.Value.Components[HOComponentNames.S33].Entries[entryName].Values.ToArray();
+                            values[3] = fieldEntry.Value.Components[HOComponentNames.S12].Entries[entryName].Values.ToArray();
+                            values[4] = fieldEntry.Value.Components[HOComponentNames.S23].Entries[entryName].Values.ToArray();
+                            values[5] = fieldEntry.Value.Components[HOComponentNames.S13].Entries[entryName].Values.ToArray();
                             //
                             vmArray = new double[values[0].Length];
+                            trescaArray = new double[values[0].Length];
                             sgnMaxAbsPrinArray = new double[values[0].Length];
                             prinMaxArray = new double[values[0].Length];
                             prinMidArray = new double[values[0].Length];
@@ -824,44 +794,154 @@ namespace CaeResults
                                 Tools.SolveQubicEquationDepressedCubic(1.0, -I1, I2, -I3, ref sp1, ref sp2, ref sp3);
                                 Tools.Sort3_descending(ref sp1, ref sp2, ref sp3);
                                 //
+                                if (double.IsNaN(sp1)) sp1 = 0;
+                                if (double.IsNaN(sp2)) sp2 = 0;
+                                if (double.IsNaN(sp3)) sp3 = 0;
+                                //
                                 sgnMaxAbsPrinArray[i] = Math.Abs(sp1) > Math.Abs(sp3) ? (float)sp1 : (float)sp3;
                                 prinMaxArray[i] = sp1;
                                 prinMidArray[i] = sp2;
                                 prinMinArray[i] = sp3;
-                                //
-                                if (double.IsNaN(sgnMaxAbsPrinArray[i])) sgnMaxAbsPrinArray[i] = 0;
-                                if (double.IsNaN(prinMaxArray[i])) prinMaxArray[i] = 0;
-                                if (double.IsNaN(prinMidArray[i])) prinMidArray[i] = 0;
-                                if (double.IsNaN(prinMinArray[i])) prinMinArray[i] = 0;
+                                trescaArray[i] = sp1 - sp3;
                             }
                             //
                             hrEntries = new HistoryResultEntries(entryName, false);
-                            hrEntries.Time = fieldEntry.Value.Components["S11"].Entries[entryName].Time;
+                            hrEntries.Time = fieldEntry.Value.Components[HOComponentNames.S11].Entries[entryName].Time;
                             hrEntries.Values = vmArray.ToList();
                             vonMisesCom.Entries.Add(entryName, hrEntries);
                             //
                             hrEntries = new HistoryResultEntries(entryName, false);
-                            hrEntries.Time = fieldEntry.Value.Components["S11"].Entries[entryName].Time;
+                            hrEntries.Time = fieldEntry.Value.Components[HOComponentNames.S11].Entries[entryName].Time;
+                            hrEntries.Values = trescaArray.ToList();
+                            trescaCom.Entries.Add(entryName, hrEntries);
+                            //
+                            hrEntries = new HistoryResultEntries(entryName, false);
+                            hrEntries.Time = fieldEntry.Value.Components[HOComponentNames.S11].Entries[entryName].Time;
                             hrEntries.Values = sgnMaxAbsPrinArray.ToList();
                             sgnMaxAbsPrinCom.Entries.Add(entryName, hrEntries);
                             //
                             hrEntries = new HistoryResultEntries(entryName, false);
-                            hrEntries.Time = fieldEntry.Value.Components["S11"].Entries[entryName].Time;
+                            hrEntries.Time = fieldEntry.Value.Components[HOComponentNames.S11].Entries[entryName].Time;
                             hrEntries.Values = prinMaxArray.ToList();
                             prinMaxCom.Entries.Add(entryName, hrEntries);
                             //
                             hrEntries = new HistoryResultEntries(entryName, false);
-                            hrEntries.Time = fieldEntry.Value.Components["S11"].Entries[entryName].Time;
+                            hrEntries.Time = fieldEntry.Value.Components[HOComponentNames.S11].Entries[entryName].Time;
                             hrEntries.Values = prinMidArray.ToList();
                             prinMidCom.Entries.Add(entryName, hrEntries);
                             //
                             hrEntries = new HistoryResultEntries(entryName, false);
-                            hrEntries.Time = fieldEntry.Value.Components["S11"].Entries[entryName].Time;
+                            hrEntries.Time = fieldEntry.Value.Components[HOComponentNames.S11].Entries[entryName].Time;
                             hrEntries.Values = prinMinArray.ToList();
                             prinMinCom.Entries.Add(entryName, hrEntries);
                         }
                         //
-                        fieldEntry.Value.Components["MISES"] = vonMisesCom;
+                        fieldEntry.Value.Components[HOComponentNames.Mises] = vonMisesCom;
+                        fieldEntry.Value.Components[HOComponentNames.Tresca] = trescaCom;
+                        fieldEntry.Value.Components.Add(sgnMaxAbsPrinCom.Name, sgnMaxAbsPrinCom);
+                        fieldEntry.Value.Components.Add(prinMaxCom.Name, prinMaxCom);
+                        fieldEntry.Value.Components.Add(prinMidCom.Name, prinMidCom);
+                        fieldEntry.Value.Components.Add(prinMinCom.Name, prinMinCom);
+                    }
+                }
+            }
+        }
+        static private void AddStrainComponents(HistoryResults historyOutput)
+        {
+            foreach (var setsEntry in historyOutput.Sets)
+            {
+                foreach (var fieldEntry in setsEntry.Value.Fields)
+                {
+                    if (fieldEntry.Key == HOFieldNames.Strains || fieldEntry.Key == HOFieldNames.MechanicalStrains)
+                    {
+                        HistoryResultComponent sgnMaxAbsPrinCom = new HistoryResultComponent(HOComponentNames.SgnMaxAbsPri);
+                        HistoryResultComponent prinMaxCom = new HistoryResultComponent(HOComponentNames.PrincipalMax);
+                        HistoryResultComponent prinMidCom = new HistoryResultComponent(HOComponentNames.PrincipalMid);
+                        HistoryResultComponent prinMinCom = new HistoryResultComponent(HOComponentNames.PrincipalMin);
+                        //
+                        string[] entryNames = fieldEntry.Value.Components[HOComponentNames.E11].Entries.Keys.ToArray();
+                        double[][] values = new double[6][];
+                        double[] sgnMaxAbsPrinArray;
+                        double[] prinMaxArray;
+                        double[] prinMidArray;
+                        double[] prinMinArray;
+                        HistoryResultEntries hrEntries;
+                        //
+                        double e11;
+                        double e22;
+                        double e33;
+                        double e12;
+                        double e23;
+                        double e31;
+                        double I1;
+                        double I2;
+                        double I3;
+                        double ep1, ep2, ep3;
+                        //
+                        foreach (var entryName in entryNames)
+                        {
+                            values[0] = fieldEntry.Value.Components[HOComponentNames.E11].Entries[entryName].Values.ToArray();
+                            values[1] = fieldEntry.Value.Components[HOComponentNames.E22].Entries[entryName].Values.ToArray();
+                            values[2] = fieldEntry.Value.Components[HOComponentNames.E33].Entries[entryName].Values.ToArray();
+                            values[3] = fieldEntry.Value.Components[HOComponentNames.E12].Entries[entryName].Values.ToArray();
+                            values[4] = fieldEntry.Value.Components[HOComponentNames.E23].Entries[entryName].Values.ToArray();
+                            values[5] = fieldEntry.Value.Components[HOComponentNames.E13].Entries[entryName].Values.ToArray();
+                            //
+                            sgnMaxAbsPrinArray = new double[values[0].Length];
+                            prinMaxArray = new double[values[0].Length];
+                            prinMidArray = new double[values[0].Length];
+                            prinMinArray = new double[values[0].Length];
+                            //
+                            for (int i = 0; i < values.Length; i++)
+                            {
+                                e11 = values[0][i];
+                                e22 = values[1][i];
+                                e33 = values[2][i];
+                                e12 = values[3][i];
+                                e23 = values[4][i];
+                                e31 = values[5][i];
+                                //
+                                I1 = e11 + e22 + e33;
+                                I2 = e11 * e22 + e22 * e33 + e33 * e11 -
+                                     Math.Pow(e12, 2.0) - Math.Pow(e23, 2.0) - Math.Pow(e31, 2.0);
+                                I3 = e11 * e22 * e33 - e11 * Math.Pow(e23, 2.0) -
+                                     e22 * Math.Pow(e31, 2.0) - e33 * Math.Pow(e12, 2.0) + 2.0 * e12 * e23 * e31;
+                                //
+                                ep1 = ep2 = ep3 = 0;
+                                Tools.SolveQubicEquationDepressedCubic(1.0, -I1, I2, -I3, ref ep1, ref ep2, ref ep3);
+                                Tools.Sort3_descending(ref ep1, ref ep2, ref ep3);
+                                //
+                                if (double.IsNaN(ep1)) ep1 = 0;
+                                if (double.IsNaN(ep2)) ep2 = 0;
+                                if (double.IsNaN(ep3)) ep3 = 0;
+                                //
+                                sgnMaxAbsPrinArray[i] = Math.Abs(ep1) > Math.Abs(ep3) ? (float)ep1 : (float)ep3;
+                                prinMaxArray[i] = ep1;
+                                prinMidArray[i] = ep2;
+                                prinMinArray[i] = ep3;
+                            }
+                            //
+                            hrEntries = new HistoryResultEntries(entryName, false);
+                            hrEntries.Time = fieldEntry.Value.Components[HOComponentNames.E11].Entries[entryName].Time;
+                            hrEntries.Values = sgnMaxAbsPrinArray.ToList();
+                            sgnMaxAbsPrinCom.Entries.Add(entryName, hrEntries);
+                            //
+                            hrEntries = new HistoryResultEntries(entryName, false);
+                            hrEntries.Time = fieldEntry.Value.Components[HOComponentNames.E11].Entries[entryName].Time;
+                            hrEntries.Values = prinMaxArray.ToList();
+                            prinMaxCom.Entries.Add(entryName, hrEntries);
+                            //
+                            hrEntries = new HistoryResultEntries(entryName, false);
+                            hrEntries.Time = fieldEntry.Value.Components[HOComponentNames.E11].Entries[entryName].Time;
+                            hrEntries.Values = prinMidArray.ToList();
+                            prinMidCom.Entries.Add(entryName, hrEntries);
+                            //
+                            hrEntries = new HistoryResultEntries(entryName, false);
+                            hrEntries.Time = fieldEntry.Value.Components[HOComponentNames.E11].Entries[entryName].Time;
+                            hrEntries.Values = prinMinArray.ToList();
+                            prinMinCom.Entries.Add(entryName, hrEntries);
+                        }
+                        //
                         fieldEntry.Value.Components.Add(sgnMaxAbsPrinCom.Name, sgnMaxAbsPrinCom);
                         fieldEntry.Value.Components.Add(prinMaxCom.Name, prinMaxCom);
                         fieldEntry.Value.Components.Add(prinMidCom.Name, prinMidCom);
@@ -871,7 +951,7 @@ namespace CaeResults
             }
         }
 
-     
+
 
     }
 }

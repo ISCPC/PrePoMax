@@ -484,11 +484,11 @@ namespace CaeResults
                         unitConverter = new StringVolumeConverter();
                         unitAbbreviation = _unitSystem.VolumeUnitAbbreviation;
                         break;
-                    case "FORCES":
-                    case "TOTAL FORCE":
-                    case "NORMAL SURFACE FORCE":
-                    case "SHEAR SURFACE FORCE":
-                    case "TOTAL SURFACE FORCE":
+                    case HOFieldNames.Forces:
+                    case HOFieldNames.TotalForce:
+                    case HOFieldNames.NormalSurfaceForce:
+                    case HOFieldNames.ShearSurfaceForce:
+                    case HOFieldNames.TotalSurfaceForce:
                         if (componentName.ToUpper().StartsWith("RM"))
                         {
                             unitConverter = new StringMomentConverter();
@@ -500,49 +500,49 @@ namespace CaeResults
                             unitAbbreviation = _unitSystem.ForceUnitAbbreviation;
                         }
                         break;
-                    case "STRESSES":
-                    case "CONTACT STRESS":
+                    case HOFieldNames.Stresses:
+                    case HOFieldNames.ContactStress:
                         unitConverter = new StringPressureConverter();
                         unitAbbreviation = _unitSystem.PressureUnitAbbreviation;
                         break;
-                    case "STRAINS":
-                    case "MECHANICAL STRAINS":
-                    case "EQUIVALENT PLASTIC STRAIN":
+                    case HOFieldNames.Strains:
+                    case HOFieldNames.MechanicalStrains:
+                    case HOFieldNames.EquivalentPlasticStrains:
                         unitConverter = new DoubleConverter();
                         unitAbbreviation = "/";
                         break;
-                    case "INTERNAL ENERGY":
-                    case "TOTAL INTERNAL ENERGY":
-                    case "CONTACT PRINT ENERGY":
+                    case HOFieldNames.InternalEnergy:
+                    case HOFieldNames.TotalInternalEnergy:
+                    case HOFieldNames.ContactPrintEnergy:
                         unitConverter = new StringEnergyConverter();
                         unitAbbreviation = _unitSystem.EnergyUnitAbbreviation;
                         break;
-                    case "INTERNAL ENERGY DENSITY":
+                    case HOFieldNames.InternalEnergyDensity:
                         unitConverter = new StringEnergyPerVolumeConverter();
                         unitAbbreviation = _unitSystem.EnergyPerVolumeUnitAbbreviation;
                         break;
-                    case "TOTAL NUMBER OF CONTACT ELEMENTS":
+                    case HOFieldNames.TotalNumberOfContactElements:
                         unitConverter = new DoubleConverter();
                         unitAbbreviation = "/";
                         break;
-                    case "MOMENT ABOUT ORIGIN":
-                    case "MOMENT ABOUT CG":
+                    case HOFieldNames.MomentAboutOrigin:
+                    case HOFieldNames.MomentAboutCG:
                         unitConverter = new StringMomentConverter();
                         unitAbbreviation = _unitSystem.MomentUnitAbbreviation;
                         break;
                     // Thermal
-                    case "TEMPERATURES":
+                    case HOFieldNames.Temperatures:
                         unitConverter = new StringTemperatureConverter();
                         unitAbbreviation = _unitSystem.TemperatureUnitAbbreviation;
                         break;
-                    case "HEAT GENERATION":
-                    case "TOTAL HEAT GENERATION":
-                    case "BODY HEATING":
-                    case "TOTAL BODY HEATING":
+                    case HOFieldNames.HeatGeneration:
+                    case HOFieldNames.TotalHeatGeneration:
+                    case HOFieldNames.BodyHeating:
+                    case HOFieldNames.TotalBodyHeating:
                         unitConverter = new StringPowerConverter();
                         unitAbbreviation = _unitSystem.PowerUnitAbbreviation;
                         break;
-                    case "HEAT FLUX":
+                    case HOFieldNames.HeatFlux:
                         unitConverter = new StringPowerPerAreaConverter();
                         unitAbbreviation = _unitSystem.PowerPerAreaUnitAbbreviation;
                         break;
@@ -1726,7 +1726,7 @@ namespace CaeResults
             {
                 if (entry.Key.Name == FOFieldNames.Disp)
                 {
-                    fieldMax = entry.Value.GetComponentMax("ALL");
+                    fieldMax = entry.Value.GetComponentMax(FOComponentNames.All);
                     if (fieldMax > max) max = fieldMax;
                 }
             }
@@ -1740,7 +1740,7 @@ namespace CaeResults
                 if (entry.Key.StepId == stepId && entry.Key.StepIncrementId == stepIncrementId &&
                     entry.Key.Name == FOFieldNames.Disp)
                 {
-                    max = entry.Value.GetComponentMax("ALL");
+                    max = entry.Value.GetComponentMax(FOComponentNames.All);
                 }
             }
             return max;
@@ -1760,18 +1760,19 @@ namespace CaeResults
         {
             ComputeHistoryWearSlidingDistance();
             //
-            HistoryResultComponent slidingDistanceAll = GetHistoryResultComponent(FOFieldNames.ContactWear, "SLIDING DISTANCE", "ALL");
+            HistoryResultComponent slidingDistanceAll =
+                GetHistoryResultComponent(HOSetNames.ContactWear, HOFieldNames.SlidingDistance, HOComponentNames.All);
             if (slidingDistanceAll != null)
             {
                 CreateAveragedFieldFromElementFaceHistory(FOFieldNames.SlidingDistance, slidingDistanceAll, true);
             }
             //
-            HistoryResultField surfaceNormalField = GetHistoryResultField("CONTACT_WEAR", "Surface normal");
+            HistoryResultField surfaceNormalField = GetHistoryResultField(HOSetNames.ContactWear, HOFieldNames.SurfaceNormal);
             if (surfaceNormalField != null)
             {
-                HistoryResultComponent n1 = surfaceNormalField.Components["N1"];
-                HistoryResultComponent n2 = surfaceNormalField.Components["N2"];
-                HistoryResultComponent n3 = surfaceNormalField.Components["N3"];
+                HistoryResultComponent n1 = surfaceNormalField.Components[HOComponentNames.N1];
+                HistoryResultComponent n2 = surfaceNormalField.Components[HOComponentNames.N2];
+                HistoryResultComponent n3 = surfaceNormalField.Components[HOComponentNames.N3];
                 //
                 CreateAveragedFieldFromElementFaceHistory(FOFieldNames.SurfaceNormal, n1, false);
                 CreateAveragedFieldFromElementFaceHistory(FOFieldNames.SurfaceNormal, n2, false);
@@ -1783,20 +1784,20 @@ namespace CaeResults
         private void ComputeHistoryWearSlidingDistance()
         {
             HistoryResultField relativeContactDisplacement =
-                GetHistoryResultField("ALL_CONTACT_ELEMENTS", HOFieldNames.RelativeContactDisplacement);
+                GetHistoryResultField(HOSetNames.AllContactElements, HOFieldNames.RelativeContactDisplacement);
             //
             if (relativeContactDisplacement != null)
             {
-                HistoryResultComponent tang1 = relativeContactDisplacement.Components["TANG1"];
-                HistoryResultComponent s1 = ComputeRelativeDisplacement("S1", tang1);
+                HistoryResultComponent tang1 = relativeContactDisplacement.Components[HOComponentNames.Tang1];
+                HistoryResultComponent s1 = ComputeRelativeDisplacement(HOComponentNames.S1, tang1);
                 //
-                HistoryResultComponent tang2 = relativeContactDisplacement.Components["TANG2"];
-                HistoryResultComponent s2 = ComputeRelativeDisplacement("S2", tang2);
+                HistoryResultComponent tang2 = relativeContactDisplacement.Components[HOComponentNames.Tang2];
+                HistoryResultComponent s2 = ComputeRelativeDisplacement(HOComponentNames.S2, tang2);
                 //
                 HistoryResultComponent all =
-                    ComputeVectorMagnitude("ALL", new HistoryResultComponent[] { s1, s2 });
+                    ComputeVectorMagnitude(HOComponentNames.All, new HistoryResultComponent[] { s1, s2 });
                 //
-                relativeContactDisplacement = new HistoryResultField("Sliding distance");
+                relativeContactDisplacement = new HistoryResultField(HOFieldNames.SlidingDistance);
                 relativeContactDisplacement.Components.Add(all.Name, all);
                 relativeContactDisplacement.Components.Add(s1.Name, s1);
                 relativeContactDisplacement.Components.Add(s2.Name, s2);
@@ -1804,12 +1805,12 @@ namespace CaeResults
                 // Use tang1 since it contains only values != 0
                 HistoryResultComponent[] normalComponents = GetNormalsFromFromElementFaceHistory(tang1);
                 //
-                HistoryResultField surfaceNormalsField = new HistoryResultField("Surface normal");
+                HistoryResultField surfaceNormalsField = new HistoryResultField(HOFieldNames.SurfaceNormal);
                 surfaceNormalsField.Components.Add(normalComponents[0].Name, normalComponents[0]);
                 surfaceNormalsField.Components.Add(normalComponents[1].Name, normalComponents[1]);
                 surfaceNormalsField.Components.Add(normalComponents[2].Name, normalComponents[2]);
                 //
-                HistoryResultSet contactWear = new HistoryResultSet("CONTACT_WEAR");
+                HistoryResultSet contactWear = new HistoryResultSet(HOSetNames.ContactWear);
                 contactWear.Fields.Add(relativeContactDisplacement.Name, relativeContactDisplacement);
                 contactWear.Fields.Add(surfaceNormalsField.Name, surfaceNormalsField);
                 //
@@ -1818,7 +1819,8 @@ namespace CaeResults
         }
         public void ComputeFieldWearSlidingDistance()
         {
-            HistoryResultComponent slidingDistanceAll = GetHistoryResultComponent("CONTACT_WEAR", "SLIDING DISTANCE", "ALL");
+            HistoryResultComponent slidingDistanceAll =
+                GetHistoryResultComponent(HOSetNames.ContactWear, HOFieldNames.SlidingDistance, HOComponentNames.All);
             if (slidingDistanceAll != null)
             {
                 // Sorted time
@@ -1846,8 +1848,8 @@ namespace CaeResults
                 Field depthField;
                 Field normalField;
                 FieldData pressureData = new FieldData(FOFieldNames.Contact, FOComponentNames.CPress, 0, 0);
-                FieldData slidingDistanceData = new FieldData(FOFieldNames.SlidingDistance, "ALL", 0, 0);                
-                FieldData depthData = new FieldData(FOFieldNames.Depth, "ALL", 0, 0);
+                FieldData slidingDistanceData = new FieldData(FOFieldNames.SlidingDistance, FOComponentNames.All, 0, 0);                
+                FieldData depthData = new FieldData(FOFieldNames.Depth, FOComponentNames.All, 0, 0);
                 FieldData normalData = new FieldData(FOFieldNames.SurfaceNormal, "", 0, 0);
                 int count = 0;
                 int[] stepIds = GetAllStepIds();
@@ -1877,9 +1879,9 @@ namespace CaeResults
                         normalData = GetFieldData(normalData.Name, normalData.Component,
                                                   stepIds[i], stepIncrementIds[j]);
                         normalField = GetField(normalData);
-                        normalN1Values = normalField.GetComponentValues("N1");
-                        normalN2Values = normalField.GetComponentValues("N2");
-                        normalN3Values = normalField.GetComponentValues("N3");
+                        normalN1Values = normalField.GetComponentValues(FOComponentNames.N1);
+                        normalN2Values = normalField.GetComponentValues(FOComponentNames.N2);
+                        normalN3Values = normalField.GetComponentValues(FOComponentNames.N3);
                         // Wear depth
                         depthValues = new float[pressureValues.Length];
                         depthValuesH1 = new float[pressureValues.Length];
@@ -1906,9 +1908,9 @@ namespace CaeResults
                         depthData.Time = (float)sortedTime[count];
                         depthField = new Field(depthData.Name);
                         depthField.AddComponent(new FieldComponent(depthData.Component, depthValues));
-                        depthField.AddComponent(new FieldComponent("H1", depthValuesH1));
-                        depthField.AddComponent(new FieldComponent("H2", depthValuesH2));
-                        depthField.AddComponent(new FieldComponent("H3", depthValuesH3));
+                        depthField.AddComponent(new FieldComponent(FOComponentNames.H1, depthValuesH1));
+                        depthField.AddComponent(new FieldComponent(FOComponentNames.H2, depthValuesH2));
+                        depthField.AddComponent(new FieldComponent(FOComponentNames.H3, depthValuesH3));
                         AddFiled(depthData, depthField);
                         //
                         prevDepthValues = depthValues;
@@ -1993,9 +1995,9 @@ namespace CaeResults
         private HistoryResultComponent[] GetNormalsFromFromElementFaceHistory(HistoryResultComponent historyResultComponent)
         {
             HistoryResultComponent[] normalComponents = new HistoryResultComponent[3];
-            normalComponents[0] = new HistoryResultComponent("N1");
-            normalComponents[1] = new HistoryResultComponent("N2");
-            normalComponents[2] = new HistoryResultComponent("N3");
+            normalComponents[0] = new HistoryResultComponent(HOComponentNames.N1);
+            normalComponents[1] = new HistoryResultComponent(HOComponentNames.N2);
+            normalComponents[2] = new HistoryResultComponent(HOComponentNames.N3);
             // Sorted time
             double[] sortedTime;
             Dictionary<double, int> timeRowId;
