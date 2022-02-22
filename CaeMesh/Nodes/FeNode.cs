@@ -35,6 +35,12 @@ namespace CaeMesh
        
 
         // Methods                                                                                                                  
+        public void SetCoor(double x, double y, double z)
+        {
+            X = x;
+            Y = y;
+            Z = z;
+        }
         public double[] Coor
         {
             get

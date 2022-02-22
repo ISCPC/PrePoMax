@@ -59,6 +59,8 @@ namespace CaeResults
                 OrderedDictionary<string, string> possibleNames = GetPossibleDeformationFieldOutputNamesMap();
                 if (possibleNames.TryGetValue(value, out _deformationFieldOutputName)) { }
                 else _deformationFieldOutputName = possibleNames.Values.First();
+                // Reset global mesh deformation settings
+                ResetScaleStepIncrement();
             }
         }
 
@@ -179,6 +181,10 @@ namespace CaeResults
         {
             _undeformedNodes = new Dictionary<int, FeNode>();
             foreach (var entry in _mesh.Nodes) _undeformedNodes.Add(entry.Key, new FeNode(entry.Value));
+            ResetScaleStepIncrement();
+        }
+        private void ResetScaleStepIncrement()
+        {
             _scale = -1;
             _stepId = -1;
             _stepIncrementId = -1;
@@ -255,9 +261,7 @@ namespace CaeResults
         public void SetPartDeformation(BasePart part, float scale, int stepId, int stepIncrementId)
         {
             // Reset global mesh deformation settings
-            _scale = -1;
-            _stepId = -1;
-            _stepIncrementId = -1;
+            ResetScaleStepIncrement();
             //
             bool scaled = false;
             double[] offset;
@@ -1875,7 +1879,7 @@ namespace CaeResults
                         //
                         for (int k = 0; k < depthValues.Length; k++)
                         {
-                            dh = 0.001f * pressureValues[k] * slidingDistanceValues[k];
+                            dh = 0.0001f * pressureValues[k] * slidingDistanceValues[k];
                             depthValues[k] = dh + prevDepthValues[k];
                             depthValuesH1[k] = dh * normalN1Values[k] + prevDepthValuesH1[k];
                             depthValuesH2[k] = dh * normalN2Values[k] + prevDepthValuesH2[k];

@@ -1392,7 +1392,7 @@ namespace PrePoMax
                 SuppressExplodedViews();
                 FeModel newModel = new FeModel("Deformed");
                 newModel.Properties.ModelSpace = _model.Properties.ModelSpace;
-                newModel.Mesh.AddPartsFromMesh(_results.Mesh, partNames, null);
+                newModel.Mesh.AddPartsFromMesh(_results.Mesh, partNames, null, false, false);
                 FileInOut.Output.CalculixFileWriter.Write(fileName, newModel);
                 ResumeExplodedViews(false);
                 //
@@ -3457,6 +3457,11 @@ namespace PrePoMax
             Commands.CRemeshElements comm = new Commands.CRemeshElements(remeshingParameters);
             _commands.AddAndExecute(comm);
         }
+        public void UpdateNodalCoordinatesFromFileCommand(string fileName)
+        {
+            Commands.CUpdateNodalCoordinatesFromFile comm = new Commands.CUpdateNodalCoordinatesFromFile(fileName);
+            _commands.AddAndExecute(comm);
+        }
         //******************************************************************************************
         public void ReplaceModelProperties(string newModelName, ModelProperties newModelProperties)
         {
@@ -3625,7 +3630,6 @@ namespace PrePoMax
             }
             else return false;
         }
-
         private bool RemeshShellElementsFromPart(BasePart part)
         {
             CalculixSettings settings = _settings.Calculix;
@@ -3666,6 +3670,16 @@ namespace PrePoMax
                 return true;
             }
             else return false;
+        }
+
+        public void UpdateNodalCoordinatesFromFile(string fileName)
+        {
+            FeModel newModel = new FeModel("Deformed");
+            newModel.Properties.ModelSpace = _model.Properties.ModelSpace;
+            newModel.ImportMeshFromInpFile(fileName, _form.WriteDataToOutput);
+            _model.Mesh.UpdateNodalCoordinatesFromMesh(newModel.Mesh);
+            //
+            Redraw();
         }
 
         #endregion #################################################################################################################

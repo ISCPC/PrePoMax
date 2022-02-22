@@ -6788,6 +6788,23 @@ namespace CaeMesh
             }
             return normals;
         }
+        public void UpdateNodalCoordinatesFromMesh(FeMesh mesh)
+        {
+            FeNode node;
+            foreach (var key in _nodes.Keys.ToArray())  // to copy
+            {
+                if (mesh.Nodes.TryGetValue(key, out node))
+                {
+                    _nodes[key] = node;
+                }
+
+                //if (mesh.Nodes.TryGetValue(entry.Key, out node))
+                //{
+                //    entry.Value.SetCoor(node.X, node.Y, node.Z);
+                //    _nodes[entry.Key] = node.d()
+                //}
+            }
+        }
 
         // Elements 
         public string[] GetElementSetNames()

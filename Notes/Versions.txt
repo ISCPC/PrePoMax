@@ -218,7 +218,9 @@ Dependency nglib - added following files for c++ redistriburable compatibility:
 Done
 
 Version 1.2.1 Master branch
-
+Added support to update nodal mesh coordinates from inp files
+Added support to export deformed result mesh as inp files
+Added support for selecting the deformed variable
 Added support for file import using command line arguments
 Added support for adding a history output from a field output
 Added support for removeing field outpurts

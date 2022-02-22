@@ -41,12 +41,16 @@
             this.tsmiSaveAs = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerFile2 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiExport = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiExportToCalculix = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiExportToAbaqus = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiExportToStep = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiExportToBrep = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiExportToMmgMesh = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiExportToStereolitography = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiDividerExport1 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsmiExportToCalculix = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiExportToAbaqus = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiExportToMmgMesh = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiDividerExport2 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsmiExportToDeformedInp = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiExportToDeformedStl = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDividerFile3 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmiCloseResults = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiExit = new System.Windows.Forms.ToolStripMenuItem();
@@ -384,10 +388,7 @@
             this.tscbSymbolsForStep = new System.Windows.Forms.ToolStripComboBox();
             this.timerTest = new System.Windows.Forms.Timer(this.components);
             this.timerOutput = new System.Windows.Forms.Timer(this.components);
-            this.tsmiExportToDeformedInp = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiDividerExport1 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsmiExportToDeformedStl = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiDividerExport2 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsmiUpdateNodalCoordinatesFromFile = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStripMain.SuspendLayout();
             this.statusStripMain.SuspendLayout();
             this.tsResults.SuspendLayout();
@@ -525,20 +526,6 @@
             this.tsmiExport.Size = new System.Drawing.Size(219, 22);
             this.tsmiExport.Text = "Export";
             // 
-            // tsmiExportToCalculix
-            // 
-            this.tsmiExportToCalculix.Name = "tsmiExportToCalculix";
-            this.tsmiExportToCalculix.Size = new System.Drawing.Size(218, 22);
-            this.tsmiExportToCalculix.Text = "Calculix *.inp";
-            this.tsmiExportToCalculix.Click += new System.EventHandler(this.tsmiExportToCalculix_Click);
-            // 
-            // tsmiExportToAbaqus
-            // 
-            this.tsmiExportToAbaqus.Name = "tsmiExportToAbaqus";
-            this.tsmiExportToAbaqus.Size = new System.Drawing.Size(218, 22);
-            this.tsmiExportToAbaqus.Text = "Abaqus *.inp";
-            this.tsmiExportToAbaqus.Click += new System.EventHandler(this.tsmiExportToAbaqus_Click);
-            // 
             // tsmiExportToStep
             // 
             this.tsmiExportToStep.Name = "tsmiExportToStep";
@@ -553,6 +540,32 @@
             this.tsmiExportToBrep.Text = "Brep *.brep";
             this.tsmiExportToBrep.Click += new System.EventHandler(this.tsmiExportToBrep_Click);
             // 
+            // tsmiExportToStereolitography
+            // 
+            this.tsmiExportToStereolitography.Name = "tsmiExportToStereolitography";
+            this.tsmiExportToStereolitography.Size = new System.Drawing.Size(218, 22);
+            this.tsmiExportToStereolitography.Text = "Stereolitography *.stl";
+            this.tsmiExportToStereolitography.Click += new System.EventHandler(this.tsmiExportToStereolitography_Click);
+            // 
+            // tsmiDividerExport1
+            // 
+            this.tsmiDividerExport1.Name = "tsmiDividerExport1";
+            this.tsmiDividerExport1.Size = new System.Drawing.Size(215, 6);
+            // 
+            // tsmiExportToCalculix
+            // 
+            this.tsmiExportToCalculix.Name = "tsmiExportToCalculix";
+            this.tsmiExportToCalculix.Size = new System.Drawing.Size(218, 22);
+            this.tsmiExportToCalculix.Text = "Calculix *.inp";
+            this.tsmiExportToCalculix.Click += new System.EventHandler(this.tsmiExportToCalculix_Click);
+            // 
+            // tsmiExportToAbaqus
+            // 
+            this.tsmiExportToAbaqus.Name = "tsmiExportToAbaqus";
+            this.tsmiExportToAbaqus.Size = new System.Drawing.Size(218, 22);
+            this.tsmiExportToAbaqus.Text = "Abaqus *.inp";
+            this.tsmiExportToAbaqus.Click += new System.EventHandler(this.tsmiExportToAbaqus_Click);
+            // 
             // tsmiExportToMmgMesh
             // 
             this.tsmiExportToMmgMesh.Name = "tsmiExportToMmgMesh";
@@ -560,12 +573,24 @@
             this.tsmiExportToMmgMesh.Text = "Mmg *.mesh";
             this.tsmiExportToMmgMesh.Click += new System.EventHandler(this.tsmiExportToMmgMesh_Click);
             // 
-            // tsmiExportToStereolitography
+            // tsmiDividerExport2
             // 
-            this.tsmiExportToStereolitography.Name = "tsmiExportToStereolitography";
-            this.tsmiExportToStereolitography.Size = new System.Drawing.Size(218, 22);
-            this.tsmiExportToStereolitography.Text = "Stereolitography *.stl";
-            this.tsmiExportToStereolitography.Click += new System.EventHandler(this.tsmiExportToStereolitography_Click);
+            this.tsmiDividerExport2.Name = "tsmiDividerExport2";
+            this.tsmiDividerExport2.Size = new System.Drawing.Size(215, 6);
+            // 
+            // tsmiExportToDeformedInp
+            // 
+            this.tsmiExportToDeformedInp.Name = "tsmiExportToDeformedInp";
+            this.tsmiExportToDeformedInp.Size = new System.Drawing.Size(218, 22);
+            this.tsmiExportToDeformedInp.Text = "Deformed mesh *.inp";
+            this.tsmiExportToDeformedInp.Click += new System.EventHandler(this.tsmiExportToDeformedInp_Click);
+            // 
+            // tsmiExportToDeformedStl
+            // 
+            this.tsmiExportToDeformedStl.Name = "tsmiExportToDeformedStl";
+            this.tsmiExportToDeformedStl.Size = new System.Drawing.Size(218, 22);
+            this.tsmiExportToDeformedStl.Text = "Deformed visualization *.stl";
+            this.tsmiExportToDeformedStl.Click += new System.EventHandler(this.tsmiExportToDeformedStl_Click);
             // 
             // tsmiDividerFile3
             // 
@@ -1331,7 +1356,8 @@
             this.tsmiToolsParts.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmiCreateBoundaryLayer,
             this.tsmiFindEdgesByAngleForModelParts,
-            this.tsmiRemeshElements});
+            this.tsmiRemeshElements,
+            this.tsmiUpdateNodalCoordinatesFromFile});
             this.tsmiToolsParts.Name = "tsmiToolsParts";
             this.tsmiToolsParts.Size = new System.Drawing.Size(194, 22);
             this.tsmiToolsParts.Text = "Tools";
@@ -1339,21 +1365,21 @@
             // tsmiCreateBoundaryLayer
             // 
             this.tsmiCreateBoundaryLayer.Name = "tsmiCreateBoundaryLayer";
-            this.tsmiCreateBoundaryLayer.Size = new System.Drawing.Size(218, 22);
+            this.tsmiCreateBoundaryLayer.Size = new System.Drawing.Size(266, 22);
             this.tsmiCreateBoundaryLayer.Text = "Create Boundary Layer";
             this.tsmiCreateBoundaryLayer.Click += new System.EventHandler(this.tsmiCreateBoundaryLayer_Click);
             // 
             // tsmiFindEdgesByAngleForModelParts
             // 
             this.tsmiFindEdgesByAngleForModelParts.Name = "tsmiFindEdgesByAngleForModelParts";
-            this.tsmiFindEdgesByAngleForModelParts.Size = new System.Drawing.Size(218, 22);
+            this.tsmiFindEdgesByAngleForModelParts.Size = new System.Drawing.Size(266, 22);
             this.tsmiFindEdgesByAngleForModelParts.Text = "Find Model Edges By Angle";
             this.tsmiFindEdgesByAngleForModelParts.Click += new System.EventHandler(this.tsmiFindEdgesByAngleForModelParts_Click);
             // 
             // tsmiRemeshElements
             // 
             this.tsmiRemeshElements.Name = "tsmiRemeshElements";
-            this.tsmiRemeshElements.Size = new System.Drawing.Size(218, 22);
+            this.tsmiRemeshElements.Size = new System.Drawing.Size(266, 22);
             this.tsmiRemeshElements.Text = "Remesh Elements";
             this.tsmiRemeshElements.Click += new System.EventHandler(this.tsmiRemeshElements_Click);
             // 
@@ -3339,29 +3365,12 @@
             // 
             this.timerOutput.Tick += new System.EventHandler(this.timerOutput_Tick);
             // 
-            // tsmiExportToDeformedInp
+            // tsmiUpdateNodalCoordinatesFromFile
             // 
-            this.tsmiExportToDeformedInp.Name = "tsmiExportToDeformedInp";
-            this.tsmiExportToDeformedInp.Size = new System.Drawing.Size(218, 22);
-            this.tsmiExportToDeformedInp.Text = "Deformed mesh *.inp";
-            this.tsmiExportToDeformedInp.Click += new System.EventHandler(this.tsmiExportToDeformedInp_Click);
-            // 
-            // tsmiDividerExport1
-            // 
-            this.tsmiDividerExport1.Name = "tsmiDividerExport1";
-            this.tsmiDividerExport1.Size = new System.Drawing.Size(215, 6);
-            // 
-            // tsmiExportToDeformedStl
-            // 
-            this.tsmiExportToDeformedStl.Name = "tsmiExportToDeformedStl";
-            this.tsmiExportToDeformedStl.Size = new System.Drawing.Size(218, 22);
-            this.tsmiExportToDeformedStl.Text = "Deformed visualization *.stl";
-            this.tsmiExportToDeformedStl.Click += new System.EventHandler(this.tsmiExportToDeformedStl_Click);
-            // 
-            // tsmiDividerExport2
-            // 
-            this.tsmiDividerExport2.Name = "tsmiDividerExport2";
-            this.tsmiDividerExport2.Size = new System.Drawing.Size(215, 6);
+            this.tsmiUpdateNodalCoordinatesFromFile.Name = "tsmiUpdateNodalCoordinatesFromFile";
+            this.tsmiUpdateNodalCoordinatesFromFile.Size = new System.Drawing.Size(266, 22);
+            this.tsmiUpdateNodalCoordinatesFromFile.Text = "Update Nodal Coordinates From File";
+            this.tsmiUpdateNodalCoordinatesFromFile.Click += new System.EventHandler(this.tsmiUpdateNodalCoordinatesFromFile_Click);
             // 
             // FrmMain
             // 
@@ -3775,6 +3784,7 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiExportToDeformedInp;
         private System.Windows.Forms.ToolStripMenuItem tsmiExportToDeformedStl;
         private System.Windows.Forms.ToolStripSeparator tsmiDividerExport2;
+        private System.Windows.Forms.ToolStripMenuItem tsmiUpdateNodalCoordinatesFromFile;
     }
 }
 

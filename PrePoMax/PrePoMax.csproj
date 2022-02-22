@@ -153,6 +153,7 @@
     <Compile Include="Command\0050_Model\16_ReferencePoint\CRemoveReferencePoints.cs" />
     <Compile Include="Command\0050_Model\16_ReferencePoint\CReplaceReferencePoint.cs" />
     <Compile Include="Command\0050_Model\16_ReferencePoint\CShowReferencePoints.cs" />
+    <Compile Include="Command\0050_Model\CUpdateNodalCoordinatesFromFile.cs" />
     <Compile Include="Command\0050_Model\CRemeshElements.cs" />
     <Compile Include="Command\0050_Model\CFindEdgesByAngleForModelPartsCommand.cs" />
     <Compile Include="Command\0050_Model\CSetModelUnitSystem.cs" />

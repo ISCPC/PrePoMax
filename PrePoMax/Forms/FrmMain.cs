@@ -1346,7 +1346,7 @@ namespace PrePoMax
                 // If the model space or the unit system are undefined
                 SelectNewModelProperties();
                 //
-                string[] files = GetFileNamesToImport();
+                string[] files = GetFileNamesToImport(GetFileImportFilter());
                 if (files != null && files.Length > 0)
                 {
                     _controller.ClearErrors();
@@ -3241,6 +3241,26 @@ namespace PrePoMax
                 ExceptionTools.Show(this, ex);
             }
         }
+        private async void tsmiUpdateNodalCoordinatesFromFile_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (!_controller.ModelInitialized || _controller.Model.Mesh == null) return;
+                //
+                string fileName = GetFileNameToImport("Abaqus/Calculix inp files|*.inp");
+                //
+                SetStateWorking(Globals.ImportingText);
+                await Task.Run(() => _controller.UpdateNodalCoordinatesFromFileCommand(fileName));
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+            finally
+            {
+                SetStateReady(Globals.ImportingText);
+            }
+        }
         //                                                                                                                          
         private void EditModel()
         {
@@ -3304,6 +3324,10 @@ namespace PrePoMax
             ItemSetDataEditor.ParentForm = _frmRemeshingParameters;
             _frmSelectItemSet.SetOnlyGeometrySelection(false);
             ShowForm(_frmRemeshingParameters, "Remeshing Parameters", null);
+        }
+        private void UpdateNodalCoordinatesFromFile()
+        {
+
         }
 
         #endregion  ################################################################################################################
@@ -6462,13 +6486,16 @@ namespace PrePoMax
         {
             return _vtk.GetBoundingBoxSize();
         }
-
         public string GetFileNameToImport()
+        {
+            return GetFileNameToImport(GetFileImportFilter());
+        }
+        public string GetFileNameToImport(string filter)
         {
             string fileName = null;
             InvokeIfRequired(() =>
             {
-                openFileDialog.Filter = GetFileImportFilter();
+                openFileDialog.Filter = filter;
                 openFileDialog.FileName = "";
                 if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
@@ -6494,7 +6521,7 @@ namespace PrePoMax
             });
             return fileName;
         }
-        public string[] GetFileNamesToImport()
+        public string[] GetFileNamesToImport(string filter)
         {
             string[] fileNames = null;
             InvokeIfRequired(() =>
@@ -6503,7 +6530,7 @@ namespace PrePoMax
                 using (OpenFileDialog openFileDialog = new OpenFileDialog())
                 {
                     openFileDialog.Multiselect = true;
-                    openFileDialog.Filter = GetFileImportFilter();
+                    openFileDialog.Filter = filter;
                     openFileDialog.FileName = "";
                     if (openFileDialog.ShowDialog() == DialogResult.OK)
                     {
@@ -7526,6 +7553,6 @@ namespace PrePoMax
             }
         }
 
-       
+        
     }
 }
