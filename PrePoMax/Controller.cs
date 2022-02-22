@@ -1385,6 +1385,20 @@ namespace PrePoMax
             //
             _form.WriteDataToOutput("Model exported to file: " + fileName);
         }
+        public void ExportDeformedPartsToCalculix(string[] partNames, string fileName)
+        {
+            if (_results != null && _results.Mesh != null)
+            {
+                SuppressExplodedViews();
+                FeModel newModel = new FeModel("Deformed");
+                newModel.Properties.ModelSpace = _model.Properties.ModelSpace;
+                newModel.Mesh.AddPartsFromMesh(_results.Mesh, partNames, null);
+                FileInOut.Output.CalculixFileWriter.Write(fileName, newModel);
+                ResumeExplodedViews(false);
+                //
+                _form.WriteDataToOutput("Deformed mesh exported to file: " + fileName);
+            }
+        }
         public void ExportToAbaqus(string fileName)
         {
             SuppressExplodedViews();
@@ -6874,7 +6888,7 @@ namespace PrePoMax
             //
             _form.UpdateUnitSystem(_results.UnitSystem);
             //
-            SetLegendAndLimits();
+            SetPostLegendAndStatusBlockSettings();
         }
         private void ApplyModelUnitSystem()
         {
@@ -12081,7 +12095,7 @@ namespace PrePoMax
                 //
                 ApplyResultsUnitSystem();
                 // Settings - must be here before drawing parts to correctly set the numer of colors
-                SetLegendAndLimits();
+                SetPostLegendAndStatusBlockSettings();
                 AnnotateWithColorLegend();
                 //
                 float scale = GetScale();
@@ -12190,7 +12204,7 @@ namespace PrePoMax
             ApplyResultsUnitSystem();
             // Settings - must be here before drawing parts to correctly set the numer of colors
             float scale = GetScale();
-            SetLegendAndLimits();
+            SetPostLegendAndStatusBlockSettings();
             SetStatusBlock(scale);
             //
             vtkControl.vtkMaxActorData data;
@@ -12264,7 +12278,7 @@ namespace PrePoMax
             ApplyResultsUnitSystem();
             // Settings - must be here before drawing parts to correctly set the numer of colors
             float scale = GetScaleForAllStepsAndIncrements();
-            SetLegendAndLimits();
+            SetPostLegendAndStatusBlockSettings();
             SetStatusBlock(scale);
             //
             vtkControl.vtkMaxActorData data = null;
@@ -12378,11 +12392,13 @@ namespace PrePoMax
             return data;
         }
         // Common
-        private void SetLegendAndLimits()
+        private void SetPostLegendAndStatusBlockSettings()
         {
+            PostSettings postSettings = _settings.Post;
+            if (_results != null) _results.DeformationFieldOutputName = postSettings.DeformationFieldOutputName;
+            //
             if (_viewResultsType == ViewResultsType.ColorContours)
             {
-                PostSettings postSettings = _settings.Post;
                 LegendSettings legendSettings = Settings.Legend;    // use Settings property to account for the results view
                 StatusBlockSettings statusBlockSettings = _settings.StatusBlock;
                 // Legend settings
@@ -12433,7 +12449,7 @@ namespace PrePoMax
         {
             if (_results == null || _results.Mesh == null) return;
             // Settings                                                              
-            SetLegendAndLimits();
+            SetPostLegendAndStatusBlockSettings();
             //
             Octree.Plane plane = _sectionViewPlanes[_currentView];
             if (plane != null) RemoveSectionView();

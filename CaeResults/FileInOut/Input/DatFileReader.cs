@@ -25,9 +25,9 @@ namespace CaeResults
         {
             { "Id", "Id" },
             //
-            { "U1", "UR1" },
-            { "U2", "UR2" },
-            { "U3", "UR3" },
+            { FOComponentNames.U1, "UR1" },
+            { FOComponentNames.U2, "UR2" },
+            { FOComponentNames.U3, "UR3" },
             //
             { "RF1", "RM1" },
             { "RF2", "RM2" },

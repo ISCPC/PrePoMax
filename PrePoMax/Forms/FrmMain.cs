@@ -738,7 +738,7 @@ namespace PrePoMax
                 CloseAllForms();
                 _controller.SelectBy = vtkSelectBy.Default;
                 //
-                if (viewType == ViewType.Geometry)_controller.CurrentView = ViewGeometryModelResults.Geometry;
+                if (viewType == ViewType.Geometry) _controller.CurrentView = ViewGeometryModelResults.Geometry;
                 else if (viewType == ViewType.Model) _controller.CurrentView = ViewGeometryModelResults.Model;
                 else if (viewType == ViewType.Results) _controller.CurrentView = ViewGeometryModelResults.Results;
                 else throw new NotSupportedException();
@@ -1419,69 +1419,12 @@ namespace PrePoMax
             }
         }
         //
-        private void tsmiExportToCalculix_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                if (CheckValiditiy())
-                {
-                    using (SaveFileDialog saveFileDialog = new SaveFileDialog())
-                    {
-                        saveFileDialog.Filter = "Calculix files | *.inp";
-                        if (_controller.OpenedFileName != null)
-                            saveFileDialog.FileName = Path.GetFileNameWithoutExtension(_controller.OpenedFileName) + ".inp";
-                        if (saveFileDialog.ShowDialog() == DialogResult.OK)
-                        {
-                            // the filter adds the extension to the file name
-                            SetStateWorking(Globals.ExportingText);
-                            _controller.ExportToCalculix(saveFileDialog.FileName);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                ExceptionTools.Show(this, ex);
-            }
-            finally
-            {
-                SetStateReady(Globals.ExportingText);
-            }
-        }
-        private void tsmiExportToAbaqus_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                if (CheckValiditiy())
-                {
-                    using (SaveFileDialog saveFileDialog = new SaveFileDialog())
-                    {
-                        saveFileDialog.Filter = "Abaqus files | *.inp";
-                        if (_controller.OpenedFileName != null)
-                            saveFileDialog.FileName = Path.GetFileNameWithoutExtension(_controller.OpenedFileName) + ".inp";
-                        if (saveFileDialog.ShowDialog() == DialogResult.OK)
-                        {
-                            // the filter adds the extension to the file name
-                            SetStateWorking(Globals.ExportingText);
-                            //_controller.ExportToCalculix(saveFileDialog.FileName);
-                            _controller.ExportToAbaqus(saveFileDialog.FileName);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                ExceptionTools.Show(this, ex);
-            }
-            finally
-            {
-                SetStateReady(Globals.ExportingText);
-            }
-        }
         private void tsmiExportToStep_Click(object sender, EventArgs e)
         {
             try
             {
+                _controller.CurrentView = ViewGeometryModelResults.Geometry;
+                //
                 if (_controller.Model.Geometry != null && _controller.Model.Geometry.Parts != null)
                 {
                     SelectMultipleEntities("Parts", _controller.GetCADGeometryParts(), SaveCADPartsAsStep);
@@ -1497,24 +1440,11 @@ namespace PrePoMax
         {
             try
             {
+                _controller.CurrentView = ViewGeometryModelResults.Geometry;
+                //
                 if (_controller.Model.Geometry != null && _controller.Model.Geometry.Parts != null)
                 {
                     SelectMultipleEntities("Parts", _controller.GetCADGeometryParts(), SaveCADPartsAsBrep);
-                }
-                else throw new CaeException("No geometry to export.");
-            }
-            catch (Exception ex)
-            {
-                ExceptionTools.Show(this, ex);
-            }
-        }
-        private void tsmiExportToMmgMesh_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                if (_controller.Model.Geometry != null && _controller.Model.Geometry.Parts != null)
-                {
-                    SelectMultipleEntities("Parts", _controller.GetGeometryParts(), SavePartsAsMmgMesh);
                 }
                 else throw new CaeException("No geometry to export.");
             }
@@ -1544,21 +1474,129 @@ namespace PrePoMax
                     }
                     else throw new CaeException("No mesh parts to export.");
                 }
-                else if (currentView == ViewGeometryModelResults.Results)
-                {
-                    if (_controller.Results.Mesh != null && _controller.Results.Mesh.Parts != null)
-                    {
-                        SelectMultipleEntities("Parts", _controller.GetResultParts(), SavePartsAsStl);
-                    }
-                    else throw new CaeException("No result parts to export.");
-                }
-                else throw new NotSupportedException();
+                else MessageBoxes.ShowError("Deformed mesh can only be exported while results are drawn.");
             }
             catch (Exception ex)
             {
                 ExceptionTools.Show(this, ex);
             }
         }
+        private void tsmiExportToCalculix_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                _controller.CurrentView = ViewGeometryModelResults.Model;
+                //
+                if (CheckValiditiy())
+                {
+                    using (SaveFileDialog saveFileDialog = new SaveFileDialog())
+                    {
+                        saveFileDialog.Filter = "Calculix files | *.inp";
+                        if (_controller.OpenedFileName != null)
+                            saveFileDialog.FileName = Path.GetFileNameWithoutExtension(_controller.OpenedFileName) + ".inp";
+                        if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                        {
+                            // the filter adds the extension to the file name
+                            SetStateWorking(Globals.ExportingText);
+                            _controller.ExportToCalculix(saveFileDialog.FileName);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+            finally
+            {
+                SetStateReady(Globals.ExportingText);
+            }
+        }
+        private void tsmiExportToAbaqus_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                _controller.CurrentView = ViewGeometryModelResults.Model;
+                //
+                if (CheckValiditiy())
+                {
+                    using (SaveFileDialog saveFileDialog = new SaveFileDialog())
+                    {
+                        saveFileDialog.Filter = "Abaqus files | *.inp";
+                        if (_controller.OpenedFileName != null)
+                            saveFileDialog.FileName = Path.GetFileNameWithoutExtension(_controller.OpenedFileName) + ".inp";
+                        if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                        {
+                            // the filter adds the extension to the file name
+                            SetStateWorking(Globals.ExportingText);
+                            //_controller.ExportToCalculix(saveFileDialog.FileName);
+                            _controller.ExportToAbaqus(saveFileDialog.FileName);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+            finally
+            {
+                SetStateReady(Globals.ExportingText);
+            }
+        }
+        private void tsmiExportToMmgMesh_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                _controller.CurrentView = ViewGeometryModelResults.Model;
+                //
+                if (_controller.Model.Geometry != null && _controller.Model.Geometry.Parts != null)
+                {
+                    SelectMultipleEntities("Parts", _controller.GetGeometryParts(), SavePartsAsMmgMesh);
+                }
+                else throw new CaeException("No geometry to export.");
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        private void tsmiExportToDeformedInp_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                _controller.CurrentView = ViewGeometryModelResults.Results;
+                //
+                if (_controller.Results.Mesh != null && _controller.Results.Mesh.Parts != null)
+                {
+                    SelectMultipleEntities("Parts", _controller.GetResultParts(), SaveDeformedPartsAsInp);
+                }
+                else MessageBoxes.ShowError("There is no mesh to export.");
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+
+        }
+        private void tsmiExportToDeformedStl_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                _controller.CurrentView = ViewGeometryModelResults.Results;
+                //
+                if (_controller.Results.Mesh != null && _controller.Results.Mesh.Parts != null)
+                {
+                    SelectMultipleEntities("Parts", _controller.GetResultParts(), SavePartsAsStl);
+                }
+                else MessageBoxes.ShowError("There is no mesh to export.");
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+        }
+        //
         private async void SaveCADPartsAsStep(string[] partNames)
         {
             try
@@ -1615,6 +1653,34 @@ namespace PrePoMax
                 SetStateReady(Globals.ExportingText);
             }
         }
+        private async void SavePartsAsStl(string[] partNames)
+        {
+            try
+            {
+                using (SaveFileDialog saveFileDialog = new SaveFileDialog())
+                {
+                    saveFileDialog.Filter = "Stereolitography files | *.stl";
+                    if (_controller.OpenedFileName != null)
+                        saveFileDialog.FileName = Path.GetFileNameWithoutExtension(_controller.OpenedFileName) + ".stl";
+                    //
+                    if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        // The filter adds the extension to the file name
+                        SetStateWorking(Globals.ExportingText);
+                        //
+                        await Task.Run(() => _controller.ExportToStl(partNames, saveFileDialog.FileName));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ExceptionTools.Show(this, ex);
+            }
+            finally
+            {
+                SetStateReady(Globals.ExportingText);
+            }
+        }
         private async void SavePartsAsMmgMesh(string[] partNames)
         {
             try
@@ -1643,22 +1709,22 @@ namespace PrePoMax
                 SetStateReady(Globals.ExportingText);
             }
         }
-        private async void SavePartsAsStl(string[] partNames)
+        private async void SaveDeformedPartsAsInp(string[] partNames)
         {
             try
             {
                 using (SaveFileDialog saveFileDialog = new SaveFileDialog())
                 {
-                    saveFileDialog.Filter = "Stereolitography files | *.stl";
+                    saveFileDialog.Filter = "Calculix files | *.inp";
                     if (_controller.OpenedFileName != null)
-                        saveFileDialog.FileName = Path.GetFileNameWithoutExtension(_controller.OpenedFileName) + ".stl";
+                        saveFileDialog.FileName = Path.GetFileNameWithoutExtension(_controller.OpenedFileName) + ".inp";
                     //
                     if (saveFileDialog.ShowDialog() == DialogResult.OK)
                     {
                         // The filter adds the extension to the file name
                         SetStateWorking(Globals.ExportingText);
                         //
-                        await Task.Run(() => _controller.ExportToStl(partNames, saveFileDialog.FileName));
+                        await Task.Run(() => _controller.ExportDeformedPartsToCalculix(partNames, saveFileDialog.FileName));
                     }
                 }
             }
@@ -7460,6 +7526,6 @@ namespace PrePoMax
             }
         }
 
-        
+       
     }
 }

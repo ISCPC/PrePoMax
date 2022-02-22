@@ -33,6 +33,7 @@ namespace CaeResults
         private HistoryResults _history;
         private DateTime _dateTime;
         private UnitSystem _unitSystem;
+        private string _deformationFieldOutputName;
 
 
         // Properties                                                                                                               
@@ -41,7 +42,25 @@ namespace CaeResults
         public string FileName { get { return _fileName; } set { _fileName = value; } }
         public FeMesh Mesh { get { return _mesh; } set { _mesh = value; } }        
         public DateTime DateTime { get { return _dateTime; } set { _dateTime = value; } }
-        public UnitSystem UnitSystem { get { return _unitSystem; } set { _unitSystem = value; } }        
+        public UnitSystem UnitSystem { get { return _unitSystem; } set { _unitSystem = value; } }
+        public string DeformationFieldOutputName
+        {
+            get
+            {
+                OrderedDictionary<string, string> possibleNames = GetPossibleDeformationFieldOutputNamesMap();
+                foreach (var entry in possibleNames)
+                {
+                    if (entry.Value == _deformationFieldOutputName) return entry.Key;
+                }
+                return "";
+            }
+            set
+            {
+                OrderedDictionary<string, string> possibleNames = GetPossibleDeformationFieldOutputNamesMap();
+                if (possibleNames.TryGetValue(value, out _deformationFieldOutputName)) { }
+                else _deformationFieldOutputName = possibleNames.Values.First();
+            }
+        }
 
 
         // Constructor                                                                                                              
@@ -55,6 +74,7 @@ namespace CaeResults
             _fieldLookUp = new Dictionary<int, FieldData>();
             _history = null;
             _unitSystem = new UnitSystem();
+            _deformationFieldOutputName = FOFieldNames.Disp;
         }
 
 
@@ -140,6 +160,7 @@ namespace CaeResults
 
 
         // Methods                                                                                                                  
+        // Mesh                                     
         public void SetMesh(FeMesh mesh, Dictionary<int, int> nodeIdsLookUp)
         {
             _mesh = mesh;
@@ -162,6 +183,7 @@ namespace CaeResults
             _stepId = -1;
             _stepIncrementId = -1;
         }
+        // Mesh deformation                         
         public void SetMeshDeformation(float scale, int stepId, int stepIncrementId)
         {
             if (scale != _scale || stepId != _stepId || stepIncrementId != _stepIncrementId)
@@ -178,45 +200,30 @@ namespace CaeResults
                 //
                 if (_scale != 0)
                 {
-                    string name = FOFieldNames.Disp;
-                    string[] componentNames = GetComponentNames(name);
-                    // Components can be deleted
-                    if (componentNames.Contains("U1") && componentNames.Contains("U2") && componentNames.Contains("U3"))
+                    float[][] deformations = GetNodalMeshDeformations(_stepId, _stepIncrementId);
+                    if (deformations != null)
                     {
-                        Field U = GetField(new FieldData(name, "", _stepId, _stepIncrementId));
-                        if (U != null)
+                        deformedNodes = new Dictionary<int, FeNode>();
+                        //
+                        foreach (var entry in _mesh.Parts)
                         {
+                            offset = entry.Value.Offset;
                             //
-                            float[][] disp = new float[3][];
-                            disp[0] = U.GetComponentValues("U1");
-                            disp[1] = U.GetComponentValues("U2");
-                            disp[2] = U.GetComponentValues("U3");
-                            //
-                            if (disp[0] != null && disp[1] != null && disp[2] != null)
+                            foreach (var nodeId in entry.Value.NodeLabels)
                             {
-                                deformedNodes = new Dictionary<int, FeNode>();
-                                //
-                                foreach (var entry in _mesh.Parts)
+                                node = _undeformedNodes[nodeId];
+                                // Result parts
+                                if (_nodeIdsLookUp.TryGetValue(node.Id, out resultNodeId))
                                 {
-                                    offset = entry.Value.Offset;
-                                    //
-                                    foreach (var nodeId in entry.Value.NodeLabels)
-                                    {
-                                        node = _undeformedNodes[nodeId];
-                                        // Result parts
-                                        if (_nodeIdsLookUp.TryGetValue(node.Id, out resultNodeId))
-                                        {
-                                            deformedNode = new FeNode(node.Id,
-                                                                      node.X + offset[0] + _scale * disp[0][resultNodeId],
-                                                                      node.Y + offset[1] + _scale * disp[1][resultNodeId],
-                                                                      node.Z + offset[2] + _scale * disp[2][resultNodeId]);
-                                        }
-                                        // Geometry parts
-                                        else deformedNode = node;
-                                        //
-                                        deformedNodes.Add(deformedNode.Id, deformedNode);
-                                    }
+                                    deformedNode = new FeNode(node.Id,
+                                                              node.X + offset[0] + _scale * deformations[0][resultNodeId],
+                                                              node.Y + offset[1] + _scale * deformations[1][resultNodeId],
+                                                              node.Z + offset[2] + _scale * deformations[2][resultNodeId]);
                                 }
+                                // Geometry parts
+                                else deformedNode = node;
+                                //
+                                deformedNodes.Add(deformedNode.Id, deformedNode);
                             }
                         }
                     }
@@ -233,12 +240,7 @@ namespace CaeResults
                             node = _undeformedNodes[nodeId];
                             // Result parts
                             if (_nodeIdsLookUp.TryGetValue(node.Id, out resultNodeId))
-                            {
-                                deformedNode = new FeNode(node.Id,
-                                                          node.X + offset[0],
-                                                          node.Y + offset[1],
-                                                          node.Z + offset[2]);
-                            }
+                                deformedNode = new FeNode(node.Id, node.X + offset[0], node.Y + offset[1], node.Z + offset[2]);
                             // Geometry parts
                             else deformedNode = node;
                             //
@@ -259,43 +261,28 @@ namespace CaeResults
             //
             bool scaled = false;
             double[] offset;
+            FeNode node;
             FeNode deformedNode;
-            FeNode unDeformedNode;
             //
             if (scale != 0)
             {
-                string name = FOFieldNames.Disp;
-                string[] componentNames = GetComponentNames(name);
-                // Components can be deleted
-                if (componentNames.Contains("U1") && componentNames.Contains("U2") && componentNames.Contains("U3"))
+                float[][] deformations = GetNodalMeshDeformations(stepId, stepIncrementId);
+                if (deformations != null)
                 {
-                    Field U = GetField(new FieldData(name, "", stepId, stepIncrementId));
-                    if (U != null)
+                    scaled = true;
+                    int resultNodeId;
+                    offset = part.Offset;
+                    //
+                    foreach (var nodeId in part.NodeLabels)
                     {
+                        resultNodeId = _nodeIdsLookUp[nodeId];
+                        node = _undeformedNodes[nodeId];
                         //
-                        float[][] disp = new float[3][];
-                        disp[0] = U.GetComponentValues("U1");
-                        disp[1] = U.GetComponentValues("U2");
-                        disp[2] = U.GetComponentValues("U3");
-                        //
-                        if (disp[0] != null && disp[1] != null && disp[2] != null)
-                        {
-                            scaled = true;
-                            int resultNodeId;
-                            offset = part.Offset;
-                            //
-                            foreach (var nodeId in part.NodeLabels)
-                            {
-                                resultNodeId = _nodeIdsLookUp[nodeId];
-                                unDeformedNode = _undeformedNodes[nodeId];
-                                //
-                                deformedNode = new FeNode(unDeformedNode.Id,
-                                                          unDeformedNode.X + offset[0] + scale * disp[0][resultNodeId],
-                                                          unDeformedNode.Y + offset[1] + scale * disp[1][resultNodeId],
-                                                          unDeformedNode.Z + offset[2] + scale * disp[2][resultNodeId]);
-                                _mesh.Nodes[deformedNode.Id] = deformedNode;
-                            }
-                        }
+                        deformedNode = new FeNode(node.Id,
+                                                  node.X + offset[0] + scale * deformations[0][resultNodeId],
+                                                  node.Y + offset[1] + scale * deformations[1][resultNodeId],
+                                                  node.Z + offset[2] + scale * deformations[2][resultNodeId]);
+                        _mesh.Nodes[deformedNode.Id] = deformedNode;
                     }
                 }
             }
@@ -304,16 +291,82 @@ namespace CaeResults
                 offset = part.Offset;
                 foreach (var nodeId in part.NodeLabels)
                 {
-                    unDeformedNode = _undeformedNodes[nodeId];
-                    deformedNode = new FeNode(unDeformedNode.Id,
-                                              unDeformedNode.X + offset[0],
-                                              unDeformedNode.Y + offset[1],
-                                              unDeformedNode.Z + offset[2]);
-                    _mesh.Nodes[unDeformedNode.Id] = deformedNode;
+                    node = _undeformedNodes[nodeId];
+                    deformedNode = new FeNode(node.Id, node.X + offset[0], node.Y + offset[1], node.Z + offset[2]);
+                    _mesh.Nodes[node.Id] = deformedNode;
                 }
             }
         }
-        //
+        private float[][] GetNodalMeshDeformations(int stepId, int stepIncrementId)
+        {
+            float[][] deformations = null;
+            string[] componentNames = GetDeformationFieldOutputComponentNames();
+            string[] existingComponentNames = GetComponentNames(_deformationFieldOutputName);
+            //
+            if (existingComponentNames != null &&
+                existingComponentNames.Contains(componentNames[0]) &&
+                existingComponentNames.Contains(componentNames[1]) &&
+                existingComponentNames.Contains(componentNames[2]))
+            {
+                Field deformationField = GetField(new FieldData(_deformationFieldOutputName, "", stepId, stepIncrementId));
+                if (deformationField == null) return null;
+                //
+                deformations = new float[3][];
+                deformations[0] = deformationField.GetComponentValues(componentNames[0]);
+                if (deformations[0] == null) return null;
+                deformations[1] = deformationField.GetComponentValues(componentNames[1]);
+                if (deformations[1] == null) return null;
+                deformations[2] = deformationField.GetComponentValues(componentNames[2]);
+                if (deformations[2] == null) return null;
+            }
+            return deformations;
+        }
+        private static OrderedDictionary<string, string> GetPossibleDeformationFieldOutputNamesMap()
+        {
+            OrderedDictionary<string, string> names = new OrderedDictionary<string, string>();
+            names.Add("Displacements", FOFieldNames.Disp);
+            names.Add("Forces", FOFieldNames.Forc);
+            names.Add("Surface normals", FOFieldNames.SurfaceNormal);
+            names.Add("Wear depths", FOFieldNames.WearDepth);
+            return names;
+        }
+        public static string[] GetPossibleDeformationFieldOutputNames()
+        {
+            return GetPossibleDeformationFieldOutputNamesMap().Keys.ToArray();
+        }
+        public string[] GetExistingDeformationFieldOutputNames()
+        {
+            string[] fieldNames = GetAllFieldNames();
+            OrderedDictionary<string, string> possibleNames = GetPossibleDeformationFieldOutputNamesMap();
+            List<string> existingFieldNames = new List<string>();
+            foreach (var entry in possibleNames)
+            {
+                if (fieldNames.Contains(entry.Value)) existingFieldNames.Add(entry.Key);
+            }
+            return existingFieldNames.ToArray();
+        }
+        private string[] GetDeformationFieldOutputComponentNames()
+        {
+            string[] componentNames = null;
+            if (_deformationFieldOutputName == FOFieldNames.Disp)
+            {
+                componentNames = new string[] { FOComponentNames.U1, FOComponentNames.U2, FOComponentNames.U3 };
+            }
+            else if (_deformationFieldOutputName == FOFieldNames.Forc)
+            {
+                componentNames = new string[] { FOComponentNames.F1, FOComponentNames.F2, FOComponentNames.F3 };
+            }
+            else if (_deformationFieldOutputName == FOFieldNames.SurfaceNormal)
+            {
+                componentNames = new string[] { FOComponentNames.N1, FOComponentNames.N2, FOComponentNames.N3 };
+            }
+            else if (_deformationFieldOutputName == FOFieldNames.WearDepth)
+            {
+                componentNames = new string[] { FOComponentNames.H1, FOComponentNames.H2, FOComponentNames.H3 };
+            }
+            return componentNames;
+        }
+        // History                                  
         public HistoryResults GetHistory()
         {
             return _history;
@@ -324,7 +377,7 @@ namespace CaeResults
             //
             ComputeWear();
         }
-        //
+        // Units                                    
         public TypeConverter GetFieldUnitConverter(string fieldDataName, string componentName)
         {
             GetFieldUnitConverterAndAbbrevation(fieldDataName, componentName, out TypeConverter unitConverter,
@@ -401,7 +454,7 @@ namespace CaeResults
                     // WEAR
                     case FOFieldNames.SlidingDistance:
                     case FOFieldNames.SurfaceNormal:
-                    case FOFieldNames.Depth:
+                    case FOFieldNames.WearDepth:
                         unitConverter = new StringLengthConverter();
                         unitAbbreviation = _unitSystem.LengthUnitAbbreviation;
                         break;
@@ -561,7 +614,7 @@ namespace CaeResults
             {
             }
         }
-        //
+        //                                          
         public void CopyPartsFromMesh(FeMesh mesh)
         {
             _mesh.Parts.Clear();
@@ -591,47 +644,6 @@ namespace CaeResults
             {
                 _mesh.Surfaces.Add(surface.Key, surface.Value.DeepClone());
             }
-        }
-        public void SetPartPropertiesFromMesh(FeMesh mesh)
-        {
-            //// the meshes must be equal
-            //List<Tuple<string, BasePart>> newNameOldPartPairs = new List<Tuple<string, BasePart>>();
-            //foreach (var entry1 in _parts)
-            //{
-            //    foreach (var entry2 in mesh.Parts)
-            //    {
-            //        if (entry1.Value.IsEqual(entry2.Value))
-            //        {
-            //            if (entry1.Value.Name != entry2.Value.Name)
-            //            {
-            //                newNameOldPartPairs.Add(new Tuple<string, BasePart>(entry2.Key, entry1.Value));
-            //                break;
-            //            }
-            //        }
-            //    }
-            //}
-
-            //foreach (var newNameOldPartPair in newNameOldPartPairs)
-            //{
-            //    if (!_parts.ContainsKey(newNameOldPartPair.Item1))  // error check in more than one new part is equal to the same old part
-            //    {
-            //        if (_parts.Remove(newNameOldPartPair.Item2.Name))
-            //        {
-            //            newNameOldPartPair.Item2.Name = newNameOldPartPair.Item1;
-            //            _parts.Add(newNameOldPartPair.Item1, newNameOldPartPair.Item2);
-            //        }
-            //    }
-            //}
-
-            //// set color
-            //BasePart part;
-            //foreach (var entry in _parts)
-            //{
-            //    if (mesh.Parts.TryGetValue(entry.Key, out part))
-            //    {
-            //        entry.Value.Color = part.Color;
-            //    }
-            //}
         }
         //
         public void AddFiled(FieldData fieldData, Field field)
@@ -802,7 +814,7 @@ namespace CaeResults
             if (names.Length == 0)
             {
                 // There is no data
-                fieldData = GetFieldData("None", "None", -1, -1);
+                fieldData = GetFieldData(FOFieldNames.None, FOComponentNames.None, -1, -1);
                 fieldData.Valid = false;
             }
             else
@@ -816,7 +828,7 @@ namespace CaeResults
                 if (fieldData == null)
                 {
                     // There is no data
-                    fieldData = GetFieldData("None", "None", -1, -1);
+                    fieldData = GetFieldData(FOFieldNames.None, FOComponentNames.None, -1, -1);
                 }
                 else if (fieldData.Type == StepType.Frequency)
                 {
@@ -947,8 +959,13 @@ namespace CaeResults
         {
             foreach (var entry in _fields)
             {
-                if ((entry.Key.Name.ToUpper() == fieldName.ToUpper() && entry.Value.ContainsComponent(component) && stepId == 1 && stepIncrementId == 0) ||  // zero increment
-                    (entry.Key.Name.ToUpper() == fieldName.ToUpper() && entry.Value.ContainsComponent(component) && entry.Key.StepId == stepId && entry.Key.StepIncrementId == stepIncrementId))
+                if ((entry.Key.Name.ToUpper() == fieldName.ToUpper() &&
+                     entry.Value.ContainsComponent(component) && stepId == 1 && stepIncrementId == 0) // zero increment
+                     ||
+                    (entry.Key.Name.ToUpper() == fieldName.ToUpper() &&
+                     entry.Value.ContainsComponent(component) &&
+                     entry.Key.StepId == stepId &&
+                     entry.Key.StepIncrementId == stepIncrementId))
                     return true;
             }
             return false;
@@ -961,7 +978,8 @@ namespace CaeResults
                 foreach (var componentName in fieldEntry.Value.GetCmponentNames())
                 {
                     fieldHashes.Add(GetFieldHash(fieldEntry.Key.Name, componentName, 1, 0));
-                    fieldHashes.Add(GetFieldHash(fieldEntry.Key.Name, componentName, fieldEntry.Key.StepId, fieldEntry.Key.StepIncrementId));
+                    fieldHashes.Add(GetFieldHash(fieldEntry.Key.Name, componentName, fieldEntry.Key.StepId,
+                                                 fieldEntry.Key.StepIncrementId));
                 }
             }
             return fieldHashes;
@@ -1139,8 +1157,12 @@ namespace CaeResults
                         //
                         if (relativeScale < 0)  // swap min and max
                         {
-                            int tmp = minId; minId = maxId; maxId = tmp;
-                            float tmpD = nodesData.Values[0]; nodesData.Values[0] = nodesData.Values[1]; nodesData.Values[1] = tmpD;
+                            int tmp = minId;
+                            minId = maxId;
+                            maxId = tmp;
+                            float tmpD = nodesData.Values[0];
+                            nodesData.Values[0] = nodesData.Values[1];
+                            nodesData.Values[1] = tmpD;
                         }
                         //
                         nodesData.Ids[0] = minId;
@@ -1640,62 +1662,18 @@ namespace CaeResults
             return ratios;
         }
         //
-        public void ScaleNodeCoordinates(float scale, int stepId, int stepIncrementId, int[] globalNodeIds, double[][] nodes,
-                                         out double[][] scaledNodes)
-        {
-            if (scale == 0)
-            {
-                scaledNodes = nodes;
-            }
-            else
-            {
-                string name = FOFieldNames.Disp;
-                string[] componentNames = GetComponentNames(name);
-                scaledNodes = new double[nodes.Length][];
-                for (int i = 0; i < nodes.Length; i++) scaledNodes[i] = nodes[i].ToArray();  // copy coordinates
-                // Components can be deleted
-                if (componentNames.Contains("U1") && componentNames.Contains("U2") && componentNames.Contains("U3"))
-                {
-                    float[][] disp = new float[3][];
-                    disp[0] = GetValues(new FieldData(name, "U1", stepId, stepIncrementId), globalNodeIds);
-                    disp[1] = GetValues(new FieldData(name, "U2", stepId, stepIncrementId), globalNodeIds);
-                    disp[2] = GetValues(new FieldData(name, "U3", stepId, stepIncrementId), globalNodeIds);
-                    //
-                    if (disp[0] != null && disp[1] != null && disp[2] != null)
-                    {
-                        for (int i = 0; i < nodes.Length; i++)
-                        {
-                            for (int j = 0; j < 3; j++)
-                            {
-                                scaledNodes[i][j] += scale * disp[j][i];
-                            }
-                        }
-                    }
-                }
-            }
-        }
         public void ScaleNodeCoordinates(float scale, int stepId, int stepIncrementId, int[] globalNodeIds, ref double[][] nodes)
         {
             if (scale != 0)
             {
-                string name = FOFieldNames.Disp;
-                string[] componentNames = GetComponentNames(name);
-                // Components can be deleted
-                if (componentNames.Contains("U1") && componentNames.Contains("U2") && componentNames.Contains("U3"))
+                float[][] deformations = GetNodalMeshDeformations(stepId, stepIncrementId);
+                if (deformations != null)
                 {
-                    float[][] disp = new float[3][];
-                    disp[0] = GetValues(new FieldData(name, "U1", stepId, stepIncrementId), globalNodeIds);
-                    disp[1] = GetValues(new FieldData(name, "U2", stepId, stepIncrementId), globalNodeIds);
-                    disp[2] = GetValues(new FieldData(name, "U3", stepId, stepIncrementId), globalNodeIds);
-                    //
-                    if (disp[0] != null && disp[1] != null && disp[2] != null)
+                    for (int i = 0; i < nodes.Length; i++)
                     {
-                        for (int i = 0; i < nodes.Length; i++)
+                        for (int j = 0; j < 3; j++)
                         {
-                            for (int j = 0; j < 3; j++)
-                            {
-                                nodes[i][j] += scale * disp[j][i];
-                            }
+                            nodes[i][j] += scale * deformations[j][i];
                         }
                     }
                 }
@@ -1755,7 +1733,7 @@ namespace CaeResults
             return 0;
         }
         
-        // Wear
+        // Wear         
         public void ComputeWear()
         {
             ComputeHistoryWearSlidingDistance();
@@ -1849,7 +1827,7 @@ namespace CaeResults
                 Field normalField;
                 FieldData pressureData = new FieldData(FOFieldNames.Contact, FOComponentNames.CPress, 0, 0);
                 FieldData slidingDistanceData = new FieldData(FOFieldNames.SlidingDistance, FOComponentNames.All, 0, 0);                
-                FieldData depthData = new FieldData(FOFieldNames.Depth, FOComponentNames.All, 0, 0);
+                FieldData depthData = new FieldData(FOFieldNames.WearDepth, FOComponentNames.All, 0, 0);
                 FieldData normalData = new FieldData(FOFieldNames.SurfaceNormal, "", 0, 0);
                 int count = 0;
                 int[] stepIds = GetAllStepIds();

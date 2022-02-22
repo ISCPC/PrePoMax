@@ -42,15 +42,24 @@ namespace PrePoMax.Forms
                 _viewSettings = new Dictionary<string, IViewSettings>();
                 foreach (var entry in value)
                 {
-                    if (entry.Value is GeneralSettings ges) _viewSettings.Add(entry.Key, new ViewGeneralSettings(ges.DeepClone()));
-                    else if (entry.Value is GraphicsSettings grs) _viewSettings.Add(entry.Key, new ViewGraphicsSettings(grs.DeepClone()));
-                    else if (entry.Value is ColorSettings cos) _viewSettings.Add(entry.Key, new ViewColorSettings(cos.DeepClone()));
-                    else if (entry.Value is MeshingSettings ms) _viewSettings.Add(entry.Key, new ViewMeshingSettings(ms.DeepClone()));
-                    else if (entry.Value is PreSettings prs) _viewSettings.Add(entry.Key, new ViewPreSettings(prs.DeepClone()));
-                    else if (entry.Value is CalculixSettings cas) _viewSettings.Add(entry.Key, new ViewCalculixSettings(cas.DeepClone()));
-                    else if (entry.Value is PostSettings pos) _viewSettings.Add(entry.Key, new ViewPostSettings(pos.DeepClone()));
-                    else if (entry.Value is LegendSettings les) _viewSettings.Add(entry.Key, new ViewLegendSettings(les.DeepClone()));
-                    else if (entry.Value is StatusBlockSettings sbs) _viewSettings.Add(entry.Key, new ViewStatusBlockSettings(sbs.DeepClone()));
+                    if (entry.Value is GeneralSettings ges)
+                        _viewSettings.Add(entry.Key, new ViewGeneralSettings(ges.DeepClone()));
+                    else if (entry.Value is GraphicsSettings grs)
+                        _viewSettings.Add(entry.Key, new ViewGraphicsSettings(grs.DeepClone()));
+                    else if (entry.Value is ColorSettings cos)
+                        _viewSettings.Add(entry.Key, new ViewColorSettings(cos.DeepClone()));
+                    else if (entry.Value is MeshingSettings ms)
+                        _viewSettings.Add(entry.Key, new ViewMeshingSettings(ms.DeepClone()));
+                    else if (entry.Value is PreSettings prs)
+                        _viewSettings.Add(entry.Key, new ViewPreSettings(prs.DeepClone()));
+                    else if (entry.Value is CalculixSettings cas)
+                        _viewSettings.Add(entry.Key, new ViewCalculixSettings(cas.DeepClone()));
+                    else if (entry.Value is PostSettings pos)
+                        _viewSettings.Add(entry.Key, new ViewPostSettings(pos.DeepClone()));
+                    else if (entry.Value is LegendSettings les)
+                        _viewSettings.Add(entry.Key, new ViewLegendSettings(les.DeepClone()));
+                    else if (entry.Value is StatusBlockSettings sbs)
+                        _viewSettings.Add(entry.Key, new ViewStatusBlockSettings(sbs.DeepClone()));
                     else throw new NotSupportedException();
                 }
             } 
@@ -167,6 +176,14 @@ namespace PrePoMax.Forms
                 {
                     lvi = lvSettings.Items.Add(entry.Key);
                     lvi.Tag = entry.Value;
+                    //
+                    if (entry.Value is ViewPostSettings vps)
+                    {
+                        if (controller.Results != null)
+                            vps.PopululateDropDownList(controller.Results.GetExistingDeformationFieldOutputNames());
+                        else
+                            vps.PopululateDropDownList(CaeResults.FeResults.GetPossibleDeformationFieldOutputNames());
+                    }
                 }
             }
             // Open previously shown settings

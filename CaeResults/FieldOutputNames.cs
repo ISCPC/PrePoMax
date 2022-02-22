@@ -30,14 +30,47 @@ namespace CaeResults
         // Wear
         public const string SlidingDistance = "SLIDING_DISTANCE";
         public const string SurfaceNormal = "SURFACE_NORMAL";
-        public const string Depth = "DEPTH";
+        public const string WearDepth = "WEAR_DEPTH";
         //
         public const string Error = "ERROR";
     }
 
     public class FOComponentNames
     {
+        public const string None = "NONE";
+        //
         public const string All = "ALL";
+        //
+        public const string U1 = "U1";
+        public const string U2 = "U2";
+        public const string U3 = "U3";
+        //
+        public const string F1 = "F1";
+        public const string F2 = "F2";
+        public const string F3 = "F3";
+        //
+        public const string Mises = "MISES";
+        public const string Tresca = "TRESCA";
+        public const string S11 = "S11";
+        public const string S22 = "S22";
+        public const string S33 = "S33";
+        public const string S12 = "S12";
+        public const string S23 = "S23";
+        public const string S13 = "S13";
+        //
+        public const string ME11 = "ME11";
+        public const string ME22 = "ME22";
+        public const string ME33 = "ME33";
+        public const string ME12 = "ME12";
+        public const string ME23 = "ME23";
+        public const string ME13 = "ME13";
+        //
+        public const string E11 = "E11";
+        public const string E22 = "E22";
+        public const string E33 = "E33";
+        public const string E12 = "E12";
+        public const string E23 = "E23";
+        public const string E13 = "E13";
         //
         public const string COpen = "COPEN";
         public const string CSlip1 = "CSLIP1";

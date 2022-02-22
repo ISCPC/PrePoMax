@@ -6231,10 +6231,18 @@ namespace CaeMesh
             HashSet<string> allNames = new HashSet<string>(_parts.Keys);
             if (reservedPartNames != null) allNames.UnionWith(reservedPartNames);
             //
+            BasePart newPart;
             foreach (var entry in mesh.Parts)
             {
+                newPart = entry.Value;
+                if (_meshRepresentation != mesh._meshRepresentation)
+                {
+                    if (_meshRepresentation == MeshRepresentation.Geometry) newPart = new GeometryPart(newPart);
+                    else if (_meshRepresentation == MeshRepresentation.Mesh) newPart = new MeshPart(newPart);
+                    else if (_meshRepresentation == MeshRepresentation.Results) newPart = new ResultPart(newPart);
+                }
                 // Set color after renumbering
-                SetPartColorFromColorTable(entry.Value);
+                SetPartColorFromColorTable(newPart);
                 //
                 entryName = entry.Key;
                 if (forceRenameParts || allNames.Contains(entryName))
@@ -6243,8 +6251,8 @@ namespace CaeMesh
                     entryName = allNames.GetNextNumberedKey(entryName);
                 }
                 //
-                entry.Value.Name = entryName;
-                _parts.Add(entryName, entry.Value);
+                newPart.Name = entryName;
+                _parts.Add(entryName, newPart);
                 addedPartNames.Add(entryName);
                 allNames.Add(entryName);
             }

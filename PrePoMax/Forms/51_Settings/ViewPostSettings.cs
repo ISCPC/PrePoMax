@@ -20,9 +20,19 @@ namespace PrePoMax.Settings
 
         // Deformation                                                          
         [CategoryAttribute("Deformation")]
-        [OrderedDisplayName(0, 10, "Deformation scale factor")]
-        [DescriptionAttribute("Select the deformation scale factor type.")]
+        [OrderedDisplayName(0, 10, "Deformation field")]
+        [DescriptionAttribute("Select the deformation field output to be used for the mesh deformation.")]
         [Id(1, 1)]
+        public string DeformationFieldOutputName
+        {
+            get { return _postSettings.DeformationFieldOutputName; }
+            set { _postSettings.DeformationFieldOutputName = value; }
+        }
+        //
+        [CategoryAttribute("Deformation")]
+        [OrderedDisplayName(1, 10, "Deformation scale factor")]
+        [DescriptionAttribute("Select the deformation scale factor type.")]
+        [Id(2, 1)]
         public DeformationScaleFactorType DeformationScaleFactorType
         {
             get { return _postSettings.DeformationScaleFactorType; }
@@ -43,9 +53,9 @@ namespace PrePoMax.Settings
         }
         //
         [CategoryAttribute("Deformation")]
-        [OrderedDisplayName(1, 10, "Value")]
+        [OrderedDisplayName(2, 10, "Value")]
         [DescriptionAttribute("Select the deformation scale factor value.")]
-        [Id(2, 1)]
+        [Id(3, 1)]
         public double DeformationScaleFactorValue 
         { 
             get { return _postSettings.DeformationScaleFactorValue; } 
@@ -57,9 +67,9 @@ namespace PrePoMax.Settings
         }
         //
         [CategoryAttribute("Deformation")]
-        [OrderedDisplayName(2, 10, "Draw undeformed model")]
+        [OrderedDisplayName(3, 10, "Draw undeformed model")]
         [DescriptionAttribute("Draw undeformed model.")]
-        [Id(3, 1)]
+        [Id(4, 1)]
         public bool DrawUndeformedModel
         {
             get { return _postSettings.DrawUndeformedModel; }
@@ -73,9 +83,9 @@ namespace PrePoMax.Settings
         }
         //
         [CategoryAttribute("Deformation")]
-        [OrderedDisplayName(3, 10, "Draw undeformed model as")]
+        [OrderedDisplayName(4, 10, "Draw undeformed model as")]
         [DescriptionAttribute("Draw undeformed model as a solid or wireframe shape.")]
-        [Id(4, 1)]
+        [Id(5, 1)]
         public bool DrawUndeformedModelAsEdges
         {
             get { return _postSettings.DrawUndeformedModelAsEdges; }
@@ -83,7 +93,7 @@ namespace PrePoMax.Settings
         }
         //
         [CategoryAttribute("Deformation")]
-        [OrderedDisplayName(4, 10, "Undeformed model color")]
+        [OrderedDisplayName(5, 10, "Undeformed model color")]
         [DescriptionAttribute("Set the color of the undeformed model.")]
         [Editor(typeof(UserControls.ColorEditorEx), typeof(UITypeEditor))]
         [Id(5, 1)]
@@ -144,6 +154,18 @@ namespace PrePoMax.Settings
         public ISettings GetBase()
         {
             return _postSettings;
+        }
+        public void PopululateDropDownList(string[] possibleFieldOutputNames)
+        {
+            CustomPropertyDescriptor cpd;
+            //
+            cpd = _dctd.GetProperty(nameof(DeformationFieldOutputName));
+            cpd.StatandardValues.Clear();
+            //
+            if (possibleFieldOutputNames.Length > 0)
+            {
+                _dctd.PopulateProperty(nameof(DeformationFieldOutputName), possibleFieldOutputNames);
+            }
         }
         public void Reset()
         {

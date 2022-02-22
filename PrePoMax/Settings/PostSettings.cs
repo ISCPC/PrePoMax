@@ -32,6 +32,7 @@ namespace PrePoMax
     public class PostSettings : ISettings
     {
         // Variables                                                                                                                
+        private string _deformationFieldOutputName;
         private DeformationScaleFactorType _dsfType;
         private double _deformationScaleFactorValue;
         private bool _drawUndeformedModel;
@@ -43,6 +44,11 @@ namespace PrePoMax
 
 
         // Properties                                                                                                               
+        public string DeformationFieldOutputName
+        {
+            get { return _deformationFieldOutputName; }
+            set { _deformationFieldOutputName = value; }
+        }
         public DeformationScaleFactorType DeformationScaleFactorType
         {
             get { return _dsfType; }
@@ -51,13 +57,13 @@ namespace PrePoMax
                 if (_dsfType != value)
                 {
                     _dsfType = value;
-                    if (_dsfType == PrePoMax.DeformationScaleFactorType.Automatic)
+                    if (_dsfType == DeformationScaleFactorType.Automatic)
                         _deformationScaleFactorValue = -1;
-                    else if (_dsfType == PrePoMax.DeformationScaleFactorType.TrueScale)
+                    else if (_dsfType == DeformationScaleFactorType.TrueScale)
                         _deformationScaleFactorValue = 1;
-                    else if (_dsfType == PrePoMax.DeformationScaleFactorType.Off)
+                    else if (_dsfType == DeformationScaleFactorType.Off)
                         _deformationScaleFactorValue = 0;
-                    else if (_dsfType == PrePoMax.DeformationScaleFactorType.UserDefined)
+                    else if (_dsfType == DeformationScaleFactorType.UserDefined)
                         _deformationScaleFactorValue = 1;
                     else throw new NotSupportedException();
                 }
@@ -113,6 +119,7 @@ namespace PrePoMax
         }
         public void Reset()
         {
+            _deformationFieldOutputName = CaeResults.FOFieldNames.Disp;
             _dsfType = DeformationScaleFactorType.Automatic;
             _deformationScaleFactorValue = -1;
             _drawUndeformedModel = true;
