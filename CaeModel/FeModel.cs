@@ -463,11 +463,11 @@ namespace CaeModel
         }
         public bool RegionValid(IMultiRegion multiRegion)
         {
-            if (multiRegion.RegionType == RegionTypeEnum.NodeSetName)
+            if (multiRegion.RegionType == RegionTypeEnum.NodeSetName && _mesh.NodeSets.ContainsKey(multiRegion.RegionName))
                 return _mesh.NodeSets[multiRegion.RegionName].Valid;
-            else if (multiRegion.RegionType == RegionTypeEnum.ElementSetName)
+            else if (multiRegion.RegionType == RegionTypeEnum.ElementSetName && _mesh.ElementSets.ContainsKey(multiRegion.RegionName))
                 return _mesh.ElementSets[multiRegion.RegionName].Valid;
-            else if (multiRegion.RegionType == RegionTypeEnum.SurfaceName)
+            else if (multiRegion.RegionType == RegionTypeEnum.SurfaceName && _mesh.Surfaces.ContainsKey(multiRegion.RegionName))
                 return _mesh.Surfaces[multiRegion.RegionName].Valid;
             //
             return false;

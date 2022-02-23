@@ -6602,9 +6602,9 @@ namespace PrePoMax
         }
         public void ReplaceLoad(string stepName, string oldLoadName, Load load)
         {
-            Load oldload = GetLoad(stepName, oldLoadName);
+            Load oldLoad = GetLoad(stepName, oldLoadName);
             // First check for a valid region since MultiRegionChanged changes the region type and region name
-            if (!_model.RegionValid(oldload) || StepCollection.MultiRegionChanged(oldload, load))
+            if (!_model.RegionValid(oldLoad) || StepCollection.MultiRegionChanged(oldLoad, load))
             {
                 DeleteSelectionBasedLoadSets(stepName, oldLoadName);
                 ConvertSelectionBasedLoad(load);

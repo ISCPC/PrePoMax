@@ -99,7 +99,7 @@ namespace FileInOut.Input
                 string[] dataSet;
                 string[][] dataSets = GetDataSets(lines);
                 //
-                Dictionary<int, FeNode> nodes = null;
+                Dictionary<int, FeNode> nodes = new Dictionary<int, FeNode>();
                 Dictionary<int, FeElement> elements = new Dictionary<int, FeElement>();
                 //
                 int[] ids;
@@ -115,7 +115,7 @@ namespace FileInOut.Input
                     if (keyword == "*NODE") // nodes
                     {
                         WriteDataToOutputStatic("Reading keyword line: " + dataSet[0]);
-                        nodes = GetNodes(dataSet);
+                        nodes.AddRange(GetNodes(dataSet));
                     }
                     else if (keyword == "*ELEMENT") // elements
                     {
