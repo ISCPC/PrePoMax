@@ -233,8 +233,12 @@ namespace FileInOut.Input
             string[] splitter = new string[] { " " };
             HashSet<int> edge;
             FeElement1D element;
-            Dictionary<int, Dictionary<int, double>> edgeIdNodeIdValue = new Dictionary<int, Dictionary<int, double>>();
-            Dictionary<int, double> nodeIdValue;
+            //
+            double[] key1;
+            double[] key2;
+            HashSet<double[]> nodeIdValue;
+            CaeGlobals.CompareDoubleArray comparer = new CaeGlobals.CompareDoubleArray();
+            Dictionary<int, HashSet<double[]>> edgeIdNodeIdValue = new Dictionary<int, HashSet<double[]>>();
             // Line 0 is the line with the Keyword
             for (int i = 2; i < N + 2; i++)
             {
@@ -252,18 +256,16 @@ namespace FileInOut.Input
                 // Collect node values
                 value1 = double.Parse(record[9]);
                 value2 = double.Parse(record[11]);
-                if (edgeIdNodeIdValue.TryGetValue(edgeId, out nodeIdValue))
+                key1 = new double[] { element.NodeIds[0], value1 };
+                key2 = new double[] { element.NodeIds[1], value2 };
+                //
+                if (!edgeIdNodeIdValue.TryGetValue(edgeId, out nodeIdValue))
                 {
-                    if (!nodeIdValue.ContainsKey(element.NodeIds[0])) nodeIdValue.Add(element.NodeIds[0], value1);
-                    if (!nodeIdValue.ContainsKey(element.NodeIds[1])) nodeIdValue.Add(element.NodeIds[1], value2);
-                }
-                else
-                {
-                    nodeIdValue = new Dictionary<int, double>();
-                    nodeIdValue.Add(element.NodeIds[0], value1);
-                    nodeIdValue.Add(element.NodeIds[1], value2);
+                    nodeIdValue = new HashSet<double[]>(comparer);
                     edgeIdNodeIdValue.Add(edgeId, nodeIdValue);
                 }
+                nodeIdValue.Add(key1);
+                nodeIdValue.Add(key2);
                 //
                 startId++;
             }
@@ -281,17 +283,16 @@ namespace FileInOut.Input
                 maxId = -1;
                 foreach (var nodeEnty in edgeEntry.Value)
                 {
-                    if (nodeEnty.Value < min)
+                    if (nodeEnty[1] < min)
                     {
-                        min = nodeEnty.Value;
-                        minId = nodeEnty.Key;
+                        min = nodeEnty[1];
+                        minId = (int)nodeEnty[0];
                     }
-                    else if (nodeEnty.Value > max)
+                    else if (nodeEnty[1] > max)
                     {
-                        max = nodeEnty.Value;
-                        maxId = nodeEnty.Key;
+                        max = nodeEnty[1];
+                        maxId = (int)nodeEnty[0];
                     }
-
                 }
                 vertexNodeIds.Add(minId);
                 vertexNodeIds.Add(maxId);
