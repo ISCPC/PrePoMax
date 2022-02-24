@@ -11,8 +11,6 @@ namespace CaeModel
     public class ThermalConductivity : MaterialProperty
     {
         // Variables                                                                                                                
-        private static string _positive = "The value must be larger than 0.";
-        //
         private double[][] _thermalConductivityTemp;
 
 

@@ -12,7 +12,7 @@ namespace CaeModel
     public class SlipWearStep : StaticStep, ISerializable
     {
         // Variables                                                                                                                
-        private int _numOfCycles;                 //ISerializable
+        private int _numOfCycles;                               //ISerializable
 
 
         // Properties                                                                                                               
@@ -39,8 +39,6 @@ namespace CaeModel
             //
             if (addFieldOutputs)
             {
-                AddFieldOutput(new NodalFieldOutput("NF-Output-1", NodalFieldVariable.U | NodalFieldVariable.RF));
-                AddFieldOutput(new ElementFieldOutput("EF-Output-1", ElementFieldVariable.E | ElementFieldVariable.S));
                 AddFieldOutput(new ContactFieldOutput("CF-Output-1", ContactFieldVariable.CDIS));
             }
         }

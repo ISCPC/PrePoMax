@@ -568,6 +568,8 @@ namespace FileInOut.Output
                         {
                             material.AddKeyword(new CalSpecificHeat(sh, entry.Value.TemperatureDependent));
                         }
+                        else if (property is SlipWear sw)
+                        { }
                         else throw new NotImplementedException();
                     }
                 }

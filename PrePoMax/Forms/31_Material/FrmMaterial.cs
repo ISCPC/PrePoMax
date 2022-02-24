@@ -120,6 +120,8 @@ namespace PrePoMax.Forms
                                     item.Tag = new ViewThermalConductivity(tc.DeepClone());
                                 else if (mp is SpecificHeat sh)
                                     item.Tag = new ViewSpecificHeat(sh.DeepClone());
+                                else if (mp is SlipWear sw)
+                                    item.Tag = new ViewSlipWear(sw.DeepClone());
                                 else throw new NotSupportedException();
                             }
                             else throw new NotSupportedException();
@@ -235,6 +237,10 @@ namespace PrePoMax.Forms
                     //
                     SetDataGridViewBinding(vsh.DataPoints);
                 }
+                else if (lvAddedProperties.SelectedItems[0].Tag is ViewSlipWear vsw)
+                {
+                    tcProperties.TabPages.Add(_pages[0]);
+                }
                 else throw new NotSupportedException();
                 //
                 propertyGrid.SelectedObject = lvAddedProperties.SelectedItems[0].Tag;
@@ -333,6 +339,9 @@ namespace PrePoMax.Forms
             node.Tag = new ThermalConductivity(new double[][] { new double[] { 0, 0 } });
             node = tvProperties.Nodes.Find("SpecificHeat", true)[0];
             node.Tag = new SpecificHeat(new double[][] { new double[] { 0, 0 } });
+            node = tvProperties.Nodes.Find("SlipWear", true)[0];
+            node.Tag = new SlipWear(0, 0);
+            //
             tvProperties.ExpandAll();
             //
             if (_materialToEditName == null)
@@ -368,6 +377,7 @@ namespace PrePoMax.Forms
                             view = new ViewThermalExpansion(te, cbTemperatureDependent.Checked);
                         else if (property is ThermalConductivity tc) view = new ViewThermalConductivity(tc);
                         else if (property is SpecificHeat sh) view = new ViewSpecificHeat(sh);
+                        else if (property is SlipWear sw) view = new ViewSlipWear(sw);
                         else throw new NotSupportedException();
                         //
                         item = new ListViewItem(view.Name);
@@ -472,6 +482,11 @@ namespace PrePoMax.Forms
                             throw new CaeException("The thermal conductivity coefficient must be larger than 0.");
                     }
                 }
+                else if (property is ViewSlipWear vsw)
+                {
+                    if (vsw.Hardness <= 0) throw new CaeException("The hardness must be larger than 0.");
+                    if (vsw.WearCoefficient <= 0) throw new CaeException("The wear coefficient must be larger than 0.");
+                }
                 //
                 _material.AddProperty(property.Base);
             }
@@ -562,6 +577,11 @@ namespace PrePoMax.Forms
                     //
                     vte.SetTemperatureDependence(cbTemperatureDependent.Checked);
                     propertyGrid.Refresh();
+                }
+                else if (lvAddedProperties.SelectedItems[0].Tag is ViewSlipWear vsw)
+                {
+                    tcProperties.TabPages.Clear();
+                    tcProperties.TabPages.Add(_pages[0]);
                 }
             }
             //

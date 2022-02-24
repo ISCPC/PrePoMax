@@ -12,9 +12,6 @@ namespace CaeModel
     public class Elastic : MaterialProperty
     {
         // Variables                                                                                                                
-        [NonSerialized]
-        private static string _positive = "The value must be larger than 0.";
-        //
         private double[][] _youngsPoissonsTemp;
 
 

@@ -28,7 +28,7 @@ namespace PrePoMax.Forms
                 if (value.GetType() == typeof(StaticStep))
                     _viewStep = new ViewStaticStep((value as StaticStep).DeepClone());  // use this form due to inheritance
                 if (value.GetType() == typeof(SlipWearStep))
-                    viewStep = new ViewStaticStep((value as StaticStep).DeepClone());  // use this form due to inheritance
+                    _viewStep = new ViewSlipWearStep((value as SlipWearStep).DeepClone());  // use this form due to inheritance
                 else if (value is FrequencyStep fs)
                     _viewStep = new ViewFrequencyStep(fs.DeepClone());
                 else if (value is BuckleStep bs)
@@ -189,6 +189,7 @@ namespace PrePoMax.Forms
         {
             Step prevOrLastStep = GetPreviousOrLastStep();
             bool addStatic = false;
+            bool addSlipWearStep = false;
             bool addFrequency = false;
             bool addBuckle = false;
             bool addHeatTransfer = true;
@@ -197,7 +198,11 @@ namespace PrePoMax.Forms
             bool cannotAdd;
             //
             if (prevOrLastStep == null || prevOrLastStep.GetType() == typeof(StaticStep) ||
-                prevOrLastStep is HeatTransferStep) addStatic = true;
+                prevOrLastStep is HeatTransferStep)
+            {
+                addStatic = true;
+                addSlipWearStep = true;
+            }
             if (!(prevOrLastStep is FrequencyStep)) addFrequency = true;
             if (!(prevOrLastStep is BuckleStep)) addBuckle = true;
             //
@@ -220,6 +225,15 @@ namespace PrePoMax.Forms
                     StaticStep staticStep = (StaticStep)CreateNewOrCloneLast(typeof(StaticStep));
                     staticStep.SolverType = defaultSolverType;
                     item.Tag = new ViewStaticStep(staticStep);
+                    lvTypes.Items.Add(item);
+                }
+                if (addSlipWearStep)
+                {
+                    // Slip wear step
+                    item = new ListViewItem("Slip wear step");
+                    SlipWearStep slipWearStep = (SlipWearStep)CreateNewOrCloneLast(typeof(SlipWearStep));
+                    slipWearStep.SolverType = defaultSolverType;
+                    item.Tag = new ViewSlipWearStep(slipWearStep);
                     lvTypes.Items.Add(item);
                 }
                 if (addFrequency)
@@ -258,7 +272,7 @@ namespace PrePoMax.Forms
                     item.Tag = new ViewUncoupledTempDispStep(uncoupledTempDispStep);
                     lvTypes.Items.Add(item);
                 }
-                if (addUncoupledTemDisp)
+                if (addCoupledTemDisp)
                 {
                     // Coupled temperature-displacement step
                     item = new ListViewItem("Coupled temperature-displacement step");

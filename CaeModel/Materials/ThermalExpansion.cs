@@ -11,10 +11,9 @@ namespace CaeModel
     public class ThermalExpansion : MaterialProperty
     {
         // Variables                                                                                                                
-        private static string _positive = "The value must be larger than 0.";
-        //
         private double[][] _thermalExpansionTemp;
         private double _zeroTemperature;
+
 
         // Properties                                                                                                               
         public double[][] ThermalExpansionTemp

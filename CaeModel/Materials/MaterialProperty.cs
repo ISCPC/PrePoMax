@@ -11,6 +11,8 @@ namespace CaeModel
     public abstract class MaterialProperty
     {
         // Variables                                                                                                                
+        [NonSerialized]
+        protected const string _positive = "The value must be larger than 0.";
 
 
         // Properties                                                                                                               

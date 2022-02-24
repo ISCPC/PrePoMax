@@ -4,38 +4,45 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CaeGlobals;
+using System.Runtime.Serialization;
 
 namespace CaeModel
 {
     [Serializable]
-    public class SpecificHeat : MaterialProperty
+    public class SlipWear : MaterialProperty
     {
         // Variables                                                                                                                
-        private double[][] _specificHeatTemp;
+        private double _hardness;
+        private double _wearCoefficient;
 
 
         // Properties                                                                                                               
-        public double[][] SpecificHeatTemp
+        public double Hardness
         {
-            get { return _specificHeatTemp; }
+            get { return _hardness; }
             set
             {
-                _specificHeatTemp = value;
-                if (_specificHeatTemp != null)
-                {
-                    for (int i = 0; i < _specificHeatTemp.Length; i++)
-                    {
-                        if (_specificHeatTemp[i][0] <= 0) throw new CaeException(_positive);
-                    }
-                }
+                if (value <= 0) throw new CaeException(_positive);
+                _hardness = value;
+            }
+        }
+        public double WearCoefficient
+        {
+            get { return _wearCoefficient; }
+            set
+            {
+                if (value <= 0) throw new CaeException(_positive);
+                _wearCoefficient = value;
             }
         }
 
 
         // Constructors                                                                                                             
-        public SpecificHeat(double[][] specificHeatTemp)
+        public SlipWear(double hardness, double wearCoefficient)
         {
-            _specificHeatTemp = specificHeatTemp;
+            // The constructor must wotk with H = 0; K = 0
+            _hardness = hardness;
+            _wearCoefficient = wearCoefficient;
         }
 
 
