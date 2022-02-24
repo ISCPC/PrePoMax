@@ -46,7 +46,7 @@ namespace PrePoMax
             //
             _dctd.RenameBooleanPropertyToOnOff("Perturbation");
             //
-            UpdateFieldView();
+            UpdateVisibility();
         }
 
 

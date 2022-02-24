@@ -49,9 +49,9 @@ namespace PrePoMax
         {
             return _heatTransferStep;
         }
-        public override void UpdateFieldView()
+        public override void UpdateVisibility()
         {
-            base.UpdateFieldView();
+            base.UpdateVisibility();
         }
     }
 }

@@ -27,6 +27,8 @@ namespace PrePoMax.Forms
             {
                 if (value.GetType() == typeof(StaticStep))
                     _viewStep = new ViewStaticStep((value as StaticStep).DeepClone());  // use this form due to inheritance
+                if (value.GetType() == typeof(SlipWearStep))
+                    viewStep = new ViewStaticStep((value as StaticStep).DeepClone());  // use this form due to inheritance
                 else if (value is FrequencyStep fs)
                     _viewStep = new ViewFrequencyStep(fs.DeepClone());
                 else if (value is BuckleStep bs)
@@ -109,7 +111,7 @@ namespace PrePoMax.Forms
         }
         protected override void OnPropertyGridPropertyValueChanged()
         {
-            (propertyGrid.SelectedObject as ViewStep).UpdateFieldView();
+            (propertyGrid.SelectedObject as ViewStep).UpdateVisibility();
             //
             base.OnPropertyGridPropertyValueChanged();
         }

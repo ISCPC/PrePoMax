@@ -49,7 +49,7 @@ namespace PrePoMax
         {
             return _step;
         }
-        public virtual void UpdateFieldView()
+        public virtual void UpdateVisibility()
         { }
     }
 }

@@ -36,8 +36,11 @@ namespace FileInOut.Output.Calculix
             string totals = "";
             if (_contactHistoryOutput.TotalsType == TotalsTypeEnum.Yes) totals = ", Totals=Yes";
             else if (_contactHistoryOutput.TotalsType == TotalsTypeEnum.Only) totals = ", Totals=Only";
-            return string.Format("*Contact print{0}{1}, Master={2}, Slave={3}{4}",
-                                 frequency, totals, _masterName, _slaveName, Environment.NewLine);
+            string masterSlave = "";
+            if (_contactHistoryOutput.Variables.HasFlag(ContactHistoryVariable.CF))
+                masterSlave = ", Master=" + _masterName + ", Slave=" + _slaveName;
+            return string.Format("*Contact print{0}{1}{2}{3}",
+                                 frequency, totals, masterSlave, Environment.NewLine);
         }
         public override string GetDataString()
         {

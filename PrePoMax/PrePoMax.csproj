@@ -346,6 +346,7 @@
     <Compile Include="Forms\37_InitialConditions\ViewInitialCondition.cs" />
     <Compile Include="Forms\37_InitialConditions\ViewInitialTemperature.cs" />
     <Compile Include="Forms\41_Step\ViewCoupledTempDispStep.cs" />
+    <Compile Include="Forms\41_Step\ViewSlipWearStep.cs" />
     <Compile Include="Forms\41_Step\ViewUncoupledTempDispStep.cs" />
     <Compile Include="Forms\41_Step\ViewHeatTransferStep.cs" />
     <Compile Include="Forms\42_HistoryOutput\ViewContactHistoryOutput.cs" />

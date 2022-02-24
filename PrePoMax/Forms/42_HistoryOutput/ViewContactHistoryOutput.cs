@@ -29,7 +29,7 @@ namespace PrePoMax
         CNUM = 8,
         //
         [StandardValue("CF", Description = "Total contact forces on slave surface.")]
-        CF = 16
+        CF = 16,
         //CFN = 32,
         //CFS = 64
     }
@@ -57,6 +57,7 @@ namespace PrePoMax
             set
             {
                 _contactOutput.Variables = (CaeModel.ContactHistoryVariable)value;
+                UpdateVisibility();
             }
         }
         //
@@ -82,6 +83,8 @@ namespace PrePoMax
             //
             base.SetBase(_contactOutput, regionTypePropertyNamePairs);
             base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
+            //
+            UpdateVisibility();
         }
 
 
@@ -96,8 +99,14 @@ namespace PrePoMax
             regionTypeListItemsPairs.Add(RegionTypeEnum.ContactPair, contactPairNames);
             base.PopululateDropDownLists(regionTypeListItemsPairs);
             //
-            CustomPropertyDescriptor cpd = base.DynamicCustomTypeDescriptor.GetProperty(nameof(SelectionHidden));
-            cpd.SetIsBrowsable(false);
+            DynamicCustomTypeDescriptor.GetProperty(nameof(SelectionHidden)).SetIsBrowsable(false);
+            //
+            UpdateVisibility(); //  must be here
+        }
+        public void UpdateVisibility()
+        {
+            bool cf = Variables.HasFlag(ViewContactHistoryVariable.CF);
+            DynamicCustomTypeDescriptor.GetProperty(nameof(ContactPairName)).SetIsBrowsable(cf);
         }
     }
 
