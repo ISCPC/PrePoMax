@@ -48,6 +48,8 @@ namespace CaeJob
         [NonSerialized] private string _outputFileName;
         [NonSerialized] private string _errorFileName;
         [NonSerialized] private object _myLock;
+        [NonSerialized] private int _numOfRuns;
+        [NonSerialized] private int _currentRun;
 
 
         // Properties                                                                                                               
@@ -176,18 +178,42 @@ namespace CaeJob
 
 
         // Methods                                                                                                                  
-        public void Submit()
+        public void Submit(int numOfRuns)
+        {
+            _numOfRuns = numOfRuns;
+            _currentRun = 0;
+            //
+            _timer = new System.Windows.Threading.DispatcherTimer();
+            _timer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
+            _timer.Tick += Timer_Tick;
+            _timer.Start();
+            //
+            _watch = new Stopwatch();
+            _watch.Start();
+            //
+            SubmitNextRun();
+        }
+        private void SubmitNextRun()
+        {
+            _currentRun++;
+            //
+            if (_currentRun <= _numOfRuns) SubmitOneRun();
+            else AllRunsCompleted();
+        }
+        private void SubmitOneRun()
         {
             if (_myLock == null) _myLock = new object();
             lock (_myLock)
             {
                 if (_sbOutput == null) _sbOutput = new StringBuilder();
                 _sbOutput.Clear();
+                //
+                if (_sbAllOutput == null) _sbAllOutput = new StringBuilder();
+                _sbAllOutput.Clear();
             }
-            if (_sbAllOutput == null) _sbAllOutput = new StringBuilder();
-            _sbAllOutput.Clear();
             //
             AppendDataToOutput(DateTime.Now + Environment.NewLine);
+            AppendDataToOutput("########   Starting run number: " + _currentRun + "   ########" +  Environment.NewLine);
             AppendDataToOutput("Running command: " + _executable + " " + _argument);
             //
             _statusFileLength = -1;
@@ -195,12 +221,6 @@ namespace CaeJob
             //
             _convergenceFileLength = -1;
             _convergenceFileContents = "";
-            //
-            _timer = new System.Windows.Threading.DispatcherTimer();
-            _timer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
-            _timer.Tick += Timer_Tick;
-            //
-            _watch = new Stopwatch();
             //
             _jobStatus = JobStatus.Running;
             //
@@ -210,19 +230,14 @@ namespace CaeJob
             {
                 bwStart.DoWork += bwStart_DoWork;
                 bwStart.RunWorkerCompleted += bwStart_RunWorkerCompleted;
-                if (!bwStart.IsBusy)
-                {
-                    _timer.Start();
-                    _watch.Start();
-                    bwStart.RunWorkerAsync();
-                }
+                if (!bwStart.IsBusy) bwStart.RunWorkerAsync();
             }
         }
-        void bwStart_DoWork(object sender, DoWorkEventArgs e)
+        private void bwStart_DoWork(object sender, DoWorkEventArgs e)
         {
-            string tmpName = Path.GetFileName(Name);
-            _outputFileName = Path.Combine(_workDirectory, "_output_" + tmpName + ".txt");
-            _errorFileName = Path.Combine(_workDirectory, "_error_" + tmpName + ".txt");
+            string fileName = Path.GetFileName(Name);
+            _outputFileName = Path.Combine(_workDirectory, "_output_" + fileName + ".txt");
+            _errorFileName = Path.Combine(_workDirectory, "_error_" + fileName + ".txt");
             //
             if (File.Exists(_outputFileName)) File.Delete(_outputFileName);
             if (File.Exists(_errorFileName)) File.Delete(_errorFileName);
@@ -230,11 +245,8 @@ namespace CaeJob
             if (Tools.IsWindows10orNewer()) Run_Win10();
             else Run_OldWin();
         }
-        void bwStart_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        private void bwStart_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            _watch.Stop();
-            _timer.Stop();
-            //
             AppendDataToOutput("");
             //
             string frdFileName = Path.Combine(WorkDirectory, _name + ".frd");
@@ -256,6 +268,11 @@ namespace CaeJob
                 {
                     _jobStatus = JobStatus.FailedWithResults;
                 }
+                else
+                {
+                    SubmitNextRun();
+                    return;
+                }
             }
             else if (_jobStatus == JobStatus.Killed)
             {
@@ -267,6 +284,13 @@ namespace CaeJob
                 if (resultsExist) _jobStatus = JobStatus.FailedWithResults;
             }
             //
+            AllRunsCompleted();
+        }
+        private void AllRunsCompleted()
+        {
+            _watch.Stop();
+            _timer.Stop();
+            //
             AppendDataToOutput("");
             AppendDataToOutput(" Process elapsed time:       " + Math.Round(_watch.Elapsed.TotalSeconds, 3).ToString() + " s");
             //AppendDataToOutput(" Peak physical memory usage: " + (Math.Round(_peakWorkingSet / 1048576.0, 3)).ToString() + " MB");
@@ -277,8 +301,8 @@ namespace CaeJob
             //
             JobStatusChanged?.Invoke(_name, _jobStatus);
             //
-            JobStatusChanged = null;   // dereference the link to otheh objects
-            //
+            // Dereference the links to otheh objects
+            JobStatusChanged = null;   
             DataOutput = null;
         }
 

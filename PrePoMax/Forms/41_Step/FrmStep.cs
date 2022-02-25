@@ -27,8 +27,8 @@ namespace PrePoMax.Forms
             {
                 if (value.GetType() == typeof(StaticStep))
                     _viewStep = new ViewStaticStep((value as StaticStep).DeepClone());  // use this form due to inheritance
-                if (value.GetType() == typeof(SlipWearStep))
-                    _viewStep = new ViewSlipWearStep((value as SlipWearStep).DeepClone());  // use this form due to inheritance
+                else if (value is SlipWearStep sws)
+                    _viewStep = new ViewSlipWearStep(sws.DeepClone());
                 else if (value is FrequencyStep fs)
                     _viewStep = new ViewFrequencyStep(fs.DeepClone());
                 else if (value is BuckleStep bs)
@@ -231,7 +231,7 @@ namespace PrePoMax.Forms
                 {
                     // Slip wear step
                     item = new ListViewItem("Slip wear step");
-                    SlipWearStep slipWearStep = (SlipWearStep)CreateNewOrCloneLast(typeof(SlipWearStep));
+                    SlipWearStep slipWearStep = new SlipWearStep(GetStepName());
                     slipWearStep.SolverType = defaultSolverType;
                     item.Tag = new ViewSlipWearStep(slipWearStep);
                     lvTypes.Items.Add(item);

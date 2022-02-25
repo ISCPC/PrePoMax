@@ -751,7 +751,7 @@ namespace FileInOut.Output
                 // Step type
                 if (step.Active)
                 {
-                    if (step.GetType() == typeof(StaticStep))
+                    if (step.GetType() == typeof(StaticStep) || step is SlipWearStep)
                     {
                         StaticStep staticStep = step as StaticStep;
                         CalStaticStep calStaticStep = new CalStaticStep(staticStep);

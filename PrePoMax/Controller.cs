@@ -6999,50 +6999,84 @@ namespace PrePoMax
             ApplySettings();
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldJobName, job, null);
         }
-        public bool RunJob(string inputFileName, AnalysisJob job)
+        public bool PrepareAndRunJob(string inputFileName, AnalysisJob job)
         {
             if (File.Exists(job.Executable))
             {
-                string directory = Path.GetDirectoryName(inputFileName);
-                string inputFileNameWithoutExtension = Path.GetFileNameWithoutExtension(inputFileName);
-                string[] files = new string[] { Path.Combine(directory, inputFileNameWithoutExtension + ".inp"),
-                                                Path.Combine(directory, inputFileNameWithoutExtension + ".dat"),
-                                                Path.Combine(directory, inputFileNameWithoutExtension + ".sta"),
-                                                Path.Combine(directory, inputFileNameWithoutExtension + ".cvg"),
-                                                Path.Combine(directory, inputFileNameWithoutExtension + ".12d"),
-                                                Path.Combine(directory, inputFileNameWithoutExtension + ".cel"), // contact elments
-                                                Path.Combine(directory, "ResultsForLastIterations.frd"),
-                                                Path.Combine(directory, inputFileNameWithoutExtension + ".frd")
-                                                };
-                try
+                if (_model.StepCollection.ContainsSlipWearStep())
                 {
-                    foreach (var fileName in files) File.Delete(fileName);
+                    return RunWearJob(inputFileName, job);
                 }
-                catch (Exception ex)
+                else
                 {
-                    throw new CaeGlobals.CaeException(ex.Message);
+                    return RunJob(inputFileName, job);
                 }
-                //
-                int[] unAssignedElementIds = _model.GetSectionAssignments(out Dictionary<int, int> elementIdSectionId);
-                if (unAssignedElementIds.Length != 0)
-                {
-                    string elementSetName = _model.Mesh.ElementSets.GetNextNumberedKey(Globals.MissingSectionName);
-                    AddElementSetCommand(new FeElementSet(elementSetName, unAssignedElementIds));
-                    //
-                    string msg = unAssignedElementIds.Length + " finite elements are missing a section assignment. Continue?";
-                    if (MessageBox.Show(msg,
-                                        "Warning",
-                                        MessageBoxButtons.OKCancel,
-                                        MessageBoxIcon.Warning) == DialogResult.Cancel) return false;
-                }
-                ExportToCalculix(inputFileName);
-                job.JobStatusChanged = JobStatusChanged;
-                job.Submit();
             }
             else
             {
                 throw new CaeException("The executable file of the analysis does not exists.");
             }
+        }
+        private bool PrepareJob(string inputFileName)
+        {
+            string directory = Path.GetDirectoryName(inputFileName);
+            string inputFileNameWithoutExtension = Path.GetFileNameWithoutExtension(inputFileName);
+            string[] files = new string[] { Path.Combine(directory, inputFileNameWithoutExtension + ".inp"),
+                                            Path.Combine(directory, inputFileNameWithoutExtension + ".dat"),
+                                            Path.Combine(directory, inputFileNameWithoutExtension + ".sta"),
+                                            Path.Combine(directory, inputFileNameWithoutExtension + ".cvg"),
+                                            Path.Combine(directory, inputFileNameWithoutExtension + ".12d"),
+                                            Path.Combine(directory, inputFileNameWithoutExtension + ".cel"), // contact elments
+                                            Path.Combine(directory, "ResultsForLastIterations.frd"),
+                                            Path.Combine(directory, inputFileNameWithoutExtension + ".frd")
+                                            };
+            try
+            {
+                foreach (var fileName in files) File.Delete(fileName);
+            }
+            catch (Exception ex)
+            {
+                throw new CaeException(ex.Message);
+            }
+            //
+            int[] unAssignedElementIds = _model.GetSectionAssignments(out Dictionary<int, int> elementIdSectionId);
+            if (unAssignedElementIds.Length != 0)
+            {
+                string elementSetName = _model.Mesh.ElementSets.GetNextNumberedKey(Globals.MissingSectionName);
+                AddElementSetCommand(new FeElementSet(elementSetName, unAssignedElementIds));
+                //
+                string msg = unAssignedElementIds.Length + " finite elements are missing a section assignment. Continue?";
+                if (MessageBox.Show(msg,
+                                    "Warning",
+                                    MessageBoxButtons.OKCancel,
+                                    MessageBoxIcon.Warning) == DialogResult.Cancel) return false;
+            }
+            return true;
+        }
+        private bool RunJob(string inputFileName, AnalysisJob job)
+        {
+            if (PrepareJob(inputFileName))
+            {
+                ExportToCalculix(inputFileName);
+                job.JobStatusChanged = JobStatusChanged;
+                job.Submit(1);
+                //
+                return true;
+            }
+            return false;
+        }
+        private bool RunWearJob(string inputFileName, AnalysisJob job)
+        {
+            int numOfCycles = _model.StepCollection.GetNumberOfSlipWearCycles();
+            //
+            if (PrepareJob(inputFileName))
+            {
+                ExportToCalculix(inputFileName);
+                job.JobStatusChanged = JobStatusChanged;
+                job.Submit(numOfCycles);
+            }
+            else return false;
+        //
             return true;
         }
         private void JobStatusChanged(string jobName, JobStatus jobStatus)

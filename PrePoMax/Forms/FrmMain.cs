@@ -5408,7 +5408,7 @@ namespace PrePoMax
                         if (MessageBoxes.ShowWarningQuestion("Overwrite existing analysis files?") != DialogResult.OK) return;
                     }
                     //
-                    if (_controller.RunJob(inputFileName, job)) MonitorAnalysis(jobName);
+                    if (_controller.PrepareAndRunJob(inputFileName, job)) MonitorAnalysis(jobName);
                 }
                 else MessageBoxes.ShowError("The analysis is already running or in queue.");
             }

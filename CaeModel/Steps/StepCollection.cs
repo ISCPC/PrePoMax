@@ -100,12 +100,6 @@ namespace CaeModel
         // Methods                                                                                                                  
         public void AddStep(Step step, bool copyBCsAndLoads = true)
         {
-            if (_steps.Count > 0)
-            {
-                Step prevStep = _steps.Last();
-                // Disable copying of BCs and loads for different step types
-                //if (prevStep.GetType() != step.GetType()) copyBCsAndLoads = false;
-            }
             if (copyBCsAndLoads && _steps.Count >= 1)
             {
                 Step lastStep = _steps.Last();
@@ -124,6 +118,8 @@ namespace CaeModel
                 }
             }
             _steps.Add(step);
+            // Update number of slip wear cycles
+            if (step is SlipWearStep sws) UpdateNumberOfAllSlipWearCycles(sws.NumOfCycles);
         }
         public Step GetStep(string stepName)
         {
@@ -148,6 +144,8 @@ namespace CaeModel
                 else newSteps.Add(step);
             }
             _steps = newSteps;
+            // Update number of slip wear cycles
+            if (newStep is SlipWearStep sws) UpdateNumberOfAllSlipWearCycles(sws.NumOfCycles);
         }
         public Step RemoveStep(string stepName)
         {
@@ -336,6 +334,35 @@ namespace CaeModel
             }
             return null;
         }
+        // Wear
+        public bool ContainsSlipWearStep()
+        {
+            foreach (var step in _steps)
+            {
+                if (step is SlipWearStep) return true;
+            }
+            return false;
+        }
+        private void UpdateNumberOfAllSlipWearCycles(int numOfCycles)
+        {
+            foreach (var step in _steps)
+            {
+                if (step is SlipWearStep sws) sws.NumOfCycles = numOfCycles;
+            }
+        }
+        public int GetNumberOfSlipWearCycles()
+        {
+            int numOfCycles = 1;
+            foreach (var step in _steps)
+            {
+                if (step is SlipWearStep sws)
+                {
+                    if (sws.NumOfCycles > numOfCycles) numOfCycles = sws.NumOfCycles;
+                }
+            }
+            return numOfCycles;
+        }
+
 
     }
 }
