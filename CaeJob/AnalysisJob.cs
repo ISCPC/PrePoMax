@@ -48,6 +48,7 @@ namespace CaeJob
         [NonSerialized] private string _outputFileName;
         [NonSerialized] private string _errorFileName;
         [NonSerialized] private object _myLock;
+        [NonSerialized] private string _inputFileName;
         [NonSerialized] private int _numOfRuns;
         [NonSerialized] private int _currentRun;
 
@@ -130,6 +131,8 @@ namespace CaeJob
         }
         public string StatusFileData { get { return _statusFileContents; } }
         public string ConvergenceFileData { get { return _convergenceFileContents; } }
+        public int CurrentRun { get { return _currentRun; } }
+        public string InputFileName { get { return _inputFileName; } }
 
 
         // Events                                                                                                                   
@@ -138,6 +141,8 @@ namespace CaeJob
 
         // Callback                                                                                                                 
         public Action<string, JobStatus> JobStatusChanged;
+        public Action<AnalysisJob> PrepareNextRun;
+        public Action<AnalysisJob> LastRunCompleted;
 
 
         // Constructor                                                                                                              
@@ -180,6 +185,8 @@ namespace CaeJob
         // Methods                                                                                                                  
         public void Submit(int numOfRuns)
         {
+            _inputFileName = Path.Combine(_workDirectory, _name + ".inp");  // must be first for the timer to work
+            //
             _numOfRuns = numOfRuns;
             _currentRun = 0;
             //
@@ -197,7 +204,11 @@ namespace CaeJob
         {
             _currentRun++;
             //
-            if (_currentRun <= _numOfRuns) SubmitOneRun();
+            if (_currentRun <= _numOfRuns)
+            {
+                PrepareNextRun?.Invoke(this);
+                SubmitOneRun();
+            }
             else AllRunsCompleted();
         }
         private void SubmitOneRun()
@@ -257,6 +268,7 @@ namespace CaeJob
                 if (length < 15 * 20) resultsExist = false;
             }
             //
+            bool continueAnalysis = false;
             if (_jobStatus == JobStatus.OK)
             {
                 if (!resultsExist)
@@ -270,8 +282,7 @@ namespace CaeJob
                 }
                 else
                 {
-                    SubmitNextRun();
-                    return;
+                    continueAnalysis = true;                    
                 }
             }
             else if (_jobStatus == JobStatus.Killed)
@@ -284,7 +295,8 @@ namespace CaeJob
                 if (resultsExist) _jobStatus = JobStatus.FailedWithResults;
             }
             //
-            AllRunsCompleted();
+            if (continueAnalysis) SubmitNextRun();
+            else AllRunsCompleted();
         }
         private void AllRunsCompleted()
         {
@@ -300,12 +312,14 @@ namespace CaeJob
             Timer_Tick(null, null);
             //
             JobStatusChanged?.Invoke(_name, _jobStatus);
+            LastRunCompleted?.Invoke(this);
             //
             // Dereference the links to otheh objects
-            JobStatusChanged = null;   
             DataOutput = null;
+            JobStatusChanged = null;
+            PrepareNextRun = null;
+            LastRunCompleted = null;
         }
-
         private void Run_OldWin()
         {
             ProcessStartInfo psi = new ProcessStartInfo();
@@ -405,7 +419,6 @@ namespace CaeJob
                 _exe.Close();
             }            
         }
-
         public void Kill(string message)
         {
             try

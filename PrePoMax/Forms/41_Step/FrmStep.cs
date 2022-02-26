@@ -197,16 +197,28 @@ namespace PrePoMax.Forms
             bool addCoupledTemDisp = true;
             bool cannotAdd;
             //
-            if (prevOrLastStep == null || prevOrLastStep.GetType() == typeof(StaticStep) ||
-                prevOrLastStep is HeatTransferStep)
+            if (prevOrLastStep is SlipWearStep)
             {
-                addStatic = true;
-                addSlipWearStep = true;
+                addSlipWearStep = true; // only one possibility
             }
-            if (!(prevOrLastStep is FrequencyStep)) addFrequency = true;
-            if (!(prevOrLastStep is BuckleStep)) addBuckle = true;
+            else
+            {
+                if (prevOrLastStep == null || prevOrLastStep.GetType() == typeof(StaticStep) ||
+                    prevOrLastStep is HeatTransferStep)
+                {
+                    addStatic = true;
+                    addSlipWearStep = true;
+                }
+                if (!(prevOrLastStep is FrequencyStep)) addFrequency = true;
+                if (!(prevOrLastStep is BuckleStep)) addBuckle = true;
+                //
+                addHeatTransfer = true;
+                addUncoupledTemDisp = true;
+                addCoupledTemDisp = true;
+            }
             //
-            cannotAdd = !(addStatic || addFrequency || addBuckle || addHeatTransfer || addUncoupledTemDisp);
+            cannotAdd = !(addStatic || addSlipWearStep || addFrequency || addBuckle || addHeatTransfer ||
+                          addUncoupledTemDisp || addCoupledTemDisp);
             //
             ListViewItem item;
             if (cannotAdd)

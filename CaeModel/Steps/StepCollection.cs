@@ -362,6 +362,17 @@ namespace CaeModel
             }
             return numOfCycles;
         }
+        public int[] GetSlipWearStepIds()
+        {
+            int count = 1;  // start at 1
+            List<int> stepIds = new List<int>();
+            foreach (var step in _steps)
+            {
+                if (step is SlipWearStep sws) stepIds.Add(count);
+                count++;
+            }
+            return stepIds.ToArray();
+        }
 
 
     }

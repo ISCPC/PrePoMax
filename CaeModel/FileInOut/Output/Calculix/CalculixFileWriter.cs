@@ -16,22 +16,21 @@ namespace FileInOut.Output
     public static class CalculixFileWriter
     {
         // Methods                                                                                                                  
-        static public void Write(string fileName, FeModel model)
+        static public void Write(string fileName, FeModel model, Dictionary<int, double[]> deformations = null)
         {
-            List<CalculixKeyword> keywords = GetAllKeywords(model);
-
-            // write file
+            List<CalculixKeyword> keywords = GetAllKeywords(model, deformations);
+            // Write file
             StringBuilder sb = new StringBuilder();
             foreach (var keyword in keywords)
             {
                 WriteKeywordRecursively(sb, keyword);
             }
-            System.IO.File.WriteAllText(fileName, sb.ToString());
+            File.WriteAllText(fileName, sb.ToString());
         }
         //
-        static public List<CalculixKeyword> GetAllKeywords(FeModel model)
+        static public List<CalculixKeyword> GetAllKeywords(FeModel model, Dictionary<int, double[]> deformations = null)
         {
-            List<CalculixKeyword> keywords = GetModelKeywords(model);
+            List<CalculixKeyword> keywords = GetModelKeywords(model, deformations);
             // Add user keywords
             if (model.CalculixUserKeywords != null)
             {
@@ -44,7 +43,7 @@ namespace FileInOut.Output
             //
             return keywords;
         }
-        static public List<CalculixKeyword> GetModelKeywords(FeModel model)
+        static public List<CalculixKeyword> GetModelKeywords(FeModel model, Dictionary<int, double[]> deformations = null)
         {
             // Only keywords from the model, not user keywords
             // Allways add a title keyword to get all possible keyword types to the keyword editor
@@ -107,7 +106,7 @@ namespace FileInOut.Output
             // Nodes
             title = new CalTitle("Nodes", "");
             keywords.Add(title);
-            AppendNodes(model, referencePointsNodeIds, title);
+            AppendNodes(model, referencePointsNodeIds, deformations, title);
             // Elements
             title = new CalTitle("Elements", "");
             keywords.Add(title);
@@ -368,11 +367,12 @@ namespace FileInOut.Output
             CalSubmodel submodel = new CalSubmodel(model.Properties.GlobalResultsFileName, nodeSetNames);
             parent.AddKeyword(submodel);
         }
-        static private void AppendNodes(FeModel model, Dictionary<string, int[]> referencePointsNodeIds, CalculixKeyword parent)
+        static private void AppendNodes(FeModel model, Dictionary<string, int[]> referencePointsNodeIds,
+                                        Dictionary<int, double[]> deformations, CalculixKeyword parent)
         {
             if (model.Mesh != null)
             {
-                CalNode node = new CalNode(model, referencePointsNodeIds);
+                CalNode node = new CalNode(model, referencePointsNodeIds, deformations);
                 parent.AddKeyword(node);
             }
 

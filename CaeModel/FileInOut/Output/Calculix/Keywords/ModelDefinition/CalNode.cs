@@ -16,15 +16,18 @@ namespace FileInOut.Output.Calculix
         private IDictionary<int, FeNode> _nodes;
         private ModelSpaceEnum _modelSpace;
         private IDictionary<string, int[]> _referencePointsNodeIds;
+        private Dictionary<int, double[]> _deformations;
 
 
         // Constructor                                                                                                              
-        public CalNode(FeModel model, IDictionary<string, int[]> referencePointsNodeIds)
+        public CalNode(FeModel model, IDictionary<string, int[]> referencePointsNodeIds,
+                       Dictionary<int, double[]> deformations)
         {
             _referencePoints = model.Mesh.ReferencePoints;
             _nodes = model.Mesh.Nodes;
             _modelSpace = model.Properties.ModelSpace;
             _referencePointsNodeIds = referencePointsNodeIds;
+            _deformations = deformations;
         }
 
 
@@ -38,13 +41,22 @@ namespace FileInOut.Output.Calculix
         }
         public override string GetDataString()
         {
-            StringBuilder sb = new StringBuilder();
             FeNode node;
-            List<int> idsSorted = _nodes.Keys.ToList();
-            idsSorted.Sort();
-            foreach (int nodeId in idsSorted)
+            double[] def;
+            StringBuilder sb = new StringBuilder();
+            List<int> sortedIds = _nodes.Keys.ToList();
+            sortedIds.Sort();
+            foreach (int nodeId in sortedIds)
             {
                 node = _nodes[nodeId];
+                //
+                if (_deformations != null && _deformations.TryGetValue(nodeId, out def))
+                {
+                    node.X += def[0];
+                    node.Y += def[1];
+                    node.Z += def[2];
+                }
+                //
                 if (_modelSpace == ModelSpaceEnum.ThreeD)
                     sb.AppendFormat("{0}, {1:E8}, {2:E8}, {3:E8}", node.Id, node.X, node.Y, node.Z).AppendLine();
                 else if (_modelSpace.IsTwoD())

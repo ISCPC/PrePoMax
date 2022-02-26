@@ -47,7 +47,8 @@ namespace PrePoMax
         //
         protected FeModel _model;
         protected NetgenJob _netgenJob;
-        protected FeResults _results;        
+        protected FeResults _results;
+        [NonSerialized] protected FeResults _wearResults;
         // History
         protected Commands.CommandsCollection _commands;
        
@@ -563,7 +564,20 @@ namespace PrePoMax
         private void OpenFrd(string fileName)
         {
             ClearResults();
-            _results = FrdFileReader.Read(fileName);
+            //
+            FeResults results;
+            bool useWearResults = _wearResults != null;
+            bool readDatFile = !useWearResults;
+            //
+            if (useWearResults) results = _wearResults;
+            else results = FrdFileReader.Read(fileName);
+            //
+            OpenResults(results, readDatFile);
+        }
+        private void OpenResults(FeResults results, bool readDatFile)
+        {
+            _results = results;
+            //
             bool redraw = false;
             //
             if (_results == null || _results.Mesh == null)
@@ -572,7 +586,7 @@ namespace PrePoMax
                 return;
             }
             else
-            {                
+            {
                 _form.Clear3D();
                 // Check if the meshes are the same and rename the parts
                 if (_model.Mesh != null && _results.Mesh != null && _model.HashName == _results.HashName)
@@ -606,23 +620,22 @@ namespace PrePoMax
                     //
                     ResumeExplodedViews(false); // must be here after the MergePartsBasedOnMesh
                 }
-
-                //_results.ComputeWearFields();
-                //
-
                 redraw = true;
                 // Model changed
                 _modelChanged = true;
             }
             // Open .cel file
-            string celFileName = Path.GetFileNameWithoutExtension(fileName) + ".cel";
-            celFileName = Path.Combine(Path.GetDirectoryName(fileName), celFileName);
+            string celFileName = Path.GetFileNameWithoutExtension(_results.FileName) + ".cel";
+            celFileName = Path.Combine(Path.GetDirectoryName(_results.FileName), celFileName);
             if (File.Exists(celFileName)) OpenCelFile(celFileName, false);
             // Open .dat file
-            string datFileName = Path.GetFileNameWithoutExtension(fileName) + ".dat";
-            datFileName = Path.Combine(Path.GetDirectoryName(fileName), datFileName);
-            if (File.Exists(datFileName)) OpenDatFile(datFileName, false);
-            //
+            if (readDatFile)
+            {
+                string datFileName = Path.GetFileNameWithoutExtension(_results.FileName) + ".dat";
+                datFileName = Path.Combine(Path.GetDirectoryName(_results.FileName), datFileName);
+                if (File.Exists(datFileName)) OpenDatFile(datFileName, false);
+            }
+            // Redraw
             if (redraw)
             {
                 // Set the view but do not draw
@@ -635,7 +648,7 @@ namespace PrePoMax
         private void OpenDatFile(string fileName, bool redraw = true)
         {
             if (_results == null) _results = new FeResults(fileName);
-            _results.SetHistory(DatFileReader.Read(fileName));
+            _results.SetHistory(DatFileReader.Read(fileName).DeepClone(), _model.StepCollection.GetSlipWearStepIds());
             //
             if (_results.GetHistory() == null)
             {
@@ -1377,10 +1390,10 @@ namespace PrePoMax
             }
         }
         // Export
-        public void ExportToCalculix(string fileName)
+        public void ExportToCalculix(string fileName, Dictionary<int, double[]> deformations = null)
         {
             SuppressExplodedViews();
-            FileInOut.Output.CalculixFileWriter.Write(fileName, _model);
+            FileInOut.Output.CalculixFileWriter.Write(fileName, _model, deformations);
             ResumeExplodedViews(false);
             //
             _form.WriteDataToOutput("Model exported to file: " + fileName);
@@ -7000,7 +7013,7 @@ namespace PrePoMax
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldJobName, job, null);
         }
         public bool PrepareAndRunJob(string inputFileName, AnalysisJob job)
-        {
+        {            
             if (File.Exists(job.Executable))
             {
                 if (_model.StepCollection.ContainsSlipWearStep())
@@ -7067,17 +7080,58 @@ namespace PrePoMax
         }
         private bool RunWearJob(string inputFileName, AnalysisJob job)
         {
-            int numOfCycles = _model.StepCollection.GetNumberOfSlipWearCycles();
+            // Clear old results
+            _wearResults = null;
             //
             if (PrepareJob(inputFileName))
             {
-                ExportToCalculix(inputFileName);
+                int numOfCycles = _model.StepCollection.GetNumberOfSlipWearCycles();
+                //
                 job.JobStatusChanged = JobStatusChanged;
+                job.PrepareNextRun = PrepareNextWearRun;
+                job.LastRunCompleted = LastWearRunCompleted;
                 job.Submit(numOfCycles);
+                //
+                return true;
             }
-            else return false;
-        //
-            return true;
+            return false;
+        }
+        private void PrepareNextWearRun(AnalysisJob job)
+        {
+            if (job.CurrentRun == 1)
+            {
+                ExportToCalculix(job.InputFileName);
+            }
+            else
+            {
+                ReadWearResults(job);
+                //
+                Dictionary<int, double[]> deformations = _wearResults.GetNodalWearDepths();
+                ExportToCalculix(job.InputFileName, deformations);
+            }
+        }
+        private void LastWearRunCompleted(AnalysisJob job)
+        {
+            ReadWearResults(job);
+        }
+        private void ReadWearResults(AnalysisJob job)
+        {
+            string resultsFileFrd = Path.Combine(job.WorkDirectory, job.Name + ".frd");
+            string resultsFileDat = Path.Combine(job.WorkDirectory, job.Name + ".dat");
+            //
+            if (File.Exists(resultsFileFrd) && File.Exists(resultsFileDat))
+            {
+                FeResults results = FrdFileReader.Read(resultsFileFrd);
+                //
+                if (results == null || results.Mesh == null) job.Kill("Intermediate results do not exist.");
+                //
+                if (results.SetHistory(DatFileReader.Read(resultsFileDat), _model.StepCollection.GetSlipWearStepIds()))
+                {
+                    if (_wearResults == null) _wearResults = results;
+                    else _wearResults.AddResults(results);
+                }
+                else job.Kill("The computation of wear variables failed.");
+            }
         }
         private void JobStatusChanged(string jobName, JobStatus jobStatus)
         {
