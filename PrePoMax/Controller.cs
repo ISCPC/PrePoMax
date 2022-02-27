@@ -7106,7 +7106,7 @@ namespace PrePoMax
             {
                 ReadWearResults(job);
                 //
-                Dictionary<int, double[]> deformations = _wearResults.GetNodalWearDepths();
+                Dictionary<int, double[]> deformations = _wearResults.GetGlobalWearDepths();
                 ExportToCalculix(job.InputFileName, deformations);
             }
         }
