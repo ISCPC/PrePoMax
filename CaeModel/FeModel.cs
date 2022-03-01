@@ -559,6 +559,67 @@ namespace CaeModel
             elementIdMaterialId = new Dictionary<int, int>();
             foreach (var entry in elementIdSectionId) elementIdMaterialId.Add(entry.Key, sectionIdMaterialId[entry.Value]);
         }
+        public Dictionary<int, double> GetNodalSlipWearCoefficients()
+        {
+            int count = 0;
+            bool containsWear = false;
+            double coefficient;
+            Dictionary<int, double> materialIdCoefficient = new Dictionary<int, double>();
+            // For each material check if the material has wear coefficients defined
+            foreach (var entry in _materials)
+            {
+                coefficient = 0;
+                foreach (var property in entry.Value.Properties)
+                {
+                    if (property is SlipWear sw)
+                    {
+                        coefficient = sw.WearCoefficient / sw.Hardness;
+                        containsWear = true;
+                        break;
+                    }
+                }
+                //
+                materialIdCoefficient.Add(count++, coefficient);
+            }
+            // If wear coefficients are defined
+            if (containsWear)
+            {
+                Dictionary<int, int> elementIdMaterialId;
+                GetMaterialAssignments(out elementIdMaterialId);
+                // Get wear coefficient for each element
+                Dictionary<int, double> elementIdCoefficient = new Dictionary<int, double>();
+                foreach (var entry in elementIdMaterialId)
+                {
+                    elementIdCoefficient.Add(entry.Key, materialIdCoefficient[entry.Value]);
+                }
+                // Get wear coefficients for each node
+                HashSet<double> allCoefficients;
+                Dictionary<int, HashSet<double>> nodeIdAllCoefficients = new Dictionary<int, HashSet<double>>();
+                FeElement element;
+                foreach (var entry in elementIdCoefficient)
+                {
+                    element = _mesh.Elements[entry.Key];
+                    foreach (var nodeId in element.NodeIds)
+                    {
+                        if (nodeIdAllCoefficients.TryGetValue(nodeId, out allCoefficients)) allCoefficients.Add(entry.Value);
+                        else nodeIdAllCoefficients.Add(nodeId, new HashSet<double>() { entry.Value });
+                    }
+                }
+                // Compute the average
+                Dictionary<int, double> nodeIdCoefficient = new Dictionary<int, double>();
+                foreach (var entry in nodeIdAllCoefficients)
+                {
+                    coefficient = 0;
+                    foreach (var value in entry.Value) coefficient += value;
+                    coefficient /= entry.Value.Count();
+                    //
+                    nodeIdCoefficient.Add(entry.Key, coefficient);
+                }
+                //
+                return nodeIdCoefficient;
+            }
+            else return null;
+        }
         public void GetSectionThicknessAssignments(out Dictionary<int, int> elementIdSectionThicknessId)
         {
             // Get element section ids

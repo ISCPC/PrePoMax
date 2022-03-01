@@ -192,9 +192,9 @@ namespace PrePoMax.Forms
             bool addSlipWearStep = false;
             bool addFrequency = false;
             bool addBuckle = false;
-            bool addHeatTransfer = true;
-            bool addUncoupledTemDisp = true;
-            bool addCoupledTemDisp = true;
+            bool addHeatTransfer = false;
+            bool addUncoupledTemDisp = false;
+            bool addCoupledTemDisp = false;
             bool cannotAdd;
             //
             if (prevOrLastStep is SlipWearStep)

@@ -200,7 +200,6 @@ namespace CaeResults
             //
             float lastTime = 0;
             FieldData fieldData;
-            Field dispField;
             Field lastWearDepthField;
             foreach (var fieldName in fieldNames)
             {
@@ -228,48 +227,39 @@ namespace CaeResults
             float[] valuesH1;
             float[] valuesH2;
             float[] valuesH3;
-            float[] lastValues;
             float[] magnitude;
             float[][] deformations = GetLocalWearDepths();
+            // Add mesh deformation
             foreach (var entry in results._fields.ToArray())    // copy to modify
             {
                 fieldData = entry.Key;
-                if (fieldData.StepId == 0 && fieldData.StepIncrementId == 0) continue; // Zero increment - Find all occurances!!!
-                //
-                fieldData.Time += lastTime;
-                fieldData.StepId += lastStepId;
-                //
                 currentField = entry.Value;
+                //
+                if (fieldData.StepId == 0 && fieldData.StepIncrementId == 0) continue; // Zero increment - Find all occurances!!!
                 //
                 if (fieldData.Name == FOFieldNames.WearDepth)
                 {
                     // H1
                     valuesH1 = currentField.GetComponentValues(FOComponentNames.H1);
-                    //lastValues = lastWearDepthField.GetComponentValues(FOComponentNames.H1);
                     magnitude = new float[valuesH1.Length];
                     for (int i = 0; i < valuesH1.Length; i++)
                     {
-                        //valuesH1[i] += lastValues[i];
                         valuesH1[i] += deformations[0][i];
                         magnitude[i] += valuesH1[i] * valuesH1[i];
                     }
                     h1 = new FieldComponent(FOComponentNames.H1, valuesH1);
                     // H2
                     valuesH2 = currentField.GetComponentValues(FOComponentNames.H2);
-                    //lastValues = lastWearDepthField.GetComponentValues(FOComponentNames.H2);
                     for (int i = 0; i < valuesH2.Length; i++)
                     {
-                        //valuesH2[i] += lastValues[i];
                         valuesH2[i] += deformations[1][i];
                         magnitude[i] += valuesH2[i] * valuesH2[i];
                     }
                     h2 = new FieldComponent(FOComponentNames.H2, valuesH2);
                     // H3
                     valuesH3 = currentField.GetComponentValues(FOComponentNames.H3);
-                    //lastValues = lastWearDepthField.GetComponentValues(FOComponentNames.H3);
                     for (int i = 0; i < valuesH3.Length; i++)
                     {
-                        //valuesH3[i] += lastValues[i];
                         valuesH3[i] += deformations[2][i];
                         magnitude[i] += valuesH3[i] * valuesH3[i];
                     }
@@ -284,37 +274,31 @@ namespace CaeResults
                     currentField.AddComponent(h3);
                     // Replace field
                     results.ReplaceField(fieldData, currentField);
-                    //
                 }
                 else if (fieldData.Name == FOFieldNames.Disp)
                 {
-                    fieldData = results.GetFieldData(FOFieldNames.Disp, "", fieldData.StepId, fieldData.StepIncrementId);
-                    dispField = results.GetField(fieldData);
                     // UH1
-                    values = dispField.GetComponentValues(FOComponentNames.U1);
+                    values = currentField.GetComponentValues(FOComponentNames.U1);
                     magnitude = new float[values.Length];
                     for (int i = 0; i < values.Length; i++)
                     {
                         values[i] += deformations[0][i];
-                        //values[i] += valuesH1[i];
                         magnitude[i] += values[i] * values[i];
                     }
                     u1 = new FieldComponent(FOComponentNames.U1, values);
                     // UH2
-                    values = dispField.GetComponentValues(FOComponentNames.U2);
+                    values = currentField.GetComponentValues(FOComponentNames.U2);
                     for (int i = 0; i < values.Length; i++)
                     {
                         values[i] += deformations[1][i];
-                        //values[i] += valuesH2[i];
                         magnitude[i] += values[i] * values[i];
                     }
                     u2 = new FieldComponent(FOComponentNames.U2, values);
                     // UH3
-                    values = dispField.GetComponentValues(FOComponentNames.U3);
+                    values = currentField.GetComponentValues(FOComponentNames.U3);
                     for (int i = 0; i < values.Length; i++)
                     {
                         values[i] += deformations[2][i];
-                        //values[i] += valuesH3[i];
                         magnitude[i] += values[i] * values[i];
                     }
                     u3 = new FieldComponent(FOComponentNames.U3, values);
@@ -326,112 +310,22 @@ namespace CaeResults
                     currentField.AddComponent(u1);
                     currentField.AddComponent(u2);
                     currentField.AddComponent(u3);
-                    // Add field
-                    if (!ReplaceField(fieldData, currentField)) results.ReplaceField(fieldData, currentField);
+                    // Replace field
+                    results.ReplaceField(fieldData, currentField);
                 }
             }
-            // Copy
+            // Copy all fields
             foreach (var entry in results._fields)
             {
                 fieldData = entry.Key;
+                currentField = entry.Value;
+                //
                 if (fieldData.StepId == 0 && fieldData.StepIncrementId == 0) continue; // Zero increment - Find all occurances!!!
                 //
                 fieldData.Time += lastTime;
                 fieldData.StepId += lastStepId;
                 //
-                currentField = entry.Value;
-                //
                 _fields.Add(fieldData, currentField);
-                //
-                continue;
-                if (fieldData.Name == FOFieldNames.WearDepth)
-                {
-                    // H1
-                    valuesH1 = currentField.GetComponentValues(FOComponentNames.H1);
-                    lastValues = lastWearDepthField.GetComponentValues(FOComponentNames.H1);
-                    magnitude = new float[valuesH1.Length];
-                    for (int i = 0; i < valuesH1.Length; i++)
-                    {
-                        valuesH1[i] += lastValues[i];
-                        magnitude[i] += valuesH1[i] * valuesH1[i];
-                    }
-                    h1 = new FieldComponent(FOComponentNames.H1, valuesH1);
-                    // H2
-                    valuesH2 = currentField.GetComponentValues(FOComponentNames.H2);
-                    lastValues = lastWearDepthField.GetComponentValues(FOComponentNames.H2);
-                    for (int i = 0; i < valuesH2.Length; i++)
-                    {
-                        valuesH2[i] += lastValues[i];
-                        magnitude[i] += valuesH2[i] * valuesH2[i];
-                    }
-                    h2 = new FieldComponent(FOComponentNames.H2, valuesH2);
-                    // H3
-                    valuesH3 = currentField.GetComponentValues(FOComponentNames.H3);
-                    lastValues = lastWearDepthField.GetComponentValues(FOComponentNames.H3);
-                    for (int i = 0; i < valuesH3.Length; i++)
-                    {
-                        valuesH3[i] += lastValues[i];
-                        magnitude[i] += valuesH3[i] * valuesH3[i];
-                    }
-                    h3 = new FieldComponent(FOComponentNames.H3, valuesH3);
-                    // Magnitude
-                    for (int i = 0; i < magnitude.Length; i++) magnitude[i] = (float)Math.Sqrt(magnitude[i]);
-                    // Create field
-                    currentField = new Field(FOFieldNames.WearDepth);
-                    currentField.AddComponent(FOComponentNames.All, magnitude);
-                    currentField.AddComponent(h1);
-                    currentField.AddComponent(h2);
-                    currentField.AddComponent(h3);
-                    // Add field
-                    _fields.Add(fieldData, currentField);
-                    //
-
-                    fieldData = results.GetFieldData(FOFieldNames.Disp, "", fieldData.StepId, fieldData.StepIncrementId);
-                    dispField = results.GetField(fieldData);
-                    magnitude = new float[valuesH1.Length];
-                    // UH1
-                    values = dispField.GetComponentValues(FOComponentNames.U1);
-                    for (int i = 0; i < values.Length; i++)
-                    {
-                        //values[i] += deformations[0][i];
-                        values[i] += valuesH1[i];
-                        magnitude[i] += values[i] * values[i];
-                    }
-                    u1 = new FieldComponent(FOComponentNames.U1, values);
-                    // UH2
-                    values = dispField.GetComponentValues(FOComponentNames.U2);
-                    for (int i = 0; i < values.Length; i++)
-                    {
-                        //values[i] += deformations[1][i];
-                        values[i] += valuesH2[i];
-                        magnitude[i] += values[i] * values[i];
-                    }
-                    u2 = new FieldComponent(FOComponentNames.U2, values);
-                    // UH3
-                    values = dispField.GetComponentValues(FOComponentNames.U3);
-                    for (int i = 0; i < values.Length; i++)
-                    {
-                        //values[i] += deformations[2][i];
-                        values[i] += valuesH3[i];
-                        magnitude[i] += values[i] * values[i];
-                    }
-                    u3 = new FieldComponent(FOComponentNames.U3, values);
-                    // Magnitude
-                    for (int i = 0; i < magnitude.Length; i++) magnitude[i] = (float)Math.Sqrt(magnitude[i]);
-                    // Create field
-                    currentField = new Field(FOFieldNames.Disp);
-                    currentField.AddComponent(FOComponentNames.All, magnitude);
-                    currentField.AddComponent(u1);
-                    currentField.AddComponent(u2);
-                    currentField.AddComponent(u3);
-                    // Add field
-                    if (!ReplaceField(fieldData, currentField)) results.ReplaceField(fieldData, currentField);
-                }
-                else
-                {
-                    _fields.Add(fieldData, currentField);
-                }
-                
             }
         }
         // Mesh deformation                         
@@ -620,11 +514,11 @@ namespace CaeResults
         {
             return _history;
         }
-        public bool SetHistory(HistoryResults historyResults, int[] slipStepIds)
+        public bool SetHistory(HistoryResults historyResults, int[] slipStepIds, Dictionary<int, double> nodeIdCoefficient)
         {
             _history = historyResults;
             //
-            return ComputeWear(slipStepIds);
+            return ComputeWear(slipStepIds, nodeIdCoefficient);
         }
         // Units                                    
         public TypeConverter GetFieldUnitConverter(string fieldDataName, string componentName)
@@ -2006,7 +1900,7 @@ namespace CaeResults
         }
         
         // Wear         
-        private bool ComputeWear(int[] slipStepIds)
+        private bool ComputeWear(int[] slipStepIds, Dictionary<int, double> nodeIdCoefficient)
         {
             if (slipStepIds != null && slipStepIds.Length > 0 && CheckFieldAndhistoryTimes())
             {
@@ -2031,7 +1925,7 @@ namespace CaeResults
                     CreateAveragedFieldFromElementFaceHistory(FOFieldNames.SurfaceNormal, n3, false);
                 }
                 //
-                return ComputeFieldWearSlidingDistance(slipStepIds);
+                return ComputeFieldWearSlidingDistance(slipStepIds, nodeIdCoefficient);
             }
             else return false;
         }
@@ -2098,12 +1992,22 @@ namespace CaeResults
                 _history.Sets.Add(contactWear.Name, contactWear);
             }
         }
-        public bool ComputeFieldWearSlidingDistance(int[] slipStepIds)
+        public bool ComputeFieldWearSlidingDistance(int[] slipStepIds, Dictionary<int, double> nodeIdCoefficient)
         {
             HistoryResultComponent slidingDistanceAll =
                 GetHistoryResultComponent(HOSetNames.ContactWear, HOFieldNames.SlidingDistance, HOComponentNames.All);
+            //
             if (slidingDistanceAll != null)
             {
+                float[] coefficients = new float[_nodeIdsLookUp.Count()]; 
+                if (nodeIdCoefficient != null)
+                {
+                    foreach (var entry in _nodeIdsLookUp) coefficients[entry.Value] = (float)nodeIdCoefficient[entry.Key];
+                }
+                else
+                {
+                    foreach (var entry in _nodeIdsLookUp) coefficients[entry.Value] = 0;
+                }
                 // Sorted time
                 double[] sortedTime;
                 Dictionary<double, int> timeRowId;
@@ -2190,7 +2094,7 @@ namespace CaeResults
                             //
                             for (int k = 0; k < depthValuesMag.Length; k++)
                             {
-                                dh = 0.0001f * pressureValues[k] * slidingDistanceValues[k];
+                                dh = coefficients[k] * pressureValues[k] * slidingDistanceValues[k];
                                 depthValuesMag[k] = dh + prevDepthValuesMag[k];
                                 depthValuesH1[k] = dh * normalN1Values[k] + prevDepthValuesH1[k];
                                 depthValuesH2[k] = dh * normalN2Values[k] + prevDepthValuesH2[k];

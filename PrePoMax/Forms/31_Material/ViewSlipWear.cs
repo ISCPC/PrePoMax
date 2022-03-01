@@ -19,7 +19,7 @@ namespace PrePoMax
         // Properties                                                                                                               
         public override string Name
         {
-            get { return "Wear"; }
+            get { return "Slip wear"; }
         }
         //
         [Browsable(false)]

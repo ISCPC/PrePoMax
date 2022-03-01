@@ -648,7 +648,9 @@ namespace PrePoMax
         private void OpenDatFile(string fileName, bool redraw = true)
         {
             if (_results == null) _results = new FeResults(fileName);
-            _results.SetHistory(DatFileReader.Read(fileName).DeepClone(), _model.StepCollection.GetSlipWearStepIds());
+            _results.SetHistory(DatFileReader.Read(fileName).DeepClone(),
+                                _model.StepCollection.GetSlipWearStepIds(),
+                                _model.GetNodalSlipWearCoefficients());
             //
             if (_results.GetHistory() == null)
             {
@@ -7125,7 +7127,11 @@ namespace PrePoMax
                 //
                 if (results == null || results.Mesh == null) job.Kill("Intermediate results do not exist.");
                 //
-                if (results.SetHistory(DatFileReader.Read(resultsFileDat), _model.StepCollection.GetSlipWearStepIds()))
+                Dictionary<int, int> elementIdMaterialId;
+                _model.GetMaterialAssignments(out elementIdMaterialId);
+                if (results.SetHistory(DatFileReader.Read(resultsFileDat),
+                                       _model.StepCollection.GetSlipWearStepIds(),
+                                       _model.GetNodalSlipWearCoefficients()))
                 {
                     if (_wearResults == null) _wearResults = results;
                     else _wearResults.AddResults(results);
