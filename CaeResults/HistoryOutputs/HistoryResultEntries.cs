@@ -38,15 +38,23 @@ namespace CaeResults
         }
 
 
-        // Static methods                                                                                                           
-
-
         // Methods                                                                                                                  
         public void Add(double time, double value)
         {
             _time.Add(time);
             _values.Add(value);
             _count.Add(1);
+        }
+        public void Append(HistoryResultEntries historyResultEntry)
+        {
+            _time.AddRange(historyResultEntry.Time);
+            _values.AddRange(historyResultEntry.Values);
+        }
+        public void ShiftTime(double timeSthift)
+        {
+            List<double> newTime = new List<double>();
+            foreach (var time in _time) newTime.Add(time + timeSthift);
+            _time = newTime;
         }
         public void SumValue(double value)
         {

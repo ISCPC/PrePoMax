@@ -7034,6 +7034,26 @@ namespace PrePoMax
         }
         private bool PrepareJob(string inputFileName)
         {
+            // Check for missing section
+            int[] unAssignedElementIds = _model.GetSectionAssignments(out Dictionary<int, int> elementIdSectionId);
+            if (unAssignedElementIds.Length != 0)
+            {
+                string elementSetName = _model.Mesh.ElementSets.GetNextNumberedKey(Globals.MissingSectionName);
+                AddElementSetCommand(new FeElementSet(elementSetName, unAssignedElementIds));
+                //
+                string msg = unAssignedElementIds.Length + " finite elements are missing a section assignment. Continue?";
+                if (MessageBox.Show(msg, "Warning", MessageBoxButtons.OKCancel,
+                                    MessageBoxIcon.Warning) == DialogResult.Cancel) return false;
+            }
+            // Check for wear coefficients in a wear analysis
+            Dictionary<int, double> materialIdCoefficient;
+            if (_model.StepCollection.ContainsSlipWearStep() && !_model.AreSlipWearCoefficientsDefined(out materialIdCoefficient))
+            {
+                string msg = "No slip wear material coefficients are defined. Continue?";
+                if (MessageBox.Show(msg, "Warning", MessageBoxButtons.OKCancel,
+                                    MessageBoxIcon.Warning) == DialogResult.Cancel) return false;
+            }
+            // Delete old files
             string directory = Path.GetDirectoryName(inputFileName);
             string inputFileNameWithoutExtension = Path.GetFileNameWithoutExtension(inputFileName);
             string[] files = new string[] { Path.Combine(directory, inputFileNameWithoutExtension + ".inp"),
@@ -7054,18 +7074,6 @@ namespace PrePoMax
                 throw new CaeException(ex.Message);
             }
             //
-            int[] unAssignedElementIds = _model.GetSectionAssignments(out Dictionary<int, int> elementIdSectionId);
-            if (unAssignedElementIds.Length != 0)
-            {
-                string elementSetName = _model.Mesh.ElementSets.GetNextNumberedKey(Globals.MissingSectionName);
-                AddElementSetCommand(new FeElementSet(elementSetName, unAssignedElementIds));
-                //
-                string msg = unAssignedElementIds.Length + " finite elements are missing a section assignment. Continue?";
-                if (MessageBox.Show(msg,
-                                    "Warning",
-                                    MessageBoxButtons.OKCancel,
-                                    MessageBoxIcon.Warning) == DialogResult.Cancel) return false;
-            }
             return true;
         }
         private bool RunJob(string inputFileName, AnalysisJob job)

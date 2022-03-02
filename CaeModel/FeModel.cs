@@ -559,12 +559,12 @@ namespace CaeModel
             elementIdMaterialId = new Dictionary<int, int>();
             foreach (var entry in elementIdSectionId) elementIdMaterialId.Add(entry.Key, sectionIdMaterialId[entry.Value]);
         }
-        public Dictionary<int, double> GetNodalSlipWearCoefficients()
+        public bool AreSlipWearCoefficientsDefined(out Dictionary<int, double> materialIdCoefficient)
         {
             int count = 0;
             bool containsWear = false;
             double coefficient;
-            Dictionary<int, double> materialIdCoefficient = new Dictionary<int, double>();
+            materialIdCoefficient = new Dictionary<int, double>();
             // For each material check if the material has wear coefficients defined
             foreach (var entry in _materials)
             {
@@ -581,6 +581,13 @@ namespace CaeModel
                 //
                 materialIdCoefficient.Add(count++, coefficient);
             }
+            return containsWear;
+        }
+        public Dictionary<int, double> GetNodalSlipWearCoefficients()
+        {
+            double coefficient;
+            Dictionary<int, double> materialIdCoefficient;
+            bool containsWear = AreSlipWearCoefficientsDefined(out materialIdCoefficient);
             // If wear coefficients are defined
             if (containsWear)
             {

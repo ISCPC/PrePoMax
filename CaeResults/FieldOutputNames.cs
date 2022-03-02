@@ -31,6 +31,7 @@ namespace CaeResults
         public const string SlidingDistance = "SLIDING_DISTANCE";
         public const string SurfaceNormal = "SURFACE_NORMAL";
         public const string WearDepth = "WEAR_DEPTH";
+        public const string DispWearDepth = "DISP_WEAR_DEPTH";
         //
         public const string Error = "ERROR";
     }
@@ -87,5 +88,9 @@ namespace CaeResults
         public const string H1 = "H1";
         public const string H2 = "H2";
         public const string H3 = "H3";
+        //
+        public const string UH1 = "UH1";
+        public const string UH2 = "UH2";
+        public const string UH3 = "UH3";
     }
 }
