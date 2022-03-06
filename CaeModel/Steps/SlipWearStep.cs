@@ -39,7 +39,8 @@ namespace CaeModel
             //
             if (addFieldOutputs)
             {
-                AddFieldOutput(new ContactFieldOutput("CF-Output-1", ContactFieldVariable.CDIS));
+                //AddHistoryOutput(new ContactHistoryOutput("CH-Output-1", ContactHistoryVariable.CDIS, null));
+                AddFieldOutput(new ContactFieldOutput("CF-Output-1", ContactFieldVariable.CDIS, true));
             }
         }
         //ISerializable

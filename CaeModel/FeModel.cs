@@ -571,7 +571,7 @@ namespace CaeModel
                 coefficient = 0;
                 foreach (var property in entry.Value.Properties)
                 {
-                    if (property is SlipWear sw)
+                    if (property is CaeModel.SlipWear sw)
                     {
                         coefficient = sw.WearCoefficient / sw.Hardness;
                         containsWear = true;

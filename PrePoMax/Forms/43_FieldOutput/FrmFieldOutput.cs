@@ -124,7 +124,7 @@ namespace PrePoMax.Forms
             _fieldOutputToEditName = fieldOutputToEditName;
             //
             if (_fieldOutputNames == null)
-                throw new CaeGlobals.CaeException("The field output names must be defined first.");
+                throw new CaeException("The field output names must be defined first.");
             //
             PopulateListOfFieldOutputs();
             //
@@ -173,9 +173,11 @@ namespace PrePoMax.Forms
             lvTypes.Items.Add(item);
             // Contact
             item = new ListViewItem("Contact output");
+            Step step = _controller.Model.StepCollection.GetStep(_stepName);
             ViewContactFieldOutput vcfo = new ViewContactFieldOutput(new ContactFieldOutput(GetFieldOutputName("C"),
                                                                                             ContactFieldVariable.CDIS |
-                                                                                            ContactFieldVariable.CSTR));
+                                                                                            ContactFieldVariable.CSTR,
+                                                                                            step is SlipWearStep));
             item.Tag = vcfo;
             lvTypes.Items.Add(item);
         }

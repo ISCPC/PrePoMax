@@ -6212,9 +6212,13 @@ namespace PrePoMax
         {
             string[] nextStepNames = _model.StepCollection.GetNextStepNames(stepName);
             HistoryOutput historyOutput = GetHistoryOutput(stepName, historyOutputName).DeepClone();
+            Step step;
             foreach (var nextStepName in nextStepNames)
             {
-                if (_model.StepCollection.GetStep(nextStepName).HistoryOutputs.ContainsKey(historyOutputName))
+                step = _model.StepCollection.GetStep(nextStepName);
+                if (historyOutput is ContactHistoryOutput cho && step is SlipWearStep) cho.IsInWearStep = true;
+                //
+                if (step.HistoryOutputs.ContainsKey(historyOutputName))
                     ReplaceHistoryOutput(nextStepName, historyOutputName, historyOutput);
                 else
                     AddHistoryOutput(nextStepName, historyOutput);
@@ -6351,9 +6355,13 @@ namespace PrePoMax
         {
             string[] nextStepNames = _model.StepCollection.GetNextStepNames(stepName);
             FieldOutput fieldOutput = GetFieldOutput(stepName, fieldOutputName).DeepClone();
+            Step step;
             foreach (var nextStepName in nextStepNames)
             {
-                if (_model.StepCollection.GetStep(nextStepName).FieldOutputs.ContainsKey(fieldOutputName))
+                step = _model.StepCollection.GetStep(nextStepName);
+                if (fieldOutput is ContactFieldOutput cfo && step is SlipWearStep) cfo.IsInWearStep = true;
+                //
+                if (step.FieldOutputs.ContainsKey(fieldOutputName))
                     ReplaceFieldOutput(nextStepName, fieldOutputName, fieldOutput);
                 else
                     AddFieldOutput(nextStepName, fieldOutput);
@@ -7016,7 +7024,9 @@ namespace PrePoMax
         }
         public bool PrepareAndRunJob(string inputFileName, AnalysisJob job)
         {            
-            if (File.Exists(job.Executable))
+            if (File.Exists(job.Executable) &&
+                CheckModelBeforeJobRun() &&
+                DeleteFilesBeforeJobRun(inputFileName))
             {
                 if (_model.StepCollection.ContainsSlipWearStep())
                 {
@@ -7032,7 +7042,7 @@ namespace PrePoMax
                 throw new CaeException("The executable file of the analysis does not exists.");
             }
         }
-        private bool PrepareJob(string inputFileName)
+        private bool CheckModelBeforeJobRun()
         {
             // Check for missing section
             int[] unAssignedElementIds = _model.GetSectionAssignments(out Dictionary<int, int> elementIdSectionId);
@@ -7053,6 +7063,11 @@ namespace PrePoMax
                 if (MessageBox.Show(msg, "Warning", MessageBoxButtons.OKCancel,
                                     MessageBoxIcon.Warning) == DialogResult.Cancel) return false;
             }
+            //
+            return true;
+        }
+        private bool DeleteFilesBeforeJobRun(string inputFileName)
+        {
             // Delete old files
             string directory = Path.GetDirectoryName(inputFileName);
             string inputFileNameWithoutExtension = Path.GetFileNameWithoutExtension(inputFileName);
@@ -7068,57 +7083,54 @@ namespace PrePoMax
             try
             {
                 foreach (var fileName in files) File.Delete(fileName);
+                //
+                return true;
             }
             catch (Exception ex)
             {
                 throw new CaeException(ex.Message);
             }
-            //
-            return true;
         }
         private bool RunJob(string inputFileName, AnalysisJob job)
         {
-            if (PrepareJob(inputFileName))
-            {
-                ExportToCalculix(inputFileName);
-                job.JobStatusChanged = JobStatusChanged;
-                job.Submit(1);
-                //
-                return true;
-            }
-            return false;
+            ExportToCalculix(inputFileName);
+            job.JobStatusChanged = JobStatusChanged;
+            job.Submit(1);
+            //
+            return true;
         }
         private bool RunWearJob(string inputFileName, AnalysisJob job)
         {
             // Clear old results
             _wearResults = null;
             //
-            if (PrepareJob(inputFileName))
-            {
-                int numOfCycles = _model.StepCollection.GetNumberOfSlipWearCycles();
-                //
-                job.JobStatusChanged = JobStatusChanged;
-                job.PrepareNextRun = PrepareNextWearRun;
-                job.LastRunCompleted = LastWearRunCompleted;
-                job.Submit(numOfCycles);
-                //
-                return true;
-            }
-            return false;
+            int numOfCycles = _model.StepCollection.GetNumberOfSlipWearCycles();
+            //
+            job.JobStatusChanged = JobStatusChanged;
+            job.PrepareNextRun = PrepareNextWearRun;
+            job.LastRunCompleted = LastWearRunCompleted;
+            job.Submit(numOfCycles);
+            //
+            return true;
         }
         private void PrepareNextWearRun(AnalysisJob job)
         {
             if (job.CurrentRun == 1)
             {
+                DeleteFilesBeforeJobRun(job.InputFileName);
                 ExportToCalculix(job.InputFileName);
             }
             else
             {
                 ReadWearResults(job);
                 //
+                DeleteFilesBeforeJobRun(job.InputFileName);
+                //
                 Dictionary<int, double[]> deformations = _wearResults.GetGlobalWearDepths();
                 ExportToCalculix(job.InputFileName, deformations);
             }
+            //
+            _form.WriteDataToOutput("Starting wear cycle number: " + job.CurrentRun);
         }
         private void LastWearRunCompleted(AnalysisJob job)
         {
@@ -12340,12 +12352,16 @@ namespace PrePoMax
                                                                                  postSettings.UndeformedModelColor, layer);
                     // Deformed
                     data = GetScaleFactorAnimationDataFromPart(resultPart, _currentFieldData, scale, numFrames);
-                    foreach (NodesExchangeData nData in data.Geometry.ExtremeNodesAnimation)
+                    // Min max
+                    if (entry.Value.Visible)
                     {
-                        if (nData != null)
+                        foreach (NodesExchangeData nData in data.Geometry.ExtremeNodesAnimation)
                         {
-                            if (nData.Values[0] < allFramesScalarRange[0]) allFramesScalarRange[0] = nData.Values[0];
-                            if (nData.Values[1] > allFramesScalarRange[1]) allFramesScalarRange[1] = nData.Values[1];
+                            if (nData != null)
+                            {
+                                if (nData.Values[0] < allFramesScalarRange[0]) allFramesScalarRange[0] = nData.Values[0];
+                                if (nData.Values[1] > allFramesScalarRange[1]) allFramesScalarRange[1] = nData.Values[1];
+                            }
                         }
                     }
                     //
@@ -12414,10 +12430,14 @@ namespace PrePoMax
                                                                                  postSettings.UndeformedModelColor, layer);
                     // Results
                     data = GetTimeIncrementAnimationDataFromPart(resultPart, _currentFieldData, scale);
-                    foreach (NodesExchangeData nData in data.Geometry.ExtremeNodesAnimation)
+                    // Min max
+                    if (entry.Value.Visible)
                     {
-                        if (nData.Values[0] < allFramesScalarRange[0]) allFramesScalarRange[0] = nData.Values[0];
-                        if (nData.Values[1] > allFramesScalarRange[1]) allFramesScalarRange[1] = nData.Values[1];
+                        foreach (NodesExchangeData nData in data.Geometry.ExtremeNodesAnimation)
+                        {
+                            if (nData.Values[0] < allFramesScalarRange[0]) allFramesScalarRange[0] = nData.Values[0];
+                            if (nData.Values[1] > allFramesScalarRange[1]) allFramesScalarRange[1] = nData.Values[1];
+                        }
                     }
                     //
                     ApplyLighting(data);

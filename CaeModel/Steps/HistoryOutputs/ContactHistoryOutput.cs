@@ -27,17 +27,20 @@ namespace CaeModel
     {
         // Variables                                                                                                                
         private ContactHistoryVariable _variables;
+        private bool _isInWearStep;
 
 
         // Properties                                                                                                               
         public ContactHistoryVariable Variables { get { return _variables; } set { _variables = value; } }
+        public bool IsInWearStep { get { return _isInWearStep; } set { _isInWearStep = value; } }
 
 
         // Constructors                                                                                                             
-        public ContactHistoryOutput(string name, ContactHistoryVariable variables, string contactPairName)
+        public ContactHistoryOutput(string name, ContactHistoryVariable variables, string contactPairName, bool isInWearStep)
             : base(name, contactPairName, RegionTypeEnum.ContactPair)
         {
             _variables = variables;
+            _isInWearStep = isInWearStep;
         }
 
 

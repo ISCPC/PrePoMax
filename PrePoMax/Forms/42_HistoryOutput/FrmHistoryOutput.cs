@@ -284,11 +284,13 @@ namespace PrePoMax.Forms
             item = new ListViewItem("Contact output");
             if (contactPairNames.Length > 0)
             {
+                Step step = _controller.Model.StepCollection.GetStep(_stepName);
                 ContactHistoryOutput cho = new ContactHistoryOutput(GetHistoryOutputName("C"),
                                                                     //ContactHistoryVariable.CDIS |
                                                                     //ContactHistoryVariable.CSTR |
                                                                     ContactHistoryVariable.CF,
-                                                                    contactPairNames[0]);
+                                                                    contactPairNames[0],
+                                                                    step is SlipWearStep);
                 ViewContactHistoryOutput vcho = new ViewContactHistoryOutput(cho);
                 vcho.PopululateDropDownLists(contactPairNames);
                 item.Tag = vcho;

@@ -1955,7 +1955,7 @@ namespace FileInOut.Input
                     {
                         variables |= (ContactFieldVariable)Enum.Parse(typeof(ContactFieldVariable), record1[i].ToUpper());
                     }
-                    ContactFieldOutput contactFieldOutput = new ContactFieldOutput(name, variables);
+                    ContactFieldOutput contactFieldOutput = new ContactFieldOutput(name, variables, step is SlipWearStep);
                     if (frequency != null) contactFieldOutput.Frequency = (int)frequency;
                     // Add to step
                     step.FieldOutputs.Add(name, contactFieldOutput);
@@ -2143,7 +2143,8 @@ namespace FileInOut.Input
                         }
                         if (contactPairName != null)
                         {
-                            ContactHistoryOutput contactHistoryOutput = new ContactHistoryOutput(name, variables, contactPairName);
+                            ContactHistoryOutput contactHistoryOutput =
+                                new ContactHistoryOutput(name, variables, contactPairName, false);
                             if (frequency != null) contactHistoryOutput.Frequency = (int)frequency;
                             if (totalsType != TotalsTypeEnum.No) contactHistoryOutput.TotalsType = totalsType;
                             // Add to step

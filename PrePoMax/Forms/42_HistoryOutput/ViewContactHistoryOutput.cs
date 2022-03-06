@@ -38,12 +38,12 @@ namespace PrePoMax
     public class ViewContactHistoryOutput : ViewHistoryOutput
     {
         // Variables                                                                                                                
-        private CaeModel.ContactHistoryOutput _contactOutput;
+        private CaeModel.ContactHistoryOutput _historyOutput;
 
 
         // Properties                                                                                                               
-        public override string Name { get { return _contactOutput.Name; } set { _contactOutput.Name = value; } }
-        public override int Frequency { get { return _contactOutput.Frequency; } set { _contactOutput.Frequency = value; } }
+        public override string Name { get { return _historyOutput.Name; } set { _historyOutput.Name = value; } }
+        public override int Frequency { get { return _historyOutput.Frequency; } set { _historyOutput.Frequency = value; } }
         //
         [OrderedDisplayName(2, 10, "Variables to output")]
         [CategoryAttribute("Data")]
@@ -52,11 +52,11 @@ namespace PrePoMax
         {
             get
             {
-                return (ViewContactHistoryVariable)_contactOutput.Variables;
+                return (ViewContactHistoryVariable)_historyOutput.Variables;
             }
             set
             {
-                _contactOutput.Variables = (CaeModel.ContactHistoryVariable)value;
+                _historyOutput.Variables = (CaeModel.ContactHistoryVariable)value;
                 UpdateVisibility();
             }
         }
@@ -64,24 +64,24 @@ namespace PrePoMax
         [OrderedDisplayName(3, 10, "Totals")]
         [CategoryAttribute("Data")]
         [DescriptionAttribute("The parameter totals only applies to the energy (CELS).")]
-        public CaeModel.TotalsTypeEnum TotalsType { get { return _contactOutput.TotalsType; } set { _contactOutput.TotalsType = value; } }
+        public CaeModel.TotalsTypeEnum TotalsType { get { return _historyOutput.TotalsType; } set { _historyOutput.TotalsType = value; } }
         //
         [CategoryAttribute("Region")]
         [OrderedDisplayName(2, 10, "Contact pair")]
         [DescriptionAttribute("Select the contact pair for the creation of the history output.")]
-        public string ContactPairName { get { return _contactOutput.RegionName; } set { _contactOutput.RegionName = value; } }
+        public string ContactPairName { get { return _historyOutput.RegionName; } set { _historyOutput.RegionName = value; } }
 
        
         // Constructors                                                                                                             
         public ViewContactHistoryOutput(CaeModel.ContactHistoryOutput historyOutput)
         {
             // The order is important
-            _contactOutput = historyOutput;
+            _historyOutput = historyOutput;
             //
             Dictionary<RegionTypeEnum, string> regionTypePropertyNamePairs = new Dictionary<RegionTypeEnum, string>();
             regionTypePropertyNamePairs.Add(RegionTypeEnum.ContactPair, nameof(ContactPairName));
             //
-            base.SetBase(_contactOutput, regionTypePropertyNamePairs);
+            base.SetBase(_historyOutput, regionTypePropertyNamePairs);
             base.DynamicCustomTypeDescriptor = ProviderInstaller.Install(this);
             //
             UpdateVisibility();
@@ -91,7 +91,7 @@ namespace PrePoMax
         // Methods                                                                                                                  
         public override CaeModel.HistoryOutput GetBase()
         {
-            return _contactOutput;
+            return _historyOutput;
         }
         public void PopululateDropDownLists(string[] contactPairNames)
         {
@@ -107,6 +107,7 @@ namespace PrePoMax
         {
             bool cf = Variables.HasFlag(ViewContactHistoryVariable.CF);
             DynamicCustomTypeDescriptor.GetProperty(nameof(ContactPairName)).SetIsBrowsable(cf);
+            DynamicCustomTypeDescriptor.GetProperty(nameof(Frequency)).SetIsBrowsable(!_historyOutput.IsInWearStep);
         }
     }
 

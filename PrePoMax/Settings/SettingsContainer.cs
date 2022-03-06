@@ -176,17 +176,23 @@ namespace PrePoMax
         }
         public void LoadFromFile()
         {
-            Initialize();
-            //
-            string fileName = Path.Combine(System.Windows.Forms.Application.StartupPath, Globals.SettingsFileName);
-            if (File.Exists(fileName))
+            try
             {
-                var t = Task.Run(() => LoadFromFile(fileName));
-                t.Wait();
+                Initialize();
+                //
+                string fileName = Path.Combine(System.Windows.Forms.Application.StartupPath, Globals.SettingsFileName);
+                if (File.Exists(fileName))
+                {
+                    var t = Task.Run(() => LoadFromFile(fileName));
+                    t.Wait();
+                }
+                // Reset the color limits
+                ClearColorSpectrums();
             }
-            // Reset the color limits
-            ClearColorSpectrums();
-
+            catch
+            {
+                Initialize();
+            }
         }
         private void LoadFromFile(string fileName)
         {            
