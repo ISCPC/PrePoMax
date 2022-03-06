@@ -172,7 +172,11 @@ namespace PrePoMax
         }
         public void SaveToFile(string fileName)
         {
-            ToDictionary().DumpToFile(fileName);
+            // Use a temporary file to save the data and copy it at the end
+            string tmpFileName = Tools.GetNonExistentRandomFileName(Path.GetDirectoryName(fileName), ".tmp");
+            ToDictionary().DumpToFile(tmpFileName);
+            File.Copy(tmpFileName, fileName, true);
+            File.Delete(tmpFileName);
         }
         public void LoadFromFile()
         {

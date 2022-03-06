@@ -939,7 +939,7 @@ namespace PrePoMax
             }
             //
             string executable = Application.StartupPath + Globals.NetGenMesher;
-            string outFileName = GetNonExistentRandomFileName(settings.WorkDirectory, ".brep");
+            string outFileName = Tools.GetNonExistentRandomFileName(settings.WorkDirectory, ".brep");
             //
             string argument = splitCommand +
                               " \"" + assemblyFileName.ToUTF8() + "\"" +
@@ -1022,7 +1022,7 @@ namespace PrePoMax
             }
             //
             string executable = Application.StartupPath + Globals.NetGenMesher;
-            string inFileName = GetNonExistentRandomFileName(workDirectory);
+            string inFileName = Tools.GetNonExistentRandomFileName(workDirectory);
 
             string[] inFileNames = new string[partNames.Length];
             for (int i = 0; i < partNames.Length; i++) 
@@ -1119,31 +1119,7 @@ namespace PrePoMax
                 if (showError) MessageBoxes.ShowError("Importing brep file failed.");
                 return null;
             }
-        }
-        public static string GetNonExistentRandomFileName(string path, string extension = "")
-        {
-            string hash;
-            bool repeate;
-            string[] allFiles = Directory.GetFiles(path);
-            //
-            do
-            {
-                hash = CaeGlobals.Tools.GetRandomString(8);
-                //
-                repeate = false;
-                foreach (var fileName in allFiles)
-                {
-                    if (fileName.StartsWith(hash))
-                    {
-                        repeate = true;
-                        break;
-                    }
-                }
-            }
-            while (repeate);
-            //
-            return Path.Combine(path, Path.ChangeExtension(hash, extension));
-        }
+        }        
         void netgenJob_AppendOutput(string data)
         {
             _form.WriteDataToOutput(data);
@@ -1332,7 +1308,7 @@ namespace PrePoMax
                 OpenedFileName = fileName;
                 object[] data = new object[] { this, _jobs, states };
                 // Use a temporary file to save the data and copy it at the end
-                string tmpFileName = GetNonExistentRandomFileName(Path.GetDirectoryName(fileName), ".tmp");
+                string tmpFileName = Tools.GetNonExistentRandomFileName(Path.GetDirectoryName(fileName), ".tmp");
                 //
                 SuppressExplodedViews();
                 //
@@ -1378,6 +1354,7 @@ namespace PrePoMax
                 File.Delete(tmpFileName);
                 // Settings
                 AddFileNameToRecent(fileName); // this line redraws the scene
+                ApplySettings(); // work folder and executable
                 //
                 _modelChanged = false;
             }
@@ -6216,7 +6193,6 @@ namespace PrePoMax
             foreach (var nextStepName in nextStepNames)
             {
                 step = _model.StepCollection.GetStep(nextStepName);
-                if (historyOutput is ContactHistoryOutput cho && step is SlipWearStep) cho.IsInWearStep = true;
                 //
                 if (step.HistoryOutputs.ContainsKey(historyOutputName))
                     ReplaceHistoryOutput(nextStepName, historyOutputName, historyOutput);
@@ -6359,7 +6335,6 @@ namespace PrePoMax
             foreach (var nextStepName in nextStepNames)
             {
                 step = _model.StepCollection.GetStep(nextStepName);
-                if (fieldOutput is ContactFieldOutput cfo && step is SlipWearStep) cfo.IsInWearStep = true;
                 //
                 if (step.FieldOutputs.ContainsKey(fieldOutputName))
                     ReplaceFieldOutput(nextStepName, fieldOutputName, fieldOutput);
@@ -7024,18 +6999,21 @@ namespace PrePoMax
         }
         public bool PrepareAndRunJob(string inputFileName, AnalysisJob job)
         {            
-            if (File.Exists(job.Executable) &&
-                CheckModelBeforeJobRun() &&
-                DeleteFilesBeforeJobRun(inputFileName))
+            if (File.Exists(job.Executable))
             {
-                if (_model.StepCollection.ContainsSlipWearStep())
+                if (CheckModelBeforeJobRun() && DeleteFilesBeforeJobRun(inputFileName)) // must be separete due to exception
                 {
-                    return RunWearJob(inputFileName, job);
+                    if (_model.Properties.ModelType == ModelType.SlipWearModel)
+                    {
+                        return RunWearJob(inputFileName, job);
+                    }
+                    else
+                    {
+                        return RunJob(inputFileName, job);
+                    }
                 }
-                else
-                {
-                    return RunJob(inputFileName, job);
-                }
+                //
+                return false;
             }
             else
             {
@@ -7055,9 +7033,18 @@ namespace PrePoMax
                 if (MessageBox.Show(msg, "Warning", MessageBoxButtons.OKCancel,
                                     MessageBoxIcon.Warning) == DialogResult.Cancel) return false;
             }
+            // Check for existance of slip wear steps
+            int[] slipWearStepIds = _model.StepCollection.GetSlipWearStepIds();
+            if (slipWearStepIds.Length > 0 && _model.Properties.ModelType != ModelType.SlipWearModel)
+            {
+                string msg = "Slip wear steps are defined but the model type is not a slip wear model. Continue?";
+                if (MessageBox.Show(msg, "Warning", MessageBoxButtons.OKCancel,
+                                    MessageBoxIcon.Warning) == DialogResult.Cancel) return false;
+            }
             // Check for wear coefficients in a wear analysis
             Dictionary<int, double> materialIdCoefficient;
-            if (_model.StepCollection.ContainsSlipWearStep() && !_model.AreSlipWearCoefficientsDefined(out materialIdCoefficient))
+            if (_model.Properties.ModelType == ModelType.SlipWearModel &&
+                !_model.AreSlipWearCoefficientsDefined(out materialIdCoefficient))
             {
                 string msg = "No slip wear material coefficients are defined. Continue?";
                 if (MessageBox.Show(msg, "Warning", MessageBoxButtons.OKCancel,
@@ -7104,7 +7091,7 @@ namespace PrePoMax
             // Clear old results
             _wearResults = null;
             //
-            int numOfCycles = _model.StepCollection.GetNumberOfSlipWearCycles();
+            int numOfCycles = _model.Properties.NumberOfCycles;
             //
             job.JobStatusChanged = JobStatusChanged;
             job.PrepareNextRun = PrepareNextWearRun;

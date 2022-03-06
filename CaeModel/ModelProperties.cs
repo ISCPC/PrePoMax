@@ -11,8 +11,12 @@ namespace CaeModel
     [Serializable]
     public enum ModelType
     {
-        General,
+        [DynamicTypeDescriptor.StandardValue("General", DisplayName = "General model")]
+        GeneralModel,
+        [DynamicTypeDescriptor.StandardValue("Submodel", DisplayName = "Submodel")]
         Submodel,
+        [DynamicTypeDescriptor.StandardValue("SlipWear", DisplayName = "Slip wear model")]
+        SlipWearModel
     }
 
     [Serializable]
@@ -28,6 +32,14 @@ namespace CaeModel
         PlaneStrain = 3,
         [DynamicTypeDescriptor.StandardValue("Axisymmetric", DisplayName = "2D axisymmetric")]
         Axisymmetric = 4
+    }
+    [Serializable]
+    public enum SlipWearResultsEnum
+    {
+        All,
+        SlipWearSteps,
+        LastIncrementOfSlipWearSteps,
+        LastIncrementOfLastSlipWearStep
     }
     public static class ExtensionMethods
     {
@@ -118,23 +130,42 @@ namespace CaeModel
     public class ModelProperties
     {
         // Variables                                                                                                                
-        public ModelType ModelType;
         public ModelSpaceEnum ModelSpace;
+        public ModelType ModelType;
+        // Submodel
         public string GlobalResultsFileName;
+        // Slip wear model
+        public SlipWearResultsEnum SlipWearResults;
+        private int _numberOfCycles;
+        //
         public double AbsoluteZero;
         public double StefanBoltzmann;
         public double NewtonGravity;
 
 
         // Properties                                                                                                               
+        public int NumberOfCycles
+        {
+            get { return _numberOfCycles; }
+            set
+            {
+                _numberOfCycles = value;
+                if (_numberOfCycles < 1) _numberOfCycles = 1;
+            }
+        }
 
 
         // Constructors                                                                                                             
         public ModelProperties()
         {
-            ModelType = ModelType.General;
             ModelSpace = ModelSpaceEnum.Undefined;
+            ModelType = ModelType.GeneralModel;
+            // Submodel
             GlobalResultsFileName = null;
+            // Slip wear model
+            SlipWearResults = SlipWearResultsEnum.All;
+            _numberOfCycles = 1;
+            //
             AbsoluteZero = double.PositiveInfinity;
             StefanBoltzmann = double.PositiveInfinity;
             NewtonGravity = double.PositiveInfinity;

@@ -17,7 +17,7 @@ namespace PrePoMax
             }
             return path;
         }
-
+        //
         public static string GetGlobalPath(string path)
         {
             if (path != null && path.StartsWith("#"))
@@ -26,6 +26,31 @@ namespace PrePoMax
                 return System.IO.Path.Combine(startUpPath, path.Substring(1).TrimStart('\\'));
             }
             return path;
+        }
+        //
+        public static string GetNonExistentRandomFileName(string path, string extension = "")
+        {
+            string hash;
+            bool repeate;
+            string[] allFiles = System.IO.Directory.GetFiles(path);
+            //
+            do
+            {
+                hash = CaeGlobals.Tools.GetRandomString(8);
+                //
+                repeate = false;
+                foreach (var fileName in allFiles)
+                {
+                    if (fileName.StartsWith(hash))
+                    {
+                        repeate = true;
+                        break;
+                    }
+                }
+            }
+            while (repeate);
+            //
+            return System.IO.Path.Combine(path, System.IO.Path.ChangeExtension(hash, extension));
         }
     }
 }

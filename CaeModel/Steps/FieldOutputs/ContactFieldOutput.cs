@@ -24,20 +24,17 @@ namespace CaeModel
     {
         // Variables                                                                                                                
         private ContactFieldVariable _variables;
-        private bool _isInWearStep;
 
 
         // Properties                                                                                                               
         public ContactFieldVariable Variables { get { return _variables; } set { _variables = value; } }
-        public bool IsInWearStep { get { return _isInWearStep; } set { _isInWearStep = value; } }
 
 
         // Constructors                                                                                                             
-        public ContactFieldOutput(string name, ContactFieldVariable variables, bool isInWearStep)
+        public ContactFieldOutput(string name, ContactFieldVariable variables)
             : base(name) 
         {
             _variables |= variables;
-            _isInWearStep = isInWearStep;
         }
 
 

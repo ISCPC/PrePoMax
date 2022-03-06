@@ -80,7 +80,6 @@ namespace PrePoMax
             _dctd = ProviderInstaller.Install(this);
             //
             _dctd.RenameBooleanPropertyToOnOff(nameof(LastIterations));
-            _dctd.GetProperty(nameof(Frequency)).SetIsBrowsable(!fieldOutput.IsInWearStep);
         }
     }
 

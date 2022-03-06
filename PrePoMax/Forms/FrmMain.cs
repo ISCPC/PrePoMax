@@ -641,7 +641,7 @@ namespace PrePoMax
         {
             try
             {
-                string fileName = Controller.GetNonExistentRandomFileName(Application.StartupPath, ".test");
+                string fileName = Tools.GetNonExistentRandomFileName(Application.StartupPath, ".test");
                 File.WriteAllText(fileName, "");
                 //
                 File.Delete(fileName);

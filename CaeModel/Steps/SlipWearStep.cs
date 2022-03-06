@@ -12,19 +12,9 @@ namespace CaeModel
     public class SlipWearStep : StaticStep, ISerializable
     {
         // Variables                                                                                                                
-        private int _numOfCycles;                               //ISerializable
 
 
         // Properties                                                                                                               
-        public int NumOfCycles
-        {
-            get { return _numOfCycles; }
-            set
-            {
-                if (value < 1) _numOfCycles = 1;
-                else _numOfCycles = value;
-            }
-        }
 
 
         // Constructors                                                                                                             
@@ -35,26 +25,22 @@ namespace CaeModel
         public SlipWearStep(string name, bool addFieldOutputs)    // must be a separate constructor!
             : base(name, addFieldOutputs)
         {
-            _numOfCycles = 1;
-            //
             if (addFieldOutputs)
             {
-                //AddHistoryOutput(new ContactHistoryOutput("CH-Output-1", ContactHistoryVariable.CDIS, null));
-                AddFieldOutput(new ContactFieldOutput("CF-Output-1", ContactFieldVariable.CDIS, true));
+                AddFieldOutput(new ContactFieldOutput("CF-Output-1", ContactFieldVariable.CDIS));
             }
         }
         //ISerializable
         public SlipWearStep(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
-            int count = 0;
             foreach (SerializationEntry entry in info)
             {
-                switch (entry.Name)
-                {
-                    case "_numOfCycles":
-                        _numOfCycles = (int)entry.Value; count++; break;
-                }
+                //switch (entry.Name)
+                //{
+                //    case "_numOfCycles":
+                //        _numOfCycles = (int)entry.Value; break;
+                //}
             }
         }
         // Methods                                                                                                                  
@@ -65,7 +51,7 @@ namespace CaeModel
             // Using typeof() works also for null fields
             base.GetObjectData(info, context);
             //
-            info.AddValue("_numOfCycles", _numOfCycles, typeof(int));
+            //info.AddValue("_numOfCycles", _numOfCycles, typeof(int));
         }
     }
 }

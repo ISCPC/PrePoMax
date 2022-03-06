@@ -176,8 +176,7 @@ namespace PrePoMax.Forms
             Step step = _controller.Model.StepCollection.GetStep(_stepName);
             ViewContactFieldOutput vcfo = new ViewContactFieldOutput(new ContactFieldOutput(GetFieldOutputName("C"),
                                                                                             ContactFieldVariable.CDIS |
-                                                                                            ContactFieldVariable.CSTR,
-                                                                                            step is SlipWearStep));
+                                                                                            ContactFieldVariable.CSTR));
             item.Tag = vcfo;
             lvTypes.Items.Add(item);
         }

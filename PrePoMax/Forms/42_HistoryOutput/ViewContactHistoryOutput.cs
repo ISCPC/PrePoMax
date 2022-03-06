@@ -107,7 +107,6 @@ namespace PrePoMax
         {
             bool cf = Variables.HasFlag(ViewContactHistoryVariable.CF);
             DynamicCustomTypeDescriptor.GetProperty(nameof(ContactPairName)).SetIsBrowsable(cf);
-            DynamicCustomTypeDescriptor.GetProperty(nameof(Frequency)).SetIsBrowsable(!_historyOutput.IsInWearStep);
         }
     }
 

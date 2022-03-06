@@ -289,8 +289,7 @@ namespace PrePoMax.Forms
                                                                     //ContactHistoryVariable.CDIS |
                                                                     //ContactHistoryVariable.CSTR |
                                                                     ContactHistoryVariable.CF,
-                                                                    contactPairNames[0],
-                                                                    step is SlipWearStep);
+                                                                    contactPairNames[0]);
                 ViewContactHistoryOutput vcho = new ViewContactHistoryOutput(cho);
                 vcho.PopululateDropDownLists(contactPairNames);
                 item.Tag = vcho;
