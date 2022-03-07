@@ -648,9 +648,10 @@ namespace PrePoMax
         private void OpenDatFile(string fileName, bool redraw = true)
         {
             if (_results == null) _results = new FeResults(fileName);
-            _results.SetHistory(DatFileReader.Read(fileName).DeepClone(),
-                                _model.StepCollection.GetSlipWearStepIds(),
-                                _model.GetNodalSlipWearCoefficients());
+            _results.SetHistory(DatFileReader.Read(fileName));
+            // Wear
+            _results.ComputeWear(_model.StepCollection.GetSlipWearStepIds(),
+                                 _model.GetNodalSlipWearCoefficients());
             //
             if (_results.GetHistory() == null)
             {
@@ -7136,10 +7137,14 @@ namespace PrePoMax
                 //
                 Dictionary<int, int> elementIdMaterialId;
                 _model.GetMaterialAssignments(out elementIdMaterialId);
-                if (results.SetHistory(DatFileReader.Read(resultsFileDat),
-                                       _model.StepCollection.GetSlipWearStepIds(),
-                                       _model.GetNodalSlipWearCoefficients()))
+                //
+                results.SetHistory(DatFileReader.Read(resultsFileDat));
+                //
+                int[] slipWearStepIds = _model.StepCollection.GetSlipWearStepIds();
+                if (results.ComputeWear(slipWearStepIds, _model.GetNodalSlipWearCoefficients()))
                 {
+                    results.DeleteUnusedSlipWearResults(_model.Properties.SlipWearResults, slipWearStepIds);
+                    //
                     if (_wearResults == null) _wearResults = results;
                     else _wearResults.AddResults(results);
                 }

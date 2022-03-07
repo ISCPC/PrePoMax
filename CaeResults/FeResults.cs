@@ -29,7 +29,6 @@ namespace CaeResults
         private string _hashName;
         private string _fileName;
         private FeMesh _mesh;
-        private Dictionary<int, FieldData> _fieldLookUp;
         private HistoryResults _history;
         private DateTime _dateTime;
         private UnitSystem _unitSystem;
@@ -73,7 +72,6 @@ namespace CaeResults
             _mesh = null;
             _nodeIdsLookUp = null;
             _fields = new Dictionary<FieldData, Field>();
-            _fieldLookUp = new Dictionary<int, FieldData>();
             _history = null;
             _unitSystem = new UnitSystem();
             _deformationFieldOutputName = FOFieldNames.Disp;
@@ -550,11 +548,9 @@ namespace CaeResults
         {
             return _history;
         }
-        public bool SetHistory(HistoryResults historyResults, int[] slipStepIds, Dictionary<int, double> nodeIdCoefficient)
+        public void SetHistory(HistoryResults historyResults)
         {
-            _history = historyResults;
-            //
-            return ComputeWear(slipStepIds, nodeIdCoefficient);
+            _history = historyResults;            
         }
         // Units                                    
         public TypeConverter GetFieldUnitConverter(string fieldDataName, string componentName)
@@ -829,7 +825,6 @@ namespace CaeResults
         public void AddFiled(FieldData fieldData, Field field)
         {
             fieldData = new FieldData(fieldData);   // copy
-            _fieldLookUp.Add(_fields.Count, fieldData);
             _fields.Add(fieldData, field);
         }
         public Field GetField(FieldData fieldData)
@@ -1954,9 +1949,9 @@ namespace CaeResults
             //
             return 0;
         }
-        
+
         // Wear         
-        private bool ComputeWear(int[] slipStepIds, Dictionary<int, double> nodeIdCoefficient)
+        public bool ComputeWear(int[] slipStepIds, Dictionary<int, double> nodeIdCoefficient)
         {
             if (slipStepIds != null && slipStepIds.Length > 0 && CheckFieldAndhistoryTimes())
             {
@@ -2508,6 +2503,66 @@ namespace CaeResults
             //
             return timeValues;
         }
+        // Select slip wear results
+        public void DeleteUnusedSlipWearResults(SlipWearResultsEnum slipWearResultsToKeep, int[] slipStepIds)
+        {
+            HashSet<int> slipStepIdsHash = new HashSet<int>(slipStepIds);
+            //
+            if (slipWearResultsToKeep == SlipWearResultsEnum.All) { }
+            else if (slipWearResultsToKeep == SlipWearResultsEnum.SlipWearSteps)
+            {
+                Dictionary<FieldData, Field> fields = new Dictionary<FieldData, Field>();
+                //
+                foreach (var entry in _fields)
+                {
+                    if (slipStepIdsHash.Contains(entry.Key.StepId))
+                    {
+                        fields.Add(entry.Key, entry.Value);
+                    }
+                }
+                _fields = fields;
+            }
+            else if (slipWearResultsToKeep == SlipWearResultsEnum.LastIncrementOfSlipWearSteps)
+            {
+                int lastIncrementId;
+                Dictionary<FieldData, Field> fields = new Dictionary<FieldData, Field>();
+                //
+                foreach (var entry in _fields)
+                {
+                    if (slipStepIdsHash.Contains(entry.Key.StepId))
+                    {
+                        lastIncrementId = GetIncrementIds(entry.Key.StepId).Last();
+                        //
+                        if (entry.Key.StepIncrementId == lastIncrementId)
+                            fields.Add(entry.Key, entry.Value);
+                    }
+                }
+                _fields = fields;
+            }
+            else if (slipWearResultsToKeep == SlipWearResultsEnum.LastIncrementOfLastSlipWearStep)
+            {
+                int lastIncrementId;
+                int lastStepId = slipStepIds.Last();
+                Dictionary<FieldData, Field> fields = new Dictionary<FieldData, Field>();
+                //
+                foreach (var entry in _fields)
+                {
+                    if (slipStepIdsHash.Contains(entry.Key.StepId))
+                    {
+                        if (entry.Key.StepId == lastStepId)
+                        {
+                            lastIncrementId = GetIncrementIds(entry.Key.StepId).Last();
+                            //
+                            if (entry.Key.StepIncrementId == lastIncrementId)
+                                fields.Add(entry.Key, entry.Value);
+                        }
+                    }
+                }
+                _fields = fields;
+            }
+            else throw new NotSupportedException();
+        }
+
 
     }
 }

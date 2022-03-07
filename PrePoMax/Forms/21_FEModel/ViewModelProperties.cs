@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeMesh;
 using CaeModel;
+using CaeResults;
 using CaeGlobals;
 using System.ComponentModel;
 using DynamicTypeDescriptor;

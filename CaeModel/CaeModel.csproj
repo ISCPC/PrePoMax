@@ -223,6 +223,10 @@
       <Project>{69d01fc1-1bc1-4470-b371-84d22282be98}</Project>
       <Name>CaeMesh</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CaeResults\CaeResults.csproj">
+      <Project>{bca7c65b-cc0b-48ca-b852-49255bd3851d}</Project>
+      <Name>CaeResults</Name>
+    </ProjectReference>
     <ProjectReference Include="..\STL\STL.csproj">
       <Project>{f32f3151-1595-4211-a01e-2f7beb34f88d}</Project>
       <Name>STL</Name>

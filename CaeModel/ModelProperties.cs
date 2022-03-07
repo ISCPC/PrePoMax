@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CaeGlobals;
 using CaeMesh;
+using CaeResults;
 
 namespace CaeModel
 {
@@ -32,15 +33,7 @@ namespace CaeModel
         PlaneStrain = 3,
         [DynamicTypeDescriptor.StandardValue("Axisymmetric", DisplayName = "2D axisymmetric")]
         Axisymmetric = 4
-    }
-    [Serializable]
-    public enum SlipWearResultsEnum
-    {
-        All,
-        SlipWearSteps,
-        LastIncrementOfSlipWearSteps,
-        LastIncrementOfLastSlipWearStep
-    }
+    }    
     public static class ExtensionMethods
     {
         // ModelSpaceEnum
