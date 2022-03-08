@@ -2090,10 +2090,6 @@ namespace CaeResults
                 {
                     foreach (var entry in _nodeIdsLookUp) coefficients[entry.Value] = 0;
                 }
-                // Sorted time
-                double[] sortedTime;
-                Dictionary<double, int> timeRowId;
-                GetSortedTime(new HistoryResultComponent[] { slidingDistanceAll }, out sortedTime, out timeRowId);
                 //
                 float dh;
                 float[] pressureValues;
@@ -2126,16 +2122,12 @@ namespace CaeResults
                 FieldData normalData;
                 FieldData dispData;
                 //
-                int count = -1;
-                //
                 for (int i = 0; i < slipStepIds.Length; i++)
                 {
                     int[] stepIncrementIds = GetIncrementIds(slipStepIds[i]);
                     //
                     for (int j = 0; j < stepIncrementIds.Length; j++)
                     {
-                        count++;    // increase befor continue
-                        //
                         if (slipStepIds[i] == 0 && stepIncrementIds[j] == 0) continue;
                         // Pressure
                         pressureData = GetFieldData(FOFieldNames.Contact, "", slipStepIds[i], stepIncrementIds[j]);
@@ -2193,7 +2185,7 @@ namespace CaeResults
                             depthData = new FieldData(FOFieldNames.WearDepth);
                             depthData.StepId = slipStepIds[i];
                             depthData.StepIncrementId = stepIncrementIds[j];
-                            depthData.Time = (float)sortedTime[count];
+                            depthData.Time = dispData.Time;
                             depthData.Type = StepType.Static;
                             depthField = new Field(depthData.Name);
                             depthField.AddComponent(FOComponentNames.All, depthValuesMag);

@@ -563,8 +563,6 @@ namespace PrePoMax
         }
         private void OpenFrd(string fileName)
         {
-            ClearResults();
-            //
             FeResults results;
             bool useWearResults = _wearResults != null;
             bool readDatFile = !useWearResults;
@@ -576,58 +574,54 @@ namespace PrePoMax
             }
             else results = FrdFileReader.Read(fileName);
             //
-            OpenResults(results, readDatFile);
+            LoadResults(results, readDatFile);
         }
-        private void OpenResults(FeResults results, bool readDatFile)
+        private void LoadResults(FeResults results, bool readDatFile)
         {
-            _results = results;
-            //
-            bool redraw = false;
-            //
-            if (_results == null || _results.Mesh == null)
+            if (results == null || results.Mesh == null)
             {
                 MessageBoxes.ShowError("The results file does not exist or is empty.");
                 return;
             }
-            else
+            //
+            _form.Clear3D();
+            ClearResults();
+            //
+            _results = results;
+            // Check if the meshes are the same and rename the parts
+            if (_model.Mesh != null && _results.Mesh != null && _model.HashName == _results.HashName)
             {
-                _form.Clear3D();
-                // Check if the meshes are the same and rename the parts
-                if (_model.Mesh != null && _results.Mesh != null && _model.HashName == _results.HashName)
+                SuppressExplodedViews();
+                //
+                double similarity = _model.Mesh.IsEqual(_results.Mesh);
+                //
+                if (similarity > 0)
                 {
-                    SuppressExplodedViews();
-                    //
-                    double similarity = _model.Mesh.IsEqual(_results.Mesh);
-                    //
-                    if (similarity > 0)
+                    if (similarity < 1)
                     {
-                        if (similarity < 1)
-                        {
-                            if (MessageBox.Show("Some node coordinates in the result .frd file are different from " +
-                                                "the coordinates in the model mesh." + Environment.NewLine + Environment.NewLine +
-                                                "Apply model mesh properties (part names, geomery...) to the result mesh?",
-                                                "Warning",
-                                                MessageBoxButtons.YesNo,
-                                                MessageBoxIcon.Warning) == DialogResult.Yes) similarity = 1;
-                        }
-                        //
-                        if (similarity == 1)
-                        {
-                            _results.CopyPartsFromMesh(_model.Mesh);
-                            _results.CopyMeshitemsFromMesh(_model.Mesh);
-                        }
-                        else if (similarity == 2)
-                        {
-                            _results.Mesh.MergePartsBasedOnMesh(_model.Mesh, typeof(ResultPart));
-                        }
+                        if (MessageBox.Show("Some node coordinates in the result .frd file are different from " +
+                                            "the coordinates in the model mesh." + Environment.NewLine + Environment.NewLine +
+                                            "Apply model mesh properties (part names, geomery...) to the result mesh?",
+                                            "Warning",
+                                            MessageBoxButtons.YesNo,
+                                            MessageBoxIcon.Warning) == DialogResult.Yes) similarity = 1;
                     }
                     //
-                    ResumeExplodedViews(false); // must be here after the MergePartsBasedOnMesh
+                    if (similarity == 1)
+                    {
+                        _results.CopyPartsFromMesh(_model.Mesh);
+                        _results.CopyMeshitemsFromMesh(_model.Mesh);
+                    }
+                    else if (similarity == 2)
+                    {
+                        _results.Mesh.MergePartsBasedOnMesh(_model.Mesh, typeof(ResultPart));
+                    }
                 }
-                redraw = true;
-                // Model changed
-                _modelChanged = true;
+                //
+                ResumeExplodedViews(false); // must be here after the MergePartsBasedOnMesh
             }
+            // Model changed
+            _modelChanged = true;
             // Open .cel file
             string celFileName = Path.GetFileNameWithoutExtension(_results.FileName) + ".cel";
             celFileName = Path.Combine(Path.GetDirectoryName(_results.FileName), celFileName);
@@ -640,14 +634,11 @@ namespace PrePoMax
                 if (File.Exists(datFileName)) OpenDatFile(datFileName, false);
             }
             // Redraw
-            if (redraw)
-            {
-                // Set the view but do not draw
-                _currentView = ViewGeometryModelResults.Results;
-                _form.SetCurrentView(_currentView);
-                // Regenerate tree
-                _form.RegenerateTree();
-            }
+            // Set the view but do not draw
+            _currentView = ViewGeometryModelResults.Results;
+            _form.SetCurrentView(_currentView);
+            // Regenerate tree
+            _form.RegenerateTree();
         }
         private void OpenDatFile(string fileName, bool redraw = true)
         {
