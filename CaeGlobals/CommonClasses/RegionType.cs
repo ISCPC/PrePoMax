@@ -12,31 +12,31 @@ namespace CaeGlobals
     {
         [StandardValue("None")]
         None = -1,
-
+        //
         [StandardValue("Part name")]
         PartName,
-
+        //
         [StandardValue("Node id")]
         NodeId,
-
+        //
         [StandardValue("Node set name")]
         NodeSetName,
-
+        //
         [StandardValue("Element id")]
         ElementId,
-
+        //
         [StandardValue("Element set name")]
         ElementSetName,
-
+        //
         [StandardValue("Surface name")]
         SurfaceName,
-
+        //
         [StandardValue("Reference point name")]
         ReferencePointName,
-
+        //
         [StandardValue("Selection")]
         Selection = 20,
-
+        //
         [StandardValue("Contact pair")]
         ContactPair = 30
     }

@@ -169,6 +169,21 @@ namespace CaeModel
             if (stepNames.Count > 0) return stepNames.ToArray();
             else return new string[0];
         }
+        public OrderedDictionary<int, double> GetStepIdDuration()
+        {
+            int count = 1;  // start at 1
+            OrderedDictionary<int, double> stepIdDuration = new OrderedDictionary<int, double>();
+            //
+            foreach (var step in _steps)
+            {
+                if (step is StaticStep ss) stepIdDuration.Add(count++, ss.TimePeriod);
+                else if (step is FrequencyStep fs) stepIdDuration.Add(count++, 0);
+                else if (step is BuckleStep bs) stepIdDuration.Add(count++, 0);
+                else throw new NotImplementedException();
+            }
+            //
+            return stepIdDuration;
+        }
         // History
         public void AddHistoryOutput(HistoryOutput historyOutput, string stepName)
         {

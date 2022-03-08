@@ -569,7 +569,11 @@ namespace PrePoMax
             bool useWearResults = _wearResults != null;
             bool readDatFile = !useWearResults;
             //
-            if (useWearResults) results = _wearResults;
+            if (useWearResults)
+            {
+                results = _wearResults;
+                _wearResults = null;
+            }
             else results = FrdFileReader.Read(fileName);
             //
             OpenResults(results, readDatFile);
@@ -7123,6 +7127,8 @@ namespace PrePoMax
         private void LastWearRunCompleted(AnalysisJob job)
         {
             ReadWearResults(job);
+            // Clear results from the last cycle
+            DeleteFilesBeforeJobRun(job.InputFileName);
         }
         private void ReadWearResults(AnalysisJob job)
         {
@@ -7143,7 +7149,9 @@ namespace PrePoMax
                 int[] slipWearStepIds = _model.StepCollection.GetSlipWearStepIds();
                 if (results.ComputeWear(slipWearStepIds, _model.GetNodalSlipWearCoefficients()))
                 {
-                    results.DeleteUnusedSlipWearResults(_model.Properties.SlipWearResults, slipWearStepIds);
+                    results.KeepOnlySelectedSlipWearResults(_model.StepCollection.GetStepIdDuration(),
+                                                             slipWearStepIds,
+                                                             _model.Properties.SlipWearResults);
                     //
                     if (_wearResults == null) _wearResults = results;
                     else _wearResults.AddResults(results);

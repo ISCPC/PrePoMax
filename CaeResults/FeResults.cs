@@ -1071,22 +1071,30 @@ namespace CaeResults
             {
                 ids.Add(entry.Key.StepId);
             }
-            return ids.ToArray();
+            //
+            int[] sortedIds = ids.ToArray();
+            Array.Sort(sortedIds);
+            //
+            return sortedIds;
         }
         public int[] GetIncrementIds(int stepId)
         {
-            HashSet<int> incrementIds = new HashSet<int>();
+            HashSet<int> ids = new HashSet<int>();
             foreach (var entry in _fields)
             {
                 if (entry.Key.StepId == stepId)
                 {
-                    if (entry.Key.Type == StepType.Static && stepId == 1 && incrementIds.Count == 0)
-                        incrementIds.Add(0);   // Zero increment - Find all occurances!!!
+                    if (entry.Key.Type == StepType.Static && stepId == 1 && ids.Count == 0)
+                        ids.Add(0);   // Zero increment - Find all occurances!!!
                     //
-                    incrementIds.Add(entry.Key.StepIncrementId);
+                    ids.Add(entry.Key.StepIncrementId);
                 }
             }
-            return incrementIds.ToArray();
+            //
+            int[] sortedIds = ids.ToArray();
+            Array.Sort(sortedIds);
+            //
+            return sortedIds;
         }
         public Dictionary<int, int[]> GetExistingIncrementIds(string fieldName, string component)
         {
@@ -1132,6 +1140,29 @@ namespace CaeResults
                 }
             }
             return existingIncrementIds;
+        }
+        public Dictionary<int, float> GetMaxStepTime()
+        {
+            int[] stepIds = GetAllStepIds();
+            Dictionary<int, float> stepMaxTime = new Dictionary<int, float>();
+            //
+            if (stepIds.Length == 0)
+            {
+                stepMaxTime.Add(-1, -1);
+            }
+            else
+            {
+                foreach (var stepId in stepIds) stepMaxTime.Add(stepId, 0);
+                if (!stepMaxTime.ContainsKey(0)) stepMaxTime.Add(0, 0); // Zero increment - Find all occurances!!!
+                //
+                float time;
+                foreach (var entry in _fields)
+                {
+                    stepMaxTime.TryGetValue(entry.Key.StepId, out time);
+                    if (entry.Key.Time > time) stepMaxTime[entry.Key.StepId] = entry.Key.Time;
+                }
+            }
+            return stepMaxTime;
         }
         public Dictionary<string, string[]> GetAllFiledNameComponentNames()
         {
@@ -2504,7 +2535,15 @@ namespace CaeResults
             return timeValues;
         }
         // Select slip wear results
-        public void DeleteUnusedSlipWearResults(SlipWearResultsEnum slipWearResultsToKeep, int[] slipStepIds)
+        public void KeepOnlySelectedSlipWearResults(OrderedDictionary<int, double> stepIdDuration, int[] slipStepIds,
+                                                    SlipWearResultsEnum slipWearResultsToKeep)
+        {
+            Dictionary<int, float> stepIdMaxTime = GetMaxStepTime();
+            //
+            KeepOnlySelectedFieldSlipWearResults(slipStepIds, slipWearResultsToKeep);
+            KeepOnlySelectedHistorySlipWearResults(stepIdDuration, slipStepIds, slipWearResultsToKeep);
+        }
+        private void KeepOnlySelectedFieldSlipWearResults(int[] slipStepIds, SlipWearResultsEnum slipWearResultsToKeep)
         {
             HashSet<int> slipStepIdsHash = new HashSet<int>(slipStepIds);
             //
@@ -2562,7 +2601,85 @@ namespace CaeResults
             }
             else throw new NotSupportedException();
         }
-
+        private void KeepOnlySelectedHistorySlipWearResults(OrderedDictionary<int, double> stepIdDuration, int[] slipStepIds,
+                                                             SlipWearResultsEnum slipWearResultsToKeep)
+        {
+            HashSet<int> slipStepIdsHash = new HashSet<int>(slipStepIds);
+            //
+            double sumTime = 0;
+            OrderedDictionary<int, double> stepIdStartTime = new OrderedDictionary<int, double>();
+            foreach (var entry in stepIdDuration)
+            {
+                stepIdStartTime.Add(entry.Key, sumTime);
+                sumTime += entry.Value;
+            }
+            //
+            int stepId;
+            double startTime;
+            double endTime;
+            List<double[]> minMaxList = new List<double[]>();
+            //
+            if (slipWearResultsToKeep == SlipWearResultsEnum.All) 
+            {
+                minMaxList.Add(new double[] { 0, sumTime });
+            }
+            else if (slipWearResultsToKeep == SlipWearResultsEnum.SlipWearSteps)
+            {
+                foreach (var entry in stepIdDuration)
+                {
+                    stepId = entry.Key;
+                    //
+                    if (slipStepIdsHash.Contains(stepId))
+                    {
+                        startTime = stepIdStartTime[stepId];
+                        endTime = startTime + entry.Value;
+                        minMaxList.Add(new double[] { startTime, endTime });
+                    }
+                }
+            }
+            else if (slipWearResultsToKeep == SlipWearResultsEnum.LastIncrementOfSlipWearSteps)
+            {
+                foreach (var entry in stepIdDuration)
+                {
+                    stepId = entry.Key;
+                    //
+                    if (slipStepIdsHash.Contains(stepId))
+                    {
+                        startTime = stepIdStartTime[stepId];
+                        endTime = startTime + entry.Value;
+                        minMaxList.Add(new double[] { endTime, endTime });
+                    }
+                }
+            }
+            else if (slipWearResultsToKeep == SlipWearResultsEnum.LastIncrementOfLastSlipWearStep)
+            {
+                stepId = slipStepIds.Last();
+                //
+                if (slipStepIdsHash.Contains(stepId))
+                {
+                    startTime = stepIdStartTime[stepId];
+                    endTime = startTime + stepIdDuration[stepId];
+                    minMaxList.Add(new double[] { endTime, endTime });
+                }
+            }
+            else throw new NotSupportedException();
+            //
+            double[][] minMax = minMaxList.ToArray();
+            //
+            foreach (var setEntry in _history.Sets)
+            {
+                foreach (var fieldEntry in setEntry.Value.Fields)
+                {
+                    foreach (var componentEntry in fieldEntry.Value.Components)
+                    {
+                        foreach (var entry in componentEntry.Value.Entries)
+                        {
+                            entry.Value.KeepOnly(minMax);
+                        }
+                    }
+                }
+            }
+        }
 
     }
 }

@@ -68,6 +68,37 @@ namespace CaeResults
                 if (_count[i] > 1) _values[i] /= _count[i];
             }
         }
+        public void KeepOnly(double[][] minMax)
+        {
+            double[] time = _time.ToArray();
+            double[] values = _values.ToArray();
+            int[] count = _count.ToArray();
+            //
+            _time.Clear();
+            _values.Clear();
+            _count.Clear();
+            //
+            bool add;
+            for (int i = 0; i < time.Length; i++)
+            {
+                add = false;
+                foreach (var pair in minMax)
+                {
+                    if (pair[0] <= time[i] && time[i] <= pair[1])
+                    {
+                        add = true;
+                        break;
+                    }
+                }
+                //
+                if (add)
+                {
+                    _time.Add(time[i]);
+                    _values.Add(values[i]);
+                    _count.Add(count[i]);
+                }
+            }
+        }
 
     }
 }
