@@ -130,6 +130,7 @@ namespace CaeModel
         // Slip wear model
         public SlipWearResultsEnum SlipWearResults;
         private int _numberOfCycles;
+        private bool _enforceZeroBoundaryConditions;
         //
         public double AbsoluteZero;
         public double StefanBoltzmann;
@@ -146,6 +147,11 @@ namespace CaeModel
                 if (_numberOfCycles < 1) _numberOfCycles = 1;
             }
         }
+        public bool EnforceZeroBoundaryConditions
+        {
+            get { return _enforceZeroBoundaryConditions; }
+            set { _enforceZeroBoundaryConditions = value; }
+        } 
 
 
         // Constructors                                                                                                             

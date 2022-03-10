@@ -42,6 +42,11 @@ namespace FileInOut.Output.Calculix
         }
         public override string GetDataString()
         {
+            //                                                                                                  
+            //                                                                                                  
+            //  Changing the boundary condition definition - change the computation of GetAllZeroDisplacements  
+            //                                                                                                  
+            //                                                                                                  
             StringBuilder sb = new StringBuilder();
             // *Boundary
             // 6975, 1, 1, 0        node id, start DOF, end DOF, value

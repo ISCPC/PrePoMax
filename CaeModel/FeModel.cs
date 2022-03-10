@@ -982,6 +982,11 @@ namespace CaeModel
             reservedPartNames.UnionWith(GetAllMeshEntityNames());
             return reservedPartNames;
         }
+        public Dictionary<int, bool[]> GetAllZeroDisplacements()
+        {
+            if (_properties.EnforceZeroBoundaryConditions) return _stepCollection.GetAllZeroDisplacements(this);
+            else return null;
+        }
         // Springs
         public PointSpring[] GetPointSpringsFromSurfaceSpring(SurfaceSpring spring)
         {

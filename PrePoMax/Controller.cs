@@ -646,7 +646,8 @@ namespace PrePoMax
             _results.SetHistory(DatFileReader.Read(fileName));
             // Wear
             _results.ComputeWear(_model.StepCollection.GetSlipWearStepIds(),
-                                 _model.GetNodalSlipWearCoefficients());
+                                 _model.GetNodalSlipWearCoefficients(),
+                                 _model.GetAllZeroDisplacements());
             //
             if (_results.GetHistory() == null)
             {
@@ -7138,7 +7139,7 @@ namespace PrePoMax
                 results.SetHistory(DatFileReader.Read(resultsFileDat));
                 //
                 int[] slipWearStepIds = _model.StepCollection.GetSlipWearStepIds();
-                if (results.ComputeWear(slipWearStepIds, _model.GetNodalSlipWearCoefficients()))
+                if (results.ComputeWear(slipWearStepIds, _model.GetNodalSlipWearCoefficients(), _model.GetAllZeroDisplacements()))
                 {
                     results.KeepOnlySelectedSlipWearResults(_model.StepCollection.GetStepIdDuration(),
                                                              slipWearStepIds,

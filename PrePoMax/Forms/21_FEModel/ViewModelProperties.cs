@@ -89,6 +89,17 @@ namespace PrePoMax.Forms
             set { _modelProperties.NumberOfCycles = value; }
         }
         //
+        [Category("Slip wear model")]
+        [OrderedDisplayName(2, 10, "Enforce zero BCs")]
+        [Description("Enforcing zero boundary conditions will account for zero boundary conditions " +
+                     "during the slip wear depth computation. Useful for symmetry boundary conditions.")]
+        [Id(3, 3)]
+        public bool EnforceZeroBoundaryConditions
+        {
+            get { return _modelProperties.EnforceZeroBoundaryConditions; }
+            set { _modelProperties.EnforceZeroBoundaryConditions = value; }
+        }
+        // Physical constants
         [Category("Physical constants")]
         [OrderedDisplayName(0, 10, "Absolute zero")]
         [Description("Value of the absolute zero temperature.")]
@@ -128,6 +139,8 @@ namespace PrePoMax.Forms
             _dctd.CategorySortOrder = CustomSortOrder.AscendingById;
             _dctd.PropertySortOrder = CustomSortOrder.AscendingById;
             //
+            _dctd.RenameBooleanPropertyToYesNo(nameof(EnforceZeroBoundaryConditions));
+            //
             UpdateVisibility();
         }
 
@@ -158,6 +171,7 @@ namespace PrePoMax.Forms
             _dctd.GetProperty(nameof(GlobalResultsFileName)).SetIsBrowsable(subModel);
             _dctd.GetProperty(nameof(SlipWearResults)).SetIsBrowsable(slipWearModel);
             _dctd.GetProperty(nameof(NumberOfCycles)).SetIsBrowsable(slipWearModel);
+            _dctd.GetProperty(nameof(EnforceZeroBoundaryConditions)).SetIsBrowsable(slipWearModel);
         }
 
 

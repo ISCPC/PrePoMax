@@ -1982,7 +1982,8 @@ namespace CaeResults
         }
 
         // Wear         
-        public bool ComputeWear(int[] slipStepIds, Dictionary<int, double> nodeIdCoefficient)
+        public bool ComputeWear(int[] slipStepIds, Dictionary<int, double> nodeIdCoefficient,
+                                Dictionary<int, bool[]> nodeIdZeroDisplacements)
         {
             if (slipStepIds != null && slipStepIds.Length > 0 && CheckFieldAndhistoryTimes())
             {
@@ -2007,7 +2008,7 @@ namespace CaeResults
                     CreateAveragedFieldFromElementFaceHistory(FOFieldNames.SurfaceNormal, n3, false);
                 }
                 //
-                return ComputeFieldWearSlidingDistance(slipStepIds, nodeIdCoefficient);
+                return ComputeSlidingWearFields(slipStepIds, nodeIdCoefficient, nodeIdZeroDisplacements);
             }
             else return false;
         }
@@ -2074,7 +2075,8 @@ namespace CaeResults
                 _history.Sets.Add(contactWear.Name, contactWear);
             }
         }
-        public bool ComputeFieldWearSlidingDistance(int[] slipStepIds, Dictionary<int, double> nodeIdCoefficient)
+        public bool ComputeSlidingWearFields(int[] slipStepIds, Dictionary<int, double> nodeIdCoefficient,
+                                             Dictionary<int, bool[]> nodeIdZeroDisplacements)
         {
             HistoryResultComponent slidingDistanceAll =
                 GetHistoryResultComponent(HOSetNames.ContactWear, HOFieldNames.SlidingDistance, HOComponentNames.All);
@@ -2122,6 +2124,9 @@ namespace CaeResults
                 FieldData normalData;
                 FieldData dispData;
                 //
+                int id;
+                Vec3D normal = new Vec3D();
+                //
                 for (int i = 0; i < slipStepIds.Length; i++)
                 {
                     int[] stepIncrementIds = GetIncrementIds(slipStepIds[i]);
@@ -2150,9 +2155,29 @@ namespace CaeResults
                             // Normal
                             normalData = GetFieldData(FOFieldNames.SurfaceNormal, "", slipStepIds[i], stepIncrementIds[j]);
                             normalField = GetField(normalData);
-                            normalN1Values = normalField.GetComponentValues(FOComponentNames.N1);
-                            normalN2Values = normalField.GetComponentValues(FOComponentNames.N2);
-                            normalN3Values = normalField.GetComponentValues(FOComponentNames.N3);
+                            normalN1Values = normalField.GetComponentValues(FOComponentNames.N1).ToArray();
+                            normalN2Values = normalField.GetComponentValues(FOComponentNames.N2).ToArray();
+                            normalN3Values = normalField.GetComponentValues(FOComponentNames.N3).ToArray();
+                            // Adjust normals based on zero BCs
+                            if (nodeIdZeroDisplacements != null)
+                            {
+                                foreach (var entry in nodeIdZeroDisplacements)
+                                {
+                                    id = _nodeIdsLookUp[entry.Key];
+                                    if (entry.Value[0]) normal.X = 0;
+                                    else normal.X = normalN1Values[id];
+                                    if (entry.Value[1]) normal.Y = 0;
+                                    else normal.Y = normalN2Values[id];
+                                    if (entry.Value[2]) normal.Z = 0;
+                                    else normal.Z = normalN3Values[id];
+                                    //
+                                    normal.Normalize();
+                                    //
+                                    normalN1Values[id] = (float)normal.X;
+                                    normalN2Values[id] = (float)normal.Y;
+                                    normalN3Values[id] = (float)normal.Z;
+                                }
+                            }
                             // Wear depth
                             depthValuesMag = new float[pressureValues.Length];
                             depthValuesH1 = new float[pressureValues.Length];
@@ -2181,7 +2206,7 @@ namespace CaeResults
                                                                     Math.Pow(dispValuesU2[k], 2) +
                                                                     Math.Pow(dispValuesU3[k], 2));
                             }
-                            // Depth
+                            // Wear depth
                             depthData = new FieldData(FOFieldNames.WearDepth);
                             depthData.StepId = slipStepIds[i];
                             depthData.StepIncrementId = stepIncrementIds[j];
@@ -2244,6 +2269,7 @@ namespace CaeResults
                 if (xyz[0] != 0 || xyz[1] != 0 || xyz[2] != 0)
                     globalDeformations.Add(entry.Key, new double[] { xyz[0], xyz[1], xyz[2] });
             }
+            //
             return globalDeformations;
         }
         //
