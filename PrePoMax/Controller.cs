@@ -7201,6 +7201,9 @@ namespace PrePoMax
             //
             if (File.Exists(resultsFileFrd))
             {
+                File.Copy(resultsFileFrd,
+                    Path.Combine(Path.GetDirectoryName(resultsFileFrd), Path.GetFileNameWithoutExtension(resultsFileFrd) + "_" +
+                    job.CurrentRun + ".frd"), true);
                 results = FrdFileReader.Read(resultsFileFrd);
                 //
                 if (results == null || results.Mesh == null) job.Kill("Intermediate results do not exist.");

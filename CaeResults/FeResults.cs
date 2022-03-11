@@ -230,12 +230,14 @@ namespace CaeResults
             float[] valuesH1;
             float[] valuesH2;
             float[] valuesH3;
+            float[] valuesHAll;
             float[] valuesUH1;
             float[] valuesUH2;
             float[] valuesUH3;
             float[] magnitude;
             //float[][] vectors = GetLocalVectors(FOFieldNames.WearDepth);
             float[][] vectors = SubtractMeshPositions(results, this);
+            float[][] vectorsWD = GetLocalVectors(FOFieldNames.WearDepth);
             // Add mesh deformation
             foreach (var entry in results._fields.ToArray())    // copy to modify
             {
@@ -251,7 +253,7 @@ namespace CaeResults
                     magnitude = new float[valuesH1.Length];
                     for (int i = 0; i < valuesH1.Length; i++)
                     {
-                        valuesH1[i] += vectors[0][i];
+                        valuesH1[i] += vectorsWD[0][i];
                         magnitude[i] += valuesH1[i] * valuesH1[i];
                     }
                     h1 = new FieldComponent(FOComponentNames.H1, valuesH1);
@@ -259,7 +261,7 @@ namespace CaeResults
                     valuesH2 = currentField.GetComponentValues(FOComponentNames.H2);
                     for (int i = 0; i < valuesH2.Length; i++)
                     {
-                        valuesH2[i] += vectors[1][i];
+                        valuesH2[i] += vectorsWD[1][i];
                         magnitude[i] += valuesH2[i] * valuesH2[i];
                     }
                     h2 = new FieldComponent(FOComponentNames.H2, valuesH2);
@@ -267,7 +269,7 @@ namespace CaeResults
                     valuesH3 = currentField.GetComponentValues(FOComponentNames.H3);
                     for (int i = 0; i < valuesH3.Length; i++)
                     {
-                        valuesH3[i] += vectors[2][i];
+                        valuesH3[i] += vectorsWD[2][i];
                         magnitude[i] += valuesH3[i] * valuesH3[i];
                     }
                     h3 = new FieldComponent(FOComponentNames.H3, valuesH3);
