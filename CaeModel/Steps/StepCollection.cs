@@ -306,7 +306,7 @@ namespace CaeModel
                         bcDsplacement = new bool[3];
                         for (int i = 0; i < 3; i++)
                         {
-                            bcDsplacement[i] = dr.GetDofType(i + 1) == DOFType.Zero || dr.GetDofType(i + 1) == DOFType.Fixed;
+                            bcDsplacement[i] = dr.GetDofType(i + 1) == DOFType.Zero; // || dr.GetDofType(i + 1) == DOFType.Fixed;
                             isZero |= bcDsplacement[i];
                         }
                         if (isZero)

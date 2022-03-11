@@ -1116,5 +1116,78 @@ namespace CaeModel
             info.AddValue("_unitSystem", _unitSystem, typeof(UnitSystem));
             info.AddValue("_hashName", _hashName, typeof(string));
         }
+
+        // Boundary displacement method
+        public FeModel PrepareBdmModel(Dictionary<int, double[]> deformations)
+        {
+            // Mesh
+            FeModel bdmModel = new FeModel("BDMmodel");
+            bdmModel.Properties = _properties;
+            bdmModel.Mesh.AddMesh(_mesh, null);
+            // Copy reference points
+            foreach (var entry in _mesh.ReferencePoints)
+            {
+                bdmModel.Mesh.ReferencePoints.Add(entry.Key, entry.Value);
+            }
+            // Create new node sets for BDM boundary conditions
+            string name;
+            FeNodeSet nodeSet;
+            Dictionary<int, string> nodeIdNodeSetName = new Dictionary<int, string>();
+            foreach (var entry in deformations)
+            {
+                name = bdmModel.Mesh.NodeSets.GetNextNumberedKey("BDM", "_" + entry.Key);
+                nodeSet = new FeNodeSet(name, new int[] { entry.Key });
+                bdmModel.Mesh.NodeSets.Add(nodeSet.Name, nodeSet);
+                nodeIdNodeSetName.Add(entry.Key, name);
+            }
+            // Materials
+            Material materialElastic = new Material("Elastic");
+            materialElastic.AddProperty(new Elastic(new double[][] { new double[] { 1000, 0, 0 } }));
+            bdmModel._materials.Add(materialElastic.Name, materialElastic);
+            // Sections
+            Section section;
+            foreach (var entry in _sections)
+            {
+                section = entry.Value.DeepClone();
+                section.MaterialName = materialElastic.Name;
+                bdmModel.Sections.Add(section.Name, section);
+            }
+            // Constraints
+            foreach (var entry in _constraints)
+            {
+                bdmModel.Constraints.Add(entry.Key, entry.Value);
+            }
+            // Steps
+            StaticStep staticStep = new StaticStep("Step-1");
+            bdmModel._stepCollection.AddStep(staticStep);
+            // Merge existing BCs
+            bool twoD = false;
+            BoundaryCondition bc;
+            foreach (var step in _stepCollection.StepsList)
+            {
+                foreach (var entry in step.BoundaryConditions)
+                {
+                    bc = entry.Value.DeepClone();
+                    bc.Name = step.Name + "_" + bc.Name;
+                    twoD |= bc.TwoD;
+                    staticStep.AddBoundaryCondition(bc);
+                }
+            }
+            // Create BDM boundary conditions
+            double[] xyz;
+            DisplacementRotation dr;
+            foreach (var entry in deformations)
+            {
+                xyz = entry.Value;
+                name = staticStep.BoundaryConditions.GetNextNumberedKey("BDM-" + entry.Key);
+                dr = new DisplacementRotation(name, nodeIdNodeSetName[entry.Key], RegionTypeEnum.NodeSetName, twoD);
+                if (xyz[0] != 0) dr.U1 = xyz[0];
+                if (xyz[1] != 0) dr.U2 = xyz[1];
+                if (xyz[2] != 0) dr.U3 = xyz[2];
+                staticStep.AddBoundaryCondition(dr);
+            }
+            //
+            return bdmModel;
+        }
     }
 }

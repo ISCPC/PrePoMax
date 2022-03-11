@@ -234,7 +234,8 @@ namespace CaeResults
             float[] valuesUH2;
             float[] valuesUH3;
             float[] magnitude;
-            float[][] deformations = GetLocalWearDepths();
+            //float[][] vectors = GetLocalVectors(FOFieldNames.WearDepth);
+            float[][] vectors = SubtractMeshPositions(results, this);
             // Add mesh deformation
             foreach (var entry in results._fields.ToArray())    // copy to modify
             {
@@ -250,7 +251,7 @@ namespace CaeResults
                     magnitude = new float[valuesH1.Length];
                     for (int i = 0; i < valuesH1.Length; i++)
                     {
-                        valuesH1[i] += deformations[0][i];
+                        valuesH1[i] += vectors[0][i];
                         magnitude[i] += valuesH1[i] * valuesH1[i];
                     }
                     h1 = new FieldComponent(FOComponentNames.H1, valuesH1);
@@ -258,7 +259,7 @@ namespace CaeResults
                     valuesH2 = currentField.GetComponentValues(FOComponentNames.H2);
                     for (int i = 0; i < valuesH2.Length; i++)
                     {
-                        valuesH2[i] += deformations[1][i];
+                        valuesH2[i] += vectors[1][i];
                         magnitude[i] += valuesH2[i] * valuesH2[i];
                     }
                     h2 = new FieldComponent(FOComponentNames.H2, valuesH2);
@@ -266,7 +267,7 @@ namespace CaeResults
                     valuesH3 = currentField.GetComponentValues(FOComponentNames.H3);
                     for (int i = 0; i < valuesH3.Length; i++)
                     {
-                        valuesH3[i] += deformations[2][i];
+                        valuesH3[i] += vectors[2][i];
                         magnitude[i] += valuesH3[i] * valuesH3[i];
                     }
                     h3 = new FieldComponent(FOComponentNames.H3, valuesH3);
@@ -288,7 +289,7 @@ namespace CaeResults
                     magnitude = new float[valuesUH1.Length];
                     for (int i = 0; i < valuesUH1.Length; i++)
                     {
-                        valuesUH1[i] += deformations[0][i];
+                        valuesUH1[i] += vectors[0][i];
                         magnitude[i] += valuesUH1[i] * valuesUH1[i];
                     }
                     uh1 = new FieldComponent(FOComponentNames.UH1, valuesUH1);
@@ -296,7 +297,7 @@ namespace CaeResults
                     valuesUH2 = currentField.GetComponentValues(FOComponentNames.UH2);
                     for (int i = 0; i < valuesUH2.Length; i++)
                     {
-                        valuesUH2[i] += deformations[1][i];
+                        valuesUH2[i] += vectors[1][i];
                         magnitude[i] += valuesUH2[i] * valuesUH2[i];
                     }
                     uh2 = new FieldComponent(FOComponentNames.UH2, valuesUH2);
@@ -304,7 +305,7 @@ namespace CaeResults
                     valuesUH3 = currentField.GetComponentValues(FOComponentNames.UH3);
                     for (int i = 0; i < valuesUH3.Length; i++)
                     {
-                        valuesUH3[i] += deformations[2][i];
+                        valuesUH3[i] += vectors[2][i];
                         magnitude[i] += valuesUH3[i] * valuesUH3[i];
                     }
                     uh3 = new FieldComponent(FOComponentNames.UH3, valuesUH3);
@@ -356,6 +357,32 @@ namespace CaeResults
                     }
                 }
             }
+        }
+        private static float[][] SubtractMeshPositions(FeResults results1, FeResults results2)
+        {
+            if (results1._undeformedNodes.Count == results2._undeformedNodes.Count)
+            {
+                int id;
+                FeNode node1;
+                FeNode node2;
+                float[][] diff = new float[3][];
+                diff[0] = new float[results1._undeformedNodes.Count];
+                diff[1] = new float[results1._undeformedNodes.Count];
+                diff[2] = new float[results1._undeformedNodes.Count];
+                //
+                foreach (var entry in results1._undeformedNodes)
+                {
+                    node1 = entry.Value;
+                    node2 = results2._undeformedNodes[node1.Id];
+                    id = results1._nodeIdsLookUp[node1.Id];
+                    //
+                    diff[0][id] = (float)(node1.X - node2.X);
+                    diff[1][id] = (float)(node1.Y - node2.Y);
+                    diff[2][id] = (float)(node1.Z - node2.Z);
+                }
+                return diff;
+            }
+            else  return null;
         }
         // Mesh deformation                         
         public void SetMeshDeformation(float scale, int stepId, int stepIncrementId)
@@ -2239,38 +2266,38 @@ namespace CaeResults
             }
             else return false;
         }
-        private float[][] GetLocalWearDepths()
+        private float[][] GetLocalVectors(string fieldName)
         {
             string prevFieldOutputName = _deformationFieldOutputName;
-            _deformationFieldOutputName = FOFieldNames.WearDepth;
+            _deformationFieldOutputName = fieldName;
             //
             int[] stepIds = GetAllStepIds();
             int stepId = stepIds.Last();
             int[] stepIncrementIds = GetIncrementIds(stepId);
             int stepIncrementId = stepIncrementIds.Last();
             //
-            float[][] deformations = GetNodalMeshDeformations(stepId, stepIncrementId);
+            float[][] vectors = GetNodalMeshDeformations(stepId, stepIncrementId);
             //
             _deformationFieldOutputName = prevFieldOutputName;
             //
-            return deformations;
+            return vectors;
         }
-        public Dictionary<int, double[]> GetGlobalWearDepths()
+        public Dictionary<int, double[]> GetGlobalNonZeroVectors(string fieldName)
         {
             double[] xyz = new double[3];
-            float[][] deformations = GetLocalWearDepths();
-            Dictionary<int, double[]> globalDeformations = new Dictionary<int, double[]>();
+            float[][] vectors = GetLocalVectors(fieldName);
+            Dictionary<int, double[]> globalVectors = new Dictionary<int, double[]>();
             foreach (var entry in _nodeIdsLookUp)
             {
-                xyz[0] = deformations[0][entry.Value];
-                xyz[1] = deformations[1][entry.Value];
-                xyz[2] = deformations[2][entry.Value];
+                xyz[0] = vectors[0][entry.Value];
+                xyz[1] = vectors[1][entry.Value];
+                xyz[2] = vectors[2][entry.Value];
                 //
                 if (xyz[0] != 0 || xyz[1] != 0 || xyz[2] != 0)
-                    globalDeformations.Add(entry.Key, new double[] { xyz[0], xyz[1], xyz[2] });
+                    globalVectors.Add(entry.Key, new double[] { xyz[0], xyz[1], xyz[2] });
             }
             //
-            return globalDeformations;
+            return globalVectors;
         }
         //
         private HistoryResultComponent ComputeRelativeDisplacement(string componentName, HistoryResultComponent tang1)

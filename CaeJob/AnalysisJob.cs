@@ -51,6 +51,7 @@ namespace CaeJob
         [NonSerialized] private string _inputFileName;
         [NonSerialized] private int _numOfRuns;
         [NonSerialized] private int _currentRun;
+        [NonSerialized] private object _tag;
 
 
         // Properties                                                                                                               
@@ -133,6 +134,7 @@ namespace CaeJob
         public string ConvergenceFileData { get { return _convergenceFileContents; } }
         public int CurrentRun { get { return _currentRun; } }
         public string InputFileName { get { return _inputFileName; } }
+        public object Tag { get { return _tag; } set { _tag = value; } }
 
 
         // Events                                                                                                                   
