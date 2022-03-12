@@ -49,8 +49,10 @@ namespace CaeJob
         [NonSerialized] private string _errorFileName;
         [NonSerialized] private object _myLock;
         [NonSerialized] private string _inputFileName;
-        [NonSerialized] private int _numOfRuns;
-        [NonSerialized] private int _currentRun;
+        [NonSerialized] private int _numOfRunSteps;
+        [NonSerialized] private int _currentRunStep;
+        [NonSerialized] private int _numOfRunIncrements;
+        [NonSerialized] private int _currentRunIncrement;
         [NonSerialized] private object _tag;
 
 
@@ -132,7 +134,8 @@ namespace CaeJob
         }
         public string StatusFileData { get { return _statusFileContents; } }
         public string ConvergenceFileData { get { return _convergenceFileContents; } }
-        public int CurrentRun { get { return _currentRun; } }
+        public int CurrentRunStep { get { return _currentRunStep; } }
+        public int CurrentRunIncrement { get { return _currentRunIncrement; } }
         public string InputFileName { get { return _inputFileName; } }
         public object Tag { get { return _tag; } set { _tag = value; } }
 
@@ -143,7 +146,8 @@ namespace CaeJob
 
         // Callback                                                                                                                 
         public Action<string, JobStatus> JobStatusChanged;
-        public Action<AnalysisJob> PrepareNextRun;
+        public Action<AnalysisJob> PreRun;
+        public Action<AnalysisJob> PostRun;
         public Action<AnalysisJob> LastRunCompleted;
 
 
@@ -185,12 +189,19 @@ namespace CaeJob
 
 
         // Methods                                                                                                                  
-        public void Submit(int numOfRuns)
+        public void Submit(int numOfRunSteps, int numOfRunIncrements)
         {
+            if (numOfRunSteps < 1 || numOfRunIncrements < 1) throw new NotSupportedException();
+            //
             _inputFileName = Path.Combine(_workDirectory, _name + ".inp");  // must be first for the timer to work
             //
-            _numOfRuns = numOfRuns;
-            _currentRun = 0;
+            _numOfRunSteps = numOfRunSteps;
+            _currentRunStep = -1;
+            //
+            _numOfRunIncrements = numOfRunIncrements;
+            _currentRunIncrement = -1;
+            //
+            _tag = null;
             //
             _timer = new System.Windows.Threading.DispatcherTimer();
             _timer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
@@ -204,11 +215,27 @@ namespace CaeJob
         }
         private void SubmitNextRun()
         {
-            _currentRun++;
-            //
-            if (_currentRun <= _numOfRuns)
+            // First run
+            if (_currentRunStep == -1)
             {
-                PrepareNextRun?.Invoke(this);
+                _currentRunStep = 1;
+                _currentRunIncrement = 1;
+            }
+            // Other runs
+            else
+            {
+                _currentRunIncrement++;
+                //
+                if (_currentRunIncrement > _numOfRunIncrements)
+                {
+                    _currentRunIncrement = 1;
+                    _currentRunStep++;
+                }
+            }
+            //
+            if (_currentRunStep <= _numOfRunSteps)
+            {
+                PreRun?.Invoke(this);
                 SubmitOneRun();
             }
             else AllRunsCompleted();
@@ -226,7 +253,7 @@ namespace CaeJob
             }
             //
             AppendDataToOutput(DateTime.Now + Environment.NewLine);
-            AppendDataToOutput("########   Starting run number: " + _currentRun + "   ########" +  Environment.NewLine);
+            AppendDataToOutput("########   Starting run number: " + _currentRunStep + "   ########" +  Environment.NewLine);
             AppendDataToOutput("Running command: " + _executable + " " + _argument);
             //
             _statusFileLength = -1;
@@ -260,8 +287,6 @@ namespace CaeJob
         }
         private void bwStart_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            AppendDataToOutput("");
-            //
             string frdFileName = Path.Combine(WorkDirectory, _name + ".frd");
             bool resultsExist = File.Exists(frdFileName);
             if (resultsExist)
@@ -271,6 +296,7 @@ namespace CaeJob
             }
             //
             bool continueAnalysis = false;
+            AppendDataToOutput("");
             if (_jobStatus == JobStatus.OK)
             {
                 if (!resultsExist)
@@ -284,6 +310,7 @@ namespace CaeJob
                 }
                 else
                 {
+                    PostRun?.Invoke(this);
                     continueAnalysis = true;                    
                 }
             }
@@ -319,7 +346,8 @@ namespace CaeJob
             // Dereference the links to otheh objects
             DataOutput = null;
             JobStatusChanged = null;
-            PrepareNextRun = null;
+            PreRun = null;
+            PostRun = null;
             LastRunCompleted = null;
         }
         private void Run_OldWin()

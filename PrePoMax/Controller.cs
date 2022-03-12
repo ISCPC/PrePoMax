@@ -6995,7 +6995,9 @@ namespace PrePoMax
             _form.UpdateTreeNode(ViewGeometryModelResults.Model, oldJobName, job, null);
         }
         public bool PrepareAndRunJob(string inputFileName, AnalysisJob job)
-        {            
+        {
+            job.Tag = null;
+            //
             if (File.Exists(job.Executable))
             {
                 if (CheckModelBeforeJobRun() && DeleteFilesBeforeJobRun(inputFileName)) // must be separete due to exception
@@ -7079,7 +7081,7 @@ namespace PrePoMax
         {
             ExportToCalculix(inputFileName);
             job.JobStatusChanged = JobStatusChanged;
-            job.Submit(1);
+            job.Submit(1, 1);
             //
             return true;
         }
@@ -7089,81 +7091,59 @@ namespace PrePoMax
             _wearResults = null;
             //
             job.JobStatusChanged = JobStatusChanged;
-            job.PrepareNextRun = PrepareNextWearRun;
+            job.PreRun = PreWearRun;
+            job.PostRun = PostWearRun;
             job.LastRunCompleted = LastWearRunCompleted;
             //
-            int numOfRuns = _model.Properties.NumberOfCycles * 2;
-            job.Submit(numOfRuns);
+            int numOfRunSteps = _model.Properties.NumberOfCycles;
+            int numOfRunIncrements = _model.Properties.MeshUpdate ?  2 : 1;
+            //
+            job.Submit(numOfRunSteps, numOfRunIncrements);
             //
             return true;
         }
-        private void PrepareNextWearRun(AnalysisJob job)
+        private void PreWearRun(AnalysisJob job)
         {
-            Dictionary<int, double[]> deformations;
-            FeResults results;
-            // Boundary displacement method
-            if (true)
-            {
-                if (job.CurrentRun == 1)
-                {
-                    DeleteFilesBeforeJobRun(job.InputFileName);
-                    ExportToCalculix(job.InputFileName);
-                }
-                else if (job.CurrentRun % 2 == 0)
-                {
-                    ReadWearResults(job);
-                    deformations = _wearResults.GetGlobalNonZeroVectors(FOFieldNames.WearDepth);
-                    //
-                    DeleteFilesBeforeJobRun(job.InputFileName);
-                    //
-                    SuppressExplodedViews();
-                    FeModel model = _model.PrepareBdmModel(deformations);
-                    FileInOut.Output.CalculixFileWriter.Write(job.InputFileName, model, null);
-                    ResumeExplodedViews(false);
-                }
-                else
-                {
-                    results = ReadBDMResults(job);
-                    deformations = results.GetGlobalNonZeroVectors(FOFieldNames.Disp);
-                    //
-                    DeleteFilesBeforeJobRun(job.InputFileName);
-                    //
-                    ExportToCalculix(job.InputFileName, deformations);
-                }
-            }
-            else
-            {
-                if (job.CurrentRun == 1)
-                {
-                    DeleteFilesBeforeJobRun(job.InputFileName);
-                    ExportToCalculix(job.InputFileName);
-                }
-                else
-                {
-                    ReadWearResults(job);
-                    //
-                    DeleteFilesBeforeJobRun(job.InputFileName);
-                    //
-                    deformations = _wearResults.GetGlobalNonZeroVectors(FOFieldNames.WearDepth);
-                    ExportToCalculix(job.InputFileName, deformations);
-                }
-            }
+            Dictionary<int, double[]> deformations = null;
+            if (job.Tag != null) deformations = (Dictionary<int, double[]>)job.Tag;
             //
-            _form.WriteDataToOutput("Starting wear cycle number: " + job.CurrentRun / 2);
+            DeleteFilesBeforeJobRun(job.InputFileName);
+            //
+            if (job.CurrentRunIncrement == 1)
+            {
+                _form.WriteDataToOutput("Starting wear cycle number: " + job.CurrentRunStep);
+                //
+                ExportToCalculix(job.InputFileName, deformations);
+            }
+            else if (job.CurrentRunIncrement == 2)
+            {
+                SuppressExplodedViews();
+                FeModel model = _model.PrepareBdmModel(deformations);
+                FileInOut.Output.CalculixFileWriter.Write(job.InputFileName, model, null);
+                ResumeExplodedViews(false);
+            }
+        }
+        private void PostWearRun(AnalysisJob job)
+        {
+            FeResults results;
+            Dictionary<int, double[]> deformations;
+            //
+            if (job.CurrentRunIncrement == 1)
+            {
+                ReadWearResults(job);
+                deformations = _wearResults.GetGlobalNonZeroVectors(FOFieldNames.WearDepth);
+                job.Tag = deformations;
+            }
+            else if (job.CurrentRunIncrement == 2)
+            {
+                results = ReadBDMResults(job);
+                deformations = results.GetGlobalNonZeroVectors(FOFieldNames.Disp);
+                job.Tag = deformations;
+            }
         }
         private void LastWearRunCompleted(AnalysisJob job)
         {
-            if (true)
-            {
-                // Clear results from the last boundary displacement method
-                DeleteFilesBeforeJobRun(job.InputFileName);
-            }
-            else
-            {
-                ReadWearResults(job);
-                // Clear results from the last cycle
-                DeleteFilesBeforeJobRun(job.InputFileName);
-            }
+            DeleteFilesBeforeJobRun(job.InputFileName);
         }
         private void ReadWearResults(AnalysisJob job)
         {
@@ -7176,8 +7156,7 @@ namespace PrePoMax
                 //
                 if (results == null || results.Mesh == null) job.Kill("Intermediate results do not exist.");
                 //
-                Dictionary<int, int> elementIdMaterialId;
-                _model.GetMaterialAssignments(out elementIdMaterialId);
+                _model.GetMaterialAssignments(out Dictionary<int, int> elementIdMaterialId);
                 //
                 results.SetHistory(DatFileReader.Read(resultsFileDat));
                 //
@@ -7201,9 +7180,9 @@ namespace PrePoMax
             //
             if (File.Exists(resultsFileFrd))
             {
-                File.Copy(resultsFileFrd,
-                    Path.Combine(Path.GetDirectoryName(resultsFileFrd), Path.GetFileNameWithoutExtension(resultsFileFrd) + "_" +
-                    job.CurrentRun + ".frd"), true);
+                //File.Copy(resultsFileFrd,
+                //    Path.Combine(Path.GetDirectoryName(resultsFileFrd), Path.GetFileNameWithoutExtension(resultsFileFrd) + "_" +
+                //    job.CurrentRunStep + ".frd"), true);
                 results = FrdFileReader.Read(resultsFileFrd);
                 //
                 if (results == null || results.Mesh == null) job.Kill("Intermediate results do not exist.");

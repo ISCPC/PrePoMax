@@ -230,7 +230,6 @@ namespace CaeResults
             float[] valuesH1;
             float[] valuesH2;
             float[] valuesH3;
-            float[] valuesHAll;
             float[] valuesUH1;
             float[] valuesUH2;
             float[] valuesUH3;
@@ -1096,10 +1095,7 @@ namespace CaeResults
         public int[] GetAllStepIds()
         {
             HashSet<int> ids = new HashSet<int>();
-            foreach (var entry in _fields)
-            {
-                ids.Add(entry.Key.StepId);
-            }
+            foreach (var entry in _fields) ids.Add(entry.Key.StepId);
             //
             int[] sortedIds = ids.ToArray();
             Array.Sort(sortedIds);
@@ -1163,6 +1159,10 @@ namespace CaeResults
             }
             else
             {
+                if (!stepIds.Contains(1))
+                {
+                    existingIncrementIds.Add(1, new int[] { 0 });   // Zero increment - Find all occurances!!!
+                }
                 foreach (int stepId in stepIds)
                 {
                     existingIncrementIds.Add(stepId, GetIncrementIds(stepId));
