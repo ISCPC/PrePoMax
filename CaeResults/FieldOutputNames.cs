@@ -31,8 +31,8 @@ namespace CaeResults
         public const string SlidingDistance = "SLIDING_DISTANCE";
         public const string SurfaceNormal = "SURFACE_NORMAL";
         public const string WearDepth = "WEAR_DEPTH";
-        public const string MeshUpdate = "MESH_UPDATE";
-        public const string DispUpdateDepth = "DISP_UPDATE_DEPTH";
+        public const string MeshDeformation = "MESH_DEF";
+        public const string DispDeformationDepth = "DISP_DEF_DEPTH";
         //
         public const string Error = "ERROR";
     }

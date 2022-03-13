@@ -277,7 +277,7 @@ namespace CaeResults
                     // Replace field
                     results.ReplaceField(fieldData, currentField);
                 }
-                else if (fieldData.Name == FOFieldNames.MeshUpdate || fieldData.Name == FOFieldNames.DispUpdateDepth)
+                else if (fieldData.Name == FOFieldNames.MeshDeformation || fieldData.Name == FOFieldNames.DispDeformationDepth)
                 {
                     // U1
                     values1 = currentField.GetComponentValues(FOComponentNames.U1);
@@ -522,8 +522,8 @@ namespace CaeResults
             names.Add("Forces", FOFieldNames.Forc);
             names.Add("Surface normals", FOFieldNames.SurfaceNormal);
             names.Add("Wear depths", FOFieldNames.WearDepth);
-            names.Add("Mesh update", FOFieldNames.MeshUpdate);
-            names.Add("Disp&Update&Depth", FOFieldNames.DispUpdateDepth);
+            names.Add("Mesh deformation", FOFieldNames.MeshDeformation);
+            names.Add("Disp&Def&Depth", FOFieldNames.DispDeformationDepth);
             return names;
         }
         public static string[] GetPossibleDeformationFieldOutputNames()
@@ -560,11 +560,11 @@ namespace CaeResults
             {
                 componentNames = new string[] { FOComponentNames.H1, FOComponentNames.H2, FOComponentNames.H3 };
             }
-            else if (_deformationFieldOutputName == FOFieldNames.MeshUpdate)
+            else if (_deformationFieldOutputName == FOFieldNames.MeshDeformation)
             {
                 componentNames = new string[] { FOComponentNames.U1, FOComponentNames.U2, FOComponentNames.U3 };
             }
-            else if (_deformationFieldOutputName == FOFieldNames.DispUpdateDepth)
+            else if (_deformationFieldOutputName == FOFieldNames.DispDeformationDepth)
             {
                 componentNames = new string[] { FOComponentNames.U1, FOComponentNames.U2, FOComponentNames.U3 };
             }
@@ -657,8 +657,8 @@ namespace CaeResults
                     case FOFieldNames.SlidingDistance:
                     case FOFieldNames.SurfaceNormal:
                     case FOFieldNames.WearDepth:
-                    case FOFieldNames.MeshUpdate:
-                    case FOFieldNames.DispUpdateDepth:
+                    case FOFieldNames.MeshDeformation:
+                    case FOFieldNames.DispDeformationDepth:
                         unitConverter = new StringLengthConverter();
                         unitAbbreviation = _unitSystem.LengthUnitAbbreviation;
                         break;
@@ -2253,7 +2253,7 @@ namespace CaeResults
                             depthField.AddComponent(FOComponentNames.H3, depthValuesH3);
                             AddFiled(depthData, depthField);
                             // Mesh update
-                            meshUpdateData = new FieldData(FOFieldNames.MeshUpdate);
+                            meshUpdateData = new FieldData(FOFieldNames.MeshDeformation);
                             meshUpdateData.StepId = slipStepIds[i];
                             meshUpdateData.StepIncrementId = stepIncrementIds[j];
                             meshUpdateData.Time = dispData.Time;
@@ -2265,7 +2265,7 @@ namespace CaeResults
                             meshUpdateField.AddComponent(FOComponentNames.U3, new float[pressureValues.Length]);
                             AddFiled(meshUpdateData, meshUpdateField);
                             // Disp with wear depth
-                            dispData.Name = FOFieldNames.DispUpdateDepth;
+                            dispData.Name = FOFieldNames.DispDeformationDepth;
                             dispField = new Field(dispData.Name);
                             dispField.AddComponent(FOComponentNames.All, dispValuesMag);
                             dispField.AddComponent(FOComponentNames.U1, dispValuesU1);

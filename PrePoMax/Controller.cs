@@ -7096,7 +7096,7 @@ namespace PrePoMax
             job.LastRunCompleted = LastWearRunCompleted;
             //
             int numOfRunSteps = _model.Properties.NumberOfCycles;
-            int numOfRunIncrements = _model.Properties.MeshUpdate ?  2 : 1;
+            int numOfRunIncrements = _model.Properties.MeshDeformation ?  2 : 1;
             //
             job.Submit(numOfRunSteps, numOfRunIncrements);
             //

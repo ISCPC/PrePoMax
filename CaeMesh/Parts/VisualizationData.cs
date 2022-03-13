@@ -464,6 +464,12 @@ namespace CaeMesh
             return allEdgeNodeIds.ToArray();
         }
         //
+        public HashSet<int> GetNodeIds()
+        {
+            HashSet<int> nodeIds = new HashSet<int>();
+            for (int i = 0; i < _cells.Length; i++) nodeIds.UnionWith(_cells[i]);
+            return nodeIds;
+        }
         public HashSet<int> GetNodeIdsBySurface(int surfaceId)
         {
             HashSet<int> surfaceNodeIds = new HashSet<int>();

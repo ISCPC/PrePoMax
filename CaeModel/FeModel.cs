@@ -1118,7 +1118,7 @@ namespace CaeModel
         }
 
         // Boundary displacement method
-        public FeModel PrepareBdmModel(Dictionary<int, double[]> deformations)
+        public FeModel PrepareBdmModel_(Dictionary<int, double[]> deformations)
         {
             // Mesh
             FeModel bdmModel = new FeModel("BDMmodel");
@@ -1185,6 +1185,96 @@ namespace CaeModel
                     staticStep.AddBoundaryCondition(dr);
                 }
             }
+            //
+            return bdmModel;
+        }
+        public FeModel PrepareBdmModel(Dictionary<int, double[]> deformations)
+        {
+            // Mesh
+            FeModel bdmModel = new FeModel("BDMmodel");
+            bdmModel.Properties = _properties;
+            bdmModel.Mesh.AddMesh(_mesh, null);
+            // Materials
+            Material materialElastic = new Material("Elastic");
+            materialElastic.AddProperty(new Elastic(new double[][] { new double[] { 1000, 0, 0 } }));
+            bdmModel._materials.Add(materialElastic.Name, materialElastic);
+            // Sections
+            Section section;
+            foreach (var entry in _sections)
+            {
+                section = entry.Value.DeepClone();
+                section.MaterialName = materialElastic.Name;
+                bdmModel.Sections.Add(section.Name, section);
+            }
+            // Steps
+            StaticStep staticStep = new StaticStep("Step-1");
+            bdmModel._stepCollection.AddStep(staticStep);
+            // Merge existing BCs
+            bool twoD = false;
+            string nodeSetName;
+            BoundaryCondition bc;
+            HashSet<int> bcNodeIds = new HashSet<int>();
+            foreach (var step in _stepCollection.StepsList)
+            {
+                foreach (var entry in step.BoundaryConditions)
+                {
+                    if (entry.Value.RegionType == RegionTypeEnum.ReferencePointName) continue;
+                    //
+                    bc = entry.Value.DeepClone();
+                    bc.Name = step.Name + "_" + bc.Name;
+                    twoD |= bc.TwoD;
+                    staticStep.AddBoundaryCondition(bc);
+                    //
+                    if (bc.RegionType == RegionTypeEnum.NodeSetName)
+                        nodeSetName = bc.RegionName;
+                    else if (bc.RegionType == RegionTypeEnum.SurfaceName)
+                        nodeSetName = _mesh.Surfaces[bc.RegionName].NodeSetName;
+                    else throw new NotSupportedException();
+                    //
+                    bcNodeIds.UnionWith(_mesh.NodeSets[nodeSetName].Labels);
+                }
+            }
+            // Create BDM boundary conditions
+            string name;
+            double[] xyz;
+            FeNodeSet nodeSet;
+            DisplacementRotation dr;
+            //
+            if (deformations != null)
+            {
+                foreach (var entry in deformations)
+                {
+                    // Node set
+                    name = bdmModel.Mesh.NodeSets.GetNextNumberedKey("BDM", "_" + entry.Key);
+                    nodeSet = new FeNodeSet(name, new int[] { entry.Key });
+                    bdmModel.Mesh.NodeSets.Add(nodeSet.Name, nodeSet);
+                    // Boundary condition
+                    xyz = entry.Value;
+                    name = staticStep.BoundaryConditions.GetNextNumberedKey("BDM-" + entry.Key);
+                    dr = new DisplacementRotation(name, nodeSet.Name, RegionTypeEnum.NodeSetName, twoD);
+                    if (xyz[0] != 0) dr.U1 = xyz[0];
+                    if (xyz[1] != 0) dr.U2 = xyz[1];
+                    if (xyz[2] != 0) dr.U3 = xyz[2];
+                    staticStep.AddBoundaryCondition(dr);
+                }
+                //
+                bcNodeIds.UnionWith(deformations.Keys);
+            }
+            // Fix remaining free visualization nodes
+            HashSet<int> allVisNodes = new HashSet<int>();
+            foreach (var entry in _mesh.Parts) allVisNodes.UnionWith(entry.Value.Visualization.GetNodeIds());
+            allVisNodes.ExceptWith(bcNodeIds);
+            // Node set
+            name = bdmModel.Mesh.NodeSets.GetNextNumberedKey("FIXED_BDM");
+            nodeSet = new FeNodeSet(name, allVisNodes.ToArray());
+            bdmModel.Mesh.NodeSets.Add(nodeSet.Name, nodeSet);
+            // Boundary condition
+            name = staticStep.BoundaryConditions.GetNextNumberedKey("FIXED-BDM");
+            dr = new DisplacementRotation(name, nodeSet.Name, RegionTypeEnum.NodeSetName, twoD);
+            dr.U1 = 0;
+            dr.U2 = 0;
+            dr.U3 = 0;
+            staticStep.AddBoundaryCondition(dr);
             //
             return bdmModel;
         }

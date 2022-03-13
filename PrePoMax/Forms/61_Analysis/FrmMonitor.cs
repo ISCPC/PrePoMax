@@ -204,7 +204,7 @@ namespace PrePoMax.Forms
                         errorElementIds.Add(int.Parse(tmp[0]));
                     }
                     string elementSetName = _controller.Model.Mesh.ElementSets.GetNextNumberedKey("Nonpositive_jacobian");
-                    _controller.AddElementSetCommand(new CaeMesh.FeElementSet(elementSetName, errorElementIds.ToArray()));
+                    _controller.AddElementSet(new CaeMesh.FeElementSet(elementSetName, errorElementIds.ToArray()));
                     //
                     tbOutput.AppendText(Environment.NewLine);
                     tbOutput.AppendText(" An element set containing elements with nonpositive jacobian determinant was created.");

@@ -90,11 +90,11 @@ namespace PrePoMax.Forms
         }
         //
         [Category("Slip wear model")]
-        [OrderedDisplayName(2, 10, "Update mesh")]
-        [Description("Use boundary displacement method to update sub-surface node positions due to surface wear " +
+        [OrderedDisplayName(2, 10, "Mesh deformation")]
+        [Description("Use boundary displacement method to deform sub-surface node positions due to surface wear " +
                      "after each wear cycle.")]
         [Id(3, 3)]
-        public bool MeshUpdate { get { return _modelProperties.MeshUpdate; } set { _modelProperties.MeshUpdate = value; } }
+        public bool MeshDeformation { get { return _modelProperties.MeshDeformation; } set { _modelProperties.MeshDeformation = value; } }
         //
         [Category("Slip wear model")]
         [OrderedDisplayName(3, 10, "Enforce zero BCs")]
@@ -146,7 +146,7 @@ namespace PrePoMax.Forms
             _dctd.CategorySortOrder = CustomSortOrder.AscendingById;
             _dctd.PropertySortOrder = CustomSortOrder.AscendingById;
             //
-            _dctd.RenameBooleanPropertyToYesNo(nameof(MeshUpdate));
+            _dctd.RenameBooleanPropertyToYesNo(nameof(MeshDeformation));
             _dctd.RenameBooleanPropertyToYesNo(nameof(EnforceZeroBoundaryConditions));
             //
             UpdateVisibility();
@@ -179,7 +179,7 @@ namespace PrePoMax.Forms
             _dctd.GetProperty(nameof(GlobalResultsFileName)).SetIsBrowsable(subModel);
             _dctd.GetProperty(nameof(SlipWearResults)).SetIsBrowsable(slipWearModel);
             _dctd.GetProperty(nameof(NumberOfCycles)).SetIsBrowsable(slipWearModel);
-            _dctd.GetProperty(nameof(MeshUpdate)).SetIsBrowsable(slipWearModel);
+            _dctd.GetProperty(nameof(MeshDeformation)).SetIsBrowsable(slipWearModel);
             _dctd.GetProperty(nameof(EnforceZeroBoundaryConditions)).SetIsBrowsable(slipWearModel);
         }
 

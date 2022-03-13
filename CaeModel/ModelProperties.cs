@@ -131,7 +131,7 @@ namespace CaeModel
         public SlipWearResultsEnum SlipWearResults;
         private int _numberOfCycles;
         private bool _enforceZeroBoundaryConditions;
-        private bool _meshUpdate;
+        private bool _meshDeformation;
         //
         public double AbsoluteZero;
         public double StefanBoltzmann;
@@ -153,10 +153,10 @@ namespace CaeModel
             get { return _enforceZeroBoundaryConditions; }
             set { _enforceZeroBoundaryConditions = value; }
         }
-        public bool MeshUpdate
+        public bool MeshDeformation
         {
-            get { return _meshUpdate; }
-            set { _meshUpdate = value; }
+            get { return _meshDeformation; }
+            set { _meshDeformation = value; }
         }
 
 
@@ -171,7 +171,7 @@ namespace CaeModel
             SlipWearResults = SlipWearResultsEnum.All;
             _numberOfCycles = 1;
             _enforceZeroBoundaryConditions = true;
-            _meshUpdate = false;
+            _meshDeformation = false;
             //
             AbsoluteZero = double.PositiveInfinity;
             StefanBoltzmann = double.PositiveInfinity;
