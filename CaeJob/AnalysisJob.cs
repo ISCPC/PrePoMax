@@ -253,7 +253,8 @@ namespace CaeJob
             }
             //
             AppendDataToOutput(DateTime.Now + Environment.NewLine);
-            AppendDataToOutput("########   Starting run number: " + _currentRunStep + "   ########" +  Environment.NewLine);
+            AppendDataToOutput("########   Starting run step number: " + _currentRunStep +
+                               "   Increment number: "  + _currentRunIncrement + "   ########" +  Environment.NewLine);
             AppendDataToOutput("Running command: " + _executable + " " + _argument);
             //
             _statusFileLength = -1;

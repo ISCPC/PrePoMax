@@ -12592,6 +12592,9 @@ namespace PrePoMax
             else if (_currentFieldData.Type == StepType.Buckling) unit = "";
             else if (_currentFieldData.Type == StepType.LastIterations) unit = _results.UnitSystem.TimeUnitAbbreviation;
             else throw new NotSupportedException();
+            // Deformation variable
+            string deformationVariable = _settings.Post.DeformationFieldOutputName;
+            //deformationVariable = FeResults.GetPossibleDeformationFieldOutputNamesMap()[deformationVariable];
             //
             vtkControl.DataFieldType fieldType = ConvertStepType(_currentFieldData);
             //
@@ -12599,7 +12602,7 @@ namespace PrePoMax
             int incrementNumber = _currentFieldData.StepIncrementId;
             //
             _form.SetStatusBlock(Path.GetFileName(_results.FileName), _results.DateTime, _currentFieldData.Time, unit,
-                                 scale, fieldType, stepNumber, incrementNumber);
+                                 deformationVariable, scale, fieldType, stepNumber, incrementNumber);
         }
         private vtkControl.DataFieldType ConvertStepType(FieldData fieldData)
         {

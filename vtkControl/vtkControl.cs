@@ -5022,13 +5022,15 @@ namespace vtkControl
             else _statusBlockWidget.BorderVisibilityOff();
         }
         public void SetStatusBlock(string name, DateTime dateTime, float analysisTimeOrFrequency, string unit,
-                                   float scaleFactor, DataFieldType fieldType, int stepNumber, int incrementNumber)
+                                   string deformationVariable, float scaleFactor, DataFieldType fieldType, int stepNumber,
+                                   int incrementNumber)
         {
             if (_statusBlockWidget == null) return;
             _statusBlockWidget.Name = name;
             _statusBlockWidget.AnalysisTime = analysisTimeOrFrequency;
             _statusBlockWidget.AnalysisTimeUnit = unit;
             _statusBlockWidget.DateTime = dateTime;
+            _statusBlockWidget.DeformationVariable = deformationVariable;
             _statusBlockWidget.DeformationScaleFactor = scaleFactor;
             _statusBlockWidget.FieldType = fieldType;
             _statusBlockWidget.AnimationScaleFactor = -1;

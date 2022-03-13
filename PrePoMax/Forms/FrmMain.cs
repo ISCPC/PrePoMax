@@ -6869,10 +6869,10 @@ namespace PrePoMax
         {
             InvokeIfRequired(_vtk.DrawStatusBlockBorder, drawBorder);
         }
-        public void SetStatusBlock(string name, DateTime dateTime, float analysisTime, string unit, float scaleFactor,
-                                   vtkControl.DataFieldType fieldType, int stepNumber, int incrementNumber)
+        public void SetStatusBlock(string name, DateTime dateTime, float analysisTime, string unit, string deformationVariable,
+                                   float scaleFactor, vtkControl.DataFieldType fieldType, int stepNumber, int incrementNumber)
         {
-            InvokeIfRequired(_vtk.SetStatusBlock, name, dateTime, analysisTime, unit, scaleFactor,
+            InvokeIfRequired(_vtk.SetStatusBlock, name, dateTime, analysisTime, unit, deformationVariable, scaleFactor,
                              fieldType, stepNumber, incrementNumber);
         }
         // General
@@ -7375,6 +7375,22 @@ namespace PrePoMax
             else
             {
                 action(parameter1, parameter2, parameter3, parameter4, parameter5, parameter6, parameter7, parameter8);
+            }
+        }
+        public void InvokeIfRequired<T1, T2, T3, T4, T5, T6, T7, T8, T9>(Action<T1, T2, T3, T4, T5, T6, T7, T8, T9> action,
+                                     T1 parameter1, T2 parameter2, T3 parameter3, T4 parameter4, T5 parameter5, T6 parameter6,
+                                     T7 parameter7, T8 parameter8, T9 parameter9)
+        {
+            if (this.InvokeRequired)
+            {
+                this.Invoke((MethodInvoker)delegate () {
+                    action(parameter1, parameter2, parameter3, parameter4, parameter5,
+                    parameter6, parameter7, parameter8, parameter9);
+                });
+            }
+            else
+            {
+                action(parameter1, parameter2, parameter3, parameter4, parameter5, parameter6, parameter7, parameter8, parameter9);
             }
         }
 

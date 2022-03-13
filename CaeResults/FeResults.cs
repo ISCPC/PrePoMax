@@ -221,18 +221,12 @@ namespace CaeResults
             //
             Field currentField;
             FieldData fieldData;
-            FieldComponent h1;
-            FieldComponent h2;
-            FieldComponent h3;
-            FieldComponent uh1;
-            FieldComponent uh2;
-            FieldComponent uh3;
-            float[] valuesH1;
-            float[] valuesH2;
-            float[] valuesH3;
-            float[] valuesUH1;
-            float[] valuesUH2;
-            float[] valuesUH3;
+            FieldComponent fc1;
+            FieldComponent fc2;
+            FieldComponent fc3;
+            float[] values1;
+            float[] values2;
+            float[] values3;
             float[] magnitude;
             //float[][] vectors = GetLocalVectors(FOFieldNames.WearDepth);
             float[][] vectors = SubtractMeshPositions(results, this);
@@ -248,76 +242,76 @@ namespace CaeResults
                 if (fieldData.Name == FOFieldNames.WearDepth)
                 {
                     // H1
-                    valuesH1 = currentField.GetComponentValues(FOComponentNames.H1);
-                    magnitude = new float[valuesH1.Length];
-                    for (int i = 0; i < valuesH1.Length; i++)
+                    values1 = currentField.GetComponentValues(FOComponentNames.H1);
+                    magnitude = new float[values1.Length];
+                    for (int i = 0; i < values1.Length; i++)
                     {
-                        valuesH1[i] += vectorsWD[0][i];
-                        magnitude[i] += valuesH1[i] * valuesH1[i];
+                        values1[i] += vectorsWD[0][i];
+                        magnitude[i] += values1[i] * values1[i];
                     }
-                    h1 = new FieldComponent(FOComponentNames.H1, valuesH1);
+                    fc1 = new FieldComponent(FOComponentNames.H1, values1);
                     // H2
-                    valuesH2 = currentField.GetComponentValues(FOComponentNames.H2);
-                    for (int i = 0; i < valuesH2.Length; i++)
+                    values2 = currentField.GetComponentValues(FOComponentNames.H2);
+                    for (int i = 0; i < values2.Length; i++)
                     {
-                        valuesH2[i] += vectorsWD[1][i];
-                        magnitude[i] += valuesH2[i] * valuesH2[i];
+                        values2[i] += vectorsWD[1][i];
+                        magnitude[i] += values2[i] * values2[i];
                     }
-                    h2 = new FieldComponent(FOComponentNames.H2, valuesH2);
+                    fc2 = new FieldComponent(FOComponentNames.H2, values2);
                     // H3
-                    valuesH3 = currentField.GetComponentValues(FOComponentNames.H3);
-                    for (int i = 0; i < valuesH3.Length; i++)
+                    values3 = currentField.GetComponentValues(FOComponentNames.H3);
+                    for (int i = 0; i < values3.Length; i++)
                     {
-                        valuesH3[i] += vectorsWD[2][i];
-                        magnitude[i] += valuesH3[i] * valuesH3[i];
+                        values3[i] += vectorsWD[2][i];
+                        magnitude[i] += values3[i] * values3[i];
                     }
-                    h3 = new FieldComponent(FOComponentNames.H3, valuesH3);
+                    fc3 = new FieldComponent(FOComponentNames.H3, values3);
                     // Magnitude
                     for (int i = 0; i < magnitude.Length; i++) magnitude[i] = (float)Math.Sqrt(magnitude[i]);
                     // Create field
                     currentField = new Field(fieldData.Name);
                     currentField.AddComponent(FOComponentNames.All, magnitude);
-                    currentField.AddComponent(h1);
-                    currentField.AddComponent(h2);
-                    currentField.AddComponent(h3);
+                    currentField.AddComponent(fc1);
+                    currentField.AddComponent(fc2);
+                    currentField.AddComponent(fc3);
                     // Replace field
                     results.ReplaceField(fieldData, currentField);
                 }
-                else if (fieldData.Name == FOFieldNames.DispWearDepth)
+                else if (fieldData.Name == FOFieldNames.MeshUpdate || fieldData.Name == FOFieldNames.DispUpdateDepth)
                 {
-                    // UH1
-                    valuesUH1 = currentField.GetComponentValues(FOComponentNames.UH1);
-                    magnitude = new float[valuesUH1.Length];
-                    for (int i = 0; i < valuesUH1.Length; i++)
+                    // U1
+                    values1 = currentField.GetComponentValues(FOComponentNames.U1);
+                    magnitude = new float[values1.Length];
+                    for (int i = 0; i < values1.Length; i++)
                     {
-                        valuesUH1[i] += vectors[0][i];
-                        magnitude[i] += valuesUH1[i] * valuesUH1[i];
+                        values1[i] += vectors[0][i];
+                        magnitude[i] += values1[i] * values1[i];
                     }
-                    uh1 = new FieldComponent(FOComponentNames.UH1, valuesUH1);
-                    // UH2
-                    valuesUH2 = currentField.GetComponentValues(FOComponentNames.UH2);
-                    for (int i = 0; i < valuesUH2.Length; i++)
+                    fc1 = new FieldComponent(FOComponentNames.U1, values1);
+                    // U2
+                    values2 = currentField.GetComponentValues(FOComponentNames.U2);
+                    for (int i = 0; i < values2.Length; i++)
                     {
-                        valuesUH2[i] += vectors[1][i];
-                        magnitude[i] += valuesUH2[i] * valuesUH2[i];
+                        values2[i] += vectors[1][i];
+                        magnitude[i] += values2[i] * values2[i];
                     }
-                    uh2 = new FieldComponent(FOComponentNames.UH2, valuesUH2);
-                    // UH3
-                    valuesUH3 = currentField.GetComponentValues(FOComponentNames.UH3);
-                    for (int i = 0; i < valuesUH3.Length; i++)
+                    fc2 = new FieldComponent(FOComponentNames.U2, values2);
+                    // U3
+                    values3 = currentField.GetComponentValues(FOComponentNames.U3);
+                    for (int i = 0; i < values3.Length; i++)
                     {
-                        valuesUH3[i] += vectors[2][i];
-                        magnitude[i] += valuesUH3[i] * valuesUH3[i];
+                        values3[i] += vectors[2][i];
+                        magnitude[i] += values3[i] * values3[i];
                     }
-                    uh3 = new FieldComponent(FOComponentNames.UH3, valuesUH3);
+                    fc3 = new FieldComponent(FOComponentNames.U3, values3);
                     // Magnitude
                     for (int i = 0; i < magnitude.Length; i++) magnitude[i] = (float)Math.Sqrt(magnitude[i]);
                     // Create field
                     currentField = new Field(fieldData.Name);
                     currentField.AddComponent(FOComponentNames.All, magnitude);
-                    currentField.AddComponent(uh1);
-                    currentField.AddComponent(uh2);
-                    currentField.AddComponent(uh3);
+                    currentField.AddComponent(fc1);
+                    currentField.AddComponent(fc2);
+                    currentField.AddComponent(fc3);
                     // Replace field
                     results.ReplaceField(fieldData, currentField);
                 }
@@ -521,14 +515,15 @@ namespace CaeResults
             }
             return deformations;
         }
-        private static OrderedDictionary<string, string> GetPossibleDeformationFieldOutputNamesMap()
+        public static OrderedDictionary<string, string> GetPossibleDeformationFieldOutputNamesMap()
         {
             OrderedDictionary<string, string> names = new OrderedDictionary<string, string>();
             names.Add("Displacements", FOFieldNames.Disp);
             names.Add("Forces", FOFieldNames.Forc);
             names.Add("Surface normals", FOFieldNames.SurfaceNormal);
             names.Add("Wear depths", FOFieldNames.WearDepth);
-            names.Add("Displacements with wear depths", FOFieldNames.DispWearDepth);
+            names.Add("Mesh update", FOFieldNames.MeshUpdate);
+            names.Add("Disp&Update&Depth", FOFieldNames.DispUpdateDepth);
             return names;
         }
         public static string[] GetPossibleDeformationFieldOutputNames()
@@ -565,9 +560,13 @@ namespace CaeResults
             {
                 componentNames = new string[] { FOComponentNames.H1, FOComponentNames.H2, FOComponentNames.H3 };
             }
-            else if (_deformationFieldOutputName == FOFieldNames.DispWearDepth)
+            else if (_deformationFieldOutputName == FOFieldNames.MeshUpdate)
             {
-                componentNames = new string[] { FOComponentNames.UH1, FOComponentNames.UH2, FOComponentNames.UH3 };
+                componentNames = new string[] { FOComponentNames.U1, FOComponentNames.U2, FOComponentNames.U3 };
+            }
+            else if (_deformationFieldOutputName == FOFieldNames.DispUpdateDepth)
+            {
+                componentNames = new string[] { FOComponentNames.U1, FOComponentNames.U2, FOComponentNames.U3 };
             }
             return componentNames;
         }
@@ -658,7 +657,8 @@ namespace CaeResults
                     case FOFieldNames.SlidingDistance:
                     case FOFieldNames.SurfaceNormal:
                     case FOFieldNames.WearDepth:
-                    case FOFieldNames.DispWearDepth:
+                    case FOFieldNames.MeshUpdate:
+                    case FOFieldNames.DispUpdateDepth:
                         unitConverter = new StringLengthConverter();
                         unitAbbreviation = _unitSystem.LengthUnitAbbreviation;
                         break;
@@ -2028,10 +2028,12 @@ namespace CaeResults
                 HistoryResultField surfaceNormalField = GetHistoryResultField(HOSetNames.ContactWear, HOFieldNames.SurfaceNormal);
                 if (surfaceNormalField != null)
                 {
+                    HistoryResultComponent all = surfaceNormalField.Components[HOComponentNames.All];
                     HistoryResultComponent n1 = surfaceNormalField.Components[HOComponentNames.N1];
                     HistoryResultComponent n2 = surfaceNormalField.Components[HOComponentNames.N2];
                     HistoryResultComponent n3 = surfaceNormalField.Components[HOComponentNames.N3];
                     //
+                    CreateAveragedFieldFromElementFaceHistory(FOFieldNames.SurfaceNormal, all, false);
                     CreateAveragedFieldFromElementFaceHistory(FOFieldNames.SurfaceNormal, n1, false);
                     CreateAveragedFieldFromElementFaceHistory(FOFieldNames.SurfaceNormal, n2, false);
                     CreateAveragedFieldFromElementFaceHistory(FOFieldNames.SurfaceNormal, n3, false);
@@ -2093,9 +2095,10 @@ namespace CaeResults
                 HistoryResultComponent[] normalComponents = GetNormalsFromFromElementFaceHistory(tang1);
                 //
                 HistoryResultField surfaceNormalsField = new HistoryResultField(HOFieldNames.SurfaceNormal);
-                surfaceNormalsField.Components.Add(normalComponents[0].Name, normalComponents[0]);
-                surfaceNormalsField.Components.Add(normalComponents[1].Name, normalComponents[1]);
-                surfaceNormalsField.Components.Add(normalComponents[2].Name, normalComponents[2]);
+                surfaceNormalsField.Components.Add(normalComponents[0].Name, normalComponents[0]);  // All
+                surfaceNormalsField.Components.Add(normalComponents[1].Name, normalComponents[1]);  // N1
+                surfaceNormalsField.Components.Add(normalComponents[2].Name, normalComponents[2]);  // N2
+                surfaceNormalsField.Components.Add(normalComponents[3].Name, normalComponents[3]);  // N3
                 //
                 HistoryResultSet contactWear = new HistoryResultSet(HOSetNames.ContactWear);
                 contactWear.Fields.Add(relativeContactDisplacement.Name, relativeContactDisplacement);
@@ -2146,12 +2149,14 @@ namespace CaeResults
                 Field depthField;
                 Field normalField;
                 Field dispField;
+                Field meshUpdateField;
                 //
                 FieldData pressureData;
                 FieldData slidingDistanceData;
                 FieldData depthData;
                 FieldData normalData;
                 FieldData dispData;
+                FieldData meshUpdateData;
                 //
                 int id;
                 Vec3D normal = new Vec3D();
@@ -2247,13 +2252,25 @@ namespace CaeResults
                             depthField.AddComponent(FOComponentNames.H2, depthValuesH2);
                             depthField.AddComponent(FOComponentNames.H3, depthValuesH3);
                             AddFiled(depthData, depthField);
+                            // Mesh update
+                            meshUpdateData = new FieldData(FOFieldNames.MeshUpdate);
+                            meshUpdateData.StepId = slipStepIds[i];
+                            meshUpdateData.StepIncrementId = stepIncrementIds[j];
+                            meshUpdateData.Time = dispData.Time;
+                            meshUpdateData.Type = StepType.Static;
+                            meshUpdateField = new Field(meshUpdateData.Name);
+                            meshUpdateField.AddComponent(FOComponentNames.All, new float[pressureValues.Length]);
+                            meshUpdateField.AddComponent(FOComponentNames.U1, new float[pressureValues.Length]);
+                            meshUpdateField.AddComponent(FOComponentNames.U2, new float[pressureValues.Length]);
+                            meshUpdateField.AddComponent(FOComponentNames.U3, new float[pressureValues.Length]);
+                            AddFiled(meshUpdateData, meshUpdateField);
                             // Disp with wear depth
-                            dispData.Name = FOFieldNames.DispWearDepth;
+                            dispData.Name = FOFieldNames.DispUpdateDepth;
                             dispField = new Field(dispData.Name);
                             dispField.AddComponent(FOComponentNames.All, dispValuesMag);
-                            dispField.AddComponent(FOComponentNames.UH1, dispValuesU1);
-                            dispField.AddComponent(FOComponentNames.UH2, dispValuesU2);
-                            dispField.AddComponent(FOComponentNames.UH3, dispValuesU3);
+                            dispField.AddComponent(FOComponentNames.U1, dispValuesU1);
+                            dispField.AddComponent(FOComponentNames.U2, dispValuesU2);
+                            dispField.AddComponent(FOComponentNames.U3, dispValuesU3);
                             AddFiled(dispData, dispField);
                             //
                             prevDepthValuesMag = depthValuesMag;
@@ -2372,10 +2389,11 @@ namespace CaeResults
         }
         private HistoryResultComponent[] GetNormalsFromFromElementFaceHistory(HistoryResultComponent historyResultComponent)
         {
-            HistoryResultComponent[] normalComponents = new HistoryResultComponent[3];
-            normalComponents[0] = new HistoryResultComponent(HOComponentNames.N1);
-            normalComponents[1] = new HistoryResultComponent(HOComponentNames.N2);
-            normalComponents[2] = new HistoryResultComponent(HOComponentNames.N3);
+            HistoryResultComponent[] normalComponents = new HistoryResultComponent[4];
+            normalComponents[0] = new HistoryResultComponent(HOComponentNames.All);
+            normalComponents[1] = new HistoryResultComponent(HOComponentNames.N1);
+            normalComponents[2] = new HistoryResultComponent(HOComponentNames.N2);
+            normalComponents[3] = new HistoryResultComponent(HOComponentNames.N3);
             // Sorted time
             double[] sortedTime;
             Dictionary<double, int> timeRowId;
@@ -2389,6 +2407,7 @@ namespace CaeResults
             double[] faceNormal;
             FeElement element;
             FeFaceName faceName;
+            HistoryResultEntries normalAllEntry;
             HistoryResultEntries normal1Entry;
             HistoryResultEntries normal2Entry;
             HistoryResultEntries normal3Entry;
@@ -2411,20 +2430,23 @@ namespace CaeResults
                     element = _mesh.Elements[elementId];
                     _mesh.GetElementFaceNormalAndArea(elementId, faceName, out faceNormal, out faceArea);
                     //
+                    normalAllEntry = new HistoryResultEntries(entry.Key, false);
                     normal1Entry = new HistoryResultEntries(entry.Key, false);
                     normal2Entry = new HistoryResultEntries(entry.Key, false);
                     normal3Entry = new HistoryResultEntries(entry.Key, false);
                     //
                     foreach (var time in entry.Value.Time)
                     {
+                        normalAllEntry.Add(time, 1);
                         normal1Entry.Add(time, faceNormal[0]);
                         normal2Entry.Add(time, faceNormal[1]);
                         normal3Entry.Add(time, faceNormal[2]);
                     }
                     //
-                    normalComponents[0].Entries.Add(normal1Entry.Name, normal1Entry);
-                    normalComponents[1].Entries.Add(normal2Entry.Name, normal2Entry);
-                    normalComponents[2].Entries.Add(normal3Entry.Name, normal3Entry);
+                    normalComponents[0].Entries.Add(normalAllEntry.Name, normalAllEntry);
+                    normalComponents[1].Entries.Add(normal1Entry.Name, normal1Entry);
+                    normalComponents[2].Entries.Add(normal2Entry.Name, normal2Entry);
+                    normalComponents[3].Entries.Add(normal3Entry.Name, normal3Entry);
                 }
                 count++;
             }
@@ -2458,7 +2480,7 @@ namespace CaeResults
                     //
                     for (int j = 0; j < stepIncrementIds.Length; j++)
                     {
-                        if (i == 0 && j == 0) continue;
+                        if (i == 0 && j == 0) continue; // Zero increment - Find all occurances!!!
                         // Field
                         values = timeAvgValues[sortedTime[count]];
                         fieldData.StepId = stepIds[i];
@@ -2713,16 +2735,22 @@ namespace CaeResults
             //
             double[][] minMax = minMaxList.ToArray();
             //
+            List<string> entryNamesToRemove = new List<string>();
             foreach (var setEntry in _history.Sets)
             {
                 foreach (var fieldEntry in setEntry.Value.Fields)
                 {
                     foreach (var componentEntry in fieldEntry.Value.Components)
                     {
+                        entryNamesToRemove.Clear();
+                        //
                         foreach (var entry in componentEntry.Value.Entries)
                         {
                             entry.Value.KeepOnly(minMax);
+                            if (entry.Value.Time.Count == 0) entryNamesToRemove.Add(entry.Key);
                         }
+                        // Remove empty
+                        foreach (var entryName in entryNamesToRemove) componentEntry.Value.Entries.Remove(entryName);
                     }
                 }
             }

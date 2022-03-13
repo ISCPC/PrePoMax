@@ -19,6 +19,7 @@ namespace vtkControl
         private string _analysisTimeUnit;
         private float _animationScaleFactor;
         private float _deformationScaleFactor;
+        private string _deformationVariable;
         private DataFieldType _fieldType;
         private int _stepNumber;
         private int _incrementNumber;
@@ -29,8 +30,17 @@ namespace vtkControl
         public DateTime DateTime { get { return _dateTime; } set { _dateTime = value; SetText(); } }
         public float AnalysisTime { get { return _analysisTime; } set { _analysisTime = value; SetText(); } }
         public string AnalysisTimeUnit { get { return _analysisTimeUnit; } set { _analysisTimeUnit = value; SetText(); } }
-        public float DeformationScaleFactor { get { return _deformationScaleFactor; } set { _deformationScaleFactor = value; SetText(); } }
-        public float AnimationScaleFactor { get { return _animationScaleFactor; } set { _animationScaleFactor = value; SetText(); } }
+        public float DeformationScaleFactor
+        {
+            get { return _deformationScaleFactor; }
+            set { _deformationScaleFactor = value; SetText(); }
+        }
+        public string DeformationVariable { get { return _deformationVariable; } set { _deformationVariable = value; SetText(); } }
+        public float AnimationScaleFactor
+        { 
+            get { return _animationScaleFactor; } 
+            set { _animationScaleFactor = value; SetText(); } 
+        }
         public DataFieldType FieldType { get { return _fieldType; } set { _fieldType = value; SetText(); } }
         public int StepNumber { get { return _stepNumber; } set { _stepNumber = value; SetText(); } }
         public int IncrementNumber { get { return _incrementNumber; } set { _incrementNumber = value; SetText(); } }
@@ -80,7 +90,8 @@ namespace vtkControl
             else throw new NotSupportedException();
             //
             _text += Environment.NewLine;
-            _text += "Deformation scale factor: " + _deformationScaleFactor.ToString();
+            _text += "Deformation variable: " + _deformationVariable + "   " +
+                     "Deformation scale factor: " + _deformationScaleFactor.ToString();
             //
             if (_animationScaleFactor >= 0)
             {
