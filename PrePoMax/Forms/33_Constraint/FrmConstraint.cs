@@ -533,12 +533,12 @@ namespace PrePoMax.Forms
             //
             string property = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
             //
-            if (property != _prevSelectionFormProperty) ItemSetDataEditor.SelectionForm.ResetSelection();
+            if (property != _prevSelectionFormProperty) ItemSetDataEditor.SelectionForm.ResetSelection(false);
             _prevSelectionFormProperty = property;
             //
             if (Constraint != null)
             {
-                ItemSetDataEditor.SelectionForm.SetOnlyGeometrySelection(false);
+                ItemSetDataEditor.SelectionForm.SetOnlyGeometrySelection(false, false);
                 //
                 if (Constraint is PointSpring ps && ps.RegionType == RegionTypeEnum.Selection)
                     ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
@@ -547,7 +547,7 @@ namespace PrePoMax.Forms
                 else if (Constraint is RigidBody rb && rb.RegionType == RegionTypeEnum.Selection)
                 {
                     ItemSetDataEditor.SelectionForm.ShowIfHidden(this.Owner);
-                    ItemSetDataEditor.SelectionForm.SetOnlyGeometrySelection(true);
+                    ItemSetDataEditor.SelectionForm.SetOnlyGeometrySelection(true, false);
                 }
                 else if (Constraint is Tie tie)
                 {

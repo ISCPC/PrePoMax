@@ -1574,6 +1574,7 @@ namespace FileInOut.Input
                 double value;
                 Dictionary<string, FeNodeSet> nodeSets = new Dictionary<string, FeNodeSet>();
                 Dictionary<string, BoundaryCondition> boundaryConditions = new Dictionary<string, BoundaryCondition>();
+                HashSet<string> allBCNames = new HashSet<string>(step.BoundaryConditions.Keys);
                 //
                 for (var i = 1; i < lines.Length; i++)
                 {
@@ -1599,13 +1600,13 @@ namespace FileInOut.Input
                     //
                     if (dofStart == 11)
                     {
-                        name = boundaryConditions.GetNextNumberedKey("Temperature");
+                        name = allBCNames.GetNextNumberedKey("Temperature");
                         TemperatureBC tempBC = new TemperatureBC(name, regionName, RegionTypeEnum. NodeSetName, dofValue, false);
                         boundaryConditions.Add(name, tempBC);
                     }
                     else
                     {
-                        name = boundaryConditions.GetNextNumberedKey("Displacement_rotation");
+                        name = allBCNames.GetNextNumberedKey("Displacement_rotation");
                         DisplacementRotation dispRotBC = new DisplacementRotation(name, regionName, RegionTypeEnum.NodeSetName,
                                                                                   false);
                         // Assign DOF prescribed displacement
@@ -1635,6 +1636,7 @@ namespace FileInOut.Input
                         }
                         boundaryConditions.Add(name, dispRotBC);
                     }
+                    allBCNames.Add(name);
                 }
                 //
                 MergeStepBoudaryConditions(boundaryConditions, nodeSets, step, mesh);
@@ -1682,9 +1684,11 @@ namespace FileInOut.Input
                 // Merge
                 BoundaryCondition boundaryCondition;
                 HashSet<int> nodeIds = new HashSet<int>();
+                FeNodeSet nodeSet;
                 FeNodeSet mergedNodeSet;
                 Dictionary<string, FeNodeSet> mergedNodeSets = new Dictionary<string, FeNodeSet>();
                 HashSet<string> allNodeSetNames = new HashSet<string>(mesh.NodeSets.Keys);
+                allNodeSetNames.UnionWith(nodeSets.Keys);
                 HashSet<string> allBCNames = new HashSet<string>(step.BoundaryConditions.Keys);
                 //
                 foreach (var keyBcEntry in keyBoundaryConditions)
@@ -1696,7 +1700,10 @@ namespace FileInOut.Input
                     {
                         // Get first boundary condition
                         if (boundaryCondition == null) boundaryCondition = bcEntry;
-                        nodeIds.UnionWith(nodeSets[bcEntry.RegionName].Labels);
+                        //
+                        if (nodeSets.TryGetValue(bcEntry.RegionName, out nodeSet)) nodeIds.UnionWith(nodeSet.Labels);
+                        else if (mesh.NodeSets.TryGetValue(bcEntry.RegionName, out nodeSet)) nodeIds.UnionWith(nodeSet.Labels);
+                        else throw new NotSupportedException();
                     }
                     // Node set
                     mergedNodeSet = new FeNodeSet(boundaryCondition.RegionName, nodeIds.ToArray());

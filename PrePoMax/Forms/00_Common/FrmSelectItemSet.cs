@@ -94,7 +94,7 @@ namespace PrePoMax
                 //                          null,
                 //                          gbFEMesh,
                 //                          new object[] { true });
-                if (this.Visible) ResetSelection();
+                if (this.Visible) ResetSelection(false);
                 else _controller.SetSelectByToDefault();
             }
             catch { }
@@ -332,14 +332,14 @@ namespace PrePoMax
                 ItemSetDataEditor.SelectionForm.Show(owner);
             }
         }
-        public void ResetSelection()
+        public void ResetSelection(bool forceInitialize)
         {
             try
             {
                 _initialSetup = true;
                 //
                 if (ItemSetDataEditor.ParentForm is Forms.IFormItemSetDataParent fdsp)
-                    SetGeometrySelection(fdsp.IsSelectionGeometryBased());
+                    SetGeometrySelection(fdsp.IsSelectionGeometryBased(), forceInitialize);
                 //
                 rbSelectBy_CheckedChanged(null, null);
             }
@@ -355,28 +355,46 @@ namespace PrePoMax
                 Location = location;
             }
         }
-        public void SetGeometrySelection(bool selectGeometry)
+        public void SetGeometrySelection(bool selectGeometry, bool forceInitialize)
         {
             if (selectGeometry)
             {
-                if (rbGeometry.Checked) return;
+                if (forceInitialize)
+                {
+                    if (rbGeometry.Checked) return;
+                }
+                else
+                {
+                    if (rbGeometry.Checked || rbGeometryPart.Checked || rbGeometryEdgeAngle.Checked ||
+                        rbGeometrySurfaceAngle.Checked) return;
+                }
                 //
                 rbGeometry.Checked = true;
+                // Hide mesh selection
                 if (btnMoreLess.Enabled && btnMoreLess.Text == "Less") btnMoreLess_Click(null, null);
             }
             else
             {
-                if (rbNode.Checked) return;
+                if (forceInitialize)
+                {
+                    if (rbNode.Checked) return;
+                }
+                else
+                {
+                    if (rbNode.Checked || rbElement.Checked || rbEdge.Checked || rbSurface.Checked || rbPart.Checked ||
+                        rbEdgeAngle.Checked || rbSurfaceAngle.Checked || rbId.Checked) return;
+                }
                 //
                 rbNode.Checked = true;
+                // Show mesh selection
                 if (btnMoreLess.Enabled && btnMoreLess.Text == "More") btnMoreLess_Click(null, null);
             }
         }
-        public void SetOnlyGeometrySelection(bool onlyGeometrySelection)
+        public void SetOnlyGeometrySelection(bool onlyGeometrySelection, bool forceInitialize = true)
         {
             if (onlyGeometrySelection)
             {
-                SetGeometrySelection(true);
+                SetGeometrySelection(true, forceInitialize);
                 if (btnMoreLess.Text == "Less") btnMoreLess_Click(null, null);
                 btnMoreLess.Enabled = false;
             }

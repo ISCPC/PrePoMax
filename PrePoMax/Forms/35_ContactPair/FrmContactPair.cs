@@ -250,7 +250,7 @@ namespace PrePoMax.Forms
             //
             string property = propertyGrid.SelectedGridItem.PropertyDescriptor.Name;
             //
-            if (property != _prevSelectionFormProperty) ItemSetDataEditor.SelectionForm.ResetSelection();
+            if (property != _prevSelectionFormProperty) ItemSetDataEditor.SelectionForm.ResetSelection(false);
             _prevSelectionFormProperty = property;
             //
             if (ContactPair != null && ContactPair is ContactPair cp)

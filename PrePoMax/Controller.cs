@@ -7114,6 +7114,9 @@ namespace PrePoMax
                 _form.WriteDataToOutput("Starting wear cycle number: " + job.CurrentRunStep);
                 //
                 ExportToCalculix(job.InputFileName, deformations);
+                //
+                //File.Copy(job.InputFileName, Path.Combine(Path.GetDirectoryName(job.InputFileName),
+                //    Path.GetFileNameWithoutExtension(job.InputFileName) + "_" + job.CurrentRunStep + ".inp"), true);
             }
             else if (job.CurrentRunIncrement == 2)
             {
