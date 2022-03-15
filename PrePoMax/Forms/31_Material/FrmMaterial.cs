@@ -24,6 +24,7 @@ namespace PrePoMax.Forms
         private Controller _controller;
         private TabPage[] _pages;
         private bool _useSimpleEditor;
+        private bool _keepVisible;
         
 
         // Properties                                                                                                               
@@ -295,18 +296,19 @@ namespace PrePoMax.Forms
         private void btnCancel_Click(object sender, EventArgs e)
         {
             _useSimpleEditor = false;
-            dgvData.HidePlot();
-            Hide();
+            //
+            if (!_keepVisible)
+            {
+                dgvData.HidePlot();
+                Hide();
+            }
         }
         private void FrmMaterial_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (e.CloseReason == CloseReason.UserClosing)
             {
                 e.Cancel = true;
-                //
-                _useSimpleEditor = false;
-                dgvData.HidePlot();
-                Hide();
+                btnCancel_Click(null, null);
             }
         }
     
@@ -320,8 +322,10 @@ namespace PrePoMax.Forms
             _materialNames = null;
             _materialToEditName = null;
             _material = null;
+            _keepVisible = false;
             lvAddedProperties.Items.Clear();
             ClearControls();
+            SetControlsVisibility();
             //
             _materialNames = _controller.GetMaterialNames();
             _materialToEditName = materialToEditName;
@@ -419,6 +423,19 @@ namespace PrePoMax.Forms
             _controller.SetSelectByToOff();
             //
             return true;
+        }
+        public void PrepareFormAlwaysVisible()
+        {
+            PrepareForm(null, null);
+            //
+            _keepVisible = true;
+            SetControlsVisibility();
+        }
+        private void SetControlsVisibility()
+        {
+            btnOKAddNew.Visible = !_keepVisible;
+            btnOK.Visible = !_keepVisible;
+            btnCancel.Visible = !_keepVisible;
         }
         private void ClearControls()
         {

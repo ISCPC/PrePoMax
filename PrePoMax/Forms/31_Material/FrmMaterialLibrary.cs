@@ -62,6 +62,12 @@ namespace PrePoMax.Forms
                 GetNodeContainingFirstMaterial(btvLibrary.Nodes[0], out materialNode);
                 if (materialNode != null) btvLibrary.SelectedNode = materialNode;
                 else btvLibrary.SelectedNode = btvLibrary.Nodes[0];
+                //
+                FrmMaterial frmMaterial = new FrmMaterial(_controller);
+                frmMaterial.Text = "Edit Material";
+                frmMaterial.PrepareFormAlwaysVisible();
+                frmMaterial.Location = new Point(Location.X + Width - 10, Location.Y);
+                frmMaterial.Show(this);
             }
             catch (Exception ex)
             {

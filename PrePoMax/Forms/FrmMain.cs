@@ -3975,7 +3975,7 @@ namespace PrePoMax
                 FrmMaterialLibrary fml = new FrmMaterialLibrary(_controller);
                 CloseAllForms();
                 SetFormLoaction((Form)fml);
-                fml.ShowDialog();
+                fml.ShowDialog();                
             }
         }
 
